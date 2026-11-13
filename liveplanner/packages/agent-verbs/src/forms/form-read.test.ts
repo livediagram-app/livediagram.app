@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FormLinkResponse } from '@liveplanner/api-schema';
-import { bugForm, formWorld } from '../testing/forms';
+import { bugForm, firstStatus, formWorld } from '../testing/forms';
 import { readFormOf } from './form-read';
 
 // read_form's answer (docs/specs/030-forms/forms.md "Agents"): the form in words, its state and its problems.
@@ -261,5 +261,73 @@ describe('readFormOf, a live board form with nowhere to send', () => {
   it('reads it as closed for want of a destination', () => {
     const r = read({ ...bugForm(), destination: undefined }, link(true));
     expect(r).toMatchObject({ state: 'closed', closedReason: 'no_destination' });
+  });
+});
+
+describe('card type rules (docs/specs/030-forms/forms.md "Choosing the card type by an answer")', () => {
+  const ruled = () => ({
+    ...bugForm(),
+    destination: {
+      ...bugForm().destination!,
+      typeRules: [
+        { id: 'r-1', questionId: 'q-sev', anyOf: ['High'], typeId: 'task', status: firstStatus() },
+      ],
+    },
+  });
+  const readIn = (boardTypes: string[] | null) => {
+    const world = formWorld();
+    return readFormOf({
+      tabId: 'form',
+      form: ruled(),
+      boards: world.boards.map((b) => ({ ...b, types: boardTypes })),
+      sheets: world.sheets,
+      types: world.types,
+      link: null,
+      now: 0,
+    });
+  };
+
+  it('lists each rule in words, its type and column by name', () => {
+    const r = readIn(null);
+    expect(r.cardTypeRules).toEqual([
+      {
+        id: 'r-1',
+        questionId: 'q-sev',
+        when: 'Severity is High',
+        anyOf: ['High'],
+        cardType: 'Task',
+        column: 'New',
+      },
+    ]);
+    expect(r.problems).toEqual([]);
+    // A form without rules says nothing of them.
+    expect(read()).not.toHaveProperty('cardTypeRules');
+  });
+
+  it('names a removed question, type or column as removed', () => {
+    const world = formWorld();
+    const form = ruled();
+    form.destination.typeRules = [
+      { id: 'r-1', questionId: 'q-gone', anyOf: ['High'], typeId: 'gone', status: 'gone' },
+    ];
+    const r = readFormOf({
+      tabId: 'form',
+      form,
+      boards: world.boards,
+      sheets: [],
+      types: world.types,
+      link: null,
+    });
+    expect(r.cardTypeRules![0]).toMatchObject({
+      when: '(removed question) is High',
+      cardType: '(removed)',
+      column: '(removed)',
+    });
+  });
+
+  it('says why a rule is broken, among the problems too', () => {
+    const r = readIn(['bug']);
+    expect(r.cardTypeRules![0]!.broken).toMatch(/no longer on the board/);
+    expect(r.problems).toEqual([`${r.cardTypeRules![0]!.broken!} ("Severity", q-sev)`]);
   });
 });

@@ -86,7 +86,8 @@ const CHIPS_MAX = 3;
 
 function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
   if (item.kind === 'import') return <ImportPicture palette={palette} />;
-  if (item.kind === 'describe') return <DescribePicture palette={palette} />;
+  if (item.kind === 'describe' || item.kind === 'describe-form')
+    return <DescribePicture palette={palette} />;
   if (item.kind === 'board') return <BoardPreview preset={item.preset} palette={palette} />;
   // A template's preview is light-canvas art, on a re-lit tile, as every start draws one.
   if (item.kind === 'template') return <TemplatePicture kind={item.template} />;
@@ -114,7 +115,8 @@ function toCard(item: StartItem, palette: PlanPalette, showKind: boolean): Start
   const chips = item.types?.slice(0, CHIPS_MAX) ?? [];
   const more = (item.types?.length ?? 0) - chips.length;
   // Import and Describe a Plan are their own names: no badge, or kind read out, saying it again.
-  const kind = showKind && item.kind !== 'import' && item.kind !== 'describe';
+  const kind =
+    showKind && item.kind !== 'import' && item.kind !== 'describe' && item.kind !== 'describe-form';
   const badge =
     item.kind === 'dashboard' && item.suggestion
       ? 'For You'
@@ -188,6 +190,7 @@ export function StartPlanning({
   onForm,
   onImport,
   onDescribe,
+  onDescribeForm,
   leave = (href) => window.location.assign(href),
 }: {
   onPickBoard: (preset: string) => void;
@@ -212,6 +215,8 @@ export function StartPlanning({
   // Opens Describe a Plan (an Editor's: describe-a-plan.md "Where it starts"); absent, no rail entry and no card in a
   // search.
   onDescribe?: (() => void) | undefined;
+  // Opens Describe a Form (an Editor's: describe-a-form.md "Who may"); absent, Forms has no Describe a Form card.
+  onDescribeForm?: (() => void) | undefined;
   // Leaving for a Community tile's copy (a full navigation; tests watch it instead).
   leave?: (href: string) => void;
 }) {
@@ -242,7 +247,8 @@ export function StartPlanning({
           (i.kind !== 'visualisation' || !!onVisualisation) &&
           (i.kind !== 'form' || !!onForm) &&
           (i.kind !== 'import' || !!onImport) &&
-          (i.kind !== 'describe' || !!onDescribe),
+          (i.kind !== 'describe' || !!onDescribe) &&
+          (i.kind !== 'describe-form' || (!!onDescribeForm && !!onForm)),
       ),
     [
       hasCards,
@@ -254,6 +260,7 @@ export function StartPlanning({
       onForm,
       onImport,
       onDescribe,
+      onDescribeForm,
     ],
   );
   // The Community's tiles join Inspiration: one read the first time the panel shows this session, none where
@@ -288,6 +295,7 @@ export function StartPlanning({
     else if (item.kind === 'form') onForm?.(item.starter);
     else if (item.kind === 'import') onImport?.();
     else if (item.kind === 'describe') onDescribe?.();
+    else if (item.kind === 'describe-form') onDescribeForm?.();
     else if (item.suggestion) onSuggestedDashboard?.(item.suggestion);
     else if (item.layout) onDashboard?.(item.layout);
   };
@@ -328,9 +336,10 @@ export function StartPlanning({
       // Where the new plan lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(p) => <StartSaveSwitch palette={p} />}
       connect={connect}
-      // Describe a Plan, above Connect File: it places nothing and opens its dialog.
-      footLead={
-        onDescribe
+      // Describe a Plan then Import, above Connect File (the rail's last entry): each places nothing and opens its
+      // dialog.
+      footLead={[
+        ...(onDescribe
           ? [
               {
                 id: DESCRIBE_ITEM.id,
@@ -339,11 +348,8 @@ export function StartPlanning({
                 onPick: onDescribe,
               },
             ]
-          : []
-      }
-      // Import, below Connect File: it places nothing and opens the Import dialog on its list.
-      footActions={
-        onImport
+          : []),
+        ...(onImport
           ? [
               {
                 id: IMPORT_ITEM.id,
@@ -352,8 +358,8 @@ export function StartPlanning({
                 onPick: onImport,
               },
             ]
-          : []
-      }
+          : []),
+      ]}
     />
   );
 }

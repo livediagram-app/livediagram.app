@@ -28,6 +28,7 @@ import type {
 } from './types';
 import { isTimeTrigger } from './types';
 import { aiStepChip } from './ai-steps';
+import { addressWords } from './email-addresses';
 import { checkboxOf, fieldKind, personNamed } from './set-value';
 
 // What the sentence reads a rule against. `tabs` names Form tabs and the boards' tabs; `filters` names saved filters
@@ -340,6 +341,7 @@ export function actionChip(action: AutomationAction, outline: RuleSentenceOutlin
     case 'create_card':
       return `Create ${outlineTypeName(action.type, outline)}`;
     case 'email':
+      if ('addresses' in action.to) return `Email ${addressWords(action.to.addresses, 'More')}`;
       return 'person' in action.to
         ? `Email ${outlinePersonName(action.to.person, outline)}`
         : 'trigger' in action.to

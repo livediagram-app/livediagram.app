@@ -87,7 +87,8 @@ export const PLAN_DRAFT_OFF_TOPIC =
   'That doesn’t read as a plan. Say what you’re planning, the stages work moves through and what each card holds, like the examples.';
 export const PLAN_DRAFT_UNREADABLE =
   'Couldn’t draft a plan from that. Try saying it another way, or start from a template.';
-export const PLAN_DRAFT_CAPPED = `You’ve described ${PLAN_DRAFT_PER_DAY} plans today. Try again tomorrow, or start from a template.`;
+// The count is shared with Describe a Form (docs/specs/030-forms/describe-a-form.md): one AI budget per account.
+export const PLAN_DRAFT_CAPPED = `You’ve used today’s ${PLAN_DRAFT_PER_DAY} AI drafts for plans and forms. Try again tomorrow, or start from a template.`;
 export const PLAN_DRAFT_FAILED = 'The AI couldn’t answer just now. Try again in a moment.';
 export const PLAN_DRAFT_NOT_SET_UP = 'AI isn’t set up here.';
 

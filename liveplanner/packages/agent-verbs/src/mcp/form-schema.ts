@@ -360,6 +360,27 @@ export const readFormOutput = {
       'Where responses go: {to: "board", board, cardType, column}, {to: "sheet", sheet} or {to: "nowhere"}.',
     ),
   respondsToProblem: z.string().optional().describe('Why responses cannot land there now.'),
+  cardTypeRules: z
+    .array(
+      z.object({
+        id: z.string().describe('The rule’s id.'),
+        questionId: z.string().describe('The question it reads.'),
+        when: z.string().describe('The rule in words: "Request Type is Bug or Defect".'),
+        anyOf: z.array(z.string()).describe('The answers that pick it.'),
+        cardType: z.string().describe('The card type it makes.'),
+        column: z.string().describe('The column its cards land in.'),
+        broken: z
+          .string()
+          .optional()
+          .describe(
+            'Why it no longer holds: skipped, so the default card type takes the response.',
+          ),
+      }),
+    )
+    .optional()
+    .describe(
+      'Board forms: other card types by an answer, read in order; respondsTo’s card type covers every other answer. Set in the editor.',
+    ),
   sections: z
     .array(
       z.object({

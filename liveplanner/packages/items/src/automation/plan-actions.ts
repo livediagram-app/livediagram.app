@@ -54,6 +54,7 @@ import {
 import { fieldText, fillValues } from './values';
 import { relatedCards } from './related';
 import { branchWords, notifyChip, waitWords } from './sentence';
+import { addressWords } from './email-addresses';
 import { Failed, fail, failGone, fieldKind, setValueOf } from './set-value';
 import { planAi } from './ai-steps';
 import {
@@ -232,17 +233,19 @@ function apply(a: AutomationAction, w: Walk) {
       return plan.line('Resolve Threads');
     }
     case 'email': {
+      const subject = cutText(fill(a.subject), AUTOMATION_SUBJECT_MAX);
+      const body = cutText(fill(a.body), AUTOMATION_TEXT_MAX);
+      if ('addresses' in a.to) {
+        plan.emails.push({ to: null, addresses: a.to.addresses, subject, body });
+        return plan.line(`Send Email to ${addressWords(a.to.addresses)}`);
+      }
       const to =
         'assignee' in a.to
           ? (itemAssignee(plan.card) ?? null)
           : 'trigger' in a.to
             ? triggerPerson(ctx)
             : (personOf(o, a.to.person) ?? null);
-      plan.emails.push({
-        to,
-        subject: cutText(fill(a.subject), AUTOMATION_SUBJECT_MAX),
-        body: cutText(fill(a.body), AUTOMATION_TEXT_MAX),
-      });
+      plan.emails.push({ to, subject, body });
       return plan.line(
         to ? `Send Email to ${to.name}` : 'Send Email (nobody to send it to)',
         to !== null,

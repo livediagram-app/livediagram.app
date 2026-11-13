@@ -30,6 +30,7 @@ import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
 import { handleImages } from './routes/images';
 import { handleAccount } from './routes/account';
 import { handlePlanDrafts } from './routes/plan-drafts';
+import { handleFormDrafts } from './routes/form-drafts';
 import { handleEvents } from './routes/events';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
@@ -45,6 +46,7 @@ import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
 import { handleAutomationHook } from './routes/automation-hook-routes';
+import { handleEmailOptOut } from './routes/email-optout-route';
 import { handleGithub } from './github/webhook-route';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
@@ -92,6 +94,10 @@ async function routeApiRequest(
   // An Incoming Webhook call (docs/specs/026-plan/automations.md "Incoming Webhook"): its rule's secret, never a
   // person, so answered before identity, with its own body, type and network checks (routes/automation-hook-routes.ts).
   if (segments[1] === 'hooks') return handleAutomationHook(request, env);
+
+  // A rule email's unsubscribe (docs/specs/026-plan/automations.md "Typed-in addresses"): its token, never a person,
+  // so answered before identity, limited per network (routes/email-optout-route.ts).
+  if (segments[1] === 'email-optout') return handleEmailOptOut(request, env);
 
   // liveplanner's GitHub App (docs/specs/026-plan/github-pull-requests.md "Deliveries"): a delivery proves itself by
   // its signature and a connect's callback by its state, never by a person, so both are answered before identity
@@ -317,6 +323,9 @@ async function routeApiRequest(
     // Describe a Plan (docs/specs/026-plan/describe-a-plan.md): a board and card types drafted from words, made nowhere.
     case 'plan-drafts':
       return await handlePlanDrafts(ctx);
+    // Describe a Form (docs/specs/030-forms/describe-a-form.md): a form drafted from words, made nowhere.
+    case 'form-drafts':
+      return await handleFormDrafts(ctx);
     case 'trash':
       return await handleTrash(ctx);
     case 'preferences':

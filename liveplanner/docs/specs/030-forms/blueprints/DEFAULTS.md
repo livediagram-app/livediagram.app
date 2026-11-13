@@ -21,3 +21,6 @@ One row per default applied where a spec is silent or qualitative.
 | D15 | forms     | How an agent's question names its type         | By the model's id (`short`, `single`...), each described with the builder's name                 |
 | D16 | forms     | Which reason Not Taking Responses names first  | Suspended, paused, switched off, Close On, Response Limit, full: the first fix unblocks the rest |
 | D17 | forms     | Whether Share Form publishes after a sync      | No: it shows Publish Form, held while the link is first read; publishing stays one press         |
+| D18 | forms     | A pre-filled Multiple Choice under its minimum | Kept: the respondent adds the rest, and Next checks the minimum                                  |
+| D19 | forms     | The QR code's error correction and quiet zone  | M (15%) and four modules, the QR standard's quiet zone, readable printed small                   |
+| D20 | forms     | The embed's default height                     | 720 px: a short form shows whole; a longer one scrolls inside the frame                          |

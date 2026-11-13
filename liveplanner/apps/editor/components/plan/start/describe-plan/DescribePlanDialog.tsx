@@ -23,10 +23,13 @@ import {
   DialogFooter,
   DialogHeader,
   SparkleIcon,
-  TextArea,
 } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { AiNote } from '@/components/automations/step-panels/AiStepPanel';
+import {
+  DescribePrompt,
+  DescribeSignIn,
+  DescribeTitle,
+} from '@/components/describe/DescribePrompt';
 import { PlanDraftRefusal } from './plan-draft-client';
 import { PlanDraftPreview } from './PlanDraftPreview';
 import { problemsByPath } from './draft-edits';
@@ -87,13 +90,10 @@ export function DescribePlanDialog({
   const [checking, setChecking] = useState<PlanDraft | null>(null);
   const [makeSaid, setMakeSaid] = useState<string | null>(null);
   const box = useRef<HTMLTextAreaElement>(null);
-  const heading = useRef<HTMLHeadingElement>(null);
+  const heading = useRef<HTMLSpanElement>(null);
   // The ask in flight: a Cancel (or an unmount) makes its answer stale, and a stale answer is dropped.
   const asking = useRef(0);
   const titleId = useId();
-  const noteId = useId();
-  const saidId = useId();
-  const examplesId = useId();
   const prompt = text.trim();
 
   useEffect(() => {
@@ -150,14 +150,7 @@ export function DescribePlanDialog({
     setMakeSaid(onMake(making));
   };
 
-  const title = (words: string) => (
-    <span className="flex items-center gap-2">
-      <SparkleIcon size={16} aria-hidden className="text-brand-700 dark:text-brand-300" />
-      <span ref={heading} tabIndex={-1} className="outline-none">
-        {words}
-      </span>
-    </span>
-  );
+  const title = (words: string) => <DescribeTitle ref={heading}>{words}</DescribeTitle>;
 
   return (
     <Dialog
@@ -175,14 +168,7 @@ export function DescribePlanDialog({
         <DialogCloseButton onClick={cancel} />
       </DialogHeader>
       {!signedIn ? (
-        <div className="flex flex-col items-center gap-3 px-6 py-8 text-center">
-          <span className="flex size-11 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
-            <SparkleIcon size={20} aria-hidden />
-          </span>
-          <p className="max-w-sm text-[14px] text-slate-700 dark:text-slate-200">
-            {DESCRIBE_PLAN_SIGN_IN}
-          </p>
-        </div>
+        <DescribeSignIn>{DESCRIBE_PLAN_SIGN_IN}</DescribeSignIn>
       ) : checking ? (
         <div
           data-describe-plan-preview=""
@@ -201,74 +187,23 @@ export function DescribePlanDialog({
           />
         </div>
       ) : (
-        <div data-describe-plan="" className="flex flex-col gap-3 px-6 py-5 max-sm:px-4">
-          <TextArea
-            ref={box}
-            aria-label="Describe the plan"
-            aria-describedby={said ? `${saidId} ${noteId}` : noteId}
-            aria-invalid={said ? true : undefined}
-            rows={4}
-            maxLength={PLAN_DRAFT_PROMPT_MAX}
-            value={text}
-            readOnly={busy}
-            placeholder={DESCRIBE_PLAN_PLACEHOLDER}
-            onChange={(e) => {
-              setText(e.target.value);
-              setSaid(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                void submit();
-              }
-            }}
-            className="resize-none"
-          />
-          <div className="-mt-1 flex justify-end">
-            <span
-              aria-live="polite"
-              className="text-[12px] tabular-nums text-slate-500 dark:text-slate-400"
-            >
-              {text.length} / {PLAN_DRAFT_PROMPT_MAX}
-            </span>
-          </div>
-          <div role="group" aria-labelledby={examplesId} className="flex flex-col gap-2">
-            <span
-              id={examplesId}
-              className="text-[12px] font-medium text-slate-500 dark:text-slate-400"
-            >
-              Try an Example
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {DESCRIBE_PLAN_EXAMPLES.map((e) => (
-                <Button
-                  key={e.label}
-                  variant="secondary"
-                  size="xs"
-                  disabled={busy}
-                  title={e.text}
-                  onClick={() => {
-                    setText(e.text);
-                    setSaid(null);
-                    box.current?.focus();
-                  }}
-                >
-                  {e.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-          {said ? (
-            <p
-              id={saidId}
-              role="alert"
-              className="rounded-lg bg-amber-50 px-3 py-2.5 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-200"
-            >
-              {said}
-            </p>
-          ) : null}
-          <AiNote id={noteId}>Uses AI: you can describe {PLAN_DRAFT_PER_DAY} plans a day.</AiNote>
-        </div>
+        <DescribePrompt
+          ref={box}
+          dataAttr="data-describe-plan"
+          label="Describe the plan"
+          text={text}
+          onText={(t) => {
+            setText(t);
+            setSaid(null);
+          }}
+          max={PLAN_DRAFT_PROMPT_MAX}
+          placeholder={DESCRIBE_PLAN_PLACEHOLDER}
+          examples={DESCRIBE_PLAN_EXAMPLES}
+          busy={busy}
+          said={said}
+          note={<>Uses AI: plans and forms share {PLAN_DRAFT_PER_DAY} drafts a day.</>}
+          onSubmit={() => void submit()}
+        />
       )}
       <DialogFooter>
         {!signedIn ? (

@@ -1,13 +1,13 @@
 'use client';
 
 // The When panel's Trigger field (docs/specs/026-plan/automations.md "The rule builder"): the trigger's tile, name and
-// what it hears, and Change, which opens the Pick a Trigger picker (StepPicker) with the current one badged.
+// what it hears, and Change, which opens the Pick a Trigger picker (TilePicker) with the current one badged.
 
 import { useMemo, useState } from 'react';
 import { AUTOMATION_TRIGGER_NAMES, type AutomationTriggerKind } from '@liveplanner/items';
 import { automationsHeroArt } from '../AutomationsHeroArt';
 import { StepTile } from '../automation-glyphs';
-import { StepPicker } from '../StepPicker';
+import { TilePicker } from '@/components/tile-picker/TilePicker';
 import { useGithubAutomations } from '../github/github-automations';
 import { useGithubConnection } from '../github/use-github-connection';
 import { TRIGGER_LINES, isTimeKind, offeredGroups } from '../trigger-groups';
@@ -58,7 +58,7 @@ export function ChangeTriggerField({
             onOpen={() => setOpen(true)}
           />
           {open ? (
-            <StepPicker
+            <TilePicker
               title="Pick a Trigger"
               line="When should this rule run?"
               art={automationsHeroArt}

@@ -232,9 +232,18 @@ export function setRespondsTo(
   // Fields set automatically stay while the card type does (they name its fields).
   const was = d.form.destination;
   const fixed = was?.typeId === type.id ? was.fixed : undefined;
+  // Card type rules stay on the same board (their types and columns are its); readForm drops one on the new default
+  // type (forms.md "Choosing the card type by an answer").
+  const typeRules = was?.tabId === board.tabId ? was.typeRules : undefined;
   d.form = {
     ...rest,
-    destination: { tabId: board.tabId, typeId: type.id, status, ...(fixed ? { fixed } : {}) },
+    destination: {
+      tabId: board.tabId,
+      typeId: type.id,
+      status,
+      ...(fixed ? { fixed } : {}),
+      ...(typeRules ? { typeRules } : {}),
+    },
   };
   // The status was chosen from the board's own columns.
   const column = board.columns.find((c) => c.status === status)!.name;

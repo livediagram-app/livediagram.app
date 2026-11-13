@@ -29,6 +29,8 @@ On a new tab, choose **Forms** in **Start Planning**'s rail, then a starter:
 - **Job Application**: two sections, about the person and their experience, as Candidates.
 - **Contact**: a message you can assign and close, as a Request.
 
+Or choose **Describe a Form** and say what it should ask, for example "an event RSVP with dietary needs and plus-ones". AI drafts the questions and where responses go; you check them, pick a board or a sheet, and press **Create Form**. An empty Form tab offers it too. It needs you to be signed in, and it shares Describe a Plan's 10 drafts a day.
+
 A starter picks where responses go: your first board that takes its kind of card, or a new **Responses** board made after the form with **New**, **In Progress** and **Done** columns. The fields its questions fill are added to the card type for you.
 
 Two plan templates come with a form already set up: **Help Desk**'s **Contact Form** sends each message to its **Tickets** board as a Ticket, and **Event Planner**'s **RSVP** adds each reply as a row on its **RSVP Responses** sheet. Like any new form, each waits for you to publish it.
@@ -39,7 +41,7 @@ New to forms? With a Form tab open, press Start Forms Tour in the bottom bar, ju
 
 The tab shows the form as people will see it. Click a question (or Tab to it and press Enter) to edit it: type its question, a description under it, and its options, and choose its type. Its footer has **Answer goes to**, **Move Up**, **Move Down**, **Duplicate**, **Delete** and **Required**. Escape lets go of it.
 
-- **Add a question** with the bar under the selected question: it adds one of the same type, or pick another type from its arrow.
+- **Add a question** with the bar under the selected question: it adds one of the same type. Its arrow opens **Add a Question**, a gallery of every type in five groups (**Text**, **Choices**, **Ratings and Numbers**, **Dates** and **Contact Details**), each with a picture of it being answered and a line on what it collects. Search it, or use the arrow keys and Enter, and the type you pick is added straight away.
 - **Add Section** splits the form after the selected question, so people answer it one page at a time with **Next** and **Back** and a progress bar.
 - **Drag** a question by the handle at its top to move it, into another section too.
 - **Options**: press Enter for the next one, Backspace in an empty one to remove it, Alt with the arrow keys to move it, and paste several lines to add one option per line. **Add “Other”** lets people type their own answer.
@@ -57,7 +59,8 @@ Everything is edited in the form itself. Select a question to change its type, i
 
 The cog at the end of the bar above the form opens two more:
 
-- **Responses Go To**: the board, the card type and the column every response is made in. **Column** offers only the columns the card type uses, so responses show on that type's boards, and **+ New Board** makes its columns from the type's own states. Picking a card type, or a board (which picks its card type), on a form with no questions yet adds a question for each field people can fill in, already mapped (Undo takes them away and keeps your pick); on a form that has questions, **Add Questions for** the type's fields adds the ones no question asks. **Set Automatically** gives every card a field without asking: a choice that is always the same (such as Type: Bug), labels, text, a number, a priority, or a date from the day the response was sent, plus some days for a due date. For a sheet, **Extra Columns** does the same for columns. Removing an extra column (or a question) never deletes anything from the sheet: its column stays with the values earlier responses wrote, and new rows leave it empty.
+- **Responses Go To**: the board, the card type and the column every response is made in. **Column** offers only the columns the card type uses, so responses show on that type's boards, and **+ New Board** makes its columns from the type's own states. Picking a card type, or a board (which picks its card type), on a form with no questions yet adds a question for each field people can fill in, already mapped (Undo takes them away and keeps your pick); on a form that has questions, **Add Questions for** the type's fields adds the ones no question asks. It works the other way too: **+ New Card Type** makes a type with a field for each question, named after it, and maps each answer there, and on a card type you already have, **Add Fields for Questions** adds a field for each question whose answer would otherwise land in the card's Description (a question going to the title keeps it, and the first paragraph question stays the card's Description). **Set Automatically** gives every card a field without asking: a choice that is always the same (such as Type: Bug), labels, text, a number, a priority, or a date from the day the response was sent, plus some days for a due date. For a sheet, **Extra Columns** does the same for columns. Removing an extra column (or a question) never deletes anything from the sheet: its column stays with the values earlier responses wrote, and new rows leave it empty.
+- **Card Type by Answer**: when the board takes more than one card type and the form has a choice or checkbox question, responses can make a different card type by an answer, such as a **Bug** card when "What type of request is this?" is Bug and a **Feature** card when it is Feature. Each rule picks the question, one or more answers, the card type and its column (only columns that type uses), and **Answers on** that type's cards maps answers to its own fields. Every other answer makes the card type chosen above. A rule whose question, answer, card type or column is removed is listed under **Problems with this Form**, and its responses use the card type chosen above until you fix it, so none is lost. The card type is always picked by liveplanner when a response arrives, never by the person filling in the form.
 - **Settings**: **Accepting Responses**, **Close On**, **Response Limit**, and the message people see after sending and once the form has closed.
 
 You can also start a form from a board: open the board's cog and choose **New Form**. Its responses go to that board.
@@ -75,6 +78,8 @@ Responses can be **Cards on a Board** or **Rows in a Sheet**. A sheet needs no m
 ## Share it
 
 Press **Share Form** (in the header, where Share is on other tabs) and then **Publish Form**. You get a link to copy or open; anyone with it can fill in the form, and they never see your plan. The same dialog has **Accepting Responses**, to close the form for a while without losing its link, and **Delete Link**. Publishing again makes a new link.
+
+Once it is published, **More Ways to Share** in the same dialog has a **QR Code** to download (PNG or SVG), an **Embed** code to put the form on your own site, and a **Pre-filled Link** that opens the form with some answers already chosen.
 
 While a form is taking responses it is locked, so nobody fills in a form that changes under them. Press **Edit Form** on the strip above it to stop taking responses while you edit; the link stays the same, and turning **Accepting Responses** back on opens it again once Share Form lists no problems. Deleting the board or sheet a form sends to pauses it the same way.
 

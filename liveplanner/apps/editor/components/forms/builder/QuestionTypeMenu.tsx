@@ -1,15 +1,15 @@
 'use client';
 
 // A question type picked from a list of its icon and name (docs/specs/030-forms/forms.md "Question types"): the
-// selected question's Type button, and the add bar's Add Question. A radio list in a popover: arrows move, Enter
-// picks.
+// selected question's Type button (the add bar's arrow opens the Add a Question gallery instead, AddQuestionDialog).
+// A radio list in a popover: arrows move, Enter picks.
 import { useRef, useState, type ReactNode } from 'react';
 import { QUESTION_TYPE_NAMES, type QuestionType } from '@liveplanner/forms';
 import { ChevronDownIcon } from '@liveplanner/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { QUESTION_TYPE_ICONS, QUESTION_TYPE_ORDER } from './question-icons';
 
-export function QuestionTypeList({
+function QuestionTypeList({
   value,
   onPick,
   label,

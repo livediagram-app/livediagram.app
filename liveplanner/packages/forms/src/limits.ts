@@ -31,6 +31,8 @@ export const QUESTIONS_MAX = 100;
 // automatically"); a set text's length; the most days after submitting a date may be.
 export const FIXED_FIELDS_MAX = 20;
 export const SHEET_FIXED_MAX = 10;
+// Card type rules on a board destination (forms.md "Choosing the card type by an answer").
+export const TYPE_RULES_MAX = 10;
 export const FIXED_TEXT_MAX = 500;
 export const FIXED_DAYS_MAX = 365;
 // A sheet form's remembered columns: # and Submitted, one a question, and one each extra column.

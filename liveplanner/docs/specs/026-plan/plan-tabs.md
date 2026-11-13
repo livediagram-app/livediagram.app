@@ -22,7 +22,7 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   categories beside a grid of cards: a board type makes a Board tab, a sheet start a Sheet tab, a form starter a Form
   tab, a Visualisation one chart filling the tab, a layout (or one built from the plan's work) a Dashboard tab, and an
   Inspiration template applies across tabs; its search reaches every one. For an Editor, **Import** sits on the
-  rail directly below Connect File and places nothing: it opens [the Import dialog](#the-import-dialog). The choice sets the tab's kind and adds its element in one change, one undo step.
+  rail directly above Connect File and places nothing: it opens [the Import dialog](#the-import-dialog). The choice sets the tab's kind and adds its element in one change, one undo step.
   A Dashboard started on a tab still on its default name ("Tab 5") is named **Dashboard**; a name someone gave the tab
   stays.
 - Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather
@@ -61,7 +61,7 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 ## The Import dialog
 
 **One dialog holds every way in.** The tab menu's **Import…** row (on every tab, from its **⋯** and the canvas
-right-click menu alike), the command palette's **Import…** and Start Planning's **Import** rail entry (an empty tab, below Connect File,
+right-click menu alike), the command palette's **Import…** and Start Planning's **Import** rail entry (an empty tab, above Connect File,
 [Starting a board](plan-mode.md#starting-a-board)) open it; nothing else in the editor offers an
 import of its own beside it. It is headed **Import**, "Choose what to bring in, or drop a file here.", with the
 Import Tabs help link and Close, and opens on its list, focus on the list's first row that can be pressed (Into This

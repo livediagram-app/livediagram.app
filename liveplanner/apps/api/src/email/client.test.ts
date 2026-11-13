@@ -77,6 +77,19 @@ describe('sendEmail', () => {
     });
   });
 
+  it('sends the one-click List-Unsubscribe-Post with a link that takes a POST', async () => {
+    const email = fakeEmail();
+    await sendEmail(withBinding(email), {
+      ...message,
+      unsubscribeUrl: 'https://app.test/api/email-optout/p/t',
+      oneClick: true,
+    });
+    expect(email.send.mock.calls[0]![0]).toHaveProperty('headers', {
+      'List-Unsubscribe': '<https://app.test/api/email-optout/p/t>',
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    });
+  });
+
   it('returns sent:false and reports the refusal code when Email Service refuses', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const refused = Object.assign(new Error('suppressed'), { code: 'E_RECIPIENT_SUPPRESSED' });

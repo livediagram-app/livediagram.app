@@ -3,7 +3,8 @@
 // Responses Go To's board and card type (docs/specs/030-forms/forms.md "Columns follow the card type", "Questions from
 // the card type's fields"): choosing either moves the column to one the type uses and keeps the values set
 // automatically that still fit, one step; on a form with no questions the type's questions follow as a step of their
-// own, so Undo takes them away and leaves the choice made.
+// own, so Undo takes them away and leaves the choice made. Add Fields for Questions goes the other way: a field on the
+// type for each question whose answer would otherwise land in Description ("Fields from the form's questions").
 import { useCallback, useMemo, type RefObject } from 'react';
 import {
   columnForType,
@@ -11,6 +12,7 @@ import {
   newFormPartId,
   questionsOf,
   readForm,
+  withQuestionFields,
   withTypeQuestions,
   type FormDefinition,
 } from '@liveplanner/forms';
@@ -30,11 +32,14 @@ export type FormDestinationActions = {
   setDestinationBoard: (tabId: string) => void;
   // Add Questions for {Type}'s Fields: a question for each field of the destination's type no question asks, one step.
   addTypeQuestions: () => void;
+  // Add Fields for Questions: a field on the destination's type for each question going to Description for want of
+  // one (withQuestionFields), each question mapped to its field; the type saved, the mappings one step.
+  addQuestionFields: () => void;
 };
 
 type Live = RefObject<{
   tabs: readonly Tab[];
-  itemTypes: { types: readonly ItemTypeDef[] };
+  itemTypes: { types: readonly ItemTypeDef[]; saveType: (type: ItemTypeDef) => void };
 }>;
 
 export function useFormDestinationActions({
@@ -141,8 +146,22 @@ export function useFormDestinationActions({
     track('Form', 'Added', 'FromCardType');
   }, [activeId, commitTabs, formOf, live]);
 
+  const addQuestionFields = useCallback<FormDestinationActions['addQuestionFields']>(() => {
+    const { tabs: now, itemTypes: slice } = live.current;
+    const formTab = now.find((t) => t.id === activeId);
+    if (!formTab || formTab.locked) return;
+    const form = formOf(formTab);
+    const type = slice.types.find((x) => x.id === form.destination?.typeId);
+    const made = type ? withQuestionFields(form, type) : null;
+    if (!made) return;
+    // The type is a catalogue change of its own, as New Field's is; the mappings are one step.
+    slice.saveType(made.type);
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, form: made.form } : t)));
+    track('Form', 'Added', 'FieldsFromQuestions');
+  }, [activeId, commitTabs, formOf, live]);
+
   return useMemo(
-    () => ({ setDestinationType, setDestinationBoard, addTypeQuestions }),
-    [setDestinationType, setDestinationBoard, addTypeQuestions],
+    () => ({ setDestinationType, setDestinationBoard, addTypeQuestions, addQuestionFields }),
+    [setDestinationType, setDestinationBoard, addTypeQuestions, addQuestionFields],
   );
 }

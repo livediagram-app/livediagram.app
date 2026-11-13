@@ -250,6 +250,17 @@ describe('the reply', () => {
     expect(body.conditions).toEqual([]);
   });
 
+  it('never keeps typed-in addresses the model made up: the email goes to the assignee', () => {
+    const { body } = drafted(
+      rule({
+        steps: [{ kind: 'email', to: { addresses: ['x@evil.example'] }, subject: 's', body: 'b' }],
+      }),
+    );
+    expect(body.steps).toEqual([
+      { kind: 'email', to: { assignee: true }, subject: 's', body: 'b' },
+    ]);
+  });
+
   it('never keeps a link the person didn’t write, and keeps one they did', () => {
     const ctx = { ...CTX, prompt: 'comment https://ok.example/run on done cards' };
     const { body } = drafted(

@@ -1,6 +1,13 @@
 'use client';
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, type ReactNode } from 'react';
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  type ClipboardEventHandler,
+  type ReactNode,
+} from 'react';
 import { CloseIcon, FIELD_INVALID, isComposingKey } from '@liveworkspace/ui';
 
 // The shared chip field: chips typed into one bordered field, as the Community publish dialog's tags are.
@@ -20,11 +27,17 @@ type ChipFieldProps = {
   // What a chip reads (Community prefixes `#`); its text by default.
   chipText?: (chip: string) => string;
   removeLabel: (chip: string) => string;
+  // A chip that is not what the field takes (a typed-in email address that is not one): drawn in rose, with
+  // `invalidChipNote` read after it by a screen reader.
+  invalidChip?: (chip: string) => boolean;
+  invalidChipNote?: string;
   draft: string;
   onDraftChange: (value: string) => void;
   onCommit: () => void;
   onRemove: (chip: string) => void;
   onBlur?: () => void;
+  // A paste into the field, before the input takes it (an input drops a pasted list's line breaks).
+  onPaste?: ClipboardEventHandler<HTMLInputElement>;
   // Read-only (someone who may only view): the chips alone, no remove buttons and no field.
   readOnly?: boolean;
   // Everything is shown but off (a dialog busy submitting).
@@ -48,11 +61,14 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
     chips,
     chipText = (c) => c,
     removeLabel,
+    invalidChip,
+    invalidChipNote = 'not valid',
     draft,
     onDraftChange,
     onCommit,
     onRemove,
     onBlur,
+    onPaste,
     readOnly = false,
     disabled = false,
     inputDisabled = false,
@@ -92,29 +108,38 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
         invalid ? FIELD_INVALID : 'border-slate-200 dark:border-slate-700'
       }`}
     >
-      {chips.map((chip) => (
-        <span
-          key={chip}
-          className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-0.5 pr-1 pl-2.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200"
-        >
-          {chipText(chip)}
-          {readOnly ? null : (
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => {
-                refocusing.current = true;
-                onRemove(chip);
-              }}
-              data-remove-chip
-              aria-label={removeLabel(chip)}
-              className="flex h-4 w-4 items-center justify-center rounded-full text-brand-700 transition hover:bg-brand-100 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100"
-            >
-              <CloseIcon size={10} />
-            </button>
-          )}
-        </span>
-      ))}
+      {chips.map((chip) => {
+        const bad = invalidChip?.(chip) ?? false;
+        return (
+          <span
+            key={chip}
+            data-invalid-chip={bad || undefined}
+            className={`inline-flex items-center gap-1 rounded-full py-0.5 pr-1 pl-2.5 text-xs font-medium ${
+              bad
+                ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-300 dark:bg-rose-500/15 dark:text-rose-200 dark:ring-rose-400/50'
+                : 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200'
+            }`}
+          >
+            {chipText(chip)}
+            {bad ? <span className="sr-only">, {invalidChipNote}</span> : null}
+            {readOnly ? null : (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => {
+                  refocusing.current = true;
+                  onRemove(chip);
+                }}
+                data-remove-chip
+                aria-label={removeLabel(chip)}
+                className="flex h-4 w-4 items-center justify-center rounded-full text-brand-700 transition hover:bg-brand-100 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100"
+              >
+                <CloseIcon size={10} />
+              </button>
+            )}
+          </span>
+        );
+      })}
       {readOnly ? (
         chips.length === 0 && emptyText ? (
           <span className="px-1 text-slate-500 dark:text-slate-400">{emptyText}</span>
@@ -140,6 +165,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
             }
           }}
           onBlur={onBlur}
+          onPaste={onPaste}
           placeholder={placeholder}
           aria-label={ariaLabel}
           aria-describedby={ariaDescribedBy}

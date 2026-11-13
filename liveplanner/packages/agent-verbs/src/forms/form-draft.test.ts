@@ -303,3 +303,16 @@ describe('setRespondsTo and the card type’s statuses', () => {
     expect(other.form.destination).not.toHaveProperty('fixed');
   });
 });
+
+describe('setRespondsTo and card type rules (docs/specs/030-forms/forms.md "Choosing the card type by an answer")', () => {
+  it('keeps the rules on the same board and clears them on another', () => {
+    const rule = { id: 'r-1', questionId: 'q-sev', anyOf: ['High'], typeId: 'task', status: 'new' };
+    const ruled = { ...bugForm(), destination: { ...bugForm().destination!, typeRules: [rule] } };
+    const same = formDraft(ruled);
+    expect(setRespondsTo(same, { to: 'board', board: 'Bugs' })).toBeNull();
+    expect(same.form.destination?.typeRules).toEqual([rule]);
+    const fresh = formDraft(ruled);
+    setRespondsTo(fresh, { to: 'board' });
+    expect(fresh.form.destination).not.toHaveProperty('typeRules');
+  });
+});

@@ -328,6 +328,7 @@ export * from './changesets';
 export * from './items';
 export * from './automations';
 export * from './plan-drafts';
+export * from './form-drafts';
 export * from './github';
 export * from './sheets';
 export * from './telemetry-schema';

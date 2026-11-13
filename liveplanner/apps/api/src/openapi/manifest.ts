@@ -832,6 +832,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [202, 400, 401, 404, 405, 413, 415, 429],
   },
   {
+    method: 'POST',
+    path: '/email-optout/{projectId}/{token}',
+    segment: 'email-optout',
+    tag: 'Automations',
+    summary:
+      "Unsubscribe a typed-in address from the plan's rule emails: the one-click POST (RFC 8058) a rule's email names in List-Unsubscribe, and the button on its unsubscribe page. The token is the whole proof; the body is never read. 404 for a token the plan never made.",
+    auth: 'public',
+    statuses: [200, 404, 405, 429],
+  },
+  {
     method: 'GET',
     path: '/projects/{id}/github',
     segment: 'projects',
@@ -1918,10 +1928,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'plan-drafts',
     tag: 'Plans',
     summary:
-      'Describe a Plan: draft a board’s columns and card types with their fields from words (up to 500 characters) with AI, answered as names to check and change before anything is made. Nothing is saved. Signed in only (a guest is refused); an account drafts up to 10 plans a day.',
+      'Describe a Plan: draft a board’s columns and card types with their fields from words (up to 500 characters) with AI, answered as names to check and change before anything is made. Nothing is saved. Signed in only (a guest is refused); an account drafts up to 10 plans a day, shared with Describe a Form.',
     auth: 'clerk',
     requestSchema: 'PlanDraftRequest',
     responseSchema: 'PlanDraftResponse',
+    statuses: [200, 400, 401, 403, 405, 422, 429, 503],
+  },
+  {
+    method: 'POST',
+    path: '/form-drafts',
+    segment: 'form-drafts',
+    tag: 'Plans',
+    summary:
+      'Describe a Form: draft a form’s heading, sections and questions, and whether its responses suit a board or a sheet, from words (up to 500 characters) with AI, answered as a form to check before anything is made. Nothing is saved. Signed in only (a guest is refused); an account drafts up to 10 plans and forms a day together.',
+    auth: 'clerk',
+    requestSchema: 'FormDraftRequest',
+    responseSchema: 'FormDraftResponse',
     statuses: [200, 400, 401, 403, 405, 422, 429, 503],
   },
   {

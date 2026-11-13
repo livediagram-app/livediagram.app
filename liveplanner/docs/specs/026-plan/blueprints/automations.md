@@ -982,11 +982,14 @@ Threads and Wait (spec "Actions", "Wait").
 
 ## The Pick a Trigger picker
 
-- `StepPicker.tsx` is the pickers' one shell: `HeroDialogHeader` with the art passed in (`addActionHeroArt` from
+- `components/tile-picker/TilePicker.tsx` is the pickers' one shell (the forms builder's Add a Question gallery
+  uses it too): `HeroDialogHeader` with the art passed in (`addActionHeroArt` from
   `AddActionHeroArt.tsx` for Add an Action, `automationsHeroArt` for Pick a Trigger; the centre piece at 4.5rem, as
   only the close stands beside the title), the search, the rail or
   chips, the grouped tile grid with its arrow keys, the empty state and the Current badge. Tiles carry
-  `data-picker-tile`, which `automation-scenes.css` plays on hover. `AddActionDialog` and `ChangeTriggerField` map
+  `data-picker-tile`, which `automation-scenes.css` plays on hover. `components/tile-picker/tile-scene.tsx` holds the tiles'
+  stage (`TileStage`: the tone's wash and fading dots), the tones and the moving-part helpers (`at`, `after`),
+  which `scene-parts.tsx` re-exports. `AddActionDialog` and `ChangeTriggerField` map
   their groups into it.
 - `trigger-groups.ts`: `TRIGGER_GROUPS` (card, time, tools), `TRIGGER_LINES` and `freshTrigger`; `TriggerScene.tsx`
   draws each trigger's picture (card triggers violet, time blue, tools emerald) from `scene-parts.tsx`.
@@ -1205,3 +1208,52 @@ action, type)` (a bound `track`, so the dashboard's emitter scan reads each lite
   once the address names a live webhook rule.
 - The dashboard: `liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts` explains every pair, and
   `computed-emitters.ts` lists `AutomationTrigger.<Kind>` from `AUTOMATION_TRIGGER_KINDS`.
+
+## Send Email to typed-in addresses
+
+Spec: automations.md "Typed-in addresses". The owner's choice of abuse protection (2026-11-13) was "Cap and
+unsubscribe": the emails go out at once, each with a one-click unsubscribe, within a low daily count per plan.
+
+- **Shape** (`packages/items/src/automation/types.ts`): `AutomationEmailRecipient = AutomationRecipient | {
+addresses: string[] }`, Send Email's `to` only (Mention Someone keeps `AutomationRecipient`).
+  `AUTOMATION_EMAIL_ADDRESSES_MAX` (10) and `AUTOMATION_ADDRESS_EMAILS_PER_DAY` (50, the owner's figure).
+- **Pure parts** (`email-addresses.ts`): `automationAddress` (the Email field's `isEmailAddress`, trimmed, lower case,
+  refusing `<>,;:"()[]\`), `addressWords` ("ana@example.com and 2 more"), `splitAddresses` (commas, semicolons,
+  white space). `validate.ts` `readAddresses` refuses an empty list, an 11th and a bad one at
+  `steps.N.to.addresses[.i]`, and keeps each once. `planActions` plans `{ to: null, addresses, subject, body }` with
+  the line "Send Email to ana@example.com and 1 more"; `actionChip` reads "Email ana@example.com and 2 More".
+  `ai-draft.ts` turns a drafted `addresses` into `{ assignee: true }`. `rule-format.ts` (the MCP's and the AI's
+  format) names the shape.
+- **Who may**: the Automations gate (`routes/automation-routes.ts` `gate`) is already a signed-in Editor of the whole
+  plan, in person or through their token; no other door saves a rule. Tests: `automations-addresses.test.ts` (owner,
+  team, token allowed; Participant, Viewer, guest, tab Editor link, Participant's token, read-only token, workbench
+  and link visitor refused).
+- **Storage, plan schema V28** (`automation-schema.ts` `AUTOMATION_ADDRESSES_SCHEMA`):
+  `automation_email_addresses (address PK, token UNIQUE, unsubscribed_at)` and `automation_email_days (day PK, sent)`.
+- **The run** (`plan-room/automations/automation-addresses.ts`, `automation-writes.ts` `applyPlannedRun`): after the
+  card writes, an addresses email is claimed synchronously on the room's SQLite (`claimAddresses`: unsubscribed ones
+  passed over, the rest counted against the UTC day as far as the 50 go, a 32-byte base64url token made for an
+  address's first email), then sent in the background (`sendToAddresses`, one `sendEmail` per address). A count that
+  does not read as a whole number throws and nothing is sent ("Not emailed: today's email count couldn't be read").
+  The outcome's `notes` (an unsubscribed address: "Not emailed: ana@example.com unsubscribed") and `skipped` (the
+  limit's words) go to the runner, which logs the notes after the planned lines (a related card's with its `#key`)
+  and ends the run **Skipped** when nothing failed and no Wait holds it. Email off (no binding): nothing claimed.
+- **The email** (`email/templates.ts` `automationAddressEmail`, `EmailKind` 'AutomationEmail'): the subject and body,
+  the fixed outro naming the rule and the plan, the card button, and the footer link to the unsubscribe page;
+  `unsubscribeUrl` is the one-click door and `oneClick: true` makes `@liveworkspace/email` add
+  `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. From is always `EMAIL_FROM`.
+- **The door** (`routes/email-optout-route.ts`, answered before identity in `index.ts`): `POST
+/api/email-optout/:projectId/:token`, per-network write limit `optout:<network>`, then the
+  room's RPC `emailOptOut` (plan-room.ts, plan-client.ts): false (404 `optout_not_found`) for a plan with no schema,
+  a token not of the room's shape (43 base64url characters) or one it never made. A GET is 405, so a link scanner unsubscribes nobody. In the manifest under Automations.
+- **The page** (`apps/editor/app/email-optout`, `components/email-optout/EmailOptOutPage.tsx`, `lib/api/
+email-optout.ts`): static, reads `?p=&t=`, one **Unsubscribe** button that POSTs to the door; states for done, a
+  link that doesn't work and a failed send (Try Again). `email-optout` is in `LIVE_ROUTE_SEGMENTS` so the router sends
+  it to the editor.
+- **The builder** (`components/automations/step-panels/TextActionPanel.tsx`, `EmailAddressesField.tsx`): **To** gains **Email Addresses**;
+  the field is `@liveworkspace/community-ui/chip-field`'s `ChipField` (now with `invalidChip`, `invalidChipNote` and
+  `onPaste`), splitting at Enter, commas, semicolons and spaces, a paste read from the clipboard before the input drops
+  its line breaks.
+- **Cost**: a run with no addresses email pays nothing new. One with one pays at most 10 primary-key reads and two
+  writes on the room's SQLite, and one email per address in the background; the day's table keeps two rows, the
+  addresses table at most 50 new rows a day.

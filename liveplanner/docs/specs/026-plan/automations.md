@@ -70,6 +70,9 @@ work. A rule does it every time, at once, and says that it did.
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
   sign-in too.
+- **Typed-in email addresses** (Send Email to addresses, [Typed-in addresses](#typed-in-addresses)) are an Editor's
+  like any action: only a signed-in Editor of the whole plan, in person or through their API token, saves a rule that
+  holds them. Participants, Viewers, guests and share-link visitors never see or set them.
 - **AI actions** are an Editor's like any action: whoever may write the rule may add one. They act as Automation with
   an Editor's access, as every action does, and a Participant's change can start one. Each costs the plan one of its
   **100 AI steps a day**, shared by every rule.
@@ -369,9 +372,11 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 | **Archive**                     | archives the card                                                                                 |
 | **Create Card**                 | adds a card of a chosen type, with a title (values allowed), to a column, optionally copying the  |
 |                                 | triggering card's assignee, labels and due date, and optionally linking it through a Card field   |
-| **Send Email**                  | emails the assignee, whoever triggered it or a chosen person, with a subject and a short body     |
-|                                 | (values allowed) and a link to the card; only people with an account get it, and the email        |
-|                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies                |
+| **Send Email**                  | emails the assignee, whoever triggered it, a chosen person, or 1 to 10 **typed-in addresses**,    |
+|                                 | with a subject and a short body (values allowed) and a link to the card; a person of the plan     |
+|                                 | gets it only with an account, and the email                                                       |
+|                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies; a typed-in    |
+|                                 | address gets it unless it unsubscribed, within the plan's 50 a day                                |
 |                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                        |
 | **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a     |
 |                                 | message (values allowed)                                                                          |
@@ -427,6 +432,43 @@ owner, and the people of the plan's team as a person's own mention email picks t
 ([comment mentions](../012-collaboration/comment-mentions.md), the platform's `teamTargets`). Someone removed from
 the team, or an Editor who came in through a share link, gets no rule email, though a card may still name them (the
 step is done; nothing is sent). A Mention Someone's thread is written all the same.
+
+#### Typed-in addresses
+
+Send Email can instead go to **addresses typed in**: anyone with an email address, inside the plan or not.
+
+- **Who may add them**: whoever may write the rule, a signed-in Editor of the whole plan, in person or through
+  their API token (the MCP server, the CLI). A Participant, a Viewer, a guest and a share-link visitor with no
+  account write no rules, so they add none ([Who may do what](#who-may-do-what)).
+- **1 to 10 a step**, each a real address (the plan's Email field check, `isEmailAddress`, with nothing a mail
+  header could misread: no `<`, `>`, `,`, `;`, quotes or brackets), kept lower case, each once. The save refuses an
+  empty list, an 11th address or a bad one (400 `invalid_rule`, naming the address).
+- **What it says**: the subject and body the Editor wrote, then fixed words the rule cannot change: "Sent by the
+  rule **Rule name** in the plan **Plan name** on liveplanner. You got this because an Editor of the plan added your
+  address to the rule." It comes from liveplanner's own sender, as every email does; a rule never sets the From
+  address, a Reply-To or any other header.
+- **Unsubscribe**: every one carries a link, **Stop emails from this plan's rules**, and the `List-Unsubscribe` and
+  `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers ([RFC 8058](https://www.rfc-editor.org/rfc/rfc8058)),
+  so a mail client's own Unsubscribe works in one click. The link opens a page on liveplanner with one button,
+  **Unsubscribe** (a link scanner opening the page unsubscribes nobody); the button, or a mail client's one-click
+  POST, stops every rule of that plan emailing that address, for good. Nothing in the plan undoes it: the run's
+  Audit Trail says "Not emailed: ana@example.com unsubscribed", the other addresses still get theirs, and an
+  unsubscribed address costs the day's count nothing. The
+  link names no person, plan or address, only an unguessable token the plan made for that address.
+- **50 a UTC day per plan**: the plan sends at most 50 emails to typed-in addresses a day, over every rule, each
+  address counting one. Past it the step sends what fits and the run is **Skipped**, its line saying what went:
+  "Emailed 3 of 10 addresses: the plan's 50 emails a day to typed-in addresses are spent". The count is the plan's
+  own, on the server, taken before the email is sent; if it cannot be read, nothing is sent ("Not emailed: today's
+  email count couldn't be read"), so a fault never lifts the limit.
+- **Test on a Card** sends nothing and counts nothing; its line reads as the run's would: "Send Email to
+  ana@example.com and 2 more".
+- The sentence reads the first address and how many more: **Email ana@example.com and 2 More**.
+- **The builder**: **To** offers **Email Addresses** after the plan's fixed choices. Its field takes an address as a
+  chip at Enter, a comma, a semicolon or a space, a pasted list (on one line or many) all at once, and what is typed
+  when the field is left; one that is not an address stays as a rose chip, read out as "not an email address" and
+  named under the field, until its remove button takes it out. It stops taking more at 10 ("That is all 10").
+- **Describe a Rule** never drafts addresses: a draft naming some emails the assignee instead, for the Editor to
+  change. The MCP's and the CLI's rules take them as any save does, from a token of a signed-in Editor.
 
 ### Assign in turn
 
@@ -665,7 +707,7 @@ it. A guest sees the sign-in gate the Automations screen already shows.
 - Each ask counts as **one of the plan's 100 AI steps a day** (above), and a plan drafts at most **20 rules a day**
   (UTC) whatever their asks, so drafting can never spend the day's AI steps on its own.
 - Describe a Plan, which drafts a board and card types on Start Planning before a plan's AI steps can apply, has its
-  own cap, **10 plans a day per account** ([Describe a Plan → Limits and cost](describe-a-plan.md#limits-and-cost)).
+  own cap, **10 plans a day per account** (shared with Describe a Form) ([Describe a Plan → Limits and cost](describe-a-plan.md#limits-and-cost)).
 - An ask has **15 seconds** and answers at most **1,500 tokens**. The ask's size is measured (`ai-draft.test.ts`,
   "measures the ask"): about **9,100 characters** (2,300 tokens) for a typical plan, **19,600** (4,900 tokens) for a
   plan past every cap, so a draft costs about **29 Neurons** typically and **86** at worst (twice that with its second
@@ -1176,6 +1218,8 @@ wake is one request however many rules ran. Like every row, none carries a rule'
 | Incoming Webhook calls per rule  | 60 a minute                            |
 | Cards one call names             | 10                                     |
 | A webhook value                  | 5 names deep, 500 characters           |
+| Addresses one Send Email types   | 10                                     |
+| Emails to typed-in addresses     | 50 per plan per UTC day                |
 
 ## Not yet
 

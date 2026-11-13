@@ -8,6 +8,7 @@ export * from './validate';
 export * from './attention';
 export * from './plan-actions';
 export * from './sentence';
+export * from './email-addresses';
 export * from './schedule';
 export * from './related';
 export * from './derived';

@@ -1,5 +1,5 @@
-// Each question type's icon (docs/specs/030-forms/forms.md "Question types"): in the Add Question menu, the Type list
-// and a question's type button.
+// Each question type's icon (docs/specs/030-forms/forms.md "Question types"): in the Add a Question gallery, the Type
+// list and a question's type button.
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideAlignLeft,

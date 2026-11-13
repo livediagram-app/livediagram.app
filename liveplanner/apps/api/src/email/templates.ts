@@ -192,6 +192,43 @@ export function automationEmail(
   };
 }
 
+// A rule's Send Email to typed-in addresses (docs/specs/026-plan/automations.md "Typed-in addresses"): the subject and
+// body as automationEmail's, then fixed words the rule cannot change (which rule, which plan, why this address), and
+// a link that stops this plan's rules emailing the address. `unsubscribeUrl` is the one-click POST door (sent as
+// List-Unsubscribe with List-Unsubscribe-Post), `unsubscribePage` the page the footer's link opens.
+export function automationAddressEmail(
+  env: Env,
+  input: {
+    subject: string;
+    body: string;
+    rule: string;
+    planName: string;
+    cardUrl: string;
+    unsubscribeUrl: string;
+    unsubscribePage: string;
+  },
+): RenderedEmail & { oneClick: true } {
+  const body = input.body
+    .split(/\r?\n/)
+    .map((line) => escapeHtml(line))
+    .join('<br>');
+  const plan = escapeHtml(input.planName.trim() || 'a plan');
+  return {
+    kind: 'AutomationEmail',
+    subject: escapeText(input.subject.trim() || input.rule),
+    html: shell(env, {
+      heading: escapeHtml(input.subject.trim() || input.rule),
+      intro: body || escapeHtml(input.rule),
+      outro: `Sent by the rule <strong>${escapeHtml(input.rule)}</strong> in the plan <strong>${plan}</strong> on liveplanner. You got this because an Editor of the plan added your address to the rule.`,
+      ctaText: 'Open the card',
+      ctaHref: input.cardUrl,
+      footer: `Don’t want these? <a href="${escapeHtml(input.unsubscribePage)}" style="color:#8b5cf6;text-decoration:underline">Stop emails from this plan’s rules</a>.`,
+    }),
+    unsubscribeUrl: input.unsubscribeUrl,
+    oneClick: true,
+  };
+}
+
 // A form's link suspended after reports (docs/specs/030-forms/forms.md "Report This Form"). Not opt-out: it is about
 // something the owner published, and the link has stopped working.
 export function formSuspendedEmail(

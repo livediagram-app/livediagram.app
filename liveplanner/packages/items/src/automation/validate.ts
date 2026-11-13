@@ -11,6 +11,7 @@ import {
   AUTOMATION_ACTIONS_MAX,
   AUTOMATION_BRANCH_ACTIONS_MAX,
   AUTOMATION_CREATED_PER_RUN,
+  AUTOMATION_EMAIL_ADDRESSES_MAX,
   AUTOMATION_NAME_MAX,
   AUTOMATION_OUTGOING_MAX,
   AUTOMATION_ROTATE_MAX,
@@ -37,6 +38,7 @@ import {
 } from './types';
 import type { ValuePlace } from './values';
 import { readAiStep } from './ai-steps';
+import { automationAddress } from './email-addresses';
 import {
   ID_MAX,
   Refused,
@@ -76,6 +78,20 @@ function readSetValue(v: unknown, path: string, place: ValuePlace): AutomationSe
   if (o['date'] !== undefined) return { date: day(o['date'], `${path}.date`) };
   if (o['from'] !== undefined) return { from: id(o['from'], `${path}.from`) };
   return refuse(path, `${path} must be text, a number, a list, a day or a field`);
+}
+
+// Send Email's typed-in addresses (spec "Typed-in addresses"): 1 to AUTOMATION_EMAIL_ADDRESSES_MAX, each an address
+// (automationAddress), kept lower case and once each.
+function readAddresses(v: unknown, path: string): string[] {
+  if (!Array.isArray(v) || v.length === 0 || v.length > AUTOMATION_EMAIL_ADDRESSES_MAX)
+    refuse(path, `${path} must hold 1 to ${AUTOMATION_EMAIL_ADDRESSES_MAX} email addresses`);
+  const out: string[] = [];
+  (v as unknown[]).forEach((raw, i) => {
+    const address = typeof raw === 'string' ? automationAddress(raw) : null;
+    if (address === null) refuse(`${path}.${i}`, `${path}.${i} is not an email address`);
+    if (!out.includes(address!)) out.push(address!);
+  });
+  return out;
 }
 
 function readRotate(v: unknown, path: string): string[] {
@@ -146,10 +162,12 @@ function readAction(v: unknown, path: string, place: ValuePlace = {}): Automatio
             ? { trigger: true as const }
             : to['person'] !== undefined
               ? { person: id(to['person'], `${path}.to.person`) }
-              : refuse(
-                  `${path}.to`,
-                  `${path}.to must be the assignee, whoever triggered it, or a person`,
-                );
+              : to['addresses'] !== undefined
+                ? { addresses: readAddresses(to['addresses'], `${path}.to.addresses`) }
+                : refuse(
+                    `${path}.to`,
+                    `${path}.to must be the assignee, whoever triggered it, a person, or addresses`,
+                  );
       return {
         kind: 'email',
         to: recipient,

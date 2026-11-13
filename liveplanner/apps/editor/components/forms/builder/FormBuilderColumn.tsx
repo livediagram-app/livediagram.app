@@ -3,7 +3,9 @@
 // The form as built (docs/specs/030-forms/forms.md "Building a form"): its header, the connect box under it while responses go nowhere, each section's questions (a later
 // section headed by its own card), and the add bar (under the selected question, else at the end), in a 640 px column.
 // A press on the column's background deselects. Questions slide when moved and grow in when added (question-motion).
-import { Fragment, useCallback, useRef } from 'react';
+// Until the form's responses have somewhere to go (no board, no sheet chosen), its questions are shown but not
+// editable and the add bar is gone: the connect box is the one thing to do first.
+import { Fragment, useCallback, useMemo, useRef } from 'react';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import type { DestinationProblem } from '@liveplanner/forms';
@@ -12,7 +14,8 @@ import { FormAddBar } from './FormAddBar';
 import { FormConnectCard } from './FormConnectCard';
 import { FormHeaderCard, SectionHeader } from './FormHeaderCard';
 import { FormQuestionCard } from './FormQuestionCard';
-import { useFormBuilder } from './form-builder-context';
+import { FormBuilderContext, useFormBuilder } from './form-builder-context';
+import { DescribeFormButton } from '../describe-form/DescribeFormButton';
 import { useQuestionDrag } from './useQuestionDrag';
 import { useFlipList } from '@liveworkspace/workbench/hooks/ui/useFlipList';
 import { QUESTION_FLIP } from './question-motion';
@@ -30,7 +33,10 @@ export function FormBuilderColumn({
   // Why its board or sheet no longer takes responses, for the connect box to say.
   problem?: DestinationProblem | null;
 }) {
-  const b = useFormBuilder();
+  const outer = useFormBuilder();
+  // Nowhere chosen for responses yet: the questions wait, read-only, for the connect box.
+  const waiting = outer.canEdit && !outer.form.destination && !outer.form.sheet;
+  const b = useMemo(() => (waiting ? { ...outer, canEdit: false } : outer), [outer, waiting]);
   const columnRef = useRef<HTMLDivElement>(null);
   const onDrop = useCallback(
     (id: string, section: number, index: number) =>
@@ -65,47 +71,67 @@ export function FormBuilderColumn({
       ) : null}
       <FormHeaderCard sections={b.form.sections.length} />
       <FormConnectCard hasExisting={hasDestinations} problem={problem} />
-      {b.form.sections.map((section, s) => (
+      <FormBuilderContext.Provider value={b}>
         <div
-          key={section.id}
-          data-form-section={s}
-          data-form-section-id={section.id}
-          className="flex flex-col gap-3"
+          className={`flex flex-col gap-3 ${waiting ? `pointer-events-none select-none ${all.length ? 'opacity-55' : ''}` : ''}`}
+          aria-disabled={waiting || undefined}
+          {...(waiting ? { inert: true } : {})}
         >
-          {s > 0 ? (
-            <SectionHeader section={section} index={s} count={b.form.sections.length} />
-          ) : null}
-          {section.questions.map((q) => (
-            <Fragment key={q.id}>
-              <div ref={rowRef(q.id)}>
-                <FormQuestionCard
-                  question={q}
-                  first={q.id === firstId}
-                  last={q.id === lastId}
-                  onGrab={drag.grab}
-                  dragging={drag.dragging === q.id}
+          {b.form.sections.map((section, s) => (
+            <div
+              key={section.id}
+              data-form-section={s}
+              data-form-section-id={section.id}
+              className="flex flex-col gap-3"
+            >
+              {s > 0 ? (
+                <SectionHeader section={section} index={s} count={b.form.sections.length} />
+              ) : null}
+              {section.questions.map((q) => (
+                <Fragment key={q.id}>
+                  <div ref={rowRef(q.id)}>
+                    <FormQuestionCard
+                      question={q}
+                      first={q.id === firstId}
+                      last={q.id === lastId}
+                      onGrab={drag.grab}
+                      dragging={drag.dragging === q.id}
+                    />
+                  </div>
+                  {/* The add bar follows the selected question: what it adds goes there. */}
+                  {q.id === b.selectedId ? <FormAddBar /> : null}
+                </Fragment>
+              ))}
+              {section.questions.length === 0 ? (
+                <CompactEmptyState
+                  className="form-box rounded-xl border border-dashed border-slate-300 bg-white/60 py-6 dark:border-slate-600 dark:bg-slate-900/40"
+                  icon={<QuestionIcon aria-hidden />}
+                  title={
+                    s === 0 && b.form.sections.length === 1
+                      ? 'No questions yet'
+                      : 'No questions in this section yet'
+                  }
+                  {...(b.canEdit && all.length === 0
+                    ? {
+                        description: 'Add one with the bar below.',
+                        // Describe a Form (describe-a-form.md "Where it starts"): an empty form drafted by AI.
+                        action: (
+                          <DescribeFormButton className="inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-semibold text-brand-700 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300 dark:hover:bg-brand-500/15" />
+                        ),
+                      }
+                    : b.canEdit
+                      ? { description: 'Add one with the bar below.' }
+                      : waiting
+                        ? { description: 'Choose where responses go above, then add questions.' }
+                        : {})}
                 />
-              </div>
-              {/* The add bar follows the selected question: what it adds goes there. */}
-              {q.id === b.selectedId ? <FormAddBar /> : null}
-            </Fragment>
+              ) : null}
+              <span data-form-section-end aria-hidden className="h-0" />
+            </div>
           ))}
-          {section.questions.length === 0 ? (
-            <CompactEmptyState
-              className="form-box rounded-xl border border-dashed border-slate-300 bg-white/60 py-6 dark:border-slate-600 dark:bg-slate-900/40"
-              icon={<QuestionIcon aria-hidden />}
-              title={
-                s === 0 && b.form.sections.length === 1
-                  ? 'No questions yet'
-                  : 'No questions in this section yet'
-              }
-              {...(b.canEdit ? { description: 'Add one with the bar below.' } : {})}
-            />
-          ) : null}
-          <span data-form-section-end aria-hidden className="h-0" />
         </div>
-      ))}
-      {selectedShown ? null : <FormAddBar />}
+        {selectedShown ? null : <FormAddBar />}
+      </FormBuilderContext.Provider>
     </div>
   );
 }

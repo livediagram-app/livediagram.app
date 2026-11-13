@@ -6,10 +6,12 @@
 import {
   AUTOMATION_TEXT_MAX,
   type AutomationAction,
+  type AutomationEmailRecipient,
   type AutomationRecipient,
 } from '@liveplanner/items';
 import { outlineFields, type AutomationOutline } from '../automation-outline';
 import { ValueTextField } from '../ValueInsert';
+import { EmailAddressesField } from './EmailAddressesField';
 import { PersonPicker } from './PeopleActionPanel';
 
 type TextAction = AutomationAction & { kind: 'comment' | 'email' | 'mention' };
@@ -22,6 +24,13 @@ const RECIPIENTS: readonly {
   { key: 'assignee', label: 'The Card’s Assignee', value: { assignee: true } },
   { key: 'trigger', label: 'The Person Who Triggered It', value: { trigger: true } },
 ];
+
+// Send Email's last fixed choice: addresses typed in (spec "Typed-in addresses").
+const ADDRESSES: { key: 'addresses'; label: string; value: AutomationEmailRecipient } = {
+  key: 'addresses',
+  label: 'Email Addresses',
+  value: { addresses: [] },
+};
 
 export function TextActionPanel({
   action,
@@ -78,15 +87,23 @@ export function TextActionPanel({
         />
       </div>
     );
+  const to = action.to;
   return (
     <div className="flex flex-col gap-4">
-      <PersonPicker
+      <PersonPicker<AutomationEmailRecipient>
         label="To"
-        value={action.to}
+        value={to}
         outline={outline}
-        extra={recipients}
-        onChange={(to) => onChange({ ...action, to })}
+        extra={[...recipients, ADDRESSES]}
+        onChange={(next) => onChange({ ...action, to: next })}
       />
+      {'addresses' in to ? (
+        <EmailAddressesField
+          addresses={to.addresses}
+          invalid={invalidPath?.startsWith('to.addresses') ?? false}
+          onChange={(addresses) => onChange({ ...action, to: { addresses } })}
+        />
+      ) : null}
       <ValueTextField
         label="Subject"
         multiline={false}
@@ -104,7 +121,11 @@ export function TextActionPanel({
         fields={fields}
         invalid={invalidPath === 'body' || invalidPath === 'text'}
         branch={branch}
-        hint="Sent from LivePlanner with a link to the card. Only to people in this plan."
+        hint={
+          'addresses' in to
+            ? 'Sent from LivePlanner with a link to the card.'
+            : 'Sent from LivePlanner with a link to the card. Only to people in this plan.'
+        }
         onChange={(body) => onChange({ ...action, body })}
       />
     </div>

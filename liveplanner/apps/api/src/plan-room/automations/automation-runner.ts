@@ -390,6 +390,10 @@ export async function runRule(
       lines.push({ kind: 'action', ok: false, text: out.reason });
       return end('failed', out.reason);
     }
+    // An email to typed-in addresses the day's limit held back (spec "Typed-in addresses"): Skipped once the rest
+    // is done, as the AI cap's.
+    if (out.notes) lines.push(...out.notes);
+    let capped = out.skipped;
     const refused: string[] = [];
     for (const r of writes.related) {
       const writes_ = r.patch.set || r.patch.clear || r.patch.type;
@@ -405,7 +409,12 @@ export async function runRule(
         resolve: r.resolve,
       };
       const wrote = await applyPlannedRun(writer, plan, rule, r.card, one, source, url);
-      if (wrote.ok) continue;
+      if (wrote.ok) {
+        for (const note of wrote.notes ?? [])
+          lines.push({ ...note, text: `#${r.card.key} ${note.text}` });
+        capped ??= wrote.skipped;
+        continue;
+      }
       lines.push({ kind: 'action', ok: false, text: `#${r.card.key} ${wrote.reason}` });
       refused.push(`#${r.card.key}`);
       failed ??= `Failed on ${refused[0]}: ${wrote.reason}`;
@@ -434,6 +443,7 @@ export async function runRule(
       deps.store.onSchedule();
       return end('waiting');
     }
+    if (capped) return end('skipped', capped);
     return end('done');
   } catch (error) {
     console.warn('[automations] run.threw', { error: String(error) });

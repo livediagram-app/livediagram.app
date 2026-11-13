@@ -29,7 +29,9 @@ export function FormNotTakingWarning({
       Not Taking Responses
     </>
   );
-  const tone = 'flex shrink-0 items-center gap-1.5 rounded-md px-1.5 py-0.5 font-semibold';
+  // Sized as the palette's other controls (36 px, 13 px medium), so the warning reads by its colour, not its size.
+  const tone =
+    'flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-[13px] font-medium';
   const colour = 'text-red-700 dark:text-red-300';
   return (
     <Tooltip label={text}>

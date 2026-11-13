@@ -21,6 +21,7 @@ afterEach(cleanup);
 const START: FormDefinition = {
   v: 1,
   heading: 'Bug Report',
+  destination: { tabId: 'board', typeId: 'bug', status: 'new' },
   sections: [
     {
       id: 's-1',
@@ -44,8 +45,8 @@ const BUG: ItemTypeDef = {
 
 let latest: FormDefinition = START;
 
-function Harness({ canEdit }: { canEdit: boolean }) {
-  const [form, setForm] = useState(START);
+function Harness({ canEdit, start = START }: { canEdit: boolean; start?: FormDefinition }) {
+  const [form, setForm] = useState(start);
   const [selectedId, setSelected] = useState<string | null>(null);
   const [focusId, setFocus] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -59,6 +60,7 @@ function Harness({ canEdit }: { canEdit: boolean }) {
     setDestinationType: vi.fn(),
     setDestinationBoard: vi.fn(),
     addTypeQuestions: vi.fn(),
+    addQuestionFields: vi.fn(),
     setResponsesTo: vi.fn(),
     newResponsesSheet: vi.fn(),
     changeForm: (fn) => setForm((f) => fn(f)),
@@ -131,14 +133,37 @@ describe('an Editor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit question: Summary' }));
     fireEvent.click(screen.getByRole('switch', { name: /Required/ }));
     expect(questionsOf(latest)[0]!.required).toBeUndefined();
-    fireEvent.click(screen.getByRole('button', { name: 'Move Down' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Move Down/ }));
     expect(questionsOf(latest).map((q) => q.id)).toEqual(['q-2', 'q-1']);
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Duplicate/ }));
     expect(questionsOf(latest)).toHaveLength(3);
     // The copy is selected and goes nowhere special.
     expect(questionsOf(latest)[2]!.goesTo).toBeUndefined();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete question' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Delete question/ }));
     expect(questionsOf(latest)).toHaveLength(2);
+  });
+
+  it('locks the questions until responses have somewhere to go', () => {
+    const { destination: _dropped, ...nowhere } = START;
+    render(<Harness canEdit start={nowhere} />);
+    expect(screen.queryByRole('button', { name: 'Edit question: Summary' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Short Answer' })).toBeNull();
+  });
+
+  it('duplicates with Mod+D and deletes with Mod+Shift+Backspace', () => {
+    render(<Harness canEdit />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit question: Summary' }));
+    const card = document.querySelector('[data-form-question="q-1"]')!;
+    fireEvent.keyDown(card, { key: 'd', ctrlKey: true });
+    expect(questionsOf(latest)).toHaveLength(3);
+    fireEvent.keyDown(document.querySelector('[data-form-question="q-1"]') ?? card, {
+      key: 'Backspace',
+      metaKey: true,
+      shiftKey: true,
+    });
+    expect(
+      screen.getByRole('button', { name: /^Duplicate/ }).getAttribute('aria-keyshortcuts'),
+    ).toMatch(/Control\+D/);
   });
 
   it('adds a question of the selected one’s type after it, focused', () => {
@@ -150,11 +175,13 @@ describe('an Editor', () => {
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Question' }));
   });
 
-  it('adds a question of another type from the list', () => {
+  it('adds a question of another type from the Add a Question gallery, which closes', () => {
     render(<Harness canEdit />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add a question of another type' }));
-    fireEvent.click(screen.getByRole('option', { name: 'Rating' }));
+    fireEvent.click(screen.getByRole('button', { name: 'More Question Types' }));
+    expect(screen.getByRole('dialog', { name: 'Add a Question' })).toBeTruthy();
+    fireEvent.click(document.querySelector<HTMLButtonElement>('[data-picker-tile="rating"]')!);
     expect(questionsOf(latest).at(-1)).toMatchObject({ type: 'rating', scale: 5, style: 'stars' });
+    expect(screen.queryByRole('dialog', { name: 'Add a Question' })).toBeNull();
   });
 
   it('edits options: Enter adds the next, and Other comes and goes', () => {

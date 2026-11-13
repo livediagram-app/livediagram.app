@@ -47,12 +47,27 @@ function writeDraft(key: string | null, state: FillState | null) {
   }
 }
 
+// The draft with each pre-filled answer (forms.md "Pre-filled answers") it leaves unanswered added: what was typed in
+// this browser wins over the address.
+function startState(
+  draft: FillState,
+  initial: Readonly<Record<string, unknown>> | undefined,
+): FillState {
+  if (!initial) return draft;
+  const add = Object.entries(initial).filter(([id]) => !(id in draft.answers));
+  return add.length
+    ? { ...draft, answers: { ...Object.fromEntries(add), ...draft.answers } }
+    : draft;
+}
+
 export function useFormFill(
   form: PublicForm,
   submit: (state: FillState) => Promise<SubmitOutcome>,
   draftKey: string | null,
+  // Pre-filled answers, read once from the form link's address and already checked (readPrefill).
+  initial?: Readonly<Record<string, unknown>>,
 ) {
-  const [state, setStateRaw] = useState<FillState>(() => readDraft(draftKey));
+  const [state, setStateRaw] = useState<FillState>(() => startState(readDraft(draftKey), initial));
   // The answers as last set, read by the handlers below (events arrive one at a time).
   const stateRef = useRef(state);
   const setState = useCallback((next: FillState) => {

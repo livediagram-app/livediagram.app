@@ -33,6 +33,12 @@ const DescribePlanHost = dynamic(
   { ssr: false },
 );
 
+// Describe a Form's dialog (docs/specs/030-forms/describe-a-form.md), fetched only when chosen.
+const DescribeFormHost = dynamic(
+  () => import('@/components/forms/describe-form/DescribeFormHost').then((m) => m.DescribeFormHost),
+  { ssr: false },
+);
+
 // What an empty or page-kind tab shows in the canvas's place: a Dashboard or Form tab's page, or an empty tab's Start
 // Planning (docs/specs/026-plan/plan-mode.md "Starting a board"). Always mounted, so the template-pick note
 // (useTemplatePickMove) keeps watching the tab.
@@ -52,6 +58,8 @@ export function EditorStartPanels() {
   const selectTab = useSelectTab();
   // Describe a Plan open over Start Planning; it stays while the board it made takes the tab, until it closes.
   const [describing, setDescribing] = useState(false);
+  // Describe a Form open over Start Planning; it stays while the form it made takes the tab, until it closes.
+  const [describingForm, setDescribingForm] = useState(false);
   const isOffline = useIsOfflineProject(ctx.projectId);
   // A template picked from Start Planning on a plan /new just made goes to its default folder
   // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
@@ -159,9 +167,14 @@ export function EditorStartPanels() {
           onDescribe={
             ctx.trackerImport.canImport && ctx.plan ? () => setDescribing(true) : undefined
           }
+          // Describe a Form (describe-a-form.md "Who may"): an Editor's, as Describe a Plan is.
+          onDescribeForm={
+            ctx.trackerImport.canImport && ctx.plan ? () => setDescribingForm(true) : undefined
+          }
         />
       ) : null}
       {describing ? <DescribePlanHost onClose={() => setDescribing(false)} /> : null}
+      {describingForm ? <DescribeFormHost onClose={() => setDescribingForm(false)} /> : null}
     </>
   );
 }

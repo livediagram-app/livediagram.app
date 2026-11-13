@@ -13,6 +13,7 @@
 import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
+  outboxParkingStep,
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
@@ -27,6 +28,7 @@ import {
   AUTOMATION_WAITING_SCHEMA,
   AUTOMATION_AI_DRAFTS_SCHEMA,
   AUTOMATION_FIRED_SCHEMA,
+  AUTOMATION_ADDRESSES_SCHEMA,
   AUTOMATIONS_SCHEMA,
   automationsV19,
 } from './automations/automation-schema';
@@ -505,6 +507,17 @@ END;
 // has run on, kept apart from the Audit Trail's trim.
 const V26 = AUTOMATION_FIRED_SCHEMA;
 
+// The outbox's parking (@liveworkspace/index-app outbox-parked.ts outboxParkingStep;
+// liveworkspace/docs/specs/004-index/one-explorer-contracts.md "When a push fails"): `parked_at`, and `attempts` and
+// `retry_at` where a plan's version row ran ahead of its columns, plus the `(attempts, retry_at)` index. Asks first.
+const V27 = (exec: Exec) => {
+  for (const table of ['outbox', 'share_outbox']) outboxParkingStep(exec, table);
+};
+
+// Automations' Send Email to typed-in addresses (automations/automation-schema.ts): each address's unsubscribe token
+// and the day's count.
+const V28 = AUTOMATION_ADDRESSES_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -532,6 +545,8 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V24,
   V25,
   V26,
+  V27,
+  V28,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

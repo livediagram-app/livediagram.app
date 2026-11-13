@@ -126,6 +126,18 @@ export type SheetFixedColumn = { id: string; header: string } & (
   { value: string | number } | { submitted: SubmittedDay }
 );
 
+// A card type rule (docs/specs/030-forms/forms.md "Choosing the card type by an answer"): when `questionId`'s answer is
+// one of `anyOf` (a section rule's shape), the response makes a `typeId` card in `status`. `fields` maps a question's
+// answer to a custom field of `typeId`, by question id (Title and Description are the form's, from `goesTo`).
+export interface CardTypeRule {
+  id: string;
+  questionId: string;
+  anyOf: string[];
+  typeId: string;
+  status: string;
+  fields?: Readonly<Record<string, string>>;
+}
+
 // Where every response goes: a Board tab, a card type, a status.
 export interface FormDestination {
   tabId: string;
@@ -133,6 +145,8 @@ export interface FormDestination {
   status: string;
   // The card fields every response's card gets without a question, by field id (one source per field).
   fixed?: Readonly<Record<string, FixedValue>>;
+  // Other card types by an answer, read in order; `typeId` and `status` cover every other answer. Absent: none.
+  typeRules?: readonly CardTypeRule[];
 }
 
 // The band across the form's top (docs/specs/030-forms/forms.md "The form card"): a colour background, a

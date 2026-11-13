@@ -6,9 +6,9 @@ import type { FormResponseAccepted, FormResponseRefusal } from '@liveplanner/api
 import {
   RESPONSE_BODY_MAX,
   checkResponse,
+  chooseCardType,
   closedReason,
   destinationProblem,
-  destinationType,
   responseCard,
   type FormDefinition,
 } from '@liveplanner/forms';
@@ -190,8 +190,11 @@ export async function respond(
   const types = typesOf(doc.itemTypes);
   const boards = form.destination ? await boardsOnTab(ctx.env, doc.id, form.destination.tabId) : [];
   const problem = destinationProblem(form.destination, boards, types);
-  const type = destinationType(form.destination, types);
-  if (problem || !type) {
+  // The card type and column, by the form's card type rules over the checked answers (forms.md "Choosing the card
+  // type by an answer"): never by anything the respondent sends. A broken rule is skipped, so the default type takes it.
+  const chosen = problem ? null : chooseCardType(form, checked.answers, { types, boards });
+  const type = chosen?.type;
+  if (problem || !chosen || !type) {
     console.warn('[forms] form.destination.broken', { projectId: doc.id, problem });
     return refuse({ error: 'form_closed' }, 409);
   }
@@ -199,11 +202,20 @@ export async function respond(
   // The card the item store would make, checked before a number is taken: a form whose answers make no valid card
   // (it should never happen: the answers were checked) refuses the response rather than burning a number.
   const cardFor = (n: number) => {
-    const card = responseCard(form, tab.id, checked.answers, type, n, preview);
+    const card = responseCard(
+      form,
+      tab.id,
+      checked.answers,
+      type,
+      n,
+      preview,
+      undefined,
+      chosen.rule ? { rule: chosen.rule, status: chosen.status } : undefined,
+    );
     return readItemCreate({
       type: card.type,
       fields: card.fields,
-      place: { status: form.destination!.status },
+      place: { status: chosen.status },
     });
   };
   const first = cardFor(1);

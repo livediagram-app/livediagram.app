@@ -34,7 +34,8 @@ Scope, by file:
 
 Through the `EMAIL` binding from `liveworkspace <EMAIL_FROM>`. Without the binding, development logs `[email] To: …
 Subject: …` and returns; staging and production throw (`the EMAIL binding is not set`). An `unsubscribeUrl` goes out
-as `List-Unsubscribe`.
+as `List-Unsubscribe`; with `oneClick: true` (the link takes RFC 8058's one-click POST, as liveplanner's rule emails to
+typed-in addresses do) `List-Unsubscribe-Post: List-Unsubscribe=One-Click` goes with it.
 
 ### The emails
 

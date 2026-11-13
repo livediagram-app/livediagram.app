@@ -1,18 +1,27 @@
 'use client';
 
-// Under the form's heading in the builder (docs/specs/030-forms/forms.md "Hearing about responses"): the response
-// count with how many are new to this reader (opening the tab responses go to), and the notices that say the form takes no responses
-// (paused: its destination broke; suspended after reports; closed), an Editor's red Not Taking Responses while a
-// published form takes none, and an Editor's Problems with this Form, which opens Share Form where they are listed.
+// The form's palette (docs/specs/030-forms/forms.md "Hearing about responses"): on a desktop it sits where every
+// other tab's palette does, centred in the top row at the menu box's height, drawn as the toolbar card (livehuddle's
+// palette look: hairline card, 36 px controls, hairlines between groups); on a phone it heads the form's column. It
+// holds the form's state, the response count with how many are new to this reader (opening the tab responses go to),
+// an Editor's red Not Taking Responses while a published form takes none, and the controls (Preview, help, the cog).
+// The notices that say the form takes no responses (paused: its destination broke; full; suspended after reports)
+// stay at the head of the column. Problems with this Form is the bottom-right cluster's Problems
+// (FormProblemsButton).
 import type { ReactNode } from 'react';
-import { Tooltip, lucideGlyph } from '@liveplanner/ui';
-import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
+import { createPortal } from 'react-dom';
+import { Tooltip } from '@liveplanner/ui';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@liveplanner/forms';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
+import {
+  STRIP_RAIL_SCROLL,
+  TOOLBAR_CARD,
+  TOOLBAR_DIVIDER,
+} from '@/components/chrome/toolbar-surface';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formNotTakingReason, type FormNotTakingFix } from './form-not-taking';
 import { FormNotTakingWarning } from './FormNotTakingWarning';
-
-const WarningIcon = lucideGlyph(lucideTriangleAlert, 14);
 
 export function FormStatusBar({
   link,
@@ -24,9 +33,8 @@ export function FormStatusBar({
   controls,
   onOpenResponses,
   destinationName,
-  problems = 0,
-  onProblems,
   onNotTaking,
+  top = null,
 }: {
   link: FormLinkState;
   problem: DestinationProblem | null;
@@ -41,12 +49,13 @@ export function FormStatusBar({
   // Opens the tab the responses go to (absent without one), named for its tooltip.
   onOpenResponses?: (() => void) | null;
   destinationName?: string | null;
-  // How many problems the form has (FormProblems), and opening Share Form where they are listed: an Editor's.
-  problems?: number;
-  onProblems?: () => void;
   // Opens where Not Taking Responses is fixed (Share Form, Responses Go To, Settings or the responses' tab).
   onNotTaking?: (fix: FormNotTakingFix) => void;
+  // The canvas to draw the palette on, centred in its top row (a desktop); null heads the column with it (a phone).
+  top?: HTMLElement | null;
 }) {
+  // Drawn at the toolbar's UI scale, 12 px down, as the menu box is (DashboardSettings).
+  const scale = useUiScale('toolbar');
   const data = link.link;
   const overdue = !!closedBy;
   // Published but taking no responses: an Editor's red warning after the count.
@@ -55,20 +64,24 @@ export function FormStatusBar({
   const responses = data?.responses ?? 0;
   const pill = (tone: 'green' | 'slate' | 'amber' | 'red', text: string) => (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold ${
+      className={`flex h-9 shrink-0 items-center gap-2 rounded-lg px-2.5 text-[13px] font-medium ${
         tone === 'green'
-          ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200'
+          ? 'text-emerald-800 dark:text-emerald-200'
           : tone === 'amber'
-            ? 'bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
+            ? 'text-amber-800 dark:text-amber-200'
             : tone === 'red'
-              ? 'bg-red-50 text-red-800 dark:bg-red-500/15 dark:text-red-200'
-              : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+              ? 'text-red-800 dark:text-red-200'
+              : 'text-slate-700 dark:text-slate-200'
       }`}
     >
-      <span
-        aria-hidden
-        className={`h-1.5 w-1.5 rounded-full ${tone === 'green' ? 'bg-emerald-500' : tone === 'amber' ? 'bg-amber-500' : tone === 'red' ? 'bg-red-500' : 'bg-slate-400'}`}
-      />
+      <span aria-hidden className="relative flex h-2 w-2">
+        {tone === 'green' ? (
+          <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />
+        ) : null}
+        <span
+          className={`relative h-2 w-2 rounded-full ${tone === 'green' ? 'bg-emerald-500' : tone === 'amber' ? 'bg-amber-500' : tone === 'red' ? 'bg-red-500' : 'bg-slate-400'}`}
+        />
+      </span>
       {text}
     </span>
   );
@@ -95,51 +108,68 @@ export function FormStatusBar({
       ) : null}
     </>
   );
-  return (
-    <div className="flex flex-col gap-2">
-      <div
-        data-form-status=""
-        className="flex items-center gap-x-3 gap-y-2 rounded-xl border max-sm:flex-wrap border-slate-200 bg-white px-4 py-2.5 text-[13px] dark:border-slate-700/80 dark:bg-slate-900"
-      >
-        {state}
+  const palette = (
+    <div
+      data-form-status=""
+      role="toolbar"
+      aria-label="Form"
+      onPointerDown={(e) => e.stopPropagation()}
+      style={
+        top
+          ? scale === 1
+            ? undefined
+            : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }
+          : undefined
+      }
+      className={`${TOOLBAR_CARD} min-w-0 ${
+        top
+          ? 'pointer-events-auto absolute left-1/2 top-3 z-[var(--z-toolbar)] max-w-[calc(100%-26rem)] -translate-x-1/2'
+          : 'w-full'
+      }`}
+    >
+      {/* One row that swipes sideways when it can't fit (a phone), as the palette does. */}
+      <div className={`flex flex-1 items-center gap-0.5 text-[13px] ${STRIP_RAIL_SCROLL}`}>
+        {/* A published form taking none is one red state, Not Taking Responses, in place of Closed, Paused or
+            Suspended: its tooltip says why, and a press opens where that is fixed. */}
+        {notTaking ? (
+          <FormNotTakingWarning
+            reason={notTaking}
+            onFix={!onNotTaking || (notTaking === 'full' && !onOpenResponses) ? null : onNotTaking}
+          />
+        ) : (
+          state
+        )}
+        <span aria-hidden className={TOOLBAR_DIVIDER} />
         {/* The count opens the board (or sheet) the responses go to. */}
         {onOpenResponses ? (
           <Tooltip label={destinationName ? `Open ${destinationName}` : 'Open the responses'}>
             <button
               type="button"
               onClick={onOpenResponses}
-              className="relative shrink-0 cursor-pointer rounded text-slate-600 underline-offset-2 touch-target-y hover:underline dark:text-slate-300"
+              className="relative flex h-9 shrink-0 cursor-pointer items-center whitespace-nowrap rounded-lg px-2.5 touch-target-y text-[13px] text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             >
-              {count}
+              <span>{count}</span>
             </button>
           </Tooltip>
         ) : (
-          <span className="shrink-0 text-slate-600 dark:text-slate-300">{count}</span>
+          <span className="flex h-9 shrink-0 items-center whitespace-nowrap px-2.5 text-[13px] text-slate-600 dark:text-slate-300">
+            {count}
+          </span>
         )}
-        {notTaking ? (
-          <FormNotTakingWarning
-            reason={notTaking}
-            onFix={!onNotTaking || (notTaking === 'full' && !onOpenResponses) ? null : onNotTaking}
-          />
+        {controls ? (
+          <>
+            <span aria-hidden className={`${TOOLBAR_DIVIDER} ml-auto`} />
+            <span className="flex shrink-0 items-center gap-0.5 [&>*]:h-9 [&_button]:h-9 [&_button]:min-w-9 [&_a]:h-9 [&_a]:px-2.5 [&_a]:text-[13px]">
+              {controls}
+            </span>
+          </>
         ) : null}
-        {canEdit && problems > 0 && onProblems ? (
-          <Tooltip label="See what to fix in Share Form">
-            <button
-              aria-label="Problems with this Form"
-              type="button"
-              onClick={onProblems}
-              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 font-medium text-amber-800 hover:bg-amber-50 dark:text-amber-200 dark:hover:bg-amber-500/10"
-            >
-              <WarningIcon aria-hidden />
-              {/* One flex item, so the button's gap falls after the icon and never inside the words. */}
-              <span>
-                Problems<span className="max-sm:hidden"> with this Form</span>
-              </span>
-            </button>
-          </Tooltip>
-        ) : null}
-        <span className="ml-auto flex min-w-0 items-center gap-1">{controls}</span>
       </div>
+    </div>
+  );
+  return (
+    <div className="flex flex-col gap-2 empty:hidden">
+      {top ? createPortal(palette, top) : palette}
       {live && problem ? (
         <div
           role="status"

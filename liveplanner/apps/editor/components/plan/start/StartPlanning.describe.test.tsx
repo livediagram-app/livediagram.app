@@ -55,11 +55,11 @@ const search = (value: string) =>
   fireEvent.change(screen.getByRole('textbox', { name: /Find a board/ }), { target: { value } });
 
 describe('Start Planning: Describe a Plan on the rail', () => {
-  it('leads the foot group, above Connect File and Import, with the sparkle', () => {
+  it('leads the foot group, above Import and Connect File, with the sparkle', () => {
     mount(ROLES.editor);
     const connect = within(rail()).getByRole('button', { name: 'Connect File' });
     expect(entry().parentElement).toBe(connect.parentElement);
-    expect(railIds().slice(-3)).toEqual(['describe', 'connect', 'import']);
+    expect(railIds().slice(-3)).toEqual(['describe', 'import', 'connect']);
     expect(entry().textContent).toBe('Describe a Plan');
     expect(entry().querySelector('svg')).not.toBeNull();
     expect(entry().getAttribute('aria-haspopup')).toBe('dialog');

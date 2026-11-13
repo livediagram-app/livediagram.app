@@ -302,6 +302,26 @@ describe('Comments, emails and Create Card', () => {
     ]);
   });
 
+  it('plans an email to typed-in addresses, its line naming the first and how many more', () => {
+    const r = done(
+      run(
+        [
+          {
+            kind: 'email',
+            to: { addresses: ['ana@example.com', 'bo@example.com'] },
+            subject: '{{card.key}}',
+            body: 'b',
+          },
+        ],
+        bug({}, { key: 4 }),
+      ),
+    );
+    expect(r.emails).toEqual([
+      { to: null, addresses: ['ana@example.com', 'bo@example.com'], subject: '#4', body: 'b' },
+    ]);
+    expect(r.lines.map((l) => l.text)).toEqual(['Send Email to ana@example.com and 1 more']);
+  });
+
   it('plans one card, copying what it asks and linking back through a Card field', () => {
     const card = bug({ labels: ['a'], assignee: SAM }, { id: 'c1' });
     const r = done(

@@ -26,6 +26,7 @@ import {
   SECTION_TITLE_MAX,
   SHEET_COLUMNS_MAX,
   SHEET_FIXED_MAX,
+  TYPE_RULES_MAX,
   UNTITLED_FORM,
 } from './limits';
 import { isBuiltInFixedId } from './fixed';
@@ -34,6 +35,7 @@ import {
   STARTER_IDS,
   isQuestionType,
   type AnswerTarget,
+  type CardTypeRule,
   type FormCover,
   type FormDefinition,
   type FormDestination,
@@ -232,14 +234,61 @@ function readSheetFixed(v: unknown): SheetFixedColumn[] | undefined {
   return out.length ? out : undefined;
 }
 
+// A rule's fields: a question id to a custom field id, at most one question per field.
+function readRuleFields(v: unknown): Record<string, string> | undefined {
+  if (!isObj(v)) return undefined;
+  const out: Record<string, string> = {};
+  const taken = new Set<string>();
+  for (const [qid, fid] of Object.entries(v)) {
+    if (Object.keys(out).length === QUESTIONS_MAX) break;
+    if (!FORM_ID_PATTERN.test(qid) || typeof fid !== 'string') continue;
+    if (!CUSTOM_FIELD_ID_PATTERN.test(fid) || taken.has(fid)) continue;
+    taken.add(fid);
+    out[qid] = fid;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+// A board destination's card type rules (forms.md "Choosing the card type by an answer"): each a distinct id and type
+// (never the default's), a question id, its answers and a status; at most TYPE_RULES_MAX, absent when none is left.
+function readTypeRules(v: unknown, defaultType: string): CardTypeRule[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: CardTypeRule[] = [];
+  const ids = new Set<string>();
+  const typesSeen = new Set<string>([defaultType]);
+  for (const r of v) {
+    if (out.length === TYPE_RULES_MAX) break;
+    if (!isObj(r)) continue;
+    const { id, questionId, typeId, status } = r;
+    if (typeof id !== 'string' || !FORM_ID_PATTERN.test(id) || ids.has(id)) continue;
+    if (typeof questionId !== 'string' || !FORM_ID_PATTERN.test(questionId)) continue;
+    if (typeof typeId !== 'string' || !ITEM_TYPE_PATTERN.test(typeId) || typesSeen.has(typeId))
+      continue;
+    if (typeof status !== 'string' || !STATUS_ID.test(status)) continue;
+    const anyOf = readOptions(r['anyOf']);
+    if (!anyOf.length) continue;
+    ids.add(id);
+    typesSeen.add(typeId);
+    const rule: CardTypeRule = { id, questionId, anyOf, typeId, status };
+    const fields = readRuleFields(r['fields']);
+    if (fields) rule.fields = fields;
+    out.push(rule);
+  }
+  return out.length ? out : undefined;
+}
+
 function readDestination(v: unknown): FormDestination | undefined {
   if (!isObj(v)) return undefined;
   const { tabId, typeId, status } = v;
   if (typeof tabId !== 'string' || !TAB_ID.test(tabId)) return undefined;
   if (typeof typeId !== 'string' || !ITEM_TYPE_PATTERN.test(typeId)) return undefined;
   if (typeof status !== 'string' || !STATUS_ID.test(status)) return undefined;
+  const out: FormDestination = { tabId, typeId, status };
   const fixed = readFixed(v['fixed']);
-  return fixed ? { tabId, typeId, status, fixed } : { tabId, typeId, status };
+  if (fixed) out.fixed = fixed;
+  const typeRules = readTypeRules(v['typeRules'], typeId);
+  if (typeRules) out.typeRules = typeRules;
+  return out;
 }
 
 export function readForm(raw: unknown): FormDefinition | null {

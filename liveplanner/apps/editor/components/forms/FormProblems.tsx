@@ -62,7 +62,13 @@ export function FormProblems({
           <li key={i} className="flex items-baseline justify-between gap-3">
             <span>{publishProblemText(p)}</span>
             {/* Show for a question's or a section's problem: a form-level one has nothing to point at. */}
-            {onShow && ('questionId' in p || 'sectionId' in p) ? (
+            {'ruleId' in p && p.ruleId ? (
+              onFixDestination ? (
+                <button type="button" onClick={onFixDestination} className={LINK}>
+                  Choose Where Responses Go
+                </button>
+              ) : null
+            ) : onShow && ('questionId' in p || 'sectionId' in p) ? (
               <button type="button" onClick={() => onShow(p)} className={LINK}>
                 Show
               </button>

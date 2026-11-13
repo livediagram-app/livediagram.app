@@ -12,8 +12,10 @@ no third-party provider and no API key: a Worker sends through its `send_email` 
   Service on this account (dashboard → Email Service → Onboard Domain). Cloudflare then adds the SPF and DKIM
   records itself, because the zone is on the same account.
 - **Code.** `@liveworkspace/email` (`packages/email`) is the only code that calls the binding. `sendEmail(env.EMAIL,
-{ from, to, subject, html, text?, unsubscribeUrl? })` resolves to the message id, sends `List-Unsubscribe` when
-  given an unsubscribe link, and gives up after 10 seconds. A refusal throws with Email Service's `code`, such as
+{ from, to, subject, html, text?, unsubscribeUrl?, oneClick? })` resolves to the message id, sends
+  `List-Unsubscribe` when given an unsubscribe link, adds `List-Unsubscribe-Post: List-Unsubscribe=One-Click`
+  ([RFC 8058](https://www.rfc-editor.org/rfc/rfc8058)) when `oneClick` says that link unsubscribes on a POST, and
+  gives up after 10 seconds. A refusal throws with Email Service's `code`, such as
   `E_RECIPIENT_SUPPRESSED`.
 - **Who is sending.** Each caller keeps its own policy. accounts throws, because a sign-in code that doesn't
   send has to fail visibly. An app's sends are best effort: logged and counted, never failing the request that

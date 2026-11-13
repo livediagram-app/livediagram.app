@@ -1,24 +1,27 @@
 'use client';
 
 // Assign and Send an Email's recipient (docs/specs/026-plan/automations.md "Actions"): a person of the plan, the
-// person who triggered the rule, the card's assignee (email), nobody or people in turn (assign).
+// person who triggered the rule, the card's assignee (email), typed-in addresses (email), nobody or people in turn
+// (assign).
 
-import type { AutomationAssignee, AutomationRecipient } from '@liveplanner/items';
+import type { AutomationAssignee, AutomationEmailRecipient } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
 import { PanelField, PanelSelect } from './panel-parts';
 
-type Who = AutomationAssignee | AutomationRecipient;
+type Who = AutomationAssignee | AutomationEmailRecipient;
 
 const keyOf = (w: Who) =>
-  'person' in w
-    ? `person:${w.person}`
-    : 'trigger' in w
-      ? 'trigger'
-      : 'nobody' in w
-        ? 'nobody'
-        : 'rotate' in w
-          ? 'rotate'
-          : 'assignee';
+  'addresses' in w
+    ? 'addresses'
+    : 'person' in w
+      ? `person:${w.person}`
+      : 'trigger' in w
+        ? 'trigger'
+        : 'nobody' in w
+          ? 'nobody'
+          : 'rotate' in w
+            ? 'rotate'
+            : 'assignee';
 
 export function PersonPicker<T extends Who>({
   label,
@@ -32,7 +35,11 @@ export function PersonPicker<T extends Who>({
   onChange: (next: T) => void;
   outline: AutomationOutline;
   // The fixed choices above the plan's people.
-  extra: readonly { key: 'trigger' | 'nobody' | 'assignee' | 'rotate'; label: string; value: T }[];
+  extra: readonly {
+    key: 'trigger' | 'nobody' | 'assignee' | 'rotate' | 'addresses';
+    label: string;
+    value: T;
+  }[];
 }) {
   const key = keyOf(value);
   const known = !('person' in value) || outline.people.some((p) => p.id === value.person);

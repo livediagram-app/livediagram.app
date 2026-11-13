@@ -31,6 +31,12 @@ export const BAND_FLUSH =
 export const BAND_STRIP_FLUSH =
   '[[data-strip-in-band]_&]:bg-transparent! [[data-strip-in-band]_&]:border-transparent! [[data-strip-in-band]_&]:shadow-none!';
 
+/** A strip's rail that gives way and swipes sideways when it can't fit (a phone): it pads for its controls' pressed
+ *  rings (cancelled by a matching negative margin, so the strip doesn't move), contains its swipe so it never pans the
+ *  page, hides its scrollbar and fades the edge with more beyond it (`scroll-edge-fade`), as livehuddle's palette does. */
+export const STRIP_RAIL_SCROLL =
+  'scroll-edge-fade min-w-0 -my-[3px] overflow-x-auto overflow-y-hidden overscroll-x-contain py-[3px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
 /** The hairline between groups of controls. */
 export const TOOLBAR_DIVIDER = 'mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700';
 

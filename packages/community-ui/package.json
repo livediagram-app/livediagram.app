@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./share": "./src/share/index.ts",
+    "./chip-field": "./src/share/ChipField.tsx",
     "./badge": "./src/share/badge.ts",
     "./words": "./src/share/words.ts",
     "./help-link": "./src/help-link/CommunityHelpLink.tsx",

@@ -21,15 +21,32 @@ describe('editor worker editor route', () => {
     expect(seen).toEqual(['/project/placeholder']);
   });
 
-  it('serves the form page for /form/<code>, not framed (docs/specs/030-forms/forms.md)', async () => {
+  // Share Form's Embed (docs/specs/030-forms/forms.md "Publishing and the form link"): the form page alone of the
+  // editor's pages may be framed; it keeps every other security header.
+  it('serves the form page for /form/<code>, frameable for an embed (docs/specs/030-forms/forms.md)', async () => {
     const { env: e, seen } = env();
     const res = await worker.fetch(
-      new Request('https://liveplanner.app/form/AbCdEfGhIjKlMnOpQrStU1'),
+      new Request('https://liveplanner.app/form/AbCdEfGhIjKlMnOpQrStU1?q.q-1=Ada'),
       e,
     );
-    await worker.fetch(new Request('https://liveplanner.app/form/placeholder'), e);
+    const placeholder = await worker.fetch(
+      new Request('https://liveplanner.app/form/placeholder'),
+      e,
+    );
     expect(seen).toEqual(['/form/placeholder', '/form/placeholder']);
-    expect(res.headers.get('X-Frame-Options')).toBe('DENY');
+    for (const r of [res, placeholder]) {
+      expect(r.headers.get('X-Frame-Options')).toBeNull();
+      expect(r.headers.get('Content-Security-Policy')).toBe(TRUSTED_TYPES_CSP);
+      expect(r.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    }
+  });
+
+  it('keeps refusing framing on paths that only look like the form page', async () => {
+    const { env: e } = env();
+    for (const path of ['/forms', '/formx/abc', '/project/form']) {
+      const res = await worker.fetch(new Request(`https://liveplanner.app${path}`), e);
+      expect(res.headers.get('X-Frame-Options')).toBe('DENY');
+    }
   });
 
   it('leaves other paths to the static assets', async () => {

@@ -27,7 +27,15 @@ import { FORM_STARTERS, type StarterId } from '@liveplanner/forms';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 
 export type StartKind =
-  'board' | 'sheet' | 'form' | 'visualisation' | 'dashboard' | 'template' | 'describe' | 'import';
+  | 'board'
+  | 'sheet'
+  | 'form'
+  | 'describe-form'
+  | 'visualisation'
+  | 'dashboard'
+  | 'template'
+  | 'describe'
+  | 'import';
 
 export type StartItem = {
   id: string;
@@ -48,6 +56,8 @@ export type StartItem = {
   | { kind: 'sheet'; start: PlacedSheetStart | null }
   // A form, from one of its starters (docs/specs/030-forms/forms.md "Starting a form").
   | { kind: 'form'; starter: StarterId }
+  // Opens the Describe a Form dialog (docs/specs/030-forms/describe-a-form.md "Where it starts"), one of Forms' cards.
+  | { kind: 'describe-form' }
   | { kind: 'dashboard'; layout: DashboardPresetId; suggestion?: undefined }
   // A Dashboard built around the project's own boards and sheets (suggested-dashboards.ts).
   | { kind: 'dashboard'; suggestion: SuggestedDashboard; layout?: undefined }
@@ -282,6 +292,31 @@ export const DESCRIBE_ITEM: StartItem = {
   bestFor: DESCRIBE_BEST_FOR,
 };
 
+// Forms' Describe a Form card, after Blank Form (docs/specs/030-forms/describe-a-form.md "Where it starts"): found by
+// every Forms word and by what asking for one of your own is called. "ai" typed whole leads with Describe a Plan.
+export const DESCRIBE_FORM_ITEM: StartItem = {
+  id: 'form:describe',
+  kind: 'describe-form',
+  name: 'Describe a Form',
+  line: 'Say what the form should ask and AI drafts its questions for you to check.',
+  keywords: [
+    'describe',
+    'ai',
+    'generate',
+    'custom',
+    'my own',
+    'own words',
+    'draft',
+    'form',
+    'survey',
+    'questionnaire',
+    'responses',
+    'submissions',
+    'intake',
+    'google forms',
+  ],
+};
+
 // The sheet starts, in Start Planning's order: the empty sheet, the card table (only with cards), then every sheet
 // template (docs/specs/029-sheets/sheet.md "Sheet templates").
 export const SHEET_STARTS: readonly {
@@ -339,7 +374,7 @@ export function startItems({
       ...(s.keywords ? { keywords: s.keywords } : {}),
     }),
   );
-  const forms: StartItem[] = FORM_STARTERS.map((f) => ({
+  const starters: StartItem[] = FORM_STARTERS.map((f) => ({
     id: `form:${f.id}`,
     kind: 'form',
     starter: f.id,
@@ -355,6 +390,8 @@ export function startItems({
       'google forms',
     ],
   }));
+  // Describe a Form right after Blank Form, the other way to start from nothing.
+  const forms: StartItem[] = [starters[0]!, DESCRIBE_FORM_ITEM, ...starters.slice(1)];
   // Status Breakdown is retired: Start Planning never makes one (plan-views.md "Visualisations").
   const visualisations: StartItem[] = PLAN_PALETTE_VISUALISATIONS.map((v) => ({
     id: `visualisation:${v}`,
@@ -428,8 +465,13 @@ export const KIND_NAMES: Record<StartKind, string> = {
   dashboard: 'Dashboard',
   template: 'Template',
   describe: 'Describe a Plan',
+  'describe-form': 'Describe a Form',
   import: 'Import',
 };
+
+// Whether `item` is one of `category`'s: Forms holds its starters and Describe a Form.
+const inCategory = (item: StartItem, category: Exclude<StartCategory, 'recommended'>) =>
+  item.kind === KIND_OF[category] || (category === 'forms' && item.kind === 'describe-form');
 
 // What a category shows.
 export function itemsIn(items: readonly StartItem[], category: StartCategory): StartItem[] {
@@ -440,7 +482,7 @@ export function itemsIn(items: readonly StartItem[], category: StartCategory): S
       id === 'dashboard:overview' && suggested ? [suggested] : items.filter((i) => i.id === id),
     );
   }
-  return items.filter((i) => i.kind === KIND_OF[category]);
+  return items.filter((i) => inCategory(i, category));
 }
 
 // The order a search's groups follow: the rail's, Recommended left out, then its foot: Describe a Plan, Import.
@@ -477,6 +519,6 @@ export function searchStartItems(
   const found = items.filter((i) => words.every((w) => hay(i).includes(w)));
   return START_SEARCH_ORDER.map((category) => ({
     category,
-    items: found.filter((i) => i.kind === KIND_OF[category]),
+    items: found.filter((i) => inCategory(i, category)),
   })).filter((g) => g.items.length > 0);
 }

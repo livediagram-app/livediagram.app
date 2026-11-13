@@ -34,7 +34,7 @@ const state = (data: Partial<FormLinkResponse> | null): FormLinkState =>
 const warning = () => screen.queryByText('Not Taking Responses');
 
 describe('FormStatusBar, Not Taking Responses', () => {
-  it('shows an Editor why, after the count, and opens Share Form for the switch', () => {
+  it('shows an Editor why, in the state place, and opens Share Form for the switch', () => {
     const onNotTaking = vi.fn();
     render(
       <FormStatusBar
@@ -46,11 +46,12 @@ describe('FormStatusBar, Not Taking Responses', () => {
       />,
     );
     const button = screen.getByRole('button', { name: /^Not Taking Responses\. Accepting/ });
-    // Right of the count, inside the same bar.
+    // In the state's place, before the count, inside the same bar, and never beside Closed.
     const bar = button.closest('[data-form-status]')!;
-    expect(bar.textContent.indexOf('responses')).toBeLessThan(
-      bar.textContent.indexOf('Not Taking Responses'),
+    expect(bar.textContent.indexOf('Not Taking Responses')).toBeLessThan(
+      bar.textContent.indexOf('responses'),
     );
+    expect(bar.textContent).not.toContain('Closed');
     expect(button.className).toContain('text-red-700');
     expect(button.className).toContain('dark:text-red-300');
     fireEvent.click(button);
@@ -70,8 +71,8 @@ describe('FormStatusBar, Not Taking Responses', () => {
         onNotTaking={onNotTaking}
       />,
     );
-    // The switch is on but the time has passed: it reads Closed and warns.
-    expect(screen.getByText('Closed')).toBeTruthy();
+    // The switch is on but the time has passed: one red state says so, not Closed beside it.
+    expect(screen.queryByText('Closed')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /Close On time has passed/ }));
     expect(onNotTaking).toHaveBeenCalledWith('settings');
   });

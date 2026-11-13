@@ -1,9 +1,11 @@
 'use client';
 
-// The rule builder's pickers (docs/specs/026-plan/automations.md "The rule builder"): Add an Action and Pick a Trigger
-// share this one dialog. The dialog hero header with the picker's art, a search that narrows the tiles across the
+// The gallery pickers' one dialog: the rule builder's Add an Action and Pick a Trigger (docs/specs/026-plan/
+// automations.md "The rule builder") and the form builder's Add a Question (docs/specs/030-forms/forms.md "The form
+// card, top to bottom"). The dialog hero header with the picker's art, a search that narrows the tiles across the
 // groups, a rail that scrolls to a group from sm (chips on a phone), and the grouped tiles: each a picture that plays
-// on hover, the step's icon, its name and a line on what it does. The arrow keys walk the tiles; Enter picks.
+// on hover (TileStage), the tile's icon, its name and a line on what it does. The arrow keys walk the tiles; Enter
+// picks.
 
 import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Button, useMediaQuery } from '@liveplanner/ui';
@@ -56,7 +58,7 @@ function searchSections<K extends string>(
     .filter((s) => s.tiles.length > 0);
 }
 
-export function StepPicker<K extends string>({
+export function TilePicker<K extends string>({
   title,
   line,
   art,
@@ -70,9 +72,9 @@ export function StepPicker<K extends string>({
   title: string;
   // The header's line under the title (for screen readers alone on a phone).
   line: string;
-  // The header's art and title mark (AddActionHeroArt, AutomationsHeroArt).
+  // The header's art and title mark (AddActionHeroArt, AutomationsHeroArt, AddQuestionHeroArt).
   art: HeroArt;
-  // What a tile is, for the search and the rail: "action", "trigger".
+  // What a tile is, for the search and the rail: "action", "trigger", "question type".
   noun: string;
   // The empty search's suggestion: "Try another word, such as “label”".
   emptyHint: string;

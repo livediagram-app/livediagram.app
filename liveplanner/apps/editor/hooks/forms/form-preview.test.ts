@@ -149,3 +149,45 @@ describe('sendPreview', () => {
     expect(sendToLink).not.toHaveBeenCalled();
   });
 });
+
+describe('sendPreview and card type rules (docs/specs/030-forms/forms.md "Choosing the card type by an answer")', () => {
+  it('makes the card the rule its answers pick, in its column, as the api would', async () => {
+    const idea: ItemTypeDef = { ...type, id: 'idea', label: 'Idea' };
+    const ruled: FormDefinition = {
+      ...form,
+      sections: [
+        {
+          ...form.sections[0]!,
+          questions: [
+            ...form.sections[0]!.questions,
+            { id: 'q-k', type: 'single', prompt: 'Kind', options: ['Bug', 'Idea'] },
+          ],
+        },
+      ],
+      destination: {
+        ...form.destination!,
+        typeRules: [
+          { id: 'r-1', questionId: 'q-k', anyOf: ['Idea'], typeId: 'idea', status: 'later' },
+        ],
+      },
+    };
+    const place = {
+      types: [type, idea],
+      boards: [{ columns: [{ status: 'triage' }, { status: 'later' }] }],
+    };
+    const { made, result } = send({
+      form: ruled,
+      place,
+      state: { answers: { 'q-t': 'Dark mode', 'q-k': 'Idea' }, other: {} },
+    });
+    expect(await result).toEqual({ kind: 'sent' });
+    expect(made[0]).toMatchObject({ type: 'idea', place: { status: 'later' } });
+    const plain = send({
+      form: ruled,
+      place,
+      state: { answers: { 'q-t': 'Crash', 'q-k': 'Bug' }, other: {} },
+    });
+    await plain.result;
+    expect(plain.made[0]).toMatchObject({ type: 'bug', place: { status: 'triage' } });
+  });
+});

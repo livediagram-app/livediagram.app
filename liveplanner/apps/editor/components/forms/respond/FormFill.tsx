@@ -26,6 +26,7 @@ export function FormFill({
   footer,
   preview = false,
   previewNote = 'This is a preview: nothing was sent.',
+  initial,
 }: {
   form: PublicForm;
   submit: (state: FillState & { website: string }) => Promise<SubmitOutcome>;
@@ -36,12 +37,15 @@ export function FormFill({
   // sends nothing).
   preview?: boolean;
   previewNote?: string;
+  // Answers the form starts with: the form link's pre-filled ones (readPrefill), never sent on their own.
+  initial?: Readonly<Record<string, unknown>>;
 }) {
   const honeypot = useRef<HTMLInputElement>(null);
   const fill = useFormFill(
     form,
     (state) => submit({ ...state, website: honeypot.current?.value ?? '' }),
     draftKey,
+    initial,
   );
   const summaryRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);

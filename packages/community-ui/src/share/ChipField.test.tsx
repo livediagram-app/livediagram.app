@@ -76,4 +76,25 @@ describe('ChipField', () => {
     expect(screen.queryByRole('button')).toBeNull();
     expect(screen.queryByText('None')).toBeNull();
   });
+
+  it('marks a chip the field does not take, for the eye and a screen reader', () => {
+    render(
+      <ChipField
+        chips={['ok@example.com', 'not an address']}
+        removeLabel={(c) => `Remove ${c}`}
+        invalidChip={(c) => !c.includes('@')}
+        invalidChipNote="not an email address"
+        draft=""
+        onDraftChange={() => {}}
+        onCommit={() => {}}
+        onRemove={() => {}}
+        ariaLabel="Chips"
+      />,
+    );
+    const bad = screen.getByText('not an address').closest('span')!;
+    expect(bad.dataset['invalidChip']).toBe('true');
+    expect(bad.textContent).toContain('not an email address');
+    const good = screen.getByText('ok@example.com').closest('span')!;
+    expect(good.dataset['invalidChip']).toBeUndefined();
+  });
 });

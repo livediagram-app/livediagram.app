@@ -54,6 +54,12 @@ export function AnswerGoesTo({
     (t.to !== 'field' || (target.to === 'field' && target.fieldId === t.fieldId));
   return (
     <div role="radiogroup" aria-label="Answer goes to" className="flex flex-col gap-1.5">
+      {/* Card type rules map their own types' fields (forms.md "Choosing the card type by an answer"). */}
+      {b.type && b.form.destination?.typeRules?.length ? (
+        <p className="text-[12px] text-slate-500 dark:text-slate-400">
+          For {b.type.label} cards. Rules map their own types’ fields under Responses Go To.
+        </p>
+      ) : null}
       {target.broken ? (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-[12px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
           Goes to Description: its field was removed or no longer fits this question. Choose again

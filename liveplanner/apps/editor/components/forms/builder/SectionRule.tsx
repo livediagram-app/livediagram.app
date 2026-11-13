@@ -10,11 +10,13 @@ import {
   ruleChoices,
   ruleQuestion,
   ruleQuestions,
+  type FormQuestion,
   type FormSection,
 } from '@liveplanner/forms';
 import { Select, lucideGlyph } from '@liveplanner/ui';
 import { lucideGitFork } from '@liveworkspace/icons/lucide';
 import { updateSection } from '@liveplanner/forms';
+import { ChoiceChip } from './ChoiceChip';
 import { FormSheet } from './FormSheet';
 import { useFormBuilder } from './form-builder-context';
 
@@ -112,55 +114,82 @@ function RuleEditor({ section, index }: { section: FormSection; index: number })
         </p>
       ) : null}
       {q && rule ? (
-        <>
-          <Select
-            aria-label="Question"
-            className="w-full"
-            selectClassName="text-[13px]"
-            value={q.id}
-            onChange={(e) => {
-              const next = questions.find((x) => x.id === e.target.value);
-              if (next) set({ questionId: next.id, anyOf: [ruleChoices(next)[0]!] });
-            }}
-          >
-            {questions.map((x) => (
-              <option key={x.id} value={x.id}>
-                {promptOf(x)}
-              </option>
-            ))}
-          </Select>
-          <div>
-            <p className="mb-1.5 text-[12px] text-slate-500 dark:text-slate-400">
-              Show it when the answer is any of:
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {ruleChoices(q).map((a) => {
-                const on = rule.anyOf.includes(a);
-                return (
-                  <button
-                    key={a}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() =>
-                      set({
-                        questionId: q.id,
-                        anyOf: on ? rule.anyOf.filter((x) => x !== a) : [...rule.anyOf, a],
-                      })
-                    }
-                    className={`flex h-8 cursor-pointer items-center rounded-full border px-3 text-[12px] font-medium transition ${
-                      on
-                        ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500'
-                    }`}
-                  >
-                    <span className="text-optical-centre">{a}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </>
+        <RulePicker
+          questions={questions}
+          question={q}
+          anyOf={rule.anyOf}
+          answersLabel="Show it when the answer is any of:"
+          onChange={(questionId, anyOf) => set({ questionId, anyOf })}
+        />
       ) : null}
     </div>
+  );
+}
+
+// A rule's question (a select of the questions that fit) and its answers (toggle chips): a section's Show If and a
+// card type rule share it (docs/specs/030-forms/forms.md "Choosing the card type by an answer"). Picking another
+// question takes its first answer; unpicking every answer passes an empty list (the caller clears the rule or keeps
+// one).
+export function RulePicker({
+  questions,
+  question: q,
+  anyOf,
+  answersLabel,
+  onChange,
+  disabled = false,
+}: {
+  questions: readonly FormQuestion[];
+  // Null: its question is gone (a broken rule), so none is chosen until one is picked.
+  question: FormQuestion | null;
+  anyOf: readonly string[];
+  answersLabel: string;
+  onChange: (questionId: string, anyOf: string[]) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <>
+      <Select
+        aria-label="Question"
+        className="w-full"
+        selectClassName="text-[13px]"
+        value={q?.id ?? ''}
+        disabled={disabled}
+        onChange={(e) => {
+          const next = questions.find((x) => x.id === e.target.value);
+          if (next) onChange(next.id, [ruleChoices(next)[0]!]);
+        }}
+      >
+        {q ? null : (
+          <option value="" disabled>
+            Choose a question…
+          </option>
+        )}
+        {questions.map((x) => (
+          <option key={x.id} value={x.id}>
+            {promptOf(x)}
+          </option>
+        ))}
+      </Select>
+      {q ? (
+        <div>
+          <p className="mb-1.5 text-[12px] text-slate-500 dark:text-slate-400">{answersLabel}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {ruleChoices(q).map((a) => {
+              const on = anyOf.includes(a);
+              return (
+                <ChoiceChip
+                  key={a}
+                  on={on}
+                  disabled={disabled}
+                  onClick={() => onChange(q.id, on ? anyOf.filter((x) => x !== a) : [...anyOf, a])}
+                >
+                  <span className="text-optical-centre">{a}</span>
+                </ChoiceChip>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

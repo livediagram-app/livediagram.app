@@ -2,7 +2,7 @@
 
 // The Add an Action picker (docs/specs/026-plan/automations.md "The rule builder"): + Add Action opens a dialog of
 // every action it may add, in groups (action-groups.ts), each tile with its picture (ActionScene), its icon, its name
-// and a line on what it does, in the pickers' shared dialog (StepPicker).
+// and a line on what it does, in the pickers' shared dialog (TilePicker).
 
 import { useMemo, useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
@@ -11,7 +11,7 @@ import { ActionScene } from './ActionScene';
 import { addActionHeroArt } from './AddActionHeroArt';
 import { StepTile } from './automation-glyphs';
 import { ACTION_LINES, pickerGroups, type ActionGroupId } from './action-groups';
-import { StepPicker } from './StepPicker';
+import { TilePicker } from '@/components/tile-picker/TilePicker';
 import { ADD_NAMES, isAiKind, isOutgoingKind, viaOf, type AddKind } from './step-defaults';
 
 export const tileIcon = (k: AddKind) =>
@@ -104,7 +104,7 @@ export function AddActionDialog({
     [body, where, only],
   );
   return (
-    <StepPicker
+    <TilePicker
       title={current ? 'Change the Action' : 'Add an Action'}
       line={current ? 'What should this step do instead?' : 'What should this rule do to the card?'}
       art={addActionHeroArt}

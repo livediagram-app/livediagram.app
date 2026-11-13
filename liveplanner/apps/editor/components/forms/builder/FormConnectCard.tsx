@@ -3,10 +3,12 @@
 // The connect box (docs/specs/030-forms/forms.md "Responses Go To and Settings"): a card under the form's title while
 // it sends its responses nowhere (no board, no sheet), drawn as the form's own cards are, so an Editor connects it
 // before anything else. Two choices side by side, each making its tab in one press: Cards on a Board (New Board) and
-// Rows in a Sheet (New Sheet); Choose Existing (when the project has a board or sheet) opens Responses Go To.
+// Rows in a Sheet (New Sheet); Choose Existing (when the project has a board or sheet) opens Responses Go To. While the
+// form has no questions, Describe a Form drafts them and where responses go (docs/specs/030-forms/describe-a-form.md).
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideSquareKanban, lucideTable } from '@liveworkspace/icons/lucide';
-import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@liveplanner/forms';
+import { DESTINATION_PROBLEM_TEXT, questionsOf, type DestinationProblem } from '@liveplanner/forms';
+import { DescribeFormButton } from '../describe-form/DescribeFormButton';
 import { track } from '@/lib/telemetry';
 import { useFormBuilder } from './form-builder-context';
 
@@ -100,6 +102,12 @@ export function FormConnectCard({
         >
           Or use a board or sheet you already have
         </button>
+      ) : null}
+      {nowhere && questionsOf(b.form).length === 0 ? (
+        <p className="mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 border-t border-slate-100 pt-3 text-[13px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
+          <DescribeFormButton className="inline-flex cursor-pointer items-center gap-1.5 font-semibold text-brand-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded dark:text-brand-300" />
+          <span>Or say what it should ask and AI drafts the questions and where responses go.</span>
+        </p>
       ) : null}
     </section>
   );
