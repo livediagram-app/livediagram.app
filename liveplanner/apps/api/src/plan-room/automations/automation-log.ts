@@ -158,7 +158,8 @@ export function listRuns(sql: Sql, query: AutomationRunsQuery): AutomationRun[] 
     where.push('at >= ?');
     bindings.push(query.since);
   }
-  const limit = Math.min(Math.max(1, query.limit ?? 50), AUTOMATION_RUNS_LIST_MAX);
+  // A whole number: SQLite refuses a LIMIT of 2.5 (datatype mismatch).
+  const limit = Math.min(Math.max(1, Math.floor(query.limit ?? 50)), AUTOMATION_RUNS_LIST_MAX);
   const rows = sql
     .exec(
       `SELECT body FROM automation_runs WHERE ${where.join(' AND ')} ORDER BY at DESC, id LIMIT ?`,

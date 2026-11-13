@@ -307,8 +307,12 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
   const read = readRuleBody(raw['rule']);
+  // A rule that is no object is refused at `rule` itself, the body's own key.
   if ('error' in read)
-    return refuse(400, read.error, { path: `rule.${read.path}`, message: read.message });
+    return refuse(400, read.error, {
+      path: read.path === 'rule' ? 'rule' : `rule.${read.path}`,
+      message: read.message,
+    });
   const refused = await testSetFieldRefusal(ctx, g.projectId, read.body);
   if (refused) return refused;
   const card = await cardOf(ctx, g, raw);
