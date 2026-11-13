@@ -616,6 +616,14 @@ export const AUTOMATION_DESCRIBE_OPENED = opened(
   (t) => t === 'AutomationDescribe',
 );
 
+// Describe a Plan (docs/specs/026-plan/describe-a-plan.md "Telemetry", in the liveplanner folder): its dialog opened from
+// Start Planning's rail or search. Never the words typed.
+export const PLAN_DESCRIBE_OPENED = opened(
+  'Describe a Plan Opened',
+  "The Describe a Plan dialog opened from Start Planning, to draft a board's columns and card types from words with AI.",
+  (t) => t === 'PlanDescribe',
+);
+
 export const OTHER_OPENED = chart(
   'UI',
   'Opened',
@@ -638,6 +646,7 @@ export const PANELS_OPENED: MetricStack = {
     MIND_OUTLINE_OPENED,
     AUTOMATION_TEMPLATES_OPENED,
     AUTOMATION_DESCRIBE_OPENED,
+    PLAN_DESCRIBE_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },
