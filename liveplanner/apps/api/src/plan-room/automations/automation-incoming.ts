@@ -226,7 +226,14 @@ function parsed(body: Uint8Array): unknown {
 /** One call to the rule's address, as the room answers it (`schema`: whether the plan has one; an id nothing has
  *  written has none, and is answered without making one). */
 export async function answerHookCall(
-  input: { env: PlanEnv; planId: string; automations: PlanAutomations; schema: boolean },
+  input: {
+    env: PlanEnv;
+    planId: string;
+    automations: PlanAutomations;
+    schema: boolean;
+    // The plan is archived or in the Trash (plan-standing.ts): the call is taken and nothing runs.
+    putAway?: boolean;
+  },
   ruleId: string,
   call: HookCall,
   now: number,
@@ -241,6 +248,10 @@ export async function answerHookCall(
     log('unauthorized');
     if (live) defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationHookUnauthorized'));
     return UNAUTHORIZED;
+  }
+  if (input.putAway) {
+    log('put_away');
+    return { status: 202, body: { queued: 0 } };
   }
   const sql = automations.sql();
   const minute = countCall(sql, ruleId, now);

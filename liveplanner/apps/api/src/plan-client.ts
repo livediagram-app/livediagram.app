@@ -26,7 +26,7 @@ import type {
 } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
-import type { ConnectedTabWrite } from '@liveworkspace/index-client';
+import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 // The source side of a copy, and whether it went through the plan's open Community post's link.
@@ -76,6 +76,8 @@ export type PlanRoomClient = {
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
   revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  // Where the plan stands at the index (archived, in the Trash), after a change there (plan-standing.ts).
+  takeStanding(standing: ItemStanding): Promise<void>;
   // The plan's Community post's link (its code, and whether it opens the plan now), or null for none.
   community(): Promise<CommunityLink | null>;
   // The post's title when `code` is its open link: what a copy through it is named.
@@ -132,6 +134,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     importMigrated: (payload) => room.importMigrated(planId, payload),
     purge: () => room.purge(planId),
     revokeCodes: (codes, reason) => room.revokeCodes(planId, codes, reason),
+    takeStanding: (standing) => room.takeStanding(planId, standing),
     community: () => room.community(planId),
     communityPostTitle: (code) => room.communityPostTitle(planId, code),
     communityListing: (code) => room.communityListing(planId, code),
@@ -173,6 +176,7 @@ export type PlanRoomRpc = {
   importMigrated(planId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
   purge(planId: string): Promise<void>;
   revokeCodes(planId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  takeStanding(planId: string, standing: ItemStanding): Promise<void>;
   community(planId: string): Promise<CommunityLink | null>;
   communityPostTitle(planId: string, code: string): Promise<string | null>;
   communityListing(planId: string, code: string): Promise<CommunityListing | null>;

@@ -88,6 +88,7 @@ export async function renewGrant(room: PlanRoom, ws: WebSocket, ticket: unknown)
     return;
   }
   await room.takeHead(renewal.claims);
+  await room.takeGrantStanding(renewal.claims);
   const current = room.readSession(ws);
   if (!current) return;
   try {
