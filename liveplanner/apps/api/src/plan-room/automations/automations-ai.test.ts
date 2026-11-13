@@ -285,7 +285,7 @@ describe('when the AI can’t answer', () => {
     ]);
     expect(run).toMatchObject({ result: 'failed', reason: AI_FAILED });
     expect(calls).toHaveLength(1);
-    expect(run.steps.slice(1).map((s) => [s.ok, s.text])).toEqual([
+    expect(run.steps.slice(1).map((s) => ['ok' in s ? s.ok : null, s.text])).toEqual([
       [true, 'Queued for Launch'],
       [false, AI_FAILED],
       [false, AI_NOT_ASKED],
