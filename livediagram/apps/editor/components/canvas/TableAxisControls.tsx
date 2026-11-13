@@ -120,6 +120,8 @@ export function TableAxisTriggers({
           the table's top edge so they never crowd the first row's
           content. */}
       <div
+        // Hover chrome: the Marker pass neither draws it nor re-takes the table as it comes and goes (finish.md "Marker").
+        data-face-hover=""
         className="pointer-events-none absolute inset-x-0 top-0 grid h-0"
         style={{ gridTemplateColumns: colTemplate }}
       >
@@ -159,6 +161,7 @@ export function TableAxisTriggers({
           heights are pinned to non-uniform values. They sit OUTSIDE the
           table's left edge so they never crowd the first column. */}
       <div
+        data-face-hover=""
         className="pointer-events-none absolute inset-y-0 left-0 grid w-0"
         style={{ gridTemplateRows: rowTemplate }}
       >
