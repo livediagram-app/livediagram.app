@@ -23,6 +23,8 @@ export type StartPanelCard = {
   footer?: ReactNode;
   // Under the line at every width: where the card leads ("Opens in Workshop", StartOtherModes).
   note?: ReactNode;
+  // Words that, typed whole, lead it under Best Match as its name would (the shared best-match.ts).
+  bestFor?: readonly string[];
 };
 
 // The accent at a strength, as a Plan card's tints are (plan-card-parts).

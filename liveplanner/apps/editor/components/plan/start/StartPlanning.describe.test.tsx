@@ -95,11 +95,11 @@ describe('Start Planning: Describe a Plan on the rail', () => {
     (q) => {
       const { onDescribe } = mount(ROLES.editor);
       search(q);
-      // Under its own heading, or the Best Match a name beginning with the words leads with.
-      const group =
-        q === 'describe'
-          ? screen.getByRole('region', { name: 'Best Match' })
-          : screen.getByRole('region', { name: 'Describe a Plan' });
+      // The Best Match for a search its name begins with or one of its bestFor words ("ai"), else under its own
+      // heading.
+      const group = ['describe', 'ai', 'generate', 'my own'].includes(q)
+        ? screen.getByRole('region', { name: 'Best Match' })
+        : screen.getByRole('region', { name: 'Describe a Plan' });
       const card = group.querySelector<HTMLElement>('[data-start-card="describe"]');
       expect(card).not.toBeNull();
       // Its own name: no kind badge saying it again.
@@ -108,4 +108,12 @@ describe('Start Planning: Describe a Plan on the rail', () => {
       expect(onDescribe).toHaveBeenCalledOnce();
     },
   );
+
+  it('is the first Best Match for "ai", ahead of every card whose words only hold it', () => {
+    mount(ROLES.editor);
+    search('ai');
+    const best = screen.getByRole('region', { name: 'Best Match' });
+    const first = best.querySelector<HTMLElement>('[data-start-card]');
+    expect(first?.dataset.startCard).toBe('describe');
+  });
 });
