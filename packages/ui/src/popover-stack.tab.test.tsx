@@ -157,4 +157,30 @@ describe('Tab in the top popover', () => {
     tab();
     expect(document.activeElement).toBe(cell);
   });
+
+  it('keeps one listener waiting for the page, however many Tabs a handler stopped', () => {
+    function Stopper() {
+      const ref = useRef<HTMLDivElement>(null);
+      usePopoverLayer(ref, () => {});
+      return (
+        <div ref={ref}>
+          <button type="button">First</button>
+          <input aria-label="Stops" onKeyDown={(e) => e.stopPropagation()} />
+        </div>
+      );
+    }
+    render(<Stopper />);
+    const stops = screen.getByRole('textbox', { name: 'Stops' });
+    stops.focus();
+    const add = vi.spyOn(window, 'addEventListener');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    for (let i = 0; i < 5; i += 1) tab();
+    const waiting = (spy: typeof add) =>
+      spy.mock.calls.filter(([type, , options]) => type === 'keydown' && options !== true)
+        .length;
+    // Five added, the first four replaced by the next: one left waiting.
+    expect(waiting(add) - waiting(remove)).toBe(1);
+    add.mockRestore();
+    remove.mockRestore();
+  });
 });

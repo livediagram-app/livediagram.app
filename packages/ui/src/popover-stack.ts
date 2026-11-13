@@ -26,14 +26,22 @@ function onKeyDown(e: KeyboardEvent): void {
   if (e.key !== 'Tab' || e.defaultPrevented) return;
   // Decided once the key has been through the page (the window's own bubble, after every handler under it), so a
   // control in the popover that takes Tab itself (a grid moving between cells) keeps it.
+  // One such listener at a time: a Tab a handler stopped never reaches the window's bubble, so its listener is
+  // replaced by the next Tab's rather than left behind, one more for every stopped key.
   const panel = top.panel.current;
-  window.addEventListener(
-    'keydown',
-    (after) => {
-      if (after === e && !e.defaultPrevented) wrapTab(e, panel);
-    },
-    { once: true },
-  );
+  dropPendingWrap();
+  pendingWrap = (after: KeyboardEvent) => {
+    dropPendingWrap();
+    if (after === e && !e.defaultPrevented) wrapTab(e, panel);
+  };
+  window.addEventListener('keydown', pendingWrap);
+}
+
+let pendingWrap: ((e: KeyboardEvent) => void) | null = null;
+
+function dropPendingWrap(): void {
+  if (pendingWrap) window.removeEventListener('keydown', pendingWrap);
+  pendingWrap = null;
 }
 
 // Keeps Tab inside the panel holding focus: from its last control (or anything after it, a scrolling list the browser
@@ -65,7 +73,10 @@ function push(layer: Layer): () => void {
   return () => {
     const at = layers.indexOf(layer);
     if (at >= 0) layers.splice(at, 1);
-    if (layers.length === 0) window.removeEventListener('keydown', onKeyDown, true);
+    if (layers.length === 0) {
+      window.removeEventListener('keydown', onKeyDown, true);
+      dropPendingWrap();
+    }
   };
 }
 
