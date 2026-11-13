@@ -20,6 +20,7 @@
       "types": "./scripts/hosted-vars.d.mts",
       "default": "./scripts/hosted-vars.mjs"
     },
+    "./image-ref-index": "./src/image-ref-index.ts",
     "./image-refs": "./src/image-refs.ts",
     "./oauth": "./src/oauth.ts",
     "./openapi-types": "./src/openapi-types.ts",
