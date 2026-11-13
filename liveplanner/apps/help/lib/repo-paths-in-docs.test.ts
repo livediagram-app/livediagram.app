@@ -91,13 +91,24 @@ function docFiles(): string[] {
   return out;
 }
 
+// A git hook runs tests with GIT_DIR and friends set, which points git at the hook's checkout whatever the cwd.
+// Without them each call finds the repository from its own cwd, as it does in CI.
+const GIT_ENV = Object.fromEntries(
+  Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+) as NodeJS.ProcessEnv;
+
 // Everything git tracks, read as text. Specs are referenced from code comments,
 // OpenAPI descriptions, tests and markdown alike, so the reference checks below
 // cover the whole repo, not just docs/.
 const TEXT_FILE = /\.(?:ts|tsx|mts|js|mjs|cjs|md|mdx|json|toml|ya?ml|css|sql|sh|example)$/;
 
 function trackedTextFiles(): string[] {
-  return execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+  return execFileSync('git', ['ls-files'], {
+    cwd: ROOT,
+    env: GIT_ENV,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  })
     .split('\n')
     .filter((f) => TEXT_FILE.test(f) && existsSync(`${ROOT}/${f}`));
 }
@@ -113,16 +124,23 @@ function trackedPaths(): Set<string> {
     const parts = f.split('/');
     for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
   };
-  for (const f of execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n'))
+  for (const f of execFileSync('git', ['ls-files'], {
+    cwd: ROOT,
+    env: GIT_ENV,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  }).split('\n'))
     add(f);
   const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
     cwd: ROOT,
+    env: GIT_ENV,
     encoding: 'utf8',
   }).trim();
   const up = relative(ROOT, top).split(sep).join('/');
   if (up !== '' && up.split('/').every((part) => part === '..')) {
     for (const f of execFileSync('git', ['ls-files'], {
       cwd: top,
+      env: GIT_ENV,
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
     }).split('\n')) {
@@ -140,6 +158,7 @@ function ignoredPaths(paths: string[]): Set<string> {
   if (inRepo.length === 0) return new Set();
   const run = spawnSync('git', ['check-ignore', '--no-index', '--stdin'], {
     cwd: ROOT,
+    env: GIT_ENV,
     input: inRepo.join('\n'),
     encoding: 'utf8',
   });

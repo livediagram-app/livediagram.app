@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { distributionSnap } from './geometry-guides';
-import { createShape, type Element } from './index';
+import type { Element } from './element';
+import { createShape } from './testing/elements';
 
 // Equal-spacing snap runs on every move of a drag. A tall lane or frame overlaps nearly the whole board on one axis, so
 // a search that paired every neighbour with every other (and scanned the board for each one's own gaps) made each move
@@ -23,7 +24,7 @@ function board(n: number): Element[] {
     const c = i % cols;
     const r = Math.floor(i / cols);
     return {
-      ...createShape('focus-button', c * 180 + ((i * 7) % 13), r * 140 + ((i * 11) % 17)),
+      ...createShape('square', c * 180 + ((i * 7) % 13), r * 140 + ((i * 11) % 17)),
       id: `e${i}`,
       width: 120,
       height: 80,
