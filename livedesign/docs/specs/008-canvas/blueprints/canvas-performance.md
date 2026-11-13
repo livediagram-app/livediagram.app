@@ -255,7 +255,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 ### A theme pick on a big board
 
-- Measured (`e2e/perf/theme-pick.perf.ts`, a production build, the reference board, the reference speed of about 3x
+- Measured in livediagram and liveplanner (their theme-pick perf probe, the same shared dialog code; a production build, the reference board, the reference speed of about 3x
   throttle, A/B against main on one machine): livediagram at 400 elements, longest task 232-251 ms before, 83-89 ms
   after; at 1,000, 436-485 ms before, 255-259 ms after. liveplanner at 400, 111-118 ms before, 72-83 ms after. The
   task was one click: every element view re-rendering in its new colours (the colours really change, so each renders
