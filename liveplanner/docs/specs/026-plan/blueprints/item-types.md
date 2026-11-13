@@ -402,7 +402,11 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
   - Editor: `RollupEditor.tsx` (Through, Calculate, Field, `CalculatedPreview`, then the `role="status"` line, so a longer line never pushes Preview under Add Field's footer on a phone; `rollupPatch`) in
     `CustomFieldForm` and `AddFieldShape` (`kindReadiness` 'through' and 'source'); `CalculatedPreview.tsx` is
     shared with `FormulaEditor` (a Rollup's prefers the first card with a value other than 0). While it waits (`field` null)
-    its row does not wrap: the card's title truncates and the waiting words keep one line (Work Tracker #510).
+    its row does not wrap: the card's title truncates and the waiting words keep one line (Work Tracker #510), except in
+    a box under 19rem (`@container`, a 320 px phone), where they wrap to a line of their own; the card's number never
+    shrinks and the title keeps 1.5em for its ellipsis. A `textarea` or `select` change before Preview in its form
+    scrolls it into view (`block: 'nearest'`, one animation frame later) with `scroll-mb-24` clearing Add Field's
+    sticky footer (Work Tracker 693).
 - Percent fields (spec "Percent"): `percent-fields.ts` (packages/items) is the one reading, shared by every surface:
   `PERCENT_MIN` 0 and `PERCENT_MAX` 100; `percentValue(v)` (a finite number, or numeric text with an optional "%",
   rounded and held to 0..100 by `clampPercent` from `@liveworkspace/model-core/progress-label`, else undefined; the
@@ -624,7 +628,12 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `routes/images.ts` and the room's `plan-room/image-grants.ts` (api.md "Images"). A read passes the grant's
   `tabScope` to the room's `servesImage(planId, imageId, tabScope)`, which reads that tab with `getTab` and, unless
   `tabShowsEveryCard`, confines `planServesImage`'s match to `itemIdsShownOnTab`'s Plan card ids (`onlyCards`, one
-  JSON parameter) (items.md "Who sees the bytes"). An upload tracks
+  JSON parameter) (items.md "Who sees the bytes"). An upload with `onProgress` (every control's: `ImageField`,
+  `use-image-field-upload`, `use-attachment-upload`) passes `uploadProgress` to `apiFetch`, which sends it by
+  XMLHttpRequest (`@liveworkspace/workbench/lib/api/xhr-fetch`, the shared core's funnel, so the grant, the
+  confinement, the network-failure report and the release signal are the fetch path's), and the controls draw
+  `UploadRing` filling by the share sent, kept to whole percents so a fast line renders at most 100 times. An
+  upload stopped by its `signal` rejects with the signal's reason, unworded. An upload tracks
   `Plan · Added · CardImage`. A copy's grants (item-types.md "Image fields", Copies): `exportPlanCopy` fills
   `PlanCopy.imageGrants` from `copiedImageGrants(env, planId, itemIds)` (`image-grants.ts`, over
   `placedImagesSql(scoped)` from `image-refs.ts`: the copied cards' placed pictures, kept to the source's grants;

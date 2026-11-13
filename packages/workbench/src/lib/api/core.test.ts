@@ -13,6 +13,10 @@ import {
 } from './core';
 import { ApiError } from './api-error';
 
+// The XMLHttpRequest transport (xhr-fetch.test.ts covers it): here only which requests take it.
+const xhr = vi.hoisted(() => ({ xhrFetch: vi.fn() }));
+vi.mock('./xhr-fetch', () => xhr);
+
 // The shared api core every editor binds (each editor's lib/api/core.ts, whose own tests drive it through the
 // binding with its real guest token, telemetry and grants). These cases cover the shared rules with fakes.
 
@@ -127,6 +131,44 @@ describe('apiFetch', () => {
     await expect(core.apiFetch('/api/x')).rejects.toBe(refused);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(report.networkError).not.toHaveBeenCalled();
+  });
+
+  it('sends a request that asks for its upload progress by XMLHttpRequest, as fetch would be', async () => {
+    const noteResponse = vi.fn();
+    const { core, config } = setup({ confinement: { refusal: () => null, noteResponse } });
+    const res = new Response('ok');
+    xhr.xhrFetch.mockResolvedValueOnce(res);
+    const uploadProgress = vi.fn();
+    const init = { method: 'POST', body: 'bytes' };
+    await expect(core.apiFetch('/api/up', init, { uploadProgress })).resolves.toBe(res);
+    expect(xhr.xhrFetch).toHaveBeenCalledWith(
+      '/api/up',
+      { ...init, headers: { 'X-Grant': 'g' } },
+      uploadProgress,
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(config.noteResponse).toHaveBeenCalledWith(res);
+    expect(noteResponse).toHaveBeenCalledWith(init, res);
+  });
+
+  it('reports an upload that fails before any response, as fetch would be', async () => {
+    const { core, report } = setup();
+    const err = new TypeError('Failed to fetch');
+    xhr.xhrFetch.mockRejectedValueOnce(err);
+    await expect(
+      core.apiFetch('/api/up', { method: 'POST' }, { uploadProgress: vi.fn() }),
+    ).rejects.toBe(err);
+    expect(report.networkError).toHaveBeenCalledWith('POST', '/api/up', err);
+  });
+
+  it('falls back to fetch where there is no XMLHttpRequest', async () => {
+    vi.stubGlobal('XMLHttpRequest', undefined);
+    xhr.xhrFetch.mockClear();
+    const { core } = setup();
+    fetchMock.mockResolvedValue(new Response('ok'));
+    await core.apiFetch('/api/up', undefined, { grant: false, uploadProgress: vi.fn() });
+    expect(fetchMock).toHaveBeenCalledWith('/api/up', undefined);
+    expect(xhr.xhrFetch).not.toHaveBeenCalled();
   });
 
   it('reports a network failure and rethrows it', async () => {

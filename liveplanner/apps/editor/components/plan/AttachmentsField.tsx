@@ -35,6 +35,7 @@ import { usePlan } from './PlanContext';
 import { imageFilesOf, useAttachmentUpload } from './use-attachment-upload';
 import { useImageUrl, useSeen } from './use-image-url';
 import { openImageWhole } from './image-open';
+import { UploadRing } from './UploadRing';
 
 const AddIcon = lucideGlyph(lucideImagePlus, 18);
 const BrokenIcon = lucideGlyph(lucideImage, 16);
@@ -171,11 +172,7 @@ export function AttachmentsField({
               aria-hidden
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-current ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:ring-slate-700"
             >
-              {busy ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-brand-600 motion-reduce:animate-none dark:border-slate-600 dark:border-t-brand-400" />
-              ) : (
-                <AddIcon />
-              )}
+              {busy ? <UploadRing progress={upload.progress} className="h-4 w-4" /> : <AddIcon />}
             </span>
             <span className="flex min-w-0 flex-col">
               <span className="text-[13px] font-medium">

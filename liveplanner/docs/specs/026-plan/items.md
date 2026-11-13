@@ -135,7 +135,8 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   the panel is open, outside a text field, uploads too. A file **dropped on a card** on a board uploads into that
   card's Attachments when its type offers them (the card rings in the brand colour and reads **Drop to Attach** while a
   file is over it, then **Uploading…**; a refusal is a toast; a card whose type has no Attachments, or a reader who
-  can't edit it, takes no drop). Each upload goes through
+  can't edit it, takes no drop). While files upload, the zone's ring fills by the bytes sent of the file going now,
+  as an Image field's does. Each upload goes through
   `POST /api/images?p=` as an Image field's does, then joins the end of the list in one write. Several files upload
   one after another; a file past the card's 20, or one the media service refuses, is skipped and said under the
   zone ("That image is over 10 MB.", "A card holds up to 20 images."), the rest still land. The room is counted

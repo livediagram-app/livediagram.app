@@ -9,6 +9,7 @@ import { readErrorCode } from '@liveworkspace/api-schema/http-errors';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { ApiError } from './api-error';
 import { API_BASE } from './base';
+import { xhrFetch, type UploadProgress } from './xhr-fetch';
 
 // How long an autosave write may take before it is abandoned (per-tab-storage.md "Retrying a
 // failed save"). Each tab's saves run one after another (tab-save-queue.ts), so a save left hanging on a stalled
@@ -131,11 +132,13 @@ export function createApiCore(config: ApiCoreConfig) {
   // Every api request goes through here rather than bare `fetch`: it reports a network failure, and reads the
   // server's release signal off every response. Same arguments and the same Response otherwise. `grant: false`
   // sends the request as it is, at once: the unload flush, which adds the grant it holds itself and cannot wait for
-  // one (a beforeunload handler runs to its end before anything it awaits).
+  // one (a beforeunload handler runs to its end before anything it awaits). `uploadProgress` is told the bytes sent
+  // as they go (an upload's ring): the request goes by XMLHttpRequest (xhr-fetch.ts), which fetch can't report,
+  // with the same grant, confinement, failure report and release signal.
   async function apiFetch(
     input: string,
     init?: RequestInit,
-    opts: { grant?: boolean | undefined } = {},
+    opts: { grant?: boolean | undefined; uploadProgress?: UploadProgress | undefined } = {},
   ): Promise<Response> {
     const method = (init?.method ?? 'GET').toUpperCase();
     // A workbench session's request outside its allow-list is refused unsent, and is no network error.
@@ -144,10 +147,12 @@ export function createApiCore(config: ApiCoreConfig) {
     let res: Response;
     try {
       // A request about one file carries the index's grant on it, fetched once per ten minutes.
-      res = await fetch(
-        input,
-        opts.grant === false ? init : await config.withGrant(API_BASE, input, init),
-      );
+      const sent = opts.grant === false ? init : await config.withGrant(API_BASE, input, init);
+      const progress = opts.uploadProgress;
+      res =
+        progress && typeof XMLHttpRequest === 'function'
+          ? await xhrFetch(input, sent, progress)
+          : await fetch(input, sent);
     } catch (err) {
       // The one place that sees a request fail before any response exists.
       report.networkError(method, input, err);

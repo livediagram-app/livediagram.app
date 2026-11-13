@@ -202,6 +202,130 @@ describe('apiUploadImage', () => {
   });
 });
 
+// The browser's XMLHttpRequest, as the upload with a ring sends: it records what it sent, and the test plays the
+// bytes going and the server's answer.
+class UploadXhr {
+  static last: UploadXhr;
+  method = '';
+  url = '';
+  responseType = '';
+  withCredentials = false;
+  headers = new Headers();
+  status = 0;
+  statusText = '';
+  response: ArrayBuffer | null = null;
+  rawHeaders = '';
+  upload = {
+    onprogress: null as
+      ((e: { lengthComputable: boolean; loaded: number; total: number }) => void) | null,
+  };
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  ontimeout: (() => void) | null = null;
+  onabort: (() => void) | null = null;
+  sent: Promise<void>;
+  private wasSent!: () => void;
+  constructor() {
+    UploadXhr.last = this;
+    this.sent = new Promise((resolve) => (this.wasSent = resolve));
+  }
+  open(method: string, url: string) {
+    this.method = method;
+    this.url = url;
+  }
+  setRequestHeader(name: string, value: string) {
+    this.headers.set(name, value);
+  }
+  send() {
+    this.wasSent();
+  }
+  abort() {
+    this.onabort?.();
+  }
+  getAllResponseHeaders() {
+    return this.rawHeaders;
+  }
+  progress(loaded: number, total: number) {
+    this.upload.onprogress?.({ lengthComputable: true, loaded, total });
+  }
+  answer(status: number, body: unknown, headers = 'content-type: application/json') {
+    this.status = status;
+    this.response = new TextEncoder().encode(JSON.stringify(body)).buffer;
+    this.rawHeaders = headers;
+    this.onload?.();
+  }
+}
+
+// The newest request, once it has gone (the upload awaits its hash and grant before sending).
+async function sentXhr(before: UploadXhr | undefined): Promise<UploadXhr> {
+  await vi.waitFor(() => expect(UploadXhr.last).not.toBe(before));
+  await UploadXhr.last.sent;
+  return UploadXhr.last;
+}
+
+describe('apiUploadImage with progress', () => {
+  beforeEach(() => vi.stubGlobal('XMLHttpRequest', UploadXhr));
+
+  it('sends by XMLHttpRequest with the same headers, and tells the share of bytes sent as they go', async () => {
+    const onProgress = vi.fn();
+    const before = UploadXhr.last;
+    const pending = apiUploadImage({ ...SCOPE, shareCode: 'C1' }, png(), { onProgress });
+    const xhr = await sentXhr(before);
+    expect(calls).toEqual([]);
+    expect(xhr.method).toBe('POST');
+    expect(xhr.url).toBe(`${API_BASE}/images?p=p1`);
+    expect(xhr.headers.get('X-Index-Grant')).toBe('G1');
+    expect(xhr.headers.get('X-Share-Code')).toBe('C1');
+    expect(xhr.headers.get('Content-Type')).toBe('image/png');
+    expect(xhr.headers.get('X-Image-Sha256')).toMatch(/^[0-9a-f]{64}$/);
+    expect(xhr.headers.get('Content-Length')).toBeNull();
+    xhr.progress(2, 8);
+    xhr.progress(8, 8);
+    xhr.progress(3, 0);
+    expect(onProgress.mock.calls).toEqual([[0.25], [1], [0]]);
+    xhr.answer(201, { image: { id: 'img-9' }, deduped: true });
+    await expect(pending).resolves.toMatchObject({ image: { id: 'img-9' }, deduped: true });
+  });
+
+  it('words a refusal and a network failure as the fetch path does', async () => {
+    let before = UploadXhr.last;
+    const refused = apiUploadImage(SCOPE, png(), { onProgress: vi.fn() });
+    (await sentXhr(before)).answer(413, { error: 'file_too_large' });
+    await expect(refused).rejects.toMatchObject({ code: 'file_too_large' });
+    before = UploadXhr.last;
+    const failed = apiUploadImage(SCOPE, png(), { onProgress: vi.fn() });
+    (await sentXhr(before)).onerror!();
+    await expect(failed).rejects.toMatchObject({ code: 'upload_failed' });
+  });
+
+  it('rejects with the signal’s reason when stopped, saying nothing', async () => {
+    const controller = new AbortController();
+    const before = UploadXhr.last;
+    const stopped = apiUploadImage(SCOPE, png(), {
+      onProgress: vi.fn(),
+      signal: controller.signal,
+    });
+    await sentXhr(before);
+    const reason = new DOMException('Stopped', 'AbortError');
+    controller.abort(reason);
+    await expect(stopped).rejects.toBe(reason);
+  });
+
+  it('stops a fetch upload by its signal too', async () => {
+    const controller = new AbortController();
+    const reason = new DOMException('Stopped', 'AbortError');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init: RequestInit) => {
+        expect(init.signal).toBe(controller.signal);
+        controller.abort(reason);
+        throw reason;
+      }),
+    );
+    await expect(apiUploadImage(SCOPE, png(), { signal: controller.signal })).rejects.toBe(reason);
+  });
+});
+
 describe('apiImageUrl', () => {
   beforeEach(() => {
     answer = () => new Response(PNG, { headers: { 'Content-Type': 'image/png' } });

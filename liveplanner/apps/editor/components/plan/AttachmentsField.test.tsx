@@ -155,6 +155,31 @@ describe('the card panel, for an Editor or a Participant', () => {
     });
   });
 
+  it('fills the zone’s ring by the bytes sent of the file going now', async () => {
+    let finish: (v: unknown) => void = () => {};
+    let progress: (share: number) => void = () => {};
+    api.upload.mockImplementationOnce(
+      (_scope: unknown, _file: File, opts: { onProgress: (share: number) => void }) => {
+        progress = opts.onProgress;
+        return new Promise((resolve) => (finish = resolve));
+      },
+    );
+    field(undefined);
+    const input = document.querySelector('input[type=file]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file('a.png')] } });
+    await flush();
+    const ring = () =>
+      document.querySelector('[data-upload-ring]')!.getAttribute('data-upload-ring');
+    expect(ring()).toBe('turning');
+    act(() => progress(0.6));
+    act(() => progress(0.601));
+    expect(ring()).toBe('60');
+    await act(async () =>
+      finish({ image: { id: 'img-9', contentType: 'image/png', byteSize: 9 }, deduped: false }),
+    );
+    expect(document.querySelector('[data-upload-ring]')).toBeNull();
+  });
+
   it('takes a drop on the zone, and a pasted image outside a text field, never one pasted into text', async () => {
     field(undefined);
     const zone = screen.getByRole('button', { name: /Add Images/ });
