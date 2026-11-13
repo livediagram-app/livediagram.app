@@ -120,8 +120,10 @@ describe('Field', () => {
 
   it('names a priority by its label, as the rule sentence does', () => {
     expect(
-      holds({ kind: 'field', field: 'priority', op: 'is', value: 'high' }, ctx({ priority: 'medium' }))
-        .text,
+      holds(
+        { kind: 'field', field: 'priority', op: 'is', value: 'high' },
+        ctx({ priority: 'medium' }),
+      ).text,
     ).toBe('Priority is High (Medium)');
     expect(
       holds(
