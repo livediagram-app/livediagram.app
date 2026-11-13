@@ -103,18 +103,20 @@ function stopBeside(el: SeatedBox, seat: Seat, from: AvatarPoint): AvatarPoint {
 export type SeatChoice = { x: number; y: number; facing: AvatarFacing; index: number };
 
 /**
- * What a character walking into a seating piece at `feet` does: sit on the free seat nearest where it arrived,
- * facing the way that seat says (a meeting table's) or else away from the piece's back; or, with every seat taken,
- * stop beside the piece.
+ * What a character walking into a seating piece at `feet` does: sit on the free seat nearest `aim` (where a click on
+ * the piece landed, so a click on either end of a bench or a pod sits you there, Work Tracker 706), or nearest where
+ * it arrived when it walked in by keys (no aim), facing the way that seat says (a meeting table's) or else away from
+ * the piece's back; or, with every seat taken, stop beside the piece, off the edge nearest the feet.
  */
 export function seatOnArrival(
   el: SeatedBox & { id: string },
   feet: AvatarPoint,
   peers: readonly SeatHolder[],
+  aim: AvatarPoint = feet,
 ): { sit: SeatChoice } | { stopAt: AvatarPoint } {
   const seats = seatPoints(el);
   const taken = takenSeats(el, peers);
-  const index = nearestIndex(seats, feet, (i) => !taken.has(i));
+  const index = nearestIndex(seats, aim, (i) => !taken.has(i));
   if (index < 0) return { stopAt: stopBeside(el, seats[0]!, feet) };
   const seat = seats[index]!;
   return {

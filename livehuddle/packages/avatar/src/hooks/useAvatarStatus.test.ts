@@ -21,12 +21,25 @@ describe('useAvatarStatus', () => {
     expect(result.current[0]).toBe('focus');
   });
 
-  it('clears the status on leaving the mode', () => {
+  // Work Tracker 706 (#710): kept through Edit and back, never shown or published with no character.
+  it('keeps the status through a switch to Edit, showing none while out of the mode', () => {
     const { result, rerender } = renderHook(({ on }) => useAvatarStatus(on), {
       initialProps: { on: true },
     });
     act(() => result.current[1]('away'));
     rerender({ on: false });
     expect(result.current[0]).toBeNull();
+    rerender({ on: true });
+    expect(result.current[0]).toBe('away');
+  });
+
+  it('clears only on None, or on leaving the Space (unmounting)', () => {
+    const { result, unmount } = renderHook(() => useAvatarStatus(true));
+    act(() => result.current[1]('dnd'));
+    act(() => result.current[1](null));
+    expect(result.current[0]).toBeNull();
+    unmount();
+    const fresh = renderHook(() => useAvatarStatus(true));
+    expect(fresh.result.current[0]).toBeNull();
   });
 });

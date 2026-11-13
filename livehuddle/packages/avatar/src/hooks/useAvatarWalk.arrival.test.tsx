@@ -54,12 +54,25 @@ describe('useAvatarWalk sitting on arrival', () => {
     // The callback here never sits, so the character stands on the chair for many frames after arriving.
     expect(result.current.readPos()!.x).toBeCloseTo(onChair.x, 0);
     expect(onWalkIntoChair).toHaveBeenCalledTimes(1);
+    // The click it walked to is the aim: the seat nearest it is taken (chair.md "Which seat", Work Tracker 706).
     expect(onWalkIntoChair).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'chair' }),
       expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }),
+      onChair,
     );
     run(4_000);
     expect(onWalkIntoChair).toHaveBeenCalledTimes(1);
+  });
+
+  it('gives no aim to feet that arrive with no click to aim at', () => {
+    const { result, onWalkIntoChair } = setup();
+    act(() => result.current.teleportTo(onChair));
+    run(100);
+    expect(onWalkIntoChair).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'chair' }),
+      expect.objectContaining({ x: onChair.x, y: onChair.y }),
+      undefined,
+    );
   });
 
   it('asks again only after stepping off and walking back on', () => {

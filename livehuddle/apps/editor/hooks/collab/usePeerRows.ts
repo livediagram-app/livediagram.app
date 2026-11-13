@@ -9,6 +9,7 @@ import type { PeerRowsSource } from '@/lib/peer-motion';
 import {
   buildRemoteAvatarRows,
   buildRemoteCursorRows,
+  walkerKey,
   type RemoteAvatarRow,
 } from '@/lib/presence-rows';
 
@@ -17,9 +18,23 @@ const whole = <T>(snapshot: T): T => snapshot;
 /** Peers' cursors on the active tab, joined with presence (the cursor layer). */
 export function usePeerCursorRows(peers: PeerRowsSource) {
   const cursors = useStoreSlice(peers.motion.cursors, whole);
+  // Who walks a character here (avatar-mode.md "Cursors while walking"): a string slice, so a step renders nothing.
+  const selectWalkers = useCallback(
+    (avatars: ReturnType<PeerRowsSource['motion']['avatars']['get']>) =>
+      walkerKey(avatars, peers.activeId, peers.tabFocus),
+    [peers],
+  );
+  const walkers = useStoreSlice(peers.motion.avatars, selectWalkers);
   return useMemo(
-    () => buildRemoteCursorRows(cursors, peers.livePresenceById, peers.selfId, peers.activeId),
-    [cursors, peers],
+    () =>
+      buildRemoteCursorRows(
+        cursors,
+        peers.livePresenceById,
+        peers.selfId,
+        peers.activeId,
+        walkers ? new Set(walkers.split('\n')) : undefined,
+      ),
+    [cursors, peers, walkers],
   );
 }
 

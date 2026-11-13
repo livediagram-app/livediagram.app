@@ -68,21 +68,23 @@ Banned synonyms: "seat" for the element (the seat is a part of it), "occupancy" 
 Per character: **standing** or **seated on `<chairId>`**. Held in `seatedRef` / `seatedOn` state
 in `useAvatarWalk`; published on every avatar presence packet.
 
-| From     | Event                                    | Guard            | To                           |
-| -------- | ---------------------------------------- | ---------------- | ---------------------------- |
-| standing | feet arrive on a chair (frontmost, D124) | a seat is free   | seated on the nearest free   |
-| standing | feet arrive on a chair (frontmost, D124) | every seat taken | standing, beside the piece   |
-| seated   | a peer's earlier claim on the same seat  | `claimBeats`     | standing, beside the seat    |
-| seated   | a peer's push                            |                  | unchanged (`shove` refuses)  |
-| seated   | arrival on another chair                 |                  | unchanged (D125)             |
-| seated   | `walkTo` onto the piece it sits on       |                  | unchanged (`walkTo` returns) |
-| seated   | any other `walkTo` (click, tap, a route) |                  | standing, walking there      |
-| seated   | any arrow key (`onSteer`)                |                  | standing                     |
-| seated   | leaving Avatar mode                      |                  | standing                     |
-| seated   | disconnect, tab change (peer's view)     |                  | gone with presence           |
+| From     | Event                                    | Guard            | To                                                    |
+| -------- | ---------------------------------------- | ---------------- | ----------------------------------------------------- |
+| standing | feet arrive on a chair (frontmost, D124) | a seat is free   | seated on the free nearest the click (keys: the feet) |
+| standing | feet arrive on a chair (frontmost, D124) | every seat taken | standing, beside the piece                            |
+| seated   | a peer's earlier claim on the same seat  | `claimBeats`     | standing, beside the seat                             |
+| seated   | a peer's push                            |                  | unchanged (`shove` refuses)                           |
+| seated   | arrival on another chair                 |                  | unchanged (D125)                                      |
+| seated   | `walkTo` onto the piece it sits on       |                  | unchanged (`walkTo` returns)                          |
+| seated   | any other `walkTo` (click, tap, a route) |                  | standing, walking there                               |
+| seated   | any arrow key (`onSteer`)                |                  | standing                                              |
+| seated   | leaving Avatar mode                      |                  | standing                                              |
+| seated   | disconnect, tab change (peer's view)     |                  | gone with presence                                    |
 
-1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet)` for any `isSeatingShape` kind:
-   `seatOnArrival(element, feet, peers)` (`@livehuddle/avatar/seat-claims`) picks the nearest seat no peer's
+1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet, aim)` for any `isSeatingShape` kind:
+   `seatOnArrival(element, feet, peers, aim)` (`@livehuddle/avatar/seat-claims`) picks the seat nearest `aim` (the
+   click-walk's destination, `destRef ?? targetRef`, which `sitsOnEntry` already holds inside the piece; absent for a
+   walk in by keys, when it is the feet) that no peer's
    presence holds (`takenSeats`: a peer's `seat.index`, or for a packet without `seat` the seat nearest its feet),
    with its facing, the seat's own (a meeting table's) or `CHAIR_SITTER_FACING[seatingFacing(element)]`, then
    `sitOn(id, seat, seat.facing, seat.index)`. With every seat taken it answers `{ stopAt }`, a point `BESIDE_GAP`
@@ -224,6 +226,9 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
   `feet - (AVATAR_HEIGHT x scale + AVATAR_HEAD_CHROME)` among the sitters, less `SEAT_PILL_GAP` (3 px),
   never below the box's top. `AVATAR_HEAD_CHROME` (walk.ts, 24 px) is the highest of what `AvatarWalker`
   draws over a head (name chip 16, own status 22, Zz 24), so the pill clears both the sprite and its chip.
+  The pill is `SeatPill` (FurnitureView.tsx): it reads `useGameOn(element.id)` (lib/table-games/table-game-scene.ts)
+  and renders nothing while the piece shows a game (Ready, play or won), since the scoreboard names the players. The
+  subscription is one `useSyncExternalStore` per occupied piece, notified only when a game starts or ends.
 - **No `…`:** `carriesSharedSettingsMenu('chair')` is `false`.
 - **Telemetry:** placing emits `Element·Added·Chair`; a facing change emits `Element·Changed·Chair`;
   sitting and standing emit nothing.
@@ -279,6 +284,7 @@ presence packet at once ("tells the room at once which seat it sat on …", "fre
 | Created with no stored colour; stamp is unset | "are created with no stored colour", "treat the …"                   | `packages/document/src/behaviour-skin.test.ts`                         |
 | Occupancy from presence only (I1, I2)         | "lists our own character and every seated peer …"                    | `packages/avatar/src/chair-sitters.test.ts`                            |
 | The exact seat ringed; pill clears the head   | "rings each sofa cushion …", "lifts the name pill clear …"           | `apps/editor/components/canvas/collab/FurnitureView.test.tsx`          |
+| No name pill while a game shows its players   | "hides the name pill while the table shows a game …"                 | `apps/editor/components/canvas/collab/FurnitureView.test.tsx`          |
 | Label survives export                         | "prints a chair label under the seat"                                | `packages/document/src/svg-render-fidelity.test.ts`                    |
 | Unknown facing rejected                       | "rejects an off-vocabulary chair facing"                             | `packages/document/src/collab-shapes.test.ts`                          |
 | Desk faces the computer; sofa the reader      | "a new desk faces its sitter at the computer …"                      | `packages/document/src/seating.test.ts`                                |

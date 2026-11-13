@@ -117,6 +117,13 @@ away when joining, for example in the middle of a key room, or the centre of a c
 | Expo Hall        | The aisle between the stage's two rows of chairs, the booths either side                | 360        |
 | Beach Offsite    | The sand between the huts' walk and the campfire                                        | 360        |
 | Festival Field   | The crowd field in front of the Main Stage, the stage ahead and the stalls to the left  | 360        |
+| Arcade Lounge    | The arcade floor, between the two banks of machines                                     | 360        |
+| Games Night Den  | The hall, in front of the Den's door                                                    | 360        |
+| Sports Bar       | The games floor, between the ping-pong and the pool, below the Bar's door               | 360        |
+| Family House     | The hall, below the Stairs, between the Living Room's door and the Kitchen's            | 240        |
+| City Townhouse   | The hall, just below the Stairs                                                         | 360        |
+| Country Cottage  | The hall, just below the Stairs, the garden through the gate                            | 360        |
+| Music Hall       | The standing floor, in front of the stage                                               | 360        |
 
 A campus lands you in its main hall, where the all-company moments happen; its Directory stays just inside the gate.
 

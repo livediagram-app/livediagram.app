@@ -2,7 +2,8 @@
 // docs/specs/008-canvas/canvas-performance.md "A collaborator moving renders what shows them, not the editor": a busy
 // room's cursors and characters, flushed once a frame by the presence coalescer, render the cursor layer and the
 // avatar layer and never the editor root or a component reading its context. Before the peer-motion store, 30 peers
-// moving for 60 frames rendered the root and every context reader 60 times; now 0.
+// moving for 60 frames rendered the root and every context reader 60 times; now 0. Half the room walks (a character
+// and no cursor drawn, avatar-mode.md "Cursors while walking") and half builds (a cursor only), as a busy Space does.
 import { act, cleanup, render } from '@testing-library/react';
 import { createContext, memo, use, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,6 +22,9 @@ const FRAMES = 60;
 const person = (id: string): Participant => ({ id, name: id, color: '#123456', status: 'online' });
 const SELF = person('me');
 const PEOPLE = Array.from({ length: PEERS }, (_, i) => person(`p${i}`));
+// The first half walk, the rest are Editors building: their cursors are the ones drawn.
+const WALKERS = PEERS / 2;
+const BUILDERS = PEERS - WALKERS;
 const TABS = [{ id: 't1', elements: [] } as unknown as Tab];
 const ROSTER = [SELF, ...PEOPLE];
 
@@ -138,7 +142,7 @@ function moveEveryone(frames: number) {
   for (let f = 0; f < frames; f++) {
     for (const [i, p] of PEOPLE.entries()) {
       room!.coalescer.cursor(p.id, { tabId: 't1', x: f, y: i });
-      room!.coalescer.avatar(p.id, { tabId: 't1', avatar: packet(f, i) });
+      if (i < WALKERS) room!.coalescer.avatar(p.id, { tabId: 't1', avatar: packet(f, i) });
     }
     runFrame();
   }
@@ -157,8 +161,8 @@ describe('peer motion', () => {
     // The layers that draw them follow every frame, and land where the peers did.
     expect(counts.cursors - before.cursors).toBe(FRAMES);
     expect(counts.avatars - before.avatars).toBe(FRAMES);
-    expect(seen.cursorXs).toEqual(Array.from({ length: PEERS }, () => FRAMES - 1));
-    expect(seen.avatarIds).toHaveLength(PEERS);
+    expect(seen.cursorXs).toEqual(Array.from({ length: BUILDERS }, () => FRAMES - 1));
+    expect(seen.avatarIds).toHaveLength(WALKERS);
   });
 
   it('still updates the lists when someone joins or leaves', () => {
@@ -168,6 +172,7 @@ describe('peer motion', () => {
     expect(seen.onTab).toBe(PEERS + 1);
 
     const before = { ...counts };
+    // The last to join, a builder, leaves.
     act(() => room!.setLivePresence(ROSTER.slice(0, -1)));
 
     // A leave is a roster change: the root and its readers render for it, once.
@@ -175,7 +180,7 @@ describe('peer motion', () => {
     expect(counts.consumer - before.consumer).toBe(1);
     expect(seen.onTab).toBe(PEERS);
     // The one who left stops being drawn at once.
-    expect(seen.avatarIds).toHaveLength(PEERS - 1);
-    expect(seen.cursorXs).toHaveLength(PEERS - 1);
+    expect(seen.cursorXs).toHaveLength(BUILDERS - 1);
+    expect(seen.avatarIds).toHaveLength(WALKERS);
   });
 });

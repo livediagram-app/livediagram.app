@@ -175,6 +175,9 @@ plant behind the counter, and a brass service bell on the counter.
   Insert Coin does. Nobody else sees your bubble.
 - **A click anywhere on the desk walks you to its front**, 16 px below it under the click (kept off its ends), never to
   the floor behind the counter, where there is no Welcome. A turned desk walks you to its turned front, beside it or behind it.
+- **A busy desk stays reachable**: with somebody already standing at that spot, the walk ends at the nearest free spot
+  along the desk's front, as at a crowded Arcade Machine ([Social pieces](social-pieces.md) "A crowded machine stays
+  reachable"), so a queue at reception still gets its Welcome.
   The [Arcade Machine](social-pieces.md#arcade-machine) walks the same way.
 - **The bubble holds a Ring Bell button.** Pressing it rings the bell: you hear a bright ding, the bell on the desk
   rings out (two waves spread from it and fade), and so does it for everyone who hears it.

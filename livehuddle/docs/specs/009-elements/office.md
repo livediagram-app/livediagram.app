@@ -188,7 +188,8 @@ A table with six chairs round it, every seat facing the table.
 
 - Drawn upright from the room's camera: two chairs beyond the table (their sitters face you), two in front (their
   backs to you), one at each end in profile, and the table top between them with its front edge toward you.
-- **Six seats.** A character walking into it sits on the seat **nearest where it arrived**, facing the table: the
+- **Six seats.** A character walking into it sits on the seat **nearest the click** (by keys, nearest where it
+  arrived; [Chair](chair.md) "Which seat"), facing the table: the
   far chairs face down, the near chairs up, the left end right, the right end left. A seat takes one sitter, as
   any chair does: a taken seat is skipped for the nearest free one, and a full table stops you beside it
   ([Chair](chair.md) "Sitting").
@@ -313,8 +314,9 @@ A booth for two, with a sliding glass door that **closes by itself when both sea
   wall with a doorway in its middle, and inside two padded benches facing each other across a little table. The
   door is a glass panel that sits slid behind the right of the front wall while the pod is open.
 - **Two seats**, one on each bench, the left sitter facing right and the right sitter facing left. Walking in
-  through the doorway sits you on the free seat nearest where you came in, by the [Chair](chair.md) rules: one
-  sitter a seat, a taken seat skipped, a full pod stops you beside it. Who sits is presence, never stored, and the
+  through the doorway sits you on the seat you clicked when it is free, or the free seat nearest the click (by keys,
+  the free seat nearest where you came in), by the [Chair](chair.md) rules ("Which seat"): one sitter a seat, a
+  taken seat skipped, a full pod stops you beside it. Who sits is presence, never stored, and the
   pod rings each taken bench seat and names its sitters in a pill above it like the meeting table.
 - **The door closes when two people sit in it**, and opens the moment either stands up or leaves. Every machine
   works it out from the same presence (both seats held), so everyone sees the same door. It **slides** shut or open

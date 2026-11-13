@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { FENCE_REACH, fenceSegments, pointSegmentDistance, type FenceSegment } from './collision';
 import { officeFootprints } from './office-geometry';
-import { freeSpawnPoint, SPAWN_SEARCH_MAX } from './spawn-point';
+import { freeSpawnPoint, SPAWN_BODY, SPAWN_SEARCH_MAX } from './spawn-point';
 
 // docs/specs/009-elements/fence.md "What does not walk" (Work Tracker #610): a new character never appears inside a
 // footprint; it appears on the nearest free floor, clear of every wall's reach, below the piece first.
@@ -40,6 +40,39 @@ describe('freeSpawnPoint', () => {
     expect(at.y).toBeGreaterThan(186);
   });
 
+  // Work Tracker 706 (#707): the depth rule draws a body standing just below water over its lower edge.
+  it.each([
+    ['swimming-pool', 320, 200],
+    ['pond', 160, 100],
+  ])('puts a spot on a %s at least a body’s height below the water', (shape, w, h) => {
+    const el = piece(shape, 0, 0, w, h);
+    const fences = fenceSegments([el]);
+    const water = officeFootprints(el)[0]!;
+    for (const body of [SPAWN_BODY, SPAWN_BODY * 1.3]) {
+      const at = freeSpawnPoint({ x: w / 2, y: h / 2 }, fences, FENCE_REACH, body);
+      expectFree(at, fences);
+      expect(at.x).toBeCloseTo(w / 2, 5);
+      expect(at.y).toBeGreaterThanOrEqual(water.y + water.height + body);
+    }
+    // A spot already on free floor just below the water moves down clear of it too.
+    const below = freeSpawnPoint({ x: w / 2, y: water.y + water.height + 14 }, fences);
+    expect(below.y).toBeGreaterThanOrEqual(water.y + water.height + SPAWN_BODY);
+    // One well below it, or beside it, stays where it is.
+    const far = { x: w / 2, y: water.y + water.height + SPAWN_BODY + 20 };
+    expect(freeSpawnPoint(far, fences)).toBe(far);
+  });
+
+  it('keeps the body’s margin below the water the spot is in, not a pool beside it or one further down', () => {
+    const pool = piece('swimming-pool', 0, 0, 320, 200);
+    const beside = piece('swimming-pool', 500, 0, 320, 200);
+    const lower = piece('pond', 0, 600, 160, 100);
+    const fences = fenceSegments([pool, beside, lower]);
+    const water = officeFootprints(pool)[0]!;
+    const at = freeSpawnPoint({ x: 160, y: 120 }, fences);
+    expectFree(at, fences);
+    expect(at).toEqual({ x: 160, y: water.y + water.height + SPAWN_BODY });
+  });
+
   it('moves a spot in a pond, a car and a drape out of each', () => {
     for (const el of [
       piece('pond', 0, 0, 160, 100),
@@ -62,13 +95,14 @@ describe('freeSpawnPoint', () => {
     expect(at.y).toBeLessThan(14);
   });
 
-  it('moves a spot in the corner of the water just round the corner', () => {
+  it('moves a spot in the corner of the water just out of it, a body clear below', () => {
     const pool = piece('swimming-pool', 0, 0, 320, 200);
     const fences = fenceSegments([pool]);
-    // 1 px inside the water's bottom-right corner (306, 186).
+    // 1 px inside the water's bottom-right corner (306, 186): its bottom edge is nearest, so the spot goes below it,
+    // a body's height down (Work Tracker 706), never just under the water's edge.
     const at = freeSpawnPoint({ x: 305, y: 185 }, fences);
     expectFree(at, fences);
-    expect(Math.hypot(at.x - 305, at.y - 185)).toBeLessThan(FENCE_REACH + 16);
+    expect(at).toEqual({ x: 305, y: 186 + SPAWN_BODY });
   });
 
   it('keeps clear of a room’s wall beside the piece', () => {
@@ -85,8 +119,8 @@ describe('freeSpawnPoint', () => {
     const fences = fenceSegments([pool]);
     const far = { x: 500, y: 500 };
     expect(freeSpawnPoint(far, fences)).toBe(far);
-    // Beside the water, outside it, within the reach: nudged straight off.
-    expect(freeSpawnPoint({ x: 160, y: 196 }, fences).y).toBeCloseTo(186 + FENCE_REACH + 0.5, 5);
+    // Beside the water, outside it, within the reach: nudged straight off (below it, the body's margin moves it on).
+    expect(freeSpawnPoint({ x: 4, y: 100 }, fences).x).toBeCloseTo(14 - FENCE_REACH - 0.5, 5);
   });
 
   it('gives up where it was asked when no free floor lies within the search, quickly', () => {

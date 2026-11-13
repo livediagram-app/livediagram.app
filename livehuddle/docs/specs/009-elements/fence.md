@@ -73,7 +73,12 @@ fence**, from either side.
   character never appears inside a footprint** (Work Tracker #610): entering the mode with the spot it would appear on
   (the view's centre, below a button, the remembered spot) inside a piece that blocks (a pool's or a pond's water, a
   plant's pot, a car) puts it on the nearest free floor instead, clear of every footprint and every wall's reach,
-  looking in front of the piece (below it) first when two spots are as near. When no free floor lies within
+  looking in front of the piece (below it) first when two spots are as near. **Below water it keeps a body's height
+  clear** (Work Tracker 706, #707): a spot that would put the character's feet under a pool's or a pond's water,
+  closer than its own height (at its size), moves straight down to that height below the water, since a body
+  standing just under the water's lower edge is drawn over it and reads as standing in it; it is taken whenever the
+  water's bottom edge is as near as any other free floor, so a character entering centred on a pool appears on the
+  deck below it, never round on the far bank. When no free floor lies within
   `SPAWN_SEARCH_MAX` (1200 canvas px), it appears where it would have, and walks out. A character that starts inside
   a fenced area stays inside until it takes a portal out.
 - **A fence is not a destination.** Standing beside one does not ring it as "the element you are

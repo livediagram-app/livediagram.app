@@ -272,28 +272,43 @@ function spreadRow(row: readonly NameChip[], shifts: Map<string, number>) {
   }
 }
 
-/** A character as the chip spread reads it: its feet, its size, whether it sits, and what its chip shows. */
+/**
+ * A character as the chip spread reads it: its feet, its size, whether it sits (or stands still on an Avatar Pad), and
+ * what its chip shows.
+ */
 export type ChipBearer = {
   key: string;
   x: number;
   y: number;
   scale?: number;
   seated: boolean;
+  // Standing still on an Avatar Pad, where everyone arrives on the same spot (avatar-mode.md "People on one pad").
+  onPad?: boolean;
   // A peer's name; none for your own character, whose chip is its status alone.
   name?: string | null;
   // The status's label ("Busy"), or none.
   status?: string | null;
 };
 
+/** How wide a chip draws, from its name and status: the measure (chip-widths.ts), or the estimate. */
+export type ChipWidthOf = (
+  name: string | null | undefined,
+  status: string | null | undefined,
+) => number;
+
 /**
- * The sideways move of each seated character's chip, by key, so seated neighbours' chips never cover each other. A
- * walking character's chip stays over its head (it moves on at once), and a character with no chip takes no room.
+ * The sideways move of each seated character's chip (and each one standing still on an Avatar Pad), by key, so
+ * neighbours' chips never cover each other. A walking character's chip stays over its head (it moves on at once), and
+ * a character with no chip takes no room. `widthOf` is each chip's width: the measured one where the caller has it.
  */
-export function seatedChipShifts(bearers: readonly ChipBearer[]): Map<string, number> {
+export function seatedChipShifts(
+  bearers: readonly ChipBearer[],
+  widthOf: ChipWidthOf = nameChipWidth,
+): Map<string, number> {
   const chips: NameChip[] = [];
   for (const b of bearers) {
-    if (!b.seated) continue;
-    const width = nameChipWidth(b.name, b.status);
+    if (!b.seated && !b.onPad) continue;
+    const width = widthOf(b.name, b.status);
     if (width === 0) continue;
     const scale = b.scale ?? avatarScale('regular');
     chips.push({ key: b.key, x: b.x, top: b.y - AVATAR_HEIGHT * scale, width });

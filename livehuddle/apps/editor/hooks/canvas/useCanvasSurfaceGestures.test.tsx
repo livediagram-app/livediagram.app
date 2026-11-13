@@ -267,7 +267,7 @@ describe('Avatar mode presses', () => {
         setPan,
         setMarquee: vi.fn(),
         spotlight: {},
-        avatar: { walkTo, readPos: () => feet, seatedOn: null },
+        avatar: { walkTo, readPos: () => feet, readFences: () => [], seatedOn: null },
         readPeerAvatars: () => peerAvatars,
         onPushPeer,
         elements,
@@ -551,6 +551,22 @@ describe('Avatar mode presses', () => {
     arrive?.();
     expect(onPushPeer).toHaveBeenCalledWith('peer', expect.any(Number), expect.any(Number));
   });
+
+  // docs/specs/009-elements/social-pieces.md "A crowded machine stays reachable" (Work Tracker 635): a peer already
+  // at the front, standing over the cabinet, is not pushed; the newcomer walks to the free spot beside them.
+  it.each(['arcade-machine', 'reception-desk'])(
+    'walks beside a peer standing at the front of a %s, pushing nobody',
+    (kind) => {
+      const atFront = { ...peerAt(null), avatar: { ...peerAt(null).avatar, y: 296 } };
+      const { press, walkTo, onPushPeer } = avatarSetup([atFront], {
+        elements: [pieceAt('shape', kind)],
+      });
+      press('mouse');
+      expect(walkTo).toHaveBeenCalledWith({ x: 144, y: 296 });
+      expect(walkTo.mock.calls[0]?.[1]).toBeUndefined();
+      expect(onPushPeer).not.toHaveBeenCalled();
+    },
+  );
 
   it('walks up to a seated peer and sends no push', () => {
     const { press, walkTo, onPushPeer } = avatarSetup([peerAt('chair')]);

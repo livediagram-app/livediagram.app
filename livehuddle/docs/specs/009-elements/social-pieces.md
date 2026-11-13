@@ -199,7 +199,8 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
 - **Scoring**: first to 11, by two clear points (at 10 all, play on until one leads by two). Service changes every
   two points, and every point from 10 all; the left player serves first. The score is shown above the table, left
   player's points on the left, for everyone on the tab, in a small pill in each player's colour, in the middle above
-  the table (clear of the two players' heads at its ends). A won game shows **<Name> Wins** in the winner's colour
+  the table (clear of the two players' heads at its ends). While it shows (Ready, the score or the win) the table's
+  name pill is hidden, as the scoreboard already says who plays ([Chair](chair.md) "A game names its own players"). A won game shows **<Name> Wins** in the winner's colour
   (**You Win** on the winner's own screen) for five seconds, then a new game starts at 0 all if both are still
   sitting.
 - **Leaving ends your side**: standing up (or leaving Avatar mode, or the tab, or the document) ends the game at
@@ -306,6 +307,14 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
   `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen. A cabinet turned to face another
   way ([Turning furniture](furniture-facing.md)) has its front there: a click walks you 16 px beyond its base on
   that side (beside its base when it faces left or right), and standing there shows the bubble.
+- **A crowded machine stays reachable** (Work Tracker 635): with somebody already standing where the click would walk
+  you, the walk ends at the **nearest free spot along its front** instead (a character's width, 24 px, from every other
+  standing character's feet), out to its sides as far as the bubble's reach goes, so two people can stand at a machine
+  and a third still walks up beside them and presses Insert Coin. A spot is free only while it is still at this
+  machine's front (not a neighbour's in a bank of machines), on open floor, and reached without crossing a wall; with
+  none free the walk ends at the spot with the most room that is still in reach. Nobody's reach widens: the bubble
+  shows exactly where it did. A click on a character standing over the cabinet is a click on the machine, never a push
+  (the push is for a character standing on open floor).
 - **Turned**: to face left, the cabinet's tall side is toward you in its arcade profile (the marquee jutting, the
   screen set back, the control panel jutting again) with a stripe of art on it, and its front is a narrow strip down
   its left: the lit marquee, a slice of the shimmering screen, the joystick and the coin door. From behind, its back

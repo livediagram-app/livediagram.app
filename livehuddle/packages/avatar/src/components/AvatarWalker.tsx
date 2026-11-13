@@ -25,6 +25,7 @@ import {
 import { AvatarSprite } from './avatar-sprite';
 import { propsEqualByField } from './props-equal';
 import { avatarStatusHeadroomPx } from './avatar-status-effects';
+import { chipNeedsMeasure, chipWidthKey, reportChipWidth } from '../chip-widths';
 
 // An Away character fades to half (docs/specs/008-canvas/avatar-mode.md "Status").
 const AWAY_OPACITY = 0.5;
@@ -117,6 +118,7 @@ function AvatarWalkerView({
 }) {
   // A transform on top of the chip's centring (the `translate` of -translate-x-1/2), so the two add up.
   const chipMove = chipShift ? `translateX(${chipShift}px)` : undefined;
+  const chip = useChipMeasure(name, status ? avatarStatusLabel(status) : null);
   const scale = avatarScale(config.size);
   const box = avatarBox(scale);
   // A status worn over the head (a party hat, a "?", a thought bubble) lifts the chip clear of it.
@@ -188,6 +190,7 @@ function AvatarWalkerView({
       >
         {name ? (
           <div
+            ref={chip}
             className={`absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${status ? 'max-w-[180px]' : 'max-w-[120px]'} ${IDENTITY_FILL}`}
             // Pinned just above the HEAD, not the (headroom-extended) box, and
             // tracking the size choice so it hugs a small character too.
@@ -210,6 +213,7 @@ function AvatarWalkerView({
         ) : status ? (
           // Your own character has no name chip: its labelled status sits where the chip would be, on a quiet chip.
           <div
+            ref={chip}
             data-own-status
             className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
             style={{
@@ -254,6 +258,29 @@ function AvatarWalkerView({
       </div>
     </>
   );
+}
+
+// The chip's width for the spread (chip-widths.ts): measured once per name and status, after layout, in CSS px before
+// the canvas's zoom, and once more when the web fonts land (a chip laid out in the fallback font measures narrower or
+// wider). A chip already measured anywhere is not read again, so a room of walkers lays nothing out per frame.
+function useChipMeasure(name: string | undefined, status: string | null) {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || (!name && !status)) return;
+    const key = chipWidthKey(name, status);
+    if (chipNeedsMeasure(key)) reportChipWidth(key, el.offsetWidth);
+    const fonts = typeof document === 'undefined' ? undefined : document.fonts;
+    if (!fonts || fonts.status === 'loaded') return;
+    let live = true;
+    void fonts.ready.then(() => {
+      if (live && ref.current) reportChipWidth(key, ref.current.offsetWidth);
+    });
+    return () => {
+      live = false;
+    };
+  }, [name, status]);
+  return ref;
 }
 
 type WalkerProps = Parameters<typeof AvatarWalkerView>[0];
