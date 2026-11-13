@@ -786,11 +786,16 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   observed by one `IntersectionObserver` (made with the first run; root the body, found by `data-plan-body`
   (`RUN_BODY_ATTR`) as React sets the body's ref after its runs' layout effects; `rootMargin` 100% on every side:
   near while intersecting, else far with its `offsetHeight` read first, every far run's height read before any is
-  set), and set near at once when `runIsNear` (the run's box within `RUN_NEAR_VIEWS` (1) of the body's box on every
-  side): every run's box is read in the same layout effects pass, before any is drawn (one layout), and the near
-  ones render their cards before the frame is drawn, so a run arriving in view never shows empty. A run whose cards
+  set), and queued to draw when `runIsNear` (the run's box within `RUN_NEAR_VIEWS` (1) of the body's box on every
+  side): every run's box is read in the same layout effects pass, before any is drawn (one layout). The runs queued
+  in a commit (`drawSoon`: those mounting near, and those `markNear` asks for) are drawn together in a microtask once
+  its layout effects have run: up to `RUN_REVEAL_TRANSITION` (8) through `flushSync`, before the frame is drawn, so a
+  run arriving in a moved card's cell never shows empty; more (a board's first draw, spec "A big board's first
+  draw") in one `startTransition`, so their cards are built between frames and shown in one commit, never in the
+  board's own task (built in a layout effect's sync re-render, 57 cards held a 2,000-card import for 0.45 s at the
+  reference speed). A run whose cards
   were just built calls `drawn`, which `usePlanCardFlip`'s `remember` hears, so its cards' places are known for the
-  next glide. `markNear(run)` (`cardsToMeasure`) asks a run to draw. A far card has no element:
+  next glide. `markNear(run)` (`cardsToMeasure`) asks a run to draw, with the others of its commit. A far card has no element:
   `focusPlanCard(root, id, opts)` focuses the card when built, else asks its far run (`[data-plan-run-ids~=id]`) to
   draw and focus it once its cards are built (`PlanBoardView`'s keyboard moves and the focus after a move,
   `SetupBoardHost`'s focus after a setup, which takes a run met before any card by its first id);
@@ -933,6 +938,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Fill Tab: which board, deletion, copy                          | `apps/editor/components/plan/fill-tab.test.ts`                                                                                                                 |
 | Far runs: near ones built, far ones held, focus, no observer   | `apps/editor/hooks/plan/useCardRunReveal.test.tsx`                                                                                                             |
 | Opening a busy board builds only the near runs, within budget  | `apps/editor/components/plan/PlanBoardView.mount.perf.test.tsx`                                                                                                |
+| A big store change drawn as a transition, a small one at once  | `apps/editor/hooks/plan/usePlanItems.big.test.ts`                                                                                                              |
+| A 2,000-card import and open, longest task (recorded, perf)    | `apps/editor/e2e/perf/big-board.perf.ts`                                                                                                                       |
 | Setup Board Layout step, stepper, Fill Tab                     | `apps/editor/components/plan/PlanSetupBoard.test.tsx`                                                                                                          |
 | Setup Board as a dialog: opens, cannot be dismissed, toast     | `apps/editor/components/plan/SetupBoardHost.test.tsx`                                                                                                          |
 | Layout read from and written to the board                      | `apps/editor/components/plan/setup-board.test.ts`                                                                                                              |
@@ -1044,6 +1051,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `RUN_SPREAD`               | 4                  | `card-runs.ts`: 8 cost 0.3-0.5 s an edge crossing, 2 slowed each gap; 3-6   |
 | `CARD_RUN_MAX`             | 8                  | `card-runs.ts`: bounds a run of cards hashing to no start; 6-12             |
 | `RUN_NEAR_VIEWS`           | 1                  | `useCardRunReveal.ts`: a view's length past the body on every side; 0.5-2   |
+| `RUN_REVEAL_TRANSITION`    | 8                  | `useCardRunReveal.ts`: near runs of a commit drawn as a transition past it  |
+| `BIG_ITEMS_CHANGE`         | 200                | `usePlanItems.ts`: items a store change touches before it is a transition   |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to

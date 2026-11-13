@@ -1348,6 +1348,12 @@ theme, with the page answering throughout.
   each letter typed in the Filter, and expanding a column, answers within a few tenths of a second, never seconds.
   A card out of view is not even built until it comes near, so opening a busy board (switching to its tab, or
   loading the plan on it) costs the cards in view, not all 2,000.
+- <a id="big-first-draw"></a>**A big board's first draw keeps the page answering.** Opening a plan of 2,000 cards on
+  its board, or importing a 2,000-card tab onto one, holds the page for no more than about a tenth of a second at a
+  time on the reference machine (it held it for about half a second). The board's columns and the places of its cards
+  appear first, then, a moment later, the cards in view all together, so no column is ever drawn part way. A change
+  of a few cards (one added, moved or edited, by anyone) and a card coming into view as the board scrolls are drawn
+  before the next frame, as before.
   Find a Card and the Filter reach every card, near or not; the browser's own find in page and a screen reader's
   reading cursor reach the cards near the view.
 - **A drag stays smooth.** Carrying a card on a 2,000-card board keeps up with the pointer or finger, on an iPad too:

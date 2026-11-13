@@ -2,7 +2,15 @@
 
 import { isOfflineIdSync, subscribeOfflineIds } from '@/lib/offline/offline-store';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
+} from 'react';
 import type { AccessLevel, ItemsRoomOp } from '@liveplanner/api-schema';
 import {
   EMPTY_ITEM_STORE,
@@ -42,6 +50,19 @@ import {
   splitPracticeWrite,
   withoutPracticeItems,
 } from './practice-items';
+
+// A change of this many items or more (a plan's cards read as it opens, an import's cards) draws as a transition
+// (docs/specs/026-plan/plan-board.md "A big board's first draw"): React builds the board between frames and shows
+// it in one commit, rather than holding the page for the whole build.
+export const BIG_ITEMS_CHANGE = 200;
+function bigStoreChange(
+  setStore: (next: SetStateAction<ItemStoreState>) => void,
+  next: SetStateAction<ItemStoreState>,
+  count: number,
+): void {
+  if (count >= BIG_ITEMS_CHANGE) startTransition(() => setStore(next));
+  else setStore(next);
+}
 
 // A burst of revision gaps refetches once (blueprint item-store.md "Constants").
 const ITEM_REFETCH_DEBOUNCE_MS = 400;
@@ -254,16 +275,19 @@ export function usePlanItems(opts: {
       unconfirmed.forEach((id) => unconfirmedRef.current.delete(id));
       // What waits for the connection is laid back over the server's copy.
       // Practice cards are never read back: they are laid over the fresh copy as they were.
-      setStore((prev) =>
-        keepPracticeItems(
-          withWritesLaid(
-            withWaitingItems(refetchedItemStore(prev, fetched, unconfirmed), queueOf(), layBy()),
-            flying,
-            layBy(),
+      bigStoreChange(
+        setStore,
+        (prev) =>
+          keepPracticeItems(
+            withWritesLaid(
+              withWaitingItems(refetchedItemStore(prev, fetched, unconfirmed), queueOf(), layBy()),
+              flying,
+              layBy(),
+            ),
+            prev,
+            practiceRef.current,
           ),
-          prev,
-          practiceRef.current,
-        ),
+        fetched.items.length,
       );
       setStatus('ready');
       callbacks.current.onRead?.(fetched.pullRequests);
@@ -276,6 +300,7 @@ export function usePlanItems(opts: {
 
   useEffect(() => {
     if (!ready || !scope) return;
+    // oxlint-disable-next-line react/set-state-in-effect -- load sets the store only once its read is answered (after an await)
     void load();
   }, [ready, scope, load]);
 
@@ -310,7 +335,11 @@ export function usePlanItems(opts: {
     (op: ItemsRoomOp) => {
       const gap = op.rev > serverRevRef.current + 1;
       serverRevRef.current = Math.max(serverRevRef.current, op.rev);
-      setStore((prev) => mergeItemChanges(prev, op.upserts, op.removed, op.rev));
+      bigStoreChange(
+        setStore,
+        (prev) => mergeItemChanges(prev, op.upserts, op.removed, op.rev),
+        op.upserts.length + op.removed.length,
+      );
       // A tab-scoped session hears the rev without the items; anyone may have missed one.
       if (gap || (op.upserts.length === 0 && op.removed.length === 0)) {
         debugLog('[items] items.refetch.gap', { rev: op.rev });
@@ -324,11 +353,15 @@ export function usePlanItems(opts: {
   const settle = useCallback((answer: ItemWriteAnswer) => {
     const overtaken = answer.rev >= 0 && answer.rev < serverRevRef.current;
     if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
-    setStore((prev) => {
-      const held = new Set(prev.items.map((i) => i.id));
-      const upserts = overtaken ? answer.upserts.filter((u) => held.has(u.id)) : answer.upserts;
-      return mergeItemChanges(prev, upserts, answer.removed, answer.rev);
-    });
+    bigStoreChange(
+      setStore,
+      (prev) => {
+        const held = new Set(prev.items.map((i) => i.id));
+        const upserts = overtaken ? answer.upserts.filter((u) => held.has(u.id)) : answer.upserts;
+        return mergeItemChanges(prev, upserts, answer.removed, answer.rev);
+      },
+      answer.upserts.length + answer.removed.length,
+    );
   }, []);
 
   // The waiting changes' replay (docs/specs/007-editor/offline-changes.md "Sending them"): a refusal is told and
@@ -392,7 +425,7 @@ export function usePlanItems(opts: {
         return { ok: true, made: [] };
       }
       storeRef.current = local.state;
-      setStore(local.state);
+      bigStoreChange(setStore, local.state, write.kind === 'create' ? write.creates.length : 0);
       inFlightRef.current.set(seq, write);
       try {
         const answer = await writeItem(s, write, by);
