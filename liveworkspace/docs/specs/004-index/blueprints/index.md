@@ -107,10 +107,10 @@ mirrored }`; a guest is `403`, a bad id `400`.
 
 Each step runs in `step()`: a throw is logged `[index] cron step failed: <name>` and the next step runs. Off: nothing.
 
-| Cron           | Steps, in order                                                                                                                                                                                                                                                               |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*/15 * * * *` | 1. `purges` (`continuePurges`): up to 20 recorded person purges oldest first within 30 s / 300 D1 calls; then up to 300 tombstones never tried or not tried for an hour; then `drainPersonNotices`. 2. `person merges` (`drainPersonMerges`). 3. `webhooks` (`kickWebhooks`). |
-| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained, team audit rows past the year swept (≤ 5000). 2. `events`: events past 30 days swept (`sweepEvents`, ≤ 20,000).                              |
+| Cron           | Steps, in order                                                                                                                                                                                                                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*/15 * * * *` | 1. `purges` (`continuePurges`): up to 20 recorded person purges oldest first within 30 s / 300 D1 calls; then up to 300 tombstones never tried or not tried for an hour; then `drainPersonNotices`. 2. `person merges` (`drainPersonMerges`). 3. `webhooks` (`kickWebhooks`).               |
+| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained. 2. `events`: events past 30 days swept (`sweepEvents`, ≤ 20,000). 3. `team audit`: audit rows past the year swept (`sweepTeamAudit`, ≤ 100,000, a minute). |
 
 Details are in [trash.md](trash.md), [guest-merge.md](guest-merge.md) and [events.md](events.md).
 
@@ -481,6 +481,9 @@ Migrations, in order:
 | `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                                        | `events.ts`                           |
 | `EVENT_SWEEP_CHUNK`             | `500`                                                                                  | `events.ts`                           |
 | `EVENT_SWEEP_ROUNDS`            | `40`                                                                                   | `events.ts`                           |
+| `TEAM_AUDIT_SWEEP_CHUNK`        | `500`                                                                                  | `team-audit.ts`                       |
+| `TEAM_AUDIT_SWEEP_ROUNDS`       | `200`                                                                                  | `team-audit.ts`                       |
+| `TEAM_AUDIT_SWEEP_MS`           | `60_000`                                                                               | `team-audit.ts`                       |
 | `WORKBENCH_CLOSE_MAX_ITEMS`     | `500`                                                                                  | `workbench-close.ts`                  |
 | `WORKBENCH_CLOSE_CONCURRENCY`   | `10`                                                                                   | `workbench-close.ts`                  |
 | `GUEST_TOKEN_REFRESH_BEFORE_MS` | `15 * 24 * 3600 * 1000`                                                                | `guest-token.ts`                      |

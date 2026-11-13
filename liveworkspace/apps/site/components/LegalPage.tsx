@@ -77,7 +77,7 @@ export function LegalPage({
                   key={page.href}
                   href={page.href}
                   aria-current={page.href === path ? 'page' : undefined}
-                  className="rounded-full px-4 py-1.5 text-slate-600 transition-colors duration-micro hover:text-slate-900 aria-[current=page]:bg-slate-900 aria-[current=page]:text-white dark:text-slate-300 dark:hover:text-white dark:aria-[current=page]:bg-white dark:aria-[current=page]:text-slate-900"
+                  className="rounded-full px-4 py-1.5 text-slate-600 transition-colors duration-micro hover:text-slate-900 aria-[current=page]:bg-slate-900 aria-[current=page]:text-white dark:text-slate-300 dark:hover:text-white dark:aria-[current=page]:bg-white dark:aria-[current=page]:text-slate-900 aria-[current=page]:hover:text-white dark:aria-[current=page]:hover:text-slate-900"
                 >
                   {page.label}
                 </a>
