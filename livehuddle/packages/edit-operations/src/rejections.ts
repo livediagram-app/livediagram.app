@@ -107,6 +107,19 @@ export function invalidValue(
   };
 }
 
+// `set` on a retired element (docs/specs/024-agents/edit-operations.md "Retired elements are left alone", Work
+// Tracker 639): it keeps its kind and every stored field.
+export function retiredElementRefusal(operation: number, ref: string, name: string): EditRejection {
+  return {
+    code: 'invalid_value',
+    operation,
+    details: [
+      `${ref} is ${/^[AEIOU]/.test(name) ? 'an' : 'a'} ${name}, which livehuddle no longer has: it stays as stored`,
+    ],
+    hint: 'move it, or remove it with rm',
+  };
+}
+
 // The first `<id>-2`, `<id>-3`, … no element holds, the clash rule of slug ids.
 function freeIdLike(id: string, taken: ReadonlySet<string>): string {
   let n = 2;

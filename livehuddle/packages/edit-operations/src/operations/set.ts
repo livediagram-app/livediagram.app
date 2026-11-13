@@ -4,10 +4,11 @@
 // not touched, so it is never normalised (E1, I2).
 
 import type { EditRejection } from '@livehuddle/api-schema';
-import type { Element } from '@livehuddle/document';
+import { isRetiredElement, retiredElementName, type Element } from '@livehuddle/document';
 import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
+import { retiredElementRefusal } from '../rejections';
 import { resolveSome } from '../selectors';
 import { type EditState, refsOf, touch, writeFields } from '../state';
 import type { SetOperation } from '../types';
@@ -22,7 +23,17 @@ export function applySet(
 ): EditRejection | null {
   const resolved = resolveSome(state, target, operation, all === true);
   if ('rejection' in resolved) return resolved.rejection;
-  for (const el of resolved.els) {
+  // A retired element stays as stored (Work Tracker 639): named, or the only kind an `all` matched, it refuses the
+  // changeset; among live ones an `all` passes it by.
+  const live = resolved.els.filter((el) => !isRetiredElement(el));
+  const first = resolved.els[0];
+  if (first && (live.length === 0 || (all !== true && isRetiredElement(first))))
+    return retiredElementRefusal(
+      operation,
+      refsOf(state).refOf(first.id),
+      retiredElementName(first),
+    );
+  for (const el of live) {
     const rejection = setOne(state, el, fields, operation);
     if (rejection) return rejection;
   }

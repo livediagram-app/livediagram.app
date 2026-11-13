@@ -53,10 +53,12 @@ const nextOf = (out: FieldsWrite) => out.next as unknown as Record<string, unkno
 describe('aliasesOf', () => {
   it('gives each element the aliases its type takes, style keys included', () => {
     const style = ['stroke', 'text-color', 'border'];
-    expect(aliasesOf(signpost)).toEqual(['label', 'note', 'shape', 'fill', ...style, 'text']);
+    // No `note` (Work Tracker 737): livehuddle shows no element notes.
+    expect(aliasesOf(signpost)).toEqual(['label', 'shape', 'fill', ...style, 'text']);
     // A stored arrow (a retired element since part 4 of the element engine) keeps only what it stored.
-    expect(aliasesOf(arrow)).toEqual(['label', 'note', 'line']);
-    expect(aliasesOf(text)).toEqual(['label', 'note', ...aliasesOf(text).slice(2)]);
+    expect(aliasesOf(arrow)).toEqual(['label', 'line']);
+    expect(aliasesOf(text)).toEqual(['label', ...aliasesOf(text).slice(1)]);
+    expect(aliasesOf(text)).not.toContain('note');
     expect(aliasesOf(image)).toContain('label');
   });
 
@@ -178,32 +180,25 @@ describe('writeFieldsOnto', () => {
     expect(write(stickyEl, { textColor: '#000' }).warnings).toEqual([]);
   });
 
-  it('caps a long shape label into the note it ends with, and warns', () => {
-    const out = write(signpost, {
-      label: 'Orders service which creates and tracks every order',
-      note: 'Given',
-    });
-    expect(nextOf(out)).toMatchObject({
-      label: 'Orders service',
-      note: 'Orders service which creates and tracks every order\n\nGiven',
-    });
+  // Work Tracker 737: a cut label leaves the rest out, and no note is written.
+  it('cuts a long shape label to its heading, leaves its note as stored, and warns', () => {
+    const out = write(signpost, { label: 'Orders service which creates and tracks every order' });
+    expect(nextOf(out)).toMatchObject({ label: 'Orders service', note: 'Old' });
     expect(out.capped).toBe(true);
     expect(out.warnings[0]!.message).toBe(
-      'n3 label kept as "Orders service"; the full text is in its note',
+      'n3 label kept as "Orders service"; the rest was cut (a label holds 40 characters: put longer text in a text element or a sticky)',
     );
-    const onArrow = write(arrow, { label: 'Orders service which creates and tracks every order' });
-    expect(onArrow.warnings[0]!.message).toBe(
-      'a1 label kept as "Orders service"; the rest was cut',
-    );
+    // note= still removes a note stored from before.
     expect(
-      write(signpost, { label: 'Message queue for asynchronous events now' }).next,
-    ).toMatchObject({
-      note: 'Message queue for asynchronous events now\n\nOld',
-    });
-    const bare = { ...signpost, note: undefined } as Element;
-    expect(
-      write(bare, { label: 'Message queue for asynchronous events now', note: null }).next,
-    ).toMatchObject({ note: 'Message queue for asynchronous events now' });
+      nextOf(write(signpost, { label: 'Message queue for asynchronous events now', note: null })),
+    ).not.toHaveProperty('note');
+  });
+
+  it('refuses a note or a rich note with a value, and compares them in a test', () => {
+    for (const fields of [{ note: 'Given' }, { noteRich: [{ text: 'Given' }] }] as Fields[])
+      expect(refusal(signpost, fields).details[0]).toMatch(/: livehuddle keeps no element notes$/);
+    const tested = writeFieldsOnto(signpost, { note: 'Old' }, theme, 'n3', 1, { test: true });
+    expect('code' in tested).toBe(false);
   });
 
   it('refuses identity, live and prototype fields, and keys the type lacks', () => {
@@ -216,7 +211,7 @@ describe('writeFieldsOnto', () => {
     const unknown = refusal(arrow, { fill: 'red' });
     expect(unknown.details).toEqual([
       '? arrow has no field "fill"',
-      expect.stringMatching(/^fields: label note line, then id type from to /),
+      expect.stringMatching(/^fields: label line, then id type from to /),
     ]);
   });
 

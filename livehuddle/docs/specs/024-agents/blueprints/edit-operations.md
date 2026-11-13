@@ -85,35 +85,35 @@ Gone (part 4): make room, `connect` (with `rewire`) and `insert`, which livediag
 
 ## Domain and naming
 
-| Term             | Identifier                                              | Meaning                                                                                                                      |
-| ---------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Edit operation   | `EditOperation` (union on `op`)                         | One step of a changeset, in its JSON form                                                                                    |
-| Operation name   | `EditOperationName`, `EDIT_OPERATION_NAMES`             | `add set rm move order layout test`                                                                                          |
-| Line form        | `parseEditOperations`, `formatOperation`                | One operation a line, words and quoted values                                                                                |
-| JSON form        | `validateEditOperation`                                 | One object a line                                                                                                            |
-| Operation number | `operation` (1-based) on rejections                     | Position among the operations, comments and blank lines not counted                                                          |
-| Selector         | `Selector` (a string), `parseSelector`                  | A ref, a quoted label, or `key:value` terms, all of which must match                                                         |
-| Selector term    | `SelectorTerm` (union on `kind`)                        | One word of a selector                                                                                                       |
-| Ref              | `computeRefs`, `RefTable`, `resolveRef` (shared)        | An element's short name, as views print it                                                                                   |
-| Slug id          | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor` (shared)     | The id an agent names or the engine mints from a label or kind token                                                         |
-| Kind word        | `kindWordOf` (shared)                                   | The shape for shapes, else the element type: what `type:` and results print                                                  |
-| Placement        | `Placement` (union on `rel`)                            | Where `add` and `move` put an element                                                                                        |
-| Content origin   | `contentOrigin(tab)` (shared)                           | The point coordinates shown and taken are relative to                                                                        |
-| Field            | `fields` member, `FieldValue`                           | A key and its value; `null` unsets                                                                                           |
-| Field alias      | `FIELD_ALIASES`                                         | A spec-named key (`label`, `note`, `shape`, `fill`, `text`, `line`) or a view's style key (`stroke`, `text-color`, `border`) |
-| Live field       | `LIVE_ELEMENT_FIELDS` (`@livehuddle/document`)          | A multi-writer field that travels as a delta; never written by an operation                                                  |
-| Theme slot       | `fillSlotNames`, `resolveColourValue`                   | `theme` or one of the theme's six quick-swatch hues, written as a binding                                                    |
-| Stored arrow     | `RetiredArrowElement` (`@livehuddle/document`)          | A retired arrow kept as stored: selectors read its ends, `set` and `rm` can name it, nothing moves or reroutes it            |
-| Working state    | `EditState`                                             | The tab as the operations have left it so far                                                                                |
-| Touched          | `EditState.touched`                                     | Elements an operation created or changed; only these are normalised                                                          |
-| Moved            | `Touch.moved` (`MoveReason`: `laid out`), `moveElement` | Elements `layout` laid out without an operation writing them                                                                 |
-| Targets          | `targets: ElementId[]`                                  | Existing elements the operations resolved; fingerprinted and checked for holds                                               |
-| Created ids      | `createdIds: ElementId[]`                               | Elements the changeset created that are in the next tab                                                                      |
-| Outcome          | `ApplyOutcome` = `ApplySuccess \| ApplyRejection`       | `{ tab, results, elementOps, inverse, warnings, targets, createdIds }` or `{ errors }`                                       |
-| Result line      | `ResultLine` (union on `mark`)                          | One line of a changeset's answer: `+ ~ - »`, `!`                                                                             |
-| Warning          | `EditWarning`, `EDIT_WARNING_CODES`                     | A named note that does not reject                                                                                            |
-| Rejection        | `EditRejection`, `EDIT_REJECTION_CODES`                 | A named refusal; the spec's code table                                                                                       |
-| Replace          | `ReplaceBody`, `applyReplace`                           | The other changeset body: a whole tab from a template or elements                                                            |
+| Term             | Identifier                                              | Meaning                                                                                                              |
+| ---------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Edit operation   | `EditOperation` (union on `op`)                         | One step of a changeset, in its JSON form                                                                            |
+| Operation name   | `EditOperationName`, `EDIT_OPERATION_NAMES`             | `add set rm move order layout test`                                                                                  |
+| Line form        | `parseEditOperations`, `formatOperation`                | One operation a line, words and quoted values                                                                        |
+| JSON form        | `validateEditOperation`                                 | One object a line                                                                                                    |
+| Operation number | `operation` (1-based) on rejections                     | Position among the operations, comments and blank lines not counted                                                  |
+| Selector         | `Selector` (a string), `parseSelector`                  | A ref, a quoted label, or `key:value` terms, all of which must match                                                 |
+| Selector term    | `SelectorTerm` (union on `kind`)                        | One word of a selector                                                                                               |
+| Ref              | `computeRefs`, `RefTable`, `resolveRef` (shared)        | An element's short name, as views print it                                                                           |
+| Slug id          | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor` (shared)     | The id an agent names or the engine mints from a label or kind token                                                 |
+| Kind word        | `kindWordOf` (shared)                                   | The shape for shapes, else the element type: what `type:` and results print                                          |
+| Placement        | `Placement` (union on `rel`)                            | Where `add` and `move` put an element                                                                                |
+| Content origin   | `contentOrigin(tab)` (shared)                           | The point coordinates shown and taken are relative to                                                                |
+| Field            | `fields` member, `FieldValue`                           | A key and its value; `null` unsets                                                                                   |
+| Field alias      | `FIELD_ALIASES`                                         | A spec-named key (`label`, `shape`, `fill`, `text`, `line`) or a view's style key (`stroke`, `text-color`, `border`) |
+| Live field       | `LIVE_ELEMENT_FIELDS` (`@livehuddle/document`)          | A multi-writer field that travels as a delta; never written by an operation                                          |
+| Theme slot       | `fillSlotNames`, `resolveColourValue`                   | `theme` or one of the theme's six quick-swatch hues, written as a binding                                            |
+| Stored arrow     | `RetiredArrowElement` (`@livehuddle/document`)          | A retired arrow kept as stored: selectors read its ends, `set` and `rm` can name it, nothing moves or reroutes it    |
+| Working state    | `EditState`                                             | The tab as the operations have left it so far                                                                        |
+| Touched          | `EditState.touched`                                     | Elements an operation created or changed; only these are normalised                                                  |
+| Moved            | `Touch.moved` (`MoveReason`: `laid out`), `moveElement` | Elements `layout` laid out without an operation writing them                                                         |
+| Targets          | `targets: ElementId[]`                                  | Existing elements the operations resolved; fingerprinted and checked for holds                                       |
+| Created ids      | `createdIds: ElementId[]`                               | Elements the changeset created that are in the next tab                                                              |
+| Outcome          | `ApplyOutcome` = `ApplySuccess \| ApplyRejection`       | `{ tab, results, elementOps, inverse, warnings, targets, createdIds }` or `{ errors }`                               |
+| Result line      | `ResultLine` (union on `mark`)                          | One line of a changeset's answer: `+ ~ - »`, `!`                                                                     |
+| Warning          | `EditWarning`, `EDIT_WARNING_CODES`                     | A named note that does not reject                                                                                    |
+| Rejection        | `EditRejection`, `EDIT_REJECTION_CODES`                 | A named refusal; the spec's code table                                                                               |
+| Replace          | `ReplaceBody`, `applyReplace`                           | The other changeset body: a whole tab from a template or elements                                                    |
 
 Banned: "op" for an edit operation (that is a room `ElementOp`), "action", "command" (a CLI command is a front
 door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias" for a ref, "group", "parent",
@@ -216,9 +216,8 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 
 | Alias        | Element types                                                     | Writes                                             | Values                                                                                              |
 | ------------ | ----------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `label`      | every type with a `label` field                                   | `label`                                            | text; on a shape over `LABEL_CAP_MAX`, capped into the note; on a stored arrow, cut (EO18)          |
+| `label`      | every type with a `label` field                                   | `label`                                            | text; on a shape over `LABEL_CAP_MAX`, cut with `label_capped` (EO18, Work Tracker 737)             |
 | `icon`       | every type with an `iconId` field and no `icon` of its own        | `iconId`                                           | the MCP's name for the icon, read as `iconId` and checked as it is                                  |
-| `note`       | every type with a `note` field                                    | `note`                                             | text                                                                                                |
 | `shape`      | `shape`                                                           | `shape`                                            | a shape kind; off-vocabulary coerced by `coerceShapeKind`, warning `shape_coerced`                  |
 | `fill`       | types whose `themeColourFields` include `fillColor`, and `sticky` | `fillColor` + `fillSwatch` (sticky: + `textColor`) | a theme slot, or `#rgb` / `#rrggbb`, or on a sticky a sticky preset name                            |
 | `stroke`     | every type with a `strokeColor` field                             | `strokeColor`; clears `strokeSwatch`               | a colour: hex (warning `colour_overrides_theme` where the theme colours it) or a marker colour name |
@@ -248,10 +247,22 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   `STICKY_PRESETS` name (`lemon`) writes its `fill` and `text` pair; a hex writes `fillColor` alone. A raw
   `fillColor`, `strokeColor` or `textColor` hex on a themed element warns the same way (EO21). Anything else is
   `invalid_value` listing the slot names (or, on a sticky, the preset names).
-- **Labels.** `applyLabel(el, text)`: on a shape, `capLabel(text)`; when cut, `label` is the heading and the
-  whole text, whitespace collapsed, is prepended to the note the element ends with (`"<full>\n\n<note>"`), as
-  the retired graph input did; warning `label_capped`. On a stored arrow, `capLabel(text).label`, warning
-  `label_capped`. Other types keep the text as given (EO18).
+- **Labels.** `applyLabel(el, text)`: on a shape, `capLabel(text)`; when cut, `label` is the heading and the rest
+  is dropped, warning `label_capped` ("<ref> label kept as "<heading>"; the rest was cut (a label holds 40
+  characters: put longer text in a text element or a sticky)"). Nothing moves into a note (Work Tracker 737).
+  Other types keep the text as given (EO18).
+- **Notes** (`NOTE_FIELDS`: `note`, `noteRich`; Work Tracker 737). `writeFieldsOnto` in its `write` purpose (`set`,
+  `add`) refuses either with a value: `invalid_value`, rule "livehuddle keeps no element notes", hint "put the text
+  in the label, or in a text element or sticky beside it; note= removes an old note". An unset (`null`) removes it.
+  `test` (its `{ test: true }` option) compares them as stored. `applyReplace`'s `keepStored` gives a kept element
+  its stored `note` and `noteRich` (or none), a new one none.
+- **Retired elements** (Work Tracker 639). `set` on an element `isRetiredElement` answers for (a stored shape of a
+  kind `SHAPE_KINDS` lacks, or a retired type, a stored arrow among them) is refused before any field is written:
+  `retiredElementRefusal(operation, ref, el)`, `invalid_value`, detail "<ref> is a <retiredElementName>, which
+  livehuddle no longer has: it stays as stored", hint "move it, or remove it with rm". A `set … all` refuses only
+  when every match is retired; otherwise it skips them. `applyReplace` runs `keepStored`: each kept retired element
+  comes back exactly as stored, the same object, and a kept live element sent back as a kind livehuddle lacks is
+  refused as a new one is.
 - **Fit to label.** After a `set` that changes a shape's `label` (or `text` / `shape`), when the shape has no
   `fixedSize`, its `textSize` is not `scale`, and `labelBoxSize(label, shape)` exceeds its box, the box grows to
   the larger of each side around its centre (`x -= dw / 2`, `y -= dh / 2`, rounded), annotated `widened w→w'` and
@@ -520,15 +531,15 @@ type ResultLine =
 
 Text, two spaces after the ref, `·` between changes:
 
-| Line             | Text                                                                              |
-| ---------------- | --------------------------------------------------------------------------------- |
-| Added box        | `+ verify  square "Verify email" @0,300 140×60`                                   |
-| Changed          | `~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→152`          |
-| Changed position | `~ n3  @0,200→@0,300`                                                             |
-| Changed end      | `~ a3  to n4→verify` (a `set` naming a stored arrow's end)                        |
-| Removed          | `- n7  square "Pay"`; a stored arrow `- a4  ? arrow`                              |
-| Laid out         | `» n5 n6 n7 t1  laid out`                                                         |
-| Warning          | `! label_capped  n3 label kept as "Orders service"; the full text is in its note` |
+| Line             | Text                                                                                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Added box        | `+ verify  square "Verify email" @0,300 140×60`                                                                                                    |
+| Changed          | `~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→152`                                                                           |
+| Changed position | `~ n3  @0,200→@0,300`                                                                                                                              |
+| Changed end      | `~ a3  to n4→verify` (a `set` naming a stored arrow's end)                                                                                         |
+| Removed          | `- n7  square "Pay"`; a stored arrow `- a4  ? arrow`                                                                                               |
+| Laid out         | `» n5 n6 n7 t1  laid out`                                                                                                                          |
+| Warning          | `! label_capped  n3 label kept as "Orders service"; the rest was cut (a label holds 40 characters: put longer text in a text element or a sticky)` |
 
 - **Order** (EO42): `+ ~ -` lines in the order operations first touched the element; then the `»` line, refs in
   element order; then warnings in order.
@@ -595,7 +606,8 @@ Edge cases:
 - **E3** A selector matching an element an earlier operation removed: it is gone from the state, so
   `target_not_found`.
 - **E4** `move` onto the same position: no line.
-- **E5** `set` on a stored arrow's `label` over `LABEL_CAP_MAX`: cut, warning `label_capped`; an arrow has no note.
+- **E5** `set` on a stored arrow (a retired element): refused as `invalid_value`, the arrow left as stored (Work
+  Tracker 639).
 - **E7** Gone (part 4): no `insert`.
 - **E9** `layout` of any selection: every box is swept into rows from the top-left.
 - **E10** An element whose id is a reserved word: reached by label or a longer prefix (EO10).
@@ -663,7 +675,7 @@ and changeset ids. Fields are counts, codes and names only.
 | `[edit-ops] unmatched`        | Misses were gathered                         | `count`, `stopped`                                               |
 | `[edit-ops] widened`          | Fit to label grew a box                      | `operation`                                                      |
 | `[edit-ops] coerced`          | A shape kind or code value was coerced       | `operation`, `field`                                             |
-| `[edit-ops] label-capped`     | A label moved into the note                  | `operation`                                                      |
+| `[edit-ops] label-capped`     | A label was cut to its heading               | `operation`                                                      |
 | `[edit-ops] selection-unread` | `selected` with `selected: null`             | `operation`                                                      |
 | `[edit-ops] theme-fallback`   | No theme passed and `tab.theme` not built in | (none)                                                           |
 | `[edit-ops] replace`          | `applyReplace` ran                           | `source` (template, elements), `elements`                        |
@@ -704,7 +716,7 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | `shape=` coerced as the MCP does                                                                                                                                 | `fields.test.ts` › "coerces an off-vocabulary shape with a warning"                                                                                                                                                                 |
 | `fill=` theme slot; hex with `colour_overrides_theme`; stickies excepted                                                                                         | `colours.test.ts`                                                                                                                                                                                                                   |
 | `text=`, `note=`, `line=` vocabulary                                                                                                                             | `fields.test.ts`                                                                                                                                                                                                                    |
-| A label over 40 characters keeps the heading, full text into the note                                                                                            | `labels.test.ts` (the MCP spec's three examples)                                                                                                                                                                                    |
+| A label over 40 characters keeps the heading, the rest cut, no note written                                                                                      | `labels.test.ts` (the MCP spec's three examples)                                                                                                                                                                                    |
 | Unknown field names the kind's fields; invalid value names the allowed values                                                                                    | `rejections.test.ts` › "unknown_field names the kind, its fields and the nearest one", "invalid_value names the key, value and rule"                                                                                                |
 | Only `layout` and `replace` move many elements; untouched stays identical                                                                                        | `apply.test.ts` › "I2 passes untouched elements through as the same objects", `invariants.test.ts`                                                                                                                                  |
 | Results: the spec's example lines, formatted character for character; a stored arrow's lines                                                                     | `results.test.ts` › "prints the spec example character for character", "result line builders"                                                                                                                                       |

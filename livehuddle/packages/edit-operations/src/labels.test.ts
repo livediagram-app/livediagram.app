@@ -21,37 +21,29 @@ const arrow = {
 const sticky = { id: 'k', type: 'sticky', x: 0, y: 0, width: 100, height: 100 } as Element;
 
 describe("applyLabel (EO18): the spec's three examples", () => {
-  it('drops a bracketed aside into the note', () => {
-    expect(applyLabel(signpost, 'Web client (React SPA served from the CDN)', undefined)).toEqual({
+  // Nothing moves into a note: livehuddle shows none (Work Tracker 737).
+  it('drops a bracketed aside, with no note', () => {
+    expect(applyLabel(signpost, 'Web client (React SPA served from the CDN)')).toEqual({
       label: 'Web client',
-      note: 'Web client (React SPA served from the CDN)',
       capped: true,
     });
   });
 
-  it('keeps the noun phrase before a clause word, ahead of the note it had', () => {
-    expect(
-      applyLabel(
-        signpost,
-        'Orders service which creates orders  and   tracks them',
-        'Owned by the orders team.',
-      ),
-    ).toEqual({
+  it('keeps the noun phrase before a clause word', () => {
+    expect(applyLabel(signpost, 'Orders service which creates orders  and   tracks them')).toEqual({
       label: 'Orders service',
-      note: 'Orders service which creates orders and tracks them\n\nOwned by the orders team.',
       capped: true,
     });
-    expect(
-      applyLabel(signpost, 'Message queue for async events between our services', undefined).label,
-    ).toBe('Message queue');
+    expect(applyLabel(signpost, 'Message queue for async events between our services').label).toBe(
+      'Message queue',
+    );
   });
 
   it("keeps a short label, cuts an arrow's, and keeps any other element's whole", () => {
-    expect(applyLabel(signpost, 'Sign in', 'n')).toEqual({ label: 'Sign in', capped: false });
+    expect(applyLabel(signpost, 'Sign in')).toEqual({ label: 'Sign in', capped: false });
     const long = 'Payment card validation and settlement reconciliation pipeline stage';
-    expect(applyLabel(arrow, long, undefined)).toMatchObject({ capped: true });
-    expect(applyLabel(arrow, long, undefined)).not.toHaveProperty('note');
-    expect(applyLabel(sticky, long, undefined)).toEqual({ label: long, capped: false });
+    expect(applyLabel(arrow, long)).toMatchObject({ capped: true });
+    expect(applyLabel(sticky, long)).toEqual({ label: long, capped: false });
   });
 });
 

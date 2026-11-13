@@ -49,12 +49,26 @@ describe('set', () => {
   });
 
   it('adds a field the element did not have', () => {
-    expect(lines(run([set('n3', { note: 'Ask for SSO' })]))).toEqual(['~ n3  note →"Ask for SSO"']);
+    expect(lines(run([set('n3', { textBold: true })]))).toEqual(['~ n3  textBold →true']);
   });
 
-  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored lane is a retired
-  // kind. A relabel writes the label and nothing else: no normalising, and no signpost in its place.
-  it('relabels a stored lane, keeping its kind and every other field', () => {
+  // docs/specs/024-agents/edit-operations.md "No element notes" (Work Tracker 737): livehuddle shows no element notes,
+  // so an edit writes none; it may only remove one stored from before.
+  it('refuses a note or a rich note with a value, and names the way to remove one', () => {
+    for (const fields of [{ note: 'Ask for SSO' }, { noteRich: [{ text: 'Ask' }] }, { note: '' }])
+      expect(refused(run([set('n3', fields)]))).toMatchObject({
+        code: 'invalid_value',
+        details: [expect.stringMatching(/: livehuddle keeps no element notes$/)],
+        hint: expect.stringContaining('note= removes an old note'),
+      });
+    expect(refused(run([{ op: 'add', kind: 'signpost', fields: { note: 'x' } }]))).toMatchObject({
+      code: 'invalid_value',
+    });
+  });
+
+  // docs/specs/024-agents/edit-operations.md "Retired elements are left alone" (Work Tracker 639): a stored lane is a
+  // retired kind. A set leaves it exactly as stored, kind and every field.
+  it('refuses to change a stored lane, which keeps its kind and every field', () => {
     const tab = checkoutFlow();
     const lane = {
       id: 'l1',
@@ -67,13 +81,48 @@ describe('set', () => {
       headerSize: 96,
     } as unknown as Element;
     tab.elements.push(lane);
-    const outcome = run([set('l1', { label: 'Payments' })], tab);
-    expect(lines(outcome)).toEqual(['~ l1  label →"Payments"']);
-    expect(applied(outcome).warnings).toEqual([]);
-    expect(applied(outcome).tab.elements.find((el) => el.id === 'l1')).toEqual({
-      ...lane,
-      label: 'Payments',
+    expect(refused(run([set('l1', { label: 'Payments' })], tab))).toEqual({
+      code: 'invalid_value',
+      operation: 1,
+      details: ['l1 is a Lane, which livehuddle no longer has: it stays as stored'],
+      hint: 'move it, or remove it with rm',
     });
+    expect(lane).not.toHaveProperty('label');
+    // A move and an rm still take it.
+    expect(lines(run([{ op: 'rm', target: 'l1' }], tab))).toEqual([
+      expect.stringMatching(/^- l1 /),
+    ]);
+  });
+
+  it('passes a retired element by in a set … all that matches live ones too', () => {
+    const tab = checkoutFlow();
+    const pie = {
+      id: 'pie',
+      type: 'shape',
+      shape: 'pie-chart',
+      x: 0,
+      y: 900,
+      width: 200,
+      height: 200,
+      textSize: 'lg',
+      label: 'Login',
+    } as unknown as Element;
+    tab.elements.push(pie);
+    const outcome = applyEditOperations(tab, [
+      // Its label matches n3's, so one selector names both.
+      { op: 'set', target: '"Login"', fields: { textSize: 'lg' }, all: true },
+    ]);
+    expect(applied(outcome).tab.elements.find((el) => el.id === 'pie')).toBe(pie);
+    expect(applied(outcome).tab.elements.find((el) => el.id === 'n3')).toMatchObject({
+      textSize: 'lg',
+    });
+    expect(
+      refused(
+        applyEditOperations(tab, [
+          { op: 'set', target: 'pie', fields: { textSize: 'sm' }, all: true },
+        ]),
+      ).details,
+    ).toEqual(['pie is a Pie Chart, which livehuddle no longer has: it stays as stored']);
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 5 (D30): nothing is coerced.
@@ -163,10 +212,12 @@ describe('set', () => {
   });
 
   it('refuses a field the element type does not store, listing its fields', () => {
-    const rejection = refused(run([set('a1', { widht: 10 })]));
+    const rejection = refused(run([set('n3', { widht: 10 })]));
     expect(rejection.code).toBe('unknown_field');
-    expect(rejection.details[0]).toBe('? arrow has no field "widht"');
-    expect(rejection.details[1]).toMatch(/^fields: label note line, then id type from to /);
+    expect(rejection.details[0]).toBe('signpost has no field "widht"');
+    expect(rejection.details[1]).toMatch(/^fields: label shape fill /);
+    // A note is never written, so the list offers none.
+    expect(rejection.details[1]).not.toMatch(/\bnote(Rich)?\b/);
   });
 
   it('refuses prototype keys as unknown_field', () => {
@@ -212,9 +263,8 @@ describe('set with aliases', () => {
     ]);
   });
 
-  it('prints text and line under their aliases', () => {
+  it('prints text under its alias', () => {
     expect(lines(run([set('n3', { text: 'lg' })]))).toEqual(['~ n3  text sm→lg']);
-    expect(lines(run([set('a1', { line: 'angled' })]))).toEqual(['~ a1  line →angled']);
   });
 
   it('prints a box growing to fit a new shape, and logs what it did', () => {
@@ -229,8 +279,12 @@ describe('set with aliases', () => {
       },
     );
     expect(lines(outcome)[0]).toBe(
-      '~ wide  label "x"→"Orders service" · shape signpost→plant · textSize →md · note →"Orders service which creates and tracks every"…',
+      '~ wide  label "x"→"Orders service" · shape signpost→plant · textSize →md',
     );
+    expect(lines(outcome)[1]).toMatch(
+      /^! label_capped {2}wide label kept as "Orders service"; the rest was cut/,
+    );
+    expect(applied(outcome).tab.elements.find((el) => el.id === 'wide')).not.toHaveProperty('note');
     expect(calls).toEqual(['[edit-ops] label-capped', '[edit-ops] applied']);
     const directory = applyEditOperations(
       checkoutFlow(),
@@ -278,7 +332,7 @@ function withTall(el: Element): Tab {
 }
 
 // A stored arrow is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part
-// 4): a set writes what it names and nothing reroutes it.
+// 4): a set is refused and nothing reroutes it (Work Tracker 639).
 describe('set: a stored arrow given new ends', () => {
   it('keeps its stored route as it was', () => {
     const tab = checkoutFlow();
@@ -289,11 +343,9 @@ describe('set: a stored arrow given new ends', () => {
       ),
     };
     const from = { kind: 'pinned', elementId: 'n1', anchor: 'e' };
-    const after = applied(run([set('a1', { from })], bent)).tab.elements.find(
-      (e) => e.id === 'a1',
-    ) as Element & { curvePoints?: unknown; from?: unknown };
-    expect(after.from).toEqual(from);
-    expect(after.curvePoints).toEqual([{ dx: 40, dy: 0 }]);
+    expect(refused(run([set('a1', { from })], bent)).details).toEqual([
+      'a1 is an Arrow, which livehuddle no longer has: it stays as stored',
+    ]);
   });
 });
 

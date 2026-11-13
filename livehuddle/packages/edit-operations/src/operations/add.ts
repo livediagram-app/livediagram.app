@@ -1,10 +1,11 @@
 // `add` with a whole raw element, as an API script's changeset sends it
 // (docs/specs/024-agents/blueprints/edit-operations.md "Operations"): taken as given, its geometry
-// kept, its id kept when free. Finalise normalises and validates it.
+// kept, its id kept when free. Finalise normalises and validates it. It carries no note (Work Tracker 737).
 
-import type { EditRejection } from '@livehuddle/api-schema';
+import type { EditRejection, JsonValue } from '@livehuddle/api-schema';
 import { ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
-import { idTaken, unknownField } from '../rejections';
+import { NOTE_FIELDS } from '../fields';
+import { idTaken, invalidValue, unknownField } from '../rejections';
 import { type EditState, isTaken, putElement } from '../state';
 import type { AddElementOperation } from '../types';
 import { PROTOTYPE_KEYS } from '../vocabulary';
@@ -26,6 +27,14 @@ export function applyAdd(
       typeof raw.type === 'string' ? raw.type : 'element',
       prototypeKey,
       fieldNamesOf(raw.type),
+    );
+  const note = [...NOTE_FIELDS].find((key) => raw[key] !== undefined && raw[key] !== null);
+  if (note !== undefined)
+    return invalidValue(
+      operation,
+      note,
+      raw[note] as JsonValue,
+      'livehuddle keeps no element notes',
     );
   const id = typeof raw.id === 'string' && raw.id !== '' ? raw.id : state.makeId();
   if (isTaken(state, id)) {

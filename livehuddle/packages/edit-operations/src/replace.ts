@@ -13,6 +13,7 @@ import {
   elementValidationIssue,
   getBuiltInTheme,
   invertElementOps,
+  isRetiredElement,
   isValidTab,
   normaliseElements,
   type Element,
@@ -24,6 +25,7 @@ import {
   resolveTemplate,
   validTemplateKinds,
 } from '@livehuddle/templates';
+import { NOTE_FIELDS } from './fields';
 import { tabRejection } from './finalise';
 import { invalidResult } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
@@ -113,6 +115,38 @@ function sourceOf(body: ReplaceBody): Source | EditRejection {
 
 const isBuiltInTheme = (id: string) => getBuiltInTheme(id).id === id;
 
+// What a replace keeps as stored (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): a retired element
+// the tab holds comes back exactly as it was, the same object (Work Tracker 639), and no element takes a note it did
+// not store, since livehuddle shows none (Work Tracker 737). A kept live element sent back as a retired kind is
+// refused, as a new one is.
+function keepStored(elements: Element[], before: readonly Element[]): Element[] | EditRejection {
+  const stored = new Map(before.map((el) => [el.id, el]));
+  const out: Element[] = [];
+  for (const el of elements) {
+    const was = stored.get(el.id);
+    if (was && isRetiredElement(was)) {
+      out.push(was);
+      continue;
+    }
+    if (was && el.type === 'shape' && !SHAPE_KINDS.has(el.shape))
+      return invalidResult(el.id, 'shape', { field: 'shape', rule: SHAPES_RETIRED });
+    out.push(withStoredNotes(el, was));
+  }
+  return out;
+}
+
+function withStoredNotes(el: Element, was: Element | undefined): Element {
+  const raw = el as unknown as Record<string, unknown>;
+  const from = (was ?? {}) as Record<string, unknown>;
+  if ([...NOTE_FIELDS].every((key) => raw[key] === from[key])) return el;
+  const next = { ...raw };
+  for (const key of NOTE_FIELDS) {
+    if (from[key] === undefined) delete next[key];
+    else next[key] = from[key];
+  }
+  return next as unknown as Element;
+}
+
 function nextTab(
   tab: Tab | null,
   built: Exclude<Built, EditRejection>,
@@ -141,7 +175,10 @@ export function applyReplace(
   if (themeId !== undefined && !isBuiltInTheme(themeId)) log('[edit-ops] theme-fallback', {});
   const built = build(body, source, themeId, new Set(tab?.elements.map((el) => el.id) ?? []));
   if ('code' in built) return refuse(built);
-  const next = nextTab(tab, built, options);
+  const made = nextTab(tab, built, options);
+  const elements = keepStored(made.elements, tab?.elements ?? []);
+  if ('code' in elements) return refuse(elements);
+  const next = elements.every((el, i) => el === made.elements[i]) ? made : { ...made, elements };
   if (!isValidTab(next)) return refuse(tabRejection(next));
   log('[edit-ops] replace', { source, elements: next.elements.length });
   const before = tab?.elements ?? [];

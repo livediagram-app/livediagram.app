@@ -14,7 +14,7 @@ import {
   withArticle,
 } from '@livehuddle/document';
 import { fillSlotNames } from './colours';
-import { aliasesOf, BORDER_STYLES, TEXT_SIZES } from './fields';
+import { aliasesOf, BORDER_STYLES, NOTE_FIELDS, TEXT_SIZES } from './fields';
 import {
   AGENT_SHAPE_KINDS,
   buildKind,
@@ -77,7 +77,6 @@ const isMadeAlias = (alias: Alias): alias is MadeAlias => alias !== 'line';
 function aliasValue(el: Element, alias: MadeAlias): string {
   switch (alias) {
     case 'label':
-    case 'note':
       return '<text>';
     case 'shape':
       return '<shape kind>';
@@ -93,7 +92,13 @@ function aliasValue(el: Element, alias: MadeAlias): string {
   }
 }
 
-const HIDDEN_FIELDS: ReadonlySet<string> = new Set(['id', 'type', ...LIVE_ELEMENT_FIELDS]);
+// A note is never written (Work Tracker 737), so no format offers one.
+const HIDDEN_FIELDS: ReadonlySet<string> = new Set([
+  'id',
+  'type',
+  ...LIVE_ELEMENT_FIELDS,
+  ...NOTE_FIELDS,
+]);
 
 // A shape's stored fields cover every shape kind at once, more than one kind's budget: a shape names the fields
 // every shape uses, then its kind's own (its content, as the API's changeset docs describe it).

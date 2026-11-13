@@ -50,7 +50,9 @@ export function applyTest(
   const ref = refsOf(state).refOf(el.id);
   const failures: string[] = [];
   for (const [key, value] of Object.entries(fields)) {
-    const written = writeFieldsOnto(el, { [key]: value }, state.theme, ref, operation);
+    const written = writeFieldsOnto(el, { [key]: value }, state.theme, ref, operation, {
+      test: true,
+    });
     if ('code' in written) return written;
     if (holds(el, key, value, written.next)) continue;
     const actual: unknown = fieldValue(el, key, state.theme);
