@@ -14,7 +14,7 @@ import type { Tab } from '@livedesign/design';
 import type { Participant } from '@/lib/identity';
 import { useOwnPicture } from '@/lib/own-picture';
 import type { PresenceClock } from './usePresenceState';
-import type { LaserPoint } from '@/lib/laser-buffer';
+import type { LaserPoint } from '@liveworkspace/workbench/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 import type { AgentPresence } from '@livedesign/api-schema';
 import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';

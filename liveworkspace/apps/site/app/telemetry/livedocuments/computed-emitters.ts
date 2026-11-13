@@ -132,13 +132,15 @@ const PRESENTATION_SETTINGS = (() => {
   };
 })();
 
-// The image picker's search failures (apps/editor image-search/telemetry.ts):
+// The image picker's search failures (@liveworkspace/workbench lib/image-search/telemetry.ts):
 // every `ImageSearch.<Reason>` token in its fixed tables.
 const IMAGE_SEARCH_WARNINGS = [
   ...new Set(
-    [...read('editor/lib/image-search/telemetry.ts').matchAll(/'(ImageSearch\.[A-Za-z.]+)'/g)].map(
-      (m) => m[1]!,
-    ),
+    [
+      ...read('../../packages/workbench/src/lib/image-search/telemetry.ts').matchAll(
+        /'(ImageSearch\.[A-Za-z.]+)'/g,
+      ),
+    ].map((m) => m[1]!),
   ),
 ];
 
@@ -431,6 +433,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: PAGES_TOUR_STEP_SOURCE,
   },
   // The shared hook's flush on page hide sends what was scheduled: every canvas-panel slider.
+  // The laser and eraser settings each editor's tool configs name (hooks/canvas/use*Config.ts).
+  'packages/workbench/src/hooks/canvas/createToolConfig.ts UI·Changed': {
+    values: ['LaserWidth', 'LaserColour', 'LaserTrail', 'LaserEffect'],
+  },
+  'apps/editor/hooks/persistence/useOfflineConversion.ts Document·Moved': {
+    values: ['SavedToCloud', 'TakenOffline'],
+  },
   'packages/workbench/src/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },

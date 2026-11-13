@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PAGE_MOTIONS } from '@liveplanner/project';
 import { motionPaint } from './page-motion';
-import { motionParts, type MotionNode } from './page-motion-parts';
+import { motionParts, type MotionNode } from '@liveworkspace/page-background/motion-parts';
 
 // Every motion's parts, read by the moving layer (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover).
 // The parts themselves are tested where they live, @liveworkspace/page-background; this checks this

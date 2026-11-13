@@ -16,7 +16,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
 import { rollMashup } from '@/lib/look-mashup';
-import { SEASON_LABELS, seasonalLooksFor } from '@/lib/seasonal-looks';
+import { SEASON_LABELS, seasonalLooksFor } from '@liveworkspace/workbench/lib/seasonal-looks';
 import {
   LOOKS_PER_PAGE,
   TAB_LOOKS,

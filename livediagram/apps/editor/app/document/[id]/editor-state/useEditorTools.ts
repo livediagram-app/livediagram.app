@@ -8,7 +8,7 @@ import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@liveworkspace/workbench/hooks/canvas/useFormatConfig';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
-import { useFormatTool } from '../useFormatTool';
+import { useFormatTool } from '@liveworkspace/workbench/hooks/editor/useFormatTool';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';

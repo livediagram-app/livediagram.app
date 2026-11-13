@@ -6,7 +6,7 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Page, PageFill, PageImageFill } from '@livedocuments/document';
-import type { OpenverseImage } from '@/lib/image-search/openverse';
+import type { OpenverseImage } from '@liveworkspace/workbench/lib/image-search/openverse';
 import type { PickedImage } from '@/lib/upload-image';
 
 const pane = vi.hoisted(() => ({

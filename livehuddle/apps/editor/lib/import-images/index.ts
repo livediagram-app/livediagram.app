@@ -11,4 +11,4 @@ export {
   type ImportImageRequest,
   type ImportImageSession,
   type ImportImageSource,
-} from './types';
+} from '@liveworkspace/workbench/lib/import-images/types';

@@ -8,7 +8,7 @@
     "dev": "node ../../../packages/next-config/scripts/next-dev.mjs --port 3202",
     "dev:webpack": "node ../../../packages/next-config/scripts/next-dev.mjs --port 3202 --webpack",
     "build": "next build && asset-size-gate out",
-    "build:signed-in": "node scripts/build-signed-in.mjs",
+    "build:signed-in": "node ../../../packages/next-config/scripts/build-signed-in.mjs",
     "lint": "oxlint",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage && vitest-budgets",
@@ -19,7 +19,7 @@
     "test:e2e:signed-in": "E2E_SIGNED_IN=1 playwright test --project=signed-in",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo coverage",
-    "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node scripts/icon-sheet/shoot.mjs",
+    "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node ../../../packages/e2e-kit/scripts/icon-sheet-shoot.mjs",
     "icons:brand": "node scripts/brand-icons/render.mjs",
     "test:e2e:workbench": "NEXT_PUBLIC_E2E_AUTH=1 next build && E2E_WORKBENCH=1 playwright test --project=workbench"
   },

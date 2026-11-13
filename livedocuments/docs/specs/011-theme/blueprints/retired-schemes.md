@@ -55,7 +55,7 @@ Derived from [Retired colour schemes, UML](../retired-schemes.md#uml). Scope, by
 | `packages/document/src/retired-themes.ts`           | `packages/document/src/retired-themes.ts` re-exports `migrateRetiredTheme` and `RETIRED_THEMES`                                  |
 | `packages/document/src/stored-tab.ts`               | `migrateStoredTab` runs `migrateRetiredTheme` on every read                                                                      |
 | `apps/editor/lib/tab-looks.ts`                      | Textbook and Schematic wear `mono`; Textbook sits before Spectrum, Whiteboard after it                                           |
-| `apps/editor/lib/themes-taxonomy.ts`                | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
+| `../packages/workbench/src/lib/themes-taxonomy.ts`  | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
 
 Behaviour, `migrateRetiredTheme(tab)`:
 

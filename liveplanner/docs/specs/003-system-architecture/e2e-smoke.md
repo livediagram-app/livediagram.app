@@ -297,7 +297,7 @@ tests where it's cheap.
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`
-  (`apps/editor/scripts/build-signed-in.mjs`) builds the export the latter runs against.
+  (`../packages/next-config/scripts/build-signed-in.mjs`) builds the export the latter runs against.
 - `apps/editor/e2e/signed-in/`: the session helper and the signed-in specs.
 
 Playwright is an `apps/editor` dev dependency; it is **not** wired into

@@ -550,7 +550,7 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
   its own height and the confetti hangs scattered down the page).
 - **In an export** (PDF, PNG and SVG, and the export's preview) the page's background is its first
   frame: every part where it stands as the page opens, never the bare gradient. The parts are
-  described once (`motionParts`, `apps/live/lib/page-motion-parts.ts`), so the moving layer and the
+  described once (`motionParts`, `../packages/page-background/src/motion-parts.ts`), so the moving layer and the
   export draw the same ones; where each stands is its loop evaluated at its start
   (`openingPose`, `page-motion-frame.ts`, which restates `app/motion-page.css`'s keyframes and
   matches the browser's own first frame). The PNG and PDF paint it onto the page

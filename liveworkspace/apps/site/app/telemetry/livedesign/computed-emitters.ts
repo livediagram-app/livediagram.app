@@ -121,13 +121,15 @@ const APPEARANCE_LABELS = tokensAfter(
 // The Trash a restored design sat in: useDesignTrashed's `from`.
 const TRASH_TYPES = ['Personal', 'Team'];
 
-// The image picker's search failures (apps/live image-search/telemetry.ts):
+// The image picker's search failures (@liveworkspace/workbench lib/image-search/telemetry.ts):
 // every `ImageSearch.<Reason>` token in its fixed tables.
 const IMAGE_SEARCH_WARNINGS = [
   ...new Set(
-    [...read('live/lib/image-search/telemetry.ts').matchAll(/'(ImageSearch\.[A-Za-z.]+)'/g)].map(
-      (m) => m[1]!,
-    ),
+    [
+      ...read('../../packages/workbench/src/lib/image-search/telemetry.ts').matchAll(
+        /'(ImageSearch\.[A-Za-z.]+)'/g,
+      ),
+    ].map((m) => m[1]!),
   ),
 ];
 
@@ -417,6 +419,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'the shape the Shape Pen recognised',
   },
   // The shared hook's flush on page hide sends what was scheduled: every canvas-panel slider.
+  // The laser and eraser settings each editor's tool configs name (hooks/canvas/use*Config.ts).
+  'packages/workbench/src/hooks/canvas/createToolConfig.ts UI·Changed': {
+    values: [
+      ...['LaserWidth', 'LaserColour', 'LaserTrail', 'LaserEffect'],
+      ...['EraserMode', 'EraserSize', 'EraserTarget'],
+    ],
+  },
   'packages/workbench/src/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },

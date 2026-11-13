@@ -19,7 +19,7 @@
 //
 // Switches:
 //   E2E_EDITOR_OUT     serve another export of the editor app, e.g. the signed-in `.next/out-signed-in` the
-//                    signed-in specs run against (apps/editor/scripts/build-signed-in.mjs).
+//                    signed-in specs run against (`../packages/next-config/scripts/build-signed-in.mjs`).
 //   E2E_EDITOR_ONLY=1  serve the static editor only, proxying to the api already listening on E2E_API_PORT (no
 //                    second worker), for trying the editor beside a stack that is already up.
 //   E2E_CACHE_POLICY=off, E2E_WORKSPACE_SITE_OUT: see scripts/e2e-stack/static-serving.mjs and stack.mjs.

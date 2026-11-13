@@ -12,7 +12,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { rollMashup } from './look-mashup';
-import { SEASONAL_LOOKS } from './seasonal-looks';
+import { SEASONAL_LOOKS } from '@liveworkspace/workbench/lib/seasonal-looks';
 import { TAB_LOOKS, withLookApplied, type TabLook } from './tab-looks';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 

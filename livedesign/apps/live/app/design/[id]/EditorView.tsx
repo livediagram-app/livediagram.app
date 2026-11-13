@@ -24,7 +24,7 @@ import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { API_BASE } from '@/lib/api-client';
-import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
+import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
 import { designIsPublic } from '@/lib/community-public';
 import { useCommunityState } from '@/lib/community-state-store';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';

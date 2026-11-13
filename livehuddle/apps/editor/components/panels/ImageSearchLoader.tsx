@@ -6,7 +6,7 @@
 // stored, its tile lifts behind a chasing ring and says which stage it is at.
 import type { ReactNode } from 'react';
 import { SearchIcon } from '@livehuddle/ui';
-import type { PickStage } from '@/lib/image-search/pick';
+import type { PickStage } from '@liveworkspace/workbench/lib/image-search/pick';
 
 // One search page fills two rows of four; a further page adds one row.
 export const SKELETON_TILES_FIRST = 8;
