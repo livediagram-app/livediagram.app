@@ -22,7 +22,7 @@ const OUTSIDE_RENDER: Record<string, string> = {
   '../packages/workbench/src/hooks/editor/useTabEntryEffects.ts': 'inside an effect',
   'apps/live/app/design/[id]/useCollabDeepLink.ts': 'inside an effect',
   '../packages/workbench/src/hooks/ui/usePanelDock.ts': 'inside an effect',
-  '../packages/workbench/src/hooks/canvas/useDocumentActions.ts': 'inside a handler',
+  '../packages/workbench/src/hooks/canvas/useItemActions.ts': 'inside a handler',
   'apps/live/hooks/canvas/useDesignActions.ts': 'inside a handler',
   '../packages/workbench/src/hooks/canvas/useAutoCopyParam.ts': 'inside an effect',
   'apps/live/hooks/canvas/useClipboard.ts': 'inside a handler',

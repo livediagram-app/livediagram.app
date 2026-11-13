@@ -8,13 +8,13 @@ vi.mock('../../lib/index-client', () => ({ indexClient: index }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('../ui/useToast', () => ({ useToast: () => toast }));
 
-const { createDocumentActions } = await import('./useDocumentActions');
+const { createItemActions } = await import('./useItemActions');
 
 // An editor's bindings, faked.
 const track = vi.fn();
 const trashOpenDocument = vi.fn(async (_id: string, _name: string) => true);
 let sharePassword: string | null = null;
-const useDocumentActions = createDocumentActions({
+const useItemActions = createItemActions({
   trackDuplicated: () => void track('Document', 'Duplicated', 'Copy'),
   trackDeleted: () => void track('Document', 'Deleted'),
   trashOpenDocument,
@@ -27,9 +27,9 @@ const useDocumentActions = createDocumentActions({
 
 const assign = vi.fn();
 
-function actions(over: Partial<Parameters<typeof useDocumentActions>[0]> = {}) {
+function actions(over: Partial<Parameters<typeof useItemActions>[0]> = {}) {
   return renderHook(() =>
-    useDocumentActions({
+    useItemActions({
       documentId: 'p1',
       documentName: 'Roadmap',
       confirm: vi.fn(async () => true),
@@ -52,7 +52,7 @@ afterEach(() => vi.clearAllMocks());
 
 // Copy and delete are the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): the index
 // makes the copy's row and has this app copy the content; a delete sends the item to the Trash.
-describe('useDocumentActions', () => {
+describe('useItemActions', () => {
   it('copies through the link a visitor came in on, then opens the copy', async () => {
     sharePassword = 'pw';
     index.copyItem.mockResolvedValue({ item: { id: 'p2' } });

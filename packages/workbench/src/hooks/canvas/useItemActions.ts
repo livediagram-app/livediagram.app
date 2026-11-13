@@ -15,7 +15,7 @@ import { useToast } from '../ui/useToast';
 // What each editor hands in, once, at module scope in its `hooks/canvas/useDocumentActions.ts`: its counts, its
 // Trash step for the open item (lib/document-delete-undo), its session's share password (lib/api-client) and its
 // failure copy (lib/write-failure-copy).
-export type DocumentActionsBindings = {
+export type ItemActionsBindings = {
   // Count a copy (Document·Duplicated·Copy) and a delete (Document·Deleted), named by the editor so its telemetry
   // manifest sees them.
   trackDuplicated: () => void;
@@ -28,7 +28,7 @@ export type DocumentActionsBindings = {
   };
 };
 
-type DocumentActionsDeps = {
+type ItemActionsDeps = {
   documentId: string | null;
   documentName: string;
   confirm: ReturnType<typeof useConfirm>;
@@ -38,14 +38,14 @@ type DocumentActionsDeps = {
   sessionShareCode: string | null;
 };
 
-export function createDocumentActions({
+export function createItemActions({
   trackDuplicated,
   trackDeleted,
   trashOpenDocument,
   getSessionSharePassword,
   DOCUMENT_FAILURE,
-}: DocumentActionsBindings) {
-  return function useDocumentActions(deps: DocumentActionsDeps) {
+}: ItemActionsBindings) {
+  return function useItemActions(deps: ItemActionsDeps) {
     const { documentId, documentName, copying, setCopying, sessionShareCode } = deps;
     const toast = useToast();
 

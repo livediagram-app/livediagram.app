@@ -265,7 +265,7 @@
     "./hooks/auth/useSignInGate": "./src/hooks/auth/useSignInGate.ts",
     "./hooks/canvas/createToolConfig": "./src/hooks/canvas/createToolConfig.ts",
     "./hooks/canvas/useAutoCopyParam": "./src/hooks/canvas/useAutoCopyParam.ts",
-    "./hooks/canvas/useDocumentActions": "./src/hooks/canvas/useDocumentActions.ts",
+    "./hooks/canvas/useItemActions": "./src/hooks/canvas/useItemActions.ts",
     "./hooks/canvas/useVoteReviewOpener": "./src/hooks/canvas/useVoteReviewOpener.ts",
     "./hooks/editor/createEditorContext": "./src/hooks/editor/createEditorContext.ts",
     "./hooks/editor/useEditorDialogs": "./src/hooks/editor/useEditorDialogs.ts",

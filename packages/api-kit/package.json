@@ -16,6 +16,10 @@
     "./d1-compound-guard": "./src/d1-compound-guard.ts",
     "./d1-like-guard": "./src/d1-like-guard.ts",
     "./embed-images": "./src/embed-images.ts",
+    "./openapi-aliases": {
+      "types": "./scripts/openapi-aliases.d.mts",
+      "default": "./scripts/openapi-aliases.mjs"
+    },
     "./hosted-vars": {
       "types": "./scripts/hosted-vars.d.mts",
       "default": "./scripts/hosted-vars.mjs"

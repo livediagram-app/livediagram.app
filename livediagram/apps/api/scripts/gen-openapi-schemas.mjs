@@ -14,6 +14,7 @@
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { inlineGenericAliases } from '@liveworkspace/api-kit/openapi-aliases';
 import { createGenerator } from 'ts-json-schema-generator';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -155,7 +156,7 @@ export function generateComponentSchemas() {
   const schemas = {};
   for (const type of ROOT_TYPES) {
     const { definitions = {} } = generator.createSchema(type);
-    for (const [name, schema] of Object.entries(definitions)) {
+    for (const [name, schema] of Object.entries(inlineGenericAliases(definitions))) {
       schemas[publicName(name)] = schema;
     }
   }
