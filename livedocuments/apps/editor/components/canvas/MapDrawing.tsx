@@ -83,20 +83,20 @@ export const MapDrawing = memo(function MapDrawing({
         >
           {layout.countries.map((c) => (
             <path
-              key={c.code}
+              key={c.part ? `${c.code}-${c.part}` : c.code}
               d={c.d}
               fill={c.fill}
               fillOpacity={c.opacity}
-              data-map-country={c.code}
+              data-map-country={c.code || undefined}
               onPointerDown={
-                onCountryPress
+                onCountryPress && c.code
                   ? (e) => {
                       e.stopPropagation();
                       onCountryPress(c.code);
                     }
                   : undefined
               }
-              onPointerEnter={onCountryHover ? () => onCountryHover(c.code) : undefined}
+              onPointerEnter={onCountryHover && c.code ? () => onCountryHover(c.code) : undefined}
             />
           ))}
         </g>
