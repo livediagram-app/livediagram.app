@@ -242,7 +242,7 @@ describe('the Audit Trail', () => {
         expect.objectContaining({ rule: 'r1', limit: 200 }),
       ),
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Expand run' }));
+    fireEvent.click(await screen.findByRole('button', { name: /^Expand run: / }));
     expect(screen.getByText('Removed the label blocked')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open Card' }));
     expect(onClose).toHaveBeenCalled();

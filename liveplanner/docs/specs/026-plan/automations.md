@@ -764,7 +764,8 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
 
 - **Audit Trail**: filters **All Rules**, **Any Result** and **Last 7 Days**, the line "Kept for 30 days or the last
   2,000 runs, and the last 500 No Matches" (No Matches are kept apart, so they never push a run out), and one row per run: When, Rule, Card (`#48` and title), Result (**Done**, **No Match**, **Skipped**,
-  **Failed** pills), Took. A row opens to its steps, one line each with a tick or a cross: who did what (the
+  **Failed** pills), Took. A row opens to its steps, a click anywhere on it or on its chevron (whose name says which
+  run: "Expand run: Stamp the Finish Date, #48"), one line each with a tick or a cross: who did what (the
   trigger), each condition with what it found, each action, and **Open Card**. A failed or skipped row shows its
   reason under it.
 - On a phone the rows stack (name, sentence, last run and week on one line, the switch at the right) and the
@@ -847,9 +848,12 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 - Picking a card selects it (a violet ring) and opens it on the right in the **step panel**: its own fields (columns,
   fields, people and types picked from the plan's), and for text, the **Insert a Value** button in the field that drops a value at the
   caret, shown as violet chips. An action's panel shows a **Preview** on a real card of the plan, filled in. A pick
-  the plan no longer has (a deleted column, Form tab, field, card type or person) stays shown, as "A column no longer
-  here" (or "Someone No Longer Here" for a person), picked, so the panel never hides what the rule holds or shows
-  another choice in its place, and it can be unpicked.
+  the plan no longer has (a deleted column, Form tab, field, card type or person, or Link Cards' deleted card) stays
+  shown, as "A column no longer here" (or "Someone No Longer Here" for a person, "A card no longer here" for a card),
+  picked, so the panel never hides what the rule holds or shows another choice in its place, and it can be unpicked.
+- To a screen reader each step card's button reads its kind and what it does ("Then", described by "Assign Ana
+  Costa"), and a panel's **Change** reads "Change Trigger" or "Change Action", described by the current one, so the
+  name heard holds the word on the button.
 - A step's ⋯ menu: Move Up, Move Down, Duplicate, Delete.
 - **Rule Details** (an accordion, closed): **Let this rule's changes trigger other rules** with "Off keeps rules
   from setting each other off. Chains stop after 5 rules.", and "Runs as Automation, with an Editor's access, for

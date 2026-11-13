@@ -4,7 +4,7 @@
 // pointed at a card picked here or, inside a branch, at the card that started the rule. A field of several cards
 // gains it; a single one is replaced.
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { itemTitle, type AutomationAction } from '@liveplanner/items';
 import { Button } from '@liveplanner/ui';
 import { CardPickerDialog } from '@/components/plan/CardPickerDialog';
@@ -51,6 +51,9 @@ export function LinkCardPanel({
   const to = 'trigger' in action.to ? TRIGGER : CHOSEN;
   const chosen =
     'card' in action.to && action.to.card ? outline.items.get(action.to.card) : undefined;
+  // A card the rule holds that the plan has since lost: shown as gone, never as nothing picked.
+  const gone = 'card' in action.to && !!action.to.card && !chosen;
+  const cardLineId = useId();
   if (!fields.length)
     return (
       <p className="text-[12px] text-slate-500 dark:text-slate-400">
@@ -101,24 +104,31 @@ export function LinkCardPanel({
             <div
               className={`flex h-11 items-center gap-2 rounded-lg border bg-white pl-3 pr-1.5 dark:bg-slate-900 ${invalid && !chosen ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-700'}`}
             >
-              <span className="min-w-0 flex-1 truncate text-[13px] text-slate-900 dark:text-slate-50">
+              <span
+                id={cardLineId}
+                className="min-w-0 flex-1 truncate text-[13px] text-slate-900 dark:text-slate-50"
+              >
                 {chosen ? (
                   <>
                     <span className="mr-1 text-slate-500 dark:text-slate-400">#{chosen.key}</span>
                     {itemTitle(chosen)}
                   </>
                 ) : (
-                  <span className="text-slate-500 dark:text-slate-400">No card picked</span>
+                  <span className="text-slate-500 dark:text-slate-400">
+                    {gone ? 'A card no longer here' : 'No card picked'}
+                  </span>
                 )}
               </span>
               <Button
                 id={id}
                 variant="secondary"
                 size="xs"
+                aria-label={chosen || gone ? 'Change Card' : 'Pick a Card'}
+                aria-describedby={cardLineId}
                 aria-haspopup="dialog"
                 onClick={() => setPicking(true)}
               >
-                {chosen ? 'Change' : 'Pick a Card'}
+                {chosen || gone ? 'Change' : 'Pick a Card'}
               </Button>
             </div>
           )}
