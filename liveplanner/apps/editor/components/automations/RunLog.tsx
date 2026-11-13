@@ -3,9 +3,10 @@
 // The Audit Trail tab (docs/specs/026-plan/automations.md "The Automations screen": Audit Trail): the All Rules, Any Result
 // and Last 7 Days filters, the line saying how long runs are kept, then the runs newest first, each opening to its
 // steps. Read when the tab opens and whenever a filter changes; a skeleton while it loads, an empty state with no
-// runs, and Try Again when the read failed.
+// runs, and Try Again when the read failed. The screen's Refresh reads the runs again through `reloadRef` (while the
+// tab is open), keeping the runs shown until the new ones land.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { AutomationResult, AutomationRun } from '@liveplanner/items';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import { CompactEmptyState, NoMatches, Select } from '@liveplanner/ui';
@@ -35,6 +36,17 @@ export function windowStart(days: RunWindow, now: number): number {
   return now - days * DAY_MS;
 }
 
+// The query a set of filters reads.
+const runQuery = (rule: string, result: AutomationResult | '', since: number) => ({
+  ...(rule ? { rule } : {}),
+  ...(result ? { result } : {}),
+  since,
+  limit: RUN_LOG_LIMIT,
+});
+
+/** Refresh's way into an open Audit Trail: reads the runs again, false when that read failed. */
+export type RunLogReload = () => Promise<boolean>;
+
 // The last answer and the read it answered: a read whose key differs from the filters' is still loading.
 type Answer = { key: string; status: 'ready' | 'error'; runs: readonly AutomationRun[] };
 
@@ -45,6 +57,7 @@ export function RunLog({
   phone,
   initialRule,
   onOpenCard,
+  reloadRef,
 }: {
   scope: AutomationsScope;
   rules: readonly AutomationListedRule[];
@@ -53,6 +66,8 @@ export function RunLog({
   // A rule's ⋯ Audit Trail opens on its runs.
   initialRule?: string | undefined;
   onOpenCard: (cardId: string) => void;
+  // Set to this tab's reload while it is open (the screen's Refresh).
+  reloadRef?: RefObject<RunLogReload | null>;
 }) {
   const [picked, setRule] = useState(initialRule ?? '');
   // A rule gone (deleted, or never in the list) filters nothing, as the Rule select then reads All Rules.
@@ -67,12 +82,7 @@ export function RunLog({
   const key = `${rule}|${result}|${since}|${attempt}`;
   useEffect(() => {
     let live = true;
-    listRuns(scope, {
-      ...(rule ? { rule } : {}),
-      ...(result ? { result } : {}),
-      since,
-      limit: RUN_LOG_LIMIT,
-    }).then(
+    listRuns(scope, runQuery(rule, result, since)).then(
       (got) => {
         if (live) setAnswer({ key, status: 'ready', runs: got.runs });
       },
@@ -85,6 +95,28 @@ export function RunLog({
       live = false;
     };
   }, [scope, rule, result, since, key]);
+  // Refresh: the same filters read again, the runs kept on screen meanwhile (the key, and so the status, stay as they
+  // were) and replaced only if the filters still are those it read for. A failure leaves them as they were.
+  const keyNow = useRef(key);
+  const reload = async (): Promise<boolean> => {
+    const asked = key;
+    try {
+      const got = await listRuns(scope, runQuery(rule, result, since));
+      if (keyNow.current === asked) setAnswer({ key: asked, status: 'ready', runs: got.runs });
+      return true;
+    } catch (error) {
+      debugLog('[automations] runs.refresh.failed', { error: String(error) });
+      return false;
+    }
+  };
+  useEffect(() => {
+    keyNow.current = key;
+    if (!reloadRef) return;
+    reloadRef.current = reload;
+    return () => {
+      reloadRef.current = null;
+    };
+  });
   const read = {
     status: answer.key === key ? answer.status : 'loading',
     runs: answer.runs,

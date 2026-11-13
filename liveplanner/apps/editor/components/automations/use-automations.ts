@@ -43,7 +43,7 @@ type Entry = {
   state: AutomationsState;
   listeners: Set<() => void>;
   // The read under way, which a second ask waits on rather than repeating.
-  reading: Promise<void> | null;
+  reading: Promise<boolean> | null;
   // The rules (by name) a reader looked for and missed, each read for once (readAutomationsFor).
   missed: Set<string>;
   // A change answered while a read was under way: that read may have been served before it, so it reads again.
@@ -69,8 +69,9 @@ function publish(entry: Entry, state: AutomationsState): void {
   for (const l of entry.listeners) l();
 }
 
-/** Reads the list (once at a time); a read already under way is not repeated, and settles when that one does. */
-export function readAutomations(scope: AutomationsScope): Promise<void> {
+/** Reads the list (once at a time); a read already under way is not repeated, and settles when that one does.
+ *  Resolves false when the read failed (the list read before stays), true otherwise (Refresh says which). */
+export function readAutomations(scope: AutomationsScope): Promise<boolean> {
   const entry = entryOf(scope);
   if (entry.reading) return entry.reading;
   if (entry.state.status !== 'ready') publish(entry, { status: 'loading', data: entry.state.data });
@@ -84,11 +85,13 @@ export function readAutomations(scope: AutomationsScope): Promise<void> {
         data = await listAutomations(scope);
       } while (entry.stale);
       publish(entry, { status: 'ready', data });
+      return true;
     } catch (error) {
       const refused =
         error instanceof AutomationRefusal && error.code === 'automations_need_editor';
       debugLog('[automations] list.failed', { refused, error: String(error) });
       publish(entry, { status: refused ? 'refused' : 'error', data: entry.state.data });
+      return refused;
     } finally {
       entry.reading = null;
     }
