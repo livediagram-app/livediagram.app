@@ -6,15 +6,10 @@
 // every edit there is.
 import { useCallback, useMemo } from 'react';
 import {
-  columnForType,
-  fixedKeptFor,
   formStarter,
-  newFormPartId,
-  questionsOf,
   starterBaseType,
   newFieldFor,
   readForm,
-  withTypeQuestions,
   UNTITLED_FORM,
   type FormDefinition,
   type FormQuestion,
@@ -27,6 +22,10 @@ import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import {
+  useFormDestinationActions,
+  type FormDestinationActions,
+} from './useFormDestinationActions';
+import {
   boardsOf,
   planFormStart,
   responsesBoardTab,
@@ -36,7 +35,7 @@ import {
   withBoardTaking,
 } from '@liveplanner/templates';
 
-export type FormActions = {
+export type FormActions = FormDestinationActions & {
   // A starter chosen on Start Planning: the tab becomes a Form tab holding it.
   startForm: (starter: StarterId) => void;
   // New Form on a board's cog: a Blank form on a new Form tab after the board's, its responses going to that board,
@@ -58,13 +57,6 @@ export type FormActions = {
   newResponsesBoard: () => void;
   // Responses Go To's New Card Type: a type named after the form, taken by the destination's board, now the type.
   newCardType: () => void;
-  // Responses Go To's Card Type: the destination's type, its column one the type uses (columnForType), its board
-  // renamed "<Type> Responses" while on its automatic name (withAutoBoardName), one step; on a form with no questions,
-  // then a question for each of the type's fields as a step of its own (docs/specs/030-forms/forms.md "Questions from
-  // the card type's fields").
-  setDestinationType: (typeId: string) => void;
-  // Add Questions for {Type}'s Fields: a question for each field of the destination's type no question asks, one step.
-  addTypeQuestions: () => void;
   // Responses Go To's Board or Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet"): to a Sheet, the given one
   // (or the project's first); to a Board, the sheet let go (the board destination was kept).
   setResponsesTo: (
@@ -435,62 +427,13 @@ export function useFormActions({
     else live.current.openTab?.(sheetTab.id);
   }, [activeId, commitTabs, live]);
 
-  const setDestinationType = useCallback<FormActions['setDestinationType']>(
-    (typeId) => {
-      const { tabs: now, itemTypes: slice } = live.current;
-      const formTab = now.find((t) => t.id === activeId);
-      if (!formTab) return;
-      const form = readForm(formTab.form) ?? blankForm(formTab.name);
-      const dest = form.destination;
-      const to = slice.types.find((t) => t.id === typeId);
-      if (!dest || !to || dest.typeId === typeId) return;
-      const from = slice.types.find((t) => t.id === dest.typeId)?.label;
-      // The column moves to one the new type uses; set values stay while their fields do.
-      const destTab = now.find((t) => t.id === dest.tabId);
-      const boards = destTab ? boardsOf(destTab) : [];
-      const board =
-        boards.find((b) => b.setup.columns.some((c) => c.status === dest.status)) ?? boards[0];
-      const status = columnForType(board?.setup.columns ?? [], to, dest.status) ?? dest.status;
-      const { fixed: _was, ...plain } = dest;
-      const fixed = fixedKeptFor(dest.fixed, to);
-      const moved = { ...plain, typeId, status, ...(fixed ? { fixed } : {}) };
-      commitTabs((ts) =>
-        ts.map((t) => {
-          if (t.id === activeId) return { ...t, form: { ...form, destination: moved } };
-          if (t.id === dest.tabId)
-            return withAutoBoardName(t, { heading: form.heading, from, to: to.label });
-          return t;
-        }),
-      );
-      // An empty form takes a question per field, its own undo step: Undo leaves the type chosen.
-      if (questionsOf(form).length === 0) {
-        commitTabs((ts) =>
-          ts.map((t) => {
-            if (t.id !== activeId) return t;
-            const current = readForm(t.form) ?? blankForm(t.name);
-            const next = withTypeQuestions(current, to, () => newFormPartId('q'));
-            return next === current ? t : { ...t, form: next };
-          }),
-        );
-        track('Form', 'Added', 'FromCardType');
-      }
-    },
-    [activeId, commitTabs, live],
-  );
-
-  const addTypeQuestions = useCallback<FormActions['addTypeQuestions']>(() => {
-    const { itemTypes: slice } = live.current;
-    commitTabs((ts) =>
-      ts.map((t) => {
-        if (t.id !== activeId) return t;
-        const form = readForm(t.form) ?? blankForm(t.name);
-        const type = slice.types.find((x) => x.id === form.destination?.typeId);
-        const next = type ? withTypeQuestions(form, type, () => newFormPartId('q')) : form;
-        return next === form ? t : { ...t, form: next };
-      }),
-    );
-    track('Form', 'Added', 'FromCardType');
-  }, [activeId, commitTabs, live]);
+  // Responses Go To's board and card type, and the questions they bring (useFormDestinationActions).
+  const { setDestinationType, setDestinationBoard, addTypeQuestions } = useFormDestinationActions({
+    activeId,
+    commitTabs,
+    live,
+    blankForm,
+  });
 
   return useMemo(
     () => ({
@@ -504,6 +447,7 @@ export function useFormActions({
       newResponsesBoard,
       newCardType,
       setDestinationType,
+      setDestinationBoard,
       addTypeQuestions,
       setResponsesTo,
       newResponsesSheet,
@@ -519,6 +463,7 @@ export function useFormActions({
       newResponsesBoard,
       newCardType,
       setDestinationType,
+      setDestinationBoard,
       addTypeQuestions,
       setResponsesTo,
       newResponsesSheet,

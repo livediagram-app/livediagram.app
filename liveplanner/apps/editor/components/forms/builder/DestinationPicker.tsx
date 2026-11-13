@@ -8,7 +8,6 @@
 import type { Tab } from '@liveplanner/project';
 import {
   DESTINATION_PROBLEM_TEXT,
-  columnForType,
   destinationProblem,
   destinationWarning,
   destinationWarningText,
@@ -172,19 +171,8 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
           disabled={!b.canEdit}
           onChange={(e) => {
             if (e.target.value === NEW) return b.actions.newResponsesBoard();
-            const tab = boardTabs.find((t) => t.id === e.target.value);
-            const setup = tab ? boardsOf(tab)[0]?.setup : undefined;
-            if (!tab || !setup) return;
-            const typeId =
-              dest && boardAddTypes(setup, b.types).some((t) => t.id === dest.typeId)
-                ? dest.typeId
-                : (boardAddTypes(setup, b.types)[0]?.id ?? dest?.typeId ?? '');
-            // The board's first column the type uses; set values stay while the type does.
-            const picked = b.types.find((t) => t.id === typeId);
-            const status =
-              columnForType(setup.columns, picked, undefined) ?? setup.columns[0]!.status;
-            const fixed = dest?.typeId === typeId ? dest.fixed : undefined;
-            set({ tabId: tab.id, typeId, status, ...(fixed ? { fixed } : {}) });
+            // Its type, column and set values; an empty form then takes the type's questions, a step of its own.
+            b.actions.setDestinationBoard(e.target.value);
           }}
         >
           <option value="" disabled>
@@ -289,7 +277,8 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
             <span className="text-[12px] text-slate-500 dark:text-slate-400">
               Choose a board first.
             </span>
-          ) : columns.length === 0 && type ? (
+          ) : columns.length === 0 && type && warning !== 'no_type_column' ? (
+            // The warning under the chips says it when it shows, so it is said once.
             <span className="text-[12px] text-slate-500 dark:text-slate-400">
               None of these columns is a {type.label} state.
             </span>

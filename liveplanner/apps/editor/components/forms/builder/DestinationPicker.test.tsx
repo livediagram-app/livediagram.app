@@ -78,6 +78,7 @@ const formWith = (extra: Partial<FormDefinition> = {}): FormDefinition => ({
 
 let latest: FormDefinition;
 const addTypeQuestions = vi.fn();
+const setDestinationBoard = vi.fn();
 
 function Harness({ start, tabs }: { start: FormDefinition; tabs: Tab[] }) {
   const [form, setForm] = useState(start);
@@ -92,6 +93,7 @@ function Harness({ start, tabs }: { start: FormDefinition; tabs: Tab[] }) {
     newResponsesBoard: vi.fn(),
     newCardType: vi.fn(),
     setDestinationType: vi.fn(),
+    setDestinationBoard,
   } as unknown as FormActions;
   const value: FormBuilderValue = {
     form,
@@ -134,19 +136,28 @@ describe('columns follow the card type', () => {
     expect(latest.destination?.status).toBe('selected');
   });
 
-  it('says so when the board has no column the type uses', () => {
+  it('says so once when the board has no column the type uses', () => {
     const start = formWith({ destination: { tabId: 'b', typeId: 'work-item', status: 'new' } });
     render(<Harness start={start} tabs={[board([['new', 'New']])]} />);
     expect(chips()).toEqual([]);
-    expect(screen.getByText('None of these columns is a Work Item state.')).toBeTruthy();
+    // The warning under the chips says it; no second line beside them.
+    expect(screen.queryByText('None of these columns is a Work Item state.')).toBeNull();
+    expect(screen.getAllByText(/None of .* columns is a Work Item state/)).toHaveLength(1);
     expect(screen.getByRole('status').textContent).toContain('None of Intake’s columns');
   });
 
-  it('takes the first column the type uses on choosing a board', () => {
+  it('keeps its short line when a destination problem shows instead', () => {
+    // The column is gone from the board: a problem, not the warning, so the chips' own line stays.
+    const start = formWith({ destination: { tabId: 'b', typeId: 'work-item', status: 'gone' } });
+    render(<Harness start={start} tabs={[board([['new', 'New']])]} />);
+    expect(screen.getByText('None of these columns is a Work Item state.')).toBeTruthy();
+  });
+
+  it('hands a board choice to setDestinationBoard', () => {
     const other: Tab = { ...board(MIXED), id: 'b2', name: 'Other' };
     render(<Harness start={formWith()} tabs={[board(MIXED), other]} />);
     fireEvent.change(screen.getByRole('combobox', { name: 'Board' }), { target: { value: 'b2' } });
-    expect(latest.destination).toEqual({ tabId: 'b2', typeId: 'work-item', status: 'review' });
+    expect(setDestinationBoard).toHaveBeenCalledWith('b2');
   });
 });
 
@@ -248,6 +259,8 @@ describe('Extra Columns', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add Column' }));
     expect(latest.sheet?.fixed?.[1]?.header).toBe('Extra Column 2');
     const [kind] = screen.getAllByRole('combobox', { name: /what it holds/ });
+    // Wide enough on a phone for "Submitted Date" at the 16 px field text.
+    expect(kind!.parentElement!.className).toContain('max-sm:w-44');
     fireEvent.change(kind!, { target: { value: 'text' } });
     expect(screen.getByText('Type a value to use it.')).toBeTruthy();
     const value = screen.getByRole('textbox', { name: 'Extra Column: its value' });
