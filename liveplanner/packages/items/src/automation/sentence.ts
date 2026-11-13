@@ -53,8 +53,17 @@ export const GONE_NAMES = {
   form: 'a form no longer here',
 } as const;
 
+// What a pick never made (an empty id: a template's field the plan has none like) reads as: the pick it waits for,
+// not something gone.
+export const UNPICKED_NAMES = {
+  column: 'a column',
+  type: 'a card type',
+  field: 'a field',
+  form: 'a form',
+} as const;
+
 const gone = (outline: RuleSentenceOutline, id: string, kind: keyof typeof GONE_NAMES): string =>
-  outline.goneWords ? GONE_NAMES[kind] : id;
+  outline.goneWords ? (id ? GONE_NAMES[kind] : UNPICKED_NAMES[kind]) : id;
 
 /** A saved filter's key in RuleSentenceOutline.filters: its board's tab and its id. */
 export const savedFilterKey = (tab: string, filter: string): string => `${tab}\u0000${filter}`;

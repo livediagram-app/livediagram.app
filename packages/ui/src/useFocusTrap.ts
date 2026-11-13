@@ -39,6 +39,26 @@ const coarsePointer = () =>
 // controls from the top.
 export type FocusTrapInitial = 'first' | 'container';
 
+const MODAL = '[aria-modal="true"]';
+
+// The modal drawn on top: the last open one in the page, as each one's portal mounted after those under it.
+function topModal(doc: Document): HTMLElement | null {
+  const all = doc.querySelectorAll<HTMLElement>(MODAL);
+  return all[all.length - 1] ?? null;
+}
+
+// Whether `node` is drawn over every open modal: the top one itself, one holding it, or anything after it in the
+// page (a popover inside it, or portaled later). A modal under another leaves focus to the one on top.
+const onTop = (node: HTMLElement) => {
+  const top = topModal(node.ownerDocument);
+  return (
+    top === null ||
+    top === node ||
+    node.contains(top) ||
+    (top.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+  );
+};
+
 export function useFocusTrap(
   ref: RefObject<HTMLElement | null>,
   active = true,
@@ -107,13 +127,14 @@ export function useFocusTrap(
     // A focused control the modal swaps out (a format card that opens its panel, a Back bar that closes it) takes
     // focus with it to <body>: a screen reader is then reading the page, not the dialog. Each change inside the
     // modal checks for that and hands focus to the container, so the reader stays in the dialog and Tab enters its
-    // controls from the top. O(1) per mutation batch.
+    // controls from the top. Only the modal on top takes it: one behind (the Automations screen under its rule
+    // drawer) never pulls focus out from under the one being used. O(open modals) per mutation batch.
     const observer =
       typeof MutationObserver === 'undefined'
         ? null
         : new MutationObserver(() => {
             const now = document.activeElement;
-            if ((now === null || now === document.body) && node.isConnected)
+            if ((now === null || now === document.body) && node.isConnected && onTop(node))
               node.focus({ preventScroll: true });
           });
     observer?.observe(node, { childList: true, subtree: true });
@@ -131,9 +152,12 @@ export function useFocusTrap(
       const back = previouslyFocused?.isConnected
         ? previouslyFocused
         : (opener as HTMLElement | null);
-      if ((lost || node.contains(now)) && back?.isConnected) {
-        back.focus?.({ preventScroll: true });
-      }
+      if (!lost && !node.contains(now)) return;
+      // What opened it, while it is still on the page and something to focus (a tap on a dim focuses nothing, so
+      // a confirm it raised began with <body>); else the modal now on top, so focus stays in what is still open.
+      const top = topModal(document);
+      const target = back?.isConnected && back !== document.body ? back : top !== node ? top : null;
+      target?.focus?.({ preventScroll: true });
     };
   }, [ref, active, initial, opener]);
 }

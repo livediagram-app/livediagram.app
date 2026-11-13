@@ -1,8 +1,9 @@
 'use client';
 
 // The rule builder on a phone (docs/specs/026-plan/automations.md "The rule builder on a phone"): a tall sheet over the
-// Automations screen, which stays behind it. Swiping it down, the dim behind it and Escape go back to the rules, asking
-// Discard Changes? first while it has unsaved changes (`beforeClose` answers false, so it springs back while it asks).
+// Automations screen, which stays behind it. Swiping it down, the dim behind it, Escape and the browser's Back go back
+// to the rules, asking Discard Changes? first while it has unsaved changes (`beforeClose` answers false, so it springs
+// back while it asks).
 
 import { useId, type ReactNode } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -28,6 +29,7 @@ export function RuleDrawer({
       titleId={titleId}
       size="3xl"
       phoneSheet="tall"
+      closeOnBack
       initialFocus="container"
       className="max-h-none overflow-hidden"
     >

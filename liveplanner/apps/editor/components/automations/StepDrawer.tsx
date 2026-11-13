@@ -2,8 +2,8 @@
 
 // A step's fields on a phone (docs/specs/026-plan/automations.md "The rule builder on a phone"): a sheet stacked over
 // the rule drawer, its own grab handle, the step's tile and name as its title beside the close, its fields scrolling
-// inside, and Done at its foot. Every way out (swipe, the dim, Escape, close, Done) slides it down first. A refused
-// save opens it on the step at fault, with the refusal's words at the top of its fields.
+// inside, and Done at its foot. Every way out (swipe, the dim, Escape, the browser's Back, close, Done) slides it down
+// first. A refused save opens it on the step at fault, with the refusal's words at the top of its fields.
 
 import { useId, type ReactNode } from 'react';
 import { Button, DialogCloseButton, useDialogDismiss } from '@liveplanner/ui';
@@ -40,6 +40,7 @@ export function StepDrawer({
       titleId={titleId}
       size="lg"
       phoneSheet
+      closeOnBack
       initialFocus="container"
       className="max-h-[85dvh] overflow-hidden"
     >

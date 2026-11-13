@@ -310,19 +310,51 @@ describe('StepPanel', () => {
     expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'labels', value: { text: '' } });
     pick('Field', 'priority');
     expect(latest.steps[0]).toMatchObject({ value: { text: 'urgent' } });
+    // A number starts on 0 and a date on Today, never on empty Text the save would refuse.
     pick('Field', 'estimate');
-    expect(latest.steps[0]).toMatchObject({ field: 'estimate', value: { text: '' } });
-    // The same kind keeps what it holds.
+    expect(latest.steps[0]).toMatchObject({ field: 'estimate', value: { number: 0 } });
     pick('Field', 'start');
-    fireEvent.change(screen.getByRole('textbox', { name: 'Text' }), {
-      target: { value: '2026-11-20' },
+    expect(latest.steps[0]).toMatchObject({ field: 'start', value: { date: { today: 0 } } });
+    // The same kind keeps what it holds.
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Today, shifted by' }), {
+      target: { value: '3' },
     });
     pick('Field', 'due');
     expect(latest.steps[0]).toEqual({
       kind: 'set_field',
       field: 'due',
-      value: { text: '2026-11-20' },
+      value: { date: { today: 3 } },
     });
+  });
+
+  it('keeps a template’s Today when its empty field is picked as a date field', () => {
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: '', value: { date: { today: 0 } } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('Field', 'due');
+    expect(latest.steps[0]).toEqual({
+      kind: 'set_field',
+      field: 'due',
+      value: { date: { today: 0 } },
+    });
+  });
+
+  it('starts a template’s empty field afresh when the value does not suit the field picked', () => {
+    render(
+      <Panel
+        body={body({
+          steps: [{ kind: 'set_field', field: '', value: { date: { today: 0 } } }],
+        })}
+        part={{ part: 'step', index: 0 }}
+      />,
+    );
+    pick('Field', 'title');
+    expect(latest.steps[0]).toEqual({ kind: 'set_field', field: 'title', value: { text: '' } });
   });
 
   it('leaves out of Field Changed the fields no write changes', () => {

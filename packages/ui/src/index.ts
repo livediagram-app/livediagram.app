@@ -98,6 +98,7 @@ export {
   type SheetDrag,
 } from './useSheetDrag';
 export { useVisualViewportBand } from './useVisualViewportBand';
+export { useBackCloses } from './useBackCloses';
 // The base every app's chrome icons are drawn on (icons/Glyph.tsx): the square, stroke-currentColor Glyph, the
 // catalogue primitives as SVG children, and lucideGlyph for a vendored Lucide glyph at its default size.
 export { Glyph, type IconProps } from './icons/Glyph';

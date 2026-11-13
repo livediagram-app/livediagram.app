@@ -150,27 +150,22 @@ export function PhoneRuleFoot({
           {message}
         </p>
       ) : null}
-      <div className="flex gap-2 border-t border-slate-100 px-4 pb-3 pt-3 dark:border-slate-800">
-        <Button variant="secondary" size="md" className="h-11 flex-1" onClick={onTest}>
+      {/* Two equal columns: Saved has no button's padding, so flex-1 alone drew it narrower than Test on a Card. */}
+      <div className="grid grid-cols-2 gap-2 border-t border-slate-100 px-4 pb-3 pt-3 dark:border-slate-800">
+        <Button variant="secondary" size="md" className="h-11" onClick={onTest}>
           Test on a Card
         </Button>
         {saved ? (
           // Nothing to save: a plain, full-contrast state rather than a faded button.
           <span
             role="status"
-            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-md bg-emerald-50 text-sm font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200"
+            className="flex h-11 items-center justify-center gap-1.5 rounded-md bg-emerald-50 text-sm font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200"
           >
             <CheckIcon size={14} />
             Saved
           </span>
         ) : (
-          <Button
-            variant="primary"
-            size="md"
-            className="h-11 flex-1"
-            onClick={onSave}
-            disabled={saving}
-          >
+          <Button variant="primary" size="md" className="h-11" onClick={onSave} disabled={saving}>
             {saving ? 'Saving…' : 'Save Rule'}
           </Button>
         )}

@@ -7,6 +7,7 @@ import {
   outlineFieldName,
   outlinePersonName,
   outlineTabName,
+  outlineTypeName,
   ruleSentence,
   savedFilterKey,
   sentenceOrList,
@@ -313,6 +314,23 @@ describe('the names', () => {
     // Known names read as ever.
     expect(outlineTabName('t-form', editor)).toBe('Intake Form');
     expect(outlineFieldName('f-done', editor)).toBe('Completed On');
+  });
+
+  it('reads a pick never made as the pick it waits for, not as gone (a template left it empty)', () => {
+    const editor = { ...OUTLINE, goneWords: true };
+    const sentence = ruleSentence(
+      rule({
+        trigger: { kind: 'card_moved', to: [''] },
+        steps: [{ kind: 'set_field', field: '', value: { date: { today: 0 } } }],
+      }),
+      editor,
+    );
+    const text = sentence.map((p) => ('word' in p ? p.word : p.chip)).join(' ');
+    expect(text).toBe('When Card Moved to a column then Set a field Today');
+    expect(outlineTypeName('', editor)).toBe('a card type');
+    expect(outlineTabName('', editor)).toBe('a form');
+    // An agent's sentence keeps what was stored.
+    expect(outlineFieldName('', OUTLINE)).toBe('');
   });
 });
 

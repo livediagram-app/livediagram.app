@@ -22,6 +22,17 @@ describe('refusalWords', () => {
     ).toBe('Ends a run.');
   });
 
+  it('says a pick left empty as what to pick, never a bare "Must name one."', () => {
+    const say = (path: string) =>
+      refusalWords({ code: 'automation_invalid', path, message: `${path} must name one` });
+    expect(say('steps.0.field')).toBe('Pick a field.');
+    expect(say('trigger.status')).toBe('Pick a column.');
+    expect(say('steps.1.then.0.type')).toBe('Pick a card type.');
+    expect(say('trigger.formTab')).toBe('Pick a form.');
+    expect(say('steps.2.to.person')).toBe('Pick a person.');
+    expect(say('conditions.0.types.1')).toBe('Pick one.');
+  });
+
   it('keeps a message that does not lead with its path, or has nothing after it', () => {
     const say = (path: string | null, message: string) =>
       refusalWords({ code: 'automation_invalid', path, message });

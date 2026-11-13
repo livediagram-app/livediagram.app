@@ -25,6 +25,29 @@ const choiceText = (text: string, choices: readonly Choice[]): string =>
 const fromOf = (v: AutomationSetValue): SetFrom =>
   'number' in v ? 'number' : 'date' in v ? 'date' : 'from' in v ? 'from' : 'text';
 
+type Field = Parameters<typeof startText>[0];
+type PickOutline = Parameters<typeof startText>[1];
+
+/** What Set Field on `field` starts on afresh: a date on Today, a number on 0, any other as startText says. */
+export function startValue(field: Field, outline: PickOutline): AutomationSetValue {
+  if (!fieldPick(field, outline)) {
+    const cls = fieldClass(field?.kind ?? 'text');
+    if (cls === 'date') return { date: { today: 0 } };
+    if (cls === 'number') return { number: 0 };
+  }
+  return { text: startText(field, outline) };
+}
+
+/** Whether `value` already suits `field`: the form startValue would give it (a day for a date, a number for a
+ *  number), or text for a text field, or one of a field of fixed values' own. */
+export function fitsField(value: AutomationSetValue, field: Field, outline: PickOutline): boolean {
+  if (!field) return false;
+  const pick = fieldPick(field, outline);
+  if (pick) return 'text' in value && pick.choices.some((c) => c.value === value.text);
+  const start = startValue(field, outline);
+  return fromOf(value) === fromOf(start);
+}
+
 function freshValue(from: SetFrom, fieldIds: readonly string[]): AutomationSetValue {
   switch (from) {
     case 'number':
@@ -81,11 +104,13 @@ export function FieldActionPanel({
             // value is kept either way.
             const nextField = fields.find((f) => f.id === id);
             const next = fieldPick(nextField, outline);
+            // No field held yet (a template's, left for you): a value that fits the one picked stays (Today on a date).
+            const kept = !field && fitsField(action.value, nextField, outline);
             const value: AutomationSetValue =
-              'from' in action.value
+              'from' in action.value || kept
                 ? action.value
                 : nextField?.kind !== field?.kind
-                  ? { text: startText(nextField, outline) }
+                  ? startValue(nextField, outline)
                   : next && 'text' in action.value
                     ? { text: choiceText(action.value.text, next.choices) }
                     : action.value;
