@@ -196,7 +196,8 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
 - **Scoring**: first to 11, by two clear points (at 10 all, play on until one leads by two). Service changes every
   two points, and every point from 10 all; the left player serves first. The score is shown above the table, left
   player's points on the left, for everyone on the tab, in a small pill in each player's colour, in the middle above
-  the table (clear of the two players' heads at its ends). A won game shows **<Name> Wins** in the winner's colour
+  the table (clear of the two players' heads at its ends). While it shows (Ready, the score or the win) the table's
+  name pill is hidden, as the scoreboard already says who plays ([Chair](chair.md) "A game names its own players"). A won game shows **<Name> Wins** in the winner's colour
   (**You Win** on the winner's own screen) for five seconds, then a new game starts at 0 all if both are still
   sitting.
 - **Leaving ends your side**: standing up (or leaving Avatar mode, or the tab, or the document) ends the game at

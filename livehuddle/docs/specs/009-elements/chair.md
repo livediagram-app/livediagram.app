@@ -138,6 +138,11 @@ reaches the stored document or undo.
   highest head among them, measured from each sitter's seat and drawn size (Small, Regular or Tall), with room
   for the name chip and status over that head, so a sprite never covers it, on a tall chair or a short bean bag
   alike. It never sits lower than the piece's top edge.
+- **A game names its own players.** While a piece shows a game (a Ping-Pong Table's Ready, score or win, which
+  [Social pieces](social-pieces.md) "Scoring" puts above the table in each player's colour), it shows no name pill:
+  the pill sat over the table's middle, which the camera centres on at a small screen, and doubled the score pills
+  (Work Tracker 753). The pill comes back as the game goes (a player stands up, or a screen's motion is reduced),
+  and every other occupied piece keeps its pill, which helps find people.
 - **Each sitter's name chip stays readable.** Sitters side by side have their name chips spread apart in a row
   rather than stacked over one another ([Avatar mode](../008-canvas/avatar-mode.md) "Seated neighbours' chips never
   cover each other"), so on a sofa, a bench or a pod every name reads whole beneath the pill.

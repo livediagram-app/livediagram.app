@@ -5,6 +5,7 @@ import { useEffect, useId, useRef } from 'react';
 import { podClosed } from '@livehuddle/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
+import { useGameOn } from '@/lib/table-games/table-game-scene';
 import { hasMoment, type PieceMomentPlay } from '@/lib/piece-moments';
 import {
   drawsOverMoment,
@@ -285,15 +286,41 @@ export function FurnitureView({
       </svg>
       {/* A Hot Desk's raised name card is its pill (WorkdayFaces hotDeskCardY). */}
       {occupied && kind !== 'hot-desk' ? (
-        <span
-          className={`absolute left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+        <SeatPill
+          id={element.id}
+          color={ringColor}
           // Clear of the highest sitter's head and the chip over it, never below the piece's top (#582).
-          style={{ ...identityVars(ringColor), top: seatPillBottom(element, frame.view, sitters) }}
-        >
-          {sitters.map((s) => s.name).join(', ')}
-        </span>
+          top={seatPillBottom(element, frame.view, sitters)}
+          names={sitters.map((s) => s.name).join(', ')}
+        />
       ) : null}
     </div>
+  );
+}
+
+// The sitters' names above an occupied piece (docs/specs/009-elements/chair.md "The name pill clears the sitter's
+// head"), hidden while the piece shows a game, whose scoreboard already names its players in their colours ("A game
+// names its own players", Work Tracker 753). Its own component so only an occupied piece subscribes to the games.
+function SeatPill({
+  id,
+  color,
+  top,
+  names,
+}: {
+  id: string;
+  color: string;
+  top: number;
+  names: string;
+}) {
+  if (useGameOn(id)) return null;
+  return (
+    <span
+      className={`absolute left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+      style={{ ...identityVars(color), top }}
+      data-seat-pill=""
+    >
+      {names}
+    </span>
   );
 }
 

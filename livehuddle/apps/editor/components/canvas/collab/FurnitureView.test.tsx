@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, render } from '@testing-library/react';
+import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ChairFacing, ShapeElement } from '@livehuddle/document';
 import { seatPillBottom } from '@livehuddle/avatar/chair-sitters';
 import { SEAT_GRIDS } from '@livehuddle/avatar/seats';
 import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
+import { setGameOn } from '@/lib/table-games/table-game-scene';
 import { FurnitureView } from './FurnitureView';
 
 afterEach(cleanup);
@@ -133,5 +134,35 @@ describe('FurnitureView seats', () => {
     // Above the head: the feet sit 0.62 down the chair, the head AVATAR_HEIGHT x scale above them.
     expect(parseFloat(pillTop(1.5))).toBeLessThan(0.62 * 72 - AVATAR_HEIGHT * 1.5);
     expect(parseFloat(pillTop(1.95))).toBeLessThan(parseFloat(pillTop(1.5)));
+  });
+
+  // chair.md "A game names its own players" (Work Tracker 753): the scoreboard names who plays, so the pill goes.
+  it('hides the name pill while the table shows a game, and brings it back after', () => {
+    const table = {
+      ...chair('chair', 's'),
+      id: 'pp',
+      shape: 'ping-pong-table',
+      width: 120,
+      height: 80,
+    } as unknown as ShapeElement;
+    const players = [
+      { name: 'Daring Fox', color: '#e11d48', seat: 0 },
+      { name: 'You', color: '#2563eb', seat: 1 },
+    ];
+    const { container, rerender } = render(
+      <FurnitureView element={table} stroke="#94a3b8" sitters={players} />,
+    );
+    const pill = () => container.querySelector('[data-seat-pill]');
+    expect(pill()?.textContent).toBe('Daring Fox, You');
+    act(() => setGameOn('pp', true));
+    expect(pill()).toBeNull();
+    // Another occupied piece keeps its pill while the game plays.
+    const other = render(
+      <FurnitureView element={chair('sofa', 's')} stroke="#94a3b8" sitters={[SAM]} />,
+    );
+    expect(other.container.querySelector('[data-seat-pill]')?.textContent).toBe('Sam');
+    act(() => setGameOn('pp', false));
+    rerender(<FurnitureView element={table} stroke="#94a3b8" sitters={players} />);
+    expect(pill()?.textContent).toBe('Daring Fox, You');
   });
 });

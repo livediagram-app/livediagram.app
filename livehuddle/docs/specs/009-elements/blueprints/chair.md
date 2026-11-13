@@ -224,6 +224,9 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
   `feet - (AVATAR_HEIGHT x scale + AVATAR_HEAD_CHROME)` among the sitters, less `SEAT_PILL_GAP` (3 px),
   never below the box's top. `AVATAR_HEAD_CHROME` (walk.ts, 24 px) is the highest of what `AvatarWalker`
   draws over a head (name chip 16, own status 22, Zz 24), so the pill clears both the sprite and its chip.
+  The pill is `SeatPill` (FurnitureView.tsx): it reads `useGameOn(element.id)` (lib/table-games/table-game-scene.ts)
+  and renders nothing while the piece shows a game (Ready, play or won), since the scoreboard names the players. The
+  subscription is one `useSyncExternalStore` per occupied piece, notified only when a game starts or ends.
 - **No `…`:** `carriesSharedSettingsMenu('chair')` is `false`.
 - **Telemetry:** placing emits `Element·Added·Chair`; a facing change emits `Element·Changed·Chair`;
   sitting and standing emit nothing.
@@ -279,6 +282,7 @@ presence packet at once ("tells the room at once which seat it sat on …", "fre
 | Created with no stored colour; stamp is unset | "are created with no stored colour", "treat the …"                   | `packages/document/src/behaviour-skin.test.ts`                         |
 | Occupancy from presence only (I1, I2)         | "lists our own character and every seated peer …"                    | `packages/avatar/src/chair-sitters.test.ts`                            |
 | The exact seat ringed; pill clears the head   | "rings each sofa cushion …", "lifts the name pill clear …"           | `apps/editor/components/canvas/collab/FurnitureView.test.tsx`          |
+| No name pill while a game shows its players   | "hides the name pill while the table shows a game …"                 | `apps/editor/components/canvas/collab/FurnitureView.test.tsx`          |
 | Label survives export                         | "prints a chair label under the seat"                                | `packages/document/src/svg-render-fidelity.test.ts`                    |
 | Unknown facing rejected                       | "rejects an off-vocabulary chair facing"                             | `packages/document/src/collab-shapes.test.ts`                          |
 | Desk faces the computer; sofa the reader      | "a new desk faces its sitter at the computer …"                      | `packages/document/src/seating.test.ts`                                |
