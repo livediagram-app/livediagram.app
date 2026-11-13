@@ -1046,7 +1046,58 @@ Threads and Wait (spec "Actions", "Wait").
   limit for Column Over Limit, days and columns for Card Stuck in `TimeTriggerPanel`).
 
 - **Template scenes** live in `apps/editor/components/automations/template-scenes/` (`first.tsx`, `board.tsx`,
-  `linked.tsx`); `TemplateScene.tsx` maps each template id to its scene.
+  `linked.tsx`, `github.tsx`); `TemplateScene.tsx` maps each template id to its scene.
+
+## GitHub templates (Work Tracker 806)
+
+The spec's six GitHub rows of the Templates table, on the GitHub triggers of github-pull-requests.md part 4.
+
+- `packages/items/src/automation/templates.ts` is now three files: `template-kit.ts` (the plan a template reads, the
+  categories, ids and picks, and the role finders), `templates-github.ts` (`GITHUB_TEMPLATES`) and `templates.ts` (the
+  rest, `AUTOMATION_TEMPLATES` ending with the GitHub ones, `picksLeft`, re-exporting the kit's public names). The
+  category `github` ("GitHub", last of
+  `AUTOMATION_TEMPLATE_CATEGORIES`) and the ids, appended to `AUTOMATION_TEMPLATE_IDS` (telemetry reads the list, so
+  the site's Templates Opened chart gains them with no change of its own):
+  - `review-on-open`: `pull_request_opened`, Move to `reviewStatus` (else a column pick at `steps.0`).
+  - `done-on-merge`: `pull_request_merged`, Move to the first done column, then Set Field `finishDateField` to today
+    (a column pick at `steps.0`, a field pick at `steps.1`, each only when the plan lacks it).
+  - `flag-failing-checks`: `pull_request_checks` failing, Flag and a comment naming `{{card.assignee}}`. No picks.
+  - `tell-checks-pass`: `pull_request_checks` passing, Unflag and a Mention of the assignee. No picks.
+  - `back-on-close`: `pull_request_closed`, a not-in-done-columns Column condition (left out when the plan has no
+    done column), Move to `inProgressStatus` (else a column pick at `steps.0`) and a comment.
+  - `merged-to-slack`: `pull_request_merged`, Post to Slack with an empty webhook (a webhook pick at `steps.0`).
+    None writes Who Did It or "whoever triggered", so each passes `checkPersonless`.
+- `TemplatesGallery.tsx` reads `useGithubAutomations()?.enabled`: false (or outside the dialog) drops the `github`
+  chip and its templates from All alike. The tile's tone is `TONE[id]`.
+- `apps/editor/components/automations/template-scenes/github.tsx`: one scene per GitHub template, from `scene-parts.tsx`'s pull request pill
+  (`PrPill`, `PR_PILLS` and the state marks, moved there from `TriggerScene.tsx`, which now imports them): the
+  card's pill turning state, then what the rule does (the card sliding a column, the flag, the comment or the
+  mention, the Slack message).
+- The round trip keeps a template's picks: `GithubAutomations.keepDraft(body, picks)` and `draft()` answer a
+  `KeptRule` (`{ body, picks }`, `github-hash.ts`); `keepGithubDraft` stores it whole and `takeGithubDraft` reads
+  `picks` back only as a list of `{ path, pick }` strings (anything else is dropped, never the body). The target
+  `{ view: 'rule', kept, keptPicks }` hands them to the builder as `picks`.
+- Tests: `templates.test.ts` (each GitHub template's fill on a full and a bare plan, the api taking each once filled,
+  the agents' round trip), `AutomationsTemplates.test.tsx` (no GitHub chip or tiles without `githubEnabled`; the chip
+  and its six tiles with it; a GitHub template on a plan not connected opening on When with Connect GitHub First;
+  nothing for a non-Editor, whom the screen refuses), `github-hash.test.tsx` (the picks kept and read back).
+
+## GitHub rules on an unconnected plan (Work Tracker 764)
+
+- `packages/items/src/automation/attention.ts`: `ruleNeedItems(rule, outline, webhooks?, githubConnected?)` adds
+  the need `{ kind: 'github' }` when the rule's trigger is a GitHub trigger and `githubConnected` is `false`
+  (`undefined`, not checked, adds nothing: the draft preview and any caller without the connection). `needLine`
+  reads it "GitHub is not connected".
+- `apps/api/src/routes/automation-routes.ts`: the list and a rule's answer read the connection once a call
+  (`readConnection`), only where `githubConfig(env)` is set and a listed rule has a GitHub trigger, so a plan with
+  no GitHub rule costs no query. A failed read checks nothing (no rule marked, logged
+  `[automations] github.connection.failed`).
+- `apps/editor/components/automations/needs-words.ts` words it "GitHub isn't connected"; `RuleRow.tsx`'s Needs
+  Attention line adds **Connect GitHub** (the context's `openView`) when the need is there and the dialog offers
+  GitHub.
+- Tests: `attention.test.ts` (marked only when unconnected and a GitHub trigger), `automation-routes` (the list
+  marks it, and reads no connection without a GitHub rule), `needs-words.test.ts`, `GithubTemplates.test.tsx`
+  (the row's Connect GitHub opens the view).
 
 ## Describe a Rule (Work Item 759)
 

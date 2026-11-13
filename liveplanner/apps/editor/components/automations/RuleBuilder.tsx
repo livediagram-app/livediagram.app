@@ -51,6 +51,9 @@ import { refusalWords } from './refusal-words';
 import { TestOnCard } from './TestOnCard';
 import type { AutomationsApi } from './use-automations';
 
+// A rule with nothing left to pick: one list, so the round trip's draft is kept again only when the rule changes.
+const NO_PICKS: readonly AutomationTemplatePickAt[] = [];
+
 type Fault = { path: string; message: string };
 
 export function RuleBuilder({
@@ -65,7 +68,7 @@ export function RuleBuilder({
   onSaved,
   onDirty,
   trailing,
-  picks = [],
+  picks = NO_PICKS,
   timeZone,
   scope,
   signedIn = false,
@@ -121,9 +124,9 @@ export function RuleBuilder({
   const keepDraft = github?.keepDraft;
   useEffect(() => {
     if (!keepDraft || rule) return;
-    keepDraft({ ...body, timeZone });
+    keepDraft({ body: { ...body, timeZone }, picks: [...picks] });
     return () => keepDraft(null);
-  }, [keepDraft, rule, body, timeZone]);
+  }, [keepDraft, rule, body, timeZone, picks]);
   const pickMarks = useMemo(
     () => new Map(picksLeft(body, picks).map((p) => [p.path, AUTOMATION_PICK_WORDS[p.pick]])),
     [body, picks],

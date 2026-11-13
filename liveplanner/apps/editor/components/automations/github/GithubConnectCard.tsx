@@ -6,12 +6,12 @@
 // trip). Connect GitHub stays busy until the page leaves for GitHub; a refusal says why under it.
 
 import { useState } from 'react';
-import type { AutomationRuleBody } from '@liveplanner/items';
 import { Button, CheckIcon, GithubMarkIcon } from '@liveplanner/ui';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { AutomationsScope } from '../automations-client';
 import { GithubRefusal } from './github-client';
+import type { KeptRule } from './github-hash';
 import { goConnectGithub } from './github-return';
 
 export const GITHUB_CONNECT_LINE =
@@ -53,7 +53,7 @@ export function GithubConnectCard({
 }: {
   scope: AutomationsScope;
   // The rule to come back to, as it stands at the press, when connecting from its trigger's panel.
-  draft?: () => AutomationRuleBody | null;
+  draft?: () => KeptRule | null;
   compact?: boolean;
 }) {
   const [busy, setBusy] = useState(false);

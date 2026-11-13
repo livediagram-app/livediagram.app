@@ -70,7 +70,7 @@ function Panel({
     enabled,
     scope: SCOPE,
     openView,
-    draft: () => DRAFT,
+    draft: () => ({ body: DRAFT, picks: [] }),
     keepDraft: () => {},
   };
   return inside ? (
@@ -178,9 +178,10 @@ describe('A GitHub trigger’s panel', () => {
     render(<Panel trigger={{ kind: 'pull_request_merged' }} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Connect GitHub' }));
     await waitFor(() => expect(go).toHaveBeenCalledWith('https://github.com/install'));
-    expect(JSON.parse(window.sessionStorage.getItem('liveplanner:github-draft:p1')!)).toEqual(
-      DRAFT,
-    );
+    expect(JSON.parse(window.sessionStorage.getItem('liveplanner:github-draft:p1')!)).toEqual({
+      body: DRAFT,
+      picks: [],
+    });
   });
 
   it('says a refused read, and a failed one with Try Again', async () => {

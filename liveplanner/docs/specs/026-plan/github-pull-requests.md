@@ -236,8 +236,12 @@ comment, and turns either off, with the Audit Trail saying what each did.
 - **By GitHub**: a GitHub-triggered rule's writes are by **GitHub** in card history (GitHub's mark, "GitHub · Move on
   Merge"), and its Who Did It (`{{person}}`) reads "GitHub". Nobody is behind it, so it can't check Who Did It or
   assign or email whoever triggered it, as a time trigger can't.
-- **Off when the App is**: with the App's settings missing, Pick a Trigger shows no GitHub group and the screen no
-  GitHub entry. A GitHub rule saved before stays, and hears nothing. A plan that is not connected may save one too:
+- **Templates**: the Templates gallery's **GitHub** category holds six ready-made GitHub rules
+  ([Automations](automations.md#the-automations-screen)): to Review when a pull request opens, to Done when it merges,
+  flag failing checks, tell the assignee when checks pass, back to In Progress when one closes unmerged, and post
+  merged work to Slack.
+- **Off when the App is**: with the App's settings missing, Pick a Trigger shows no GitHub group, the Templates gallery
+  no GitHub category and the screen no GitHub entry. A GitHub rule saved before stays, and hears nothing. A plan that is not connected may save one too:
   its trigger panel says to connect first.
 
 ## Who may do what

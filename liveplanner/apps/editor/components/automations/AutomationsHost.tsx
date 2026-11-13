@@ -10,7 +10,6 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { AutomationRuleBody } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import type { AutomationsScope } from './automations-client';
@@ -29,6 +28,7 @@ import {
   takeGithubDraft,
   trackGithubResult,
   type GithubResult,
+  type KeptRule,
 } from './github/github-hash';
 
 const AutomationsDialog = dynamic(
@@ -93,7 +93,7 @@ export function AutomationsHost({
     () => (ownerId && projectId ? { ownerId, projectId, shareCode: shareCode ?? null } : null),
     [ownerId, projectId, shareCode],
   );
-  const githubDraft = useRef<AutomationRuleBody | null | undefined>(undefined);
+  const githubDraft = useRef<KeptRule | null | undefined>(undefined);
   // The screen at the GitHub view (or the rule kept), once the plan's Editor scope is known.
   useEffect(() => {
     if (!github || !stable) return;

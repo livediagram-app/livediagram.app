@@ -53,6 +53,21 @@ The **GitHub** group in **Pick a Trigger** holds four triggers:
 
 The rule runs once on each card the pull request links, with any conditions and actions. Each GitHub event runs a rule once, even if GitHub sends it again, and an event that arrives late never moves a card backwards.
 
+### Start From a Template
+
+The quickest way in: **New Rule**, then **Start From a Template**, then the **GitHub** chip. Six ready-made rules wait there:
+
+- **Review When a Pull Request Opens**: moves the card to Review.
+- **Done When the Pull Request Merges**: moves the card to Done and sets Completed On to today.
+- **Flag Failing Checks**: flags the card and says so in a comment.
+- **Tell Them the Checks Pass**: clears the flag and mentions the card's assignee.
+- **Back to In Progress When Closed**: moves the card back to In Progress when its pull request closes without merging (a card already done stays put).
+- **Post Merged Work to Slack**: posts the card's title and link to a Slack channel.
+
+Each fills in your plan's columns and fields by their names, and marks what it can't find ("Pick a column", "Pick a webhook") until you pick it. If the plan isn't connected yet, the rule's **When** step shows **Connect GitHub First**: connect there, and GitHub brings you back to the rule, unsaved as you left it. The GitHub chip shows only where GitHub is set up for liveplanner.
+
+A GitHub rule on a plan that isn't connected, or was disconnected, never runs, so the Rules list marks it **Needs Attention: GitHub isn't connected**, with **Connect GitHub** beside it.
+
 ### Example: In Review When It Opens
 
 1. In **Automations**, press **New Rule**.

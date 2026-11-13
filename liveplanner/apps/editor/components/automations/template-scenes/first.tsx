@@ -20,7 +20,7 @@ import {
   MessageGlyph,
   NEXT_COLUMN,
   Pill,
-  ZapGlyph,
+  SlackChannel,
   type ToneClasses,
 } from '../scene-parts';
 
@@ -245,45 +245,7 @@ export function ShippedToSlack({ tone }: { tone: ToneClasses }) {
         </Card>
         <Card ghost wide="w-3/5" />
       </Column>
-      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-white shadow-[0_6px_16px_-8px_rgba(15,23,42,0.35),0_0_0_1px_rgba(15,23,42,0.06)] dark:bg-slate-800 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
-        <div className="flex items-center gap-1 border-b border-slate-100 px-1.5 py-1 dark:border-slate-700">
-          <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">#</span>
-          <span className="text-[8.5px] font-bold text-slate-800 dark:text-slate-100">launch</span>
-          <span className="ml-auto flex gap-0.5">
-            <span className="size-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-            <span className="size-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-          </span>
-        </div>
-        <div className="flex flex-1 flex-col justify-end gap-1.5 p-1.5">
-          <div
-            className="ats-t flex items-start gap-1 opacity-60"
-            style={at('translateY(-4px)', 'none', 160)}
-          >
-            <span className="size-3 shrink-0 rounded bg-rose-400" />
-            <div className="flex flex-1 flex-col gap-[3px] pt-px">
-              <div className="h-[3px] w-1/3 rounded-full bg-slate-300 dark:bg-slate-600" />
-              <div className="h-[3px] w-4/5 rounded-full bg-slate-200 dark:bg-slate-700" />
-            </div>
-          </div>
-          <div
-            className="ats-t ats-in flex items-start gap-1"
-            style={at('none', 'translateY(14px)', 260)}
-          >
-            <span className={`grid size-3 shrink-0 place-items-center rounded ${tone.solid}`}>
-              <ZapGlyph aria-hidden />
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-[3px] pt-px">
-              <div className="h-[3px] w-2/5 rounded-full bg-slate-400 dark:bg-slate-500" />
-              <div className="h-[3px] w-full rounded-full bg-slate-200 dark:bg-slate-700" />
-              <span
-                className={`mt-px self-start truncate rounded-sm px-1 text-[6.5px] font-semibold leading-[10px] ${tone.soft}`}
-              >
-                Open in liveplanner
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <SlackChannel tone={tone} channel="launch" />
     </>
   );
 }

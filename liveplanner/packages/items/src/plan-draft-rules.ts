@@ -145,6 +145,8 @@ const NEED_NOUNS: Partial<Record<AutomationNeed['kind'], string>> = {
 /** A need in the preview's words: what the rule names that the plan won't have. */
 export function planDraftNeedWords(need: AutomationNeed): string {
   if (need.kind === 'unheard') return `Field Changed never hears ${need.name}.`;
+  if (need.kind === 'github')
+    return 'This rule hears GitHub, which a new plan is not connected to.';
   const noun = NEED_NOUNS[need.kind];
   return noun
     ? `This rule names the ${noun} “${need.id}”, which this plan won’t have.`
