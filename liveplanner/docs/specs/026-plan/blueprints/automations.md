@@ -126,8 +126,8 @@ CREATE INDEX automation_runs_result ON automation_runs (result, at);   -- the tw
 ```
 
 The day's count is `SELECT COUNT(*) FROM automation_runs WHERE at >= <UTC midnight> AND result != 'no_match'`, indexed, so the budget needs no
-table of its own. It leaves out the Audit Trail's own lines, whose ids are `burst:<now>` (`burstLineId`) and
-`time:<rule>:<moment>` (`timeLineId`) where a run's is a hash. A rule's Last Run and This Week (`ruleStats`) count the
+table of its own. It leaves out the Audit Trail's own lines, whose ids are `burst:<now>` (`burstLineId`),
+`time:<rule>:<moment>` (`timeLineId`) and `derived:<rule>:<moments>` (`derivedLineId`) where a run's is a hash. A rule's Last Run and This Week (`ruleStats`) count the
 same rows, settled ones only. A plan never given a rule has empty tables and `onKinds` empty.
 
 ## The event
@@ -358,8 +358,8 @@ build):
   `AutomationStore.onSchedule`, and after each scan); `wakeAt` is the earlier of it and the queue's, which
   `armAlarm` takes. A due rule whose cards don't fit in the queue's room now is not dropped: its row stays due and
   the scan asks again in 1 s (`AUTOMATION_TIME_RETRY_MS`), so a moment never loses cards to the 500 cap; the run ids
-  make the re-scan harmless. The Skipped "Ran on 100 of 340 …" row has id `time:<rule>:<moment>` and counts toward
-  the day's budget like any Skipped row. A wake that throws pushes `timeAt` a minute on, as the queue's.
+  make the re-scan harmless. The Skipped "Ran on 100 of 340 …" row has id `time:<rule>:<moment>` and, as the Audit
+  Trail's own line, spends none of the day's budget (`runsToday` leaves it out). A wake that throws pushes `timeAt` a minute on, as the queue's.
 - **Copies** schedule each time rule they keep on, from the copy's moment (`copiedRuleStatements`).
   A copy's and a file's rules name the new tab ids (`ruleWithTabIds`, @liveplanner/items named.ts), the walk
   Describe a Rule's names take.
@@ -1004,9 +1004,15 @@ Threads and Wait (spec "Actions", "Wait").
   card when the column now holds exactly limit + 1, or, past that, when the card is the (limit + 1)th of the
   column's live cards by `itemStatusSince` (then key): several in before one wake run it once, on the card that tipped
   it. Answered cards go in number order, at most `AUTOMATION_DERIVED_CARDS_MAX` (100), so a blocker of 2,000 cards
-  runs each rule on 100, not 2,000 (`automations.perf.test.ts`). The runner reads the plan's cards for such an event
+  runs each rule on 100, not 2,000 (`automations.perf.test.ts`); `derivedFound` gives the count before the cut, and
+  past it the wake settles one Skipped line per rule and event, "Ran on 100 of 340 cards: at most 100 a move"
+  (`derivedCapped`, id `derivedLineId(rule, sha256 of the runs' ids)`, so events reaching the same moments say it once; the Audit Trail's own line, it spends none of the day). The runner reads the plan's cards for such an event
   only when a rule on hears one; a branch or Link Cards reads them through `cardsNow`, again only once the store's
-  `items_rev` has moved, so a wake of 25 triggers past 50 such rules reads them once while nothing writes. Card Unblocked and Related Cards Done run the rule on each answered card under
+  `items_rev` has moved, so a wake of 25 triggers past 50 such rules reads them once while nothing writes. A run's own
+  card writes go into the cards held through its relay (`noteWrite`), each only when it landed one rev past them (no
+  write from elsewhere between), so a wake whose every run writes still reads them once (7,530 ms to 690 ms of CPU
+  for 1,000 writing branch runs over 2,000 cards); any other write leaves them at their rev, and the next branch reads
+  afresh. Card Unblocked and Related Cards Done run the rule on each answered card under
   `d:${card.id}:${sha256(moment)}`, the moment (`derivedMoments`) being the card's blockers, children or linked cards
   as sorted `id@rev`, so two events read against the same cards make one run id. Column Over Limit runs under
   `${event.id}>${card.id}`, once per wake per rule and set of card ids in the column (`RunState.tipped`): every event a
@@ -1125,9 +1131,10 @@ rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On /
   builder in `RuleDrawer.tsx`: the shared `Dialog` with `phoneSheet="tall"` (its height the full sheet's, the top bar
   and the notch kept clear, `PHONE_SHEET_TALL`), an sr-only title (New Rule or Edit Rule), `beforeClose` = the dirty guard (returns false and opens Discard Changes? when
   dirty), and `closeOnBack` (`useBackCloses`, @liveworkspace/ui: an entry in the browser's history while open, so Back
-  dismisses it as a swipe would). Discarding unmounts the drawer straight away (the question was the exit).
+  dismisses it as a swipe would; tokens carry the page load's id, and one shared pass a task after the last close
+  steps back off every closed sheet's entry, `history.go(-n)`). Discarding unmounts the drawer straight away (the question was the exit).
 - `RuleBuilder` with `phone`: `PhoneRuleChrome.tsx` holds `PhoneRuleHeader` (back chevron, the shared `Switch`
-  labelled with its visible word On or Off, or the Off · Not Saved pill for an unsaved rule; the name in `RuleNameField`, a one-row `textarea` that grows with its text, Enter
+  named `RULE_SWITCH_NAME` (Rule On) whichever way it is set, as the wide screen's, or the Off · Not Saved pill for an unsaved rule; the name in `RuleNameField`, a one-row `textarea` that grows with its text, Enter
   ignored, newlines folded to spaces), the steps scrolling, and `PhoneRuleFoot` (Rule Details, then the two buttons
   as `Button size="md"` `h-11` in a two-column grid, so Saved, which has no button's padding, is as wide; a saved rule with nothing changed shows **Saved** with a check, a `role="status"`, in Save Rule's place).
 - `RuleDetails` takes `placement="foot"`: the accordion's bar sits in the foot and its body opens above the bar,

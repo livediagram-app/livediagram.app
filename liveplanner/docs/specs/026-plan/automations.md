@@ -156,7 +156,9 @@ work. A rule does it every time, at once, and says that it did.
   it once: on the card they concern, and on one card for a column. Several cards into a column before it runs
   (three into a column whose limit is one) run Column Over Limit once, on the card that came in one past the limit,
   by when each card entered the column (then the lower number). One move runs Card Unblocked or Related Cards Done on
-  at most **100 cards**, the first by their number, as a branch's related cards are.
+  at most **100 cards**, the first by their number, as a branch's related cards are. Past that, the Run Log says
+  "Ran on 100 of 340 cards: at most 100 a move", and the rest are left out (no later move runs it on them unless it
+  concerns them again).
 
 ### Time triggers
 
@@ -724,7 +726,7 @@ hands focus back to the field, the caret after the value:
 - **Per plan per day** (UTC): at most **1,000 runs**, counted afresh as each run starts (a run counts from then), so a
   wake and Run Rules at once never pass it between them. Only runs that did something, failed or were skipped count; a
   **No Match** is logged and costs nothing, and so do the Audit Trail's own lines, which are no rule's run (a burst's
-  "Too many changes at once", a time trigger's "Ran on 100 of 340 matching cards"). Past it, triggers are dropped until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
+  "Too many changes at once", a time trigger's "Ran on 100 of 340 matching cards", a move's "Ran on 100 of 340 cards"). Past it, triggers are dropped until the next day, the Automations screen's meter reads full, a line says "Daily limit reached: rules run again
   tomorrow", and Run Rule answers that it cannot run now.
 - **Waiting**: at most **500 triggers** wait at once; a burst past that drops the newest and logs one Skipped line
   ("Too many changes at once").

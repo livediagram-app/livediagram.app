@@ -11,7 +11,7 @@ import {
   type ItemTypeDef,
 } from '@liveplanner/items';
 import { AUTOMATION_NO_MATCH_LOG_MAX, runsToday } from './automation-log';
-import { AUTOMATION_EVENTS_PER_WAKE } from './automation-runner';
+import { AUTOMATION_EVENTS_PER_WAKE, derivedCapped } from './automation-runner';
 import { endRepeatWorld } from '../test-repeat-world';
 import { automationWorld, type AutomationWorld } from './test-automation-world';
 
@@ -141,6 +141,37 @@ describe('Automations cost', () => {
     expect(wake).toBeLessThan(cpuBudgetMs(1500));
   }, 30_000);
 
+  // The same, every run writing (`noteWrite`): each write raised the store's rev, so the next branch read all 2,000
+  // cards again, 1,000 reads in one wake (measured 7,530 ms on an M-series Mac); now the run's own writes go into the
+  // cards held, and only a write from elsewhere reads them afresh (measured 690 ms).
+  it('a wake of 25 triggers past 50 branch rules that each write reads its cards once', async () => {
+    const c = await w.make('A', { title: 'Busy' });
+    fill(c.id);
+    for (let i = 0; i < AUTOMATION_RULES_MAX; i += 1)
+      await w.rule({
+        name: `Writer ${i}`,
+        trigger: { kind: 'field_changed', fields: ['priority'] },
+        conditions: [],
+        // Each rule names the card its own way, so every run's write changes it.
+        steps: [
+          { kind: 'set_field', field: 'title', value: { text: `Writer ${i}` } },
+          { kind: 'for', related: { kind: 'linked' }, conditions: [], then: [{ kind: 'flag' }] },
+        ],
+      });
+    for (let i = 0; i < AUTOMATION_EVENTS_PER_WAKE; i += 1)
+      await w.send('POST', `/api/projects/A/items/${c.id}`, {
+        set: { priority: i % 2 ? 'high' : 'low' },
+      });
+    room().automations.schedule.at = Date.now();
+    const wake = await cpuMsOfAsync(() => room().alarm());
+    const db = w.plans.get('A')!.db;
+    // Every run up to the day's 1,000 wrote the card.
+    expect(db.prepare("SELECT COUNT(*) AS n FROM automation_runs WHERE result = 'done'").get()).toEqual(
+      { n: 1000 },
+    );
+    expect(wake).toBeLessThan(cpuBudgetMs(1500));
+  }, 60_000);
+
   // Card Unblocked (spec "Triggers"): a blocker of 2,000 cards finished seven times before one wake, under 17 Card
   // Unblocked rules. Each rule ran on every card it freed (34,000 runs, and every event hashed and claimed them all
   // again); now on the first 100.
@@ -173,8 +204,26 @@ describe('Automations cost', () => {
     // 17 rules, 100 cards each: every one claimed and checked once, none matching.
     expect(store.claims - before).toBe(RULES * AUTOMATION_DERIVED_CARDS_MAX);
     expect(
-      db.prepare("SELECT COUNT(*) AS n FROM automation_runs WHERE result != 'no_match'").get(),
+      db
+        .prepare(
+          "SELECT COUNT(*) AS n FROM automation_runs WHERE result != 'no_match' AND id NOT LIKE 'derived:%'",
+        )
+        .get(),
     ).toEqual({ n: 0 });
+    // The cards past the first 100 are said once a rule on the Audit Trail, the seven finishes reaching one moment,
+    // and spend none of the day.
+    const capped = db
+      .prepare("SELECT rule_id, result, body FROM automation_runs WHERE id LIKE 'derived:%'")
+      .all() as { rule_id: string; result: string; body: string }[];
+    expect(capped).toHaveLength(RULES);
+    expect(new Set(capped.map((r) => r.rule_id)).size).toBe(RULES);
+    for (const r of capped) {
+      expect(r.result).toBe('skipped');
+      expect(JSON.parse(r.body)).toMatchObject({
+        reason: derivedCapped(AUTOMATION_DERIVED_CARDS_MAX, ITEMS_MAX - 1),
+      });
+    }
+    expect(runsToday(room().automations.sql(), Date.now())).toBe(0);
     expect(wake).toBeLessThan(cpuBudgetMs(4000));
   }, 60_000);
 

@@ -58,9 +58,22 @@ export function derivedTargets(
   types: readonly ItemTypeDef[],
   isDone: IsDone,
 ): Item[] {
-  return allTargets(trigger, event, items, types, isDone)
-    .sort((a, b) => a.key - b.key)
-    .slice(0, AUTOMATION_DERIVED_CARDS_MAX);
+  return derivedFound(trigger, event, items, types, isDone).cards;
+}
+
+/** derivedTargets' cards with how many it found before the cut, for the Run Log's "Ran on 100 of 340 cards". */
+export function derivedFound(
+  trigger: DerivedTrigger,
+  event: AutomationEvent,
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+  isDone: IsDone,
+): { cards: Item[]; found: number } {
+  const all = allTargets(trigger, event, items, types, isDone);
+  return {
+    cards: all.sort((a, b) => a.key - b.key).slice(0, AUTOMATION_DERIVED_CARDS_MAX),
+    found: all.length,
+  };
 }
 
 function allTargets(

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Item } from '../item';
 import type { ItemTypeDef } from '../item-types';
 import { item, SAM } from '../test-items';
-import { derivedMoments, derivedTargets, isDerivedTrigger } from './derived';
+import { derivedFound, derivedMoments, derivedTargets, isDerivedTrigger } from './derived';
 import type { AutomationEvent } from './matches';
 import { AUTOMATION_DERIVED_CARDS_MAX } from './types';
 
@@ -64,6 +64,22 @@ describe('derived triggers', () => {
     expect(out.map((c) => c.key)).toEqual(
       blocked.slice(0, AUTOMATION_DERIVED_CARDS_MAX).map((c) => c.key),
     );
+  });
+
+  it('counts the cards a move concerns before the cut, for the Run Log', () => {
+    const a = task('A', { status: 'done' });
+    const blocked = Array.from({ length: AUTOMATION_DERIVED_CARDS_MAX + 7 }, (_, i) =>
+      task(`B${i}`, { 'f-blocked': [a.id] }),
+    );
+    const out = derivedFound(
+      { kind: 'card_unblocked' },
+      moved(a, 'doing', 'done'),
+      [a, ...blocked],
+      TYPES,
+      isDone,
+    );
+    expect(out.cards).toHaveLength(AUTOMATION_DERIVED_CARDS_MAX);
+    expect(out.found).toBe(AUTOMATION_DERIVED_CARDS_MAX + 7);
   });
 
   it('answers nothing for a card the plan no longer holds', () => {

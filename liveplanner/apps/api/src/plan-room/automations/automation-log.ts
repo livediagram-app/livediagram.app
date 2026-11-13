@@ -20,11 +20,14 @@ const PENDING = 'pending';
 
 const utcMidnight = (now: number) => Math.floor(now / DAY_MS) * DAY_MS;
 
-// The Audit Trail's own lines, which are no rule's run: a burst's "Too many changes at once" and a time trigger's
-// "Ran on 100 of 340". A run's id is a hash, so these prefixes never meet one.
+// The Audit Trail's own lines, which are no rule's run: a burst's "Too many changes at once", a time trigger's
+// "Ran on 100 of 340" and a move's (Card Unblocked, Related Cards Done) "Ran on 100 of 340 cards". A run's id is a
+// hash, so these prefixes never meet one.
 export const burstLineId = (now: number): string => `burst:${now}`;
 export const timeLineId = (ruleId: string, moment: number): string => `time:${ruleId}:${moment}`;
-const NO_LINE = "id NOT LIKE 'burst:%' AND id NOT LIKE 'time:%'";
+export const derivedLineId = (ruleId: string, moment: string): string =>
+  `derived:${ruleId}:${moment}`;
+const NO_LINE = "id NOT LIKE 'burst:%' AND id NOT LIKE 'time:%' AND id NOT LIKE 'derived:%'";
 
 // Runs today (UTC) that did something, failed or were skipped, pending ones too: what the daily budget counts. A No
 // Match is logged and never counted, nor is one of the Audit Trail's own lines.

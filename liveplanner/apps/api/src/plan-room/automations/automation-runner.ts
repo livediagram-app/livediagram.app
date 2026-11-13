@@ -12,6 +12,7 @@
 // the rule's steps need none (a blank card, `card.…` values reading nothing, no card on the run or its messages).
 import {
   AUTOMATION_CHAIN_MAX,
+  AUTOMATION_DERIVED_CARDS_MAX,
   AUTOMATION_RUNS_PER_DAY,
   NO_CARDS_NAMED,
   allHold,
@@ -29,7 +30,7 @@ import {
   timeTriggerWords,
   triggerMatches,
   derivedMoments,
-  derivedTargets,
+  derivedFound,
   isDerivedTrigger,
   type DerivedTrigger,
   waitWords,
@@ -46,6 +47,7 @@ import { appBaseUrl } from '../../email/client';
 import { cardUrl, readAutomationPlan, type AutomationPlan } from './automation-plan';
 import {
   burstLineId,
+  derivedLineId,
   claimRun,
   dropRun,
   runsToday,
@@ -92,7 +94,8 @@ export type RunState = {
   cards?: { event: string; items: Item[] };
   // The plan's cards as a branch or Link Cards last read them, at the store's rev then: read again only once a write
   // raised it, so a wake of 25 triggers past 50 such rules reads the plan's cards once, not 1,250 times.
-  planCards?: { rev: number; items: Item[] };
+  // `at`: each card's place in `items`, made at the first of the run's own writes put in (noteWrite).
+  planCards?: { rev: number; items: Item[]; at?: Map<string, number> };
   // The columns this wake's Column Over Limit rules ran on, each as its rule and the column's cards.
   tipped?: Set<string>;
   // A wake's counts (automation-telemetry.ts); absent for Test on a Card and Run Rule, which the browser counts.
@@ -168,6 +171,23 @@ async function cardsNow(deps: RunnerDeps, state: RunState): Promise<Item[]> {
   return state.planCards.items;
 }
 
+// A run's own card write, landed at the store's `rev`, put into the cards `state` holds when it is the one write
+// since they were read (the rev one past theirs): the next branch reads them without a read of every card. Any
+// other write between (a person's, another request's run) leaves them at their rev, so `cardsNow` reads afresh.
+export function noteWrite(state: RunState, written: readonly Item[], rev: number): void {
+  const held = state.planCards;
+  if (!held || held.rev !== rev - 1) return;
+  held.at ??= new Map(held.items.map((item, i) => [item.id, i]));
+  for (const item of written) {
+    const i = held.at.get(item.id);
+    if (i === undefined) {
+      held.at.set(item.id, held.items.length);
+      held.items.push(item);
+    } else held.items[i] = item;
+  }
+  held.rev = rev;
+}
+
 // Whether a rule's steps read the plan's cards: a branch's related cards, or a Link Cards (the card it links, and a
 // Blocked By loop).
 const readsCards = (rule: AutomationRule): boolean =>
@@ -201,6 +221,14 @@ export async function runRule(
     deps.store.claims += 1;
     state.claims = deps.store.claims;
   }
+  // The run's writes keep the cards `state` holds in step (noteWrite), so a branch after them reads none afresh.
+  const writer: RunnerDeps = {
+    ...deps,
+    relay: (items, rev) => {
+      deps.relay(items, rev);
+      noteWrite(state, items, rev);
+    },
+  };
   const lines: AutomationStepLine[] = [];
   let card: AutomationRun['card'] = null;
   let turns = 0;
@@ -333,7 +361,7 @@ export async function runRule(
     };
     const ai = (dry: boolean) =>
       runAiSteps(
-        deps,
+        writer,
         {
           client: aiClient(deps.env),
           sql,
@@ -356,7 +384,7 @@ export async function runRule(
       await sendMessages(messages, writes.sends, lines, offset);
       return end(failed === null ? 'done' : 'failed', failed ?? undefined, gone);
     }
-    const out = await applyPlannedRun(deps, plan, rule, item, writes, source, ctx.url);
+    const out = await applyPlannedRun(writer, plan, rule, item, writes, source, ctx.url);
     if (!out.ok) {
       lines.push({ kind: 'action', ok: false, text: out.reason });
       return end('failed', out.reason);
@@ -375,7 +403,7 @@ export async function runRule(
         mentions: r.mentions,
         resolve: r.resolve,
       };
-      const wrote = await applyPlannedRun(deps, plan, rule, r.card, one, source, url);
+      const wrote = await applyPlannedRun(writer, plan, rule, r.card, one, source, url);
       if (wrote.ok) continue;
       lines.push({ kind: 'action', ok: false, text: `#${r.card.key} ${wrote.reason}` });
       refused.push(`#${r.card.key}`);
@@ -418,6 +446,10 @@ export async function runRule(
   }
 }
 
+// One move's Card Unblocked or Related Cards Done past AUTOMATION_DERIVED_CARDS_MAX, on the Audit Trail.
+export const derivedCapped = (ran: number, found: number): string =>
+  `Ran on ${ran} of ${found} cards: at most ${AUTOMATION_DERIVED_CARDS_MAX} a move`;
+
 // A derived trigger's events: one for each card it concerns. Card Unblocked's and Related Cards Done's go under that
 // card's id and the moment it reached (a hash of its related cards at their revs), so two events that reach the same
 // moment run the rule on it once, in this wake or a later one. Column Over Limit's go under the event's id and the
@@ -425,7 +457,7 @@ export async function runRule(
 async function derivedFor(
   deps: RunnerDeps,
   state: RunState,
-  ruleId: string,
+  rule: AutomationRule,
   trigger: DerivedTrigger,
   event: AutomationEvent,
 ): Promise<AutomationEvent[]> {
@@ -433,24 +465,47 @@ async function derivedFor(
   if (state.cards?.event !== event.id)
     state.cards = { event: event.id, items: await listItems(deps.env, deps.planId) };
   const { items } = state.cards;
-  const targets = derivedTargets(trigger, event, items, state.plan.types, state.plan.isDone);
+  const { cards: targets, found } = derivedFound(
+    trigger,
+    event,
+    items,
+    state.plan.types,
+    state.plan.isDone,
+  );
   const moments = derivedMoments(trigger, targets, items, state.plan.types);
   if (trigger.kind === 'column_limit') {
     const tipped = (state.tipped ??= new Set());
     return targets.flatMap((card, i) => {
-      const key = `${ruleId}:${moments[i]!}`;
+      const key = `${rule.id}:${moments[i]!}`;
       if (tipped.has(key)) return [];
       tipped.add(key);
       return [{ ...event, id: `${event.id}>${card.id}`, cardId: card.id }];
     });
   }
-  return Promise.all(
+  const events = await Promise.all(
     targets.map(async (card, i) => ({
       ...event,
       id: `d:${card.id}:${hex(await sha256(new TextEncoder().encode(moments[i])))}`,
       cardId: card.id,
     })),
   );
+  // Past the cap the rest are left out, said on the Audit Trail (its own line, spending none of the day) under the
+  // runs' moments, so events that reach the same ones say it once, as they run the rule once.
+  if (found > targets.length) {
+    const moment = hex(await sha256(new TextEncoder().encode(events.map((e) => e.id).join(','))));
+    settleRun(deps.sql(), {
+      id: derivedLineId(rule.id, moment),
+      ruleId: rule.id,
+      ruleName: rule.name,
+      card: null,
+      at: Date.now(),
+      result: 'skipped',
+      reason: derivedCapped(targets.length, found),
+      tookMs: 0,
+      steps: [],
+    });
+  }
+  return events;
 }
 
 // One wake: the oldest waiting triggers, each against every rule that is on and hears it, in the list's order; a
@@ -488,7 +543,7 @@ export async function runAutomationWake(
       // Card Unblocked, Related Cards Done, Column Over Limit: the cards it concerns, worked out from the plan now. A
       // held run going on already names its card (the one the trigger found before the Wait).
       if (isDerivedTrigger(rule.trigger) && event!.kind !== 'resume') {
-        for (const target of await derivedFor(deps, state, rule.id, rule.trigger, event!))
+        for (const target of await derivedFor(deps, state, rule, rule.trigger, event!))
           if (await runRule(deps, state, rule, target)) ran += 1;
         continue;
       }
