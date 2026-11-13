@@ -168,6 +168,7 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 - A rule holds up to 3 AI actions, and a plan makes up to 100 AI steps a day, rules and Describe a Rule together, even when they ask at once; past that, AI steps are skipped until the next day.
 - A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a webhook stopped it, **Fix Webhook** opens the plan's webhooks.
 - A rule that names something the plan no longer has (a column, a card type, a field, a person, a saved filter, a Form tab, or the card a **Link Cards** step points at) says **Needs Attention** and what is missing, in words: "Needs Attention: A column is gone · Someone is gone". Its steps say the same ("Move to a column no longer here", "Assign Someone No Longer Here"). A condition naming one doesn't hold, and an action that reaches one fails its run, saying what is gone. Open the step and pick again.
+- A rule with a GitHub trigger on a plan that isn't connected to GitHub (or no longer is) hears nothing, so it says **Needs Attention: GitHub isn't connected**, with **Connect GitHub** after it. Connect the plan and the line goes.
 
 ## Agents and the CLI
 
