@@ -17,7 +17,9 @@ const placement = indicatorPlacementFor<Element>({
   roundedRectRing: (x, y, w, h) => rect(x, y, w, h),
 });
 const box = (shape: string) =>
-  ({ id: 'a', type: 'shape', shape, x: 0, y: 0, width: 200, height: 100 }) as Element & { type: 'shape' };
+  ({ id: 'a', type: 'shape', shape, x: 0, y: 0, width: 200, height: 100 }) as Element & {
+    type: 'shape';
+  };
 
 describe('indicatorPlacementFor', () => {
   it('reads a box corner-first and an outlined shape through its outline', () => {
@@ -30,13 +32,17 @@ describe('indicatorPlacementFor', () => {
 
   it('places a cluster just inside the corner, and the pip on the outline', () => {
     const rings = placement.indicatorRings(box('square'), 0);
-    expect(placement.placeIndicators(rings, 200, 100, { width: 20, height: 10 }, 'top-right')).toEqual({
+    expect(
+      placement.placeIndicators(rings, 200, 100, { width: 20, height: 10 }, 'top-right'),
+    ).toEqual({
       x: 174,
       y: 6,
       width: 20,
       height: 10,
     });
-    expect(placement.placeIndicators([], 200, 100, { width: 20, height: 10 }, 'top-right')).toBeNull();
+    expect(
+      placement.placeIndicators([], 200, 100, { width: 20, height: 10 }, 'top-right'),
+    ).toBeNull();
     expect(placement.pipInset(rings, 200, 100, false)).toEqual({ x: 0.5, y: 0.5 });
     expect(placement.pipInset(rings, 200, 100, true)).toEqual({ x: 100, y: 0 });
   });

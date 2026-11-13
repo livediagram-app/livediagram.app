@@ -965,7 +965,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 | Rule                                                                                          | Test                                                                                                                    |
 | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| A stored whiteboard opens in Draw                                                             | `../packages/element-model/src/legacy-whiteboard-tab.test.ts`                                                                   |
+| A stored whiteboard opens in Draw                                                             | `../packages/element-model/src/legacy-whiteboard-tab.test.ts`                                                           |
 | Tokens meet contrast                                                                          | `../packages/element-model/src/whiteboard.test.ts`                                                                      |
 | Stock colours drawn for the canvas                                                            | `packages/document/src/stock-colours.test.ts`                                                                           |
 | Stroke touch and partial split                                                                | `packages/document/src/whiteboard-stroke.test.ts`                                                                       |

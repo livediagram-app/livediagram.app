@@ -24,7 +24,7 @@ export function sameFill<I extends { kind: 'image' }>(
       (a.speed ?? 1) === (b.speed ?? 1)
     );
   }
-  if (a.kind === 'image' && b.kind === 'image') return sameImage(a as I, b as I);
+  if (a.kind === 'image' && b.kind === 'image') return sameImage(a, b);
   return false;
 }
 

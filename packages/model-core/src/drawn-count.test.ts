@@ -19,7 +19,9 @@ describe('drawnCountWithForm', () => {
   it('counts the elements, and a form as one more', () => {
     expect(drawnCountWithForm({ elements: [] })).toBe(0);
     expect(drawnCountWithForm({ elements: [{}, {}] })).toBe(2);
-    expect(drawnCountWithForm({ elements: [], form: { v: 1, heading: 'F', sections: [] } })).toBe(1);
+    expect(drawnCountWithForm({ elements: [], form: { v: 1, heading: 'F', sections: [] } })).toBe(
+      1,
+    );
     expect(drawnCountWithForm({ elements: [{}], form: { v: 1 } })).toBe(2);
   });
 

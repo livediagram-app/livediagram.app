@@ -14,7 +14,8 @@ type Element = {
   votes?: string[];
 };
 
-const { applyElementOp, applyElementOps, invertElementOps, applyRoomElementOp } = createElementOps<Element>();
+const { applyElementOp, applyElementOps, invertElementOps, applyRoomElementOp } =
+  createElementOps<Element>();
 
 const el = (id: string, over: Partial<Element> = {}): Element => ({
   id,
@@ -243,9 +244,7 @@ describe('diff and apply converge', () => {
     for (let seed = 1; seed <= 2000; seed++) {
       const r = seeded(seed);
       const before = Array.from({ length: Math.floor(r() * 12) }, (_, i) => el(`e${i}`));
-      const after = before
-        .filter(() => r() > 0.25)
-        .map((e) => (r() < 0.3 ? ({ ...e, x: 100 } as typeof e) : e));
+      const after = before.filter(() => r() > 0.25).map((e) => (r() < 0.3 ? { ...e, x: 100 } : e));
       for (let k = Math.floor(r() * 4); k > 0; k--)
         after.splice(Math.floor(r() * (after.length + 1)), 0, el(`n${seed}-${k}`));
       if (r() < 0.4) after.sort(() => r() - 0.5);

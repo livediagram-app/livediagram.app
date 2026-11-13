@@ -4,7 +4,16 @@ import { dropMalformedFlowchartIds, dropMalformedIds, ELEMENT_KEY_MAX } from './
 
 // Catalogue keys are text (each product's technology-icons spec, "iconId stays a plain string").
 const shape = (fields: Record<string, unknown>) =>
-  ({ id: 'a', type: 'shape', shape: 'icon', x: 0, y: 0, width: 1, height: 1, ...fields }) as unknown as Element;
+  ({
+    id: 'a',
+    type: 'shape',
+    shape: 'icon',
+    x: 0,
+    y: 0,
+    width: 1,
+    height: 1,
+    ...fields,
+  }) as unknown as Element;
 
 describe('dropMalformedIds', () => {
   it('keeps text keys and hands the same array back', () => {

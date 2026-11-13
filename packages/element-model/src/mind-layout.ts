@@ -30,7 +30,9 @@ export type MindPoint = { x: number; y: number };
 export type MindLayout = Map<ElementId, MindPoint>;
 
 // Bound to a product's element union and its mind map's walks.
-export function mindLayoutFor<E extends ModelElement>(mindMap: Pick<MindMap<E>, 'isMindNode' | 'mindChildren'>) {
+export function mindLayoutFor<E extends ModelElement>(
+  mindMap: Pick<MindMap<E>, 'isMindNode' | 'mindChildren'>,
+) {
   type Element = E;
   type ShapeElement = Extract<E, { type: 'shape' }>;
   type ArrowElement = Extract<E, { type: 'arrow' }>;
@@ -42,7 +44,6 @@ export function mindLayoutFor<E extends ModelElement>(mindMap: Pick<MindMap<E>, 
   /** Where a node that is not on the canvas yet slots into its siblings: right
    *  after `after` (Enter inserts the next line), else at the end (Tab). */
   type MindOrderHint = { id: ElementId; after?: ElementId };
-
 
   const centre = (n: ShapeElement): MindPoint => ({ x: n.x + n.width / 2, y: n.y + n.height / 2 });
   const TAU = Math.PI * 2;
@@ -121,7 +122,8 @@ export function mindLayoutFor<E extends ModelElement>(mindMap: Pick<MindMap<E>, 
       let cursor = at[across] + extent(p, across) / 2 - block / 2;
       for (const c of children) {
         const s = span(c);
-        const main = dir === 1 ? at[axis] + extent(p, axis) + gap : at[axis] - gap - extent(c, axis);
+        const main =
+          dir === 1 ? at[axis] + extent(p, axis) + gap : at[axis] - gap - extent(c, axis);
         const side = cursor + s / 2 - extent(c, across) / 2;
         out.set(c.id, axis === 'x' ? { x: main, y: side } : { x: side, y: main });
         cursor += s + gaps.sibling;
@@ -176,7 +178,8 @@ export function mindLayoutFor<E extends ModelElement>(mindMap: Pick<MindMap<E>, 
         // count swung every other branch round the dial each time one of them
         // grew a leaf. Below the root, a wedge is split by leaves, so a busy
         // sub-branch gets the room it needs without moving its neighbours' parents.
-        const s = depth === 0 ? share / kids.length : (share * leaves.get(c.id)!) / leaves.get(n.id)!;
+        const s =
+          depth === 0 ? share / kids.length : (share * leaves.get(c.id)!) / leaves.get(n.id)!;
         const mid = a + s / 2;
         const r = radius[depth + 1]!;
         out.set(c.id, {
@@ -356,7 +359,8 @@ export function mindLayoutFor<E extends ModelElement>(mindMap: Pick<MindMap<E>, 
       return p ? { ...n, ...p } : n;
     };
     const nodes = new Map<ElementId, ShapeElement>();
-    for (const el of elements) if (isMindNode(el) && nodeIds.has(el.id)) nodes.set(el.id, moved(el));
+    for (const el of elements)
+      if (isMindNode(el) && nodeIds.has(el.id)) nodes.set(el.id, moved(el));
     const out: ArrowElement[] = [];
     for (const el of elements) {
       if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') continue;

@@ -18,7 +18,7 @@ import { variantFitsKind } from './chart-types';
 import { entityHeight } from '@liveworkspace/model-core/entity-geometry';
 import { settleChips } from './attachment';
 import { createSticky, createTable, createText } from './factories';
-import { normalizeTable, type TableGrid } from './table';
+import { normalizeTable } from './table';
 import type { Element as ModelElement, TextSize } from './element';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 import {
@@ -62,7 +62,7 @@ export function elementNormaliserFor<E extends ModelElement, K extends string>(
     const cells = el.cells;
     if (!Array.isArray(cells) || !cells.every(Array.isArray)) return el;
     const stringCells = (cells as unknown[][]).map((row) => row.map(str));
-    return normalizeTable({ ...el, cells: stringCells } as unknown as TableGrid);
+    return normalizeTable({ ...el, cells: stringCells });
   }
 
   function normaliseCodeBlock(el: Raw): Raw {
@@ -72,7 +72,8 @@ export function elementNormaliserFor<E extends ModelElement, K extends string>(
       !(CODE_LANGUAGES as readonly unknown[]).includes(out.codeLanguage)
     )
       out.codeLanguage = 'plain';
-    if (out.codeTheme !== undefined && !isCodeThemeId(out.codeTheme as string)) delete out.codeTheme;
+    if (out.codeTheme !== undefined && !isCodeThemeId(out.codeTheme as string))
+      delete out.codeTheme;
     return out;
   }
 
@@ -105,7 +106,12 @@ export function elementNormaliserFor<E extends ModelElement, K extends string>(
           count === undefined ? values : Array.from({ length: count }, (_, i) => values[i] ?? 0);
         // A second axis is `right` or nothing.
         const { axis, ...rest } = s;
-        return { ...rest, name: str(s.name), values: fitted, ...(axis === 'right' ? { axis } : {}) };
+        return {
+          ...rest,
+          name: str(s.name),
+          values: fitted,
+          ...(axis === 'right' ? { axis } : {}),
+        };
       });
     }
     return out;
@@ -253,7 +259,8 @@ export function elementNormaliserFor<E extends ModelElement, K extends string>(
   // would lose two tiers at its first edit, and a cycle of 2 could never be edited. Past the most, the rest are dropped;
   // short of the fewest, rows named as the menu's Add names them ("Step 3") fill the gap.
   function normaliseConcept(el: Raw): Raw {
-    if (!Array.isArray(el.conceptRows)) return el.shape === 'timeline-rail' ? railToTimeline(el) : el;
+    if (!Array.isArray(el.conceptRows))
+      return el.shape === 'timeline-rail' ? railToTimeline(el) : el;
     const { min, max, noun } = CONCEPT_ROWS[el.shape as ConceptShape];
     const rows = el.conceptRows.slice(0, max);
     while (rows.length < min) rows.push({ label: `${noun} ${rows.length + 1}` });

@@ -47,7 +47,6 @@ export function mindMapFor<E extends ModelElement>(deps: MindMapDeps<E>) {
   type ShapeElement = Extract<E, { type: 'shape' }>;
   type ArrowElement = Extract<E, { type: 'arrow' }>;
 
-
   function isMindNode(el: Element): el is ShapeElement {
     return el.type === 'shape' && el.shape === 'mind-node';
   }
@@ -139,7 +138,6 @@ export function mindMapFor<E extends ModelElement>(deps: MindMapDeps<E>) {
 
   // `Array.isArray` alone narrows a readonly list to any[].
   const isRectList = (room: Rect | readonly Rect[]): room is readonly Rect[] => Array.isArray(room);
-
 
   // A tree always has at least its root, so the union is never null.
   const boundsOf = (nodes: readonly ShapeElement[]): Rect => unionRects(nodes)!;
@@ -371,7 +369,20 @@ export function mindMapFor<E extends ModelElement>(deps: MindMapDeps<E>) {
     };
   }
 
-  return { isMindNode, mindChildren, mindSubtree, withMindBranches, mindRootOf, makeRoom, mindFlowOf, mindSpacingOf, nextMindChildPosition, treeIds, growMindChild, growMindSibling };
+  return {
+    isMindNode,
+    mindChildren,
+    mindSubtree,
+    withMindBranches,
+    mindRootOf,
+    makeRoom,
+    mindFlowOf,
+    mindSpacingOf,
+    nextMindChildPosition,
+    treeIds,
+    growMindChild,
+    growMindSibling,
+  };
 }
 
 export type MindMap<E extends ModelElement> = ReturnType<typeof mindMapFor<E>>;

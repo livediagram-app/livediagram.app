@@ -7,7 +7,10 @@ import { isBoxed } from './element';
 
 type Box = { id: string; x: number; y: number; width: number; height: number };
 
-export function createText(x: number, y: number): Box & { type: 'text'; label: string; textSize: 'sm' } {
+export function createText(
+  x: number,
+  y: number,
+): Box & { type: 'text'; label: string; textSize: 'sm' } {
   return {
     id: crypto.randomUUID(),
     type: 'text',
@@ -65,7 +68,10 @@ const ANNOTATION_SIZE = 44;
 // A note marker dropped at (x, y). The note text starts empty: the user
 // clicks the marker to add it. Aspect-locked by default so resizing keeps
 // the marker round (docs/specs/009-elements/annotations.md).
-export function createAnnotation(x: number, y: number): Box & { type: 'annotation'; aspectLocked: true } {
+export function createAnnotation(
+  x: number,
+  y: number,
+): Box & { type: 'annotation'; aspectLocked: true } {
   return {
     id: crypto.randomUUID(),
     type: 'annotation',
@@ -157,7 +163,10 @@ export function scaleElements<E extends { type: string }>(
 // Spawns an image element in the empty-state (placeholder) shape. The
 // imageId stays null until the user picks an image from the picker;
 // the renderer shows the upload affordance in the meantime.
-export function createImage(x: number, y: number): Box & { type: 'image'; imageId: null; aspectLocked: true } {
+export function createImage(
+  x: number,
+  y: number,
+): Box & { type: 'image'; imageId: null; aspectLocked: true } {
   return {
     id: crypto.randomUUID(),
     type: 'image',

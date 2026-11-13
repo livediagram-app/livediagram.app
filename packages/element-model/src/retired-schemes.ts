@@ -2,11 +2,7 @@
 // being migrated away on read: a tab saved against it is rewritten into the
 // scheme that replaced it, and the next save persists the rewrite. These
 // colours are data about the past, frozen as they shipped; they never change.
-import {
-  DEFAULT_SCHEME_ID,
-  themeColourFields,
-  type ThemedElement,
-} from './themes';
+import { DEFAULT_SCHEME_ID, themeColourFields, type ThemedElement } from './themes';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT } from './themes-data';
 
 type RetiredScheme = 'charcoal' | 'previous-default-dark' | 'previous-default-light';
@@ -81,7 +77,7 @@ export function migrateRetiredScheme<T extends MigratableTab>(tab: T): T {
   if (from === 'charcoal') {
     next = { ...next, theme: DEFAULT_SCHEME_ID };
     if (Array.isArray(tab.elements)) {
-      const elements = tab.elements.map((el) => {
+      const elements = tab.elements.map((el: ThemedElement) => {
         const out = stripCharcoalColours(el);
         stripped += out.stripped;
         return out.el;

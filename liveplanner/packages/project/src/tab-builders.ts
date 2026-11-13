@@ -15,5 +15,12 @@ export function buildTab(
   layout: 'auto' | 'preserve' | undefined,
   themeId: string | undefined,
 ): Tab {
-  return buildTabWith({ coerceShapeKind, settle: settleDiagramKeys }, tabId, name, elements, layout, themeId);
+  return buildTabWith(
+    { coerceShapeKind, settle: settleDiagramKeys },
+    tabId,
+    name,
+    elements,
+    layout,
+    themeId,
+  );
 }

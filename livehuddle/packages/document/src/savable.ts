@@ -4,6 +4,9 @@ import { savableElementsOf } from '@liveworkspace/element-model/savable';
 import { isValidElement, MAX_ELEMENTS_PER_TAB } from './validate';
 import type { Element } from './index';
 
-export function savableElements(elements: readonly unknown[]): { elements: Element[]; dropped: number } {
+export function savableElements(elements: readonly unknown[]): {
+  elements: Element[];
+  dropped: number;
+} {
   return savableElementsOf(elements, isValidElement, MAX_ELEMENTS_PER_TAB);
 }

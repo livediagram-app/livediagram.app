@@ -151,13 +151,13 @@ export function elementKindsFor<E extends KindedElement>({
   const knownType = (type: string) => elementTypes.has(type) && !isRetiredType(type);
   return {
     // Whether the product's model knows this element's type, and its shape kind for a shape.
-    isKnownElement(el: E): boolean {
+    isKnownElement: (el: E): boolean => {
       if (!knownType(el.type)) return false;
       return el.type !== 'shape' || shapeKinds.has(el.shape!);
     },
     // The first word of an element's line: a notation the element names itself by, a shape's kind, else the
     // element type. An unknown or retired type, or an unknown shape kind, prints `? <name>`.
-    kindWordOf(el: E): string {
+    kindWordOf: (el: E): string => {
       if (!knownType(el.type)) return unknownKindWord(el.type, 'element');
       const notation = notationOf(el);
       if (notation) return notation;

@@ -46,7 +46,7 @@ export function buildTabWith<E extends Element, K extends string>(
   // Coerce off-vocabulary shape kinds (e.g. a model emitting "rectangle", which
   // isn't a kind: the box is "square") so every node actually renders a box.
   const coerced = elements.map((el) =>
-    el.type === 'shape' ? ({ ...el, shape: coerceShapeKind(el.shape) } as E) : el,
+    el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
   );
   // An angled arrow left as an L between ends that face each other bends twice instead (layout-cleanup.md).
   const laidOut = settle(withFacingBends(applyLayout(layout, coerced)));

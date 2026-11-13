@@ -70,7 +70,13 @@ function putBack<E extends Element>(prev: E, next: E): E {
     height: number;
     rotation?: number;
   };
-  const back: Record<string, unknown> = { ...next, x: p.x, y: p.y, width: p.width, height: p.height };
+  const back: Record<string, unknown> = {
+    ...next,
+    x: p.x,
+    y: p.y,
+    width: p.width,
+    height: p.height,
+  };
   if (p.rotation === undefined) delete back.rotation;
   else back.rotation = p.rotation;
   return back as E;

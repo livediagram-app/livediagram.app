@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { RETIRED_SHAPE_KINDS, svgTabWindow, tabWindowNames, type TabWindowElement } from './tab-window';
+import {
+  RETIRED_SHAPE_KINDS,
+  svgTabWindow,
+  tabWindowNames,
+  type TabWindowElement,
+} from './tab-window';
 
 // Each product's tab-window spec (retired): a stored window draws as a frame named for its tab.
 const windowOn = (): TabWindowElement => ({ type: 'shape', x: 0, y: 0, width: 640, height: 360 });

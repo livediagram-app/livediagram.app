@@ -794,7 +794,7 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | Every stored field listed per type                                                                                       | `packages/document/src/element-fields.test.ts` (plus the compile-time `satisfies`)                                   |
 | Validation names the field and rule                                                                                      | `packages/document/src/validate.test.ts` › "elementValidationIssue"                                                  |
 | Refs, slugs, kind words, containment, origin (the document-views blueprint's tests; `isContainer` here)                  | `packages/document/src/{element-refs,containment}.test.ts`                                                           |
-| Batched element ops equal the sequential reduce                                                                          | `../packages/element-model/src/element-ops.test.ts` › "applyElementOps, batched"                                             |
+| Batched element ops equal the sequential reduce                                                                          | `../packages/element-model/src/element-ops.test.ts` › "applyElementOps, batched"                                     |
 | Observability: each fingerprint fires with its fields and no content                                                     | `apply.test.ts` › "logs" (a recording `log`), `make-room.test.ts` › "logs what it shifted"                           |
 
 ## Constants and configuration

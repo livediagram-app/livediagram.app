@@ -64,14 +64,12 @@ function hugText<E extends Element>(el: E): E {
 function inkElement<E extends Element>(el: E): E {
   if (el.type === 'text') return hugText(el);
   const patch = inkPatch(el);
-  return Object.keys(patch).length === 0 ? el : ({ ...el, ...patch } as E);
+  return Object.keys(patch).length === 0 ? el : { ...el, ...patch };
 }
 
 export function migrateWhiteboardKind<
   T extends { elements: Element[]; backgroundPattern?: BackgroundPattern },
->(
-  tab: T,
-): T {
+>(tab: T): T {
   const stored = tab as T & { id?: string; kind?: string };
   if (stored.kind !== LEGACY_WHITEBOARD_KIND) return tab;
   const elements = Array.isArray(tab.elements) ? tab.elements.map(inkElement) : tab.elements;

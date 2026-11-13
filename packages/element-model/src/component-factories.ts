@@ -53,7 +53,7 @@ export function componentFactoriesFor<E extends ModelElement, K extends string>(
   type ImageElement = Extract<E, { type: 'image' }>;
   const { createFlowchartStart } = deps;
   const createShape = deps.createShape as (kind: ShapeKind, x: number, y: number) => ShapeElement;
-  const SHAPE_DEFAULT_SIZE = deps.shapeDefaultSize as Readonly<Record<string, Size>>;
+  const SHAPE_DEFAULT_SIZE = deps.shapeDefaultSize;
 
   // Theme colours a component is built from. `accent` is the theme accent
   // (elementStroke); `surface` is the light element fill; `ink` is the element
@@ -126,7 +126,12 @@ export function componentFactoriesFor<E extends ModelElement, K extends string>(
   // theme. The accent-bar kinds (banner, header) take the accent as their
   // stroke, which the bar paints in, and keep white text; the cards take the
   // surface + ink with the accent as their border and emphasis.
-  function createWebShape(kind: ShapeKind, cx: number, cy: number, c: ComponentColors): ShapeElement {
+  function createWebShape(
+    kind: ShapeKind,
+    cx: number,
+    cy: number,
+    c: ComponentColors,
+  ): ShapeElement {
     const { width, height } = SHAPE_DEFAULT_SIZE[kind]!;
     const base = createShape(kind, cx - width / 2, cy - height / 2);
     if (kind === 'banner' || kind === 'site-header') {
@@ -165,5 +170,12 @@ export function componentFactoriesFor<E extends ModelElement, K extends string>(
     return createWebShape(COMPONENT_SHAPE[kind]!, cx, cy, colors);
   }
 
-  return { componentShapeKind, createAvatar, createHero, createCalloutCard, createComponent, COMPONENT_SIZE };
+  return {
+    componentShapeKind,
+    createAvatar,
+    createHero,
+    createCalloutCard,
+    createComponent,
+    COMPONENT_SIZE,
+  };
 }

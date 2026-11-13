@@ -24,7 +24,10 @@ describe('page lock', () => {
   // The guard itself is @liveworkspace/element-model's (page-lock.test.ts there); this is it on this model's layout.
   it('keeps a new element off a locked page laid out by this model', () => {
     const added = box('new', pa!.rect.x + 300, pa!.rect.y + 300);
-    expect(guardLockedPages([onB], [onB, added], pages, pages)).toEqual({ elements: [onB], blocked: true });
+    expect(guardLockedPages([onB], [onB, added], pages, pages)).toEqual({
+      elements: [onB],
+      blocked: true,
+    });
   });
 
   it('reads a stored lock, and only `true`', () => {

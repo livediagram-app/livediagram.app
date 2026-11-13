@@ -57,7 +57,14 @@ describe('element factories', () => {
       false,
     );
     // The box pads the stroke by a pixel each side.
-    expect(stroke).toMatchObject({ type: 'freehand', x: 9, y: 9, width: 22, height: 42, closed: false });
+    expect(stroke).toMatchObject({
+      type: 'freehand',
+      x: 9,
+      y: 9,
+      width: 22,
+      height: 42,
+      closed: false,
+    });
     expect(typeof stroke.packedPoints).toBe('string');
   });
 
@@ -83,7 +90,12 @@ describe('scaleElements', () => {
       from: { kind: 'free', x: 10, y: 10 },
       to: { kind: 'pinned', elementId: box.id, anchor: 'top' },
     };
-    const [scaledBox, scaledArrow] = scaleElements<typeof box | typeof arrow>([box, arrow], 0, 0, 2);
+    const [scaledBox, scaledArrow] = scaleElements<typeof box | typeof arrow>(
+      [box, arrow],
+      0,
+      0,
+      2,
+    );
     expect(scaledBox).toMatchObject({ x: 20, y: 40, width: 20, height: 20 });
     expect(scaledArrow).toMatchObject({ from: { x: 20, y: 20 }, to: arrow.to });
   });

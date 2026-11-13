@@ -309,5 +309,13 @@ export function mindGrowFor<E extends ModelElement>(deps: MindGrowDeps<E>) {
     });
   }
 
-  return { mindStyleSource, mindConnectorBetween, mindConnectorStyleSource, planMindGrowth, relayoutMindMap, withMindSubtrees, applyMindMoves };
+  return {
+    mindStyleSource,
+    mindConnectorBetween,
+    mindConnectorStyleSource,
+    planMindGrowth,
+    relayoutMindMap,
+    withMindSubtrees,
+    applyMindMoves,
+  };
 }

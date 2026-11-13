@@ -281,5 +281,14 @@ export function indicatorPlacementFor<E extends ModelElement>(deps: IndicatorOut
     return footer ? { top: 0, bottom: inset } : { top: inset, bottom: 0 };
   }
 
-  return { centredIndicators, indicatorRings, topAnchor, footerAnchor, contentBox, placeIndicators, pipInset, contentShift };
+  return {
+    centredIndicators,
+    indicatorRings,
+    topAnchor,
+    footerAnchor,
+    contentBox,
+    placeIndicators,
+    pipInset,
+    contentShift,
+  };
 }

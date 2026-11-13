@@ -4,7 +4,10 @@ import { sameFill as sameFillBy } from '@liveworkspace/page-background/page-pain
 import type { PageFill } from './page';
 import { samePageImage } from './page-image';
 
-export { PAGE_GRADIENT_ANGLE, withBackgroundPatch } from '@liveworkspace/page-background/page-paint';
+export {
+  PAGE_GRADIENT_ANGLE,
+  withBackgroundPatch,
+} from '@liveworkspace/page-background/page-paint';
 
 /** Whether two fills are the same (a preset's swatch shows as chosen). */
 export function sameFill(a: PageFill | undefined, b: PageFill | undefined): boolean {

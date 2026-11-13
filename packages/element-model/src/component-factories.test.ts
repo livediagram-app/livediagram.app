@@ -39,16 +39,34 @@ describe('component factories', () => {
   });
 
   it('makes the avatar and hero as images centred on the point', () => {
-    expect(createAvatar(100, 100)).toMatchObject({ type: 'image', x: 52, y: 52, borderRadius: 'full' });
-    expect(createHero(0, 0, '#0af')).toMatchObject({ type: 'image', width: 520, fillColor: '#0af' });
+    expect(createAvatar(100, 100)).toMatchObject({
+      type: 'image',
+      x: 52,
+      y: 52,
+      borderRadius: 'full',
+    });
+    expect(createHero(0, 0, '#0af')).toMatchObject({
+      type: 'image',
+      width: 520,
+      fillColor: '#0af',
+    });
     expect(createComponent('avatar', 0, 0, colors).type).toBe('image');
     expect(createComponent('hero', 0, 0, colors).type).toBe('image');
   });
 
   it('dresses the shapes in the theme: the bars in the accent, the cards in the surface', () => {
-    expect(createComponent('banner', 0, 0, colors)).toMatchObject({ shape: 'banner', strokeColor: '#f00' });
-    expect(createComponent('stat', 0, 0, colors)).toMatchObject({ shape: 'stat-row', fillColor: '#fff' });
-    expect(createComponent('callout', 0, 0, colors)).toMatchObject({ shape: 'card', textColor: '#111' });
+    expect(createComponent('banner', 0, 0, colors)).toMatchObject({
+      shape: 'banner',
+      strokeColor: '#f00',
+    });
+    expect(createComponent('stat', 0, 0, colors)).toMatchObject({
+      shape: 'stat-row',
+      fillColor: '#fff',
+    });
+    expect(createComponent('callout', 0, 0, colors)).toMatchObject({
+      shape: 'card',
+      textColor: '#111',
+    });
     expect(createCalloutCard(0, 0)).toMatchObject({ shape: 'card' });
     expect(createComponent('flowchart', 0, 0, colors).type).toBe('shape');
   });

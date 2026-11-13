@@ -6,8 +6,10 @@ import { PAGE_GRADIENT_ANGLE, sameFill as sameFillBy, withBackgroundPatch } from
 type Picture = { kind: 'image'; imageId: string };
 type Background = { fill?: PageColourFill | Picture; pattern?: PagePattern };
 const page = (background?: Background) => (background ? { background } : {});
-const sameFill = (a: PageColourFill | Picture | undefined, b: PageColourFill | Picture | undefined) =>
-  sameFillBy(a, b, (x, y) => x.imageId === y.imageId);
+const sameFill = (
+  a: PageColourFill | Picture | undefined,
+  b: PageColourFill | Picture | undefined,
+) => sameFillBy(a, b, (x, y) => x.imageId === y.imageId);
 const solid = { kind: 'solid', color: '#e0f2fe' } as const;
 const gradient = {
   kind: 'gradient',

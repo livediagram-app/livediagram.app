@@ -54,9 +54,11 @@ export function createImage(x: number, y: number): ImageElement {
   return shared.createImage(x, y);
 }
 
-export function createFreehand(rawPoints: readonly { x: number; y: number }[],
+export function createFreehand(
+  rawPoints: readonly { x: number; y: number }[],
   closed: boolean,
-  pressures?: readonly number[]): FreehandElement {
+  pressures?: readonly number[],
+): FreehandElement {
   return shared.createFreehand(rawPoints, closed, pressures);
 }
 
@@ -64,9 +66,11 @@ export function createArrow(fromX: number, fromY: number, toX: number, toY: numb
   return shared.createArrow(fromX, fromY, toX, toY);
 }
 
-export function createPinnedArrow(fromId: ElementId,
+export function createPinnedArrow(
+  fromId: ElementId,
   fromAnchor: Anchor,
   toId: ElementId,
-  toAnchor: Anchor): ArrowElement {
+  toAnchor: Anchor,
+): ArrowElement {
   return shared.createPinnedArrow(fromId, fromAnchor, toId, toAnchor);
 }
