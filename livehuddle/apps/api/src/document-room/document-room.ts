@@ -548,7 +548,11 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.joined(this, documentId, personId);
   }
 
-  anonymise(documentId: string, personId: string, guestKeys: readonly string[] = []): Promise<number> {
+  anonymise(
+    documentId: string,
+    personId: string,
+    guestKeys: readonly string[] = [],
+  ): Promise<number> {
     return rpc.anonymise(this, documentId, personId, guestKeys);
   }
 

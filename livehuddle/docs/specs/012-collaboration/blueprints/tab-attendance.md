@@ -75,8 +75,8 @@ person_key = ? AND left_at IS NULL`.
 - **Upkeep**: `maintain` deletes closed visits past retention (`deleteOldVisits`). A join arms the upkeep as a content
   write does (`armUpkeep`), so a Space visited and never edited still sweeps.
 - **Anonymise**: `anonymiseDocument(env, documentId, personId, guestKeys)` adds `UPDATE tab_attendance SET
-  person_key = 'anonymised', name = 'Deleted account', picture = NULL WHERE person_key IN (collabKeyFor(personId),
-  ...guestKeys)`, the guest keys being those `isCollabKey` accepts, at most `MERGED_GUESTS_MAX` (32).
+person_key = 'anonymised', name = 'Deleted account', picture = NULL WHERE person_key IN (collabKeyFor(personId),
+...guestKeys)`, the guest keys being those `isCollabKey` accepts, at most `MERGED_GUESTS_MAX` (32).
 - **Guest keys at sign-in** (`mergeGuest`, `db/account.ts`): before the guest's store is purged, the account's
   person store `noteMergedGuests([collabKeyFor(guestId), ...guest store's own merged keys])` (a legacy guest that
   merged into this guest passes its keys on). `INSERT OR IGNORE` with `merged_at`; past `MERGED_GUESTS_MAX` the

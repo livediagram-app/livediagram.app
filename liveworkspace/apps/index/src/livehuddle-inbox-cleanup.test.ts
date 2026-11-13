@@ -58,10 +58,12 @@ function seed(sql: DatabaseSync): void {
 }
 
 const appsIn = (sql: DatabaseSync, table: string) =>
-  (sql.prepare(`SELECT app, count(*) AS n FROM ${table} GROUP BY app ORDER BY app`).all() as {
-    app: string;
-    n: number;
-  }[]).map((r) => `${r.app}:${r.n}`);
+  (
+    sql.prepare(`SELECT app, count(*) AS n FROM ${table} GROUP BY app ORDER BY app`).all() as {
+      app: string;
+      n: number;
+    }[]
+  ).map((r) => `${r.app}:${r.n}`);
 
 const cleanup = (sql: DatabaseSync) => {
   sql.exec('BEGIN');
@@ -91,9 +93,9 @@ describe('livehuddle-inbox-cleanup.sql', () => {
       appsIn(sql, t),
     );
     cleanup(sql);
-    expect(['collab_threads', 'collab_thread_people', 'collab_actions'].map((t) => appsIn(sql, t))).toEqual(
-      before,
-    );
+    expect(
+      ['collab_threads', 'collab_thread_people', 'collab_actions'].map((t) => appsIn(sql, t)),
+    ).toEqual(before);
     expect(() => cleanup(migrated())).not.toThrow();
   });
 

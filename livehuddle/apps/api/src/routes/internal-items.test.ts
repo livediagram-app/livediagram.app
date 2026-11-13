@@ -264,15 +264,23 @@ describe("a closed account's visits as the guest it signed in from", () => {
     await upsertTab(db.env, 'A', { id: 't1', name: 'Tab 1', elements: [] }, 0);
     const item = nodeItemSql(sql);
     const visit = async (person: string, name: string) =>
-      joinVisit(item, 't1', await collabKeyFor(person), { name, color: '#111', picture: null, guest: true }, 1);
+      joinVisit(
+        item,
+        't1',
+        await collabKeyFor(person),
+        { name, color: '#111', picture: null, guest: true },
+        1,
+      );
     await visit(GUEST, 'Ada as a guest');
     await visit(USER, 'Ada');
     await visit(OTHER, 'Bob');
     const names = () =>
-      (sql.prepare('SELECT person_key, name FROM tab_attendance ORDER BY id').all() as {
-        person_key: string;
-        name: string;
-      }[]).map((r) => (r.person_key === ANONYMISED_PERSON ? r.name : `${r.name} (kept)`));
+      (
+        sql.prepare('SELECT person_key, name FROM tab_attendance ORDER BY id').all() as {
+          person_key: string;
+          name: string;
+        }[]
+      ).map((r) => (r.person_key === ANONYMISED_PERSON ? r.name : `${r.name} (kept)`));
 
     expect((await call(`${GUEST}/merge`, { into: USER })).status).toBe(200);
     // Nothing about the guest's visit changes while the account is open.
@@ -287,7 +295,7 @@ describe("a closed account's visits as the guest it signed in from", () => {
     expect(names()).toEqual([ANONYMISED_NAME, ANONYMISED_NAME, 'Bob (kept)']);
   });
 
-  it("passes on the keys of guests merged into the guest, and keeps only collab keys", async () => {
+  it('passes on the keys of guests merged into the guest, and keeps only collab keys', async () => {
     const { env, call } = arrange();
     const earlier = 'guest_old';
     await personStore(env, GUEST).noteMergedGuests([await collabKeyFor(earlier), 'not-a-key']);

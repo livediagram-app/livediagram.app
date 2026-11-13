@@ -15,7 +15,8 @@ describe('merged guests', () => {
     const env = { PERSON_STORE: ns } as unknown as Env;
     return { ns, store: personStore(env, 'user_ada'), raw: ns.get(ns.idFromName('user_ada')) };
   };
-  const keys = (n: number) => Promise.all(Array.from({ length: n }, (_, i) => collabKeyFor(`guest_${i}`)));
+  const keys = (n: number) =>
+    Promise.all(Array.from({ length: n }, (_, i) => collabKeyFor(`guest_${i}`)));
 
   it('records each key once, newest first, and keeps at most the cap', async () => {
     vi.useFakeTimers();

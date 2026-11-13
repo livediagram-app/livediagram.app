@@ -122,7 +122,9 @@ export class PersonStore extends DurableObject<Env> {
     this.ready = false;
     if (guests.length === 0) return;
     const sql = this.writable();
-    this.ctx.storage.transactionSync(() => noteMergedGuests(sql, [...guests].reverse(), Date.now()));
+    this.ctx.storage.transactionSync(() =>
+      noteMergedGuests(sql, [...guests].reverse(), Date.now()),
+    );
     await this.ctx.storage.setAlarm(Date.now() + MERGED_GUESTS_KEEP_MS);
   }
 

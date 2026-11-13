@@ -776,7 +776,7 @@ component on the page and in every editor's panel:
   remembered Inbox section, or an `/explorer/inbox` address, opens Home instead. The other apps keep the Inbox as
   below. The Inbox rows livehuddle pushed before it stopped (its comment threads, with the people in and mentioned in
   them, and its actions) are cleared once, by a cleanup only a person runs (`liveworkspace/apps/index/scripts/
-  livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads`, `collab_thread_people` and
+livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads`, `collab_thread_people` and
   `collab_actions` rows whose `app` is livehuddle and nothing else, emits no event, and changes nothing a second
   time.
 

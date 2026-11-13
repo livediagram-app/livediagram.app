@@ -6,16 +6,16 @@ from the code. Defaults are cited as `IDXn`. Paths are relative to the repositor
 
 Scope, by file:
 
-| File                                          | Role                                                                                                                                                            |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/app-routes.ts`  | `/app/…` dispatch; the summary push                                                                                                                             |
-| `liveworkspace/apps/index/src/collab-push.ts` | `parseCard`, `parseThread`, `parseAction`, `pushCollab`, `collabEvents`, `retractedComments`, `parseForm`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen` |
-| `liveworkspace/apps/index/src/inbox.ts`       | `inboxQueries`, `handleInbox`                                                                                                                                   |
-| `packages/explorer/src/inbox-apps.ts`         | `APPS_WITHOUT_INBOX` (livehuddle), `appHasInbox`: the per-app switch that hides the Inbox and skips its fetch                                                   |
-| `liveworkspace/apps/index/scripts/livehuddle-inbox-cleanup.sql` | The one-off cleanup of livehuddle's Inbox rows from before it stopped pushing (Work Tracker 736)                               |
-| `packages/index-app/src/outbox.ts`            | The item's outbox in its Durable Object: what it owes the index, drained on idle                                                                                |
-| `packages/index-app/src/cards.ts`, `forms.ts` | Cards and their threads under `~cards`; a form's code lookup, cached                                                                                            |
-| `packages/index-client/src/app-client.ts`     | `createIndexAppClient`: `pushSummary`, `pushCollab`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen`, `pushEvents`, `pushPersonEvents`                     |
+| File                                                            | Role                                                                                                                                                            |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/app-routes.ts`                    | `/app/…` dispatch; the summary push                                                                                                                             |
+| `liveworkspace/apps/index/src/collab-push.ts`                   | `parseCard`, `parseThread`, `parseAction`, `pushCollab`, `collabEvents`, `retractedComments`, `parseForm`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen` |
+| `liveworkspace/apps/index/src/inbox.ts`                         | `inboxQueries`, `handleInbox`                                                                                                                                   |
+| `packages/explorer/src/inbox-apps.ts`                           | `APPS_WITHOUT_INBOX` (livehuddle), `appHasInbox`: the per-app switch that hides the Inbox and skips its fetch                                                   |
+| `liveworkspace/apps/index/scripts/livehuddle-inbox-cleanup.sql` | The one-off cleanup of livehuddle's Inbox rows from before it stopped pushing (Work Tracker 736)                                                                |
+| `packages/index-app/src/outbox.ts`                              | The item's outbox in its Durable Object: what it owes the index, drained on idle                                                                                |
+| `packages/index-app/src/cards.ts`, `forms.ts`                   | Cards and their threads under `~cards`; a form's code lookup, cached                                                                                            |
+| `packages/index-client/src/app-client.ts`                       | `createIndexAppClient`: `pushSummary`, `pushCollab`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen`, `pushEvents`, `pushPersonEvents`                     |
 
 ## Domain and naming
 
@@ -128,13 +128,13 @@ on production with `--remote`.
 
 ## Testing
 
-| Test                                                    | Pins                                            |
-| ------------------------------------------------------- | ----------------------------------------------- |
-| `liveworkspace/apps/index/src/inbox.test.ts` (11)       | Inbox threads, cards, forms; the Inbox at scale |
-| `liveworkspace/apps/index/src/app.test.ts` (15)         | app pushes and the Inbox among the rest         |
-| `packages/index-app/src/outbox.test.ts`                 | the outbox's keys, drain, caps and retries      |
-| `packages/index-app/src/cards.test.ts`, `forms.test.ts` | cards under `~cards`; a form's code lookup      |
-| `packages/explorer/src/inbox-apps.test.tsx`             | no Inbox for livehuddle; the other four keep it |
+| Test                                                            | Pins                                                                               |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/inbox.test.ts` (11)               | Inbox threads, cards, forms; the Inbox at scale                                    |
+| `liveworkspace/apps/index/src/app.test.ts` (15)                 | app pushes and the Inbox among the rest                                            |
+| `packages/index-app/src/outbox.test.ts`                         | the outbox's keys, drain, caps and retries                                         |
+| `packages/index-app/src/cards.test.ts`, `forms.test.ts`         | cards under `~cards`; a form's code lookup                                         |
+| `packages/explorer/src/inbox-apps.test.tsx`                     | no Inbox for livehuddle; the other four keep it                                    |
 | `liveworkspace/apps/index/src/livehuddle-inbox-cleanup.test.ts` | the cleanup deletes livehuddle's thread, people and action rows only, twice safely |
 
 ## Constants and configuration
