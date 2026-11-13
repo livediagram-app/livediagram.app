@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { type ArrowElement, type Element } from './index';
+import type { Element } from './index';
 import { buildTab } from './tab-builders';
 
 describe("buildTab settles a diagram key's rows", () => {
