@@ -70,6 +70,9 @@ export function handleInternalItems(
       // A new plan from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importProjectFileFor(env, input),
       revoke: (id, codes, reason) => planRoom(env, id).revokeCodes(codes, reason),
+      // Archived, moved out, trashed or restored at the index: the plan's time rules, Waits and repeating cards stop
+      // while it is put away and take up again when it comes back (plan-room/plan-standing.ts).
+      standing: (id, standing) => planRoom(env, id).takeStanding(standing),
       // Someone's first time in through a link: the owner's email, and Project·Joined by the link's level.
       notice: (id, notice) =>
         notice.type === 'shared'

@@ -105,6 +105,8 @@ export async function enqueueComment(
   }
 }
 
+const NONE_HEARD: ReadonlySet<AutomationEventKind> = new Set();
+
 // The wake the queue asks for (now while a trigger waits, else none), and the time triggers' (their earliest
 // `next_at`, one indexed MIN read, none when no time rule is on).
 export class AutomationSchedule {
@@ -210,16 +212,20 @@ export class PlanAutomations implements AutomationsHook {
   readonly sql: () => Sql;
   readonly deps: () => RunnerDeps | null;
   private readonly arm: () => void;
+  // Whether the plan is archived or in the Trash (plan-standing.ts): its schedule reads as empty and it hears nothing.
+  private readonly putAway: () => boolean;
 
   constructor(
     sql: () => Sql,
     ready: () => boolean,
     arm: () => void,
     deps: () => RunnerDeps | null,
+    putAway: () => boolean = () => false,
   ) {
     this.sql = sql;
+    this.putAway = putAway;
     this.store = new AutomationStore(sql, ready);
-    this.schedule = new AutomationSchedule(sql, ready);
+    this.schedule = new AutomationSchedule(sql, () => ready() && !putAway());
     this.arm = arm;
     this.deps = deps;
     // A rule write changed when a time rule next runs: the room's alarm asks again.
@@ -229,8 +235,9 @@ export class PlanAutomations implements AutomationsHook {
     };
   }
 
+  // Put away, none: no write, comment or delivery builds an event.
   get kinds(): ReadonlySet<AutomationEventKind> {
-    return this.store.kinds;
+    return this.putAway() ? NONE_HEARD : this.store.kinds;
   }
 
   queued(dropped: number): void {

@@ -13,6 +13,7 @@ import type { Env } from './env';
 import { conflict, forbidden, json } from './http';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
 import { eventStatements } from './events';
+import { tellStanding } from './standing';
 
 /** Whether a row is in its owner's Archived. */
 export const isArchived = (row: Pick<ItemRow, 'archived_at'>) => row.archived_at != null;
@@ -92,7 +93,10 @@ export async function archiveItem(ctx: RouteContext, id: string): Promise<Respon
   )
     .bind(id)
     .all<{ code: string }>();
-  await env.INDEX_DB.batch(archiveStatements(env, row, person.id, Date.now()));
+  const now = Date.now();
+  await env.INDEX_DB.batch(archiveStatements(env, row, person.id, now));
+  // Its app stops what it runs on its own clock for it (one-explorer-contracts.md "Where an item stands").
+  tellStanding(env, ctx.waitUntil, row.app, id, { archived: true, trashed: false, at: now });
   // The sessions its links admitted end now; an owner's or teammate's when their grant is next renewed.
   const codes = links.map((l) => l.code);
   if (codes.length > 0) {

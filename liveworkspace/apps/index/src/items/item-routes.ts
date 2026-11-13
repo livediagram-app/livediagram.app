@@ -19,6 +19,7 @@ import { recordVisitorCopy, recordVisitorOpen } from '../visitors';
 import { recordOpen } from './opens';
 import { insertItem, itemFor, optionalId } from './create';
 import { clientIpOf } from './shared';
+import { tellStanding } from '../standing';
 
 export async function handleItem(ctx: RouteContext, id: string): Promise<Response> {
   const { request, segments } = ctx;
@@ -146,6 +147,15 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
       .bind(title, ownerId, teamId, scope, folderId, updatedAt, archivedAt, id),
     ...events,
   ]);
+  // Moved out of Archived: its app starts what it runs on its own clock for it again (one-explorer-contracts.md
+  // "Where an item stands").
+  if (archived && moving) {
+    tellStanding(env, ctx.waitUntil, row.app, id, {
+      archived: false,
+      trashed: row.trashed_at !== null,
+      at: now,
+    });
+  }
   // Renamed or moved: its owner's mirror before and after (into or out of a team, one side is personal).
   if (events.length > 0) {
     touchItem(ctx.drive, row);
@@ -210,7 +220,15 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
     );
   }
   await db.batch(statements);
-  if (row.trashed_at === null) touchItem(ctx.drive, row);
+  if (row.trashed_at === null) {
+    touchItem(ctx.drive, row);
+    // Into the Trash: its app stops what it runs on its own clock for it. One already there was told.
+    tellStanding(env, ctx.waitUntil, row.app, id, {
+      archived: isArchived(row),
+      trashed: true,
+      at: now,
+    });
+  }
   return noContent();
 }
 
@@ -219,6 +237,7 @@ async function restoreItem(ctx: RouteContext, id: string): Promise<Response> {
   const loaded = await loadItem(env, id, caller, 'edit', { manage: true });
   if (loaded instanceof Response) return loaded;
   const db = env.INDEX_DB;
+  const now = Date.now();
   const statements = [
     db.prepare('UPDATE items SET trashed_at = NULL, trash_reason = NULL WHERE id = ?').bind(id),
   ];
@@ -228,12 +247,20 @@ async function restoreItem(ctx: RouteContext, id: string): Promise<Response> {
         itemId: id,
         type: 'restored',
         actorId: caller.person?.id ?? null,
-        at: Date.now(),
+        at: now,
       }),
     );
   }
   await db.batch(statements);
-  if (loaded.row.trashed_at !== null) touchItem(ctx.drive, loaded.row);
+  if (loaded.row.trashed_at !== null) {
+    touchItem(ctx.drive, loaded.row);
+    // Out of the Trash (back to Archived, for an archived item): its app hears where it stands now.
+    tellStanding(env, ctx.waitUntil, loaded.row.app, id, {
+      archived: isArchived(loaded.row),
+      trashed: false,
+      at: now,
+    });
+  }
   const row = await getItemRow(env, id);
   return json({ item: await itemFor(env, caller.person, row!, loaded.access) });
 }

@@ -49,7 +49,10 @@ export async function route(
 ): Promise<Response> {
   room.bindPlan(planId);
   const env = room.requireEnv();
-  if (identity.grant?.item === planId) await room.takeHead(identity.grant);
+  if (identity.grant?.item === planId) {
+    await room.takeHead(identity.grant);
+    await room.takeGrantStanding(identity.grant);
+  }
   const community = await communityOf(room, planId);
   const writesBefore = room.writes;
   const response = await answerPlanRequest(

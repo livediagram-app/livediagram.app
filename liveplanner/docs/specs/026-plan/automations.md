@@ -794,6 +794,29 @@ hands focus back to the field, the caret after the value:
 - **Pausing**: a rule that fails **10 runs in a row** turns itself off and is marked **Paused** with the last
   failure's reason; **Resume** turns it on again and clears the count. Any matched run resets the count.
 
+### Put away
+
+A plan its owner **archived** or moved to the **Trash** runs no rule: nobody can open it, so nothing it sends
+(an email, a Slack or Teams post, a webhook) should go out in its name. liveworkspace's index tells the plan each
+time it is put away or comes back ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
+"Where an item stands").
+
+- **While it is put away**: no time rule (Scheduled, Due In, Overdue, Card Stuck) reaches its moment, no run held
+  by a **Wait** goes on, and no trigger is heard (an Incoming Webhook call is answered `202 {queued: 0}`, a GitHub
+  event and anything else starts nothing). Its repeating cards make no copies ([Repeating cards](items.md#repeating-cards)).
+  The plan's alarm does not wake for any of them. Its rules, their Audit Trail and its waiting runs are kept as
+  they are.
+- **When it comes back** (moved out of Archived, restored from the Trash): every time rule takes up from where it
+  stopped, as after any long sleep (**late, never a burst**, above): a rule whose moment passed while it was put
+  away runs once, for the latest moment it missed, and only when that moment is at most a day old; the moments
+  before it never run. A waiting run whose time came while it was put away goes on at once when its time is at most a
+  day old, and is **Skipped** otherwise ("The plan was archived or in the Trash when this run was due"). Each
+  repeating card makes at most one copy, for today.
+- **Fails open**: a plan that never heard it was put away (the index could not reach it) runs as before. A plan that
+  never heard it came back takes it from the next grant anyone opens it with, so its rules start again the next
+  time the plan is opened.
+- Archiving a **card**, or trashing one, is not this: it stops only what that card does (above).
+
 ## Where it shows
 
 ### The footer button

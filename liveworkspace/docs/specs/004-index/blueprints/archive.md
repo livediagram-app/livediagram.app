@@ -57,6 +57,9 @@ archived_at IS NULL AND trashed_at IS NULL`.
 6. `DELETE` from `collab_thread_people`, `collab_threads`, `collab_actions`, `collab_form_reads`, `collab_forms`.
 7. After the batch, the app hears `POST /items/:id/revoke {codes}` with the deleted links' codes (`waitUntil`), and
    the owner's Drive mirror (and, out of a team, nobody else's) is touched.
+8. After the batch, the app hears `POST /items/:id/standing {archived: true, trashed: false, at}` (`waitUntil`,
+   `tellStanding` in `standing.ts`; [one-explorer-contracts.md](../one-explorer-contracts.md) "Where an item stands"),
+   so its own clock (liveplanner's time rules) stops.
 
 ### Who may archive
 
@@ -70,7 +73,8 @@ the data export never call it.
 `updateItem` treats an archived row as being in no team and no folder: naming `teamId` (null or a joined team) or
 `folderId` (null or a folder of the target scope) moves it, with the same membership and folder checks as any move.
 `scope` becomes `scopeOf(owner, team)`; `archived_at` null; `moveScopeStatements(a:<owner> → scope)`; a `moved`
-event. Naming neither keeps `a:<owner>` whatever the title.
+event. Naming neither keeps `a:<owner>` whatever the title. A move out tells the app `POST /items/:id/standing {archived: false, trashed, at}`
+(`trashed` as the row has it), so its clock starts again.
 
 ### Lists
 
@@ -143,6 +147,7 @@ one `items_live` range: pinned by `lists.test.ts` "query plans".
 | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/src/archive.test.ts`     | the archive, its deletions, the refusals, previews, lists, move out, Trash, team, roles, guest merge |
 | `liveworkspace/apps/index/src/lists.test.ts`       | the Archived, Search and Trash plans                                                                 |
+| `liveworkspace/apps/index/src/standing.test.ts`    | the app told on archive and move out, once, and a failed call dropped                                |
 | `packages/explorer/src/explorer/archived.test.tsx` | the sidebar row, the view and empty state, the menu, the dialog, Change Folder's space, `?move=`     |
 
 ## Constants and configuration

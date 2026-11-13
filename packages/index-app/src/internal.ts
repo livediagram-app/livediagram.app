@@ -8,6 +8,9 @@
 //   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
 //   POST   /api/internal/items/:id/workbench-close {pairingId}  a workbench pairing's access ended: close its sessions
 //                                                            in the item's room (liveworkspace/docs/specs/011-workbench/workbench.md)
+//   POST   /api/internal/items/:id/standing {archived, trashed, at}  where the item stands at the index after an
+//                                                            archive, move out, trash or restore (standing.ts in
+//                                                            index-client); 200 and nothing done without a handler
 //   POST   /api/internal/items/:id/connected-tabs {name, connection}  the index's reverse write of a connected tab
 //                                                            (connected-tabs.ts): one tab at the end, `{ tabId }`
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?, title?}  copy an item's content (or one
@@ -51,6 +54,7 @@ import {
   COMMUNITY_STATES_MAX,
   isItemCommunityState,
   parseItemNotice,
+  parseItemStanding,
   TITLE_MAX,
   type CommunityStateAnswer,
   type CommunityStateAsk,
@@ -278,6 +282,20 @@ export async function handleInternalItems(
     if (!validId(pairingId)) return badRequest('pairingId must be a pairing id');
     const reached = await handlers.workbenchClose(id, pairingId).catch(() => false);
     return reached ? json({ ok: true }) : json({ ok: false }, 503);
+  }
+
+  if (rest.length === 2 && rest[1] === 'standing' && request.method === 'POST') {
+    const standing = parseItemStanding(await bodyOf(request));
+    if (!standing) return badRequest('invalid standing');
+    // Only an app that works on its own clock for an item (liveplanner) acts on it; every other app confirms.
+    if (!handlers.standing) return json({ ok: true });
+    try {
+      await handlers.standing(id, standing);
+    } catch (err) {
+      console.warn('[internal] standing failed', { error: String(err) });
+      return json({ ok: false }, 503);
+    }
+    return json({ ok: true });
   }
 
   if (rest.length === 2 && rest[1] === 'notices' && request.method === 'POST' && handlers.notice) {

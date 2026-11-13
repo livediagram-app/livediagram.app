@@ -50,11 +50,12 @@ import { importPlanCopy, readPlanOutline, type PlanCopy, type PlanOutline } from
 import type { CommunityLink, CommunityListing, CopySource } from '../plan-client';
 import type { Copier } from '@liveworkspace/index-app';
 import { RepeatSchedule } from './card-repeats';
+import { PlanStanding, STANDING_KEY, takeGrantStanding, takeStanding } from './plan-standing';
 import { PlanAutomations } from './automations/automation-queue';
 import { automationDeps, runAutomations } from './automations/plan-room-automations';
 import { importProjectFile, type ProjectFileImport } from './project-file';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
-import type { ConnectedTabWrite } from '@liveworkspace/index-client';
+import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-client';
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { type RouteIdentity } from './plan-route';
@@ -233,11 +234,14 @@ export class PlanRoom extends DurableObject<Env> {
   );
   lastFlushAt = 0;
   draining = false;
+  // Where the plan stands at the index (plan-standing.ts): while it is archived or in the Trash, the repeats' and the
+  // Automations' schedules read as empty and its rules hear nothing.
+  readonly standing = new PlanStanding();
   // Repeating cards (card-repeats.ts; docs/specs/026-plan/items.md "Repeating cards"): the wake their schedule asks
-  // for. A plan without one asks for none.
+  // for. A plan without one, or put away, asks for none.
   readonly repeats = new RepeatSchedule(
     () => this.state.storage.sql,
-    () => this.schemaReady,
+    () => this.schemaReady && !this.standing.putAway,
   );
   // The plan's Automations (automations/; docs/specs/026-plan/automations.md): its rules, the kinds they hear (the
   // check every save makes) and the wake its queue asks for. A plan without a rule that is on asks for none.
@@ -246,6 +250,7 @@ export class PlanRoom extends DurableObject<Env> {
     () => this.schemaReady,
     () => this.armAlarm(),
     () => automationDeps(this),
+    () => this.standing.putAway,
   );
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
   writes = 0;
@@ -325,6 +330,8 @@ export class PlanRoom extends DurableObject<Env> {
         await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
       }
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
+      // Before the schedules restore, so a plan put away asks for no wake.
+      this.standing.restore(await state.storage.get(STANDING_KEY));
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
       this.armAlarm();
     });
@@ -465,6 +472,17 @@ export class PlanRoom extends DurableObject<Env> {
     return joined(this, planId, personId);
   }
 
+  // Where the plan stands at the index, after an archive, move out, trash or restore (plan-standing.ts).
+  takeStanding(planId: string, standing: ItemStanding): Promise<void> {
+    this.bindPlan(planId);
+    return takeStanding(this, standing);
+  }
+
+  // What a grant handed to the room says of where the plan stands, when it is newer than the last word.
+  takeGrantStanding(grant: { iat?: number; trashed?: boolean }): Promise<void> {
+    return takeGrantStanding(this, grant);
+  }
+
   anonymise(planId: string, personId: string): Promise<number> {
     return anonymise(this, planId, personId);
   }
@@ -550,7 +568,7 @@ export class PlanRoom extends DurableObject<Env> {
     }
     const env = this.requireEnv();
     return answerHookCall(
-      { env, planId, automations: this.automations, schema },
+      { env, planId, automations: this.automations, schema, putAway: this.standing.putAway },
       ruleId,
       call,
       Date.now(),
@@ -733,6 +751,11 @@ export class PlanRoom extends DurableObject<Env> {
     if (expired.length > 0) this.broadcastPresence();
     const now = Date.now();
     checkGrants(this, now);
+    // Put away while a wake was running: what it asked for is dropped, so the alarm stops asking.
+    if (this.standing.putAway) {
+      this.repeats.clear();
+      this.automations.schedule.clear();
+    }
     if (this.repeats.due(now)) await runRepeats(this, now);
     if (this.automations.schedule.due(now)) await runAutomations(this, now);
     if (this.flushAt !== null && this.flushAt <= now) await drainIndex(this);

@@ -44,6 +44,12 @@ Delete and restore need `edit` and `manage` (owner or team, never a link). An ar
 its `a:<owner>` scope in the Trash, so a restore puts it back in Archived; the Trash's list and Empty Trash read the
 person's `a:` scope with their own, and `sweepEmpty` passes archived items by ([archive.md](archive.md)).
 
+A `DELETE` that moves a live item to the Trash, and a restore of a trashed one, tell its app where it stands after
+the batch (`POST <app>/api/internal/items/:id/standing {archived, trashed, at}`, `waitUntil`, `standing.ts`), so the
+app's own clock stops in the Trash and starts again on restore. One already in the Trash is not told again, and the
+daily empty clean-up tells nobody ([one-explorer-contracts.md](../one-explorer-contracts.md) "Where an item
+stands").
+
 ### The Trash routes
 
 - `GET /trash`: the `trash` view ([items.md](items.md)).
@@ -132,6 +138,8 @@ configured counts as confirmed; a failure gets `attempts + 1`.
 | `liveworkspace/apps/index/src/app.test.ts` (15)             | the daily purge; the empty clean-up                                    |
 | `liveworkspace/apps/index/src/account-purge.test.ts` (9)    | `POST /internal/purge-person`; telling the apps about a closed account |
 | `packages/index-app/src/purge.test.ts`, `anonymise.test.ts` | each app dropping rooms and anonymising                                |
+| `liveworkspace/apps/index/src/standing.test.ts`             | the app told on trash and restore, once, and a failed call dropped     |
+| `packages/index-app/src/standing-door.test.ts`              | the app's `standing` door: the body, no handler, a handler that throws |
 
 ## Constants and configuration
 

@@ -348,7 +348,8 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
   from the Trash) makes one copy, for the latest of them, and moves on to the next.
 - **Whatever its state**: a done or archived source keeps repeating. A **trashed** source makes none while it is in
   the Trash (restored, it resumes, a missed day coming once at most), and **Stop Repeating** clears the rule for
-  good. Deleting the card ends it.
+  good. Deleting the card ends it. A plan **archived** or in the **Trash** makes no copies for any card; moved out or restored,
+  each repeating card settles afresh and makes at most one, for today ([automations.md](automations.md#put-away)).
 - **Who may**: an Editor sets, changes and stops a repeat (the api refuses anyone else, 403). A Participant and a
   Viewer see the glyph and the panel's line but no Repeat row, and a Participant's other edits to the card are
   untouched by it.
