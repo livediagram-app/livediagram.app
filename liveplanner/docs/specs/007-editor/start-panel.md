@@ -23,8 +23,9 @@ Start Planning is the panel's one start: there is no mode switch and no other mo
   Escape clears a search. Nothing found: the shared empty state.
 - **A title match leads.** A choice whose name begins with what was typed (case, punctuation and hyphens ignored, as
   the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
-  longer one, then in the order the groups list them (`best-match.ts`). With no name beginning so, there is no Best
-  Match and the groups lead.
+  longer one, then in the order the groups list them (`best-match.ts`). A choice may also name words that lead it as
+  an exact name would, typed whole (its `bestFor`: Describe a Plan's "ai", "generate", "my own" and "own words"). With
+  no name beginning so, there is no Best Match and the groups lead.
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
 - **Keyboard:** the search is focused on a fine pointer, as the panel opens, unless focus has gone somewhere since: the
   panel's code loads when it is first drawn, so on a busy machine it can arrive after a control was reached or a menu
