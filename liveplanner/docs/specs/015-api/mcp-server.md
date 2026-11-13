@@ -594,14 +594,18 @@ built with the editor's own edits (`@liveplanner/forms`) and started as Start Pl
 (`@liveplanner/templates` `planFormStart`).
 
 - **`read_form`** (read): the form in words (sections, questions with their settings, each answer's destination by
-  field name, section rules by prompt), where responses go, the settings, state, response count, the form link (an
-  Editor's only) and its problems; `image` adds a picture of the form on its tab's look.
+  field name, section rules by prompt), where responses go, the card fields it sets automatically (`setAutomatically`,
+  a broken one marked) or a sheet's extra columns (`extraColumns`), the settings, state, response count, the form
+  link (an Editor's only) and its problems (`broken_fixed` among them); `image` adds a picture of the form on its
+  tab's look.
 - **`add_form`** (write): a Form tab from a starter or questions, its responses to a new or named board or sheet,
-  the fields its mappings name added to the card type; a new project when no `projectId` is given. Answers as
-  `read_form` does, with the tabs it made.
-- **`change_form`** (destructive): up to 50 question, section, form, settings and destination changes, checked whole
-  and written as one changeset; a refusal writes nothing and names the change. While the form takes responses only
-  `settings` changes go through.
+  the fields its mappings name added to the card type, with `setAutomatically` fields and `extraColumns`; a new
+  project when no `projectId` is given. Answers as `read_form` does, with the tabs it made.
+- **`change_form`** (destructive): up to 50 question, section, form, settings and destination changes, and
+  `set_field` (a card field set automatically; `value: null` clears it), `add_column`, `set_column` and
+  `delete_column` (a sheet's extra columns), checked whole and written as one changeset; a refusal writes nothing and
+  names the change. Every new field is optional, so an agent that sends none keeps the form's set values and extra
+  columns as they are. While the form takes responses only `settings` changes go through.
 - **`share_form`** (write): `publish`, `close` or `delete_link`, through the form link routes as Share Form calls
   them; a form not ready answers every problem.
 - **`try_form`** (write): fills the form in as the builder's Preview does, answers by question id or prompt checked
