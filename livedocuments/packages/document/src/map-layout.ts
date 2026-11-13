@@ -3,6 +3,7 @@
 // label side. Pure and shared by the canvas view, the Map dialog's preview and the SVG export, so
 // the three draw the same map.
 
+import { mapInsets } from './map-insets';
 import {
   isMapRegion,
   projectLonLat,
@@ -34,6 +35,9 @@ export type MapLayoutCountry = {
   d: string;
   fill: string;
   opacity: number;
+  // A focused country's far land drawn again in an inset (map-insets.ts): which one. Its paper plate is a row of its
+  // own with no code (`part` ending `-plate`), drawn first and never pressed or named.
+  part?: string;
 };
 export type MapLayoutPin = {
   id: string;
@@ -105,6 +109,21 @@ export function mapLayout(
     fill: lit.has(code) ? colours.accent : colours.land,
     opacity: focus && code !== el.mapCountry && !lit.has(code) ? MAP_FAINT_OPACITY : 1,
   }));
+  // The focused country's far land (Alaska and Hawaii for the United States) in insets in the frame's lower left.
+  const focused = focus ? countries.find((c) => c.code === el.mapCountry) : undefined;
+  if (focused)
+    for (const inset of mapInsets(focused.code, focused.d, win))
+      countries.push(
+        {
+          code: '',
+          name: '',
+          d: inset.plate,
+          fill: colours.paper,
+          opacity: 1,
+          part: `${inset.part}-plate`,
+        },
+        { ...focused, d: inset.d, part: inset.part },
+      );
   const pinRadius = clamp(short * 0.022, 3.5, 9);
   const labelSize = clamp(short * 0.055, 10, 22);
   const gap = pinRadius + labelSize * 0.35;

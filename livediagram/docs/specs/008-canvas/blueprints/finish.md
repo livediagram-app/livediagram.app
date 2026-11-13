@@ -349,10 +349,13 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
   inline shadows); `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),
   flattens (`--tw-shadow`, hover `--tw-translate-y`) and thins (`border-2`, `stroke-width="2"`) under Professional and
   hides each redrawn part's own line under Marker (`[data-marker-drawn]`, `[data-marker-rules]`).
-  `useFaceFinishPass(rootRef, finish, id)` takes through `face-take-batch.ts` (`markerFaceTake`: `prepare` clears
-  the last take, `read` reads every part, its write draws them; `drawMarkerFace` runs one alone), `now` on mount and
+  `useFaceFinishPass(rootRef, finish, id)` takes through `face-take-batch.ts` (`markerFaceTake`: `prepare` sets
+  `data-marker-taking` on the face (face-finish.css: `transition: none !important` on it and everything under it)
+  and clears the last take, `read` reads every part, its write draws them and returns what it marked, and what the
+  write returns reads each mark's computed style once (one style pass, so the marks land with transitions still held)
+  and removes `data-marker-taking`, also on a throw; `drawMarkerFace` runs one alone), `now` on mount and
   `frame` after, watching from its first take, and re-takes on settle (`watchUntilSettled` with `ignore` for its own
-  changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
+  changes and for anything in or of `[data-face-hover]`, the hover chrome `SKIP` never reads into, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
   positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules.
 - `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`, `handDrawnPathPaint`

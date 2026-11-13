@@ -24,8 +24,17 @@ export const INK_ATTR = 'data-marker-ink';
 export const DRAWN_ATTR = 'data-marker-drawn';
 /** Marks an SVG rectangle whose ends are round, which Professional keeps round (face-finish.css). */
 export const PILL_ATTR = 'data-finish-pill';
-/** What the pass never reads into: the hand-drawn body, photos, embeds, kept parts and its own ink. */
-export const SKIP = `[data-finish="marker"], [data-finish-keep], [data-sketch-skip], [data-sketch-ink], [${INK_ATTR}], img, video, iframe, canvas, foreignObject, text`;
+/** Set on the face's root while a take reads and marks it: face-finish.css holds every transition under it still, so a
+ *  part's line reads as it rests (not mid-ease from the mark the take just cleared) and the new marks land at once. */
+export const TAKING_ATTR = 'data-marker-taking';
+/** Marks a face's hover chrome (a table's add-row and add-column triggers): shown and hidden as the pointer moves, so
+ *  the pass neither reads into it nor takes the face again when it comes and goes. */
+export const HOVER_ATTR = 'data-face-hover';
+/** What the pass never reads into: the hand-drawn body, photos, embeds, kept parts, hover chrome and its own ink. */
+export const SKIP = `[data-finish="marker"], [data-finish-keep], [data-sketch-skip], [data-sketch-ink], [${HOVER_ATTR}], [${INK_ATTR}], img, video, iframe, canvas, foreignObject, text`;
+/** A part's ink going in: what it marked (each mark's style is read before the face is released, so the mark takes
+ *  effect with transitions still held), or null when it marked nothing. */
+export type Write = () => Element | readonly Element[] | null;
 export type Pen = 'marker' | 'pencil';
 // Marker redraws a part; Sketch's pencil only shades a shape (its wobble draws the rest by hand).
 const PEN_PART = { marker: markerFacePart, pencil: sketchFacePart } as const;
@@ -49,7 +58,7 @@ export function gridRules(
   face: { width: number; height: number },
   seed: number,
   first: number,
-  writes: (() => void)[],
+  writes: Write[],
 ): number {
   type Piece = { at: number; from: number; to: number; colour: string; px: number };
   const vertical = new Map<string, Piece[]>();
@@ -122,7 +131,8 @@ export function gridRules(
   for (const pieces of horizontal.values()) rule(pieces, false);
   writes.push(() => {
     for (const [cell, sides] of ruled) cell.setAttribute(RULES_ATTR, sides);
-    if (ink.length === 0) return;
+    const marked = ruled.map(([cell]) => cell);
+    if (ink.length === 0) return marked;
     const svg = document.createElementNS(SVG_NS, 'svg');
     svg.setAttribute(INK_ATTR, '');
     svg.setAttribute('aria-hidden', 'true');
@@ -131,6 +141,7 @@ export function gridRules(
     svg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none';
     setHtml(svg, builtMarkup(ink.join('')));
     root.appendChild(svg);
+    return marked;
   });
   return drawn;
 }
@@ -169,7 +180,7 @@ export function isFaceBox(el: HTMLElement, face: { width: number; height: number
 }
 
 /** A part read for drawing, and the write that draws it. */
-type PartInk = { part: FacePartDrawing; write: () => void };
+type PartInk = { part: FacePartDrawing; write: Write };
 
 // An outlined HTML box: its marker outline in an <svg> laid over its border box, inside it so it scrolls and clips
 // with it. A static box is not a containing block for the ink, so it keeps its plain border.
@@ -252,6 +263,7 @@ export function frameInk(
       setHtml(svg, builtMarkup(part.svg));
       if (drawnAs) el.setAttribute(DRAWN_ATTR, drawnAs);
       el.appendChild(svg);
+      return drawnAs ? el : null;
     },
   };
 }
@@ -287,6 +299,7 @@ export function shapeInk(
       setHtml(g, builtMarkup(part.svg));
       if (pen === 'marker') el.setAttribute(DRAWN_ATTR, part.role);
       el.after(g);
+      return pen === 'marker' ? el : null;
     },
   };
 }

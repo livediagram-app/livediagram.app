@@ -125,7 +125,11 @@ side by side shows its cards in a row, as slides stand, with no fan, footer nav 
 - **Long stacks stay quick**: only the writing of the card in front and the cards either side of it is open for
   writing at a time (and the card being written, while it is). The other cards are read from their text where they
   are shown away from the canvas: Contents' thumbnails and the Map draw their lines from it, an export sets their
-  words as an export of a document that is not open does, and Find reaches their text and turns to their card. A
+  words as an export of a document that is not open does, and Find reaches their text and turns to their card. In
+  the browser those words are measured in the faces the card is drawn in, and their lines break where the card's
+  own writing breaks them (at spaces and after a hyphen inside a word, as Safari or Chrome fits a line), so an
+  exported stack of 100 cards keeps every line break the screen shows; away from a browser (an agent's preview)
+  they break at an average glyph's width, a few words off. A
   stack of 100 cards opens, types and flips on a mid-range phone as one of a few cards does. What settles after
   each typed change (the zones an article fits to its pictures and drawings) looks only at writing that has zones,
   which a card never has, so typing on a card does no work for the rest of the stack: no pause over 50 ms while

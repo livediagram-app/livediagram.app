@@ -2,7 +2,9 @@
 // long flashcard stack mounts only the writing near the card in front, so the other cards are drawn where they show
 // away from the canvas (an export, a thumbnail, the Map) from the headless estimate an export of a document that is
 // not open uses (estimateArticle). Cached per stored writing object and page place: a card's estimate is made again
-// only when its own writing, its place or the theme changes.
+// only when its own writing, its place or the theme changes. In the browser its lines break where the card's editor
+// would break them, each word measured by a canvas (canvas-text-measure.ts); a web font that loads makes it again.
+import { canvasTextMeasure, measureGeneration } from './canvas-text-measure';
 import {
   BOLD_EM,
   estimateArticle,
@@ -41,13 +43,13 @@ export function estimatedPageOps(
   if (!raw) return undefined;
   const theme = (source as Partial<Tab>).theme;
   const r = page.rect;
-  const key = `${r.x},${r.y},${r.width},${r.height}:${theme ?? ''}`;
+  const key = `${r.x},${r.y},${r.width},${r.height}:${theme ?? ''}:${measureGeneration()}`;
   const hit = cache.get(raw);
   if (hit && hit.key === key) return hit.ops.get(page.id);
   const own =
     pages ?? ('pages' in source && 'elements' in source ? laidOutPagesOf(source as Tab) : [page]);
   const accent = themeAccent(getBuiltInTheme(theme, 'light'));
-  const { ops } = estimateArticle(source, flow, own, accent);
+  const { ops } = estimateArticle(source, flow, own, accent, canvasTextMeasure());
   cache.set(raw, { key, ops });
   return ops.get(page.id);
 }

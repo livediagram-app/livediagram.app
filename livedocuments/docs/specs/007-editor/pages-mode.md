@@ -646,7 +646,9 @@ An infographic, slide or article page can be painted with a picture:
   is the same). Replacing the picture keeps the blur, as it keeps the overlay.
   - **On the canvas** the sheet paints a blurred copy of the picture, made once in the browser per picture and
     blur (the picture drawn small, a three-pass box blur with its edges held, saved as a JPEG), never a CSS blur
-    filter, so a pan or zoom never re-blurs. The last eight copies are kept; the sheet shows the picture's tone
+    filter, so a pan or zoom never re-blurs. The copy is made off the main thread (in a worker), so letting go of
+    a stronger Blur on a large picture never pauses the editor (no task over 50 ms); a browser that cannot (no
+    OffscreenCanvas) or a picture the worker cannot fetch makes it on the page as before. The last eight copies are kept; the sheet shows the picture's tone
     until its copy is ready, never the sharp picture first. While Blur is dragged the last copy keeps showing and
     the next is made once the slider has rested 150 ms, so a drag makes one copy, not one per step.
   - **In an export** (PNG, PDF and SVG, and the previews) the picture is drawn under an SVG `feGaussianBlur` at

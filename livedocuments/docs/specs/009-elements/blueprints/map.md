@@ -12,6 +12,7 @@ Scope, by file:
 | `packages/document/src/map-geometry.generated.ts`        | `MAP_GEOMETRY`: countries and places (subpath `@livedocuments/document/map-geometry` only)                                                                                                                   |
 | `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `MAP_REGIONS`, `provideMapGeometry` / `providedMapGeometry`                                                                                                  |
 | `packages/document/src/map-layout.ts`                    | `mapLayout`: view window, transform, country fills, pins and labels, shared by every surface                                                                                                                 |
+| `packages/document/src/map-insets.ts`                    | `MAP_INSETS`, `mapInsets(code, d, window)`, `pathRings(d)`: a focused country's far land in insets                                                                                                           |
 | `packages/document/src/svg-render-map.ts`                | `svgMap`: the export body from `mapLayout`                                                                                                                                                                   |
 | `packages/document/src/svg-render-body.ts`               | Routes `'map'` to `svgMap` with the resolved colours                                                                                                                                                         |
 | `packages/document/src/shape-factory.ts`                 | Size 480 × 260, no data                                                                                                                                                                                      |
@@ -50,21 +51,23 @@ Banned synonyms: "location" for a pin, "zoom" for the view, "tile".
 
 ## Constants
 
-| Constant             | Value                                                               | Provenance                                       |
-| -------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
-| `MAP_WORLD_WIDTH`    | 4000                                                                | Plane width; 1 unit is 0.5 px on a 1920 px world |
-| `MAP_PINS_MAX`       | 40                                                                  | Spec                                             |
-| `MAP_HIGHLIGHTS_MAX` | 60                                                                  | Spec                                             |
-| `MAP_PIN_LABEL_MAX`  | 40                                                                  | Spec                                             |
-| `MAP_LAT_MAX`        | 85                                                                  | Spec                                             |
-| Default size         | 480 × 260                                                           | Spec                                             |
-| Pin radius           | `clamp(min(w, h) * 0.022, 3.5, 9)` px                               | D194                                             |
-| Pin ring             | `max(1.5, r * 0.35)` px in the paper colour                         | D194                                             |
-| Label size           | `clamp(min(w, h) * 0.055, 10, 22)` px, weight 600                   | D194                                             |
-| Label halo           | stroke `max(2, size * 0.22)` px, paper, `paint-order: stroke`       | D194                                             |
-| Border width         | `max(0.5, min(1.2, scale * 6))` px, paper, `stroke-linejoin: round` | D195                                             |
-| Faint context        | land at 45% opacity when a country is focused                       | D196                                             |
-| Default land         | `#dbe3ec` light paper, `#334155` dark paper                         | D195                                             |
+| Constant             | Value                                                                           | Provenance                                       |
+| -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `MAP_WORLD_WIDTH`    | 4000                                                                            | Plane width; 1 unit is 0.5 px on a 1920 px world |
+| `MAP_PINS_MAX`       | 40                                                                              | Spec                                             |
+| `MAP_HIGHLIGHTS_MAX` | 60                                                                              | Spec                                             |
+| `MAP_PIN_LABEL_MAX`  | 40                                                                              | Spec                                             |
+| `MAP_LAT_MAX`        | 85                                                                              | Spec                                             |
+| Default size         | 480 × 260                                                                       | Spec                                             |
+| Pin radius           | `clamp(min(w, h) * 0.022, 3.5, 9)` px                                           | D194                                             |
+| Pin ring             | `max(1.5, r * 0.35)` px in the paper colour                                     | D194                                             |
+| Label size           | `clamp(min(w, h) * 0.055, 10, 22)` px, weight 600                               | D194                                             |
+| Label halo           | stroke `max(2, size * 0.22)` px, paper, `paint-order: stroke`                   | D194                                             |
+| Border width         | `max(0.5, min(1.2, scale * 6))` px, paper, `stroke-linejoin: round`             | D195                                             |
+| Faint context        | land at 45% opacity when a country is focused                                   | D196                                             |
+| Insets               | `US`: Alaska (box 540, 60, 940, 235) at 0.4, Hawaii (280, 640, 330, 700) at 1.5 | Spec "What it shows"                             |
+| Inset margin, gap    | 1.5% each, plate pad 1.2%, of window width                                      | Spec "What it shows"                             |
+| Default land         | `#dbe3ec` light paper, `#334155` dark paper                                     | D195                                             |
 
 Regions, as longitude and latitude windows (west, south, east, north), D197:
 
@@ -92,12 +95,25 @@ Newton's method on θ (at most 12 steps, tolerance 1e-9), clamped to `MAP_LAT_MA
 
 1. The view window: the focused country's frame (its row's `x0..y1`) padded 12% each side, else the
    region's window projected by sampling a 5 × 5 grid of its corners and edges and taking the box.
-   An unknown country code falls back to the region.
+   An unknown country code falls back to the region. The build script frames each country on its
+   biggest piece and the pieces within 35% of its size of it, except the countries in
+   `MAIN_LAND_ONLY` (`US`), which frame on their biggest piece alone (the lower 48: 774, 285, 1364,
+   604).
 2. Fit: `scale = min(boxW / winW, boxH / winH)`, the window centred; the transform maps plane units
    to element px. The drawing is clipped to the element box, not the window (the spec's "land
    around the view").
 3. Countries: every row, in geometry order, with its fill: accent when highlighted, land otherwise,
-   at the faint opacity when a country is focused and this is neither it nor highlighted.
+   at the faint opacity when a country is focused and this is neither it nor highlighted. Then the
+   focused country's insets (`MAP_INSETS[code]`, in order): each is the country's rings whose box
+   lies inside the inset's box, re-projected about the box's middle meridian (`unprojectPoint`, then
+   `projectLonLat(lon - mid, lat)`, so Alaska stands upright), scaled by its `scale` and set along
+   the window's foot from its left (margin 1.5%, then each inset after the last and a 1.5% gap),
+   written as one absolute path (`M x yL ... Z`) in plane units. Each inset is two rows: first its
+   plate, a rounded box 1.2% of the window's width larger than its land each side, in the paper
+   colour, with no code and `part` `AK-plate` (never pressed, hovered or named), then its land with
+   the focused country's code, fill and opacity and `part` `AK` or `HI`, so every renderer draws it
+   as a country and keys it `code-part`. An inset with no rings is left out. Insets are cached per
+   country, window and path (at most 16 entries).
 4. Pins: in list order, projected then transformed; a pin outside the box is kept and clipped.
    A label's side is right unless `x + r + gap + estimatedWidth > boxW`, then left
    (`estimatedWidth = label.length * size * 0.56`).
@@ -175,6 +191,9 @@ way in. The mode switch is a radio group.
 - `map-model.test.ts`: projection agrees with the script on known cities; inverse round-trips;
   validators accept and refuse each field; regions project to sane windows.
 - `map-layout.test.ts`: fit, centring, faint context, highlight fill, pin placement and label side.
+- `map-insets.test.ts`: ring parsing; the United States frames on its lower 48, which fill a 16:9 box
+  (over 75% of its width); Alaska and Hawaii insets inside the window in the country's fill, every
+  far ring taken; no insets for other countries or regions; the cache is bounded.
 - `svg-render-map.test.ts`: export body with and without geometry.
 - `MapDialog.test.tsx`: toggle a country, place a pin, find a place, Done commits once, Cancel none.
 - `map-edit.test.ts`: Editor yes; Participant, Viewer and a locked map no.

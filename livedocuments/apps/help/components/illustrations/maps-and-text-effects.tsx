@@ -56,7 +56,12 @@ function MapArt({
           {layout.countries
             .filter((c) => inView.has(c.code))
             .map((c) => (
-              <path key={c.code} d={c.d} className={FILL[c.fill]} fillOpacity={c.opacity} />
+              <path
+                key={c.part ? `${c.code}-${c.part}` : c.code}
+                d={c.d}
+                className={FILL[c.fill]}
+                fillOpacity={c.opacity}
+              />
             ))}
         </g>
         {layout.pins.map((p) => {
