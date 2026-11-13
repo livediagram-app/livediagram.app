@@ -54,7 +54,27 @@ function fieldNamer(names: RuleNames): Namer {
   };
 }
 
+// A person: an id kept; else the one person whose name it is, as list_rules lists them (case and spacing aside); a
+// name nobody has, or two people share, kept as written, so the rule needs attention rather than name the wrong one.
+function personNamer(people: RuleNames['people']): Namer {
+  return (ref) => {
+    if (people.some((p) => p.id === ref)) return ref;
+    const key = statusKey(ref);
+    const found = people.filter((p) => statusKey(p.name) === key);
+    return found.length === 1 ? found[0]!.id : ref;
+  };
+}
+
+// Whether a field holds a person: the Assignee, or a Person field of one of the plan's types.
+const personFieldOf =
+  (types: readonly ItemTypeDef[]) =>
+  (field: string): boolean =>
+    field === 'assignee' ||
+    types.some((t) => t.custom?.some((f) => f.id === field && f.kind === 'person'));
+
 type Namers = { status: Namer; type: Namer; field: Namer; person: Namer; tab: Namer };
+// What the walk also reads: which fields hold a person (a Set Field's picked person is named as one).
+type Walker = Namers & { personField: (field: string) => boolean };
 
 function namersOf(names: RuleNames): Namers {
   return {
@@ -69,11 +89,7 @@ function namersOf(names: RuleNames): Namers {
       (t) => t.label,
     ),
     field: fieldNamer(names),
-    person: namer(
-      names.people,
-      (p) => p.id,
-      (p) => p.name,
-    ),
+    person: personNamer(names.people),
     tab: namer(
       names.tabs,
       (t) => t.id,
@@ -112,7 +128,7 @@ function namePeople(to: unknown, n: Namers): void {
   name(to, 'rotate', n.person);
 }
 
-function nameStep(s: Json, n: Namers): void {
+function nameStep(s: Json, n: Walker): void {
   name(s, 'status', n.status);
   if (s['kind'] === 'create_card') {
     name(s, 'type', n.type);
@@ -122,7 +138,14 @@ function nameStep(s: Json, n: Namers): void {
   // A Card field to link through, a field to set or clear, or an AI summary's text field.
   if (['set_field', 'clear_field', 'link_card', 'ai'].includes(s['kind'] as string))
     name(s, 'field', n.field);
-  if (s['kind'] === 'set_field' && isObject(s['value'])) name(s['value'], 'from', n.field);
+  if (s['kind'] === 'set_field' && isObject(s['value'])) {
+    const value = s['value'];
+    name(value, 'from', n.field);
+    // The Assignee or a Person field set to someone picked (never a value filled in, `{{…}}`).
+    const text = value['text'];
+    if (typeof text === 'string' && !text.includes('{{') && n.personField(String(s['field'])))
+      value['text'] = n.person(text.trim());
+  }
   if (s['kind'] === 'assign' || s['kind'] === 'email' || s['kind'] === 'mention')
     namePeople(s['to'], n);
   if (s['kind'] === 'if' || s['kind'] === 'for') {
@@ -142,7 +165,7 @@ function nameAll(list: unknown, each: (o: Json) => void): void {
 
 /** `body` with what it names by name put back to the plan's ids; a copy, the input untouched. */
 export function namedRuleBody<T>(body: T, names: RuleNames): T {
-  return ruleWithRefs(body, namersOf(names));
+  return ruleWithRefs(body, namersOf(names), { personField: personFieldOf(names.types) });
 }
 
 const same: Namer = (ref) => ref;
@@ -151,14 +174,17 @@ const same: Namer = (ref) => ref;
 export type RuleRefKind = keyof Namers;
 
 /** `body` with every ref of a kind put through its map (a kind the maps lack kept as it is): the one walk under
- *  namedRuleBody's naming, a copy's new tab ids and Describe a Plan's renames. A copy, the input untouched. */
+ *  namedRuleBody's naming, a copy's new tab ids and Describe a Plan's renames. `personField` says which fields hold a
+ *  person, whose Set Field text goes through the person map (none, by default). A copy, the input untouched. */
 export function ruleWithRefs<T>(
   body: T,
   maps: Partial<Record<RuleRefKind, (ref: string) => string>>,
+  opts: { personField?: (field: string) => boolean } = {},
 ): T {
   if (!isObject(body)) return body;
   const out = structuredClone(body) as Json;
-  const n: Namers = {
+  const n: Walker = {
+    personField: opts.personField ?? (() => false),
     status: maps.status ?? same,
     type: maps.type ?? same,
     field: maps.field ?? same,

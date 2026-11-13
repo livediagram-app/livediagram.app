@@ -159,6 +159,35 @@ describe('changing the rules', () => {
     ]);
   });
 
+  // Work Tracker 780: a person named as list_rules lists them saves as their id, in an add, a set and a test alike;
+  // a name the plan lacks goes as written, for the api to flag.
+  it('saves a person named as list_rules lists them by their id', async () => {
+    const listing = await readRuleListing(world().api, DOC_A, {});
+    expect(listing.ok && listing.listing.people).toEqual(['Ana Costa']);
+    const mention = (person: string) => [{ kind: 'mention', to: { person }, text: 'Look' }];
+    const w = world();
+    await apply(
+      [
+        {
+          op: 'add',
+          rule: { name: 'Tell Ana', trigger: { kind: 'manual' }, steps: mention('Ana Costa') },
+        },
+        { op: 'set', rule: 'r1', steps: mention('p_ana') },
+        {
+          op: 'test',
+          rule: { name: 'Tell', trigger: { kind: 'manual' }, steps: mention('Thomas Gone') },
+          card: '#12',
+        },
+      ],
+      w,
+    );
+    const steps = w.bodies.map((b) => {
+      const body = b as { steps?: unknown; rule?: { steps: unknown } };
+      return body.steps ?? body.rule?.steps;
+    });
+    expect(steps).toEqual([mention('p_ana'), mention('p_ana'), mention('Thomas Gone')]);
+  });
+
   it('tests a saved rule or a body, and runs one, on a card read once', async () => {
     const r = await apply([
       { op: 'test', rule: 'Done stamp', card: '#12' },
