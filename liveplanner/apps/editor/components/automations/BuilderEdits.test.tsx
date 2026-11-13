@@ -68,7 +68,7 @@ describe('the rule builder', () => {
     fireEvent.change(nameBox(), { target: { value: 'wrapped ' } });
     fireEvent.click(saveButton());
     await waitFor(() => expect(nameBox().value).toBe('Wrapped'));
-    expect(saveButton().disabled).toBe(true);
+    expect(saveButton().getAttribute('aria-disabled')).toBe('true');
   });
 
   it('tests the rule in this browser’s time zone, as Save Rule would save it', async () => {

@@ -755,8 +755,10 @@ action's check joined by a line, a dashed arrow looping back over them. The bolt
 allowing. On a phone the header keeps its desktop look (100px, the mark, the title and its line).
 
 - Three tabs: **Rules · n**, **Audit Trail** and **Templates**. On a phone the bar is 48 px tall, each tab a 44 px
-  target with its label centred in it, the active tab's underline along the bar's foot.
-- A **Runs today** meter at the right of the tabs: "142 of 1,000" (No Match runs are not counted).
+  target with its label centred in it, the active tab's underline along the bar's foot. The bar is one Tab stop, the
+  open tab: Left and Right move to the next tab and open it (wrapping), Home and End to the first and last, and the
+  open tab names its panel.
+- A **Runs today** meter at the right of the tabs, beside the tab list rather than in it: "142 of 1,000" (No Match runs are not counted).
 - The rules are read each time the screen opens (what was read before shows meanwhile), so a rule another Editor
   or an agent made, changed or deleted shows; there is no live push between two people's screens. A change made
   while that read is under way is kept: the list is read once more after it, never left as the read had it.
@@ -851,7 +853,11 @@ appears.
 ### The rule builder
 
 Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back to **Automations**, the rule's name
-(editable in place), its On / Off chip, "Edited by … · when", **Test on a Card** and **Save Rule**.
+(editable in place), its On / Off chip, "Edited by … · when", **Test on a Card** and **Save Rule**. The chip of a
+saved rule is a switch named **Rule On** whichever way it is set (a screen reader hears its state from the switch).
+**Save Rule** keeps the keyboard while it saves ([Busy buttons](../004-interface-design/busy-buttons.md)) and once
+saved with nothing changed: there it reads as unavailable and a press does nothing (on a phone **Saved** takes its
+place and the focus with it).
 
 - The rule reads top to bottom as cards joined by a line: **When** (the trigger), **If all of these** (the
   conditions), then one **Then** card per action, each with its icon. Under them: **+ Add Action**, **+ Add

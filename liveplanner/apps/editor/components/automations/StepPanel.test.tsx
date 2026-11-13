@@ -567,6 +567,8 @@ describe('StepPanel', () => {
       'Shipped by Ana Costa',
     );
     expect(screen.getByText(/Preview on #48 Publish pricing page/)).toBeTruthy();
+    // The rule's name beside Automation reads on the violet wash (slate 500 there was 4.34:1).
+    expect(document.querySelector('[data-preview-via]')!.className).toContain('text-slate-600');
   });
 
   it('writes an email to a person, and marks the part a refusal names', () => {

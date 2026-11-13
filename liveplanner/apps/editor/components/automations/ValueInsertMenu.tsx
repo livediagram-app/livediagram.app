@@ -154,7 +154,11 @@ export function ValueInsertList({
                   >
                     <span className="min-w-0 truncate font-medium">{o.label}</span>
                     {o.kind === 'value' ? (
-                      <span className="min-w-0 shrink truncate font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                      // On the marked row's violet wash slate 500 falls short of 4.5:1 (axe); 600 holds it.
+                      <span
+                        data-value-token=""
+                        className={`min-w-0 shrink truncate font-mono text-[11px] ${on ? 'text-slate-600 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}
+                      >
                         {`{{${o.name}}}`}
                       </span>
                     ) : null}

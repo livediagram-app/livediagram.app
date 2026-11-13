@@ -42,7 +42,7 @@ import {
   samePart,
   type RulePart,
 } from './rule-draft';
-import { PhoneRuleFoot, PhoneRuleHeader } from './PhoneRuleChrome';
+import { PhoneRuleFoot, PhoneRuleHeader, RULE_SWITCH_NAME } from './PhoneRuleChrome';
 import { RuleDetails } from './RuleDetails';
 import { RuleSteps, type StepsActions } from './RuleSteps';
 import { defaultCondition, defaultStep } from './step-defaults';
@@ -113,6 +113,8 @@ export function RuleBuilder({
   const [toggling, setToggling] = useState(false);
   const [testing, setTesting] = useState(false);
   const dirty = !rule || !sameBody(body, saved);
+  // A saved rule with nothing changed: nothing to save.
+  const unchanged = !!rule && !dirty;
   useEffect(() => onDirty(dirty), [dirty, onDirty]);
   // A new rule as it stands, for Connect GitHub to keep for the round trip (github-return.ts).
   const github = useGithubAutomations();
@@ -261,7 +263,7 @@ export function RuleBuilder({
             size="sm"
             checked={rule.enabled}
             busy={toggling}
-            label={rule.enabled ? 'On' : 'Off'}
+            label={RULE_SWITCH_NAME}
             onChange={(next) => void toggle(next)}
           />
         ) : (
@@ -281,11 +283,16 @@ export function RuleBuilder({
         <Button variant="secondary" size="xs" onClick={() => setTesting(true)}>
           Test on a Card
         </Button>
+        {/* Busy while it saves and only marked unavailable once saved (busy-buttons.md): a disabled button would drop
+            the keyboard to the dialog, away from the refusal or the toast it just raised. */}
         <Button
           variant="primary"
           size="xs"
-          onClick={() => void save()}
-          disabled={saving || (!!rule && !dirty)}
+          onClick={() => {
+            if (!unchanged) void save();
+          }}
+          busy={saving}
+          aria-disabled={unchanged || undefined}
         >
           {saving ? 'Saving…' : 'Save Rule'}
         </Button>
