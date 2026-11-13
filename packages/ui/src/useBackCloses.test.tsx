@@ -94,7 +94,7 @@ describe('useBackCloses', () => {
     window.history.replaceState(null, '');
     const { unmount } = render(<Sheet onBack={() => {}} />);
     window.history.pushState({ page: 'elsewhere' }, '');
-    const spy = vi.spyOn(window.history, 'back');
+    const spy = vi.spyOn(window.history, 'go');
     unmount();
     await settle();
     expect(spy).not.toHaveBeenCalled();
@@ -113,5 +113,71 @@ describe('useBackCloses', () => {
     expect(tokens()).toHaveLength(1);
     await back();
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('steps back off both entries when the rule and step sheets close together', async () => {
+    window.history.replaceState(null, '');
+    function Host() {
+      const [open, setOpen] = useState(true);
+      return (
+        <>
+          <Sheet onBack={() => {}} active={open} />
+          <Sheet onBack={() => {}} active={open} />
+          <button type="button" onClick={() => setOpen(false)}>
+            Close Both
+          </button>
+        </>
+      );
+    }
+    const { getByRole } = render(<Host />);
+    expect(tokens()).toHaveLength(2);
+    const popped = new Promise((resolve) =>
+      window.addEventListener('popstate', resolve, { once: true }),
+    );
+    act(() => getByRole('button').click());
+    await act(async () => {
+      await popped;
+    });
+    expect(tokens()).toEqual([]);
+  });
+
+  it('names its sheets apart from the entries a reload left, so Back still closes the top sheet', async () => {
+    // The page before the reload: a rule and a step sheet open, their entry on top.
+    vi.resetModules();
+    const before = (await import('./useBackCloses')).useBackCloses;
+    window.history.replaceState(null, '');
+    function Old() {
+      before(true, () => {});
+      return null;
+    }
+    const first = render(
+      <>
+        <Old />
+        <Old />
+      </>,
+    );
+    const left: unknown = window.history.state;
+    first.unmount();
+    await settle();
+    // The reload: history keeps the entry, the module starts again.
+    window.history.replaceState(left, '');
+    vi.resetModules();
+    const after = (await import('./useBackCloses')).useBackCloses;
+    const rule = vi.fn();
+    const step = vi.fn();
+    function New({ onBack }: { onBack: () => void }) {
+      after(true, onBack);
+      return null;
+    }
+    render(
+      <>
+        <New onBack={rule} />
+        <New onBack={step} />
+      </>,
+    );
+    expect(tokens()).toHaveLength(4);
+    await back();
+    expect(step).toHaveBeenCalledTimes(1);
+    expect(rule).not.toHaveBeenCalled();
   });
 });

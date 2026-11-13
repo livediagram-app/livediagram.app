@@ -367,7 +367,9 @@ Saved), so it never jumps to a dialog behind (`useFocusTrap`).
 step drawer) takes an entry in the browser's history while it is open, so Back (Android's, an iPhone's
 swipe, the browser's) closes it the way a swipe down does, asking Discard Changes? first where it would,
 instead of leaving the page and dropping the work. Kept open after asking, it takes its entry again; closed
-any other way, it steps back off its entry, so the next Back does what it did before the sheet opened
+any other way, it steps back off its entry, so the next Back does what it did before the sheet opened.
+Sheets that close together (the rule drawer with its step drawer over it) step back off every entry they
+took, and an entry left by the page before a reload never passes for a sheet open now
 (`Dialog`'s `closeOnBack`, `useBackCloses`).
 
 **The keyboard never hides the caret.** The on-screen keyboard shrinks the visual viewport, not
