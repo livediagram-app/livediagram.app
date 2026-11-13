@@ -143,6 +143,10 @@ recoloured, refurnished or emptied like any room, and its pieces like any piece.
   A room placed bigger or smaller than its preset (dragged out to a size) spreads its pieces with it; each keeps its
   own size.
 
+  A Screen on the back wall (the Boardroom's, the Meeting Booth's) hangs just below the wall's face
+  (`PRESET_SCREEN_TOP`, 2 px under `ROOM_BACK_FACE`), centred over its table, so the room's name band on that face is
+  never covered (Work Tracker 638).
+
 - The Meeting Booth is the one preset that stores something: its walls are glass (`variant: 'glass'`, below), the
   room's own wall style, which stays when the room is moved, resized or refurnished.
 - The [Restroom](office-amenities.md#the-restroom-preset) stays in **Perks** with the restroom pieces it brings.
@@ -158,7 +162,8 @@ Work Tracker #539.
   a room drawn with the [Room Builder](room-builder.md). A value a room does not take draws as Solid, so an older
   client reading a glass room sees a solid one, and a newer client reading an old room sees what it always did.
 - **Where it is set**: the Room tile's **Meeting Booth** preset arrives glass, and every room's element menu has a
-  **Walls** section with two tiles, **Solid** and **Glass** (a selection of several rooms sets them all; other kinds
+  **Walls** section (its glyph a run of bricks, `WallsMenuGlyph`, its own beside the Room section's wrench) with two
+  tiles, **Solid** and **Glass** (a selection of several rooms sets them all; other kinds
   are left alone; one undoable change, `Element · Changed · Room`). Editors only: a Participant's short menu has no
   Walls section, and the participant content rule keeps a room's `variant` as stored.
 - **Drawn see-through**: the walls keep their place and thickness (ROOM_WALL along the same centre line), but are

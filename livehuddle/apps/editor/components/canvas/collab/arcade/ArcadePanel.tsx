@@ -10,7 +10,6 @@
 
 import { useState } from 'react';
 import { arcadeName, type ShapeElement } from '@livehuddle/document';
-import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { arcadeScoreFor } from '@/lib/arcade/arcade-post';
@@ -36,8 +35,7 @@ export default function ArcadePanel({
   // The machine's tab as the panel opened: a run ended by leaving the tab still posts to its own machine.
   const [tabId] = useState(() => editor?.activeTab?.id);
   const [result, setResult] = useState<RunResult & { id: string | null }>();
-  // While open the panel holds the keyboard: no walking, no shortcuts, no tour steps behind it.
-  useModalGuard(true);
+  // While open the panel holds the keyboard (ReaderShell's modal guard): no walking, no shortcuts, no tours behind it.
 
   const live = useLatest({ element, editor, myKey, tabId });
   const onEnd = (run: MoonMailRun) => {

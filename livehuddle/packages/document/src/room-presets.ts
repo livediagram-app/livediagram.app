@@ -4,7 +4,7 @@
 // table in the Boardroom, desk pods in the Open Plan, a kitchen along the Kitchen's back wall, sofas round a fire in the
 // Lounge). Placed in one change with the Room and its Door (`withDoorPiece`, room-builder.ts). Pure: no React, no DOM.
 
-import { ROOM_DOOR_WIDTH } from '@livehuddle/avatar/office-geometry';
+import { ROOM_BACK_FACE, ROOM_DOOR_WIDTH } from '@livehuddle/avatar/office-geometry';
 import type { ChairFacing, ShapeElement, ShapeKind } from './index';
 import { createShape } from './shape-factory';
 import { RESTROOM_VARIANT, applyShapeVariant } from './shape-variants';
@@ -33,6 +33,10 @@ export const RESTROOM_LAYOUT: readonly PresetPiece[] = [
   { kind: 'washbasin', x: 370, y: 44 },
 ];
 
+/** Where a preset's Screen starts, room-relative: just below the back wall's face (ROOM_BACK_FACE), which carries the
+ *  room's name band, so the Screen never covers the name (Work Tracker 638). */
+export const PRESET_SCREEN_TOP = ROOM_BACK_FACE + 2;
+
 /**
  * Each furnished preset's pieces, in drawing order (a rug first, so its sofas stand on it), laid out clear of its Door's
  * swing and inside its walls (DEFAULTS.md D226). A seat faces its kind's default (a desk `s`, its sitter at the
@@ -46,12 +50,12 @@ export const ROOM_PRESET_LAYOUTS: Readonly<Record<string, readonly PresetPiece[]
     { kind: 'plant', x: 152, y: 52 },
     { kind: 'bookshelf', x: 224, y: 36 },
   ],
-  // A Long Table for sixteen down the middle under a Screen on the back wall, plants in the back corners, drinks in the
-  // front corners clear of the door.
+  // A Long Table for sixteen down the middle under a Screen just below the back wall's face (clear of the room's name
+  // band, PRESET_SCREEN_TOP), plants in the back corners, drinks in the front corners clear of the door.
   boardroom: [
     { kind: 'plant', x: 20, y: 40 },
     { kind: 'plant', x: 724, y: 40 },
-    { kind: 'screen', x: 336, y: 32, width: 128 },
+    { kind: 'screen', x: 336, y: PRESET_SCREEN_TOP, width: 128 },
     { kind: 'meeting-table', x: 120, y: 120, variant: 'long' },
     { kind: 'water-cooler', x: 24, y: 276 },
     { kind: 'coffee-machine', x: 704, y: 290 },
@@ -89,9 +93,10 @@ export const ROOM_PRESET_LAYOUTS: Readonly<Record<string, readonly PresetPiece[]
     { kind: 'plant', x: 110, y: 324 },
     { kind: 'plant', x: 274, y: 324 },
   ],
-  // A glass booth (office.md "Glass walls"): a Screen on the back wall, a Meeting Table for six, a plant in a corner.
+  // A glass booth (office.md "Glass walls"): a Screen just below the back wall's face, centred over a Meeting Table for
+  // six, a plant in a corner.
   'meeting-booth': [
-    { kind: 'screen', x: 164, y: 26, width: 112 },
+    { kind: 'screen', x: 112, y: PRESET_SCREEN_TOP, width: 96 },
     { kind: 'meeting-table', x: 44, y: 100 },
     { kind: 'plant', x: 290, y: 40 },
   ],

@@ -28,8 +28,11 @@ import {
   outlineNameAlign,
   pointInPolygon,
   RUG_VARIANTS,
+  ROOM_PRESET_LAYOUTS,
+  PRESET_SCREEN_TOP,
   type ShapeElement,
 } from './index';
+import { ROOM_BACK_FACE } from '@livehuddle/avatar/office-geometry';
 import { corridorSvg, doorSvg } from './svg-render-doors';
 import { svgBehaviourFace } from './svg-render-faces';
 
@@ -154,6 +157,9 @@ describe('room presets', () => {
     expect(isLongTable(table)).toBe(true);
     expect(isLongTable(createShape('meeting-table', 0, 0))).toBe(false);
     expect(pieces.find((p) => p.shape === 'screen')).toMatchObject({ width: 128, height: 80 });
+    // Under the screen, not behind it.
+    const screen = pieces.find((p) => p.shape === 'screen')!;
+    expect(screen.y + screen.height).toBeLessThanOrEqual(table.y);
     const art = longTableArt(table.width, table.height).front;
     expect(art.width).toBe(560);
     expect(art.seats).toHaveLength(16);
@@ -161,6 +167,28 @@ describe('room presets', () => {
     expect(longTableArt(900, 168).front.seats).toHaveLength(28);
     expect(longTableArt(560, 168)).toBe(longTableArt(560, 168));
     expect(face(table)).toContain('viewBox="0 0 560 168"');
+  });
+
+  it("keeps every furnished preset's Screen below its room's name band, clear of the table (Work Tracker 638)", () => {
+    expect(PRESET_SCREEN_TOP).toBeGreaterThan(ROOM_BACK_FACE);
+    const withScreens = Object.keys(ROOM_PRESET_LAYOUTS).filter((v) =>
+      ROOM_PRESET_LAYOUTS[v]!.some((p) => p.kind === 'screen'),
+    );
+    expect(withScreens.sort()).toEqual(['boardroom', 'meeting-booth']);
+    for (const variant of withScreens) {
+      const placed = at(applyShapeVariant(createShape('room', 0, 0), variant), 100, 50);
+      const [room, , ...pieces] = withDoorPiece(placed, variant) as ShapeElement[];
+      const screen = pieces.find((p) => p.shape === 'screen')!;
+      const table = pieces.find((p) => p.shape === 'meeting-table')!;
+      // The back wall's face carries the name: the Screen starts below it.
+      expect(screen.y - room!.y, variant).toBeGreaterThanOrEqual(ROOM_BACK_FACE);
+      expect(screen.y + screen.height, variant).toBeLessThanOrEqual(table.y);
+      // Centred over its table.
+      expect(
+        Math.abs(screen.x + screen.width / 2 - (table.x + table.width / 2)),
+        variant,
+      ).toBeLessThanOrEqual(1);
+    }
   });
 
   it('turns a Long Table like the Meeting Table: a tall table on its side, drawn and seated to its length', () => {

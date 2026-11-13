@@ -474,7 +474,9 @@ backdrop dismisses it, and focus stays inside it while it is open. Nothing walks
   modal. The Elevator's floor panel keeps its click-outside close: it is a one-press choice, and walking off the lift
   closes a walk-in panel anyway.
 - The shell (`components/canvas/collab/ReaderShell.tsx`: portal, backdrop, title bar, Close, focus trap, Escape) is
-  the one the Screen's large player uses.
+  the one the Screen's large player uses. It counts itself in the modal guard (`useModalGuard`) for as long as it is
+  open, so `walkInputBlocked` holds every walking input behind any reader: the arrows, W/A/S/D, Space, the action keys
+  and Enter move nothing, while a field inside the reader (the Notice Board's add box) still types.
 
 ## The camera
 
