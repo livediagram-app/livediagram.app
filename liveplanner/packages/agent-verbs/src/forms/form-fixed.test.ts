@@ -239,6 +239,33 @@ describe('set_field', () => {
   });
 });
 
+// docs/specs/026-plan/item-types.md "Risk": a Risk set automatically takes a level by its name or id, any case.
+describe('set_field on a Risk', () => {
+  const withRisk: ItemTypeDef = {
+    ...BUG,
+    fields: [...BUG.fields, 'f-risk'],
+    custom: [...BUG.custom!, { id: 'f-risk', label: 'Risk', kind: 'risk' }],
+  };
+  const riskDraft = () =>
+    formDraft(unasked(), worldOf('doc', { ...formPlan(), types: [withRisk, ...ITEM_TYPES] }));
+
+  it('keeps a level as its id', () => {
+    const { d, refused } = run([{ op: 'set_field', field: 'Risk', value: 'High' }], riskDraft());
+    expect(refused).toBeNull();
+    expect(d.form.destination?.fixed).toEqual({ 'f-risk': { value: 'high' } });
+  });
+
+  it('refuses any other value, naming the levels', () => {
+    const { refused } = run([{ op: 'set_field', field: 'Risk', value: 'Severe' }], riskDraft());
+    expect(refused).toMatchObject({
+      code: 'fixed_value_invalid',
+      message: expect.stringContaining(
+        'Risk takes a risk level: "Critical", "High", "Medium", "Low".',
+      ),
+    });
+  });
+});
+
 describe('extra columns', () => {
   it('adds, changes and deletes a sheet form’s columns, the sheet keeping a deleted one', () => {
     const { d, refused } = run(

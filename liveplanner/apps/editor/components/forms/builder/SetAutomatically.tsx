@@ -15,7 +15,7 @@ import {
   type FixedField,
   type FixedValue,
 } from '@liveplanner/forms';
-import { PRIORITIES, PRIORITY_LABELS } from '@liveplanner/items';
+import { PRIORITIES, PRIORITY_LABELS, RISKS, RISK_LABELS } from '@liveplanner/items';
 import { Select } from '@liveplanner/ui';
 import { DraftText } from './DraftText';
 import { useFormBuilder } from './form-builder-context';
@@ -36,6 +36,7 @@ const KIND_HINT: Readonly<Record<FixedField['kind'], string>> = {
   text: 'Text',
   number: 'Number',
   priority: 'Priority',
+  risk: 'Risk',
   date: 'Date',
 };
 
@@ -63,11 +64,15 @@ function FieldValue({
         />
       );
     case 'priority':
+    case 'risk':
     case 'choice': {
+      // Priority's and Risk's fixed levels by id, named; a Choice's options as they are.
       const options =
         field.kind === 'priority'
           ? PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] }))
-          : (field.options ?? []).map((o) => ({ value: o, label: o }));
+          : field.kind === 'risk'
+            ? RISKS.map((r) => ({ value: r, label: RISK_LABELS[r] }))
+            : (field.options ?? []).map((o) => ({ value: o, label: o }));
       const current = typeof given === 'string' ? given : '';
       const known = options.some((o) => o.value.toLowerCase() === current.toLowerCase());
       return (
@@ -168,7 +173,7 @@ function FieldValue({
 // A new set field's first value: one that already holds where there is an obvious one; else none until typed.
 function firstValue(field: FixedField): FixedValue | null {
   if (field.kind === 'date') return submittedAfter(0);
-  if (field.kind === 'priority') return { value: 'medium' };
+  if (field.kind === 'priority' || field.kind === 'risk') return { value: 'medium' };
   if (field.kind === 'choice' && field.options?.length) return { value: field.options[0]! };
   if (field.kind === 'multichoice' && field.options?.length) return { value: [field.options[0]!] };
   return null;

@@ -34,6 +34,7 @@ const SORT_KIND_GLYPHS: Record<BoardSortKind, string> = {
   date: 'calendar',
   rating: 'star',
   choice: 'checklist',
+  risk: 'risk',
 };
 
 export function BoardSortOptions({

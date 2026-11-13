@@ -1,6 +1,7 @@
 // Mapping (docs/specs/030-forms/forms.md "Mapping: where an answer goes", blueprint §5): which card fields a
 // question's answer may be kept in, and where it goes when its field is gone.
 import {
+  riskOf,
   isTimedRange,
   ratingScaleOf,
   type CustomFieldDef,
@@ -22,7 +23,8 @@ export const MAPPABLE_KINDS: Readonly<Record<QuestionType, readonly CustomFieldK
   date: ['date'],
   datetime: ['datetime'],
   daterange: ['daterange'],
-  single: ['choice', 'text'],
+  // A Risk after Text: [1] is the kind a choice with Other falls back to (newFieldFor).
+  single: ['choice', 'text', 'risk'],
   multi: ['multichoice', 'longtext'],
   rating: ['rating', 'number'],
   checkbox: ['checkbox'],
@@ -62,6 +64,9 @@ export function fieldTakes(q: FormQuestion, field: CustomFieldDef): boolean {
   if (field.kind === 'rating') return ratingScaleOf(field) >= (q.scale ?? RATING_SCALE_DEFAULT);
   // A range's ends are days or moments on both sides, never one of each (forms.md "Mapping").
   if (field.kind === 'daterange') return isTimedRange(field) === (q.withTime === true);
+  // A Risk takes a question whose every option names a level (item-types.md "Risk"), never one with Other.
+  if (field.kind === 'risk')
+    return !q.other && (q.options ?? []).every((o) => riskOf(o) !== undefined);
   if (field.kind === 'choice' || field.kind === 'multichoice') {
     if (q.other) return false;
     const options = new Set((field.options ?? []).map((o) => o.toLowerCase()));

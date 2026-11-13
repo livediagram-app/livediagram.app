@@ -148,6 +148,27 @@ describe('number summaries', () => {
 });
 
 describe('category summaries', () => {
+  // docs/specs/026-plan/item-types.md "Risk": per level, in the levels' order and fixed colours.
+  it("counts a Risk's levels in their own order and colours, whatever the counts, and only levels", () => {
+    const risk = def('f-r', 'risk');
+    const items = [
+      feature({ 'f-r': 'low' }),
+      feature({ 'f-r': 'low' }),
+      feature({ 'f-r': 'critical' }),
+      feature({ 'f-r': 'medium' }),
+      feature({ 'f-r': 'Severe' }),
+      feature({}),
+    ];
+    const s = fieldSummary(field(risk), items, reading);
+    expect(s).toMatchObject({ shape: 'category', from: 'risk', cards: 6, filled: 4 });
+    if (s?.shape !== 'category') throw new Error('category');
+    expect(s.values).toEqual([
+      { key: 'critical', label: 'Critical', count: 1, color: '#dc2626' },
+      { key: 'medium', label: 'Medium', count: 1, color: '#ca8a04' },
+      { key: 'low', label: 'Low', count: 2, color: '#16a34a' },
+    ]);
+  });
+
   it('counts each value, commonest first and option order among equals', () => {
     const sev = def('f-s', 'choice', { options: ['Critical', 'High', 'Low'] });
     const items = [

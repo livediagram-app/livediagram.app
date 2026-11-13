@@ -65,6 +65,7 @@ const LANE_KIND_GLYPHS: Record<LaneFieldKind, string> = {
   percent: 'percent',
   date: 'calendar',
   choice: 'star',
+  risk: 'risk',
   checkbox: 'task',
   card: 'person',
   person: 'person',
