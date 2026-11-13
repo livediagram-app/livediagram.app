@@ -53,6 +53,8 @@ Owner / edit-role.
   (id, name, order; no `data`).
 - `GET    /api/documents/:id/tabs/:tabId`: full tab payload (data + everything).
 - `PUT    /api/documents/:id/tabs/:tabId`: upsert a single tab (active edit path).
+- `POST   /api/documents/:id/tabs/:tabId/delta`: the same save sent as the element ops since a stored base copy
+  ([Delta saves](delta-saves.md)); refused `409 delta_refused` whenever it cannot rebuild exactly the whole tab.
 - `DELETE /api/documents/:id/tabs/:tabId`: remove a tab.
 - `PUT    /api/documents/:id`: document-level fields only (rename,
   tab order, shareable). Body

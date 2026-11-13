@@ -36,6 +36,7 @@
     "./share-links": "./src/share-links.ts",
     "./signed-in-hint": "./src/signed-in-hint.ts",
     "./snapshot-svg": "./src/snapshot-svg.ts",
+    "./tab-delta": "./src/tab-delta.ts",
     "./tab-save-changes": "./src/tab-save-changes.ts",
     "./tab-size": "./src/tab-size.ts",
     "./tab-connection": "./src/tab-connection.ts",

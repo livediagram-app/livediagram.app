@@ -11,6 +11,8 @@ import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/api-schema';
 import { handleQaBoardRoute } from './qa-board-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
+import { handleTabDelta } from './tab-delta-route';
+import { TAB_DELTA_SEGMENT } from '@liveworkspace/api-schema/tab-delta';
 import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
@@ -63,6 +65,26 @@ export async function handleDocumentSubresources(
     request.method === 'PUT'
   ) {
     return handleTabRename(ctx, segments[2]!, segments[4]!);
+  }
+  // /api/documents/<id>/tabs/<tabId>/delta: the same save as the PUT, sent as the element ops since a stored base
+  // copy (docs/specs/006-document/delta-saves.md), behind the PUT's doors in the PUT's order.
+  if (
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === TAB_DELTA_SEGMENT &&
+    request.method === 'POST'
+  ) {
+    const id = segments[2]!;
+    const tabId = segments[4]!;
+    const refused = refuseTokenTabPut(ctx, id, tabId);
+    if (refused) return refused;
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    const saving = await getDocumentForSave(env, id);
+    if (!saving) return missingDocument(ctx, id);
+    const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
+    if (!allowed) return deniedEdit(ctx, id, tabId);
+    return handleTabDelta(ctx, saving, tabId, owner);
   }
   if (segments.length === 5 && segments[3] === 'tabs') {
     const id = segments[2]!;
