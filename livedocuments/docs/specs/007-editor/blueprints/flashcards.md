@@ -160,6 +160,22 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   anyway). An unmounted card has no `ArticleEditorHandle`: `pageWriting` (exports) and `pageWritingBars` (slide
   thumbnails, Contents, the Map) fall back to `estimateArticle`'s ops for its page (`estimatedPageOps`,
   `lib/article/article-estimate-cache.ts`, cached per writing object and flow), the bars drawn one per estimated line;
+  in the browser the estimate takes a measure (`canvasTextMeasure`, `lib/article/canvas-text-measure.ts`: an
+  `OffscreenCanvas` (else a page canvas) 2D context's `measureText` in the block's CSS font, widths kept per font and
+  text up to `MEASURE_CACHE_MAX` (20,000), the store and the cache key's `measureGeneration` moved on at each
+  `document.fonts` `loadingdone`), and `estimateArticle`'s paragraphs, lists, headings and code wrap by
+  `wrapMeasured` (`packages/document/src/article-layout-measured.ts`): breaks at spaces and after a hyphen inside a
+  word (not one starting or ending it), a word wider than the line broken at the last character that fits, the
+  title's -0.01em tracking counted, each style stretch (bold, italic) measured in its own face, a line fitting while
+  its width is within `FIT_SLACK_PX` (0.01) of the room. WebKit (`fitsWordByWord`: `AppleWebKit/` without `Chrome/`
+  or `Chromium/`, so every iOS browser) adds a line's words up one by one, Blink and Gecko measure the candidate line
+  whole (the kerning between words counted); the measure's `wordByWord` picks which. Tables and contents entries keep
+  `wrapEstimated`. Without a measure (node, the API's summaries, the SVG render) every block keeps `wrapEstimated`.
+  Measured (#387, a 100-card stack, a heading and a 10 to 60 word body with a bold stretch per card, hyphens and
+  number ranges, each line read off a div set as `app/article-pages.css` sets the writing, Playwright Chromium and
+  WebKit, the default, serif, modern and friendly styles): lines that differ from the browser's, average glyph 315
+  to 340 of 451 to 456 (85 to 92 cards), measured 0 in every style and both engines; measuring the stack 14 to 25 ms.
+  Tests: `packages/document/src/article-layout-measured.test.ts`, `apps/editor/lib/article/canvas-text-measure.test.ts`.
   Find's block pages put an unmounted one-page card's blocks on its page.
 - Measured (#234, a 100-card stack with two lines a card, 390x844 touch, CPU 4x, the dev build): before, 100
   editors mounted, 9,407 event listeners, opening ran 1,073 ms of long tasks (worst 340 ms) and typing's p95 frame
