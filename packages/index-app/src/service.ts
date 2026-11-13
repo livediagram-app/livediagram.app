@@ -54,6 +54,9 @@ export type ItemGrant = {
   token: string;
   // The item is in the Trash: only its owner and team hold a grant, and the app answers it as trashed.
   trashed?: boolean;
+  // When the index signed it (epoch seconds): a grant signed after the item was last put away says it is back
+  // (one-explorer-contracts.md "Where an item stands"). Absent from a grant built by hand.
+  iat?: number;
 };
 
 // Who the app asks for: an account it checked itself (an API token's, a workbench session's owner) with the
@@ -89,6 +92,7 @@ export function itemGrantOf(
     // The grant's own word first: a caller who leaves the share header off still came through the link.
     shareCode: claims.link ?? linkCodeOf(claims.sub) ?? shareCode,
     ...(claims.trashed ? { trashed: true } : {}),
+    iat: claims.iat,
   };
 }
 

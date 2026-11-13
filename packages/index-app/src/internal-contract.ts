@@ -5,6 +5,7 @@ import type {
   CommunityStateAsk,
   ConnectedTabWrite,
   ItemNotice,
+  ItemStanding,
   Level,
 } from '@liveworkspace/index-client';
 import type { ConnectedTabOutcome } from './connected-tabs';
@@ -123,6 +124,10 @@ export type InternalItemHandlers = {
   // A workbench pairing was unpaired, its token revoked or its account closed (liveworkspace/docs/specs/011-workbench/workbench.md
   // "Ending access"): close that pairing's sessions in the item's room. Answers whether the room was reached.
   workbenchClose?: (itemId: string, pairingId: string) => Promise<boolean>;
+  // Where the item stands at the index after an archive, move out, trash or restore (one-explorer-contracts.md "Where an
+  // item stands"): the app stops work it does on its own clock for the item while it is put away. An app without it
+  // answers 200 and does nothing; one that throws answers 503, which the index logs and drops.
+  standing?: (itemId: string, standing: ItemStanding) => Promise<unknown>;
   // An old livediagram.app document's part into the item's room (the migration door, docs/migration.md): one
   // Durable Object call, one transaction (migration-room.ts writeMigratedRoom). The payload is checked for shape,
   // version, app and id before it is called. Throws MigrationTabTooLarge (migration-door.ts) for a tab over the
