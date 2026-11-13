@@ -28,7 +28,7 @@ import {
 import { Button } from '@liveworkspace/ui';
 import { EmptyState } from '@liveworkspace/ui';
 import { CheckIcon, SearchIcon, SparkleIcon } from '../ui/icons';
-import { ChevronDownIcon, Portal } from '@liveworkspace/ui';
+import { ChevronDownIcon, MenuLandmark, Portal } from '@liveworkspace/ui';
 import { withLens } from '../views';
 import type { Words } from '../words';
 import { useExplorer } from './context';
@@ -246,40 +246,43 @@ function ChipListbox({
   const optionId = (index: number) => `${id}-option-${index}`;
   return (
     <Portal>
-      <div
-        ref={list}
-        role="listbox"
-        aria-label={chip.label}
-        aria-multiselectable="true"
-        aria-activedescendant={optionId(active)}
-        tabIndex={0}
-        onKeyDown={onKeyDown}
-        className="fixed z-50 w-56 rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
-        style={{ left: pos.left, top: pos.top }}
-      >
-        {chip.options.map((option, index) => (
-          <div
-            key={option.value ?? 'any'}
-            id={optionId(index)}
-            role="option"
-            aria-selected={option.selected}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              setActive(index);
-              onChoose(option.value);
-            }}
-            onMouseEnter={() => setActive(index)}
-            className={`flex min-h-8 cursor-pointer items-center gap-2 px-3 py-1.5 text-slate-700 dark:text-slate-200 ${
-              index === active ? 'bg-slate-100 dark:bg-slate-800' : ''
-            } ${index === 0 ? 'border-b border-slate-100 dark:border-slate-800' : ''}`}
-          >
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center text-brand-700 dark:text-brand-300">
-              {option.selected ? <CheckIcon size={12} /> : null}
-            </span>
-            <span className="truncate">{option.label}</span>
-          </div>
-        ))}
-      </div>
+      {/* Portalled to the body, outside every landmark: a named region of its own, as the ⋯ menus have. */}
+      <MenuLandmark name={`${chip.label} filter`}>
+        <div
+          ref={list}
+          role="listbox"
+          aria-label={chip.label}
+          aria-multiselectable="true"
+          aria-activedescendant={optionId(active)}
+          tabIndex={0}
+          onKeyDown={onKeyDown}
+          className="fixed z-50 w-56 rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+          style={{ left: pos.left, top: pos.top }}
+        >
+          {chip.options.map((option, index) => (
+            <div
+              key={option.value ?? 'any'}
+              id={optionId(index)}
+              role="option"
+              aria-selected={option.selected}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                setActive(index);
+                onChoose(option.value);
+              }}
+              onMouseEnter={() => setActive(index)}
+              className={`flex min-h-8 cursor-pointer items-center gap-2 px-3 py-1.5 text-slate-700 dark:text-slate-200 ${
+                index === active ? 'bg-slate-100 dark:bg-slate-800' : ''
+              } ${index === 0 ? 'border-b border-slate-100 dark:border-slate-800' : ''}`}
+            >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center text-brand-700 dark:text-brand-300">
+                {option.selected ? <CheckIcon size={12} /> : null}
+              </span>
+              <span className="truncate">{option.label}</span>
+            </div>
+          ))}
+        </div>
+      </MenuLandmark>
     </Portal>
   );
 }

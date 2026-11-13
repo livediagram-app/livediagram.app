@@ -105,7 +105,7 @@ last row is on screen, over its trigger; one taller than the window keeps to the
 runs off the page, so every verb on it can be reached.
 
 Every ⋯ menu is portalled to the page's body, outside every landmark, so each stands in a named region of its own
-(named as the menu is, "Actions for <name>"): axe's "region" rule finds nothing outside a landmark and a screen
+(named as the menu is, "Actions for <name>"), and so does a filter chip's list of choices ("Edited filter"): axe's "region" rule finds nothing outside a landmark and a screen
 reader's landmark list reaches the open menu. The search field is a search landmark ("Search your work") for the same
 reason: the bar's and the hero's sit outside the Explorer's main, and a host may give the Explorer no header of its own.
 
