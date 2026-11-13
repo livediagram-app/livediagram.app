@@ -10,12 +10,17 @@ import {
   lucideCalendar,
   lucideCheck,
   lucideFlag,
+  lucideGitMerge,
+  lucideGitPullRequest,
+  lucideGitPullRequestClosed,
+  lucideGitPullRequestDraft,
   lucideLink,
   lucideMail,
   lucideMessageSquare,
   lucidePackage,
   lucideSparkles,
   lucideTriangleAlert,
+  lucideX,
   lucideZap,
 } from '@liveworkspace/icons/lucide';
 
@@ -96,6 +101,24 @@ export const ArchiveGlyph = lucideGlyph(lucidePackage, 11);
 export const CalendarGlyph = lucideGlyph(lucideCalendar, 8);
 export const LinkGlyph = lucideGlyph(lucideLink, 9);
 export const SparklesGlyph = lucideGlyph(lucideSparkles, 10);
+
+// A pull request's marks, as a card's pill draws them (PullRequestPill.tsx), at the scenes' size.
+export const PrOpenGlyph = lucideGlyph(lucideGitPullRequest, 8);
+export const PrDraftGlyph = lucideGlyph(lucideGitPullRequestDraft, 8);
+export const PrMergedGlyph = lucideGlyph(lucideGitMerge, 8);
+export const PrClosedGlyph = lucideGlyph(lucideGitPullRequestClosed, 8);
+export const FailGlyph = lucideGlyph(lucideX, 7);
+
+// GitHub's state colours, written out whole for Tailwind.
+export const PR_PILLS = {
+  draft: 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-100',
+  open: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/25 dark:text-emerald-100',
+  merged: 'bg-violet-100 text-violet-800 dark:bg-violet-500/30 dark:text-violet-100',
+  closed: 'bg-red-100 text-red-700 dark:bg-red-500/25 dark:text-red-100',
+} as const;
+
+/** A pull request's state as a card face draws it: the state's colour and mark, its number, and a checks mark. */
+export type PrFace = { pill: keyof typeof PR_PILLS; Mark: typeof PrOpenGlyph; tail?: ReactNode };
 
 // A moving part: where it rests, where it plays to, and its delay as it plays.
 export const at = (p: string, r = 'none', d = 0): CSSProperties =>
@@ -313,6 +336,93 @@ export function Lane({ tone, children }: { tone: ToneClasses; children?: ReactNo
       className={`relative flex h-[42px] w-[40%] shrink-0 flex-col justify-center rounded-lg bg-white/70 p-1.5 ring-1 dark:bg-slate-900/50 ${tone.ring}`}
     >
       {children}
+    </div>
+  );
+}
+
+/** A card's pull request pill turning from one state to the next as the scene plays, `d` in. */
+export function PrTurn({
+  from,
+  to,
+  d = 220,
+  className = 'bottom-[3px] right-1',
+}: {
+  from: PrFace;
+  to: PrFace;
+  d?: number;
+  className?: string;
+}) {
+  return (
+    <span className={`absolute inline-grid ${className}`}>
+      <Pill
+        className={`ats-out relative col-start-1 row-start-1 shadow-none ${PR_PILLS[from.pill]}`}
+        style={after(d)}
+      >
+        <from.Mark aria-hidden />
+        #42
+        {from.tail}
+      </Pill>
+      <Pill
+        className={`ats-t ats-in ats-pop relative col-start-1 row-start-1 shadow-none ${PR_PILLS[to.pill]}`}
+        style={at('none', 'scale(0.5)', d)}
+      >
+        <to.Mark aria-hidden />
+        #42
+        {to.tail}
+      </Pill>
+    </span>
+  );
+}
+
+/** A Slack channel, its newest message (the rule's) landing as the scene plays, `d` in. */
+export function SlackChannel({
+  tone,
+  channel,
+  d = 260,
+}: {
+  tone: ToneClasses;
+  channel: string;
+  d?: number;
+}) {
+  return (
+    <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-white shadow-[0_6px_16px_-8px_rgba(15,23,42,0.35),0_0_0_1px_rgba(15,23,42,0.06)] dark:bg-slate-800 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
+      <div className="flex items-center gap-1 border-b border-slate-100 px-1.5 py-1 dark:border-slate-700">
+        <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">#</span>
+        <span className="text-[8.5px] font-bold text-slate-800 dark:text-slate-100">{channel}</span>
+        <span className="ml-auto flex gap-0.5">
+          <span className="size-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+          <span className="size-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col justify-end gap-1.5 p-1.5">
+        <div
+          className="ats-t flex items-start gap-1 opacity-60"
+          style={at('translateY(-4px)', 'none', Math.max(0, d - 100))}
+        >
+          <span className="size-3 shrink-0 rounded bg-rose-400" />
+          <div className="flex flex-1 flex-col gap-[3px] pt-px">
+            <div className="h-[3px] w-1/3 rounded-full bg-slate-300 dark:bg-slate-600" />
+            <div className="h-[3px] w-4/5 rounded-full bg-slate-200 dark:bg-slate-700" />
+          </div>
+        </div>
+        <div
+          className="ats-t ats-in flex items-start gap-1"
+          style={at('none', 'translateY(14px)', d)}
+        >
+          <span className={`grid size-3 shrink-0 place-items-center rounded ${tone.solid}`}>
+            <ZapGlyph aria-hidden />
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-[3px] pt-px">
+            <div className="h-[3px] w-2/5 rounded-full bg-slate-400 dark:bg-slate-500" />
+            <div className="h-[3px] w-full rounded-full bg-slate-200 dark:bg-slate-700" />
+            <span
+              className={`mt-px self-start truncate rounded-sm px-1 text-[6.5px] font-semibold leading-[10px] ${tone.soft}`}
+            >
+              Open in liveplanner
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

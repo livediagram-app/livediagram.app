@@ -34,6 +34,7 @@ const DRAFT = {
   steps: [],
   chain: false,
 } as unknown as AutomationRuleBody;
+const KEPT = { body: DRAFT, picks: [] };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -63,10 +64,10 @@ describe('github-hash', () => {
   });
 
   it('keeps a draft once, and never a broken one', () => {
-    keepGithubDraft('p1', DRAFT);
-    expect(takeGithubDraft('p1')).toEqual(DRAFT);
+    keepGithubDraft('p1', KEPT);
+    expect(takeGithubDraft('p1')).toEqual(KEPT);
     expect(takeGithubDraft('p1')).toBeNull();
-    keepGithubDraft('p1', DRAFT);
+    keepGithubDraft('p1', KEPT);
     keepGithubDraft('p1', null);
     expect(takeGithubDraft('p1')).toBeNull();
     window.sessionStorage.setItem('liveplanner:github-draft:p1', '{"name":1}');
@@ -75,11 +76,33 @@ describe('github-hash', () => {
     expect(takeGithubDraft('p1')).toBeNull();
   });
 
+  it('keeps a template’s picks with its rule, and reads back only well-formed ones', () => {
+    const picks = [{ path: 'steps.0', pick: 'column' as const }];
+    keepGithubDraft('p1', { body: DRAFT, picks });
+    expect(takeGithubDraft('p1')).toEqual({ body: DRAFT, picks });
+    window.sessionStorage.setItem(
+      'liveplanner:github-draft:p1',
+      JSON.stringify({
+        body: DRAFT,
+        picks: [picks[0], { path: 'steps.1', pick: 'nope' }, { path: 2, pick: 'field' }, null],
+      }),
+    );
+    expect(takeGithubDraft('p1')).toEqual({ body: DRAFT, picks });
+    window.sessionStorage.setItem(
+      'liveplanner:github-draft:p1',
+      JSON.stringify({ body: DRAFT, picks: 'steps.0' }),
+    );
+    expect(takeGithubDraft('p1')).toEqual(KEPT);
+    // A rule kept before picks were (the body alone) is no kept rule.
+    window.sessionStorage.setItem('liveplanner:github-draft:p1', JSON.stringify(DRAFT));
+    expect(takeGithubDraft('p1')).toBeNull();
+  });
+
   it('keeps no draft where session storage throws', () => {
     const set = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('quota');
     });
-    expect(() => keepGithubDraft('p1', DRAFT)).not.toThrow();
+    expect(() => keepGithubDraft('p1', KEPT)).not.toThrow();
     set.mockRestore();
     expect(takeGithubDraft('p1')).toBeNull();
   });
@@ -119,28 +142,28 @@ describe('AutomationsHost: back from GitHub', () => {
   });
 
   it('opens the rule kept for the round trip', async () => {
-    keepGithubDraft('p1', DRAFT);
+    keepGithubDraft('p1', KEPT);
     window.history.replaceState(null, '', '/project/p1#github=requested');
     render(host(SCOPE));
     await act(async () => {});
     expect(JSON.parse(screen.getByTestId('target').textContent)).toEqual({
       view: 'rule',
       ruleId: null,
-      kept: DRAFT,
+      kept: KEPT,
       github: 'requested',
     });
     expect(takeGithubDraft('p1')).toBeNull();
   });
 
   it('opens the rule kept even when the effect runs twice (Strict Mode)', async () => {
-    keepGithubDraft('p1', DRAFT);
+    keepGithubDraft('p1', KEPT);
     window.history.replaceState(null, '', '/project/p1#github=connected');
     render(<StrictMode>{host(SCOPE)}</StrictMode>);
     await act(async () => {});
     expect(JSON.parse(screen.getByTestId('target').textContent)).toEqual({
       view: 'rule',
       ruleId: null,
-      kept: DRAFT,
+      kept: KEPT,
       github: 'connected',
     });
   });

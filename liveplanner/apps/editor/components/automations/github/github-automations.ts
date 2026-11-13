@@ -6,16 +6,17 @@
 // the Automations dialog; absent (null) outside it.
 
 import { createContext, use } from 'react';
-import type { AutomationRuleBody } from '@liveplanner/items';
 import type { AutomationsScope } from '../automations-client';
+import type { KeptRule } from './github-hash';
 
 export type GithubAutomations = {
   enabled: boolean;
   scope: AutomationsScope;
   openView: () => void;
-  // The builder's new rule as it stands (null outside one), and the builder's way to keep it current.
-  draft: () => AutomationRuleBody | null;
-  keepDraft: (body: AutomationRuleBody | null) => void;
+  // The builder's new rule as it stands, with a template's picks (null outside one), and the builder's way to keep
+  // it current.
+  draft: () => KeptRule | null;
+  keepDraft: (kept: KeptRule | null) => void;
 };
 
 export const GithubAutomationsContext = createContext<GithubAutomations | null>(null);

@@ -5,9 +5,9 @@
 // Automation comment's link to its rule all read one value, and none of them draws for anyone else.
 
 import { createContext, use } from 'react';
-import type { AutomationRuleBody, AutomationTemplateId } from '@liveplanner/items';
+import type { AutomationTemplateId } from '@liveplanner/items';
 import type { AutomationsScope } from './automations-client';
-import type { GithubResult } from './github/github-hash';
+import type { GithubResult, KeptRule } from './github/github-hash';
 
 // Where the screen opens: the Rules list, one rule's builder (null: a new rule, blank, from a template, or the draft
 // kept for the round trip to GitHub), the Run Log (one rule's runs), the Templates tab, or the GitHub view (with how a
@@ -15,13 +15,13 @@ import type { GithubResult } from './github/github-hash';
 export type AutomationsTarget =
   | { view: 'rules' }
   // `draft`: the rule Describe a Rule drafted, which the screen holds (never in the address). `kept`: the rule kept
-  // for the round trip to GitHub, with how it went.
+  // for the round trip to GitHub (with a template's picks), with how it went.
   | {
       view: 'rule';
       ruleId: string | null;
       template?: AutomationTemplateId;
       draft?: true;
-      kept?: AutomationRuleBody;
+      kept?: KeptRule;
       github?: GithubResult;
     }
   | { view: 'runs'; ruleId?: string }

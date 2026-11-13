@@ -31,6 +31,14 @@ import {
   SummariseRequests,
 } from './template-scenes/board';
 import { CloseParent, TellUnblocked, NudgeStuck, DoneWhenResolved } from './template-scenes/linked';
+import {
+  ReviewOnOpen,
+  DoneOnMerge,
+  FlagFailingChecks,
+  TellChecksPass,
+  BackOnClose,
+  MergedToSlack,
+} from './template-scenes/github';
 
 export type { SceneTone } from './scene-parts';
 
@@ -57,6 +65,12 @@ const SCENES: Readonly<Record<AutomationTemplateId, (p: { tone: ToneClasses }) =
   'tell-unblocked': TellUnblocked,
   'nudge-stuck': NudgeStuck,
   'done-when-resolved': DoneWhenResolved,
+  'review-on-open': ReviewOnOpen,
+  'done-on-merge': DoneOnMerge,
+  'flag-failing-checks': FlagFailingChecks,
+  'tell-checks-pass': TellChecksPass,
+  'back-on-close': BackOnClose,
+  'merged-to-slack': MergedToSlack,
 };
 
 /** The scene at the top of a template tile, in the template's colour. */

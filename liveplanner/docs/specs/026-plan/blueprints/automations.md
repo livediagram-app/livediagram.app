@@ -1066,7 +1066,7 @@ The spec's six GitHub rows of the Templates table, on the GitHub triggers of git
     None writes Who Did It or "whoever triggered", so each passes `checkPersonless`.
 - `TemplatesGallery.tsx` reads `useGithubAutomations()?.enabled`: false (or outside the dialog) drops the `github`
   chip and its templates from All alike. The tile's tone is `TONE[id]`.
-- `template-scenes/github.tsx`: one scene per GitHub template, from `scene-parts.tsx`'s pull request pill
+- `apps/editor/components/automations/template-scenes/github.tsx`: one scene per GitHub template, from `scene-parts.tsx`'s pull request pill
   (`PrPill`, `PR_PILLS` and the state marks, moved there from `TriggerScene.tsx`, which now imports them): the
   card's pill turning state, then what the rule does (the card sliding a column, the flag, the comment or the
   mention, the Slack message).

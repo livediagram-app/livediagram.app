@@ -4,7 +4,11 @@
 // for the round trip, taken once. Small and eager, since the Automations host reads it on every plan; the screen's own
 // code stays in its lazy chunk. Storage that throws (a private window) or holds something unreadable keeps no draft.
 
-import type { AutomationRuleBody } from '@liveplanner/items';
+import type {
+  AutomationPick,
+  AutomationRuleBody,
+  AutomationTemplatePickAt,
+} from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
 
 export type GithubResult = 'connected' | 'failed' | 'requested';
@@ -26,27 +30,52 @@ export function dropGithubHash(): void {
   window.history.replaceState(null, '', url.pathname + url.search);
 }
 
+/** The rule being built, and what a template left in it to pick (marked again when it comes back). */
+export type KeptRule = { body: AutomationRuleBody; picks: AutomationTemplatePickAt[] };
+
+// The pick words a kept pick may name (a key of AUTOMATION_PICK_WORDS, listed here so this stays small and eager).
+const PICKS: Readonly<Record<AutomationPick, true>> = {
+  column: true,
+  type: true,
+  field: true,
+  label: true,
+  people: true,
+  webhook: true,
+};
+const isPickAt = (p: unknown): p is AutomationTemplatePickAt => {
+  const at = p as Partial<AutomationTemplatePickAt> | null;
+  return (
+    !!at &&
+    typeof at.path === 'string' &&
+    typeof at.pick === 'string' &&
+    Object.hasOwn(PICKS, at.pick)
+  );
+};
+
 /** The rule kept for the round trip, taken once. */
-export function takeGithubDraft(projectId: string): AutomationRuleBody | null {
+export function takeGithubDraft(projectId: string): KeptRule | null {
   try {
     const text = window.sessionStorage.getItem(draftKey(projectId));
     window.sessionStorage.removeItem(draftKey(projectId));
     if (!text) return null;
-    const body = JSON.parse(text) as Partial<AutomationRuleBody> | null;
+    const kept = JSON.parse(text) as { body?: Partial<AutomationRuleBody>; picks?: unknown } | null;
+    const body = kept?.body;
     const ok =
       !!body &&
       typeof body.name === 'string' &&
       typeof body.trigger?.kind === 'string' &&
       Array.isArray(body.conditions) &&
       Array.isArray(body.steps);
-    return ok ? (body as AutomationRuleBody) : null;
+    if (!ok) return null;
+    const picks = Array.isArray(kept.picks) ? kept.picks.filter(isPickAt) : [];
+    return { body: body as AutomationRuleBody, picks };
   } catch {
     return null;
   }
 }
 
 /** The rule kept for the round trip (or none). */
-export function keepGithubDraft(projectId: string, draft: AutomationRuleBody | null): void {
+export function keepGithubDraft(projectId: string, draft: KeptRule | null): void {
   try {
     if (draft) window.sessionStorage.setItem(draftKey(projectId), JSON.stringify(draft));
     else window.sessionStorage.removeItem(draftKey(projectId));
