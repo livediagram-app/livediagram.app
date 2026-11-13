@@ -8,13 +8,14 @@ import { boardConfigureHeroArt } from './BoardConfigureHeroArt';
 
 // docs/specs/026-plan/plan-board.md "Configure": the dialog hero header, drawn as a board being set up.
 describe('the Configure Board hero art', () => {
-  it('draws the grid fading toward the title and two corners, with no centre piece', () => {
+  it('draws the grid fading toward the title and its corner, with no centre piece', () => {
     const { container } = render(<HeroBand art={boardConfigureHeroArt} />);
     const band = container.querySelector('[data-dialog-hero-art]') as HTMLElement;
     expect(band.getAttribute('data-dialog-hero-art')).toBe('board-configure');
     expect(band.style.backgroundImage).toMatch(/^linear-gradient\(90deg, var\(--hero-paper\)/);
     const pieces = [...band.children];
-    expect(pieces).toHaveLength(2);
+    // One corner, on the right: the title's side stays plain paper.
+    expect(pieces).toHaveLength(1);
     for (const el of pieces) expect(el.getAttribute('aria-hidden')).toBe('true');
     expect(container.querySelector('[class*="@4xl:block"]')).toBeNull();
   });

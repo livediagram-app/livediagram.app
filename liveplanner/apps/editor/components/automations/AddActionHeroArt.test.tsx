@@ -8,7 +8,7 @@ import { addActionHeroArt } from './AddActionHeroArt';
 
 // docs/specs/026-plan/automations.md "The rule builder": the Add an Action picker wears the dialog hero header.
 describe('the Add an Action hero art', () => {
-  it('draws the dots fading toward the title, the corners from `sm` and the hand only on a wide header', () => {
+  it('draws the dots fading toward the title, its corner from `sm` and the hand only on a wide header', () => {
     const { container } = render(<HeroBand art={addActionHeroArt} />);
     const band = container.querySelector('[data-dialog-hero-art]') as HTMLElement;
     expect(band.getAttribute('data-dialog-hero-art')).toBe('add-action');
@@ -19,7 +19,8 @@ describe('the Add an Action hero art', () => {
     expect(String(hand.getAttribute('class'))).toMatch(/\bhidden\b.*@4xl:block/);
     expect(addActionHeroArt.centre).toBe(true);
     const corners = [...band.children].filter((el) => el !== hand);
-    expect(corners).toHaveLength(2);
+    // One corner, on the right: the title's side stays plain paper.
+    expect(corners).toHaveLength(1);
     for (const el of corners) {
       const cls = String(el.getAttribute('class'));
       expect(cls).toContain('max-sm:hidden');

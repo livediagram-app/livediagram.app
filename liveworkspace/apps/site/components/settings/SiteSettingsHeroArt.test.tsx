@@ -10,7 +10,7 @@ import { siteSettingsHeroArt } from './SiteSettingsHeroArt';
 const SOURCE = readFileSync(join(import.meta.dirname, 'SiteSettingsHeroArt.tsx'), 'utf8');
 
 describe('the site Settings hero art', () => {
-  it('draws the grid, the corners from sm and the hub only on a wide header', () => {
+  it('draws the grid, its corner from sm and the hub only on a wide header', () => {
     const { container } = render(<HeroBand art={siteSettingsHeroArt} />);
     const band = container.querySelector('[data-dialog-hero-art]') as HTMLElement;
     expect(band.getAttribute('data-dialog-hero-art')).toBe('site-settings');
@@ -19,7 +19,8 @@ describe('the site Settings hero art', () => {
     expect(String(hub.getAttribute('class'))).toMatch(/\bhidden\b.*@4xl:block/);
     expect(siteSettingsHeroArt.centre).toBe(true);
     const corners = [...band.children].filter((el) => el !== hub);
-    expect(corners).toHaveLength(2);
+    // One corner, on the right: the title's side stays plain paper.
+    expect(corners).toHaveLength(1);
     for (const el of corners) {
       expect(el.getAttribute('aria-hidden')).toBe('true');
       expect(String(el.getAttribute('class'))).toContain('max-sm:hidden');
