@@ -261,6 +261,29 @@ closed to opening and editing until it is moved out ([blueprints/archive.md](blu
   items by. A collab push for one is accepted and dropped (`204`), so its Inbox stays empty; a summary push is kept,
   so its preview stays current.
 
+**Where an item stands.** The index tells an item's app each time the item is put away or comes back, so work the
+app does on its own clock for the item (liveplanner's time rules, Waits and repeating cards) stops while it is
+archived or in the Trash. The index pushes; the app never asks (no call per wake, so a plan with a time rule costs the
+index nothing while it runs).
+
+- After the batch that archives the item, moves it out of Archived, sends it to the Trash or restores it, the index
+  calls `POST <app>/api/internal/items/:id/standing` with the app's key, off its request's path (`waitUntil`):
+  `{archived, trashed, at}`, both flags as the item stands after the change and `at` the moment it was written
+  (epoch ms). An item already where the call would put it (archived again, trashed again) is not told twice. The
+  empty clean-up tells nobody: an item with nothing in it has nothing to run.
+- The app keeps the newest standing it has heard (a call with an older `at` than its stored one changes nothing, so
+  two calls that cross land in order). It treats the item as **put away** while either flag is true.
+- **Fails open.** A call that can't be delivered (the app down, a timeout) is logged (`[index] standing not
+delivered`) and dropped, never retried: an app that has heard nothing runs the item as before. A grant says
+  again where the item stands when it is signed (an archived item is never granted; a trashed one carries
+  `trashed`), so the app takes a grant signed after its stored `at` as the item's standing too: a lost move out or
+  restore mends itself the next time anyone opens the item or renews a grant on it.
+- Every app's door is `@liveworkspace/index-app` `handleInternalItems` (the `standing` handler); the body's type and
+  parser are `@liveworkspace/index-client` `standing.ts`. An app without the handler answers `200 {ok: true}` and does
+  nothing: livediagram, livedocuments, livedesign and livehuddle keep no clock of their own for an item today, so only
+  liveplanner acts on it ([automations.md](../../../../liveplanner/docs/specs/026-plan/automations.md) "Put away").
+  A malformed body is `400`; a handler that throws is `503`, which the index logs as not delivered.
+
 ## Closing an account
 
 When a liveworkspace account closes, accounts tells the index (`POST /internal/purge-person`

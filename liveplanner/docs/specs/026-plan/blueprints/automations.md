@@ -1308,3 +1308,39 @@ email-optout.ts`): static, reads `?p=&t=`, one **Unsubscribe** button that POSTs
 - **Cost**: a run with no addresses email pays nothing new. One with one pays at most 10 primary-key reads and two
   writes on the room's SQLite, and one email per address in the background; the day's table keeps two rows, the
   addresses table at most 50 new rows a day.
+
+## Put away (Work Tracker 785)
+
+A plan archived or in the Trash runs no rule ([automations.md](../automations.md#put-away)). The index pushes where
+the plan stands (`POST /api/internal/items/:id/standing {archived, trashed, at}`,
+[one-explorer-contracts.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Where an
+item stands"); the plan never asks, so a time wake costs no index call.
+
+- **Decision: push, not pull.** Pull (the time wake asking the index first) would cost one index call per wake of
+  every plan with a time rule, and stall each wake on the index. Push costs one call per archive, move out, trash or
+  restore, which a person makes by hand, over the bindings the index already calls apps with.
+- **The door**: `routes/internal-items.ts` `standing` → `planRoom(env, id).takeStanding(standing)` → the room's
+  `PlanStanding` (`plan-room/plan-standing.ts`). It keeps `{putAway, at}` under one Durable Object storage key
+  (`planStanding`), read once in the constructor's `blockConcurrencyWhile` before the schedules restore; a plan that
+  never heard keeps no key and is live. A standing whose `at` is not newer than the stored one changes nothing.
+- **Mending from grants**: `route()` (an API request's grant) and a session's grant renewal pass the grant's `iat`
+  and `trashed` to `PlanStanding.fromGrant`: no grant is signed for an archived item, so one signed after the stored
+  `at` says the plan is live (or in the Trash, with `trashed`). One comparison in memory per request; storage is
+  written only when the standing changes.
+- **While put away** the room's schedules read as empty: `RepeatSchedule` and `AutomationSchedule` are built with a
+  `ready` that is false while put away, so neither restores a wake, and `PlanAutomations.kinds` answers an empty set,
+  so no write, comment or GitHub delivery builds an event. The alarm clears both schedules first while put away (a
+  wake that was running when the push came may have asked for more), and `answerHookCall` answers `202 {queued: 0}`
+  after the secret check. `automation_schedule`, `automation_waiting`,
+  `automation_queue` and `item_repeats` are left as they are.
+- **The resume** (live again, `resumePlan` in `plan-standing.ts`): `item_repeats` all set `dirty = 1` (so each settles
+  from `settledFloor`, yesterday at the latest, and makes at most today's copy); held runs whose `at` is more than
+  `AUTOMATION_LATE_MAX_MS` past settle Skipped (`WAIT_PUT_AWAY`); then both schedules restore and the alarm is armed.
+  `automation_schedule.next_at` is left at the moment the rule was waiting for, so the next wake finds it due and
+  `latestMissed(next_at - 1, now)` picks the latest moment missed, a day late at most, exactly as after any long
+  sleep; no other moment runs.
+- **Cost**: the put-away check is one boolean read on each alarm, save and rule-kind check. A resume is three
+  statements (`UPDATE item_repeats`, a `DELETE ... RETURNING` on `automation_waiting`, at most 500 rows) and the two
+  `MIN` reads of a restore.
+- **Tests**: `plan-room/plan-standing.test.ts` (archive, trash, restore, an older `at`, a grant that mends, a plan that
+  never heard: the unreachable index), `routes/internal-items.test.ts` (the door).
