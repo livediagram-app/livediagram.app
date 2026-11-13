@@ -13,8 +13,12 @@ marks a line that differs from the last digest; a line without it was already re
 watch: polls once a minute and compares with the state the last watcher saved under .git, so a
 PR that changed between two watchers is still reported (with no saved state the first poll is
 the baseline). Exits at the first PR that went RED, GREEN or CONFLICTING or got a new comment or
-review (COMMENTED). One watcher per clone (pid file); exits with TIMEOUT after WATCH_MAX_HOURS
-(default 4) so an orphan can't hold the lock.
+review (COMMENTED). A poll where only mergeability is UNKNOWN (GitHub recomputes it for every open PR
+after each merge to main) keeps the PR's last state, so an unchanged green PR stays quiet. One watcher
+per clone (pid file); exits with TIMEOUT after WATCH_MAX_HOURS (default 4) so an orphan can't hold the lock.
+
+checks: a rerun leaves the old attempt's check runs in the rollup, so each check (workflow and job
+name) counts only its newest run.
 """
 import json, os, re, shutil, subprocess, sys, time
 
@@ -28,7 +32,7 @@ QUERY = """query($owner:String!,$name:String!){viewer{login}repository(owner:$ow
 pullRequests(states:OPEN,first:100,orderBy:{field:CREATED_AT,direction:ASC}){nodes{
 number title isDraft mergeable mergeStateStatus author{login} labels(first:20){nodes{name}}
 commits(last:1){nodes{commit{oid committedDate statusCheckRollup{contexts(first:100){nodes{__typename
-...on CheckRun{name status conclusion} ...on StatusContext{context state}}}}}}}
+...on CheckRun{name status conclusion databaseId checkSuite{workflowRun{workflow{name}}}} ...on StatusContext{context state}}}}}}}
 reviewThreads(first:100){nodes{isResolved}}
 comments(last:50){nodes{author{login} createdAt}} reviews(last:50){nodes{author{login} submittedAt body}}}}}}"""
 
@@ -57,9 +61,17 @@ def head(pr):
 
 
 def checks(pr):
-    """(failed names, pending count, total)."""
+    """(failed names, pending count, total), counting only the newest run of each check (reruns)."""
     roll = head(pr).get("statusCheckRollup") or {}
-    nodes = (roll.get("contexts") or {}).get("nodes") or []
+    newest, nodes = {}, []
+    for c in (roll.get("contexts") or {}).get("nodes") or []:
+        if c["__typename"] != "CheckRun":
+            nodes.append(c)
+            continue
+        key = ((((c.get("checkSuite") or {}).get("workflowRun") or {}).get("workflow") or {}).get("name"), c["name"])
+        if key not in newest or (c.get("databaseId") or 0) > (newest[key].get("databaseId") or 0):
+            newest[key] = c
+    nodes += newest.values()
     failed, pending = [], 0
     for c in nodes:
         if c["__typename"] == "StatusContext":
@@ -75,15 +87,15 @@ def checks(pr):
 
 
 def classify(pr):
-    """RED, CONFLICTING, GREEN or PENDING."""
+    """RED, CONFLICTING, GREEN, PENDING, or UNKNOWN (all checks passed but mergeability is being recomputed)."""
     failed, pending, total = checks(pr)
     if pr["mergeable"] == "CONFLICTING":
         return "CONFLICTING"
     if failed:
         return "RED"
-    if pending or not total or pr["mergeable"] == "UNKNOWN":
+    if pending or not total:
         return "PENDING"
-    return "GREEN"
+    return "UNKNOWN" if pr["mergeable"] == "UNKNOWN" else "GREEN"
 
 
 def talk(pr):
@@ -114,7 +126,7 @@ def digest_line(pr):
         action = "RED"
     elif threads or fresh:
         action = "COMMENTS"
-    elif state == "PENDING":
+    elif state in ("PENDING", "UNKNOWN"):
         action = "WAIT-CI"
     elif BLOCKING & set(labels) or pr["isDraft"]:
         action = "WAIT-PERSON"
@@ -169,6 +181,25 @@ def watch_line(pr, state):
     return f"PR {pr['number']}: {state}{detail} ({pr['mergeable']} {pr['mergeStateStatus']}) {pr['title'][:60]}"
 
 
+def transitions(prs, seen, heads):
+    """One poll's states, with UNKNOWN replaced by the PR's last state unless its head moved, and the PRs that
+    changed to RED, GREEN or CONFLICTING since `seen` (None: first poll, a baseline with no events)."""
+    states = {}
+    for n, p in prs.items():
+        s, oid = classify(p), head(p).get("oid")
+        same_head = heads.get(n, oid) == oid  # no saved head (an older watch.json): assume it did not move
+        states[n] = (seen or {}).get(n, "PENDING") if s == "UNKNOWN" and same_head else (
+            "PENDING" if s == "UNKNOWN" else s)
+    if seen is None:
+        return states, []
+    return states, [n for n, s in sorted(states.items()) if s != "PENDING" and s != seen.get(n, "PENDING")]
+
+
+def new_talk(counts, said):
+    """(PR, how many) for each PR with more comments and reviews than last poll; a PR new to the watch has none."""
+    return [(n, c - said[n]) for n, c in sorted(counts.items()) if n in said and c > said[n]]
+
+
 def watch():
     pid_path, saved_path = state_path("watch.pid"), state_path("watch.json")
     pid = running_pid(pid_path)
@@ -180,6 +211,7 @@ def watch():
     saved = load(saved_path, None)
     seen = {int(n): v for n, v in saved["states"].items()} if saved else None
     said = {int(n): v for n, v in saved["talk"].items()} if saved else {}
+    heads = {int(n): v for n, v in saved.get("heads", {}).items()} if saved else {}
     start = time.monotonic()
     try:
         while time.monotonic() - start < MAX_SECONDS:
@@ -188,14 +220,13 @@ def watch():
             except (subprocess.CalledProcessError, ValueError, KeyError, TypeError):
                 time.sleep(POLL)  # GitHub unreachable for a moment: try again next round
                 continue
-            states = {n: classify(p) for n, p in prs.items()}
+            states, changed = transitions(prs, seen, heads)
             counts = {n: talk(p) for n, p in prs.items()}
-            json.dump({"states": states, "talk": counts}, open(saved_path, "w"))
+            heads = {n: head(p).get("oid") for n, p in prs.items()}
+            json.dump({"states": states, "talk": counts, "heads": heads}, open(saved_path, "w"))
             if seen is not None:
-                events = [watch_line(prs[n], s) for n, s in sorted(states.items())
-                          if s != "PENDING" and s != seen.get(n, "PENDING")]
-                events += [f"PR {n}: COMMENTED {c - said[n]} new {prs[n]['title'][:60]}"
-                           for n, c in sorted(counts.items()) if n in said and c > said[n]]
+                events = [watch_line(prs[n], states[n]) for n in changed]
+                events += [f"PR {n}: COMMENTED {k} new {prs[n]['title'][:60]}" for n, k in new_talk(counts, said)]
                 if events:
                     print("\n".join(events))
                     return
