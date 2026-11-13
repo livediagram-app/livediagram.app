@@ -1,8 +1,9 @@
 'use client';
 
 // One run in the Audit Trail (docs/specs/026-plan/automations.md "The Automations screen": Audit Trail): When, Rule, Card
-// (its number and title), Result as a pill, Took, and the chevron that opens its steps (its hit area the whole row). A failed or skipped run shows
-// its reason under it. An open row is tinted violet, its steps under it. On a phone the parts stack.
+// (its number and title), Result as a pill, Took, and the chevron that opens its steps (its hit area the whole row).
+// A failed or skipped run shows its reason under it. An open row is tinted violet, its steps under it. On a phone the
+// parts stack.
 
 import { useId, useState } from 'react';
 import type { AutomationRun } from '@liveplanner/items';

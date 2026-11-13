@@ -62,6 +62,8 @@ describe('a pick the plan no longer has', () => {
     );
     expect(select('In Column').value).toBe('gone-col');
     expect(select('In Column').selectedOptions[0]!.textContent).toBe('A column no longer here');
+    // Above the plan's own columns, where every panel keeps its gone pick.
+    expect(select('In Column').options[1]!.textContent).toBe('A column no longer here');
     cleanup();
     render(
       <Panel
@@ -71,6 +73,7 @@ describe('a pick the plan no longer has', () => {
     );
     expect(select('Column').value).toBe('gone-col');
     expect(select('Column').selectedOptions[0]!.textContent).toBe('A column no longer here');
+    expect(select('Column').options[0]!.textContent).toBe('A column no longer here');
   });
 
   it('keeps a deleted Form tab under Form Response', () => {
@@ -79,6 +82,7 @@ describe('a pick the plan no longer has', () => {
     );
     expect(select('Form').value).toBe('t-gone');
     expect(select('Form').selectedOptions[0]!.textContent).toBe('A form no longer here');
+    expect(select('Form').options[1]!.textContent).toBe('A form no longer here');
   });
 
   it('names Field Changed’s gone field, and a built-in field no type lists by its name', () => {
