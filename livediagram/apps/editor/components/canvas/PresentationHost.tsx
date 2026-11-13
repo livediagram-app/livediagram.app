@@ -18,7 +18,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useFocusReturn } from '@liveworkspace/workbench/hooks/ui/useFocusReturn';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { startTypedTransition } from '@liveworkspace/workbench/lib/view-transition';
-import { slideTransitionType, whenScreenSettles } from './slide-transition';
+import { slideTransitionType, whenScreenSettles } from '@liveworkspace/workbench/components/canvas/slide-transition';
 
 // Drawn only while presenting; fetched once the editor is idle (lib/editor-deferred-code.ts), and a deck
 // starts only once it is in (useSlideDeck). This lazy wrapper is the fallback for a presentation entered

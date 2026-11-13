@@ -7,7 +7,7 @@ import type { LiveStroke } from '@/lib/live-stroke';
 import { useRecognitionPreview } from '@/hooks/canvas/useRecognitionPreview';
 import { LiveInk } from '@/components/canvas/whiteboard/LiveInk';
 import { RecognisedShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
-import { RecognitionChip } from '@/components/canvas/whiteboard/RecognitionChip';
+import { RecognitionChip } from '@liveworkspace/workbench/components/canvas/whiteboard/RecognitionChip';
 import { flipStrokeRecognition } from '@/lib/recognition-flip';
 
 type WhiteboardPenPreviewProps = {

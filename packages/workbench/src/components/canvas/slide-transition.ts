@@ -5,7 +5,8 @@
 // to settle (`whenScreenSettles`): going fullscreen resizes the canvas, and the refit that follows used to land
 // mid-entrance, the card arriving and then jumping.
 
-import type { SlideTransition } from '@/lib/presentation-config';
+/** How a presentation moves between slides (each editor's lib/presentation-config SlideTransition). */
+type SlideTransition = 'slide' | 'fade' | 'none';
 
 // Longest the first slide waits for fullscreen to land before it arrives anyway (a refused request).
 export const SETTLE_FAILSAFE_MS = 600;

@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { RecognitionChipState } from '@/hooks/canvas/useRecognitionPreview';
+
+/** The chip on a pen or touch stroke held still (each editor's useRecognitionPreview): what a tap does, and where. */
+type RecognitionChipState = { action: 'make' | 'keep'; at: { x: number; y: number } };
 
 // The chip's corner sits this far above and before the pen's tip, in screen px, so the hand
-// holding the pen never covers it (docs/specs/023-draw-mode/draw-mode.md "Shape recognition").
+// holding the pen never covers it (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"; drawing-tools.md in livedesign).
 const RECOGNITION_CHIP_GAP_PX = 12;
 
 const LABEL: Record<RecognitionChipState['action'], string> = {
@@ -19,12 +21,12 @@ type RecognitionChipProps = {
   onFlip: () => void;
 };
 
-// What Alt does, for a pen or finger with no keyboard (docs/specs/023-draw-mode/draw-mode.md
+// What Alt does, for a pen or finger with no keyboard (docs/specs/023-draw-mode/draw-mode.md, drawing-tools.md in livedesign,
 // "Shape recognition"): a tap with the other hand flips the stroke while the pen stays down. It
 // sits in the canvas's transformed layer beside the stroke, at the tip, with the zoom undone: a
 // 44 x 44 px target at any zoom. Its presses are its own: `data-floating-panel` keeps the canvas's
 // capture-phase handler (pan, the pen-seen palm rule, a new stroke) out, the press stops at the
-// chip, and its touchstart never reaches the document's pinch detection, so the tap is never a
+// chip, and its touchstart never reaches the canvas's pinch detection, so the tap is never a
 // pan, a pinch or a stroke, and the stroke under the pen carries on.
 export function RecognitionChip({ chip, zoom, onFlip }: RecognitionChipProps) {
   const ref = useRef<HTMLButtonElement>(null);
