@@ -1,18 +1,27 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type {
-  ArrowElement,
-  Element,
-  FreehandElement,
-  PathElement,
-  ShapeElement,
-  Tab,
-  TextElement,
-} from './index';
+import type * as Model from './element';
+import type { BackgroundPattern } from '@liveworkspace/model-core/basics';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
-// A stored whiteboard tab (docs/specs/007-editor/editor-modes.md "Existing whiteboards") reads as
-// a general tab that opens in Draw, looking exactly as it did ("One look").
+// A stored livediagram whiteboard tab (livediagram's editor-modes spec, "Existing whiteboards") reads as a general
+// tab that opens in Draw, looking exactly as it did.
+// The fields a whiteboard's migration writes, which each product's own element types carry.
+type Pens = { penColour?: string; penTextColour?: string; sizing?: string };
+type Element = Model.Element & Pens;
+type ArrowElement = Model.ArrowElement & Pens;
+type FreehandElement = Model.FreehandElement & Pens;
+type PathElement = Model.PathElement & Pens;
+type ShapeElement = Model.ShapeElement & Pens;
+type TextElement = Model.TextElement & Pens;
+type Tab = {
+  id: string;
+  name: string;
+  kind?: string;
+  opensIn?: string;
+  elements: Element[];
+  backgroundPattern?: BackgroundPattern;
+};
 const board = (over: Record<string, unknown> = {}) =>
   ({ id: 't', name: 'Board', kind: 'whiteboard', elements: [], ...over }) as unknown as Tab;
 
@@ -96,7 +105,7 @@ describe('migrateWhiteboardKind', () => {
     for (const tab of [
       { id: 't', name: 'T', elements: [shape()] },
       { id: 't', name: 'T', kind: 'diagram', opensIn: 'draw', elements: [shape()] },
-      { id: 't', name: 'T', kind: 'event-storming', elements: [] },
+      { id: 't', name: 'T', kind: 'board', elements: [] },
     ] as Tab[]) {
       expect(migrateWhiteboardKind(tab)).toBe(tab);
     }
@@ -159,7 +168,7 @@ describe('migrateWhiteboardKind', () => {
     expect(migrated(highlighter)).toEqual(highlighter);
   });
 
-  // docs/specs/007-editor/editor-modes.md "A text box's sizing": text hugged on a board.
+  // Each product's structure spec, "Data model": text hugged on a board.
   it("keeps a board's text boxes hugging: set width wraps, an auto width fits", () => {
     expect((migrated(text()) as TextElement).sizing).toBe('wrap');
     const fit = migrated(text({ autoWidth: true } as Partial<TextElement>)) as TextElement;
