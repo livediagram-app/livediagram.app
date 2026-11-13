@@ -37,13 +37,7 @@ const plan = {
   planTabs: () => [],
 } as unknown as PlanContextValue;
 
-function Harness({
-  initial,
-  scope = SCOPE,
-}: {
-  initial: AutomationsTarget;
-  scope?: typeof SCOPE;
-}) {
+function Harness({ initial, scope = SCOPE }: { initial: AutomationsTarget; scope?: typeof SCOPE }) {
   const [target, setTarget] = useState(initial);
   return (
     <PlanProvider value={plan}>
@@ -124,7 +118,11 @@ describe('the Automations screen', () => {
     expect(await screen.findByText('This Rule Was Deleted')).toBeTruthy();
     // The other plan's list, read earlier, lacks the rule too; its read for this opening has not answered.
     const other = { ...SCOPE, projectId: 'p2' };
-    client.listAutomations.mockResolvedValueOnce({ rules: [rule()], runsToday: 1, runsPerDay: 1000 });
+    client.listAutomations.mockResolvedValueOnce({
+      rules: [rule()],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
     await readAutomations(other);
     let answer: (v: unknown) => void = () => {};
     client.listAutomations.mockReturnValueOnce(new Promise((r) => (answer = r)));

@@ -118,7 +118,10 @@ function firstSetField(outline: Outline & Partial<Pick<AutomationOutline, 'peopl
   const fields = fieldChangeFields(outline.types).filter((f) => !OWN_ACTION_FIELDS.has(f.id));
   const field = fields.find((f) => f.id === 'priority') ?? fields[0];
   if (!field) return { field: 'priority', text: PRIORITIES[0] };
-  return { field: field.id, text: startText(field, { types: outline.types, people: outline.people ?? [] }) };
+  return {
+    field: field.id,
+    text: startText(field, { types: outline.types, people: outline.people ?? [] }),
+  };
 }
 
 export function defaultAction(
