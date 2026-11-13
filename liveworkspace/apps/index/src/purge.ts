@@ -14,7 +14,7 @@ import {
 import { hostedPassStatements } from './connection-rows';
 import { sendDriveSignals, touchItem, type DriveTouched } from './drive';
 import type { Env } from './env';
-import { deletedAuditStatement, sweepTeamAudit } from './team-audit';
+import { deletedAuditStatement } from './team-audit';
 
 export type Purgeable = { id: string; app: App };
 
@@ -161,7 +161,5 @@ export async function sweep(
   for (const row of results) touchItem(touched, row);
   await sendDriveSignals(env, touched, now);
   const confirmed = await drainTombstones(env, {}, now);
-  // The team audit log's rows past the year (team-audit.ts).
-  await sweepTeamAudit(env, now);
   return { emptied, purged: results.length, confirmed };
 }

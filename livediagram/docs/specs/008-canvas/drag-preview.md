@@ -126,8 +126,9 @@ elements' layer instead.
 - **The dragger's preview goes to the room as presence**: ephemeral, unordered, never logged or
   replayed, like a cursor. At most one message every 33 ms (the cursor's rate), carrying the tab,
   and for each previewed element only what the gesture changes (position and size for a box; the
-  changed geometry for an arrow). A last message says the preview has ended, and whether the
-  gesture landed or was cancelled.
+  changed geometry for an arrow). A dragger who holds still repeats the latest message once a
+  second, so a held gesture never expires on a collaborator's screen (D130). A last message says the
+  preview has ended, and whether the gesture landed or was cancelled.
 - **A very large move goes as one offset.** A gesture changing more than 200 elements sends the
   offset most of them ride instead of a patch each (a ride), the ids riding it on the gesture's
   first message, whenever they change and at least once a second, and a patch for each other
@@ -137,7 +138,9 @@ elements' layer instead.
 - **An editor that does not know rides yet** drops the message whole and sees the gesture on
   release, as before; the release converges everyone either way.
 - **A collaborator draws a peer's preview the same way** the dragger draws their own: those elements
-  from the preview, the rest of each element as the collaborator has it, nothing written. A
+  from the preview, the rest of each element as the collaborator has it, nothing written. It draws
+  at most once a frame, from the latest message: a device too slow to draw every message skips to
+  where the dragger is now instead of replaying each step behind them (D130). A
   cancelled gesture's preview ends on its end message; a landed one is kept until the peer's real
   change arrives (which follows the release by the autosave's wait), so the elements never jump back
   to where they started. Either way it also ends when the peer leaves, or after 2 s without a
