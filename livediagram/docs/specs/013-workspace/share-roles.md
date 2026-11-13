@@ -170,9 +170,31 @@ browser never chooses it.
   a reconnect that visitor's earlier answers no longer read as theirs.
 - **Nobody answers or reacts as someone else, at any level.** The room drops a dot or a response naming any key but
   the sender's own, an Editor's included, and stamps every reaction's `by` with the sender's key.
-- **What stays open.** An Editor's whole-tab save can still write any answer or reaction into the stored tab, as it
-  can change anything on the canvas; the room's ledger keeps each person's latest live answer and reaction, so a save
-  made before one arrived cannot erase it. Locking each entry the saver does not own to the stored tab is not done yet, because the stored tab alone cannot tell another person's live entry (in the room's ledger, not yet saved) from one the saver made up: locking to it would drop the first or keep a removed one. A correct lock reads the ledger's per-person on and off beside the stored tab, in every path that writes a whole tab (the tab save, agent changesets, the REST and MCP document updates, a version restore and an offline sync), so it is its own change.
+- **Whole-tab writes keep other people's entries.** A write that replaces a tab whole may change only the writer's
+  own reactions, responses and dots. The writes are the editor's tab save and its delta save, an agent's changeset and
+  its revert (the REST and MCP document updates and the CLI all write through changesets, and a revert is the
+  nearest thing here to a version restore), and a document's re-commit, which is what an offline sync sends. For
+  anyone else's entry, what is stored is the room ledger's latest on or off for that person when the ledger has one,
+  and otherwise what the stored tab held. So another person's live answer the saver had (in the ledger, not saved
+  yet) is kept, and one the saver made up, changed or took away is not.
+  - **An agent answers as nobody.** A changeset made with a token may change no person's entry; a person's own revert
+    may change theirs.
+  - **The ledger is asked only where it matters.** Only when the write differs from the stored tab on someone else's
+    entry does the api read the ledger, and then only the entries of those elements (and the tab's vote). A room that
+    cannot answer keeps the stored entry, and that person's own next save puts theirs back.
+  - **A clear still clears.** A new round on a card or a new vote empties the round for everyone, as it always did; a
+    deleted element or comment takes its entries with it. A copy (a duplicate, a paste) carries no one's entries.
+  - **A new document keeps what it carries.** A create is not an overwrite: nobody else's entry exists there yet, and
+    a canvas taken offline and synced back keeps the answers and reactions it went offline with. A new tab in a
+    stored document is locked like any write.
+  - **Not tab state:** a live poll's answers live in the room alone ([Vote integrity](../012-collaboration/vote-integrity.md)),
+    so no tab write reaches them.
+- **Duplicates from old editors collapse.** An editor from before the collab key kept its browser's key, so its save
+  could store a reaction under that key beside the same reaction under the person's derived one. Every whole-tab
+  write keeps one: a reaction whose key is not a collab key's shape goes when the same comment holds the same emoji,
+  under the same name, from a collab key. A browser-keyed reaction can no longer be taken back on its own (only the
+  key that left it could, and nobody holds that any more), but reacting again with the same emoji folds it into the
+  new one.
 - **Answers and reactions left before this** were filed under each browser's own key. They still show and count,
   but no longer as yours; answering or reacting again records yours under the new key.
 - **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions

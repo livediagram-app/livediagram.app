@@ -176,9 +176,19 @@ chooses it.
   mints for that socket, as before; a session with an identity never takes one from a hello.
 - **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, an
   Editor's included, so a reaction can only ever be the sender's own.
-- **What stays open.** An Editor's whole-tab save can still write any reaction into the stored tab, as it can change
-  anything on the canvas; the room's ledger keeps each person's latest live reaction, so a save made before one
-  arrived cannot erase it. Locking each entry the saver does not own to the stored tab is not done yet, because the stored tab alone cannot tell another person's live entry (in the room's ledger, not yet saved) from one the saver made up: locking to it would drop the first or keep a removed one. A correct lock reads the ledger's per-person on and off beside the stored tab, in every path that writes a whole tab (the tab save, agent changesets, the REST and MCP document updates, a version restore and an offline sync), so it is its own change.
+- **Whole-tab writes keep other people's entries.** A write that replaces a tab whole (the tab save, an agent's
+  changeset and its revert, which the REST and MCP document updates go through, and a re-commit, which an offline sync
+  sends) may change only the writer's own reactions. For anyone else's, what is stored is the room ledger's latest on or
+  off for that person when the ledger has one, and otherwise what the stored tab held, so another person's live entry
+  the saver had is kept and one it made up, changed or took away is not. A token answers as nobody. The api reads the
+  ledger only for the elements where the write differs from the stored tab on someone else's entry; a room that
+  cannot answer keeps the stored entry. A reaction stored under an old browser key goes when the same comment holds
+  the same emoji, under the same name, from a collab key. The lock is one shared rule
+  (`@liveworkspace/model-core/person-entry-lock`, read beside the ledger's `RoomLedgerStore.readKeys`).
+- **What stays open.** This product's write paths do not take the lock yet: livediagram's took it first (Work
+  Tracker 677, part 1) and this product's follow in a later part. Until then an Editor's whole-tab save can still
+  write any of these into the stored tab; the room's ledger keeps each person's latest live entry, so a save made
+  before one arrived cannot erase it.
 - **Reactions left before this** were filed under each browser's own key. They still show and count, but no longer
   as yours; reacting again records yours under the new key.
 - **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions

@@ -67,7 +67,9 @@ like the owner id, worthless like the presence id: it is a one-way hash of the
 account or guest id, the same on every device. It rides the roster as
 `ParticipantPresence.key`, which the room stamps from the session, never from
 the `hello`, and the room tells each session its own key (`collab-key`). A
-response naming any key but its sender's is dropped, from an Editor too. Before
+response naming any key but its sender's is dropped, from an Editor too, and a
+whole-tab write keeps everyone's responses but its writer's as the room's ledger,
+else the stored tab, has them ([Share roles](../013-workspace/share-roles.md#the-collab-key)). Before
 the room answers, and in a document only in This Browser, the editor records answers
 under this browser's own key (`livediagram:v2:collab-key`, `ensureCollabKey`), as it
 did before keys were derived.

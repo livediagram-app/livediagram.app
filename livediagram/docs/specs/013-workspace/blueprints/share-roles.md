@@ -37,6 +37,12 @@ The spec's [Later](../share-roles.md#later) items (token levels, ownership power
 | `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                                                  | Three cards                                                                                    |
 | `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                                               | Participating pill                                                                             |
 | `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                                             | Participant badge; Participate chip                                                            |
+| `../packages/model-core/src/person-entry-lock.ts` (new)                                                                                  | The shared lock: `lockEntries`, `lockDots`, the diff checks, ledger words, the collapse        |
+| `packages/document/src/whole-tab-lock.ts` (new)                                                                                          | `wholeTabLockNeeds`, `lockWholeTab`: the lock over a livediagram tab                           |
+| `packages/document/src/collab-ledger.ts`                                                                                                 | A reaction record keeps the stamped `person`; `ledgerEntryKeys`                                |
+| `../packages/api-kit/src/room-ledger-store.ts`, `room-client.ts`                                                                         | `RoomLedgerStore.readKeys`; `fetchLedgerEntries` (`POST /ledger-entries`)                      |
+| `apps/api/src/whole-tab-lock.ts` (new), `room-internal.ts`                                                                               | `lockTabWrite`, `lockRecommittedTabs`; the room's `/ledger-entries`                            |
+| `apps/api/src/routes/tab-put-route.ts`, `changesets/write.ts`, `routes/documents.ts`                                                     | The save (and delta save), every changeset and revert, and a re-commit call the lock           |
 
 ## Domain and naming
 
@@ -211,6 +217,31 @@ every level and before the ladder, an op that `namesAnotherPerson(op, sender.key
 `el-delta` `response` whose `participantId`, is not the sender's key (no key: dropped). `stampCommentAuthor` sets a
 reaction's `by` from `presence.key`.
 
+Whole-tab lock ([spec](../share-roles.md#the-collab-key), "Whole-tab writes keep other people's entries"). Every
+write that stores a tab whole calls `lockTabWrite(env, documentId, tabId, written, stored, person, write)` just before
+it stores: `writeTabSave` (the PUT and the delta save) on its merged, author-rewritten body against the tab it read;
+`writeChangeset` (submit and revert) on `next` against `stored`, with `person` null for a token; the document POST
+on a clash (a re-commit) through `lockRecommittedTabs`, each tab against `getTab` (null for a tab new to the
+document). A create (no clash) is not locked. The steps:
+
+1. `key = collabKeyFor(person)`, or null.
+2. `needs = wholeTabLockNeeds(written, stored, key)`: the elements whose per-person entries differ from the stored
+   element's on someone else's slot (a card's `responses`, judged only against a stored card on the same
+   `collabRound`; each comment's `reactions`, matched by comment id), and `vote` when the written vote's dots differ
+   from the stored vote's on the same round. A list left as stored, in order, is one pass with nothing allocated.
+3. Only when `needs` names something: `fetchLedgerEntries` posts `{ tab, elements, vote }` to the room's
+   `/ledger-entries`, which answers `RoomLedgerStore.readKeys(tabId, ledgerEntryKeys(tabId, needs))`: a batched get
+   of exactly those entries, whatever their seq or the room's epoch. Null (the room refused, threw, or a chunk
+   failed) is an empty ledger.
+4. `lockWholeTab(written, stored, ledger, { key, isDerivedKey: isCollabKey }, needs)`: on each named element, every
+   slot not the writer's takes `lockedEntry`: the ledger's word (`on` with its value, or off) when it has one, else
+   the stored entry, else nothing; the writer's own stay as written. Slots the write left out that the stored list or
+   the ledger keeps on are appended. Responses read the ledger entry only on the element's round; dots take the
+   ledger's round map when it is on the written round (it holds every dot of it), else the stored round's, else none.
+   On every comment, named or not, `collapseLegacyReactions` drops a reaction whose `by` is not `isCollabKey` when the
+   comment holds the same emoji and name from a collab key.
+5. A tab nothing changed is returned as the same object.
+
 ## Interfaces and contracts
 
 `../packages/api-schema/src/access-levels.ts`:
@@ -295,6 +326,84 @@ REST: `POST /api/documents/:id/share` takes `role?: 'view' | 'participate' | 'ed
 400 `invalid role`. `GET /api/share/:code` answers `role: AccessLevel`. `POST .../room-ticket` answers
 `RoomTicketResponse { ticket, adderKey? }`, the key only for a Participant.
 
+`../packages/model-core/src/person-entry-lock.ts`:
+
+```ts
+export type LedgerWord<V> = { on: true; value: V } | { on: false };
+export type EntryKeys<V> = {
+  slotOf(e: V): string;
+  personOf(e: V): string;
+  same(a: V, b: V): boolean;
+};
+export function lockedEntry<V>(
+  written: V | undefined,
+  stored: V | undefined,
+  ledger: LedgerWord<V> | undefined,
+  own: boolean,
+): V | undefined;
+export function foreignEntriesDiffer<V>(
+  written,
+  stored,
+  keys: EntryKeys<V>,
+  writerKey: string | null,
+): boolean;
+export function lockEntries<V>(
+  written,
+  stored,
+  ledger: ReadonlyMap<string, LedgerWord<V>>,
+  keys,
+  writerKey,
+): V[] | undefined;
+export const REACTION_KEYS: EntryKeys<CommentReaction>; // slot `${emoji}\0${by}`
+export const RESPONSE_KEYS: EntryKeys<PersonResponse>; // slot participantId
+export function reactionWords(
+  reacts: LedgerReacts | undefined,
+  commentId: string,
+): Map<string, LedgerWord<CommentReaction>>;
+export function responseWords(
+  responses: LedgerResponses | undefined,
+): Map<string, LedgerWord<PersonResponse>>;
+export function foreignDotsDiffer(
+  written: Dots,
+  stored: Dots | undefined,
+  writerKey: string | null,
+): boolean;
+export function lockDots(
+  written: Dots,
+  stored: Dots | undefined,
+  ledger: Dots | undefined,
+  writerKey: string | null,
+): Record<string, string[]>;
+export function collapseLegacyReactions(
+  reactions,
+  isDerivedKey: (key: string) => boolean,
+): CommentReaction[] | undefined;
+```
+
+`packages/document/src/whole-tab-lock.ts`:
+
+```ts
+export type WholeTabWriter = { key: string | null; isDerivedKey: (key: string) => boolean };
+export type WholeTabLockNeeds = { elementIds: string[]; vote: boolean };
+export function wholeTabLockNeeds(
+  written: Tab,
+  stored: Tab | null,
+  key: string | null,
+): WholeTabLockNeeds;
+export function lockWholeTab(
+  written: Tab,
+  stored: Tab | null,
+  ledger: TabLedger,
+  writer: WholeTabWriter,
+  needs: WholeTabLockNeeds,
+): Tab;
+```
+
+`apps/api/src/whole-tab-lock.ts`: `lockTabWrite<T extends Tab>(env, documentId, tabId, written: T, stored: Tab | null,
+person: string | null, write: 'save' | 'changeset' | 'recommit'): Promise<T>` and `lockRecommittedTabs(env,
+documentId, tabs, person): Promise<Tab[]>`. Room: `POST /ledger-entries` takes `{ tab: string, elements: string[] (at
+most LEDGER_LOCK_ELEMENTS_MAX), vote?: boolean }` and answers the `TabLedger` of those entries; anything else is 400.
+
 MCP: `share_document.role` is `z.enum(['view', 'participate', 'edit']).optional()`, default `participate`; the
 description reads `"participate" (default): recipients add stickies, write and vote but cannot reshape it. "view":
 they only look, with no comments or votes. "edit": they can change anything.`
@@ -340,6 +449,19 @@ lands in a new document, where no adder key matches it.
 - **E16** A socket with `PARTICIPANT_PENDING_MAX` writes waiting sends another: refused, the sender re-hydrates.
 - **E18** An Editor duplicates or pastes a Participant's sticky: the copy has no `addedBy` (`freshCopyFields`).
 - **E19** A Participant's dot or response naming another key: dropped.
+- **E20** An Editor's save carries a reaction, response or dot under another person's key the stored tab and ledger
+  lack, changes one, or leaves one out: stored as the ledger, else the stored tab, has it.
+- **E21** The save carries another person's live entry only the ledger holds (seen before its cursor, never saved):
+  kept, from the lock's read.
+- **E22** The room cannot answer the lock's read: the stored entries stand; `[whole-tab-lock] ledger-unavailable`.
+- **E23** A clear (a new `collabRound`) or a new vote round: the stored round's entries no longer count; another
+  person's entry in the new round stands only when the ledger holds it on that round.
+- **E24** A token's changeset changes a person's response or reaction (directly, or by a revert's before-image): kept
+  as stored.
+- **E25** A stored comment holds the same emoji under one name from a browser key and a collab key: the next
+  whole-tab write keeps the collab key's.
+- **E26** A re-commit (offline sync) over stored tabs: each is locked against its stored tab; a create keeps what it
+  carries.
 
 ## Security and trust
 
@@ -351,7 +473,10 @@ lands in a new document, where no adder key matches it.
   into an owner id and differs per document; a Participant cannot claim another's element by writing `addedBy`
   (the rule keeps the stored value).
 - The collab key is the server's (`X-Verified-Collab-Key`, set on every path): no session can publish, answer or react
-  under another's key, at any level. An Editor's whole-tab save can still write any key into the stored tab.
+  under another's key, at any level, and no whole-tab write can add, change or take away another person's reaction,
+  response or dot (the whole-tab lock). The lock fails closed: without the ledger, the stored entries stand. What
+  stays open: a create keeps the entries it carries, so a person can make a new document showing a reaction under
+  someone's public key; a browser-keyed reaction can be taken back by nobody.
 - Rate: room frames ride `OP_RATE_CAP`; each drain of a tab's waiting ops is one read and one compare-and-swap in the document's SQLite.
 
 ## Performance and limits
@@ -369,6 +494,11 @@ lands in a new document, where no adder key matches it.
   against 387 ms (livediagram's `participant-drain.test.ts` holds it to a budget).
 - `ANSWERS_FLUSH_MS` coalesces a burst of dots into one write per tab.
 - `applyParticipantOp` is linear in the tab's element count for one op.
+- The whole-tab lock, measured CPU per write (needs plus lock, warm): a save that changes nobody else, 0.68 ms on 200
+  cards with 5 answers and 5 reactions each, 1.3 ms on 2,000, 5.9 ms on 2,000 with 30 each; a write that forges
+  every entry of the last, 62 ms (bounded by `MAX_TAB_BYTES`). It costs no room call unless the write changes someone
+  else's entry, and then one batched get of only those elements' entries. `collabKeyFor` is one SHA-256 per write.
+  `whole-tab-lock.test.ts` holds a 2,000-element walk to a CPU budget.
 
 ## Presentation and UX
 
@@ -411,6 +541,8 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | `[participant-write] failed <documentId> <tabId> <status>`  | room (error)             |
 | `[participant-write] answers <documentId> <tabId> <ok>`     | room (debug)             |
 | `[participant] change held back <tabId>`                    | editor (debugLog)        |
+| `[whole-tab-lock] locked <documentId> <tabId> <write>`      | api (info)               |
+| `[whole-tab-lock] ledger-unavailable <documentId> <tabId>`  | api (warn)               |
 
 ## Testing
 
@@ -433,6 +565,12 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Three cards and keys                                                             | `../packages/explorer/src/dialogs/ShareDialog.test.tsx`                     |
 | Pill per level                                                                   | `apps/editor/components/chrome/RoleIndicator.test.tsx`                      |
 | MCP default and enum                                                             | `packages/agent-verbs` MCP schema tests                                     |
+| The shared lock: entries, dots, words, diff, collapse                            | `../packages/model-core/src/person-entry-lock.test.ts`                      |
+| The tab lock: reactions, responses, rounds, dots, agent, collapse, CPU budget    | `packages/document/src/whole-tab-lock.test.ts`                              |
+| Ledger keeps the reaction's person; `ledgerEntryKeys`                            | `packages/document/src/collab-ledger.test.ts`                               |
+| `readKeys`; `fetchLedgerEntries` chunks and failures                             | `../packages/api-kit/src/room-ledger-store.test.ts`, `room-client.test.ts`  |
+| Save, live entry via the ledger, collapse, re-commit, `/ledger-entries`          | `apps/api/src/document-room/document-room-store.test.ts`                    |
+| Changeset by a token and by a person; room down                                  | `apps/api/src/changesets/write-lock.test.ts`                                |
 
 ## Constants and configuration
 
@@ -448,6 +586,7 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | `ANSWERS_FLUSH_MS`          | 1500                                            | SR9                                            | 250 to 10000        |
 | `PARTICIPANT_PENDING_MAX`   | 64                                              | SR12                                           | 8 to 512            |
 | `HELD_BACK_NOTICE_MS`       | 4000                                            | SR13                                           | 1000 to 30000       |
+| `LEDGER_LOCK_ELEMENTS_MAX`  | 1024                                            | Ids per lock read: 8 batched runtime gets      | 128 to 4096         |
 
 No new environment variable or binding; deploying needs nothing more.
 
