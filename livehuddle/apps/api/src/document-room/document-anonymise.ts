@@ -2,17 +2,22 @@
 // account"): the index tells the app which documents name them (POST /api/internal/people/:id/purge), and each document's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments and
 // assignments in each tab's elements, the changesets they wrote, the email claims they sent, their tab Attendance
-// visits, and the document's owner when it was their team document. Only rows that mention them are read and rewritten, in
+// visits (their guest visits from before they signed in too), and the document's owner when it was their team document. Only rows that mention them are read and rewritten, in
 // one batch; running it again changes nothing.
 
 import { ANONYMISED_NAME, ANONYMISED_PERSON, anonymiseJsonText } from '@liveworkspace/index-app';
 import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
+import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
+import { MERGED_GUESTS_MAX } from '../person-store/merged-guests';
 import type { DocumentEnv } from '../types';
 
 export async function anonymiseDocument(
   env: DocumentEnv,
   documentId: string,
   personId: string,
+  // The collab keys of the guests the account signed in from (person-store/merged-guests.ts): their Attendance
+  // visits go with the account's (docs/specs/012-collaboration/tab-attendance.md "Closing an account").
+  guestKeys: readonly string[] = [],
 ): Promise<number> {
   const db = env.DOCUMENT_DB;
   const now = Date.now();
@@ -46,13 +51,21 @@ export async function anonymiseDocument(
       .prepare('UPDATE document SET owner_id = ? WHERE id = ? AND owner_id = ?')
       .bind(ANONYMISED_PERSON, documentId, personId),
     db.prepare('DELETE FROM notify_claims WHERE sender = ?').bind(personId),
-    // Their tab Attendance visits (docs/specs/012-collaboration/tab-attendance.md "Closing an account"), as the team
-    // audit log: the visit stays, so a meeting's head count stays true, with no key, no name and no picture of them.
+  );
+  // Their tab Attendance visits (docs/specs/012-collaboration/tab-attendance.md "Closing an account"), as the team
+  // audit log: the visit stays, so a meeting's head count stays true, with no key, no name and no picture of them.
+  // Their visits as a guest before they signed in go too.
+  const keys = [
+    await collabKeyFor(personId),
+    ...new Set(guestKeys.filter(isCollabKey).slice(0, MERGED_GUESTS_MAX)),
+  ];
+  writes.push(
     db
       .prepare(
-        'UPDATE tab_attendance SET person_key = ?, name = ?, picture = NULL WHERE person_key = ?',
+        `UPDATE tab_attendance SET person_key = ?, name = ?, picture = NULL
+          WHERE person_key IN (${keys.map(() => '?').join(', ')})`,
       )
-      .bind(ANONYMISED_PERSON, ANONYMISED_NAME, await collabKeyFor(personId)),
+      .bind(ANONYMISED_PERSON, ANONYMISED_NAME, ...keys),
   );
   const results = await db.batch(writes);
   return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);

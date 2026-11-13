@@ -26,6 +26,10 @@ vi.mock('../community-service', async (importOriginal) => ({
   countCommunityCopy,
 }));
 
+import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
+import { ANONYMISED_NAME, ANONYMISED_PERSON } from '@liveworkspace/index-app';
+import { nodeItemSql } from '@liveworkspace/index-app/testing';
+import { joinVisit } from '../db/tab-attendance';
 import { upsertTab } from '../db/tabs';
 import { saveCommunityPost } from '../document-room/community-post';
 import { personStore } from '../person-client';
@@ -248,6 +252,49 @@ describe('POST /api/internal/people/:id/purge', () => {
     expect(await res.json()).toMatchObject({ ok: true, anonymised: 1, unreached: [] });
     const { data } = sql.prepare(`SELECT data FROM tabs WHERE id = 't1'`).get() as { data: string };
     expect(data).not.toContain(USER);
+  });
+});
+
+// docs/specs/012-collaboration/tab-attendance.md "Closing an account" (Work Tracker 730): a guest's visits from before
+// they signed in go with the account, and nobody else's.
+describe("a closed account's visits as the guest it signed in from", () => {
+  it('anonymises them on every purge call, keeps everyone else, and the kept keys outlast the purge', async () => {
+    const { db, env, sql, call } = arrange();
+    testDocument(db, 'A', OTHER, { name: 'Theirs' });
+    await upsertTab(db.env, 'A', { id: 't1', name: 'Tab 1', elements: [] }, 0);
+    const item = nodeItemSql(sql);
+    const visit = async (person: string, name: string) =>
+      joinVisit(item, 't1', await collabKeyFor(person), { name, color: '#111', picture: null, guest: true }, 1);
+    await visit(GUEST, 'Ada as a guest');
+    await visit(USER, 'Ada');
+    await visit(OTHER, 'Bob');
+    const names = () =>
+      (sql.prepare('SELECT person_key, name FROM tab_attendance ORDER BY id').all() as {
+        person_key: string;
+        name: string;
+      }[]).map((r) => (r.person_key === ANONYMISED_PERSON ? r.name : `${r.name} (kept)`));
+
+    expect((await call(`${GUEST}/merge`, { into: USER })).status).toBe(200);
+    // Nothing about the guest's visit changes while the account is open.
+    expect(names()).toEqual(['Ada as a guest (kept)', 'Ada (kept)', 'Bob (kept)']);
+    expect(await personStore(env, USER).mergedGuestKeys()).toEqual([await collabKeyFor(GUEST)]);
+
+    const first = await call(`${USER}/purge`, { items: [] });
+    expect(first.status).toBe(200);
+    // The index's next call (its items come in chunks) still finds the guest's key after the store's purge.
+    const second = await call(`${USER}/purge`, { items: ['A'] });
+    expect(await second.json()).toMatchObject({ ok: true, anonymised: 1 });
+    expect(names()).toEqual([ANONYMISED_NAME, ANONYMISED_NAME, 'Bob (kept)']);
+  });
+
+  it("passes on the keys of guests merged into the guest, and keeps only collab keys", async () => {
+    const { env, call } = arrange();
+    const earlier = 'guest_old';
+    await personStore(env, GUEST).noteMergedGuests([await collabKeyFor(earlier), 'not-a-key']);
+    expect((await call(`${GUEST}/merge`, { into: USER })).status).toBe(200);
+    expect((await personStore(env, USER).mergedGuestKeys()).sort()).toEqual(
+      [await collabKeyFor(GUEST), await collabKeyFor(earlier)].sort(),
+    );
   });
 });
 

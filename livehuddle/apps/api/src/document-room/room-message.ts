@@ -11,6 +11,7 @@ import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types
 import { storedTabName } from './room-content-state';
 import { noteCallSession, relayNudge } from './room-call-sessions';
 import { noteAttendance } from './room-attendance';
+import { isVisitorSecret, visitorCollabKey } from '../visitor-key';
 import { relaySessionOf, scopeOf } from './room-sockets';
 import type { DocumentRoom } from './document-room';
 
@@ -75,10 +76,14 @@ export function roomMessage(
     // explicitly (not spread) and length-clamped so a hostile hello can't
     // smuggle arbitrary keys or oversize strings into the attachment:
     // see the size note on SessionAttachment.
-    const presence = helloPresence(msg.participant, session);
+    // A session with no identity takes its browser's key from its first hello (docs/specs/013-workspace/
+    // share-roles.md "The collab key"), so a reconnect is the same visitor; never one with an identity, and never
+    // a second time.
+    const keyed = withVisitorKey(session, (msg as { visitor?: unknown }).visitor);
+    const presence = helloPresence(msg.participant, keyed);
     const batches = (msg as { batches?: unknown }).batches === true;
     const leanAvatars = (msg as { leanAvatars?: unknown }).leanAvatars === true;
-    const hello = { ...session, presence, batches, leanAvatars } satisfies SessionAttachment;
+    const hello = { ...keyed, presence, batches, leanAvatars } satisfies SessionAttachment;
     ws.serializeAttachment(hello);
     room.presenceRelay.noteSession(ws, relaySessionOf(hello));
     // Who is in which tab, for its Attendance (docs/specs/012-collaboration/tab-attendance.md).
@@ -285,6 +290,14 @@ export function roomMessage(
       room.sendTo(ws, { kind: 'cursor', epoch: room.epoch, seq, ...ref });
     }
   }
+}
+
+// The session with its browser's collab key, when it has no identity, has said no hello yet and this hello carries a
+// visitor secret (visitor-key.ts); else the session as it is.
+function withVisitorKey(session: SessionAttachment, visitor: unknown): SessionAttachment {
+  if (!session.keyMinted || session.presence !== null || !isVisitorSecret(visitor)) return session;
+  const { keyMinted: _minted, ...rest } = session;
+  return { ...rest, collabKey: visitorCollabKey(visitor) };
 }
 
 // Answer a client's `sync` (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): given the last epoch+seq it

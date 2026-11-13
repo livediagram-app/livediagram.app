@@ -288,6 +288,23 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
 
   // docs/specs/015-api/api.md "A busy room bounds its presence fan-out": the hello says we take batches, and a
   // batch frame is each of its frames handled in turn.
+  // docs/specs/013-workspace/share-roles.md "The collab key" (Work Tracker 730): one secret per browser, on every
+  // hello, so a visitor with no identity is the same visitor after a reconnect.
+  it("says this browser's visitor secret in every hello, the same each time", () => {
+    connectRoom('d1', { id: 'me', name: 'Me', color: '#000' }, { onPresence() {}, onOp() {} }, {
+      ticket: 'first',
+    });
+    connectRoom('d2', { id: 'me', name: 'Me', color: '#000' }, { onPresence() {}, onOp() {} }, {
+      ticket: 'second',
+    });
+    const [a, b] = FakeSocket.all;
+    a!.fire('open');
+    b!.fire('open');
+    const visitorOf = (s: FakeSocket) => (s.sent[0] as unknown as { visitor?: unknown }).visitor;
+    expect(typeof visitorOf(a!)).toBe('string');
+    expect(visitorOf(a!)).toBe(visitorOf(b!));
+  });
+
   it('says it takes batches, and applies every op a batch frame holds', () => {
     const ops: [string, unknown][] = [];
     connectRoom(

@@ -117,9 +117,9 @@ export function ensureCollabKey(): string {
   return fresh;
 }
 
-// The secret half of the collab key (docs/specs/012-collaboration/vote-integrity.md): a per-browser random that
-// proves a live poll answer under our collab key is ours. The key is public (it rides the roster); this never leaves
-// the browser except inside our own poll answers, which the room checks and never relays.
+// This browser's secret (docs/specs/013-workspace/share-roles.md "The collab key"): a per-browser random, sent in our
+// room hello alone, from which the room derives our collab key when we have no identity, one key per browser. The
+// key is public (it rides the roster); this never leaves the browser but in that hello, which the room never relays.
 export function ensureCollabSecret(): string {
   const stored = readLocalStorageSafe(KEYS.collabSecret);
   if (stored) return stored;

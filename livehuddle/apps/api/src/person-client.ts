@@ -16,6 +16,8 @@ export type PersonStoreClient = {
   deleteShapeLibrary(id: string): Promise<boolean>;
   exportShapeLibraries(): Promise<LibraryRecord[]>;
   adoptShapeLibraries(records: LibraryRecord[]): Promise<{ moved: number; renamed: number }>;
+  noteMergedGuests(keys: string[]): Promise<number>;
+  mergedGuestKeys(): Promise<string[]>;
   purge(): Promise<void>;
 };
 
@@ -36,6 +38,8 @@ type PersonStoreRpc = {
   deleteShapeLibrary(id: string): Promise<boolean>;
   exportShapeLibraries(): Promise<LibraryRecord[]>;
   adoptShapeLibraries(records: LibraryRecord[]): Promise<{ moved: number; renamed: number }>;
+  noteMergedGuests(keys: string[]): Promise<number>;
+  mergedGuestKeys(): Promise<string[]>;
   purge(): Promise<void>;
 };
 
@@ -58,6 +62,8 @@ export function personStore(env: Pick<Env, 'PERSON_STORE'>, personId: string): P
     deleteShapeLibrary: (id) => store().deleteShapeLibrary(id),
     exportShapeLibraries: () => store().exportShapeLibraries(),
     adoptShapeLibraries: (records) => store().adoptShapeLibraries(records),
+    noteMergedGuests: (keys) => store().noteMergedGuests(keys),
+    mergedGuestKeys: () => store().mergedGuestKeys(),
     purge: () => store().purge(),
   };
 }

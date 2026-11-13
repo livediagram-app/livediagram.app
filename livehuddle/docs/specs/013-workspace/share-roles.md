@@ -168,8 +168,12 @@ chooses it.
   `collab-key` frame sent to that socket alone, and the editor records its answers and reactions under it from then on. Before
   that (a document only in This Browser, or the moment before the room answers) the editor uses this browser's own
   key, as it always did.
-- **A session with no identity** (a link visitor whose guest handoff could not run) gets a random key the room mints
-  for that socket. Nobody else can be handed it, so nobody can act under it; it lasts as long as the socket.
+- **A session with no identity** (a link visitor whose guest handoff could not run) gets a key per browser: its
+  first `hello` carries the browser's own secret (a random kept in this browser, never on the roster or in a URL),
+  and the room derives the key from it, one-way, so the same browser is the same visitor across reconnects and
+  tabs ([Tab attendance](../012-collaboration/tab-attendance.md#one-person-one-visit)). Nobody else holds the
+  secret, so nobody can act under the key. A hello with no secret (an older editor) gets a random key the room
+  mints for that socket, as before; a session with an identity never takes one from a hello.
 - **Nobody acts as someone else, at any level.** The room stamps every reaction's `by` with the sender's key, an
   Editor's included, so a reaction can only ever be the sender's own.
 - **What stays open.** An Editor's whole-tab save can still write any reaction into the stored tab, as it can change

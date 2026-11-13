@@ -21,8 +21,8 @@ describe('migratePersonSchema', () => {
   it('leaves a new store with its shape libraries and no Drive tables', () => {
     const db = new DatabaseSync(':memory:');
     migratePersonSchema(nodeItemSql(db));
-    expect(tables(db)).toEqual(['_person_schema', 'shape_libraries']);
-    expect(version(db)).toBe(2);
+    expect(tables(db)).toEqual(['_person_schema', 'merged_guests', 'shape_libraries']);
+    expect(version(db)).toBe(3);
   });
 
   it('drops a version 1 store’s Drive tables, sealed tokens and all, and keeps its libraries', () => {
@@ -41,8 +41,8 @@ describe('migratePersonSchema', () => {
 
     migratePersonSchema(sql);
 
-    expect(tables(db)).toEqual(['_person_schema', 'shape_libraries']);
-    expect(version(db)).toBe(2);
+    expect(tables(db)).toEqual(['_person_schema', 'merged_guests', 'shape_libraries']);
+    expect(version(db)).toBe(3);
     expect(db.prepare('SELECT id FROM shape_libraries').all()).toEqual([{ id: 'l1' }]);
   });
 

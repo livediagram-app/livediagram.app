@@ -8,12 +8,13 @@ import type { Env } from './types';
 // runtime's does. Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 export function testPersonStores(): DurableObjectNamespace<PersonStore> & {
   databaseOf(personId: string): DatabaseSync | undefined;
+  alarmOf(personId: string): number | null;
 } {
-  const stores = new Map<string, { store: PersonStore; db: DatabaseSync }>();
+  const stores = new Map<string, { store: PersonStore; db: DatabaseSync; alarm: number | null }>();
   const storeOf = (name: string) => {
     let entry = stores.get(name);
     if (!entry) {
-      const holder = { db: new DatabaseSync(':memory:') };
+      const holder = { db: new DatabaseSync(':memory:'), alarm: null as number | null };
       const storage = {
         get sql() {
           return nodeItemSql(holder.db);
@@ -22,6 +23,10 @@ export function testPersonStores(): DurableObjectNamespace<PersonStore> & {
         deleteAll: async () => {
           holder.db.close();
           holder.db = new DatabaseSync(':memory:');
+          holder.alarm = null;
+        },
+        setAlarm: async (when: number) => {
+          holder.alarm = when;
         },
       };
       const store = new PersonStore(
@@ -33,6 +38,9 @@ export function testPersonStores(): DurableObjectNamespace<PersonStore> & {
         get db() {
           return holder.db;
         },
+        get alarm() {
+          return holder.alarm;
+        },
       };
       stores.set(name, entry);
     }
@@ -42,8 +50,10 @@ export function testPersonStores(): DurableObjectNamespace<PersonStore> & {
     idFromName: (name: string) => ({ name, toString: () => name }) as unknown as DurableObjectId,
     get: (id: DurableObjectId) => storeOf(String(id)).store,
     databaseOf: (personId: string) => stores.get(personId)?.db,
+    alarmOf: (personId: string) => stores.get(personId)?.alarm ?? null,
   };
   return ns as unknown as DurableObjectNamespace<PersonStore> & {
     databaseOf(personId: string): DatabaseSync | undefined;
+    alarmOf(personId: string): number | null;
   };
 }

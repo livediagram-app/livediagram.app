@@ -10,6 +10,7 @@ import type { ShapeLibrary, ShapeLibraryItem } from '@livehuddle/api-schema';
 import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
 import type { Env } from '../types';
 import { hasPersonSchema, migratePersonSchema } from './person-schema';
+import { listMergedGuests, MERGED_GUESTS_KEEP_MS, noteMergedGuests } from './merged-guests';
 import {
   createLibraryChecked,
   deleteLibrary,
@@ -96,10 +97,37 @@ export class PersonStore extends DurableObject<Env> {
     return this.ctx.storage.transactionSync(() => importLibraries(sql, records));
   }
 
+  // A guest signed in to this account (db/account.ts mergeGuest): the guests' collab keys, kept so the account's close
+  // anonymises their Attendance visits too (merged-guests.ts). Answers how many were new.
+  async noteMergedGuests(keys: string[]): Promise<number> {
+    if (keys.length === 0) return 0;
+    const sql = this.writable();
+    return this.ctx.storage.transactionSync(() => noteMergedGuests(sql, keys, Date.now()));
+  }
+
+  // The guests' keys, for the account's purge (routes/internal-items.ts) and for a guest merging on into an account.
+  async mergedGuestKeys(): Promise<string[]> {
+    const sql = this.readable();
+    return sql ? listMergedGuests(sql) : [];
+  }
+
   // The person is gone (their account closed, or the guest they were signed in to an account): everything here
-  // goes. Idempotent, and a store that never held anything stays untouched.
+  // goes. Idempotent, and a store that never held anything stays untouched. The guests it signed in from stay
+  // MERGED_GUESTS_KEEP_MS more, so the index's purge retries can still anonymise their visits; the alarm then
+  // deletes them.
   async purge(): Promise<void> {
     if (!this.ready && !hasPersonSchema(this.sql)) return;
+    const guests = listMergedGuests(this.writable());
+    await this.ctx.storage.deleteAll();
+    this.ready = false;
+    if (guests.length === 0) return;
+    const sql = this.writable();
+    this.ctx.storage.transactionSync(() => noteMergedGuests(sql, [...guests].reverse(), Date.now()));
+    await this.ctx.storage.setAlarm(Date.now() + MERGED_GUESTS_KEEP_MS);
+  }
+
+  // The kept guest keys' time is up: the store goes whole.
+  async alarm(): Promise<void> {
     await this.ctx.storage.deleteAll();
     this.ready = false;
   }

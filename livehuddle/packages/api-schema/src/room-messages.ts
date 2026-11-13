@@ -170,12 +170,15 @@ export type ClientMessage =
   // bounds its presence fan-out"); a room never sends one to a session that did not say so.
   // `leanAvatars`: this editor reads lean avatar packets (AvatarPacket), filling in the costume it last saw; a room
   // fills them back out for a session that did not say so.
+  // `visitor`: this browser's own secret (docs/specs/013-workspace/share-roles.md "The collab key"): a session with no
+  // identity takes its collab key from it, one key per browser. Never relayed, never on the roster.
   | {
       kind: 'hello';
       participant: ParticipantPresence;
       facilitatorToken?: string;
       batches?: boolean;
       leanAvatars?: boolean;
+      visitor?: string;
     }
   // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
   | { kind: 'op'; op: unknown; ref?: number }
@@ -199,6 +202,7 @@ export type RoomOutgoing =
       facilitatorToken?: string;
       batches?: boolean;
       leanAvatars?: boolean;
+      visitor?: string;
     }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }

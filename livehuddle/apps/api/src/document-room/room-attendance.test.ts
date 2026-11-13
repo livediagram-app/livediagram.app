@@ -215,6 +215,62 @@ describe('two people in a Space', () => {
   });
 });
 
+// docs/specs/013-workspace/share-roles.md "The collab key" (Work Tracker 730): a link visitor with no identity is keyed
+// by their browser's secret, so a reconnect carries on their visit rather than adding a row.
+describe('a visitor with no identity', () => {
+  const SECRET = '0f8e6a2c-1b3d-4e5f-8a9b-0c1d2e3f4a5b';
+  const OTHER_SECRET = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
+  const linkVisitor = () => {
+    const ws = socket() as unknown as WebSocket;
+    room.acceptSession(ws, 'edit', false, null, null, null, null, 'd1', null, null);
+    return ws;
+  };
+  const visit = (ws: WebSocket, visitor: unknown, name = 'Visitor') =>
+    room.webSocketMessage(
+      ws,
+      JSON.stringify({
+        kind: 'hello',
+        participant: { name, color: '#0ea5e9', tabId: 't1' },
+        visitor,
+      }),
+    );
+  const keyOf = (ws: WebSocket) => (ws.deserializeAttachment() as SessionAttachment).presence?.key;
+
+  it('is one visit across reconnects and tabs of one browser, and another browser is another', () => {
+    const first = linkVisitor();
+    visit(first, SECRET);
+    at(10_000);
+    close(first);
+    at(20_000);
+    const back = linkVisitor();
+    visit(back, SECRET);
+    const second = linkVisitor();
+    visit(second, SECRET);
+    const stranger = linkVisitor();
+    visit(stranger, OTHER_SECRET, 'Stranger');
+    expect(keyOf(back)).toBe(keyOf(second));
+    expect(keyOf(stranger)).not.toBe(keyOf(back));
+    expect(rows().map((r) => r.name)).toEqual(['Visitor', 'Stranger']);
+  });
+
+  it("never takes a key from a later hello, from a malformed secret, or over an identity's", async () => {
+    const ws = linkVisitor();
+    visit(ws, 'short');
+    const minted = keyOf(ws);
+    expect(minted).toMatch(/^[0-9a-f]{32}$/);
+    visit(ws, SECRET);
+    expect(keyOf(ws)).toBe(minted);
+    const ada = await connect('guest_ada');
+    visit(ada.ws, SECRET, 'Ada');
+    expect(keyOf(ada.ws)).toBe(ada.key);
+    // An older editor with no secret keeps a key of its own socket's.
+    const old = linkVisitor();
+    visit(old, undefined);
+    expect(keyOf(old)).toMatch(/^[0-9a-f]{32}$/);
+    expect(keyOf(old)).not.toBe(minted);
+  });
+});
+
 describe('a full room', () => {
   it('records a move in a room of ROOM_MAX_CONNECTIONS people within a small budget', async () => {
     const people: Awaited<ReturnType<typeof connect>>[] = [];

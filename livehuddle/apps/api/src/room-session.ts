@@ -8,6 +8,7 @@ import {
   sessionCollabKey,
   sessionReactionPerson,
 } from '@liveworkspace/api-kit/collab-key';
+import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import type { ParticipantPresence } from './types';
 
 // Everything the room knows about one session, persisted in the socket's
@@ -41,6 +42,9 @@ export type SessionAttachment = {
   //     X-Verified-Collab-Key, or minted here for a session with no identity: what the roster's `key` is, and the
   //     only key its answers and reactions may name. Absent on an attachment from before it existed.
   collabKey?: string;
+  //   - `keyMinted`: the collab key was minted here, the upgrade naming none (a session with no identity). Its first
+  //     hello's `visitor` secret then gives it its browser's key instead (visitor-key.ts), and this is cleared.
+  keyMinted?: boolean;
   //   - `reactionPerson`: the person's public id the room stamps on each reaction this session leaves
   //     (docs/specs/012-collaboration/comment-reactions.md), from X-Verified-Reaction-Person. Absent with no identity.
   reactionPerson?: string;
@@ -164,6 +168,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     verifiedRole: v.verifiedRole,
     presence: null,
     collabKey: sessionCollabKey(v.collabKey),
+    ...(isCollabKey(v.collabKey) ? {} : { keyMinted: true }),
     ...(reactionPerson ? { reactionPerson } : {}),
     isOwner: v.isOwner,
     tabScope: v.tabScope,

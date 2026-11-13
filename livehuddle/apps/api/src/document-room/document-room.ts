@@ -548,8 +548,8 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.joined(this, documentId, personId);
   }
 
-  anonymise(documentId: string, personId: string): Promise<number> {
-    return rpc.anonymise(this, documentId, personId);
+  anonymise(documentId: string, personId: string, guestKeys: readonly string[] = []): Promise<number> {
+    return rpc.anonymise(this, documentId, personId, guestKeys);
   }
 
   // ---------- RPC: a tab shared with other documents (tab-shares.ts) ----------------------------------------------
