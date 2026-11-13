@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { HomeOverview } from '@/components/illustrations/explorer-home';
+import { HomeOverview } from '@liveworkspace/help-site/art/illustrations/explorer-home';
 
 export const metadata = helpMetadata({
   title: 'Home',
@@ -29,7 +29,7 @@ Your first visit looks different. With nothing made yet, Home welcomes you and o
 Below the greeting, Home is one column of sections, each under its own heading: **New** (what was made most recently), **Most Used**, **Recent**, your **Workspaces**, then **Shared With You Recently**. A section with nothing in it is left out.
 
 <Figure caption="Home: the spaces you use most and last, then what was shared with you recently.">
-  <HomeOverview />
+  <HomeOverview recent={['Stand-up', 'Auth flow', 'Sprint 12', 'Brainstorm']} />
 </Figure>
 
 ## Most Used and Recent

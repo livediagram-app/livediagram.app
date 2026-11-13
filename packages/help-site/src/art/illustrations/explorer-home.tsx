@@ -1,8 +1,8 @@
-// Explorer Home illustration (docs/specs/018-help/help-app.md): Most Used, Recent and Shared With
+// Explorer Home illustration (each product's docs/specs/018-help/help-app.md): Most Used, Recent and Shared With
 // You Recently. Drawn from the real labels in the shared Explorer's HomePane. Composed from the shared
-// primitives, so the house style holds.
+// primitives, so the house style holds. A product names its own recent items.
 
-import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
+import { Label, Scene } from '../primitives';
 
 // --- Local parts -------------------------------------------------------------
 
@@ -38,7 +38,7 @@ function SectionHeading({ y, title, link }: { y: number; title: string; link?: s
   );
 }
 
-/** A small canvas snapshot: a box or two joined by a line, on a pale well. */
+/** A small snapshot of an item: a box or two joined by a line, on a pale well. */
 function Snapshot({
   x,
   y,
@@ -136,12 +136,12 @@ function Snapshot({
   );
 }
 
+const MOST_USED = ['Roadmap', 'Payments', 'Onboarding', 'Data model'];
+const RECENT = ['Retro', 'Auth flow', 'Sprint 12', 'Brainstorm'];
+
 /** Home: Most Used, then Recent with See More, each a section of its own, then Shared With You Recently. */
-export function HomeOverview() {
-  const tiles = [
-    ['Roadmap', 'Payments', 'Onboarding', 'Data model'],
-    ['Stand-up', 'Auth flow', 'Sprint 12', 'Brainstorm'],
-  ];
+export function HomeOverview({ recent = RECENT }: { recent?: readonly string[] }) {
+  const tiles = [MOST_USED, recent];
   return (
     <Scene w={420} h={298} bg="plain">
       <Pane h={274} />
