@@ -266,6 +266,28 @@ Finished**). Their engineering and their guarantees (once per delivery, never ba
 
 - **Which card.** The rule runs once on each card the pull request links (a Pull Request field, a Link field holding
   its address, or its title or body naming the card as "{plan name} #N"), up to 50.
+- **Which repositories.** A GitHub trigger may name some of the repositories the plan hears: the panel's
+  **Repositories** chips, one for each repository the plan hears, pressed for each the rule names, shown while the plan
+  hears more than one (or the rule names some). None pressed (the default, and every rule saved before) hears every repository the plan hears; with some pressed, a pull request of
+  any other repository starts nothing. A trigger names up to 20 (`REPOSITORIES_MAX`) by `owner/name`, any case,
+  each once. A named repository the plan no longer hears stays as a pressed chip, "acme/old · Not Heard", so it can be
+  unpicked; while it is named the rule never hears it. The Rules list's sentence ends "in acme/web" (or "in acme/web or
+  acme/api"). Test on a Card runs as if one of the named repositories' pull requests had done it.
+- **Pull request values.** A GitHub rule's text may hold the pull request's values ([Values](#values)):
+  `{{pull_request.title}}`, `{{pull_request.number}}` and `{{pull_request.url}}`, under **Insert a Value**'s
+  **Pull Request** group, offered only in a GitHub rule ("Merged: {{pull_request.title}} {{pull_request.url}}").
+  Elsewhere they are refused on save (`automation_value_unknown`). A run a Wait holds keeps them for the rest of the
+  rule. Test on a Card fills them with nothing: no pull request did anything.
+- **A private repository's title.** Whether a repository is private is GitHub's word on the delivery or on the plan's
+  list of repositories, either one, and a repository the plan can't say counts as private. A private repository's
+  `{{pull_request.title}}` is its title only in **Post to Slack**, **Post to Teams** and **Send to Webhook** messages,
+  which go to the team's own tools through webhooks an Editor added. Everywhere else a rule writes (a comment, a
+  mention's message, an email, a card's title, a field, a checklist item) it reads the pull request's short name,
+  `acme/web#42`, as its number and address do. So nothing the plan keeps holds a private repository's title: no
+  comment or card a share link opens (a Viewer's or a public one), a Community post, a copy of the plan, its file or
+  an email. And a pull request's values reach only the plans connected to its repository: a delivery is acted on by
+  a plan whose connection names its installation and has chosen that repository, never by another plan on the same
+  installation, and its values ride only that plan's runs.
 - **Nobody behind it.** Its writes are by **GitHub** in card History, with the rule's name ("GitHub · Move on
   Merge"), its comments are Automation's as any rule's, the Audit Trail's first line reads "GitHub: acme/web#42
   merged" (opened, closed, checks failing, checks passing), and `{{person}}` reads "GitHub". Who Did It conditions and
@@ -755,6 +777,11 @@ hands focus back to the field, the caret after the value:
 | `{{now + 3d}}`, `{{now - 1d}}` | a day from today, for a date field                     |
 | `{{webhook.<path>}}`           | a value of an Incoming Webhook call's body, by its dot |
 |                                | path (`{{webhook.build.status}}`, Webhook Field…)      |
+| `{{pull_request.title}}`       | a GitHub rule's pull request's title (a private        |
+|                                | repository's: its short name, outside outgoing         |
+|                                | messages; [GitHub triggers](#github-triggers))         |
+| `{{pull_request.number}}`      | its number, `#42`                                      |
+| `{{pull_request.url}}`         | its address on GitHub                                  |
 
 - A value the rule cannot fill (no assignee) reads as nothing. A value the builder does not know is refused on save
   with its name (`automation_value_unknown`).
@@ -1067,6 +1094,11 @@ above, unchanged.
 
 ### On cards
 
+- The item panel's footer says who last edited the card. A rule's change reads "Edited by **Done Means Wrapped Up**"
+  with the bolt; a GitHub-triggered rule's, "Edited by **GitHub** · Move on Merge" with GitHub's mark on its dark disc,
+  as its History rows draw it. Which it was is the card's newest history entry's tag (`automation_github`), read only
+  while the card's last edit was Automation's: the read Set by Automation already makes, so it costs nothing more.
+  Until that read answers, the footer shows the bolt and the rule.
 - A change Automation made reads in the card's **History** with the bolt glyph: "**Automation** set Completed On to
   11 Nov 2026 · Done Means Wrapped Up · 10:42" ([History](items.md#history)), and a field whose latest change in
   the history read was a rule's shows a small **Set by Automation** chip beside its value in the item panel.
