@@ -273,7 +273,7 @@ async function duplicate(ctx: PlanRouteContext, g: Gated, held: AutomationRule):
   const rule: AutomationRule = {
     ...rest,
     id: crypto.randomUUID(),
-    name: freeRuleName(`${held.name} copy`, rules),
+    name: freeRuleName(held.name, rules, ' copy'),
     enabled: false,
     made: stamp,
     edited: stamp,

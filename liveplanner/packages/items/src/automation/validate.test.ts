@@ -306,6 +306,16 @@ describe('rule names and actions', () => {
     expect(freeRuleName(long, [{ id: 'a', name: long }])).toBe(`${'x'.repeat(58)} 2`);
   });
 
+  it('cuts the base, not the tail, so a copy of a long name still ends in copy', () => {
+    const long = 'x'.repeat(60);
+    const copy = `${'x'.repeat(55)} copy`;
+    expect(freeRuleName(long, [{ id: 'a', name: long }], ' copy')).toBe(copy);
+    expect(freeRuleName(long, [{ id: 'b', name: copy }], ' copy')).toBe(`${'x'.repeat(53)} copy 2`);
+    expect(freeRuleName('Triage', [{ id: 'a', name: 'Triage copy' }], ' copy')).toBe(
+      'Triage copy 2',
+    );
+  });
+
   it('knows whether a rule does anything', () => {
     expect(ruleHasAction({ steps: [] })).toBe(false);
     expect(

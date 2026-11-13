@@ -55,4 +55,12 @@ describe('the rule format', () => {
     for (const kind of Object.keys(CONDITION_KINDS))
       expect(RULE_CONDITIONS_FORMAT, kind).toContain(`"kind":"${kind}"`);
   });
+
+  it('says which value each field kind takes, and which fields a rule never writes', () => {
+    for (const words of ['a day', 'a number', 'a list', '{"text":"Yes"|"No"}', '{"text":person}'])
+      expect(RULE_STEPS_FORMAT, words).toContain(words);
+    expect(RULE_STEPS_FORMAT).toContain(
+      'neither ever sets nor clears a Time Spent, Votes, Comments or Calculated field',
+    );
+  });
 });
