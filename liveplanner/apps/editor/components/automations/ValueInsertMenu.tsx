@@ -23,17 +23,24 @@ export function ValueInsertButton({
   label,
   open,
   onOpen,
+  quiet = false,
+  onBlur,
 }: {
   // The field's label, for the button's name.
   label: string;
   open: boolean;
   onOpen: (anchor: HTMLButtonElement) => void;
+  // Keeps the hover card away: a phone's sheet, closed by Escape, hands focus back here as keyboard focus, and the
+  // card would sit over the step's fields until the next tap.
+  quiet?: boolean;
+  onBlur?: () => void;
 }) {
   return (
     <span className="absolute right-1.5 top-1.5 z-10">
       <HoverCard
         title={VALUE_INSERT_TITLE}
         description="Put a value of the card, like its title or due date, at the caret."
+        disabled={quiet}
       >
         <button
           type="button"
@@ -42,6 +49,7 @@ export function ValueInsertButton({
           aria-haspopup="dialog"
           aria-expanded={open}
           onClick={(e) => onOpen(e.currentTarget)}
+          onBlur={onBlur}
           className={`touch-target relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition motion-reduce:transition-none ${
             open
               ? 'bg-brand-100 text-brand-800 dark:bg-brand-500/25 dark:text-brand-100'

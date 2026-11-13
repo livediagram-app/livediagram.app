@@ -165,6 +165,40 @@ describe('Insert a Value', () => {
   });
 });
 
+describe('Insert a Value on a phone', () => {
+  // A sheet closed by Escape hands focus back to the button as keyboard focus: its hover card stays away, so it
+  // never sits over the step's fields, until focus leaves the button.
+  it('keeps its hover card away once Escape closes the sheet', () => {
+    wide = false;
+    vi.spyOn(HTMLElement.prototype, 'matches').mockImplementation(function (
+      this: HTMLElement,
+      q: string,
+    ) {
+      return q === ':focus-visible' ? true : Element.prototype.matches.call(this, q);
+    });
+    render(<Field />);
+    fireEvent.click(button());
+    const sheet = screen.getByRole('dialog', { name: 'Insert a Value' });
+    fireEvent.keyDown(sheet, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'Insert a Value' })).toBeNull();
+    fireEvent.focus(button());
+    expect(
+      screen.queryByText('Put a value of the card, like its title or due date, at the caret.', {
+        selector: 'p',
+      }),
+    ).toBeNull();
+    // Focus gone and back (a person tabbing to it again): the card shows as ever.
+    fireEvent.blur(button());
+    fireEvent.focus(button());
+    expect(
+      screen.getByText('Put a value of the card, like its title or due date, at the caret.', {
+        selector: 'p',
+      }),
+    ).toBeTruthy();
+    vi.restoreAllMocks();
+  });
+});
+
 describe('valueInsertGroups', () => {
   it('groups the card, a branch’s triggering card, the fields and the webhook', () => {
     expect(valueInsertGroups(false, [], false).map((g) => g.label)).toEqual(['This Card']);

@@ -88,6 +88,8 @@ export function ValueTextField({
   // Whether the field has had focus, so its selection is where the person left the caret.
   const placed = useRef(false);
   const [menu, setMenu] = useState<HTMLButtonElement | null>(null);
+  // A phone's sheet just closed: its button keeps its hover card away until focus leaves it.
+  const [quiet, setQuiet] = useState(false);
   const { incoming } = useIncomingRule();
   const phone = !useMediaQuery('(min-width: 640px)');
   const groups = useMemo(
@@ -171,6 +173,8 @@ export function ValueTextField({
           label={label}
           open={menu !== null}
           onOpen={(anchor) => setMenu(menu ? null : anchor)}
+          quiet={quiet}
+          onBlur={() => setQuiet(false)}
         />
       </div>
       {hint ? <p className="text-[12px] text-slate-500 dark:text-slate-400">{hint}</p> : null}
@@ -180,7 +184,10 @@ export function ValueTextField({
           groups={groups}
           phone={phone}
           onInsert={insert}
-          onClose={() => setMenu(null)}
+          onClose={() => {
+            setMenu(null);
+            if (phone) setQuiet(true);
+          }}
         />
       ) : null}
     </div>
