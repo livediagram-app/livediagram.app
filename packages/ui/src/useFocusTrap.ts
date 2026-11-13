@@ -29,6 +29,15 @@ const FOCUSABLE = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
+/** The controls Tab stops on inside `node`, in page order: visible (`offsetParent === null` is display:none, a collapsed
+ *  accordion), in the Tab order (`tabindex="-1"` drops one the selectors still match) and outside an `inert` subtree.
+ *  The ends of a trapped loop: a modal's here, a popover's in popover-stack.ts. */
+export function tabbables(node: HTMLElement): HTMLElement[] {
+  return Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (el) => el.offsetParent !== null && el.tabIndex >= 0 && el.closest('[inert]') === null,
+  );
+}
+
 // Whether the primary pointer is a finger (phones, tablets). Read once per open, not subscribed: an open dialog
 // never re-places its initial focus.
 const coarsePointer = () =>
@@ -81,15 +90,8 @@ export function useFocusTrap(
     if (!node) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
-    // Visible, focusable descendants in DOM order. `offsetParent === null`
-    // filters elements hidden via display:none (e.g. a collapsed accordion).
-    // `tabIndex >= 0` drops a control taken out of the Tab order (`tabindex="-1"` on a button or a
-    // link, which the selectors above still match): it is never an end of the loop.
-    // Nor is a control inside an `inert` subtree (a collapsed AccordionSection keeps its layout): Tab skips it.
-    const focusables = () =>
-      Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (el) => el.offsetParent !== null && el.tabIndex >= 0 && el.closest('[inert]') === null,
-      );
+    // Visible, focusable descendants in DOM order (tabbables).
+    const focusables = () => tabbables(node);
 
     // A control that already took focus as the modal opened (an `autoFocus` field) keeps it; otherwise the first.
     // On a touch screen the container takes it instead: focusing the first control there highlights it and can
