@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { crossesPages, layOutPages, newSlidePage, pageIdAt, pageIdOf } from './index';
-import type { Element } from './index';
+import { crossesPages, pageIdAt, pageIdOf } from './page-of';
+import type { Element } from './element';
 
-// docs/specs/007-editor/pages-mode.md "Arrows stay on one page".
-const pages = layOutPages([newSlidePage('a'), newSlidePage('b')]);
+// Each pages product's pages-mode spec, "Arrows stay on one page": two pages laid out side by side.
+const pages = [
+  { id: 'a', rect: { x: 0, y: 0, width: 400, height: 300 } },
+  { id: 'b', rect: { x: 480, y: 0, width: 400, height: 300 } },
+];
 const centre = (i: number) => {
   const r = pages[i]!.rect;
   return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
