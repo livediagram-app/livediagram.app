@@ -703,6 +703,9 @@ hands focus back to the field, the caret after the value:
 - Days and times are in the time zone of the person who last saved the rule (kept on the rule, as a Repeat keeps its
   setter's).
 - Values are text: what a card holds is never run, and a value is never read as a value again.
+- Text whose values fill it past its limit (a comment's or a message's 2,000 characters, an email subject's 200, a
+  card title's 500, a checklist item's 200) is cut to that limit, never through an emoji: a cut that would split one
+  stops a character short.
 - `{{webhook.<path>}}` is known only in an Incoming Webhook rule's text (elsewhere `automation_value_unknown`), and
   **Insert a Value** offers **Webhook Field…** (a path typed in, as `order.id`) only there. A path is 1 to 5 names
   joined by dots, each 1 to 64 letters, digits, `_` or `-` (a list's place is its number: `items.0.name`). It reads the

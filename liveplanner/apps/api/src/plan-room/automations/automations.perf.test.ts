@@ -263,8 +263,7 @@ describe('Automations cost', () => {
       .all() as { rank: string }[];
     // The first 100 by number, each at the end of Done as it landed: every rank past the one before it.
     expect(done).toHaveLength(AUTOMATION_BRANCH_CARDS_MAX);
-    for (let i = 1; i < done.length; i += 1)
-      expect(done[i]!.rank > done[i - 1]!.rank).toBe(true);
+    for (let i = 1; i < done.length; i += 1) expect(done[i]!.rank > done[i - 1]!.rank).toBe(true);
     expect(wake).toBeLessThan(cpuBudgetMs(400));
   }, 60_000);
 

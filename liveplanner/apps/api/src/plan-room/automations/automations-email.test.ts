@@ -144,6 +144,28 @@ describe('Send Email', () => {
     expect(comment!.text).toHaveLength(THREAD_COMMENT_TEXT_MAX);
   });
 
+  it('Mention Someone cuts the comment at its 2,000 characters, never through an emoji', async () => {
+    // Two messages a unit apart: whatever the handle's length, one of them puts an emoji across the cut.
+    for (const [name, text] of [
+      ['Even', '😀'.repeat(1000)],
+      ['Odd', `x${'😀'.repeat(999)}`],
+    ])
+      await w.rule({ name, steps: [{ kind: 'mention', to: { assignee: true }, text }] });
+    const c = await w.make('A', {
+      title: 'Long',
+      assignee: { id: 'n-ali', name: 'Ali', color: '#112233' },
+    });
+    await w.send('POST', `/api/projects/A/items/${c.id}/move`, { status: 'done' });
+    await w.plans.get('A')!.room.alarm();
+    const rows = w.plans.get('A')!.db.prepare('SELECT comments FROM card_threads').all();
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      const [comment] = JSON.parse(String(row['comments'])) as { text: string }[];
+      expect(comment!.text).not.toMatch(/[\uD800-\uDBFF]$/);
+      expect(comment!.text.length).toBeGreaterThanOrEqual(THREAD_COMMENT_TEXT_MAX - 1);
+    }
+  });
+
   it('sends nothing to a name typed onto the card', async () => {
     await doneWithAssignee({ id: 'n-ali', name: 'Ali', color: '#112233' });
     expect(sent).toHaveLength(0);

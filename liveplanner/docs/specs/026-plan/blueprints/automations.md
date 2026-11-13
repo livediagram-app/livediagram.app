@@ -40,7 +40,9 @@ packages/items/src/automation/
                       ruleSetsFields(rule), so the create and save routes (and Test on a Card, its path under
                       `rule.`) read the plan's types only then
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the
-                      rule's time zone
+                      rule's time zone; a filled text past its limit is cut by the
+                      shared cutText (@liveworkspace/model-core/text-cut), never through an emoji
+                      (text-cuts.test.ts)
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
   matches.ts          AutomationEvent; eventOfWrite(before, after, changes, source) → the event a landed write makes
                       (or null); triggerMatches(trigger, event, ruleId) → boolean; TRIGGER_EVENT_KINDS

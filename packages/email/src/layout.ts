@@ -2,6 +2,7 @@
 // inline-styled, email-client-safe HTML (no external CSS, tables for layout where it matters), a brand band across
 // the top of a white card, the app's lockup above and below. Each api's email/templates.ts binds it once with its
 // brand (colours, logo, wordmark, tagline, default sign-off) and keeps its own builders and words.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 
 // The body text and headings: slate-900 and slate-600, the same in every app.
 const INK = '#0f172a';
@@ -52,9 +53,9 @@ export function notificationSettingsUrl(base: string): string {
   return `${base}/explorer?settings=notifications`;
 }
 
-// The plain-text form of a name for a subject line: one line, at most 80 characters.
+// The plain-text form of a name for a subject line: one line, at most 80 characters, never half an emoji.
 export function subjectText(s: string): string {
-  return s.replace(/[\r\n]+/g, ' ').slice(0, 80);
+  return cutText(s.replace(/[\r\n]+/g, ' '), 80);
 }
 
 // docs/specs/012-collaboration/comment-mentions.md: the quote of a mention email is the author's own words, cut at a
@@ -64,7 +65,7 @@ export const MENTION_QUOTE_CHARS = 280;
 export function mentionQuote(text: string): string {
   const flat = text.trim().replace(/\s+/g, ' ');
   if (flat.length <= MENTION_QUOTE_CHARS) return flat;
-  const cut = flat.slice(0, MENTION_QUOTE_CHARS);
+  const cut = cutText(flat, MENTION_QUOTE_CHARS);
   const space = cut.lastIndexOf(' ');
   return `${(space > MENTION_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }

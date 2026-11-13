@@ -3,6 +3,7 @@
 // refusal with the `path` of the part at fault (`steps.2.text`) for the builder to mark. What a rule names that the
 // plan lacks is not a refusal: it needs attention (attention.ts). Also the rule's name rules. Pure.
 
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import { ITEM_CHECKLIST_TEXT_MAX, ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
 import { itemColourValue } from '../item-colour';
 import { isRuleTimeZone } from '../repeat-dates';
@@ -453,7 +454,7 @@ export const ruleNameTaken = (
 export function freeRuleName(base: string, rules: readonly { id: string; name: string }[]): string {
   for (let n = 1; ; n += 1) {
     const suffix = n === 1 ? '' : ` ${n}`;
-    const name = `${base.trim().slice(0, AUTOMATION_NAME_MAX - suffix.length)}${suffix}`;
+    const name = `${cutText(base.trim(), AUTOMATION_NAME_MAX - suffix.length)}${suffix}`;
     if (!ruleNameTaken(name, rules)) return name;
   }
 }

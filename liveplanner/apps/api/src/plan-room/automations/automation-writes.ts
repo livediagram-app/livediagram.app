@@ -5,6 +5,7 @@
 // a Repeat makes its copies), the threads it starts (by Automation, through the thread store) and its emails
 // (account people alone, their opt-out honoured, in the background), its mentions and Resolve Threads. Each write is relayed to the room and carries
 // the rule and chain, so the events it causes know where they came from.
+import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   ITEMS_MAX,
   ITEM_LABELS_MAX,
@@ -290,7 +291,7 @@ async function mentionOne(
   const handle = mentionHandle(to.name) || 'teammate';
   const accountId = plan.accounts.get(to.id);
   // The whole comment within a comment's limit: the message is cut, never the handle.
-  const text = `@${handle} ${mention.text}`.trim().slice(0, THREAD_COMMENT_TEXT_MAX);
+  const text = cutText(`@${handle} ${mention.text}`.trim(), THREAD_COMMENT_TEXT_MAX);
   const out = await addComment(deps, rule, card, text, {
     mentions: [{ userId: accountId ?? null, name: to.name, handle }],
   });
