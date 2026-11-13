@@ -1,5 +1,5 @@
 import { DOCUMENT_FORMAT, isRoomOpRef, parseBuildId, type NudgeOp } from '@livehuddle/api-schema';
-import { opForTheWire, stampCommentAuthor } from '@livehuddle/document';
+import { opForTheWire, stampCommentAuthor, stampSenderName } from '@livehuddle/document';
 import { helloChangesRoster } from '@liveworkspace/api-kit/room-roster';
 import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
 import { admitFrame, helloPresence, MAX_TAB_ID_LEN, resolveCatchup } from '../document-room-rules';
@@ -231,6 +231,9 @@ export function roomMessage(
       if (opKind === 'avatar-knock' && !room.knocks.allow(sender.id, Date.now())) return;
       // A ring of the bell, likewise one per sender per 5 seconds, then broadcast; each receiver checks its earshot.
       if (opKind === 'avatar-bell' && !room.bells.allow(sender.id, Date.now())) return;
+      // A game's moment, at most GAME_EVENT_CAP per sender per second (social-pieces.md "A cap per sender"): a fast
+      // rally is one or two a second, so only a flood meets it.
+      if (opKind === 'game-event' && !room.gameEvents.allow(sender.id, Date.now())) return;
       // A nudge (docs/specs/012-collaboration/nudge.md "The wire"): to its target alone, once per 2 minutes per
       // pair; inside that the sender alone is told how long is left. Never fanned out.
       if (opKind === 'nudge') {
@@ -262,12 +265,17 @@ export function roomMessage(
       // the author's owner id, a guest's credential. And a posted comment
       // carries the name of the session that sent it, the one on its
       // cursor, not whatever the frame claimed (docs/specs/012-collaboration/collab-race-hardening.md).
+      // So does a pinned note's author and a posted score's name (docs/specs/009-elements/social-pieces.md "The author
+      // is the sender's"), so nobody pins or posts under a colleague's name.
       // A scoped session's whole-tab op goes out under the stored name: it may not rename its tab
       // (docs/specs/013-workspace/tab-scoped-share-links.md "No rename from a scoped session").
       const scoped = scopedTabOp(msg.op, session.tabScope ?? null, (tabId) =>
         storedTabName(room, tabId),
       );
-      const op = stampCommentAuthor(opForTheWire(scoped), sender, session.reactionPerson ?? null);
+      const op = stampSenderName(
+        stampCommentAuthor(opForTheWire(scoped), sender, session.reactionPerson ?? null),
+        sender.name,
+      );
       const seq = room.sequenceMutation(sender.id, op, ws);
       // The relay skips the sender, so tell it the seq its op took: its own
       // ops are already applied, and a reconnect must not replay them. The

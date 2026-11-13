@@ -99,6 +99,13 @@ Derived from [Social pieces](../social-pieces.md).
   equal to the session's adder key, then schedules the room's answers write, which folds the ledger's notes into the
   stored tab (`mergeLedgerAnswersIntoTab`), applying each against the stored board. A Viewer's is dropped.
   `mergeNoticeNotes` stays on the participant content rule, as defence against an older screen's `el` update.
+- **The sender's name** (Work Tracker 624): before the room sequences any `el-delta` (an Editor's or a
+  Participant's), `stampSenderName(op, presence.name)` (`packages/document/src/sender-names.ts`, run in
+  `room-message.ts` after `stampCommentAuthor`) rewrites a `notice-pin`'s `note.author` to the presence name cut to
+  `NOTE_AUTHOR_MAX` (60), or `'Someone'` when it is blank (the editor's own fallback, `useNoteSigner`), and an
+  `arcade-score`'s `score.name` to `arcadeName(presence.name)` (cut to 24, or `'Guest'`). Any other op comes back
+  the same object. The stamped op is what is relayed, logged for catch-up and recorded in the ledger, so the stored
+  board and machine carry the sender's name. Stored notes and scores are never rewritten.
 - **The minute**: `useMinuteNow` is a `useSyncExternalStore` over one `setTimeout` to the next whole minute, armed while
   one clock is subscribed and cleared when the last unsubscribes.
 - **The jukebox**: `useSocialPieces` (in `useCanvasAvatar`) narrows the elements to jukeboxes, arcades and rooms once
@@ -114,7 +121,11 @@ drawing and the controls.
 - **The wire**: `game-input` and `game-event` are presence op kinds (`PRESENCE_OP_KINDS`, room-op-kinds.ts), so the
   room relays them unordered and never logs them. `gateClientOp` drops either from a Viewer, and either that fails
   its parser. `game-input` joins `ROOM_SAMPLE_KINDS` (document-room.ts), so `PresenceRelay` sends it to its `tabId`'s
-  sockets only and, in a room of more than 10, coalesces it to the sender's newest sample each step. The editor sends
+  sockets only and, in a room of more than 10, coalesces it to the sender's newest sample each step. A
+  `game-event` passes the room's per-sender cap first (`room.gameEvents`, `createGameEventThrottle()` in
+  `packages/api-schema/src/table-game.ts`): at most `GAME_EVENT_CAP` (6) per sender per `GAME_EVENT_WINDOW_MS`
+  (1,000 ms) window, a reset-on-expiry window like `admitFrame`'s, keyed by presence id, pruned past 256 senders,
+  and forgotten when the socket closes, as the knock and bell throttles are. The rest are dropped unanswered. The editor sends
   both through the canvas's `onCallSignal` (`CallSignal` takes them without their `tabId`; `broadcastCallSignal`
   stamps the active tab), so no new prop crosses the editor.
 - **The model** (`ping-pong.ts`): `ballAt(ball, ms)` is the closed form of the flight (x straight, y folded between

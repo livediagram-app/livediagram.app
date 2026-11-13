@@ -90,6 +90,9 @@ A cork board in a wooden frame, hung on a wall, that holds pinned notes.
 by, at, color? }`, where `by` is the pinner's adder key (an Editor without one writes their participant key) and
   `at` the epoch ms it was pinned, a whole number a date can show (0 to 8.64e15), since the face prints its day. A
   note keeps only those fields: one a pin or an update carries beyond them is never stored.
+- **The author is the sender's**: the room writes a pin's `author` from the name on the sender's presence (the name
+  their cursor and character carry), cut to 60 characters, or **Someone** with none, whatever the pin claimed, so
+  nobody pins under a colleague's name. Notes pinned before this keep the name they were pinned with.
 - **Notes travel as deltas** ([Collab race hardening](../012-collaboration/collab-race-hardening.md)), never inside a
   whole-element update. A pin is one `notice-pin` delta carrying the note; an unpin is one `notice-unpin` naming the
   note's id and its signer's `by`, and removes the note only while that is still its signer. A whole-element update
@@ -279,6 +282,10 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
   showing (or a `serve` with `seq` 1 from the left seat, which starts a new match), with the next `seq`, and from the
   seat whose turn it is. Anything else changes nothing. The room relays both ops from an Editor or a Participant
   and drops a Viewer's and any that is malformed.
+- **A cap per sender**: the room relays at most 6 `game-event`s from one sender in any second and drops the rest,
+  as it holds knocks and bells to their windows. A fast rally is one or two moments a second from each player (a
+  miss and the next serve together are two), so a real game never meets the cap; a flood of moments from one screen
+  reaches nobody past it.
 - **A silent player**: if the word from an end has not come 3 seconds after the ball reached it, every screen treats
   that player as gone and the game ends, as if they had stood up. A screen that loses its room connection ends its
   own game the same way.
@@ -406,7 +413,8 @@ at }`, where `ms` is how long the run played (paused time not counted), `by` the
   the three a run starts with, each worth at most 50 (×5), so a run of `ms` scores at most
   `(3 + floor(ms / 900)) × 50`; a run plays at most 2 hours. A name is at most 24 characters. The room relays a
   Participant's `arcade-score` only when its `by` is the sender's server-verified adder key (so a Participant posts
-  as itself), drops a Participant's `arcade-clear` and drops a Viewer's either. The room writes a Participant's
+  as itself), and writes every score's `name` from the sender's presence (its display name cut to 24, or **Guest**),
+  whatever the score claimed, so nobody posts under a colleague's name (scores posted before this keep theirs), drops a Participant's `arcade-clear` and drops a Viewer's either. The room writes a Participant's
   scores into the stored machine itself, as it writes its notes. A hand-made score inside those bounds is still
   possible; the table holds ten, and an Editor clears it.
 - **Not undoable**: a posted score and a clear are the room's, like a pinned note; one person's undo never takes

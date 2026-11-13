@@ -114,3 +114,40 @@ export function parseGameEvent(op: unknown): GameEventOp | null {
   const ball = parseBall(o.ball);
   return ball ? { ...base, event: o.event, ball, score } : null;
 }
+
+/**
+ * The most `game-event`s the room relays from one sender in one window (social-pieces.md "A cap per sender"). A fast
+ * rally is one or two moments a second from each player (a miss and the next serve together are two), so a real game
+ * never meets it; a flood from one screen reaches nobody past it.
+ */
+export const GAME_EVENT_CAP = 6;
+/** The cap's window: a reset-on-expiry second, as the room's flood cap counts. */
+export const GAME_EVENT_WINDOW_MS = 1_000;
+/** Past this many senders the throttle prunes those whose window has run out. */
+const GAME_EVENT_SENDERS_MAX = 256;
+
+/**
+ * The room's per-sender `game-event` cap: whether one from `sender` at `now` may pass, counting it when it does.
+ * Bounded by the connections in the room (the caller forgets a sender when its socket closes) and pruned of stale
+ * windows as it goes, like the knock throttle.
+ */
+export function createGameEventThrottle(cap = GAME_EVENT_CAP, windowMs = GAME_EVENT_WINDOW_MS) {
+  const windows = new Map<string, { count: number; start: number }>();
+  return {
+    allow(sender: string, now: number): boolean {
+      const w = windows.get(sender);
+      if (w && now - w.start < windowMs) {
+        if (w.count >= cap) return false;
+        w.count += 1;
+        return true;
+      }
+      windows.set(sender, { count: 1, start: now });
+      if (windows.size > GAME_EVENT_SENDERS_MAX)
+        for (const [id, x] of windows) if (now - x.start >= windowMs) windows.delete(id);
+      return true;
+    },
+    forget(sender: string): void {
+      windows.delete(sender);
+    },
+  };
+}
