@@ -76,6 +76,28 @@ describe('StepPanel', () => {
     expect(screen.getByText(/listed under Run Rule/)).toBeTruthy();
   });
 
+  it('leaves out of Field Changed the fields no write changes', () => {
+    const [first, ...rest] = outline().types;
+    const timed = {
+      ...first!,
+      fields: [...first!.fields, 'f-time', 'f-left'],
+      custom: [
+        ...(first!.custom ?? []),
+        { id: 'f-time', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+        { id: 'f-left', label: 'Time Left', kind: 'duration' as const },
+      ],
+    };
+    render(
+      <Panel
+        body={body({ trigger: { kind: 'field_changed', fields: ['f-left'] } })}
+        part={{ part: 'trigger' }}
+        o={outline({ types: [timed, ...rest] })}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Time Left' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Time Spent' })).toBeNull();
+  });
+
   it('edits the type, column and who conditions, is and is not', () => {
     render(
       <Panel

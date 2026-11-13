@@ -22,6 +22,8 @@ import {
   ruleHasAction,
   ruleNameTaken,
   ruleNeeds,
+  typesOf,
+  unheardFields,
   type AutomationEvent,
   type AutomationResult,
   type AutomationRule,
@@ -40,6 +42,7 @@ import { getProject } from '../db';
 import { readItem } from '../db/items';
 import { json, methodNotAllowed, noContent } from '../responses';
 import { readAutomationPlan, type AutomationPlan } from '../plan-room/automations/automation-plan';
+import { readPlanHead } from '../plan-room/plan-content';
 import { listRuns, ruleStats, runsToday } from '../plan-room/automations/automation-log';
 import { runRule } from '../plan-room/automations/automation-runner';
 import type { PlanAutomations } from '../plan-room/automations/automation-queue';
@@ -148,17 +151,31 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   return json(answer);
 }
 
-// The request's rule, checked, or the refusal.
-async function bodyOf(ctx: PlanRouteContext): Promise<AutomationRuleBody | Response> {
+// The request's rule, checked, or the refusal. A Field Changed rule naming a field no write changes (Time Spent, a
+// Votes tally) would never run: refused, naming the field, with the plan's types read only for such a rule.
+async function bodyOf(
+  ctx: PlanRouteContext,
+  projectId: string,
+): Promise<AutomationRuleBody | Response> {
   const raw = await readBody(ctx);
   if (raw instanceof Response) return raw;
   const read = readRuleBody(raw);
   if ('error' in read) return refuse(400, read.error, { path: read.path, message: read.message });
+  const trigger = read.body.trigger;
+  if (trigger.kind === 'field_changed') {
+    const types = typesOf((await readPlanHead(ctx.env, projectId)).itemTypes);
+    const [unheard] = unheardFields(types, trigger.fields);
+    if (unheard)
+      return refuse(400, 'automation_invalid', {
+        path: `trigger.fields.${trigger.fields.indexOf(unheard.id)}`,
+        message: `Field Changed never hears ${unheard.name}: it changes without an edit, so the rule would never run`,
+      });
+  }
   return read.body;
 }
 
 async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
-  const body = await bodyOf(ctx);
+  const body = await bodyOf(ctx, g.projectId);
   if (body instanceof Response) return body;
   const rules = g.hook.store.list();
   if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
@@ -178,7 +195,7 @@ async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
 }
 
 async function save(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
-  const body = await bodyOf(ctx);
+  const body = await bodyOf(ctx, g.projectId);
   if (body instanceof Response) return body;
   if (ruleNameTaken(body.name, g.hook.store.list(), held.id))
     return refuse(409, 'automation_name_taken', { path: 'name' });

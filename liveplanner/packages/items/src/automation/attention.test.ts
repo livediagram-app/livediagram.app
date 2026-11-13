@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import type { ItemTypeDef } from '../item-types';
 import { ruleNeeds } from './attention';
+import { unheardFields } from './outline';
 import { OUTLINE, ruleBody } from './test-fixtures';
 
 // docs/specs/026-plan/automations.md "Conditions" (Needs Attention) and "Copies, exports and deletes".
@@ -146,5 +148,44 @@ describe('Link Cards', () => {
   });
   it('leaves chosen cards unchecked when the caller read no cards', () => {
     expect(ruleNeeds(rule, OUTLINE)).toEqual([]);
+  });
+});
+
+describe('Field Changed on a field no write changes', () => {
+  const timed: ItemTypeDef = {
+    ...OUTLINE.types[0]!,
+    id: 'timed',
+    fields: ['title', 'f-time', 'f-votes', 'f-talk', 'f-kids', 'f-left'],
+    custom: [
+      { id: 'f-time', label: 'Time Spent', kind: 'duration', timeSpent: true },
+      { id: 'f-votes', label: 'Votes Here', kind: 'votes' },
+      { id: 'f-talk', label: 'Talk', kind: 'comments' },
+      { id: 'f-kids', label: 'Children', kind: 'calculated', calculation: 'childCount' },
+      { id: 'f-left', label: 'Time Left', kind: 'duration' },
+    ],
+  };
+  const outline = { ...OUTLINE, types: [timed] };
+
+  it('names each one Field Changed never hears, and passes a field it does', () => {
+    const fields = [
+      'f-time',
+      'f-votes',
+      'f-talk',
+      'f-kids',
+      'f-left',
+      'votes',
+      'comments',
+      'title',
+    ];
+    expect(unheardFields(outline.types, fields)).toEqual([
+      { id: 'f-time', name: 'Time Spent' },
+      { id: 'f-votes', name: 'Votes Here' },
+      { id: 'f-talk', name: 'Talk' },
+      { id: 'f-kids', name: 'Children' },
+      { id: 'votes', name: 'Votes' },
+      { id: 'comments', name: 'Comments' },
+    ]);
+    const rule = ruleBody({ trigger: { kind: 'field_changed', fields: ['f-time', 'f-left'] } });
+    expect(ruleNeeds(rule, outline)).toEqual(['Field Changed never hears Time Spent']);
   });
 });

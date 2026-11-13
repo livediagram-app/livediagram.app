@@ -11,6 +11,7 @@ import {
   knownFieldKind,
   labelUsage,
   typeFieldLabel,
+  unheardFields,
   normaliseBoardSetup,
   savedFilterKey,
   type Item,
@@ -102,6 +103,12 @@ export function outlineFields(types: readonly ItemTypeDef[]): OutlineField[] {
     }
   }
   return out;
+}
+
+/** Field Changed's choices: the fields a write changes, so leaving out Time Spent, a Votes tally, a Comments field
+ *  and a Calculated value, which it never hears (spec "Triggers"). */
+export function fieldChangeFields(types: readonly ItemTypeDef[]): OutlineField[] {
+  return outlineFields(types).filter((f) => unheardFields(types, [f.id]).length === 0);
 }
 
 export function useAutomationOutline(): AutomationOutline {

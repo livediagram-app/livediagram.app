@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AUTOMATION_RULES_MAX, type AutomationRule, type AutomationRun } from '@liveplanner/items';
+import {
+  AUTOMATION_RULES_MAX,
+  defaultCatalogue,
+  type AutomationRule,
+  type AutomationRun,
+} from '@liveplanner/items';
 import type { AutomationListedRule, AutomationsListResponse } from '@liveplanner/api-schema';
 import { endRepeatWorld } from '../plan-room/test-repeat-world';
 import {
@@ -246,6 +251,39 @@ describe('the rules', () => {
     expect((await w.call('PATCH', `/${a.id}`)).status).toBe(405);
     expect((await w.call('GET', `/${a.id}/toggle`)).status).toBe(405);
     expect((await w.call('PUT', '')).status).toBe(405);
+  });
+
+  it('refuses Field Changed on a field no write changes, naming it, and takes one that changes', async () => {
+    const put = await w.send('PUT', '/api/projects/A/item-types', {
+      itemTypes: {
+        version: defaultCatalogue().version,
+        types: [
+          {
+            id: 'task',
+            label: 'Task',
+            newTitle: 'New task',
+            glyph: 'task',
+            color: '#2563eb',
+            fields: ['title', 'status', 'f-time', 'f-left'],
+            custom: [
+              { id: 'f-time', label: 'Time Spent', kind: 'duration', timeSpent: true },
+              { id: 'f-left', label: 'Time Left', kind: 'duration' },
+            ],
+          },
+        ],
+      },
+    });
+    expect(put.status).toBeLessThan(300);
+    const trigger = (fields: string[]) => ruleBody({ trigger: { kind: 'field_changed', fields } });
+    const refused = await w.call('POST', '', trigger(['f-left', 'f-time']));
+    expect(refused.status).toBe(400);
+    expect(await refused.json()).toMatchObject({
+      error: 'automation_invalid',
+      path: 'trigger.fields.1',
+      message: expect.stringContaining('Field Changed never hears Time Spent') as string,
+    });
+    const made = await w.rule(trigger(['f-left']));
+    expect((await w.call('PUT', `/${made.id}`, trigger(['f-time']))).status).toBe(400);
   });
 
   it('says what a rule names that the plan lacks', async () => {
