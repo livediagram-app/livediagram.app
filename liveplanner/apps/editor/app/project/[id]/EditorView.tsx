@@ -67,6 +67,7 @@ import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUi
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
+import { PlanSheetsArea } from '@/components/plan/PlanSheetsArea';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
@@ -74,12 +75,6 @@ const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
 // Only a Community link's view draws it, so it stays off every other open's first load.
 const CommunityBar = dynamic(
   () => import('@liveworkspace/community-ui/community-bar').then((m) => m.CommunityBar),
-  { ssr: false },
-);
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
-// Plan pays nothing for it.
-const PlanSheetsHost = dynamic(
-  () => import('@/components/plan/PlanSheetsHost').then((m) => m.PlanSheetsHost),
   { ssr: false },
 );
 
@@ -304,11 +299,9 @@ export function EditorView() {
                                           {ctx.plan.openItemId ||
                                           ctx.plan.editingType ||
                                           ctx.plan.requiredFields ? (
-                                            // Its own boundary: a card opened offline before this code came
-                                            // must not take the board with it (load-recovery.md "Offline").
-                                            <AreaErrorBoundary area="Modals">
-                                              <PlanSheetsHost plan={ctx.plan} />
-                                            </AreaErrorBoundary>
+                                            // Its own boundary: a card that fails to draw must not take the board
+                                            // with it (load-recovery.md "Offline"), and closes (PlanSheetsArea).
+                                            <PlanSheetsArea plan={ctx.plan} />
                                           ) : null}
                                         </AreaErrorBoundary>
                                         {embedMode ? (

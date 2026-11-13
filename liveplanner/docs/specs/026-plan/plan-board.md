@@ -634,6 +634,12 @@ In Plan mode:
     edits what a Participant may). A card that no longer exists, or that the link's share does not show, opens
     nothing and says nothing: the plan opens on the tab, and the address drops the card. A tab that is gone, or out
     of the share's scope, gives way to the plan's first tab, and the card still opens.
+    - **A panel that fails to draw closes.** Should the card's panel (or the type editor, or the required fields
+      asked for a new card) fail to draw, it closes, the address drops the card, and a toast says so: "Couldn't open
+      that card. Reload the page to open cards again." when its code could not load (a release made while the plan
+      was open), else "Couldn't open that card. Try again." Nothing is left open but unseen: the next card clicked
+      opens afresh, never into a panel that is gone until the page is reloaded. The panel's code is fetched once the
+      editor is idle, so a release after the plan opened seldom reaches it.
     - **Back closes the card.** Opening a card from the plan (a board, a sheet row, the Cards finder, a search
       result, a new card) adds one history entry, so the browser's Back closes the card and leaves the person on
       the plan, and Forward opens it again. Closing the card any other way (Close, Escape, Enter in the title,

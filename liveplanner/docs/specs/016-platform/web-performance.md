@@ -65,8 +65,9 @@ this way. Where switching to one must stay instant, its code is fetched once the
   and facilitation panels. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the project
   request, so a board that has one finds its code already in, while the first load does not carry it.
 - **Surfaces someone opens**: the Explorer popover (mounted from its first opening on, then kept, so its
-  state survives), search and session settings. Fetched once the opened project has rendered and the page is
-  idle. Only what Plan can open is prefetched: no Layers panel, quick style panel or Format tool panel is on the
+  state survives), search, session settings and the card panel (with the type editor and required fields).
+  Fetched once the opened project has rendered and the page is idle. The card panel is there so a release made
+  after the plan opened does not leave its first card asking for a chunk the release removed. Only what Plan can open is prefetched: no Layers panel, quick style panel or Format tool panel is on the
   list.
 - **At the press**: a template's canvas overrides, and a form template's starter, load with its builders
   when one is applied. Asking whether a kind is a Plan template reads the import-free list of Plan
