@@ -4,6 +4,8 @@ import type { GrantClaims } from '@liveworkspace/index-client';
 import { clearGrantCacheForTests, setGrantVerifierForTests } from '../index-service';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livediagram/document';
+import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
+import { LEDGER_LOCK_ELEMENTS_MAX } from '@liveworkspace/api-kit/room-ledger-store';
 import worker from '../index';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor } from '../test-media-service';
@@ -1146,14 +1148,141 @@ describe('the collaboration ledger after its upkeep', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     await sequence(room, answer('bo'));
     // A socket back after more than 30 days away, saving before its catch-up: Bo's answer is merged; Ann's, cut ten
-    // days ago, is the residual the spec states.
+    // days ago, stays as stored, since a save may take away only its saver's own answer (share-roles.md "The
+    // collab key").
     expect((await save(w, room, 0, withAnswers())).status).toBe(200);
-    expect(stored(w).responses?.map((r) => r.participantId)).toEqual(['bo']);
+    expect(stored(w).responses?.map((r) => r.participantId)).toEqual(['bo', 'ann']);
     expect(warn).toHaveBeenCalledWith('[ledger] stale cursor', { tabId: 't1', since: 0, floor: 1 });
   });
 
   it('cuts nothing younger than 30 days', async () => {
     const { room } = await afterUpkeep(20);
     expect(Object.keys((await ledgerOf(room)).elements)).toEqual(['card']);
+  });
+});
+
+// Whole-tab writes keep other people's entries (docs/specs/013-workspace/share-roles.md "The collab key"), end to
+// end: the save and the re-commit through the real worker, the lock reading the document's own room's ledger.
+describe("whole-tab writes keep other people's entries", () => {
+  const OLD_KEY = '6f2c1d3e-9a7b-4c5d-8e1f-0a2b3c4d5e6f';
+  const BO = 'b'.repeat(32);
+  const reaction = (by: string, name: string) => ({ emoji: 'heart', by, name });
+  const card = (
+    responses: string[],
+    reactions: { emoji: string; by: string; name: string }[] = [],
+  ): Element =>
+    ({
+      id: 'card',
+      type: 'shape',
+      shape: 'done-check',
+      x: 0,
+      y: 200,
+      width: 100,
+      height: 100,
+      responses: responses.map((participantId) => ({ participantId, value: 'done', at: 1 })),
+      commentThread: {
+        resolved: false,
+        comments: [
+          {
+            id: 'c1',
+            text: 'hi',
+            createdAt: 1,
+            authorName: 'Bo',
+            authorColor: '#0a0',
+            ...(reactions.length ? { reactions } : {}),
+          },
+        ],
+      },
+    }) as Element;
+  type Stored = {
+    responses?: { participantId: string }[];
+    commentThread: { comments: { reactions?: { by: string }[] }[] };
+  };
+  const storedOf = (w: World): Stored => {
+    const row = w.documents.get('A')!.db.prepare("SELECT data FROM tabs WHERE id = 't1'").get();
+    return (JSON.parse(String(row!.data)) as { elements: Stored[] }).elements[0]!;
+  };
+  const answered = (w: World) => storedOf(w).responses?.map((r) => r.participantId);
+  const reacted = (w: World) => storedOf(w).commentThread.comments[0]!.reactions?.map((r) => r.by);
+  const put = (w: World, saved: Element, cursor?: string) =>
+    w.send(
+      'PUT',
+      '/api/documents/A/tabs/t1',
+      { id: 't1', name: 'Board', elements: [saved] },
+      cursor ? { 'X-Room-Cursor': cursor } : {},
+    );
+
+  async function start(first: Element) {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world();
+    await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [first] }]);
+    return { w, room: w.documents.get('A')!.room };
+  }
+
+  it("refuses a save's made-up, changed or removed answers and reactions of anyone else", async () => {
+    const { w } = await start(card(['bo'], [reaction(BO, 'Bo')]));
+    const mine = await collabKeyFor(OWNER);
+    const forged = card([mine, 'cy'], [reaction(mine, 'Me'), reaction('c'.repeat(32), 'Cy')]);
+    expect((await put(w, forged)).status).toBe(200);
+    expect(answered(w)).toEqual([mine, 'bo']);
+    expect(reacted(w)).toEqual([mine, BO]);
+  });
+
+  it("keeps another person's live answer the save carries, which only the ledger holds", async () => {
+    const { w, room } = await start(card([]));
+    await room.fetch(
+      new Request('https://room/mutation', {
+        method: 'POST',
+        body: JSON.stringify({
+          op: {
+            kind: 'el-delta',
+            tabId: 't1',
+            elementId: 'card',
+            delta: { kind: 'response', participantId: 'bo', value: 'done', at: 1 },
+          },
+        }),
+      }),
+    );
+    // The saver had seen Bo's answer (cursor 1), so the merge adds nothing: the lock's own read keeps it.
+    expect((await put(w, card(['bo']), `${room.epoch}:1`)).status).toBe(200);
+    expect(answered(w)).toEqual(['bo']);
+  });
+
+  it("refuses a lock read it can't take", async () => {
+    const { room } = await start(card([]));
+    const ask = (body: unknown) =>
+      room.fetch(
+        new Request('https://room/ledger-entries', { method: 'POST', body: JSON.stringify(body) }),
+      );
+    expect((await ask({ elements: [] })).status).toBe(400);
+    expect((await ask({ tab: 't1', elements: [1] })).status).toBe(400);
+    expect((await ask({ tab: 't1', elements: 'card' })).status).toBe(400);
+    const many = Array.from({ length: LEDGER_LOCK_ELEMENTS_MAX + 1 }, (_, i) => `e${i}`);
+    expect((await ask({ tab: 't1', elements: many })).status).toBe(400);
+    expect(await (await ask({ tab: 't1', elements: ['card'], vote: true })).json()).toEqual({
+      elements: {},
+    });
+  });
+
+  it("collapses an old editor's duplicate reaction", async () => {
+    const both = [reaction(OLD_KEY, 'Bo'), reaction(BO, 'Bo')];
+    const { w } = await start(card([], both));
+    expect((await put(w, card([], both))).status).toBe(200);
+    expect(reacted(w)).toEqual([BO]);
+  });
+
+  it('locks a re-commit (an offline sync) over the stored tabs, and leaves a create as it came', async () => {
+    const { w } = await start(card(['bo']));
+    const again = await w.send('POST', '/api/documents', {
+      id: 'A',
+      name: 'A',
+      tabs: [{ id: 't1', name: 'Board', elements: [card(['cy'])] }],
+    });
+    expect(again.status).toBe(201);
+    expect(answered(w)).toEqual(['bo']);
+    // The create itself kept the answer it carried.
+    const fresh = world();
+    await createDocument(fresh, 'A', [{ id: 't1', name: 'Board', elements: [card(['cy'])] }]);
+    expect(answered(fresh)).toEqual(['cy']);
   });
 });

@@ -1,7 +1,8 @@
 // PUT /api/documents/<id>/tabs/<tabId>: the editor's whole-tab autosave and nothing else's
 // (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames"; blueprint "The tab
 // PUT"). A token is refused; the save is merged with every recorded changeset its editor had not
-// seen and with the room's collaboration ledger, then written at the revision it read.
+// seen and with the room's collaboration ledger, locked to the saver's own entries (whole-tab-lock.ts), then written
+// at the revision it read.
 
 import {
   CHANGESET_MERGE_WINDOW_MS,
@@ -28,6 +29,7 @@ import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, notFound, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
+import { lockTabWrite } from '../whole-tab-lock';
 import type { TabSaveDocument } from '../db/tab-save-document';
 import { grantOn, readBody, type DocumentRouteContext } from './context';
 
@@ -149,15 +151,25 @@ export async function writeTabSave(
     // guest-only deployment, or liveworkspace out of reach) the writer's own new comments keep the
     // name they were posted under, still tied to the writer's id.
     const writerParticipant = await getParticipant(env, owner);
-    const sanitised: Tab = {
-      ...body,
-      elements: rewriteCommentAuthors(
-        body.elements,
-        existingTab?.elements ?? [],
-        writerParticipant ?? { id: owner, name: null, color: null },
-        commentAuthors,
-      ),
-    };
+    // Everyone else's reactions, responses and dots as the room's ledger, else the stored tab, has them
+    // (docs/specs/013-workspace/share-roles.md "The collab key"): the saver changes only its own.
+    const sanitised: Tab = await lockTabWrite(
+      env,
+      id,
+      tabId,
+      {
+        ...body,
+        elements: rewriteCommentAuthors(
+          body.elements,
+          existingTab?.elements ?? [],
+          writerParticipant ?? { id: owner, name: null, color: null },
+          commentAuthors,
+        ),
+      },
+      existingTab,
+      owner,
+      'save',
+    );
     const connection = connectionToKeep(sentConnection, {
       exists: existingTab !== null,
       connection: existingTab?.connection ?? null,

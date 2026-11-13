@@ -48,6 +48,10 @@ export const roomFetch: (
 export const fetchRoomLedger = room.fetchRoomLedger;
 export const applyRoomLedger = room.applyRoomLedger;
 
+// The ledger entries a whole-tab write's lock reads (whole-tab-lock.ts): the named elements' and the vote's, whatever
+// their seq; null when the room cannot answer.
+export const fetchLedgerEntries = room.fetchLedgerEntries;
+
 // A change the api itself wrote (a view-role visitor's comment), as the `el-delta` an editor's own sends.
 export const relayElementDelta: (
   env: Env,
