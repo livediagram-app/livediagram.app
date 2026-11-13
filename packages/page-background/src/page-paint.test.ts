@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Page } from './page';
-import { PAGE_GRADIENT_ANGLE, sameFill, withBackgroundPatch } from './page-paint';
+import type { PageColourFill, PagePattern } from './index';
+import { PAGE_GRADIENT_ANGLE, sameFill as sameFillBy, withBackgroundPatch } from './page-paint';
 
-// docs/specs/007-editor/pages-mode.md "Backgrounds".
-const page = (background?: Page['background']): Page => ({
-  id: 'p',
-  orientation: 'portrait',
-  ...(background ? { background } : {}),
-});
+// Each pages product's pages-mode spec, "Backgrounds".
+type Picture = { kind: 'image'; imageId: string };
+type Background = { fill?: PageColourFill | Picture; pattern?: PagePattern };
+const page = (background?: Background) => (background ? { background } : {});
+const sameFill = (a: PageColourFill | Picture | undefined, b: PageColourFill | Picture | undefined) =>
+  sameFillBy(a, b, (x, y) => x.imageId === y.imageId);
 const solid = { kind: 'solid', color: '#e0f2fe' } as const;
 const gradient = {
   kind: 'gradient',
@@ -34,5 +34,12 @@ describe('a page background edit', () => {
     expect(sameFill(solid, gradient)).toBe(false);
     expect(sameFill(undefined, undefined)).toBe(true);
     expect(sameFill(solid, undefined)).toBe(false);
+  });
+
+  it("compares two pictures by the product's own check", () => {
+    const picture = (imageId: string): Picture => ({ kind: 'image', imageId });
+    expect(sameFill(picture('a'), picture('a'))).toBe(true);
+    expect(sameFill(picture('a'), picture('b'))).toBe(false);
+    expect(sameFill(picture('a'), solid)).toBe(false);
   });
 });
