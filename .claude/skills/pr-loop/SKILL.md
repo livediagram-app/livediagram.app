@@ -22,7 +22,8 @@ reason the loop orchestrates and helper agents do the fixing (section 2).
 1. `git fetch -q origin`.
 2. `.claude/skills/pr-loop/prs.py digest`: one GraphQL call, one line per open PR of yours or Dependabot's, PRs
    needing work first. Each line starts with what the PR needs:
-   - `CONFLICT`, `RED` (failing checks named), `COMMENTS` (unresolved threads, or comments and reviews newer than
+   - `CONFLICT`, `RED` (failing checks named; after a rerun only each check's newest run counts, so the old
+     attempt's failures drop off), `COMMENTS` (unresolved threads, or comments and reviews newer than
      the head commit): work it (section 2).
    - `MERGE` (green, `CLEAN`, no blocking label): merge it (section 3).
    - `CHECK`: green but GitHub won't call it `CLEAN`; look at why (`gh pr view <n> --json mergeStateStatus`).
@@ -140,7 +141,8 @@ clears those.
    with one `gh` call a minute. It exits at the first change worth acting on, printing one line per PR that went
    RED (a check failed, even with others still running), GREEN (every check passed), CONFLICTING, or COMMENTED (a
    new comment or review). That exit is what wakes the loop, so a red check or a new comment gets picked up within
-   about a minute, and the loop is not woken while CI just runs (Monitors expire every 30 minutes and woke the
+   about a minute, and the loop is not woken while CI just runs or while GitHub recomputes mergeability after a
+   merge to main (a poll where only mergeability is `UNKNOWN` keeps the PR's last state) (Monitors expire every 30 minutes and woke the
    loop each time; one per push piled up). It saves what it saw under `.git`, so a PR that changes while the
    loop is busy is reported by the next watcher. Only one runs per clone; it exits after 4 hours with `TIMEOUT`
    (start it again). On its lines: RED, CONFLICTING or COMMENTED starts a helper (above); GREEN with
