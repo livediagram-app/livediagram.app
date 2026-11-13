@@ -1049,7 +1049,10 @@ Derived from the spec's "The rule builder on a phone", the screen's phone bullet
 dialog's `!useMediaQuery('(min-width: 640px)')`, as before; nothing below changes a desktop.
 
 - `ScreenTabs`: on a phone the bar is `h-12 items-stretch`, each tab `flex items-center` (44 px of it a target).
-- `RuleFilters.tsx` (out of `RulesList`): the desktop row as before; on a phone a column of the search (`SearchInput`
+- `RuleFilters.tsx` (out of `RulesList`): the desktop row, the search at `SearchInput`'s `size="row"` (32 px, 13 px
+  text, level with the `h-8` selects); its trigger options are `kinds`, which `RulesList` takes from
+  `filterTriggerKinds(githubEnabled, used)` (trigger-groups.ts: GitHub's kinds only where the deployment has the App,
+  as `offeredGroups`, or one a rule or the current filter is on); on a phone a column of the search (`SearchInput`
   at its `size="lg"`: 40 px, 14 px text) and a row of the trigger `Select` (`flex-1`, `PHONE_SELECT` = `h-10
 rounded-lg pl-3 pr-8 text-[14px]`) and `SegmentedRadio` (`size="lg"`, All / On / Off, `h-10`).
 - `AutomationsDialog`: on a phone, editing (`target.view === 'rule'`) keeps the rules screen mounted and renders the
