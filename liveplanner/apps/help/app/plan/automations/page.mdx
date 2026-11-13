@@ -47,11 +47,13 @@ Describing a rule uses AI: each ask counts toward the plan's 100 AI steps a day 
 
 Press **New Rule**, then **Blank Rule**. The rule reads from top to bottom:
 
-- **When**: the trigger. Pick one of **Card Created**, **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose; Time Spent, votes and worked-out fields are left out, as no edit changes them), **Card Archived**, **Card Restored**, **Checklist Completed** (the last item is ticked), **Column Over Limit** (a column holds more cards than the limit you set), **Comment Added**, **All Threads Resolved** (the card's last open thread is resolved), **Someone Mentioned** (anyone, or the people you pick), **Card Unblocked** (the last card blocking it is done or archived), **Related Cards Done** (all its children, or all the cards its Card fields point at, are done), or **Run from a Card** (you start it from a card's **⋯** menu). Or pick a time, or a pull request on GitHub (both below). **Change** opens **Pick a Trigger**, a gallery of every trigger in groups, each with a picture of what it hears.
+- **When**: the trigger. Pick one of **Card Created** (an undo that puts back a deleted card is not a new card, so it doesn't count), **Form Response** (a card made by one of the plan's forms), **Card Moved** (from and to the columns you choose), **Field Changed** (any of the fields you choose; Time Spent, votes, Comments fields and worked-out fields are left out, as no edit changes them), **Card Archived**, **Card Restored**, **Checklist Completed** (the last item is ticked), **Column Over Limit** (a column holds more cards than the limit you set; several cards dropped in at once start it once, on the card that went past the limit), **Comment Added**, **All Threads Resolved** (the card's last open thread is resolved), **Someone Mentioned** (anyone, or the people you pick), **Card Unblocked** (the last card blocking it is done or archived), **Related Cards Done** (all its children, or all the cards its Card fields point at, are done), or **Run from a Card** (you start it from a card's **⋯** menu). Or pick a time, or a pull request on GitHub (both below). **Change** opens **Pick a Trigger**, a gallery of every trigger in groups, each with a picture of what it hears.
 - **If all of these**: the conditions, all of which must hold. Check the **Card Type**, the **Column**, a **Field** (is, is not, is empty, contains, before or after a day, and more), **Who Did It** (a person, an Editor, a Participant, an agent), or whether it **Matches a Saved Filter** of one of your boards.
-- **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign**, **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive** or **Restore From Archive**, **Change Card Type**, **Set Colour**, **Create Card** or **Copy Card**, **Add a Checklist**, **Link Cards**, **Send Email**, **Mention Someone** (their emails reach the plan's owner and its team, as your own mention emails do), **Resolve Threads** and **Wait**, and **Send to Webhook**, **Post to Slack** and **Post to Microsoft Teams** (below). **+ Add Action** opens a picker of them by group; on a step's panel, **Change** opens it again to swap the action.
+- **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign**, **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive** or **Restore From Archive**, **Change Card Type**, **Set Colour**, **Create Card** or **Copy Card**, **Add a Checklist**, **Link Cards**, **Send Email**, **Mention Someone**, **Resolve Threads** and **Wait**, and **Send to Webhook**, **Post to Slack** and **Post to Microsoft Teams** (below). **+ Add Action** opens a picker of them by group; on a step's panel, **Change** opens it again to swap the action.
 
-- **Wait** holds the rest of the rule for 1 hour to 30 days. When the time is up the rule checks its conditions again, and if they still hold, the steps after the Wait run. The run shows as **Waiting** in the Audit Trail until then, with when it goes on. Turning the rule off, editing or deleting it, or deleting the card, stops the runs waiting on it.
+- **Wait** holds the rest of the rule for 1 hour to 30 days. When the time is up the rule checks its conditions again, and if they still hold, the steps after the Wait run. The run shows as **Waiting** in the Audit Trail until then, with when it goes on. Turning the rule off (or its pausing itself), editing or deleting it, or deleting the card, stops the runs waiting on it, and turning it back on doesn't bring them back. A run whose time comes once the plan has used its runs for the day is skipped.
+- **Set Field** sets a value you type, a value from the card, or a day (Today, or so many days before or after). A field of fixed values picks one of them: a Priority or Choice field one of its values, the Assignee or a Person field one of the plan's people, a Checkbox **Yes** or **No**. Time Spent, votes, Comments fields and worked-out fields are never set or cleared by a rule, so they aren't offered; Flagged and the Checklist have their own actions (**Flag**, **Unflag**, **Add a Checklist**).
+- **Send Email** and **Mention Someone** email only the people your own notifications reach: the plan's owner and the people of its team. Someone who has left the team, or who came in through a share link, gets no email from a rule, though the step still counts as done (and a mention's thread is still written).
 
 Press **+ Add Action**, **+ Add Condition**, **+ If / Else** or **+ For Related Cards** to add a step. An **If / Else** runs one list of actions when its conditions hold and another when they don't. Click any step to change it in the panel on the right; its **⋯** menu moves it up or down, duplicates it or deletes it. Name the rule at the top, then press **Save Rule**.
 
@@ -68,7 +70,7 @@ At its time, the rule runs once for each card its conditions match: "Every Weekd
 
 ### Assign in Turn
 
-**Assign** gives the card to a person, to whoever triggered the rule, to nobody, or to **People in Turn**: 2 to 10 people, in the order you pick them. Each run assigns the next one, then starts again from the first.
+**Assign** gives the card to a person, to whoever triggered the rule, to nobody, or to **People in Turn**: 2 to 10 people, in the order you pick them. Each run assigns the next one, then starts again from the first. Two runs at the same moment take the next two people, never the same one twice.
 
 ### For Related Cards
 
@@ -95,6 +97,10 @@ Text a rule writes (a comment, a card's title, an email) can hold values that ar
 ### Test on a Card
 
 **Test on a Card** runs the rule as it stands, saved or not, on a card you pick, and changes nothing: you see each step and what it would do.
+
+### On a Phone
+
+On a phone a rule opens as a sheet over the Automations screen, and a step's fields open in a second sheet on top of it. Swipe a sheet down, tap outside it, or press your phone's Back to close it: Back closes the sheet, never the plan. With unsaved changes, closing the rule asks **Discard Changes?** first.
 
 ## Start a Rule from Another Tool
 
@@ -143,7 +149,7 @@ A rule's changes are by **Automation**, with the rule's name beside it:
 
 - The card's [Activity](/help/plan/card-activity/) lists them with a lightning bolt: "**Automation** set Completed On to 11 Nov 2026 · Done Means Wrapped Up".
 - A field a rule set last shows a small **Set by Automation** chip in Details.
-- A comment a rule added shows the bolt and the rule's name; one an AI action wrote also says **Generated by AI**.
+- A comment a rule added shows the bolt and the rule's name, which opens the rule for an Editor (a rule deleted since says **This Rule Was Deleted**); one an AI action wrote also says **Generated by AI**.
 - A rule a GitHub trigger started is by **GitHub** instead, with GitHub's mark: "**GitHub** · Done When It Merges".
 
 ## Run Rule
@@ -157,10 +163,10 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 ## Limits and Pausing
 
 - A plan holds up to 50 rules, each with up to 10 conditions and 20 actions (a For Related Cards step's count too), of which up to 5 post messages.
-- A plan makes up to 1,000 runs a day (UTC); past that, what would start a rule is let go and rules run again the next day. A No Match doesn't count.
-- A rule holds up to 3 AI actions, and a plan makes up to 100 AI steps a day; past that, AI steps are skipped until the next day.
+- A plan makes up to 1,000 runs a day (UTC), counted as each run starts, so runs that start together never pass it; past that, what would start a rule is let go and rules run again the next day. A No Match doesn't count.
+- A rule holds up to 3 AI actions, and a plan makes up to 100 AI steps a day, rules and Describe a Rule together, even when they ask at once; past that, AI steps are skipped until the next day.
 - A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a webhook stopped it, **Fix Webhook** opens the plan's webhooks.
-- A rule that names something the plan no longer has (a column, a card type, a field, a person, a saved filter, a Form tab, or the card a **Link Cards** step points at) says **Needs Attention** and what is missing.
+- A rule that names something the plan no longer has (a column, a card type, a field, a person, a saved filter, a Form tab, or the card a **Link Cards** step points at) says **Needs Attention** and what is missing, in words: "Needs Attention: A column is gone · Someone is gone". Its steps say the same ("Move to a column no longer here", "Assign Someone No Longer Here"). A condition naming one doesn't hold, and an action that reaches one fails its run, saying what is gone. Open the step and pick again.
 
 ## Agents and the CLI
 
