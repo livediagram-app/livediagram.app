@@ -64,7 +64,7 @@ for (const n of SIZES) {
         : undefined,
     );
     results[`${n}`] = reading;
-    console.log(describeReading(`theme pick ${n}`, rate, reading));
+    console.log(`${describeReading(`theme pick ${n}`, rate, reading)}; picked ${reading.picked}`);
     mkdirSync(OUT, { recursive: true });
     writeFileSync(`${OUT}/theme-pick.json`, JSON.stringify(results, null, 2));
     await ctx.close();

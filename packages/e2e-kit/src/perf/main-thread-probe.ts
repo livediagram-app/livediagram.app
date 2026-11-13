@@ -102,6 +102,7 @@ export const describeReading = (what: string, rate: number, r: MainThreadReading
 export const countElementRenders = async (context: BrowserContext): Promise<void> => {
   await context.addInitScript(() => {
     type Fiber = {
+      flags: number;
       child: Fiber | null;
       sibling: Fiber | null;
       memoizedProps: {
@@ -112,8 +113,9 @@ export const countElementRenders = async (context: BrowserContext): Promise<void
     };
     const w = window as unknown as ProbeWindow & { __REACT_DEVTOOLS_GLOBAL_HOOK__: unknown };
     w.__renders = { ids: new Set(), views: 0 };
-    // A fiber that rendered is a new object in the tree (React swaps in its alternate); one that bailed out is the
-    // same object as in the commit before.
+    // A fiber that rendered is a new object in the tree (React swaps in its alternate) carrying React's PerformedWork
+    // flag (1). A fiber left alone is the same object as in the commit before (its flags can be stale); one React
+    // cloned under a parent that rendered, then bailed out of (a memo whose props were equal), is new but unflagged.
     let before = new WeakSet<Fiber>();
     w.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
       supportsFiber: true,
@@ -131,7 +133,7 @@ export const countElementRenders = async (context: BrowserContext): Promise<void
           now.add(f);
           const p = f.memoizedProps;
           const id = p?.element?.id ?? p?.arrow?.id ?? p?.item?.id;
-          if (id !== undefined && !before.has(f) && w.__renders) {
+          if (id !== undefined && !before.has(f) && (f.flags & 1) !== 0 && w.__renders) {
             w.__renders.ids.add(id);
             w.__renders.views++;
           }

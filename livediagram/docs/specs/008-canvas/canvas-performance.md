@@ -125,7 +125,9 @@ large move rides as one layer").
   at 400 elements no frame of a pick in the Tab Style dialog takes more than about a tenth of a second on the
   reference machine (it took about a quarter of a second). The new colours are worked out between frames while the
   canvas keeps the old ones, then shown in one step; on a busy canvas only the canvas's own surface takes the ease,
-  never the rest of the page, and the toolbars do not measure themselves again while the canvas redraws.
+  never the rest of the page, and the toolbars do not measure themselves again while the canvas redraws. Only the
+  elements whose colours the pick changes draw again: one the pick leaves as it was (a hand-picked colour, a sticky)
+  keeps its view as it is.
 - **Adding many elements animates nothing.** More than 24 elements landing in one commit (a paste,
   a duplicate, an undo, an import, a collaborator's change) appear at once, with no pop-in
   ([Canvas and palette](canvas-and-palette.md) "Motion and animations"). Safari gives each element

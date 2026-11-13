@@ -359,6 +359,7 @@
     "./lib/composed-key": "./src/lib/composed-key.ts",
     "./lib/concept-tour-preview": "./src/lib/concept-tour-preview.ts",
     "./lib/contents-sidebar": "./src/lib/contents-sidebar.ts",
+    "./lib/keep-unchanged-elements": "./src/lib/keep-unchanged-elements.ts",
     "./lib/page-snap-scope": "./src/lib/page-snap-scope.ts",
     "./lib/context-menu-anchor": "./src/lib/context-menu-anchor.ts",
     "./lib/crc32": "./src/lib/crc32.ts",
