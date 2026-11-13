@@ -219,7 +219,7 @@ describe('an id that is no built-in', () => {
   it.each(['constructor', '__proto__', 'toString', 'hasOwnProperty'])(
     '%s reads as itself',
     (id) => {
-      const named: ItemTypeDef = { ...ITEM_TYPES[0]!, fieldLabels: { estimate: 'Points' } };
+      const named: ItemTypeDef = { ...ITEM_TYPES[0], fieldLabels: { estimate: 'Points' } };
       expect(builtInFieldName(id)).toBeUndefined();
       expect(typeFieldLabel(named, id)).toBe(id);
       expect(typeFieldLabel(undefined, id)).toBe(id);

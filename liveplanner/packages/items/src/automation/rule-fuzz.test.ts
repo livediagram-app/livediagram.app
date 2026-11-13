@@ -36,7 +36,7 @@ let noise = 0.02;
 // How often a text names a branch's or a webhook's value.
 let placed = 0.05;
 // One of `good`, or (as often as `noise` says) one of `bad`.
-const alt = <T>(r: R, good: readonly T[], bad: readonly T[]): T =>
+const alt = (r: R, good: readonly unknown[], bad: readonly unknown[]): unknown =>
   chance(r, noise) ? pick(r, bad) : pick(r, good);
 
 // Ids the plan holds, ids it lacks, and names that read the prototype if looked up carelessly.
