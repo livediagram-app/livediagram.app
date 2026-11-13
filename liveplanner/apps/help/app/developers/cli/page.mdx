@@ -208,6 +208,8 @@ liveplanner form try "Summer Party" answers.json            # one test response,
 
 A test response makes a card (or sheet row) titled **Preview:**, so you can see each answer land where you expect, then delete it.
 
+The changes file takes the same changes as the MCP server's `change_form`, among them `set_field` (a card field every response gets without a question, such as `{"op":"set_field","field":"Due Date","submitted":{"days":7}}`; `"value": null` stops it) and `add_column`, `set_column` and `delete_column` for a sheet's extra columns. `form get` lists them after the questions.
+
 ## Files, Exports and Pictures
 
 ```bash
