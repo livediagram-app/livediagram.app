@@ -4,7 +4,7 @@
 // refused `409 delta_refused`, and the editor saves the tab whole. The envelope is every product's; the ops are each
 // product's own `diffToElementOps` and `applyElementOps`, which share these four shapes.
 
-import { sha256Hex } from './sha256';
+import { sha256Hex, sha256HexSync } from './sha256';
 
 /** The path segment after the tab id: `POST /api/<items>/<id>/tabs/<tabId>/delta`. */
 export const TAB_DELTA_SEGMENT = 'delta';
@@ -86,13 +86,18 @@ function digestOfJson(json: string): Promise<string> {
   return sha256Hex(new TextEncoder().encode(json));
 }
 
-/** The delta to send for `tab`, or null to save it whole: no base copy, more than TAB_DELTA_MAX_OPS ops, or a body
- *  longer than TAB_DELTA_MAX_SHARE of the elements' JSON. `tab` is the tab as the whole save would send it. */
-export async function planTabDelta<E extends { id: string }>(args: {
+type DeltaPlanArgs<E extends { id: string }> = {
   base: { rev: number; elements: E[] } | null;
   tab: { elements: E[] };
   diff: (before: E[], after: E[]) => TabDeltaOp<E>[];
-}): Promise<{ body: string; digest: string; ops: number } | null> {
+};
+
+export type TabDeltaPlan = { body: string; digest: string; ops: number };
+
+// Everything but the digest: null to save whole, or the elements' JSON and the body for a digest.
+function draftTabDelta<E extends { id: string }>(
+  args: DeltaPlanArgs<E>,
+): { elementsJson: string; ops: number; body: (digest: string) => string } | null {
   const { base, tab } = args;
   if (!base) return null;
   const ops = args.diff(base.elements, tab.elements);
@@ -103,6 +108,27 @@ export async function planTabDelta<E extends { id: string }>(args: {
   // Sized with a stand-in digest of the same length, so the hash is taken only once a delta is worth sending.
   const body = (digest: string) => JSON.stringify({ baseRev: base.rev, digest, ops, tab: fields });
   if (body('0'.repeat(64)).length > elementsJson.length * TAB_DELTA_MAX_SHARE) return null;
-  const digest = await digestOfJson(elementsJson);
-  return { body: body(digest), digest, ops: ops.length };
+  return { elementsJson, ops: ops.length, body };
+}
+
+/** The delta to send for `tab`, or null to save it whole: no base copy, more than TAB_DELTA_MAX_OPS ops, or a body
+ *  longer than TAB_DELTA_MAX_SHARE of the elements' JSON. `tab` is the tab as the whole save would send it. */
+export async function planTabDelta<E extends { id: string }>(
+  args: DeltaPlanArgs<E>,
+): Promise<TabDeltaPlan | null> {
+  const draft = draftTabDelta(args);
+  if (!draft) return null;
+  const digest = await digestOfJson(draft.elementsJson);
+  return { body: draft.body(digest), digest, ops: draft.ops };
+}
+
+/** planTabDelta at once, for the unload flush, which cannot wait for Web Crypto: the same plan, its digest taken in
+ *  plain code (the same SHA-256, byte for byte). */
+export function planTabDeltaSync<E extends { id: string }>(
+  args: DeltaPlanArgs<E>,
+): TabDeltaPlan | null {
+  const draft = draftTabDelta(args);
+  if (!draft) return null;
+  const digest = sha256HexSync(new TextEncoder().encode(draft.elementsJson));
+  return { body: draft.body(digest), digest, ops: draft.ops };
 }

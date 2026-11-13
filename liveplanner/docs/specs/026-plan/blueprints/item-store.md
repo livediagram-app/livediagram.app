@@ -720,6 +720,10 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
     and its panel close with its address): the writes still on their way are laid back over the copy read, as the
     waiting ones are, and a copy older than an answer or room op that landed while it was asked for (its `rev`
     below `serverRevRef`, which moved during the read) is dropped and read again (`items.refetch.stale`).
+  - A big change draws as a transition (plan-board.md "A big board's first draw"): a load, an own create, an answer
+    or a room op touching `BIG_ITEMS_CHANGE` (200) items or more sets the store inside `startTransition`
+    (`bigStoreChange`), so React builds the board between frames rather than in the change's task; `storeRef` moves
+    at once as before, so a write that follows reads the new store. A smaller change sets it at once.
   - Room op `items`: `mergeItemChanges` keeps the higher `rev` per item; an item back at the rev it holds and alike
     field for field keeps its object, and a fold that changes no item keeps the store itself (plan-board.md "A drag
     stays smooth": the answer to a drop redraws nothing); `removed` deletes; a rev past
@@ -985,6 +989,7 @@ include `fields` or comment text.
 | `ITEM_LABELS_MAX`          | 12                        | Spec                                                    |
 | `ITEM_CHECKLIST_MAX`       | 50                        | Spec                                                    |
 | `ITEM_BULK_MAX`            | 200                       | A sync of a big offline doc batches                     |
+| `BIG_ITEMS_CHANGE`         | 200                       | `usePlanItems.ts`: a store change drawn as a transition |
 | `ITEM_WRITE_RETRIES`       | 3                         | As changesets' retry                                    |
 | `ITEM_KEY_MAX`             | 1000000                   | A named key's ceiling; keeps the next key far from 2^53 |
 | `ITEM_COMMENTS_MAX`        | 200                       | Spec; a card's conversation, well past a real one       |

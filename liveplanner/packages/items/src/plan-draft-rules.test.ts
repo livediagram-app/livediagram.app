@@ -201,6 +201,7 @@ describe('planDraftNeedWords', () => {
     expect(planDraftNeedWords({ kind: 'unheard', name: 'Votes' })).toBe(
       'Field Changed never hears Votes.',
     );
+    expect(planDraftNeedWords({ kind: 'github' })).toContain('not connected');
     expect(planDraftNeedWords({ kind: 'person', id: 'Ana' })).toBe(
       'This rule names something a new plan won’t have.',
     );

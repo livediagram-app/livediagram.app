@@ -50,6 +50,10 @@ if (!countriesPath || !placesPath) {
   process.exit(1);
 }
 
+// The United States frames on the lower 48: Alaska sits close enough to join its frame by distance, which left the
+// lower 48 small in the box. Alaska and Hawaii are drawn in insets instead (src/map-insets.ts).
+const MAIN_LAND_ONLY = new Set(['US']);
+
 const countries = JSON.parse(readFileSync(countriesPath, 'utf8'));
 const places = JSON.parse(readFileSync(placesPath, 'utf8'));
 
@@ -89,7 +93,7 @@ for (const f of countries.features) {
   let cx = 0;
   let cy = 0;
   // Each outer ring's box and area: the country frames on its biggest piece and the pieces near it,
-  // so France frames on Europe (not French Guiana) and the United States on its lower 48.
+  // so France frames on Europe (not French Guiana); the United States frames on its lower 48 (MAIN_LAND_ONLY).
   const pieces = [];
   for (const poly of polys) {
     poly.forEach((ring, ri) => {
@@ -125,7 +129,8 @@ for (const f of countries.features) {
   const main = pieces[0].box;
   const reach = Math.max(main[2] - main[0], main[3] - main[1]) * 0.35;
   const frame = [...main];
-  for (const { box } of pieces.slice(1)) {
+  // A country whose far land is drawn in its own inset (src/map-insets.ts) frames on its main land alone.
+  for (const { box } of MAIN_LAND_ONLY.has(code) ? [] : pieces.slice(1)) {
     const gapX = Math.max(0, box[0] - main[2], main[0] - box[2]);
     const gapY = Math.max(0, box[1] - main[3], main[1] - box[3]);
     if (Math.max(gapX, gapY) > reach) continue;

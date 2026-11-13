@@ -67,6 +67,8 @@ describe('AreaErrorBoundary', () => {
     );
     expect(container.innerHTML).toBe('');
     expect(onError).toHaveBeenCalledTimes(1);
+    // Told what was thrown, so the owner can say why.
+    expect(onError.mock.calls[0]![0]).toBeInstanceOf(Error);
   });
 
   it('clears the failure when the reset key changes', () => {

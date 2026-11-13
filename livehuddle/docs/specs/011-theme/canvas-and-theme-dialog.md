@@ -245,7 +245,10 @@ snapping (`../packages/workbench/src/lib/tab-style-ease.ts`); the transition is 
 root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps. On a busy Space (more
 than 20 elements, [Canvas performance](../008-canvas/canvas-performance.md) "A Tab Style change on a busy Space eases
 the canvas, not its parts") the parts snap too, the canvas's own colour still easing: easing every node of every
-element held a campus Space in long frames for most of a second a pick.
+element held a campus Space in long frames for most of a second a pick. The ease is then switched on on that
+canvas's surface alone, never the page's root, and the new colours are worked out between frames and shown in one
+step, so a pick on a big Space never holds the page ([Canvas performance](../008-canvas/canvas-performance.md#theme-pick-big-board)
+"A theme pick on a big Space keeps the page answering").
 
 ### Text panel
 

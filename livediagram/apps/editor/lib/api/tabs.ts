@@ -6,7 +6,12 @@ import {
   DOCUMENT_OPEN_HEADER,
   type TabSummary,
 } from '@livediagram/api-schema';
-import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
+import {
+  diffToElementOps,
+  normalizeTable,
+  type CommentMention,
+  type Tab,
+} from '@livediagram/document';
 import {
   createTabCalls,
   createUnloadHeaders,
@@ -84,6 +89,8 @@ const calls = createTabCalls<Tab, typeof NO_GRANT_WAIT, TabSummary>({
   normalizeElement: (el) => (el.type === 'table' ? normalizeTable(el) : el),
   unloadHeaders,
   noGrantWait: NO_GRANT_WAIT,
+  // The autosave sends the changed elements when a base copy is held (docs/specs/006-document/delta-saves.md).
+  delta: { diff: diffToElementOps },
 });
 
 // The full tab and its revision (docs/specs/024-agents/agent-changesets.md "The tab revision"), lazily when the user

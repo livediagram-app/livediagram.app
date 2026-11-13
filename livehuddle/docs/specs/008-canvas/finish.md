@@ -153,6 +153,10 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
     the frame size) keep their plain look, so the words in and around them stay easy to read.
   - The marker strokes are seeded by the element's id and the part's place in it, so a face looks the same on
     every screen and in every export.
+  - A face is read as it rests: while a take reads it, nothing in it eases, so a part whose border fades on a
+    change (a card's colour transition) is read at its own colour, never mid-fade as no line, and its marker ink is
+    drawn. The pointer's own chrome on a face (a table's add-row and add-column triggers, marked `data-face-hover`)
+    is never drawn, and its coming and going never takes the face again.
 - **Not affected:** pencil, pen and highlighter strokes, images, and photos inside a face.
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
 

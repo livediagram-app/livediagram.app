@@ -207,3 +207,34 @@ export function isoLayerBrightness(index: number, count: number): number {
   const t = count > 1 ? index / (count - 1) : 0;
   return 1 - 0.5 * t; // 1.0 (just under the element) -> 0.5 (floor)
 }
+
+// The on-screen depth layer is one FLAT picture (docs/specs/008-canvas/isometric-view.md "The depth layer is one flat
+// picture in the scene"): a translateZ per copy made every copy a compositing layer of its own. The layer sits this
+// far under the base plane, so its topmost copy (the first of isoDepthLayers) needs no shift and the tops and
+// frames above it still cover it.
+export const ISO_DEPTH_PLANE_PX = ISO_LAYER_STEP_PX;
+
+// Where a point `1px` deeper than the depth layer's plane lands, as a shift WITHIN that plane, under the wrapper's
+// `rotateX(elevation) rotateZ(azimuth)` (isoTransform). The projection is parallel, so depth is one fixed screen
+// vector, (0, sin e) per px, and the in-plane shift that lands on it is tan(e) along (sin a, cos a): rotateZ turns
+// it to (0, tan e), and rotateX takes that to (0, sin e). Drawing each copy shifted by its depth times this puts
+// it where its translateZ would have, so the flat layer and the 3D stack look the same.
+export function isoDepthShift(azimuthDeg: number, elevationDeg: number): { x: number; y: number } {
+  const a = (azimuthDeg * Math.PI) / 180;
+  const t = Math.tan((elevationDeg * Math.PI) / 180);
+  return { x: round4(Math.sin(a) * t), y: round4(Math.cos(a) * t) };
+}
+
+// Four decimals: below a hundredth of a pixel at the deepest copy, and short enough for a CSS variable.
+const round4 = (v: number) => Math.round(v * 10_000) / 10_000 || 0;
+
+// The copies' shifts and shades as the depth layer draws them: for each copy under the topmost one, its depth
+// below the layer's plane (px) and its brightness. globals.css's `[data-iso-wall]` box-shadow list is written
+// from this (isometric-wall-css.test.ts holds the two together).
+export function isoWallSteps(): { depthPx: number; brightness: number }[] {
+  const layers = isoDepthLayers();
+  return layers.slice(1).map((z, i) => ({
+    depthPx: -z - ISO_DEPTH_PLANE_PX,
+    brightness: isoLayerBrightness(i + 1, layers.length),
+  }));
+}

@@ -265,7 +265,11 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
   **Problems with this Form** lists it.
   - **+ New Board** for a type with its own statuses makes the responses board from them: one column per status, in
     the type's order, each named (and coloured) as the project's boards name it, the board taking that type alone. A
-    type without its own list (a legacy one) gets New, In Progress and Done, as before.
+    type without its own list (a legacy one) gets New, In Progress and Done, as before, and takes that type alone too.
+    A form starter's new board (its own columns) takes the form's type alone as well. A responses board never names the
+    Kanban board's Task and Action:
+    it once did, which hid the form's type (and its cards) and paused the form as soon as the project gained Task or
+    Action.
   - **A saved column outside the type's statuses** (a form from before, or a type changed since) is a warning, never
     a pause: responses keep arriving where they did, and Problems with this Form lists "Its column isn't one of
     {Type}'s states, so its cards miss {Type}'s boards. Choose another column." with Choose Where Responses Go,

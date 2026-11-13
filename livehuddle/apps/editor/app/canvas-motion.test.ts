@@ -88,11 +88,18 @@ describe('the Tab Style ease', () => {
     return rule[0]!
       .split(',')
       .map((s) => s.trim())
-      .filter((s) => s.startsWith(':root.lvd-style-transition'));
+      .filter(
+        (s) => s.startsWith(':root.lvd-style-transition') || s.includes('[data-style-easing]'),
+      );
   };
 
   it('eases the canvas surface itself', () => {
     expect(selectors()).toContain(':root.lvd-style-transition [data-canvas-root]');
+  });
+
+  // A pick on a busy canvas eases that surface alone (SURFACE_EASE_ATTR): a class on the root restyled the whole page.
+  it('eases a busy canvas by its own attribute, not the root class', () => {
+    expect(selectors()).toContain('[data-canvas-root][data-style-easing]');
   });
 
   it('eases the parts only on a canvas that is not busy', () => {

@@ -33,7 +33,9 @@ import {
   wrapEstimated,
   type Style,
 } from './article-layout-set';
+import { wrapMeasured, type ArticleTextMeasure } from './article-layout-measured';
 export { BOLD_EM, wrapEstimated } from './article-layout-set';
+export { wrapMeasured, type ArticleTextMeasure } from './article-layout-measured';
 
 type EstimatedArticle = {
   // Each page's operations, by page id.
@@ -56,20 +58,24 @@ const ADDED_PAGE_Y = -1_000_000;
 const CELL_PAD_X = 10;
 const CELL_PAD_Y = 6;
 const TOC_INDENT = 20;
+// The title's letter spacing (app/article-pages.css .article-title), in em.
+const TITLE_TRACKING_EM = -0.01;
 
 // The article `flow`'s writing set on its pages (`pages`, every laid-out page of the tab, in order), in the tab
 // theme's accent `accent`. A contents block's page numbers come from a first pass that sets the writing once to
-// see where each heading lands; only an article with a contents block takes the second.
+// see where each heading lands; only an article with a contents block takes the second. `measure`, where there is a
+// browser to measure with, breaks each paragraph's lines where the browser would (wrapMeasured).
 export function estimateArticle(
   tab: object,
   flow: string,
   pages: readonly LaidOutPage[],
   accent: string,
+  measure?: ArticleTextMeasure,
 ): EstimatedArticle {
-  const first = layoutOnce(tab, flow, pages, accent, null);
+  const first = layoutOnce(tab, flow, pages, accent, null, measure);
   const doc = articlesOf(tab)[flow];
   if (!doc?.blocks.some((b) => b.type === 'toc')) return first.estimate;
-  return layoutOnce(tab, flow, pages, accent, first.headingPages).estimate;
+  return layoutOnce(tab, flow, pages, accent, first.headingPages, measure).estimate;
 }
 
 function layoutOnce(
@@ -78,6 +84,7 @@ function layoutOnce(
   pages: readonly LaidOutPage[],
   accent: string,
   tocPages: ReadonlyMap<string, number> | null,
+  measure: ArticleTextMeasure | undefined,
 ): { estimate: EstimatedArticle; headingPages: Map<string, number> } {
   const headingPages = new Map<string, number>();
   const ops = new Map<string, ArticleDrawOp[]>();
@@ -207,11 +214,26 @@ function layoutOnce(
     // Wrapped as bold when every word of it is (a bold line runs wider).
     const bold =
       set.weight !== '400' || (b.type !== 'code' && b.runs.length > 0 && b.runs.every((r) => r.b));
-    const lines = wrapEstimated(text, width - set.indent * (b.type === 'code' ? 2 : 1), px, bold);
     const styles =
       b.type === 'code'
         ? Array.from(text, () => ({ b: false, i: false }))
         : charStyles(b.runs, set.weight !== '400', !!set.italic);
+    const lineWidth = width - set.indent * (b.type === 'code' ? 2 : 1);
+    const face = b.type === 'code' ? MONO : set.heading ? headingFace : body;
+    const lines = measure
+      ? wrapMeasured(
+          text,
+          styles,
+          lineWidth,
+          {
+            fontOf: (sg) =>
+              `${sg.i ? 'italic ' : ''}${sg.b ? (set.weight === '400' ? '700' : set.weight) : '400'} ${px}px ${face}`,
+            px,
+            tracking: b.type === 'paragraph' && b.style === 'title' ? TITLE_TRACKING_EM : 0,
+          },
+          measure,
+        )
+      : wrapEstimated(text, lineWidth, px, bold);
     let cursor = 0;
     const color =
       set.heading && style.accentHeadings ? ink.accent : set.muted ? ink.muted : ink.text;
@@ -274,7 +296,7 @@ function layoutOnce(
         x,
         y: baseline,
         text: t,
-        family: b.type === 'code' ? MONO : set.heading ? headingFace : body,
+        family: face,
         size: px,
         weight: one ? weightOf(one) : '400',
         style: one?.i ? 'italic' : 'normal',

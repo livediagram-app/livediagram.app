@@ -92,6 +92,12 @@ describe('the templates', () => {
       'Done When Feedback Is Resolved',
       'Sort Incoming Cards',
       'Summarise Form Requests',
+      'Review When a Pull Request Opens',
+      'Done When the Pull Request Merges',
+      'Flag Failing Checks',
+      'Tell Them the Checks Pass',
+      'Back to In Progress When Closed',
+      'Post Merged Work to Slack',
     ]);
     expect(AUTOMATION_TEMPLATES.map((t) => t.id)).toEqual([...AUTOMATION_TEMPLATE_IDS]);
     for (const t of AUTOMATION_TEMPLATES) {
@@ -100,7 +106,7 @@ describe('the templates', () => {
     }
     expect(
       AUTOMATION_TEMPLATE_CATEGORIES.map((c) => AUTOMATION_TEMPLATE_CATEGORY_NAMES[c]),
-    ).toEqual(['Status', 'Assigning', 'Due Dates', 'Forms', 'Telling People', 'AI']);
+    ).toEqual(['Status', 'Assigning', 'Due Dates', 'Forms', 'Telling People', 'AI', 'GitHub']);
     expect(automationTemplate('nope')).toBeUndefined();
   });
 
@@ -191,6 +197,90 @@ describe('the templates', () => {
       const got = readRuleBody(fill(t.build(FULL).body));
       expect('body' in got ? null : got).toBeNull();
     }
+  });
+});
+
+// docs/specs/026-plan/automations.md "GitHub triggers": Templates.
+describe('the GitHub templates', () => {
+  const GITHUB = [
+    'review-on-open',
+    'done-on-merge',
+    'flag-failing-checks',
+    'tell-checks-pass',
+    'back-on-close',
+    'merged-to-slack',
+  ];
+
+  it('are the GitHub category’s, each on a GitHub trigger with nobody behind it', () => {
+    expect(AUTOMATION_TEMPLATES.filter((t) => t.category === 'github').map((t) => t.id)).toEqual(
+      GITHUB,
+    );
+    for (const id of GITHUB) {
+      const { body } = build(id, FULL);
+      expect(body.trigger.kind).toMatch(/^pull_request_/);
+      expect(JSON.stringify(body)).not.toContain('"trigger":true');
+      expect(body.conditions.some((c) => c.kind === 'who')).toBe(false);
+    }
+  });
+
+  it('Review When a Pull Request Opens moves to the column named like Review, else leaves it to pick', () => {
+    const { body, picks } = build('review-on-open', FULL);
+    expect(body.trigger).toEqual({ kind: 'pull_request_opened' });
+    expect(body.steps).toEqual([{ kind: 'move', status: 'review' }]);
+    expect(picks).toEqual([]);
+    const bare = build('review-on-open', BARE);
+    expect(bare.body.steps).toEqual([{ kind: 'move', status: '' }]);
+    expect(bare.picks).toEqual([{ path: 'steps.0', pick: 'column' }]);
+    expect(picksLeft(bare.body, bare.picks)).toEqual(bare.picks);
+  });
+
+  it('Done When the Pull Request Merges moves to the first done column and stamps Completed On', () => {
+    const { body, picks } = build('done-on-merge', FULL);
+    expect(body.trigger).toEqual({ kind: 'pull_request_merged' });
+    expect(body.steps).toEqual([
+      { kind: 'move', status: 'done' },
+      { kind: 'set_field', field: 'f-done', value: { date: { today: 0 } } },
+    ]);
+    expect(picks).toEqual([]);
+    expect(build('done-on-merge', BARE).picks).toEqual([
+      { path: 'steps.0', pick: 'column' },
+      { path: 'steps.1', pick: 'field' },
+    ]);
+  });
+
+  it('Flag Failing Checks and Tell Them the Checks Pass hear each result, with nothing to pick', () => {
+    const failing = build('flag-failing-checks', BARE);
+    expect(failing.body.trigger).toEqual({ kind: 'pull_request_checks', result: 'failing' });
+    expect(failing.body.steps.map((s) => s.kind)).toEqual(['flag', 'comment']);
+    expect(failing.picks).toEqual([]);
+    const passing = build('tell-checks-pass', BARE);
+    expect(passing.body.trigger).toEqual({ kind: 'pull_request_checks', result: 'passing' });
+    expect(passing.body.steps).toEqual([
+      { kind: 'unflag' },
+      { kind: 'mention', to: { assignee: true }, text: expect.stringContaining('checks pass') },
+    ]);
+    expect(passing.picks).toEqual([]);
+  });
+
+  it('Back to In Progress When Closed spares done cards, and leaves the column to pick on a bare plan', () => {
+    const { body, picks } = build('back-on-close', FULL);
+    expect(body.trigger).toEqual({ kind: 'pull_request_closed' });
+    expect(body.conditions).toEqual([{ kind: 'column', not: true, statuses: ['done', 'shipped'] }]);
+    expect(body.steps.map((s) => s.kind)).toEqual(['move', 'comment']);
+    expect(body.steps[0]).toEqual({ kind: 'move', status: 'doing' });
+    expect(picks).toEqual([]);
+    const bare = build('back-on-close', BARE);
+    expect(bare.body.conditions).toEqual([]);
+    expect(bare.picks).toEqual([{ path: 'steps.0', pick: 'column' }]);
+  });
+
+  it('Post Merged Work to Slack leaves the webhook to pick', () => {
+    const { body, picks } = build('merged-to-slack', FULL);
+    expect(body.trigger).toEqual({ kind: 'pull_request_merged' });
+    expect(body.steps).toEqual([
+      { kind: 'notify', via: 'slack', webhook: '', text: 'Merged: {{card.title}} {{card.url}}' },
+    ]);
+    expect(picks).toEqual([{ path: 'steps.0', pick: 'webhook' }]);
   });
 });
 

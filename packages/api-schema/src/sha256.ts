@@ -13,7 +13,7 @@
 // 64 chars, no separator: matches the `images.sha256` column shape
 // in the api worker's D1 schema.
 
-import { sha256 } from '@liveworkspace/model-core/sha256';
+import { sha256, sha256Fallback } from '@liveworkspace/model-core/sha256';
 
 function bytesToHex(buf: Uint8Array): string {
   let out = '';
@@ -26,4 +26,10 @@ function bytesToHex(buf: Uint8Array): string {
 
 export async function sha256Hex(bytes: BufferSource): Promise<string> {
   return bytesToHex(await sha256(bytes));
+}
+
+/** The same digest at once, in plain code: for a caller that cannot wait for Web Crypto (the unload flush's delta,
+ *  livediagram's docs/specs/006-document/delta-saves.md "Unload"). */
+export function sha256HexSync(bytes: Uint8Array): string {
+  return bytesToHex(sha256Fallback(bytes));
 }

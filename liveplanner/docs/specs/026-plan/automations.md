@@ -273,7 +273,14 @@ Finished**). Their engineering and their guarantees (once per delivery, never ba
 - **Test on a Card** runs it on the chosen card as if one of its pull requests had just done so.
 - **Off when GitHub is.** The group, and everything below, show only where the deployment has liveplanner's GitHub
   App (`githubEnabled`). A plan not yet connected may pick and save a GitHub trigger; its panel shows **Connect
-  GitHub** in place, and the rule hears nothing until the plan connects.
+  GitHub** in place, and the rule hears nothing until the plan connects. Meanwhile it never sits there silently: the
+  Rules list marks it **Needs Attention: GitHub isn't connected**, with **Connect GitHub** after it (to the GitHub
+  view), as a rule naming a gone column is marked; agents read the line "GitHub is not connected". A plan that
+  disconnects marks its GitHub rules the same way. Where the deployment has no GitHub App, nothing is marked (there is
+  nothing to connect; the trigger's panel says the rule hears nothing).
+- **Templates.** Six templates in the gallery's **GitHub** category start from these triggers (Review When a Pull
+  Request Opens, Done When the Pull Request Merges, Flag Failing Checks, Tell Them the Checks Pass, Back to In Progress
+  When Closed, Post Merged Work to Slack), shown only where `githubEnabled` is.
 - **Drafted too.** The GitHub triggers are in the one rule format (`rule-format.ts`) that an agent's change_rules
   and [Describe a Rule](#describe-a-rule) are given, so "when its pull request merges, move it to Done" drafts a
   Pull Request Merged rule, open in the builder as any draft is (with Connect GitHub in its panel while the plan is
@@ -311,8 +318,8 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
   opens Automations on the GitHub view with a line in the view ("GitHub is connected. The repositories this plan
   hears are below." / "GitHub didn't connect. Try again, or check the App is installed on that account." / "An owner of that
   organisation must approve the install on GitHub. Connect again once they have."), and drops the hash. Someone who
-  left from a GitHub trigger's panel comes back to that rule, unsaved as they left it (kept in this tab's session
-  storage for the round trip), told in a toast ("GitHub is connected. Finish the rule and save it.", or the failure's
+  left from a GitHub trigger's panel comes back to that rule, unsaved as they left it, with a template's picks still
+  marked (kept in this tab's session storage for the round trip), told in a toast ("GitHub is connected. Finish the rule and save it.", or the failure's
   line). The hash is dropped for anyone who opens it; only an Editor's scope opens the screen.
 - **Who**: the screen is an Editor's already; connecting, choosing and disconnecting are a signed-in Editor's of the
   whole plan (the api refuses anyone else `github_needs_editor`, shown as "Only an Editor signed in can connect
@@ -345,7 +352,8 @@ Each condition is one line in the builder, a chip sentence:
 
 A condition on a field the card's type lacks does not hold (it never errors). A condition naming a type, column,
 field, person or saved filter that is gone since does not hold, and the Rules list marks the rule **Needs Attention**
-with what is missing. So does a **Link Cards** step whose chosen card has since been deleted, and a **Set Field**
+with what is missing. So does a **Link Cards** step whose chosen card has since been deleted, a GitHub-triggered rule
+on a plan not connected to GitHub ([GitHub triggers](#github-triggers)), and a **Set Field**
 whose picked person has left the plan (its run fails, "Someone is gone"). The editor never shows
 an id: the line says each kind of thing gone once, in words ("Needs Attention: A column is gone · Someone is gone",
 "2 fields are gone", "A card is gone"), and the rule's sentence and step cards read a gone pick as its panel does
@@ -845,42 +853,55 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
   moving, assigning, labelling and telling people about cards. Start from one below or build your own.", **New
   Rule** and **How Rules Work** (the help article), then **Start From a Template** with the gallery below.
 - **Templates** (the tab, and under the empty state): category chips **All**, **Status**, **Assigning**, **Due
-  Dates**, **Forms**, **Telling People** and **AI**, then a tile per template: a small picture of the rule at work on a
+  Dates**, **Forms**, **Telling People**, **AI** and **GitHub** (only where the deployment has liveplanner's GitHub App,
+  `githubEnabled`: elsewhere the chip and its templates are not shown at all), then a tile per template: a small picture of the rule at work on a
   board, in the template's colour, then its name, its sentence and its category. The picture shows the moment before
   the rule acts (a card in Review, an empty assignee); hovering or focusing the tile plays it (the card slides into
   Done and is stamped with the date, an avatar drops onto the card), and leaving it plays back. It is decoration,
   hidden from screen readers. With reduced motion, or on a touch screen, it shows the moment after, still. The tile
   lifts a little on hover:
 
-  | Template                       | Does                                                                                        | Category       |
-  | ------------------------------ | ------------------------------------------------------------------------------------------- | -------------- |
-  | Stamp the Finish Date          | When a card moves to a done column, set Completed On to today and clear its flag.           | Status         |
-  | Assign on Start                | When a card moves to In Progress with no assignee, assign whoever moved it.                 | Assigning      |
-  | Overdue Nudge                  | Every weekday at 9:00, flag overdue cards and email their assignee.                         | Due Dates      |
-  | Share Out Form Responses       | When a form response lands, assign people in turn and thank the sender in a comment.        | Forms          |
-  | Post Shipped Work to Slack     | When a card with a chosen label moves to Done, post its title and link to a channel.        | Telling People |
-  | Triage New Bugs                | When a Bug card is added, label it triage and assign the people on triage in turn.          | Assigning      |
-  | Unblock the Next Card          | When a card is done, comment on every card it was blocking that it can start.               | Status         |
-  | Due Soon Reminder              | Two days before a card is due, email its assignee with a link to the card.                  | Due Dates      |
-  | Clean Up Done                  | Every Monday at 9:00, archive cards that have been done for more than 14 days.              | Status         |
-  | Escalate Urgent Work           | When a card's priority becomes Urgent, flag it, email its assignee and post to Slack.       | Telling People |
-  | Reopen on New Comment          | When someone comments on a done card, move it back to In Progress and flag it.              | Status         |
-  | Route Reviews                  | When a card moves to Review, assign reviewers in turn and say it is ready for them.         | Assigning      |
-  | Give It a Due Date             | When a card moves to In Progress with no due date, set it due a week from today.            | Due Dates      |
-  | Flag Blocked Cards             | When a card gets the blocked label, flag it and ask in a comment what it waits on.          | Status         |
-  | Verify the Fix                 | When a Bug card is done, add a Verify Fix card to its first column to check it.             | Status         |
-  | Back to the Backlog            | When a card moves back to a to-do column, unassign it and clear its due date.               | Assigning      |
-  | Sort Incoming Cards            | When a card is added, AI suggests its card type and sets its priority and labels.           | AI             |
-  | Summarise Form Requests        | When a form response lands, AI summarises it in a comment and sets its priority and labels. | AI             |
-  | Close the Parent               | When the last of a card’s children is done, move the card to Done too.                      | Status         |
-  | Tell Them It’s Unblocked       | When the last card blocking a card is done, mention its assignee so they can start.         | Telling People |
-  | Nudge Stuck Cards              | Each morning, flag cards that have not changed for 5 days and ask for an update.            | Telling People |
-  | Done When Feedback Is Resolved | When the last comment thread on a card in Review is resolved, move it to Done.              | Status         |
+  | Template                          | Does                                                                                        | Category       |
+  | --------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
+  | Stamp the Finish Date             | When a card moves to a done column, set Completed On to today and clear its flag.           | Status         |
+  | Assign on Start                   | When a card moves to In Progress with no assignee, assign whoever moved it.                 | Assigning      |
+  | Overdue Nudge                     | Every weekday at 9:00, flag overdue cards and email their assignee.                         | Due Dates      |
+  | Share Out Form Responses          | When a form response lands, assign people in turn and thank the sender in a comment.        | Forms          |
+  | Post Shipped Work to Slack        | When a card with a chosen label moves to Done, post its title and link to a channel.        | Telling People |
+  | Triage New Bugs                   | When a Bug card is added, label it triage and assign the people on triage in turn.          | Assigning      |
+  | Unblock the Next Card             | When a card is done, comment on every card it was blocking that it can start.               | Status         |
+  | Due Soon Reminder                 | Two days before a card is due, email its assignee with a link to the card.                  | Due Dates      |
+  | Clean Up Done                     | Every Monday at 9:00, archive cards that have been done for more than 14 days.              | Status         |
+  | Escalate Urgent Work              | When a card's priority becomes Urgent, flag it, email its assignee and post to Slack.       | Telling People |
+  | Reopen on New Comment             | When someone comments on a done card, move it back to In Progress and flag it.              | Status         |
+  | Route Reviews                     | When a card moves to Review, assign reviewers in turn and say it is ready for them.         | Assigning      |
+  | Give It a Due Date                | When a card moves to In Progress with no due date, set it due a week from today.            | Due Dates      |
+  | Flag Blocked Cards                | When a card gets the blocked label, flag it and ask in a comment what it waits on.          | Status         |
+  | Verify the Fix                    | When a Bug card is done, add a Verify Fix card to its first column to check it.             | Status         |
+  | Back to the Backlog               | When a card moves back to a to-do column, unassign it and clear its due date.               | Assigning      |
+  | Sort Incoming Cards               | When a card is added, AI suggests its card type and sets its priority and labels.           | AI             |
+  | Summarise Form Requests           | When a form response lands, AI summarises it in a comment and sets its priority and labels. | AI             |
+  | Close the Parent                  | When the last of a card’s children is done, move the card to Done too.                      | Status         |
+  | Tell Them It’s Unblocked          | When the last card blocking a card is done, mention its assignee so they can start.         | Telling People |
+  | Nudge Stuck Cards                 | Each morning, flag cards that have not changed for 5 days and ask for an update.            | Telling People |
+  | Done When Feedback Is Resolved    | When the last comment thread on a card in Review is resolved, move it to Done.              | Status         |
+  | Review When a Pull Request Opens  | When a linked pull request opens, move its card to Review.                                  | GitHub         |
+  | Done When the Pull Request Merges | When a linked pull request merges, move its card to Done and set Completed On to today.     | GitHub         |
+  | Flag Failing Checks               | When a linked pull request's checks fail, flag its card and say so in a comment.            | GitHub         |
+  | Tell Them the Checks Pass         | When a linked pull request's checks pass, clear the flag and mention the assignee.          | GitHub         |
+  | Back to In Progress When Closed   | When a linked pull request closes without merging, move its card back to In Progress.       | GitHub         |
+  | Post Merged Work to Slack         | When a linked pull request merges, post its card's title and link to a Slack channel.       | GitHub         |
 
   Picking one opens the builder filled in, unsaved and off, named after it (made unique). What the plan has is
   filled in by its role (its done columns, its In Progress column, a column named like Review, a date field named like
   Completed On, a Bug type, its first to-do column); what it lacks or the template leaves to you (a label, the people in turn, a Slack webhook) is left empty,
   its step marked "Pick a field" (or a label, people, a webhook) until picked. Nothing is saved until **Save Rule**.
+  The **GitHub** templates start from a [GitHub trigger](#github-triggers), so they hear a linked pull request, by
+  GitHub with nobody behind it (no Who Did It, nobody assigned or emailed as whoever triggered it). Done When the Pull
+  Request Merges moves to the plan's first done column; Back to In Progress When Closed acts only on a card outside
+  the done columns, so a card already shipped stays put. On a plan not yet connected, the builder opens on the When
+  step as any template does, whose panel shows **Connect GitHub First**: connecting keeps the rule, with what it still
+  leaves to pick, for the round trip, and GitHub sends the person back to it ([The GitHub view](#the-github-view)).
   **New Rule** is a menu: **Blank Rule** (the builder, empty), **Start From a Template** (the Templates tab) and
   **Describe a Rule** ([Describe a Rule](#describe-a-rule)). With
   the plan at its 50 rules the tiles show but don't open.

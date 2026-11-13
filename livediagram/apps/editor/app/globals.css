@@ -767,6 +767,44 @@
   translate: 0 0 var(--ride-z);
 }
 
+/* An isometric column's side walls (docs/specs/008-canvas/isometric-view.md "The depth layer is one flat picture in
+   the scene"): the column's own box is its topmost copy, and each shadow is one copy further down, shifted by its
+   depth along the camera's depth shift (--iso-hx / --iso-hy, set on the depth layer) and shaded toward black, the
+   first shadow on top. Shadows follow the box's border-radius, so a circle, a pill and a cylinder keep their outline.
+   Written from isoWallSteps (lib/isometric.ts); app/isometric-wall-css.test.ts keeps the two the same. */
+[data-iso-wall] {
+  background: var(--iso-wall);
+  box-shadow:
+    calc(var(--iso-hx) * 2px) calc(var(--iso-hy) * 2px)
+      color-mix(in srgb, var(--iso-wall) 96.43%, black),
+    calc(var(--iso-hx) * 4px) calc(var(--iso-hy) * 4px)
+      color-mix(in srgb, var(--iso-wall) 92.86%, black),
+    calc(var(--iso-hx) * 6px) calc(var(--iso-hy) * 6px)
+      color-mix(in srgb, var(--iso-wall) 89.29%, black),
+    calc(var(--iso-hx) * 8px) calc(var(--iso-hy) * 8px)
+      color-mix(in srgb, var(--iso-wall) 85.71%, black),
+    calc(var(--iso-hx) * 10px) calc(var(--iso-hy) * 10px)
+      color-mix(in srgb, var(--iso-wall) 82.14%, black),
+    calc(var(--iso-hx) * 12px) calc(var(--iso-hy) * 12px)
+      color-mix(in srgb, var(--iso-wall) 78.57%, black),
+    calc(var(--iso-hx) * 14px) calc(var(--iso-hy) * 14px)
+      color-mix(in srgb, var(--iso-wall) 75%, black),
+    calc(var(--iso-hx) * 16px) calc(var(--iso-hy) * 16px)
+      color-mix(in srgb, var(--iso-wall) 71.43%, black),
+    calc(var(--iso-hx) * 18px) calc(var(--iso-hy) * 18px)
+      color-mix(in srgb, var(--iso-wall) 67.86%, black),
+    calc(var(--iso-hx) * 20px) calc(var(--iso-hy) * 20px)
+      color-mix(in srgb, var(--iso-wall) 64.29%, black),
+    calc(var(--iso-hx) * 22px) calc(var(--iso-hy) * 22px)
+      color-mix(in srgb, var(--iso-wall) 60.71%, black),
+    calc(var(--iso-hx) * 24px) calc(var(--iso-hy) * 24px)
+      color-mix(in srgb, var(--iso-wall) 57.14%, black),
+    calc(var(--iso-hx) * 26px) calc(var(--iso-hy) * 26px)
+      color-mix(in srgb, var(--iso-wall) 53.57%, black),
+    calc(var(--iso-hx) * 28px) calc(var(--iso-hy) * 28px)
+      color-mix(in srgb, var(--iso-wall) 50%, black);
+}
+
 /* The floating chrome gets its OWN compositing layer while isometric is on.
    Isometric puts a large preserve-3d scene on the page, and the panels sit
    above it in z but shared its repaint region — which is why the palette
@@ -957,6 +995,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
    canvasIsBusy in the same module; docs/specs/008-canvas/canvas-performance.md) only the surface eases: easing every
    part of every element restyled thousands of nodes each frame and held the page in long frames. */
 :root.lvd-style-transition [data-canvas-root],
+[data-canvas-root][data-style-easing],
 :root.lvd-style-transition [data-canvas-root]:not([data-canvas-busy]) * {
   transition-property: background-color, border-color, color, fill, stroke, opacity;
   transition-duration: 250ms;

@@ -1,11 +1,11 @@
 // A rule's Needs Attention line as the Rules list words it (docs/specs/026-plan/automations.md "Conditions"): never an
 // id, as the step panels' gone picks never show one. Each kind of thing gone is said once, counted ("A column is gone",
 // "2 columns are gone", "Someone is gone"), in the order the rule names them; a field Field Changed never hears keeps
-// its name. Pure.
+// its name; a GitHub rule on a plan not connected says so. Pure.
 
 import { goneIdsWords, type AutomationGone, type AutomationNeed } from '@liveplanner/items';
 
-type GoneKind = Exclude<AutomationNeed['kind'], 'unheard'>;
+type GoneKind = Exclude<AutomationNeed['kind'], 'unheard' | 'github'>;
 
 // What one, and several, of each kind read as.
 const GONE: Readonly<Record<GoneKind, readonly [one: string, many: string]>> = {
@@ -19,12 +19,19 @@ const GONE: Readonly<Record<GoneKind, readonly [one: string, many: string]>> = {
   card: ['A card', 'cards'],
 };
 
+/** A GitHub rule's line on a plan not connected to GitHub. */
+export const GITHUB_UNCONNECTED = 'GitHub isn’t connected';
+
 export function needsWords(attention: readonly AutomationNeed[]): string {
   const counts = new Map<GoneKind, number>();
   const lines: ({ gone: GoneKind } | { text: string })[] = [];
   for (const need of attention) {
     if (need.kind === 'unheard') {
       lines.push({ text: `Field Changed never hears ${need.name}` });
+      continue;
+    }
+    if (need.kind === 'github') {
+      lines.push({ text: GITHUB_UNCONNECTED });
       continue;
     }
     const n = counts.get(need.kind) ?? 0;

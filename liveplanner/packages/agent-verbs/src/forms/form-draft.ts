@@ -204,12 +204,8 @@ export function setRespondsTo(
       undefined,
       { typeId: type.id, statuses: type.statuses },
     );
-    // A responses board takes the form's card type alone, so it shows only responses.
+    // A responses board takes the form's card type alone (responsesBoardTab), so it shows only responses.
     const made = boardsOf(tab)[0]!;
-    // The tab holds the one board responsesBoardTab made.
-    tab.elements = [
-      { ...made.element, planBoard: { ...made.setup, addTypes: [type.id] } } as Element,
-    ];
     d.newTabs.push(tab);
     board = {
       tabId: tab.id,

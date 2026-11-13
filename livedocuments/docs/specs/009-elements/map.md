@@ -24,7 +24,11 @@ no tiles, no zoom and no streets, and nothing is fetched from anywhere when it d
 - **View.** One of eight **regions**: World (the default), Europe, Africa, Asia, Middle East, North
   America, South America, Oceania. Or **one country** (picked by name in the View picker), which
   frames that country on its main land and the pieces near it (France frames on Europe with Corsica,
-  not on French Guiana) and draws every other country faint behind it for context.
+  not on French Guiana) and draws every other country faint behind it for context. The **United
+  States** frames on the lower 48, so they fill the box, and draws **Alaska and Hawaii again in
+  insets** along the frame's lower left, as an atlas does: Alaska smaller, Hawaii a little larger,
+  both in the United States' own fill, so a highlighted United States shows every state. Each
+  inset sits on a plate of the paper, so the faint land behind it never runs into it.
 - **Highlighted countries** are filled in the accent (the element's stroke colour). The rest of the
   land is the element's fill colour, else a soft neutral for the paper it sits on. Country borders
   are thin lines in the paper colour.

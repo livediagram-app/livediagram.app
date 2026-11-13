@@ -175,6 +175,30 @@ describe('the triggers after Phase 3', () => {
   });
 });
 
+// docs/specs/026-plan/automations.md "GitHub triggers": a GitHub rule on a plan not connected needs attention.
+describe('a GitHub rule on a plan not connected', () => {
+  const github = ruleBody({ trigger: { kind: 'pull_request_merged' } });
+
+  it('needs attention only when the caller says the plan is not connected', () => {
+    expect(ruleNeedItems(github, OUTLINE, undefined, false)).toEqual([{ kind: 'github' }]);
+    expect(ruleNeeds(github, OUTLINE)).toEqual([]);
+    expect(ruleNeedItems(github, OUTLINE, undefined, true)).toEqual([]);
+    expect(needLine({ kind: 'github' })).toBe('GitHub is not connected');
+  });
+
+  it('marks no other trigger, and comes first beside what else the rule lacks', () => {
+    expect(ruleNeedItems(ruleBody(), OUTLINE, undefined, false)).toEqual([]);
+    const both = ruleBody({
+      trigger: { kind: 'pull_request_checks', result: 'failing' },
+      steps: [{ kind: 'move', status: 'gone' }],
+    });
+    expect(ruleNeedItems(both, OUTLINE, undefined, false).map((n) => n.kind)).toEqual([
+      'github',
+      'column',
+    ]);
+  });
+});
+
 describe('Link Cards', () => {
   const rule = ruleBody({
     steps: [

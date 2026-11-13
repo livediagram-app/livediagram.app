@@ -3,6 +3,7 @@
 // this once with its api core, its item path (`documents`, `designs`, `projects`), its offline store and the few
 // places its copy had drifted, and keeps only its own extra calls.
 import { dedupeInFlight } from '../dedupe';
+import { createTabDeltaSaves, type TabDeltaConfig } from './tab-delta-save';
 
 type ApiHeaders = (
   ownerId: string,
@@ -64,6 +65,9 @@ export type TabCallsConfig<Tab extends TabBase, NoGrant> = {
   takeKeepalive?: (body: string | undefined) => boolean;
   // The unload flush's requests go at once, with the grant they hold.
   noGrantWait: NoGrant;
+  // Delta saves (livediagram's docs/specs/006-document/delta-saves.md): the product's element diff. Absent, every
+  // save sends the whole tab and no base copy is held.
+  delta?: TabDeltaConfig<Tab['elements'][number] & { id: string }>;
 };
 
 // The keepalive bodies one unload flush sends at most: browsers allow 64 KB in all per page; the rest is headroom
@@ -110,14 +114,20 @@ export function createUnloadHeaders(deps: {
   };
 }
 
-// The revision a save wrote, from the tab the api echoes; null when the answer names none.
-async function savedRevOf(res: Response): Promise<number | null> {
+// The revision a save wrote and the elements it stored, from the tab the api echoes; null when the answer names none.
+async function savedEchoOf(
+  res: Response,
+): Promise<{ rev: number | null; elements: unknown[] | null }> {
   try {
-    const body = (await res.json()) as { tab?: { rev?: unknown } };
+    const body = (await res.json()) as { tab?: { rev?: unknown; elements?: unknown } };
     const rev = body.tab?.rev;
-    return typeof rev === 'number' ? rev : null;
+    const elements = body.tab?.elements;
+    return {
+      rev: typeof rev === 'number' ? rev : null,
+      elements: Array.isArray(elements) ? elements : null,
+    };
   } catch {
-    return null;
+    return { rev: null, elements: null };
   }
 }
 
@@ -126,6 +136,16 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
 ) {
   const { core, offline, itemPath } = config;
   const enc = encodeURIComponent;
+  type DeltaElement = Tab['elements'][number] & { id: string };
+  // The base copies and the delta save, only for a product that sends deltas.
+  const deltas = config.delta
+    ? createTabDeltaSaves<DeltaElement>({
+        diff: config.delta.diff,
+        fetch: (url, init) => core.apiFetch(url, init),
+        expectOkVoid: (res, action) => core.expectOkVoid(res, action),
+        saveTimeoutSignal: (body) => core.saveTimeoutSignal(body),
+      })
+    : null;
 
   // The full tab payload, elements and per-tab metadata, pulled lazily when the user opens a tab. `open` declares
   // this read an open of the item, for the reader's Home: only the editor's first-tab read sets it. The tab's
@@ -155,6 +175,10 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     void _oi;
     void _ua;
     const clientTab = rest as unknown as Tab;
+    // The base copy is the elements as stored, so it is taken before the load's own fixes below.
+    if (deltas && typeof rev === 'number' && Array.isArray(clientTab.elements)) {
+      deltas.hold(itemId, tabId, rev, clientTab.elements as DeltaElement[]);
+    }
     // Coerce on load: this is the single boundary where stored elements enter the editor, so a legacy or
     // hand-edited row cannot reach the renderer and break it. A no-op for the common case.
     const normalize = config.normalizeElement;
@@ -213,8 +237,21 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     if (opts.saveChanges && config.saveChangesHeader) {
       headers.set(config.saveChangesHeader, opts.saveChanges);
     }
-    const body = JSON.stringify(core.tabForWire(tab));
-    const res = await core.apiFetch(`${core.API_BASE}/${itemPath}/${itemId}/tabs/${tab.id}`, {
+    const wire = core.tabForWire(tab);
+    const url = `${core.API_BASE}/${itemPath}/${itemId}/tabs/${tab.id}`;
+    if (deltas) {
+      // A delta when one is held and worth sending; null (no base, too large, or refused) saves whole below.
+      const sent = await deltas.send({
+        itemId,
+        tabId: tab.id,
+        url,
+        tab: wire as { elements: DeltaElement[] },
+        headers,
+      });
+      if (sent) return sent.rev;
+    }
+    const body = JSON.stringify(wire);
+    const res = await core.apiFetch(url, {
       method: 'PUT',
       headers,
       body,
@@ -222,12 +259,24 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
       signal: core.saveTimeoutSignal(body),
     });
     await core.expectOkVoid(res, 'save tab');
-    return savedRevOf(res);
+    const echo = await savedEchoOf(res);
+    // The echo is what the api stored, merges and all: the next delta's base copy.
+    if (deltas && echo.rev !== null && echo.elements) {
+      deltas.holdEcho(
+        itemId,
+        tab.id,
+        echo.rev,
+        echo.elements as DeltaElement[],
+        (wire as { elements: DeltaElement[] }).elements,
+      );
+    }
+    return echo.rev;
   }
 
   // The last-ditch unload flush of pending tab/meta writes, so a fast edit then reload doesn't lose changes. A
   // `beforeunload` handler can't await, and the account token provider is async, so this builds headers
-  // synchronously and uses `keepalive` to let each request outlive the teardown. Callers pass an already-diffed
+  // synchronously and uses `keepalive` to let each request outlive the teardown. A tab with a base copy goes as a
+  // delta, planned synchronously, when it fits the keepalive budget (delta saves). Callers pass an already-diffed
   // change set; empty sets fire nothing. Only tabs whose content is authoritative in memory (`loadedTabIds`) may
   // authorise an empty-body overwrite.
   function flushSavesBeacon(args: {
@@ -283,14 +332,41 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
         ...(seen !== undefined ? { [config.changesetSeenHeader]: String(seen) } : {}),
         ...(changes ? { [config.saveChangesHeader as string]: changes } : {}),
       };
-      const body = JSON.stringify(core.tabForWire(t));
-      void core
-        .apiFetch(
-          tabUrl(t.id),
-          { method: 'PUT', headers, body, keepalive: keepaliveFor(body) },
-          config.noGrantWait,
-        )
-        .catch(() => {});
+      const wire = core.tabForWire(t);
+      const url = tabUrl(t.id);
+      const whole = () => {
+        const body = JSON.stringify(wire);
+        void core
+          .apiFetch(
+            url,
+            { method: 'PUT', headers, body, keepalive: keepaliveFor(body) },
+            config.noGrantWait,
+          )
+          .catch(() => {});
+      };
+      // A delta where one is held and fits the keepalive budget, so a large tab's last edits outlive the page
+      // (delta-saves.md "Unload"). Refused, the whole tab follows if the page is still here to send it.
+      const delta = deltas?.planUnload({
+        itemId: args.itemId,
+        tabId: t.id,
+        url,
+        tab: wire as { elements: DeltaElement[] },
+      });
+      if (delta && keepaliveFor(delta.body)) {
+        void core
+          .apiFetch(
+            delta.url,
+            { method: 'POST', headers, body: delta.body, keepalive: true },
+            config.noGrantWait,
+          )
+          .then((res) => delta.settle(res))
+          .then((settled) => {
+            if (settled === 'refused') whole();
+          })
+          .catch(() => {});
+        continue;
+      }
+      whole();
     }
     for (const tabId of args.deletedIds) {
       void core

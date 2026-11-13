@@ -2,11 +2,10 @@
 // (when it started from a GitHub trigger's panel), then GitHub's install page; and what the screen says about a
 // return (github-hash.ts reads it).
 
-import type { AutomationRuleBody } from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
 import type { AutomationsScope } from '../automations-client';
 import { startGithubConnect } from './github-client';
-import { keepGithubDraft, type GithubResult } from './github-hash';
+import { keepGithubDraft, type GithubResult, type KeptRule } from './github-hash';
 
 export type { GithubResult } from './github-hash';
 
@@ -14,7 +13,7 @@ export type { GithubResult } from './github-hash';
  *  throws for the caller to show. */
 export async function goConnectGithub(
   scope: AutomationsScope,
-  draft: AutomationRuleBody | null,
+  draft: KeptRule | null,
   go: (url: string) => void = (url) => window.location.assign(url),
 ): Promise<void> {
   track('Plan', 'Started', 'GithubConnect');

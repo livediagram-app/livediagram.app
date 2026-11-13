@@ -4,13 +4,18 @@
 // "Far runs"). A run's cards are built only while the run is near (components/plan/PlanCardRun.tsx): a far run is an
 // empty placeholder that keeps its last drawn height (`--run-h`) or the estimate for its cards (app/globals.css
 // `plan-card-run`). Opening a 2,000-card board built every card's DOM, then hid the far ones; Safari also styled them.
-import { createContext, useLayoutEffect, useMemo } from 'react';
+import { createContext, startTransition, useLayoutEffect, useMemo } from 'react';
+import { flushSync } from 'react-dom';
 
 export const RUN_NEAR_ATTR = 'data-plan-run-near';
 // A run's card ids, space separated, so a far card (not built) can be found by its run.
 export const RUN_IDS_ATTR = 'data-plan-run-ids';
 // How far past the body's visible box a run counts as near, in body boxes on every side.
 export const RUN_NEAR_VIEWS = 1;
+// Runs drawn near together as they mount (a board's first draw) past this many build their cards as a transition, in
+// the frames after the board appears, rather than in the board's own task (plan-board.md "A big board's first draw").
+// Fewer are built before the frame is drawn, as one run arriving in a moved card's cell is.
+export const RUN_REVEAL_TRANSITION = 8;
 
 type Box = { top: number; bottom: number; left: number; right: number };
 
@@ -35,15 +40,19 @@ export const RUN_FAR: RunState = { near: false };
 export type RunHandle = {
   set: (s: RunState) => void;
   focusAfter: (id: string, opts: FocusOptions | undefined) => void;
+  // Drawn near with the others asked for in this commit (the reveal's own handle; RUN_REVEAL_TRANSITION).
+  soon?: () => void;
 };
 
 // Every mounted run's handle, by its element: a card about to take focus (focusPlanCard) or a run the card flip reads
 // (cardsToMeasure) is drawn through it.
 const handles = new WeakMap<Element, RunHandle>();
 
-// A run drawn near now (the flip reads it in a commit; its cards are built in the render that follows).
+// A run drawn near (the flip reads it in a commit; its cards are built with the others asked for in that commit).
 export function markNear(run: Element): void {
-  handles.get(run)?.set(RUN_NEAR);
+  const handle = handles.get(run);
+  if (handle?.soon) handle.soon();
+  else handle?.set(RUN_NEAR);
 }
 
 const quoted = (id: string) => `"${CSS.escape(id)}"`;
@@ -93,6 +102,22 @@ function createRunReveal(): RunReveal {
   // The runs drawn near, so the observer sets a run only when its state changes.
   const near = new WeakSet<Element>();
   const set = (run: Element, s: RunState) => handles.get(run)?.set(s);
+  // The runs found near in a commit (as they mounted, or read by the card flip), drawn together once its layout effects
+  // have run: a few before the frame is drawn, so a run arriving in view never shows empty; a board's worth as a
+  // transition.
+  const queued = new Set<Element>();
+  const drawQueued = () => {
+    const runs = [...queued];
+    queued.clear();
+    const draw = () => runs.forEach((run) => set(run, RUN_NEAR));
+    if (runs.length > RUN_REVEAL_TRANSITION) startTransition(draw);
+    else flushSync(draw);
+  };
+  const drawSoon = (run: Element) => {
+    if (near.has(run) || queued.has(run)) return;
+    if (queued.size === 0) queueMicrotask(drawQueued);
+    queued.add(run);
+  };
   const observer = (root: HTMLElement) =>
     new IntersectionObserver(
       (entries) => {
@@ -120,19 +145,19 @@ function createRunReveal(): RunReveal {
           near.add(run);
           own.focusAfter(id, opts);
         },
+        soon: () => drawSoon(run),
       };
       handles.set(run, handle);
       const root = run.closest<HTMLElement>(`[${RUN_BODY_ATTR}]`);
       if (root) {
         io ??= observer(root);
         io.observe(run);
-        // Read in the runs' layout effects, before any is drawn: one layout for them all, and the near ones are
-        // built before the frame is drawn, so a run arriving in view never shows empty.
-        if (runIsNear(run.getBoundingClientRect(), root.getBoundingClientRect()))
-          set(run, RUN_NEAR);
+        // Read in the runs' layout effects, before any is drawn: one layout for them all.
+        if (runIsNear(run.getBoundingClientRect(), root.getBoundingClientRect())) drawSoon(run);
       } else set(run, RUN_NEAR);
       return () => {
         io?.unobserve(run);
+        queued.delete(run);
         near.delete(run);
         if (handles.get(run) === handle) handles.delete(run);
       };

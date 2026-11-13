@@ -53,6 +53,8 @@ import { hookInfos } from '../plan-room/automations/automation-incoming';
 import { draftRule } from './automation-draft-route';
 import { makeSecret } from './automation-hook-routes';
 import { writer } from './item-route-kit';
+import { githubConfig } from '../github/github-config';
+import { readConnection } from '../plan-room/github/github-store';
 import { gateEdit, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
 
 // `ai`: the caller is an API token (an agent), whose stamps and Run Rule say so.
@@ -103,6 +105,22 @@ const stampOf = (g: Gated) => ({
   ...(g.ai ? { ai: true as const } : {}),
 });
 
+// Whether the plan is connected to GitHub, read only where the deployment has the App and a rule hears GitHub
+// (undefined: not checked, so no rule is marked; spec automations.md "GitHub triggers"). A failed read checks nothing.
+async function githubConnected(
+  ctx: PlanRouteContext,
+  projectId: string,
+  rules: readonly AutomationRule[],
+): Promise<boolean | undefined> {
+  if (!githubConfig(ctx.env) || !rules.some((r) => isGithubTrigger(r.trigger))) return undefined;
+  try {
+    return (await readConnection(ctx.env.PLAN_DB, projectId)) !== null;
+  } catch (error) {
+    console.warn('[automations] github.connection.failed', { error: String(error) });
+    return undefined;
+  }
+}
+
 function listed(
   hook: PlanAutomations,
   plan: AutomationPlan,
@@ -111,10 +129,12 @@ function listed(
   nextAts: ReadonlyMap<string, number>,
   // An Incoming Webhook rule's address and secret (never the secret itself).
   hooks: ReadonlyMap<string, AutomationHookInfo> = new Map(),
+  // Whether the plan is connected to GitHub (undefined: not checked).
+  github?: boolean,
 ): AutomationListedRule {
   const s = stats.get(rule.id);
   const info = hooks.get(rule.id);
-  const attention = ruleNeedItems(rule, plan.outline);
+  const attention = ruleNeedItems(rule, plan.outline, undefined, github);
   return {
     ...rule,
     ...(info ? { hook: info } : {}),
@@ -133,8 +153,9 @@ async function answerRule(ctx: PlanRouteContext, g: Gated, rule: AutomationRule,
   const plan = await readAutomationPlan(ctx.env, g.projectId);
   const stats = ruleStats(g.hook.sql(), Date.now());
   const hooks = hookInfos(ctx.env, g.projectId, g.hook.sql(), [rule]);
+  const github = await githubConnected(ctx, g.projectId, [rule]);
   return json(
-    { rule: listed(g.hook, plan, rule, stats, g.hook.store.nextAts(), hooks) },
+    { rule: listed(g.hook, plan, rule, stats, g.hook.store.nextAts(), hooks, github) },
     { status },
   );
 }
@@ -146,8 +167,9 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const nextAts = g.hook.store.nextAts();
   const rules = g.hook.store.list();
   const hooks = hookInfos(ctx.env, g.projectId, g.hook.sql(), rules);
+  const github = await githubConnected(ctx, g.projectId, rules);
   const answer: AutomationsListResponse = {
-    rules: rules.map((r) => listed(g.hook, plan, r, stats, nextAts, hooks)),
+    rules: rules.map((r) => listed(g.hook, plan, r, stats, nextAts, hooks, github)),
     runsToday: runsToday(g.hook.sql(), now),
     runsPerDay: AUTOMATION_RUNS_PER_DAY,
     // What an agent names people by, and words them with (spec "Agents and the CLI").

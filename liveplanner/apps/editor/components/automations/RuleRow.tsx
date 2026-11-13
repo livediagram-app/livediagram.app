@@ -3,7 +3,8 @@
 // One rule in the Rules list (docs/specs/026-plan/automations.md "The Automations screen"): its switch, its name and
 // sentence, Last Run and This Week, and its ⋯ menu. A rule that paused itself is amber, with Paused, the reason and
 // Resume (and Fix Webhook, when a webhook it posts through stopped it); one naming something the plan lacks says what,
-// in words and never by id ("A column is gone · Someone is gone").
+// in words and never by id ("A column is gone · Someone is gone"), and a GitHub rule on a plan not connected offers
+// Connect GitHub.
 // A time rule that is on says its next moment under Last Run ("Next: Mon 9:00"). Clicking the name or sentence opens
 // the builder. On a phone the row stacks: the name, the sentence's trigger, "4 min ago · 38 runs this week", and the
 // switch at the right.
@@ -17,6 +18,7 @@ import {
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import { Switch, lucideGlyph } from '@liveplanner/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
+import { useGithubAutomations } from './github/github-automations';
 import { goneText, needsWords } from './needs-words';
 import { SentenceChips } from './SentenceChips';
 import { RuleMenu } from './RuleMenu';
@@ -72,6 +74,9 @@ function PausedNote({
 }
 
 function NeedsNote({ attention }: { attention: readonly AutomationNeed[] }) {
+  // A GitHub rule on a plan not connected: the way to connect, where the dialog offers GitHub.
+  const github = useGithubAutomations();
+  const connect = github?.enabled && attention.some((n) => n.kind === 'github');
   if (attention.length === 0) return null;
   return (
     <span
@@ -83,6 +88,15 @@ function NeedsNote({ attention }: { attention: readonly AutomationNeed[] }) {
       </span>
       <span>
         <span className="font-semibold">Needs Attention:</span> {needsWords(attention)}
+        {connect ? (
+          <>
+            {' '}
+            <span aria-hidden>·</span>{' '}
+            <button type="button" className={`${LINK} z-[1]`} onClick={github?.openView}>
+              Connect GitHub
+            </button>
+          </>
+        ) : null}
       </span>
     </span>
   );

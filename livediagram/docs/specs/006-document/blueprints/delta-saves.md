@@ -4,27 +4,31 @@ Derived from [Delta saves](../delta-saves.md). Engineering precision only; desig
 
 ## Domain and naming
 
-| Term       | Identifier                   | Meaning                                                                                   |
-| ---------- | ---------------------------- | ----------------------------------------------------------------------------------------- |
-| Delta save | `POST .../tabs/:tabId/delta` | One tab save sent as element ops over a base copy                                         |
-| Delta body | `TabDeltaBody`               | `{ baseRev, digest, ops, tab }`, parsed by `parseTabDelta`                                |
-| Delta op   | `TabDeltaOp`                 | One element op, the same four kinds as `ElementOp` (`add`, `update`, `remove`, `reorder`) |
-| Base copy  | (the editor's, per tab)      | The tab's elements exactly as stored at `baseRev`                                         |
-| Digest     | `elementsDigest(elements)`   | SHA-256 lowercase hex of `JSON.stringify(elements)`                                       |
-| Refusal    | `TabDeltaRefusal`            | `too_many_ops`, `no_base`, `stale_base`, `digest_mismatch`                                |
-| Whole save | `PUT .../tabs/:tabId`        | The whole-tab save; the delta save's fallback                                             |
+| Term         | Identifier                   | Meaning                                                                                   |
+| ------------ | ---------------------------- | ----------------------------------------------------------------------------------------- |
+| Delta save   | `POST .../tabs/:tabId/delta` | One tab save sent as element ops over a base copy                                         |
+| Delta body   | `TabDeltaBody`               | `{ baseRev, digest, ops, tab }`, parsed by `parseTabDelta`                                |
+| Delta op     | `TabDeltaOp`                 | One element op, the same four kinds as `ElementOp` (`add`, `update`, `remove`, `reorder`) |
+| Base copy    | (the editor's, per tab)      | The tab's elements exactly as stored at `baseRev`                                         |
+| Digest       | `elementsDigest(elements)`   | SHA-256 lowercase hex of `JSON.stringify(elements)`                                       |
+| Refusal      | `TabDeltaRefusal`            | `too_many_ops`, `no_base`, `stale_base`, `digest_mismatch`                                |
+| Whole save   | `PUT .../tabs/:tabId`        | The whole-tab save; the delta save's fallback                                             |
+| Unload delta | `planUnload`                 | The unload flush's delta, planned synchronously, sent `keepalive` within the budget       |
 
 "Delta save" is the only name: never "patch save", "partial save" or "diff save".
 
 ## Modules
 
-| File                                                 | Responsibility                                                                                                                                   |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `../packages/api-schema/src/tab-delta.ts`            | The envelope every product shares: constants, `TabDeltaOp`, `TabDeltaBody`, `parseTabDelta`, `elementsDigest`, `planTabDelta`, the refusal names |
-| `apps/api/src/routes/tab-delta-route.ts`             | `handleTabDelta`: parse, refuse, rebuild with `applyElementOps`, prove by digest, hand to `writeTabSave`                                         |
-| `apps/api/src/routes/tab-put-route.ts`               | `writeTabSave`: the whole-tab save's pipeline, shared by the PUT and the delta door; `handleTabPut`                                              |
-| `apps/api/src/routes/document-subresource-routes.ts` | Dispatch: `POST /api/documents/:id/tabs/:tabId/delta` behind the PUT's doors                                                                     |
-| `apps/api/src/openapi/manifest.ts`                   | The route's OpenAPI entry                                                                                                                        |
+| File                                                  | Responsibility                                                                                                                                                                           |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/tab-delta.ts`             | The envelope every product shares: constants, `TabDeltaOp`, `TabDeltaBody`, `parseTabDelta`, `elementsDigest`, `planTabDelta`, `planTabDeltaSync`, the refusal names                     |
+| `apps/api/src/routes/tab-delta-route.ts`              | `handleTabDelta`: parse, refuse, rebuild with `applyElementOps`, prove by digest, hand to `writeTabSave`                                                                                 |
+| `apps/api/src/routes/tab-put-route.ts`                | `writeTabSave`: the whole-tab save's pipeline, shared by the PUT and the delta door; `handleTabPut`                                                                                      |
+| `apps/api/src/routes/document-subresource-routes.ts`  | Dispatch: `POST /api/documents/:id/tabs/:tabId/delta` behind the PUT's doors                                                                                                             |
+| `apps/api/src/openapi/manifest.ts`                    | The route's OpenAPI entry                                                                                                                                                                |
+| `../packages/workbench/src/lib/api/tab-delta-save.ts` | The editor's side: `createTabDeltaSaves`, the base copies (`hold`, `drop`), `send` (one delta save or null to save whole) and `planUnload`                                               |
+| `../packages/workbench/src/lib/api/tab-calls.ts`      | `createTabCalls` with `delta`: holds the load's and the whole save's base copies, tries `send` before the whole `PUT`; `flushSavesBeacon` tries `planUnload` within the keepalive budget |
+| `apps/editor/lib/api/tabs.ts`                         | livediagram's binding: `delta: { diff: diffToElementOps }`                                                                                                                               |
 
 ## Interfaces and contracts
 
@@ -52,7 +56,13 @@ export function planTabDelta<E extends { id: string }>(args: {
   base: { rev: number; elements: E[] } | null;
   tab: { elements: E[] };
   diff: (before: E[], after: E[]) => TabDeltaOp<E>[];
-}): Promise<{ body: string; digest: string; ops: number } | null>;
+}): Promise<TabDeltaPlan | null>;
+export function planTabDeltaSync<E extends { id: string }>(args: {
+  base: { rev: number; elements: E[] } | null;
+  tab: { elements: E[] };
+  diff: (before: E[], after: E[]) => TabDeltaOp<E>[];
+}): TabDeltaPlan | null;
+export type TabDeltaPlan = { body: string; digest: string; ops: number };
 ```
 
 - `parseTabDelta` answers the parsed body or the `400` message: `expected a JSON object`, `invalid baseRev` (not a
@@ -62,6 +72,56 @@ export function planTabDelta<E extends { id: string }>(args: {
 - `planTabDelta` answers null (save whole) when there is no base copy, the diff has more than `TAB_DELTA_MAX_OPS` ops,
   or the delta body is longer than `TAB_DELTA_MAX_SHARE` of the elements' JSON; otherwise the body to send, the
   digest of the current elements and the op count.
+- `planTabDeltaSync` answers exactly what `planTabDelta` answers, at once: the digest is `sha256HexSync`
+  (`../packages/api-schema/src/sha256.ts`, over `@liveworkspace/model-core/sha256`'s `sha256Fallback`, FIPS 180-4 in
+  plain code), byte for byte Web Crypto's.
+
+```ts
+// @liveworkspace/workbench/lib/api/tab-delta-save
+export const TAB_DELTA_BASES_MAX = 16;
+export type TabDeltaConfig<E extends { id: string }> = {
+  diff: (before: E[], after: E[]) => TabDeltaOp<E>[];
+};
+export function createTabDeltaSaves<E extends { id: string }>(deps: {
+  diff: TabDeltaConfig<E>['diff'];
+  fetch: (url: string, init: RequestInit) => Promise<Response>;
+  expectOkVoid: (res: Response, action: string) => Promise<void>;
+  saveTimeoutSignal: (body: string) => AbortSignal;
+  max?: number;
+}): {
+  hold(itemId: string, tabId: string, rev: number, elements: E[]): void;
+  holdEcho(itemId: string, tabId: string, rev: number, echoed: E[], sent: readonly E[]): void;
+  drop(itemId: string, tabId: string): void;
+  base(itemId: string, tabId: string): { rev: number; elements: E[] } | null;
+  send(args: {
+    itemId: string;
+    tabId: string;
+    url: string; // the whole save's tab url; the delta posts to `${url}/delta`
+    tab: { elements: E[] }; // the tab as the whole save would send it
+    headers: Headers;
+  }): Promise<{ rev: number | null } | null>;
+  planUnload(args: {
+    itemId: string;
+    tabId: string;
+    url: string; // the whole save's tab url
+    tab: { elements: E[] }; // the tab as the whole save would send it
+  }): {
+    url: string; // `${url}/delta`
+    body: string;
+    settle(res: Response): Promise<'saved' | 'refused' | 'failed'>;
+  } | null;
+};
+// TabCallsConfig gains `delta?: TabDeltaConfig<Tab['elements'][number]>`; absent, every save is whole.
+```
+
+- `send` answers null (save whole) when there is no base copy, `planTabDelta` answers null, or the api answers
+  `409 delta_refused` (the base copy is dropped). Any other failed answer throws through `expectOkVoid`, as the whole
+  save's does. On `200` it holds `tab.elements` at the answer's `rev` when the answer's digest is the plan's, and
+  drops the base copy otherwise; it answers `{ rev }` (null when the answer names none).
+- `planUnload` sends nothing: it answers null (send whole) when there is no base copy or `planTabDeltaSync` answers
+  null, else the url, the body and `settle`. `settle` answers `refused` on `409 delta_refused` (the base copy dropped
+  if still the one planned over), `failed` on any other failed answer (nothing thrown, nothing reported, the base copy
+  kept), and `saved` otherwise, holding or dropping the base copy as `send` does.
 
 ### REST
 
@@ -84,6 +144,27 @@ The refusal body: `{ error: 'delta_refused', reason: TabDeltaRefusal }`.
    first attempt reusing the read of step 3 (a lost race re-reads, as the PUT does).
 6. Answer `{ rev, digest: elementsDigest(saved.elements) }`.
 
+The editor (`createTabCalls` with `delta`):
+
+1. `loadTabRevisioned` holds the answered elements, before `normalizeElement`, at the answered `rev`.
+2. `saveTab` (not offline) builds the headers once, then `send` with the wire tab (`tabForWire`). An answer is the
+   save's revision; null goes on to the whole `PUT` with the same headers.
+3. The whole `PUT`'s answer: its `tab.rev` is the save's revision, and with `tab.elements` a list, they are held as
+   the base copy at that revision (`holdEcho`: each echoed element whose JSON is the sent element's is held as the
+   editor's own object, so the copy shares memory with the editor and the next diff skips it by reference).
+4. `hold` keeps the held copy when it is for a newer revision than the one offered, refreshes the tab as the most
+   recently used, and evicts the least recently used past `TAB_DELTA_BASES_MAX`.
+
+The unload flush (`flushSavesBeacon`, for each changed tab, not offline):
+
+1. The headers as before (`unloadHeaders`, `Content-Type`, `X-Allow-Empty` for a loaded tab, the seen changeset).
+2. With `delta`, `planUnload` over the wire tab. A plan whose body the keepalive budget takes (`keepaliveFor`, which
+   then counts it) is sent `POST` with `keepalive: true` and the unload's `noGrantWait`; its answer goes to `settle`,
+   and `refused` sends the whole tab (step 3) if the page is still running. Nothing else is sent for the tab.
+3. Otherwise the whole `PUT` as before: `keepalive` while the budget takes the body, a plain request past it.
+
+The api (`handleTabDelta`), and below it `writeTabSave`:
+
 `writeTabSave` is `handleTabPut`'s body from `migrateIncomingTab` on, unchanged but for two things: it takes the
 received body as an argument, and with `stored` its first attempt uses that read instead of `getTab`. It answers a
 `Response` (any refusal) or the saved tab: the echo the PUT answers, and the stored elements.
@@ -97,6 +178,16 @@ received body as an argument, and with `stored` its first attempt uses that read
 - A racing writer between step 3 and the write is the PUT's lost race: re-read, merged, written, or `409 tab_busy`.
 - A save whose pipeline merged something (changesets, the ledger, comment authors) answers a digest other than the
   one sent; the editor drops its base copy.
+- A delta that times out or loses its answer may still have landed: the next delta is `stale_base` and saves whole.
+- A tab deleted and made again under its id starts its revisions again: the held newer copy is `stale_base` once,
+  dropped, and the whole save's echo is held.
+- An unload delta refused as the page closes stores nothing and sends nothing more: the editor keeps no local draft,
+  so that edit is lost as a whole flush past the budget was before, and the next load shows the tab as stored.
+- An unload delta past the keepalive budget is never sent plainly: the whole tab goes instead, as before.
+- An unload delta answered with another failure (`403`, `413`, `tab_busy`) sends nothing more: the whole save would
+  meet the same refusal.
+- The editor's element objects with a key order other than the stored ones' are `update` ops (the diff compares
+  JSON), and the rebuild then carries the editor's order: the digest still matches.
 
 ## Security and trust
 
@@ -115,7 +206,21 @@ received body as an argument, and with `stored` its first attempt uses that read
   passes `TAB_DELTA_MAX_OPS` and saves whole.
 - The api's added work per delta save: one `applyElementOps` (linear in elements plus ops) and two digests of the
   elements' JSON (0.8 ms each at 2,000 elements, measured), bounded by `TAB_DELTA_MAX_OPS`.
-- The editor's added work (part 2): one `diffToElementOps` (already run for the room) and one digest per save.
+- The editor's added work: one `diffToElementOps` and one digest per save. The digest is taken only once the delta
+  is worth sending. Memory: at most `TAB_DELTA_BASES_MAX` base copies; a load's and a confirmed delta's share the
+  editor's element objects, a whole save's echo is one parsed copy of the tab (already parsed for its `rev`).
+- Measured on the local stack (the e2e stack, a 2,033-element Flowchart tab, one shape nudged): the whole save
+  sent 714,131 bytes, the delta 733 bytes. A forced `delta_refused` cost the 734-byte delta plus the same whole
+  save, and the next save was a delta again.
+- Planning a 2,033-element save measured 1.7 ms over a base sharing the editor's objects and 3.9 ms over a freshly
+  parsed one, against 1.0 ms to serialise the whole tab (median of 21, Node, a loaded machine).
+- The unload flush, measured (`apps/editor` fixture, 2,000 shapes, one moved, Node): the whole body 264,926 bytes,
+  past the 61,440-byte keepalive budget; the unload delta 309 bytes. Planning it synchronously took 7.1 ms (median
+  of 21; the plain-code digest is most of it, about 20 ms for a 714 KB tab), once, on the way out, and only when a
+  delta is worth sending.
+- With two editors saving the same tab, each one's base copy goes stale at the other's save: its next save is a
+  refused delta (about 1 KB) and then the whole tab, as every save was before. Peers advancing their base copies
+  from the room is left to a follow-up.
 
 ## Observability
 
@@ -123,6 +228,7 @@ received body as an argument, and with `stored` its first attempt uses that read
 - `[tab-delta] saved { documentId, tabId, ops, matched }` (info) on every delta save, `matched` whether the stored
   digest is the one sent.
 - The whole save's own lines (`[changeset] merged-on-save`, `lost-race`) as before.
+- The editor: `[tab-delta] refused { tabId, reason }` (a `debugLog` trace line) when it falls back to the whole save.
 
 ## Testing
 
@@ -137,6 +243,17 @@ received body as an argument, and with `stored` its first attempt uses that read
 | The fallback whole save after a refusal lands            | `tab-delta-route.test.ts` "refusals fall back"                                          |
 | Unseen changesets merge, the answer's digest says so     | `tab-delta-route.test.ts` "the delta path"                                              |
 | Tokens refused; Editor yes, Participant and Viewer `403` | `tab-delta-route.test.ts` "share roles"                                                 |
+| The editor's base copies: newer kept, bound, dropped     | `packages/workbench/src/lib/api/tab-delta-save.test.ts` "base copies"                   |
+| The editor sends a delta, or null to save whole          | `tab-delta-save.test.ts` "send"                                                         |
+| A refusal falls back to the whole PUT in the same save   | `apps/editor/lib/api/tab-delta-save.test.ts` "a refused delta saves whole"              |
+| The load and the whole save hold the base copy           | `apps/editor/lib/api/tab-delta-save.test.ts` "base copy sources"                        |
+| A small edit on 2,000 elements sends a small delta       | `apps/editor/lib/api/tab-delta-save.test.ts` "a small edit on a 2,000-element tab"      |
+| Offline documents never send one; other editors whole    | `apps/editor/lib/api/tab-delta-save.test.ts`, the other editors' existing save tests    |
+| The sync plan is the async plan, digest and all          | `tab-delta.test.ts` "planTabDeltaSync"                                                  |
+| The unload plan: null, body, settle saved/refused/failed | `tab-delta-save.test.ts` "planUnload"                                                   |
+| The unload flush takes the delta, under 1 KB, keepalive  | `apps/editor/lib/api/tab-delta-save.test.ts` "the unload flush"                         |
+| No base, too many ops, past the budget: whole as before  | `apps/editor/lib/api/tab-delta-save.test.ts` "the unload flush"                         |
+| A refused unload delta: the whole tab follows if it can  | `apps/editor/lib/api/tab-delta-save.test.ts` "the unload flush"                         |
 
 ## Constants and configuration
 
@@ -145,7 +262,8 @@ received body as an argument, and with `stored` its first attempt uses that read
 | `TAB_DELTA_MAX_OPS`   | 500     | A diff past it saves little and costs the api an apply; 100 to 2,000        |
 | `TAB_DELTA_MAX_SHARE` | 0.5     | A delta over half the whole body is not worth the refusal risk; 0.25 to 0.9 |
 | `TAB_DELTA_SEGMENT`   | `delta` | The path segment after the tab id                                           |
+| `TAB_DELTA_BASES_MAX` | 16      | Base copies the editor holds, most recently used; 4 to 64                   |
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows D7 to D9.
+See [DEFAULTS.md](DEFAULTS.md), rows D7 to D11.

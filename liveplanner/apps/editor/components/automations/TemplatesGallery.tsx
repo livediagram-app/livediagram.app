@@ -1,9 +1,11 @@
 'use client';
 
 // The Templates gallery (docs/specs/026-plan/automations.md "The Automations screen": Templates), on its own tab and
-// under the empty Rules list: the category chips (All, Status, Assigning, Due Dates, Forms, Telling People), then a
-// tile per ready-made rule: its living preview (TemplateScene), name, sentence and category. Picking one hands its id up; the dialog opens
-// the builder filled from the plan. The chips narrow the tiles in place and are this screen's own (never saved).
+// under the empty Rules list: the category chips (All, Status, Assigning, Due Dates, Forms, Telling People, AI, and
+// GitHub where the deployment has the GitHub App), then a tile per ready-made rule: its living preview
+// (TemplateScene), name, sentence and category. Picking one hands its id up; the dialog opens the builder filled from
+// the plan. The chips narrow the tiles in place and are this screen's own (never saved). Without the App the GitHub
+// chip and its templates are not drawn at all.
 
 import { useId, useState } from 'react';
 import {
@@ -13,6 +15,7 @@ import {
   type AutomationTemplateCategory,
   type AutomationTemplateId,
 } from '@liveplanner/items';
+import { useGithubAutomations } from './github/github-automations';
 import { TemplateScene, type SceneTone } from './TemplateScene';
 
 // Each tile's colour, as the design draws them.
@@ -39,6 +42,12 @@ const TONE: Readonly<Record<AutomationTemplateId, SceneTone>> = {
   'tell-unblocked': 'blue',
   'nudge-stuck': 'orange',
   'done-when-resolved': 'violet',
+  'review-on-open': 'emerald',
+  'done-on-merge': 'violet',
+  'flag-failing-checks': 'red',
+  'tell-checks-pass': 'emerald',
+  'back-on-close': 'orange',
+  'merged-to-slack': 'violet',
 };
 
 type Filter = AutomationTemplateCategory | 'all';
@@ -62,10 +71,14 @@ export function TemplatesGallery({
 }) {
   const [filter, setFilter] = useState<Filter>('all');
   const headingId = useId();
-  const shown = AUTOMATION_TEMPLATES.filter((t) => filter === 'all' || t.category === filter);
+  const github = useGithubAutomations()?.enabled ?? false;
+  const offered = (c: AutomationTemplateCategory) => github || c !== 'github';
+  const shown = AUTOMATION_TEMPLATES.filter(
+    (t) => offered(t.category) && (filter === 'all' || t.category === filter),
+  );
   const chips: readonly { value: Filter; label: string }[] = [
     { value: 'all', label: 'All' },
-    ...AUTOMATION_TEMPLATE_CATEGORIES.map((c) => ({
+    ...AUTOMATION_TEMPLATE_CATEGORIES.filter(offered).map((c) => ({
       value: c,
       label: AUTOMATION_TEMPLATE_CATEGORY_NAMES[c],
     })),

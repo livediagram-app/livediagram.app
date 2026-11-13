@@ -59,17 +59,64 @@ fallback, never a tab.
 
 ## How the editor uses it
 
-Not sent yet: the api's door is built first, and the editor's autosave and unload flush follow (Work Tracker 661).
+The autosave sends deltas, and so does the unload flush (below, [Unload](#unload)).
+
+- The editor holds one **base copy** per tab: the elements exactly as the api stores them at a revision. It comes
+  from three places only:
+  - the tab's load: the elements as the api answered them, before the editor's own load fixes (a ragged table made
+    rectangular), with the revision beside them;
+  - a whole-tab save's answer: the elements it echoes, and its revision;
+  - a delta save's answer whose digest is the one sent: the store then holds exactly the elements the editor sent,
+    and they are the base copy at the answer's revision.
+
+  A base copy is never replaced by one for an older revision (a slower answer is ignored). It is dropped on a
+  refusal and on a delta answer whose digest differs, so the next save is whole. The editor holds base copies for
+  at most 16 tabs, the most recently used.
 
 - An Editor's save of a tab it holds a base copy for sends a delta when the delta is small: at most 500 ops and a
   body at most half the size of the elements sent whole. Otherwise, and for a new tab, it sends the whole tab.
 - A `409 delta_refused` is answered at once with the whole-tab save, in the same save. Any other failure is a failed
-  save, retried as today ([Per-tab storage](per-tab-storage.md#a-refused-save-stops-a-failed-save-doesnt)).
+  save, retried as today ([Per-tab storage](per-tab-storage.md#a-refused-save-stops-a-failed-save-doesnt)). The
+  whole save's own refusals (`409 empty_tab_overwrite_blocked`, `409 tab_busy`, `403`, `413`) reach the editor from
+  a delta exactly as from the whole save.
+- Only livediagram's editor sends deltas; the other editors' saves stay whole until their own cards turn it on.
 - The room relay and the own-write hold are unchanged: the ops are derived at the snapshot and relayed after the save
   lands, whichever way it went ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)).
 - The unload flush sends a delta where it has one, so a large tab's last edits fit the keepalive budget (Work Tracker
-  589).
+  589; [Unload](#unload)).
 - An offline document (This Browser) never sends one: it has no api.
+
+## Unload
+
+What the debounce still holds when the editor goes is flushed at once ([Per-tab storage](per-tab-storage.md#saving)):
+on `beforeunload`, on `pagehide` and when the editor unmounts for another page of the app. Those requests outlive the
+page only as `keepalive` requests, which browsers cap at 64 KB in all per page (the flush uses 60 KB). A whole
+2,000-element tab is several hundred KB, so before delta saves its last edits rode a plain request that dies with the
+page (Work Tracker 589).
+
+- **A delta first.** For each changed tab the editor holds a base copy for, the flush plans a delta by the autosave's
+  rules (at most 500 ops, a body at most half the elements' JSON). It plans synchronously, since the page is going
+  and cannot wait: the digest is taken in plain code, the same SHA-256 the autosave takes with Web Crypto.
+- **Within the keepalive budget.** The delta goes, as a `keepalive` request with the whole flush's headers, only when
+  its body fits what is left of the budget. A one-shape edit on a 2,000-element tab is under 1 KB.
+- **Otherwise as before.** No base copy, a diff too large, or a delta past the budget: the tab goes whole, as
+  `keepalive` while it fits and as a plain request past that.
+- **A refused delta** (`409 delta_refused`) stores nothing. Where the page lives on (the editor unmounted for another
+  page of the app, or the page kept in the back-forward cache), the whole tab follows as soon as the refusal answers,
+  as the autosave's fallback does. A landed delta whose digest matches is the tab's next base copy.
+- An offline document, a Participant (whose changes go to the room) and a refused or deleted document flush exactly as
+  before.
+
+What is guaranteed:
+
+- Nothing but the editor's exact tab is ever stored from the flush: the digest check holds there as everywhere.
+- A tab's last edits survive a closed page when its delta fits the budget and lands, which a whole large tab never
+  could. A delta is refused only when someone else saved the tab since this editor's base copy, or the base copy was
+  wrong.
+- The editor keeps no local copy of unsaved changes ([Load recovery](../007-editor/load-recovery.md): they are held in
+  memory only). So an edit whose flushed delta is refused as the page closes is lost, as a large tab's whole flush was
+  before, and the next load shows the tab as last stored. A draft kept in the browser for that case is a follow-up
+  (Work Tracker 661).
 
 ## Share roles
 
@@ -86,6 +133,12 @@ Not sent yet: the api's door is built first, and the editor's autosave and unloa
   it is closed), cannot carry the unload flush's keepalive requests, and skips what the whole-tab save does at the
   write (the unseen changesets, the comment authors, the empty-tab backstop, the emails and pushes). A REST door that
   rebuilds the whole tab and hands it to the same path keeps every one of those rules in one place.
+- **A synchronous digest at unload.** Web Crypto answers only after the page has gone, so the flush hashes in plain
+  code (about 20 ms for a 700 KB tab, once, on the way out). Planned this way the delta is sent in the same event,
+  before the page tears down.
+- **No draft in the browser yet.** Keeping unsaved changes in browser storage for the next load to save is a new
+  recovery path with its own conflicts (another writer since, another browser); it is not needed for the common case
+  this fixes, a large tab's last edit by its only editor, and is left to its own card.
 - **Proved, not trusted.** The api compares a digest of the rebuilt elements with the editor's instead of trusting the
   ops, so the delta path can never store anything a whole-tab save would not have.
 - **The other fields go whole.** A tab's name, kind, mode, layers and settings are a few hundred bytes; only elements

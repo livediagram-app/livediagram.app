@@ -634,6 +634,12 @@ In Plan mode:
     edits what a Participant may). A card that no longer exists, or that the link's share does not show, opens
     nothing and says nothing: the plan opens on the tab, and the address drops the card. A tab that is gone, or out
     of the share's scope, gives way to the plan's first tab, and the card still opens.
+    - **A panel that fails to draw closes.** Should the card's panel (or the type editor, or the required fields
+      asked for a new card) fail to draw, it closes, the address drops the card, and a toast says so: "Couldn't open
+      that card. Reload the page to open cards again." when its code could not load (a release made while the plan
+      was open), else "Couldn't open that card. Try again." Nothing is left open but unseen: the next card clicked
+      opens afresh, never into a panel that is gone until the page is reloaded. The panel's code is fetched once the
+      editor is idle, so a release after the plan opened seldom reaches it.
     - **Back closes the card.** Opening a card from the plan (a board, a sheet row, the Cards finder, a search
       result, a new card) adds one history entry, so the browser's Back closes the card and leaves the person on
       the plan, and Forward opens it again. Closing the card any other way (Close, Escape, Enter in the title,
@@ -1342,6 +1348,12 @@ theme, with the page answering throughout.
   each letter typed in the Filter, and expanding a column, answers within a few tenths of a second, never seconds.
   A card out of view is not even built until it comes near, so opening a busy board (switching to its tab, or
   loading the plan on it) costs the cards in view, not all 2,000.
+- <a id="big-first-draw"></a>**A big board's first draw keeps the page answering.** Opening a plan of 2,000 cards on
+  its board, or importing a 2,000-card tab onto one, holds the page for no more than about a tenth of a second at a
+  time on the reference machine (it held it for about half a second). The board's columns and the places of its cards
+  appear first, then, a moment later, the cards in view all together, so no column is ever drawn part way. A change
+  of a few cards (one added, moved or edited, by anyone) and a card coming into view as the board scrolls are drawn
+  before the next frame, as before.
   Find a Card and the Filter reach every card, near or not; the browser's own find in page and a screen reader's
   reading cursor reach the cards near the view.
 - **A drag stays smooth.** Carrying a card on a 2,000-card board keeps up with the pointer or finger, on an iPad too:

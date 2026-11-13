@@ -8,15 +8,7 @@ import type { ReactNode } from 'react';
 import { TileStage } from '@/components/tile-picker/tile-scene';
 import type { AutomationTriggerKind } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
-import {
-  lucideClock,
-  lucideGitMerge,
-  lucideGitPullRequest,
-  lucideGitPullRequestClosed,
-  lucideGitPullRequestDraft,
-  lucideWebhook,
-  lucideX,
-} from '@liveworkspace/icons/lucide';
+import { lucideClock, lucideWebhook } from '@liveworkspace/icons/lucide';
 import {
   AlertGlyph,
   ArchiveGlyph,
@@ -27,9 +19,16 @@ import {
   Card,
   Chip,
   Cursor,
+  FailGlyph,
   Lane,
   PANEL,
   Pill,
+  PrTurn,
+  PrClosedGlyph,
+  PrDraftGlyph,
+  PrMergedGlyph,
+  PrOpenGlyph,
+  type PrFace,
   Subject,
   TONES,
   ZapGlyph,
@@ -54,45 +53,11 @@ const SmallClock = lucideGlyph(lucideClock, 8);
 const WebhookGlyph = lucideGlyph(lucideWebhook, 10);
 const SLIDE = 'translateX(calc(100% + 26px))';
 
-// A pull request's marks, as a card's pill draws them (PullRequestPill.tsx), at the scenes' size.
-const PrOpenGlyph = lucideGlyph(lucideGitPullRequest, 8);
-const PrDraftGlyph = lucideGlyph(lucideGitPullRequestDraft, 8);
-const PrMergedGlyph = lucideGlyph(lucideGitMerge, 8);
-const PrClosedGlyph = lucideGlyph(lucideGitPullRequestClosed, 8);
-const FailGlyph = lucideGlyph(lucideX, 7);
-
-// GitHub's state colours, written out whole for Tailwind.
-const PR_PILLS = {
-  draft: 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-100',
-  open: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/25 dark:text-emerald-100',
-  merged: 'bg-violet-100 text-violet-800 dark:bg-violet-500/30 dark:text-violet-100',
-  closed: 'bg-red-100 text-red-700 dark:bg-red-500/25 dark:text-red-100',
-} as const;
-
-type PrFace = { pill: keyof typeof PR_PILLS; Mark: typeof PrOpenGlyph; tail?: ReactNode };
-
 /** A card whose pull request pill turns from one state to the next, the bolt lighting as it does. */
 function PullRequestTurn({ tone, from, to }: { tone: ToneClasses; from: PrFace; to: PrFace }) {
   return (
     <Subject>
-      <span className="absolute bottom-[3px] right-1 inline-grid">
-        <Pill
-          className={`ats-out relative col-start-1 row-start-1 shadow-none ${PR_PILLS[from.pill]}`}
-          style={after(220)}
-        >
-          <from.Mark aria-hidden />
-          #42
-          {from.tail}
-        </Pill>
-        <Pill
-          className={`ats-t ats-in ats-pop relative col-start-1 row-start-1 shadow-none ${PR_PILLS[to.pill]}`}
-          style={at('none', 'scale(0.5)', 220)}
-        >
-          <to.Mark aria-hidden />
-          #42
-          {to.tail}
-        </Pill>
-      </span>
+      <PrTurn from={from} to={to} />
       <Fire tone={tone} d={460} />
     </Subject>
   );

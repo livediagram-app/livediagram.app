@@ -14,6 +14,8 @@
     "./perf/calibrate": "./src/perf/calibrate.ts",
     "./perf/canvas-probe": "./src/perf/canvas-probe.ts",
     "./perf/interactive": "./src/perf/interactive.ts",
+    "./perf/main-thread-probe": "./src/perf/main-thread-probe.ts",
+    "./perf/theme-pick-probe": "./src/perf/theme-pick-probe.ts",
     "./perf/trace-tasks": "./src/perf/trace-tasks.ts"
   },
   "scripts": {

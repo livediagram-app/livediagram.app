@@ -90,6 +90,13 @@
 [data-face-finish='marker'][data-marker-drawn='ring'] {
   box-shadow: none !important;
 }
+/* While a take reads the face (useFaceFinishPass's data-marker-taking), nothing eases: a part's line reads as it rests,
+ * not as the first frame of easing back from the mark the take just cleared (a border's colour fade read as no line
+ * at all, so the part went undrawn), and the new marks land at once. */
+[data-marker-taking],
+[data-marker-taking] * {
+  transition: none !important;
+}
 
 /* A sticker's shadow (sticker-markup.ts): a flat or a marker drawing casts none. */
 :is([data-face-finish='professional'], [data-face-finish='marker']) [data-sticker-shadow] {

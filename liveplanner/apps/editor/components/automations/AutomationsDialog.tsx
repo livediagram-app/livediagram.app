@@ -35,6 +35,7 @@ import { automationsHeroArt } from './AutomationsHeroArt';
 import type { AutomationsTarget } from './AutomationsContext';
 import { GithubAutomationsContext, type GithubAutomations } from './github/github-automations';
 import { GithubButton } from './github/GithubButton';
+import type { KeptRule } from './github/github-hash';
 import { GITHUB_RULE_WORDS } from './github/github-return';
 import { GithubView } from './github/GithubView';
 import type { AutomationOutline } from './automation-outline';
@@ -132,7 +133,7 @@ export function AutomationsDialog({
   // GitHub, from the one capabilities read the editor shares; the connection itself is read by the GitHub view and a
   // GitHub trigger's panel, as they open.
   const { githubEnabled } = useCapabilities();
-  const githubDraft = useRef<AutomationRuleBody | null>(null);
+  const githubDraft = useRef<KeptRule | null>(null);
   // Describe a Rule: its dialog, and the rule it drafted (numbered, so each draft mounts the builder afresh).
   const [describing, setDescribing] = useState(false);
   const [drafted, setDrafted] = useState<{
@@ -164,8 +165,8 @@ export function AutomationsDialog({
       scope,
       openView: openGithub,
       draft: () => githubDraft.current,
-      keepDraft: (body) => {
-        githubDraft.current = body;
+      keepDraft: (kept) => {
+        githubDraft.current = kept;
       },
     }),
     [githubEnabled, scope, openGithub],
@@ -250,14 +251,16 @@ export function AutomationsDialog({
   const ruleWaiting = ruleAbsent && (!fresh || api.status === 'loading');
   // Said deleted only once a read has answered without it; a failed read says it failed.
   const ruleGone = ruleAbsent && !ruleWaiting && !!api.data && api.status === 'ready';
-  const fromTemplate =
-    editing && !editing.ruleId && editing.template
-      ? templateStart(editing.template, outline, rules, zone)
-      : null;
+  // Built once per template opened (and as the plan's columns or rules change), so its picks are one list.
+  const startTemplate = editing && !editing.ruleId ? editing.template : undefined;
+  const fromTemplate = useMemo(
+    () => (startTemplate ? templateStart(startTemplate, outline, rules, zone) : null),
+    [startTemplate, outline, rules, zone],
+  );
   // Read once, as the builder mounts (its key changes with the rule).
   const initial =
     editingRule ??
-    editing?.kept ??
+    editing?.kept?.body ??
     fromDraft?.body ??
     fromTemplate?.body ??
     newRuleBody(nextRuleName(rules.map((r) => r.name)), zone);
@@ -387,7 +390,7 @@ export function AutomationsDialog({
       }
       rule={editingRule}
       initial={initial}
-      picks={fromDraft?.picks ?? fromTemplate?.picks}
+      picks={fromDraft?.picks ?? fromTemplate?.picks ?? editing?.kept?.picks}
       notice={fromDraft ? <DraftedNote /> : undefined}
       timeZone={zone}
       scope={scope}

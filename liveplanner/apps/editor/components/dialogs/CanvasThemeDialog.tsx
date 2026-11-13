@@ -26,7 +26,7 @@ import { ThemeBrowser } from '@/components/palette/ThemeBrowser';
 import type { TextSize } from '@liveplanner/project';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';
-import { easeNextStyleChange } from '@liveworkspace/workbench/lib/tab-style-ease';
+import { easedStyleChange } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { LooksHome } from './LooksHome';
 import { ApplyToAllTabsRow } from '@liveworkspace/workbench/components/dialogs/ApplyToAllTabsRow';
 import { activeLookId, type LookSettings, type TabLook } from '@/lib/tab-looks';
@@ -34,13 +34,8 @@ import { activeLookId, type LookSettings, type TabLook } from '@/lib/tab-looks';
 // 'looks' is the home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"); the others are its Fine-tune panels.
 export type CanvasThemeTab = 'looks' | 'canvas' | 'theme' | 'font' | 'finish';
 
-// A setter whose change the canvas eases into rather than snaps to.
-const eased =
-  <A,>(fn: (a: A) => void) =>
-  (a: A) => {
-    easeNextStyleChange();
-    fn(a);
-  };
+// A setter whose change the canvas eases into rather than snaps to, drawn as a transition.
+const eased = easedStyleChange;
 
 // The header's line for each view: what the home and each Fine-tune panel set, in a few words.
 const VIEW_LINES: Record<CanvasThemeTab, string> = {

@@ -2221,6 +2221,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "name"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "github",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
       }
     ]
   },
