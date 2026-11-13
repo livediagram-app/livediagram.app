@@ -5,6 +5,7 @@ Follow the references below only as needed; never upfront.
 - ./document.md - when naming things: a document holds tabs; diagram and event-storming board are tab kinds; whiteboarding is an editor mode
 - ./document-structure.md - when working on Document structure: Documents contain tabs; elements can link across tabs
 - ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own rows so autosave scope shrinks
+- ./delta-saves.md - when working on Delta saves: an Editor's autosave sends only the changed elements as ops (`POST .../tabs/:tabId/delta`), rebuilt over the stored copy, proved by a digest and saved through the whole-tab path; refused `409 delta_refused` back to a whole-tab save
 - ./tab-document-many-to-many.md - when working on Tab ↔ document many-to-many: Link table so a tab can live in multiple documents
 - ./tab-folders.md - when working on Tab folders: Group a document's tabs into one-level named folders that open in place from one chip
 - ./document-snapshots.md - when working on Document SVG snapshots: the document's picture, drawn by its object through the export door for liveworkspace's previews, which store and serve the Explorer thumbnail, the live image ([Live image share link](../013-workspace/live-image-share.md)) and the share card
