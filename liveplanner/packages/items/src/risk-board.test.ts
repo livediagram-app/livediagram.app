@@ -124,7 +124,7 @@ describe('swimlanes by a Risk', () => {
     const high = lanes.find((l) => l.label === 'High')!;
     expect(field.kind).toBe('risk');
     expect(laneDropPatch(high)).toEqual({ set: { 'f-risk': 'high' } });
-    expect(laneDropPatch(lanes.find((l) => l.key === '')!)).toEqual({ clear: ['f-risk'] });
+    expect(laneDropPatch(lanes.find((l) => l.key === ''))).toEqual({ clear: ['f-risk'] });
   });
 });
 

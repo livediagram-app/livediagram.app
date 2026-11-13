@@ -61,9 +61,9 @@ export function fieldShapeOf(field: CustomFieldDef): FieldShape | undefined {
       return { kind: 'number', unit: 'percent' };
     case 'rating':
       return { kind: 'number', unit: 'rating', scale: field.scale ?? RATING_SCALE_DEFAULT };
+    // A Risk's cards per level, in the levels' order and colours (item-types.md "Risk").
     case 'choice':
     case 'multichoice':
-    // Cards per level, in the levels' order and colours (item-types.md "Risk").
     case 'risk':
     case 'labels':
     case 'person':
