@@ -110,6 +110,16 @@ CSS backgrounds on spans cost no filter; text shadows use `text-shadow`, not `fi
 gradient run in a shadowed element (one small span filter). Export adds at most one rect and one def
 per fragment.
 
+Measured (#680, Playwright WebKit and Chromium on an M-series Mac, six shadowed text boxes of 34px
+600 text with 42 gradient runs between them, each run's `drop-shadow(4px 6px 8px)`, the world panned
+and zoomed every frame for 180 frames, at 1440x900 @2x and 390x844 @3x, the main thread's rendering
+update per frame timed from `requestAnimationFrame` to a message posted from it): WebKit, no layer on
+the world, plain text 0.4 to 0.6 ms (max 4), gradient runs 0.6 to 1 ms (max 3), shadowed gradient
+runs 1 to 1.5 ms (max 4); with the world on its own layer (`will-change: transform`) all three 0.2 to
+0.5 ms. Chromium 0.2 to 0.4 ms throughout. A shadowed gradient run costs about 1 ms a frame in WebKit
+at most, well inside a 16.7 ms frame, so it keeps its `drop-shadow`: no cheaper fallback. WebKit's
+timer is 1 ms coarse and the GPU's compositing is not counted; a real iPhone is the owner's check.
+
 ## Presentation and UX
 
 Panel `w-64 p-1.5`, the article colour panel's titles; gradient tiles `h-9`, "Aa" at 15px/700 on the
