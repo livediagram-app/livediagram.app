@@ -799,7 +799,12 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
   **Failed** pills), Took. A row opens to its steps, a click anywhere on it or on its chevron (whose name says which
   run: "Expand run: Stamp the Finish Date, #48"), one line each with a tick or a cross: who did what (the
   trigger), each condition with what it found, each action, and **Open Card**. A failed or skipped row shows its
-  reason under it.
+  reason under it. Neither shows an id: a step that failed on something the plan lost says what, as Needs Attention
+  does ("A field is gone", "#12 A column is gone", "Failed on #12, #14: A card type is gone"), and a condition naming
+  one reads it as the sentence does ("Column is Done or a column no longer here (a column is gone)"); so do Paused's
+  reason, Test on a Card and Run Rule's message. Agents read the ids: such a line, its run and a pause carry what is
+  gone as data (`gone`: its kind and id) beside the text, which keeps the id. A run logged before `gone` existed reads
+  as it was stored.
 - On a phone the rows stack (name, sentence, last run and week on one line, the switch at the right) and the
   dialog fills the screen.
 

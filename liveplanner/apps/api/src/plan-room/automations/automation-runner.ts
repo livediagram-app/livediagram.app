@@ -34,6 +34,7 @@ import {
   type DerivedTrigger,
   waitWords,
   type AutomationEvent,
+  type AutomationGone,
   type AutomationResult,
   type AutomationRule,
   type AutomationRun,
@@ -184,7 +185,8 @@ export async function runRule(
   let webhook: string | undefined;
   const resume = event.kind === 'resume';
   let waitsUntil: number | undefined;
-  const end = (result: AutomationResult, reason?: string): AutomationRun => {
+  // `gone`: what the reason names that the plan lacks (the editor words it without the id).
+  const end = (result: AutomationResult, reason?: string, gone?: AutomationGone): AutomationRun => {
     const run: AutomationRun = {
       id,
       ruleId: rule.id,
@@ -193,6 +195,7 @@ export async function runRule(
       at,
       result,
       ...(reason ? { reason } : {}),
+      ...(reason && gone ? { gone } : {}),
       tookMs: Date.now() - at,
       steps: lines,
       ...(waitsUntil !== undefined ? { waitsUntil } : {}),
@@ -208,7 +211,10 @@ export async function runRule(
       deps.store.advanceTurn(rule.id, turns);
     if (
       (result === 'done' || result === 'failed' || result === 'waiting') &&
-      deps.store.settle(rule.id, result === 'waiting' ? 'done' : result, reason ?? '', at, webhook)
+      deps.store.settle(rule.id, result === 'waiting' ? 'done' : result, reason ?? '', at, {
+        ...(webhook ? { webhook } : {}),
+        ...(reason && gone ? { gone } : {}),
+      })
     )
       state.tally?.track('Plan', 'Ran', 'AutomationPaused');
     if (state.tally && !opts.dry) tallyRun(state.tally, result, rule.trigger.kind);
@@ -271,8 +277,12 @@ export async function runRule(
     // A failed step stops the run; the steps before it stay done (spec "Actions").
     const writes = 'failed' in planned ? planned.done : planned;
     let failed = 'failed' in planned ? planned.failed : null;
+    let gone = 'failed' in planned ? planned.gone : undefined;
     const related = writes.related.filter((r) => r.failed);
-    failed ??= related.length ? relatedFailure(related) : null;
+    if (failed === null && related.length) {
+      failed = relatedFailure(related);
+      gone = related[0]!.gone;
+    }
     const messages = {
       client: opts.dry ? null : sendsClient(deps.env),
       planId: deps.planId,
@@ -310,7 +320,7 @@ export async function runRule(
     if (opts.dry) {
       await ai(true);
       await sendMessages(messages, writes.sends, lines, offset);
-      return end(failed === null ? 'done' : 'failed', failed ?? undefined);
+      return end(failed === null ? 'done' : 'failed', failed ?? undefined, gone);
     }
     const out = await applyPlannedRun(deps, plan, rule, item, writes, source, ctx.url);
     if (!out.ok) {
@@ -345,7 +355,7 @@ export async function runRule(
       failed = sent.failed;
       webhook = sent.webhook;
     }
-    if (failed !== null) return end('failed', failed);
+    if (failed !== null) return end('failed', failed, gone);
     turns = writes.turns;
     // A step the day's AI cap skipped makes the run Skipped, not Failed: nothing is wrong with the rule.
     if (asked.skipped) return end('skipped', asked.skipped);

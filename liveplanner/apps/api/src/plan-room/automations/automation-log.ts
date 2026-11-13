@@ -92,7 +92,7 @@ export function settleWaiting(
   } catch {
     return;
   }
-  const { waitsUntil: _until, reason: _reason, ...rest } = run;
+  const { waitsUntil: _until, reason: _reason, gone: _gone, ...rest } = run;
   settleRun(sql, { ...rest, result, ...(reason ? { reason } : {}) });
 }
 

@@ -7,7 +7,12 @@ import type { Item, ItemFieldValue, ItemFields, ItemPatch, ItemPerson } from '..
 import type { ItemTypeDef } from '../item-types';
 import { isEmptyFieldValue } from '../required-fields';
 import { typeIn } from '../type-catalogue';
-import { AUTOMATION_PERSON_ID, type AutomationOutgoing, type AutomationStepLine } from './types';
+import {
+  AUTOMATION_PERSON_ID,
+  type AutomationGone,
+  type AutomationOutgoing,
+  type AutomationStepLine,
+} from './types';
 import type { ConditionContext } from './conditions';
 import type { ValueContext } from './values';
 import type { PlannedAi } from './ai-steps';
@@ -68,6 +73,7 @@ export interface PlannedRelated {
   mentions: PlannedMention[];
   resolve: boolean;
   failed?: string;
+  gone?: AutomationGone;
 }
 
 // What a run writes: the triggering card's one patch, the threads it starts, the card it makes, its emails, its
@@ -92,7 +98,7 @@ export interface PlannedWrites {
 // A failed run keeps `done`, the steps before the one that failed (spec "Actions": the steps before it stay done).
 export type PlannedRun =
   | (PlannedWrites & { lines: AutomationStepLine[] })
-  | { failed: string; lines: AutomationStepLine[]; done: PlannedWrites };
+  | { failed: string; gone?: AutomationGone; lines: AutomationStepLine[]; done: PlannedWrites };
 
 const same = (a: ItemFieldValue | undefined, b: ItemFieldValue | undefined) =>
   JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
@@ -158,8 +164,13 @@ export class Plan {
     });
   }
 
-  failure(reason: string): void {
-    this.run.lines.push({ kind: 'action', ok: false, text: `${this.prefix}${reason}` });
+  failure(reason: string, gone?: AutomationGone): void {
+    this.run.lines.push({
+      kind: 'action',
+      ok: false,
+      text: `${this.prefix}${reason}`,
+      ...(gone ? { gone } : {}),
+    });
   }
 
   // Changes the card's type: whether that changed it.

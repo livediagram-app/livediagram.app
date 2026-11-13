@@ -38,8 +38,12 @@ describe('Card Type and Column', () => {
     expect(holds({ kind: 'type', not: true, types: ['epic'] }, ctx())).toEqual({
       ok: false,
       text: 'Card Type is not epic (epic is gone)',
+      gone: { kind: 'type', id: 'epic' },
     });
-    expect(holds({ kind: 'column', statuses: ['qa'] }, ctx()).ok).toBe(false);
+    expect(holds({ kind: 'column', statuses: ['qa'] }, ctx()).gone).toEqual({
+      kind: 'column',
+      id: 'qa',
+    });
   });
 });
 
@@ -173,6 +177,7 @@ describe('Who Did It', () => {
     expect(holds({ kind: 'who', who: [{ person: 'p-gone' }] }, ctx())).toEqual({
       ok: false,
       text: 'Who Did It is p-gone (p-gone is gone)',
+      gone: { kind: 'person', id: 'p-gone' },
     });
   });
 });
@@ -197,7 +202,11 @@ describe('Matches a Saved Filter', () => {
   });
 
   it('does not hold when the filter is gone', () => {
-    expect(holds({ kind: 'saved_filter', tab: 't2', filter: 'sf-mine' }, ctx()).ok).toBe(false);
+    expect(holds({ kind: 'saved_filter', tab: 't2', filter: 'sf-mine' }, ctx())).toEqual({
+      ok: false,
+      text: 'Matches a Saved Filter (sf-mine is gone)',
+      gone: { kind: 'filter', id: 'sf-mine' },
+    });
   });
 });
 

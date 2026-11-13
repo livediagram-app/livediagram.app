@@ -22,6 +22,7 @@ import { AutomationRefusal } from './automations-client';
 import { RunSteps } from './RunSteps';
 import { ResultPill } from './RunRow';
 import { tookWords } from './run-words';
+import { goneText } from './needs-words';
 
 type Phase =
   | { at: 'pick' }
@@ -128,7 +129,9 @@ export function TestOnCard({
               {tookWords(phase.run.tookMs)} · A test changes nothing
             </div>
             {phase.run.reason ? (
-              <p className="text-[13px] text-amber-800 dark:text-amber-300">{phase.run.reason}</p>
+              <p className="text-[13px] text-amber-800 dark:text-amber-300">
+                {goneText(phase.run.reason, phase.run.gone)}
+              </p>
             ) : null}
             <RunSteps steps={phase.run.steps} />
           </>

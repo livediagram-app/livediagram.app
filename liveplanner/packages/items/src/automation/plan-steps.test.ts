@@ -70,6 +70,11 @@ describe('a branch', () => {
     );
     expect(r.related).toHaveLength(3);
     expect(r.related.every((x) => x.failed === 'Column gone is gone')).toBe(true);
+    // What is gone rides with each related card's failure and its line, for the editor's words.
+    expect(r.related.every((x) => x.gone?.kind === 'column' && x.gone.id === 'gone')).toBe(true);
+    expect(
+      r.lines.filter((l) => !l.ok && l.kind === 'action').map((l) => 'gone' in l && l.gone),
+    ).toEqual(r.related.map(() => ({ kind: 'column', id: 'gone' })));
     expect(r.related[0]!.patch).toEqual({ set: { flagged: true } });
     expect(r.lines[0]).toMatchObject({ ok: false, text: expect.stringContaining('failed on #') });
   });

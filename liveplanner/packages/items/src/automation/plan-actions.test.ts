@@ -304,7 +304,12 @@ describe('Comments, emails and Create Card', () => {
     [{ kind: 'create_card', type: 'bug', title: 't', status: 'qa' }, 'Column qa is gone'],
     [
       { kind: 'create_card', type: 'note', title: 't', linkField: 'f-nope' },
-      'A Note card has no Card field f-nope',
+      'Field f-nope is gone',
+    ],
+    // A field the plan has, but not as the new card's Card field: named.
+    [
+      { kind: 'create_card', type: 'note', title: 't', linkField: 'f-points' },
+      'A Note card has no Card field Points',
     ],
   ] as [AutomationAction, string][])('fails a card it cannot make: %o', (action, reason) => {
     expect(failed(one(action))).toBe(reason);
@@ -336,11 +341,14 @@ describe('If / Else, failing and the action limit', () => {
 
   it('stops at the failed step, keeping the lines before it', () => {
     const r = run([{ kind: 'flag' }, { kind: 'move', status: 'qa' }, { kind: 'unflag' }]);
+    // What is gone rides with the reason and its line, as data, so the editor words it without the id.
+    const gone = { kind: 'column', id: 'qa' };
     expect(r).toEqual({
       failed: 'Column qa is gone',
+      gone,
       lines: [
         { kind: 'action', ok: true, text: 'Flag' },
-        { kind: 'action', ok: false, text: 'Column qa is gone' },
+        { kind: 'action', ok: false, text: 'Column qa is gone', gone },
       ],
       // The Flag before it stays done; the Unflag after it never ran.
       done: {

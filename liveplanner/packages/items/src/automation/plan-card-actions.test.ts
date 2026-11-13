@@ -161,13 +161,19 @@ describe('Link Cards', () => {
       'a field its type lacks',
       { field: 'f-links', to: { card: 'x' } },
       bug(),
-      'A Bug card has no Card field f-links',
+      'A Bug card has no Card field Links',
     ],
     [
       'a field that is not a Card field',
       { field: 'f-points', to: { card: 'x' } },
       bug(),
-      'A Bug card has no Card field f-points',
+      'A Bug card has no Card field Points',
+    ],
+    [
+      'a field gone from the plan',
+      { field: 'f-gone', to: { card: 'x' } },
+      bug(),
+      'Field f-gone is gone',
     ],
     [
       'a card that is gone',

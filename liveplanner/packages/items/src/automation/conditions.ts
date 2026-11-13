@@ -11,7 +11,13 @@ import { dayNumber } from '../plan-view-dates';
 import { zonedDay } from '../date-time-fields';
 import { isEmptyFieldValue } from '../required-fields';
 import { typeIn } from '../type-catalogue';
-import type { AutomationCondition, AutomationDay, AutomationFieldOp, AutomationWho } from './types';
+import type {
+  AutomationCondition,
+  AutomationDay,
+  AutomationFieldOp,
+  AutomationGone,
+  AutomationWho,
+} from './types';
 import {
   fieldName,
   personOf,
@@ -36,7 +42,8 @@ export interface ConditionContext {
   timeZone: string;
 }
 
-export type ConditionLine = { ok: boolean; text: string };
+// `gone`: what a condition names that the plan lacks (its text keeps the id for agents).
+export type ConditionLine = { ok: boolean; text: string; gone?: AutomationGone };
 
 // The days a saved filter's Due Soon window spans, as the board's chip counts them (the editor's DUE_SOON_DAYS).
 export const AUTOMATION_DUE_SOON_DAYS = 2;
@@ -161,6 +168,13 @@ function whoWords(w: AutomationWho, o: AutomationOutline): string {
   return 'person' in w ? (personOf(o, w.person)?.name ?? w.person) : ROLE_WORDS[w.role];
 }
 
+// A condition naming something the plan lacks: it does not hold, its line says what is gone.
+const goneLine = (words: string, gone: AutomationGone): ConditionLine => ({
+  ok: false,
+  text: `${words} (${gone.id} is gone)`,
+  gone,
+});
+
 // One condition against the card: whether it holds, and its line.
 export function holds(c: AutomationCondition, ctx: ConditionContext): ConditionLine {
   const o = ctx.outline;
@@ -169,14 +183,14 @@ export function holds(c: AutomationCondition, ctx: ConditionContext): ConditionL
     case 'type': {
       const words = `Card Type ${is(c.not)} ${listed(c.types.map((t) => typeName(o, t)))}`;
       const gone = c.types.find((t) => !o.types.some((x) => x.id === t));
-      if (gone) return { ok: false, text: `${words} (${gone} is gone)` };
+      if (gone) return goneLine(words, { kind: 'type', id: gone });
       const ok = c.types.includes(card.type) !== (c.not === true);
       return { ok, text: `${words} (${typeName(o, card.type)})` };
     }
     case 'column': {
       const words = `Column ${is(c.not)} ${listed(c.statuses.map((s) => statusName(o, s)))}`;
       const gone = c.statuses.find((s) => !o.statuses.some((x) => x.status === s));
-      if (gone) return { ok: false, text: `${words} (${gone} is gone)` };
+      if (gone) return goneLine(words, { kind: 'column', id: gone });
       const status = itemStatus(card);
       const ok = (status !== undefined && c.statuses.includes(status)) !== (c.not === true);
       return { ok, text: `${words} (${status ? statusName(o, status) : 'none'})` };
@@ -186,7 +200,7 @@ export function holds(c: AutomationCondition, ctx: ConditionContext): ConditionL
       const name = fieldName(o, c.field, type);
       const value = valueWords(c.value);
       const words = `${name} ${FIELD_OP_WORDS[c.op]}${value ? ` ${value}` : ''}`;
-      if (!planHasField(o, c.field)) return { ok: false, text: `${words} (${c.field} is gone)` };
+      if (!planHasField(o, c.field)) return goneLine(words, { kind: 'field', id: c.field });
       if (!typeHasField(type, c.field))
         return { ok: false, text: `${words} (a ${type.label} card has no ${name})` };
       const raw = card.fields[c.field];
@@ -196,13 +210,13 @@ export function holds(c: AutomationCondition, ctx: ConditionContext): ConditionL
     case 'who': {
       const words = `Who Did It ${is(c.not)} ${listed(c.who.map((w) => whoWords(w, o)))}`;
       const gone = c.who.find((w) => 'person' in w && !personOf(o, w.person));
-      if (gone && 'person' in gone) return { ok: false, text: `${words} (${gone.person} is gone)` };
+      if (gone && 'person' in gone) return goneLine(words, { kind: 'person', id: gone.person });
       const ok = c.who.some((w) => whoMatches(w, ctx)) !== (c.not === true);
       return { ok, text: `${words} (${ctx.by.name})` };
     }
     case 'saved_filter': {
       const saved = o.savedFilters.find((s) => s.tab === c.tab && s.filter.id === c.filter);
-      if (!saved) return { ok: false, text: `Matches a Saved Filter (${c.filter} is gone)` };
+      if (!saved) return goneLine('Matches a Saved Filter', { kind: 'filter', id: c.filter });
       const words = `Matches Saved Filter ${saved.filter.name}`;
       const quick = resolveSavedFilter(saved.filter, {
         mine: ctx.by.id,

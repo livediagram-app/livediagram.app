@@ -205,7 +205,7 @@ not routed (the OpenAPI drift probe's clean 404), and every route is in the Open
   regardless). It honours the **assigned actions** email setting (`notifyActionAssigned`); a name typed onto a card has no
   account and gets nothing. The template is `automationEmail` (`EmailKind` 'AutomationEmail').
 - Create Card needs a card type from the plan's catalogue: a plan whose types are not chosen fails the run with
-  "Card type <id> is gone".
+  "Card type <id> is gone" (with `gone`, "What is gone, in the Audit Trail" below).
 - The day's budget counts done, failed and skipped runs; a No Match is logged and never counted. The trim keeps the
   newest 2,000 of those and, apart from them, the newest 500 No Match rows, so a rule that matches nothing on every
   save never pushes a real run out of the log.
@@ -415,6 +415,23 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   Templates Opened.
 - **Audit Trail.** A branch line wears its own mark (blue, a list tree; red when it failed on a card), and the lines after
   it that start with a card number are inset under it, the number in the card's weight (`insetLines`).
+- **What is gone, in the Audit Trail.** `AutomationGone` (`{ kind: 'column' | 'type' | 'field' | 'person' |
+'filter'; id }`, types.ts) rides beside the text it explains: on a failed action line and an unheld condition
+  line (`gone?`), on the run (`AutomationRun.gone`, with its `reason`) and on a pause (`paused.gone`). The engine
+  fails a step on something the plan lost with `failGone(gone)` (set-value.ts), whose text is `goneLine(gone)`
+  ("Field estimate_x is gone", the words `needLine` uses for agents); `Failed.gone` carries it through
+  `planActions` (`{ failed, gone }`, a related card's `PlannedRelated.gone`) to the runner's `end(result, reason,
+gone)`, the run's first related failure giving its own, and `store.settle(..., { webhook, gone })` to the pause.
+  A condition's gone line is `goneLine(words, gone)` in conditions.ts, text `<words> (<id> is gone)`. A Card field
+  the card's type lacks fails as gone when the plan lost it, else by the field's name. `settleWaiting` drops a
+  stored `gone` with the reason it replaces. The editor's `goneText(text, gone)` (needs-words.ts) words each:
+  a step line or reason keeps its start (`#12 `, `Failed on #12, #14: `) and says `GONE`'s one ("A field is
+  gone"); a condition line keeps its words, the id (as a whole word) read as `a column no longer here` (person
+  "Someone No Longer Here"), and ends "(a column is gone)". RunSteps (action and condition lines), RunRow's
+  reason, TestOnCard's reason, RuleRow's Paused reason and Run Rule's toast use it; text without `gone` reads as
+  stored. Size: a gone line adds `,"gone":{"kind":"field","id":"<id>"}` (32 bytes plus the id, measured) to the
+  failed line and the run, so a failed run's row grows by 94 bytes for a 15-character id; no other run
+  changes.
 - **The gate.** `automationsGateFor` gives whoever could edit the whole plan (hydrated, not an embed, edit level,
   structure editable, no tab scope) a kind: `sync` on a plan in This Browser, `sign_in` for a guest on a server plan
   once sign-in has answered (`authLoaded`), else none; `automationsScopeFor` now also needs `signedIn`, so a guest

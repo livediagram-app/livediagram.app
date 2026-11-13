@@ -17,7 +17,7 @@ import {
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import { Switch, lucideGlyph } from '@liveplanner/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
-import { needsWords } from './needs-words';
+import { goneText, needsWords } from './needs-words';
 import { SentenceChips } from './SentenceChips';
 import { RuleMenu } from './RuleMenu';
 import { lastRunWords, nextRunWords, runsWords } from './run-words';
@@ -54,7 +54,8 @@ function PausedNote({
       data-rule-paused-reason=""
       className="relative z-[1] text-[12px] text-amber-800 dark:text-amber-300"
     >
-      Paused after 10 failures in a row: {rule.paused.reason} <span aria-hidden>·</span>{' '}
+      Paused after 10 failures in a row: {goneText(rule.paused.reason, rule.paused.gone)}{' '}
+      <span aria-hidden>·</span>{' '}
       {rule.paused.webhook && onFixWebhook ? (
         <>
           <button type="button" className={LINK} onClick={onFixWebhook}>

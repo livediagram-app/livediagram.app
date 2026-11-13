@@ -8,7 +8,7 @@ import type { CustomFieldDef } from '../item-types';
 import { ITEM_TITLE_MAX } from '../limits';
 import { isPriority } from '../fields';
 import { isDay } from '../repeat-dates';
-import type { AutomationSetValue } from './types';
+import type { AutomationGone, AutomationSetValue } from './types';
 import type { AutomationOutline } from './outline';
 import { dayFrom, fillValues, type ValueContext } from './values';
 
@@ -16,11 +16,32 @@ const DATE_FIELDS = new Set(['start', 'due']);
 const NUMBER_KINDS = new Set(['number', 'currency', 'percent', 'duration', 'rating']);
 const LIST_KINDS = new Set(['labels', 'multichoice']);
 
-// A step the card refuses: the run fails there, with why.
-export class Failed extends Error {}
-export const fail = (reason: string): never => {
-  throw new Failed(reason);
+// A step the card refuses: the run fails there, with why (and, for something the plan lost, what: AutomationGone).
+export class Failed extends Error {
+  readonly gone: AutomationGone | undefined;
+  constructor(reason: string, gone?: AutomationGone) {
+    super(reason);
+    this.gone = gone;
+  }
+}
+export const fail = (reason: string, gone?: AutomationGone): never => {
+  throw new Failed(reason, gone);
 };
+
+/** "Field estimate_x is gone": something a step names that the plan lacks, failed with its id kept for agents. */
+export const failGone = (gone: AutomationGone): never => fail(goneLine(gone), gone);
+
+const GONE_WORDS: Readonly<Record<AutomationGone['kind'], string>> = {
+  column: 'Column',
+  type: 'Card type',
+  field: 'Field',
+  person: 'Person',
+  filter: 'Saved filter',
+};
+
+/** A gone thing as agents read it, by its stored id: "Column done is gone". */
+export const goneLine = (gone: AutomationGone): string =>
+  `${GONE_WORDS[gone.kind]} ${gone.id} is gone`;
 
 // How a field reads a value: its built-in kind, else its custom field's.
 export function fieldKind(field: string, def: CustomFieldDef | undefined): string {

@@ -1925,6 +1925,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AutomationGone": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "enum": [
+          "column",
+          "type",
+          "field",
+          "person",
+          "filter"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "id"
+    ],
+    "type": "object"
+  },
   "AutomationHookAccepted": {
     "additionalProperties": false,
     "properties": {
@@ -2076,6 +2099,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "properties": {
           "at": {
             "type": "number"
+          },
+          "gone": {
+            "$ref": "#/components/schemas/AutomationGone"
           },
           "reason": {
             "type": "string"
@@ -2465,6 +2491,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "gone": {
+        "$ref": "#/components/schemas/AutomationGone"
+      },
       "id": {
         "type": "string"
       },
@@ -2694,6 +2723,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
+          "gone": {
+            "$ref": "#/components/schemas/AutomationGone"
+          },
           "kind": {
             "const": "condition",
             "type": "string"
@@ -2722,6 +2754,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "already": {
             "const": true,
             "type": "boolean"
+          },
+          "gone": {
+            "$ref": "#/components/schemas/AutomationGone"
           },
           "kind": {
             "const": "action",

@@ -3,7 +3,7 @@
 // "2 columns are gone", "Someone is gone"), in the order the rule names them; a field Field Changed never hears keeps
 // its name. Pure.
 
-import type { AutomationNeed } from '@liveplanner/items';
+import type { AutomationGone, AutomationNeed } from '@liveplanner/items';
 
 type GoneKind = Exclude<AutomationNeed['kind'], 'unheard'>;
 
@@ -39,4 +39,31 @@ export function needsWords(attention: readonly AutomationNeed[]): string {
       return n === 1 ? `${one} is gone` : `${n} ${many} are gone`;
     })
     .join(' · ');
+}
+
+// What a gone thing reads as inside a line, as the rule's sentence reads a gone pick ("a column no longer here").
+const INLINE: Readonly<Record<AutomationGone['kind'], string>> = {
+  column: 'a column no longer here',
+  type: 'a card type no longer here',
+  field: 'a field no longer here',
+  person: 'Someone No Longer Here',
+  filter: 'a saved filter no longer here',
+};
+
+// The start a failed step's line or a run's reason keeps: a related card's number, or the branch's failed cards.
+const KEPT = /^(?:#\d+ |Failed on [^:]*: )?/;
+
+const escaped = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** A failed step's line, an unheld condition's or a run's reason, as the Audit Trail words it: never an id. What is
+ *  gone (`gone`, kept beside the text) reads as Needs Attention says it ("#12 A column is gone", "Failed on #12, #14: A
+ *  field is gone"); a condition keeps its words, the id read as the sentence reads a gone pick ("Column is Done or a
+ *  column no longer here (a column is gone)"). A line without it (a run from before) reads as stored. */
+export function goneText(text: string, gone: AutomationGone | undefined): string {
+  if (!gone) return text;
+  const one = GONE[gone.kind][0];
+  const tail = `(${gone.id} is gone)`;
+  if (!text.endsWith(tail)) return `${KEPT.exec(text)![0]}${one} is gone`;
+  const id = new RegExp(`(?<![\\w-])${escaped(gone.id)}(?![\\w-])`, 'g');
+  return `${text.slice(0, -tail.length).replace(id, INLINE[gone.kind])}(${one.toLowerCase()} is gone)`;
 }

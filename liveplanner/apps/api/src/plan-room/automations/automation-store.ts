@@ -10,6 +10,7 @@ import {
   isTimeTrigger,
   nextMoment,
   type AutomationEventKind,
+  type AutomationGone,
   type AutomationRule,
 } from '@liveplanner/items';
 import { stopWaits } from './automation-waits';
@@ -188,7 +189,8 @@ export class AutomationStore {
     result: 'done' | 'failed',
     reason: string,
     now: number,
-    webhook?: string,
+    // The webhook a message's failure names (for Fix Webhook), and what a reason names that the plan lacks.
+    about: { webhook?: string; gone?: AutomationGone } = {},
   ): boolean {
     const rule = this.get(id);
     if (!rule) return false;
@@ -201,10 +203,7 @@ export class AutomationStore {
       this.sql().exec('UPDATE automation_rules SET failures = ? WHERE id = ?', failures, id);
       return false;
     }
-    this.update(
-      { ...rule, enabled: false, paused: { reason, at: now, ...(webhook ? { webhook } : {}) } },
-      failures,
-    );
+    this.update({ ...rule, enabled: false, paused: { reason, at: now, ...about } }, failures);
     console.info('[automations] paused', { failures });
     return true;
   }

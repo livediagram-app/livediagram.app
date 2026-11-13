@@ -12,6 +12,7 @@ import { useAutomationsAccess } from './AutomationsContext';
 import { AutomationRefusal } from './automations-client';
 import type { RunRuleChoices } from './RunRuleMenu';
 import { useAutomations } from './use-automations';
+import { goneText } from './needs-words';
 
 export function useRunRule(itemId: string): RunRuleChoices | null {
   const access = useAutomationsAccess();
@@ -29,9 +30,10 @@ export function useRunRule(itemId: string): RunRuleChoices | null {
         track('Plan', 'Ran', 'AutomationManual');
         api.run(id, itemId).then(
           ({ run }) => {
-            if (run.result === 'failed') toast.error(run.reason ?? `${name} didn’t run.`);
+            const reason = run.reason && goneText(run.reason, run.gone);
+            if (run.result === 'failed') toast.error(reason || `${name} didn’t run.`);
             else if (run.result === 'done') toast.success(`Ran ${name}`);
-            else toast.info(run.reason ?? `${name} found nothing to do on this card.`);
+            else toast.info(reason || `${name} found nothing to do on this card.`);
           },
           (error: unknown) => {
             debugLog('[automations] run.failed', { error: String(error) });

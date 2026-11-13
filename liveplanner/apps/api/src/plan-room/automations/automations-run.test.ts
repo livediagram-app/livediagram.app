@@ -138,6 +138,18 @@ describe('runs, limits and loops', () => {
     }>();
     expect(list.rules[0]).toMatchObject({ enabled: false, stats: { failuresInARow: 10 } });
     expect(list.rules[0]!.paused?.reason).toMatch(/gone/);
+    // What is gone rides as data with the pause, each run's reason and its failed line, so the editor words it
+    // without the id; the reason keeps the id for agents.
+    const gone = { kind: 'column', id: 'gone-column' };
+    expect(list.rules[0]!.paused).toMatchObject({ reason: 'Column gone-column is gone', gone });
+    const failed = (await runs(`?rule=${rule.id}`))[0]!;
+    expect(failed).toMatchObject({ reason: 'Column gone-column is gone', gone });
+    expect(failed.steps.at(-1)).toEqual({
+      kind: 'action',
+      ok: false,
+      text: 'Column gone-column is gone',
+      gone,
+    });
     // Off now: a card reaching Done runs nothing.
     expect(room().automations.kinds.size).toBe(0);
     const resumed = await (

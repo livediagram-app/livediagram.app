@@ -9,6 +9,7 @@ import { useId, useState } from 'react';
 import type { AutomationRun } from '@liveplanner/items';
 import { ChevronDownIcon } from '@liveplanner/ui';
 import { RunSteps } from './RunSteps';
+import { goneText } from './needs-words';
 import { RESULT_LABELS, RESULT_PILL, nextRunWords, runWhen, tookWords } from './run-words';
 
 export const RUN_GRID =
@@ -64,7 +65,7 @@ export function RunRow({
     run.result === 'waiting' && run.waitsUntil !== undefined
       ? `Goes on ${nextRunWords(run.waitsUntil, now)}`
       : run.reason && (run.result === 'failed' || run.result === 'skipped')
-        ? run.reason
+        ? goneText(run.reason, run.gone)
         : null;
   const card = run.card;
   const openCard = card && onOpenCard ? () => onOpenCard(card.id) : undefined;

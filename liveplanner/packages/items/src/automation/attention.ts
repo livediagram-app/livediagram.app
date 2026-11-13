@@ -9,11 +9,13 @@ import type {
   AutomationAction,
   AutomationAi,
   AutomationCondition,
+  AutomationGone,
   AutomationOutgoing,
   AutomationRelated,
   AutomationRuleBody,
 } from './types';
 import { stepActions } from './validate';
+import { goneLine } from './set-value';
 import { personOf, planHasField, unheardFields, type AutomationOutline } from './outline';
 
 type Need = {
@@ -25,12 +27,8 @@ type Need = {
 // can never hear (by the plan's name). The editor words these without ids; ruleNeeds words them for agents.
 export type AutomationNeed = Need | { kind: 'unheard'; name: string };
 
-const WORDS: Readonly<Record<Need['kind'], string>> = {
-  column: 'Column',
-  type: 'Card type',
-  field: 'Field',
-  person: 'Person',
-  filter: 'Saved filter',
+// What the kinds a run never fails on read as (the rest read as a failed step's line does, goneLine).
+const WORDS: Readonly<Record<Exclude<Need['kind'], AutomationGone['kind']>, string>> = {
   form: 'Form tab',
   webhook: 'Webhook',
   card: 'Card',
@@ -167,7 +165,9 @@ export function ruleNeedItems(
 export const needLine = (need: AutomationNeed): string =>
   need.kind === 'unheard'
     ? `Field Changed never hears ${need.name}`
-    : `${WORDS[need.kind]} ${need.id} is gone`;
+    : need.kind === 'form' || need.kind === 'webhook' || need.kind === 'card'
+      ? `${WORDS[need.kind]} ${need.id} is gone`
+      : goneLine({ kind: need.kind, id: need.id });
 
 // What the rule names that the plan lacks, a line each ("Column done is gone"), for agents.
 export function ruleNeeds(
