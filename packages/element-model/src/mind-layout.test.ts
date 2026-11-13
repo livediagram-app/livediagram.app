@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from './factories';
+import { createPinnedArrow, createShape } from './testing/elements';
+import { MIND_LAYOUT } from './testing/mind';
 import {
   MIND_CHILD_GAP_X,
   MIND_CHILD_GAP_Y,
@@ -7,8 +8,9 @@ import {
   MIND_FLOWS,
   type MindFlow,
 } from './mind-flow';
-import { isMindTreeTidy, layoutMindTree, reanchorMindConnectors } from './mind-layout';
-import type { ArrowElement, Element, ShapeElement } from './index';
+import type { ArrowElement, Element, ShapeElement } from './element';
+
+const { isMindTreeTidy, layoutMindTree, reanchorMindConnectors } = MIND_LAYOUT;
 
 // docs/specs/009-elements/mind-node.md "A tidy map stays tidy".
 
@@ -74,7 +76,7 @@ describe('layoutMindTree: tree flow', () => {
     expect(apply(els, layoutMindTree(els, 'r', 'tree'))).toEqual(els);
   });
 
-  it('reads sibling order from the drawing, not the project', () => {
+  it('reads sibling order from the drawing, not the document', () => {
     // c is drawn above a, so it stays above a.
     const els = map().map((el) => (el.id === 'c' ? { ...el, y: -500 } : el));
     const out = apply(els, layoutMindTree(els, 'r', 'tree'));

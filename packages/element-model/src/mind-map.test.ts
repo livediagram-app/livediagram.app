@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from './factories';
-import { SHAPE_DEFAULT_SIZE } from './shape-factory';
-import type { Element, ShapeElement } from './index';
-import {
+import { SHAPE_DEFAULT_SIZE, createPinnedArrow, createShape } from './testing/elements';
+import { MIND_MAP } from './testing/mind';
+import type { Element, ShapeElement } from './element';
+import { MIND_CHILD_GAP_X, MIND_SIBLING_GAP_Y } from './mind-map';
+
+const {
   growMindChild,
   growMindSibling,
-  MIND_CHILD_GAP_X,
-  MIND_SIBLING_GAP_Y,
   mindChildren,
   mindSubtree,
   nextMindChildPosition,
   withMindBranches,
-} from './mind-map';
+} = MIND_MAP;
 
 // The size a new node is actually created at, so these tests keep exercising
 // the real default rather than a number that was the default once.
-const SIZE = SHAPE_DEFAULT_SIZE['mind-node'];
+const SIZE = SHAPE_DEFAULT_SIZE['mind-node']!;
 
 const node = (id: string, x: number, y: number, parent?: string): ShapeElement => ({
   ...createShape('mind-node', x, y),

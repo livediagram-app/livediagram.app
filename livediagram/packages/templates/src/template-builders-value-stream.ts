@@ -1,5 +1,5 @@
 // The Value stream map template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): how a change gets from an
-// idea to production at Plateful, drawn from its worked steps (./template-analysis-data VALUE_STREAM_STEPS,
+// idea to production at Plateful, drawn from its worked steps (@liveworkspace/template-previews/analysis-data VALUE_STREAM_STEPS,
 // valueStreamTotals), so every time and total here adds up.
 //
 // The classic notation, left to right: the information flow along the top (ideas into the Product team, the Jira
@@ -27,7 +27,7 @@ import {
   VALUE_STREAM_HOURS_PER_DAY,
   VALUE_STREAM_STEPS,
   valueStreamTotals,
-} from './template-analysis-data';
+} from '@liveworkspace/template-previews/analysis-data';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, MUTED, PAPER, SCAFFOLD, chipRow } from './template-report-kit';
 import { CANVAS_TONES } from './template-inks';

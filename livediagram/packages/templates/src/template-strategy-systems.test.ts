@@ -9,7 +9,7 @@ import {
   driverTree,
   threatRating,
   valueStreamTotals,
-} from './template-analysis-data';
+} from '@liveworkspace/template-previews/analysis-data';
 import { buildTemplate } from './build-template';
 import { RATING_COLOURS } from './template-builders-threat-model';
 import { NORTH_STAR_GOAL } from './template-builders-metric-tree';

@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape } from './factories';
-import { SHAPE_DEFAULT_SIZE } from './shape-factory';
+import { SHAPE_DEFAULT_SIZE, createPinnedArrow, createShape } from './testing/elements';
+import { MIND_GROW, MIND_LAYOUT } from './testing/mind';
 import { MIND_SIBLING_GAP_Y } from './mind-flow';
-import { isMindTreeTidy, layoutMindTree } from './mind-layout';
-import {
-  planMindGrowth,
-  relayoutMindMap,
-  withMindSubtrees,
-  type MindGrowthPlan,
-} from './mind-grow';
-import type { ArrowElement, Element, ShapeElement } from './index';
+import type { MindGrowthPlan as SharedGrowthPlan } from './mind-grow';
+import type { ArrowElement, Element, ShapeElement } from './element';
+
+type MindGrowthPlan = SharedGrowthPlan<ShapeElement, ArrowElement>;
+const { isMindTreeTidy, layoutMindTree } = MIND_LAYOUT;
+const { planMindGrowth, relayoutMindMap, withMindSubtrees } = MIND_GROW;
 
 // docs/specs/009-elements/mind-node.md: growth, the level's look, connectors, Tidy Map, branch drags.
 
@@ -126,7 +124,7 @@ describe('planMindGrowth: the level look', () => {
     const els: Element[] = [node('r', undefined, { w: 400, h: 120 })];
     const plan = planMindGrowth(els, 'r', 'child', ids(1))!;
     expect(plan.styleFrom).toBeNull();
-    expect(plan.node.width).toBe(SHAPE_DEFAULT_SIZE['mind-node'].width);
+    expect(plan.node.width).toBe(SHAPE_DEFAULT_SIZE['mind-node']!.width);
   });
 
   it('never makes a first branch bigger than a small root', () => {

@@ -373,7 +373,7 @@ export * from '@liveworkspace/element-model/geometry-guides';
 // while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
 export * from './layer-order';
 export * from './stored-elements';
-export { isSafeColourValue } from './unsafe-colours';
+export { isSafeColourValue } from '@liveworkspace/element-model/unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 

@@ -14,6 +14,7 @@
     "./deferred-preview-fan": "./src/DeferredPreviewFan.tsx",
     "./template-catalogue": "./src/template-catalogue.ts",
     "./template-search": "./src/template-search.ts",
+    "./analysis-data": "./src/analysis-data.ts",
     "./testing": "./src/testing.tsx",
     "./preview-art-tile.css": "./src/preview-art-tile.css",
     "./preview-motion.css": "./src/preview-motion.css"

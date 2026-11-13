@@ -7,7 +7,7 @@ import { migrateLegacyTextSizing } from './legacy-text-sizing';
 import { dropUnturnableRotation } from './unturnable-rotation';
 import { dropMalformedIds } from './malformed-ids';
 import { dropMalformedStyles } from './malformed-styles';
-import { dropUnsafeColours } from './unsafe-colours';
+import { dropUnsafeColours } from '@liveworkspace/element-model/unsafe-colours';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {

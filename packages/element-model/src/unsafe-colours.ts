@@ -1,11 +1,9 @@
-// A colour field that is not a colour, dropped where stored elements enter (./stored-elements): from storage, a peer,
+// A colour field that is not a colour, dropped where stored elements enter (each product's stored-elements): from storage, a peer,
 // a paste, a file or an agent's write. The canvas paints element colours into CSS, several of them inside a
 // `background` or a gradient (a card's wash, a reveal's glow, a mood bar), where a value carrying `url(...)` makes
-// every viewer's browser fetch an outside address. Nothing in livedesign loads from outside the design
-// (docs/specs/009-elements/images.md "External-URL images"), so a colour that could is refused once, at the door,
+// every viewer's browser fetch an outside address. Nothing in any product loads from outside its own item
+// (each product's images spec, "External-URL images"), so a colour that could is refused once, at the door,
 // rather than at each of the sinks. The element then paints with that colour's default, as if it had none.
-
-import type { Element } from './index';
 
 // The fields that hold a colour, wherever they sit in an element (on it, or on one of its rows, series or notes).
 const COLOUR_FIELDS = new Set([
@@ -86,7 +84,7 @@ function withoutUnsafeColours<T>(value: T, depth: number): T {
   return (out ?? value) as T;
 }
 
-export function dropUnsafeColours(elements: Element[]): Element[] {
+export function dropUnsafeColours<E extends object>(elements: E[]): E[] {
   let changed = false;
   const next = elements.map((el) => {
     const clean = withoutUnsafeColours(el, 0);

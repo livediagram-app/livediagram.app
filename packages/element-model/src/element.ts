@@ -34,7 +34,7 @@ import type { EntityField, LineSeries, PieSlice } from './data-shapes';
 import type { FlowchartDirection } from './flowchart';
 import type { KeyRow } from './diagram-key';
 import type { Finish } from './finish';
-import type { MindFlow } from './mind-flow';
+import type { MindFlow, MindSpacing } from './mind-flow';
 import type { MindLook } from './person-node';
 import type {
   SankeyAlign,
@@ -166,6 +166,7 @@ export type ShapeElement = BoxBase & {
   /** A mind node's parent and its map's flow (livediagram, liveplanner). */
   mindParentId?: ElementId;
   mindFlow?: MindFlow;
+  mindSpacing?: MindSpacing;
   /** A flowchart step's or lane's chart, its flow and a step's lane (livediagram, liveplanner; flowchart.ts). */
   flowchartId?: string;
   flowDirection?: FlowchartDirection;

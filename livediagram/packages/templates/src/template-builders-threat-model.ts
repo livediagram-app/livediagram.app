@@ -1,5 +1,5 @@
 // The Threat model template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a STRIDE threat model of
-// Plateful's checkout, drawn from its worked threats (./template-analysis-data THREAT_EXAMPLES), each with its element
+// Plateful's checkout, drawn from its worked threats (@liveworkspace/template-previews/analysis-data THREAT_EXAMPLES), each with its element
 // and rating.
 //
 // The drawing is a data-flow diagram inside its trust boundaries (Internet, Plateful VPC and the PCI zone nested in
@@ -24,7 +24,7 @@ import {
   threatRating,
   type StrideCategory,
   type ThreatRating,
-} from './template-analysis-data';
+} from '@liveworkspace/template-previews/analysis-data';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import {
   CONTENT,

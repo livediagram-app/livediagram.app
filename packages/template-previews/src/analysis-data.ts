@@ -1,6 +1,7 @@
-// The worked examples behind the Threat model, Metric tree and Value stream map templates: their threats, driver
-// inputs and value-stream steps, and the arithmetic their drawings show (a threat's rating, the metric tree's values,
-// the stream's totals). Pure data.
+// The worked examples behind the analysis templates, for livediagram and liveplanner: the Threat model, Metric tree
+// and Value stream map templates draw them, and liveplanner's three analysis sheets (Threat Register, Driver Model and
+// Value Stream, its docs/specs/029-sheets/sheet.md "Sheet templates") are their companion Sheets, so the drawing and
+// its sheet agree when made. Pure data and the arithmetic both sides share.
 
 // ---- Threat Register ----------------------------------------------------------------------------------------------
 

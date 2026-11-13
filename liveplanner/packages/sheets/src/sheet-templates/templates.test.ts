@@ -30,7 +30,7 @@ import {
   leverGain,
   threatRating,
   valueStreamTotals,
-} from './analysis-data';
+} from '@liveworkspace/template-previews/analysis-data';
 import { localMs, serialFromDate } from '../dates';
 
 const ctx = { now: 1, by: { id: '', name: '', color: '#000000' } };
@@ -269,7 +269,7 @@ describe('the Habit Tracker’s checkboxes (data-validation.md)', () => {
   });
 });
 
-// The analysis sheets work their examples out to the very figures their drawings show (analysis-data.ts): the Threat
+// The analysis sheets work their examples out to the very figures their drawings show (@liveworkspace/template-previews/analysis-data): the Threat
 // model's markers, the Metric tree's cards and the Value stream map's ladder read the same rows.
 describe('the analysis sheets agree with the drawings they sit beside', () => {
   it('Threat Register: every score and rating, the summary and the STRIDE counts', () => {

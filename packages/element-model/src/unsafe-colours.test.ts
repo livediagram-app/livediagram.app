@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { migrateStoredElements } from './stored-elements';
 import { dropUnsafeColours, isSafeColourValue } from './unsafe-colours';
-import type { Element } from './index';
 
-// A colour that could load something from outside the project never reaches the canvas (unsafe-colours.ts).
+type Element = { id: string; type: string };
+
+// A colour that could load something from outside a product's item never reaches the canvas (unsafe-colours.ts).
 describe('dropUnsafeColours', () => {
   it('keeps every colour CSS writes', () => {
     for (const c of [
@@ -62,7 +62,7 @@ describe('dropUnsafeColours', () => {
     });
   });
 
-  it('hands back the same list when nothing needed dropping, and runs with the stored-element migrations', () => {
+  it('hands back the same list when nothing needed dropping', () => {
     const els = [
       {
         id: 'a',
@@ -88,9 +88,6 @@ describe('dropUnsafeColours', () => {
       },
     ] as unknown as Element[];
     expect(dropUnsafeColours(els)).toBe(els);
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const migrated = migrateStoredElements([{ ...els[0]!, strokeColor: 'url(x)' }]);
-    expect(migrated[0]).not.toHaveProperty('strokeColor');
   });
 
   it('drops a colour field that is not a string, and keeps a page background fill object', () => {
