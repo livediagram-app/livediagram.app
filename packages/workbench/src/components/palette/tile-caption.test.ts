@@ -22,4 +22,18 @@ describe('tileCaption', () => {
     expect(caption).toBe('A (');
     expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
+
+  it('reads a label of many unclosed brackets in linear time, and keeps them', () => {
+    const label = '('.repeat(50_000);
+    let caption = '';
+    const ms = cpuMsOf(() => {
+      caption = tileCaption(label);
+    });
+    expect(caption).toBe(label);
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
+  });
+
+  it('drops a bracket that closes after an unclosed one', () => {
+    expect(tileCaption('Shape ((round) corners')).toBe('Shape Corners');
+  });
 });

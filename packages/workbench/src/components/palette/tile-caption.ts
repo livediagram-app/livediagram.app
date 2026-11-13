@@ -11,11 +11,22 @@ import { headlineCase } from '@liveworkspace/api-schema/title-case';
 // left (docs/specs/004-interface-design/menus.md "Item labels"). "Add Web Browser" → "Web Browser",
 // "Pencil (freehand)" → "Pencil". A tile's explicit `caption` always wins, for the names this rule
 // would mangle.
+// Drops each "(...)" in one pass: a regex would rescan the rest of the label from every unclosed bracket.
+function withoutParentheticals(text: string): string {
+  let out = '';
+  let from = 0;
+  for (let open = text.indexOf('('); open !== -1; open = text.indexOf('(', from)) {
+    const close = text.indexOf(')', open);
+    if (close === -1) break;
+    out += text.slice(from, open);
+    from = close + 1;
+  }
+  return out + text.slice(from);
+}
+
 export function tileCaption(label: string, override?: string): string {
   if (override) return override;
-  const base = label
-    .replace(/^add\s+/i, '')
-    .replace(/\([^)]*\)/g, '')
+  const base = withoutParentheticals(label.replace(/^add\s+/i, ''))
     .replace(/\s+/g, ' ')
     .trim();
   return headlineCase(base);
