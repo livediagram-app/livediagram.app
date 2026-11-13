@@ -73,7 +73,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'personal-space': '#f59e0b',
   'team-spaces': '#a855f7',
   'tab-folders': '#3b82f6',
-  'add-to-project': '#6366f1',
   'import-tabs': '#0891b2',
   tags: '#e11d48',
   'export-tabs': '#0284c7',

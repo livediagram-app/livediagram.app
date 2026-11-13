@@ -7,12 +7,7 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
-import {
-  ClearIcon,
-  FolderMenuIcon,
-  MoveIcon,
-  TabLockIcon,
-} from '@/components/chrome/tab-bar-icons';
+import { ClearIcon, FolderMenuIcon, TabLockIcon } from '@/components/chrome/tab-bar-icons';
 import {
   MenuActionRow,
   MenuGroupSeparator,
@@ -22,10 +17,7 @@ import {
   MenuToolButton,
 } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
-import {
-  AddTabToProjectDialog,
-  AddTabToFolderDialog,
-} from '@/components/dialogs/TabOrganiseDialogs';
+import { AddTabToFolderDialog } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
 import {
   DuplicateIcon,
@@ -55,12 +47,8 @@ export function PortalMenu({
   onImport,
   canImport,
   onExport,
-  onCopyTo,
   onToggleLock,
   locked,
-  planTab = false,
-  selfId,
-  otherProjects,
   folderNames,
   currentFolder,
   onMoveToFolder,
@@ -89,14 +77,8 @@ export function PortalMenu({
   // Absent, the tab's lock decides, as for a tab that takes a liveplanner tab's JSON.
   canImport?: boolean;
   onExport: () => void;
-  onCopyTo: (targetProjectId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
-  // A Plan tab: Add to Project is off, its cards belong to this project's items.
-  planTab?: boolean;
-  // Viewer identity for the Add to Project dialog's thumbnail fetches.
-  selfId: string;
-  otherProjects: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
   onMoveToFolder: (folderName: string) => void;
@@ -110,15 +92,13 @@ export function PortalMenu({
   // follows its file, so its menu keeps only Remove Tab, its folder and, when it opens nothing, Connect Again.
   connected?: ConnectedTabMenu | undefined;
 }) {
-  // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
-  // organise pickers — "copyTo" (docs/specs/006-project/tab-project-many-to-many.md, link the tab into another
-  // project) and "folder" (docs/specs/006-project/tab-folders.md, file the tab into a tab-bar folder) —
-  // open as proper centred MODALS in place of the anchored box, so they
-  // get room instead of squeezing into the menu. While a modal is up the
+  // The menu itself lists the verbs (Rename, Duplicate, Clear…); the organise picker, "folder"
+  // (docs/specs/006-project/tab-folders.md, file the tab into a tab-bar folder), opens as a proper centred MODAL in place of the anchored box, so it
+  // gets room instead of squeezing into the menu. While a modal is up the
   // anchored box unmounts (`ref` goes null), which conveniently disarms
   // the outside-click dismisser below; the modal owns its own dismissal
   // and closes the whole menu with it.
-  const [view, setView] = useState<'actions' | 'copyTo' | 'folder'>('actions');
+  const [view, setView] = useState<'actions' | 'folder'>('actions');
   // Delete asks nothing (undo brings a tab back), except for what an undo cannot take back (deleteTabWarning):
   // then an inline popover anchored to the Delete row, rendered so the outside-click handler treats it as "inside".
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -206,16 +186,6 @@ export function PortalMenu({
     onClose();
     if (anchor?.isConnected) anchor.focus({ preventScroll: true });
   };
-  if (view === 'copyTo') {
-    return (
-      <AddTabToProjectDialog
-        ownerId={selfId}
-        otherProjects={otherProjects}
-        onPick={onCopyTo}
-        onClose={closePicker}
-      />
-    );
-  }
   if (view === 'folder') {
     return (
       <AddTabToFolderDialog
@@ -380,13 +350,6 @@ export function PortalMenu({
             icon={<FolderMenuIcon />}
             label="Organise in Tab Folder"
             onClick={() => setView('folder')}
-          />
-          <MenuActionRow
-            plain
-            icon={<MoveIcon />}
-            label="Add to Plan"
-            onClick={() => setView('copyTo')}
-            disabled={otherProjects.length === 0 || planTab}
           />
           <MenuGroupSeparator />
           <MenuActionRow

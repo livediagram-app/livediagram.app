@@ -100,7 +100,6 @@ Two further rules, both learned from the untyped version:
 - **Empty/whitespace name** → treated as loose everywhere (client normalize, create handler rejects, server trims to NULL).
 - **Name uniqueness within a plan** → same name is the same folder (members merge into one run on normalize).
 - **Shared tab, foldered in A, loose in B** → naturally correct: folder is on each plan's `plan_tabs` row, never in the body that is kept in step.
-- **Add to Plan** → the tab lands loose in the other plan; its folder there is the person's to choose.
 
 ## Cross-references
 

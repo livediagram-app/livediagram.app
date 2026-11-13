@@ -16,7 +16,7 @@ import {
 export function ImportMenu() {
   const barY = 158;
   const mx = 150;
-  const my = 14;
+  const my = 32;
   return (
     <Scene w={420} h={210}>
       <TabBar y={barY} w={420} />
@@ -27,7 +27,7 @@ export function ImportMenu() {
         x={mx}
         y={my}
         width={192}
-        height={110}
+        height={92}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -36,7 +36,7 @@ export function ImportMenu() {
         x={mx}
         y={my + 6}
         w={192}
-        rows={['Organise in Tab Folder', 'Add to Plan', null, 'Import…', 'Export', 'Clear']}
+        rows={['Organise in Tab Folder', null, 'Import…', 'Export', 'Clear']}
         highlight="Import…"
       />
     </Scene>

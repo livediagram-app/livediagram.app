@@ -27,14 +27,12 @@ import {
   type Element,
   type Tab,
 } from '@liveplanner/project';
-import { apiLinkTab } from '@/lib/api-client';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from '@liveworkspace/workbench/hooks/persistence/tab-folder-reporting';
 import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
-import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 
 type TabActionsDeps = {
@@ -43,13 +41,6 @@ type TabActionsDeps = {
   // Whether the session may change the project's structure (its tabs): false for a view link and
   // for any tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md).
   canEditStructure: boolean;
-  // The owner's project list — read for the destination name when
-  // linking a tab into another project.
-  projectList: { id: string; name: string }[];
-  // The open plan: the one a tab added elsewhere is shared from.
-  projectId: string | null;
-  // The local participant id (owner of the link request).
-  ownerId: string;
   // Factory for a blank tab (kept in the page because the initial-state
   // initialiser also uses it).
   createTab: (name: string) => Tab;
@@ -72,8 +63,6 @@ type TabActionsDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
   requestFit: () => void;
-  // Re-pulls the owner's project list after a cross-project tab link.
-  refreshProjectList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
   toast: ReturnType<typeof useToast>;
   // A JSON tab export's Plan items, added after its tab lands (usePlanTabImport).
@@ -88,9 +77,6 @@ export function useTabActions(deps: TabActionsDeps) {
   const {
     tabs,
     activeId,
-    projectList,
-    ownerId,
-    projectId,
     createTab,
     commit,
     commitTabs,
@@ -101,7 +87,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setEditingId,
     setImportError,
     requestFit,
-    refreshProjectList,
     confirm,
     toast,
   } = deps;
@@ -186,29 +171,6 @@ export function useTabActions(deps: TabActionsDeps) {
       deps.retitleSheets?.(sheetIds, previous.trim(), trimmed);
     }
     track('Tab', 'Renamed');
-  };
-
-  // Share the active tab into another of the user's plans (docs/specs/006-project/tab-project-many-to-many.md).
-  // Goes through POST /api/projects/<target>/tabs/<tabId>/link with this plan as `from`: the target then holds
-  // the same tab, and an edit to it in either plan reaches the other.
-  const linkActiveTabTo = async (targetProjectId: string) => {
-    const source = tabs.find((t) => t.id === activeId);
-    if (!source || !projectId) return;
-    const target =
-      toastName(projectList.find((d) => d.id === targetProjectId)?.name) ?? 'that plan';
-    try {
-      await apiLinkTab(ownerId, targetProjectId, source.id, projectId);
-      toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
-      track('Tab', 'Linked');
-    } catch {
-      // Previously swallowed silently: the user clicked a destination
-      // and nothing visible happened. The toast surfaces the failure
-      // without forcing a modal; refresh still runs so the source
-      // project's local state remains consistent with what landed.
-      // Two names fill the line, so the try-again is left to the reader.
-      toast.error(`Could not add ${toastName(source.name) ?? 'the tab'} to ${target}.`);
-    }
-    refreshProjectList(ownerId);
   };
 
   const duplicateTab = (id: string) => {
@@ -362,7 +324,6 @@ export function useTabActions(deps: TabActionsDeps) {
     importTextIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
-    linkActiveTabTo,
     duplicateTab,
     deleteTab,
     reorderTabs,

@@ -178,7 +178,7 @@ export function EditorView() {
     role,
     barsShown: landscapeBars.shown,
   });
-  const footer = renderEditorTabBar(ctx, { isOffline, selectTab, barsShown: landscapeBars.shown });
+  const footer = renderEditorTabBar(ctx, { selectTab, barsShown: landscapeBars.shown });
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
   // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
   const landscapeBarsHandle =

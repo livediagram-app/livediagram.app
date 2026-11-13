@@ -1,15 +1,15 @@
 // Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tabs,
 // tab folders opening in place, the tab menu (toolbar over full-width rows split into groups),
-// the Organise in Tab Folder / Add to Project / Import / Export dialogs, cross-tab links, a locked
+// the Organise in Tab Folder / Import / Export dialogs, cross-tab links, a locked
 // tab, and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
 // TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
 // Composed only from the shared primitives so the house style holds.
 //
 // The scenes every product draws the same live in @liveworkspace/help-site (tabs-scenes, over the
 // tab-bar parts in tabs-parts), the Import and Export ones in ./tabs-import-export; this module keeps
-// the tab menu and the Add to dialog.
+// the tab menu.
 
-import { Scene, Label, Dialog } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 import {
   Padlock,
   TabPill,
@@ -65,14 +65,13 @@ export function RenamingTab() {
 }
 
 /** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Lock Tab, Delete) over
- *  full-width rows in two groups (folders and projects, content), opened from the
- *  active tab's ⋯ button. */
+ *  full-width rows in two groups (folders, content), opened from the active tab's ⋯ button. */
 export function TabMenu() {
   const barY = 178;
   const mx = 150;
-  const my = 10;
+  const my = 28;
   const mw = 200;
-  const rows = ['Organise in Tab Folder', 'Add to Plan', null, 'Import…', 'Export', 'Clear'];
+  const rows = ['Organise in Tab Folder', null, 'Import…', 'Export', 'Clear'];
   return (
     <Scene w={420} h={230}>
       <TabBar y={barY} w={420} />
@@ -84,7 +83,7 @@ export function TabMenu() {
         x={mx}
         y={my}
         width={mw}
-        height={152}
+        height={134}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -202,98 +201,15 @@ export function TabMenu() {
         strokeWidth={1.5}
       />
       <MenuRowList x={mx} y={my + 46} w={mw} rows={rows} />
-      <Label x={14} y={30} size={10} tone="muted">
+      <Label x={14} y={48} size={10} tone="muted">
         Rename, Duplicate,
       </Label>
-      <Label x={14} y={44} size={10} tone="muted">
+      <Label x={14} y={62} size={10} tone="muted">
         Paste, Side by Side,
       </Label>
-      <Label x={14} y={58} size={10} tone="muted">
+      <Label x={14} y={76} size={10} tone="muted">
         then Lock Tab, Delete
       </Label>
-    </Scene>
-  );
-}
-
-/** The Add to Project dialog: a filter box over a grid of your other projects. */
-export function AddToProjectMenu() {
-  const W = 420;
-  const H = 210;
-  const dx = 30;
-  const dy = 14;
-  const docs = ['Roadmap 2026', 'Onboarding', 'Architecture'];
-  return (
-    <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Plan" sceneW={W} sceneH={H}>
-        <rect
-          x={dx + 16}
-          y={dy + 48}
-          width={328}
-          height={24}
-          rx={6}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={dx + 26} y={dy + 61} size={11} tone="muted">
-          Filter plans…
-        </Label>
-        {docs.map((d, i) => {
-          const tx = dx + 16 + i * 112;
-          const ty = dy + 84;
-          return (
-            <g key={d}>
-              <rect
-                x={tx}
-                y={ty}
-                width={104}
-                height={84}
-                rx={8}
-                className={
-                  i === 2 ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'
-                }
-                strokeWidth={1.5}
-              />
-              {/* The destination's snapshot thumbnail */}
-              <rect
-                x={tx + 8}
-                y={ty + 8}
-                width={88}
-                height={48}
-                rx={4}
-                className="fill-slate-50 stroke-slate-200"
-                strokeWidth={1}
-              />
-              <rect
-                x={tx + 18}
-                y={ty + 18}
-                width={24}
-                height={14}
-                rx={3}
-                className="fill-brand-200"
-              />
-              <rect
-                x={tx + 58}
-                y={ty + 30}
-                width={26}
-                height={16}
-                rx={3}
-                className="fill-brand-100 stroke-brand-300"
-                strokeWidth={1}
-              />
-              <Label
-                x={tx + 52}
-                y={ty + 70}
-                anchor="middle"
-                size={10}
-                weight={600}
-                tone={i === 2 ? 'accent' : 'strong'}
-              >
-                {d}
-              </Label>
-            </g>
-          );
-        })}
-      </Dialog>
     </Scene>
   );
 }

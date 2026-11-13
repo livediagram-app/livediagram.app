@@ -550,13 +550,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 11h18" />
     </Glyph>
   ),
-  'add-to-project': (
-    <Glyph>
-      <rect x="3" y="3" width="12" height="12" rx="2" />
-      <path d="M9 21h10a2 2 0 0 0 2-2V9" />
-      <path d="M17 13v4M15 15h4" />
-    </Glyph>
-  ),
   'import-tabs': (
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />

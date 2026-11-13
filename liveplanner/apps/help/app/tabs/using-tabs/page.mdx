@@ -63,21 +63,25 @@ Click the **⋯** button on the active tab, or right-click any tab (which switch
 
 Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** (greyed out until you have copied something), **Side by Side** (on a large enough window, with another tab to sit beside; **Close Side by Side** while two tabs are open), **Lock Tab** and **Delete**. Below them, everything else is a full-width row, in groups split by a line:
 
-- **Organise in Tab Folder** and **Add to Plan**.
+- **Organise in Tab Folder**.
 - **Import…** (the [Import dialog](/help/tabs/import-tabs/): a CSV into a Board or Sheet tab, a tab's JSON, or a board from Trello, Asana, Jira or Linear), **Export**, and **Clear**, which empties the tab after a confirmation (Undo brings it back).
 
-<Figure caption="The tab menu: quick actions along the top, then full-width rows for folders and plans, and for importing, exporting and clearing.">
+<Figure caption="The tab menu: quick actions along the top, then full-width rows for folders, and for importing, exporting and clearing.">
   <TabMenu />
 </Figure>
 
 ## Deleting a tab
 
-Choose **Delete** in the tab menu. The tab goes straight away, and **Undo** brings it back. Once you reload or leave the plan it is gone, unless another plan also holds it ([Add to Plan](/help/tabs/add-to-project/)), so export or duplicate anything you might want later. A few things to know:
+Choose **Delete** in the tab menu. The tab goes straight away, and **Undo** brings it back. Once you reload or leave the plan it is gone, so export or duplicate anything you might want later. A few things to know:
 
 - Delete asks first only when it does something Undo can't take back: a [form](/help/plan/forms/)'s tab deletes the form's link with it, and a board or sheet that forms send their responses to stops them taking responses.
 - A plan always keeps at least one tab, so Delete is greyed out on the last one.
 - A [locked tab](/help/tabs/locking-tabs/) can't be deleted until you unlock it.
-- If the tab is also in [another plan](/help/tabs/add-to-project/), it is only removed from this one.
+- If the tab is also in [another plan](#tabs-in-more-than-one-plan), it is only removed from this one.
+
+## Tabs in more than one plan
+
+A tab belongs to one plan. Tabs used to be addable to another plan from the tab menu, but a plan's tabs show its cards, and a card is kept in the plan it came from, so a tab carried into another plan couldn't take its cards with it. Tabs that were already shared between plans stay shared: an edit in either plan shows in both, and deleting the tab in one plan only removes it from that one. To reuse a tab's layout somewhere new, [export it](/help/tabs/export-tabs/) and [import it](/help/tabs/import-tabs/) into the other plan.
 
 ## Share links
 
@@ -88,7 +92,6 @@ On a share link for a Viewer or a Participant, and on any link scoped to one tab
 - **[Tab Folders](/help/tabs/tab-folders/)** group related tabs under one named chip so a long tab bar stays readable.
 - **[Side by Side Tabs](/help/tabs/side-by-side/)** puts two tabs on screen at once, each live.
 - **[Connected Files](/help/tabs/connected-files/)** adds a tab that opens a file from any liveworkspace app, among its canvases, plans, documents and designs.
-- **[Add a Tab to Another Plan](/help/tabs/add-to-project/)** shares a Dashboard or Form tab into a different plan: the same tab in both places, not a copy.
 - **[Importing](/help/tabs/import-tabs/)** and **[Exporting](/help/tabs/export-tabs/)** move a tab's contents in and out as a file.
 - **[Locking a Tab](/help/tabs/locking-tabs/)** stops a tab being deleted, cleared or imported over, and freezes a Dashboard's layout.
 

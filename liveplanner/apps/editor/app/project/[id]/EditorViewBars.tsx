@@ -9,7 +9,6 @@ import type { ReactNode } from 'react';
 import { truncateName } from '@liveplanner/project';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
-import { addToProjectTargets } from '@/lib/add-to-project-targets';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { TabBar } from '@/components/chrome/TabBar';
@@ -112,11 +111,9 @@ export function renderEditorHeader(
 export function renderEditorTabBar(
   ctx: EditorContextValue,
   {
-    isOffline,
     selectTab,
     barsShown,
   }: {
-    isOffline: boolean;
     selectTab: (id: string) => void;
     barsShown: boolean;
   },
@@ -143,9 +140,6 @@ export function renderEditorTabBar(
     trackerImport,
     setExportScope,
     setExportOpen,
-    projectList,
-    isOwner,
-    linkActiveTabTo,
     toggleActiveTabLock,
     reorderTabs,
     isStructureReadOnly,
@@ -211,14 +205,6 @@ export function renderEditorTabBar(
             setExportScope('tab');
             setExportOpen(true);
           }}
-          otherProjects={addToProjectTargets({
-            projectId,
-            projectList,
-            isOffline,
-            workbench: workbench !== null,
-            isOwner,
-          })}
-          onCopyTabTo={linkActiveTabTo}
           onToggleLockTab={toggleActiveTabLock}
           onReorder={reorderTabs}
           // A tab-scoped visitor edits their tab's content at most, never the

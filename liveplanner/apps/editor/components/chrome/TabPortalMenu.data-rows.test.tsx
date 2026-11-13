@@ -24,11 +24,8 @@ function props(over: Partial<Props> = {}): Props {
     onClearContent: noop,
     onImport: noop,
     onExport: noop,
-    onCopyTo: noop,
     onToggleLock: noop,
     locked: false,
-    selfId: 'me',
-    otherProjects: [],
     folderNames: [],
     currentFolder: null,
     onMoveToFolder: noop,
@@ -77,5 +74,14 @@ describe('the tab menu’s Import and Export rows', () => {
   it('dims Import… on a locked tab by default', () => {
     render(<PortalMenu {...props({ point: { x: 10, y: 10 }, locked: true })} />);
     expect(rowLabels()).toEqual(['Export']);
+  });
+});
+
+// docs/specs/006-project/tab-project-many-to-many.md "Add to Plan": not offered, a tab's cards stay in their plan.
+describe('the tab menu without Add to Plan', () => {
+  it('offers no way to add the tab to another plan', () => {
+    render(<PortalMenu {...props({ point: { x: 10, y: 10 } })} />);
+    expect(screen.queryByRole('button', { name: /Add to Plan/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Organise in Tab Folder' })).toBeTruthy();
   });
 });
