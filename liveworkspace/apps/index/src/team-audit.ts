@@ -11,8 +11,8 @@
 //   webhook added or removed (`webhookAuditStatement`, webhooks/routes.ts).
 // Each is one statement whatever the count, through an index lookup, so logging never slows what it logs.
 //
-// Keeping. The daily run deletes rows past TEAM_AUDIT_RETENTION_MS, at most TEAM_AUDIT_SWEEP_MAX, the oldest first
-// (`sweepTeamAudit`). Closing an account anonymises its rows (`teamAuditPurgeStatements`, account-purge.ts).
+// Keeping. The daily run deletes rows past TEAM_AUDIT_RETENTION_MS, the oldest first, a chunk a statement until a
+// statement takes less than a chunk or the run's bound is spent (`sweepTeamAudit`). Closing an account anonymises its rows (`teamAuditPurgeStatements`, account-purge.ts).
 
 import {
   TEAM_AUDIT_ACCOUNT_TYPES,
@@ -26,8 +26,12 @@ import type { Env } from './env';
 
 type Db = D1Database;
 
-// Rows the daily run deletes, at most.
-export const TEAM_AUDIT_SWEEP_MAX = 5000;
+// The daily sweep: TEAM_AUDIT_SWEEP_CHUNK rows a statement (by rowid through team_audit_age, so a statement never
+// holds more than a chunk), at most TEAM_AUDIT_SWEEP_ROUNDS statements or TEAM_AUDIT_SWEEP_MS a run, whichever comes
+// first: up to 100,000 rows a day, however big the backlog. What is left waits a day.
+export const TEAM_AUDIT_SWEEP_CHUNK = 500;
+export const TEAM_AUDIT_SWEEP_ROUNDS = 200;
+export const TEAM_AUDIT_SWEEP_MS = 60_000;
 
 const COLUMNS =
   'team_id, id, type, app, actor_id, actor_name, subject_id, item_id, title, detail, occurred_at';
@@ -149,19 +153,30 @@ export function webhookAuditStatement(db: Db, audit: WebhookAudit): D1PreparedSt
     );
 }
 
-/** The daily run: rows past the year go, at most TEAM_AUDIT_SWEEP_MAX, the oldest first. Returns how many. */
+/** The daily run: rows past the year go, the oldest first. Returns how many went and whether some are left. */
 export async function sweepTeamAudit(
   env: Env,
   now = Date.now(),
-  max = TEAM_AUDIT_SWEEP_MAX,
-): Promise<number> {
-  const result = await env.INDEX_DB.prepare(
+  {
+    chunk = TEAM_AUDIT_SWEEP_CHUNK,
+    rounds = TEAM_AUDIT_SWEEP_ROUNDS,
+    ms = TEAM_AUDIT_SWEEP_MS,
+  } = {},
+): Promise<{ deleted: number; more: boolean }> {
+  const statement = env.INDEX_DB.prepare(
     `DELETE FROM team_audit_events WHERE rowid IN (
        SELECT rowid FROM team_audit_events WHERE occurred_at < ? ORDER BY occurred_at LIMIT ?)`,
-  )
-    .bind(now - TEAM_AUDIT_RETENTION_MS, max)
-    .run();
-  return result.meta.changes ?? 0;
+  ).bind(now - TEAM_AUDIT_RETENTION_MS, chunk);
+  // Wall time from when the step starts (`now` is the cutoff's clock, which a test may set in the past).
+  const deadline = Date.now() + ms;
+  let deleted = 0;
+  for (let round = 0; round < rounds; round++) {
+    if (round > 0 && Date.now() >= deadline) break;
+    const changes = (await statement.run()).meta.changes ?? 0;
+    deleted += changes;
+    if (changes < chunk) return { deleted, more: false };
+  }
+  return { deleted, more: true };
 }
 
 /**

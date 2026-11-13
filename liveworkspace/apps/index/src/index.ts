@@ -25,6 +25,7 @@ import { sweep } from './purge';
 import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountEvents } from './event-push';
 import { sweepEvents } from './events';
+import { sweepTeamAudit } from './team-audit';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
 import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
 import { handleTeamAudit } from './team-audit-read';
@@ -237,7 +238,7 @@ const worker = {
 
   // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests
   // became accounts. Once a day: move empty, unchanged items to the Trash, purge items 30 days in it, retry apps that missed a purge, and
-  // delete events past their 30 days (events.ts).
+  // delete events past their 30 days (events.ts) and team audit rows past their year (team-audit.ts).
   async scheduled(event: ScheduledController, env: Env): Promise<void> {
     if (!indexEnabled(env)) return;
     if (event.cron === FREQUENT_CRON) {
@@ -269,6 +270,11 @@ const worker = {
     await step('events', async () => {
       const { deleted, more } = await sweepEvents(env);
       console.info(`[index] events swept: ${deleted}${more ? ', more left for tomorrow' : ''}`);
+    });
+    // The team audit log's rows past the year (team-audit.ts).
+    await step('team audit', async () => {
+      const { deleted, more } = await sweepTeamAudit(env);
+      console.info(`[index] team audit swept: ${deleted}${more ? ', more left for tomorrow' : ''}`);
     });
   },
 };

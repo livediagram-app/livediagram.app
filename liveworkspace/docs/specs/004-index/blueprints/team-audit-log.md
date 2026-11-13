@@ -11,7 +11,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/team-audit.ts`                                                                           | `itemAuditStatement`, `accountAuditStatement`, `deletedAuditStatement`, `webhookAuditStatement`, `sweepTeamAudit`, `teamAuditPurgeStatements`     |
 | `liveworkspace/apps/index/src/events.ts`                                                                               | `eventStatements` and `bulkEventStatements` add the audit statement to the event's batch                                                          |
 | `liveworkspace/apps/index/src/items/item-routes.ts`, `liveworkspace/apps/index/src/items/list-routes.ts` (Empty Trash) | a move's `auditTeams` and `fromTeamId`; Delete Forever and Empty Trash pass who did it to `purgeRows`                                             |
-| `liveworkspace/apps/index/src/purge.ts`                                                                                | `purgeRows(…, audit?)` logs team items before their rows go; `sweep` runs `sweepTeamAudit`                                                        |
+| `liveworkspace/apps/index/src/purge.ts`                                                                                | `purgeRows(…, audit?)` logs team items before their rows go                                                                                       |
 | `liveworkspace/apps/index/src/sharing.ts`                                                                              | a public link's `shared` carries `public`                                                                                                         |
 | `liveworkspace/apps/index/src/webhooks/routes.ts`                                                                      | a team webhook's add and delete, each one batch with its audit row                                                                                |
 | `liveworkspace/apps/index/src/account-purge.ts`                                                                        | `purgePerson` runs `teamAuditPurgeStatements` after the person's own rows                                                                         |
@@ -108,7 +108,13 @@ secret.
 
 One statement per event or per batch, each a primary-key read of the event it copies: `POST /internal/events` with
 100 team events is two statements (`events.test.ts` "the bound"); the plans never scan `events`, `items`
-or the log (`team-audit.test.ts` "the bound"). The sweep is one indexed `DELETE … LIMIT 5000` a day (`IDX28`).
+or the log (`team-audit.test.ts` "the bound"). The sweep (`sweepTeamAudit`, the daily run's
+`team audit` step in `index.ts`) is one indexed statement, `DELETE … WHERE rowid IN (SELECT rowid … WHERE occurred_at <
+? ORDER BY occurred_at LIMIT 500)` through `team_audit_age` (two bound parameters, no temp B-tree), run again while it
+takes a full chunk, at most `TEAM_AUDIT_SWEEP_ROUNDS` (200) times or `TEAM_AUDIT_SWEEP_MS` (60 s), so a run is
+bounded however big the backlog and each statement holds 500 rows (`IDX28`). It returns `{ deleted, more }`.
+Measured (`team-audit.test.ts` "keeping it a year", CPU time, local SQLite): a 12,000-row backlog past the year beside
+20,000 kept goes in one daily cron run, 24 statements, in about 31 ms of CPU for the whole run.
 
 The read is one keyset query per page, `team_id = ?` plus each filter given, `(occurred_at < ? OR (occurred_at = ?
 AND id < ?))` for the cursor, `ORDER BY occurred_at DESC, id DESC LIMIT n + 1`: at most 9 bound parameters, and its
@@ -169,13 +175,13 @@ placeholder list is `aria-busy`. Export CSV is `busy` while it runs (it keeps fo
 ## Constants and configuration
 
 `TEAM_AUDIT_RETENTION_MS` 365 days, `TEAM_AUDIT_PAGE` 50, `TEAM_AUDIT_LIMIT_MAX` 100, `TEAM_AUDIT_CSV_MAX` 10,000,
-`TEAM_AUDIT_NEXT_CURSOR_HEADER` (`packages/index-client`); `TEAM_AUDIT_SWEEP_MAX` 5,000 (`team-audit.ts`);
+`TEAM_AUDIT_NEXT_CURSOR_HEADER` (`packages/index-client`); `TEAM_AUDIT_SWEEP_CHUNK` 500, `TEAM_AUDIT_SWEEP_ROUNDS` 200, `TEAM_AUDIT_SWEEP_MS` 60 s (`team-audit.ts`);
 `CSV_READ_CHUNK` 2,000 (`team-audit-read.ts`); `NAMES_PER_CALL` 100 (`accounts-access.ts`); `AUDIT_EXPORT_FILES_MAX`
 20 (`useAuditLog.ts`, `IDX34`).
 
 ## Defaults ledger
 
-- `IDX28`: the daily run deletes at most 5,000 rows past the year.
+- `IDX28`: the daily run deletes rows past the year 500 a statement, at most 200 statements or a minute.
 - `IDX29`: the Trash's own 30-day purge writes no row.
 - `IDX30`: a deleted team's rows stay until the year takes them.
 - `IDX31`: a page is 50 rows unless asked, at most 100; a CSV file at most 10,000, read 2,000 a query.
