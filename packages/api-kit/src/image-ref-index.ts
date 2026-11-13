@@ -27,7 +27,7 @@ export function createImageRefWriters<E>(db: (env: E) => D1Database) {
   return {
     // A body replace: drop the tab's references the new body no longer has, then add the ones it does. A save
     // that changes no image writes no row, so it owes no push.
-    imageRefReplaceStatements(env: E, tabId: string, ids: string[]): D1PreparedStatement[] {
+    imageRefReplaceStatements: (env: E, tabId: string, ids: string[]): D1PreparedStatement[] => {
       return [
         db(env)
           .prepare(
@@ -39,9 +39,8 @@ export function createImageRefWriters<E>(db: (env: E) => D1Database) {
     },
     imageRefAddStatements,
     // Every reference a tab holds, for a write that drops or replaces the tab wholesale.
-    imageRefPruneTabStatement(env: E, tabId: string): D1PreparedStatement {
-      return db(env).prepare('DELETE FROM image_refs WHERE tab_id = ?').bind(tabId);
-    },
+    imageRefPruneTabStatement: (env: E, tabId: string): D1PreparedStatement =>
+      db(env).prepare('DELETE FROM image_refs WHERE tab_id = ?').bind(tabId),
   };
 }
 
@@ -49,7 +48,7 @@ export function createImageRefReaders<E>(db: (env: E) => D1Database, link: Image
   const { table, item } = link;
   return {
     // Every image the item places, each once: what the media service holds for it after the next push.
-    async itemImageIds(env: E, itemId: string): Promise<string[]> {
+    itemImageIds: async (env: E, itemId: string): Promise<string[]> => {
       const { results } = await db(env)
         .prepare(
           `SELECT DISTINCT r.image_id
@@ -63,12 +62,12 @@ export function createImageRefReaders<E>(db: (env: E) => D1Database, link: Image
     },
     // Whether the item places image `imageId` (on `onlyTabId` only, for a tab-scoped visitor): the byte
     // endpoint's first question, answered from the item itself so an image placed a moment ago serves at once.
-    async itemPlacesImage(
+    itemPlacesImage: async (
       env: E,
       itemId: string,
       imageId: string,
       onlyTabId: string | null = null,
-    ): Promise<boolean> {
+    ): Promise<boolean> => {
       const row = await db(env)
         .prepare(
           `SELECT 1 AS present

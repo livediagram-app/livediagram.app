@@ -49,8 +49,7 @@ export function createRoomAccessClient<E>(roomFetch: RoomFetch<E>) {
 
   return {
     // The sockets one workbench pairing opened on the item, closed.
-    closeWorkbenchSessions(env: E, itemId: string, pairingId: string): Promise<boolean> {
-      return closeRoomSessions(env, itemId, { match: 'workbench', pairingId });
-    },
+    closeWorkbenchSessions: (env: E, itemId: string, pairingId: string): Promise<boolean> =>
+      closeRoomSessions(env, itemId, { match: 'workbench', pairingId }),
   };
 }

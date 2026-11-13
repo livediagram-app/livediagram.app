@@ -57,13 +57,18 @@ describe('createScoreRound', () => {
     const runsDir = mkdtempSync(join(tmpdir(), 'mcp-score-'));
     round(runsDir, 'r1');
     const { scoreRound, snaps } = scorer(runsDir);
-    const results = scoreRound('r1');
+    const results = scoreRound('r1') as {
+      deprecated: string[];
+      excluded: string[];
+      meta: { tools?: unknown; toolChars: number };
+      runs: { name: string }[];
+    };
     expect(results.deprecated).toEqual(['old']);
     expect(results.excluded).toEqual(['A1-m-3']);
     expect(results.meta).toMatchObject({ models: ['m'], toolCount: 2 });
     expect(results.meta.tools).toBeUndefined();
     expect(results.meta.toolChars).toBe('list'.length + 'Lists'.length + 7 + 'old'.length + 20 + 2);
-    expect(results.runs.map((r: { name: string }) => r.name)).toEqual(['A1-m-1', 'A1-m-2']);
+    expect(results.runs.map((r) => r.name)).toEqual(['A1-m-1', 'A1-m-2']);
     expect(results.runs[1]).toMatchObject({
       task: 'A1',
       area: 'basics',
@@ -85,7 +90,10 @@ describe('scoreMain', () => {
     round(runsDir, 'r1');
     const { scoreRound } = scorer(runsDir);
     const md = scoreMain(scoreRound, runsDir, ['--round', 'r2', '--compare', 'r1']);
-    expect(JSON.parse(readFileSync(join(dir, 'results.json'), 'utf8')).round).toBe('r2');
+    const written = JSON.parse(readFileSync(join(dir, 'results.json'), 'utf8')) as {
+      round: string;
+    };
+    expect(written.round).toBe('r2');
     expect(readFileSync(join(dir, 'summary.md'), 'utf8')).toBe(md);
     expect(scoreMain(scoreRound, runsDir, ['--round', 'r2'])).not.toContain('r1');
     expect(() => scoreMain(scoreRound, runsDir, [])).toThrow(/--round is required/);

@@ -20,7 +20,10 @@ describe('createTaskBank', () => {
   it('selects all, an area or ids, each once', () => {
     expect(selectTasks()).toHaveLength(3);
     expect(selectTasks('all')).toHaveLength(3);
-    expect(selectTasks('forms, P2,F1,,').map((t: { id: string }) => t.id)).toEqual(['F1', 'P2']);
-    expect(() => selectTasks('nope')).toThrow('No task nope');
+    const picked = selectTasks('forms, P2,F1,,') as { id: string }[];
+    expect(picked.map((t) => t.id)).toEqual(['F1', 'P2']);
+    expect(() => {
+      selectTasks('nope');
+    }).toThrow('No task nope');
   });
 });
