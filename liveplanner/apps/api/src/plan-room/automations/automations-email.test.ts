@@ -149,7 +149,7 @@ describe('Send Email', () => {
     for (const [name, text] of [
       ['Even', '😀'.repeat(1000)],
       ['Odd', `x${'😀'.repeat(999)}`],
-    ])
+    ] as const)
       await w.rule({ name, steps: [{ kind: 'mention', to: { assignee: true }, text }] });
     const c = await w.make('A', {
       title: 'Long',

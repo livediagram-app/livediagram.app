@@ -70,7 +70,8 @@ apps/api/src/plan-room/automations/
   automation-plan.ts     readAutomationPlan: the AutomationOutline, the plan's name and the account ids behind its
                          people's hashed ids (owner, joined team members, known_people), once per wake or request
   plan-room-automations.ts  the room's alarm step (runAutomations) and what a run needs from the room
-  automation-copy.ts     the rules in a copy and in the plan's file
+  automation-copy.ts     the rules in a copy and in the plan's file; rulesFromFile checks a file's as a save does
+                         (readRuleBody, ruleNameTaken, unheardFields, setFieldRefusal on the file's types)
   automation-runner.ts   one event against every rule it matches: run id, budget, chain, conditions, planActions,
                          then the writes (below), the Audit Trail row, the failure count and pausing
   automation-writes.ts   applies a planned run: one items patch for the triggering card via the shared write
