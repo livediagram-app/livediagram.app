@@ -141,6 +141,11 @@ work. A rule does it every time, at once, and says that it did.
   rule naming one is refused (`automation_invalid` at `trigger.fields.N`, "Field Changed never hears Time Spent: it
   changes without an edit, so the rule would never run"). A rule saved before its field became one needs attention
   ("Field Changed never hears Time Spent").
+- **Set Field and Clear Field write only fields a write changes**, the same ones: Time Spent's entries, a Votes
+  tally, a Comments field's threads and a Calculated value are never a rule's to write, and a value a rule wrote
+  there would be one the field cannot read. The builder leaves them out of both actions' fields and of Another
+  Field's Value (a step that holds one still shows it), and a run that reaches one fails: "Votes is never set by a
+  rule" ("never cleared" for Clear Field); a Calculated field keeps "Score is worked out, never set".
 - **Card Stuck** is a time trigger (below). It fires once for each stretch a card sits unchanged: the run id holds
   when the card last changed, so any change re-arms it.
 - **Card Unblocked, Related Cards Done and Column Over Limit** are worked out when the rule runs, from the plan's cards
@@ -902,7 +907,10 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
 - **Test on a Card** picks a card (the card finder) and runs the rule as it stands in the builder, unsaved, without
   changing anything: the result shows as an Audit Trail row with its steps, each action saying what it would do.
 - Leaving with unsaved changes asks **Discard Changes?**. A save the api refuses keeps the builder open and marks
-  the step at fault.
+  the step at fault, in words, never a path: the api's message for agents leads with the part's path ("steps.2.text
+  must be text of 1 to 2000 characters"), and the builder, which marks that part, says the rest as a sentence ("Must
+  be text of 1 to 2000 characters."). Text a step must hold is refused as "1 to N characters", text that may be
+  empty as "up to N characters".
 - A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says
   **This Rule Was Deleted**, "It's no longer in this plan. Its runs stay in the Audit Trail until they age out.", with
   **Back to Rules**, once a read of the list has answered without it. A read that fails says **Couldn't Load the

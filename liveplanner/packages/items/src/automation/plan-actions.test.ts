@@ -426,3 +426,35 @@ describe('If / Else, failing and the action limit', () => {
     ).toThrow('boom');
   });
 });
+
+describe('fields no write changes', () => {
+  // Time Spent's entries, a Votes tally and a Comments field: a rule never writes them (spec "Triggers").
+  const outline = {
+    ...OUTLINE,
+    types: OUTLINE.types.map((t) =>
+      t.id === 'bug'
+        ? {
+            ...t,
+            fields: [...t.fields, 'f-votes', 'f-spent', 'f-talk'],
+            custom: [
+              ...(t.custom ?? []),
+              { id: 'f-votes', label: 'Votes', kind: 'votes' as const },
+              { id: 'f-spent', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+              { id: 'f-talk', label: 'Talk', kind: 'comments' as const },
+            ],
+          }
+        : t,
+    ),
+  };
+  it.each([
+    [{ kind: 'set_field', field: 'f-votes', value: { text: '5' } }, 'Votes is never set by a rule'],
+    [
+      { kind: 'set_field', field: 'f-spent', value: { number: 30 } },
+      'Time Spent is never set by a rule',
+    ],
+    [{ kind: 'set_field', field: 'f-talk', value: { text: 'hi' } }, 'Talk is never set by a rule'],
+    [{ kind: 'clear_field', field: 'f-votes' }, 'Votes is never cleared by a rule'],
+  ] as [AutomationAction, string][])('fails %o rather than write it', (action, reason) => {
+    expect(failed(planActions([action], ctxFor(bug(), { outline })))).toBe(reason);
+  });
+});

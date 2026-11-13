@@ -196,13 +196,13 @@ Where each is set, so a setting lives with what it changes, never in one central
   cards are in {Name}, on every board that shows it. Where should they go?" (one card: "One card is in {Name}, on
   every board that shows it. Where should it go?"), and two option cards, one picked:
   **Move to Another Column** (a menu of the board's other columns, the first picked; the default) or **Move to the
-  Trash** ("You can restore them from the Trash."). **Delete Status** in it (a bin) moves the cards as picked,
-  then removes the column, and the state's column from every other board in the project; **Cancel** or Escape
-  keeps it. Moving to the Trash moves every card of that state and announces "N cards moved to the Trash"; a card
-  whose type leaves out the target column's state stays, as a move does. A state that holds no card is deleted
-  at once. The board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
-  opens the **column picker** (below) in the popover; the column it adds goes after this one, and the popover
-  moves to it, anchored to its cog.
+  Trash** ("You can restore them from the Trash."; one card: "You can restore it from the Trash."). **Delete
+  Status** in it (a bin) moves the cards as picked, then removes the column, and the state's column from every other
+  board in the project; **Cancel** or Escape keeps it. Moving to the Trash moves every card of that state and
+  announces "N cards moved to the Trash"; a card whose type leaves out the target column's state stays, as a move
+  does. A state that holds no card is deleted at once. The board's last column cannot be removed. Each change
+  applies as it is made. **+ Add Column After** opens the **column picker** (below) in the popover; the column it
+  adds goes after this one, and the popover moves to it, anchored to its cog.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯) as **five
   flyout rows of the menu itself** (a board has no Style row: its tab's theme dresses it, and the old board
   presets are themes), each opening its own panel to the
