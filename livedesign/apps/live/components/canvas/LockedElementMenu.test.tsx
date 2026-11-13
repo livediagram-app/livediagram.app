@@ -6,6 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { LockedElementMenu } from './LockedElementMenu';
 
 afterEach(cleanup);
@@ -33,6 +34,22 @@ function mount(
 }
 
 describe('LockedElementMenu', () => {
+  it('stands in a landmark of its own, portalled as it is, and axe is clean', async () => {
+    render(
+      <main>
+        <LockedElementMenu
+          at={{ x: 100, y: 100 }}
+          holders={[ARIEL]}
+          onRelease={vi.fn()}
+          onClose={vi.fn()}
+        />
+      </main>,
+    );
+    const region = screen.getByRole('region', { name: 'Locked element menu' });
+    expect(region.contains(screen.getByRole('menu'))).toBe(true);
+    expect(await axeViolations()).toEqual([]);
+  });
+
   it('names the person whose hold it would break', () => {
     mount();
     expect(screen.getByRole('menuitem', { name: /Release Ariel’s Hold/ })).toBeTruthy();

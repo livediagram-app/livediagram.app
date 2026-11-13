@@ -7,6 +7,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { editorModeDescription, type EditorMode } from '@livediagram/document';
+import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { ModeMenuChip } from './ModeMenuChip';
 import { MODE_TOOLS } from './mode-menu-copy';
 
@@ -26,6 +27,18 @@ const preview = () => document.querySelector<HTMLElement>('[data-mode-preview]')
 const row = (name: string) => screen.getByRole('menuitemradio', { name: new RegExp(`^${name}`) });
 
 describe('ModeMenu preview', () => {
+  it('floats from the top chrome’s chip in a landmark of its own, portalled as it is, and axe is clean', async () => {
+    render(
+      <main>
+        <ModeMenuChip mode="diagram" onChange={vi.fn()} compact />
+      </main>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /mode:/ }));
+    const region = screen.getByRole('region', { name: 'Editor mode' });
+    expect(region.contains(screen.getByRole('menu'))).toBe(true);
+    expect(await axeViolations()).toEqual([]);
+  });
+
   it('shows the current mode until a row is pointed at, then follows the pointer', () => {
     open('diagram');
     expect(preview().dataset.modePreview).toBe('diagram');

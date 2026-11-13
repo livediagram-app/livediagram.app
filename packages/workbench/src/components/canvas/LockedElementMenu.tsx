@@ -16,6 +16,7 @@
 import { useCallback, useId, useRef } from 'react';
 import {
   MENU_LABEL_ATTR,
+  MenuLandmark,
   MenuTreeContext,
   useMenu,
   Portal,
@@ -63,59 +64,62 @@ export function LockedElementMenu({
 
   return (
     <Portal>
-      <MenuTreeContext.Provider value={tree}>
-        <div
-          ref={setRef}
-          {...surfaceProps}
-          aria-describedby={noteId}
-          // The canvas reads a press as select-and-maybe-drag, and a portal's
-          // events still bubble up the REACT tree to the canvas that rendered
-          // this — the same trap ElementEllipsisMenu documents.
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
-          onDoubleClick={(e) => e.stopPropagation()}
-          style={{ left, top, width: WIDTH }}
-          className="fixed z-[var(--z-overlay,50)] rounded-lg outline-none border border-slate-200 bg-white py-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
-        >
-          <p
-            {...{ [MENU_LABEL_ATTR]: '' }}
-            id={`${noteId}-label`}
-            aria-hidden
-            className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+      {/* Portalled to the body, so a landmark of its own (MenuLandmark). */}
+      <MenuLandmark name="Locked element menu">
+        <MenuTreeContext.Provider value={tree}>
+          <div
+            ref={setRef}
+            {...surfaceProps}
+            aria-describedby={noteId}
+            // The canvas reads a press as select-and-maybe-drag, and a portal's
+            // events still bubble up the REACT tree to the canvas that rendered
+            // this — the same trap ElementEllipsisMenu documents.
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            onDoubleClick={(e) => e.stopPropagation()}
+            style={{ left, top, width: WIDTH }}
+            className="fixed z-[var(--z-overlay,50)] rounded-lg outline-none border border-slate-200 bg-white py-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
           >
-            In use
-          </p>
-          {holders.map((holder) => (
-            <button
-              key={holder.id}
-              type="button"
-              role="menuitem"
-              tabIndex={-1}
-              onClick={() => {
-                onRelease(holder.id);
-                onClose();
-              }}
-              className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+            <p
+              {...{ [MENU_LABEL_ATTR]: '' }}
+              id={`${noteId}-label`}
+              aria-hidden
+              className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
             >
-              <span
-                aria-hidden
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: holder.color }}
-              />
-              {/* The name is the point: "free it" without saying whose hold you
+              In use
+            </p>
+            {holders.map((holder) => (
+              <button
+                key={holder.id}
+                type="button"
+                role="menuitem"
+                tabIndex={-1}
+                onClick={() => {
+                  onRelease(holder.id);
+                  onClose();
+                }}
+                className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <span
+                  aria-hidden
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: holder.color }}
+                />
+                {/* The name is the point: "free it" without saying whose hold you
                 are breaking is an action you cannot judge before taking. */}
-              <span className="truncate">Release {holder.name}&rsquo;s Hold</span>
-            </button>
-          ))}
-          <p
-            id={noteId}
-            aria-hidden
-            className="px-3 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400"
-          >
-            They keep their work; it just stops being theirs to edit.
-          </p>
-        </div>
-      </MenuTreeContext.Provider>
+                <span className="truncate">Release {holder.name}&rsquo;s Hold</span>
+              </button>
+            ))}
+            <p
+              id={noteId}
+              aria-hidden
+              className="px-3 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400"
+            >
+              They keep their work; it just stops being theirs to edit.
+            </p>
+          </div>
+        </MenuTreeContext.Provider>
+      </MenuLandmark>
     </Portal>
   );
 }

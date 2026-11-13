@@ -31,3 +31,4 @@ export { useMenu, type MenuHandle, type SurfaceProps, type UseMenuOptions } from
 export { useMenuButton, type MenuButton } from './useMenuButton';
 export { useControlMenu, type UseControlMenuOptions } from './useControlMenu';
 export { MENU_PANEL, menuRadioRowClass } from './menu-classes';
+export { MenuLandmark, menuLandmarkName } from './MenuLandmark';

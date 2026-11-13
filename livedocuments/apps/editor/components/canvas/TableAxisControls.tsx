@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { MenuTreeContext, useMenu } from '@livedocuments/ui';
+import { MenuLandmark, MenuTreeContext, useMenu } from '@livedocuments/ui';
 import type { TableElement } from '@livedocuments/document';
 import {
   TableHeaderMenu,
@@ -237,45 +237,48 @@ export function TableAxisMenuPortal({
     initialFocus: 'first',
   });
   return createPortal(
-    <MenuTreeContext.Provider value={tree}>
-      <div
-        ref={attach}
-        {...surfaceProps}
-        data-table-ui
-        className={`pointer-events-auto fixed z-[var(--z-overlay)] w-40 animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
-          menu.axis === 'col' ? '-translate-x-1/2' : '-translate-y-1/2'
-        }`}
-        style={{ left: menu.x, top: menu.y }}
-      >
-        {menu.axis === 'col' ? (
-          <TableHeaderMenu
-            axis="col"
-            index={menu.index}
-            count={cols}
-            onAdd={addCol}
-            onMove={moveCol}
-            onDelete={delCol}
-            highlight={
-              onToggleHighlight
-                ? {
-                    on: highlightColumn === menu.index,
-                    onToggle: () => onToggleHighlight(menu.index),
-                  }
-                : undefined
-            }
-          />
-        ) : (
-          <TableHeaderMenu
-            axis="row"
-            index={menu.index}
-            count={rows}
-            onAdd={addRow}
-            onMove={moveRow}
-            onDelete={delRow}
-          />
-        )}
-      </div>
-    </MenuTreeContext.Provider>,
+    // Portalled to the body, so a landmark of its own (MenuLandmark).
+    <MenuLandmark name={menu.axis === 'col' ? 'Column menu' : 'Row menu'}>
+      <MenuTreeContext.Provider value={tree}>
+        <div
+          ref={attach}
+          {...surfaceProps}
+          data-table-ui
+          className={`pointer-events-auto fixed z-[var(--z-overlay)] w-40 animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
+            menu.axis === 'col' ? '-translate-x-1/2' : '-translate-y-1/2'
+          }`}
+          style={{ left: menu.x, top: menu.y }}
+        >
+          {menu.axis === 'col' ? (
+            <TableHeaderMenu
+              axis="col"
+              index={menu.index}
+              count={cols}
+              onAdd={addCol}
+              onMove={moveCol}
+              onDelete={delCol}
+              highlight={
+                onToggleHighlight
+                  ? {
+                      on: highlightColumn === menu.index,
+                      onToggle: () => onToggleHighlight(menu.index),
+                    }
+                  : undefined
+              }
+            />
+          ) : (
+            <TableHeaderMenu
+              axis="row"
+              index={menu.index}
+              count={rows}
+              onAdd={addRow}
+              onMove={moveRow}
+              onDelete={delRow}
+            />
+          )}
+        </div>
+      </MenuTreeContext.Provider>
+    </MenuLandmark>,
     document.body,
   );
 }
