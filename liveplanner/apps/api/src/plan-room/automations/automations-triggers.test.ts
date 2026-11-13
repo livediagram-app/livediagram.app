@@ -84,6 +84,33 @@ describe('card triggers', () => {
     expect(await labelled(c.id)).toEqual(['gone', 'back']);
   });
 
+  it('Card Created never runs on a card put back: an undo of its delete is no new card', async () => {
+    const c = await w.make('A', { title: 'Old' });
+    expect((await set(c.id, { status: 'trash', trashedFrom: 'todo' })).status).toBe(200);
+    const stored = await card(c.id);
+    expect((await w.send('DELETE', `/api/projects/A/items/${c.id}`)).status).toBe(204);
+    // A rule made after the card first was: nothing it ran before stops it.
+    await w.rule({
+      name: 'New',
+      trigger: { kind: 'card_created' },
+      steps: [{ kind: 'add_label', label: 'new' }],
+    });
+    const back = await w.send('POST', '/api/projects/A/items', {
+      id: c.id,
+      type: stored.type,
+      key: stored.key,
+      fields: stored.fields,
+    });
+    expect(back.status).toBe(201);
+    await room().alarm();
+    expect(await labelled(c.id)).toBeUndefined();
+    expect(await runs()).toEqual([]);
+    // A card made anew still runs it.
+    const fresh = await w.make('A', { title: 'Fresh' });
+    await room().alarm();
+    expect(await labelled(fresh.id)).toEqual(['new']);
+  });
+
   it('Checklist Completed runs when the last item is ticked, once', async () => {
     await w.rule({
       name: 'Ticked',
@@ -225,6 +252,24 @@ describe('derived triggers heard twice before a wake', () => {
     await room().alarm();
     const flagged = [await card(a.id), await card(b.id)].filter((c) => c.fields['flagged']);
     expect(flagged).toHaveLength(1);
+  });
+
+  it('Column Over Limit runs once, on the card one past the limit, when three come in before a wake', async () => {
+    await w.rule({
+      name: 'Too many',
+      trigger: { kind: 'column_limit', status: 'doing', limit: 1 },
+      steps: [{ kind: 'flag' }],
+    });
+    const cards = [
+      await w.make('A', { title: 'A' }),
+      await w.make('A', { title: 'B' }),
+      await w.make('A', { title: 'C' }),
+    ];
+    for (const c of cards) await move(c.id, 'doing');
+    await room().alarm();
+    const flagged = [];
+    for (const c of cards) if ((await card(c.id)).fields['flagged']) flagged.push(c.id);
+    expect(flagged).toEqual([cards[1]!.id]);
   });
 });
 

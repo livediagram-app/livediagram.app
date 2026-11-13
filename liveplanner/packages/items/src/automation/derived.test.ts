@@ -162,13 +162,47 @@ describe('derived triggers', () => {
     const trigger = { kind: 'column_limit' as const, status: 'doing', limit: 2 };
     const e = moved(cards[2]!, 'todo', 'doing');
     expect(derivedTargets(trigger, e, cards, TYPES, isDone).map(name)).toEqual(['3']);
-    // Two past: it went over already.
-    expect(
-      derivedTargets(trigger, e, [...cards, task('4', { status: 'doing' })], TYPES, isDone),
-    ).toEqual([]);
+    // Two past, and it came in last: the column went over already, as another card came in.
+    const late = { ...cards[2]!, fields: { ...cards[2]!.fields, statusSince: 9 } } as Item;
+    const four = task('4', { status: 'doing', statusSince: 5 });
+    expect(derivedTargets(trigger, e, [cards[0]!, cards[1]!, late, four], TYPES, isDone)).toEqual(
+      [],
+    );
     // The card is no longer in the column.
     const left = { ...cards[2]!, fields: { ...cards[2]!.fields, status: 'todo' } } as Item;
     expect(derivedTargets(trigger, e, [cards[0]!, cards[1]!, left], TYPES, isDone)).toEqual([]);
+  });
+
+  it('Column Over Limit: several in before the wake, the card that came in one past the limit runs it, once', () => {
+    const trigger = { kind: 'column_limit' as const, status: 'doing', limit: 1 };
+    const one = task('1', { status: 'doing', statusSince: 1 });
+    // Two and three came in after it, before the wake read the column (three past a limit of one).
+    const two = task('2', { status: 'doing', statusSince: 5 });
+    const three = task('3', { status: 'doing', statusSince: 7 });
+    const cards = [three, one, two];
+    const on = (c: Item) =>
+      derivedTargets(trigger, moved(c, 'todo', 'doing'), cards, TYPES, isDone).map(name);
+    expect(on(two)).toEqual(['2']);
+    expect(on(three)).toEqual([]);
+    expect(on(one)).toEqual([]);
+    // Within the limit: nothing.
+    expect(derivedTargets(trigger, moved(one, 'todo', 'doing'), [one], TYPES, isDone)).toEqual([]);
+    // Came in at the same moment: the lower number first.
+    const twin = task('Twin', { status: 'doing', statusSince: 5 });
+    const order = [one, two, twin].sort((a, b) => a.key - b.key);
+    const later = order[2]!;
+    expect(
+      derivedTargets(trigger, moved(later, 'todo', 'doing'), [...order, three], TYPES, isDone),
+    ).toEqual([]);
+    expect(
+      derivedTargets(
+        trigger,
+        moved(order[1]!, 'todo', 'doing'),
+        [...order, three],
+        TYPES,
+        isDone,
+      ).map(name),
+    ).toEqual([name(order[1]!)]);
   });
 
   it('names the moment each target reached by its related cards, so a second event at the same one runs nothing', () => {
