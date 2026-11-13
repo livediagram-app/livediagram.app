@@ -9,8 +9,10 @@ import {
   ITEM_TYPES,
   PLAN_DRAFT_COLOURS,
   type ItemTypeDef,
+  type AutomationRuleBody,
   type PlanBoardSetup,
   type PlanDraft,
+  type PlanDraftRule,
 } from '@liveplanner/items';
 import type { ComponentProps } from 'react';
 import { freshName, newDraftType, problemsByPath, withKind } from './draft-edits';
@@ -32,9 +34,32 @@ vi.mock('./DescribePlanDialog', () => ({
 }));
 const ctx = vi.hoisted(() => ({ value: null as unknown }));
 vi.mock('@/app/project/[id]/EditorContext', () => ({ useEditorContext: () => ctx.value }));
+const rulesApi = vi.hoisted(() => ({
+  listAutomations: vi.fn(async () => ({ rules: [{ id: 'r0', name: 'Stamp Offer Date' }] })),
+  createRule: vi.fn(async (_scope: unknown, body: { name: string }) => ({
+    rule: { id: `id-${body.name}`, name: body.name, enabled: true },
+  })),
+  toggleRule: vi.fn(async () => ({})),
+}));
+vi.mock('@/components/automations/automations-client', () => rulesApi);
+const readAutomations = vi.hoisted(() => vi.fn(async () => true));
+vi.mock('@/components/automations/use-automations', () => ({ readAutomations }));
+const toast = vi.hoisted(() => ({ error: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { draftPlan, PlanDraftRefusal } = await import('./plan-draft-client');
 const { DescribePlanHost, DESCRIBE_PLAN_NOT_READY } = await import('./DescribePlanHost');
+const { makeStarterRules, STARTER_RULES_FAILED } = await import('./starter-rules-client');
+const { AutomationsContext } = await import('@/components/automations/AutomationsContext');
+
+const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const RULE: PlanDraftRule = {
+  name: 'Stamp Offer Date',
+  on: true,
+  trigger: { kind: 'card_moved', to: ['Offer'] },
+  conditions: [],
+  steps: [{ kind: 'flag' }],
+};
 
 const draft = (): PlanDraft => ({
   title: 'Hiring',
@@ -128,7 +153,14 @@ describe('the preview’s parts', () => {
 });
 
 describe('DescribePlanHost', () => {
-  const host = (opts: { plan?: boolean; account?: string | null; catalogue?: boolean } = {}) => {
+  const host = (
+    opts: {
+      plan?: boolean;
+      account?: string | null;
+      catalogue?: boolean;
+      automations?: boolean;
+    } = {},
+  ) => {
     const addTypes = vi.fn<(defs: readonly ItemTypeDef[]) => void>();
     const startElementTab = vi.fn((_kind: string, add: () => void) => add());
     const dropPaletteItem =
@@ -156,7 +188,15 @@ describe('DescribePlanHost', () => {
       dropPaletteItem,
     };
     const onClose = vi.fn();
-    render(<DescribePlanHost onClose={onClose} />);
+    render(
+      opts.automations ? (
+        <AutomationsContext.Provider value={{ scope: SCOPE, open: () => {} }}>
+          <DescribePlanHost onClose={onClose} />
+        </AutomationsContext.Provider>
+      ) : (
+        <DescribePlanHost onClose={onClose} />
+      ),
+    );
     const props = dialog.props as unknown as ComponentProps<
       typeof import('./DescribePlanDialog').DescribePlanDialog
     >;
@@ -207,5 +247,48 @@ describe('DescribePlanHost', () => {
     expect(props.onMake({ ...draft(), columns: [] })).toMatch(/column/);
     expect(dropPaletteItem).not.toHaveBeenCalled();
     expect(host({ plan: false }).props.onMake(draft())).toBe(DESCRIBE_PLAN_NOT_READY);
+  });
+
+  it('makes the starter rules left in through Automations, after the board, where Automations is open', async () => {
+    const { props } = host({ automations: true });
+    expect(props.rulesMade).toBe(true);
+    expect(
+      props.onMake({ ...draft(), rules: [RULE, { ...RULE, name: 'Second', on: false }] }),
+    ).toBeNull();
+    await vi.waitFor(() => expect(readAutomations).toHaveBeenCalledWith(SCOPE));
+    expect(rulesApi.createRule.mock.calls.map((c) => c[1].name)).toEqual([
+      'Stamp Offer Date 2',
+      'Second',
+    ]);
+    const body = rulesApi.createRule.mock.calls[0]![1] as unknown as AutomationRuleBody;
+    expect(body).toMatchObject({ chain: false, timeZone: expect.any(String) });
+    // The board's own status, not the draft's name.
+    expect(body.trigger).toEqual({ kind: 'card_moved', to: [expect.stringMatching(/^offer/)] });
+    expect(rulesApi.toggleRule).toHaveBeenCalledWith(SCOPE, 'id-Second', false);
+    expect(track.mock.calls.filter((c) => c[2] === 'PlanDraftRule')).toHaveLength(2);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('says in a toast when the rules can’t be made, the plan kept', async () => {
+    rulesApi.createRule.mockRejectedValueOnce(new Error('full'));
+    const { props, dropPaletteItem } = host({ automations: true });
+    expect(props.onMake({ ...draft(), rules: [RULE] })).toBeNull();
+    await vi.waitFor(() => expect(toast.error).toHaveBeenCalledWith(STARTER_RULES_FAILED));
+    expect(dropPaletteItem).toHaveBeenCalled();
+    expect(readAutomations).toHaveBeenCalled();
+  });
+
+  it('makes no rules where Automations is closed (a plan in This Browser)', () => {
+    const { props } = host();
+    expect(props.rulesMade).toBe(false);
+    expect(props.onMake({ ...draft(), rules: [RULE] })).toBeNull();
+    expect(rulesApi.listAutomations).not.toHaveBeenCalled();
+  });
+});
+
+describe('makeStarterRules', () => {
+  it('asks nothing for no rules', async () => {
+    await makeStarterRules(SCOPE, [], () => {});
+    expect(rulesApi.listAutomations).not.toHaveBeenCalled();
   });
 });

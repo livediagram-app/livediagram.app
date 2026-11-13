@@ -723,9 +723,9 @@ export const articles: Article[] = [
     slug: 'describe-a-plan',
     title: 'Describe a Plan',
     description:
-      'Say how your work runs and AI drafts a board’s columns and card types, for you to check and change before Make Plan.',
+      'Say how your work runs and AI drafts a board’s columns, card types and starter rules, for you to check and change before Make Plan.',
     keywords:
-      'describe a plan ai artificial intelligence generate generator draft custom my own words build plan make plan board columns stages card types fields prompt write describe workflow pipeline process set up start planning check your plan sign in',
+      'describe a plan ai artificial intelligence generate generator draft custom my own words build plan make plan board columns stages card types fields prompt write describe workflow pipeline process set up start planning check your plan sign in starter rules automations rule',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Getting Going',

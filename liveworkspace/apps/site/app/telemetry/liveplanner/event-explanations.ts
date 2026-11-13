@@ -824,6 +824,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Ran|PlanAiOffTopic': "Describe a Plan's request wasn't a plan, so nothing was drafted.",
   'Plan|Created|PlanDraft':
     'Someone pressed Make Plan on a plan Describe a Plan drafted, making its board and the card types the plan lacked.',
+  'Plan|Created|PlanDraftRule':
+    'Make Plan made one of the starter Automations rules Describe a Plan drafted with the plan.',
   'UI|Opened|PlanDescribe':
     "Someone opened Describe a Plan on Start Planning, to draft a board's columns and card types from words with AI.",
   'Plan|Created|AutomationDraft':

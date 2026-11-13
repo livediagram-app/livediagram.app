@@ -61,6 +61,7 @@ export function DescribePlanDialog({
   draft,
   plan,
   planTypes,
+  rulesMade,
   onMake,
   onClose,
 }: {
@@ -72,6 +73,9 @@ export function DescribePlanDialog({
   // The plan the draft would join, for the preview's checks, and its card types, for the ones it keeps.
   plan: PlanDraftPlan;
   planTypes: readonly ItemTypeDef[];
+  // Whether Make Plan can make the draft's starter rules (a plan saved to an account): else they are left out, and
+  // never checked.
+  rulesMade: boolean;
   // Make Plan: makes the plan from the edited draft, answering why it couldn't (null: made).
   onMake: (draft: PlanDraft) => string | null;
   onClose: () => void;
@@ -99,10 +103,12 @@ export function DescribePlanDialog({
     };
   }, []);
 
-  const problems = useMemo(
-    () => (checking ? planDraftProblems(checking, plan) : []),
-    [checking, plan],
+  // The draft as Make Plan would take it: with no starter rules where they can't be made.
+  const making = useMemo(
+    () => (checking && !rulesMade && checking.rules ? { ...checking, rules: [] } : checking),
+    [checking, rulesMade],
   );
+  const problems = useMemo(() => (making ? planDraftProblems(making, plan) : []), [making, plan]);
   const problemAt = useMemo(() => {
     const byPath = problemsByPath(problems);
     return (path: string) => byPath.get(path);
@@ -140,8 +146,8 @@ export function DescribePlanDialog({
   };
 
   const make = () => {
-    if (!checking || problems.length > 0) return;
-    setMakeSaid(onMake(checking));
+    if (!making || problems.length > 0) return;
+    setMakeSaid(onMake(making));
   };
 
   const title = (words: string) => (
@@ -185,6 +191,7 @@ export function DescribePlanDialog({
           <PlanDraftPreview
             draft={checking}
             planTypes={planTypes}
+            rulesMade={rulesMade}
             problemAt={problemAt}
             onChange={(next) => {
               setChecking(next);

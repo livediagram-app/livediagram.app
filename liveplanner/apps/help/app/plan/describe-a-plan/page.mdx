@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Describe a Plan',
   description:
-    'Say what you are planning in your own words and AI drafts a board’s columns and card types, shown for you to check and change before Make Plan makes anything.',
+    'Say what you are planning and AI drafts a board’s columns, card types and starter rules, for you to check and change before Make Plan makes anything.',
   path: '/help/plan/describe-a-plan/',
 });
 
@@ -15,11 +15,11 @@ export const metadata = helpMetadata({
   categorySlug="plan"
 >
 
-Start Planning offers ready-made boards and templates. When your work runs its own way, such as a hiring pipeline with Applied, Screen, Interview and Offer, and a Candidate card with Role, Salary Band and Interview Date, **Describe a Plan** drafts that board for you: its columns, and the card types its cards are, each with its own fields.
+Start Planning offers ready-made boards and templates. When your work runs its own way, such as a hiring pipeline with Applied, Screen, Interview and Offer, and a Candidate card with Role, Salary Band and Interview Date, **Describe a Plan** drafts that board for you: its columns, the card types its cards are, each with its own fields, and sometimes a starter rule or two to run it.
 
 ## Describe Your Plan
 
-1. On an empty tab, choose **Describe a Plan** at the foot of Start Planning's list, above **Connect File** and **Import**. On a phone it is a chip in the row. You can also search Start Planning for "describe", "ai" or "custom".
+1. On an empty tab, choose **Describe a Plan** at the foot of Start Planning's list, above **Connect File** and **Import**. On a phone it is a chip in the row. You can also search Start Planning for "describe", "ai" or "custom": for "ai" it is the **Best Match**.
 2. Say what you're planning: the stages work moves through and what each card should hold. The examples under the box (**Customer Onboarding**, **Grant Applications**, **Home Renovation**) fill it in for you. You have up to 500 characters.
 3. Press **Draft Plan**, or Ctrl or ⌘ Enter. It takes a few seconds. **Cancel** stops waiting.
 
@@ -29,13 +29,16 @@ The draft opens as **Check Your Plan**, marked **Drafted by AI**. Nothing is mad
 
 - **The board**: its name, and its columns as chips. Rename a column in place, remove one with its **×**, or press **Add Column** (a board has up to 12).
 - **Each card type**: its name, the built-in fields it shows (remove any you don't want), and its own fields. Each field has a name and a kind (Text, Number, Date, Choice and the rest). A Choice or Multiple Choice field lists its options, which you can rename, remove or add to. **Add Field** adds one (up to 8 a type), and **Remove Type** takes the type away. **Add Card Type** adds another (up to 4).
+- **Starter Rules**, when the draft suggests any (up to 2): Automations rules for the new board, such as "When a card moves to Offer, set Offer Date to today". Each shows what it does, with its **On** switch (switch it off and it is made off, to turn on later), its name to change, and **Remove Rule**. Rename a column, card type or field and the rules that name it follow. Remove one a rule needs and the rule says so: remove the rule too, or put the name back.
 - A type named like one your plan already has says **Already in this plan: yours is kept as it is**. Make Plan uses your own type and leaves it unchanged.
 
-Anything that wouldn't work, such as a column with no name or two fields with the same name, is marked where it is, and **Make Plan** waits until it's fixed. **Back** returns to your words, kept as you left them.
+Anything that wouldn't work, such as a column with no name or two fields with the same name, is marked where it is (both of the two, so you can see each), and **Make Plan** waits until it's fixed. **Back** returns to your words, kept as you left them.
 
 ## Make the Plan
 
 Press **Make Plan**. The tab becomes a Board tab holding the board, named after it, and your plan gains the card types it didn't have. A column named like one of your plan's statuses shares it, so cards already in that status show on the new board too. **Undo** takes the board away as it would any board; the card types stay, as a template's do.
+
+The starter rules you kept are then made in [Automations](/help/plan/automations/), where you can open, test, change or turn them off like any rule. They need the plan saved to your account: on a plan in This Browser, Check Your Plan says they are left out, and you can add rules in Automations once the plan is synced. If they can't be made (the plan has its 50 rules already, say), a message says so and the plan stays as made.
 
 ## What Can't Be Drafted
 
