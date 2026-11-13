@@ -196,6 +196,13 @@ export function takesChartPalette(kind: ShapeKind): boolean {
   return isChartShape(kind) || isSankeyShape(kind);
 }
 
+// The kinds whose face draws in the theme's chart colours: the charts, the Sankey diagram and the legend. Only these
+// take the chart palette from the element layer, so a theme pick's new palette renders no other element's view (each
+// product's docs/specs/008-canvas/canvas-performance.md "A theme pick on a big board keeps the page answering").
+export function drawsWithChartPalette(kind: ShapeKind): boolean {
+  return takesChartPalette(kind) || isLegendShape(kind);
+}
+
 // The "self-drawing" shape kinds: progress (bar / ring), timeline rail, rating,
 // the data charts, the code block, the checklist, and the sticker. They render
 // their own bespoke content (no fill/border box) and carry no editable text

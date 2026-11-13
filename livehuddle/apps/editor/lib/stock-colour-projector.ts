@@ -7,6 +7,7 @@
 // theme painted is drawn as the same slot in the viewer's half, before the stock colours resolve. Given the stored and the
 // drawn canvas, a label that redraw sank into what is behind it is drawn in an ink that reads there ("A theme never
 // sinks a label into what is behind it").
+import { keepUnchangedElements } from '@liveworkspace/workbench/lib/keep-unchanged-elements';
 import {
   elementAsSeen,
   withReadableLabelInks,
@@ -51,6 +52,7 @@ export function createStockColourProjector(): StockColourProjector {
       lastIn = null;
     }
     if (elements === lastIn) return lastOut;
+    const drawnBefore = lastOut;
     let changed = false;
     const out = elements.map((el) => {
       let projected = cache.get(el);
@@ -80,6 +82,10 @@ export function createStockColourProjector(): StockColourProjector {
           return el;
         });
     }
+    // What draws as it did keeps last time's object, however it was worked out (a theme pick or a mode switch drops
+    // the caches), so each element's view renders only when what it draws changed (docs/specs/008-canvas/
+    // canvas-performance.md "A theme pick on a big board keeps the page answering").
+    lastOut = keepUnchangedElements(drawnBefore, lastOut);
     return lastOut;
   };
   project.one = (el) => {

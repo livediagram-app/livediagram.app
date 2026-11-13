@@ -17,7 +17,7 @@ export async function measureThemePick(
   page: Page,
   rate: number,
   trace?: { path: string; invalidations: boolean },
-): Promise<MainThreadReading> {
+): Promise<MainThreadReading & { picked: string }> {
   await page.getByRole('button', { name: 'Theme and canvas' }).click();
   await page.getByRole('button', { name: /^Colours: / }).click();
   const fourth = page.locator('button[aria-pressed="false"]').filter({ hasText: /\S/ }).nth(3);
@@ -38,5 +38,5 @@ export async function measureThemePick(
   const reading = await readMainThreadProbe(page);
   if (trace) await browser.stopTracing();
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
-  return reading;
+  return { ...reading, picked: label };
 }

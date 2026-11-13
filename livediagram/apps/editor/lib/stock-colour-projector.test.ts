@@ -131,3 +131,27 @@ describe('one', () => {
     expect(project.one(a)).toBe(once);
   });
 });
+
+// docs/specs/008-canvas/canvas-performance.md "A theme pick on a big board keeps the page answering": an element that
+// draws as it did keeps last time's object, even when the board handed in is a new copy of it.
+describe('an element that draws as it did', () => {
+  it('keeps the object it was drawn as last time', () => {
+    const project = createStockColourProjector();
+    type El = Parameters<typeof project>[0][number];
+    const el = {
+      id: 'same',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 80,
+      height: 20,
+      text: 'Same',
+    } as unknown as El;
+    const first = project([el], 'light');
+    const copy = { ...el };
+    const second = project([copy], 'light');
+    expect(second[0]).toBe(first[0]);
+    const moved = { ...el, x: 40 } as El;
+    expect(project([moved], 'light')[0]).toBe(moved);
+  });
+});

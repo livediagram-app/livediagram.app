@@ -235,6 +235,14 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - `easedStyleChange(fn)` (`../packages/workbench/src/lib/tab-style-ease.ts`): each `CanvasThemeDialog` pick calls
   `easeNextStyleChange()` then runs `fn` inside `startTransition`, so the elements re-render between frames and
   commit once.
+- A pick renders only the element views whose colours change. `withThemeApplied` hands back each element the pick
+  leaves as it was as the same object (`keepUnchangedElements` in `@liveworkspace/workbench/lib/keep-unchanged-elements`:
+  structural equality, a key set to `undefined` as one left out), and the stock-colour projector does the same against
+  what it drew last, as a pick drops its caches. The theme's chart palette reaches a boxed view only when its face draws in it
+  (`drawsWithChartPalette` in `@liveworkspace/element-model/data-shapes`, checked in `CanvasElementList`): handed to
+  every view through the layer's shared props, a pick's new palette rendered them all. livediagram's `CanvasElementsLayer.renders.test.tsx` picks Forest on a Brand board of three theme-coloured and three hand-coloured shapes with a new palette: 3 of 6 views render (6 of 6 before). The colours of a theme-coloured element really
+  change, so its view still renders once, in the transition: on the reference board 380 of 400 elements change on a
+  Brand to Forest pick (the 20 stickies do not).
 - `easeNextStyleChange()` on a busy canvas (a `[data-canvas-root][data-canvas-busy]` in the page) sets
   `SURFACE_EASE_ATTR` (`data-style-easing`) on that surface, not the `lvd-style-transition` class on `:root`: a class
   on the root invalidated every node of the page (the toolbars, the dialog). `globals.css` adds

@@ -86,7 +86,9 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   at 400 elements no frame of a pick in the Tab Style dialog takes more than about a tenth of a second on the
   reference machine (it took about a quarter of a second). The new colours are worked out between frames while the
   canvas keeps the old ones, then shown in one step; on a busy canvas only the canvas's own surface takes the ease,
-  never the rest of the page, and the toolbars do not measure themselves again while the canvas redraws.
+  never the rest of the page, and the toolbars do not measure themselves again while the canvas redraws. Only the
+  elements whose colours the pick changes draw again: one the pick leaves as it was (a hand-picked colour, a sticky)
+  keeps its view as it is.
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,

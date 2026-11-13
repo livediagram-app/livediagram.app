@@ -91,6 +91,7 @@ import {
 import { buildLargeSelectionBoard } from '@/e2e/perf/large-selection-board';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
+const { withThemeApplied } = await import('@/lib/tab-theme-apply');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
 const { SelectionStoreProvider } =
   await import('@liveworkspace/workbench/hooks/canvas/useSelectionStore');
@@ -123,13 +124,16 @@ const STABLE = {
 
 // What one editor render hands the layer: the same data, every handler a fresh closure, the panel
 // action bags fresh objects, as the editor mints them per render.
-function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
+function layerProps(
+  over: { elements?: Element[]; zoom?: number; chartPalette?: readonly string[] } = {},
+) {
   const fresh = () => vi.fn();
   return {
     ...STABLE,
     elements: over.elements ?? BOARD,
     activeTabId: 't',
     viewportZoom: over.zoom ?? 1,
+    chartPalette: over.chartPalette,
     editingId: null,
     hasArrows: true,
     readOnly: false,
@@ -527,5 +531,39 @@ describe('the element plane', () => {
     expect(plane!.querySelectorAll('[data-arrow-svg]').length).toBe(1);
     expect(container.querySelectorAll('[data-element-plane]').length).toBe(1);
     expect(plane!.querySelector('[data-selection-grips]')).toBeNull();
+  });
+});
+
+// docs/specs/008-canvas/canvas-performance.md "A theme pick on a big board keeps the page answering": a pick renders the
+// views of the elements whose colours it changes, never one it leaves as it was (a hand-coloured shape keeps its own).
+describe('a theme pick', () => {
+  it('renders only the element views whose colours change', () => {
+    const themed = [0, 1, 2].map((i) => createShape('square', i * 200, 0));
+    const handColoured = [0, 1, 2].map((i) => ({
+      ...createShape('square', i * 200, 300),
+      fillColor: '#123456',
+      strokeColor: '#654321',
+      textColor: '#fedcba',
+    }));
+    const board: Element[] = [...themed, ...handColoured];
+    const picked = withThemeApplied(
+      { id: 't', name: 'T', theme: 'brand', elements: board },
+      'forest',
+    );
+    // Before: restyled anew, every element was a new object, and every view rendered (six of six).
+    const anew = picked.elements.filter((el, i) => el !== board[i]).length;
+    // The new theme's chart colours come too: only a chart's face takes them.
+    const { rerender } = mount(
+      layerProps({ elements: board, chartPalette: ['#111111', '#222222'] }),
+    );
+    rerender(
+      <CanvasElementsLayer
+        {...layerProps({ elements: picked.elements, chartPalette: ['#333333', '#444444'] })}
+      />,
+    );
+    expect(anew).toBe(3);
+    expect(counts().boxed).toBe(3);
+    for (const el of handColoured) expect(renders.boxed.has(el.id)).toBe(false);
+    for (const el of themed) expect(renders.boxed.get(el.id)).toBe(1);
   });
 });

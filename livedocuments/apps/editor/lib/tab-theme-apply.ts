@@ -2,6 +2,7 @@
 // multicolour-themes.md): the tab's theme id, its backdrop and its elements' colours, as one pure transform. Picking a
 // theme (useTabTheme.setTheme) and picking a look (useTabCanvas.applyTabLook) both run it, so a look's theme lands
 // exactly as picking that theme does.
+import { keepUnchangedElements } from '@liveworkspace/workbench/lib/keep-unchanged-elements';
 import { withTabStyleOf } from '@liveworkspace/workbench/lib/tab-style-to-all';
 import { viewElementInTheme, type Appearance, type Tab } from '@livedocuments/document';
 import { withPageBackgroundsFollowingTheme } from './page-theme-follow';
@@ -16,8 +17,8 @@ import {
   themeViewMap,
 } from '@/lib/themes';
 
-/** The tab with theme `id` applied: preserve-customs for shapes, text and backdrop; arrows always re-tinted. */
-export function withThemeApplied(
+// The tab restyled from scratch: each of its elements a new object (withThemeApplied keeps the unchanged ones).
+function themeAppliedAnew(
   source: Tab,
   id: string,
   appearance: Appearance = getResolvedAppearance(),
@@ -75,6 +76,15 @@ export function withThemeApplied(
     prevTheme,
     theme,
   );
+}
+
+/** The tab with theme `id` applied: preserve-customs for shapes, text and backdrop; arrows always re-tinted.
+ *  An element the pick leaves as it was is handed back as the same object, so its view does not render again
+ *  (keepUnchangedElements; docs/specs/008-canvas/canvas-performance.md "A theme pick on a big board keeps the page
+ *  answering"). */
+export function withThemeApplied(source: Tab, id: string, appearance?: Appearance): Tab {
+  const tab = themeAppliedAnew(source, id, appearance);
+  return { ...tab, elements: keepUnchangedElements(source.elements, tab.elements) };
 }
 
 /** `target` restyled from `source` for Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): `source`'s

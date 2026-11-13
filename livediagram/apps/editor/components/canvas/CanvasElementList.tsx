@@ -1,4 +1,5 @@
 import { Fragment, memo, type ComponentProps } from 'react';
+import { drawsWithChartPalette } from '@livediagram/document';
 import {
   arrowLabelFontStack,
   exportFontFamily,
@@ -20,6 +21,10 @@ import type { BoxedElementView } from './BoxedElementView';
 import type { CanvasElementsLayerProps } from './CanvasElementsLayer';
 import { PreviewedElement } from './PreviewedElement';
 import { FreeArrowFrame, SelectableArrowView, SelectableBoxedView } from './selection-aware-views';
+
+// A boxed element whose face draws in the theme's chart colours (drawsWithChartPalette).
+const paletteDrawn = (element: Element): boolean =>
+  element.type === 'shape' && drawsWithChartPalette(element.shape);
 
 // Every element of the canvas in paint order (arrows and boxed views interleaved, so `bringToFront` /
 // `sendToBack` reorder arrows relative to boxes), each a PreviewedElement drawn from its drag preview
@@ -263,6 +268,10 @@ export const CanvasElementList = memo(function CanvasElementList({
                 key={element.id}
                 editingId={editingId}
                 {...boxedShared}
+                // The theme's chart colours only to a face that draws in them: handed to every view, a theme pick's
+                // new palette rendered them all (docs/specs/008-canvas/canvas-performance.md "A theme pick on a big
+                // board keeps the page answering").
+                chartPalette={paletteDrawn(element) ? boxedShared.chartPalette : undefined}
                 element={element}
                 // Paint index, used only by isometric mode to stagger each element
                 // onto its own z-plane (globals.css --iso-z): coplanar layers

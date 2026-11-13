@@ -1,4 +1,5 @@
 import { Fragment, memo } from 'react';
+import { drawsWithChartPalette } from '@livedesign/design';
 import { arrowLabelFontStack, exportFontFamily, isBoxed, type Element } from '@livedesign/design';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import type {
@@ -12,6 +13,10 @@ import type { CanvasElementsLayerProps } from './CanvasElementsLayer';
 import { PreviewedElement } from './PreviewedElement';
 import { FreeArrowFrame, SelectableArrowView, SelectableBoxedView } from './selection-aware-views';
 import type { BoxedShared } from './boxed-shared';
+
+// A boxed element whose face draws in the theme's chart colours (drawsWithChartPalette).
+const paletteDrawn = (element: Element): boolean =>
+  element.type === 'shape' && drawsWithChartPalette(element.shape);
 
 // Every element of the canvas in paint order (arrows and boxed views interleaved, so `bringToFront` /
 // `sendToBack` reorder arrows relative to boxes), each a PreviewedElement drawn from its drag preview
@@ -183,6 +188,10 @@ export const CanvasElementList = memo(function CanvasElementList({
                 key={element.id}
                 editingId={editingId}
                 {...boxedShared}
+                // The theme's chart colours only to a face that draws in them: handed to every view, a theme pick's
+                // new palette rendered them all (docs/specs/008-canvas/canvas-performance.md "A theme pick on a big
+                // board keeps the page answering").
+                chartPalette={paletteDrawn(element) ? boxedShared.chartPalette : undefined}
                 element={element}
                 // A stack's child glides to its new slot, unless the gesture is moving it (docs/specs/009-elements/stack.md).
                 stackGlide={stackedIds.has(element.id) && entry === undefined}

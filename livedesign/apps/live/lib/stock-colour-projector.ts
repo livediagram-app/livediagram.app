@@ -13,6 +13,7 @@
 // surface, its stock colours for that surface, so a light slide in dark chrome keeps dark words. The labels re-inked
 // against the canvas (`canvases`) leave those elements be: in livedesign the canvas given is the plain paper, white as
 // stored and printed, slate as the dark editor draws it.
+import { keepUnchangedElements } from '@liveworkspace/workbench/lib/keep-unchanged-elements';
 import {
   canvasSurface,
   elementPageTones,
@@ -128,6 +129,7 @@ export function createStockColourProjector(): StockColourProjector {
     }
     const surfaces = pageView?.surfaces ?? null;
     if (elements === lastIn && surfaces === lastSurfaces) return lastOut;
+    const drawnBefore = lastOut;
     lastSurfaces = surfaces;
     let changed = false;
     const out = elements.map((el) => {
@@ -169,6 +171,10 @@ export function createStockColourProjector(): StockColourProjector {
           return el;
         });
     }
+    // What draws as it did keeps last time's object, however it was worked out (a theme pick or a mode switch drops
+    // the caches), so each element's view renders only when what it draws changed (docs/specs/008-canvas/
+    // canvas-performance.md "A theme pick on a big board keeps the page answering").
+    lastOut = keepUnchangedElements(drawnBefore, lastOut);
     return lastOut;
   };
   project.one = (el) => {
