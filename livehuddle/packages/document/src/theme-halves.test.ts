@@ -120,3 +120,20 @@ describe('viewElementInTheme cost', () => {
     expect(Math.min(...runs)).toBeLessThan(cpuBudgetMs(20));
   });
 });
+
+// docs/specs/011-theme/light-and-dark.md "Text follows the text role": Mono's outline and text share one colour.
+describe('a colour two roles share', () => {
+  it('draws a Mono label in the dark half as the text, not the outline', () => {
+    const mono = THEMES.find((t) => t.id === 'mono')!;
+    const dark = themeHalf(mono, 'dark');
+    const el = { fillColor: '#ffffff', strokeColor: '#0f172a', textColor: '#0f172a' };
+    const drawn = viewElementInTheme(el, themeColourMap(mono, 'dark'));
+    expect(drawn).toEqual({
+      fillColor: dark.elementFill,
+      strokeColor: dark.elementStroke,
+      textColor: dark.elementText,
+    });
+    expect(drawn.textColor).not.toBe(drawn.strokeColor);
+    expect(viewElementInTheme(el, themeColourMap(mono, 'light'))).toBe(el);
+  });
+});
