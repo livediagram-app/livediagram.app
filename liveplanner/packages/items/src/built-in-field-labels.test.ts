@@ -5,6 +5,7 @@ import {
   FIELD_LABEL_MAX,
   RENAMABLE_BUILT_INS,
   builtInFieldLabel,
+  builtInFieldName,
   builtInIdOfName,
   fieldLabelsWith,
   isRenamableBuiltIn,
@@ -210,5 +211,23 @@ describe('the places several types meet', () => {
     expect(scope.byName.get('points')).toBe('estimate');
     expect(scope.byName.get('estimate')).toBe('estimate');
     expect(scope.byName.get('start')).toBe('start');
+  });
+});
+
+describe('an id that is no built-in', () => {
+  // An agent's rule may name any id: one the prototype holds never reads as a name.
+  it.each(['constructor', '__proto__', 'toString', 'hasOwnProperty'])(
+    '%s reads as itself',
+    (id) => {
+      const named: ItemTypeDef = { ...ITEM_TYPES[0]!, fieldLabels: { estimate: 'Points' } };
+      expect(builtInFieldName(id)).toBeUndefined();
+      expect(typeFieldLabel(named, id)).toBe(id);
+      expect(typeFieldLabel(undefined, id)).toBe(id);
+      expect(builtInFieldLabel(id, [named])).toBe(id);
+    },
+  );
+
+  it('reads a built-in by its own name', () => {
+    expect(builtInFieldName('due')).toBe('Due Date');
   });
 });

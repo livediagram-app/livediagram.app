@@ -68,7 +68,14 @@ export function webhookValues(payload: unknown, paths: readonly string[]): Webho
   const out: Record<string, WebhookValue> = {};
   for (const path of paths) {
     const value = readPath(payload, path.split('.'));
-    if (value !== undefined) out[path] = value;
+    // Defined, not assigned: a `__proto__` path is kept as the call's own value, never set as the prototype.
+    if (value !== undefined)
+      Object.defineProperty(out, path, {
+        value,
+        enumerable: true,
+        writable: true,
+        configurable: true,
+      });
   }
   return out;
 }

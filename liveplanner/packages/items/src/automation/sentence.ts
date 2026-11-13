@@ -6,7 +6,7 @@
 // then one reads as the step panels' gone picks do ("a column no longer here", "Someone No Longer Here"). Pure.
 
 import { automationDayWords } from './conditions';
-import { BUILT_IN_FIELD_NAMES, builtInFieldLabel } from '../built-in-field-labels';
+import { builtInFieldLabel, builtInFieldName } from '../built-in-field-labels';
 import { isPriority, PRIORITY_LABELS } from '../fields';
 import type { ItemPerson } from '../item';
 import type { ItemTypeDef } from '../item-types';
@@ -242,7 +242,7 @@ export function outlineTabName(tabId: string, outline: RuleSentenceOutline): str
 
 /** A built-in field's name as the plan's types agree on it, or a custom field's label, else the id (or words). */
 export function outlineFieldName(fieldId: string, outline: RuleSentenceOutline): string {
-  if (fieldId in BUILT_IN_FIELD_NAMES)
+  if (builtInFieldName(fieldId) !== undefined)
     return builtInFieldLabel(fieldId, outline.types as readonly ItemTypeDef[]);
   for (const t of outline.types) {
     const custom = t.custom?.find((f) => f.id === fieldId);

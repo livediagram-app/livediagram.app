@@ -290,6 +290,13 @@ describe('the names', () => {
     expect(outlineTabName('t-x', OUTLINE)).toBe('t-x');
   });
 
+  it('reads a field named after a prototype key as gone, never as the prototype', () => {
+    for (const id of ['constructor', '__proto__', 'toString']) {
+      expect(outlineFieldName(id, { ...OUTLINE, goneWords: true })).toBe('a field no longer here');
+      expect(outlineFieldName(id, OUTLINE)).toBe(id);
+    }
+  });
+
   it('reads what the plan lost in words, never by id, where the outline asks (the editor)', () => {
     const editor = { ...OUTLINE, goneWords: true };
     const sentence = ruleSentence(

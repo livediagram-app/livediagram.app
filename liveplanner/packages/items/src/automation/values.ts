@@ -117,7 +117,9 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
   }
   const path = webhookPathOf(name);
   if (path !== null) {
-    const value = ctx.webhook?.[path.join('.')];
+    // Own values only: `{{webhook.constructor}}` (a valid path) never reads the prototype.
+    const key = path.join('.');
+    const value = ctx.webhook && Object.hasOwn(ctx.webhook, key) ? ctx.webhook[key] : undefined;
     return value === undefined ? '' : String(value);
   }
   if (ctx.cardless && name.startsWith('card.')) return '';

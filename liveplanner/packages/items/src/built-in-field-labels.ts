@@ -53,6 +53,15 @@ export function isRenamableBuiltIn(id: string): id is ItemFieldId {
   return (RENAMABLE_BUILT_INS as readonly string[]).includes(id);
 }
 
+/** A built-in field's own name, or undefined for an id that is none: own keys only, so an id such as `constructor` or
+ *  `__proto__` (an agent's rule may name anything) never reads the prototype. */
+export const builtInFieldName = (id: string): string | undefined =>
+  Object.hasOwn(BUILT_IN_FIELD_NAMES, id) ? BUILT_IN_FIELD_NAMES[id as ItemFieldId] : undefined;
+
+// A type's own name for a built-in, own keys only (as builtInFieldName).
+const ownLabel = (labels: FieldLabels | undefined, id: string): string | undefined =>
+  labels && Object.hasOwn(labels, id) ? labels[id as ItemFieldId] : undefined;
+
 const isOwnName = (id: ItemFieldId, name: string) =>
   name.toLowerCase() === BUILT_IN_FIELD_NAMES[id].toLowerCase();
 
@@ -96,9 +105,9 @@ export function readFieldLabels(
 export function typeFieldLabel(
   type: Pick<ItemTypeDef, 'fieldLabels'> | undefined,
   id: string,
-  fallback: string = BUILT_IN_FIELD_NAMES[id as ItemFieldId] ?? id,
+  fallback: string = builtInFieldName(id) ?? id,
 ): string {
-  return type?.fieldLabels?.[id as ItemFieldId] ?? fallback;
+  return ownLabel(type?.fieldLabels, id) ?? fallback;
 }
 
 // The name the types in scope agree on for each built-in (null: none, or they differ), per `types` array: a menu,
@@ -118,7 +127,7 @@ function agreedName(id: string, types: readonly ItemTypeDef[]): string | null {
   for (const t of types) {
     // A type without the field has no say.
     if (!t.fields.includes(id)) continue;
-    const own = t.fieldLabels?.[id as ItemFieldId] ?? null;
+    const own = ownLabel(t.fieldLabels, id) ?? null;
     if (!seen) {
       name = own;
       seen = true;
@@ -138,7 +147,7 @@ function agreedName(id: string, types: readonly ItemTypeDef[]): string | null {
 export function builtInFieldLabel(
   id: string,
   types: readonly ItemTypeDef[],
-  fallback: string = BUILT_IN_FIELD_NAMES[id as ItemFieldId] ?? id,
+  fallback: string = builtInFieldName(id) ?? id,
 ): string {
   return agreedName(id, types) ?? fallback;
 }
