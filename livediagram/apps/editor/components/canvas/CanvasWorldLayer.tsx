@@ -50,6 +50,8 @@ type CanvasWorldLayerProps = Pick<
   viewportZoom: number;
   viewportOffset: { x: number; y: number };
   isoFragment: string;
+  // The isometric camera's angles, for where the depth layer draws each copy (IsometricDepthLayer).
+  isoAngles: { azimuth: number; elevation: number };
 };
 
 // The canvas's world layer, split out of Canvas.tsx: the wrapper the view transforms (pan, zoom, the
@@ -68,6 +70,7 @@ export function CanvasWorldLayer({
   viewportZoom,
   viewportOffset,
   isoFragment,
+  isoAngles,
   hasArrows,
   arrowLabels,
   selectionInput,
@@ -166,7 +169,13 @@ export function CanvasWorldLayer({
       {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
       behind the real element layer, which caps each column at z=0.
       Only mounted while the tool is active. */}
-      {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
+      {canvasTool === 'isometric' ? (
+        <IsometricDepthLayer
+          elements={elements}
+          azimuth={isoAngles.azimuth}
+          elevation={isoAngles.elevation}
+        />
+      ) : null}
       <CanvasStillProvider still={props.editorMode === 'draw'}>
         <CanvasArrivalProvider
           tabId={props.activeTabId ?? ''}

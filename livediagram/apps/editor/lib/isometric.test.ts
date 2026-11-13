@@ -10,6 +10,9 @@ import {
   ISO_TILT_DEG,
   isoDepthLayers,
   isoLayerBrightness,
+  ISO_DEPTH_PLANE_PX,
+  isoDepthShift,
+  isoWallSteps,
   isoPivot,
   isoTransform,
 } from './isometric';
@@ -167,5 +170,37 @@ describe('isoProjectBounds', () => {
     // A 45° spin widens the diagonal footprint beyond the original width.
     expect(out.w).toBeGreaterThan(100);
     expect(out.h).toBeLessThan(100); // and the tilt squashes the height
+  });
+});
+
+// docs/specs/008-canvas/isometric-view.md "The depth layer is one flat picture in the scene".
+describe('isoDepthShift', () => {
+  it('lands a shift in the plane where a step down in depth would, for the camera', () => {
+    // Straight on (azimuth 0): along y only, tan(elevation) a px of depth.
+    expect(isoDepthShift(0, 45)).toEqual({ x: 0, y: 1 });
+    // Turned a quarter: along x.
+    expect(isoDepthShift(90, 45)).toEqual({ x: 1, y: 0 });
+    const s = isoDepthShift(30, 60);
+    expect(Math.hypot(s.x, s.y)).toBeCloseTo(Math.tan(Math.PI / 3), 3);
+  });
+
+  it('has no shift looking straight down, and never a negative zero', () => {
+    expect(isoDepthShift(45, 0)).toEqual({ x: 0, y: 0 });
+    expect(Object.is(isoDepthShift(180, 0).x, -0)).toBe(false);
+  });
+});
+
+describe('isoWallSteps', () => {
+  it('is every copy under the topmost, by depth below the layer’s plane, dimming to the floor', () => {
+    const layers = isoDepthLayers();
+    const steps = isoWallSteps();
+    expect(steps).toHaveLength(layers.length - 1);
+    expect(steps[0]!.depthPx).toBe(-layers[1]! - ISO_DEPTH_PLANE_PX);
+    expect(steps.at(-1)!.depthPx).toBe(ISO_DEPTH_PX - ISO_DEPTH_PLANE_PX);
+    expect(steps.at(-1)!.brightness).toBeCloseTo(0.5);
+    for (let i = 1; i < steps.length; i++) {
+      expect(steps[i]!.depthPx).toBeGreaterThan(steps[i - 1]!.depthPx);
+      expect(steps[i]!.brightness).toBeLessThan(steps[i - 1]!.brightness);
+    }
   });
 });

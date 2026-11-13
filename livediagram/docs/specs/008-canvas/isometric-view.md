@@ -136,12 +136,36 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 - Orbit (Shift-drag) is a self-contained drag in `useIsometricCamera` that
   applies incremental azimuth / elevation deltas, taken before the pan branch
   in the `<main>` pointerdown so plain drag still pans.
-- The extrusion is drawn by `IsometricDepthLayer` as a `translateZ`-stacked
-  column of rectangle copies per boxed element (a deterministic "voxel"
-  stack, so there are no rotated wall faces to mis-orient); it paints behind
-  the real element layer, which caps each column at z=0. Each column takes the
-  element's accent colour (stroke, else fill, else neutral) dimmed toward the
-  floor via `filter: brightness()`.
+- The extrusion is drawn by `IsometricDepthLayer` as a stacked column of
+  rectangle copies per boxed element, one every 2px of depth down to 30px (a
+  deterministic "voxel" stack, so there are no rotated wall faces to
+  mis-orient); it paints behind the real element layer, which caps each column
+  at z=0. Each column takes the element's accent colour (stroke, else fill,
+  else neutral) dimmed toward the floor (`color-mix` with black, from full
+  just under the element to half at the floor).
+- **The depth layer is one flat picture in the scene, not a 3D layer per
+  copy.** It sits 2px under the base plane (a `translate` on the layer), and
+  each copy is drawn in that plane, shifted by where its true depth would put
+  it on screen under the camera: `isoDepthShift(azimuth, elevation)`
+  (`lib/isometric.ts`) gives that shift per px of depth, `tan(elevation)` along
+  `(sin azimuth, cos azimuth)`, which the layer carries as `--iso-hx` and
+  `--iso-hy`, so an orbit restyles one node and re-renders no column. A
+  rectangle, a rounded box, a circle or a pill draws its copies as one node's
+  `box-shadow` list (`[data-iso-wall]` in `globals.css`, its offsets and
+  shades written from `isoWallSteps` and held to it by
+  `app/isometric-wall-css.test.ts`); a
+  clipped silhouette (diamond, hexagon, ...) draws its copies as children,
+  deepest first. Columns paint back to front along the depth shift (a
+  `z-index` from each column's centre and `--iso-sx` / `--iso-sy`), so a
+  column nearer the camera covers the one behind it, as depth did.
+  Why (Work Tracker 754): with a 3D `translateZ` per copy, Chromium made every
+  copy a compositing layer of its own, 15 a box, so a 1,200-box board was
+  18,000 layers, and a collaborator's frame during a whole-board drag spent
+  most of its frame laying them out and committing them: its longest task
+  was 3.1 to 4.8 s at a 4x CPU throttle in a production build
+  (`e2e/perf/iso-drag-peer.perf.ts`, measured against main). As one flat layer
+  the copies are painted, not composited: 119 ms at 1,200 boxes and 57 ms at
+  300, with the Flat view's 113 ms at 1,200 (142 ms on main) unchanged.
 - A collaborator's live drag moves the columns with their tops ([Drag
   preview](drag-preview.md) "A very large move rides as one layer"): each column
   is tagged with its element's id as a ride node (`data-ride-id`) and the layer
