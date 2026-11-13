@@ -10,7 +10,6 @@ import { budgetTable, evaluateBudget, medianOfRuns, type Measurement } from './b
 import {
   REFERENCE_BENCH_MS,
   TARGET_SLOWDOWN,
-  benchmarkInPage,
   calibratedThrottle,
   type Calibration,
 } from './calibrate';
@@ -22,6 +21,7 @@ import {
   type GestureSettings,
 } from './canvas-gestures';
 import { interactiveMs, OPEN_QUIET_MS } from './interactive';
+import { benchmark } from './main-thread-probe';
 
 export type CanvasProbeSettings<Tab extends string> = GestureSettings<Tab> & {
   /** The tabs the board is measured on, each seeded on its own item. */
@@ -39,20 +39,6 @@ export type CanvasProbeSettings<Tab extends string> = GestureSettings<Tab> & {
   /** Closes the product's first-run tour, if it has one. */
   dismissQuickTour: (page: Page) => Promise<void>;
 };
-
-// The machine's speed: the fastest of five fresh blank pages' benchmark medians, unthrottled.
-// Interference (other processes, a busy core, the first page's warm-up) only ever slows a run, so the
-// fastest is the machine's own speed.
-async function benchmark(browser: Browser): Promise<number> {
-  const runs: number[] = [];
-  for (let i = 0; i < 5; i++) {
-    const page = await browser.newPage();
-    await page.goto('about:blank');
-    runs.push(await page.evaluate(benchmarkInPage));
-    await page.close();
-  }
-  return Math.min(...runs);
-}
 
 // Opening (D68, D80): the probe waits until the page has been quiet for OPEN_QUIET_MS before it reads
 // the number, and touches the page (the tour check, keys) only after, so its own work stays out.
