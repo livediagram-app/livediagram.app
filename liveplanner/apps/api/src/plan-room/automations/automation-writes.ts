@@ -222,7 +222,8 @@ export async function addComment(
   return { ok: true };
 }
 
-// An email to a person of the plan with an account, unless they turned these off. Never fails the run.
+// An email to a person of the plan with an account whom the plan's own notices reach (AutomationPlan.mayEmail),
+// unless they turned these off. Never fails the run.
 async function sendOne(
   deps: WriteDeps,
   plan: AutomationPlan,
@@ -232,7 +233,8 @@ async function sendOne(
   url: string,
 ): Promise<void> {
   const accountId = email.to ? plan.accounts.get(email.to.id) : undefined;
-  if (!accountId || !isAccountId(accountId) || !emailEnabled(deps.env)) return;
+  if (!accountId || !isAccountId(accountId) || !plan.mayEmail(accountId)) return;
+  if (!emailEnabled(deps.env)) return;
   const to = (await notifyRecipients(deps.env, [accountId], 'notifyActionAssigned')).get(accountId);
   if (!to) return;
   await sendEmail(deps.env, {
@@ -265,7 +267,8 @@ async function mentionOne(
   const out = await addComment(deps, rule, card, text, {
     mentions: [{ userId: accountId ?? null, name: to.name, handle }],
   });
-  if (!out.ok || !accountId || !isAccountId(accountId) || !emailEnabled(deps.env)) return out;
+  if (!out.ok || !accountId || !isAccountId(accountId) || !plan.mayEmail(accountId)) return out;
+  if (!emailEnabled(deps.env)) return out;
   deps.defer(
     (async () => {
       const email = (await notifyRecipients(deps.env, [accountId], 'notifyMentions')).get(
