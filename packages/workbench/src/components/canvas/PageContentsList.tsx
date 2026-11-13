@@ -4,7 +4,7 @@
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
 // (PageContentsSidebar). The state behind them is hooks/ui/usePageContents.
 import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
-import { Fragment, useId, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, memo, useId, type CSSProperties, type ReactNode } from 'react';
 import { lucideGripVertical, lucideLock } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { htmlProps } from '@liveworkspace/trusted-types';
@@ -17,7 +17,7 @@ import {
   rowToolsReveal,
   usePageRowMenu,
 } from './PageRowMenu';
-import type { ContentsRowBase, ContentsThumb } from '../../lib/page-contents';
+import type { ContentsRowBase, ContentsThumb, ContentsThumbPart } from '../../lib/page-contents';
 import type { PageContents } from '../../hooks/ui/usePageContents';
 
 const LockIcon = lucideGlyph(lucideLock, 12);
@@ -271,13 +271,25 @@ function Picture({
           viewBox={thumb.viewBox}
           preserveAspectRatio="xMidYMid slice"
           // The editor's own renderer's output (every label is xmlEscaped inside it).
-          {...htmlProps(sanitizedHtml(thumb.markup, 'svg-content'))}
-        />
+          {...(thumb.parts ? {} : htmlProps(sanitizedHtml(thumb.markup, 'svg-content')))}
+        >
+          {thumb.parts?.map((part) => (
+            <PicturePart key={part.key} markup={part.markup} />
+          ))}
+        </svg>
       ) : null}
       <ContentsVeil on={aside} width={w} {...(large ? { large } : {})} />
     </span>
   );
 }
+
+// One part of a picture, set as markup only when its markup changed: a drop on a page of a thousand elements
+// re-sets the box it moved and the arrows it reached, not the page, so the browser parses, restyles and lays out
+// those alone (docs/specs/008-canvas/canvas-performance.md "Pictures of every page"). A bare group draws nothing of
+// its own, so the parts in their groups draw as the markup did in one piece.
+const PicturePart = memo(function PicturePart({ markup }: Pick<ContentsThumbPart, 'markup'>) {
+  return <g {...htmlProps(sanitizedHtml(markup, 'svg-content'))} />;
+});
 
 // The name, the editor's own marks, then the padlock on a locked page.
 function NameLine({

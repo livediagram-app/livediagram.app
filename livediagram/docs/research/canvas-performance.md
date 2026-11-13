@@ -394,6 +394,26 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
   root on each insertion and restyle the floating panels (ten times in one release); rewriting it
   without `:has` saved only 3-4 ms, so it stays.
 
+## The selection toolbar's layout read, and what moving it did
+
+Measured 2026-11-13 on the reference board, local, calibrated 3.06x, against main at `c74afdb80`.
+
+- **Every select, pickup, marquee release and stroke release forced a layout of the whole board**
+  (12 to 14 ms of style and layout inside the task), read by the floating toolbar's placement
+  (`useEdgeAwarePlacement`) in React's commit, from a source-mapped build with stack sampling.
+- **Moving that read after the browser's own layout did not shorten the tasks.** Placing from a
+  ResizeObserver's first report (it lands after layout and before paint) took the read out of the
+  commit, and the next reader forced the same layout instead: `SnapWidth` at select, pickup and
+  stroke release, Quick Style's placement at a marquee's release. Moving those two as well left the
+  tasks with no forced layout at all, and the same length: select 55-86 ms, marquee 57-78 ms, stroke
+  51-79 ms, against 50-71 ms before. The layout still has to run before the frame paints; forced or
+  not, it lands in the same task. All three changes were taken out again.
+- **What stays**: the five editors' copies of `useEdgeAwarePlacement` are one hook in
+  `@liveworkspace/workbench`, unchanged in what it does.
+- **The whiteboard's zoom at 100% (53 ms)** is one wheel tick's task: script 15-16 ms (the zoom's
+  render), restyle of 454 elements 8 ms, layout of 1,375 dirty objects of 7,073 7 ms, paint 6 ms,
+  layerize 5 ms. Every tick runs 44 to 51 ms; the row reads 53 when one tick lands on a busy moment.
+
 ## Not tried
 
 - A raster snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.

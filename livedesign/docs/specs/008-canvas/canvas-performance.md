@@ -234,6 +234,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   (`withPresent`, `@liveworkspace/workbench/lib/remote-op-log`), so React renders nothing for it. A
   new history object for an unchanged tab re-rendered the whole editor; in livedocuments that was
   every keystroke of a long article.
+- **A page's picture redraws the parts that changed.** A Contents picture is drawn part by part: the
+  sheet and each element, in paint order. A drop on a page of a thousand elements draws the box it
+  moved again (each box's markup is carried over by its element while nothing it reads changed) and
+  re-sets in the page only the parts whose markup changed, so the browser parses, restyles and lays
+  out those, not the page's thousand. The parts drawn together are the picture drawn whole.
 
 ## Later
 

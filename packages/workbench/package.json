@@ -253,6 +253,7 @@
     "./hooks/canvas/pan-through": "./src/hooks/canvas/pan-through.ts",
     "./hooks/canvas/useBurstCheckpoint": "./src/hooks/canvas/useBurstCheckpoint.ts",
     "./hooks/canvas/useCanvasClientOrigin": "./src/hooks/canvas/useCanvasClientOrigin.ts",
+    "./hooks/canvas/useEdgeAwarePlacement": "./src/hooks/canvas/useEdgeAwarePlacement.ts",
     "./hooks/canvas/useCanvasLongTaskLog": "./src/hooks/canvas/useCanvasLongTaskLog.ts",
     "./hooks/canvas/useNoCanvasTextSelection": "./src/hooks/canvas/useNoCanvasTextSelection.ts",
     "./hooks/canvas/useCanvasSelectHandlers": "./src/hooks/canvas/useCanvasSelectHandlers.ts",

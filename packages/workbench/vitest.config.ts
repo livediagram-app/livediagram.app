@@ -31,6 +31,9 @@ const HELD_AT_100 = [
   'src/hooks/persistence/useResolveSelf.ts',
   'src/hooks/canvas/useCanvasSurfaceGestures.ts',
   'src/hooks/canvas/useFocusCanvasOnMount.ts',
+  // The selection toolbar's placement every editor's FloatingToolbar and SelectionPopover share
+  // (docs/specs/008-canvas/canvas-performance.md "A gesture frame never reads layout after writing it").
+  'src/hooks/canvas/useEdgeAwarePlacement.ts',
   // The dot-vote overlay livediagram and liveplanner both mount (docs/specs/012-collaboration/session-tools.md).
   'src/components/canvas/ElementVoteOverlay.tsx',
   'src/components/canvas/VoteStepper.tsx',

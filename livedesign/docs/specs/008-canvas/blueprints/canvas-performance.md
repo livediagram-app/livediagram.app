@@ -24,7 +24,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/hooks/canvas/useSettledElements.ts`                         | What the Map draws: frozen during element gestures, throttled otherwise                                                  |
 | `apps/live/hooks/canvas/useDesignHistory.ts`                           | `historyTick` through `withPresent`: an unchanged tab hands back the same history                                        |
 | `apps/live/components/canvas/Minimap.tsx`                              | Draws `useSettledElements(elements)`                                                                                     |
-| `apps/live/hooks/canvas/useEdgeAwarePlacement.ts`                      | Takes `suspended`; never measures while suspended                                                                        |
+| `../packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts`      | Takes `suspended`; never measures while suspended                                                                        |
 | `apps/live/components/canvas/CanvasSelectionToolbars.tsx`              | `toolbarsStale` includes `selectionMoving`                                                                               |
 | `../packages/workbench/src/hooks/canvas/useCanvasLongTaskLog.ts`       | The `[canvas-perf] long task` debug log                                                                                  |
 | `../packages/workbench/src/hooks/ui/useBodyEndAnchor.ts`               | `useBodyEndAnchor`: an empty `div[data-body-end]` kept at the end of `<body>`, called by `SplitViewFrame`                |
@@ -281,6 +281,17 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   `styleChangeInFlight`), `SnapWidth.test.tsx` (no read while a style change draws), `app/canvas-motion.test.ts`
   (the surface attribute in the ease rule).
 
+### A page's picture redraws the parts that changed
+
+- `pageThumbFor` returns `parts` beside `markup` (their markups joined): `{ key: 'page' }` (the
+  sheet), then each element by its id, boxes then arrows. Each box's markup is carried over in a
+  module `WeakMap` by its element while its key holds: the icon catalogues, the tab's font and
+  finish, the page's surface, the chart palette, whether it is a Sketch backdrop, what a chart sits
+  on and its picture's URL (`thumbImageIds([el])` resolved). Arrows are drawn every time.
+- `PageContentsList`'s `Picture` (`@liveworkspace/workbench`) draws `thumb.parts`, when given, as one
+  `PicturePart` each: a memoised `<g>` whose markup is sanitized and set only when its string
+  changed, keyed by the part's key.
+
 ### The Map is one image
 
 - `Minimap`'s memo builds the board's markup (`svgBoxed` / `svgArrow`, frames first, arrows on
@@ -496,7 +507,7 @@ export function CounterScaled(props: ComponentProps<'div'>): ReactElement;
 export const MAP_REDRAW_MIN_MS = 250;
 export function useSettledElements(elements: Element[]): Element[];
 
-// apps/live/hooks/canvas/useEdgeAwarePlacement.ts
+// ../packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts (one hook for every editor; it was a copy in each)
 export function useEdgeAwarePlacement(
   bounds: Bounds, canvasOffset: XY, zoom: number, gap: number, suspended?: boolean,
 ): { ref; placeAbove: boolean; style: CSSProperties };
