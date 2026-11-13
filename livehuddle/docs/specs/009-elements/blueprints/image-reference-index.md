@@ -7,18 +7,19 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file (all under `apps/api/`):
 
-| File                                    | Role                                                                                          |
-| --------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `../packages/api-kit/src/image-refs.ts` | The JavaScript extractor: what a reference is                                                 |
-| `src/db/image-refs.ts`                  | The writers' statements, and the document's own reads (its set; whether it places an image)   |
-| `src/routes/images.ts`                  | The usage map (`usageOf`): the media service's references, kept to canvases the index answers |
-| `src/db/tabs.ts`                        | `upsertTab`, `seedTabs`, `swapTabData` carry index statements; `deleteTabRow` cascades        |
-| `src/document-room/document-content.ts` | `importDocumentCopy` indexes a copy from its bodies                                           |
-| `src/document-room/document-schema.ts`  | `image_refs`, and the outbox triggers that key a change to it                                 |
-| `src/document-room/document-outbox.ts`  | The push: the placement grants, then the whole set to the media service                       |
-| `src/db/image-grants.ts`                | Placement grants, in the document's own SQLite, through `@liveworkspace/index-app`            |
-| `src/db/documents.ts`                   | `purgeDocumentPreviews` has the media service delete a purged canvas's previews               |
-| `src/image-refs/writer-census.test.ts`  | Fails when SQL writing `tabs` appears outside the known writers                               |
+| File                                         | Role                                                                                          |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `../packages/api-kit/src/image-refs.ts`      | The JavaScript extractor: what a reference is                                                 |
+| `../packages/api-kit/src/image-ref-index.ts` | The SQL: the writers' statements and the item's reads (its set; whether it places an image)   |
+| `src/db/image-refs.ts`                       | The SQL bound to the document's database and `document_tabs`                                  |
+| `src/routes/images.ts`                       | The usage map (`usageOf`): the media service's references, kept to canvases the index answers |
+| `src/db/tabs.ts`                             | `upsertTab`, `seedTabs`, `swapTabData` carry index statements; `deleteTabRow` cascades        |
+| `src/document-room/document-content.ts`      | `importDocumentCopy` indexes a copy from its bodies                                           |
+| `src/document-room/document-schema.ts`       | `image_refs`, and the outbox triggers that key a change to it                                 |
+| `src/document-room/document-outbox.ts`       | The push: the placement grants, then the whole set to the media service                       |
+| `src/db/image-grants.ts`                     | Placement grants, in the document's own SQLite, through `@liveworkspace/index-app`            |
+| `src/db/documents.ts`                        | `purgeDocumentPreviews` has the media service delete a purged canvas's previews               |
+| `src/image-refs/writer-census.test.ts`       | Fails when SQL writing `tabs` appears outside the known writers                               |
 
 ## Domain and naming
 
