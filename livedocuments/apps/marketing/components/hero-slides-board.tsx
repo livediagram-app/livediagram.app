@@ -1,5 +1,5 @@
 import { FONT, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 
 // The hero's Slide Decks window (docs/specs/019-marketing/marketing-site.md "Hero"): a 16:9 slide page in Pages
 // (docs/specs/007-editor/pages-mode.md) builds up, its title typed and three big numbers landing, the deck's

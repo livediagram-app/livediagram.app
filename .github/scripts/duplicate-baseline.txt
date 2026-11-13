@@ -2,7 +2,6 @@
 # Written by .github/scripts/duplicate-guard.mjs --update; it may only shrink (docs/ci.md).
 livedesign/apps/api/src/routes/community.ts	livedocuments/apps/api/src/routes/community.ts	liveplanner/apps/api/src/routes/community.ts
 livedesign/apps/api/src/routes/folders.ts	livediagram/apps/api/src/routes/folders.ts	livedocuments/apps/api/src/routes/folders.ts	liveplanner/apps/api/src/routes/folders.ts
-livedesign/apps/cli/src/dispatch/globals.ts	livediagram/apps/cli/src/dispatch/globals.ts	livedocuments/apps/cli/src/dispatch/globals.ts	liveplanner/apps/cli/src/dispatch/globals.ts
 livedesign/apps/cli/src/output/cli-error.ts	livediagram/apps/cli/src/output/cli-error.ts	livedocuments/apps/cli/src/output/cli-error.ts	liveplanner/apps/cli/src/output/cli-error.ts
 livedesign/apps/cli/src/render/png.ts	livediagram/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
 livedesign/apps/help/app/account-and-data/page.tsx	livediagram/apps/help/app/account-and-data/page.tsx	livedocuments/apps/help/app/account-and-data/page.tsx	livehuddle/apps/help/app/account-and-data/page.tsx	liveplanner/apps/help/app/account-and-data/page.tsx
@@ -118,9 +117,6 @@ livedesign/packages/ui/src/browser-repair/index.ts	livediagram/packages/ui/src/b
 livedesign/packages/ui/src/browser-repair/repair.ts	livediagram/packages/ui/src/browser-repair/repair.ts	livedocuments/packages/ui/src/browser-repair/repair.ts	livehuddle/packages/ui/src/browser-repair/repair.ts	liveplanner/packages/ui/src/browser-repair/repair.ts
 livedesign/packages/ui/src/icons/index.ts	livediagram/packages/ui/src/icons/index.ts	livedocuments/packages/ui/src/icons/index.ts	livehuddle/packages/ui/src/icons/index.ts	liveplanner/packages/ui/src/icons/index.ts
 livedesign/packages/ui/src/seo.ts	livediagram/packages/ui/src/seo.ts	livedocuments/packages/ui/src/seo.ts	livehuddle/packages/ui/src/seo.ts	liveplanner/packages/ui/src/seo.ts
-livedesign/scripts/ci-test-filters.mjs	livediagram/scripts/ci-test-filters.mjs	livedocuments/scripts/ci-test-filters.mjs	livehuddle/scripts/ci-test-filters.mjs	liveplanner/scripts/ci-test-filters.mjs
-livedesign/scripts/git-hooks/install.mjs	livediagram/scripts/git-hooks/install.mjs	livedocuments/scripts/git-hooks/install.mjs	livehuddle/scripts/git-hooks/install.mjs	liveplanner/scripts/git-hooks/install.mjs
-livedesign/scripts/ts-source-hooks.mjs	livediagram/scripts/ts-source-hooks.mjs	livedocuments/scripts/ts-source-hooks.mjs	livehuddle/scripts/ts-source-hooks.mjs	liveplanner/scripts/ts-source-hooks.mjs
 livediagram/apps/api/src/db/content-summary.ts	livehuddle/apps/api/src/db/content-summary.ts
 livediagram/apps/api/src/legacy-request-forms.ts	livehuddle/apps/api/src/legacy-request-forms.ts
 livediagram/apps/api/src/liveworkspace/activity.ts	livehuddle/apps/api/src/liveworkspace/activity.ts
@@ -203,7 +199,6 @@ livediagram/apps/help/components/category-art/tabs.tsx	livehuddle/apps/help/comp
 livediagram/apps/help/components/illustrations/tabs-side-by-side.tsx	livehuddle/apps/help/components/illustrations/tabs-side-by-side.tsx
 livediagram/apps/marketing/app/page.tsx	livehuddle/apps/marketing/app/page.tsx
 livediagram/apps/marketing/components/art-tokens.ts	livehuddle/apps/marketing/components/art-tokens.ts
-livediagram/apps/marketing/components/hero-cursor.tsx	livedocuments/apps/marketing/components/hero-cursor.tsx	liveplanner/apps/marketing/components/hero-cursor.tsx
 livediagram/apps/marketing/lib/hero-motion.ts	livehuddle/apps/marketing/lib/hero-motion.ts
 livediagram/apps/mcp/eval/bench/score.mjs	livedocuments/apps/mcp/eval/bench/score.mjs
 livediagram/apps/mcp/src/created-folder.ts	livedocuments/apps/mcp/src/created-folder.ts

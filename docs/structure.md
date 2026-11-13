@@ -58,7 +58,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
-├─ scripts/                    the root's own scripts: git-hooks, and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)
+├─ scripts/                    the root's own scripts: git-hooks, ts-source-hooks.mjs (Node type stripping for every product's repo scripts), and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
 │  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /community, /telemetry, /status, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product
@@ -615,6 +615,15 @@ Each step is its own PR, and both products build and pass their tests after ever
        the output is byte-identical.
      - Still per product: the lint and test configs (a few lines each), the CLI's version, png and io bindings,
        `room-scope.ts` (its op kinds are the product's) and `person-tag.ts`.
+   - Fourth slices, what the product CLIs, MCPs, apis, help and marketing apps still copied, each one copy now:
+     `api-kit`'s hosted-vars script (`scripts/hosted-vars.mjs`, each api's `scripts/hosted-vars.mjs` binding its
+     `hosted-vars.json`), the image reference index's SQL (`image-ref-index`) and the workbench pairing's room closer
+     (`room-access-client`); `auth-client`'s workbench session checker (`workbench-sessions`); `cli-kit`'s global
+     flags (`globals`) and entry (`bin`); `mcp-kit`'s test client (`testing/test-client`) and the benchmark's scorer
+     and task bank (`eval/score`, `eval/task-bank`); `marketing-site`'s template gallery, Start from a template band
+     and hero cursor; `help-site`'s Explorer Home illustration; `vitest-config`'s `workspace-manifests`. The product
+     folders' own `scripts/git-hooks`, `.githooks` and `ci-test-filters.mjs`, which the root's hooks and CI plan
+     replaced, are gone, and `ts-source-hooks.mjs` is one root script.
 
 6. **Avatar mode out of livediagram's editor**, so a second product (livehuddle) can walk the same characters.
    `@liveworkspace/avatar` (`packages/avatar` then) held the parts of Avatar mode that read no element union: the sprite

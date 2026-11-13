@@ -29,7 +29,7 @@ spec.
 | `packages/document/src/freehand-points.ts`              | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
 | `../packages/element-model/src/legacy-stroke-points.ts` | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
 | `packages/document/scripts/expand-stroke-points.ts`     | The debug script: a tab or document JSON file with every block expanded                                                                                  |
-| `scripts/ts-source-hooks.mjs`                           | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
+| `../scripts/ts-source-hooks.mjs`                        | Node resolve hook (the monorepo root's): lets repo scripts run workspace TypeScript sources                                                              |
 
 ## Interfaces and contracts
 

@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AccountsUnavailable } from '../db/api-tokens';
-import { noteWorkbenchRoom, resolveWorkbenchSession, sessionPrefixOf } from './workbench-session';
+import { resolveWorkbenchSession } from './workbench-session';
 
 // Sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api asks accounts about each with its client
-// credentials and reads the answer in its own words.
+// credentials and reads the answer in its own words. The checking, caching, refusals and room notes are
+// @liveworkspace/auth-client's, tested in workbench-sessions.test.ts; this holds the api's names for what a session reaches.
 const ENV = {
   ACCOUNTS_URL: 'https://accounts.test',
   ACCOUNTS_CLIENT_ID: 'livediagram',
@@ -90,62 +91,11 @@ describe('resolveWorkbenchSession', () => {
     });
   });
 
-  it('calls a document session with no document unknown', async () => {
-    stubAccounts(() => Response.json({ ...CHECKED, itemId: null }));
-    expect(await resolveWorkbenchSession(ENV, secret())).toEqual({ ok: false, reason: 'unknown' });
-  });
-
-  it('passes on why accounts refused it', async () => {
-    stubAccounts(() =>
-      Response.json({ error: 'invalid_session', reason: 'revoked' }, { status: 404 }),
-    );
-    expect(await resolveWorkbenchSession(ENV, secret())).toEqual({ ok: false, reason: 'revoked' });
-  });
-
-  it('is unknown with no accounts configured, and unavailable when accounts fails', async () => {
-    expect(await resolveWorkbenchSession({}, secret())).toEqual({ ok: false, reason: 'unknown' });
+  it('is unavailable, in this api’s error, when accounts fails', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     stubAccounts(() => new Response(null, { status: 503 }));
     await expect(resolveWorkbenchSession(ENV, secret())).rejects.toBeInstanceOf(
       AccountsUnavailable,
     );
-  });
-
-  it('logs a session by its id’s first eight characters', () => {
-    expect(sessionPrefixOf('abcdefghijkl')).toBe('abcdefgh');
-  });
-});
-
-describe('noteWorkbenchRoom', () => {
-  it('tells accounts once per session and document', async () => {
-    const calls = stubAccounts(() => new Response(null, { status: 204 }));
-    const session = { ownerId: 'user_1', sessionId: `s-${secret()}` };
-    await noteWorkbenchRoom(ENV, session, 'doc1');
-    await noteWorkbenchRoom(ENV, session, 'doc1');
-    expect(calls).toEqual([
-      {
-        path: '/api/account/internal/workbench/rooms',
-        body: { ownerId: 'user_1', sessionId: session.sessionId, itemId: 'doc1' },
-      },
-    ]);
-  });
-
-  it('asks nothing with no accounts configured', async () => {
-    const calls = stubAccounts(() => new Response(null, { status: 204 }));
-    await noteWorkbenchRoom({}, { ownerId: 'user_1', sessionId: `s-${secret()}` }, 'doc1');
-    expect(calls).toEqual([]);
-  });
-
-  it('is best effort: an unreachable accounts is logged, never thrown', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.stubGlobal('fetch', async () => {
-      throw new TypeError('network down');
-    });
-    await expect(
-      noteWorkbenchRoom(ENV, { ownerId: 'user_1', sessionId: `s-${secret()}` }, 'doc1'),
-    ).resolves.toBeUndefined();
-    expect(warn).toHaveBeenCalledWith('[workbench] room note failed', {
-      error: 'TypeError: network down',
-    });
   });
 });

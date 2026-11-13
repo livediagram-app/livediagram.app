@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { workspaceManifests } from '../../../scripts/ci-test-filters.mjs';
+import { workspaceManifests } from '@liveworkspace/vitest-config/workspace-manifests';
 
 // One TypeScript (docs/development/contributing.md#typescript): every workspace that type-checks
 // lists the root manifest's `typescript`, TypeScript 7, and nothing aliases another TypeScript under
@@ -18,11 +18,16 @@ type Manifest = {
 const root = JSON.parse(
   readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'),
 ) as Manifest;
-const workspaces = workspaceManifests() as Manifest[];
+const workspaces = workspaceManifests(new URL('../../../', import.meta.url)) as Manifest[];
 const specOf = (m: Manifest, dep: string) => m.devDependencies?.[dep] ?? m.dependencies?.[dep];
 const deps = (m: Manifest) => Object.entries({ ...m.dependencies, ...m.devDependencies });
 
 describe('workspace TypeScript', () => {
+  it('reads every app and package', () => {
+    // Guard against the reader going blind and every check below passing on nothing.
+    expect(workspaces.length).toBeGreaterThan(5);
+  });
+
   it('is TypeScript 7 at the root', () => {
     expect(specOf(root, 'typescript')).toMatch(/^\^7\./);
   });

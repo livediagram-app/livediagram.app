@@ -1,5 +1,5 @@
 import { FONT, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 import { CARD_H, CardFace, Sliders, type CardDef } from './hero-plan-card';
 
 // The pieces a board scene moves with (hero-plan-board.tsx, hero-automations-board.tsx): a column's count

@@ -13,7 +13,7 @@ livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
 livehuddle/      livehuddle.app: meetings and workshops, forked from livediagram in-tree
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
-scripts/         the root's git hooks, and the parts every product's e2e stack shares (scripts/e2e-stack)
+scripts/         the root's git hooks, ts-source-hooks.mjs (Node type stripping for repo scripts), and the parts every product's e2e stack shares (scripts/e2e-stack)
 ```
 
 Read [docs/structure.md](docs/structure.md) first: it covers what's shared, what each product keeps, and

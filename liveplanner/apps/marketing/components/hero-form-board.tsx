@@ -1,5 +1,5 @@
 import { FONT, TEAMMATE, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 
 // The hero's Forms window (docs/specs/019-marketing/marketing-site.md "Hero"): an RSVP form (docs/specs/030-forms/
 // forms.md) beside the Sheet its responses go to. The form builds, its cover, heading and questions landing; a guest

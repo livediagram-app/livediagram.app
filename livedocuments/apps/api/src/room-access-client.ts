@@ -4,48 +4,12 @@
 // logged rather than failing the request. Sharing and team changes are the index's: it tells the room itself
 // (`/api/internal/items/:id/revoke`), and a removed member's grant lapses within ten minutes.
 
-import type { AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
+// The closing is @liveworkspace/api-kit's room-access-client.ts; this hands in the room fetch.
+
+import { createRoomAccessClient } from '@liveworkspace/api-kit/room-access-client';
 import { roomFetch } from './room-client';
-import type { Env } from './types';
 
-// The api never waits on one room longer than this.
-const ROOM_ACCESS_CLOSE_TIMEOUT_MS = 3_000;
-
-async function closeRoomSessions(
-  env: Env,
-  documentId: string,
-  close: AccessCloseMatch,
-): Promise<boolean> {
-  try {
-    const res = await roomFetch(
-      env,
-      documentId,
-      '/close-sessions',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(close),
-      },
-      ROOM_ACCESS_CLOSE_TIMEOUT_MS,
-    );
-    if (!res.ok) throw new Error(`status ${res.status}`);
-    return true;
-  } catch (err) {
-    console.warn('[room-access] close did not reach the room', {
-      documentId,
-      match: close.match,
-      error: String(err),
-    });
-    return false;
-  }
-}
-
-// A workbench pairing ended (unpaired, or its token revoked): close the sockets it opened on one document
-// (docs/specs/013-workspace/workbench-embeds.md), with WORKBENCH_ENDED_CLOSE.
-export function closeWorkbenchSessions(
-  env: Env,
-  documentId: string,
-  pairingId: string,
-): Promise<boolean> {
-  return closeRoomSessions(env, documentId, { match: 'workbench', pairingId });
-}
+// Read at call time, so a test's mock of ./room-client is the one asked.
+export const { closeWorkbenchSessions } = createRoomAccessClient(
+  (...args: Parameters<typeof roomFetch>) => roomFetch(...args),
+);
