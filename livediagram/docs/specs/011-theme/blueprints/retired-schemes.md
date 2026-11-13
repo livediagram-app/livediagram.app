@@ -127,7 +127,7 @@ a tab with nothing to migrate.
 
 | Rule                                                   | Test                                                               |
 | ------------------------------------------------------ | ------------------------------------------------------------------ |
-| Detection (three branches)                             | `packages/document/src/retired-schemes.test.ts`, "retiredSchemeOf" |
+| Detection (three branches)                             | `../packages/element-model/src/retired-schemes.test.ts`, "retiredSchemeOf" |
 | Charcoal → Default, baked colours removed              | `retired-schemes.test.ts`, "a Charcoal tab"                        |
 | Choices kept (I2), untouched kinds, table cell fill    | `retired-schemes.test.ts`                                          |
 | Previous dark half → current; single-colour match kept | `retired-schemes.test.ts`, "Default's previous dark half"          |
