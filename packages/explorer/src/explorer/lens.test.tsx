@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder, ItemListQuery } from '@liveworkspace/index-client';
+import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { Explorer, type ExplorerProps } from './Explorer';
@@ -115,6 +116,17 @@ describe('the filter lens', () => {
     fireEvent.blur(field());
     await waitFor(() => expect(lastList(index)).toMatchObject({ source: ['ai'] }));
     await waitFor(() => expect(titles()).toEqual(['By AI']));
+  });
+
+  it('opens a chip’s choices in a landmark of its own, portalled as they are, and axe is clean', async () => {
+    const index = createFakeIndex({ items: [makeItem(1, { title: 'Fresh' })] });
+    renderRouted(index, { kind: 'all' });
+    await waitFor(() => expect(titles()).toHaveLength(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Edited, any' }));
+    const listbox = await screen.findByRole('listbox', { name: 'Edited' });
+    const region = screen.getByRole('region', { name: 'Edited filter' });
+    expect(region.contains(listbox)).toBe(true);
+    expect(await axeViolations()).toEqual([]);
   });
 
   it('writes a chip’s choice, lights the chip, and Clear empties the lens', async () => {

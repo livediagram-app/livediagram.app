@@ -6,6 +6,7 @@ import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives
 import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import {
   Glyph,
+  MenuLandmark,
   MenuTreeContext,
   useControlMenu,
   useMenu,
@@ -150,7 +151,12 @@ function CommandSurface(props: SurfaceProps) {
     onClose: props.onClose,
     trigger: props.trigger,
   });
-  return <SurfaceFrame {...props} attach={attach} tree={tree} surfaceProps={surfaceProps} />;
+  // Portalled to the body, so a landmark of its own (MenuLandmark); a control menu is a dialog, one already.
+  return (
+    <MenuLandmark name={props.label} trigger={props.trigger}>
+      <SurfaceFrame {...props} attach={attach} tree={tree} surfaceProps={surfaceProps} />
+    </MenuLandmark>
+  );
 }
 
 function ControlSurface(props: SurfaceProps) {

@@ -5,6 +5,11 @@
 // stay first, dashes last) and the choice is kept on the device. Folder rows carry the folder menu, inline rename,
 // what they hold and their dates; item rows preview their snapshot after a 600 ms rest and ask the host to load it
 // ahead as they come near. Sorting is over what is loaded; the rows are windowed like the list's.
+//
+// To assistive technology it is a table (the WAI-ARIA sortable table pattern): a header row of column headers, each
+// holding its sort button and the sorted one carrying aria-sort, then a row group of rows whose first cell (the
+// name) is the row's header. Windowed, each row says where it stands (aria-rowindex, the header row being 1) and the
+// table how many there are (aria-rowcount, -1 while more are still to load).
 
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { FOLDER_PREVIEW_IDS_MAX, type Folder } from '@liveworkspace/index-client';
@@ -86,6 +91,8 @@ const CELLS = Object.fromEntries(DETAILS_COLUMNS.map((c) => [c.id, cellClass(c.i
 >;
 
 const LOAD_AHEAD = 40;
+// The header row is the table's first (aria-rowindex 1); body row i is i + 2.
+const FIRST_BODY_ROW = 2;
 
 export function DetailsView({
   folders,
@@ -131,7 +138,7 @@ export function DetailsView({
       }),
     [folders, items, sort, previews],
   );
-  const body = useRef<HTMLUListElement>(null);
+  const body = useRef<HTMLDivElement>(null);
   const count = sorted.folders.length + sorted.items.length;
   const range = useWindowedRange(body, count, ROW_HEIGHT);
   useFocusAfterRemoval(
@@ -152,6 +159,7 @@ export function DetailsView({
       rows.push(
         <DetailsFolderRow
           key={`f:${f.id}`}
+          rowIndex={i + FIRST_BODY_ROW}
           folder={f}
           renaming={renamingId === f.id}
           itemCount={previews.get(f.id)?.itemCount}
@@ -165,6 +173,7 @@ export function DetailsView({
       rows.push(
         <DetailsRow
           key={item.id}
+          rowIndex={i + FIRST_BODY_ROW}
           item={item}
           renaming={renamingId === item.id}
           options={options}
@@ -174,20 +183,29 @@ export function DetailsView({
   }
 
   return (
-    <div className={`@container ${LIST_CARD}`}>
+    <div
+      role="table"
+      aria-label={`Folders and ${words.lowerMany}`}
+      aria-rowcount={hasMore ? -1 : count + 1}
+      className={`@container ${LIST_CARD}`}
+    >
       <div
         role="row"
+        aria-rowindex={1}
         className={`${GRID} border-b border-slate-200 bg-slate-50/95 px-4 py-2.5 text-xs font-medium text-slate-500 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-400`}
       >
         {DETAILS_COLUMNS.map((c) => {
           const on = sort.column === c.id;
           return (
-            <span key={c.id} className={CELLS[c.id]}>
+            <span
+              key={c.id}
+              role="columnheader"
+              aria-sort={on ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}
+              className={CELLS[c.id]}
+            >
               <button
                 type="button"
-                role="columnheader"
                 data-sort-column={c.id}
-                aria-sort={on ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}
                 title={`Sort by ${c.label}`}
                 onClick={() => sortBy(c.id)}
                 className={`group/sort -mx-1.5 inline-flex min-w-0 items-center gap-1 rounded-md px-1.5 py-0.5 transition hover:bg-slate-200/60 hover:text-slate-900 dark:hover:bg-slate-700/60 dark:hover:text-white ${
@@ -200,16 +218,20 @@ export function DetailsView({
             </span>
           );
         })}
-        <span aria-hidden />
+        {/* The ⋯ column: named for a screen reader, blank on screen as before. */}
+        <span role="columnheader" className="flex">
+          <span className="sr-only">Actions</span>
+        </span>
       </div>
-      <ul
+      <div
         ref={body}
+        role="rowgroup"
         className={`divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
       >
-        {start > 0 ? <li aria-hidden style={{ height: start * ROW_HEIGHT }} /> : null}
+        {start > 0 ? <div aria-hidden style={{ height: start * ROW_HEIGHT }} /> : null}
         {rows}
-        {end < count ? <li aria-hidden style={{ height: (count - end) * ROW_HEIGHT }} /> : null}
-      </ul>
+        {end < count ? <div aria-hidden style={{ height: (count - end) * ROW_HEIGHT }} /> : null}
+      </div>
       {loadingMore ? (
         <p className="border-t border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-700/60 dark:text-slate-400">
           Loading more…
@@ -220,6 +242,7 @@ export function DetailsView({
 }
 
 const DetailsFolderRow = memo(function DetailsFolderRow({
+  rowIndex,
   folder: f,
   renaming,
   itemCount,
@@ -227,6 +250,7 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
   one,
   many,
 }: {
+  rowIndex: number;
   folder: Folder;
   renaming: boolean;
   itemCount: number | undefined;
@@ -240,7 +264,9 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
   const drop = useDropTarget({ teamId: f.teamId, folderId: f.id });
   const drag = useFolderDrag(f, renaming);
   return (
-    <li
+    <div
+      role="row"
+      aria-rowindex={rowIndex}
       data-folder-row={f.id}
       data-drop-over={drop.over || undefined}
       className={`${GRID} group px-4 hover:bg-slate-50 dark:hover:bg-slate-700 ${drop.over ? DROP_ROW : ''}`}
@@ -249,7 +275,7 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
       {...drop.handlers}
       {...drag}
     >
-      <span className="flex min-w-0 items-center gap-2">
+      <span role="rowheader" className="flex min-w-0 items-center gap-2">
         <span aria-hidden className="inline-flex shrink-0 text-amber-500 [&_svg]:size-4">
           <FolderSolidIcon />
         </span>
@@ -273,12 +299,13 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
         )}
         {renaming ? null : <DefaultFolderMarker folderId={f.id} />}
       </span>
-      <span className={CELLS.type}>
+      <span role="cell" className={CELLS.type}>
         <FolderTypeCell />
       </span>
-      <span className={CELLS.comments} />
-      <span className={CELLS.access} />
+      <span role="cell" className={CELLS.comments} />
+      <span role="cell" className={CELLS.access} />
       <span
+        role="cell"
         className={`${CELLS.size} truncate whitespace-nowrap text-xs tabular-nums text-slate-600 dark:text-slate-300`}
       >
         {itemCount === undefined ? (
@@ -289,29 +316,31 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
           <span data-folder-held="">{formatHeld(itemCount, one, many)}</span>
         )}
       </span>
-      <span className={CELLS.created}>
+      <span role="cell" className={CELLS.created}>
         <DateCell at={f.createdAt} />
       </span>
-      <span className={CELLS.updated}>
+      <span role="cell" className={CELLS.updated}>
         <DateCell at={f.updatedAt} ago />
       </span>
-      {renaming ? (
-        <span />
-      ) : (
-        <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for folder ${f.name}`} />
-      )}
+      <span role="cell" className="flex">
+        {renaming ? null : (
+          <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for folder ${f.name}`} />
+        )}
+      </span>
       {menu.open ? (
         <FolderMenu folder={f} anchor={menu.triggerRef.current} onClose={menu.close} />
       ) : null}
-    </li>
+    </div>
   );
 });
 
 const DetailsRow = memo(function DetailsRow({
+  rowIndex,
   item,
   renaming,
   options,
 }: {
+  rowIndex: number;
   item: ShownItem;
   renaming: boolean;
   options: RowOptions;
@@ -341,7 +370,9 @@ const DetailsRow = memo(function DetailsRow({
     [preview.handlers, menu],
   );
   return (
-    <li
+    <div
+      role="row"
+      aria-rowindex={rowIndex}
       data-item-row={item.id}
       className={`${GRID} group px-4 transition hover:bg-slate-50 dark:hover:bg-slate-700 ${
         leaving.has(item.id) ? 'lw-row-out' : ''
@@ -351,7 +382,7 @@ const DetailsRow = memo(function DetailsRow({
       {...preview.handlers}
       {...drag}
     >
-      <span className="flex min-w-0 items-center gap-2">
+      <span role="rowheader" className="flex min-w-0 items-center gap-2">
         {/* Its kind's glyph in its app's colour, so a row reads at a glance, as a folder's does. */}
         <span
           aria-hidden
@@ -382,36 +413,36 @@ const DetailsRow = memo(function DetailsRow({
         <MadeByAiBadge item={item} />
         <ArchivedBadge item={item} />
       </span>
-      <span className={CELLS.type}>
+      <span role="cell" className={CELLS.type}>
         <TypeCell app={item.app} label={kind} />
       </span>
-      <span className={CELLS.comments}>
+      <span role="cell" className={CELLS.comments}>
         <CommentsCell count={summaryCount(item, 'comments')} />
       </span>
-      <span className={CELLS.access}>
+      <span role="cell" className={CELLS.access}>
         <AccessCell level={item.access} />
       </span>
-      <span className={CELLS.size}>
+      <span role="cell" className={CELLS.size}>
         <SizeCell item={item} />
       </span>
-      <span className={CELLS.created}>
+      <span role="cell" className={CELLS.created}>
         <DateCell at={item.createdAt} />
       </span>
-      <span className={`${CELLS.updated} justify-between gap-1.5`}>
+      <span role="cell" className={`${CELLS.updated} justify-between gap-1.5`}>
         <DateCell at={item.updatedAt} ago />
         {renderItemMark?.(item, 'time')}
       </span>
-      {renaming ? (
-        <span />
-      ) : (
-        <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for ${title}`} />
-      )}
+      <span role="cell" className="flex">
+        {renaming ? null : (
+          <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for ${title}`} />
+        )}
+      </span>
       {menu.open ? (
         <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
       ) : null}
       {preview.spot && card ? (
         <HoverPreviewCard spot={preview.spot}>{card}</HoverPreviewCard>
       ) : null}
-    </li>
+    </div>
   );
 });

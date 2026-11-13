@@ -15,7 +15,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react';
-import { Portal } from '@liveworkspace/ui';
+import { MenuLandmark, Portal } from '@liveworkspace/ui';
 import { useLatest } from './useLatest';
 
 const ITEM = '[role="menuitem"]:not([aria-disabled="true"])';
@@ -138,33 +138,36 @@ export function PortalMenu({
 
   return (
     <Portal>
-      <div
-        ref={ref}
-        role="menu"
-        // A host's popover counts its portalled menus as inside (liveplanner's MovablePanel): without the mark, the
-        // tap on an item closes the popover, and the menu with it, before the item runs.
-        data-menu-surface=""
-        aria-label={label}
-        tabIndex={-1}
-        onKeyDown={onKeyDown}
-        // Choosing an item hands focus to the trigger first, before the item runs: a dialog it opens then remembers
-        // the trigger (not the item, which is about to go) as where to return focus, even when a field in the
-        // dialog takes focus as it opens.
-        onClickCapture={(e) => {
-          const item = (e.target as Element).closest?.(ITEM);
-          if (item && ref.current?.contains(item)) anchor?.focus({ preventScroll: true });
-        }}
-        className={`fixed z-50 flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
-        style={
-          at
-            ? at.maxHeight === undefined
-              ? { left: at.left, top: at.top }
-              : { left: at.left, top: at.top, maxHeight: at.maxHeight, overflowY: 'auto' }
-            : { left: -9999, top: -9999 }
-        }
-      >
-        {children}
-      </div>
+      {/* Portalled to the body, so a landmark of its own (MenuLandmark), named as the menu is. */}
+      <MenuLandmark name={label} trigger={anchor}>
+        <div
+          ref={ref}
+          role="menu"
+          // A host's popover counts its portalled menus as inside (liveplanner's MovablePanel): without the mark, the
+          // tap on an item closes the popover, and the menu with it, before the item runs.
+          data-menu-surface=""
+          aria-label={label}
+          tabIndex={-1}
+          onKeyDown={onKeyDown}
+          // Choosing an item hands focus to the trigger first, before the item runs: a dialog it opens then remembers
+          // the trigger (not the item, which is about to go) as where to return focus, even when a field in the
+          // dialog takes focus as it opens.
+          onClickCapture={(e) => {
+            const item = (e.target as Element).closest?.(ITEM);
+            if (item && ref.current?.contains(item)) anchor?.focus({ preventScroll: true });
+          }}
+          className={`fixed z-50 flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
+          style={
+            at
+              ? at.maxHeight === undefined
+                ? { left: at.left, top: at.top }
+                : { left: at.left, top: at.top, maxHeight: at.maxHeight, overflowY: 'auto' }
+              : { left: -9999, top: -9999 }
+          }
+        >
+          {children}
+        </div>
+      </MenuLandmark>
     </Portal>
   );
 }

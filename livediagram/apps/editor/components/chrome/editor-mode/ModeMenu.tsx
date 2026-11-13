@@ -4,6 +4,7 @@ import {
   CheckIcon,
   EDITOR_MODE_ICONS,
   MENU_PANEL,
+  MenuLandmark,
   POPOVER_VIEWPORT_MARGIN,
   Portal,
   clampIntoRange,
@@ -171,7 +172,14 @@ export function ModeMenu({
       <ModePreview mode={shown} keyLeads={shown === keyLeadsTo} />
     </div>
   );
-  return floating ? <Portal>{menu}</Portal> : menu;
+  // Floating, it is portalled to the body: a landmark of its own (MenuLandmark). In place it sits in its panel's.
+  return floating ? (
+    <Portal>
+      <MenuLandmark name="Editor mode">{menu}</MenuLandmark>
+    </Portal>
+  ) : (
+    menu
+  );
 }
 
 // The preview pane: hidden under 640px, and from assistive technology (the rows carry its words).

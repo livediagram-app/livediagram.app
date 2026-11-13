@@ -4,7 +4,9 @@ import { useId, type CSSProperties, type MouseEvent, type ReactNode } from 'reac
 import {
   ChevronDownIcon,
   MENU_LABEL_ATTR,
+  MenuLandmark,
   MenuTreeContext,
+  menuLandmarkName,
   useControlMenu,
   useMenu,
   useMenuKind,
@@ -28,8 +30,9 @@ type PortalMenuBase = {
   beside?: HTMLElement | null;
   onClose: () => void;
   children: ReactNode;
-  // Wrap the menu in a named region (axe "region": a menu portalled to the body belongs to no landmark). Opt in
-  // where the menu is not inside a dialog or panel that is one already.
+  // The name of the region a command menu stands in (axe "region": a menu portalled to the body belongs to no
+  // landmark, MenuLandmark). A command menu always has one, named this, else its label, else its anchor's name. A
+  // control menu is a dialog, which counts as a region already, and takes one only when this is given.
   landmark?: string;
   // A wider menu for rows that carry a line under their name (the Sheet's function menus): 20rem, not 14.
   wide?: boolean;
@@ -87,7 +90,7 @@ function CommandPortalMenu({
       tree={tree}
       surfaceProps={surfaceProps}
       wide={wide}
-      landmark={landmark}
+      landmark={menuLandmarkName(landmark ?? label, anchor)}
       surfaceStyle={surfaceStyle}
     >
       {children}
@@ -168,13 +171,7 @@ function PortalMenuFrame({
   return (
     <Portal>
       <MenuTreeContext.Provider value={tree}>
-        {landmark ? (
-          <div role="region" aria-label={landmark}>
-            {menu}
-          </div>
-        ) : (
-          menu
-        )}
+        {landmark ? <MenuLandmark name={landmark}>{menu}</MenuLandmark> : menu}
       </MenuTreeContext.Provider>
     </Portal>
   );

@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ExplorerAccounts } from '../data/accounts';
+import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { Explorer } from './Explorer';
@@ -116,7 +117,11 @@ describe('the Details table', () => {
     });
     const view = page(index, { kind: 'all' });
     await screen.findByText('Zebra');
-    fireEvent.click(screen.getByRole('columnheader', { name: /Name/ }));
+    fireEvent.click(
+      within(screen.getByRole('columnheader', { name: /Name/ })).getByRole('button', {
+        name: /Name/,
+      }),
+    );
     const names = () =>
       [...document.querySelectorAll('[data-folder-row], [data-item-row]')].map(
         (r) => r.getAttribute('data-folder-row') ?? r.getAttribute('data-item-row'),
@@ -129,18 +134,48 @@ describe('the Details table', () => {
     expect(names()).toEqual(['f1', 'item-2', 'item-1']);
   });
 
-  it('keeps aria-rowcount off the Details and List lists', async () => {
+  it('counts rows on the Details table, where the role allows it, and keeps it off the List', async () => {
     const index = createFakeIndex({ items: [makeItem(1, { title: 'Zebra' })] });
     const view = page(index, { kind: 'all' });
-    expect((await screen.findByText('Zebra')).closest('ul')!.hasAttribute('aria-rowcount')).toBe(
-      false,
-    );
+    const zebra = await screen.findByText('Zebra');
+    expect(zebra.closest('ul')).toBeNull();
+    expect(zebra.closest('[role="table"]')!.getAttribute('aria-rowcount')).toBe('2');
     view.unmount();
     localStorage.setItem('liveworkspace:explorer-view-mode', 'list');
     page(index, { kind: 'all' });
     expect((await screen.findByText('Zebra')).closest('ul')!.hasAttribute('aria-rowcount')).toBe(
       false,
     );
+  });
+
+  it('is a table axe finds clean: header row, sortable column headers, rows of cells', async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1, { title: 'Zebra' }), makeItem(2, { title: 'apple' })],
+      folders: [folder('f1', 'Specs')],
+    });
+    page(index, { kind: 'all' });
+    await screen.findByText('Zebra');
+    const table = screen.getByRole('table', { name: 'Folders and plans' });
+    const rows = within(table).getAllByRole('row');
+    // The header row, then the folder, then the two items, each saying where it stands.
+    expect(rows.map((r) => r.getAttribute('aria-rowindex'))).toEqual(['1', '2', '3', '4']);
+    expect(table.getAttribute('aria-rowcount')).toBe('4');
+    expect(within(rows[1]!).getByRole('rowheader').textContent).toContain('Specs');
+    // A header press sorts and the column says so; the sort button sits inside its header.
+    const name = within(table).getByRole('columnheader', { name: /Name/ });
+    fireEvent.click(within(name).getByRole('button', { name: /Name/ }));
+    expect(name.getAttribute('aria-sort')).toBe('ascending');
+    expect(await axeViolations()).toEqual([]);
+  });
+
+  it('opens a row’s menu in a landmark of its own, so axe stays clean with it open', async () => {
+    const index = createFakeIndex({ items: [makeItem(1)], folders: [folder('f1', 'Specs')] });
+    page(index, { kind: 'all' });
+    await screen.findByText('Item 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Menu for folder Specs' }));
+    const menu = await screen.findByRole('menu', { name: 'Actions for Specs' });
+    expect(menu.closest('[role="region"]')?.getAttribute('aria-label')).toBe('Actions for Specs');
+    expect(await axeViolations()).toEqual([]);
   });
 
   it('carries a sort chosen in the app’s own Explorer', async () => {
@@ -179,6 +214,7 @@ describe('the Details table', () => {
       'Size',
       'Created',
       'Updated',
+      'Actions',
     ]);
     expect(
       within(document.querySelector('[data-item-row="item-2"]') as HTMLElement).getAllByText(

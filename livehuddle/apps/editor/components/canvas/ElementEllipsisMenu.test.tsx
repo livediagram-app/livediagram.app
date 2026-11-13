@@ -15,6 +15,7 @@
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { ElementEllipsisMenu, ElementMenuItem } from './ElementEllipsisMenu';
 
 afterEach(cleanup);
@@ -118,6 +119,20 @@ describe('ElementEllipsisMenu kinds', () => {
     fireEvent.keyDown(item, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it('stands a command menu in a landmark of its own, portalled as it is, and axe is clean', async () => {
+    render(
+      <main>
+        <ElementEllipsisMenu label="Q&A board options" kind="command">
+          {(close) => <ElementMenuItem onPress={close}>Empty the Board</ElementMenuItem>}
+        </ElementEllipsisMenu>
+      </main>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Q&A board options' }));
+    const region = screen.getByRole('region', { name: 'Q&A board options' });
+    expect(region.contains(screen.getByRole('menu'))).toBe(true);
+    expect(await axeViolations()).toEqual([]);
   });
 
   it('is a named dialog for settings', () => {
