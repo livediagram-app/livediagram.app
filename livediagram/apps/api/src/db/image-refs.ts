@@ -8,7 +8,7 @@
 // (document-room/document-outbox.ts). A tab's rows go with the tab
 // (a foreign key).
 //
-// The SQL is @liveworkspace/api-kit's image-ref-index.ts; this binds the document's database and its tabs.
+// The SQL is @liveworkspace/api-kit's image-ref-index.ts; this binds livediagram's document database and its tabs.
 
 import {
   createImageRefReaders,
