@@ -124,7 +124,8 @@ export function FormStatusBar({
       className={`${TOOLBAR_CARD} min-w-0 ${
         top
           ? 'pointer-events-auto absolute left-1/2 top-3 z-[var(--z-toolbar)] max-w-[calc(100%-26rem)] -translate-x-1/2'
-          : 'w-full'
+          : // In the column (a phone): it stays at the top as the form scrolls under it, as a palette would.
+            'sticky top-0 z-[2] w-full'
       }`}
     >
       {/* One row that swipes sideways when it can't fit (a phone), as the palette does. */}
@@ -153,7 +154,8 @@ export function FormStatusBar({
           </Tooltip>
         ) : (
           <span className="flex h-9 shrink-0 items-center whitespace-nowrap px-2.5 text-[13px] text-slate-600 dark:text-slate-300">
-            {count}
+            {/* One span, so the flex row keeps the space inside "0 responses". */}
+            <span>{count}</span>
           </span>
         )}
         {controls ? (

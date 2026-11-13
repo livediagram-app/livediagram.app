@@ -123,8 +123,8 @@ export function TextActionPanel({
         branch={branch}
         hint={
           'addresses' in to
-            ? 'Sent from LivePlanner with a link to the card.'
-            : 'Sent from LivePlanner with a link to the card. Only to people in this plan.'
+            ? 'Sent from liveplanner with a link to the card.'
+            : 'Sent from liveplanner with a link to the card. Only to people in this plan.'
         }
         onChange={(body) => onChange({ ...action, body })}
       />
