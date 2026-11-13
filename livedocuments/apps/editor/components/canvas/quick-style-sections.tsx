@@ -29,7 +29,7 @@ import {
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { QuickMoreColours } from './QuickMoreColours';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useCanvasSurface } from './CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { QUICK_ROW_TARGETS, QUICK_TARGET_PX } from './quick-style-metrics';
 import {
   FlowingLineGlyph,

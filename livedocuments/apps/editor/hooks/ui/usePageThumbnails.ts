@@ -24,7 +24,7 @@ import {
 } from '@livedocuments/document';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useImageSources } from '@/components/canvas/page-image-access';
 import { thumbImageHref, thumbImageIds } from '@/lib/thumb-images';
 import { slideThumbFor, tabArrowLabels, type SlideThumb } from '@/lib/slide-thumb';

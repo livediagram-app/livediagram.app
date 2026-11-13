@@ -1,6 +1,6 @@
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';
-import { TopCenterStack } from '@/components/chrome/TopCenter';
+import { TopCenterStack } from '@liveworkspace/workbench/components/chrome/TopCenter';
 
 // Everything that floats at the top of the canvas: the Offline banner. (The session timer and the vote's status and
 // results walkthrough live in the Session strip's popovers, docs/specs/012-collaboration/session-tools.md; the

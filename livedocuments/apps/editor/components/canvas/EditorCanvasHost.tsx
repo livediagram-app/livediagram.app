@@ -30,7 +30,7 @@ import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/sta
 import { useTemplateStartOpen } from '@/components/start/useTemplateStartShown';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditMap } from '@/lib/map-edit';
-import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { CanvasThemeProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useCanvasHostBrush } from '@/components/canvas/useCanvasHostBrush';
 import { useCanvasHostExplorer } from '@/components/canvas/useCanvasHostExplorer';
 import { useCanvasHostMenus } from '@/components/canvas/useCanvasHostMenus';

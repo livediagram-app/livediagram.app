@@ -14,7 +14,7 @@ import {
   type Finish,
   type TextSize,
 } from '@livediagram/document';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { finishPreviewSvg } from '@/lib/finish-preview';
 import { resolveTabBackdrop } from '@/lib/themes';
 

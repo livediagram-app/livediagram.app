@@ -16,7 +16,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
 import { fitDock, placeTopDock } from '@/lib/whiteboard-dock-fold';

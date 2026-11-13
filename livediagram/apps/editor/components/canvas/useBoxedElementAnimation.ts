@@ -15,7 +15,7 @@ import {
 } from '@livediagram/document';
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 import { useArrivesWithBoard } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 

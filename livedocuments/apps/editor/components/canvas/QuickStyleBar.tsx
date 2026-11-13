@@ -17,7 +17,7 @@ import {
   useQuickStyleBarSlot,
 } from '@/lib/quick-style-bar-slots';
 import { track } from '@/lib/telemetry';
-import { SwatchOverridePopover } from './SwatchOverridePopover';
+import { SwatchOverridePopover } from '@liveworkspace/workbench/components/canvas/SwatchOverridePopover';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 import {
   QUICK_BAR_SECTIONS,

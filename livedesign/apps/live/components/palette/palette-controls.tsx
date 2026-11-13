@@ -7,7 +7,7 @@ import type { StandardTone } from '@livedesign/design';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { standardGroup, standardOptions } from '@/components/colour/colour-options';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 

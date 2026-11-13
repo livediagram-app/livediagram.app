@@ -2,7 +2,7 @@
 
 import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
 import { useSaveFailing } from '@liveworkspace/workbench/lib/save-health';
-import { TopCenterBanner, TopCenterRow } from './TopCenter';
+import { TopCenterBanner, TopCenterRow } from '@liveworkspace/workbench/components/chrome/TopCenter';
 
 // The editor's offline banner (docs/specs/007-editor/load-recovery.md "Offline"), first in the
 // top-centre stack while the browser says it is offline. Changes are held in memory, not stored, so

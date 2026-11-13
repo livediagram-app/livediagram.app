@@ -9,7 +9,7 @@ import {
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
-import type { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import type { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import type { useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';

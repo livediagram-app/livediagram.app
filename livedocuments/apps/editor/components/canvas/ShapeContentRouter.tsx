@@ -44,7 +44,7 @@ import { ChecklistView } from '@/components/canvas/ChecklistView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
-import { useChartGround, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useChartGround, useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 // A Sankey (docs/specs/009-elements/sankey.md) loads only when one is drawn: most boards have none.

@@ -14,7 +14,7 @@ import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { PageCornerFold } from '@liveworkspace/workbench/components/canvas/PageCornerFold';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
-import type { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import type { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import type { useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';

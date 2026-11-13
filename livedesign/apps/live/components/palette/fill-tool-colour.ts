@@ -10,7 +10,7 @@ import {
   saveFillChoice,
   type FillChoice,
 } from '@liveworkspace/workbench/lib/fill-choice';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 
 // Where this browser keeps the Fill tool's colour.
 export const FILL_CHOICE_KEY = 'livedesign:v2:fill';

@@ -13,7 +13,7 @@ import {
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { usePresenting } from '@/components/canvas/PresentingContext';
 import { useCountUp } from '@/components/canvas/useCountUp';
 

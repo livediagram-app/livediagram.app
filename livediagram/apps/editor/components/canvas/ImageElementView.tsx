@@ -8,7 +8,7 @@ import {
   type ImageElement,
 } from '@livediagram/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
-import { useCanvasSurface, useCanvasTheme } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface, useCanvasTheme } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
 import {
   IMAGE_BROKEN_TONE,

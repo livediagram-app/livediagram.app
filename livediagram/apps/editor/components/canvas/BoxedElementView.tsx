@@ -21,12 +21,12 @@ import { openEntityFieldAt } from '@/components/canvas/entity/entity-double-clic
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { describeVariant } from '@/components/canvas/element-variant';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
-import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
+import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';

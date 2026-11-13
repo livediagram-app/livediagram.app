@@ -25,7 +25,7 @@ import { CropGlyph, ImagePictureControls } from '@/components/palette/ImagePictu
 import { startImageCrop } from '@/lib/image-crop-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;

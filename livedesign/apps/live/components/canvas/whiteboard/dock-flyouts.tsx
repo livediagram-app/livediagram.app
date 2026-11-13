@@ -12,7 +12,7 @@ import {
 import type { MarkerPensModel } from '@/hooks/canvas/useMarkerPens';
 import { FlyoutHeading, FlyoutOption } from './WhiteboardFlyout';
 import { ColourPicker } from './ColourPicker';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { PenWidthIcon } from './PenWidthIcon';
 
 export function PenFlyoutBody({ pen, model }: { pen: WhiteboardPen; model: MarkerPensModel }) {

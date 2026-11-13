@@ -8,7 +8,7 @@
 import { useSyncExternalStore, type ComponentProps } from 'react';
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { LaserOverlay } from '@/components/canvas/LaserOverlay';
+import { LaserOverlay } from '@liveworkspace/workbench/components/canvas/LaserOverlay';
 import { Minimap } from '@/components/canvas/Minimap';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';

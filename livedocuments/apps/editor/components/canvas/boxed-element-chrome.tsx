@@ -1,6 +1,6 @@
 import { defaultFillColor } from '@livedocuments/document';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
-import type { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import type { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { indicatorBacking } from '@liveworkspace/workbench/components/canvas/indicator-items';

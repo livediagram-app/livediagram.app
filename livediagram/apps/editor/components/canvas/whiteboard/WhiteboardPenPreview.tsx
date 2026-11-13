@@ -2,7 +2,7 @@
 
 import { penColourCss } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { LiveStroke } from '@/lib/live-stroke';
 import { useRecognitionPreview } from '@/hooks/canvas/useRecognitionPreview';
 import { LiveInk } from '@/components/canvas/whiteboard/LiveInk';

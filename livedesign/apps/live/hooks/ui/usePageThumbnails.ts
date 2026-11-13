@@ -20,7 +20,7 @@ import {
 } from '@livedesign/design';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useComponentFaces } from '@/components/canvas/component/component-face-context';
 import { useImageSources } from '@/components/canvas/page-image-access';
 import { thumbImageHref, thumbImageIds } from '@/lib/thumb-images';

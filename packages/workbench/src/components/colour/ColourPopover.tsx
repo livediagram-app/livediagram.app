@@ -1,0 +1,59 @@
+'use client';
+
+// The picker in a popover (docs/specs/004-interface-design/colour-picker.md "Skins"), anchored to the
+// trigger that opened it: the field and swatch-button skins open it. Opening focuses the picker's
+// Tab stop (the picked swatch); Escape and a press outside close it, Escape handing focus back to
+// the trigger (AnchoredPopover).
+import { useEffect, useRef, type ComponentType } from 'react';
+import { AnchoredPopover } from '../primitives/AnchoredPopover';
+import { COLOUR_PICKER_WIDTH, COLOUR_POPOVER_PADDING } from './colour-metrics';
+
+const COLOUR_POPOVER_WIDTH = COLOUR_PICKER_WIDTH + 2 * COLOUR_POPOVER_PADDING + 2;
+
+// What an editor hands the popover: its ColourPicker (it reads the editor's own tab for the theme and custom
+// colours), with its props `P`.
+export type ColourPopoverDeps<P> = { ColourPicker: ComponentType<P> };
+
+/** The colour picker in a popover, made once per editor at module scope. */
+export function createColourPopover<P extends { label: string }>({ ColourPicker }: ColourPopoverDeps<P>) {
+  function ColourPopover({
+    anchor,
+    onClose,
+    beside,
+    ...picker
+  }: {
+    anchor: HTMLElement;
+    onClose: () => void;
+    // Open beside this panel (a menu narrower than the picker) rather than under the anchor.
+    beside?: HTMLElement | null;
+  } & P) {
+    const box = useRef<HTMLDivElement>(null);
+    // AnchoredPopover focuses its first control once mounted; the picker's own stop is the picked
+    // swatch, so it takes focus a frame later.
+    useEffect(() => {
+      const frame = requestAnimationFrame(() =>
+        box.current?.querySelector<HTMLElement>('[data-colour-key][tabindex="0"]')?.focus(),
+      );
+      return () => cancelAnimationFrame(frame);
+    }, []);
+    return (
+      <AnchoredPopover
+        anchor={anchor}
+        name={picker.label}
+        width={COLOUR_POPOVER_WIDTH}
+        onClose={onClose}
+        beside={beside}
+      >
+        <div
+          ref={box}
+          className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
+          style={{ padding: COLOUR_POPOVER_PADDING }}
+        >
+          <ColourPicker {...(picker as unknown as P)} />
+        </div>
+      </AnchoredPopover>
+    );
+  }
+
+  return ColourPopover;
+}

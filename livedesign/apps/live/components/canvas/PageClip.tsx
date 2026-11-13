@@ -9,7 +9,7 @@ import {
   type LaidOutPage,
   type Layer,
 } from '@livedesign/design';
-import { ChartGroundsProvider, PageSurfacesProvider } from './CanvasSurfaceContext';
+import { ChartGroundsProvider, PageSurfacesProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-background-preview';
 
 // Pages mode cuts elements off at the page edges (docs/specs/007-editor/pages-mode.md "The

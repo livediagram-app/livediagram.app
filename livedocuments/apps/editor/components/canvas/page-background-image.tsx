@@ -36,7 +36,7 @@ import {
   UPLOAD_ACCEPT_ATTR,
   type PickedImage,
 } from '@/lib/upload-image';
-import { useCanvasSurface } from './CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { usePageImageAccess } from './page-image-access';
 import { tileClass } from './page-panel-sections';
 

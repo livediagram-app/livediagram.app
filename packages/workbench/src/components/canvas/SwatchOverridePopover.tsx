@@ -8,7 +8,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { usePopoverLayer } from '@liveworkspace/workbench/components/primitives/popover-stack';
-import { CustomColourEditor } from '@/components/colour/CustomColourEditor';
+import { CustomColourEditor } from '@liveworkspace/workbench/components/colour/CustomColourEditor';
 
 const GAP = 8;
 const MARGIN = 8;
@@ -43,9 +43,9 @@ export function SwatchOverridePopover({
     onCloseRef.current = onClose;
   });
 
-  // Beside the panel, level with the swatch, kept inside the viewport: to its
-  // right (the panel lives on the left), else to its left. Written straight to
-  // the node before paint: it is placement, not state.
+  // Beside the panel or the row's popover, level with the swatch, kept inside the viewport: to
+  // its right, else to its left. Written straight to the node before paint: it is placement, not
+  // state.
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node) return;

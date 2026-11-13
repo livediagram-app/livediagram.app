@@ -25,7 +25,7 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
-import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { CanvasThemeProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { useHostCollab } from './editor-canvas-host/useHostCollab';
 import { useSessionCanvasProps } from './editor-canvas-host/useSessionCanvasProps';

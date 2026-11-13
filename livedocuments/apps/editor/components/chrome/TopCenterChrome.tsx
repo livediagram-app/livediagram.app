@@ -3,10 +3,10 @@ import { drawBannerMessage } from '@/lib/draw-mode';
 import { FormatPainterIcon, lucideGlyph } from '@livedocuments/ui';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { ModeBanner } from '@/components/chrome/ModeBanner';
-import { OfflineBanner } from '@/components/chrome/OfflineBanner';
+import { ModeBanner } from '@liveworkspace/workbench/components/chrome/ModeBanner';
+import { OfflineBanner } from '@liveworkspace/workbench/components/chrome/OfflineBanner';
 import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
-import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
+import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@liveworkspace/workbench/components/chrome/TopCenter';
 import { formatBannerMessage } from '@liveworkspace/workbench/lib/format-page-brush';
 
 // Everything that floats at the top of the canvas: the follow-me pill,

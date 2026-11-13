@@ -23,7 +23,7 @@ import { useInspectHost } from '@/components/canvas/inspect/useInspectHost';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { useTemplateStartOpen } from '@/components/start/useTemplateStartShown';
-import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { CanvasThemeProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ComponentFaceContext } from './component/component-face-context';
 import { ComponentSessionBar } from './component/ComponentSessionBar';
 import { useDeadPageBrush } from '@liveworkspace/workbench/hooks/editor/useDeadPageBrush';

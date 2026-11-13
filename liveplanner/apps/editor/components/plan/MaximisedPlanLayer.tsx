@@ -7,7 +7,7 @@
 // (a Gantt keeps its scale, window and collapsed lanes; a drag in flight survives), and PlanContext and the canvas
 // surface still reach it. While maximised, its presses stop at the slot so the canvas never selects or moves the
 // element underneath.
-import { useCanvasMenu } from '@/components/canvas/canvas-menu-context';
+import { useCanvasMenu } from '@liveworkspace/workbench/components/canvas/canvas-menu-context';
 import {
   useEffect,
   useLayoutEffect,

@@ -11,7 +11,7 @@ import { useEffect } from 'react';
 import { canvasSurface } from '@livediagram/document';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
-import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { CanvasFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';

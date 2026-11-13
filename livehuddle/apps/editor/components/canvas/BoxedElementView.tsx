@@ -39,7 +39,7 @@ import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
-import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
+import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';

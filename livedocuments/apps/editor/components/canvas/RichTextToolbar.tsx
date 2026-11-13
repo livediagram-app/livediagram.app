@@ -29,7 +29,7 @@ import type {
 import { HoverCard } from '@livedocuments/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { TextEffectsButton, type TextEffectPatch } from '@/components/rich-text/TextEffectsPanel';
 

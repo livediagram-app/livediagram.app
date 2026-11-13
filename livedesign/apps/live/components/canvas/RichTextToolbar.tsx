@@ -22,7 +22,7 @@ import type { ListStyle, RunBoolKey, RunHeading, TextAlignX, TextAlignY } from '
 import { HoverCard } from '@livedesign/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 
 // What the swatch shows while the selection has no colour of its own.

@@ -1,6 +1,6 @@
 import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
-import { CanvasMenu } from './canvas-menu-context';
+import { CanvasMenu } from '@liveworkspace/workbench/components/canvas/canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
 import {
