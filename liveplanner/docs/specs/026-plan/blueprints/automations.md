@@ -49,7 +49,9 @@ packages/items/src/automation/
   plan-actions.ts     planActions(steps, ctx) → { patch, comments, created, emails, lines } | { failed, lines }:
                       the pure run: walks steps and If / Else, folds every change to the triggering card into ONE
                       patch (set / clear, in order), marks "Already so", never touches storage; a Set or Clear
-                      Field naming a field gone from the plan fails (never hidden data)
+                      Field naming a field gone from the plan fails (never hidden data); a Set Field on a field the
+                      card's type lacks (`typeHasField` false, the plan holding it) writes nothing and logs the ok
+                      line `setFieldLacked(type, field)` "Skipped: a Note card has no Finish Date", the run going on
   sentence.ts         ruleSentence(rule, outline) → chips[]: the Rules list's "When Card Moved to Done then …"
   index.ts            re-exports; packages/items/src/index.ts exports './automation'
   *.test.ts           one per module; 100% branches (the package's thresholds)
@@ -671,9 +673,13 @@ midnight> AND s.value ->> '$.ai' = 1`, read into `RunState.ai` before a call whe
   checks the count before each ask, its first too, after its plan reads. No
   schema step: the Audit Trail keeps every run of the day (at most 1,000 counted runs, under its 2,000).
 - `runAiSteps(deps, input, planned, lines, offset)`: after `applyPlannedRun` and the branches, before `sendMessages`.
-  Per step: dry → the "Would …" line; no binding → `AI_NOT_SET_UP`; `state.ai >= 100` → the step's line and the
-  run's reason `AI_CAPPED`, result **skipped** unless something failed (a skipped run still advances Assign in Turn,
-  since its writes stand); else the call marked (above), the card read again
+  Per step: dry → the "Would …" line; after a failed step → the line `AI_NOT_ASKED` "Not asked: a step before it
+  failed" (`ok: false`, nothing asked) and `failedStep` the first failed step's index; no binding → `AI_NOT_SET_UP`;
+  `state.ai >= 100` → that step's line `AI_CAPPED` and `skipped`, the next step going on; the runner folds `skipped`
+  into the run's `capped` (as the addresses limit's), so a Wait still holds the run (**waiting**) and otherwise the
+  result is **skipped** unless something failed (a skipped run still advances Assign in Turn, since its writes
+  stand); `heldSends(sends, failedStep, lines, offset)` keeps the outgoing messages of steps before the failed one and
+  settles the rest `SEND_NOT_SENT` "Not sent: a step before it failed" (`ok: false`); else the call marked (above), the card read again
   (`readItem`), its latest comments (`linksOfItem` home this plan, `readThreads`, newest 5 comments across them), the
   plan's labels (`listItems`, triage only), the call, `readAiReply`, the constraint, then the write:
   - summarise to a comment: `addComment(deps, rule, card, text, { ai: true })` (automation-writes.ts), the Comment
@@ -1133,7 +1139,12 @@ builder unsaved and off. Nothing here saves, enables or runs a rule.
   25 before they are walked, a text to twice its limit before a pattern reads it: a hostile reply reads in linear
   time.
 - `packages/agent-verbs/src/rules/rule-names.ts` keeps `namedRuleBody(body, state)` as a thin adapter over items'
-  `namedRuleBody(body, names)`.
+  `namedRuleBody(body, names)`, its people `state.list.people` (the names `list_rules` lists).
+- A person (`namer` over `names.people`): an id kept; else the one person whose name matches (`statusKey`, case and
+  spacing aside); none, or two sharing the name, keeps the ref as written, so `ruleNeeds` flags it ("Person Ana Costa
+  is gone"). It names the Mentioned trigger's `people`, the Who Did It condition's `who[].person`, Assign's
+  `to.person` and `to.rotate`, Send Email's and Mention's `to.person`, and a Set Field's `value.text` when the field
+  (named first) is the Assignee or a Person field of one of the plan's types and the text holds no `{{`.
 
 ### The api (apps/api/src/routes/automation-draft-route.ts, plan-room/automations/automation-ai.ts)
 

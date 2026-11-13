@@ -526,6 +526,10 @@ steps only; the run is **Failed** if any did, naming them.
   run says "Already so" for that step and carries on.
 - An action the card refuses (a column its type leaves out, a required field missing, a field gone from the plan,
   the plan full) fails that step: the run stops there and is **Failed** with the reason; the steps before it stay done.
+- A **Set Field** on a field the card's type lacks (in a plan of several card types, a field only some of them have)
+  writes nothing: that step is **skipped**, its line saying "Skipped: a Note card has no Finish Date", and the run
+  carries on. It is no failure, so it never counts toward pausing the rule. A field gone from the whole plan still
+  fails the step as gone (the rule needs attention).
 - Every change a run makes lands as **one write per card** where it can (the step's changes to the triggering card
   are batched into one patch, in step order), so the card's history reads as one entry and the board moves once.
 
@@ -566,7 +570,10 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
   Field of Labels.
 - Its outcome is the step's line in the Audit Trail with the sparkle: "Summarised the card into a comment", "Set the
   card type to Bug", "Set priority High, added labels billing, urgent". A step that fails fails the run with its
-  reason, as any action does, after the steps before it landed:
+  reason, as any action does, after the steps before it landed. The run stops there: **no later AI step is asked**
+  (its line says "Not asked: a step before it failed") and **no later outgoing message is sent** ("Not sent: a step
+  before it failed"), while a message from a step before it still goes. The card changes the rule's other steps
+  make land in the run's one write before any AI step is asked, so they stay done. A step fails:
   - no model here (a self-hosted copy with no `AI` binding): "AI isn't set up here". Local `wrangler dev` reaches the
     real Workers AI through the developer's wrangler sign-in (the binding is always remote), so local runs spend that
     account's Neurons within the same 100 a day; signed out, they fail "The AI couldn't answer";
@@ -583,8 +590,10 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
 
 - A plan makes at most **100 AI calls a day** (UTC), whichever rules make them (`AUTOMATION_AI_PER_DAY`). Every call
   counts, whatever it answered; Test on a Card and a step that never called (no model, the cap) count nothing.
-- Past it, the step is **skipped**: its line says "This plan has used its 100 AI steps today", nothing is asked, and
-  the run is **Skipped** with that reason when nothing else failed. A skipped run never counts toward pausing.
+- Past it, **only that step is skipped**: its line says "This plan has used its 100 AI steps today", nothing is asked,
+  and the run carries on with the steps after it, a **Wait** and the steps after the Wait included. The run is
+  **Skipped** with that reason when nothing else failed and no Wait holds it; a Wait it reaches holds it **Waiting** as
+  ever, the capped step's line kept in its log. A skipped run never counts toward pausing.
 - The day's count is read from the Audit Trail (each called step's line is marked), again before each call, and a
   call is marked on its run's row as it is asked, before its answer comes: a wake, a Run Rule and a Describe a Rule
   asking at once never pass 100 between them.
@@ -1114,9 +1123,12 @@ same words.
   action kind and its fields, the values a text may hold, and the limits. Where a body names something of the plan,
   the agent may write it as the board shows it and the engine puts in the id before it saves: a **column** by name
   ("Done") for a status, a **card type** by name ("Bug"), a **field** by its name ("Completed On", "Due"), a
-  **person** by name ("Ana Costa") and a **Form tab** by its name. An id is kept as it is, and a name the plan lacks
-  is kept as written, so the rule saves and its list line says it needs attention, as a rule naming something gone
-  does.
+  **person** by name ("Ana Costa", exactly as `list_rules` lists the plan's people, case and spacing aside) wherever a
+  rule takes one (Mention, Send Email, Assign and its people in turn, a Set Field of the Assignee or a Person field,
+  the Who Did It condition and the Mentioned trigger), and a **Form tab** by its name. An id is kept as it is, and a
+  name the plan lacks is kept as written, so the rule saves and its list line says it needs attention, as a rule
+  naming something gone does. A name two of the plan's people share is kept as written too, never guessed at: the
+  rule needs attention until the agent names the one it means by id.
 - **Whose time it is**: an agent has no clock of its own, so `timeZone` (an IANA zone) is the agent's to give. Left
   out, an added rule takes `UTC` and a changed one keeps its own.
 - **Refusals** answer with the api's code and, for a rule that does not read, the part at fault as the api names it
