@@ -14,6 +14,12 @@ describe('needsWords', () => {
     ).toBe('A column is gone · Someone is gone · A field is gone · A card is gone');
   });
 
+  it('says a GitHub rule’s plan is not connected', () => {
+    expect(needsWords([{ kind: 'github' }, { kind: 'column', id: 'a' }])).toBe(
+      'GitHub isn’t connected · A column is gone',
+    );
+  });
+
   it('counts several of a kind', () => {
     expect(
       needsWords([

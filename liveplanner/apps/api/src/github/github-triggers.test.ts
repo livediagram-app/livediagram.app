@@ -265,3 +265,23 @@ describe('a rule on a GitHub trigger', () => {
     expect(res.status).toBe(404);
   });
 });
+
+// Work Tracker 764 (docs/specs/026-plan/automations.md "GitHub triggers"): a GitHub rule on a plan not connected
+// needs attention; a connected plan's, and every other rule, don't.
+describe('a GitHub rule on a plan not connected', () => {
+  type Listed = { rules: { name: string; needs: string[]; attention: unknown[] }[] };
+  const listed = async () => (await (await w.call('GET', '')).json<Listed>()).rules;
+
+  it('needs attention once the plan disconnects, and not while it is connected', async () => {
+    await moveOn({ kind: 'pull_request_merged' }, 'done', 'Done on Merge');
+    await w.rule({ name: 'Plain', trigger: { kind: 'card_created' }, steps: [{ kind: 'flag' }] });
+    expect((await listed()).every((r) => r.attention.length === 0)).toBe(true);
+    expect((await w.as('owner', 'DELETE', '/github')).status).toBe(204);
+    const rules = await listed();
+    expect(rules.find((r) => r.name === 'Done on Merge')).toMatchObject({
+      needs: ['GitHub is not connected'],
+      attention: [{ kind: 'github' }],
+    });
+    expect(rules.find((r) => r.name === 'Plain')!.attention).toEqual([]);
+  });
+});
