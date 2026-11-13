@@ -47,11 +47,14 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const slotRenders = { count: 0 };
 vi.mock('./PreviewedElement', async (importOriginal) => {
   const real = await importOriginal<typeof import('./PreviewedElement')>();
+  const { memo } = await import('react');
   return {
-    PreviewedElement: (props: Parameters<typeof real.PreviewedElement>[0]) => {
+    ...real,
+    // The real memo, counting the slots it lets through.
+    PreviewedElement: memo((props: Parameters<typeof real.PreviewedElementRow>[0]) => {
       slotRenders.count += 1;
-      return real.PreviewedElement(props);
-    },
+      return real.PreviewedElementRow(props);
+    }, real.samePreviewedRow),
   };
 });
 // The grips layer is re-created on every layer render, so its count is the layer's.
@@ -175,11 +178,19 @@ describe('element views render only for their own changes', () => {
     expect(slotRenders.count).toBe(0);
   });
 
-  it('walks the element slots again when an element changes', () => {
+  // docs/specs/008-canvas/canvas-performance.md "A drop redraws what it reached".
+  it('walks only the slot of an element that changes, when nothing else reads it', () => {
     const { rerender } = mount();
     const moved = BOARD.map((el) => (el.id === c.id ? { ...el, x: 40 } : el));
     rerender(<CanvasElementsLayer {...layerProps({ elements: moved })} />);
-    expect(slotRenders.count).toBe(BOARD.length);
+    expect(slotRenders.count).toBe(1);
+  });
+
+  it('walks the slots of a moved box and the stored arrow pinned to it', () => {
+    const { rerender } = mount();
+    const moved = BOARD.map((el) => (el.id === a.id ? { ...el, y: 60 } : el));
+    rerender(<CanvasElementsLayer {...layerProps({ elements: moved })} />);
+    expect(slotRenders.count).toBe(2);
   });
 
   it('renders no element view for a zoom', () => {

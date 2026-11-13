@@ -90,6 +90,8 @@ export function deriveArrowViewFrame(
   // A shared end's dashes anchored there, in step with every arrow into it (arrow-dash.ts).
   const dashOffset = arrowDashOffset(arrow, from, to);
   return {
+    // Drawn along a route the finish worked out from the map round it (a mind map's connectors).
+    routed,
     from,
     to,
     style,

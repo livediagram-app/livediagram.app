@@ -116,6 +116,12 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   pan moves the window without repainting the picture: Safari draws an SVG picture again in full
   each time anything over it repaints. The Map's body is the one every editor shares
   (`MinimapMap`, `@liveworkspace/workbench`).
+- **The Map draws what changed.** The picture is rebuilt when the board settles, from parts carried
+  over from the last build: each box's markup by its element, and each arrow's by the same rule as
+  the layer's arrow geometry. A part is drawn again when what it is inked for changes too: the page
+  it is on, and for a chart what it sits on. The pages themselves are drawn afresh each build. A
+  drop draws the boxes it changed and the arrows it reached, not the whole board again. A seeded
+  test checks that the carried-over picture equals one built afresh.
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,
@@ -134,6 +140,16 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   layer (its handlers, the image context) keeps its identity through a pickup, a move and a drop: a crop handler
   made afresh with each change to the elements re-rendered all 700 boxes on the reference board three times a drag
   (measured 2026-11-13; a drop went from about 1280 ms at 3x CPU, with the Tidy check, to about 230 ms).
+- **A drop redraws what it reached.** A commit (a drop, a stroke, an edit) changes one element or a
+  few, and redraws those and what they reach, not the board. Each arrow's geometry is carried over
+  from the last board unless the change reaches it: a box it is pinned to, a box sharing a pin with
+  its other end (the converging fan), a box inside its route-behind reach where it was or where it
+  went, or a change to the arrow or to another arrow at its pins. The arrows at a fan with an end on
+  another arrow are derived every time, and a change to an element whose extent is unknown derives
+  the board. A label whose layout did not change keeps its render object. Each element's row in the
+  layer is memoised on what it draws (its element, its arrow's geometry and label, its opacity, and
+  the props every row shares), so a row nothing reached is not drawn again. Seeded tests check that
+  the carried-over geometry equals the geometry derived afresh after random edits.
 - **A move that only translates renders nothing.** When a gesture shifts elements without
   reshaping them (a move, of any number of elements), each of them is drawn where the document has
   it, shifted by one offset written to the page outside React, so a move frame renders no element

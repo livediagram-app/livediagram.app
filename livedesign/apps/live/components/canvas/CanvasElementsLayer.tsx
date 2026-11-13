@@ -3,7 +3,7 @@ import { RemoteCursors } from '@liveworkspace/workbench/components/canvas/Remote
 import { identityVars } from '@livedesign/ui';
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { arrowViewGeometry } from './arrow-view-frame';
-import { buildArrowLinks } from './drag-affected-arrows';
+import { arrowGeometryCache, buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
 import { CanvasElementList } from './CanvasElementList';
 import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
@@ -15,6 +15,7 @@ import {
   layerBands,
   layerOpacityOf,
   createElementGridTracker,
+  type ArrowElement,
   type ElementIndex,
   stackedElementIds,
 } from '@livedesign/design';
@@ -264,15 +265,20 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // and holes from it, once per element change. ArrowView compares both by value, so a move
   // re-renders only the arrows whose geometry it changed.
   const [gridTracker] = useState(createElementGridTracker);
+  // Carried over for the arrows a change cannot reach (canvas-performance.md "A drop redraws what it reached"). The
+  // geometry reads nothing beyond the board, so its key never changes.
+  const [geometryCache] = useState(arrowGeometryCache);
+  // What decides each arrow's geometry beyond the elements: which boxes are drawn (the layers) and the finish. The
+  // cache diffs every element, drawn or not, since an arrow's ends resolve against all of them.
+  // oxlint-disable-next-line react/exhaustive-deps -- a fresh key exactly when one of these changes
+  const geometryKey = useMemo(() => ({}), [tabLayers]);
   const arrowGeometry = useMemo(() => {
-    const out = new Map<string, ReturnType<typeof arrowViewGeometry>>();
-    if (!elementIndex) return out;
+    if (!elementIndex) return new Map<string, ReturnType<typeof arrowViewGeometry>>();
     const grid = gridTracker.gridFor(drawnElements);
-    for (const el of drawnElements) {
-      if (el.type === 'arrow') out.set(el.id, arrowViewGeometry(el, elementIndex, grid));
-    }
-    return out;
-  }, [drawnElements, elementIndex, gridTracker]);
+    return geometryCache.geometryFor(elements, geometryKey, (el) =>
+      arrowViewGeometry(el as ArrowElement, elementIndex, grid),
+    );
+  }, [elements, drawnElements, elementIndex, gridTracker, geometryCache, geometryKey]);
   const arrowLinks = useMemo(
     () => (hasArrows ? buildArrowLinks(drawnElements) : null),
     [hasArrows, drawnElements],

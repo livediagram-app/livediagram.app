@@ -1,7 +1,8 @@
 'use client';
 
 import { CANVAS_PAPER } from '@/lib/page-paint';
-import { useDeferredValue, useMemo } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
+import { createArrowGeometryCache } from '@liveworkspace/workbench/lib/arrow-geometry-cache';
 import { MinimapMap, minimapPicture } from '@liveworkspace/workbench/components/canvas/MinimapMap';
 import {
   boundsOfPoints,
@@ -15,9 +16,14 @@ import {
   chartPageGrounds,
   svgShadowDefs,
   elementPageSurfaces,
+  elementIndexFor,
+  routeBehindQueryRect,
+  spreadArrowEnds,
+  type ArrowElement,
   type Element,
   type LaidOutPage,
   type Point,
+  type Rect,
 } from '@livedesign/design';
 import { pageExportFrame } from '@/lib/export-page';
 import { framesFirst, ZOOM_MIN, zoomMax } from '@/lib/canvas';
@@ -86,7 +92,7 @@ type MinimapProps = {
 const NO_ART = () => undefined;
 const NO_ELEMENTS: Element[] = [];
 // An element as the Map draws it: its label left out (docs/specs/008-canvas/minimap.md "What it shows").
-function withoutLabel(el: Element): Element {
+export function withoutLabel(el: Element): Element {
   if (!('label' in el) && !('richText' in el)) return el;
   const {
     label: _label,
@@ -94,6 +100,144 @@ function withoutLabel(el: Element): Element {
     ...rest
   } = el as Element & { label?: unknown; richText?: unknown };
   return rest;
+}
+
+// The picture's parts carried over from the last build (docs/specs/008-canvas/canvas-performance.md "The Map draws
+// what changed"): each element as drawn (its label left out) and each box's markup, by the element; each arrow's
+// markup, for the arrows no change reaches (the layer's arrow geometry cache, the same reads). A commit that moves
+// one box draws that box and the arrows it reached, not the board. The pages are drawn every build: there are few.
+type ArrowPart = { svg: string; reach: Rect; surface: string };
+export function minimapParts() {
+  return {
+    plain: new WeakMap<Element, Element>(),
+    boxed: new WeakMap<Element, { key: string; svg: string }>(),
+    arrows: createArrowGeometryCache<Element, ArrowPart>({
+      isArrow: (el) => el.type === 'arrow',
+      ends: (arrow) => [(arrow as ArrowElement).from, (arrow as ArrowElement).to],
+      reach: (part) => part.reach,
+      // No finish routes an arrow here from the shape round it: this model's mind nodes carry no parent link.
+      structural: () => false,
+    }),
+  };
+}
+
+type MinimapBuildContext = {
+  pages: readonly LaidOutPage[] | undefined;
+  tabFont: string | undefined;
+  tabFinish: NonNullable<Parameters<typeof svgBoxed>[1]>['tabFinish'];
+  iconsLoaded: boolean;
+  surface: NonNullable<NonNullable<Parameters<typeof svgBoxed>[1]>['surface']>;
+  chartPalette: NonNullable<Parameters<typeof svgBoxed>[1]>['chartPalette'];
+};
+
+// The Map's picture for `elements` (see Minimap), drawing afresh only the parts `parts` cannot carry over.
+export function minimapBuild(
+  parts: ReturnType<typeof minimapParts>,
+  elements: Element[],
+  { pages, tabFont, tabFinish, iconsLoaded, surface, chartPalette }: MinimapBuildContext,
+) {
+  const drawn = elements.map((el) => {
+    let plain = parts.plain.get(el);
+    if (!plain) parts.plain.set(el, (plain = withoutLabel(el)));
+    return plain;
+  });
+  // What every part reads beyond its element and its page: a part drawn under another is drawn again.
+  const key = `${tabFont}|${tabFinish}|${iconsLoaded}|${surface}|${JSON.stringify(chartPalette ?? null)}`;
+  const corners: Point[] = [];
+  const markup: string[] = [];
+  // The pages first, under everything: each sheet in its own paint with a crisp outline, so
+  // even an empty page shows where it is.
+  const paper = CANVAS_PAPER[surface === 'dark' ? 'dark' : 'light'];
+  const outline = surface === 'dark' ? '#94a3b8' : '#64748b';
+  for (const page of pages ?? []) {
+    const { x, y, width, height } = page.rect;
+    markup.push(
+      pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
+        `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
+    );
+    corners.push({ x, y }, { x: x + width, y: y + height });
+  }
+  // Each element inked for the page it is on, as the canvas inks it.
+  const pageSurfaces = pages ? elementPageSurfaces(drawn, pages) : null;
+  // And each chart on a filled page adapted to what it sits on.
+  const chartGrounds = pages ? chartPageGrounds(drawn, pages) : undefined;
+  // The resolvers find nothing until the catalogue chunk lands, which
+  // re-runs the build with the glyphs.
+  const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
+  const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
+  // Laid out once a changed arrow draws (the knockouts it reads), not on every build.
+  let labels: ReturnType<typeof arrowLabelPass> | null = null;
+  const labelsOf = () =>
+    (labels ??= arrowLabelPass(drawn, {
+      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
+    }));
+  // Boxed first (frames behind their contents), then arrows on top,
+  // matching the canvas z-order.
+  // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+  const backdrops = sketchBackdropIds(drawn, tabFinish);
+  for (const el of framesFirst(drawn)) {
+    if (el.type === 'arrow') continue;
+    if (!isBoxed(el)) continue;
+    const boxSurface = pageSurfaces?.get(el.id) ?? surface;
+    const ground = chartGrounds?.get(el.id);
+    // A box's page and what its chart sits on can change with no change to it, so both are in its key.
+    const boxKey = `${key}|${backdrops.has(el.id)}|${boxSurface}|${ground?.join(',') ?? ''}`;
+    let box = parts.boxed.get(el);
+    if (box?.key !== boxKey) {
+      box = {
+        key: boxKey,
+        svg: svgBoxed(el, {
+          resolveIconArt,
+          resolveStickerArt,
+          tabFont,
+          tabFinish,
+          sketchBackdrop: backdrops.has(el.id),
+          surface: boxSurface,
+          chartPalette,
+          chartGrounds,
+        }),
+      };
+      parts.boxed.set(el, box);
+    }
+    markup.push(box.svg);
+    corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
+  }
+  let index: ReturnType<typeof elementIndexFor> | null = null;
+  const arrowPart = (arrow: ArrowElement): ArrowPart => {
+    const arrowSurface = pageSurfaces?.get(arrow.id) ?? surface;
+    // svgArrow's ends: the converging-fan spread, as the canvas draws them.
+    const { from, to } = spreadArrowEnds(arrow, (index ??= elementIndexFor(drawn)));
+    return {
+      svg: svgArrow(
+        arrow,
+        drawn,
+        arrowSurface,
+        tabFont,
+        labelsOf(),
+        'lvd-minimap-ko-',
+        undefined,
+        undefined,
+        tabFinish,
+      ),
+      reach: routeBehindQueryRect(from, to),
+      surface: arrowSurface,
+    };
+  };
+  const arrows = parts.arrows.geometryFor(drawn, key, (el) => arrowPart(el as ArrowElement));
+  for (const el of drawn) {
+    if (el.type !== 'arrow') continue;
+    let part = arrows.get(el.id)!;
+    // An arrow's page can change with no change on the board (the pages' own fills): drawn again, and kept in the
+    // map the cache carries over (the one it returned).
+    if (part.surface !== (pageSurfaces?.get(el.id) ?? surface)) {
+      part = arrowPart(el);
+      arrows.set(el.id, part);
+    }
+    markup.push(part.svg);
+    corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
+  }
+  // One image over the padded content box (MinimapMap's minimapPicture).
+  return minimapPicture(boundsOfPoints(corners), `${svgShadowDefs(elements)}${markup.join('')}`);
 }
 export function Minimap({
   elements: liveElements,
@@ -139,74 +283,19 @@ export function Minimap({
   // board a live copy doubled the page and slowed every gesture
   // (docs/specs/008-canvas/canvas-performance.md "The Map is one image"). It draws no labels: at the
   // Map's size they are a pixel or two tall, and laying them out was half the picture's cost.
-  const { picture, bounds } = useMemo(() => {
-    const drawn = elements.map(withoutLabel);
-    const corners: Point[] = [];
-    const parts: string[] = [];
-    // The pages first, under everything: each sheet in its own paint with a crisp outline, so
-    // even an empty page shows where it is.
-    const paper = CANVAS_PAPER[surface === 'dark' ? 'dark' : 'light'];
-    const outline = surface === 'dark' ? '#94a3b8' : '#64748b';
-    for (const page of pages ?? []) {
-      const { x, y, width, height } = page.rect;
-      parts.push(
-        pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
-          `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
-      );
-      corners.push({ x, y }, { x: x + width, y: y + height });
-    }
-    // Each element inked for the page it is on, as the canvas inks it.
-    const pageSurfaces = pages ? elementPageSurfaces(drawn, pages) : null;
-    // And each chart on a filled page adapted to what it sits on.
-    const chartGrounds = pages ? chartPageGrounds(drawn, pages) : undefined;
-    // The resolvers find nothing until the catalogue chunk lands, which
-    // re-runs the build with the glyphs.
-    const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
-    const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
-    const labels = arrowLabelPass(drawn, {
-      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
-    });
-    // Boxed first (frames behind their contents), then arrows on top —
-    // matching the canvas z-order.
-    // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
-    const backdrops = sketchBackdropIds(drawn, tabFinish);
-    for (const el of framesFirst(drawn)) {
-      if (el.type === 'arrow') continue;
-      if (!isBoxed(el)) continue;
-      parts.push(
-        svgBoxed(el, {
-          resolveIconArt,
-          resolveStickerArt,
-          tabFont,
-          tabFinish,
-          sketchBackdrop: backdrops.has(el.id),
-          surface: pageSurfaces?.get(el.id) ?? surface,
-          chartPalette,
-          chartGrounds,
-        }),
-      );
-      corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
-    }
-    for (const el of drawn) {
-      if (el.type !== 'arrow') continue;
-      parts.push(
-        svgArrow(
-          el,
-          drawn,
-          pageSurfaces?.get(el.id) ?? surface,
-          tabFont,
-          labels,
-          'lvd-minimap-ko-',
-          undefined,
-          undefined,
-          tabFinish,
-        ),
-      );
-      corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
-    }
-    // One image over the padded content box (MinimapMap's minimapPicture).
-    return minimapPicture(boundsOfPoints(corners), `${svgShadowDefs(elements)}${parts.join('')}`);
-  }, [elements, pages, tabFont, tabFinish, iconsLoaded, surface, chartPalette]);
+  const [parts] = useState(minimapParts);
+  const { picture, bounds } = useMemo(
+    () =>
+      minimapBuild(parts, elements, {
+        pages,
+        tabFont,
+        tabFinish,
+        iconsLoaded,
+        surface,
+        chartPalette,
+      }),
+    [elements, pages, tabFont, tabFinish, iconsLoaded, surface, chartPalette, parts],
+  );
 
   if (!bounds) return null; // Nothing to map.
 

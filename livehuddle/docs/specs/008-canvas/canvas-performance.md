@@ -149,6 +149,11 @@ large move rides as one layer").
   each time anything over it repaints, and on a 100-room office that was about 45 ms of every frame
   of a walk (a walk's frame went from about 56 ms to about 14 ms in WebKit at iPad size). The Map's
   body is the one every editor shares (`MinimapMap`, `@liveworkspace/workbench`).
+- **The Map draws what changed.** The picture is rebuilt when the board settles, from parts carried
+  over from the last build: each box's markup by its element, and each stored arrow's by its element
+  and where its ends resolve. A drop draws the boxes it changed and the stored arrows whose ends it
+  moved, not the whole board again. A seeded test checks that the carried-over picture equals one
+  built afresh.
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,
@@ -174,6 +179,12 @@ large move rides as one layer").
   recomputed. A preview frame renders neither the canvas nor the element layer: each element view
   reads its own part of the preview, so a frame's work follows what moved, not the board, and only
   what follows the moved selection (its chrome) reads the whole preview.
+- **A drop redraws what it reached.** A commit (a drop, an edit) changes one element or a few, and
+  redraws those and what they reach, not the board. Each element's row in the layer is memoised on
+  what it draws (its element, a stored arrow's resolved ends, its layer's opacity, and the props
+  every row shares), so a row nothing reached is not drawn again: a moved box draws its own row and
+  the rows of the stored arrows pinned to it, and nothing else. A seeded test checks that the rows
+  carried over draw what rows drawn afresh do after random edits.
 - **Selection chrome derives a frame once.** Every piece of chrome that follows the selection (the
   layer's resize box and pluses, the toolbars and popover) reads the same preview frame: the board
   with the preview laid over it, and the selection derived from it, are built once a frame and
