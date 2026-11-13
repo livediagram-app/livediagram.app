@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from 'react';
-import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
+import { useEdgeAwarePlacement } from '@liveworkspace/workbench/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
 import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livedesign/ui';
 import {

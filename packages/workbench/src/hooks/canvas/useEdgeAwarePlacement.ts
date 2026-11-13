@@ -1,8 +1,15 @@
 'use client';
 
-import { useEffectEvent, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
-import type { Rect } from '@livehuddle/document';
+import {
+  useEffectEvent,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from 'react';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 type XY = { x: number; y: number };
 
@@ -18,6 +25,7 @@ export function overlapsChrome(r: DOMRect, self: Element): boolean {
   return false;
 }
 
+// Every editor's FloatingToolbar and SelectionPopover place with this one hook (it was five copies).
 // Positions a floating box that hovers above (or below, when there's no room)
 // a canvas-space `bounds`, nudging it back inside the viewport when it would
 // overflow an edge. Shared by FloatingToolbar + SelectionPopover so the subtle
@@ -47,7 +55,7 @@ export function useEdgeAwarePlacement(
   // While the selection moves the box is hidden and measures nothing: a gesture frame never reads
   // layout (docs/specs/008-canvas/canvas-performance.md). It places once on resuming.
   suspended = false,
-): { ref: React.RefObject<HTMLDivElement | null>; placeAbove: boolean; style: CSSProperties } {
+): { ref: RefObject<HTMLDivElement | null>; placeAbove: boolean; style: CSSProperties } {
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState<XY>({ x: 0, y: 0 });
   const flipSigRef = useRef('');

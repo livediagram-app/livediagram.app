@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/design';
+import { createPinnedArrow, createShape, type Tab } from '@livedesign/design';
 import { getTheme, themeChartPalette } from './themes';
 import { pageThumbFor } from './page-thumb';
 import { CANVAS_PAPER } from './page-paint';
@@ -98,5 +98,65 @@ describe('pageThumbFor', () => {
     const bare = pageThumbFor('p', pictured, { iconsLoaded: true })!;
     expect(bare.markup).not.toContain('<image');
     expect(bare.markup).toContain('#334455');
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "A page's picture redraws the parts that changed".
+  describe('part by part', () => {
+    const board = () => {
+      const a = createShape('square', 20, 20);
+      const b = createShape('square', 200, 20);
+      const arrow = createPinnedArrow(a.id, 'e', b.id, 'w');
+      return { a, b, arrow };
+    };
+    const onPage = (elements: unknown[]) => ({ ...tab(), elements }) as unknown as Tab;
+
+    it('draws the page, then each box, then each arrow, the parts joined being the picture', () => {
+      const { a, b, arrow } = board();
+      const thumb = pageThumbFor('p', onPage([a, b, arrow]), { iconsLoaded: true })!;
+      expect(thumb.parts.map((p) => p.key)).toEqual(['page', a.id, b.id, arrow.id]);
+      expect(thumb.parts.map((p) => p.markup).join('')).toBe(thumb.markup);
+    });
+
+    it('carries over a box nothing reached, and draws exactly what a fresh picture draws', () => {
+      const { a, b, arrow } = board();
+      const before = pageThumbFor('p', onPage([a, b, arrow]), { iconsLoaded: true })!;
+      const moved = { ...b, x: b.x + 40 };
+      const after = pageThumbFor('p', onPage([a, moved, arrow]), { iconsLoaded: true })!;
+      expect(after.parts[1]!.markup).toBe(before.parts[1]!.markup);
+      expect(after.parts[2]!.markup).not.toBe(before.parts[2]!.markup);
+      const fresh = pageThumbFor('p', onPage(structuredClone([a, moved, arrow])), {
+        iconsLoaded: true,
+      })!;
+      expect(after.markup).toBe(fresh.markup);
+    });
+
+    it('draws a carried box again when what it reads beyond itself changes', () => {
+      const { a } = board();
+      const dark = pageThumbFor('p', onPage([a]), { iconsLoaded: true, surface: 'dark' })!;
+      expect(dark.parts[1]!.markup).toBe(
+        pageThumbFor('p', onPage([structuredClone(a)]), { iconsLoaded: true, surface: 'dark' })!
+          .parts[1]!.markup,
+      );
+      const image = {
+        id: 'i',
+        type: 'image',
+        imageId: 'g1',
+        objectFit: 'cover',
+        x: 0,
+        y: 0,
+        width: 50,
+        height: 50,
+      };
+      const waiting = pageThumbFor('p', onPage([image]), {
+        iconsLoaded: true,
+        resolveImageHref: () => undefined,
+      })!;
+      const arrived = pageThumbFor('p', onPage([image]), {
+        iconsLoaded: true,
+        resolveImageHref: (id) => `blob:${id}`,
+      })!;
+      expect(waiting.parts[1]!.markup).not.toContain('blob:g1');
+      expect(arrived.parts[1]!.markup).toContain('href="blob:g1"');
+    });
   });
 });

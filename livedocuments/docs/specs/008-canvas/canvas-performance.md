@@ -258,6 +258,13 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   article's lines, never once per page; a page whose own elements, lines of writing and article
   style are as they were keeps its picture, so a pause in typing redraws the page written on (and
   those its new line pushed along), not the hundred.
+- **A page's picture redraws the parts that changed.** A Contents picture is drawn part by part: the
+  sheet, its writing, and each element, in paint order. A drop on a page of a thousand elements draws
+  the box it moved again (each box's markup is carried over by its element while nothing it reads
+  changed) and re-sets in the page only the parts whose markup changed, so the browser parses,
+  restyles and lays out those, not the page's thousand. Setting the whole picture again after each
+  drop on the reference board cost a task of about 40 ms to build and parse it and a frame of about
+  55 ms to restyle and lay out its 4,000 nodes. The parts drawn together are the picture drawn whole.
 
 ## Later
 

@@ -24,12 +24,24 @@ import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { CANVAS_PAPER } from '@/lib/page-paint';
 import { pageExportFrame } from '@/lib/export-page';
 import { exportChartInk } from '@/lib/export-chart-ink';
+import { thumbImageIds } from '@/lib/thumb-images';
 import {
   resolveIconArtLoaded,
   resolveStickerArtLoaded,
 } from '@liveworkspace/workbench/lib/icon-registry';
 
-export type SlideThumb = { markup: string; viewBox: string };
+// The picture whole (`markup`) and part by part (`parts`: the page, its writing, each element by id, in paint
+// order), so Contents re-sets only the parts a change redrew (docs/specs/008-canvas/canvas-performance.md
+// "Pictures of every page").
+export type SlideThumb = {
+  markup: string;
+  viewBox: string;
+  parts: readonly { key: string; markup: string }[];
+};
+
+// Each box's markup by its element, carried over from the last picture that drew it under the same `key` (everything
+// svgBoxed reads beyond the element): a drop redraws the boxes it changed, not the page's thousand.
+const boxedMarkup = new WeakMap<object, { key: string; svg: string }>();
 
 export type SlideThumbOptions = {
   // Whether the icon catalogues have landed: until then icons draw as nothing.
@@ -64,7 +76,7 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
   if (!bounds) return null;
   // Boxed first, then arrows, matching the canvas's own paint order so a connector never
   // disappears under the box it points at.
-  const parts: string[] = [];
+  const parts: { key: string; markup: string }[] = [];
   const page = slide.pageId
     ? layOutPages(pagesOf(tab)).find((p) => p.id === slide.pageId)
     : undefined;
@@ -80,30 +92,42 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
       ruling: pageRulingOf(tab, page),
     });
     if (page.background?.fill) surface = frame.surface;
-    parts.push(frame.backgroundSvg);
+    parts.push({ key: 'page', markup: frame.backgroundSvg });
     // An article page's writing, as lines of text.
     const bars = opts.writingBars ?? pageWritingBars(page, undefined, tab);
-    if (bars.length) parts.push(articleOpsToSvg(bars));
+    if (bars.length) parts.push({ key: 'writing', markup: articleOpsToSvg(bars) });
   }
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(elements, tab.finish);
   // Charts in the tab theme's colours and, on a filled page, adapted to what they sit on, as on the
   // canvas and in the exports (without the palette every chart fell back to the built-in ramp).
   const { chartPalette, chartGrounds } = exportChartInk(tab, page);
+  const shared = `${opts.iconsLoaded}|${tab.font}|${tab.finish}|${surface}|${chartPalette.join(',')}`;
   for (const el of elements) {
     if (el.type !== 'arrow') {
-      parts.push(
-        svgBoxed(el, {
-          ...art,
-          resolveImageHref: opts.resolveImageHref,
-          tabFont: tab.font,
-          tabFinish: tab.finish,
-          sketchBackdrop: backdrops.has(el.id),
-          surface,
-          chartPalette,
-          chartGrounds,
-        }),
-      );
+      // A box reads, beyond the shared key, whether it is a backdrop, what a chart sits on and its pictures' URLs.
+      const hrefs = opts.resolveImageHref
+        ? thumbImageIds([el], undefined).map((id) => opts.resolveImageHref!(id) ?? '')
+        : [];
+      const key = `${shared}|${backdrops.has(el.id)}|${chartGrounds?.get(el.id)?.join(',') ?? ''}|${hrefs.join(' ')}`;
+      let box = boxedMarkup.get(el);
+      if (box?.key !== key) {
+        box = {
+          key,
+          svg: svgBoxed(el, {
+            ...art,
+            resolveImageHref: opts.resolveImageHref,
+            tabFont: tab.font,
+            tabFinish: tab.finish,
+            sketchBackdrop: backdrops.has(el.id),
+            surface,
+            chartPalette,
+            chartGrounds,
+          }),
+        };
+        boxedMarkup.set(el, box);
+      }
+      parts.push({ key: el.id, markup: box.svg });
     }
   }
   // Labels are laid out against the whole tab, as the canvas lays them out.
@@ -114,9 +138,10 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
     // Arrows resolve their endpoints against the WHOLE tab: an arrow is on the slide because
     // both its ends are, and it still needs their real positions to draw itself.
     if (el.type === 'arrow')
-      parts.push(
+      parts.push({
+        key: el.id,
         // Breaks only around the slide's own boxes, the ones drawn here.
-        svgArrow(
+        markup: svgArrow(
           el,
           tab.elements,
           surface,
@@ -127,11 +152,12 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
           undefined,
           tab.finish,
         ),
-      );
+      });
   }
   const pad = 8;
   return {
-    markup: parts.join(''),
+    markup: parts.map((p) => p.markup).join(''),
+    parts,
     viewBox: `${r2(bounds.x - pad)} ${r2(bounds.y - pad)} ${r2(bounds.w + pad * 2)} ${r2(
       bounds.h + pad * 2,
     )}`,

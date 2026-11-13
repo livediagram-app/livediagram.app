@@ -398,6 +398,24 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
   root on each insertion and restyle the floating panels (ten times in one release); rewriting it
   without `:has` saved only 3-4 ms, so it stays.
 
+## A drop redrew its page's picture
+
+Measured 2026-11-13 on the reference board, local, calibrated 3.07x, against main at `c74afdb80`.
+
+- **The four drag rows were the only ones over budget** (55 to 59 ms). The longest task was not the
+  drag: it ran about 285 ms after the drop and was rendering only, a restyle of about 4,040 nodes
+  (28 to 31 ms), layout of 4,640 objects (9 ms) and paint (12 ms). Just before it, a 43 ms script
+  task built the page's picture and parsed it (DOMPurify's parse about 11 ms).
+- **The cause**: the Contents sidebar's picture of the page is one inline SVG of every element on it.
+  A drop changed the page's elements, so the picture's whole markup was built, sanitized and set
+  again, and the browser restyled and laid out every node in it.
+- **What shipped**: the picture is drawn part by part (the sheet, its writing, each element), each
+  box's markup carried over by its element, and each part a memoised `<g>` that re-sets only when its
+  markup changed. Measured interleaved over two pairs, the drag rows went from 55-68 ms (with a
+  155-169 ms first run on each tab) to under 50 ms on every run but the first on each tab (50-57 ms:
+  the editor's first drag, which also loads its code). The longest task after a drop is now the drop
+  itself, 44-50 ms, all script. The probe's screenshots are byte-identical before and after.
+
 ## Not tried
 
 - A raster snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.

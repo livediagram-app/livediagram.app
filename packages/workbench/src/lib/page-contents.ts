@@ -20,8 +20,17 @@ export type ContentsRowBase = {
   setAside?: string;
 };
 
-/** A page's picture: an SVG of the page, drawn by the editor's own renderer. */
-export type ContentsThumb = { markup: string; viewBox: string };
+/** One part of a page's picture (its sheet, its writing, one element), keyed by what it draws. */
+export type ContentsThumbPart = { key: string; markup: string };
+
+/** A page's picture: an SVG of the page, drawn by the editor's own renderer. `markup` is the whole picture; `parts`,
+ *  when given, are the same markup in order, one per part, so a redraw re-sets only the parts whose markup changed
+ *  (docs/specs/008-canvas/canvas-performance.md "Pictures of every page"). */
+export type ContentsThumb = {
+  markup: string;
+  viewBox: string;
+  parts?: readonly ContentsThumbPart[];
+};
 
 /** A laid-out page, as far as Contents reads one: its id and its rectangle on the canvas. */
 export type ContentsPageRect = {

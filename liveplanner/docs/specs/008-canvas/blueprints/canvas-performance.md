@@ -23,7 +23,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                     | `draftLayout` identity-stable across passes                                                                              |
 | `apps/editor/lib/stock-colour-projector.ts`                            | Same board in, same array out (`lastIn` / `lastOut`)                                                                     |
 | `apps/editor/hooks/canvas/useProjectHistory.ts`                        | `historyTick` through `withPresent`: an unchanged tab hands back the same history                                        |
-| `apps/editor/hooks/canvas/useEdgeAwarePlacement.ts`                    | Takes `suspended`; never measures while suspended                                                                        |
+| `../packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts`      | Takes `suspended`; never measures while suspended                                                                        |
 | `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`            | `toolbarsStale` includes `selectionMoving`                                                                               |
 | `../packages/workbench/src/hooks/canvas/useCanvasLongTaskLog.ts`       | The `[canvas-perf] long task` debug log                                                                                  |
 | `../packages/workbench/src/hooks/ui/useBodyEndAnchor.ts`               | `useBodyEndAnchor`: an empty `div[data-body-end]` kept at the end of `<body>`, called by `SplitViewFrame`                |
@@ -421,7 +421,7 @@ export function CounterScaled(props: ComponentProps<'div'>): ReactElement;
 export function idBound<T>(make: (id: string) => T): (id: string) => T;
 export function useStableCollab(collab: CollabApi): CollabApi;
 
-// apps/editor/hooks/canvas/useEdgeAwarePlacement.ts
+// ../packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts (one hook for every editor; it was a copy in each)
 export function useEdgeAwarePlacement(
   bounds: Bounds, canvasOffset: XY, zoom: number, gap: number, suspended?: boolean,
 ): { ref; placeAbove: boolean; style: CSSProperties };

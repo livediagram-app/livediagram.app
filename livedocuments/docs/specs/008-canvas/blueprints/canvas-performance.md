@@ -28,7 +28,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/lib/article/page-writing-bars.ts`                         | `writingBarsByPage` (every page's bars in one pass), `sameBars`                                                          |
 | `apps/editor/hooks/ui/usePageThumbnails.ts`                            | Keeps a page's picture while its elements, bars and article style hold                                                   |
 | `apps/editor/components/canvas/Minimap.tsx`                            | Draws `useSettledElements(elements)`                                                                                     |
-| `apps/editor/hooks/canvas/useEdgeAwarePlacement.ts`                    | Takes `suspended`; never measures while suspended                                                                        |
+| `../packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts`      | Takes `suspended`; never measures while suspended                                                                        |
 | `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`            | `toolbarsStale` includes `selectionMoving`                                                                               |
 | `../packages/workbench/src/hooks/canvas/useCanvasLongTaskLog.ts`       | The `[canvas-perf] long task` debug log                                                                                  |
 | `../packages/workbench/src/hooks/ui/useBodyEndAnchor.ts`               | `useBodyEndAnchor`: an empty `div[data-body-end]` kept at the end of `<body>`, called by `SplitViewFrame`                |
@@ -146,6 +146,19 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 - `sameBars(a, b)`: the same length and each pair the same object or two `rect`s with equal
   `x`, `y`, `w`, `h`, `fill`, `r`.
 - `slideThumbFor` takes `writingBars` and draws them instead of reading `pageWritingBars`.
+- A page's picture redraws the parts that changed. `slideThumbFor` returns `parts` beside `markup`
+  (their markups joined): `{ key: 'page' }` (the sheet), `{ key: 'writing' }` (its bars, when there
+  are any), then each element by its id, boxes then arrows. Each box's markup is carried over in a
+  module `WeakMap` by its element while its key holds: the icon catalogues, the tab's font and
+  finish, the page's surface, the chart palette, whether it is a Sketch backdrop, what a chart sits
+  on and its pictures' URLs (`thumbImageIds([el])` resolved). Arrows are drawn every time (they
+  read their ends, their holes and the tab's label pass).
+- `PageContentsList`'s `Picture` (`@liveworkspace/workbench`) draws `thumb.parts`, when given, as one
+  `PicturePart` each: a memoised `<g>` whose markup is sanitized and set only when its string
+  changed, keyed by the part's key. A thumb with no parts sets `markup` whole, as before.
+- Measured on the reference board, its page in the docked sidebar, at the reference speed: a drop's
+  picture task (build, sanitize, parse) and the frame after it (a restyle of about 4,000 nodes,
+  layout, paint) were 43 and 56 ms.
 - `usePageThumbnails`: the shared inputs (a change redraws every picture) are the tab id, layers,
   font, finish, the icon catalogues and the canvas surface; `articles` is not among them. Each
   page's entry keeps `bars` and `style` (`tab.articles[page.flow]?.style`) beside its page,
@@ -537,7 +550,7 @@ export function CounterScaled(props: ComponentProps<'div'>): ReactElement;
 export const MAP_REDRAW_MIN_MS = 250;
 export function useSettledElements(elements: Element[]): Element[];
 
-// apps/editor/hooks/canvas/useEdgeAwarePlacement.ts
+// ../packages/workbench/src/hooks/canvas/useEdgeAwarePlacement.ts (one hook for every editor; it was a copy in each)
 export function useEdgeAwarePlacement(
   bounds: Bounds, canvasOffset: XY, zoom: number, gap: number, suspended?: boolean,
 ): { ref; placeAbove: boolean; style: CSSProperties };
