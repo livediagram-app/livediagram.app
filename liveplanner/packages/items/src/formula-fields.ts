@@ -5,6 +5,7 @@
 // never throws: a problem is an outcome. Pure.
 import { currencyText, dayLabel } from './card-text';
 import { PRIORITY_LABELS, isPriority } from './fields';
+import { riskLabel } from './risk-fields';
 import { itemAssignee, itemLabels, itemTitle, type Item, type ItemFieldValue } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { calculatedResultOf } from './calculated-result';
@@ -125,6 +126,9 @@ function customValue(run: Run, def: CustomFieldDef): FormulaValue {
       return dateValue(raw);
     case 'checkbox':
       return raw === true;
+    // Its level's name, as text (item-types.md "Risk").
+    case 'risk':
+      return riskLabel(raw);
     case 'multichoice':
     case 'labels':
     case 'checklist':

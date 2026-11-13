@@ -75,7 +75,9 @@ function valueColour(
       return choiceColour(field.def.options ?? [], key) ?? fallback;
     case 'labels':
       return labelColour(key);
+    // A person's own colour, and a Risk level's fixed one (field-widget-stats.ts gives both).
     case 'person':
+    case 'risk':
       return own ?? fallback;
     default:
       return fallback;

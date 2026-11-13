@@ -116,7 +116,9 @@ export function trackerCardType(
       continue;
     }
     const own = custom[at]!;
-    if (own.kind !== extra.kind) continue;
+    // A plan's Risk takes a Choice or Text of its name, by level (docs/specs/026-plan/item-types.md "Risk").
+    const asRisk = own.kind === 'risk' && extra.kind !== 'person';
+    if (own.kind !== extra.kind && !asRisk) continue;
     // A Choice the plan has gains the options it lacks, as many as a Choice holds.
     if (own.kind === 'choice') {
       const options = [...(own.options ?? [])];

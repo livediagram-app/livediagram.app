@@ -15,6 +15,7 @@ import {
   type SwimlaneBy,
 } from './board';
 import { PRIORITY_LABELS, isPriority } from './fields';
+import { riskLabel } from './risk-fields';
 import type { Item } from './item';
 import { ITEM_TYPES, LEGACY_PARENT_GROUPING, type ItemTypeDef } from './item-types';
 
@@ -174,11 +175,11 @@ function keyLabel(
   statusNames?: ReadonlyMap<string, string>,
 ): string {
   const { by, key } = filter;
+  const f = by === 'field' ? laneFieldsOf(types, true).find((x) => x.id === filter.field) : null;
   if (key === '') {
     if (by === 'status') return 'No status';
     if (by === 'assignee') return 'No assignee';
     if (by === 'priority') return 'No priority';
-    const f = by === 'field' ? laneFieldsOf(types, true).find((x) => x.id === filter.field) : null;
     return f ? `No ${f.label}` : 'Empty';
   }
   const rest = key.slice(2);
@@ -189,6 +190,8 @@ function keyLabel(
     try {
       const v: unknown = JSON.parse(rest);
       if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+      // A Risk level by its name, "High" (item-types.md "Risk").
+      if (f?.kind === 'risk' && riskLabel(v)) return riskLabel(v)!;
       if (typeof v === 'string' || typeof v === 'number') return String(v);
     } catch {
       // Not a value's key: named by the key, below.

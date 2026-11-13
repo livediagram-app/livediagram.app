@@ -2,6 +2,7 @@
 // blueprint §8a): the fields a respondent can fill, each as a question already mapped to it. Pure: the builder adds
 // them when a card type is picked on an empty form, or on Add Questions for {Type}'s Fields.
 import {
+  RISK_OPTIONS,
   isNewerField,
   isTimedRange,
   ratingScaleOf,
@@ -29,6 +30,8 @@ export const TYPE_QUESTION_KINDS: Partial<Record<CustomFieldKind, QuestionType>>
   datetime: 'datetime',
   daterange: 'daterange',
   choice: 'single',
+  // A Choice question of the four levels, in order (docs/specs/026-plan/item-types.md "Risk").
+  risk: 'single',
   multichoice: 'multi',
   rating: 'rating',
   checkbox: 'checkbox',
@@ -70,7 +73,8 @@ export function questionFromField(
     goesTo: { to: 'field', fieldId: field.id },
   };
   if (field.required) q.required = true;
-  if (qType === 'single' || qType === 'multi') q.options = readOptions(field.options);
+  if (qType === 'single' || qType === 'multi')
+    q.options = readOptions(field.kind === 'risk' ? RISK_OPTIONS : field.options);
   if (qType === 'rating') {
     q.scale = Math.min(RATING_SCALE_MAX, Math.max(RATING_SCALE_MIN, ratingScaleOf(field)));
     q.style = 'stars';

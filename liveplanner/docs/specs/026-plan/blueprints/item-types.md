@@ -526,17 +526,45 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     `KIND_DESCRIPTIONS` and `KIND_ALIASES`, a sample chip "High" in `RISK_COLOURS.high`; `CustomFieldEditor` draws
     nothing for it yet), but no category places its tile. The OpenAPI schema is regenerated (`gen:openapi`), as it
     lists the stored `CustomFieldKind`; the agents' kind enum is `OFFERED_FIELD_KINDS`, so it does not change. `PROJECT_FORMAT` (packages/api-schema `project-format.ts`) is bumped to 5 with `risk` in format 5's kinds (`project-format.test.ts`), so an editor on 4 reads a Risk field as a newer field and is offered Reload.
-  - Part 2, board behaviours (packages): `board-sort.ts` (by `riskRank`, starting `desc`), filters and saved
-    filters, swimlanes (`board-lanes.ts`, `board-lane-fields.ts`, a lane per level then No Risk), card search,
-    dashboards, widgets and charts (`field-widgets.ts`, `plan-view-charts.ts`, plan-art), sheet card tables and
-    functions (`card-source.ts`), formulas (`formula-fields.ts`), forms (`fixed.ts`, `type-questions.ts`,
-    `mapping.ts`), tracker import, automations' Set Value, and `canBeRequired`.
+  - Part 2, board behaviours (packages), every reading by the level's id and named by `riskLabel`:
+    - Sorts, `board-sort.ts`: `risk` is in `BOARD_SORT_KINDS` and is its own `BoardSortKind` (`'risk'`), read by
+      `riskRank` (no level `undefined`, so last either way), named Lowest First and Highest First, and
+      `defaultBoardSortDir('risk')` is `desc`, Critical first, as Priority's is.
+    - Swimlanes, filters, saved filters, Card Search and Cards by Field (all read `laneGroups`):
+      `board-lane-fields.ts` takes `risk` into `GROUPING_KINDS` and `LaneFieldKind`; `laneValue` reads a stored
+      level (`isRisk`) and anything else as the No row; `fieldLane` names a level's row by `riskLabel` ("High", its
+      key `f:"high"`), the empty row "No {Field}"; `board-lanes.ts` orders the rows by `RISKS` (Critical first, No
+      {Field} last) and `boardLanes` lays a row per level, cards or not, as it does a Choice's options, so a drop
+      sets the level's id; `card-search.ts` `keyLabel` names a level no card has any more by `riskLabel`.
+    - Widgets: `field-widgets.ts` `fieldShapeOf` reads a Risk as `{ kind: 'category', from: 'risk' }` (Breakdown,
+      Donut); plan-art `field-widget-stats.ts` counts only stored levels, each named by `riskLabel` and coloured
+      `RISK_COLOURS[level]`, in the levels' order (Critical first), never commonest first; the editor's
+      `FieldWidgetView` colours a segment by that colour.
+    - Sheets: `card-source.ts` reads a Risk as its name ("High") for card tables and card functions; a card table
+      writes one back through `resolveFields` (`plan-names.ts`): `riskOf` reads a name or id in any case, and any
+      other text is refused (`choice_unknown`, `"Severe" is not a Risk level. Pick Critical, High, Medium or Low.`).
+      The same reading serves `change_items` once part 4 offers the kind.
+    - Formulas: `formula-fields.ts` reads a Risk as its name, as text (`null` for none).
+    - Forms (packages/forms): `TYPE_QUESTION_KINDS.risk` is `single`, its question's options the four names in
+      order (`RISK_OPTIONS`); `MAPPABLE_KINDS.single` gains `risk` (after `text`, so `[1]` stays the text kind
+      Other falls back to); `fieldTakes` takes a single question with no Other whose every option names a level;
+      `card.ts` keeps the answer as its level's id (`riskOf`). Set Automatically: `FixedKind` gains `risk`
+      (`fixedFieldsOf` gives it the four names as options), `fixedValueOf` keeps a value that names a level as its
+      id; agent-verbs `form-fixed.ts` reads a name or id and names it in a refusal (`a risk level: "Critical", "High",
+"Medium", "Low"`), and the builder's `SetAutomatically` offers the four levels as Priority's are (its hint
+      Risk), starting on Medium.
+    - Tracker import (`tracker-type.ts`, `tracker-plan.ts`): a plan's Risk field takes an import's Choice or Text
+      extra of the same name, each value through `riskOf`, and a value naming no level is left off the card.
+    - Automations' Set Value (`packages/items/src/automation/set-value.ts`): a `risk` field takes text naming a level (`riskOf`), any
+      other is refused `{Field} has no "{text}"`, as a Priority's is.
+    - `canBeRequired('risk')` is true, and an empty Risk is no level.
+    - The editor's exhaustive kind maps take the new kinds: `BoardSortOptions` `SORT_KIND_GLYPHS.risk` and
+      `plan-menu-parts` `LANE_KIND_GLYPHS.risk`, both the `risk` glyph.
   - Part 3, the editor: the card panel's Risk control (the Choice control with the fixed levels and colours), the
     card face pill, the selection bar's Set Risk menu, Add Field's Risk tile (sample, line, search words), Edit
     Field's kind changes, filters, swimlanes and widgets on screen, and the sheet's card field options.
   - Part 4, agents and help: `risk` leaves `KINDS_IN_PROGRESS` (so `plan-schema.ts`'s kind enum and
-    `type-change-fields.ts` take it), `plan-names.ts` `resolveFields` reads a level with `riskOf` and refuses any
-    other value with `RISK_HINT`, `plan-listing.ts` lists the levels, `change_card_types`' description names the
+    `type-change-fields.ts` take it), `plan-listing.ts` lists the levels, `change_card_types`' description names the
     kind, the OpenAPI schema is regenerated (`gen:openapi`), and the help centre's card fields article gains Risk.
 - Duration fields (spec "Duration"): `duration-fields.ts` (packages/items) is the one reading, shared by every
   surface: `DURATION_HOURS_MAX` 99,999 and `DURATION_MINUTES_MAX`; `parseDuration(v)` (a number is minutes; text
@@ -1221,6 +1249,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Times and ranges on calendars and the Gantt chart, across zones and clock changes                                | `packages/items/src/view-dates-write.test.ts`                                                                                                                                                                                                                                                                    |
 | Phone: check, tel link, CSV as text                                                                              | `packages/items/src/phone-fields.test.ts`, `packages/sheets/src/fill-csv.test.ts`                                                                                                                                                                                                                                |
 | Risk: levels, names, ranks, the in-progress gate, catalogue read, card text, CSV, kind changes                   | `packages/items/src/risk-fields.test.ts`, `packages/project/src/plan-palette.test.ts`                                                                                                                                                                                                                            |
+| Risk on boards: sorts, lanes, filters, search, widgets, formulas, card tables, Set Field, imports, forms         | `packages/items/src/risk-board.test.ts`, `packages/forms/src/risk-questions.test.ts`, plan-art `field-widget-stats.test.ts`, agent-verbs `form-fixed.test.ts`                                                                                                                                                    |
 | Date and Time, Date Range, Phone in the card panel and its roles                                                 | `apps/editor/components/plan/DateTimeFields.test.tsx`                                                                                                                                                                                                                                                            |
 | Percent: read, parse, clamp, show as, sort, lanes, CSV                                                           | `packages/items/src/percent-fields.test.ts`                                                                                                                                                                                                                                                                      |
 | Percent: agents write, refuse, list showAs                                                                       | `packages/agent-verbs/src/verbs/item.test.ts`, `packages/items/src/type-changes.test.ts`                                                                                                                                                                                                                         |

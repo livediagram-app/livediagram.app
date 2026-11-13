@@ -25,7 +25,7 @@ import {
   type SheetFixedColumn,
   type SubmittedDay,
 } from '@liveplanner/forms';
-import { PRIORITIES, type ItemTypeDef } from '@liveplanner/items';
+import { PRIORITIES, RISK_OPTIONS, riskOf, type ItemTypeDef } from '@liveplanner/items';
 import type { FormDraft } from './form-draft';
 import { refuse, type FormRefusal, type Named } from './form-names';
 
@@ -114,6 +114,8 @@ function takes(field: FixedField): string {
       return 'a number';
     case 'priority':
       return `a priority: ${PRIORITIES.join(', ')}`;
+    case 'risk':
+      return `a risk level: ${quoted(RISK_OPTIONS)}`;
     case 'date':
       return `submitted: { days? } (the day the response is submitted, plus 0 to ${FIXED_DAYS_MAX} days)`;
   }
@@ -128,6 +130,9 @@ function rawValue(field: FixedField, v: NonNullable<FixedInput['value']>): unkno
   switch (field.kind) {
     case 'priority':
       return typeof v === 'string' ? v.trim().toLowerCase() : v;
+    // A level by its name or id, any case (docs/specs/026-plan/item-types.md "Risk").
+    case 'risk':
+      return riskOf(v) ?? v;
     case 'choice':
       return optionOf(v, field.options!);
     case 'multichoice':

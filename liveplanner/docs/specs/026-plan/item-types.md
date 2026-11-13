@@ -270,6 +270,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       back by name, in any case.
     - **Forms** ask a Risk field as a Choice question of the four levels, in order.
     - **Formulas** read a Risk as its level's name, as text.
+    - **Automations**' Set Field sets a Risk from text naming a level, in any case, and fails the run for any
+      other text, as it does a Priority. A form's Set Automatically sets one to a level.
+    - **Imports** from another tracker fill a plan's Risk field from the import's Choice or text of the same
+      name, each value naming a level; any other value is left off the card.
     - **Changing kind** (Edit Field): a Choice, Multiple Choice, Text or Long Text becomes a Risk keeping each card's
       value that names a level (in any case, the first such pick of a Multiple Choice), the rest cleared and counted
       as every kind change counts them; a Risk becomes any of them as its level's name, and a Choice made from one

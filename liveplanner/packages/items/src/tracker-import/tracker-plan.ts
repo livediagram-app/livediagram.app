@@ -10,6 +10,7 @@ import { ITEM_DESCRIPTION_MAX, PLAN_COLUMNS_MAX } from '../limits';
 import type { PlanStatusName } from '../plan-outline';
 import { personNamed } from '../plan-names';
 import { statusKey } from '../status-names';
+import { riskOf } from '../risk-fields';
 import { fitFields } from './tracker-fit';
 import {
   TRACKER_CARD_COMMENTS_MAX,
@@ -199,8 +200,11 @@ function extraValue(
   value: TrackerExtraValue,
   people: People,
 ): ItemFields[string] | undefined {
-  if (typeof value === 'string')
+  if (typeof value === 'string') {
+    // A level its text names, else none (docs/specs/026-plan/item-types.md "Risk").
+    if (field.kind === 'risk') return riskOf(value);
     return field.kind === 'choice' ? field.options?.find((o) => o === value) : value;
+  }
   const list = value.map((p) => people.of(p));
   return field.multiple ? list : list[0];
 }

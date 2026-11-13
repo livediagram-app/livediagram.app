@@ -4,7 +4,9 @@
 import {
   ITEM_LABELS_MAX,
   ITEM_LABEL_MAX,
+  RISK_OPTIONS,
   isPriority,
+  riskOf,
   typeFieldLabel,
   type CustomFieldKind,
   type ItemFieldValue,
@@ -13,9 +15,10 @@ import {
 import { FIXED_TEXT_MAX } from './limits';
 import type { FixedValue, FormDefinition, SheetFixedColumn } from './model';
 
-// What a set field takes: one option, some options, labels, text, a number, a priority, or the submitted day.
+// What a set field takes: one option, some options, labels, text, a number, a priority, a risk level, or the
+// submitted day.
 export type FixedKind =
-  'choice' | 'multichoice' | 'labels' | 'text' | 'number' | 'priority' | 'date';
+  'choice' | 'multichoice' | 'labels' | 'text' | 'number' | 'priority' | 'risk' | 'date';
 
 export type FixedField = {
   id: string;
@@ -36,6 +39,8 @@ const BUILT_IN_FIXED: Readonly<Record<string, FixedKind>> = {
 const CUSTOM_FIXED: Partial<Record<CustomFieldKind, FixedKind>> = {
   choice: 'choice',
   multichoice: 'multichoice',
+  // One of the four levels, its options their names (docs/specs/026-plan/item-types.md "Risk").
+  risk: 'risk',
   labels: 'labels',
   text: 'text',
   longtext: 'text',
@@ -62,7 +67,9 @@ export function fixedFieldsOf(type: ItemTypeDef | undefined): FixedField[] {
     out.push(
       kind === 'choice' || kind === 'multichoice'
         ? { id, label: f.label, kind, options: f.options ?? [] }
-        : { id, label: f.label, kind },
+        : kind === 'risk'
+          ? { id, label: f.label, kind, options: RISK_OPTIONS }
+          : { id, label: f.label, kind },
     );
   }
   return out;
@@ -114,6 +121,8 @@ export function fixedValueOf(
   switch (field.kind) {
     case 'priority':
       return isPriority(v) ? v : undefined;
+    case 'risk':
+      return riskOf(v);
     case 'choice':
       return optionOf(v, field.options ?? []);
     case 'multichoice': {

@@ -7,6 +7,7 @@ import {
   momentText,
   ratingScaleOf,
   readInstant,
+  riskOf,
   type CustomFieldDef,
   type ItemFields,
   type ItemFieldValue,
@@ -78,6 +79,10 @@ function fieldValue(q: FormQuestion, value: AnswerValue, field: CustomFieldDef):
   switch (field.kind) {
     case 'choice':
       return asOption(value as string, field);
+    // A level as its id, "high" (item-types.md "Risk"): fieldTakes maps only a question whose every option is one,
+    // and the answer is one of its options.
+    case 'risk':
+      return riskOf(value)!;
     case 'multichoice':
       return (value as string[]).map((v) => asOption(v, field));
     case 'currency':

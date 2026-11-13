@@ -16,6 +16,9 @@ import {
   todayNumber,
   voteTotalOf,
   checklistRowsProgress,
+  RISKS,
+  isRisk,
+  riskLabel,
   type BoardField,
   type CalculatedRead,
   type CustomFieldDef,
@@ -23,6 +26,7 @@ import {
   type Item,
   type PlanBoardSetup,
 } from '@liveplanner/items';
+import { RISK_COLOURS } from '@liveplanner/project';
 import { DUE_SOON_DAYS } from './widget-stats';
 
 // How many bars a Spread draws, and how many weeks a Timeline looks ahead.
@@ -53,7 +57,7 @@ export type CategorySummary = {
   from: Extract<FieldShape, { kind: 'category' }>['from'];
   cards: number;
   filled: number;
-  // Commonest first; a Choice's and Multiple Choice's in option order among equals.
+  // Commonest first; a Choice's and Multiple Choice's in option order among equals; a Risk's in the levels' order.
   values: CategoryValue[];
 };
 
@@ -126,6 +130,14 @@ function valueOf(
             }
           : undefined;
       }
+      // A stored level, named and in its fixed colour (docs/specs/026-plan/item-types.md "Risk"); else none.
+      if (shape.from === 'risk')
+        return isRisk(raw)
+          ? {
+              kind: 'category',
+              keys: [{ key: raw, label: riskLabel(raw)!, color: RISK_COLOURS[raw] }],
+            }
+          : undefined;
       const list = Array.isArray(raw) ? raw : [raw];
       const keys = [...new Set(list.filter((v): v is string => typeof v === 'string' && v !== ''))];
       return keys.length
@@ -218,13 +230,16 @@ export function fieldSummary(
         else counts.set(k.key, { ...k, count: 1 });
       }
     }
-    const options = def.options ?? [];
+    const options: readonly string[] = shape.from === 'risk' ? RISKS : (def.options ?? []);
     const rank = (k: string) => {
       const i = options.indexOf(k);
       return i < 0 ? options.length : i;
     };
-    const values = [...counts.values()].sort(
-      (a, b) => b.count - a.count || rank(a.key) - rank(b.key) || a.label.localeCompare(b.label),
+    // Levels in their own order, Critical first, as Priority's counts are; any other commonest first.
+    const values = [...counts.values()].sort((a, b) =>
+      shape.from === 'risk'
+        ? rank(a.key) - rank(b.key)
+        : b.count - a.count || rank(a.key) - rank(b.key) || a.label.localeCompare(b.label),
     );
     return { shape: 'category', from: shape.from, cards, filled, values };
   }
