@@ -77,7 +77,8 @@ type Props = {
   // Clears a failure when it changes (e.g. the route), so navigating away
   // from a broken Explorer section doesn't leave the notice behind.
   resetKey?: unknown;
-  onError?: () => void;
+  // Told what was thrown, so the owner can say why (a chunk from an earlier build, say).
+  onError?: (error: unknown) => void;
   children: ReactNode;
 };
 
@@ -101,7 +102,7 @@ export class AreaErrorBoundary extends Component<Props, State> {
     } catch {
       // Telemetry must never throw from inside an error boundary.
     }
-    this.props.onError?.();
+    this.props.onError?.(error);
     // A chunk from an earlier build is gone: load the page in full instead (docs/specs/016-platform/stale-builds.md).
     if (isChunkLoadError(error)) void recoverInBrowser(error, browserNavigationDeps());
   }

@@ -16,6 +16,10 @@ export const loadEditorSearchPanel = () =>
   import('@/components/panels/EditorSearchPanel').then((m) => m.EditorSearchPanel);
 export const loadSessionElementSettings = () =>
   import('@/components/canvas/SessionElementSettings');
+// The card panel, type editor and required fields (PlanSheetsArea). Fetched at idle too: a card first opened after a
+// release would otherwise ask for a chunk the release removed, and open nothing until a reload.
+export const loadPlanSheetsHost = () =>
+  import('@/components/plan/PlanSheetsHost').then((m) => m.PlanSheetsHost);
 
 export const PROJECT_CONTENT_CODE = [loadTableView, loadCollabFaceRouter] as const;
 
@@ -23,4 +27,5 @@ export const EDITOR_SURFACE_CODE = [
   loadExplorerPanel,
   loadEditorSearchPanel,
   loadSessionElementSettings,
+  loadPlanSheetsHost,
 ] as const;
