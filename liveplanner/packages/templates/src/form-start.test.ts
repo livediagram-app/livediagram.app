@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element, type Tab } from '@liveplanner/project';
-import { formStarter } from '@liveplanner/forms';
-import { ITEM_TYPES, presetSetup, type ItemTypeDef } from '@liveplanner/items';
+import { destinationProblem, formStarter } from '@liveplanner/forms';
+import { boardAddTypes, ITEM_TYPES, presetSetup, type ItemTypeDef } from '@liveplanner/items';
 import {
   boardsOf,
   planFormStart,
@@ -81,6 +81,25 @@ describe('planFormStart', () => {
       status: setup.columns[0]!.status,
     });
     expect(plan.newSheet).toBeNull();
+  });
+
+  // The bug: the board took Kanban's Task and Action, so once the project had either, the form's type (and its cards)
+  // left the board and the form paused ("Its board no longer takes that card type").
+  it('makes a Responses board that takes the form’s type alone, and keeps taking it once Task arrives', () => {
+    const plan = planFormStart({
+      starter: formStarter('contact'),
+      formTab,
+      tabs: [formTab],
+      types: [],
+      statusNames: [],
+      random,
+    });
+    const setup = boardsOf(plan.newBoardTab!)[0]!.setup;
+    expect(setup.addTypes).toEqual([plan.type.id]);
+    const destination = plan.form.destination;
+    const withTask = [plan.type, ...ITEM_TYPES];
+    expect(destinationProblem(destination, [setup], withTask)).toBeNull();
+    expect(boardAddTypes(setup, withTask).map((t) => t.id)).toEqual([plan.type.id]);
   });
 
   // The user's call (2026-10-15): a Blank form makes nothing that might not be wanted, as a sheet may be.
@@ -164,6 +183,8 @@ describe('the pieces', () => {
       random,
     );
     expect(setup.columns[0]!.status).toBe('new~ab12');
+    // Never Kanban's Task and Action: responsesBoardTab names the form's type.
+    expect(setup).not.toHaveProperty('addTypes');
     expect(setup.doneColumnId).toBe(setup.columns[2]!.id);
     expect(responsesBoardSetup(formStarter('bug-report'), 'X', [], random).columns[0]!.name).toBe(
       'New',
