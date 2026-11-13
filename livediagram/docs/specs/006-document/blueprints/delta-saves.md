@@ -187,7 +187,7 @@ received body as an argument, and with `stored` its first attempt uses that read
 - `[tab-delta] saved { documentId, tabId, ops, matched }` (info) on every delta save, `matched` whether the stored
   digest is the one sent.
 - The whole save's own lines (`[changeset] merged-on-save`, `lost-race`) as before.
-- The editor: `[tab-delta] refused { tabId, reason }` (info) when it falls back to the whole save.
+- The editor: `[tab-delta] refused { tabId, reason }` (a `debugLog` trace line) when it falls back to the whole save.
 
 ## Testing
 

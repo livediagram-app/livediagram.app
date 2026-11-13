@@ -8,6 +8,7 @@ import {
   planTabDelta,
   type TabDeltaOp,
 } from '@liveworkspace/api-schema/tab-delta';
+import { debugLog } from '../debug-log';
 
 /** The tabs whose base copies the editor holds, the most recently used. Safe range: 4 to 64. */
 export const TAB_DELTA_BASES_MAX = 16;
@@ -115,7 +116,7 @@ export function createTabDeltaSaves<E extends El>(deps: {
     });
     const reason = await refusalOf(res);
     if (reason) {
-      console.info('[tab-delta] refused', { tabId, reason });
+      debugLog('[tab-delta] refused', { tabId, reason });
       if (base(itemId, tabId) === sentOver) drop(itemId, tabId);
       return null;
     }
