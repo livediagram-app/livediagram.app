@@ -90,7 +90,7 @@ describe('a GitHub trigger’s repositories', () => {
     id: 'e',
     kind: 'github',
     cardId: 'c1',
-    by: { id: 'github', name: 'GitHub' },
+    by: { id: 'github', name: 'GitHub', color: '#1f2328' },
     role: 'system',
     github: 'merged',
     ...(repository ? { pull: { ...pull(false), repository } } : {}),
@@ -111,15 +111,17 @@ describe('a GitHub trigger’s repositories', () => {
 
   it('matches an event only from a named repository', () => {
     const t = merged(['acme/web']);
-    expect(triggerMatches(t, event('acme/web'))).toBe(true);
-    expect(triggerMatches(t, event('acme/api'))).toBe(false);
-    expect(triggerMatches(merged(), event('acme/api'))).toBe(true);
+    expect(triggerMatches(t, event('acme/web'), 'r1')).toBe(true);
+    expect(triggerMatches(t, event('acme/api'), 'r1')).toBe(false);
+    expect(triggerMatches(merged(), event('acme/api'), 'r1')).toBe(true);
     const checks: AutomationTrigger = {
       kind: 'pull_request_checks',
       result: 'failing',
       repositories: ['acme/web'],
     };
-    expect(triggerMatches(checks, { ...event('acme/api'), github: 'checks_failing' })).toBe(false);
+    expect(triggerMatches(checks, { ...event('acme/api'), github: 'checks_failing' }, 'r1')).toBe(
+      false,
+    );
   });
 
   it('reads repositories trimmed and once by case, drops an empty list, refuses a bad one', () => {
@@ -142,7 +144,7 @@ describe('a GitHub trigger’s repositories', () => {
 
   it('names them at the end of the Rules list’s sentence', () => {
     const words = (trigger: AutomationTrigger) =>
-      ruleSentence({ trigger, conditions: [], steps: [] }, OUTLINE)
+      ruleSentence({ trigger, conditions: [], steps: [] }, OUTLINE as never)
         .map((p) => ('word' in p ? p.word : 'chip' in p ? `[${p.chip}]` : ''))
         .join(' ');
     expect(words(merged(['acme/web', 'acme/api']))).toContain('in [acme/web] or [acme/api]');
