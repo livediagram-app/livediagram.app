@@ -19,10 +19,9 @@ describe('boardColumnTemplate', () => {
   it('gives a maximised slot a fifth of the body, a wide column its slots and gaps, the floor winning', () => {
     expect(MAXIMISED_BOARD_SLOTS).toBe(5);
     // Six slots: more than fit, so each takes its share of five.
-    const [one, two] = boardColumnTemplate(
-      [{}, { width: 2 }, { width: 3 }],
-      'maximised',
-    ).split(') minmax');
+    const [one, two] = boardColumnTemplate([{}, { width: 2 }, { width: 3 }], 'maximised').split(
+      ') minmax',
+    );
     expect(one).toBe('minmax(max(220px, calc((100cqw - 48px) / 5 * 1 + 0px)), 1fr');
     expect(two).toBe('(max(440px, calc((100cqw - 48px) / 5 * 2 + 12px)), 2fr');
   });
