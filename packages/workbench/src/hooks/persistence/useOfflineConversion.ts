@@ -6,7 +6,7 @@ import { dismissLocalMove } from '../../lib/offline/local-move-dismissal';
 
 // The open editor, where there is one: its id and its in-place moves (useSyncInPlace, useTakeOfflineInPlace).
 type OpenEditor = {
-  documentId: string;
+  documentId: string | null;
   syncToCloud: () => Promise<unknown>;
   takeOfflineInPlace: () => Promise<unknown>;
 };
