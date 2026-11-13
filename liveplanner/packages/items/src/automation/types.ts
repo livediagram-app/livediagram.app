@@ -339,6 +339,8 @@ export type AutomationResult = 'done' | 'no_match' | 'skipped' | 'failed' | 'wai
 export type AutomationGone = {
   kind: 'column' | 'type' | 'field' | 'person' | 'filter';
   id: string;
+  // A condition naming several of its kind gone: the rest of them, after `id` (absent for one).
+  more?: string[];
 };
 
 export type AutomationStepLine =

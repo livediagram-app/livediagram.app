@@ -37,7 +37,8 @@ packages/items/src/automation/
   set-field-check.ts  setFieldRefusal(rule, types) → { path, message } | null: a Checkbox's Set Field given text
                       that is no Yes or No (and no value filled in), a number, a day or a list, refused on save
                       ("Signed Off is a Checkbox: set it to Yes or No", `automation_invalid` at `steps.N.value`);
-                      ruleSetsFields(rule), so the create and save routes read the plan's types only then
+                      ruleSetsFields(rule), so the create and save routes (and Test on a Card, its path under
+                      `rule.`) read the plan's types only then
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the
                       rule's time zone
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
@@ -385,7 +386,8 @@ build):
   is always a link for an Editor, so a rule made or renamed since the list was read still opens; the screen reads the
   list as it opens and, while that read (`readAutomations`, which hands a second asker the read under way) has not
   settled, a rule id the list lacks shows the loading rows (`ruleWaiting`), never This Rule Was Deleted, which waits
-  for the read (`fresh`). A history line has only the rule's name: one the list lacks reads it again through
+  for the read (`fresh`, kept per scope, so a scope changed while open waits for its own) and for it to answer: a
+  failed read shows Couldn't Load the Rules. A history line has only the rule's name: one the list lacks reads it again through
   `readAutomationsFor`, once per name per plan, so a rule really gone costs one read.
 - **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
 - **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
@@ -427,22 +429,25 @@ What the editor does, where it differs from or adds to the Editor list above (ea
 - **Audit Trail.** A branch line wears its own mark (blue, a list tree; red when it failed on a card), and the lines after
   it that start with a card number are inset under it, the number in the card's weight (`insetLines`).
 - **What is gone, in the Audit Trail.** `AutomationGone` (`{ kind: 'column' | 'type' | 'field' | 'person' |
-'filter'; id }`, types.ts) rides beside the text it explains: on a failed action line and an unheld condition
+'filter'; id; more? }`, types.ts) rides beside the text it explains: on a failed action line and an unheld condition
   line (`gone?`), on the run (`AutomationRun.gone`, with its `reason`) and on a pause (`paused.gone`). The engine
   fails a step on something the plan lost with `failGone(gone)` (set-value.ts), whose text is `goneLine(gone)`
   ("Field estimate_x is gone", the words `needLine` uses for agents); `Failed.gone` carries it through
   `planActions` (`{ failed, gone }`, a related card's `PlannedRelated.gone`) to the runner's `end(result, reason,
 gone)`, the run's first related failure giving its own, and `store.settle(..., { webhook, gone })` to the pause.
-  A condition's gone line is `goneLine(words, gone)` in conditions.ts, text `<words> (<id> is gone)`. A Card field
+  A condition's gone line is `goneLine(words, gone)` in conditions.ts, text `<words> (<id> is gone)`; one naming
+  several gone of its kind (`goneOf`, each once) keeps the first as `id` and the rest in `more`, text
+  `<words> (<id>, <id> are gone)` (`goneIdsWords`). A Card field
   the card's type lacks fails as gone when the plan lost it, else by the field's name. `settleWaiting` drops a
   stored `gone` with the reason it replaces. The editor's `goneText(text, gone)` (needs-words.ts) words each:
   a step line or reason keeps its start (`#12 `, `Failed on #12, #14: `) and says `GONE`'s one ("A field is
   gone"); a condition line keeps its words, the id (as a whole word) read as `a column no longer here` (person
-  "Someone No Longer Here"), and ends "(a column is gone)". RunSteps (action and condition lines), RunRow's
+  "Someone No Longer Here"), and ends "(a column is gone)", or for several each read so, ending "(2 columns are gone)". RunSteps (action and condition lines), RunRow's
   reason, TestOnCard's reason, RuleRow's Paused reason and Run Rule's toast use it; text without `gone` reads as
   stored. Size: a gone line adds `,"gone":{"kind":"field","id":"<id>"}` (32 bytes plus the id, measured) to the
   failed line and the run, so a failed run's row grows by 94 bytes for a 15-character id; no other run
-  changes.
+  changes. `more` adds `,"more":[...]` (10 bytes plus 3 and the id for each further one) only to a condition
+  line naming several gone, bounded by the condition's own list.
 - **The gate.** `automationsGateFor` gives whoever could edit the whole plan (hydrated, not an embed, edit level,
   structure editable, no tab scope) a kind: `sync` on a plan in This Browser, `sign_in` for a guest on a server plan
   once sign-in has answered (`authLoaded`), else none; `automationsScopeFor` now also needs `signedIn`, so a guest

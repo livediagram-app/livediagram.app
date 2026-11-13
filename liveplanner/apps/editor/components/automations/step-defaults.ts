@@ -16,6 +16,7 @@ import {
   type AutomationWait,
 } from '@liveplanner/items';
 import { outlineFields, type AutomationOutline } from './automation-outline';
+import { fieldPick, OWN_ACTION_FIELDS } from './field-pick';
 
 export const ACTION_KINDS: readonly AutomationActionKind[] = [
   'move',
@@ -109,15 +110,28 @@ const firstField = (outline: Outline, prefer: string) => {
   return (fields.find((f) => f.id === prefer) ?? fields[0])?.id ?? prefer;
 };
 
-export function defaultAction(kind: AutomationActionKind, outline: Outline): AutomationAction {
+// Set Field's first field (Priority where the plan has it, never one left to its own action) and its first value: a
+// field of fixed values starts on its first one, so a person, choice or checkbox field never starts on text its save
+// refuses.
+function firstSetField(outline: Outline & Partial<Pick<AutomationOutline, 'people'>>) {
+  const fields = outlineFields(outline.types).filter((f) => !OWN_ACTION_FIELDS.has(f.id));
+  const field = fields.find((f) => f.id === 'priority') ?? fields[0];
+  if (!field) return { field: 'priority', text: PRIORITIES[0] };
+  const pick = fieldPick(field, { types: outline.types, people: outline.people ?? [] });
+  return { field: field.id, text: pick?.choices[0]?.value ?? '' };
+}
+
+export function defaultAction(
+  kind: AutomationActionKind,
+  outline: Outline & Partial<Pick<AutomationOutline, 'people'>>,
+): AutomationAction {
   const status = outline.columns[0]?.status ?? '';
   switch (kind) {
     case 'move':
       return { kind, status };
     case 'set_field': {
-      // Priority starts on its first value (its panel picks one, never typed text).
-      const field = firstField(outline, 'priority');
-      return { kind, field, value: { text: field === 'priority' ? PRIORITIES[0] : '' } };
+      const { field, text } = firstSetField(outline);
+      return { kind, field, value: { text } };
     }
     case 'clear_field':
       return { kind, field: firstField(outline, 'due') };

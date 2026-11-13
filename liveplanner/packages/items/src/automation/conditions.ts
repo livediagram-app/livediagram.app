@@ -168,12 +168,23 @@ function whoWords(w: AutomationWho, o: AutomationOutline): string {
   return 'person' in w ? (personOf(o, w.person)?.name ?? w.person) : ROLE_WORDS[w.role];
 }
 
-// A condition naming something the plan lacks: it does not hold, its line says what is gone.
+// A condition naming something the plan lacks: it does not hold, its line says what is gone (each one it names).
 const goneLine = (words: string, gone: AutomationGone): ConditionLine => ({
   ok: false,
-  text: `${words} (${gone.id} is gone)`,
+  text: `${words} (${goneIdsWords(gone)})`,
   gone,
 });
+
+/** "done is gone", "done, later are gone": the ids a gone line names, as its text ends. */
+export const goneIdsWords = (gone: AutomationGone): string =>
+  gone.more?.length ? `${[gone.id, ...gone.more].join(', ')} are gone` : `${gone.id} is gone`;
+
+// Each id of a kind the plan lacks, as one gone (`more` only when there are several); null when none is gone.
+function goneOf(kind: AutomationGone['kind'], ids: readonly string[]): AutomationGone | null {
+  const [id, ...more] = [...new Set(ids)];
+  if (id === undefined) return null;
+  return more.length ? { kind, id, more } : { kind, id };
+}
 
 // One condition against the card: whether it holds, and its line.
 export function holds(c: AutomationCondition, ctx: ConditionContext): ConditionLine {
@@ -182,15 +193,21 @@ export function holds(c: AutomationCondition, ctx: ConditionContext): ConditionL
   switch (c.kind) {
     case 'type': {
       const words = `Card Type ${is(c.not)} ${listed(c.types.map((t) => typeName(o, t)))}`;
-      const gone = c.types.find((t) => !o.types.some((x) => x.id === t));
-      if (gone) return goneLine(words, { kind: 'type', id: gone });
+      const gone = goneOf(
+        'type',
+        c.types.filter((t) => !o.types.some((x) => x.id === t)),
+      );
+      if (gone) return goneLine(words, gone);
       const ok = c.types.includes(card.type) !== (c.not === true);
       return { ok, text: `${words} (${typeName(o, card.type)})` };
     }
     case 'column': {
       const words = `Column ${is(c.not)} ${listed(c.statuses.map((s) => statusName(o, s)))}`;
-      const gone = c.statuses.find((s) => !o.statuses.some((x) => x.status === s));
-      if (gone) return goneLine(words, { kind: 'column', id: gone });
+      const gone = goneOf(
+        'column',
+        c.statuses.filter((s) => !o.statuses.some((x) => x.status === s)),
+      );
+      if (gone) return goneLine(words, gone);
       const status = itemStatus(card);
       const ok = (status !== undefined && c.statuses.includes(status)) !== (c.not === true);
       return { ok, text: `${words} (${status ? statusName(o, status) : 'none'})` };
@@ -209,8 +226,11 @@ export function holds(c: AutomationCondition, ctx: ConditionContext): ConditionL
     }
     case 'who': {
       const words = `Who Did It ${is(c.not)} ${listed(c.who.map((w) => whoWords(w, o)))}`;
-      const gone = c.who.find((w) => 'person' in w && !personOf(o, w.person));
-      if (gone && 'person' in gone) return goneLine(words, { kind: 'person', id: gone.person });
+      const gone = goneOf(
+        'person',
+        c.who.flatMap((w) => ('person' in w && !personOf(o, w.person) ? [w.person] : [])),
+      );
+      if (gone) return goneLine(words, gone);
       const ok = c.who.some((w) => whoMatches(w, ctx)) !== (c.not === true);
       return { ok, text: `${words} (${ctx.by.name})` };
     }

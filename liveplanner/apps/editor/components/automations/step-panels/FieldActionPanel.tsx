@@ -6,86 +6,16 @@
 // Assignee and a Person field to one of the plan's people (kept by id, shown by name, as Assign's pick is), a
 // Checkbox to Yes or No. Set Field leaves out Flagged and Checklist, which Flag, Unflag and Add a Checklist set.
 
-import {
-  PRIORITIES,
-  PRIORITY_LABELS,
-  type AutomationAction,
-  type AutomationSetValue,
-} from '@liveplanner/items';
+import { type AutomationAction, type AutomationSetValue } from '@liveplanner/items';
 import { TextInput } from '@liveplanner/ui';
-import { outlineFields, type AutomationOutline, type OutlineField } from '../automation-outline';
+import { outlineFields, type AutomationOutline } from '../automation-outline';
+import { fieldPick, OWN_ACTION_FIELDS, type Choice } from '../field-pick';
 import { fieldClass } from '../field-kinds';
 import { ValueTextField } from '../ValueInsert';
 import { PanelField, PanelSelect, TodayShift } from './panel-parts';
 
 type FieldAction = AutomationAction & { kind: 'set_field' | 'clear_field' };
 type SetFrom = 'text' | 'number' | 'date' | 'from';
-
-type Choice = { value: string; label: string };
-
-// A field of fixed values: its values, the Set To option and the select's label, and what text it holds that is no
-// value reads as (a value filled in, an old option or name as it is; a person picked who has left in words).
-type FieldPick = {
-  choices: Choice[];
-  option: string;
-  label: string;
-  empty: string;
-  kept: (text: string) => string;
-};
-
-const asIs = (text: string) => text;
-
-// The built-in fields Set Field leaves to their own actions (Flag and Unflag, Add a Checklist).
-const OWN_ACTION_FIELDS: ReadonlySet<string> = new Set(['flagged', 'checklist']);
-
-const pickOf = (choices: Choice[]): FieldPick => ({
-  choices,
-  option: 'A Choice',
-  label: 'Choice',
-  empty: 'Pick a choice',
-  kept: asIs,
-});
-
-/** A field's fixed values, as Set Field offers them: Priority's four, a Choice field's options, the plan's people
- *  for a Person field, Yes and No for a Checkbox; null for the rest. */
-export function fieldPick(
-  field: OutlineField | undefined,
-  outline: Pick<AutomationOutline, 'types' | 'people'>,
-): FieldPick | null {
-  if (!field) return null;
-  if (field.id === 'priority')
-    return pickOf(PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] })));
-  if (field.kind === 'person')
-    return {
-      choices: outline.people.map((p) => ({ value: p.id, label: p.name })),
-      option: 'A Person',
-      label: 'Person',
-      empty: 'Pick a person',
-      // A name an agent wrote stays as it is; any other picked text is someone who has left.
-      kept: (text) =>
-        text.includes('{{') ||
-        outline.people.some((p) => p.name.toLowerCase() === text.toLowerCase())
-          ? text
-          : 'Someone No Longer Here',
-    };
-  if (field.kind === 'checkbox')
-    return {
-      choices: [
-        { value: 'true', label: 'Yes' },
-        { value: 'false', label: 'No' },
-      ],
-      option: 'Yes or No',
-      label: 'Value',
-      empty: 'Pick Yes or No',
-      kept: asIs,
-    };
-  if (field.kind !== 'choice') return null;
-  for (const t of outline.types) {
-    const def = t.custom?.find((f) => f.id === field.id);
-    if (def?.options?.length) return pickOf(def.options.map((o) => ({ value: o, label: o })));
-  }
-  return null;
-}
 
 // A text value a choice field keeps: the one it holds when it is a choice, else its first choice.
 const choiceText = (text: string, choices: readonly Choice[]): string =>

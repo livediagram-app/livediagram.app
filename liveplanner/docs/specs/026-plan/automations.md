@@ -342,8 +342,8 @@ an id: the line says each kind of thing gone once, in words ("Needs Attention: A
 | **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days); a field of   |
 |                                 | fixed values to one of them, picked: Priority and a Choice field to a value, the Assignee and a   |
 |                                 | Person field to one of the plan's people (kept by id, shown by name, as Assign's), a Checkbox to  |
-|                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save); Flagged    |
-|                                 | and the Checklist are set by Flag, Unflag and Add a Checklist instead                             |
+|                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save and by Test  |
+|                                 | on a Card); Flagged and the Checklist are set by Flag, Unflag and Add a Checklist instead         |
 | **Clear Field**                 | empties a field                                                                                   |
 | **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
 |                                 | the next of 2 to 10 chosen people, in order, round and round                                      |
@@ -806,8 +806,9 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
   does ("A field is gone", "#12 A column is gone", "Failed on #12, #14: A card type is gone"), and a condition naming
   one reads it as the sentence does ("Column is Done or a column no longer here (a column is gone)"); so do Paused's
   reason, Test on a Card and Run Rule's message. Agents read the ids: such a line, its run and a pause carry what is
-  gone as data (`gone`: its kind and id) beside the text, which keeps the id. A run logged before `gone` existed reads
-  as it was stored.
+  gone as data (`gone`: its kind and id, and for a condition naming several gone, the rest in `more`) beside the
+  text, which keeps the ids; several of one kind are counted ("(2 columns are gone)"). A run logged before `gone`
+  existed reads as it was stored.
 - On a phone the rows stack (name, sentence, last run and week on one line, the switch at the right) and the
   dialog fills the screen.
 
@@ -904,7 +905,8 @@ Opening a rule (or New Rule) swaps the screen to its builder: a breadcrumb back 
   the step at fault.
 - A rule opened by its link (an Automation comment's) that the plan no longer has opens no builder: the screen says
   **This Rule Was Deleted**, "It's no longer in this plan. Its runs stay in the Audit Trail until they age out.", with
-  **Back to Rules**.
+  **Back to Rules**, once a read of the list has answered without it. A read that fails says **Couldn't Load the
+  Rules** with **Try Again** instead, never that the rule was deleted.
 
 #### The rule builder on a phone
 

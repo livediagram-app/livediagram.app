@@ -318,6 +318,16 @@ describe('the rules', () => {
     });
     const made = await w.rule(setting('true'));
     expect((await w.call('PUT', `/${made.id}`, setting('later'))).status).toBe(400);
+    // Test on a Card refuses it as a save does, under its rule's path.
+    const c = await w.make('A', { title: 'Try me' });
+    const tried = await w.call('POST', '/test', { rule: setting('maybe'), item: c.id });
+    expect(tried.status).toBe(400);
+    expect(await tried.json()).toMatchObject({
+      error: 'automation_invalid',
+      path: 'rule.steps.1.value',
+      message: 'Signed Off is a Checkbox: set it to Yes or No',
+    });
+    expect((await w.call('POST', '/test', { rule: setting('yes'), item: c.id })).status).toBe(200);
   });
 
   it('says what a rule names that the plan lacks', async () => {

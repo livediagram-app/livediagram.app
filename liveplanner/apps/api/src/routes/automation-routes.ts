@@ -182,6 +182,18 @@ async function bodyOf(
   return set ? refuse(400, 'automation_invalid', set) : read.body;
 }
 
+// Test on a Card's rule, refused as a save would refuse its Set Field (a Checkbox given anything but Yes or No), its
+// path under `rule.`; the plan's types read only for a rule that holds one.
+async function testSetFieldRefusal(
+  ctx: PlanRouteContext,
+  projectId: string,
+  body: AutomationRuleBody,
+): Promise<Response | null> {
+  if (!ruleSetsFields(body)) return null;
+  const set = setFieldRefusal(body, typesOf((await readPlanHead(ctx.env, projectId)).itemTypes));
+  return set ? refuse(400, 'automation_invalid', { ...set, path: `rule.${set.path}` }) : null;
+}
+
 async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const body = await bodyOf(ctx, g.projectId);
   if (body instanceof Response) return body;
@@ -297,6 +309,8 @@ async function test(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const read = readRuleBody(raw['rule']);
   if ('error' in read)
     return refuse(400, read.error, { path: `rule.${read.path}`, message: read.message });
+  const refused = await testSetFieldRefusal(ctx, g.projectId, read.body);
+  if (refused) return refused;
   const card = await cardOf(ctx, g, raw);
   const deps = g.hook.deps();
   if (!card || !deps) return missingItem();

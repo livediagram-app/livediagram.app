@@ -9,7 +9,8 @@ import { AutomationRefusal } from './automations-client';
 import { ValueTextField, ValueChipsText, insertValue } from './ValueInsert';
 import { lastRunWords, meterWords, runWhen, runsWords, tookWords } from './run-words';
 import { RunsMeter } from './RunsMeter';
-import { NOW, outline, rule, run } from './test-fixtures';
+import type { CustomFieldDef } from '@liveplanner/items';
+import { ANA, NOW, outline, rule, run } from './test-fixtures';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -165,6 +166,40 @@ describe('the words', () => {
       kind: 'saved_filter',
       tab: 't-board',
       filter: 'f1',
+    });
+  });
+
+  it('starts Set Field on a fixed-value field on its first value, past Flagged, on a plan without Priority', () => {
+    const typeOf = (custom: CustomFieldDef) => ({
+      id: 't',
+      label: 'T',
+      newTitle: 'New',
+      glyph: 'item' as const,
+      color: '#000',
+      fields: ['flagged', custom.id],
+      custom: [custom],
+    });
+    const set = (custom: CustomFieldDef) =>
+      defaultAction('set_field', outline({ types: [typeOf(custom)] }));
+    expect(set({ id: 'owner', label: 'Owner', kind: 'person' })).toEqual({
+      kind: 'set_field',
+      field: 'owner',
+      value: { text: ANA.id },
+    });
+    expect(set({ id: 'size', label: 'Size', kind: 'choice', options: ['S', 'M'] })).toEqual({
+      kind: 'set_field',
+      field: 'size',
+      value: { text: 'S' },
+    });
+    expect(set({ id: 'done', label: 'Done', kind: 'checkbox' })).toEqual({
+      kind: 'set_field',
+      field: 'done',
+      value: { text: 'true' },
+    });
+    expect(set({ id: 'note', label: 'Note', kind: 'text' })).toEqual({
+      kind: 'set_field',
+      field: 'note',
+      value: { text: '' },
     });
   });
 });

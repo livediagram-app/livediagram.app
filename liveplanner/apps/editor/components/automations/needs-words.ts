@@ -3,7 +3,7 @@
 // "2 columns are gone", "Someone is gone"), in the order the rule names them; a field Field Changed never hears keeps
 // its name. Pure.
 
-import type { AutomationGone, AutomationNeed } from '@liveplanner/items';
+import { goneIdsWords, type AutomationGone, type AutomationNeed } from '@liveplanner/items';
 
 type GoneKind = Exclude<AutomationNeed['kind'], 'unheard'>;
 
@@ -61,9 +61,12 @@ const escaped = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  *  column no longer here (a column is gone)"). A line without it (a run from before) reads as stored. */
 export function goneText(text: string, gone: AutomationGone | undefined): string {
   if (!gone) return text;
-  const one = GONE[gone.kind][0];
-  const tail = `(${gone.id} is gone)`;
+  const [one, many] = GONE[gone.kind];
+  const tail = `(${goneIdsWords(gone)})`;
   if (!text.endsWith(tail)) return `${KEPT.exec(text)![0]}${one} is gone`;
-  const id = new RegExp(`(?<![\\w-])${escaped(gone.id)}(?![\\w-])`, 'g');
-  return `${text.slice(0, -tail.length).replace(id, INLINE[gone.kind])}(${one.toLowerCase()} is gone)`;
+  // A condition naming several gone reads each as the sentence does, and counts them.
+  const ids = [gone.id, ...(gone.more ?? [])];
+  const id = new RegExp(`(?<![\\w-])(?:${ids.map(escaped).join('|')})(?![\\w-])`, 'g');
+  const said = ids.length > 1 ? `${ids.length} ${many} are gone` : `${one.toLowerCase()} is gone`;
+  return `${text.slice(0, -tail.length).replace(id, INLINE[gone.kind])}(${said})`;
 }

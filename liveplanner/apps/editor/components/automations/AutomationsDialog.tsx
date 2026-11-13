@@ -91,12 +91,14 @@ export function AutomationsDialog({
   const api = useAutomations(scope);
   // Each opening reads the list again, so Last Run, This Week and Runs today are fresh (the list read for the footer's
   // dot, or by an earlier opening, keeps showing meanwhile). A read already under way is not repeated. `fresh` once this
-  // opening's read settles: until then a rule the list lacks may be one made since, never yet called deleted.
-  const [fresh, setFresh] = useState(false);
+  // opening's read settles: until then a rule the list lacks may be one made since, never yet called deleted. Kept as
+  // the scope it settled for, so a scope changed while open waits for its own read.
+  const [freshFor, setFreshFor] = useState<AutomationsScope | null>(null);
+  const fresh = freshFor === scope;
   useEffect(() => {
     let live = true;
     void readAutomations(scope).then(() => {
-      if (live) setFresh(true);
+      if (live) setFreshFor(scope);
     });
     return () => {
       live = false;
@@ -234,10 +236,12 @@ export function AutomationsDialog({
   const editing = target.view === 'rule' ? target : null;
   const fromDraft = editing && !editing.ruleId && editing.draft ? drafted : null;
   const editingRule = editing?.ruleId ? (rules.find((r) => r.id === editing.ruleId) ?? null) : null;
-  // A rule opened by its id (a comment's link to it) that the plan no longer has: said so, never a blank new rule.
-  const ruleGone = !!editing?.ruleId && !!api.data && !editingRule && fresh;
-  // One the list lacks before this opening's read lands: wait for it (a rule made since the list was read).
-  const ruleWaiting = !!editing?.ruleId && !editingRule && !fresh;
+  // A rule opened by its id (a comment's link to it) that the list lacks opens no builder, never a blank new rule.
+  const ruleAbsent = !!editing?.ruleId && !editingRule;
+  // Before this opening's read lands (or while it is read again): wait for it (a rule made since the list was read).
+  const ruleWaiting = ruleAbsent && (!fresh || api.status === 'loading');
+  // Said deleted only once a read has answered without it; a failed read says it failed.
+  const ruleGone = ruleAbsent && !ruleWaiting && !!api.data && api.status === 'ready';
   const fromTemplate =
     editing && !editing.ruleId && editing.template
       ? templateStart(editing.template, outline, rules, zone)
@@ -264,7 +268,7 @@ export function AutomationsDialog({
           description="Ask whoever shared this plan for edit access to see and change its rules."
         />
       );
-    if (api.status === 'error' && !api.data)
+    if (api.status === 'error' && (!api.data || (ruleAbsent && !ruleWaiting)))
       return (
         <CompactEmptyState
           role="status"
@@ -448,7 +452,7 @@ export function AutomationsDialog({
               trailing={<DialogCloseButton onClick={close} />}
             />
           </>
-        ) : editing && api.data && !ruleGone && !ruleWaiting && !phone ? (
+        ) : editing && api.data && !ruleAbsent && !phone ? (
           <>
             {/* The builder's breadcrumb stands where the header was; the dialog keeps its name for screen readers. */}
             <h2 id={titleId} className="sr-only">
@@ -460,7 +464,7 @@ export function AutomationsDialog({
           listScreen
         )}
         {/* On a phone the builder is a drawer over the rules, which stay behind it ("The rule builder on a phone"). */}
-        {editing && api.data && !ruleGone && !ruleWaiting && phone ? (
+        {editing && api.data && !ruleAbsent && phone ? (
           <RuleDrawer
             title={editing.ruleId ? 'Edit Rule' : 'New Rule'}
             onClose={backToRules}

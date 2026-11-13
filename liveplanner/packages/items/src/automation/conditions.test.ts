@@ -45,6 +45,23 @@ describe('Card Type and Column', () => {
       id: 'qa',
     });
   });
+
+  it('records every gone thing a condition names, each once', () => {
+    expect(holds({ kind: 'type', types: ['epic', 'bug', 'saga', 'epic'] }, ctx())).toEqual({
+      ok: false,
+      text: 'Card Type is epic or Bug or saga or epic (epic, saga are gone)',
+      gone: { kind: 'type', id: 'epic', more: ['saga'] },
+    });
+    expect(holds({ kind: 'column', statuses: ['qa', 'done', 'later'] }, ctx()).gone).toEqual({
+      kind: 'column',
+      id: 'qa',
+      more: ['later'],
+    });
+    expect(
+      holds({ kind: 'who', who: [{ person: 'p1' }, { role: 'agent' }, { person: 'p2' }] }, ctx())
+        .gone,
+    ).toEqual({ kind: 'person', id: 'p1', more: ['p2'] });
+  });
 });
 
 describe('Field', () => {

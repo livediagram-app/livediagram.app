@@ -37,11 +37,17 @@ const plan = {
   planTabs: () => [],
 } as unknown as PlanContextValue;
 
-function Harness({ initial }: { initial: AutomationsTarget }) {
+function Harness({
+  initial,
+  scope = SCOPE,
+}: {
+  initial: AutomationsTarget;
+  scope?: typeof SCOPE;
+}) {
   const [target, setTarget] = useState(initial);
   return (
     <PlanProvider value={plan}>
-      <AutomationsDialog scope={SCOPE} target={target} onTarget={setTarget} onClose={() => {}} />
+      <AutomationsDialog scope={scope} target={target} onTarget={setTarget} onClose={() => {}} />
     </PlanProvider>
   );
 }
@@ -85,6 +91,52 @@ describe('the Automations screen', () => {
     });
     expect(await screen.findByDisplayValue('Made Later')).toBeTruthy();
     expect(screen.queryByText('This Rule Was Deleted')).toBeNull();
+  });
+
+  it('says a failed read failed, never that a rule its older list lacks was deleted', async () => {
+    client.listAutomations.mockResolvedValueOnce({
+      rules: [rule()],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
+    await readAutomations(SCOPE);
+    client.listAutomations.mockRejectedValueOnce(new Error('offline'));
+    render(<Harness initial={{ view: 'rule', ruleId: 'r-new' }} />);
+    expect(await screen.findByText('Couldn’t Load the Rules')).toBeTruthy();
+    expect(screen.queryByText('This Rule Was Deleted')).toBeNull();
+    client.listAutomations.mockResolvedValueOnce({
+      rules: [rule(), rule({ id: 'r-new', name: 'Made Later' })],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
+    expect(await screen.findByDisplayValue('Made Later')).toBeTruthy();
+    expect(screen.queryByText('This Rule Was Deleted')).toBeNull();
+  });
+
+  it('waits for the new plan’s read when the scope changes while open, never calling its rule deleted', async () => {
+    client.listAutomations.mockResolvedValueOnce({
+      rules: [rule()],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
+    const view = render(<Harness initial={{ view: 'rule', ruleId: 'r-new' }} />);
+    expect(await screen.findByText('This Rule Was Deleted')).toBeTruthy();
+    // The other plan's list, read earlier, lacks the rule too; its read for this opening has not answered.
+    const other = { ...SCOPE, projectId: 'p2' };
+    client.listAutomations.mockResolvedValueOnce({ rules: [rule()], runsToday: 1, runsPerDay: 1000 });
+    await readAutomations(other);
+    let answer: (v: unknown) => void = () => {};
+    client.listAutomations.mockReturnValueOnce(new Promise((r) => (answer = r)));
+    view.rerender(<Harness initial={{ view: 'rule', ruleId: 'r-new' }} scope={other} />);
+    expect(await screen.findByRole('status', { name: 'Loading rules' })).toBeTruthy();
+    expect(screen.queryByText('This Rule Was Deleted')).toBeNull();
+    answer({
+      rules: [rule({ id: 'r-new', name: 'Made Later' })],
+      runsToday: 1,
+      runsPerDay: 1000,
+    });
+    expect(await screen.findByDisplayValue('Made Later')).toBeTruthy();
   });
 
   it('says rules run again tomorrow once the day’s runs are spent, and not before', async () => {

@@ -1940,6 +1940,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "filter"
         ],
         "type": "string"
+      },
+      "more": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       }
     },
     "required": [

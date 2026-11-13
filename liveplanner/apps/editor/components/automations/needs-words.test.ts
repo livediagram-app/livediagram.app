@@ -77,6 +77,18 @@ describe('goneText', () => {
     );
   });
 
+  it('reads each of several gone a condition names, and counts them', () => {
+    expect(
+      goneText('Column is qa or Done or later (qa, later are gone)', {
+        kind: 'column',
+        id: 'qa',
+        more: ['later'],
+      }),
+    ).toBe(
+      'Column is a column no longer here or Done or a column no longer here (2 columns are gone)',
+    );
+  });
+
   it('reads a line from before, with no gone beside it, as stored', () => {
     expect(goneText('Field f-1 is gone', undefined)).toBe('Field f-1 is gone');
   });
