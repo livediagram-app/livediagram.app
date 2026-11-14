@@ -112,7 +112,8 @@ export async function writeResponseRow(
 
 // A template's table (forms.md "A template's table with a total"): when the last row holding a value sits under the
 // header row and is a total, its inputs and the first empty row among the table's first TABLE_GAP_ROWS rows. Else
-// undefined, and the response goes under the last value. Two indexed reads, only for a sheet whose last row has one.
+// undefined, and the response goes under the last value. Two indexed reads (three when a row is added, for the row
+// above's formulas), only for a sheet whose last row has one.
 async function tableOf(
   env: PlanEnv,
   projectId: string,
@@ -125,7 +126,14 @@ async function tableOf(
   if (!isTotalRow(totalInputs.values())) return undefined;
   const body = at.rows.slice(at.head + 1, Math.min(total, at.head + 1 + TABLE_GAP_ROWS));
   const used = await usedSheetRows(env, projectId, sheetId, body);
-  return { total: at.last!, totalInputs, empty: body.find((r) => !used.has(r)) ?? null };
+  const empty = body.find((r) => !used.has(r)) ?? null;
+  // No empty row: a new one goes above the total, taking the per-row formulas of the row above it (one more read).
+  const above = at.rows[total - 1]!;
+  const aboveInputs =
+    empty === null && total - 1 > at.head
+      ? await readRowInputs(env, projectId, sheetId, above)
+      : undefined;
+  return { total: at.last!, totalInputs, empty, aboveInputs };
 }
 
 const cellsOf = (w: SheetWrite) => (w.kind === 'title' ? [] : (w.cells ?? []));

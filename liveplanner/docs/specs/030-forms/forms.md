@@ -836,7 +836,9 @@ board settings, for switching back.
   value in it a formula, at least one over a range of rows, such as the Contacts template's row 11), the response
   goes inside the table instead of under the total: the first empty row between the header and the total, else a
   new row inserted just above the total. The total's ranges that ended on the row above it grow to take the new row
-  in, so "6 contacts" reads "7 contacts". A sheet with values under its total, or no total, is one a person has
+  in, so "6 contacts" reads "7 contacts", and the new row takes the row above's own formulas (Contacts' Days Since
+  and Follow Up), each moved down to read its new row, as filling down would; a column the response writes keeps the
+  answer, and a formula that reads another sheet's rows, or a row below, is not copied. A sheet with values under its total, or no total, is one a person has
   made their own: it keeps taking the first row after its last value, as above. Only the table's first 256 rows
   under the header are looked at for an empty one; a longer table takes the new row above its total.
   Its cells: the response number, the time ("2026-10-15 14:03 UTC"; the api knows no one's zone), and each answer: a

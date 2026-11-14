@@ -75,6 +75,7 @@ function respond(sheet: Sheet, number: number): Sheet {
           total: rows[lastIndex]!,
           totalInputs: lastInputs,
           empty: rows.slice(head + 1, lastIndex).find((r) => !used(sheet, r)) ?? null,
+          aboveInputs: inputsOf(sheet, rows[lastIndex - 1]!),
         }
       : undefined;
   const write = responseRowWrite({
@@ -144,6 +145,99 @@ describe('a response on a fresh Contacts sheet', () => {
     const next = respond(sheet, 1);
     expect(text(next, 13, 0)).toBe('Ada Lovelace');
     expect(value(next, 10, 0)).toBe('6 contacts');
+  });
+});
+
+describe("a new row's per-row formulas", () => {
+  it("takes the row above's Days Since and Follow Up, on its own row", () => {
+    const once = respond(contacts(), 1);
+    const { rows, cols } = once.layout;
+    // Days Since (H) and Follow Up (I) on the response's row (index 10) read its own Last Contacted (G) and H.
+    const days = once.cells.get(cellKey(rows[10]!, cols[7]!))?.input;
+    expect(days && 'f' in days ? days.f.r : []).toEqual([{ r1: rows[10], c1: cols[6] }]);
+    expect(typeof value(once, 10, 7)).toBe('number');
+    const follow = once.cells.get(cellKey(rows[10]!, cols[8]!))?.input;
+    expect(follow && 'f' in follow ? follow.f.r : []).toEqual([{ r1: rows[10], c1: cols[7] }]);
+    // The example row above keeps its own.
+    const before = once.cells.get(cellKey(rows[9]!, cols[7]!))?.input;
+    expect(before && 'f' in before ? before.f.r : []).toEqual([{ r1: rows[9], c1: cols[6] }]);
+  });
+
+  it('moves references to earlier rows down one, keeps absolute rows, and leaves out what it cannot move', () => {
+    const rows = ['h', 'a', 'b', 't'];
+    const layout = { rows, cols: ['ca', 'cb', 'cc', 'cd', 'ce', 'cf', 'cg', 'ch', 'ci'] };
+    const f = (r: object[]) => ({ f: { t: 'SUM(@0)', r } }) as CellInput;
+    const write = responseRowWrite({
+      form,
+      answers,
+      number: 1,
+      preview: false,
+      at: AT,
+      layout,
+      rowTexts: new Map([
+        [
+          'h',
+          new Map([
+            ['ca', 'Name'],
+            ['cb', 'Email'],
+            // # and Submitted already at the far end, so the formula columns are free.
+            ['ch', '#'],
+            ['ci', 'Submitted'],
+          ]),
+        ],
+      ]),
+      usedRows: new Set(['t']),
+      table: {
+        total: 't',
+        totalInputs: new Map(),
+        empty: null,
+        aboveInputs: new Map<string, CellInput>([
+          // A running balance: the row before (a) and its own (b).
+          [
+            'cc',
+            f([
+              { r1: 'a', c1: 'cc' },
+              { r1: 'b', c1: 'cd' },
+              { r1: 'a', c1: 'cc', r2: 'b', c2: 'cc' },
+            ]),
+          ],
+          // An absolute row and a whole column stay.
+          [
+            'cd',
+            f([
+              { r1: 'a', c1: 'cd', a: 1 },
+              { c1: 'cd', c2: 'cd' },
+              { s: 'other', r1: 'a', c1: 'cd', r2: 'b', c2: 'cd', a: 5 },
+            ]),
+          ],
+          // Below the row above, or another sheet's row: left out.
+          ['ce', f([{ r1: 't', c1: 'ce' }])],
+          ['cf', f([{ s: 'other', r1: 'a', c1: 'cf' }])],
+          ['cg', { s: 'text' }],
+          // A column the response writes (Name) is the response's.
+          ['ca', f([{ r1: 'b', c1: 'ca' }])],
+        ]),
+      },
+      rand,
+    });
+    if (write.kind !== 'layout') throw new Error('a layout write');
+    const added = (write.changes.find((c) => c.k === 'insertRows') as { ids: string[] }).ids[0]!;
+    const copied = new Map(
+      (write.cells ?? [])
+        .filter((c) => c.r === added && 'f' in c.i!)
+        .map((c) => [c.c, (c.i as { f: { r: object[] } }).f.r]),
+    );
+    expect([...copied.keys()]).toEqual(['cc', 'cd']);
+    expect(copied.get('cc')).toEqual([
+      { r1: 'b', c1: 'cc' },
+      { r1: added, c1: 'cd' },
+      { r1: 'b', c1: 'cc', r2: added, c2: 'cc' },
+    ]);
+    expect(copied.get('cd')).toEqual([
+      { r1: 'a', c1: 'cd', a: 1 },
+      { c1: 'cd', c2: 'cd' },
+      { s: 'other', r1: 'a', c1: 'cd', r2: 'b', c2: 'cd', a: 5 },
+    ]);
   });
 });
 

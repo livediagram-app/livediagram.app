@@ -40,11 +40,13 @@ export type SheetRowInput = {
 };
 
 // A table under the header row that ends in a total: the total row, its inputs by column, and the first empty row
-// between the header and it (null when none was found).
+// between the header and it (null when none was found); with none, the inputs of the row above the total, whose
+// per-row formulas a new row takes.
 export type SheetTable = {
   total: string;
   totalInputs: ReadonlyMap<string, CellInput>;
   empty: string | null;
+  aboveInputs?: ReadonlyMap<string, CellInput> | undefined;
 };
 
 // How many rows under the header the api looks through for a table's first empty row.
@@ -62,6 +64,49 @@ export function isTotalRow(inputs: Iterable<CellInput>): boolean {
     if (i.f.r.some(rowSpan)) spans = true;
   }
   return spans;
+}
+
+// The row above's formulas, copied into the row put in under it as a spreadsheet's fill down would: each reference
+// to a row moved one row down (its own row's to the new row), an absolute row ($5) kept. A formula with a relative
+// reference to another sheet's row, or to a row below the row above, is left out (nothing to move it to safely);
+// so are the columns the response writes.
+function filledDown(
+  inputs: ReadonlyMap<string, CellInput>,
+  rows: readonly string[],
+  above: string,
+  added: string,
+  skip: ReadonlySet<string>,
+): CellChange[] {
+  const at = rows.indexOf(above);
+  const down = (id: string | undefined, fixed: boolean): string | undefined | null => {
+    if (id === undefined || fixed) return id;
+    const i = rows.indexOf(id);
+    if (i < 0 || i > at) return null;
+    return i === at ? added : rows[i + 1]!;
+  };
+  const out: CellChange[] = [];
+  for (const [c, i] of inputs) {
+    if (!('f' in i) || skip.has(c)) continue;
+    let ok = true;
+    const r = i.f.r.map((ref) => {
+      const a = ref.a ?? 0;
+      if (ref.s !== undefined || ref.st !== undefined) {
+        // Another sheet's rows move only when relative: then the formula is left out.
+        if ((ref.r1 !== undefined && !(a & 1)) || (ref.r2 !== undefined && !(a & 4))) ok = false;
+        return ref;
+      }
+      const r1 = down(ref.r1, (a & 1) !== 0);
+      const r2 = down(ref.r2, (a & 4) !== 0);
+      if (r1 === null || r2 === null) ok = false;
+      return {
+        ...ref,
+        ...(r1 ? { r1 } : {}),
+        ...(r2 ? { r2 } : {}),
+      };
+    });
+    if (ok) out.push({ r: added, c, i: { f: { t: i.f.t, r } } });
+  }
+  return out;
 }
 
 // The total's formulas whose range ended on `above`, rewritten to end on `added` (the row put in under it).
@@ -131,6 +176,10 @@ export function responseRowWrite(input: SheetRowInput): SheetWrite {
       changes.push({ k: 'insertRows', after: above, ids: [added!] });
       row = added!;
       cells.push(...grownTotal(input.table, above, row));
+      if (input.table.aboveInputs)
+        cells.push(
+          ...filledDown(input.table.aboveInputs, rows, above, row, new Set(colOf.values())),
+        );
     }
   } else {
     const short = last + 2 - rows.length;

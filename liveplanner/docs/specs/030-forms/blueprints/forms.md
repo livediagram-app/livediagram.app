@@ -220,7 +220,11 @@ place). `responseRowWrite({ form, answers, number, preview, at, layout, header, 
 `SheetWrite` from the same plan, the row after the last used (rows inserted as needed); `cells` kind when nothing needs
 the layout. With `table: { total, totalInputs, empty }` (a total row the api found, see below) the row is `empty` when
 it sits between the header row and the total, else one `insertRows` after the row above the total, and each formula
-in `totalInputs` whose range (`r1 !== r2`, same sheet) ends on that row is rewritten to end on the new one.
+in `totalInputs` whose range (`r1 !== r2`, same sheet) ends on that row is rewritten to end on the new one; with
+`aboveInputs` (the row above the total's inputs), each of its formulas in a column the response does not write is
+copied to the new row (`filledDown`): a relative row id moves one row down (the row above's own to the new row), an
+absolute row (`a` bits 1 and 4) and a whole column stay, and one with a relative row below the row above or on
+another sheet is not copied.
 `isTotalRow(inputs)`: every input a formula and at least one with a same-sheet range over two or more rows. `sheetDestinationProblem(sheet, sheets)` → `sheet_missing`. Api: `responsesProblem(env, docId, form,
 types)` (`sheetOnItsTab`: the sheet head on its tab and that tab still in the project (`projectLinksTab`), else the
 board check) for publishing and the public read; `respond` branches on
@@ -232,7 +236,8 @@ layout's rows are probed from the end in windows of `USED_ROW_WINDOW` (64) ids, 
 each one indexed `EXISTS` seek a row through `json_each`, so a response reads about a window's rows, never every
 cell of a sheet that grows with each response); when that last row sits under the header row (`headerRowIndex`), its
 inputs (`readRowInputs`, one indexed read) and, when they make a total (`isTotalRow`), the used rows among the first
-`TABLE_GAP_ROWS` (256) rows between the header and the total (`usedSheetRows`, one `EXISTS` read) give `table`; plans, and stores through
+`TABLE_GAP_ROWS` (256) rows between the header and the total (`usedSheetRows`, one `EXISTS` read), and with no empty
+row the row above the total's inputs (`readRowInputs`, `aboveInputs`) give `table`; plans, and stores through
 `storeSheetWrite(ctx, projectId, sheetId, { write, unchecked: true }, by, null, { atRev })`, the route's write path
 factored out: `atRev` makes it answer `sheet_moved` (409) rather than apply a plan to a sheet that changed since it
 was read, and the row is planned again (`SHEET_WRITE_RETRIES`); a stored answer whose `applied` cells are fewer than

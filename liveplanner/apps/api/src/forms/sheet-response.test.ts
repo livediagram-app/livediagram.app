@@ -154,7 +154,7 @@ describe('writeResponseRow', () => {
     const table = (rows: [string, string, object][]) => {
       sql.sql
         .prepare(
-          `UPDATE sheets SET layout = '{"rows":["ra01","ra02","ra03","ra04","ra05","ra06","ra07","ra08","ra09"],"cols":["ca01","ca02"]}' WHERE id = ?`,
+          `UPDATE sheets SET layout = '{"rows":["ra01","ra02","ra03","ra04","ra05","ra06","ra07","ra08","ra09"],"cols":["ca01","ca02","ca03","ca04","ca05"]}' WHERE id = ?`,
         )
         .run(SHEET);
       for (const [row, col, input] of [
@@ -201,6 +201,9 @@ describe('writeResponseRow', () => {
         ['ra05', 'ca01', { s: 'Jordan' }],
         ['ra06', 'ca01', { s: 'Kim' }],
         ['ra07', 'ca01', { s: 'Sam' }],
+        // A per-row formula on the row above the total (Days Since's kind), reading its own row; # and Submitted take
+        // ca03 and ca04.
+        ['ra07', 'ca05', { f: { t: 'LEN(@0)', r: [{ r1: 'ra07', c1: 'ca01' }] } }],
       ]);
       const w = await planned();
       if (w.kind !== 'layout') throw new Error('a layout write');
@@ -213,6 +216,10 @@ describe('writeResponseRow', () => {
       expect(answerRows(w)).toEqual(new Set([added]));
       const grown = w.cells!.find((c) => c.r === 'ra08');
       expect(grown?.i).toEqual({ f: { t: 'COUNTA(@0)', r: [{ ...total.f.r[0], r2: added }] } });
+      // The new row takes it, on its own row.
+      expect(w.cells!.find((c) => c.r === added && c.c === 'ca05')?.i).toEqual({
+        f: { t: 'LEN(@0)', r: [{ r1: added, c1: 'ca01' }] },
+      });
     });
 
     it('appends under a value written below the total', async () => {
