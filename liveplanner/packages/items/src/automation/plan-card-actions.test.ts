@@ -81,6 +81,22 @@ describe('Change Card Type', () => {
       ),
     );
     expect(then.patch).toEqual({ type: 'work', set: { 'f-app': 'Editor' } });
+    // Map Fields (item-types.md "Explicit mappings", Work Tracker 843): Solution into the Description, over its value.
+    const mapped = done(
+      planActions(
+        [{ kind: 'set_type', type: 'work', map: [{ from: 'f-solution', to: 'description' }] }],
+        ctxFor(
+          { ...card, fields: { ...card.fields, description: 'Old' } },
+          {
+            outline: { ...OUTLINE, types: [idea, work] },
+          },
+        ),
+      ),
+    );
+    expect(mapped.patch).toEqual({
+      type: 'work',
+      set: { 'f-app': 'API', description: 'Ship it' },
+    });
   });
 
   it.each([

@@ -334,6 +334,10 @@ none (blueprint [tracker-import.md](tracker-import.md) "A whole import"). Its ot
 - Routes live in `apps/api/src/routes/item-routes.ts` (`/items/patches` in `item-patches-route.ts`, the parts they
   share, such as the caller, refusals and relay, in `item-route-kit.ts`, the creates they write in `item-creates.ts`), dispatched from
   `project-subresource-routes.ts`; `db/items.ts` holds `readItems` and `updateItemsAtRev` for the many-item write.
+- A patch, a move or a patch among many that changes a card's type is mapped on the stored card before it applies
+  (`mappedWrite(caller, item, write, undo)` in `item-route-kit.ts`: `withTypeChangeFields` against the project's
+  types; an undo is never mapped), so an API script's type change carries same-name compatible fields
+  (item-types.md "The REST API maps too").
 
 ## Comments
 

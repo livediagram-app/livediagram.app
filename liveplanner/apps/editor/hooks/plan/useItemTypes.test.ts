@@ -82,6 +82,22 @@ describe('useItemTypes', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
+  // Work Tracker 827: a plan synced from This Browser in place holds its own revision count (3 saves here); the
+  // server's starts again, so its refusal names a lower one, which the save takes and lands on.
+  it('saves straight after Sync Plan, taking the server’s lower revision from its refusal', async () => {
+    api.saveItemTypes.mockRejectedValueOnce(
+      new ItemTypesStaleError({ itemTypes: cat('task'), itemTypesRev: 0 }),
+    );
+    answering();
+    const { hook, onError } = render({ itemTypes: cat('task'), itemTypesRev: 3 });
+    act(() => hook.result.current.slice.saveType(def('risk')));
+    await waitFor(() => expect(api.saveItemTypes).toHaveBeenCalledTimes(2));
+    expect(sent(1)).toEqual({ ids: ['task', 'risk'], rev: 0 });
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(1));
+    expect(ids(hook.result.current.slice.catalogue)).toEqual(['task', 'risk']);
+    expect(onError).not.toHaveBeenCalled();
+  });
+
   it('drops only a failed change, keeping one saved after it', async () => {
     api.saveItemTypes.mockRejectedValueOnce(new Error('item-types failed: 500'));
     answering();

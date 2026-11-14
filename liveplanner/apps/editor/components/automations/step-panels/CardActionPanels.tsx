@@ -1,12 +1,14 @@
 'use client';
 
 // The card actions with a single pick (docs/specs/026-plan/automations.md "Actions"): Change Card Type (one of the
-// plan's card types), Set Colour (a standard colour, or none) and Copy Card (its own column, or one chosen).
+// plan's card types, and its Map Fields), Set Colour (a standard colour, or none) and Copy Card (its own column, or
+// one chosen).
 
-import type { AutomationAction } from '@liveplanner/items';
+import type { AutomationAction, TypeFieldMap } from '@liveplanner/items';
 import { ColourSelect } from '@/components/plan/ColourSwatches';
 import type { AutomationOutline } from '../automation-outline';
 import { PanelField, PanelNote, PanelSelect } from './panel-parts';
+import { TypeFieldMapEditor } from './TypeFieldMapEditor';
 
 export function SetTypePanel({
   action,
@@ -18,23 +20,40 @@ export function SetTypePanel({
   outline: AutomationOutline;
 }) {
   const known = outline.types.some((t) => t.id === action.type);
+  const change = (type: string, map: readonly TypeFieldMap[]) =>
+    onChange({ kind: 'set_type', type, ...(map.length ? { map: [...map] } : {}) });
   return (
-    <PanelField label="Card Type" hint="The card keeps its column only if the new type takes it.">
-      {(id) => (
-        <PanelSelect
-          id={id}
-          value={action.type}
-          onChange={(e) => onChange({ kind: 'set_type', type: e.target.value })}
-        >
-          {known ? null : <option value={action.type}>A card type no longer here</option>}
-          {outline.types.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.label}
-            </option>
-          ))}
-        </PanelSelect>
-      )}
-    </PanelField>
+    <div className="flex flex-col gap-4">
+      <PanelField label="Card Type" hint="The card keeps its column only if the new type takes it.">
+        {(id) => (
+          <PanelSelect
+            id={id}
+            value={action.type}
+            onChange={(e) => {
+              // A new type keeps the mappings into the Description and into fields it has too.
+              const next = outline.types.find((t) => t.id === e.target.value);
+              const kept = (action.map ?? []).filter(
+                (m) => m.to === 'description' || next?.custom?.some((f) => f.id === m.to),
+              );
+              change(e.target.value, kept);
+            }}
+          >
+            {known ? null : <option value={action.type}>A card type no longer here</option>}
+            {outline.types.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </PanelSelect>
+        )}
+      </PanelField>
+      <TypeFieldMapEditor
+        map={action.map ?? []}
+        target={action.type}
+        types={outline.types}
+        onChange={(map) => change(action.type, map)}
+      />
+    </div>
   );
 }
 

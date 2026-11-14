@@ -74,7 +74,11 @@ const personFieldOf =
 
 type Namers = { status: Namer; type: Namer; field: Namer; person: Namer; tab: Namer };
 // What the walk also reads: which fields hold a person (a Set Field's picked person is named as one).
-type Walker = Namers & { personField: (field: string) => boolean };
+type Walker = Namers & {
+  personField: (field: string) => boolean;
+  // A field of one card type by id or name (a Change Card Type mapping's target), else as `field` names it.
+  typeField: (type: string, ref: string) => string;
+};
 
 function namersOf(names: RuleNames): Namers {
   return {
@@ -135,7 +139,13 @@ function nameStep(s: Json, n: Walker): void {
     name(s, 'type', n.type);
     name(s, 'linkField', n.field);
   }
-  if (s['kind'] === 'set_type') name(s, 'type', n.type);
+  if (s['kind'] === 'set_type') {
+    name(s, 'type', n.type);
+    nameAll(s['map'], (m) => {
+      name(m, 'from', n.field);
+      if (typeof m['to'] === 'string') m['to'] = n.typeField(String(s['type']), m['to']);
+    });
+  }
   // A Card field to link through, a field to set or clear, or an AI summary's text field.
   if (['set_field', 'clear_field', 'link_card', 'ai'].includes(s['kind'] as string))
     name(s, 'field', n.field);
@@ -166,7 +176,17 @@ function nameAll(list: unknown, each: (o: Json) => void): void {
 
 /** `body` with what it names by name put back to the plan's ids; a copy, the input untouched. */
 export function namedRuleBody<T>(body: T, names: RuleNames): T {
-  return ruleWithRefs(body, namersOf(names), { personField: personFieldOf(names.types) });
+  const field = fieldNamer(names);
+  return ruleWithRefs(body, namersOf(names), {
+    personField: personFieldOf(names.types),
+    typeField: (typeId, ref) => {
+      const type = names.types.find((t) => t.id === typeId);
+      return (
+        (type && (type.custom?.some((f) => f.id === ref) ? ref : fieldOfName(type, ref))) ||
+        field(ref)
+      );
+    },
+  });
 }
 
 const same: Namer = (ref) => ref;
@@ -180,7 +200,10 @@ export type RuleRefKind = keyof Namers;
 export function ruleWithRefs<T>(
   body: T,
   maps: Partial<Record<RuleRefKind, (ref: string) => string>>,
-  opts: { personField?: (field: string) => boolean } = {},
+  opts: {
+    personField?: (field: string) => boolean;
+    typeField?: (type: string, ref: string) => string;
+  } = {},
 ): T {
   if (!isObject(body)) return body;
   const out = structuredClone(body) as Json;
@@ -191,6 +214,7 @@ export function ruleWithRefs<T>(
     field: maps.field ?? same,
     person: maps.person ?? same,
     tab: maps.tab ?? same,
+    typeField: opts.typeField ?? ((_, ref) => (maps.field ?? same)(ref)),
   };
   if (isObject(out['trigger'])) nameTrigger(out['trigger'], n);
   nameAll(out['conditions'], (c) => nameCondition(c, n));

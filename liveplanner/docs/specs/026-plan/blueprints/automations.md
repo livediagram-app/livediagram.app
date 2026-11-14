@@ -994,6 +994,14 @@ Threads and Wait (spec "Actions", "Wait").
   AI step's Set Card Type (`ai-steps.ts`) returns `withTypeChangeFields(card, { type }, types)`. The editor's writes
   (`usePlanItemWrites`: `patchItem`, `patchItems`, `moveItem`, `moveItems`) and agents' `change_items` `set`
   (`agent-verbs/src/plan/item-changes.ts`) add them the same way.
+- **Map Fields** (item-types.md "Explicit mappings"): `set_type` takes `map?: { from, to }[]` (1 to
+  `AUTOMATION_TYPE_MAPS_MAX` = 13, each `to` once, `to` a custom field id or `description`; absent on older rules,
+  which read as before). `validate.ts` refuses a repeated target (`steps.N.map.K.to`); `named.ts` names `from` across
+  every type and `to` within the step's type first; `attention.ts` needs each field; `sentence.ts` reads
+  "Change to Work Item (Solution to Description)"; `rule-format.ts` describes it for MCP `change_rules`;
+  `plan-actions.ts` passes the map to `typeChangeFields`. The editor's `SetTypePanel` (`CardActionPanels.tsx`) hosts
+  `TypeFieldMapEditor.tsx`: a row per mapping (From: every type's custom fields, grouped by type; To: the new type's
+  fields that can take it and Description), **Add Mapping**, and a remove button per row.
 - **Shapes** (`packages/items/src/automation/types.ts`): `set_type`, `set_colour` (`#rrggbb` or null), `restore`,
   `copy_card` (`status?`), `add_checklist` (`items`, 1 to 20), `link_card` (`field`, `to: {card} | {trigger}`),
   `mention` (`to`, `text`), `resolve_threads`; and the step `AutomationWait` (`hours`, 1 to 720). `validate.ts` reads
