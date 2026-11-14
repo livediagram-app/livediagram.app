@@ -340,6 +340,7 @@
     "./hooks/collab/useFocusInvite": "./src/hooks/collab/useFocusInvite.ts",
     "./hooks/collab/useFocusLanding": "./src/hooks/collab/useFocusLanding.ts",
     "./hooks/collab/useShowFollowersMyView": "./src/hooks/collab/useShowFollowersMyView.ts",
+    "./hooks/collab/useFollowMe": "./src/hooks/collab/useFollowMe.ts",
     "./hooks/editor/active-tab-name-store": "./src/hooks/editor/active-tab-name-store.ts",
     "./hooks/editor/useApplyStyleToAllTabs": "./src/hooks/editor/useApplyStyleToAllTabs.ts",
     "./hooks/editor/useDeadPageBrush": "./src/hooks/editor/useDeadPageBrush.ts",

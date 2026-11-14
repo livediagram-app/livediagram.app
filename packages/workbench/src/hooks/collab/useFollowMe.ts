@@ -7,12 +7,12 @@
 // use to somebody scrolled elsewhere. Following is the missing half: instead
 // of moving the pointer to the audience, move the audience to the pointer.
 
-import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import type { ViewportStore } from '../../lib/viewport-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
-import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
-import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
-import { track } from '@/lib/telemetry';
-import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import type { ReadableStore } from '../../lib/state-store';
+import { useStoreSlice } from '../ui/useStoreSlice';
+import { workbench } from '../../bindings';
+import { useLatest } from '../ui/useLatest';
 
 // A peer's last published `viewport` op. `size` is their canvas, missing from a client from before it was sent.
 export type RemoteViewport = {
@@ -113,7 +113,7 @@ export function useFollowMe({
       // dashboard's Selection-modes list instead of being the one pointing tool
       // nobody can see the usage of. Entering the mode only, never per frame —
       // the applied viewports are a continuous gesture.
-      track('Canvas', 'Used', 'FollowMe');
+      workbench.track('Canvas', 'Used', 'FollowMe');
     },
     [followerIdsRef, nameOfRef, onNoticeRef],
   );

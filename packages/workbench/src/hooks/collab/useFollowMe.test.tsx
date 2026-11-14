@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
-import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
+import { createViewportStore } from '../../lib/viewport-store';
+import { createStateStore } from '../../lib/state-store';
 import { useFollowMe, type RemoteViewport } from './useFollowMe';
 
 const peers = (entries: [string, RemoteViewport][]) =>
   createStateStore(new Map<string, RemoteViewport>(entries));
 
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+vi.mock('../../bindings', () => ({ workbench: { track: vi.fn() } }));
 
 type Args = Parameters<typeof useFollowMe>[0];
 
@@ -169,5 +169,24 @@ describe('useFollowMe', () => {
     );
     expect(renders).toBe(following + 1);
     expect(viewport.get()).toEqual({ zoom: 2, offset: { x: 50, y: 0 } });
+  });
+  it("switches to the followed peer's tab, waits for a peer with no viewport yet, and names an unnamed follower", () => {
+    const onTab = setup({
+      remoteViewports: peers([['p1', { tabId: 'tab2', pan: { x: 1, y: 2 }, zoom: 1 }]]),
+    });
+    act(() => onTab.hook.result.current.startFollowing('p1'));
+    expect(onTab.args.onFollowTab).toHaveBeenCalledWith('tab2');
+
+    const waiting = setup({ remoteViewports: peers([]) });
+    act(() => waiting.hook.result.current.startFollowing('p1'));
+    // Nothing applied yet, so a view of our own is not a gesture against the follow.
+    act(() => waiting.viewport.setView({ zoom: 4, offset: { x: 9, y: 9 } }));
+    expect(waiting.hook.result.current.followingId).toBe('p1');
+
+    const unnamed = setup({ followerIds: ['p1'] });
+    act(() => unnamed.hook.result.current.startFollowing('p1'));
+    expect(unnamed.args.onNotice).toHaveBeenCalledWith(
+      "Someone is following you, so you can't follow them back.",
+    );
   });
 });
