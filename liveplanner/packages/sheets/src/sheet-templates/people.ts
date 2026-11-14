@@ -114,8 +114,9 @@ export function contactsDesign(today: number): SheetDesign {
               text(phone),
               stage,
               day(today, ago),
-              `=TODAY()-G${r}`,
-              `=IF(H${r}>${FOLLOW_UP_DAYS},"Follow Up","")`,
+              // Empty while Last Contacted is (a form's response row): never days since 1899.
+              `=IF(G${r}="","",TODAY()-G${r})`,
+              `=IF(H${r}="","",IF(H${r}>${FOLLOW_UP_DAYS},"Follow Up",""))`,
               notes,
             ];
           },

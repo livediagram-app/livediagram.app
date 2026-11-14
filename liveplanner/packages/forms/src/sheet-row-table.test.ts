@@ -149,18 +149,22 @@ describe('a response on a fresh Contacts sheet', () => {
 });
 
 describe("a new row's per-row formulas", () => {
-  it("takes the row above's Days Since and Follow Up, on its own row", () => {
+  it("takes the row above's Days Since and Follow Up, on its own row, empty without Last Contacted", () => {
     const once = respond(contacts(), 1);
     const { rows, cols } = once.layout;
+    const rowsOf = (r: number, c: number) => {
+      const i = once.cells.get(cellKey(rows[r]!, cols[c]!))?.input;
+      return new Set(i && 'f' in i ? i.f.r.map((ref) => `${ref.r1}:${ref.c1}`) : []);
+    };
     // Days Since (H) and Follow Up (I) on the response's row (index 10) read its own Last Contacted (G) and H.
-    const days = once.cells.get(cellKey(rows[10]!, cols[7]!))?.input;
-    expect(days && 'f' in days ? days.f.r : []).toEqual([{ r1: rows[10], c1: cols[6] }]);
-    expect(typeof value(once, 10, 7)).toBe('number');
-    const follow = once.cells.get(cellKey(rows[10]!, cols[8]!))?.input;
-    expect(follow && 'f' in follow ? follow.f.r : []).toEqual([{ r1: rows[10], c1: cols[7] }]);
-    // The example row above keeps its own.
-    const before = once.cells.get(cellKey(rows[9]!, cols[7]!))?.input;
-    expect(before && 'f' in before ? before.f.r : []).toEqual([{ r1: rows[9], c1: cols[6] }]);
+    expect(rowsOf(10, 7)).toEqual(new Set([`${rows[10]}:${cols[6]}`]));
+    expect(rowsOf(10, 8)).toEqual(new Set([`${rows[10]}:${cols[7]}`]));
+    // A response gives no Last Contacted, so both read empty, never days since 1899.
+    expect(value(once, 10, 7)).toBe('');
+    expect(value(once, 10, 8)).toBe('');
+    // The example row above keeps its own, still counting.
+    expect(rowsOf(9, 7)).toEqual(new Set([`${rows[9]}:${cols[6]}`]));
+    expect(typeof value(once, 9, 7)).toBe('number');
   });
 
   it('moves references to earlier rows down one, keeps absolute rows, and leaves out what it cannot move', () => {
