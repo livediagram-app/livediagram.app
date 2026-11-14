@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livehuddle/document';
 import type { RoomOp, RoomOutgoing } from '@livehuddle/api-schema';
-import type { PresenceCoalescer } from '@liveworkspace/workbench/lib/presence-coalescer';
+import type { PresenceCoalescer } from './presence-coalescer';
 import { receiveRoomOp } from './room-op-receive';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { createRemoteOpJournal } from './save-baseline';
