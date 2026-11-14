@@ -27,6 +27,8 @@ describe('PasswordSection', () => {
     act(() => vi.advanceTimersByTime(100));
     expect(vi.getTimerCount()).toBe(1);
     unmount();
+    // Unmounting removes the focused field, so jsdom runs its focus fixup on the next frame; let that one go.
+    act(() => vi.advanceTimersByTime(20));
     expect(vi.getTimerCount()).toBe(0);
   });
 });

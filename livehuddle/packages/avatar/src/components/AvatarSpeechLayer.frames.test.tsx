@@ -37,6 +37,10 @@ const props = {
   self: { name: 'Tom', colour: '#14b8a6' },
 };
 
+// The y of a card's `translate(x, y) scale(…)`: the style drops a 0 y, as a browser may.
+const yOf = (transform: string) =>
+  Number(/^translate\(.*?(?:, (-?[\d.]+)px)?\) scale/.exec(transform)![1] ?? 0);
+
 describe('the speech bubbles flight', () => {
   it('reads the reduced-motion setting once per flight, not every frame', () => {
     vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
@@ -70,7 +74,7 @@ describe('the speech bubbles flight', () => {
 
     it('pulls a bubble at the right edge back in', () => {
       const { card, tail } = placed(380);
-      expect(card.style.transform).toContain('calc(-50% + -48px)');
+      expect(card.style.transform).toContain('calc(-50% - 48px)');
       expect(tail.style.marginLeft).toBe('36px');
     });
 
@@ -110,7 +114,7 @@ describe('the speech bubbles flight', () => {
     });
 
     it('leaves a bubble with room above it where it starts', () => {
-      expect(startAt(300)).toContain(', 0px) scale');
+      expect(yOf(startAt(300))).toBe(0);
     });
 
     it('holds a rising bubble at the top once it meets it', () => {
@@ -136,7 +140,7 @@ describe('the speech bubbles flight', () => {
     });
 
     it('keeps only the sides where the view has no height', () => {
-      expect(startAt(20, props.view)).toContain(', 0px) scale');
+      expect(yOf(startAt(20, props.view))).toBe(0);
     });
   });
 
@@ -165,8 +169,7 @@ describe('the speech bubbles flight', () => {
       );
       return container.querySelector<HTMLElement>('[aria-hidden].w-max')!;
     };
-    const liftIn = (card: HTMLElement) =>
-      0 - Number(/, (-?[\d.]+)px\) scale/.exec(card.style.transform)![1]);
+    const liftIn = (card: HTMLElement) => 0 - yOf(card.style.transform);
 
     it('starts over a camera bubble on its path, at once on its first frame', () => {
       // A bubble from 182 to 250 straddles its path: it starts 8 over its top, 300 - 182 + 8 = 126 up.

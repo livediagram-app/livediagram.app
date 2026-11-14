@@ -18,7 +18,6 @@ import {
   SquareKanbanIcon,
   StickyNoteIcon,
   TableIcon,
-  VideoIcon,
   WorkflowIcon,
 } from './icons';
 
@@ -136,11 +135,6 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: MapIcon,
     panel: 'from-lime-100 to-emerald-50 dark:from-lime-500/15 dark:to-emerald-500/5',
     glyph: 'text-emerald-700 dark:text-emerald-200',
-  },
-  teamflow: {
-    icon: VideoIcon,
-    panel: 'from-cyan-100 to-sky-50 dark:from-cyan-500/15 dark:to-sky-500/5',
-    glyph: 'text-cyan-600 dark:text-cyan-300',
   },
   kumospace: {
     icon: ArmchairIcon,

@@ -33,7 +33,7 @@ the app's `brand-*` Tailwind ramp, so the accent is the app's; each app's `globa
 | liveplanner   | Trello, Asana, Monday.com, Notion, Jira, ClickUp, Airtable, Smartsheet     | [marketing-site.md](../../liveplanner/docs/specs/019-marketing/marketing-site.md)   |
 | livedocuments | Google Slides                                                              | [marketing-site.md](../../livedocuments/docs/specs/019-marketing/marketing-site.md) |
 | livedesign    | Figma                                                                      | [marketing-site.md](../../livedesign/docs/specs/019-marketing/marketing-site.md)    |
-| livehuddle    | Gather, Teamflow, Kumospace                                                | [marketing-site.md](../../livehuddle/docs/specs/019-marketing/marketing-site.md)    |
+| livehuddle    | Gather, Kumospace                                                          | [marketing-site.md](../../livehuddle/docs/specs/019-marketing/marketing-site.md)    |
 
 liveworkspace.app keeps none. Its old `/alternatives/<slug>` addresses redirect permanently (301) to the
 same slug on the app that answers it, and its `/alternatives` to `/compare`, a small page that points at
@@ -151,7 +151,7 @@ dashboard on liveworkspace.app shows them under its own app.
 
 ## livehuddle
 
-- **Compete on their ground**: Gather, Teamflow and Kumospace as virtual offices and spatial meeting places, where a
+- **Compete on their ground**: Gather and Kumospace as virtual offices and spatial meeting places, where a
   remote team walks between rooms to meet. livehuddle is a place to meet in Spaces (its
   [Purpose](../../livehuddle/docs/specs/001-project-vision/purpose.md)), so these are its ground too.
 - **Talking is shared ground, compared fairly.** Each of them has voice and video built in, and so does livehuddle:
@@ -170,9 +170,11 @@ dashboard on liveworkspace.app shows them under its own app.
 - **Meet-first words** (Work Tracker #423): no workshops, retros, polls, decks or diagrams, pinned by the app's
   `lib/meet-first.test.ts`.
 
-**The set**: Gather, Teamflow and Kumospace. **Retired**: Miro and FigJam, compared for meetings and workshops until
-the meet-first refocus (2026-11-05); their old livehuddle.app addresses redirect permanently to the hub, pinned by
-livehuddle's `lib/comparison-redirects.test.ts`. Both remain livediagram's comparisons.
+**The set**: Gather and Kumospace. **Retired**: Miro and FigJam, compared for meetings and workshops until
+the meet-first refocus (2026-11-05), and Teamflow, whose virtual office looks closed (teamflow.com shows another
+product, teamflowhq.com is frozen in 2022, a rival's blog says it closed in 2023; Work Tracker 767); their old
+livehuddle.app addresses redirect permanently to the hub, pinned by livehuddle's `lib/comparison-redirects.test.ts`.
+Miro and FigJam remain livediagram's comparisons.
 
 **Candidates** for later: Wonder, SpatialChat and oVice, each needing an honest angle first.
 

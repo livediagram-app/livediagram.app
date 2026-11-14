@@ -90,7 +90,7 @@ describe('useTabSlider', () => {
   it('stands under the open tab on mount, without sliding in', () => {
     const { container } = render(<Strip tabs={TABS} activeId="a" />);
     const s = slider(container);
-    expect(s.style.transform).toBe('translate3d(10px, 8px, 0)');
+    expect(s.style.transform).toBe('translate3d(10px, 8px, 0px)');
     expect(s.style.width).toBe('80px');
     expect(s.style.height).toBe(`${40 + TAB_SLIDER_FOOT_PX}px`);
     expect(s.style.transition).toBe('none');
@@ -102,7 +102,7 @@ describe('useTabSlider', () => {
     const { container, rerender } = render(<Strip tabs={TABS} activeId="a" />);
     rerender(<Strip tabs={TABS} activeId="b" />);
     const s = slider(container);
-    expect(s.style.transform).toBe('translate3d(92px, 8px, 0)');
+    expect(s.style.transform).toBe('translate3d(92px, 8px, 0px)');
     expect(s.style.width).toBe('100px');
     expect(s.style.transition).toContain(`transform ${TAB_SLIDE_MS}ms`);
     // Layout changes during the slide are the slide's own: the card keeps travelling.
@@ -112,7 +112,7 @@ describe('useTabSlider', () => {
       vi.advanceTimersByTime(TAB_SLIDE_MS + 20);
     });
     expect(s.style.transition).toBe('none');
-    expect(s.style.transform).toBe('translate3d(92px, 8px, 0)');
+    expect(s.style.transform).toBe('translate3d(92px, 8px, 0px)');
   });
 
   it('turns round mid-slide, settling once from the last switch', () => {
@@ -123,7 +123,7 @@ describe('useTabSlider', () => {
     });
     rerender(<Strip tabs={TABS} activeId="a" />);
     const s = slider(container);
-    expect(s.style.transform).toBe('translate3d(10px, 8px, 0)');
+    expect(s.style.transform).toBe('translate3d(10px, 8px, 0px)');
     act(() => {
       vi.advanceTimersByTime(TAB_SLIDE_MS / 2 + 20);
     });
@@ -140,7 +140,7 @@ describe('useTabSlider', () => {
     reduced = true;
     rerender(<Strip tabs={TABS} activeId="b" />);
     expect(slider(container).style.transition).toBe('none');
-    expect(slider(container).style.transform).toBe('translate3d(92px, 8px, 0)');
+    expect(slider(container).style.transform).toBe('translate3d(92px, 8px, 0px)');
   });
 
   it('follows its tab at once when the layout moves it, and when the order changes', () => {
@@ -160,7 +160,7 @@ describe('useTabSlider', () => {
         activeId="a"
       />,
     );
-    expect(slider(container).style.transform).toBe('translate3d(112px, 8px, 0)');
+    expect(slider(container).style.transform).toBe('translate3d(112px, 8px, 0px)');
     expect(slider(container).style.transition).toBe('none');
   });
 
@@ -182,7 +182,7 @@ describe('useTabSlider', () => {
     // The next open tab: the card appears there, rather than sliding from where it last stood.
     rerender(<Strip tabs={TABS} activeId="b" />);
     expect(slider(container).style.transition).toBe('none');
-    expect(slider(container).style.transform).toBe('translate3d(92px, 8px, 0)');
+    expect(slider(container).style.transform).toBe('translate3d(92px, 8px, 0px)');
   });
 
   it('does without a ResizeObserver, and stops its timer when it unmounts', () => {

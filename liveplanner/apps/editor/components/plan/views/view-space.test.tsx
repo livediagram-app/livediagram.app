@@ -77,7 +77,7 @@ describe('Card Search uses its space', () => {
     const plan = planWith(CARDS());
     draw('search', plan, { width: 1280, height: 800 });
     const grid = screen.getByRole('list', { name: 'Matching cards' });
-    expect(grid.style.gridTemplateColumns).toBe('repeat(5, minmax(0, 1fr))');
+    expect(grid.style.gridTemplateColumns).toBe('repeat(5, minmax(0px, 1fr))');
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     fireEvent.click(screen.getByRole('button', { name: /^Open Beta/ }));
     expect(plan.openItem).toHaveBeenCalledWith(expect.stringMatching(/^i/));
@@ -86,7 +86,7 @@ describe('Card Search uses its space', () => {
   it('falls back to one column in a narrow slot', () => {
     draw('search', planWith(CARDS()), { width: 240, height: 400 });
     expect(screen.getByRole('list', { name: 'Matching cards' }).style.gridTemplateColumns).toBe(
-      'repeat(1, minmax(0, 1fr))',
+      'repeat(1, minmax(0px, 1fr))',
     );
   });
 });

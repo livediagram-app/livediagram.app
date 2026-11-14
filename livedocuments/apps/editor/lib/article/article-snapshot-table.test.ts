@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { snapshotWriting, type ArticleDrawOp } from './article-snapshot';
 
 // docs/specs/007-editor/article-pages.md "Everywhere a page goes": a table's rules, a contents entry's dotted
@@ -16,12 +16,16 @@ function el(tag: string, style: string, rects: DOMRect[], cls = ''): HTMLElement
   return e;
 }
 
+// Computed style needs the tree in the document: a detached element has none, as in a browser.
+const attachedRoot = () => document.body.appendChild(document.createElement('div'));
+afterEach(() => document.body.replaceChildren());
+
 const lines = (ops: ArticleDrawOp[]) =>
   ops.flatMap((o) => (o.k === 'line' ? [[o.x1, o.y1, o.x2, o.y2, o.width, o.dash ?? false]] : []));
 
 describe('a table, as an export draws it', () => {
   it('rules its top and left edges and each cell’s right and bottom, on each page it lies on', () => {
-    const root = document.createElement('div');
+    const root = attachedRoot();
     // Split across two pages: two rects.
     const table = el(
       'table',
@@ -48,7 +52,7 @@ describe('a table, as an export draws it', () => {
   });
 
   it('never rules the top or right of anything outside a table', () => {
-    const root = document.createElement('div');
+    const root = attachedRoot();
     root.appendChild(
       el('p', 'border-top: 2px solid #000; border-right: 2px solid #000', [rect(0, 0, 10, 10)]),
     );
@@ -56,7 +60,7 @@ describe('a table, as an export draws it', () => {
   });
 
   it('draws a dotted leader dashed, and leaves out selected cells’ tint and the chips', () => {
-    const root = document.createElement('div');
+    const root = attachedRoot();
     root.appendChild(el('span', 'border-bottom: 1px dotted #888', [rect(0, 0, 80, 10)]));
     root.appendChild(el('td', 'background-color: #ccddff', [rect(0, 0, 9, 9)], 'selectedCell'));
     const chips = el('div', 'background-color: #eee', [rect(0, 0, 9, 9)], 'article-chrome');
@@ -68,7 +72,7 @@ describe('a table, as an export draws it', () => {
   });
 
   it('draws an opaque colour with no blue in it, and leaves a see-through one out', () => {
-    const root = document.createElement('div');
+    const root = attachedRoot();
     root.appendChild(el('p', 'background-color: rgb(255, 0, 0)', [rect(0, 0, 9, 9)]));
     root.appendChild(el('p', 'background-color: rgba(255, 0, 0, 0)', [rect(0, 0, 9, 9)]));
     const fills = snapshotWriting(root, (x, y) => ({ x, y }), 1).flatMap((o) =>

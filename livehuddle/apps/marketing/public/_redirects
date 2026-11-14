@@ -7,6 +7,9 @@
 /alternatives/miro/ /alternatives 301
 /alternatives/figjam /alternatives 301
 /alternatives/figjam/ /alternatives 301
+# Teamflow's virtual office looks closed (Work Tracker 767), so its page moved to the hub too.
+/alternatives/teamflow /alternatives 301
+/alternatives/teamflow/ /alternatives 301
 
 # The Meetings feature page was /features/workshops until the meet-first refocus (Work Tracker #423).
 /features/workshops /features/meetings 301

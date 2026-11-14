@@ -1,7 +1,7 @@
 'use client';
 
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type { Tab } from '@livediagram/document';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
@@ -309,7 +309,12 @@ export function useEditorRoom({
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
-  // indicators + TabBar avatars). See usePresenceBroadcast.
+  // indicators + TabBar avatars). See usePresenceBroadcast. An element we let go of stays held while our change to it
+  // has not landed (selection-write-hold.ts): one stable object, read when used.
+  const presenceWriting = useMemo(
+    () => ({ tabs: tabsRef, baseline: lastSavedTabsRef, writes: ownWrites }),
+    [tabsRef, lastSavedTabsRef, ownWrites],
+  );
   usePresenceBroadcast({
     hydrated,
     documentId,
@@ -317,6 +322,7 @@ export function useEditorRoom({
     selection: selectionStore,
     activeId,
     roomRef,
+    writing: presenceWriting,
   });
 
   // Lazy fetch the active tab's full payload on first open, plus the
