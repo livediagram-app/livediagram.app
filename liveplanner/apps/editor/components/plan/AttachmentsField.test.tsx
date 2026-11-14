@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { Profiler } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import {
@@ -178,6 +179,55 @@ describe('the card panel, for an Editor or a Participant', () => {
       finish({ image: { id: 'img-9', contentType: 'image/png', byteSize: 9 }, deduped: false }),
     );
     expect(document.querySelector('[data-upload-ring]')).toBeNull();
+  });
+
+  // Work Tracker 794.
+  it('cancels: the file going now stops, the rest are dropped, nothing is said or written', async () => {
+    let signal: AbortSignal | undefined;
+    api.upload.mockImplementationOnce(
+      (_scope: unknown, _file: File, opts: { signal: AbortSignal }) => {
+        signal = opts.signal;
+        return new Promise((_resolve, reject) =>
+          opts.signal.addEventListener('abort', () => reject(new Error('stopped'))),
+        );
+      },
+    );
+    field(undefined);
+    const input = document.querySelector('input[type=file]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file('a.png'), file('b.png')] } });
+    await flush();
+    expect(screen.getByText('Uploading 2 Images…')).toBeTruthy();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Cancel Upload' })));
+    expect(signal!.aborted).toBe(true);
+    expect(api.upload).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Cancel Upload' })).toBeNull();
+    expect(screen.getByRole('button', { name: /Add Images/ })).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(patchItem).not.toHaveBeenCalled();
+  });
+
+  it('keeps the files already sent, and adds none that finished as Cancel was pressed', async () => {
+    let finish: (v: unknown) => void = () => {};
+    api.upload.mockImplementationOnce(async (_scope: unknown, f: File) => ({
+      image: { id: 'img-a', contentType: f.type, byteSize: 9 },
+      deduped: false,
+    }));
+    // The second answers after the press, as an upload the server had already stored.
+    api.upload.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+    field(undefined);
+    const input = document.querySelector('input[type=file]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [file('a.png'), file('b.png'), file('c.png')] } });
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel Upload' }));
+    await act(async () =>
+      finish({ image: { id: 'img-b', contentType: 'image/png', byteSize: 9 }, deduped: false }),
+    );
+    expect(api.upload).toHaveBeenCalledTimes(2);
+    expect(patchItem).toHaveBeenCalledTimes(1);
+    expect(patchItem).toHaveBeenCalledWith(item.id, {
+      set: { attachments: [{ id: 'img-a', name: 'a.png', size: 9, type: 'image/png' }] },
+    });
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('takes a drop on the zone, and a pasted image outside a text field, never one pasted into text', async () => {
@@ -489,6 +539,89 @@ describe('a file dropped on a board’s card', () => {
     expect(patchItem).toHaveBeenCalledWith(item.id, {
       set: { attachments: [{ id: 'img-1', name: 'drop.png', size: 2048, type: 'image/png' }] },
     });
+  });
+
+  it('fills the card pill’s ring by the bytes sent while it uploads', async () => {
+    let finish: (v: unknown) => void = () => {};
+    let progress: (share: number) => void = () => {};
+    api.upload.mockImplementationOnce(
+      (_scope: unknown, _file: File, opts: { onProgress: (share: number) => void }) => {
+        progress = opts.onProgress;
+        return new Promise((resolve) => (finish = resolve));
+      },
+    );
+    card();
+    const el = document.querySelector('[data-plan-card]')!;
+    fireEvent.drop(el, { dataTransfer: { types: ['Files'], files: [file('drop.png')] } });
+    await flush();
+    const ring = () =>
+      el
+        .querySelector('[data-card-file-drop] [data-upload-ring]')!
+        .getAttribute('data-upload-ring');
+    expect(screen.getByText('Uploading…')).toBeTruthy();
+    expect(ring()).toBe('turning');
+    act(() => progress(0.42));
+    expect(screen.getByText('Uploading 42%')).toBeTruthy();
+    expect(ring()).toBe('42');
+    await act(async () =>
+      finish({ image: { id: 'img-9', contentType: 'image/png', byteSize: 9 }, deduped: false }),
+    );
+    expect(el.querySelector('[data-card-file-drop]')).toBeNull();
+  });
+
+  // Work Tracker 796: the card face is drawn for every card, so the ring's state is the uploading card's alone.
+  it('redraws only the uploading card as its ring fills', async () => {
+    let progress: (share: number) => void = () => {};
+    api.upload.mockImplementationOnce(
+      (_scope: unknown, _file: File, opts: { onProgress: (share: number) => void }) => {
+        progress = opts.onProgress;
+        return new Promise(() => {});
+      },
+    );
+    const other: Item = { ...item, id: 'item0002', key: 2, fields: { title: 'Pricing' } };
+    setPlan({
+      items: new Map([
+        [item.id, item],
+        [other.id, other],
+      ]),
+    });
+    const renders = { [item.id]: 0, [other.id]: 0 };
+    const props = {
+      palette: PALETTE,
+      placeholderBefore: undefined,
+      lifted: false,
+      done: false,
+      setupFields: ['key'] as const,
+      cardSize: 'detailed' as const,
+      faceDown: false,
+      presence: undefined,
+      interactive: true,
+      canMove: true,
+      onPress: vi.fn(),
+      onOpen: vi.fn(),
+      onKey: vi.fn(),
+      onMenu: vi.fn(),
+    };
+    render(
+      <>
+        {[item, other].map((it) => (
+          <Profiler
+            key={it.id}
+            id={it.id}
+            onRender={(id) => (renders[id] = (renders[id] ?? 0) + 1)}
+          >
+            <PlanBoardCard item={it} {...props} />
+          </Profiler>
+        ))}
+      </>,
+    );
+    const [el] = document.querySelectorAll('[data-plan-card]');
+    fireEvent.drop(el!, { dataTransfer: { types: ['Files'], files: [file('drop.png')] } });
+    await flush();
+    const before = { ...renders };
+    for (const share of [0.1, 0.2, 0.3, 0.4]) act(() => progress(share));
+    expect(renders[item.id]! - before[item.id]!).toBe(4);
+    expect(renders[other.id]).toBe(before[other.id]);
   });
 
   it('lets the ring go when the file leaves', () => {

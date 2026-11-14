@@ -2,7 +2,9 @@
 
 // A file dropped on a board's card joins its Attachments (docs/specs/026-plan/items.md "Attachments"), when its type
 // offers them and this person may edit cards: the card rings in the brand colour while a file is over it, and a
-// refusal (too big, the card full) is said in a toast. Any other card takes no drop.
+// refusal (too big, the card full) is said in a toast; while it uploads, the card's pill fills a ring by the bytes
+// sent (Work Tracker 796), held in this card's own upload state so no other card redraws. Any other card takes no
+// drop.
 import { useState, type DragEvent } from 'react';
 import { ITEM_TYPES, typeIn, type Item } from '@liveplanner/items';
 import { usePlanCard, usePlanLatest } from './PlanCardContext';
@@ -11,6 +13,8 @@ import { imageFilesOf, useAttachmentUpload } from './use-attachment-upload';
 export type CardFileDrop = {
   over: boolean;
   uploading: boolean;
+  // The share of the bytes sent of the file going now (0 to 1), or undefined until the browser says.
+  progress: number | undefined;
   handlers: {
     onDragOver?: (e: DragEvent<HTMLElement>) => void;
     onDragLeave?: (e: DragEvent<HTMLElement>) => void;
@@ -28,10 +32,12 @@ export function useCardFileDrop(item: Item, faceDown: boolean): CardFileDrop {
   const upload = useAttachmentUpload(item.id, takes, { watchOffline: false });
   const [over, setOver] = useState(false);
   const uploading = upload.uploading > 0;
-  if (!upload.canAdd) return { over: false, uploading, handlers: NO_HANDLERS };
+  const { progress } = upload;
+  if (!upload.canAdd) return { over: false, uploading, progress, handlers: NO_HANDLERS };
   return {
     over,
     uploading,
+    progress,
     handlers: {
       onDragOver: (e) => {
         if (!e.dataTransfer.types.includes('Files')) return;

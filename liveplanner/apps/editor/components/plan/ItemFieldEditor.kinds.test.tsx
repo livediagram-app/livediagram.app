@@ -125,6 +125,7 @@ describe('an Image field', () => {
     await flush();
     expect(api.upload).toHaveBeenCalledWith(SCOPE, file, {
       onProgress: expect.any(Function),
+      signal: expect.any(AbortSignal),
     });
     expect(c.onSave).toHaveBeenCalledWith('f-shot', 'img_1');
   });
@@ -165,6 +166,47 @@ describe('an Image field', () => {
     act(() => progress(1));
     expect(screen.getByText('Uploading 100%')).toBeTruthy();
     await act(async () => finish({ image: { id: 'img_2' }, deduped: false }));
+  });
+
+  // Work Tracker 794.
+  it('cancels an upload on the empty zone, saving and saying nothing', async () => {
+    let signal: AbortSignal | undefined;
+    api.upload.mockImplementation((_scope: unknown, _file: File, opts: { signal: AbortSignal }) => {
+      signal = opts.signal;
+      return new Promise((_resolve, reject) =>
+        opts.signal.addEventListener('abort', () => reject(new Error('stopped'))),
+      );
+    });
+    const c = ctx(make({}));
+    const { container } = render(<ItemFieldEditor f="f-shot" ctx={c} />);
+    expect(screen.queryByRole('button', { name: 'Cancel Upload' })).toBeNull();
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(['x'], 'shot.png', { type: 'image/png' })] },
+    });
+    await flush();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Cancel Upload' })));
+    expect(signal!.aborted).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Cancel Upload' })).toBeNull();
+    expect(screen.getByText('Add an Image')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(c.onSave).not.toHaveBeenCalled();
+  });
+
+  it('keeps the picture when a replacement is cancelled as it finishes', async () => {
+    let finish: (v: unknown) => void = () => {};
+    api.upload.mockImplementation(() => new Promise((resolve) => (finish = resolve)));
+    const c = ctx(make({ 'f-shot': 'img_1' }));
+    const { container } = render(<ItemFieldEditor f="f-shot" ctx={c} />);
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(['y'], 'next.png', { type: 'image/png' })] },
+    });
+    await flush();
+    expect(screen.getByRole('button', { name: 'Replace' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel Upload' }));
+    await act(async () => finish({ image: { id: 'img_2' }, deduped: false }));
+    expect(c.onSave).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Cancel Upload' })).toBeNull();
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('takes a dropped file, and says why an upload was refused', async () => {

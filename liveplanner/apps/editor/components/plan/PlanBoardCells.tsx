@@ -30,6 +30,7 @@ import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
 import { PracticeMarks } from './PracticeMarks';
 import { useCardFileDrop } from './card-file-drop';
+import { UploadRing, uploadingWords } from './UploadRing';
 import type { PlanPalette } from './plan-palette';
 import { PLAN_HEADING_STYLE, planTextScaleVars } from '@/lib/plan-font';
 import { usePlanTextScale } from './PlanTextScaleContext';
@@ -262,8 +263,15 @@ export const PlanBoardCard = memo(function PlanBoardCard({
             data-card-file-drop=""
             className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[var(--plan-card-r,12px)] bg-white/80 ring-2 ring-brand-500 dark:bg-slate-900/80"
           >
-            <span className="rounded-md bg-brand-700 px-2 py-0.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold text-white shadow-sm dark:bg-brand-600">
-              {fileDrop.uploading ? 'Uploading…' : 'Drop to Attach'}
+            <span className="flex items-center gap-1.5 rounded-md bg-brand-700 px-2 py-0.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold text-white shadow-sm dark:bg-brand-600">
+              {fileDrop.uploading ? (
+                <>
+                  <UploadRing progress={fileDrop.progress} className="h-3.5 w-3.5" onBrand />
+                  {uploadingWords(fileDrop.progress)}
+                </>
+              ) : (
+                'Drop to Attach'
+              )}
             </span>
           </span>
         ) : null}

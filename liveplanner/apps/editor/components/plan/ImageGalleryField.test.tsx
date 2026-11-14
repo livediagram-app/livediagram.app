@@ -231,6 +231,57 @@ describe('the card panel, for an Editor or a Participant', () => {
     expect(patchItem).toHaveBeenCalledTimes(2);
   });
 
+  // Work Tracker 794.
+  it('cancels an uploading file and a waiting one: each tile goes, nothing is said, the rest still land', async () => {
+    let signal: AbortSignal | undefined;
+    api.upload.mockImplementationOnce(
+      (_scope: unknown, _file: File, opts: { signal: AbortSignal }) => {
+        signal = opts.signal;
+        return new Promise((_resolve, reject) =>
+          opts.signal.addEventListener('abort', () => reject(new Error('stopped'))),
+        );
+      },
+    );
+    gallery([]);
+    pick([file('first.png'), file('second.png'), file('third.png')]);
+    await flush();
+    // The waiting one first: it leaves the queue without ever being sent (a second press before it goes is nothing).
+    const second = screen.getByRole('button', { name: 'Cancel upload of second.png' });
+    act(() => {
+      second.click();
+      second.click();
+    });
+    expect(screen.queryByLabelText(/^second\.png/)).toBeNull();
+    await act(async () =>
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel upload of first.png' })),
+    );
+    await flush();
+    expect(signal!.aborted).toBe(true);
+    expect(screen.queryByLabelText(/^first\.png/)).toBeNull();
+    expect(api.upload).toHaveBeenCalledTimes(2);
+    expect((api.upload.mock.calls[1]![1] as File).name).toBe('third.png');
+    expect(patchItem).toHaveBeenCalledTimes(1);
+    expect(patchItem).toHaveBeenCalledWith(item.id, { set: { 'f-designs': ['img-1'] } });
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(announce).toHaveBeenCalledWith('Image added');
+  });
+
+  it('adds nothing for a file that finished uploading as Cancel was pressed', async () => {
+    let finish: (v: unknown) => void = () => {};
+    api.upload.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+    gallery(['a']);
+    pick([file('late.png')]);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel upload of late.png' }));
+    await act(async () => finish({ image: { id: 'img-late' }, deduped: false }));
+    await flush();
+    expect(patchItem).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText(/^late\.png/)).toBeNull();
+    expect(screen.queryByRole('alert')).toBeNull();
+    // A second press, or one for a tile already gone, does nothing.
+    expect(screen.queryByRole('button', { name: /Cancel upload/ })).toBeNull();
+  });
+
   it('checks every file before sending, skips the refused and says why, and the rest still land', async () => {
     gallery([]);
     const big = file('huge.png');

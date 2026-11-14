@@ -12,6 +12,7 @@ import {
   lucideImagePlus,
   lucideRefreshCw,
   lucideTrash2,
+  lucideX,
 } from '@liveworkspace/icons/lucide';
 import { IMAGE_ACCEPT, IMAGE_THUMB_EDGE, ImageUploadError, apiUploadImage } from '@/lib/api/images';
 import { track } from '@/lib/telemetry';
@@ -23,6 +24,7 @@ const AddIcon = lucideGlyph(lucideImagePlus, 20);
 const BrokenIcon = lucideGlyph(lucideImage, 18);
 const ReplaceIcon = lucideGlyph(lucideRefreshCw, 13);
 const RemoveIcon = lucideGlyph(lucideTrash2, 13);
+const CancelIcon = lucideGlyph(lucideX, 13);
 
 // The picture an Image field shows: its id, or the first of a stored list (a value a Several Images field wrote).
 const imageIdOf = (value: ItemFieldValue | undefined): string | null =>
@@ -57,6 +59,8 @@ export function ImageFieldControl({
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [over, setOver] = useState(false);
+  // The upload going now's stop (Cancel Upload, Work Tracker 794).
+  const stopRef = useRef<AbortController | null>(null);
   const canUpload = !disabled && !unavailable && !!scope;
 
   const upload = async (file: File | undefined) => {
@@ -64,21 +68,41 @@ export function ImageFieldControl({
     setError(null);
     setUploading(true);
     setSent(undefined);
+    const stop = new AbortController();
+    stopRef.current = stop;
     try {
       const { image } = await apiUploadImage(scope, file, {
         // Whole percents, so React keeps the same value and draws nothing between them.
         onProgress: (share) => setSent(uploadPercent(share) / 100),
+        signal: stop.signal,
       });
+      // Cancelled as it finished: the field keeps what it had (the picture stays in the uploader's gallery).
+      if (stop.signal.aborted) return;
       onSave(image.id);
       track('Plan', 'Added', 'CardImage');
     } catch (err) {
+      // Stopped by Cancel Upload: nothing to say.
+      if (stop.signal.aborted) return;
       const failure = err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
       if (failure.code === 'images_unavailable') setUnavailable(true);
       setError(failure.message);
     } finally {
+      stopRef.current = null;
       setUploading(false);
     }
   };
+  const cancelUpload = () => stopRef.current?.abort();
+  const cancelButton = (
+    <button
+      type="button"
+      aria-label="Cancel Upload"
+      className={`${QUIET_BUTTON} whitespace-nowrap`}
+      onClick={cancelUpload}
+    >
+      <CancelIcon />
+      Cancel
+    </button>
+  );
   const choose = () => fileRef.current?.click();
   const drop = (e: DragEvent) => {
     e.preventDefault();
@@ -142,6 +166,7 @@ export function ImageFieldControl({
             PNG, JPEG, WebP or GIF, up to 10 MB
           </span>
         </Button>
+        {uploading ? <div className="flex items-center gap-1">{cancelButton}</div> : null}
         {message ? (
           <p role="alert" className="text-[12px] text-rose-700 dark:text-rose-300">
             {message}
@@ -204,18 +229,21 @@ export function ImageFieldControl({
             <ReplaceIcon />
             Replace
           </Button>
-          <button
-            type="button"
-            className={QUIET_BUTTON}
-            disabled={uploading}
-            onClick={() => {
-              setError(null);
-              onSave(undefined);
-            }}
-          >
-            <RemoveIcon />
-            Remove
-          </button>
+          {uploading ? (
+            cancelButton
+          ) : (
+            <button
+              type="button"
+              className={QUIET_BUTTON}
+              onClick={() => {
+                setError(null);
+                onSave(undefined);
+              }}
+            >
+              <RemoveIcon />
+              Remove
+            </button>
+          )}
         </div>
       )}
       {message ? (

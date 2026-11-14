@@ -4,6 +4,7 @@
 // of square thumbnails in the field's order, each opening the picture full size; then a dashed Add Images tile that
 // takes the file picker (several files at once) and a drop. Each file waits its turn and uploads as its own tile. A
 // thumbnail is removed by its cross and moved by dragging it (or its grip, on a touch screen) or by Alt+← and Alt+→.
+// A file on its way is cancelled by pressing its ring.
 // A reader sees the pictures and opens them; adding, removing and moving are an Editor's and a Participant's.
 import { useEffect, useId, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import {
@@ -199,7 +200,7 @@ export function ImageGalleryField({
           />
         ))}
         {upload.pending.map((p) => (
-          <PendingTile key={p.key} pending={p} />
+          <PendingTile key={p.key} pending={p} onCancel={() => upload.cancel(p.key)} />
         ))}
         {addTile}
       </ul>
@@ -315,8 +316,9 @@ function Thumbnail({
 }
 
 // A file on its way, as a tile of its own: a still ring while it waits its turn, then one filling by the bytes sent
-// while it uploads (turning until the browser first says how far it has got).
-function PendingTile({ pending }: { pending: PendingImage }) {
+// while it uploads (turning until the browser first says how far it has got). The ring is its Cancel button, a small
+// cross at its centre (a stop in a progress ring, as app stores draw a download), so it fits the narrowest tile.
+function PendingTile({ pending, onCancel }: { pending: PendingImage; onCancel: () => void }) {
   const uploading = pending.state === 'uploading';
   const known = uploading && pending.progress !== undefined;
   return (
@@ -328,9 +330,24 @@ function PendingTile({ pending }: { pending: PendingImage }) {
             ? `uploading, ${uploadPercent(pending.progress!)}%`
             : 'uploading'
       }`}
-      className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg bg-slate-50 px-1.5 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700"
+      className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg bg-slate-50 px-1.5 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700"
     >
-      <UploadRing progress={uploading ? pending.progress : 0} />
+      <Tooltip label="Cancel Upload">
+        <button
+          type="button"
+          aria-label={`Cancel upload of ${pending.name}`}
+          onClick={onCancel}
+          className="group/cancel relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 motion-reduce:transition-none pointer-coarse:h-11 pointer-coarse:w-11 dark:hover:bg-rose-500/15"
+        >
+          <UploadRing progress={uploading ? pending.progress : 0} />
+          <span
+            aria-hidden
+            className="absolute inset-0 flex items-center justify-center text-slate-500 transition group-hover/cancel:text-rose-600 motion-reduce:transition-none dark:text-slate-400 dark:group-hover/cancel:text-rose-300"
+          >
+            <CloseIcon size={8} />
+          </span>
+        </button>
+      </Tooltip>
       <span
         aria-hidden
         className="w-full truncate text-center text-[10px] leading-tight text-slate-500 dark:text-slate-400"

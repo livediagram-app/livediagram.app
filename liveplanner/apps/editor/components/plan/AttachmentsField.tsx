@@ -21,6 +21,7 @@ import {
   lucideImage,
   lucideImagePlus,
   lucidePanelTop,
+  lucideX,
 } from '@liveworkspace/icons/lucide';
 import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
@@ -42,6 +43,7 @@ const BrokenIcon = lucideGlyph(lucideImage, 16);
 const OpenIcon = lucideGlyph(lucideExternalLink, 14);
 const DownloadIcon = lucideGlyph(lucideDownload, 14);
 const CoverIcon = lucideGlyph(lucidePanelTop, 14);
+const CancelIcon = lucideGlyph(lucideX, 13);
 
 const NO_ATTACHMENTS: readonly ItemAttachment[] = [];
 
@@ -185,6 +187,20 @@ export function AttachmentsField({
               </span>
             </span>
           </Button>
+          {busy ? (
+            // Under the zone, as an Image field's: a button can't hold another.
+            <div className="flex items-center">
+              <button
+                type="button"
+                aria-label="Cancel Upload"
+                onClick={upload.cancel}
+                className="inline-flex h-8 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 motion-reduce:transition-none pointer-coarse:h-11 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+              >
+                <CancelIcon />
+                Cancel
+              </button>
+            </div>
+          ) : null}
         </>
       ) : null}
       {message ? (
