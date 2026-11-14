@@ -18,7 +18,7 @@ export function WordCountLine({ counts }: { counts: ArticleCounts }) {
       className="flex items-center gap-2 px-2.5 py-1.5 text-slate-700 dark:text-slate-200"
     >
       <CountIcon aria-hidden />
-      <span aria-hidden className="flex-1">
+      <span aria-hidden className="flex-1 whitespace-nowrap">
         Word Count
       </span>
       <span

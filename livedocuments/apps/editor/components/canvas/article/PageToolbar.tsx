@@ -473,7 +473,7 @@ export function PageToolbar({
         </ToolbarPopover>
       ) : null}
       {open === 'more' ? (
-        <ToolbarPopover anchor="more" menu onClose={close} label="More Formatting" width={248}>
+        <ToolbarPopover anchor="more" menu onClose={close} label="More Formatting" width={272}>
           <MorePanel
             selection={selection}
             card={card}
