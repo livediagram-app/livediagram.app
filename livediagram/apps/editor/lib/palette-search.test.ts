@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { SHAPE_KINDS } from '@livediagram/document';
 
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { buildPaletteSearchItems } from '@/lib/palette-search';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { SHAPE_KEYWORDS } from '@/lib/palette-tile-keywords';
 
 // Drift guard. The "Add to canvas" catalogue used to be a hand-written list of
@@ -132,5 +133,41 @@ describe('buildPaletteSearchItems', () => {
     expect(before.some((i) => /^(icon|sticker|tech):/.test(i.id))).toBe(false);
     const after = buildPaletteSearchItems();
     expect(after.filter((i) => /^(shape|tile):/.test(i.id))).toEqual(before);
+  });
+});
+
+// Work Tracker 444 (docs/specs/008-canvas/canvas-and-palette.md "One row per name between icons and emoji"): a row
+// shows only its name, so the Gift icon and the Gift sticker were two identical rows.
+describe('one Add to canvas row per name', () => {
+  beforeAll(() => ensureIconCatalogs());
+
+  it('lists one Gift row, the icon, carrying the sticker\u2019s words too', () => {
+    const items = buildPaletteSearchItems();
+    const gifts = items.filter((i) => i.name.toLowerCase() === 'gift');
+    expect(gifts.map((i) => i.id)).toEqual(['icon:gift']);
+    expect(gifts[0]!.keywords).toMatch(/present/);
+    expect(gifts[0]!.keywords).toMatch(/surprise/);
+    expect(gifts[0]!.keywords).toMatch(/emoji/);
+    expect(items.some((i) => i.id === 'sticker:emoji-gift')).toBe(false);
+  });
+
+  it('shows no icon and emoji sticker under the same name anywhere', () => {
+    const items = buildPaletteSearchItems();
+    const iconNames = new Set(
+      items.filter((i) => i.id.startsWith('icon:')).map((i) => i.name.toLowerCase()),
+    );
+    const twins = items.filter(
+      (i) =>
+        i.add.type === 'sticker' &&
+        !i.add.stickerId.startsWith('badge-') &&
+        iconNames.has(i.name.toLowerCase()),
+    );
+    expect(twins).toEqual([]);
+  });
+
+  it('keeps a badge its own row and an emoji with no icon twin', () => {
+    const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
+    expect(ids.has('sticker:badge-idea')).toBe(true);
+    expect(ids.has('sticker:emoji-cake')).toBe(true);
   });
 });

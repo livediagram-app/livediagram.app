@@ -119,28 +119,41 @@ export function buildPaletteSearchItems({
   catalogues?: boolean;
 } = {}): PaletteSearchItem[] {
   if (!catalogues) return [...SHAPE_TILES.map(shapeTileSearchItem), ...otherTileItems(hasImage)];
+  // Line art only. The catalogue still carries the legacy emoji entries so
+  // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
+  // a second way to place something that is a sticker now.
+  const icons: PaletteSearchItem[] = getLoadedIconCatalog()
+    .filter((i) => !isLegacyEmojiIconId(i.id))
+    .map((i) => ({
+      id: `icon:${i.id}`,
+      name: i.label,
+      keywords: `icon ${i.keywords}`,
+      add: { type: 'icon' as const, iconId: i.id },
+    }));
+  // One row per name between icons and emoji (docs/specs/008-canvas/canvas-and-palette.md "Add to canvas"): a row
+  // shows only its name, so an emoji sticker sharing an icon's name (Gift, Rocket) made two identical rows. The icon's
+  // row is kept and takes the sticker's words too; the sticker stays in the palette's Stickers.
+  const iconByName = new Map(icons.map((item) => [item.name.toLowerCase(), item]));
+  const stickers: PaletteSearchItem[] = [];
+  // Stickers (docs/specs/010-palette/stickers.md), added through their own path. A badge also
+  // matches on the word on its pill, so "blocked" finds BLOCKED.
+  for (const s of getLoadedStickerCatalog()) {
+    const keywords = `sticker ${s.kind === 'badge' ? `${s.text.toLowerCase()} badge ` : 'emoji '}${s.keywords}`;
+    const twin = s.kind === 'badge' ? undefined : iconByName.get(s.label.toLowerCase());
+    if (twin) twin.keywords = `${twin.keywords} ${keywords}`;
+    else
+      stickers.push({
+        id: `sticker:${s.id}`,
+        name: s.label,
+        keywords,
+        add: { type: 'sticker' as const, stickerId: s.id },
+      });
+  }
   return [
     ...SHAPE_TILES.map(shapeTileSearchItem),
     ...otherTileItems(hasImage),
-    // Line art only. The catalogue still carries the legacy emoji entries so
-    // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
-    // a second way to place something that is a sticker now.
-    ...getLoadedIconCatalog()
-      .filter((i) => !isLegacyEmojiIconId(i.id))
-      .map((i) => ({
-        id: `icon:${i.id}`,
-        name: i.label,
-        keywords: `icon ${i.keywords}`,
-        add: { type: 'icon' as const, iconId: i.id },
-      })),
-    // Stickers (docs/specs/010-palette/stickers.md), added through their own path. A badge also
-    // matches on the word on its pill, so "blocked" finds BLOCKED.
-    ...getLoadedStickerCatalog().map((s) => ({
-      id: `sticker:${s.id}`,
-      name: s.label,
-      keywords: `sticker ${s.kind === 'badge' ? `${s.text.toLowerCase()} badge ` : 'emoji '}${s.keywords}`,
-      add: { type: 'sticker' as const, stickerId: s.id },
-    })),
+    ...icons,
+    ...stickers,
     ...getLoadedTechIconCatalog().map((t) => ({
       id: `tech:${t.id}`,
       name: t.label,
