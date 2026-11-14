@@ -31,7 +31,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasWorldLayer } from './CanvasWorldLayer';
-import { canvasGestureNow } from '@/lib/canvas-gesture';
+import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';

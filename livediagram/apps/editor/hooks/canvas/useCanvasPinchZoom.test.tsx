@@ -6,7 +6,7 @@ import {
   WHEEL_SETTLE_MS,
   canvasGestureNow,
   resetCanvasGesturesForTests,
-} from '@/lib/canvas-gesture';
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasPinchZoom } from './useCanvasPinchZoom';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

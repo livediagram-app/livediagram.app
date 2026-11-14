@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
+import { canvasGestureNow, resetCanvasGesturesForTests } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasPanAndMarquee } from './useCanvasPanAndMarquee';
 
 // Held Space turns a canvas drag into a pan (docs/specs/008-canvas/canvas-and-palette.md). The pointerdown reads the
