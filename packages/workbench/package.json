@@ -588,6 +588,7 @@
     "./components/primitives/ChartLegend": "./src/components/primitives/ChartLegend.tsx",
     "./components/primitives/ChartSurface": "./src/components/primitives/ChartSurface.tsx",
     "./hooks/ui/useToast": "./src/hooks/ui/useToast.tsx",
+    "./hooks/ui/useImageSearch": "./src/hooks/ui/useImageSearch.ts",
     "./components/canvas/ElementIndicatorStyleContext": "./src/components/canvas/ElementIndicatorStyleContext.tsx",
     "./components/primitives/useMovablePanelMeasure": "./src/components/primitives/useMovablePanelMeasure.ts",
     "./lib/element-indicator-style": "./src/lib/element-indicator-style.ts",
