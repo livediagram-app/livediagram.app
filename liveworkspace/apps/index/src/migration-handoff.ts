@@ -4,7 +4,7 @@
 // `POST /items` would, then has that app write it through its migration door; if the app can't, the item goes
 // again, so nothing is left pointing at an empty room.
 
-import { APP_KINDS, TITLE_MAX, type App } from '@liveworkspace/index-client';
+import { APP_KINDS, type App } from '@liveworkspace/index-client';
 import type { HandoffRequest, MigrationRoomPayload } from '@liveworkspace/migration/contract';
 import { callApp } from './app-calls';
 import { handoffPersonOf, personalScope } from './auth';
@@ -12,7 +12,7 @@ import { isId } from './codec';
 import { HANDOFF_APP_TIMEOUT_MS, HANDOFF_MAX_BYTES } from './config';
 import { sendDriveSignals } from './drive';
 import type { Env } from './env';
-import { readName } from './folders';
+import { readTitle } from './folders';
 import { badRequest, conflict, fail, forbidden, json, notFound, unauthorized } from './http';
 import { insertItem } from './items';
 import type { ItemRow } from './rows';
@@ -66,7 +66,7 @@ export async function handleMigrationHandoff(
   if (!body) return badRequest();
   const target = body.app;
   if (!isHandoffApp(target)) return badRequest('invalid_app');
-  const title = readName(body.title, TITLE_MAX);
+  const title = readTitle(body.title);
   if (!title) return badRequest('invalid_title');
   const payload = body.payload;
   if (

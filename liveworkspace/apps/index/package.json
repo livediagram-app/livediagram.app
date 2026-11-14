@@ -24,6 +24,7 @@
     "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/media": "workspace:^",
+    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/migration": "workspace:^",
     "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/telemetry": "workspace:*",
