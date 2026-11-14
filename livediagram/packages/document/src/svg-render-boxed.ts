@@ -339,6 +339,9 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
               label.maxWidth,
               label.valign,
               label.fontFamily,
+              undefined,
+              undefined,
+              label.maxLines,
             )
           : svgWrappedLabel(
               // Wrapped in the face it paints in, or a wide face breaks at the

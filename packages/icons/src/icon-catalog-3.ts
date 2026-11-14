@@ -265,7 +265,7 @@ export const ICON_CATALOG_3: IconDef[] = [
   },
   {
     id: 'lightbulb',
-    label: 'Idea',
+    label: 'Lightbulb',
     keywords: 'lightbulb idea insight innovation tip',
     prims: [...lucideLightbulb],
   },

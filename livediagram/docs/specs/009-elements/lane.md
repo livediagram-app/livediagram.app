@@ -126,8 +126,8 @@ wraps onto more lines inside it, rather than running on past the seam into the l
 `LANE_TITLE_MAX_LINES` (3) lines the last one ends in an ellipsis. The full title is still the label: the editor is
 never clamped, so every word can be reached while typing, and dragging the seam wider gives the words their room
 back. A band across the top or bottom keeps the lane's width for its title, and an upright title wraps as below.
-The canvas (`lane-title-frame.ts`) and every export (`svg-render-describe`, `clampLabelLines`) lay the title out
-alike.
+The canvas (`lane-title-frame.ts`) and every export lay the title out alike: SVG and PNG, a plain title
+(`clampLabelLines`) and a formatted one (`clampExportRunLines`) alike.
 
 ## Upright titles
 

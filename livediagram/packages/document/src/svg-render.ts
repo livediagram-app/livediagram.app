@@ -20,6 +20,7 @@ import { shapeHasBespokeBody } from './svg-render-body';
 import { r2, xmlEscape } from './svg-render-primitives';
 
 export {
+  clampLabelLines,
   estimatedLabelMeasure,
   fontSizeFor,
   LABEL_ESTIMATE_CHAR_EM,
@@ -35,6 +36,7 @@ import { hasWordmarkType } from './wordmark';
 export {
   EXPORT_DEFAULT_FONT,
   BLANK_LINE,
+  clampExportRunLines,
   svgFontFamilyAttr,
   svgRichWrappedLabel,
   svgWrappedLabel,

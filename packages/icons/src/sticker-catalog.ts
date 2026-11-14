@@ -407,7 +407,7 @@ export const STICKER_CATALOG: StickerDef[] = [
     id: 'emoji-new',
     kind: 'emoji',
     glyph: '🆕',
-    label: 'New',
+    label: 'New button',
     keywords: 'new latest just added fresh recent badge',
   },
   {

@@ -165,6 +165,14 @@ describe('one Add to canvas row per name', () => {
     expect(twins).toEqual([]);
   });
 
+  it('lists every icon and sticker under a name of its own, so no two rows read alike', () => {
+    const names = buildPaletteSearchItems()
+      .filter((i) => i.add.type === 'icon' || i.add.type === 'sticker')
+      .map((i) => i.name.toLowerCase());
+    const repeated = names.filter((n, i) => names.indexOf(n) !== i);
+    expect(repeated).toEqual([]);
+  });
+
   it('keeps a badge its own row and an emoji with no icon twin', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
     expect(ids.has('sticker:badge-idea')).toBe(true);

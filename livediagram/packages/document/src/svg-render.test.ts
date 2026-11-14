@@ -974,6 +974,25 @@ describe('chrome the canvas draws on a box', () => {
     expect(Math.max(...xs)).toBeLessThan(132);
   });
 
+  it('clamps a formatted across title to three lines the same way', () => {
+    const text = 'Quarterly marketing programme review and sign off with every regional lead';
+    const svg = renderElementsToSvg(
+      tab([
+        laneAt({
+          label: text,
+          richText: [{ text: 'Quarterly', bold: true }, { text: text.slice('Quarterly'.length) }],
+          x: 0,
+          y: 0,
+        }),
+      ]),
+    );
+    // One positioned line per outer tspan (x="..." dy="..."), each holding its styled fragments.
+    const lines = svg.match(/<tspan x="[\d.]+" dy="[\d.]+">/g) ?? [];
+    expect(lines).toHaveLength(3);
+    expect(svg).toContain('font-weight="600">Quarterly</tspan>');
+    expect(svg).toMatch(/…<\/tspan><\/tspan><\/text>/);
+  });
+
   it('keeps a short across title on one line in its gutter', () => {
     const svg = renderElementsToSvg(tab([laneAt({ label: 'Sales', x: 0, y: 0 })]));
     expect(svg).toContain('>Sales<');

@@ -90,7 +90,9 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
     not editing clamps the text block to `LANE_TITLE_MAX_LINES` (3) lines with an ellipsis (`line-clamp-3`). The
     export places the label in the same strip with `maxWidth = strip.width - 2 × padding` and `maxLines = 3`,
     and `clampLabelLines` keeps the first three wrapped lines, taking characters (graphemes) off the third until it
-    and `…` fit. The stored label is never shortened.
+    and `…` fit; a formatted title's runs go through `clampExportRunLines`, which takes characters off the last
+    line's fragments from the end and puts the ellipsis in the last fragment's style. The PNG drawer
+    (`export-tab-canvas-draw.ts`) clamps both the same way. The stored label is never shortened.
 
 Guards:
 
