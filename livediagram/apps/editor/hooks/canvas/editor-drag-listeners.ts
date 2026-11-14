@@ -17,8 +17,11 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 import { applyArrowDragMove } from './arrow-drag-apply';
 import type { ShiftDupSwap } from './shift-duplicate-swap';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { beginCanvasGesture } from '@/lib/canvas-gesture';
-import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
+import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
+import {
+  dragWaitsToEngage,
+  gestureOfDrag,
+} from '@liveworkspace/workbench/hooks/canvas/drag-gesture';
 import type { useSnapGuideState } from './useSnapGuideState';
 import { createDragRelease } from './editor-drag-release';
 import { DRAG_ENGAGE_PX, moveBoxedDrag, type MovePointer } from './editor-drag-boxed-move';

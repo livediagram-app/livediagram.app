@@ -7,10 +7,10 @@
 import { createStartPanel } from '@liveworkspace/workbench/components/start/StartPanel';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { chosenLabel } from './start-palette';
-import { StartCardGrid, startTint } from './StartCard';
+import { StartCardGrid, startTint } from '@liveworkspace/workbench/components/start/StartCard';
 import { StartOtherModes } from './StartOtherModes';
 
-export type { StartPanelCard } from './StartCard';
+export type { StartPanelCard } from '@liveworkspace/workbench/components/start/StartCard';
 
 export const StartPanel = createStartPanel({
   app: 'livediagram',

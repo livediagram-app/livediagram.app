@@ -13,7 +13,7 @@ import type { RemoteSelection } from '@/lib/presence-rows';
 import type { PendingIdeaIds } from './room-op-apply';
 import type { SaveBaselineRefs } from './save-baseline';
 import type { OwnElementWrites } from './own-element-writes';
-import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
+import type { RemoteViewport } from '@liveworkspace/workbench/hooks/collab/useFollowMe';
 
 // What useRoomConnection takes, split out of useRoomConnection.ts: the document and who we are, the page's state
 // the room drives, and the handlers each kind of message reaches.

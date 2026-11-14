@@ -3,7 +3,7 @@
 
 import type { CapabilitiesResponse } from '@liveplanner/api-schema';
 import type { DebugLog } from '../debug';
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { cacheDir } from './paths';

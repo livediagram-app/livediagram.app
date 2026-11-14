@@ -9,7 +9,7 @@
 // label you were reading, or the padding while positioning the element, does
 // not send the room somewhere.
 
-import { keycapEdge } from '@/components/canvas/paper-kit';
+import { keycapEdge } from '@liveworkspace/workbench/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { Glyph, HoverCard } from '@livehuddle/ui';
 

@@ -36,7 +36,7 @@ import {
 import { COMMUNITY_LISTED_QUERY } from '@liveworkspace/community/app';
 import { cardsPushOf, noteKnownPeople } from './plan-cards-push';
 import { projectStatsSql } from '../db/tab-stats';
-import { isEmptyCount, type ContentSummary } from '../db/content-summary';
+import { isEmptyCount, type ContentSummary } from '@liveworkspace/index-app';
 import { pushFormInbox } from '../forms/form-inbox';
 import { IMAGES_OUTBOX_KIND, pushImageRefs } from './image-refs';
 import { indexAppClient } from '../index-service';
@@ -137,7 +137,7 @@ function parseTab(data: string): ParsedTab {
 
 // ---------- Summary ------------------------------------------------------------------------------------------
 
-// The plan's listing summary (db/content-summary.ts) and its last save, read from its own tables, never a body.
+// The plan's listing summary (@liveworkspace/index-app content-summary.ts) and its last save, read from its own tables, never a body.
 export async function readContentSummary(
   env: PlanEnv,
   planId: string,

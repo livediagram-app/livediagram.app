@@ -40,7 +40,9 @@ const stage = (e: TourEngine<unknown>, props: Partial<Parameters<typeof TourStag
 
 describe('TourStage', () => {
   it('draws nothing while the tour is not running', () => {
-    const { container } = render(stage(engine({ id: 'a', title: 'A', body: '' }, { active: false })));
+    const { container } = render(
+      stage(engine({ id: 'a', title: 'A', body: '' }, { active: false })),
+    );
     expect(container.innerHTML).toBe('');
     expect(document.querySelector('[data-tour-popover]')).toBeNull();
   });

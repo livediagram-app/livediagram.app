@@ -6,7 +6,7 @@ import {
   resetApiWriteListeners,
   subscribeApiWrites,
   type ApiWriteSignal,
-} from './api/write-signal';
+} from '@liveworkspace/workbench/lib/api/write-signal';
 import {
   __resetLegacyGuestClaim,
   claimLegacyGuest,

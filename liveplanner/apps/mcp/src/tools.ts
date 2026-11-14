@@ -24,7 +24,7 @@ import {
   type Project,
   type TrashedProject,
 } from '@liveplanner/api-schema';
-import { createdFolderLabel } from './created-folder';
+import { createdFolderLabel } from '@liveworkspace/mcp-kit/created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readProject } from './read-project';
 import type { Env } from '@liveworkspace/mcp-kit/env';
@@ -256,7 +256,7 @@ export function registerTools(server: McpServer, env: Env): void {
         name: args.name,
         tabCount: tabs.length,
         tabIds,
-        folder: await createdFolderLabel(env, token, created),
+        folder: await createdFolderLabel(clientFor(env, token), created, 'create_project'),
         url: deepLink(env, id),
         ...dashboardLeftOffNote(leftOff),
       },

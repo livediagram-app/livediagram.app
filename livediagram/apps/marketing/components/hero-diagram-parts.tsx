@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { IconPrim } from '@liveworkspace/icons';
 import { Prims } from '@livediagram/ui';
-import { cursorRide, type Point } from '@/lib/hero-motion';
+import { cursorRide, type Point } from '@liveworkspace/marketing-site/lib/hero-motion';
 import { FONT, at } from '@/components/art-tokens';
 import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 

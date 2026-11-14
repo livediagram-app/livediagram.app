@@ -8,7 +8,7 @@ import { EXPORT_FORMATS, listAllDesigns, tabPath, type VerbContext } from '@live
 import { ApiError } from '@liveworkspace/api-client';
 import type { DesignResponse } from '@livedesign/api-schema';
 import { designToEnvelopeText, type EnvelopeTab, type Tab } from '@livedesign/design';
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';

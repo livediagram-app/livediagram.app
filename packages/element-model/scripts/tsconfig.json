@@ -1,0 +1,6 @@
+{
+  // The package's Node scripts (the stroke points bench): the package's settings with Node's types.
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": ["*.ts"]
+}

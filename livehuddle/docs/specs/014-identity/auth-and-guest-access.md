@@ -61,7 +61,7 @@ When verification fails (expired, forged, minted for another app, or sign-in not
 
 **An owner id is never a credential.** Only a verified token says who is asking. Knowing someone's id, an account's or a guest's, lets a caller do nothing as them. The editor keeps the rule from its side (`identityHeaders` in `apps/editor/lib/api/core.ts`, shared with the unload beacon): a signed-in client whose `getToken()` resolves null asks once more with `{ skipCache: true }`, and if that is null too it throws `SessionTokenUnavailableError` rather than sending the request with no identity. The autosave reports both a 401 and a missing token as `unauthenticated` ([Per-tab storage](../006-document/per-tab-storage.md)).
 
-**An owner id is not shown to readers either.** `redactDocumentForReader` (`apps/api/src/redact-document.ts`) blanks the document's `ownerId` for anyone who is not its owner, on both doors that hand out a document DTO: the share resolver (`GET /api/share/<code>`) and the document fetch (`GET /api/documents/<id>`). A guest's id is the same in every liveworkspace app, so handing it to a reader would tie the document to that guest everywhere else. Blanking costs non-owners nothing: the client reads `ownerId` only to compute `isOwner` (false for a blank), and `resolveOwnerBadge` falls back to the owner's name and colour. The same function nulls the document's primary `shareCode` for non-owners: it is the document's oldest link of any role, so a view-link visitor who received it would hold an edit link. Visitors already hold the code they arrived with, and only the owner manages links.
+**An owner id is not shown to readers either.** `redactDocumentForReader` (`apps/api/src/redact-document.ts`, over `../packages/api-kit/src/redact-item.ts`) blanks the document's `ownerId` for anyone who is not its owner, on both doors that hand out a document DTO: the share resolver (`GET /api/share/<code>`) and the document fetch (`GET /api/documents/<id>`). A guest's id is the same in every liveworkspace app, so handing it to a reader would tie the document to that guest everywhere else. Blanking costs non-owners nothing: the client reads `ownerId` only to compute `isOwner` (false for a blank), and `resolveOwnerBadge` falls back to the owner's name and colour. The same function nulls the document's primary `shareCode` for non-owners: it is the document's oldest link of any role, so a view-link visitor who received it would hold an edit link. Visitors already hold the code they arrived with, and only the owner manages links.
 
 The two kinds coexist. A signed-in user can hand a share link to a guest who edits without an account.
 
@@ -240,7 +240,7 @@ copied under `guest_<old uuid>`, which nobody holds until it is claimed (repo `d
 - **The answer.** `{ merged: true }` or `{ merged: false }` (`LegacyGuestClaimAnswer`): the editor removes
   `self-id` and `self-sig`, and nothing else. Any other outcome (a network failure, any non-2xx) keeps both keys,
   and the next page load tries again.
-- **After a merge** the editor raises the `claimed` api-write signal (`lib/api/write-signal.ts`), and the views
+- **After a merge** the editor raises the `claimed` api-write signal (`packages/workbench/src/lib/api/write-signal.ts`), and the views
   that list the person's documents read their list again a second later (the editor's pickers,
   `useDocumentList`, and /new's Jump Back In card), so the claimed work appears without a reload.
 - **Into whom.** The caller, guest or account. A guest who signs in later carries the claimed work with them

@@ -31,7 +31,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasWorldLayer } from './CanvasWorldLayer';
-import { canvasGestureNow } from '@/lib/canvas-gesture';
+import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
@@ -41,7 +41,7 @@ import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 
-import { useCanvasPointer } from './useCanvasPointer';
+import { useCanvasPointer } from '@liveworkspace/workbench/hooks/canvas/useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 import { useCanvasSelectionInput } from './useCanvasSelectionInput';
 

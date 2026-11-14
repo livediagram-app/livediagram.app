@@ -1,7 +1,7 @@
 // The CLI's OAuth client (docs/specs/015-api/blueprints/cli.md "The CLI's OAuth client", CLI34 to CLI36):
 // @liveworkspace/cli-kit's browser and device sign-in, as livedesign's CLI client.
 
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import type { DebugLog } from '../debug';
 import * as kit from '@liveworkspace/cli-kit/oauth';
 import { PRODUCT } from '../product';

@@ -341,8 +341,7 @@ The container was called a diagram before it became a document ([Document](../00
 - A WebSocket upgrade on the old path passes through unchanged.
 
 Outside `/api/diagrams…` the paths never changed, so nothing marks a request as coming from an old
-client. Those routes accept the old **request** forms until the sunset (`apps/api/src/legacy-request-forms.ts`):
-the timeline's `scope=diagram:<id>`, and a `diagramId` in the team notification bodies. Their
+client. Those routes accept the old **request** form of the timeline's `scope=diagram:<id>` until the sunset. Their
 **responses** use the new names only (`document` in `/share/{code}` and `/trash/{id}/restore`, the
 `document_*` timeline types): repeating a whole document under two keys would double the largest
 payloads.
