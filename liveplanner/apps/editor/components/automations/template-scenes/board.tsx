@@ -30,8 +30,6 @@ import {
   type ToneClasses,
 } from '../scene-parts';
 
-// The back of a column, the way a card moving left travels.
-
 /** A small chip set inline in a row (Pill is placed absolutely). */
 function Chip({
   className = '',

@@ -39,8 +39,6 @@ const RUNNING: PrFace = {
 const FAILING: PrFace = { pill: 'closed', Mark: PrOpenGlyph, tail: <FailGlyph aria-hidden /> };
 const PASSING: PrFace = { ...OPEN, tail: <CheckGlyph aria-hidden /> };
 
-// One card slot back to the column before: the card's width, the column's padding and border, and the gap.
-
 // The pill turns first; then the rule moves the card.
 const TURN = 120;
 const MOVE = 420;
