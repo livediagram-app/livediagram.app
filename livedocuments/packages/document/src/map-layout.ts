@@ -35,8 +35,8 @@ export type MapLayoutCountry = {
   d: string;
   fill: string;
   opacity: number;
-  // A focused country's far land drawn again in an inset (map-insets.ts): which one. Its paper plate is a row of its
-  // own with no code (`part` ending `-plate`), drawn first and never pressed or named.
+  // A focused country's far land drawn again in an inset (map-insets.ts): which one. The insets' one paper plate is a
+  // row of its own with no code (`part` `plate`), drawn before them and never pressed or named.
   part?: string;
 };
 export type MapLayoutPin = {
@@ -111,19 +111,16 @@ export function mapLayout(
   }));
   // The focused country's far land (Alaska and Hawaii for the United States) in insets in the frame's lower left.
   const focused = focus ? countries.find((c) => c.code === el.mapCountry) : undefined;
-  if (focused)
-    for (const inset of mapInsets(focused.code, focused.d, win))
+  if (focused) {
+    // Set in the corner of the box as drawn (the land round the window fills it), on one plate of the paper.
+    const frame = { x: -tx / scale, y: -ty / scale, w: width / scale, h: height / scale };
+    const { plate, insets } = mapInsets(focused.code, focused.d, win, frame);
+    if (insets.length > 0)
       countries.push(
-        {
-          code: '',
-          name: '',
-          d: inset.plate,
-          fill: colours.paper,
-          opacity: 1,
-          part: `${inset.part}-plate`,
-        },
-        { ...focused, d: inset.d, part: inset.part },
+        { code: '', name: '', d: plate, fill: colours.paper, opacity: 1, part: 'plate' },
+        ...insets.map((inset) => ({ ...focused, d: inset.d, part: inset.part })),
       );
+  }
   const pinRadius = clamp(short * 0.022, 3.5, 9);
   const labelSize = clamp(short * 0.055, 10, 22);
   const gap = pinRadius + labelSize * 0.35;

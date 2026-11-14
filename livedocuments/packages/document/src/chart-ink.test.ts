@@ -225,6 +225,19 @@ describe('chartPageGrounds', () => {
     const page = pageWith({ kind: 'gradient', from: '#000000', to: '#ffffff', angle: 180 });
     expect(chartPageGrounds([chartAt(page)], [page]).get('c')!.length).toBeGreaterThan(1);
   });
+
+  // docs/specs/009-elements/map.md "What it shows": a map's paper follows the page it sits on.
+  it('gives a map its ground too, alone on the page or on a card', () => {
+    const page = pageWith({ kind: 'solid', color: NAVY });
+    const map = { ...chartAt(page, 'm'), shape: 'map' } as Element;
+    expect(chartPageGrounds([map], [page]).get('m')).toEqual([NAVY]);
+    expect(chartPageGrounds([cardUnder(page, '#f8fafc'), map], [page]).get('m')).toEqual([
+      '#f8fafc',
+    ]);
+    // A plain square is still given none.
+    const square = { ...chartAt(page, 's'), shape: 'square' } as Element;
+    expect(chartPageGrounds([square], [page]).has('s')).toBe(false);
+  });
 });
 
 describe('the export draws charts as the canvas does', () => {

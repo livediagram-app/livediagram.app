@@ -2,8 +2,8 @@
 // United States frames on its lower 48, and Alaska and Hawaii are drawn again, smaller, in the frame's lower left, as
 // an atlas draws them, so a highlighted United States still shows every state. Pure: each inset is the country's own
 // rings that lie in the inset's box, moved and scaled into the frame as one absolute SVG path in plane units, so the
-// renderers draw it as any country (MapDrawing, svgMap). Each sits on a paper plate, so the faint land behind the frame's
-// corner (Mexico) never runs into it.
+// renderers draw it as any country (MapDrawing, svgMap). They sit on one paper plate that runs to the frame's corner
+// edges, so the faint land behind the corner (Mexico) never shows under, beside or between them.
 import { projectLonLat, unprojectPoint } from './map-model';
 
 type Box = readonly [number, number, number, number];
@@ -25,14 +25,16 @@ export const MAP_INSETS: Readonly<Record<string, readonly MapInsetDef[]>> = {
   ],
 };
 
-// How far the insets sit in from the frame's lower left, how far apart, and how much paper each plate keeps round its
-// land, as a share of the frame's width.
+// How far the insets sit in from the frame's lower left, how far apart, and how much paper the plate keeps round each
+// one's land, as a share of the view window's width.
 const INSET_MARGIN = 0.015;
 const INSET_GAP = 0.015;
 const INSET_PAD = 0.012;
 
-/** One inset: its land, and the paper plate under it (a rounded box) that keeps the context land beneath out of it. */
-export type MapInset = { part: string; d: string; plate: string };
+/** One inset's land, as an absolute path in plane units. */
+export type MapInset = { part: string; d: string };
+/** A country's insets, and the one paper plate under them all that keeps the context land beneath out of them. */
+export type MapInsets = { plate: string; insets: MapInset[] };
 
 type Ring = { points: [number, number][]; box: [number, number, number, number] };
 
@@ -92,26 +94,29 @@ const inside = (b: Box, box: Box) =>
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
-// Insets by country and frame: the frame is fixed per country, so one entry each.
-const made = new Map<string, MapInset[]>();
+// Insets by country, window and frame: both are fixed per country and box shape, so one entry each.
+const made = new Map<string, MapInsets>();
 
-/** The focused country `code`'s insets in the frame `win` (plane units), from its path `d`. Empty for a country
+type Frame = { x: number; y: number; w: number; h: number };
+const frameKey = (f: Frame) => `${r1(f.x)},${r1(f.y)},${r1(f.w)},${r1(f.h)}`;
+const NONE: MapInsets = { plate: '', insets: [] };
+
+/** The focused country `code`'s insets, from its path `d`: sized against its view window `win` and set in the lower
+ *  left corner of `frame`, the element's box in plane units (the window itself when left out). None for a country
  *  that has none. */
-export function mapInsets(
-  code: string,
-  d: string,
-  win: { x: number; y: number; w: number; h: number },
-): MapInset[] {
+export function mapInsets(code: string, d: string, win: Frame, frame: Frame = win): MapInsets {
   const defs = MAP_INSETS[code];
-  if (!defs) return [];
-  const key = `${code}|${r1(win.x)},${r1(win.y)},${r1(win.w)},${r1(win.h)}|${d.length}`;
+  if (!defs) return NONE;
+  const key = `${code}|${frameKey(win)}|${frameKey(frame)}|${d.length}`;
   const hit = made.get(key);
   if (hit) return hit;
   const rings = pathRings(d);
-  const out: MapInset[] = [];
+  const insets: MapInset[] = [];
+  // Each inset's own plate (its land and the pad round it), left to right, for the one plate under them all.
+  const plates: { x: number; y: number; w: number }[] = [];
   const pad = win.w * INSET_PAD;
-  let x = win.x + win.w * INSET_MARGIN;
-  const foot = win.y + win.h - win.w * INSET_MARGIN;
+  let x = frame.x + win.w * INSET_MARGIN;
+  const foot = frame.y + frame.h - win.w * INSET_MARGIN;
   for (const def of defs) {
     const own = rings.filter((r) => inside(r.box, def.box));
     if (own.length === 0) continue;
@@ -139,23 +144,31 @@ export function mapInsets(
     const top = foot - pad - h;
     const at = ([px, py]: [number, number]) =>
       `${r1(left + (px - b[0]!) * s)} ${r1(top + (py - b[1]!) * s)}`;
-    const path = upright.map((ring) => `M${ring.map(at).join('L')}Z`).join('');
-    const plate = { x, y: top - pad, w: w + pad * 2, h: h + pad * 2 };
-    out.push({ part: def.part, d: path, plate: platePath(plate, pad) });
-    x += plate.w + win.w * INSET_GAP;
+    insets.push({
+      part: def.part,
+      d: upright.map((ring) => `M${ring.map(at).join('L')}Z`).join(''),
+    });
+    plates.push({ x, y: top - pad, w: w + pad * 2 });
+    x += w + pad * 2 + win.w * INSET_GAP;
   }
+  const out: MapInsets =
+    insets.length === 0
+      ? NONE
+      : { plate: platePath(plates, frame.x - pad, frame.y + frame.h + pad), insets };
   if (made.size >= 16) made.clear();
   made.set(key, out);
   return out;
 }
 
-// A rounded box as an absolute path, its corners `r` round.
-function platePath(b: { x: number; y: number; w: number; h: number }, r: number): string {
-  const { x, y, w, h } = b;
-  const q = (n: number) => r1(n);
-  return (
-    `M${q(x + r)} ${q(y)}H${q(x + w - r)}Q${q(x + w)} ${q(y)} ${q(x + w)} ${q(y + r)}` +
-    `V${q(y + h - r)}Q${q(x + w)} ${q(y + h)} ${q(x + w - r)} ${q(y + h)}` +
-    `H${q(x + r)}Q${q(x)} ${q(y + h)} ${q(x)} ${q(y + h - r)}V${q(y + r)}Q${q(x)} ${q(y)} ${q(x + r)} ${q(y)}Z`
-  );
+// The one plate under every inset, as an absolute path: from `left` (past the frame's left edge) up to the first
+// inset's top, along each inset's top, across each gap at the next inset's height, and down past the frame's foot to
+// `bottom` after the last, so no land behind shows beside, under or between them.
+function platePath(
+  plates: readonly { x: number; y: number; w: number }[],
+  left: number,
+  bottom: number,
+): string {
+  let d = `M${r1(left)} ${r1(bottom)}`;
+  for (const p of plates) d += `V${r1(p.y)}H${r1(p.x + p.w)}`;
+  return `${d}V${r1(bottom)}Z`;
 }

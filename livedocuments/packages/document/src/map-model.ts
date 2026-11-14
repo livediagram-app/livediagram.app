@@ -194,6 +194,13 @@ export function mapLandColour(
   return fill ?? (surface === 'dark' ? '#334155' : '#dbe3ec');
 }
 
-export function mapPaperColour(surface: 'light' | 'dark' = 'light'): string {
+/** The paper the map's borders, inset plate, pin rings and label halos are drawn in (map.md "What it shows"): what it
+ *  sits on where a page's fill makes that matter (`ground`, chartPageGrounds: one tone, or a gradient's tones across
+ *  the map, of which the middle one), else the canvas's plain paper for the surface. */
+export function mapPaperColour(
+  surface: 'light' | 'dark' = 'light',
+  ground?: readonly string[],
+): string {
+  if (ground && ground.length > 0) return ground[Math.floor((ground.length - 1) / 2)]!;
   return surface === 'dark' ? '#0f172a' : '#ffffff';
 }

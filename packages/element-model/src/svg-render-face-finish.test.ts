@@ -100,3 +100,38 @@ describe('a sticker in its finish', () => {
     expect(out).toContain('<path d="M0 0 L36 0 L36 36 Z" fill="#fc0"/>');
   });
 });
+
+// docs/specs/008-canvas/finish.md "Tables": the export draws a Marker table as the canvas does.
+describe('a table in marker', () => {
+  const face = { width: 360, height: 150 };
+  const rule = (attrs = '') =>
+    `<line x1="0" y1="50" x2="360" y2="50" fill="none" stroke="#94a3b8" stroke-width="1"${attrs}/>`;
+
+  it('keeps a plain hairline as it is', () => {
+    expect(svgMarkerFace(rule(), 't', face)).toBe(rule());
+  });
+
+  it('draws a grid rule in one marker stroke at any width, dashed or not, in its ink', () => {
+    for (const attrs of [' data-marker-rule=""', ' stroke-dasharray="6 4" data-marker-rule=""']) {
+      const out = svgMarkerFace(rule(attrs), 't', face);
+      expect(out).toContain('data-marker-part="line"');
+      expect(out).not.toContain('<line');
+      expect(out).toContain('stroke="#94a3b8"');
+    }
+  });
+
+  it('draws a rule too pale to read in a stronger shade, as the canvas does', () => {
+    const out = svgMarkerFace(
+      '<line x1="0" y1="50" x2="360" y2="50" stroke="#f1f5f9" stroke-width="1" data-marker-rule=""/>',
+      't',
+      face,
+    );
+    expect(out).toContain('data-marker-part="line"');
+    expect(out).not.toContain('stroke="#f1f5f9"');
+  });
+
+  it("leaves a cell's colour flat", () => {
+    const cell = '<rect x="0" y="0" width="120" height="50" fill="#eceef2" data-finish-keep=""/>';
+    expect(svgMarkerFace(cell, 't', face)).toBe(cell);
+  });
+});
