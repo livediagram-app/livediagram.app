@@ -607,6 +607,8 @@ export function createStartPanel<
           </div>
           {footer ? (
             <footer
+              // The new version prompt stands above it on a phone (start-panel-open.ts START_FOOTER_SELECTOR).
+              data-start-footer=""
               className={
                 config.hideEmptyFooter
                   ? 'shrink-0 border-t px-4 py-1.5 empty:hidden sm:px-6'

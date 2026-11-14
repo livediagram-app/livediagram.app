@@ -22,6 +22,9 @@ export function startPanelIsOpen(): boolean {
   return open;
 }
 
+/** The start panel's foot row (StartPanel's footer, the Save switch): the new version prompt stands above it. */
+export const START_FOOTER_SELECTOR = '[data-start-footer]';
+
 export function useStartPanelOpen(): boolean {
   return useSyncExternalStore(
     listeners.subscribe,

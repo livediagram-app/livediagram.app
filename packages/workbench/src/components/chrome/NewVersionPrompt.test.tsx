@@ -108,6 +108,33 @@ describe('NewVersionPrompt', () => {
     expect(status.className).not.toContain('--z-overlay');
   });
 
+  it('stands above the start sheet’s foot row (the Save switch) while both show, never lower than usual', async () => {
+    const footer = document.createElement('footer');
+    footer.setAttribute('data-start-footer', '');
+    // A phone's sheet: its foot row's top 150px above the bottom of an 844px screen, across the column.
+    footer.getBoundingClientRect = () =>
+      ({ top: 694, bottom: 744, left: 0, right: 390, width: 390, height: 50 }) as DOMRect;
+    document.body.append(footer);
+    vi.stubGlobal('innerWidth', 390);
+    vi.stubGlobal('innerHeight', 844);
+    try {
+      mount();
+      newer();
+      await flush();
+      const status = screen.getByRole('status');
+      expect(status.style.getPropertyValue('--start-clear')).toBe('');
+      act(() => setStartPanelOpen(true));
+      // 844 - 694 and the toasts' gap over chrome: clear of the row, whatever its height.
+      const clear = parseInt(status.style.getPropertyValue('--start-clear'), 10);
+      expect(clear).toBeGreaterThan(150);
+      expect(OVER_START_SHEET).toContain('max-sm:bottom-[max(5rem,var(--start-clear))]');
+      act(() => setStartPanelOpen(false));
+      expect(status.style.getPropertyValue('--start-clear')).toBe('');
+    } finally {
+      footer.remove();
+    }
+  });
+
   it('renders nothing in the static export, whatever the server says', () => {
     serverFormat = EDITOR_FORMAT + 1;
     const html = renderToString(
