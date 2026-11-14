@@ -3,11 +3,12 @@
 // keeps everything but its type, its box (the new type's own size, turned to its facing, about the old centre) and its
 // aspect lock, which become what placing that type would give it. Pure: no React, no DOM.
 
-import type { ShapeElement } from './index';
+import type { Element, ShapeElement } from './index';
 import { createShape } from './shape-factory';
 import { applyShapeVariant } from './shape-variants';
 import { pieceVariant, variantsOf } from './piece-variants';
 import { pieceFacing, turnPiece, turnsWithFacing } from './furniture-facing';
+import { snapDoorToWall, wallUnder } from './room-builder';
 
 /** The kinds whose type the element menu changes. A Room's `variant` is its walls, set from its own Walls section. */
 export const RETYPED_KINDS = ['door', 'rug', 'corridor', 'meeting-table'] as const;
@@ -44,4 +45,40 @@ export function withPieceType(el: ShapeElement, type: string): ShapeElement {
     width: box.width,
     height: box.height,
   };
+}
+
+// The length of the wall a door stands on among `elements`, or null for a door standing free (or any other piece).
+function wallLengthUnder(el: ShapeElement, elements: readonly Element[]): number | null {
+  if (el.shape !== 'door') return null;
+  const wall = wallUnder(el, elements);
+  return wall ? Math.hypot(wall.b.x - wall.a.x, wall.b.y - wall.a.y) : null;
+}
+
+/**
+ * Whether `el` can become `type` where it stands (office.md "A piece's type"): a Door on a wall only as a type no wider
+ * than that wall, so it never sticks out past the wall's end. Every other piece, and a free-standing door, always can.
+ */
+export function pieceTypeFits(
+  el: ShapeElement,
+  type: string,
+  elements: readonly Element[],
+): boolean {
+  const length = wallLengthUnder(el, elements);
+  return length === null || withPieceType(el, type).width <= length;
+}
+
+/**
+ * `el` as `type` where it stands among `elements`: `withPieceType`, then a Door on a wall kept inside that wall (slid
+ * along it clear of its ends, `snapDoorToWall`). A door whose new type is wider than its wall stays as it was.
+ */
+export function retypePiece(
+  el: ShapeElement,
+  type: string,
+  elements: readonly Element[],
+): ShapeElement {
+  const next = withPieceType(el, type);
+  const length = next === el ? null : wallLengthUnder(el, elements);
+  if (length === null) return next;
+  if (next.width > length) return el;
+  return snapDoorToWall(next, elements);
 }

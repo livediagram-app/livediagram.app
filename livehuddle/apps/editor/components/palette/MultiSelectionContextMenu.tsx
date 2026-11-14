@@ -36,6 +36,8 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { ShapePresetsSection, shapeSupportsPresets } from './PresetSections';
 import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
+import { PieceTypeMenuSection } from './PieceTypeMenuSection';
+import { selectionTypeTarget } from './piece-type-tiles';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 
 type MultiSelectionContextMenuProps = {
@@ -137,6 +139,10 @@ export function MultiSelectionContextMenu({
         // The Text flyout groups Typography (Font / Size / Padding) +
         // Alignment + Markers, mirroring the single-element menu.
         const showTextFlyout = !!markerSrc || !!alignSrc;
+        const typeTarget = selectionTypeTarget(
+          sel,
+          props.menu.mode === 'multi' ? props.menu.elementId : undefined,
+        );
         return (
           <>
             {/* Placement group (Layer / Shape / Rotation) — see
@@ -149,6 +155,16 @@ export function MultiSelectionContextMenu({
               sectionProps={sectionProps}
               onClose={onClose}
             />
+            {/* The right-clicked piece's Type (docs/specs/009-elements/office.md "A piece's type"): picking one retypes
+                every selected piece of its kind, and leaves the rest of the selection alone. */}
+            {typeTarget && props.onSetPieceType ? (
+              <PieceTypeMenuSection
+                target={typeTarget}
+                elements={props.elements}
+                sectionProps={sectionProps}
+                onSetType={props.onSetPieceType}
+              />
+            ) : null}
             <MenuGroupSeparator />
             {/* ── Style band (docs/specs/008-canvas/canvas-and-palette.md): Presets + Colours + Border behind one
                   "Style" flyout row, matching the single-element menu. ── */}

@@ -315,7 +315,13 @@ a Long Table and back (Work Tracker 628).
 - **What stays**: everything else, the piece's id, name, colours, facing, rotation (a corridor's turn, a door's angle on
   its wall), lock, layer and group. A Door keeps its centre and angle, so it stays on its wall and keeps cutting it. A
   table's sitters are presence: seats past the new type's last fall away, as when a Long Table is dragged narrower.
-- **A selection of several** pieces of the clicked piece's kind changes them all; other kinds are left alone. Picking
+- **A Door stays inside its wall**: on a wall, a wider type slides along it just far enough to clear the wall's ends
+  (`snapDoorToWall`), and a type wider than the whole wall is offered disabled, its hover card **Too Wide for This
+  Wall** ("A Double Door is wider than the wall this door stands on. Move the door to a longer wall first.").
+- **A selection of several**: right-clicking one piece of a multi-selection opens the selection menu with that
+  piece's **Type** section (the menu remembers the piece right-clicked); opened from the selection toolbar's `…`, with
+  no piece clicked, it shows the Type of the one retyped kind the selection holds, and none when it mixes two. A pick
+  changes every selected piece of that kind; other kinds are left alone (two rugs and a door, Persian: both rugs). Picking
   the type a piece already has changes nothing. One undoable change, `Element · Changed · <Kind>` (`Door`, `Rug`,
   `Corridor`, `Meeting-table`).
 

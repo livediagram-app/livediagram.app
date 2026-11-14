@@ -130,6 +130,9 @@ describe('CategoryFlyoutSide', () => {
     expect(panel.style.top).toBe('60px');
     // At least as tall as the flyout (Work Tracker 628): a short panel never leaves its bottom rows showing below.
     expect(panel.style.minHeight).toBe('520px');
+    // A column whose body grows, so the footer pins to the bottom of the stretched panel, no empty band under it.
+    expect(panel.className).toContain('flex-col');
+    expect(panel.children[1]!.className).toBe('grow');
     expect(panel.className).not.toContain('opacity-0');
     rerender(
       <CategoryFlyoutSide

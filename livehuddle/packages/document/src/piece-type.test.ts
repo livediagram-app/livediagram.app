@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { applyShapeVariant, changesType, createShape, turnPiece, withPieceType } from './index';
+import {
+  applyShapeVariant,
+  changesType,
+  createShape,
+  pieceTypeFits,
+  retypePiece,
+  snapDoorToWall,
+  turnPiece,
+  wallUnder,
+  withPieceType,
+  type ShapeElement,
+} from './index';
 
 // docs/specs/009-elements/office.md "A piece's type": a placed piece changes its type in place, keeping its data.
 
@@ -112,5 +123,52 @@ describe('withPieceType', () => {
     expect(withPieceType(rug, 'double')).toBe(rug);
     const room = createShape('room', 0, 0);
     expect(withPieceType(room, 'glass')).toBe(room);
+  });
+});
+
+// office.md "A piece's type": a Door on a wall stays inside it, and a type wider than its wall is refused.
+describe('a door retyped on its wall', () => {
+  // A room 140 wide (its front wall about 130 between its ends), a plain Door snapped onto it right of the middle.
+  const room = {
+    ...createShape('room', 0, 0),
+    id: 'room',
+    width: 140,
+    height: 200,
+    roomDoor: 'none',
+  } as ShapeElement;
+  const door = snapDoorToWall({ ...createShape('door', 0, 0), id: 'door', x: 60, y: 190 }, [room]);
+  const els = [room, door];
+
+  it('stands on the wall to start with', () => {
+    expect(wallUnder(door, els)).not.toBeNull();
+    expect(wallUnder(createShape('door', 900, 900), els)).toBeNull();
+    expect(wallUnder(room, els)).toBeNull();
+  });
+
+  it('fits a type no wider than its wall, never a wider one', () => {
+    expect(pieceTypeFits(door, 'sliding', els)).toBe(true);
+    expect(pieceTypeFits(door, 'double', els)).toBe(false);
+    // A free-standing door, and any other piece, always fits.
+    expect(pieceTypeFits(createShape('door', 900, 900), 'double', els)).toBe(true);
+    expect(pieceTypeFits(createShape('rug', 0, 0), 'runner', els)).toBe(true);
+  });
+
+  it('slides a wider type along the wall to keep it inside, still on the wall', () => {
+    const sliding = retypePiece(door, 'sliding', els);
+    expect(sliding.width).toBe(120);
+    const wall = wallUnder(sliding, els)!;
+    expect(wall).not.toBeNull();
+    const [lo, hi] = [Math.min(wall.a.x, wall.b.x), Math.max(wall.a.x, wall.b.x)];
+    expect(sliding.x).toBeGreaterThanOrEqual(lo - 1e-6);
+    expect(sliding.x + sliding.width).toBeLessThanOrEqual(hi + 1e-6);
+  });
+
+  it('refuses a type wider than its wall, and retypes a free door or a rug as withPieceType does', () => {
+    expect(retypePiece(door, 'double', els)).toBe(door);
+    expect(retypePiece(door, 'swing', els)).toBe(door);
+    const free = createShape('door', 900, 900);
+    expect(retypePiece(free, 'double', els)).toEqual(withPieceType(free, 'double'));
+    const rug = createShape('rug', 0, 0);
+    expect(retypePiece(rug, 'round', els)).toEqual(withPieceType(rug, 'round'));
   });
 });

@@ -26,7 +26,9 @@ export type EditorContextMenuState =
   | { mode: 'element'; elementId: string; x: number; y: number }
   // A whole multi-selection or group was right-clicked — actions apply to
   // everything selected.
-  | { mode: 'multi'; x: number; y: number }
+  // `elementId` is the member right-clicked, when one was (the selection toolbar's ⋯ names none): its kind picks the
+  // Type section the menu offers (docs/specs/009-elements/office.md "A piece's type").
+  | { mode: 'multi'; x: number; y: number; elementId?: string }
   // `openUp` grows the menu upward from y (for the footer canvas-menu button,
   // so it opens above the footer rather than over it).
   | {

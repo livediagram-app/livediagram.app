@@ -79,8 +79,13 @@ furniture-art` `longTableArt(width, height, facing)` (re-exported by `office.ts`
   reads the kind's palette cards (the Door, Rug and Corridor preset tiles; the Meeting Table and Long Table tiles) for
   each type's caption and glyph; `PieceTypeMenuSection` draws them as tiles (2 columns, 3 for more than four types)
   under the `TypeMenuGlyph`, first in the element menu's Tools; `useDataShapeSetters.setPieceTypeSelected(kind, type)`
-  retypes every selected piece of that kind in one commit, no commit and no telemetry when nothing changes, then
-  `Element · Changed · <Kind>`.
+  retypes every selected piece of that kind in one commit through `retypePiece(el, type, elements)` (a Door on a
+  wall, `wallUnder` in room-builder.ts, is re-snapped by `snapDoorToWall` to clear the wall's ends, and kept as it was
+  when the type is wider than the wall; `pieceTypeFits` disables that tile under a HoverCard), no commit and no
+  telemetry when nothing changes, then `Element · Changed · <Kind>`. The selection menu (`MultiSelectionContextMenu`)
+  renders the section for `selectionTypeTarget(selection, menu.elementId)`: the `multi` menu state carries the member
+  right-clicked (`elementId`), passed by `@liveworkspace/workbench`'s `useCanvasSelectHandlers` as
+  `onMultiContextMenu(x, y, id)`.
 - A rug turns flat (`turnFlat` in `furniture-facing.ts`): its box's sides swap about its centre when it goes onto its
   side or comes back, whatever its type, so a Round rug stays a circle (it used to take the Oval's drawing's
   proportions).
@@ -89,7 +94,8 @@ furniture-art` `longTableArt(width, height, facing)` (re-exported by `office.ts`
 - A room preset's pieces stand at their layout place from the room's top left (`roomPresetCompanions`), never scaled:
   a preset always lands at its own size (`dropsAtOwnSize`).
 - On a phone `CategoryFlyoutSide` takes `minHeight: flyoutHeight` (the flyout's height, from `sidePlacement`), so it
-  covers the whole flyout however few presets it holds.
+  covers the whole flyout however few presets it holds, as a `flex flex-col` whose body is `grow`, so the footer
+  pins to the bottom.
 
 ## Windows and glass walls
 

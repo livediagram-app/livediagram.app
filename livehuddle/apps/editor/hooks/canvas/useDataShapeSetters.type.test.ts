@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type ShapeElement } from '@livehuddle/document';
+import { createShape, snapDoorToWall, type Element, type ShapeElement } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useDataShapeSetters } from './useDataShapeSetters';
 
@@ -51,5 +51,32 @@ describe('the type setter', () => {
     useDataShapeSetters(harness([]).deps).setPieceTypeSelected('rug', 'round');
     expect(h.commits()).toBe(0);
     expect(track).not.toHaveBeenCalled();
+  });
+
+  it('keeps a door on a wall too short for the new type as it was, committing nothing', () => {
+    vi.mocked(track).mockClear();
+    const room = {
+      ...createShape('room', 0, 0),
+      id: 'room',
+      width: 140,
+      height: 200,
+      roomDoor: 'none',
+    } as ShapeElement;
+    const door = snapDoorToWall({ ...createShape('door', 0, 0), id: 'door', x: 22, y: 190 }, [
+      room,
+    ]);
+    let commits = 0;
+    const deps = {
+      currentSelectionIds: () => new Set(['door']),
+      commit: () => {
+        commits++;
+      },
+      elements: () => [room, door] as Element[],
+    };
+    useDataShapeSetters(deps).setPieceTypeSelected('door', 'double');
+    expect(commits).toBe(0);
+    expect(track).not.toHaveBeenCalled();
+    useDataShapeSetters(deps).setPieceTypeSelected('door', 'sliding');
+    expect(commits).toBe(1);
   });
 });

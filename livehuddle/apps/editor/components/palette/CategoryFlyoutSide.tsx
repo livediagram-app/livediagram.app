@@ -157,7 +157,7 @@ export function CategoryFlyoutSide({
           ? { top: anchor - lift, minHeight: side.flyoutHeight }
           : { ...uiUnscaleStyle(scale), top: side.top - lift, right: side.right }
       }
-      className={`absolute ${isMobile ? 'inset-x-3' : 'w-[19rem]'} max-h-[calc(100dvh-10rem)] origin-top-left animate-dropdown-down ${seeThrough ? 'opacity-0' : 'transition-opacity duration-short'} overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/50`}
+      className={`absolute ${isMobile ? 'inset-x-3 flex flex-col' : 'w-[19rem]'} max-h-[calc(100dvh-10rem)] origin-top-left animate-dropdown-down ${seeThrough ? 'opacity-0' : 'transition-opacity duration-short'} overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/50`}
     >
       <FlyoutHeader
         icon={def.icon}
@@ -165,7 +165,12 @@ export function CategoryFlyoutSide({
         tagline={def.variantsHint ?? PRESETS_HINT}
         count={variants?.length}
       />
-      <div ref={bodyRef} onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}>
+      <div
+        ref={bodyRef}
+        // On a phone the body fills the panel, so its footer pins to the bottom of a panel stretched to the flyout's height.
+        className={isMobile ? 'grow' : undefined}
+        onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}
+      >
         {variants ? (
           <div className="p-2">
             <CardList

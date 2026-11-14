@@ -1,4 +1,4 @@
-import { changesType, variantsOf } from '@livehuddle/document';
+import { changesType, variantsOf, type Element, type ShapeElement } from '@livehuddle/document';
 import {
   CORRIDOR_PRESET_TILES,
   DOOR_PRESET_TILES,
@@ -34,4 +34,22 @@ export function pieceTypeChoices(kind: string): PieceTypeChoice[] {
     const { variant } = tile.action as { variant?: string };
     return { type: variant ?? first, label: tileDisplayName(tile), icon: tile.icon };
   });
+}
+
+/**
+ * The piece whose Type the selection menu offers (office.md "A piece's type"): the right-clicked one when its kind
+ * changes type, else, opened from the selection's toolbar with no piece clicked, the one kind every retyped piece in the
+ * selection shares. Null when none of the selection retypes, or it mixes two such kinds with none clicked.
+ */
+export function selectionTypeTarget(
+  selection: readonly Element[],
+  clickedId?: string,
+): ShapeElement | null {
+  const retyped = selection.filter(
+    (el): el is ShapeElement => el.type === 'shape' && changesType(el.shape),
+  );
+  const clicked = retyped.find((el) => el.id === clickedId);
+  if (clicked) return clicked;
+  const first = retyped[0];
+  return first && retyped.every((el) => el.shape === first.shape) ? first : null;
 }

@@ -281,7 +281,8 @@ export type CanvasProps = {
   // (the page sets a 'multi' context-menu mode). Always OPENS at the cursor —
   // mirrors onElementContextMenu, so re-right-clicking repositions rather than
   // toggling closed.
-  onMultiContextMenu?: (screenX: number, screenY: number) => void;
+  // `elementId` is the member right-clicked.
+  onMultiContextMenu?: (screenX: number, screenY: number, elementId?: string) => void;
   // Toggle variant for the selection toolbar's "More" ellipsis: opens the
   // 'multi' menu, or closes it if already open (mirrors onOpenElementContextMenu
   // for the single-element ellipsis).

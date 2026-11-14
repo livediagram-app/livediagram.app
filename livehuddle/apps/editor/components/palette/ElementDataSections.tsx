@@ -82,6 +82,7 @@ export function ElementDataSections({
           {retypes && shapeTarget ? (
             <PieceTypeMenuSection
               target={shapeTarget}
+              elements={props.elements}
               sectionProps={sectionProps}
               onSetType={props.onSetPieceType!}
             />
