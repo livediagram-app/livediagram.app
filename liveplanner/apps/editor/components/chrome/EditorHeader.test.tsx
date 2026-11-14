@@ -14,9 +14,6 @@ vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
     signOut: vi.fn(),
   }),
 }));
-vi.mock('@/components/chrome/auth-shared', () => ({
-  useAuthHrefs: () => ({ signInHref: '/sign-in/' }),
-}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { EditorHeader } = await import('./EditorHeader');

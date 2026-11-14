@@ -58,6 +58,9 @@ const HELD_AT_100 = [
   'src/components/chrome/VisibilityLegend.tsx',
   'src/components/dialogs/EditorSettingsDialog.tsx',
   'src/lib/preferences-local-only.ts',
+  // The account control and the Settings panel host, the last of the header's five copies.
+  'src/components/chrome/AuthControls.tsx',
+  'src/components/dialogs/settings/settings-panel-host.tsx',
 ];
 
 export default defineProject({
