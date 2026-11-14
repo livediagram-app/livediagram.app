@@ -16,13 +16,31 @@ import type { RoomOp } from '@livediagram/api-schema';
 // an `add` is a new id. A hold is released when the room confirms the op, when the
 // write fails, or when the room cannot say (a closed socket, a timeout), so an element is never held for good.
 
-export type OwnElementWrites = { held: Map<string, number> };
+//
+// Whoever needs to know when a hold ends (the selection lock, which keeps holding an element we let go of until our
+// change to it lands: usePresenceBroadcast, selection-write-hold.ts) listens through `onOwnWritesReleased`.
+export type OwnElementWrites = { held: Map<string, number>; released: Set<() => void> };
 
 export function createOwnElementWrites(): OwnElementWrites {
-  return { held: new Map() };
+  return { held: new Map(), released: new Set() };
 }
 
 const keyOf = (tabId: string, elementId: string) => `${tabId}␟${elementId}`;
+
+/** Whether this editor is writing `elementId` on `tabId`: its save's op has not been sequenced yet. */
+export function isOwnWriteHeld(
+  writes: OwnElementWrites,
+  tabId: string,
+  elementId: string,
+): boolean {
+  return writes.held.has(keyOf(tabId, elementId));
+}
+
+/** Calls `listener` after every release of a hold; the returned function stops it. */
+export function onOwnWritesReleased(writes: OwnElementWrites, listener: () => void): () => void {
+  writes.released.add(listener);
+  return () => void writes.released.delete(listener);
+}
 
 // The element an op writes in full, if any: an add or an update.
 function writtenId(op: RoomElementOp): string | null {
@@ -49,6 +67,7 @@ export function holdOwnWrites(
       if (n > 0) writes.held.set(key, n);
       else writes.held.delete(key);
     }
+    for (const listener of writes.released) listener();
   };
 }
 

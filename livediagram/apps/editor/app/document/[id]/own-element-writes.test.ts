@@ -1,10 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livediagram/document';
 import type { RoomOp } from '@livediagram/api-schema';
 import {
   createOwnElementWrites,
   holdOwnWrites,
+  isOwnWriteHeld,
   isSupersededByOwnWrite,
+  onOwnWritesReleased,
 } from './own-element-writes';
 
 // docs/specs/012-collaboration/realtime-conflict-resolution.md "Same-element edits converge".
@@ -80,5 +82,21 @@ describe('own element writes', () => {
         op: { kind: 'update', element: null },
       } as unknown as RoomOp),
     ).toBe(false);
+  });
+
+  it('says what is held by tab and id, and tells its listeners of each release until they stop', () => {
+    const writes = createOwnElementWrites();
+    const heard = vi.fn();
+    const stop = onOwnWritesReleased(writes, heard);
+    const release = holdOwnWrites(writes, 't1', [{ kind: 'update', element: el('a') }]);
+    expect(isOwnWriteHeld(writes, 't1', 'a')).toBe(true);
+    expect(isOwnWriteHeld(writes, 't2', 'a')).toBe(false);
+    release();
+    release();
+    expect(isOwnWriteHeld(writes, 't1', 'a')).toBe(false);
+    expect(heard).toHaveBeenCalledTimes(1);
+    stop();
+    holdOwnWrites(writes, 't1', [{ kind: 'update', element: el('a') }])();
+    expect(heard).toHaveBeenCalledTimes(1);
   });
 });
