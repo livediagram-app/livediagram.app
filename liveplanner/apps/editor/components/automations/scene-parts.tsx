@@ -66,8 +66,10 @@ export const PR_PILLS = {
 /** A pull request's state as a card face draws it: the state's colour and mark, its number, and a checks mark. */
 export type PrFace = { pill: keyof typeof PR_PILLS; Mark: typeof PrOpenGlyph; tail?: ReactNode };
 
-// One card slot across to the next column: the card's width, the column's padding and border, and the gap.
-export const NEXT_COLUMN = 'translateX(calc(100% + 22px))';
+// One card slot across to the next column, or back to the one before: the card's width, the column's two 6px
+// paddings and the stage's 8px gap (the column's ring is a shadow and takes no room).
+export const NEXT_COLUMN = 'translateX(calc(100% + 20px))';
+export const PREV_COLUMN = 'translateX(calc(-100% - 20px))';
 
 export function Column({
   tone,
@@ -82,9 +84,11 @@ export function Column({
   className?: string;
   children?: ReactNode;
 }) {
+  // Its blur makes it a stacking context, so a moving card's z-10 reaches only this column: a column sending a card
+  // (an .ats-drag part) is raised, so the card lands over the next column's translucent surface, not under it.
   return (
     <div
-      className={`relative flex min-w-0 flex-1 flex-col gap-1.5 rounded-lg bg-white/75 p-1.5 ring-1 backdrop-blur-[1px] dark:bg-slate-900/55 ${tone.ring} ${className}`}
+      className={`relative flex min-w-0 flex-1 flex-col gap-1.5 rounded-lg bg-white/75 p-1.5 ring-1 backdrop-blur-[1px] has-[.ats-drag]:z-10 dark:bg-slate-900/55 ${tone.ring} ${className}`}
     >
       <div className="flex items-center gap-1 px-0.5">
         <span className={`size-1.5 shrink-0 rounded-full ${tone.dot}`} />

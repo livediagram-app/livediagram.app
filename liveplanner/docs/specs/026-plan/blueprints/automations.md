@@ -929,6 +929,13 @@ The spec's "The rule builder" (Add an Action) and "Motion".
 - `TemplateScene.tsx` draws each template's scene (`SCENES`, keyed by template id, one small component each) from
   shared parts (`SceneColumn`, `SceneCard`, `SceneAvatar`, `ScenePill`, `SceneBubble`); every template id must have
   one (a type-level `Record<AutomationTemplateId, …>`, so a new template fails to compile without its scene).
+- A move across columns is `NEXT_COLUMN` or `PREV_COLUMN` (scene-parts.tsx): one card slot, `100% + 20px` (the
+  column's two 6px paddings and the stage's 8px gap; the column's ring is a shadow and takes no room). `Column` is
+  `backdrop-blur`, so it is its own stacking context and the moving card's `z-10` reaches only its own column: a
+  column holding an `.ats-drag` part is raised (`has-[.ats-drag]:z-10`), so the card it sends into a later column
+  paints over that column's translucent surface. What a moving card gains stays inside the column it lands in: a
+  Today pill sits inside the card's right edge (`right-1`), and a corner badge reaches at most `-right-1` past it,
+  within the column's 6px padding.
 - The motion is CSS only, in `apps/editor/app/automation-scenes.css` (a content illustration under motion.md, so its
   durations live there): `.ats-in` parts appear, `.ats-out` parts leave and `.ats-mv` parts move, on
   `[data-template]:hover` and `:focus-visible`, staggered by `--ats-d`. `(hover: none)` and reduced motion show the
