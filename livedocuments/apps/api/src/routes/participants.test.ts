@@ -65,7 +65,7 @@ describe('handleParticipants', () => {
     expect(answered.participant.picture).toBe(picture);
     for (const owner of ['owner-1', null]) {
       const res = await handleParticipants(makeCtx('GET', '/api/participants/p1', { owner }));
-      const body = (await res.json()) as { participant: Record<string, unknown> };
+      const body = await res.json<{ participant: Record<string, unknown> }>();
       expect(body.participant).not.toHaveProperty('picture');
     }
     expect(db.participantPicture).toHaveBeenCalledTimes(1);

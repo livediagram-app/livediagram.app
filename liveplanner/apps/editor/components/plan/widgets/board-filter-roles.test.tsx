@@ -104,7 +104,7 @@ describe('the board filter for a Viewer', () => {
   it('shows the words and chips read-only, with no Clear or Add Filter', () => {
     const c = ctx('viewer', { text: 'login', filters: [{ by: 'type', key: 'task' }] });
     draw('filter', c);
-    const box = screen.getByRole('textbox', { name: 'Filter this board' }) as HTMLInputElement;
+    const box = screen.getByRole<HTMLInputElement>('textbox', { name: 'Filter this board' });
     expect(box.readOnly).toBe(true);
     expect(box.value).toBe('login');
     expect(screen.queryByRole('button', { name: 'Clear Filter' })).toBeNull();
@@ -116,7 +116,7 @@ describe('the board filter for a Viewer', () => {
   it('disables Only Mine and every widget press, and reads the count without Show all', () => {
     const c = ctx('viewer', { mine: 'sam' });
     draw('mine', c);
-    const mine = screen.getByRole('button', { name: 'Only Mine' }) as HTMLButtonElement;
+    const mine = screen.getByRole<HTMLButtonElement>('button', { name: 'Only Mine' });
     expect(mine.disabled).toBe(true);
     expect(mine.getAttribute('aria-pressed')).toBe('true');
     cleanup();

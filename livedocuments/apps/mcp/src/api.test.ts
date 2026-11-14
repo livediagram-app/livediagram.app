@@ -90,7 +90,7 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
       runInTool('update_document', () => apiJson(env, 't', '/documents/x/tabs/y')),
     ).rejects.toBeInstanceOf(ApiError);
     const event = calls.find(isEventsPost)!;
-    const body = (await event.json()) as { events: Array<{ type: string }> };
+    const body = await event.json<{ events: Array<{ type: string }> }>();
     expect(body.events[0]!.type).toBe('Http503.UpdateDocument');
   });
 

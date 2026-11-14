@@ -166,7 +166,7 @@ export function createRoomClient<
       const query = `tab=${encodeURIComponent(tabId)}&epoch=${encodeURIComponent(cursor.epoch)}&since=${cursor.seq}`;
       const res = await roomStub(env, roomId).fetch(`https://room/ledger?${query}`);
       if (!res.ok) return null;
-      const ledger = (await res.json()) as Ledger;
+      const ledger = await res.json<Ledger>();
       if (!ledger || typeof ledger !== 'object' || !ledger.elements) return null;
       return { ledger, seq: cursor.seq };
     } catch {
@@ -206,7 +206,7 @@ export function createRoomClient<
           body: JSON.stringify({ tab: tabId, elements: chunk, vote: want.vote && i === 0 }),
         });
         if (!res.ok) return null;
-        const ledger = (await res.json()) as Ledger;
+        const ledger = await res.json<Ledger>();
         if (!ledger || typeof ledger !== 'object' || !ledger.elements) return null;
         out = out
           ? ({
@@ -345,7 +345,7 @@ export function createRoomClient<
         config.selectionsTimeoutMs,
       );
       if (!res.ok) throw new Error(`status ${res.status}`);
-      const body = (await res.json()) as { selections?: unknown };
+      const body = await res.json<{ selections?: unknown }>();
       if (!Array.isArray(body.selections)) throw new Error('no selections');
       return body.selections as RoomSelection[];
     } catch (err) {
@@ -390,7 +390,7 @@ export function createRoomClient<
     }
     if (res.status === 409) return { ok: false, error: 'agent_presence_full' };
     if (!res.ok) throw new RoomUnavailableError(`status ${res.status}`);
-    const answer = (await res.json()) as { expiresAt: number; created: boolean };
+    const answer = await res.json<{ expiresAt: number; created: boolean }>();
     return { ok: true, expiresAt: answer.expiresAt, created: answer.created };
   }
 

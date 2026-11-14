@@ -200,7 +200,7 @@ describe('the words, on the note', () => {
       />,
     );
     fireEvent.click(screen.getByTestId('note-words-0'));
-    const input = screen.getByDisplayValue('Odor placed') as HTMLInputElement;
+    const input = screen.getByDisplayValue<HTMLInputElement>('Odor placed');
     fireEvent.change(input, { target: { value: 'Order placed' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     screen.getByRole('button', { name: /^Add 1 note$/ }).click();

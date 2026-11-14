@@ -12,7 +12,10 @@ import {
   PHOTO_MAX_AREA,
   PHOTO_PIXEL_CAP,
   PHOTO_PIXEL_CAP_COARSE,
+  PHOTO_TILE,
+  resizePlan,
   resizeRaster,
+  resizeSourceRect,
   rotate as rotateMatrix,
   rotateQuarter,
   chain,
@@ -27,6 +30,7 @@ import {
   type QuarterTurn,
   type Raster,
   type Rect,
+  type ResizePlan,
 } from '@livedesign/photo-engine';
 import { coarsePointer } from './coarse-pointer';
 import { photoWorkers } from './photo-worker-client';
@@ -47,12 +51,22 @@ export function sizeRefused(width: number, height: number): string | null {
 }
 
 type Placed = { raster: Raster; x: number; y: number };
+// A rework's result already in tiles (Make Sizes' tile-by-tile resample), `width` x `height` from its origin.
+type PlacedTiles = { tiles: TiledRaster; width: number; height: number; x: number; y: number };
 
-/** A raster's whole picture (its tiles' extent) and where it sits in the photo. */
+/** A raster's whole picture (its tiles' extent) and where it sits in the photo. The picture is read only when
+ *  asked for: a rework that brings its own pixels (coverSize) never holds the whole of a large layer again. */
 function picture(r: TiledRaster, offset: { x: number; y: number }): Placed | null {
   const b = r.contentBounds();
   if (!b) return null;
-  return { raster: r.read(b), x: b.x + offset.x, y: b.y + offset.y };
+  let read: Raster | null = null;
+  return {
+    get raster() {
+      return (read ??= r.read(b));
+    },
+    x: b.x + offset.x,
+    y: b.y + offset.y,
+  };
 }
 
 const offsetOf = (l: PhotoLayer) =>
@@ -78,7 +92,7 @@ function rework(
   s: PhotoSession,
   label: string,
   size: { width: number; height: number },
-  map: (p: Placed, kind: 'layer' | 'mask', layerId: string) => Placed | null,
+  map: (p: Placed, kind: 'layer' | 'mask', layerId: string) => Placed | PlacedTiles | null,
   move: (layer: PhotoLayer) => PhotoLayer,
   // Last touches to the reworked pixels before the commit, given where each pixel layer now sits.
   finish?: (offsets: ReadonlyMap<string, { x: number; y: number }>) => void,
@@ -90,7 +104,11 @@ function rework(
       const p = picture(s.raster(l.id), offsetOf(l));
       const next = p ? map(p, 'layer', l.id) : null;
       // A layer's pixels sit at its origin; its offset carries where.
-      const t = next ? TiledRaster.fromRaster(next.raster) : new TiledRaster();
+      const t = next
+        ? 'tiles' in next
+          ? next.tiles
+          : TiledRaster.fromRaster(next.raster)
+        : new TiledRaster();
       s.replacePixels(l.id, 'layer', t);
       offsets.set(l.id, next ? { x: next.x, y: next.y } : { x: 0, y: 0 });
       targets.push({ layerId: l.id, target: 'layer', dropSource: true });
@@ -99,7 +117,16 @@ function rework(
       const at = maskOffsetOf(l);
       // A mask's white beyond its tiles: worked as a grey picture of its tiles' extent.
       const p = picture(s.raster(l.id, 'mask'), at);
-      const next = p ? map(p, 'mask', l.id) : null;
+      const mapped = p ? map(p, 'mask', l.id) : null;
+      // A mask is grey and small beside its layer: worked whole.
+      const next =
+        mapped && 'tiles' in mapped
+          ? {
+              raster: mapped.tiles.read({ x: 0, y: 0, width: mapped.width, height: mapped.height }),
+              x: mapped.x,
+              y: mapped.y,
+            }
+          : mapped;
       const t = new TiledRaster(1, 255);
       if (next) {
         // What a turn or a crop left empty is the mask's white, not black.
@@ -243,35 +270,79 @@ export function coverPlan(
   };
 }
 
-export type Resample = (r: Raster, width: number, height: number) => Promise<Raster>;
+/** One tile of a resample drawn from the source pixels it reads (resizeRegion). */
+export type RegionResample = (region: Raster, plan: ResizePlan, out: Rect) => Promise<Raster>;
 
-/** Bicubic resampling in the photo worker (on the page where a worker cannot start). */
-export const workerResample: Resample = async (raster, width, height) => {
-  const res = await photoWorkers().run({ kind: 'resize', raster, width, height }).result;
+/** A tile's Bicubic resample in the photo worker (on the page where a worker cannot start). */
+export const workerRegionResample: RegionResample = async (region, plan, out) => {
+  const res = await photoWorkers().run({ kind: 'resize-region', region, plan, out }).result;
   if (res.kind !== 'resize') throw new Error('resize failed');
   return res.raster;
 };
 
+// The least side of a tile of the result: below it the round trips to the worker cost more than they save.
+const RESAMPLE_TILE_MIN = 64;
+
+/** A result tile's side along one axis: a PHOTO_TILE, or less when shrinking, so the source it reads stays about a
+ *  PHOTO_TILE across (4 MB at most) however much the picture shrinks. */
+const resampleStep = (from: number, to: number) =>
+  Math.max(RESAMPLE_TILE_MIN, Math.min(PHOTO_TILE, Math.floor((PHOTO_TILE * to) / from)));
+
+/** `bounds` of `r` resampled to `width` x `height` (Bicubic), a tile of the result at a time: each tile's source
+ *  pixels read, resampled in the worker and written into the result's tiles, so neither the source nor the result
+ *  is ever held whole (docs/specs/031-photo/blueprints/photo-engine.md "Make Sizes"). The tiles go one after
+ *  another, so at most one tile's source is held at a time. */
+export async function resampleTiled(
+  r: TiledRaster,
+  bounds: Rect,
+  width: number,
+  height: number,
+  resample: RegionResample = workerRegionResample,
+): Promise<TiledRaster> {
+  const plan = resizePlan(bounds.width, bounds.height, width, height, 'bicubic');
+  const out = new TiledRaster();
+  const stepX = resampleStep(bounds.width, width);
+  const stepY = resampleStep(bounds.height, height);
+  for (let y = 0; y < height; y += stepY)
+    for (let x = 0; x < width; x += stepX) {
+      const tile = {
+        x,
+        y,
+        width: Math.min(stepX, width - x),
+        height: Math.min(stepY, height - y),
+      };
+      const src = resizeSourceRect(plan, tile);
+      const region = r.read({
+        x: bounds.x + src.x,
+        y: bounds.y + src.y,
+        width: src.width,
+        height: src.height,
+      });
+      out.write(await resample(region, plan, tile), x, y);
+    }
+  return out;
+}
+
 /** Make Sizes' one step: Image Size by the cover scale, then Canvas Size about the centre, every layer
  *  reworked once. The pixels past the new edges are kept, so the Move tool can choose another crop.
- *  Each layer's and mask's picture is resampled off the main thread first (blueprint "Make Sizes"),
- *  so a large photo never holds the page for a whole size. */
+ *  Each layer's and mask's picture is resampled off the main thread first, a tile at a time (resampleTiled,
+ *  blueprint "Make Sizes"), so a large photo never holds the page for a whole size, nor its memory for a whole copy. */
 export async function coverSize(
   s: PhotoSession,
   width: number,
   height: number,
-  resample: Resample = workerResample,
+  resample: RegionResample = workerRegionResample,
 ): Promise<string | null> {
   const refused = sizeRefused(width, height);
   if (refused) return refused;
   const { k, dx, dy } = coverPlan(s.photo, { width, height });
-  const scaled = new Map<string, Raster>();
+  const scaled = new Map<string, { tiles: TiledRaster; width: number; height: number }>();
   const scale = async (key: string, r: TiledRaster) => {
     const b = r.contentBounds();
     if (!b) return;
     const w = Math.max(1, Math.round(b.width * k));
     const h = Math.max(1, Math.round(b.height * k));
-    scaled.set(key, await resample(r.read(b), w, h));
+    scaled.set(key, { tiles: await resampleTiled(r, b, w, h, resample), width: w, height: h });
   };
   for (const l of s.photo.layers) {
     if (l.layerKind === 'pixel') await scale(`${l.id}:layer`, s.raster(l.id));
@@ -283,7 +354,7 @@ export async function coverSize(
     { width, height },
     // Every picture rework reads was resampled above: the same bounds, so the same key.
     (p, kind, id) => ({
-      raster: scaled.get(`${id}:${kind}`)!,
+      ...scaled.get(`${id}:${kind}`)!,
       x: Math.round(p.x * k) + dx,
       y: Math.round(p.y * k) + dy,
     }),

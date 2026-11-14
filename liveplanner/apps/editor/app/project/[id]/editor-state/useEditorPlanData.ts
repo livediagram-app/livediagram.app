@@ -12,7 +12,7 @@ import { usePlanDefaultTool } from '@/hooks/editor/usePlanDefaultTool';
 import { signalReconnect } from '@/lib/offline-queue/reconnect';
 import { type SheetsBridge, useSheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { tabNamedForSheet } from '@/lib/tab-named-plan';
-import { useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { type Element, type Tab, voteHidesCursors } from '@liveplanner/project';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
@@ -307,7 +307,12 @@ export function useEditorPlanData(
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
-  // indicators + TabBar avatars). See usePresenceBroadcast.
+  // indicators + TabBar avatars). See usePresenceBroadcast. An element we let go of stays held while our change to it
+  // has not landed (@liveworkspace/workbench/lib/selection-write-hold): one stable object, read when used.
+  const presenceWriting = useMemo(
+    () => ({ tabs: tabsRef, baseline: lastSavedTabsRef, writes: ownWrites }),
+    [tabsRef, lastSavedTabsRef, ownWrites],
+  );
   usePresenceBroadcast({
     hydrated,
     projectId,
@@ -315,6 +320,7 @@ export function useEditorPlanData(
     selection: selectionStore,
     activeId,
     roomRef,
+    writing: presenceWriting,
   });
 
   // Lazy fetch the active tab's full payload on first open, plus the

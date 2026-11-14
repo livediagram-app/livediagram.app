@@ -55,3 +55,37 @@ describe('the media service', () => {
     expect(source).not.toMatch(/\+ 1000/);
   });
 });
+
+describe('the e2e stacks side by side', () => {
+  // Every `E2E_<NAME>_PORT ?? <number>` default in a product's stack, with its inspector ten above, is unique across
+  // products, so two default stacks run at once.
+  const portsOf = (product: string) => {
+    const source = read(`${product}/scripts/e2e-stack.mjs`);
+    const ports = new Map<string, number>();
+    for (const match of source.matchAll(/process\.env\.(E2E_[A-Z]+_PORT) \?\? (\d+)/g)) {
+      ports.set(match[1]!, Number(match[2]));
+    }
+    return ports;
+  };
+
+  it('gives every product its own default ports, inspectors included', () => {
+    const owners = new Map<number, string>();
+    for (const product of PRODUCTS) {
+      const ports = portsOf(product);
+      expect(ports.size, `${product} names its default ports`).toBeGreaterThan(2);
+      for (const [name, port] of ports) {
+        for (const used of [port, port + 10]) {
+          const label = `${product} ${name}`;
+          expect(owners.get(used), `${label} (${used}) clashes`).toBeUndefined();
+          owners.set(used, label);
+        }
+      }
+    }
+  });
+
+  it('keeps livediagram and livehuddle index and media apart', () => {
+    for (const name of ['E2E_INDEX_PORT', 'E2E_MEDIA_PORT']) {
+      expect(portsOf('livehuddle').get(name)).not.toBe(portsOf('livediagram').get(name));
+    }
+  });
+});

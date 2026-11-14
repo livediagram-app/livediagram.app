@@ -225,7 +225,7 @@ describe('TabFolderGroup', () => {
     const onRename = vi.fn();
     render(<TabFolderGroup {...props({ onRename })} />);
     fireEvent.doubleClick(chip());
-    const field = screen.getByRole('textbox', { name: 'Folder name' }) as HTMLInputElement;
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Folder name' });
     field.value = '  Plans  ';
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(onRename).toHaveBeenCalledWith('Planning', 'Plans');

@@ -20,6 +20,7 @@ import {
   resolveStockColours,
   viewElementInTheme,
   withPaperLabelInks,
+  withPaperMarkInks,
   withReadableLabelInks,
   type CanvasSurface,
   type Element,
@@ -33,6 +34,25 @@ const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
  *  mode): what a label on a page with no fill of its own is read against. */
 export function plainPaper(surface: CanvasSurface): { stored: string; drawn: string } {
   return { stored: CANVAS_PAPER.light, drawn: CANVAS_PAPER[surface] };
+}
+
+/** `drawn` (the elements `stored` drawn on `canvases.drawn`) with what the redraw sank lifted off the paper, in
+ *  order: ink marks straight on the plain paper ("Ink marks on the plain paper stay seen"), then labels under 3:1
+ *  against what is behind them, then words straight on the plain paper at the contrast they were made with. The canvas
+ *  (createStockColourProjector) and the layout picker's tiles (layout-render-thumb.tsx) draw through it, so a tile
+ *  matches the page. The same array when nothing changes. */
+export function inkedOnPaper(
+  stored: readonly Element[],
+  drawn: readonly Element[],
+  canvases: { stored: string; drawn: string },
+): readonly Element[] {
+  const marked = withPaperMarkInks(stored, canvases.stored, drawn, canvases.drawn);
+  return withPaperLabelInks(
+    stored,
+    canvases.stored,
+    withReadableLabelInks(stored, canvases.stored, marked, canvases.drawn),
+    canvases.drawn,
+  );
 }
 
 /** The surface of each element on a page with its own fill (elementPageSurfaces), the theme map
@@ -73,6 +93,14 @@ export function elementAsSeen(
       )
     : resolveStockColours(viewElementInTheme(el, themeMap), surface);
 }
+
+type Inks = { textColor?: unknown; fillColor?: unknown; strokeColor?: unknown };
+/** True when the walks gave `a` and `b` the same colours: the only fields inkedOnPaper writes (a rich label's runs
+ *  aside, which a new walk of the same label repeats). */
+const sameInks = (a: Element, b: Element): boolean =>
+  (a as Inks).textColor === (b as Inks).textColor &&
+  (a as Inks).fillColor === (b as Inks).fillColor &&
+  (a as Inks).strokeColor === (b as Inks).strokeColor;
 
 export type StockColourProjector = ((
   elements: Element[],
@@ -148,25 +176,14 @@ export function createStockColourProjector(): StockColourProjector {
     // Labels against what is behind them: only when the redraw changed an element or the canvas, so a tab drawn as
     // stored is free. A label given the same ink as last time keeps last time's object, so its view stays quiet.
     if (canvases && (changed || canvases.stored !== canvases.drawn)) {
-      // The 3:1 walk first; then the words straight on the plain paper are drawn at the contrast they were made
-      // with on white ("Words on the plain paper keep the contrast they were made with").
-      const inked = withPaperLabelInks(
-        elements,
-        canvases.stored,
-        withReadableLabelInks(elements, canvases.stored, lastOut, canvases.drawn),
-        canvases.drawn,
-      );
+      const inked = inkedOnPaper(elements, lastOut, canvases);
       if (inked !== lastOut)
         lastOut = inked.map((el, i) => {
           if (el === lastOut[i]) return el;
           // A label on a page with a fill of its own is drawn for that page (elementAsSeen), not read against the canvas.
           if (surfaces?.has(el.id)) return lastOut[i]!;
           const prior = inkCache.get(lastOut[i]!);
-          if (
-            prior &&
-            (prior as { textColor?: string }).textColor === (el as { textColor?: string }).textColor
-          )
-            return prior;
+          if (prior && sameInks(prior, el)) return prior;
           inkCache.set(lastOut[i]!, el);
           return el;
         });

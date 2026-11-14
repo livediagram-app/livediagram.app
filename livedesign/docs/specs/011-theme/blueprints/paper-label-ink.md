@@ -1,7 +1,7 @@
 # Paper label ink
 
 Derived from [Light and dark](../light-and-dark.md), "What a viewer sees": "Words on the plain paper keep the
-contrast they were made with".
+contrast they were made with" and "Ink marks on the plain paper stay seen".
 
 ## Domain and naming
 
@@ -11,6 +11,8 @@ contrast they were made with".
 - **Paper label**: a label whose backdrop, as `labelBackdrops` finds it, is the paper itself: no fill of its own and
   no filled element under its centre.
 - **Made contrast**: the paper label's ink as stored against the stored paper.
+- **Ink mark**: a shape (not a cycle, opacity 1 or unset) that paints with one hex colour: an icon (`shape: 'icon'`)
+  its `strokeColor`, any other shape its own `fillColor`. A **paper mark** is one whose backdrop is the paper.
 
 ## Behaviour and state
 
@@ -30,6 +32,27 @@ contrast they were made with".
 The canvas runs it after `withReadableLabelInks`, on that walk's output, in `createStockColourProjector`, and keeps
 an element on a page with a fill of its own as `elementAsSeen` drew it.
 
+### Ink marks
+
+`withPaperMarkInks(before, storedPaper, after, drawnPaper)` in the same file, pure:
+
+1. The same array when `storedPaper` equals `drawnPaper`.
+2. A mark in `after` is a candidate only when its colour reads worse on the drawn paper than on the stored one
+   (`- 0.01`) and, for a fill, under 3:1 on the drawn paper. No candidate: the same array, with no backdrop lookup.
+3. `paperMarkBackdrops(elements, paper, ids)` finds each candidate's backdrop with one `labelBackdrops` pass over the
+   list with a probe after each candidate: a `text` element on the candidate's box whose `textColor` is its colour.
+   The candidate has the probe's area, so it is never its own backdrop (`labelBackdrops` takes only larger panels).
+4. Run for `after` on the drawn paper and for `before` on the stored one, matched by id. A mark is changed only when
+   it is a paper mark in both and `contrast(now) < made - 0.01`.
+5. Target: an icon `max(LABEL_BACKDROP_CONTRAST, made)`, as a word; a fill `LABEL_BACKDROP_CONTRAST` (3:1, WCAG
+   non-text). Nothing below the target is left. The walk is `reachContrast`, cached as the labels' are.
+6. An icon gets `strokeColor`; a fill gets `fillColor`, and `strokeColor` too when it equalled the old fill.
+
+`inkedOnPaper(stored, drawn, canvases)` in `apps/live/lib/stock-colour-projector.ts` runs the three walks in order:
+marks, `withReadableLabelInks`, `withPaperLabelInks`, so a word on a walked fill is read against the walked fill. The
+projector and the layout picker's tiles (`layoutRenderSvg`, a plain page in dark chrome) both call it. The projector's
+re-ink cache keeps a prior object only when its `textColor`, `fillColor` and `strokeColor` all match.
+
 ## Interfaces and contracts
 
 - Input: two element lists of the same elements by id, and two `#rrggbb` paper colours.
@@ -46,7 +69,8 @@ an element on a page with a fill of its own as `elementAsSeen` drew it.
 ## Performance and limits
 
 - Two `labelBackdrops` passes (grid-bucketed, linear in elements) per projection in the dark editor, only when the
-  projector re-inks (an element or the canvas changed). Walked inks are cached by `ink|paper|target`, up to
+  projector re-inks (an element or the canvas changed). The mark walk adds one colour check per shape, and two more
+  `labelBackdrops` passes (over the list plus one probe per candidate) only when some mark sinks. Walked inks are cached by `ink|paper|target`, up to
   `PAPER_INK_CACHE_SIZE` (512) entries, cleared whole when full.
 
 ## Testing
@@ -54,8 +78,13 @@ an element on a page with a fill of its own as `elementAsSeen` drew it.
 - `packages/design/src/paper-label-ink.test.ts`: each rule above (paper label walked to its made contrast, hue kept;
   light editor untouched; card labels, filled backdrops, new labels and light words untouched; floor of 3:1; identity
   kept).
-- `apps/live/lib/pages-template-contrast.test.ts`: every Wireframes template, the Logo Design template and the four logo explorations at 4.5:1
-  in the light and the dark editor, as the canvas draws them.
+- `packages/design/src/paper-label-ink.test.ts` `withPaperMarkInks`: fills to 3:1 with a matching stroke, icons to
+  their made contrast with their steps kept, light editor and unsunk parts untouched, parts on cards, washes, cycles,
+  words and stroke-less icons untouched, new and moved parts untouched, identity kept, a 4,000-part board in budget.
+- `apps/live/lib/pages-template-contrast.test.ts`: every Wireframes template, the Logo Design template and the four
+  logo explorations at 4.5:1 in the light and the dark editor, as the canvas draws them, and at 3:1 under every theme
+  picked in either half and seen in either; each paper mark on the dark paper at 3:1 (or its made contrast, if less).
+- `apps/live/components/canvas/layout-render-thumb.test.tsx`: a dark tile draws the canvas's walked button fill.
 
 ## Constants and configuration
 

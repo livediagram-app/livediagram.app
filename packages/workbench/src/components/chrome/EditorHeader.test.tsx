@@ -76,7 +76,7 @@ describe('EditorHeader title', () => {
     const onRename = vi.fn();
     render(header({ onRename }));
     fireEvent.click(screen.getByRole('button', { name: 'Untitled item' }));
-    const field = screen.getByLabelText('Item name') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Item name');
     fireEvent.change(field, { target: { value: '  Roadmap ' } });
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(onRename).toHaveBeenLastCalledWith('Roadmap');

@@ -18,17 +18,19 @@ backdrop, a heavy display heading, pills with a coloured dot, the glowing search
 
 - **The hero** opens the page ([The hero](#the-hero)): a full-width band under the Explorer header, above the
   sidebar and the sections. It is Home's page header; Home has no other.
-- **One column** under it, beside the sidebar, at every width: **New**, then **Most Used** and **Recent**. It scrolls
-  with the page.
+- **One column** under it, beside the sidebar, at every width: **New**, then **Most Used** and **Recent**, then
+  **Spaces** and **Shared With You Recently** ([Spaces and Shared With You Recently](#spaces-and-shared-with-you-recently)).
+  It scrolls with the page.
 - **Display headings** set the sections apart. Each section opens with its heading row: the title (about 24 px,
-  extra bold, tight tracking) and the section's quiet link at the right end (**See More**). No rule
+  extra bold, tight tracking) and the section's quiet link at the right end (Recent's **See More**, Shared With You Recently's **See All**). No rule
   runs under the row. Generous space (about 40 px) separates one section from the next.
-- Most Used and Recent's designs are **cards** ([Most Used and Recent](#most-used-and-recent)).
+- New, Most Used, Recent and Shared With You Recently's designs are the same large **cards**
+  ([Most Used and Recent](#most-used-and-recent)).
 - Home has no import, no folder and no view switch.
 - The person's own history (what they created, updated or opened) is not on Home: New holds the four designs made
   most recently in livedesign (theirs and their teams', made by AI ones included, wearing Made by AI; hidden while there
-  are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Jump
-  Back In what they reach for, and a design's own record is its History.
+  are none: [One Explorer "New, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#new-on-home)), Most
+  Used and Recent what they reach for, and a design's own record is its History.
 
 ## The hero
 
@@ -150,9 +152,9 @@ and the **8 most recent**, no design twice ([one-explorer.md](../../../../livewo
   not by how many days. A day on which they only edited the design or made it
   ([Making a design](#making-a-design)) counts as one open. A design not opened in 14 days drops off the list.
   Equal counts go to the one opened most recently.
-- **Recent**: the designs the person used most recently, newest first: the latest of their last open, their last
-  edit and their making of it. A design that is both shows under **Most Used**, and Recent takes the next most
-  recent instead.
+- **Recent**: the designs the person opened most recently that are not among Most Used, newest first by their last
+  open (a design made and never opened by when it last changed). A design that is both shows under **Most Used**,
+  and Recent takes the next most recent instead. This browser's designs are merged in by their last open.
 - **Making a design is a use** ([Making a design](#making-a-design)): what the person just made is in Most
   Used and Recent at once, opened or not.
 - Only designs the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
@@ -160,23 +162,26 @@ and the **8 most recent**, no design twice ([one-explorer.md](../../../../livewo
 - A design stored only in this browser ([Offline Mode](../006-design/offline-mode.md)) takes part with this
   browser's own record of its opens and edits ([Opens](#opens)), and carries the **This Browser** pill on its
   thumbnail, as every other row and card of one does.
-- Each design is a **card**: its snapshot thumbnail, its name, and one quiet line that says why it is there.
+- Each design is a **card**: its snapshot thumbnail, its name, and one quiet line that says why it is there. A design an
+  AI tool made carries the **Made by AI** badge on its thumbnail's corner.
   The full name is its accessible name, and no tooltip repeats the name written under the picture; the quiet line is
   its description. Activating a card opens the
   design.
-  - A most used design's line counts its opens in the window: "Opened once", "Opened N times".
-  - A recent design's line says when the person last used it: "Used 2 hours ago", "Used yesterday" (the
-    Explorer's relative time).
+  - A most used design's line counts its opens in the window: "Opened once", "Opened N times" ("Used on N days"
+    from an index that counts only days).
+  - A recent design's line says when the person last opened it: "Opened 2 hours ago", "Opened yesterday" (the
+    Explorer's relative time), or "Changed 2 hours ago" for one made and never opened
+    (`jumpBackInLine` in `@liveworkspace/explorer`).
 - **Each card has the design's ⋯ menu**, the same menu its row and card carry everywhere else in the Explorer
   (Rename, Duplicate, Move, Favourite, History, Delete and the rest; a design shared with you gets the
-  shared-with-you menu), so it can be changed from Home without opening it. A ⋯ button opens it: at the top right of
-  a large card's thumbnail, at the right end of a compact card, and at the top right of a phone tile's thumbnail. A
-  right-click anywhere on the card opens it too. Under a mouse the button shows while the card is hovered or has
-  keyboard focus; on touch it always shows. It is a button beside the card's link, never inside it.
-  - The menu opens **beside the card**, out of its way, never over it: to the card's right with its top level with
-    the card's, or to its left when the right has no room. Only when neither side has room (a phone, a narrow
-    window) does it hang below the ⋯ as other menus do. Either way it stays inside the window. The ⋯ and a
-    right-click open it in the same place.
+  shared-with-you menu; a This Browser design gets This Browser's), so it can be changed from Home without opening
+  it. A ⋯ button on the card opens it, and a right-click anywhere on the card opens it too. Under a mouse the button
+  shows while the card is hovered or has keyboard focus; on touch it always shows. It is a button beside the card's
+  link, never inside it.
+  - The menu opens as every Explorer ⋯ menu does: below its trigger, or above it when there is no room below,
+    always inside the window
+    ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#4-the-explorer-is-built-once-by-liveworkspaceapp-and-shown-at-every-apps-address)).
+- **A card can be dragged** as an Explorer row can.
   - **Rename** edits the name in place on the card, as on an Explorer card; while renaming, the card does not open.
   - What changes shows at once: a renamed design shows its new name, and a design moved to the Trash or taken
     off Shared With Me leaves Most Used and Recent (and comes back if the move is undone).
@@ -199,13 +204,13 @@ and the **8 most recent**, no design twice ([one-explorer.md](../../../../livewo
 - **Most Used** first: up to 8 large cards (a white, rounded, hairline-bordered card; the thumbnail 128 px high
   inside it, the name in semibold and the quiet line under it), most used first from the left.
 - **Recent** under it: up to 8 cards the size of Most Used's (the thumbnail above the name and the quiet line), newest first, so every card in either section reads, opens and drags alike.
-- Four across from the `lg` breakpoint, so each full section is two rows of four; two across below it. Nothing
-  scrolls sideways.
+- From `md`, four across from the `lg` breakpoint, so each full section is two rows of four; two across below it.
+  Nothing scrolls sideways.
 - A card lifts a little on hover (a rose edge and a soft rose shadow), within the motion budget.
 
 ### Phone
 
-- Each section is its own **sideways-scrolling strip** of at most **8** thumbnails under its own heading (This
+- Below `md`, each section is its own **sideways-scrolling strip** of at most **8** thumbnails (New's of four) under its own heading (This
   Browser's among Recent's), with no quiet lines: each tile is its thumbnail and name.
 - Recent's strip ends in a **See More** tile, the same size as a thumbnail, that opens the Recent page.
 - The strip scrolls sideways (touch, trackpad, Shift+wheel, and keyboard focus moving through it). Its trailing
@@ -239,6 +244,18 @@ and the **8 most recent**, no design twice ([one-explorer.md](../../../../livewo
   or edit, as before.
 - A design stored only in this browser counts its making in this browser's record ([Opens](#opens)), by the same
   rule.
+
+## Spaces and Shared With You Recently
+
+Under Recent, Home ends with two more sections, drawn by the shared Explorer as on every app's Home
+([One Explorer "Spaces, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#spaces-on-home)):
+
+- **Spaces**: My Work, then each team the person is in, then This Browser while it holds anything, each a tile with
+  a mosaic of its newest designs that goes straight to that space's list. Up to eight show, with **Show All N
+  Spaces** past that. A person with no team gets a **Create a Team** tile (a guest, **Sign In to Work in Teams**).
+- **Shared With You Recently**: up to four designs most recently shared with the person through a link, as large
+  cards, with **See All** at the heading's right opening Shared With Me. Left out, heading and all, when there are
+  none.
 
 ## Opens
 
@@ -277,12 +294,12 @@ Every state keeps the layout it lands in: headings are in place from the first p
 has the size of what replaces it, so nothing shifts (CLS 0). The one exception is a person with no design at all:
 Recent's empty state is shorter than the skeleton, on a page with nothing else on it.
 
-| State          | What shows                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| Loading        | Each section's heading over its skeleton: Most Used's cards, Recent's cards (the phone's strips) |
-| Partial        | What exists, no empty boxes; a section with none left out ([Fewer designs](#fewer-designs))      |
-| Nothing opened | Recent alone, its empty state "No designs yet": "The designs you open will gather here."         |
-| Read failed    | Recent's heading over one "Couldn’t load Home." with **Try again**; no Most Used                 |
+| State          | What shows                                                                                           |
+| -------------- | ---------------------------------------------------------------------------------------------------- |
+| Loading        | Each section's heading over its skeleton: New's, Most Used's and Recent's cards (the phone's strips) |
+| Partial        | What exists, no empty boxes; a section with none left out ([Fewer designs](#fewer-designs))          |
+| Nothing opened | Recent alone, its empty state "No designs yet": "The designs you open will gather here."             |
+| Read failed    | Recent's heading over one "Couldn’t load Home." with **Try again**; no Most Used                     |
 
 Under reduced motion nothing animates: no skeleton pulse, no smooth scrolling.
 
@@ -307,13 +324,16 @@ One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md))
 
 ## Help
 
-The help centre's Home article (Home's Help link) describes Home, Most Used and Recent.
+The help centre's Home article (Home's Help link) describes Home: New, Most Used and Recent, Spaces and Shared With You
+Recently.
 
 ## Accessibility
 
-- Each section is a landmark (`section`) named by its heading (**Most Used**, **Recent**).
+- Each section is a landmark (`section`) named by its heading (**New**, **Most Used**, **Recent**, **Spaces**,
+  **Shared With You Recently**).
 - Each section's designs are one list; each design is one link named by its design's
   name (plus **This Browser** for a design stored only here). No row or group carries a label of its own.
-- Keyboard order follows the reading order: Most Used's designs, Recent's See More (desktop and tablet), then Recent's
-  designs in their order (then the See More tile on a phone).
+- Keyboard order follows the reading order: New's designs, Most Used's designs, Recent's See More (desktop and
+  tablet), then Recent's designs in their order (then the See More tile on a phone), then the Spaces tiles and
+  Shared With You Recently.
 - WCAG 2.2 AA: contrast, visible focus, and targets of at least 24 by 24 px.

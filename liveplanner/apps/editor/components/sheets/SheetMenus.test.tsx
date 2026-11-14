@@ -341,7 +341,7 @@ describe('a header menu', () => {
   it('resizes to the pixels typed, at least the line’s minimum', () => {
     show(h, colMenu, { at: 'A1:B8' });
     fireEvent.click(btn('Resize…'));
-    const field = screen.getByLabelText('Width') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Width');
     expect(Number(field.value)).toBeGreaterThan(0);
     // Only digits, up to four.
     fireEvent.change(field, { target: { value: '1x2' } });
@@ -352,7 +352,7 @@ describe('a header menu', () => {
     expect(h.ctl().menu).toBeNull();
     act(() => h.ctl().setMenu(rowMenu));
     fireEvent.click(btn('Resize…'));
-    const height = screen.getByLabelText('Height') as HTMLInputElement;
+    const height = screen.getByLabelText<HTMLInputElement>('Height');
     fireEvent.change(height, { target: { value: '' } });
     // Nothing typed: nothing happens.
     fireEvent.click(btn('OK'));
@@ -367,7 +367,7 @@ describe('a header menu', () => {
   it('opens a row’s Resize at its height', async () => {
     show(h, rowMenu, { at: 'A2' });
     fireEvent.click(btn('Resize…'));
-    const height = screen.getByLabelText('Height') as HTMLInputElement;
+    const height = screen.getByLabelText<HTMLInputElement>('Height');
     expect(Number(height.value)).toBe(
       Math.round(h.ctl().geometry.rows[2]! - h.ctl().geometry.rows[1]!),
     );
@@ -444,7 +444,7 @@ describe('the filter menu', () => {
 
   it('filters by a condition with one value, two, or none', async () => {
     await open();
-    const select = screen.getByLabelText('Condition') as HTMLSelectElement;
+    const select = screen.getByLabelText<HTMLSelectElement>('Condition');
     expect(screen.queryByLabelText('Value')).toBeNull();
     fireEvent.change(select, { target: { value: 'contains' } });
     expect(screen.queryByLabelText('And')).toBeNull();

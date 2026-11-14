@@ -47,13 +47,13 @@ const rows = () => screen.queryAllByRole('listitem').map((li) => li.textContent)
 describe('filtering linked cards', () => {
   it('offers only the types and states the list holds, and narrows by each', () => {
     draw();
-    const typeMenu = screen.getByLabelText('Linked as Parent: Card Type') as HTMLSelectElement;
+    const typeMenu = screen.getByLabelText<HTMLSelectElement>('Linked as Parent: Card Type');
     expect([...typeMenu.options].map((o) => o.textContent)).toEqual([
       'All card types',
       'Task',
       'Note',
     ]);
-    const stateMenu = screen.getByLabelText('Linked as Parent: State') as HTMLSelectElement;
+    const stateMenu = screen.getByLabelText<HTMLSelectElement>('Linked as Parent: State');
     expect([...stateMenu.options].map((o) => o.textContent)).toEqual([
       'All states',
       'To Do',

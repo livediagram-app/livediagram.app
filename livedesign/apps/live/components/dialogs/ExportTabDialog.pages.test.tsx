@@ -110,7 +110,7 @@ describe('LogoKitPanel', () => {
     } as unknown as Tab;
     render(<ExportTabDialog tab={withNote} designName="Doc" onClose={vi.fn()} pages={pages} />);
     fireEvent.click(screen.getByRole('button', { name: /Logo Kit/ }));
-    const img = (await screen.findByAltText('The logo as it will export')) as HTMLImageElement;
+    const img = await screen.findByAltText<HTMLImageElement>('The logo as it will export');
     const svg = decodeURIComponent(img.src);
     expect(svg).toContain('Sunny Side');
     expect(svg).not.toContain('Pick the lockup');
@@ -119,7 +119,7 @@ describe('LogoKitPanel', () => {
   it('names each logo page by its full label', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /Logo Kit/ }));
-    const select = screen.getByLabelText('Logo page') as HTMLSelectElement;
+    const select = screen.getByLabelText<HTMLSelectElement>('Logo page');
     expect([...select.options].map((o) => o.textContent)).toEqual([
       'Page 1 · 1024 x 1024 · Logo',
       'Mark · 1024 x 1024 · Logo',

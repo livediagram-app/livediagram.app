@@ -4,6 +4,17 @@ import { bodySetClass } from '@/lib/animation-classes';
 import { unitCount } from './animated-words';
 import { useTextAnimation, type TextAnimView } from './useTextAnimation';
 
+// Where each count starts: the sum of the counts before it.
+function startsOf(counts: number[]): number[] {
+  const starts: number[] = [];
+  let sum = 0;
+  for (const count of counts) {
+    starts.push(sum);
+    sum += count;
+  }
+  return starts;
+}
+
 // A table's animations (docs/specs/028-animation/element-animations.md "Table" and "Text"): the
 // Table set's class on the grid, with the row and column counts its cascades stagger by, and the
 // Text animation of its cells, counted across every cell in reading order as one label (EA5), each
@@ -22,14 +33,10 @@ export function useTableAnimation(
   const textAnim = useTextAnimation(element, texts, textColor, isEditing);
   const textStarts = useMemo(() => {
     if (!textAnim) return undefined;
-    let next = 0;
-    return element.cells.map((row) =>
-      row.map((cell) => {
-        const start = next;
-        next += unitCount(cell, textAnim.plan);
-        return start;
-      }),
-    );
+    const counts = element.cells.map((row) => row.map((cell) => unitCount(cell, textAnim.plan)));
+    const starts = startsOf(counts.flat());
+    const firstOfRow = startsOf(counts.map((row) => row.length));
+    return counts.map((row, r) => row.map((_, c) => starts[firstOfRow[r]! + c]!));
   }, [element.cells, textAnim]);
   const gridClass = bodySetClass(element, 'table');
   const rows = element.cells.length;

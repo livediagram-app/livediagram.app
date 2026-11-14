@@ -969,6 +969,11 @@ pressable again, and so does coming Back to a page the browser kept.
   found the way Tailwind scans: what each sheet's `@source` lines reach, colour classes of one family under the same
   variants set on one element. A guard test writes and checks those files, and fails when a page's sheet would emit
   a light class without its dark half. The dark variant itself is unchanged (`:where`, no weight), as in every app.
+  Two colour classes of one element under different states (`hover:text-slate-900`, `aria-[current=page]:text-white`)
+  weigh the same as well, so which wins is whichever sheet emitted its rule last: an element that can be in both states
+  at once names them together (`aria-[current=page]:hover:text-white`), which outweighs both. A second guard test
+  (`hover-tie-guard.test.ts`) finds such ties the same way and fails when a page sheet that doesn't scan the
+  element's file emits exactly one half.
 - The front door, Comparison, the dashboard, Status and the privacy policy and terms are indexable: title, description, canonical,
   Open Graph, `robots.txt` and `sitemap.xml`. Every other page's title names the page and then the site
   (`Status · liveworkspace`), the same in its Open Graph and X cards, so a search result or a tab never reads

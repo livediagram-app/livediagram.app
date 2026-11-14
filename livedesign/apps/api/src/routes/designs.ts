@@ -184,7 +184,7 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
   }
   // An API client's create answers where the index filed it (the MCP names the folder it landed in).
   if (filed && res.status === 201) {
-    const answer = (await res.json()) as { design?: DesignDTO | null };
+    const answer = await res.json<{ design?: DesignDTO | null }>();
     if (answer.design) answer.design = { ...answer.design, ...filed };
     return json(answer, { status: 201 });
   }

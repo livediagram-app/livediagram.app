@@ -82,7 +82,7 @@ export const dohResolve: Resolve = async (host) => {
           signal: AbortSignal.timeout(DOH_TIMEOUT_MS),
         });
         if (!res.ok) throw new Error(`doh ${res.status}`);
-        const body = (await res.json()) as { Answer?: { type?: unknown; data?: unknown }[] };
+        const body: { Answer?: { type?: unknown; data?: unknown }[] } = await res.json();
         return (body.Answer ?? [])
           .filter((a) => typeof a.type === 'number' && ANSWER_TYPES.has(a.type))
           .map((a) => String(a.data));

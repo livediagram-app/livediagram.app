@@ -51,7 +51,7 @@ describe('the Find field while the bar loads', () => {
     const { rerender } = render(<FindBarLoading find={view({ query: 'th' })} />);
     // The bar's code arrives and takes the field's place.
     rerender(<FindBar find={view({ query: 'th' })} />);
-    const field = screen.getByRole('textbox', { name: 'Find' }) as HTMLInputElement;
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Find' });
     expect(document.activeElement).toBe(field);
     expect([field.selectionStart, field.selectionEnd]).toEqual([2, 2]);
     // Taken once: the next opening selects the query as ever.
@@ -65,7 +65,7 @@ describe('the Find field while the bar loads', () => {
     expect(find.close).toHaveBeenCalledOnce();
     unmount();
     render(<FindBar find={view({ query: 'plan' })} />);
-    const field = screen.getByRole('textbox', { name: 'Find' }) as HTMLInputElement;
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Find' });
     expect([field.selectionStart, field.selectionEnd]).toEqual([0, 4]);
   });
 });

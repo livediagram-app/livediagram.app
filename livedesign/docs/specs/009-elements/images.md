@@ -173,6 +173,8 @@ there leaves placeholders and a count, never a failed import.
 
 `naturalWidth` / `naturalHeight` are captured on load so a future "Reset to natural size" affordance can snap back to them, but that menu entry is **not yet wired** (the right-click context menu currently exposes Link / Remove Icon / layer order / Note / Comment only). Aspect lock defaults to true on first paint (the user can explicitly unlock via the Shape accordion's existing aspect-lock toggle, which works on ImageElement the same way it works on shapes).
 
+**A `data:` id is its own bytes.** Every read of one picture's bytes (`apps/live/lib/api/images.ts` `fetchImage`, behind `apiFetchImageBlob`, `apiFetchImageDataUrl` and `apiFetchImageBlobUrl`) decodes a `data:` id in place and never sends it to `GET /api/images/<id>`, so Open a Picture, Place a Picture and Edit as Photo work on a This Browser design.
+
 ### Visual export (PNG / SVG / PDF)
 
 The visual tab exporters embed the bitmap so an image / avatar element looks the same in a downloaded file as on the canvas, rather than a dashed placeholder. Because the bytes live behind the authenticated `GET /api/images/<id>` endpoint (a native `<img src>` can't send the owner / share headers), the export **prefetches** each referenced image as a base64 `data:` URL via `apiFetchImageDataUrl` (`apps/live/lib/export-tab-images.ts` → `loadTabImages`), then threads a `imageId → bytes` map into the renderers:

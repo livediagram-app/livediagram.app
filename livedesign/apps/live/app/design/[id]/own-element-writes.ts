@@ -1,5 +1,11 @@
 import type { RoomElementOp } from '@livedesign/design';
 import type { RoomOp } from '@livedesign/api-schema';
+import {
+  createOwnWrites,
+  holdOwnWriteKeys,
+  ownWriteKey as keyOf,
+  type OwnWrites,
+} from '@liveworkspace/workbench/lib/own-writes';
 
 // This editor's element writes the room has not sequenced yet (docs/specs/012-collaboration/realtime-conflict-resolution.md
 // "Same-element edits converge").
@@ -16,13 +22,11 @@ import type { RoomOp } from '@livedesign/api-schema';
 // an `add` is a new id. A hold is released when the room confirms the op, when the
 // write fails, or when the room cannot say (a closed socket, a timeout), so an element is never held for good.
 
-export type OwnElementWrites = { held: Map<string, number> };
+// The counts live in the tracker every editor shares (@liveworkspace/workbench/lib/own-writes); this file turns this
+// editor's op shapes into its keys.
+export type OwnElementWrites = OwnWrites;
 
-export function createOwnElementWrites(): OwnElementWrites {
-  return { held: new Map() };
-}
-
-const keyOf = (tabId: string, elementId: string) => `${tabId}␟${elementId}`;
+export const createOwnElementWrites = createOwnWrites;
 
 // The element an op writes in full, if any: an add or an update.
 function writtenId(op: RoomElementOp): string | null {
@@ -39,17 +43,7 @@ export function holdOwnWrites(
     const id = writtenId(op);
     return id === null ? [] : [keyOf(tabId, id)];
   });
-  for (const key of keys) writes.held.set(key, (writes.held.get(key) ?? 0) + 1);
-  let released = false;
-  return () => {
-    if (released) return;
-    released = true;
-    for (const key of keys) {
-      const n = (writes.held.get(key) ?? 0) - 1;
-      if (n > 0) writes.held.set(key, n);
-      else writes.held.delete(key);
-    }
-  };
+  return holdOwnWriteKeys(writes, keys);
 }
 
 /** Whether a peer's op is a whole-element update of an element this editor is writing, ordered before our write. */
