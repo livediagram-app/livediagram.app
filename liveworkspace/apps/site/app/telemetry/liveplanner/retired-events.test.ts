@@ -32,6 +32,12 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Element', 'Added', 'PlanBoard')).toBe(false);
   });
 
+  it('retires the Comment panel, in both spellings, keeping the Action panel', () => {
+    expect(isRetiredEvent('Element', 'Added', 'CommentPin')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'Comment-pin')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'ActionPanel')).toBe(false);
+  });
+
   it('retires the diagram lint view, keeping the other agent views', () => {
     expect(isRetiredEvent('Agent', 'Viewed', 'Lint')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'TabLint')).toBe(true);

@@ -111,17 +111,27 @@ const comment = (id: string, authorId: string, extra: Partial<Comment> = {}): Co
 });
 
 const CELL = 'row004:colb01';
+// A Sheet whose cell holds the thread: canvas elements take no comment of their own (docs/specs/026-plan/plan-mode.md
+// "No comment thread on any canvas element"), so every push here is a cell's.
 const box = (comments: Comment[]) =>
   ({
     id: 'e1',
     type: 'shape',
-    shape: 'square',
+    shape: 'plan-sheet',
     x: 0,
     y: 0,
     width: 10,
     height: 10,
-    ...(comments.length ? { commentThread: { comments, resolved: false } } : {}),
+    ...(comments.length ? { cellComments: { [CELL]: { comments, resolved: false } } } : {}),
   }) as unknown as Element;
+// A square carrying its own thread, as an older project's might.
+const square = (comments: Comment[]) =>
+  ({
+    ...box([]),
+    shape: 'square',
+    commentThread: { comments, resolved: false },
+  }) as unknown as Element;
+const CELL_AT = 'e1%3Arow004%3Acolb01';
 
 const save = (elements: Element[], as = OWNER, token = false) =>
   route('PUT', '/api/projects/d1/tabs/t1', {
@@ -138,8 +148,8 @@ describe('a comment in a tab save', () => {
         userId: OWNER,
         kind: 'comment',
         title: 'Bob commented on Roadmap',
-        url: `${BASE}/project/d1#t=t1&el=e1&open=comments`,
-        tag: 'd1:e1',
+        url: `${BASE}/project/d1#t=t1&el=${CELL_AT}&open=comments`,
+        tag: 'd1:e1:row004:colb01',
       },
     ]);
     // The next save carries the same comment: nothing new.
@@ -184,6 +194,24 @@ describe('a comment in a tab save', () => {
     expect(fake.pushes).toEqual([]);
     present.add(await personTagFor('d1', OWNER));
     await save([box([comment('c2', BOB)])], BOB);
+    expect(fake.pushes).toEqual([]);
+  });
+
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 878).
+  it('pushes nothing for a comment on an element’s own thread, which the save strips', async () => {
+    expect((await save([square([comment('c1', BOB)])], BOB)).status).toBe(200);
+    expect(fake.pushes).toEqual([]);
+  });
+
+  it('pushes nothing for a stored element thread handed to it directly', async () => {
+    await pushNewComments(db.env, {
+      plan: { id: 'd1', name: 'Roadmap', ownerId: OWNER, teamId: null },
+      tabId: 't1',
+      authorId: BOB,
+      authorName: 'Bob',
+      previous: [],
+      next: [square([comment('c1', BOB)])],
+    });
     expect(fake.pushes).toEqual([]);
   });
 
@@ -322,7 +350,7 @@ describe('who may hear (share roles)', () => {
       next: places.map((id) => at(id, [earlier(id), comment(`new-${id}`, OWNER)])),
     });
     expect(fake.pushes.map((p) => [p.userId, p.tag])).toEqual(
-      places.map((id) => ['user_viewer', `solo:${id}`]),
+      places.map((id) => ['user_viewer', `solo:${id}:row004:colb01`]),
     );
     const urlOf = (input: unknown) => (input instanceof Request ? input.url : String(input));
     const pushCalls = fetchSpy.mock.calls.filter(([input]) =>

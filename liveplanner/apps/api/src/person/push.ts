@@ -69,14 +69,21 @@ export function elementUrl(env: Env, planId: string, tabId: string, elementId: s
   return `${appBaseUrl(env)}/project/${enc(planId)}#t=${enc(tabId)}&el=${enc(elementId)}&open=action`;
 }
 
-// A tab's threads as the pusher reads them, each placed at its element.
+// A tab's threads as the pusher reads them: its Sheet cells', each at its cell (docs/specs/029-sheets/sheet.md "Cell
+// comments" "Inbox"), so its link opens it. An element's own thread is retired (docs/specs/026-plan/plan-mode.md "No
+// comment thread on any canvas element"), so a stored one never pushes.
 function threadsOf(elements: readonly Element[]): PushThread<Comment>[] {
   return elements.flatMap((el) =>
-    elementThreads(el).map(({ cell, thread }) => ({
-      // A Sheet cell's thread at its cell (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"), so its link opens it.
-      at: cell === undefined ? el.id : cellThreadKey(el.id, cell),
-      comments: (thread as CommentThread | undefined)?.comments ?? [],
-    })),
+    elementThreads(el).flatMap(({ cell, thread }) =>
+      cell === undefined
+        ? []
+        : [
+            {
+              at: cellThreadKey(el.id, cell),
+              comments: (thread as CommentThread | undefined)?.comments ?? [],
+            },
+          ],
+    ),
   );
 }
 
