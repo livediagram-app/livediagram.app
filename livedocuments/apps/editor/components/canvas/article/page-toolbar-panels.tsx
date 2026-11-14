@@ -36,6 +36,8 @@ import { lucideGlyph } from '@livedocuments/ui';
 import type { ArticleAlign, ArticleListKind, ArticleParagraphStyle } from '@livedocuments/document';
 import type { ArticleSelectionState } from '@/lib/article/article-commands';
 import { MenuRow } from './page-toolbar-menus';
+import { WordCountLine } from './page-toolbar-word-count';
+import type { ArticleCounts } from '@/lib/article/article-word-count';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
@@ -346,11 +348,14 @@ export function MorePanel({
   selection,
   onAction,
   card = false,
+  counts = null,
 }: {
   selection: ArticleSelectionState;
   onAction: (action: MoreAction) => void;
   // On a flashcard the style is the card's (docs/specs/007-editor/flashcards.md "Text only").
   card?: boolean;
+  // The article's Word Count, read as the menu opened (article-pages.md "Word Count").
+  counts?: ArticleCounts | null;
 }) {
   return (
     <div role="menu" aria-label="More Formatting" className="flex flex-col">
@@ -392,6 +397,12 @@ export function MorePanel({
         icon={<PanelIcons.style />}
         onPick={() => onAction('style')}
       />
+      {counts ? (
+        <>
+          <Rule />
+          <WordCountLine counts={counts} />
+        </>
+      ) : null}
     </div>
   );
 }

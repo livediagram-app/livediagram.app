@@ -244,7 +244,8 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
   - **Alignment** (a menu: left, centre, right, justify);
   - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
-    formatting, Article style, which opens the page panel on Style);
+    formatting, Article style, which opens the page panel on Style, and at its foot the article's
+    **Word Count**);
   - **Insert** (a menu: Image, Chart, then Table, Table of Contents, Footnote, Divider, Page break, Quote,
     Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
     callout from the slash menu).
@@ -253,7 +254,14 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
     Header Row (on or off), Delete Table);
   - **Comment** (⌘⌥M) and **Assign Action**, usable while text is selected outside a table (see
     "Comments and actions"; a margin note never sits in a cell, the buttons' tooltips saying so).
-- No undo or redo (the canvas controls have them) and no word count.
+- No undo or redo (the canvas controls have them).
+- **Word Count**: the foot of More Formatting reads the length of the article the caret is in, as
+  "840 words", and while text is selected, the selection's count beside the total, as "12 of 840
+  words". It counts as agents' page summaries do (one count, `articleWordCount`): the writing, code,
+  table cells and footnote text count, a footnote's marker does not. It is read only while the menu
+  is open (as it opens, and again as the selection moves), so typing with the menu shut never counts
+  and a long article types as fast with it as without. It is a line to read, not a choice: picking it does nothing and the menu stays
+  open. A flashcard's menu has it too (a card's length is its speaking time's).
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar fixed along the top of the canvas, across it (its controls
   scroll sideways), in the Toolbar strip's place: the strip (its menu and palette) stands aside
