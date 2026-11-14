@@ -59,6 +59,7 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
 - **Focused tests, not a matrix.** Each spec file proves what only a browser
   can show for one feature; breadth and edge cases stay in unit tests, where
   they are cheap.
+- **A failed create resumes.** `create-retry.spec.ts` refuses the content's first `POST` on `/new?blank=1` (route interception), presses Try again and checks the document opens and survives a reload, and that the index answered the Retry's create with 409 `item_exists`: the resume in `createOrResumeItem` (`@liveworkspace/index-client`), without which the Retry fails again.
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
