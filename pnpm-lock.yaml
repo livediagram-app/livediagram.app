@@ -8080,6 +8080,9 @@ importers:
       '@liveworkspace/settings-ui':
         specifier: workspace:^
         version: link:../settings-ui
+      '@liveworkspace/telemetry':
+        specifier: workspace:^
+        version: link:../telemetry
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client

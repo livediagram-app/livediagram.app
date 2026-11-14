@@ -623,6 +623,7 @@
     "./components/primitives/MovablePanel.types": "./src/components/primitives/MovablePanel.types.ts",
     "./components/primitives/MovablePanelHeader": "./src/components/primitives/MovablePanelHeader.tsx",
     "./components/primitives/usePopoverTopClearance": "./src/components/primitives/usePopoverTopClearance.ts",
+    "./components/primitives/AreaErrorBoundary": "./src/components/primitives/AreaErrorBoundary.tsx",
     "./lib/tab-looks": "./src/lib/tab-looks.ts",
     "./hooks/persistence/usePerTabLoad": "./src/hooks/persistence/usePerTabLoad.ts",
     "./hooks/persistence/useResolveSelf": "./src/hooks/persistence/useResolveSelf.ts",
@@ -665,6 +666,7 @@
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:^",
+    "@liveworkspace/telemetry": "workspace:^",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",
     "@liveworkspace/ui": "workspace:*"

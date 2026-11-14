@@ -3,17 +3,22 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
-const track = vi.fn<typeof import('@/lib/telemetry').track>();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
+const track = vi.fn<(category: 'Error', action: 'Client', type: string) => void>();
 
 const recover = vi.fn<(...a: unknown[]) => void>();
-vi.mock('@liveworkspace/workbench/lib/stale-build-navigation', () => ({
+vi.mock('../../lib/stale-build-navigation', () => ({
   browserNavigationDeps: () => ({}),
   recoverInBrowser: (...a: unknown[]) => recover(...a),
 }));
 
-import { act } from 'react';
-import { AreaErrorBoundary } from './AreaErrorBoundary';
+import { act, useLayoutEffect } from 'react';
+import { createAreaErrorBoundary } from './AreaErrorBoundary';
+
+// Bound as an editor binds it (its components/primitives/AreaErrorBoundary.tsx).
+const { AreaErrorBoundary, MenuErrorBoundary } = createAreaErrorBoundary({
+  track: (...a) => track(...a),
+  labels: { Canvas: 'the canvas', Modals: 'a dialog', ExplorerPane: 'this page', Menu: 'the menu' },
+});
 
 let shouldThrow = true;
 function Flaky() {
@@ -67,6 +72,8 @@ describe('AreaErrorBoundary', () => {
     );
     expect(container.innerHTML).toBe('');
     expect(onError).toHaveBeenCalledTimes(1);
+    // Told what was thrown, so the owner can say why.
+    expect(onError.mock.calls[0]![0]).toBeInstanceOf(Error);
   });
 
   it('clears the failure when the reset key changes', () => {
@@ -124,6 +131,26 @@ describe('AreaErrorBoundary', () => {
       expect(screen.getByText('Canvas content')).toBeTruthy();
     });
 
+    it('mounts again at once when the connection came back before it began to wait', () => {
+      // Back online in the commit, after the render that failed offline and before the boundary waits.
+      function GoOnline() {
+        useLayoutEffect(() => {
+          online = true;
+          shouldThrow = false;
+        }, []);
+        return null;
+      }
+      render(
+        <>
+          <GoOnline />
+          <AreaErrorBoundary area="Canvas" fallback="panel">
+            <Unloaded />
+          </AreaErrorBoundary>
+        </>,
+      );
+      expect(screen.getByText('Canvas content')).toBeTruthy();
+    });
+
     it('mounts an overlay again once online', () => {
       const { container } = render(
         <AreaErrorBoundary area="Modals">
@@ -156,5 +183,37 @@ describe('AreaErrorBoundary', () => {
       expect(off).toHaveBeenCalledWith('online', expect.any(Function));
       off.mockRestore();
     });
+  });
+});
+
+function Boom(): never {
+  throw new Error('menu render failed');
+}
+
+describe('MenuErrorBoundary', () => {
+  it('renders the menu normally', () => {
+    render(
+      <MenuErrorBoundary onError={vi.fn()}>
+        <p>Menu</p>
+      </MenuErrorBoundary>,
+    );
+    expect(screen.getByText('Menu')).toBeTruthy();
+  });
+
+  it('closes the menu instead of taking the page down when it throws', () => {
+    const onError = vi.fn();
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <div>
+        <p>Editor</p>
+        <MenuErrorBoundary onError={onError}>
+          <Boom />
+        </MenuErrorBoundary>
+      </div>,
+    );
+    // The page around the menu survives; the menu asks to be closed.
+    expect(screen.getByText('Editor')).toBeTruthy();
+    expect(onError).toHaveBeenCalledTimes(1);
+    quiet.mockRestore();
   });
 });
