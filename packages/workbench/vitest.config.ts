@@ -61,6 +61,11 @@ const HELD_AT_100 = [
   // The account control and the Settings panel host, the last of the header's five copies.
   'src/components/chrome/AuthControls.tsx',
   'src/components/dialogs/settings/settings-panel-host.tsx',
+  // The selection lock held until the holder's change lands, and the holds on our saves it reads, in every editor
+  // (docs/specs/007-editor/editor-app.md "Held until the holder's change lands", Work Tracker 862).
+  'src/lib/own-writes.ts',
+  'src/lib/selection-write-hold.ts',
+  'src/lib/remote-selection.ts',
 ];
 
 export default defineProject({

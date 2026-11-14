@@ -1,7 +1,7 @@
 'use client';
 
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { usePerTabLoad } from '../usePerTabLoad';
 import { useRoomConnection } from '../useRoomConnection';
@@ -276,7 +276,12 @@ export function useEditorRoom({
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
-  // indicators + TabBar avatars). See usePresenceBroadcast.
+  // indicators + TabBar avatars). See usePresenceBroadcast. An element we let go of stays held while our change to it
+  // has not landed (@liveworkspace/workbench/lib/selection-write-hold): one stable object, read when used.
+  const presenceWriting = useMemo(
+    () => ({ tabs: tabsRef, baseline: lastSavedTabsRef, writes: ownWrites }),
+    [tabsRef, lastSavedTabsRef, ownWrites],
+  );
   usePresenceBroadcast({
     hydrated,
     documentId,
@@ -284,6 +289,7 @@ export function useEditorRoom({
     selection: selectionStore,
     activeId,
     roomRef,
+    writing: presenceWriting,
   });
 
   // Lazy fetch the active tab's full payload on first open, plus the

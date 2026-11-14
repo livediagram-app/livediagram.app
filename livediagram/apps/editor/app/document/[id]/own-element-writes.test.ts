@@ -4,10 +4,9 @@ import type { RoomOp } from '@livediagram/api-schema';
 import {
   createOwnElementWrites,
   holdOwnWrites,
-  isOwnWriteHeld,
   isSupersededByOwnWrite,
-  onOwnWritesReleased,
 } from './own-element-writes';
+import { isOwnWriteHeld, onOwnWritesReleased } from '@liveworkspace/workbench/lib/own-writes';
 
 // docs/specs/012-collaboration/realtime-conflict-resolution.md "Same-element edits converge".
 

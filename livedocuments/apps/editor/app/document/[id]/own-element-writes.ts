@@ -1,5 +1,11 @@
 import type { ArticleOp, RoomElementOp } from '@livedocuments/document';
 import type { RoomOp } from '@livedocuments/api-schema';
+import {
+  createOwnWrites,
+  holdOwnWriteKeys,
+  ownWriteKey as keyOf,
+  type OwnWrites,
+} from '@liveworkspace/workbench/lib/own-writes';
 
 // This editor's element writes the room has not sequenced yet (docs/specs/012-collaboration/realtime-conflict-resolution.md
 // "Same-element edits converge").
@@ -21,13 +27,11 @@ import type { RoomOp } from '@livedocuments/api-schema';
 // room kept the later one. A peer's put of a block we are writing, in its place, is left out; a put that moves it is
 // still applied (its place is theirs), as is a remove.
 
-export type OwnElementWrites = { held: Map<string, number> };
+// The counts live in the tracker every editor shares (@liveworkspace/workbench/lib/own-writes); this file turns this
+// editor's op shapes into its keys.
+export type OwnElementWrites = OwnWrites;
 
-export function createOwnElementWrites(): OwnElementWrites {
-  return { held: new Map() };
-}
-
-const keyOf = (tabId: string, elementId: string) => `${tabId}␟${elementId}`;
+export const createOwnElementWrites = createOwnWrites;
 
 // The element an op writes in full, if any: an add or an update.
 function writtenId(op: RoomElementOp): string | null {
@@ -71,21 +75,7 @@ export function holdOwnRoomWrites(writes: OwnElementWrites, ops: readonly RoomOp
       if (key !== null) keys.push(key);
     }
   }
-  return holdKeys(writes, keys);
-}
-
-function holdKeys(writes: OwnElementWrites, keys: readonly string[]): () => void {
-  for (const key of keys) writes.held.set(key, (writes.held.get(key) ?? 0) + 1);
-  let released = false;
-  return () => {
-    if (released) return;
-    released = true;
-    for (const key of keys) {
-      const n = (writes.held.get(key) ?? 0) - 1;
-      if (n > 0) writes.held.set(key, n);
-      else writes.held.delete(key);
-    }
-  };
+  return holdOwnWriteKeys(writes, keys);
 }
 
 /** Whether a peer's op is a whole-element update of an element this editor is writing, ordered before our write. */
