@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Item } from '../item';
 import type { ItemTypeDef } from '../item-types';
+import { itemStatusSince } from '../status-since';
 import { item, SAM } from '../test-items';
 import { derivedFound, derivedMoments, derivedTargets, isDerivedTrigger } from './derived';
 import type { AutomationEvent } from './matches';
@@ -261,9 +262,22 @@ describe('derived triggers', () => {
     expect(
       derivedMoments({ kind: 'related_done', related: 'linked' }, [holder], items, TYPES),
     ).toEqual([at(a)]);
-    // A column by its cards alone: the rule's own write to the card that tipped it changes no moment.
-    expect(
-      derivedMoments({ kind: 'column_limit', status: 'done', limit: 1 }, [a], items, TYPES),
-    ).toEqual([sorted(a.id, b.id, kid.id)]);
+    // A column by its cards and when each entered it: the rule's own write to the card that tipped it (a new rev)
+    // changes no moment, so a second wake reading the same going-over runs nothing; leaving and coming back does.
+    const since = (c: Item) => `${c.id}@${itemStatusSince(c)}`;
+    const column = { kind: 'column_limit', status: 'done', limit: 1 } as const;
+    expect(derivedMoments(column, [a], items, TYPES)).toEqual([
+      sorted(since(a), since(b), since(kid)),
+    ]);
+    const written = items.map((i) => (i.id === a.id ? { ...i, rev: i.rev + 1 } : i));
+    expect(derivedMoments(column, [a], written, TYPES)).toEqual(
+      derivedMoments(column, [a], items, TYPES),
+    );
+    const back = items.map((i) =>
+      i.id === a.id ? { ...i, fields: { ...i.fields, statusSince: 99_999 } } : i,
+    );
+    expect(derivedMoments(column, [a], back, TYPES)).not.toEqual(
+      derivedMoments(column, [a], items, TYPES),
+    );
   });
 });

@@ -15,6 +15,7 @@ export * from './derived';
 export * from './time-cards';
 export * from './templates';
 export * from './ai-steps';
+export * from './replan';
 export * from './incoming';
 export * from './github-triggers';
 export * from './named';
