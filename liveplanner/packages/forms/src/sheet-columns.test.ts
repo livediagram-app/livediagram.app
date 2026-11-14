@@ -6,8 +6,10 @@ import {
   sameSheetColumns,
   sheetColumnPlan,
   sheetHeadersWrite,
+  topRowTexts,
   type SheetColumnsInput,
 } from './sheet-columns';
+import type { Cell } from '@liveplanner/sheets';
 import type { FormDefinition } from './model';
 
 // A sheet form's columns (docs/specs/030-forms/forms.md "Columns before any response", "Linked by column, not by
@@ -256,5 +258,36 @@ describe('headerRowIndex', () => {
     const many = Array.from({ length: HEADER_SCAN_ROWS + 3 }, (_, i) => `r${i + 1}`);
     const low = `r${HEADER_SCAN_ROWS + 2}`;
     expect(headerRowIndex(form(['Name']), many, texts([[low, ['Name', 'Email']]]))).toBe(0);
+  });
+});
+
+describe('topRowTexts', () => {
+  const sheet = (cells: [string, Cell][] = [], rows = ['r1', 'r2']) => ({
+    layout: { rows, cols: ['ca', 'cb', 'cc'] },
+    cells: new Map(cells),
+  });
+
+  it("reads the top rows' text, by row then column", () => {
+    expect(
+      topRowTexts(
+        sheet([
+          ['r1:ca', { input: { s: '#' } }],
+          ['r1:cb', { input: { n: 4 } }],
+          ['r1:cc', { format: { b: true } }],
+          ['r2:ca', { input: { s: 'below' } }],
+        ]),
+      ),
+    ).toEqual(
+      new Map([
+        ['r1', new Map([['ca', '#']])],
+        ['r2', new Map([['ca', 'below']])],
+      ]),
+    );
+    expect(topRowTexts(sheet([], []))).toEqual(new Map());
+  });
+
+  it('looks only at the top rows', () => {
+    const many = Array.from({ length: HEADER_SCAN_ROWS + 3 }, (_, i) => `r${i + 1}`);
+    expect([...topRowTexts(sheet([], many)).keys()]).toEqual(many.slice(0, HEADER_SCAN_ROWS));
   });
 });

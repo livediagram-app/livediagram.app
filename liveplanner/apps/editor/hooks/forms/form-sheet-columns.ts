@@ -15,8 +15,6 @@ import type { Sheet, SheetWrite } from '@liveplanner/sheets';
 // header, not one per letter. Safe range 400..2000 ms.
 export const FORM_COLUMNS_SYNC_MS = 800;
 
-export { topRowTexts };
-
 // Each key's header as the form words it now (what `renamed` is the next time).
 export function headersByKey(form: SheetForm): Map<string, string> {
   return new Map(sheetHeaders(form).map((h) => [h.key, h.header]));
