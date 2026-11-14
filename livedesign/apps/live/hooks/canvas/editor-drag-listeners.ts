@@ -20,7 +20,7 @@ import {
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
-import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
+import { dragWaitsToEngage, gestureOfDrag } from '@liveworkspace/workbench/hooks/canvas/drag-gesture';
 import type { useSnapGuideState } from './useSnapGuideState';
 import { createDragRelease } from './editor-drag-release';
 

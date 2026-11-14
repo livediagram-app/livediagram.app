@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { DragState } from '@/lib/canvas';
-import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
+import {
+  dragWaitsToEngage,
+  gestureOfDrag,
+  type DragGestureState as DragState,
+} from './drag-gesture';
 
 const drag = (over: Record<string, unknown>) => over as unknown as DragState;
 
