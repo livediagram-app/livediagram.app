@@ -5,6 +5,7 @@
 // authenticated read (apiImageUrl), so a picture shown on a board and in its panel is fetched once per size.
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { apiImageUrl, releaseImageUrl, type ImagesScope } from '@/lib/api/images';
+import { awaitSeen, SEEN_MARGIN_PX } from './seen-recheck';
 
 export type Shown = { state: 'loading' } | { state: 'shown'; url: string } | { state: 'missing' };
 
@@ -45,25 +46,28 @@ export function useImageUrl(
 }
 
 // Whether the element has come near the screen yet (and stays true after): a card's picture is fetched only then.
-// Without an IntersectionObserver (an old browser) it is true at once.
+// Without an IntersectionObserver (an old browser) it is true at once. Beside the observer, the element is measured
+// again once a motion settles (seen-recheck.ts), as the observer can miss a tile mounted in a panel still sliding in.
 export function useSeen<T extends Element>(): [RefObject<T | null>, boolean] {
   const ref = useRef<T>(null);
   const [seen, setSeen] = useState(() => typeof IntersectionObserver !== 'function');
   useEffect(() => {
     const el = ref.current;
     if (!el || seen) return;
+    const found = () => setSeen(true);
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setSeen(true);
-          io.disconnect();
-        }
+        if (entries.some((e) => e.isIntersecting)) found();
       },
       // A little ahead of the scroll, so a picture is there as its card arrives.
-      { rootMargin: '200px' },
+      { rootMargin: `${SEEN_MARGIN_PX}px` },
     );
     io.observe(el);
-    return () => io.disconnect();
+    const stopWaiting = awaitSeen(el, found);
+    return () => {
+      io.disconnect();
+      stopWaiting();
+    };
   }, [seen]);
   return [ref, seen];
 }
