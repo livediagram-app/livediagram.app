@@ -95,7 +95,7 @@ describe('SavedFilterChips', () => {
     const { saved } = chips({ quick: { text: 'login', priority: 'high' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save Filter' }));
     const name = screen.getByRole('textbox', { name: 'Name' });
-    const save = screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement;
+    const save = screen.getByRole<HTMLButtonElement>('button', { name: 'Save' });
     expect(save.disabled).toBe(true);
     fireEvent.change(name, { target: { value: ' my bugs ' } });
     expect(screen.getByRole('alert').textContent).toBe('A saved filter already has this name.');
@@ -116,7 +116,7 @@ describe('SavedFilterChips', () => {
     const { saved } = chips({ quick: { type: 'task' } });
     fireEvent.click(screen.getByRole('button', { name: 'Saved Filter Options: My Bugs' }));
     fireEvent.click(screen.getByRole('button', { name: 'Rename' }));
-    const name = screen.getByRole('textbox', { name: 'Name' }) as HTMLInputElement;
+    const name = screen.getByRole<HTMLInputElement>('textbox', { name: 'Name' });
     expect(name.value).toBe('My Bugs');
     fireEvent.change(name, { target: { value: 'Bugs' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));

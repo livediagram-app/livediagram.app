@@ -104,7 +104,7 @@ describe('agent writes (#343)', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await personalDesign(roomRecorder());
     const seen = await call(db, 'person', 'GET', '/api/designs/D/tabs/t1');
-    const { tab } = (await seen.json()) as { tab: { rev: number } };
+    const { tab } = await seen.json<{ tab: { rev: number } }>();
     await call(db, 'agent', 'POST', '/api/designs/D/tabs/t1/changesets', {
       operations: [{ op: 'add', element: box('b', 200) }],
     });
@@ -125,7 +125,7 @@ describe('agent writes (#343)', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await personalDesign(roomRecorder());
     const read = await call(db, 'agent', 'GET', '/api/designs/D/tabs/t1');
-    const { tab } = (await read.json()) as { tab: { rev: number } };
+    const { tab } = await read.json<{ tab: { rev: number } }>();
     // The person adds c while the model thinks.
     await call(db, 'person', 'PUT', '/api/designs/D/tabs/t1', {
       id: 't1',

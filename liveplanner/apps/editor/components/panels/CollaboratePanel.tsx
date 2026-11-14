@@ -21,6 +21,7 @@ import {
   kindCounts,
   rowsFor,
   sectionsFor,
+  sectionStarts,
   showKindChips,
   type CollaborateKind,
   type CollaborateSide,
@@ -122,7 +123,7 @@ export function CollaboratePanel({
   const counts = kindCounts(side, commentRows, actionRows);
   const shown = rowsFor(side, activeKind, commentRows, actionRows);
   const sections = sectionsFor(side, shown);
-  let index = 0;
+  const starts = sectionStarts(sections);
   return (
     <MovablePanel
       helpArticle="comments"
@@ -158,7 +159,7 @@ export function CollaboratePanel({
             key={`${side}-${activeKind}`}
             className="-mx-1 flex max-h-[min(26rem,50vh)] flex-col gap-3 overflow-y-auto px-1"
           >
-            {sections.map((section) => (
+            {sections.map((section, s) => (
               <section key={section.key} aria-label={section.label ?? undefined}>
                 {section.label ? (
                   <h3 className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -166,11 +167,11 @@ export function CollaboratePanel({
                   </h3>
                 ) : null}
                 <ul className="flex flex-col gap-1.5">
-                  {section.rows.map((row) =>
+                  {section.rows.map((row, r) =>
                     row.kind === 'action' ? (
                       <ActionRowItem
                         key={`a-${row.action.elementId}-${row.action.actionId}`}
-                        index={index++}
+                        index={starts[s]! + r}
                         row={row.action}
                         onClick={() => onActionRowClick(row.action.elementId)}
                         onToggleDone={
@@ -183,7 +184,7 @@ export function CollaboratePanel({
                     ) : (
                       <CommentRowItem
                         key={`c-${row.comment.elementId}-${row.comment.cell ?? ''}`}
-                        index={index++}
+                        index={starts[s]! + r}
                         row={row.comment}
                         onClick={() => onCommentRowClick(row.comment.elementId, row.comment.cell)}
                       />

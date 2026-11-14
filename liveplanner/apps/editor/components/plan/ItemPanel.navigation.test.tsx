@@ -74,7 +74,7 @@ describe('the item panel’s first focus', () => {
   it('puts the caret at the end of the title on a desktop', async () => {
     panel(item('t', 2, 'task'), [], []);
     await nextFrame();
-    const title = screen.getByLabelText('Title') as HTMLInputElement;
+    const title = screen.getByLabelText<HTMLInputElement>('Title');
     expect(document.activeElement).toBe(title);
     expect(title.selectionStart).toBe(title.value.length);
     expect(title.selectionEnd).toBe(title.value.length);
@@ -83,7 +83,7 @@ describe('the item panel’s first focus', () => {
   it('selects the whole title of a card just made', async () => {
     panel(item('t', 2, 'task', { title: 'New task' }), [], [], true);
     await nextFrame();
-    const title = screen.getByLabelText('Title') as HTMLInputElement;
+    const title = screen.getByLabelText<HTMLInputElement>('Title');
     expect(document.activeElement).toBe(title);
     expect(title.selectionStart).toBe(0);
     expect(title.selectionEnd).toBe('New task'.length);

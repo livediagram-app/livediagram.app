@@ -199,7 +199,7 @@ describe('the States tab’s Default State', () => {
         onDefaultStatus={onDefault}
       />,
     );
-    const menu = screen.getByLabelText('Default State') as HTMLSelectElement;
+    const menu = screen.getByLabelText<HTMLSelectElement>('Default State');
     expect(menu.value).toBe('todo');
     expect([...menu.options].map((o) => o.textContent)).toEqual(['None', 'Done', 'To Do']);
     fireEvent.change(menu, { target: { value: 'done' } });
@@ -320,9 +320,9 @@ describe('the item panel’s Status', () => {
   it('shows a left-out status a card is already in, marked, and lets it move out', () => {
     const c = ctx(make('done'));
     render(<ItemFieldEditor f="status" ctx={c} />);
-    const done = screen.getByRole('option', {
+    const done = screen.getByRole<HTMLOptionElement>('option', {
       name: 'Done (not used by Task)',
-    }) as HTMLOptionElement;
+    });
     expect(done.disabled).toBe(true);
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'doing' } });
     expect(c.onSave).toHaveBeenCalledWith('status', 'doing');

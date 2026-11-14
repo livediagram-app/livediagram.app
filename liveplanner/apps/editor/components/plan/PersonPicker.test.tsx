@@ -154,9 +154,9 @@ describe('PersonPicker', () => {
     fireEvent.click(row(openList(field), '+ Custom Assignee'));
     expect(field.textContent).toBe('Me');
     const dialog = screen.getByRole('dialog', { name: 'Custom Assignee' });
-    const add = screen.getByRole('button', { name: 'Add' }) as HTMLButtonElement;
+    const add = screen.getByRole<HTMLButtonElement>('button', { name: 'Add' });
     expect(add.disabled).toBe(true);
-    const name = screen.getByLabelText('Name') as HTMLInputElement;
+    const name = screen.getByLabelText<HTMLInputElement>('Name');
     expect(name.maxLength).toBe(60);
     fireEvent.change(name, { target: { value: '  Casey Jones ' } });
     expect(add.disabled).toBe(false);

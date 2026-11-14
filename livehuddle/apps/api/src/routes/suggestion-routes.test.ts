@@ -180,7 +180,7 @@ describe('reading and removing', () => {
     await drop('Second', { owner: VISITOR, code: 'TAKE' });
     const res = await list({ owner: VISITOR, code: 'EDIT' });
     expect(res.status).toBe(200);
-    const { suggestions } = (await res.json()) as SuggestionsResponse;
+    const { suggestions } = await res.json<SuggestionsResponse>();
     expect(suggestions.map((s) => s.text)).toEqual(['Second', 'First']);
     expect(Object.keys(suggestions[0]!).sort()).toEqual(['day', 'id', 'text']);
   });
@@ -197,7 +197,7 @@ describe('reading and removing', () => {
 
   it('lets an Editor remove one, and only an Editor', async () => {
     await drop('Remove me');
-    const { suggestions } = (await (await list()).json()) as SuggestionsResponse;
+    const { suggestions } = await (await list()).json<SuggestionsResponse>();
     const path = `/tabs/t1/suggestions/${suggestions[0]!.id}`;
     expect((await call({ method: 'DELETE', path, owner: VISITOR, code: 'TAKE' })).status).toBe(403);
     expect((await call({ method: 'DELETE', path })).status).toBe(204);

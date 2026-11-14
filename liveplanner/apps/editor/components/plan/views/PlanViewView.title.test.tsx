@@ -83,7 +83,7 @@ describe('a chart filling its Visualisation tab', () => {
     const plan = planWith({}, [card({ title: 'a', status: 'todo' })]);
     draw('workload', plan);
     fireEvent.doubleClick(screen.getByText('Cards by Assignee'));
-    const field = screen.getByLabelText('Chart name') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Chart name');
     fireEvent.change(field, { target: { value: 'Load' } });
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(plan.updateView).toHaveBeenCalledWith(ID, { view: 'workload', title: 'Load' });
@@ -111,7 +111,7 @@ describe('a chart filling its Visualisation tab', () => {
       draw('calendar', plan);
       const title = screen.getByText(/^Due Calendar · /);
       fireEvent.doubleClick(title);
-      const field = screen.getByLabelText('Chart name') as HTMLInputElement;
+      const field = screen.getByLabelText<HTMLInputElement>('Chart name');
       expect(field.value).toBe('Due Calendar');
       fireEvent.blur(field);
       // Left as it was: nothing saved.

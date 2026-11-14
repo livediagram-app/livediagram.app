@@ -42,7 +42,7 @@ describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', 
   it('makes the team on liveworkspace with the caller as admin, and keeps no copy of it here', async () => {
     const res = await create({ name: '  Design  ', organisation: 'Acme' });
     expect(res.status).toBe(201);
-    const { team } = (await res.json()) as { team: { id: string; name: string } };
+    const { team } = await res.json<{ team: { id: string; name: string } }>();
     expect(team).toMatchObject({ id: 'team_1', name: 'Design', organisation: 'Acme' });
     expect(accounts.teams).toEqual([
       { id: 'team_1', name: 'Design', organisation: 'Acme', admin: 'user_a' },
@@ -52,7 +52,7 @@ describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', 
 
   it('cuts a long name as liveworkspace does, and refuses an empty one', async () => {
     const res = await create({ name: 'x'.repeat(200), organisation: '  ' });
-    const made = (await res.json()) as { team: { name: string; organisation: string | null } };
+    const made = await res.json<{ team: { name: string; organisation: string | null } }>();
     expect(made.team.name).toHaveLength(80);
     expect(made.team.organisation).toBeNull();
     expect((await create({ name: '   ' })).status).toBe(400);

@@ -51,7 +51,7 @@ async function resolveLink(ctx: RouteContext, code: string): Promise<Response> {
     segments: ['api', 'documents', resolved.id],
   });
   if (!read.ok) return read;
-  const { document } = (await read.json()) as { document: unknown };
+  const { document } = await read.json<{ document: unknown }>();
   const community = isCommunity ? await room.communityListing(code) : null;
   if (isCommunity && !community) return notFound();
   return json({

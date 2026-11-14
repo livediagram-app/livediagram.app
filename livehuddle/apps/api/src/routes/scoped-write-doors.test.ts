@@ -84,7 +84,7 @@ describe('a tab-scoped editor on another tab', () => {
       operations: [{ op: 'rm', target: 'b' }],
     });
     expect(written.status).toBe(200);
-    const { changeset } = (await written.json()) as { changeset: { id: string } };
+    const { changeset } = await written.json<{ changeset: { id: string } }>();
 
     const save = await call(
       db,

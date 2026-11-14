@@ -308,7 +308,7 @@ export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
 export * from './label-backdrop';
-export { withPaperLabelInks } from './paper-label-ink';
+export { paperMarkBackdrops, withPaperLabelInks, withPaperMarkInks } from './paper-label-ink';
 export * from './theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),

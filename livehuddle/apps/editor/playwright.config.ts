@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 // E2E smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Chromium only; deliberately small. Runs
 // against the real production build + api worker + liveworkspace's local index (scripts/e2e-stack.mjs; the
-// default stack's index on :8119),
+// default stack's index on :8519),
 // or a developer's already-running `pnpm dev` stack when one is up
 // (reuseExistingServer below).
 const isCI = !!process.env.CI;

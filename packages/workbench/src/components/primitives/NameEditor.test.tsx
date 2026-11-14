@@ -44,7 +44,7 @@ describe('NameEditor', () => {
 
   it('opens focused with the name selected', () => {
     render(<Host />);
-    const field = screen.getByDisplayValue('Plan') as HTMLInputElement;
+    const field = screen.getByDisplayValue<HTMLInputElement>('Plan');
     expect(document.activeElement).toBe(field);
     expect([field.selectionStart, field.selectionEnd]).toEqual([0, 4]);
   });

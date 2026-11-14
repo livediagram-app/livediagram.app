@@ -54,7 +54,8 @@ export function CommentBubbles({
   freshFrom: number;
   onDelete?: (commentId: string) => void;
 }) {
-  let index = 0;
+  // Groups keep the comments in order, so a comment's place in the thread is its place in `comments`.
+  const position = new Map(comments.map((c, i) => [c, i]));
   // Your own comments wear your Google picture (docs/specs/014-identity/profile-picture.md §4).
   const ownPicture = useOwnPicture().picture;
   return (
@@ -90,7 +91,7 @@ export function CommentBubbles({
                 </span>
               </span>
               {group.map((c) => {
-                const fresh = index++ >= freshFrom;
+                const fresh = position.get(c)! >= freshFrom;
                 const reactions = reactionGroups(c.reactions);
                 return [
                   <span

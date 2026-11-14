@@ -107,7 +107,7 @@ describe('AddFieldTryIt', () => {
 
   it('says why a Phone box refuses what was typed, and takes a real number', () => {
     const { writes } = open({ label: 'Mobile', kind: 'phone' });
-    const box = tryIt().getByRole('textbox', { name: 'Mobile' }) as HTMLInputElement;
+    const box = tryIt().getByRole<HTMLInputElement>('textbox', { name: 'Mobile' });
     fireEvent.change(box, { target: { value: 'call me' } });
     fireEvent.blur(box);
     expect(tryIt().getByRole('alert').textContent).toBe(`Mobile: ${PHONE_HINT}.`);
@@ -152,7 +152,7 @@ describe('AddFieldTryIt', () => {
 
   it('toggles a Checkbox', () => {
     open({ label: 'Signed Off', kind: 'checkbox' });
-    const box = tryIt().getByRole('checkbox', { name: 'Signed Off' }) as HTMLInputElement;
+    const box = tryIt().getByRole<HTMLInputElement>('checkbox', { name: 'Signed Off' });
     fireEvent.click(box);
     expect(box.checked).toBe(true);
   });

@@ -117,7 +117,7 @@ export async function relayPresenceName(
       ROOM_RELAY_TIMEOUT_MS,
     );
     if (!res.ok) return null;
-    const body = (await res.json()) as { renamed?: unknown };
+    const body = await res.json<{ renamed?: unknown }>();
     return typeof body.renamed === 'number' ? body.renamed : 0;
   } catch {
     return null;
