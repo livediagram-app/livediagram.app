@@ -1,5 +1,6 @@
 import { defaultFillColor } from '@livedocuments/document';
-import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
+import { BuildBadge, LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
+import { useBuildStep } from '@/components/canvas/BuildStepsContext';
 import type { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
@@ -55,6 +56,9 @@ export function useBoxedElementChrome(
     longPress,
   }: BoxedChromeLocals,
 ) {
+  // Its step among the slide's builds (presentation-mode.md "Setting builds up"); a hook in a plain function the view
+  // calls in its render, so it runs on every render of the view, in the same place.
+  const buildStep = useBuildStep(element.id);
   return (
     <>
       {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
@@ -79,6 +83,9 @@ export function useBoxedElementChrome(
       {/* The element's own lock only: a locked tab or layer shows its padlock once, on the tab or the layer
           (canvas-and-palette.md "Locking"). */}
       {element.locked === true ? <LockBadge /> : null}
+      {buildStep !== undefined ? (
+        <BuildBadge step={buildStep} besideLock={element.locked === true} />
+      ) : null}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 

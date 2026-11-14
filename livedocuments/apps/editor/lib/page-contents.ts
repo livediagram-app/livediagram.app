@@ -28,6 +28,9 @@ export type ContentsRow = ContentsRowBase & {
   inDeck?: boolean;
   // A card's speaking time ("45 sec"), shown beside its name; absent off a card or on an empty one.
   speakingTime?: string;
+  // A slide's builds ("3 builds", presentation-mode.md "Setting builds up"), shown beside its name; absent on a page
+  // with none.
+  builds?: string;
 };
 
 const HIDDEN_IN_SLIDES = 'Hidden in Slides';
@@ -46,6 +49,8 @@ export function contentsRows(
     inDeck?: (pageId: string) => boolean;
     // Whether the deck's slide of the page is hidden; absent where there is no deck to ask.
     hiddenInSlides?: (pageId: string) => boolean;
+    // How many builds a slide page has (presentation-mode.md "Setting builds up"); absent where none are counted.
+    buildsOf?: (pageId: string) => number;
     articles?: Readonly<Record<string, ArticleFlow>>;
     // A slide's or an infographic's own title (lib/page-title.ts), the name it goes by until someone
     // names it; absent where its words are not read.
@@ -56,6 +61,7 @@ export function contentsRows(
     const kind = pageKindOf(p);
     let line: string = KIND_NAME[kind];
     let speakingTime: string | null = null;
+    let builds: string | null = null;
     // What the page goes by when nobody has named it: its own title (an article's, a card deck's, or
     // the biggest words on a slide or an infographic), then its place.
     let titled = opts.titleOf?.(p.id);
@@ -65,6 +71,9 @@ export function contentsRows(
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
     } else if (kind === 'slide' && opts.inDeck) {
       line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
+      const count = opts.buildsOf?.(p.id) ?? 0;
+      builds = count > 0 ? `${count} ${count === 1 ? 'build' : 'builds'}` : null;
+      if (builds) line += ` · ${builds}`;
     } else if ((kind === 'article' || kind === 'flashcard') && p.flow) {
       const flow = opts.articles?.[p.flow];
       const title = flow ? articleTitleOf(flow).trim() : '';
@@ -91,6 +100,7 @@ export function contentsRows(
       // A page (any kind) whose slide the deck skips when presenting: set aside under a Hidden veil.
       ...(opts.hiddenInSlides?.(p.id) ? { setAside: HIDDEN_IN_SLIDES } : {}),
       ...(speakingTime ? { speakingTime } : {}),
+      ...(builds ? { builds } : {}),
     };
   });
 }

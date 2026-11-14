@@ -1,0 +1,70 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Builds',
+  description:
+    'Bring a slide’s points in one click at a time while you present: give an element a build, choose Appear, Fade or Rise, and set the order.',
+  path: '/help/selection-modes/slide-deck/slide-builds/',
+});
+
+<ArticleLayout
+  title="Builds"
+  description="Reveal a slide's points one click at a time while you present."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  parentArticle={{ title: 'Slide Deck', slug: 'slide-deck' }}
+  subArticles={getSubArticles('slide-deck').filter((a) => a.slug !== 'slide-builds')}
+>
+
+A **build** brings an element onto a slide at a step of your talk instead of with the slide. Give a slide's three
+points a build each and the slide opens on its title alone; each press of **Next** brings in the next point, and only
+after the last one does the deck move to the next slide.
+
+## Giving an element a build
+
+Right-click the element on a slide page (or select it and open its menu), open **Animation**, then **Build**:
+
+- **Appear** cuts the element in, **Fade** fades it in, and **Rise** fades it in while it rises a short way into place.
+  Hover a tile to see it play.
+- **None** takes the build off: the element is on the slide from the start.
+
+The first element you give a build comes in at step 1, the next at step 2, and so on: click through a slide's points in
+the order you will talk about them and they build in that order. Select several elements first and they all come in
+together, as one step.
+
+**Order** appears once an element has a build. It lists the slide's steps (**Step 1**, **Step 2** and so on): pick one to move the element to
+that step, so it comes in together with whatever else is there, or pick **New Step** to give it a step of its own after
+the rest.
+
+Each built element shows a small **numbered badge** on its top-left corner in the editor, so you can see the slide's order
+at a glance. Elements that overlap and come in at the same step, like an icon in its circle, share one badge. In Contents, a slide page
+with builds shows how many beside its name, such as "3 builds".
+
+Builds are set by an **Editor**, and only an Editor sees the badges. A Participant or a Viewer sees builds only when they present the deck.
+
+## Presenting with builds
+
+| Key or control                                           | Does                                                     |
+| -------------------------------------------------------- | -------------------------------------------------------- |
+| `→`, `Space`, `Enter`, `Page Down`, a click, or **next** | Plays the slide's next build; after the last, next slide |
+| `←`, `Page Up`, or **previous**                          | Takes the last build back off; with none, previous slide |
+| `Home`, `End`, or a slide from the jump list             | Goes straight there, with nothing built yet              |
+
+- **A slide with three builds presents in four steps**: first everything that does not build, then each build in turn.
+  The press after the last build moves to the next slide.
+- **Going back to the previous slide** shows it finished, every build in place, so pressing back keeps retracing your
+  talk exactly.
+- An **arrow** between two elements comes in once both of its ends are showing.
+- **Auto-Advance** plays each build in turn before moving to the next slide.
+- With **reduce motion** on (on your device or in Settings), each step simply appears, with no fade or movement.
+- A screen reader hears each build as it plays ("Build 2 of 3").
+
+## What builds never change
+
+The editor, the page pictures in Contents and every export always show the **finished** slide, with every element in
+place. A build only changes what a running deck shows. Presenting is your own: someone else viewing the same document
+steps through the builds on their own screen.
+
+</ArticleLayout>

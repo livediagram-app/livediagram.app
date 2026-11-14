@@ -271,6 +271,22 @@ to appear.
   animation.
 - No migration: old documents render as they did.
 
+## Builds
+
+A **build** brings an element onto a presented slide at a step of the talk rather than with the slide: one click at a
+time. It is presenting's, specified in [Presentation mode](../012-collaboration/presentation-mode.md) "Builds"; this
+spec owns only where it is set and what it stores.
+
+- **Where it is set**: the Animation row's **Build** section, after every set's section, for an element on one of the
+  open tab's slides (never an arrow, which follows its ends). Its tiles are None, **Appear**, **Fade** and **Rise**,
+  live miniatures like every animation tile, then an **Order** row of the slide's steps.
+- **What it stores**: `build?: { order: number; effect: 'appear' | 'fade' | 'rise' }` on every boxed element but a
+  margin note. Cosmetic and lenient like the animation fields: an unknown effect reads as Appear, an order that is not
+  a whole number from 1 reads as no build.
+- **It composes**: a build decides WHEN an element arrives on a presented slide; the element's own animations still
+  play once it is there, a play-once reveal as it arrives. The editor, thumbnails and exports show the element as if
+  it had no build.
+
 ## Telemetry
 
 Picking an animation fires `track('Element', 'Changed', <type>)` with the set's type: `Animation` (Shape),
@@ -279,8 +295,9 @@ their existing types.
 
 ## Non-goals
 
-- Animations triggered by presentation steps, clicks or scrolling. Every animation runs from the stored fields
-  alone. The one exception is the stat row's count-up, which plays as its slide is presented and only then
+- Animations triggered by clicks or scrolling. Every animation runs from the stored fields alone. A **build**
+  (Builds above) is the one thing a presentation step triggers, and it decides when an element arrives, not how it
+  moves once there. The other exception is the stat row's count-up, which plays as its slide is presented and only then
   ([Stat row](../009-elements/stat-row.md) "Count-up when presented"); it is the stat row's own, not a set.
 - Choosing a different animation per letter, word, row or cell.
-- Sequencing animations across elements (one after another).
+- Sequencing animations across elements (one after another), outside a presented slide's builds.
