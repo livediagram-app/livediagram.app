@@ -36,8 +36,8 @@ export function DevelopersArt() {
             stroke="stroke-violet-400"
           />
           <Shape x={282} y={126} w={40} h={22} accent />
-          <Arrow from={[324, 104]} to={[340, 119]} width={1.8} />
-          <Arrow from={[302, 116]} to={[302, 123]} width={1.8} />
+          <Arrow connector from={[324, 104]} to={[340, 119]} width={1.8} />
+          <Arrow connector from={[302, 116]} to={[302, 123]} width={1.8} />
         </>
       }
     />
