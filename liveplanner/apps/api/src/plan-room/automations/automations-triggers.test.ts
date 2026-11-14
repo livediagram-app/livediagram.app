@@ -273,6 +273,53 @@ describe('derived triggers heard twice before a wake', () => {
   });
 });
 
+describe('Column Over Limit over two wakes', () => {
+  // Spec "Triggers": one going-over runs the rule once even when its triggers are read in two wakes (a busy queue):
+  // the run's id is the column's cards as they stand, so the second wake's claim finds it ran.
+  it('runs once when the moves into the column are read in two wakes', async () => {
+    const rule = await w.rule({
+      name: 'Too many',
+      trigger: { kind: 'column_limit', status: 'doing', limit: 1 },
+      steps: [{ kind: 'add_label', label: 'over' }],
+    });
+    // Wakes due now, each reading at most 25 triggers.
+    const wake = async () => {
+      room().automations.schedule.at = Date.now();
+      await room().alarm();
+    };
+    const queued = () =>
+      Number(plan().db.prepare('SELECT COUNT(*) AS n FROM automation_queue').get()!['n']);
+    const others = [];
+    for (let i = 0; i < 24; i += 1) others.push(await w.make('A', { title: `Other ${i}` }));
+    const cards = [
+      await w.make('A', { title: 'A' }),
+      await w.make('A', { title: 'B' }),
+      await w.make('A', { title: 'C' }),
+    ];
+    while (queued() > 0) await wake();
+    // A full wake's worth of other moves ahead of them, so the three moves span two wakes: A's in the first (the
+    // column already holding all three), B's and C's in the second.
+    for (const o of others) await move(o.id, 'done');
+    for (const c of cards) await move(c.id, 'doing');
+    expect(queued()).toBe(27);
+    await wake();
+    expect(queued()).toBe(2);
+    await wake();
+    const ran = (await runs()).filter((r) => r.ruleId === rule.id && r.result !== 'no_match');
+    expect(ran).toHaveLength(1);
+    expect(ran[0]!.card?.id).toBe(cards[1]!.id);
+    // It drops back under its limit and goes over again: a new going-over, run anew.
+    await move(cards[1]!.id, 'todo');
+    await move(cards[2]!.id, 'todo');
+    await wake();
+    await move(cards[1]!.id, 'doing');
+    await wake();
+    expect(
+      (await runs()).filter((r) => r.ruleId === rule.id && r.result !== 'no_match'),
+    ).toHaveLength(2);
+  });
+});
+
 describe('comment triggers', () => {
   const thread = (itemId: string, text: string, extra: Record<string, unknown> = {}) =>
     w.send('POST', `/api/projects/A/items/${itemId}/threads`, { text, ...extra });
@@ -338,6 +385,28 @@ describe('Wait', () => {
     const all = await runs();
     expect(all.map((r) => r.result).sort()).toEqual(['done', 'done']);
     expect(plan().db.prepare('SELECT COUNT(*) AS n FROM automation_waiting').get()!['n']).toBe(0);
+  });
+
+  // Spec "Wait", "Each part counts": the run up to the Wait and the run after it are two of the day's runs.
+  it('counts the run up to a Wait and the run after it as two of the day', async () => {
+    await w.rule({
+      name: 'Later',
+      steps: [{ kind: 'flag' }, { kind: 'wait', hours: 2 }, { kind: 'add_label', label: 'later' }],
+    });
+    const c = await w.make('A', { title: 'Wait for it' });
+    await move(c.id, 'done');
+    await room().alarm();
+    const today = async () =>
+      (await (await w.call('GET', '')).json<{ runsToday: number }>()).runsToday;
+    expect(await today()).toBe(1);
+    plan()
+      .db.prepare('UPDATE automation_waiting SET at = ?')
+      .run(Date.now() - 1);
+    room().automations.schedule.restoreTimes();
+    await room().alarm();
+    await room().alarm();
+    expect(await labelled(c.id)).toEqual(['later']);
+    expect(await today()).toBe(2);
   });
 
   // A run held at a Wait, its time come (the next wake queues it).

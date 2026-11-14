@@ -19,6 +19,11 @@ import {
   removeLocalStorageSafe,
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
+import {
+  __resetPreferencesKeptLocally,
+  preferencesKeptLocally,
+  rememberPreferencesKeptLocally,
+} from '@liveworkspace/workbench/lib/preferences-local-only';
 
 // The most the whole blob may be, in characters of `{"prefs":...}`. The api takes a patch of up to
 // twice this (../packages/api-kit/src/preferences-route.ts PREFERENCES_PATCH_MAX, which checks
@@ -97,20 +102,17 @@ type Blob = Record<string, unknown>;
 
 // What the server last confirmed for the owner: its answer on load, then each save that landed.
 let confirmed: { ownerId: string; prefs: Blob } | null = null;
-// Owners this deployment keeps no preferences for: their choices stay in this browser.
-const localOnly = new Set<string>();
 
 export function rememberServerPreferences(ownerId: string, prefs: Blob): void {
   confirmed = { ownerId, prefs };
 }
 
+// The api keeps no preferences for this owner: recorded for every reader (the Settings host's This app / All rule,
+// @liveworkspace/workbench/lib/preferences-local-only), and this device's unconfirmed mark dropped, since nothing
+// will ever confirm it.
 export function markPreferencesLocalOnly(ownerId: string): void {
-  localOnly.add(ownerId);
+  rememberPreferencesKeptLocally(ownerId);
   if (preferencesUnsynced(ownerId)) removeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY);
-}
-
-export function preferencesLocalOnly(ownerId: string): boolean {
-  return localOnly.has(ownerId);
 }
 
 // The keys of `next` that differ from `base`, each whole, and null for each key `base` has and
@@ -165,7 +167,7 @@ async function drain(): Promise<void> {
 // tab closed mid-save still keeps its copy on the next load. Nothing goes for an owner whose
 // preferences stay in this browser.
 export function savePreferences(ownerId: string, prefs: UserPreferences): void {
-  if (localOnly.has(ownerId)) return;
+  if (preferencesKeptLocally(ownerId)) return;
   writeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY, ownerId);
   waiting = { ownerId, prefs };
   if (!inFlight) void drain();
@@ -177,5 +179,5 @@ export function __resetPreferencesSync(): void {
   inFlight = false;
   waiting = null;
   confirmed = null;
-  localOnly.clear();
+  __resetPreferencesKeptLocally();
 }

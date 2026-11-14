@@ -12,7 +12,7 @@
   "dependencies": {
     "@oxlint/plugins": "^1.90.0",
     "oxlint": "^1.90.0",
-    "oxlint-tsgolint": "^7.0.2005"
+    "oxlint-tsgolint": "^7.0.2006"
   },
   "scripts": {
     "lint": "oxlint",

@@ -8,7 +8,7 @@ description: One pass over the Work Tracker plan in liveplanner. Takes every Wor
 Builds the work people have selected in the **Work Tracker** plan (liveworkspace team library). Every Work Item
 in **Selected for Development** is checked for readiness. If it isn't ready, it goes back to **Under Review**
 with a comment thread on the card saying why. If it is, it moves to **In Progress**, an agent builds it and opens a
-PR, and the card gets the PR link and moves to **Implemented**. A build that can't be finished moves to
+PR that names the card, and the card moves to **Implemented**. A build that can't be finished moves to
 **Development Failure** with a comment thread saying why.
 
 This loop runs unattended. Act on these rules and never stop to ask (AskUserQuestion). Wherever a choice comes up,
@@ -30,15 +30,16 @@ The same as review-loop (`.claude/skills/review-loop/SKILL.md`): the liveplanner
   **In Flight** (Selected for Development again, **In Progress**, **Development Failure**) and **Results**
   (**Implemented**, Cancelled). Tab names may change, so go by column names, which `list_items` lists per board.
   A `move` names the column, and the card moves there on every board.
-- The Work Item's **Pull Request** field is a link, id `f-pull-request`. Write it by id:
-  `{"op": "set", "item": "#12", "fields": {"f-pull-request": "<PR url>"}}`.
+- A Work Item has no Pull Request field (removed 2026-11-14, owner): a PR links its cards by naming them (below),
+  and the card shows that PR and its state. The loop records each card's PR in a resolved "Built in <PR url>"
+  thread.
 - Every question, answer, decision and piece of context about a card is in its comment threads. There are no
   Question cards: never make one, and never put a question or answer in a card's fields.
 - **The plan's Automations move some cards themselves** (`list_rules` lists them). A linked PR merging moves its
   card to Done. A PR opening moves a card to Implemented, and a PR closed unmerged flags the card with a comment,
   but both skip In Progress, so this loop still moves its own cards to Implemented once verified (step 4), and a
   Large card stays In Progress while its parts merge. Never redo or undo a rule's move or flag. A PR links its cards
-  by the Pull Request field or by naming them as "Work Tracker 12" in its title or body, so name every card the PR
+  only by naming them as "Work Tracker 12" in its title or body, so name every card the PR
   carries that way: the plan's name before each number ("Work Tracker 98, Work Tracker 110"), never a bare "#110" or
   "Work Item 110", and no `#` (GitHub would link it to its own issue 110).
 
@@ -58,7 +59,7 @@ must land first. Leave a selected card where it is, untouched and with no thread
 `MERGED`). Work built on top of an unmerged PR would be cut from code main doesn't have. List waiting cards in the
 report as "Blocked by #N". A blocker in Development Failure or Cancelled is worth one line in the report too.
 
-Also note every card in **In Progress** that has no Pull Request link. Those were left by a pass that died.
+Also note every card in **In Progress** that no open PR names (`gh pr list --search "Work Tracker <n>"`). Those were left by a pass that died.
 Never touch them. List them in the report. The exception is a **Large** card between parts (step 3): it is In
 Progress with its last part's PR link and an open build plan thread, and this pass may pick up its next part.
 
@@ -456,11 +457,11 @@ as FAILED.
   (step 4's port-block check). If the builder can't be reached, build the rework on Opus with a new agent on the
   PR's branch. After a second REWORK, treat it as FAILED.
 
-- **DONE:** only once every Acceptance Criteria item is Met (or Owner). In one `change_items` call, set
-  `f-pull-request` to the PR url, tick **every** Acceptance Criteria item (`{"text": ..., "done": true}`, same
-  text), and move the card to **Implemented** (cards that shared a PR all get the same link). An Owner item is
+- **DONE:** only once every Acceptance Criteria item is Met (or Owner). In one `change_items` call, tick
+  **every** Acceptance Criteria item (`{"text": ..., "done": true}`, same text) and move the card to
+  **Implemented**; the PR already names it, which links it. An Owner item is
   ticked only when its step is done; until then the PR keeps `not-ready` and the card's thread names it.
-  For a Large card's part, set the link, tick the items that part met, and keep it In Progress until the last
+  For a Large card's part, tick the items that part met, and keep it In Progress until the last
   part ticks the rest; reply in the build plan thread with the part's PR.
 - **Close the thread loop** (on DONE): in one `change_threads` call, reply in each question thread whose answer
   this PR built, in one line: "Built in <PR url>: <how, short>". Then resolve every question thread the loop
@@ -516,7 +517,7 @@ If the MCP refuses a change, report it and carry on with the other cards.
   comment `ai: true`, from this loop, review-loop or any other) that:
   - asks nothing, whatever column its card is in;
   - asked something a person has answered and the loop has built;
-  - is on a card in **Cancelled**, **Done** or **Implemented**, or a card whose Pull Request link is set: nothing
+  - is on a card in **Cancelled**, **Done** or **Implemented**, or a card an open PR names: nothing
     on such a card waits on the owner any more (an owner-only step lives on the PR's Owner checklist, never in a
     thread), so even an unanswered question there is moot. Reply first in one line saying why it closes
     ("Cancelled", "Merged in <PR url>", "Built in <PR url>"), then resolve it.
@@ -527,7 +528,7 @@ If the MCP refuses a change, report it and carry on with the other cards.
   report lists how many threads the pass resolved and which stay open, each with the question it waits on.
 
 - On the board, only ever do these: move Work Items from Selected for Development to Under Review or In
-  Progress, from In Progress to Implemented or Development Failure, set their Pull Request link, start question threads on those cards, reply in the loop's own threads and resolve
+  Progress, from In Progress to Implemented or Development Failure, start question threads on those cards, reply in the loop's own threads and resolve
   them once their answers are built, take a Large card's next part from In Progress, and add follow-up Work Items and Ideas
   to Under Review (step 4). Never
   edit titles, descriptions or other fields, never add Question cards, never resolve, edit or

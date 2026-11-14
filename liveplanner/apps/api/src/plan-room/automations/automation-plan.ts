@@ -5,6 +5,7 @@
 import {
   isItemPerson,
   isIdentityPersonId,
+  isTrashed,
   itemPersonId,
   normaliseBoardSetup,
   planOutline,
@@ -148,7 +149,8 @@ export async function readAutomationPlan(env: PlanEnv, planId: string): Promise<
       people: [...people.values()],
       savedFilters: savedFiltersOf(tabs),
       formTabs: outlines.filter((t) => t.kind === 'form').map((t) => t.id),
-      cards: new Set(items.map((i) => i.id)),
+      // A Link Cards step's chosen card in the Trash is gone, as a deleted one is (spec "Conditions").
+      cards: new Set(items.filter((i) => !isTrashed(i)).map((i) => i.id)),
     },
     types,
     isDone: doneStatusesOf(board.boards),

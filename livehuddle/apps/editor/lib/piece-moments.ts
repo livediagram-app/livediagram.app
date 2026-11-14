@@ -43,6 +43,13 @@ export const MOMENT_KINDS = [
   'photo-wall',
   'pillar',
   'column',
+  // The interactive pieces with a walk-up answer (piece-moments.md "Which pieces have a moment", Work Tracker 626).
+  'hammock',
+  'notice-board',
+  'world-clock',
+  'calendar-wall',
+  'suggestion-box',
+  'window',
 ] as const;
 export type MomentKind = (typeof MOMENT_KINDS)[number];
 
@@ -105,6 +112,13 @@ export const MOMENT_TOP: Record<MomentKind, number> = {
   'photo-wall': 0.5,
   pillar: 0.8,
   column: 0.8,
+  hammock: 0.5,
+  'notice-board': 0.5,
+  'world-clock': 0.5,
+  'calendar-wall': 0.5,
+  'suggestion-box': 0.85,
+  // Unused: a Window's reach is its light's side (windowReach).
+  window: 0.5,
 };
 
 /** How far below the box the reach goes: the floor in front of a wall or a counter, else MOMENT_REACH. */
@@ -113,6 +127,10 @@ const BELOW_WALL_OR_COUNTER: Partial<Record<MomentKind, number>> = {
   'hand-dryer': WALL_REACH,
   'photo-wall': WALL_REACH,
   'stage-curtains': WALL_REACH,
+  'notice-board': WALL_REACH,
+  'world-clock': WALL_REACH,
+  'calendar-wall': WALL_REACH,
+  window: WALL_REACH,
   microwave: COUNTER_REACH,
   kettle: COUNTER_REACH,
 };
@@ -158,12 +176,21 @@ export const MOMENT_MS: Record<MomentKind, number> = {
   'photo-wall': 1100,
   pillar: 1500,
   column: 2500,
+  hammock: 1900,
+  'notice-board': 1700,
+  'world-clock': 1700,
+  'calendar-wall': 1400,
+  'suggestion-box': 1500,
+  window: 1700,
 };
 
 export type Side = -1 | 1;
 type Point = { x: number; y: number };
 type Box = { x: number; y: number; width: number; height: number };
-/** A moment piece as the trigger checks it: its box, and its reach's box, worked out once (momentPiece). */
+/**
+ * A moment piece as the trigger checks it: its box, its reach's box, and its middle and the direction along it (a
+ * Window turned onto its wall runs along the wall), worked out once (momentPiece).
+ */
 export type MomentPiece = Box & {
   id: string;
   kind: MomentKind;
@@ -171,6 +198,10 @@ export type MomentPiece = Box & {
   top: number;
   right: number;
   bottom: number;
+  cx: number;
+  cy: number;
+  ux: number;
+  uy: number;
 };
 export type MomentHit = { id: string; side: Side };
 
@@ -178,20 +209,65 @@ export type MomentHit = { id: string; side: Side };
  * A piece with its reach: its box from MOMENT_TOP of its height down to MOMENT_BELOW under it, widened by
  * MOMENT_REACH each side (and above, for what lies flat). Worked out when the board changes, so a step only compares.
  */
-export function momentPiece(piece: Box & { id: string; kind: MomentKind }): MomentPiece {
-  const top = MOMENT_TOP[piece.kind];
-  return {
+export function momentPiece(
+  piece: Box & { id: string; kind: MomentKind; rotation?: number },
+): MomentPiece {
+  const base = {
     id: piece.id,
     kind: piece.kind,
     x: piece.x,
     y: piece.y,
     width: piece.width,
     height: piece.height,
+    cx: piece.x + piece.width / 2,
+    cy: piece.y + piece.height / 2,
+  };
+  if (piece.kind === 'window') return { ...base, ...windowReach(piece) };
+  const top = MOMENT_TOP[piece.kind];
+  return {
+    ...base,
+    ux: 1,
+    uy: 0,
     left: piece.x - MOMENT_REACH,
     right: piece.x + piece.width + MOMENT_REACH,
     top: piece.y + piece.height * top - (top === 0 ? MOMENT_REACH : 0),
     bottom: piece.y + piece.height + MOMENT_BELOW[piece.kind],
   };
+}
+
+/**
+ * A Window's reach (piece-moments.md "When one plays"): the floor its light falls on, from the wall's centre line
+ * WALL_REACH into the room along its whole width and MOMENT_REACH past each end, turned with the window onto its wall
+ * (clockwise about its middle, its light on its own +y), as the box around that.
+ */
+function windowReach(piece: Box & { rotation?: number }) {
+  const a = ((piece.rotation ?? 0) * Math.PI) / 180;
+  // Rounded, so a quarter turn's reach is exact rather than off by a float's last digit.
+  const ux = Math.round(Math.cos(a) * 1e9) / 1e9;
+  const uy = Math.round(Math.sin(a) * 1e9) / 1e9;
+  const cx = piece.x + piece.width / 2;
+  const cy = piece.y + piece.height / 2;
+  const half = piece.width / 2 + MOMENT_REACH;
+  const depth = piece.height / 2 + WALL_REACH;
+  let left = Infinity;
+  let right = -Infinity;
+  let top = Infinity;
+  let bottom = -Infinity;
+  for (const [lx, ly] of [
+    [-half, 0],
+    [half, 0],
+    [half, depth],
+    [-half, depth],
+  ] as const) {
+    // The local point turned: along the wall by (ux, uy), into the room by (-uy, ux).
+    const x = cx + lx * ux - ly * uy;
+    const y = cy + lx * uy + ly * ux;
+    left = Math.min(left, x);
+    right = Math.max(right, x);
+    top = Math.min(top, y);
+    bottom = Math.max(bottom, y);
+  }
+  return { ux, uy, left, right, top, bottom };
 }
 
 /** Whether `p` stands in this piece's reach: one box test, checked on every step, so it builds nothing. */
@@ -230,7 +306,9 @@ export function createMomentTrigger({
         const until = playingUntil.get(piece.id);
         if (until !== undefined && t < until) continue;
         playingUntil.set(piece.id, t + MOMENT_MS[piece.kind]);
-        hits.push({ id: piece.id, side: feet.x < piece.x + piece.width / 2 ? -1 : 1 });
+        // Your side along the piece: left or right of its middle, or along a Window's wall.
+        const along = (feet.x - piece.cx) * piece.ux + (feet.y - piece.cy) * piece.uy;
+        hits.push({ id: piece.id, side: along < 0 ? -1 : 1 });
       }
       return hits;
     },

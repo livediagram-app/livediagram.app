@@ -7,6 +7,7 @@ vi.mock('./api-client', () => ({
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
+import { preferencesKeptLocally } from '@liveworkspace/workbench/lib/preferences-local-only';
 import {
   __resetPreferencesSync,
   fitPreferences,
@@ -14,7 +15,6 @@ import {
   PREFERENCES_BODY_MAX,
   PREFERENCES_UNSYNCED_KEY,
   preferencesBodyLength,
-  preferencesKeptLocally,
   preferencesPatch,
   SAVE_DEBOUNCE_MS,
   savePreferences,
@@ -186,7 +186,7 @@ describe('savePreferences', () => {
     savePreferences('owner-1', { uiScale: 1.1 });
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
     expect(mockedPut).toHaveBeenCalledTimes(1);
-    expect(preferencesKeptLocally()).toBe(true);
+    expect(preferencesKeptLocally('owner-1')).toBe(true);
     expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
   });
 
@@ -227,7 +227,7 @@ describe('fetchUserPreferences', () => {
     mockedGet.mockResolvedValue('local');
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ middleMousePan: false }));
     expect(await fetchUserPreferences('owner-1')).toBeNull();
-    expect(preferencesKeptLocally()).toBe(true);
+    expect(preferencesKeptLocally('owner-1')).toBe(true);
     writeUserPreferences({ middleMousePan: true }, 'owner-1');
     expect(mockedPut).not.toHaveBeenCalled();
   });

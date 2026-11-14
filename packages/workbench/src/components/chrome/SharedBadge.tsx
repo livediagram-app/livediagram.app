@@ -2,18 +2,18 @@
 
 import { useEffect, useId, useRef, useState, type HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
-import { Chip } from '@liveplanner/ui';
+import { Chip } from '@liveworkspace/ui';
 import { SHARE_STATE_META, STATE_CHIP_HEIGHT_PX, StateDot, type ShareState } from './share-states';
 import { VisibilityLegend } from './VisibilityLegend';
 
-// The visibility pill rendered beside the project title, split out of
-// EditorHeader. Share links win: a shared team project reads "Shared" as
+// The visibility pill rendered beside the item's title, split out of
+// EditorHeader. Share links win: a shared team item reads "Shared" as
 // normal; "Team" covers the team-but-unshared case where "Private" would be a
-// lie (every joined member can open it); "This Browser" (docs/specs/006-project/offline-mode.md)
-// supersedes "Private" for browser-only projects, matching the Explorer's This Browser pill. Hovering (or focusing) the pill opens a
+// lie (every joined member can open it); "This Browser" (docs/specs/006-<kind>/offline-mode.md)
+// supersedes "Private" for browser-only items, matching the Explorer's This Browser pill. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
 // the states can be compared in place instead of hunting each hover card. "Public" (listed in the Community,
-// docs/specs/025-community/community.md) wins over the rest but This Browser: a plan listed in the public
+// docs/specs/025-community/community.md) wins over the rest but This Browser: an item listed in the public
 // Community is the widest audience there is, so "Private" or "Shared" would understate it.
 
 // How long the legend stays after the pointer leaves the pill or the legend (a timer, docs/specs/004-interface-design/motion.md).
@@ -50,12 +50,12 @@ export function SharedBadge({
   // clip a legend drawn inside it).
   portal?: boolean;
   // Opens Share: the pill becomes a button and its legend offers Change Who Can See This. Absent where the
-  // reader may not change who can see the project.
+  // reader may not change who can see the item.
   onManage?: () => void;
   shareable: boolean;
   team?: boolean;
   offline?: boolean;
-  // Listed in the Community (a hidden post is not public, so it reads as the plan otherwise is).
+  // Listed in the Community (a hidden post is not public, so it reads as the item otherwise is).
   community?: boolean;
 }) {
   const state: ShareState = offline
@@ -127,7 +127,7 @@ export function SharedBadge({
       <span id={descriptionId} className="sr-only">
         {meta.description}
       </span>
-      {/* The badge legend (docs/specs/006-project/offline-mode.md follow-up): every visibility state with its
+      {/* The badge legend (docs/specs/006-<kind>/offline-mode.md follow-up): every visibility state with its
           meaning, current row highlighted. Anchored below the pill; the header
           creates its own stacking context and doesn't clip overflow (the
           AuthControls menu relies on the same), so no portal is needed. */}

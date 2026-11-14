@@ -120,8 +120,22 @@ export class Run {
   readonly sends: PlannedSend[] = [];
   readonly related: PlannedRelated[] = [];
   readonly ai: PlannedAi[] = [];
-  actions = 0;
-  turns = 0;
+  actions: number;
+  turns: number;
+
+  // `carry`: the counts of the run so far, when the rest of it is planned afresh after an AI step.
+  constructor(carry?: RunCarry) {
+    this.actions = carry?.actions ?? 0;
+    this.turns = carry?.turns ?? 0;
+  }
+}
+
+// A run's counts at a step: the actions it planned, the Assign in Turn turns it took and the cards it made, carried
+// into the rest of it when that is planned afresh from the card an AI step left (spec "How a step runs").
+export interface RunCarry {
+  actions: number;
+  turns: number;
+  made: number;
 }
 
 // One card's walk: the card as the steps so far left it, and the one patch that gets it there. Its lines go to the
