@@ -223,12 +223,12 @@ function Columns() {
 }
 
 function Cards() {
-  let i = 0;
+  const popOrder = new Map(COLUMNS.flatMap((col) => col.cards).map((card, n) => [card, n]));
   return (
     <>
       {COLUMNS.map((col, c) =>
         col.cards.map((card, s) => {
-          const d = T.cards + i++ * 0.05;
+          const d = T.cards + popOrder.get(card)! * 0.05;
           const thread = c === THREAD_CARD.col && s === THREAD_CARD.slot;
           return (
             <g key={card.id} className="hm-pop" style={at(d)}>

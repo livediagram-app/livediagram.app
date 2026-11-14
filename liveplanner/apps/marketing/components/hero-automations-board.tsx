@@ -156,7 +156,11 @@ function Scene({ l }: { l: Layout }) {
     card: COLUMNS[m.from]!.cards.at(-1)!,
   }));
   const moving = new Set<number>(MOVES.map((m) => m.from));
-  let order = 0;
+  // The cards that stay put pop in column by column; the carried ones follow them.
+  const staying = COLUMNS.flatMap((col, c) =>
+    col.cards.filter((_, s) => !(moving.has(c) && s === col.cards.length - 1)),
+  );
+  const popOrder = new Map(staying.map((card, n) => [card, n]));
 
   // Each column's count: down one as its card leaves, Done up one as each lands.
   const counts = (c: number) => {
@@ -200,7 +204,7 @@ function Scene({ l }: { l: Layout }) {
       {COLUMNS.map((col, c) =>
         col.cards.map((card, s) =>
           moving.has(c) && s === col.cards.length - 1 ? null : (
-            <g key={card.title} className="hm-pop" style={at(T.cards + order++ * 0.1)}>
+            <g key={card.title} className="hm-pop" style={at(T.cards + popOrder.get(card)! * 0.1)}>
               <CardFace card={card} x={cardX(l, c)} y={slotY(l, s)} w={w} narrow={l.narrow} />
             </g>
           ),
@@ -243,7 +247,7 @@ function Scene({ l }: { l: Layout }) {
             name={m.name}
             arrive={T.runs[i]!.arrive}
             carry={T.runs[i]!.carry}
-            appear={T.cards + (order + i) * 0.1}
+            appear={T.cards + (staying.length + i) * 0.1}
           />
         );
       })}

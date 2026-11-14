@@ -66,7 +66,7 @@ describe('IdentityPrompt', () => {
 
   it("locks a signed-in visitor's account name", () => {
     prompt({ lockedName: 'Ada Lovelace' });
-    const field = screen.getByLabelText('Your name') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Your name');
     expect(field.value).toBe('Ada Lovelace');
     expect(field.readOnly).toBe(true);
     expect(screen.queryByRole('button', { name: 'Generate a different name' })).toBeNull();

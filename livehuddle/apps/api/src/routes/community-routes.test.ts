@@ -196,7 +196,7 @@ function owner(method: string, path: string, opts: { body?: unknown; clerk?: str
 async function publish(docId = 'd1'): Promise<{ id: string; shareCode: string }> {
   const res = await handleDocuments(owner('PUT', `/api/documents/${docId}/community`, { body }));
   expect(res.status).toBe(201);
-  const { post } = (await res.json()) as { post: { id: string; shareCode: string } };
+  const { post } = await res.json<{ post: { id: string; shareCode: string } }>();
   return post;
 }
 
@@ -439,14 +439,14 @@ describe('My Shares', () => {
     const res = await mine(AUTHOR);
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('private, no-store');
-    const listed = (await res.json()) as Mine;
+    const listed = await res.json<Mine>();
     expect(listed.posts.map((p) => [p.id, p.state, p.documentId, p.liked])).toEqual([
       [post.id, 'listed', 'd1', true],
     ]);
     expect(listed.totals).toEqual({ posts: 1, likes: 1, copies: 0 });
 
     await hideOnService(post.id);
-    const hidden = (await (await mine(AUTHOR)).json()) as Mine;
+    const hidden = await (await mine(AUTHOR)).json<Mine>();
     expect(hidden.posts.map((p) => [p.id, p.state])).toEqual([[post.id, 'hidden']]);
     expect(await (await mine('user_x')).json()).toMatchObject({ posts: [] });
   });
@@ -578,7 +578,7 @@ describe('the community link', () => {
           owner: 'guest-visitor',
         }),
       );
-    const resolved = (await (await visit()).json()) as Record<string, unknown>;
+    const resolved = await (await visit()).json<Record<string, unknown>>();
     expect(resolved).toMatchObject({
       role: 'view',
       tabId: null,
@@ -682,18 +682,22 @@ describe('what a community link reveals', () => {
   });
 
   it("names nobody: not the owner's name or colour, nor where the document sits", async () => {
-    const post = (await (
+    const post = await (
       await community('PUT', { body: { ...body, anonymous: true } })
-    ).json()) as { post: { shareCode: string } };
-    const resolved = (await (await share(`/api/share/${post.post.shareCode}`)).json()) as {
+    ).json<{ post: { shareCode: string } }>();
+    const resolved = await (
+      await share(`/api/share/${post.post.shareCode}`)
+    ).json<{
       document: Record<string, unknown>;
       community: { author: { name: string } };
-    };
+    }>();
     expect(resolved.community.author.name).toBe('Anonymous');
     expect(resolved.document).toMatchObject({ ownerName: null, ownerColor: null, ownerId: '' });
-    const read = (await (await readDocument(post.post.shareCode)).json()) as {
+    const read = await (
+      await readDocument(post.post.shareCode)
+    ).json<{
       document: Record<string, unknown>;
-    };
+    }>();
     expect(read.document).toMatchObject({
       ownerName: null,
       ownerColor: null,

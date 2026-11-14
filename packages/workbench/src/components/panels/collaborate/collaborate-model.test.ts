@@ -5,6 +5,7 @@ import {
   kindCounts,
   rowsFor,
   sectionsFor,
+  sectionStarts,
   showKindChips,
 } from './collaborate-model';
 
@@ -82,6 +83,26 @@ describe('sectionsFor', () => {
     expect(sectionsFor('open', onlyOthers).map((s) => s.label)).toEqual([null]);
     const resolved = rowsFor('resolved', 'all', [], [action('mine', 1, 'done', true)]);
     expect(sectionsFor('resolved', resolved).map((s) => s.label)).toEqual([null]);
+  });
+});
+
+describe('sectionStarts', () => {
+  it('starts each section after every row before it', () => {
+    expect(sectionStarts([{ rows: [1, 2] }, { rows: [] }, { rows: [3] }])).toEqual([0, 2, 2]);
+    expect(sectionStarts([])).toEqual([]);
+  });
+
+  it('numbers rows the way a running counter did', () => {
+    const rows = rowsFor(
+      'open',
+      'all',
+      [comment('c', 5)],
+      [action('mine', 1, 'open', true), action('other', 2, 'open', false)],
+    );
+    const sections = sectionsFor('open', rows);
+    const starts = sectionStarts(sections);
+    const numbered = sections.flatMap((s, i) => s.rows.map((_, r) => starts[i]! + r));
+    expect(numbered).toEqual([0, 1, 2]);
   });
 });
 

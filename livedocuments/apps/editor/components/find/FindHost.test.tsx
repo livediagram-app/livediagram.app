@@ -67,7 +67,7 @@ describe('FindHost', () => {
     vi.useFakeTimers();
     render(<Editor />);
     act(() => openerRef.current(false));
-    const field = screen.getByRole('textbox', { name: 'Find' }) as HTMLInputElement;
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Find' });
     editor.renders = 0;
     for (const q of ['p', 'pl', 'pla', 'plan']) fireEvent.change(field, { target: { value: q } });
     act(() => {

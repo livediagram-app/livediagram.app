@@ -235,7 +235,7 @@ describe('Setup Sheet', () => {
     fireEvent.click(btn('Next: Columns'));
     // Number, Title, Type and State are always there; a field no found card's type has is not offered.
     for (const f of ['Number', 'Title', 'Type', 'State']) {
-      const box = screen.getByRole('checkbox', { name: new RegExp(`^${f}`) }) as HTMLButtonElement;
+      const box = screen.getByRole<HTMLButtonElement>('checkbox', { name: new RegExp(`^${f}`) });
       expect([box.disabled, box.getAttribute('aria-checked')]).toEqual([true, 'true']);
     }
     fireEvent.click(btn(/Back/));

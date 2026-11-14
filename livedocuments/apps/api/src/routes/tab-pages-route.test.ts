@@ -87,7 +87,7 @@ describe('page changes', () => {
       ],
     });
     expect(res.status).toBe(200);
-    const body = (await res.json()) as PagesAnswer;
+    const body = await res.json<PagesAnswer>();
     expect(body.lines[0]).toBe('Added page 1 (slide, Slide (16:9)).');
     expect(body.pages.map((p) => [p.place, p.kind, p.name])).toEqual([
       [1, 'slide', null],
@@ -110,7 +110,7 @@ describe('page changes', () => {
     const { db, room } = await setUp();
     const layout = layoutCatalogueFor('slide').layouts[0]!.id;
     const res = await call(db, { pages: [{ op: 'add', kind: 'slide', layout }] });
-    const body = (await res.json()) as PagesAnswer;
+    const body = await res.json<PagesAnswer>();
     expect(body.changesetId).toMatch(/^cs_/);
     expect(body.pages[0]!.elements).toBeGreaterThan(0);
     expect(room.bodies.map((b) => b.op.kind)).toEqual(['changeset', 'tab-meta']);
@@ -175,7 +175,7 @@ describe('an article write', () => {
     const { db, room } = await setUp();
     const res = await call(db, { article: { markdown: '---\ntitle: Brief\n---\n# Goals\n- One' } });
     expect(res.status).toBe(200);
-    const body = (await res.json()) as PagesAnswer;
+    const body = await res.json<PagesAnswer>();
     expect(body.article).toMatchObject({ title: 'Brief', pages: [1], blocks: 3, created: true });
     // The answer says how many pages the writing takes, as estimated.
     expect(body.lines.at(-1)).toMatch(/^It takes about 1 page once laid out \(estimated/);

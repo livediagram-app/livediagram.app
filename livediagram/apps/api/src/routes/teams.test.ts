@@ -53,7 +53,7 @@ beforeEach(() => {
     const route = url.pathname.replace('/api/account/internal', '');
     if (route === '/teams/members' || route === '/teams/of') {
       accountsCalls.push(route);
-      const body = (await req.json()) as { teamId?: string; userId?: string };
+      const body = await req.json<{ teamId?: string; userId?: string }>();
       if (route === '/teams/of') return Response.json({ teams: teamsOf.get(body.userId!) ?? [] });
       const members = people.get(body.teamId!);
       return members
@@ -123,10 +123,10 @@ describe('GET /api/teams/:id/library', () => {
     const res = await call('GET', '/api/teams/team_1/library', { token: true });
 
     expect(res.status).toBe(200);
-    const body = (await res.json()) as {
+    const body = await res.json<{
       documents: { id: string; name: string; teamId: string; folderId: string }[];
       folders: { id: string; name: string }[];
-    };
+    }>();
     expect(body.documents).toMatchObject([
       { id: 'D', name: 'Plan', teamId: 'team_1', folderId: 'f1' },
     ]);
@@ -155,9 +155,9 @@ describe('GET /api/teams/:id/members', () => {
   it('lists the joined and invited people for someone whose token names the team', async () => {
     const res = await call('GET', '/api/teams/team_1/members');
     expect(res.status).toBe(200);
-    const { members } = (await res.json()) as {
+    const { members } = await res.json<{
       members: { userId: string | null; status: string; teamId: string }[];
-    };
+    }>();
     expect(members.map((p) => [p.userId, p.status, p.teamId])).toEqual([
       ['user_ada', 'joined', 'team_1'],
       ['user_bob', 'joined', 'team_1'],

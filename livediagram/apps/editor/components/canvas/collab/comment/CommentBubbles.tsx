@@ -51,7 +51,8 @@ export function CommentBubbles({
   freshFrom: number;
   onDelete?: (commentId: string) => void;
 }) {
-  let index = 0;
+  // Groups keep the comments in order, so a comment's place in the thread is its place in `comments`.
+  const position = new Map(comments.map((c, i) => [c, i]));
   return (
     <ul className="flex flex-col gap-2.5">
       {groupByAuthor(comments).map((group) => {
@@ -83,7 +84,7 @@ export function CommentBubbles({
                 </span>
               </span>
               {group.map((c) => {
-                const fresh = index++ >= freshFrom;
+                const fresh = position.get(c)! >= freshFrom;
                 const reactions = reactionGroups(c.reactions);
                 return [
                   <span

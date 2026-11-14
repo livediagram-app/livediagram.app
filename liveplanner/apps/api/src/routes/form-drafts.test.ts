@@ -147,7 +147,7 @@ describe('a draft', () => {
   it('answers the form, from the request alone sent as data, logging only its size', async () => {
     const res = await draft();
     expect(res.status).toBe(200);
-    const { draft: d } = (await res.json()) as FormDraftResponse;
+    const { draft: d } = await res.json<FormDraftResponse>();
     expect(d.respondsTo).toBe('sheet');
     expect(questionsOf(d.form).map((q) => q.type)).toEqual(['short', 'multi', 'number']);
     expect(calls[0]!.model).toBe(AUTOMATION_AI_MODEL);

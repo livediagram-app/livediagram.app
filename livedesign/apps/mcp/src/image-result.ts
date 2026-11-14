@@ -98,7 +98,7 @@ export async function withMains(tab: Tab, auth?: PreviewAuth): Promise<Tab> {
       `/designs/${encodeURIComponent(auth.designId)}/components`,
     );
     if (!res.ok) return tab;
-    const { components } = (await res.json()) as ComponentsResponse;
+    const { components } = await res.json<ComponentsResponse>();
     return expandInstances(
       tab,
       libraryLookup(libraryOf(components.filter(isValidDesignComponent))),

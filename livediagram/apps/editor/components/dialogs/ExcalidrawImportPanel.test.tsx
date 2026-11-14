@@ -21,7 +21,7 @@ describe('ExcalidrawImportPanel', () => {
     }));
     const onClose = vi.fn();
     render(<ExcalidrawImportPanel importScenes={importScenes} onClose={onClose} />);
-    const input = screen.getByTestId('excalidraw-file-input') as HTMLInputElement;
+    const input = screen.getByTestId<HTMLInputElement>('excalidraw-file-input');
     expect(input.multiple).toBe(true);
     expect(input.accept).toBe(EXCALIDRAW_FILE_ACCEPT);
     fireEvent.change(input, { target: { files: [saved('Plan.excalidraw')] } });

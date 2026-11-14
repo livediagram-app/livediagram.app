@@ -42,7 +42,7 @@ describe('ShareOfflineGate', () => {
   it('keeps the button shut until the reader is known', () => {
     const sync = vi.fn();
     render(<ShareOfflineGate onSyncToCloud={sync} ready={false} onClose={vi.fn()} />);
-    const button = screen.getByRole('button', { name: 'Sync Plan' }) as HTMLButtonElement;
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Plan' });
     expect(button.disabled).toBe(true);
     fireEvent.click(button);
     expect(sync).not.toHaveBeenCalled();

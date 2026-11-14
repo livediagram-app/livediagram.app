@@ -25,7 +25,7 @@ describe('FilterSearchBox', () => {
         onKeyDown={onKeyDown}
       />,
     );
-    const box = screen.getByRole('textbox', { name: 'Search cards' }) as HTMLInputElement;
+    const box = screen.getByRole<HTMLInputElement>('textbox', { name: 'Search cards' });
     expect(box.placeholder).toBe('Search these…');
     fireEvent.keyDown(box, { key: 'Backspace' });
     expect(onRemoveChip).toHaveBeenCalledWith(0);
@@ -48,7 +48,7 @@ describe('FilterSearchBox', () => {
         readOnly
       />,
     );
-    const box = screen.getByRole('textbox', { name: 'Search cards' }) as HTMLInputElement;
+    const box = screen.getByRole<HTMLInputElement>('textbox', { name: 'Search cards' });
     expect(box.readOnly).toBe(true);
     expect(box.value).toBe('login');
     expect(screen.getByText('Bug')).toBeTruthy();

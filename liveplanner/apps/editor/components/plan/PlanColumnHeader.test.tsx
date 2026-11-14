@@ -56,7 +56,7 @@ describe('a column’s settings', () => {
     const first = openAdd(setup);
     fireEvent.change(screen.getByLabelText('New column name'), { target: { value: 'Planning' } });
     fireEvent.keyDown(screen.getByLabelText('New column name'), { key: 'Enter' });
-    const names = screen.getAllByLabelText('Column name') as HTMLInputElement[];
+    const names = screen.getAllByLabelText<HTMLInputElement>('Column name');
     expect(names).toHaveLength(1);
     const name = names[0]!;
     expect(name.value).toBe('Planning');

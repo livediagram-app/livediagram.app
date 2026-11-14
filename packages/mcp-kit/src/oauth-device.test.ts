@@ -80,7 +80,7 @@ async function start(): Promise<Started> {
     env,
   );
   expect(res.status).toBe(200);
-  return (await res.json()) as Started;
+  return await res.json<Started>();
 }
 
 const poll = async (deviceCode: string, clientId = 'example-cli') => {

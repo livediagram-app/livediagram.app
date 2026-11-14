@@ -149,7 +149,7 @@ describe('tab views over REST (R23)', () => {
     const db = await setUp();
     const res = await tabView(db, 'view=show&ref=orders&json=1');
     expect(res.headers.get('Content-Type')).toBe('application/json');
-    const body = (await res.json()) as Record<string, unknown>;
+    const body = await res.json<Record<string, unknown>>();
     expect(body).toMatchObject({
       ref: 'orders',
       kind: 'square',
@@ -290,7 +290,7 @@ describe('the lint over REST', () => {
     const db = await setUp();
     const res = await tabView(db, 'view=lint&json=1');
     expect(res.status).toBe(200);
-    const report = (await res.json()) as { measures: { boxes: number }; findings: unknown[] };
+    const report = await res.json<{ measures: { boxes: number }; findings: unknown[] }>();
     expect(report.measures.boxes).toBe(4);
     expect(Array.isArray(report.findings)).toBe(true);
   });
@@ -455,10 +455,12 @@ describe('the overview over REST', () => {
   it('answers JSON with json=1 and a budget', async () => {
     quiet();
     const db = await setUp();
-    const body = (await (await docView(db, 'view=overview&json=1&budget=40&door=mcp')).json()) as {
+    const body = await (
+      await docView(db, 'view=overview&json=1&budget=40&door=mcp')
+    ).json<{
       design: Record<string, unknown>;
       elision: { command: string } | null;
-    };
+    }>();
     expect(Object.keys(body.design).sort()).toEqual(['id', 'name', 'savedAt', 'tabs']);
     expect(body.elision?.command).toMatch(/^read_design \{"budget":\d+\}$/);
   });
@@ -571,9 +573,11 @@ describe('components over REST', () => {
       '  square bar "Home" takes=label,fillColor,strokeColor,textColor',
     ]);
     expect(logged('[views] components')).toMatchObject({ doc: 'D', components: 1, scoped: false });
-    const body = (await (await docView(db, 'view=components&json=1')).json()) as {
+    const body = await (
+      await docView(db, 'view=components&json=1')
+    ).json<{
       components: { id: string }[];
-    };
+    }>();
     expect(body.components.map((c) => c.id)).toEqual(['nav']);
     await settled();
     expect(viewed()).toEqual(['Components', 'Components']);

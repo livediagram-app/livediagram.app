@@ -40,7 +40,7 @@ const picture = (over: Record<string, unknown> = {}) =>
 describe('the Image section’s Alt Text', () => {
   it('shows the stored words and writes the typed ones for this image', () => {
     const onSetImageAlt = open(picture());
-    const field = screen.getByRole('textbox', { name: 'Alt Text' }) as HTMLTextAreaElement;
+    const field = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Alt Text' });
     expect(field.value).toBe('photo.jpg');
     fireEvent.change(field, { target: { value: 'A red bicycle' } });
     fireEvent.keyDown(field, { key: 'Enter' });

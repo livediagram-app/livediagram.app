@@ -34,7 +34,7 @@ describe('AvatarMessagePopover', () => {
 
   it('sends, and clears the field once it went', () => {
     const { onSend } = popover();
-    const box = screen.getByRole('textbox', { name: 'Message' }) as HTMLTextAreaElement;
+    const box = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Message' });
     fireEvent.change(box, { target: { value: 'hello room' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     expect(onSend).toHaveBeenCalledWith('hello room');

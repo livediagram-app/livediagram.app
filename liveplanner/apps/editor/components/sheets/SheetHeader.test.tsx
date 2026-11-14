@@ -109,7 +109,7 @@ describe('the sheet header', () => {
     show(h);
     openSettings();
     expect(cog().getAttribute('aria-expanded')).toBe('true');
-    const name = screen.getByLabelText('Title') as HTMLInputElement;
+    const name = screen.getByLabelText<HTMLInputElement>('Title');
     expect(name.value).toBe('Sheet 1');
     fireEvent.change(name, { target: { value: 'budget' } });
     fireEvent.keyDown(name, { key: 'Enter' });
@@ -135,12 +135,12 @@ describe('the sheet header', () => {
     fireEvent.click(screen.getByRole('switch', { name: /Gridlines/ }));
     expect(layout(h).showGrid).toBeUndefined();
     section('Cells');
-    const width = screen.getByLabelText('Column Width') as HTMLInputElement;
+    const width = screen.getByLabelText<HTMLInputElement>('Column Width');
     expect(width.value).toBe('120');
     fireEvent.change(width, { target: { value: '15a0' } });
     fireEvent.keyDown(width, { key: 'Enter' });
     expect(layout(h).colWidth).toBe(150);
-    const height = screen.getByLabelText('Row Height') as HTMLInputElement;
+    const height = screen.getByLabelText<HTMLInputElement>('Row Height');
     fireEvent.change(height, { target: { value: '1' } });
     fireEvent.blur(height);
     // Kept within the limits.
@@ -177,7 +177,7 @@ describe('the sheet header', () => {
     expect(radio(/^Roomy/).getAttribute('aria-checked')).toBe('true');
     fireEvent.click(radio(/^Compact/));
     expect([layout(h).colWidth, layout(h).rowHeight]).toEqual([100, 24]);
-    const width = screen.getByLabelText('Column Width') as HTMLInputElement;
+    const width = screen.getByLabelText<HTMLInputElement>('Column Width');
     fireEvent.change(width, { target: { value: '130' } });
     fireEvent.blur(width);
     for (const n of [/^Compact/, /^Default/, /^Roomy/])
@@ -190,7 +190,7 @@ describe('the sheet header', () => {
     show(h);
     openSettings();
     section('Freeze');
-    const rows = screen.getByLabelText('Frozen Rows') as HTMLInputElement;
+    const rows = screen.getByLabelText<HTMLInputElement>('Frozen Rows');
     fireEvent.change(rows, { target: { value: '2' } });
     fireEvent.keyDown(rows, { key: 'Enter' });
     fireEvent.change(screen.getByLabelText('Frozen Columns'), { target: { value: '1' } });

@@ -79,7 +79,7 @@ describe('in-place editing', () => {
     const a = actions();
     render(<Controls element={entity()} a={a} />);
     act(() => setEntityFieldEdit({ entityId: 'e1', index: 1 }));
-    const name = screen.getByLabelText('Field name') as HTMLInputElement;
+    const name = screen.getByLabelText<HTMLInputElement>('Field name');
     expect(name.value).toBe('email');
     fireEvent.change(name, { target: { value: 'mail' } });
     fireEvent.keyDown(name, { key: 'Enter' });
