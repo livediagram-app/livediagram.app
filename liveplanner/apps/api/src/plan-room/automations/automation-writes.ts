@@ -140,8 +140,9 @@ export async function patchCard(
   source: HistorySource,
   tag: 'automation' | 'automation_ai' = 'automation',
 ): Promise<WriteOutcome> {
-  const by = automationPerson(rule.name);
   const line = tag === 'automation' ? historyTag(source) : tag;
+  // The stamp says GitHub when the history line does (automations.md "On cards").
+  const by = automationPerson(rule.name, line === 'automation_github' ? 'github' : undefined);
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const now = Date.now();
     const before = await readItem(deps.env, deps.planId, card.id);
@@ -210,7 +211,7 @@ async function createCard(
       id: newItemId(),
       key,
       now: Date.now(),
-      by: automationPerson(rule.name),
+      by: automationPerson(rule.name, source.via),
       items: itemPlacer(items),
     });
     try {

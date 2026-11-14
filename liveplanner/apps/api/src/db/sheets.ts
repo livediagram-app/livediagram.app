@@ -5,6 +5,7 @@
 
 import {
   cellKey,
+  type CellInput,
   type Sheet,
   type SheetJson,
   type SheetLayout,
@@ -214,6 +215,11 @@ export async function readRowTexts(
   return out;
 }
 
+// Which of a JSON list of row ids hold a value, each one indexed seek that stops at its first value.
+const USED_ROWS_SQL = `SELECT value AS row_id FROM json_each(?) AS r
+  WHERE EXISTS (SELECT 1 FROM sheet_cells
+                 WHERE plan_id = ? AND sheet_id = ? AND row_id = r.value AND input IS NOT NULL)`;
+
 // The ids of a sheet's first probe window of rows, from its end; each window after it twice the last.
 export const USED_ROW_WINDOW = 64;
 
@@ -227,11 +233,7 @@ export async function lastUsedSheetRow(
   sheetId: string,
   rows: readonly string[],
 ): Promise<Set<string>> {
-  const stmt = env.PLAN_DB.prepare(
-    `SELECT value AS row_id FROM json_each(?) AS r
-      WHERE EXISTS (SELECT 1 FROM sheet_cells
-                     WHERE plan_id = ? AND sheet_id = ? AND row_id = r.value AND input IS NOT NULL)`,
-  );
+  const stmt = env.PLAN_DB.prepare(USED_ROWS_SQL);
   let end = rows.length;
   for (let size = USED_ROW_WINDOW; end > 0; size *= 2) {
     const window = rows.slice(Math.max(0, end - size), end);
@@ -244,6 +246,41 @@ export async function lastUsedSheetRow(
     end -= window.length;
   }
   return new Set();
+}
+
+// The inputs of one row, by column (a form tells a template table's total by them).
+export async function readRowInputs(
+  env: PlanEnv,
+  projectId: string,
+  sheetId: string,
+  rowId: string,
+): Promise<Map<string, CellInput>> {
+  const rows = await env.PLAN_DB.prepare(
+    `SELECT col_id, input FROM sheet_cells
+      WHERE plan_id = ? AND sheet_id = ? AND row_id = ? AND input IS NOT NULL`,
+  )
+    .bind(projectId, sheetId, rowId)
+    .all<{ col_id: string; input: string }>();
+  const out = new Map<string, CellInput>();
+  for (const cell of rows.results ?? []) {
+    const i = parseJson<CellInput | undefined>(cell.input, undefined);
+    if (i) out.set(cell.col_id, i);
+  }
+  return out;
+}
+
+// Which of `rows` hold a value: one indexed EXISTS seek a row (a form finds a table's first empty row).
+export async function usedSheetRows(
+  env: PlanEnv,
+  projectId: string,
+  sheetId: string,
+  rows: readonly string[],
+): Promise<Set<string>> {
+  if (rows.length === 0) return new Set();
+  const found = await env.PLAN_DB.prepare(USED_ROWS_SQL)
+    .bind(JSON.stringify(rows), projectId, sheetId)
+    .all<{ row_id: string }>();
+  return new Set((found.results ?? []).map((r) => r.row_id));
 }
 
 // How many of `keys` exist, and their stored bytes, for an exact cap check near the limit.
