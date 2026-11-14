@@ -30,7 +30,7 @@ The App asks GitHub for read-only access to pull requests, checks and metadata, 
 
 ## Pick the Repositories
 
-The **GitHub** view lists the installation's repositories you can reach, a lock on each private one. When there are 20 or fewer, the plan hears them all. With more, pick up to 20 with their switches and press **Save Repositories**. **Change on GitHub** takes you back to GitHub to add or remove repositories from the installation itself.
+The **GitHub** view lists the installation's repositories you can reach, a lock on each private one. When there are 20 or fewer, the plan hears them all. With more, pick up to 20 with their switches and press **Save Repositories**; a long list (an installation can hold up to 1,000) scrolls in its own box, with a search box above it to find a repository by name. **Change on GitHub** takes you back to GitHub to add or remove repositories from the installation itself.
 
 ## Link a Pull Request to a Card
 
@@ -40,7 +40,9 @@ A card is linked to a pull request in any of three ways:
 - a **Link** field holding its address;
 - the pull request's title or body naming the card: the plan's name, then the card's number, like "Work Tracker #143" (the `#` is optional, and case doesn't matter). It only counts in plans connected to that repository.
 
-A card shows up to 10 linked pull requests. Each is a small pill on the card in GitHub's colours, and in the card's panel the state is spelled out beside the field, with the pull request's title.
+A card shows up to 10 linked pull requests. Each is a small pill on the card in GitHub's colours, and in the card's panel the state is spelled out beside the field, with the pull request's title. One the card's face has no pill for (say one that names the card) is a small mark beside the card's title instead, followed by a tick, a cross or a dot while its checks pass, fail or run, so you can tell them apart on a phone too.
+
+AI agents and the [command line](/help/developers/cli/) read the same states with the cards (`list_items`, `liveplanner item ls`), and see only what the person they act for sees on the board.
 
 ## Rules That Run on Pull Requests
 
