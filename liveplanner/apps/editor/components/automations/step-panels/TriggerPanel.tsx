@@ -25,7 +25,12 @@ import { IncomingWebhookPanel } from './IncomingWebhookPanel';
 import { TimeTriggerPanel } from './TimeTriggerPanel';
 import { ChangeTriggerField } from './ChangeTriggerField';
 import { freshTrigger } from '../trigger-groups';
-import { cardMovedColumns, withCardMovedTypes } from '../card-moved-columns';
+import {
+  cardMovedColumns,
+  unusedPicks,
+  unusedPicksNote,
+  withCardMovedTypes,
+} from '../card-moved-columns';
 
 // Column Over Limit's choices: every limit to 20, then in steps.
 const LIMITS = [
@@ -68,14 +73,20 @@ export function TriggerPanel({
   const fields = fieldChangeFields(outline.types);
   const columns = outline.columns.map((c) => ({ value: c.status, label: c.name }));
   const statuses = columns.map((c) => c.value);
-  // Card Moved's From and To: the columns its picked card types use, every column when none is picked.
-  const movedColumns =
-    trigger.kind === 'card_moved'
-      ? cardMovedColumns(outline.types, trigger.types, outline.columns).map((c) => ({
-          value: c.status,
-          label: c.name,
-        }))
-      : columns;
+  // Card Moved's From and To: the columns its picked card types use, every column when none is picked, then a picked
+  // one the plan has that no picked type uses any more, by its name with a note (only a deleted column is gone).
+  const moved = (chosen: readonly string[] | undefined) => {
+    if (trigger.kind !== 'card_moved') return { options: columns, note: null };
+    const unused = unusedPicks(outline.types, trigger.types, outline.columns, chosen);
+    return {
+      options: [...cardMovedColumns(outline.types, trigger.types, outline.columns), ...unused].map(
+        (c) => ({ value: c.status, label: c.name }),
+      ),
+      note: unusedPicksNote(unused.map((c) => c.name)),
+    };
+  };
+  const movedFrom = moved(trigger.kind === 'card_moved' ? trigger.from : undefined);
+  const movedTo = moved(trigger.kind === 'card_moved' ? trigger.to : undefined);
   // Field Changed's chips: the plan's fields, and one the rule names that is not offered by its name: a field it never
   // hears (Needs Attention names it too) or a built-in one no card type lists. Only one the plan lacks reads as gone.
   const fieldOptions = fields.map((f) => ({ value: f.id, label: f.name }));
@@ -172,18 +183,20 @@ export function TriggerPanel({
           />
           <ChipToggles
             label="From"
-            options={movedColumns}
+            options={movedFrom.options}
             value={trigger.from ?? []}
             hint="None picked: from any column."
             gone={GONE_COLUMN}
+            note={movedFrom.note}
             onChange={(from) => onChange({ ...trigger, from })}
           />
           <ChipToggles
             label="To"
-            options={movedColumns}
+            options={movedTo.options}
             value={trigger.to ?? []}
             hint="None picked: to any column."
             gone={GONE_COLUMN}
+            note={movedTo.note}
             onChange={(to) => onChange({ ...trigger, to })}
           />
         </>

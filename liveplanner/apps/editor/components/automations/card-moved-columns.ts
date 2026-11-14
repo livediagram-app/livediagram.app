@@ -20,6 +20,32 @@ export function cardMovedColumns<C extends Column>(
   return columns.filter((c) => used.has(c.status));
 }
 
+/** The chosen From or To columns the plan still has that no picked type uses (a type's statuses changed since it
+ *  was picked), in the order chosen: shown by name with a note, never as gone (only a column the plan lacks is). */
+export function unusedPicks<C extends Column>(
+  types: readonly ItemTypeDef[],
+  picked: readonly string[] | undefined,
+  columns: readonly C[],
+  chosen: readonly string[] | undefined,
+): C[] {
+  if (!chosen?.length) return [];
+  const offered = new Set(cardMovedColumns(types, picked, columns).map((c) => c.status));
+  const byStatus = new Map(columns.map((c) => [c.status, c]));
+  return chosen.flatMap((s) => {
+    const column = byStatus.get(s);
+    return column && !offered.has(s) ? [column] : [];
+  });
+}
+
+/** The note under From or To naming the picked columns no picked type uses: "The picked card types don't use Review."
+ *  ("Review or QA", "Review, QA or Blocked"). */
+export function unusedPicksNote(names: readonly string[]): string | null {
+  if (names.length === 0) return null;
+  const list =
+    names.length === 1 ? names[0]! : `${names.slice(0, -1).join(', ')} or ${names.at(-1)!}`;
+  return `The picked card types don't use ${list}.`;
+}
+
 /** `trigger` with its Card Types set to `types` (none: the key left out, any type), each From and To pick the plan
  *  still has that no picked type uses dropped. A column the plan deleted stays, shown gone. */
 export function withCardMovedTypes(

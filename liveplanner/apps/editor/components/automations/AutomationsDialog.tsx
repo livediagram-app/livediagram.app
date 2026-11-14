@@ -390,6 +390,7 @@ export function AutomationsDialog({
       }
       rule={editingRule}
       initial={initial}
+      blank={!editing.ruleId && !editing.kept && !fromDraft && !editing.template}
       picks={fromDraft?.picks ?? fromTemplate?.picks ?? editing?.kept?.picks}
       notice={fromDraft ? <DraftedNote /> : undefined}
       timeZone={zone}
