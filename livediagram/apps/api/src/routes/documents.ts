@@ -47,7 +47,8 @@ import {
 } from '../redact-document';
 import { answerOverview, parseViewQuery } from './document-views-route';
 import { notifyMilestone } from '../email/notifications';
-import { reportOwnerActivity } from '../liveworkspace/activity';
+import { reportOwnerActivity } from '@liveworkspace/index-app';
+import { accountCredentials } from '../auth/accounts';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { relayDocumentRename } from '../room-client';
@@ -376,8 +377,8 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         console.info('[documents] created', { documentId: body.id, marked: making.markUsed });
       // A genuine create may be the owner's tenth canvas (docs/specs/014-identity/transactional-email.md #6).
       if (!clash) ctx.waitUntil?.(notifyMilestone(env, owner));
-      // liveworkspace's onboarding series: they made something (liveworkspace/activity.ts).
-      if (!clash) ctx.waitUntil?.(reportOwnerActivity(env, owner, Date.now()));
+      // liveworkspace's onboarding series: they made something (@liveworkspace/index-app reportOwnerActivity).
+      if (!clash) ctx.waitUntil?.(reportOwnerActivity(accountCredentials(env), owner, Date.now()));
       return json({ document: liveDoc }, { status: 201 });
     }
   }

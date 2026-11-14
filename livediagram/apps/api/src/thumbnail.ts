@@ -25,7 +25,7 @@ import {
   servableImageIds,
 } from './db';
 import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
-import { redactTabForCommunity } from './community-redact';
+import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { mediaClient } from './media';
 import type { DocumentEnv } from './types';
 

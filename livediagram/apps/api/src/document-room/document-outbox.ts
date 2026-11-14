@@ -4,7 +4,7 @@
 // History and their Most Used (`PUT /app/items/:id/events`), all with this app's key through
 // @liveworkspace/index-app's drainIndexOutbox; the images it places to liveworkspace's media service
 // (liveworkspace/docs/specs/006-media/media.md "References"); and the owner's newest save to the liveworkspace accounts Worker for
-// its onboarding emails (liveworkspace/activity.ts reportOwnerActivity).
+// its onboarding emails (@liveworkspace/index-app reportOwnerActivity).
 //
 // The document's triggers fill `outbox` with a key per changed thing (document-schema.ts), in the same transaction
 // as the write, so no write path can forget one and a save makes no network call. The room's alarm drains it on
@@ -37,7 +37,8 @@ import { documentStatsSql, readDocumentStats } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
 import { indexAppClient } from '../index-service';
 import { mediaClient } from '../media';
-import { reportOwnerActivity } from '../liveworkspace/activity';
+import { reportOwnerActivity } from '@liveworkspace/index-app';
+import { accountCredentials } from '../auth/accounts';
 import type { DocumentEnv } from '../types';
 
 type TabRow = {
@@ -288,7 +289,7 @@ export async function drainOutbox(
         return { summary: itemSummaryOf(summary), updatedAt: savedAt, ownerId };
       },
       // The owner's newest activity, for liveworkspace's onboarding emails; a guest's is not sent.
-      onSummary: (ownerId, at) => reportOwnerActivity(env, ownerId, at),
+      onSummary: (ownerId, at) => reportOwnerActivity(accountCredentials(env), ownerId, at),
     }),
     imageRows.length > 0
       ? pushImageRefs(
