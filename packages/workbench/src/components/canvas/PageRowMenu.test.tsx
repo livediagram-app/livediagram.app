@@ -347,3 +347,49 @@ describe('focusRowAfterRemove', () => {
     }
   });
 });
+
+describe('PageRowMenu: presses stay out of the row', () => {
+  function Parent({ m }: { m: PageRowModel }) {
+    const menu = usePageRowMenu();
+    const seen = (e: { type: string }) => seenTypes.push(e.type);
+    return (
+      <div onPointerDown={seen} onKeyDown={seen} onClick={seen}>
+        <PageRowStack
+          id="a"
+          name="Page a"
+          menu={menu}
+          grip={<span />}
+          shown={false}
+          {...(m.remove ? { remove: m.remove } : {})}
+        />
+        {menu.openId ? (
+          <PageRowMenu title="Page a" model={m} anchor={menu.anchor} onClose={menu.close} />
+        ) : null}
+      </div>
+    );
+  }
+  const seenTypes: string[] = [];
+
+  it("keeps the ⋯'s and Delete's presses, and the open menu's presses, keys and clicks, from the row", () => {
+    seenTypes.length = 0;
+    render(<Parent m={model().model} />);
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'More Actions for Page a' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Delete Page a' }));
+    expect(seenTypes).toEqual([]);
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page a' }));
+    const item = screen.getByRole('menuitem', { name: 'Duplicate' });
+    fireEvent.pointerDown(item);
+    fireEvent.keyDown(screen.getByRole('region', { name: 'Page a actions' }), { key: 'x' });
+    expect(seenTypes).toEqual([]);
+  });
+
+  it('opens nothing when a row has no ⋯ to hang its menu from', () => {
+    function Bare() {
+      const menu = usePageRowMenu();
+      return <div data-testid="bare" {...menu.rowProps('z')} />;
+    }
+    render(<Bare />);
+    fireEvent.contextMenu(screen.getByTestId('bare'));
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+});

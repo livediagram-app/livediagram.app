@@ -8,7 +8,9 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // (docs/specs/007-editor/pages-mode.md "Contents" in each). The editors' door tests drive them with real pages; these
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
+  'src/components/canvas/PageContentsList.tsx',
   'src/components/canvas/PageContentsSidebar.tsx',
+  'src/components/canvas/PageRowMenu.tsx',
   'src/lib/editor-arrival.ts',
   'src/lib/guard-run.ts',
   'src/lib/room-presence.ts',

@@ -425,6 +425,76 @@ describe('when the AI can’t answer', () => {
     expect(calls).toHaveLength(1);
     expect(run.steps.map((s) => s.text)).toContain(AI_NOT_ASKED);
   });
+
+  // Spec "How a step runs": the card is read again after an AI step. One deleted, or moved to the Trash, while the
+  // model answered counts as gone: the writes after it are refused, the run Failed, and what it would have done reads
+  // "Not done" in the Audit Trail.
+  // The step's answer was a comment, so the card it left is the card as the run began: the fallback the steps after it
+  // are planned from, and the write that follows is refused all the same.
+  it('plans the steps after from the card as the run began when it is gone and the step wrote none', async () => {
+    answer = async () => {
+      plan().db.prepare('DELETE FROM items').run();
+      return { response: { type: 'Bug' } };
+    };
+    const { run } = await ran([{ kind: 'ai', task: 'card_type', set: false }, { kind: 'flag' }]);
+    expect(run).toMatchObject({ result: 'failed', reason: 'The card is gone' });
+    expect(run.steps.map((l) => [l.kind === 'action' ? l.ok : undefined, l.text])).toEqual([
+      [undefined, expect.stringContaining('moved it')],
+      [true, 'Suggested card type Bug in a comment'],
+      [false, STEP_NOT_DONE],
+      [false, 'The card is gone'],
+    ]);
+  });
+
+  describe.each([
+    ['deleted', (id: string) => plan().db.prepare('DELETE FROM items WHERE id = ?').run(id)],
+    [
+      'moved to the Trash',
+      (id: string) =>
+        plan()
+          .db.prepare(
+            "UPDATE items SET fields = json_set(fields, '$.status', 'trash', '$.trashedFrom', 'todo') WHERE id = ?",
+          )
+          .run(id),
+    ],
+  ])('a card %s while the AI answered', (_how, remove) => {
+    const gone = async () => {
+      const c = await w.make('A', { title: 'Going' });
+      answer = async () => {
+        remove(c.id);
+        return { response: { summary: 'A summary.' } };
+      };
+      await w.rule({
+        name: 'Tidy',
+        steps: [
+          { kind: 'ai', task: 'summarise' },
+          { kind: 'flag' },
+          { kind: 'add_label', label: 'after' },
+          { kind: 'notify', via: 'slack', webhook: 'wh1', name: 'Launch', text: 'Done' },
+          { kind: 'ai', task: 'card_type', set: true },
+        ],
+      });
+      await w.send('POST', `/api/projects/A/items/${c.id}/move`, { status: 'done' });
+      await room().alarm();
+      return (await runs())[0]!;
+    };
+
+    it('refuses the write after it, shows the steps not run, and asks no later AI step', async () => {
+      const run = await gone();
+      expect(run).toMatchObject({ result: 'failed', reason: 'The card is gone' });
+      expect(calls).toHaveLength(1);
+      const lines = run.steps.map((s): [boolean | undefined, string] => [
+        s.kind === 'action' ? s.ok : undefined,
+        s.text,
+      ]);
+      expect(lines).toContainEqual([false, 'The card is gone']);
+      expect(lines).toContainEqual([false, STEP_NOT_DONE]);
+      expect(lines).toContainEqual([false, AI_NOT_ASKED]);
+      expect(lines).toContainEqual([false, SEND_NOT_SENT]);
+      expect(lines.map(([, text]) => text)).not.toContain('Flag');
+      expect(sent).toEqual([]);
+    });
+  });
 });
 
 describe('the daily cap', () => {
