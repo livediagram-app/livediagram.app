@@ -9,6 +9,7 @@ import {
   resolvedFontWeight,
   wordmarkDisplayText,
 } from './wordmark';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/006-document/document-structure.md "Text type".
 describe('wordmark type', () => {
@@ -65,9 +66,9 @@ describe('wordmark type', () => {
 
   it('stays linear on a long run of spaces (CodeQL js/polynomial-redos)', () => {
     const text = 'a' + ' '.repeat(100_000) + 'b\n' + ' '.repeat(100_000);
-    const t = performance.now();
+    const t = cpuNowMs();
     expect(arcText(text)).toBe('a' + ' '.repeat(100_000) + 'b ');
-    expect(performance.now() - t).toBeLessThan(200);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(200));
   });
 
   it('validates the fields', () => {

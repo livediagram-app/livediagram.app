@@ -15,6 +15,7 @@ import {
   imageOwners,
   servableImageIds,
 } from './image-grants';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Which images a design may serve (docs/specs/009-elements/images.md, "Placement grants"), in the design's own
 // SQLite, against the real media service and the accounts stand-in for a team's people.
@@ -130,15 +131,15 @@ describe('servableImageIds', () => {
     accounts.teamPeople.set('team_1', [member('user_ada'), member('user_bob')]);
     const ids = Array.from({ length: 200 }, (_, i) => `img-${i}`);
     mediaImages(media, 'user_bob', ids);
-    const cold = performance.now();
+    const cold = cpuNowMs();
     expect((await servableImageIds(db.env, 'D', ids)).size).toBe(200);
-    const coldMs = performance.now() - cold;
-    const warm = performance.now();
+    const coldMs = cpuNowMs() - cold;
+    const warm = cpuNowMs();
     expect((await servableImageIds(db.env, 'D', ids)).size).toBe(200);
-    const warmMs = performance.now() - warm;
+    const warmMs = cpuNowMs() - warm;
     // Cold asks the service for each image (in process here); warm is two reads of the design's own tables.
-    expect(coldMs).toBeLessThan(2_000);
-    expect(warmMs).toBeLessThan(100);
+    expect(coldMs).toBeLessThan(cpuBudgetMs(2_000));
+    expect(warmMs).toBeLessThan(cpuBudgetMs(100));
   });
 });
 

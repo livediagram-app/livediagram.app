@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { gateClientOp, type GateSender } from './room-op-gate';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/013-workspace/share-roles.md "The level ladder": what each role may relay through the room.
 const as = (role: unknown, over: Partial<GateSender> = {}): GateSender => ({
@@ -154,13 +155,13 @@ describe('gateClientOp', () => {
     const meta = { kind: 'tab-meta', tabId: 't1', patch: { timer: null, vote: null } };
     const sender = as('edit', { tabScope: 't1' });
     const n = 200_000;
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < n; i++) {
       gateClientOp(op, sender);
       gateClientOp(meta, sender);
     }
-    const perOpUs = ((performance.now() - start) * 1000) / (2 * n);
+    const perOpUs = ((cpuNowMs() - start) * 1000) / (2 * n);
     // Measured about 0.1 µs per op; the budget leaves room for a busy CI machine.
-    expect(perOpUs).toBeLessThan(5);
+    expect(perOpUs).toBeLessThan(cpuBudgetMs(5));
   });
 });

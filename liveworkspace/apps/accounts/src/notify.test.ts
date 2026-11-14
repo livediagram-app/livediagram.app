@@ -3,6 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { isNotifyKey, readNotifySettings, teamPeople } from './notify.ts';
 import { answerInvitation, createTeam, deleteTeam, inviteMember, type Actor } from './teams.ts';
 import { addUser, testD1 } from './test-d1.ts';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const ADA: Actor = { id: 'user_ada', email: 'ada@example.com' };
 const BEA: Actor = { id: 'user_bea', email: 'bea@example.com' };
@@ -47,10 +48,10 @@ describe('readNotifySettings', () => {
         filler: 'x'.repeat(15_000),
       });
     }
-    const started = performance.now();
+    const started = cpuNowMs();
     const read = await readNotifySettings(db, owners, 'liveplanner.app', ['notifyMentions']);
     expect(Object.keys(read)).toHaveLength(100);
-    expect(performance.now() - started).toBeLessThan(250);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(250));
   });
 
   it('takes only notify switches', () => {

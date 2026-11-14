@@ -3,6 +3,7 @@ import { DRIVE_ITEM_MIN_WRITE_INTERVAL_MS } from '../constants';
 import { planOutbound, type OutboundOp } from './plan-outbound';
 import { buildSnapshot } from './snapshot';
 import type { DriveRow, MirrorFolder, MirrorItem, MirrorTrashed } from './types';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Each row of the spec's Outbound table as a pure plan (liveworkspace/docs/specs/005-drive/drive.md "Outbound: liveworkspace to
 // Drive").
@@ -455,11 +456,11 @@ describe('planOutbound: order', () => {
     const items = Array.from({ length: 5000 }, (_, i) =>
       item(`i${i}`, { createdAt: i, folderId: `f${i % 4000}` }),
     );
-    const started = performance.now();
+    const started = cpuNowMs();
     const { ops } = plan({ items, folders });
     expect(ops).toHaveLength(9000);
     expect(ops[0]).toMatchObject({ op: 'create-folder', folder: { id: 'f0' } });
     expect(ops[3999]).toMatchObject({ op: 'create-folder', folder: { id: 'f3999' } });
-    expect(performance.now() - started).toBeLessThan(500);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(500));
   });
 });

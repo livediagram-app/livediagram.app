@@ -10,6 +10,7 @@ import {
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { PlanEnv } from '../types';
 import { appendItemHistory, deleteOldItemHistory, readItemHistory } from './item-history';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // A card's history store (docs/specs/026-plan/items.md "History", blueprint item-store.md "History"), on real SQLite
 // with every schema step: what an append keeps, its bounds, the cascade, and that it reaches the plan's own storage
@@ -288,7 +289,7 @@ describe('cost', () => {
     const changes = () => (db.sql.prepare('SELECT total_changes() AS n').get() as { n: number }).n;
     const runs = 500;
     const startChanges = changes();
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 1; i <= runs; i += 1) {
       const after = card(
         { rev: before.rev + 1, updatedAt: NOW + ITEM_HISTORY_MAX + i },
@@ -297,13 +298,13 @@ describe('cost', () => {
       await appendItemHistory(db.env, 'P', [{ before, after }]);
       before = after;
     }
-    const perAppendMs = (performance.now() - start) / runs;
+    const perAppendMs = (cpuNowMs() - start) / runs;
     // Each append at the cap inserts one row and trims one, and each is a move, so it queues one outbox key for
     // webhooks: three row changes.
     const rowChanges = (changes() - startChanges) / runs;
     console.info('[measure] history append', { perAppendMs, rowChanges });
     expect(rowChanges).toBe(3);
-    expect(perAppendMs).toBeLessThan(5);
+    expect(perAppendMs).toBeLessThan(cpuBudgetMs(5));
     expect(rowsOf(db)).toBe(ITEM_HISTORY_MAX);
   });
 
@@ -320,14 +321,14 @@ describe('cost', () => {
       await appendItemHistory(db.env, 'P', [{ before, after }]);
       before = after;
     }
-    const start = performance.now();
+    const start = cpuNowMs();
     const read = await readItemHistory(db.env, 'P', 'card-0001', NOW + ITEM_HISTORY_MAX * 120_000);
     const entries = historyForReader(groupHistory(read), SAM.id);
-    const readMs = performance.now() - start;
+    const readMs = cpuNowMs() - start;
     const bytes = JSON.stringify({ entries }).length;
     console.info('[measure] history read at the cap', { entries: entries.length, bytes, readMs });
     expect(entries).toHaveLength(ITEM_HISTORY_MAX);
     expect(bytes).toBeLessThan(64 * 1024);
-    expect(readMs).toBeLessThan(200);
+    expect(readMs).toBeLessThan(cpuBudgetMs(200));
   });
 });

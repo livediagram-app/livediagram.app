@@ -1,8 +1,8 @@
 // Speed budgets in tests use CPU time (docs/ci.md "Speed budgets"): `cpuMsOf` / `cpuMsOfAsync` and
 // `cpuBudgetMs` from @liveworkspace/vitest-config/cpu-time. A `performance.now()` budget also counts the
 // time a test waits for a core on CI's shared runners, and turned main red at random. This fails when a
-// change ADDS `performance.now()` to a test file in the group's folders, so the old ones are left for a
-// pass of their own while no new one comes in. A line that truly needs the wall clock (it measures a
+// change ADDS `performance.now()` to a test file in the group's folders, so none comes back now that the
+// old ones are converted (`cpuNowMs()` is the CPU-time stand-in for a clock read). A line that truly needs the wall clock (it measures a
 // timer, say) says so with a `wall-clock:` comment on the same line.
 //
 //   BASE=<sha or empty> PRODUCT=<livediagram|…, or empty for the platform> node .github/scripts/cpu-budget-guard.mjs

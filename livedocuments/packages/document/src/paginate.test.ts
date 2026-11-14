@@ -4,6 +4,7 @@ import { elementIdsOnPage } from './page-content';
 import { pagesOf, layOutPages, MAX_PAGES, pageMargin, type Page } from './page';
 import { FIT_PAGE_MAX_SIDE } from '@liveworkspace/model-core/page-fit';
 import type { Element } from './index';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/pages-mode.md "Into pages".
 const box = (id: string, x: number, y: number, w = 100, h = 60) =>
@@ -290,9 +291,9 @@ describe('withContentOnAPage: cost', () => {
     const elements = Array.from({ length: 5000 }, (_, i) =>
       box(`e${i}`, (i % 50) * 180, Math.floor(i / 50) * 120, 150, 92),
     );
-    const start = performance.now();
+    const start = cpuNowMs();
     withContentOnAPage({ elements });
     withContentOnAPage({ elements, pages: [{ id: 'x', orientation: 'portrait' }] });
-    expect(performance.now() - start).toBeLessThan(150);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(150));
   });
 });

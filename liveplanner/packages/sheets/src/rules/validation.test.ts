@@ -21,6 +21,7 @@ import {
   writeForRules,
 } from './validation';
 import { resetSheetWrite } from '../sheet-starters';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const by = { id: 'p', name: 'P', color: '#000000' };
 const R = (i: number) => `s0r${i}`;
@@ -141,9 +142,9 @@ describe('what each rule allows', () => {
     ]);
     // A dotted run the old pattern backtracked over quadratically (seconds at this length).
     const text = `!@!.${'!.'.repeat(20_000)}@`;
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     expect(isEmail(text)).toBe(false);
-    expect(performance.now() - t0).toBeLessThan(50);
+    expect(cpuNowMs() - t0).toBeLessThan(cpuBudgetMs(50));
   });
   it('checks a typed number against a Text rule as its cell shows it, as the invalid mark does', () => {
     const pct = rule({ is: 'text', op: 'contains', a: '%' });

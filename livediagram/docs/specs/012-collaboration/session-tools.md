@@ -242,7 +242,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   (32 px: the 24 px badge and the third of it hung off the corner), as at a phone's full Fit of a large board where a
   note is about 23 px, the badge would be bigger than its note and cover its neighbours, so the badge (and, once casting closes, the read-only count) shrinks to a **vote
   dot**: 8 px, tucked inside the element's bottom-right corner, brand-filled while it holds your dots, dark while it
-  holds only other people's (as privacy allows), hollow while empty. The dot takes no press of its own: a tap on the
+  holds only other people's (as privacy allows), hollow while empty (a transparent centre inside a ring, so the note shows through it in light and dark alike, never a dark fill that reads as someone's dot). While a zoom is moving, the badge, the stepper and the dot ride with the board and take their size on screen when it stops (a fifth of a second), so a vote on a large board costs the zoom nothing per frame ([Canvas performance](../008-canvas/canvas-performance.md)). The dot takes no press of its own: a tap on the
   element still casts a dot, and zooming in brings the badge back to open the stepper or take a dot back. At 100% and above
   nothing changes, and pressing the element itself still casts. Plan cards on a board never zoom, so they keep the
   stepper.

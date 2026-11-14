@@ -10,6 +10,7 @@ import {
   cellPreview,
   isCommentShortcut,
 } from './sheet-cell-comments';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const comment = (text: string): Comment => ({
   id: text,
@@ -48,14 +49,14 @@ describe('cellMarkers', () => {
     for (let i = 0; i < CELL_THREADS_MAX; i++)
       threads[`r${i * 10}:c${i % 26}`] = { comments: [comment(`t${i}`)], resolved: false };
     // The layout's index is the engine's, kept per layout; the first read pays for it.
-    let t = performance.now();
+    let t = cpuNowMs();
     expect(cellMarkers(threads, l)).toHaveLength(CELL_THREADS_MAX);
-    const first = performance.now() - t;
-    t = performance.now();
+    const first = cpuNowMs() - t;
+    t = cpuNowMs();
     for (let i = 0; i < 100; i++) cellMarkers(threads, l);
-    const reads = (performance.now() - t) / 100;
-    expect(first).toBeLessThan(50);
-    expect(reads).toBeLessThan(0.1);
+    const reads = (cpuNowMs() - t) / 100;
+    expect(first).toBeLessThan(cpuBudgetMs(50));
+    expect(reads).toBeLessThan(cpuBudgetMs(0.1));
   });
 });
 

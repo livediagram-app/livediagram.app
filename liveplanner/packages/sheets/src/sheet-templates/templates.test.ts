@@ -32,6 +32,7 @@ import {
   valueStreamTotals,
 } from '@liveworkspace/template-previews/analysis-data';
 import { localMs, serialFromDate } from '../dates';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const ctx = { now: 1, by: { id: '', name: '', color: '#000000' } };
 // A Thursday.
@@ -232,12 +233,12 @@ describe('the example data works out', () => {
 
 describe('cost', () => {
   it('builds every template in well under a frame', () => {
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     for (const id of SHEET_TEMPLATE_IDS) make(id);
-    const per = (performance.now() - t0) / SHEET_TEMPLATE_IDS.length;
+    const per = (cpuNowMs() - t0) / SHEET_TEMPLATE_IDS.length;
     // Measured 0.2 to 1.2 ms each on a laptop (the Loan Calculator, 206 cells, the largest); the budget leaves room for
     // a slow CI machine.
-    expect(per).toBeLessThan(100);
+    expect(per).toBeLessThan(cpuBudgetMs(100));
   });
 });
 

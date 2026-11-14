@@ -65,6 +65,14 @@ large move rides as one layer").
 - **A pan or zoom moves the canvas, not its elements.** The viewport is one transform on the
   element layer. No element view takes the pan offset as a prop or reads it from a context; zoom
   reaches only what is counter-scaled to stay a constant screen size (grips, handles, badges).
+  **What a board carries by the thousand follows the zoom without rendering for it.** A vote's badge, stepper and
+  dot sit on every votable note, so a board of 2,000 has 2,000 of them: each reads the zoom through a selector that
+  renders it only when its fold or its dot flips (`useCanvasZoomSelector`), and keeps its counter-scale by writing
+  its own transform once the zoom has stood still for 120 ms (`ZoomFollowing`), so while a pinch or a wheel moves
+  the view it rides with the board and costs nothing per frame. Measured in Chromium on a development build, a full
+  Fit pinch on 2,000 notes with a vote open cost 94 ms a frame (the same board with no vote, 23 ms) while every
+  overlay rendered and re-scaled on each step; with these it costs 34 ms. A frame under 16 ms is not met on a
+  development build, where the 2,000 notes alone take 23 (Work Tracker 778).
 - **A pan or zoom repaints no filter.** A look every element of a kind wears by default (a soft
   shadow) is drawn as a picture made once, never as a live CSS or SVG filter: Safari runs every
   filter on screen again on every frame of a pan, a zoom or a page glide, and fifty sticky notes'

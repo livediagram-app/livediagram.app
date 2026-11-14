@@ -11,6 +11,7 @@ import type { GrantClaims } from '@liveworkspace/index-client';
 import { setGrantVerifierForTests } from '../index-service';
 import type { Env } from '../types';
 import { DocumentRoom } from './document-room';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // A session holds the index's grant, which lapses after ten minutes (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Grants"): the room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before, moves the lapse on when one comes, and
@@ -213,20 +214,20 @@ describe('a room full of sessions', () => {
       join({ expMs: T0 + 600_000 }),
     );
     vi.setSystemTime(T0 + 590_000);
-    let t = performance.now();
+    let t = cpuNowMs();
     await document.alarm();
-    expect(performance.now() - t).toBeLessThan(250);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(250));
     expect(sockets.every((ws) => kinds(ws).includes('grant-renew'))).toBe(true);
 
     const fresh = grant({ exp: (T0 + 1_200_000) / 1000 });
-    t = performance.now();
+    t = cpuNowMs();
     for (const ws of sockets) await document.renewGrant(ws as unknown as WebSocket, fresh);
-    expect(performance.now() - t).toBeLessThan(2000);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(2000));
 
     vi.setSystemTime(T0 + 1_200_000);
-    t = performance.now();
+    t = cpuNowMs();
     await document.alarm();
-    expect(performance.now() - t).toBeLessThan(250);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(250));
     expect(sockets.every((ws) => ws.closed?.code === GRANT_LAPSED_CLOSE)).toBe(true);
   });
 

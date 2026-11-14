@@ -112,7 +112,7 @@ const xOf = (els: Element[], id: string) => {
 
 beforeEach(() => {
   vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
-    cb(performance.now());
+    cb(performance.now()); // wall-clock: a fake frame's timestamp, not a budget
     return 0;
   });
   vi.stubGlobal('cancelAnimationFrame', () => {});

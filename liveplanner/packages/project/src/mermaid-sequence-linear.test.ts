@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { afterWord, parseSequenceDiagram } from './mermaid-sequence';
+import { cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Lines are read by prefixes and indexOf, so a long run of spaces costs its length (CodeQL "polynomial regular
 // expression"): each worst case CodeQL named finishes well inside a budget.
@@ -7,9 +8,9 @@ const SPACES = ' '.repeat(100_000);
 const BUDGET_MS = 250;
 
 const timed = (run: () => void): number => {
-  const started = performance.now();
+  const started = cpuNowMs();
   run();
-  return performance.now() - started;
+  return cpuNowMs() - started;
 };
 
 describe('reading Mermaid in linear time', () => {

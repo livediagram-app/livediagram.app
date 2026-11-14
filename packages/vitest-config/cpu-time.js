@@ -19,6 +19,19 @@ export function cpuMsOf(fn) {
 }
 
 /**
+ * The CPU time this process has spent so far, in ms (user + system): a clock that stands in for
+ * `performance.now()` where a test times a stretch of code across several statements. Two reads give the CPU the
+ * code between them spent, so `cpuNowMs() - start` replaces `performance.now() - start` one for one and never
+ * counts the time the test waited for a core. Prefer `cpuMsOf` where the work fits in one callback.
+ *
+ * @returns {number}
+ */
+export function cpuNowMs() {
+  const spent = process.cpuUsage();
+  return (spent.user + spent.system) / 1000;
+}
+
+/**
  * `cpuMsOf` for async work: the CPU time this process spent while `fn`'s
  * promise settled. The worker runs one test at a time, so nothing else is
  * on its CPU meanwhile.

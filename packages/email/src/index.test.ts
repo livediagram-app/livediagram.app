@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { type EmailBinding, parseSender, redactAddress, sendEmail } from './index';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const binding = (send: EmailBinding['send']) => ({ send: vi.fn(send) });
 
@@ -89,10 +90,10 @@ describe('parseSender', () => {
   });
 
   it('stays linear on a long hostile value', () => {
-    const start = performance.now();
+    const start = cpuNowMs();
     parseSender(`${'<'.repeat(50_000)}a`);
     parseSender(`${' '.repeat(50_000)}<`);
-    expect(performance.now() - start).toBeLessThan(200);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(200));
   });
 });
 

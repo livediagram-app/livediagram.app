@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { cardsCollabPush, type InboxCardSource } from './cards';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const hashOf = async (id: string) =>
   createHash('sha256').update(`h:${id}`).digest('hex').slice(0, 24);
@@ -184,10 +185,10 @@ describe('cardsCollabPush', () => {
         card(`c${i}`, { assigneeId: people[i % 200]!, updatedAt: i }),
       ),
     );
-    const start = performance.now();
+    const start = cpuNowMs();
     const { push } = await cardsCollabPush(cards, { people, hashOf, fallbackAssignerId: 'o' });
-    const took = performance.now() - start;
-    expect(took).toBeLessThan(200);
+    const took = cpuNowMs() - start;
+    expect(took).toBeLessThan(cpuBudgetMs(200));
     expect(push.actions).toHaveLength(500);
     expect(push.actions[0]!.updatedAt).toBe(1_999);
   });

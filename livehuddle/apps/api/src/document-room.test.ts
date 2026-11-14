@@ -18,6 +18,7 @@ import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import { DocumentRoom } from './document-room/document-room';
 import type { Env } from './types';
 import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
 // membership reads through this rather than `.has`.
@@ -2904,9 +2905,9 @@ describe('DocumentRoom capacity', () => {
     const { room, state } = newRoom();
     for (let i = 0; i < ROOM_MAX_CONNECTIONS; i++) seedSession(state, makeSocket(), null);
     const n = 1000;
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < n; i++) room.turnAwayIfFull(upgrade().ws);
-    expect((performance.now() - start) / n).toBeLessThan(1);
+    expect((cpuNowMs() - start) / n).toBeLessThan(cpuBudgetMs(1));
   });
 });
 

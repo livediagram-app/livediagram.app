@@ -28,6 +28,7 @@ import {
   writeUserPreferences,
   type UserPreferences,
 } from './user-preferences';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Saving preferences to the server (docs/specs/007-editor/user-preferences.md "Saving to the server").
 
@@ -92,10 +93,10 @@ describe('fitPreferences', () => {
       ...fullAccount(),
       customSwatches: Array.from({ length: 1000 }, () => '#abcdef'),
     };
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 20; i++) fitPreferences(prefs);
     // One serialisation a dropped key: well under a millisecond. Generous for CI.
-    expect((performance.now() - start) / 20).toBeLessThan(3);
+    expect((cpuNowMs() - start) / 20).toBeLessThan(cpuBudgetMs(3));
   });
 });
 
@@ -203,10 +204,10 @@ describe('preferencesPatch', () => {
   it('measures the largest blob within budget', () => {
     const prefs = fullAccount() as Record<string, unknown>;
     const base = Object.fromEntries(Object.keys(prefs).map((key) => [key, 'old']));
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 100; i++) preferencesPatch(base, prefs);
     // Measured ~0.03 ms a patch. Generous for CI.
-    expect((performance.now() - start) / 100).toBeLessThan(2);
+    expect((cpuNowMs() - start) / 100).toBeLessThan(cpuBudgetMs(2));
     expect(Object.keys(preferencesPatch(base, prefs))).toHaveLength(Object.keys(prefs).length);
   });
 });

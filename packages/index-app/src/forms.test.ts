@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createFormPlaces } from './forms';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('createFormPlaces', () => {
   const index = (answers: Record<string, { itemId: string; tabId: string } | null>) => {
@@ -45,8 +46,8 @@ describe('createFormPlaces', () => {
     const { client } = index({ A: { itemId: 'p', tabId: 't' } });
     const places = createFormPlaces();
     for (let i = 0; i < 1_000; i++) await places.lookup(client, `c${i}`, 0);
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 10_000; i++) await places.lookup(client, `c${i % 1_000}`, 1);
-    expect(performance.now() - start).toBeLessThan(50);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(50));
   });
 });

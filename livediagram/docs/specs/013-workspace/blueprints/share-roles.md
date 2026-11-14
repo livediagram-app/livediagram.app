@@ -157,6 +157,7 @@ Editor state:
 | `canEdit`       | `sessionRole === 'edit' && !viewPreview` (unchanged)                         |
 | `isReadOnly`    | `!canEdit` (unchanged): every structural gate stays shut for a Participant   |
 | `can`           | `resolveEditorCapabilities({ level, adderKey })`, in `useParticipantSession` |
+| Session gates   | `roleGates(can, runBlocked)`: `run`, `shape`, `takePart` (below)             |
 | Pill level      | `viewPreview ? 'view' : sessionRole`                                         |
 | `canToggleRole` | `sessionRole === 'edit'` (unchanged)                                         |
 
@@ -171,6 +172,11 @@ Editor state:
 | `resize(el)`    | a sticky, image or own; not locked                             | false |
 | `recolour(el)`  | `el.type === 'sticky'` or own                                  | false |
 | `remove(el)`    | own (`el.addedBy === selfAdderKey`) or a mind node; not locked | false |
+
+`roleGates(can, runBlocked)` answers the canvas's role gates from `can`: `run` is `can.level === 'edit' && !runBlocked`
+(starting, ending, revealing and clearing a session tool, Bring Focus, a session button), `shape` is
+`can.level === 'edit'` (an estimate's scale), and `takePart` is `can.takePart`. `mayHoldBaton(level)` is the baton's
+rule (`levelAtLeast(parseStoredLevel(level), 'edit')`), the room's `canHold` as the editor reads it.
 
 A Participant's commit: `editsBlocked` is false for a Participant (its gestures open through `can`), so every commit
 passes `guardCommit`, which runs `participantTabChange(before, after, adderKey)`: the change lands, with `addedBy`
@@ -587,6 +593,8 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Write: applied, unchanged, refused, CAS retry, 404, 409, 413                      | `apps/api/src/participant-write.test.ts`                                                |
 | Room: op gate per level; participant path; adder header                           | `apps/api/src/document-room.test.ts`, `document-room-routes.test.ts`                    |
 | Capabilities per level                                                            | `apps/editor/lib/editor-capabilities.test.ts`                                           |
+| Every row of both tables, per level: the room's half                              | `apps/api/src/share-roles.test.ts`                                                      |
+| Every row of both tables, per level: the editor's half, `roleGates`               | `apps/editor/lib/share-roles.test.ts`                                                   |
 | Participant save branch                                                           | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                                   |
 | Three cards and keys                                                              | `../packages/explorer/src/dialogs/ShareDialog.test.tsx`                                 |
 | Pill per level                                                                    | `apps/editor/components/chrome/RoleIndicator.test.tsx`                                  |

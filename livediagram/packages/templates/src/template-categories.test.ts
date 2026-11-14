@@ -11,6 +11,7 @@ import { isBlankTemplate, templateEditorMode } from './template-modes';
 import { templateKeywords } from './template-keywords';
 import { templateMatchesQuery } from './template-search';
 import { TEMPLATES, type TemplateKind } from './templates';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Template categories".
 describe('template categories', () => {
@@ -143,9 +144,9 @@ describe('template search words', () => {
   });
 
   it('matches the whole catalogue in well under a frame (it runs on every keystroke)', () => {
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     for (let i = 0; i < 100; i++)
       TEMPLATES.filter((t) => templateMatchesQuery(t, 'flow chart map'));
-    expect((performance.now() - t0) / 100).toBeLessThan(4);
+    expect((cpuNowMs() - t0) / 100).toBeLessThan(cpuBudgetMs(4));
   });
 });

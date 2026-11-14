@@ -7,6 +7,7 @@ import {
   restingTurn,
   settleTurn,
 } from './motion';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const face = (key: string) => BRAND_FACES.find((f) => f.key === key)!.d;
 const visible = (frame: ReturnType<typeof prismFrame>) => frame.sides.filter((s) => s.d);
@@ -77,10 +78,10 @@ describe('the settle', () => {
   });
 
   it('computes a frame well inside a frame budget', () => {
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 100; i++) prismFrame({ turn: i * 0.37, open: (i % 10) / 10 });
     // Under 1ms a frame even on a loaded CI runner (about 0.2ms measured
     // locally), against a 16ms frame.
-    expect((performance.now() - start) / 100).toBeLessThan(1);
+    expect((cpuNowMs() - start) / 100).toBeLessThan(cpuBudgetMs(1));
   });
 });

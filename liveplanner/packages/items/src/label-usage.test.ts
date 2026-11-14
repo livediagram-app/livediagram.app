@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Item } from './item';
 import { TRASH_STATUS } from './board';
 import { labelUsage, matchLabels, planSpellingOf } from './label-usage';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/026-plan/plan-board.md "Working on a board": the label menu.
 const card = (labels: unknown, status = 'todo'): Item =>
@@ -36,9 +37,9 @@ describe('labelUsage', () => {
       card(Array.from({ length: 12 }, (_, j) => `label-${(i * 7 + j) % 300}`)),
     );
     // Generous against a busy machine (suggested-statuses.test.ts's budget): it measures a few milliseconds.
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     const uses = labelUsage(cards);
-    expect(performance.now() - t0).toBeLessThan(250);
+    expect(cpuNowMs() - t0).toBeLessThan(cpuBudgetMs(250));
     expect(uses).toHaveLength(300);
   });
 });
