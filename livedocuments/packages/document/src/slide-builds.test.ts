@@ -12,7 +12,8 @@ import {
   buildStepsOfTab,
   type ElementBuild,
 } from './slide-builds';
-import type { ArrowElement, Element, ShapeElement } from './index';
+import type { ArrowElement, Element, Page, ShapeElement, Tab } from './index';
+import { layOutPages } from './page-layout';
 
 const shape = (id: string, build?: ElementBuild | Record<string, unknown>): ShapeElement =>
   ({
@@ -196,8 +197,59 @@ describe('buildStepsOfTab', () => {
     ]);
   });
 
+  it('numbers the built elements on a page slide by the page under their centre', () => {
+    const pages = [
+      { id: 'p1', kind: 'slide', size: 'slide', orientation: 'landscape' },
+      { id: 'p2', kind: 'slide', size: 'slide', orientation: 'landscape' },
+    ] as Page[];
+    const [r1, r2] = layOutPages(pages).map((p) => p.rect);
+    const at = (id: string, r: { x: number; y: number }, order: number) => ({
+      ...shape(id, { order, effect: 'fade' }),
+      x: r.x + 10,
+      y: r.y + 10,
+    });
+    const tab = {
+      id: 't',
+      name: 't',
+      pages,
+      elements: [
+        at('a', r1!, 7),
+        at('b', r1!, 3),
+        at('c', r2!, 5),
+        at('off', { x: -9e5, y: 0 }, 1),
+      ],
+    } as unknown as Tab;
+    const slides = [
+      { id: 's1', tabId: 't', elementIds: [], pageId: 'p1' },
+      { id: 's2', tabId: 't', elementIds: [], pageId: 'p2' },
+      { id: 's3', tabId: 't', elementIds: [], pageId: 'gone' },
+    ];
+    expect([...buildStepsOfTab(slides, tab)]).toEqual([
+      ['a', 2],
+      ['b', 1],
+      ['c', 1],
+    ]);
+  });
+
   it('resolves no slide when nothing builds', () => {
     const tab = { id: 't', name: 't', elements: [shape('a')] };
     expect(buildStepsOfTab([{ id: 's', tabId: 't', elementIds: ['a'] }], tab).size).toBe(0);
+  });
+
+  it('numbers 2,000 elements across 40 slides within an edit budget', () => {
+    const els: Element[] = [];
+    for (let i = 0; i < 2000; i++) els.push(shape(`e${i}`, { order: (i % 5) + 1, effect: 'fade' }));
+    const tab = { id: 't', name: 't', elements: els };
+    const slides = Array.from({ length: 40 }, (_, s) => ({
+      id: `s${s}`,
+      tabId: 't',
+      elementIds: els.slice(s * 50, s * 50 + 50).map((e) => e.id),
+    }));
+    let steps = new Map<string, number>();
+    const ms = cpuMsOf(() => {
+      steps = buildStepsOfTab(slides, tab);
+    });
+    expect(steps.size).toBe(2000);
+    expect(ms).toBeLessThan(cpuBudgetMs(40));
   });
 });

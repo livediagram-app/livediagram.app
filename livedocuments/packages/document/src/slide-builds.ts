@@ -7,6 +7,8 @@ import type { ArrowElement } from './arrow-types';
 import type { Element } from './element-union';
 import type { Tab } from './index';
 import { resolveSlide, type Slide } from './slide-deck';
+import { layOutPages, pageAt } from './page-layout';
+import { pagesOf } from './page';
 
 export { BUILD_EFFECTS, type BuildEffect, type ElementBuild } from './build-types';
 
@@ -138,20 +140,39 @@ export function slideElementsOf(
 }
 
 /** Each built element's place among the steps of the first of the tab's slides it is on (1 for the first step): the
- *  number its badge shows. Empty when nothing on the tab builds, without resolving a slide. */
+ *  number its badge shows. Empty when nothing on the tab builds. Runs on every edit of a tab that builds, so it walks
+ *  only the built elements: once to file them by page (a built element is a box, on the page under its centre, as
+ *  `resolveSlide` reads a page), then each slide's own members, O(built + the slides' element lists). */
 export function buildStepsOfTab(slides: readonly Slide[], tab: Tab): Map<string, number> {
   const steps = new Map<string, number>();
-  if (!tab.elements.some((el) => buildOf(el))) return steps;
+  const built = tab.elements.filter((el) => buildOf(el));
+  if (built.length === 0) return steps;
+  const byId = new Map(built.map((el) => [el.id, el]));
+  let byPage: Map<string, Element[]> | null = null;
+  const onPage = (pageId: string) => {
+    if (!byPage) {
+      const pages = layOutPages(pagesOf(tab));
+      const filed = new Map<string, Element[]>();
+      for (const el of built) {
+        const box = el as { x: number; y: number; width: number; height: number };
+        const page = pageAt(pages, { x: box.x + box.width / 2, y: box.y + box.height / 2 });
+        if (!page) continue;
+        const list = filed.get(page.id);
+        if (list) list.push(el);
+        else filed.set(page.id, [el]);
+      }
+      byPage = filed;
+    }
+    return byPage.get(pageId) ?? [];
+  };
   for (const slide of slides) {
     if (slide.tabId !== tab.id) continue;
-    const on = resolveSlide(slide, tab);
+    const on = slide.pageId
+      ? onPage(slide.pageId)
+      : slide.elementIds.flatMap((id) => byId.get(id) ?? []);
     const orders = slideBuildOrders(on);
-    if (orders.length === 0) continue;
     const place = new Map(orders.map((o, i) => [o, i + 1]));
-    for (const el of on) {
-      const b = buildOf(el);
-      if (b && !steps.has(el.id)) steps.set(el.id, place.get(b.order)!);
-    }
+    for (const el of on) if (!steps.has(el.id)) steps.set(el.id, place.get(buildOf(el)!.order)!);
   }
   return steps;
 }

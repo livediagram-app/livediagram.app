@@ -153,7 +153,10 @@ check; a build that loses either is a defect.
 A build step renders the slide once (the canvas's element list less the unbuilt) and animates only the step's own
 nodes with the Web Animations API (`opacity` and `translate`, never `transform`, which carries rotation), so a step on
 a 100-element slide costs one render and a few compositor animations. `presentedBuild` is O(n) over the slide's
-elements.
+elements. The badges' numbers (`buildStepsOfTab`, under
+`BuildStepsProvider`) re-derive on every edit of a tab that builds, walking only its built elements and the slides'
+element lists: 2,000 built elements over 40 slides measured 2.3 ms (12.4 ms when it resolved every slide), held by a
+CPU-time test; the map keeps its identity while the numbers hold, so an edit re-renders no element view for it.
 
 ## Presentation and UX
 
