@@ -240,7 +240,7 @@ copied under `guest_<old uuid>`, which nobody holds until it is claimed (repo `d
 - **The answer.** `{ merged: true }` or `{ merged: false }` (`LegacyGuestClaimAnswer`): the editor removes
   `self-id` and `self-sig`, and nothing else. Any other outcome (a network failure, any non-2xx) keeps both keys,
   and the next page load tries again.
-- **After a merge** the editor raises the `claimed` api-write signal (`lib/api/write-signal.ts`), and the views
+- **After a merge** the editor raises the `claimed` api-write signal (`packages/workbench/src/lib/api/write-signal.ts`), and the views
   that list the person's documents read their list again a second later (the editor's pickers,
   `useDocumentList`, and /new's Jump Back In card), so the claimed work appears without a reload.
 - **Into whom.** The caller, guest or account. A guest who signs in later carries the claimed work with them

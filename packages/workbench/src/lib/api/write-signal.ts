@@ -1,12 +1,12 @@
-// "An old livehuddle.app guest's work was just merged into the person"
+// "An old site's guest work was just merged into the person"
 // (docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site"): a module-level signal
-// the views that list documents re-read off, so the merged work shows without a browser refresh.
+// the views that list items re-read off, so the merged work shows without a browser refresh.
 //
 // Module-level rather than context: the claim runs outside React, and the views that listen are spread over
 // modules that shouldn't each have to thread a callback down.
 
 export type ApiWriteSignal = {
-  /** An old guest's work was just merged into the person: views that list documents re-read. */
+  /** An old guest's work was just merged into the person: views that list items re-read. */
   claimed?: true;
 };
 

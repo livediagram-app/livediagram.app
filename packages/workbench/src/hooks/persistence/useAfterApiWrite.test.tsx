@@ -5,7 +5,11 @@
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { notifyApiWrite, resetApiWriteListeners } from '@/lib/api/write-signal';
+import {
+  notifyApiWrite,
+  resetApiWriteListeners,
+  subscribeApiWrites,
+} from '../../lib/api/write-signal';
 import { useAfterApiWrite } from './useAfterApiWrite';
 
 beforeEach(() => {
@@ -53,5 +57,28 @@ describe('useAfterApiWrite', () => {
     vi.advanceTimersByTime(10_000);
     expect(run).not.toHaveBeenCalled();
     unmount();
+  });
+
+  it('counts only the signals its filter takes, drops a run pending at unmount, and survives a failing listener', () => {
+    const run = vi.fn();
+    const { unmount } = renderHook(() =>
+      useAfterApiWrite(run, { delayMs: 10, filter: (signal) => signal.claimed === true }),
+    );
+    // Another listener's bug never reaches the writer, nor the views after it.
+    const broken = vi.fn(() => {
+      throw new Error('listener bug');
+    });
+    subscribeApiWrites(broken);
+    notifyApiWrite();
+    vi.advanceTimersByTime(10);
+    expect(run).not.toHaveBeenCalled();
+    notifyApiWrite({ claimed: true });
+    vi.advanceTimersByTime(10);
+    expect(run).toHaveBeenCalledOnce();
+    expect(broken).toHaveBeenCalledTimes(2);
+    notifyApiWrite({ claimed: true });
+    unmount();
+    vi.advanceTimersByTime(10_000);
+    expect(run).toHaveBeenCalledOnce();
   });
 });

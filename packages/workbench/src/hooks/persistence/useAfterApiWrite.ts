@@ -13,7 +13,7 @@
 // without re-subscribing on every render, matching useReturnToTab.
 
 import { useEffect, useRef } from 'react';
-import { subscribeApiWrites, type ApiWriteSignal } from '@/lib/api/write-signal';
+import { subscribeApiWrites, type ApiWriteSignal } from '../../lib/api/write-signal';
 
 export const AFTER_WRITE_DELAY_MS = 1_000;
 const AFTER_WRITE_MIN_INTERVAL_MS = 5_000;
