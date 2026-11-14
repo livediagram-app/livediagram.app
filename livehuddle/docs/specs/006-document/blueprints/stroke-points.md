@@ -21,17 +21,17 @@ spec.
 
 ## Modules
 
-| File                                                    | Responsibility                                                                                                                                           |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/model-core/src/stroke-points.ts`           | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
-| `livediagram/packages/document/src/stroke-fit.ts`       | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                          |
-| `../packages/model-core/src/stroke-points-cache.ts`     | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
-| `../packages/model-core/src/stroke-points-debug.ts`     | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
-| `livediagram/packages/document/src/freehand-points.ts`  | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
-| `../packages/element-model/src/legacy-stroke-points.ts` | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                          |
-| `packages/document/scripts/expand-stroke-points.ts`     | The debug script: a tab or document JSON file with every block expanded                                                                                  |
-| `../scripts/ts-source-hooks.mjs`                        | Node resolve hook (the monorepo root's): lets repo scripts run workspace TypeScript sources                                                              |
-| `scripts/stroke-points-bench.ts`                        | The bench behind `pnpm bench:stroke-points`                                                                                                              |
+| File                                                    | Responsibility                                                                                                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/model-core/src/stroke-points.ts`           | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                                  |
+| `livediagram/packages/document/src/stroke-fit.ts`       | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                                     |
+| `../packages/model-core/src/stroke-points-cache.ts`     | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                                  |
+| `../packages/model-core/src/stroke-points-debug.ts`     | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                                     |
+| `livediagram/packages/document/src/freehand-points.ts`  | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures`            |
+| `../packages/element-model/src/legacy-stroke-points.ts` | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                                     |
+| `packages/document/scripts/expand-stroke-points.ts`     | The debug script: a tab or document JSON file with every block expanded                                                                                             |
+| `../scripts/ts-source-hooks.mjs`                        | Node resolve hook (the monorepo root's): lets repo scripts run workspace TypeScript sources                                                                         |
+| `scripts/stroke-points-bench.ts`                        | The bench behind `pnpm bench:stroke-points`: hands this product's `migrateStoredTab` to the shared bench in `packages/element-model/scripts/stroke-points-bench.ts` |
 
 ## Interfaces and contracts
 
@@ -284,7 +284,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
   6 ms, a 30,000-sample handwriting trace 9 ms, a 60,000-sample dense scribble 12 ms (the worst
   case tried; 54 ms with one RDP per tolerance, and about 80 ms under coverage instrumentation). A
   stroke that fits costs one array copy.
-- The bench (`scripts/stroke-points-bench.ts`, `pnpm bench:stroke-points`, run with `--expose-gc`)
+- The bench (`packages/element-model/scripts/stroke-points-bench.ts`, run by `scripts/stroke-points-bench.ts` and `pnpm bench:stroke-points`, run with `--expose-gc`)
   records tab bytes, bytes per point, objects allocated, heap held, `JSON.parse` time, parse and
   draw of one viewport and of the whole board (cold decode cache), and the worst errors, which it
   checks against the bound (spec, "Measured wins").
