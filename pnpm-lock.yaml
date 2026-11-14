@@ -7506,6 +7506,9 @@ importers:
 
   packages/mcp-kit:
     dependencies:
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../api-client
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../api-kit
