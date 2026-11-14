@@ -65,11 +65,13 @@ One `list_items` call on the plan, no filters. Its output is large: save it and 
 From it:
 
 - The **Idea** type's fields, by id from `types[].custom`. Today: `description` (built in), `priority` (built
-  in, carries over on conversion), Solution `f-solution`, App `f-apps`, Source `f-source`, Effort `f-effort` and Reviewed `f-reviewed`. If the type
+  in, carries over on conversion), Solution `f-solution`, App `f-apps`, Source `f-source`, Effort `f-effort`, Reviewed `f-reviewed` and Reason `f-reason` (the owner's). If the type
   has changed, follow what it says now and note it in the report.
 - Every card's title and description, of every type and in every column, to check for duplicates.
 - The owner's verdicts: Ideas in **Cancelled** with Reviewed `Rejected`, and cards that were Ideas and are now
-  Work Items (they still carry `f-reviewed: Accepted`). Turn these into the state file's Lessons.
+  Work Items (they still carry `f-reviewed: Accepted`). Turn these into the state file's Lessons. The
+  **Reason** field, when the owner filled it, is the strongest signal: learn the pattern it names, not just the
+  title. A rejection with no Reason teaches only "not this idea".
 - Ideas still in **Under Review** that the owner hasn't judged yet. While **8 or more** are waiting, log nothing
   new this pass: research anyway, save the best to Candidates, and say so in the report. The owner's queue is the
   limit, not your output.
@@ -139,12 +141,13 @@ For each idea that makes the cut, check the board once more for a duplicate (ste
 - **Priority** (built-in `priority`, written lowercase: `low`, `medium`, `high`): calibrated, not inflated.
   `high` only for a clear, evidenced gap that costs users today; `medium` for a solid improvement; `low` for nice
   to have. `urgent` (shown as Critical) is never right for an idea.
-- Never set **Reviewed**: that's the owner's call, and setting it fires the conversion rule.
+- Never set **Reviewed** or **Reason**: they're the owner's verdict, and setting Reviewed fires the conversion
+  rule.
 - No comment threads on Idea cards. If an idea needs a question answered first, it isn't ready: keep it in
   Candidates.
 
 The rule converts the card's type but doesn't copy its fields (App, Solution, Source and Effort land on fields a Work
-Item doesn't show; Work Tracker 837). Until that is fixed in the automation code, write the description so it stands alone: the review
+Item doesn't show; card 837 tracks the fix). Until that is fixed in the automation code, write the description so it stands alone: the review
 loop reads it as the Work Item's Problem.
 
 ## 4. Wrap up
