@@ -362,7 +362,7 @@ describe('the card panel, for an Editor or a Participant', () => {
 
   it('is full at 20: Add Images is off, its tooltip says why', () => {
     gallery(Array.from({ length: 20 }, (_, i) => `p${i}`));
-    const add = screen.getByRole('button', { name: /Add Images/ }) as HTMLButtonElement;
+    const add = screen.getByRole<HTMLButtonElement>('button', { name: /Add Images/ });
     expect(add.disabled).toBe(true);
   });
 

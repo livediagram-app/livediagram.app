@@ -220,7 +220,7 @@ describe('SettingsDialog', () => {
       vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
         this: Element,
       ) {
-        const pane = this.closest('[data-settings-pane]') as HTMLElement | null;
+        const pane = this.closest<HTMLElement>('[data-settings-pane]');
         const key = this.getAttribute(SETTINGS_ROW_ATTRIBUTE);
         if (!pane || this.hasAttribute('data-settings-pane')) return { top: 100 } as DOMRect;
         const rows = [...pane.querySelectorAll(`[${SETTINGS_ROW_ATTRIBUTE}]`)];

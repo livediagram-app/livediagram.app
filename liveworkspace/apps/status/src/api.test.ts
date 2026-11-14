@@ -47,7 +47,7 @@ describe('the read API', () => {
     const latest = await get(env, '/api/status');
     expect(latest.status).toBe(200);
     expect(await latest.json()).toEqual({ v: 1, at: null, services: {} });
-    const history = (await (await get(env, '/api/status/history')).json()) as StatusHistory;
+    const history = await (await get(env, '/api/status/history')).json<StatusHistory>();
     expect(history).toMatchObject({ v: 1, at: null, days: 90, services: {}, incidents: [] });
   });
 
@@ -71,7 +71,7 @@ describe('the read API', () => {
   it('slices fewer days on request, and refuses a bad count', async () => {
     const env = testEnv();
     await runOnce(env, T0, { results: all });
-    const body = (await (await get(env, '/api/status/history?days=7')).json()) as StatusHistory;
+    const body = await (await get(env, '/api/status/history?days=7')).json<StatusHistory>();
     expect(body.days).toBe(7);
     expect(body.from).toBe('2026-10-19');
     expect(body.services['liveworkspace:site']!.w).toHaveLength(7);
@@ -88,7 +88,7 @@ describe('the read API', () => {
     await get(env, '/api/status/history?days=90&x=1');
     expect([...store.keys()]).toEqual(['https://lw.example/api/status/history?days=90']);
     env.raw.exec('DELETE FROM snapshots');
-    const again = (await (await get(env, '/api/status/history')).json()) as StatusHistory;
+    const again = await (await get(env, '/api/status/history')).json<StatusHistory>();
     expect(again.at).toBe(T0);
   });
 

@@ -226,11 +226,11 @@ describe('a comment posted over REST', () => {
 
   it('a card thread opens the card on that thread; its reply tells the thread’s writers', async () => {
     const item = (
-      (await (
+      await (
         await route('POST', '/api/projects/d1/items', {
           body: { type: 'task', fields: { title: 'A' } },
         })
-      ).json()) as ItemResponse
+      ).json<ItemResponse>()
     ).item;
     const started = await route('POST', `/api/projects/d1/items/${item.id}/threads`, {
       body: { text: 'look' },

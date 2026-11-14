@@ -107,6 +107,6 @@ export async function handleQaBoardRoute(ctx: DocumentRouteContext): Promise<Res
   if (res.status === 404) return notFound();
   if (res.status === 413) return payloadTooLarge();
   if (!res.ok) return conflict('qa_busy');
-  const state = (await res.json()) as { notes: QaNote[]; rev: number };
+  const state = await res.json<{ notes: QaNote[]; rev: number }>();
   return json({ ...state, voterId });
 }

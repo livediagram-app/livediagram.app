@@ -31,7 +31,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
 
   let body: ReadNotesRequest;
   try {
-    body = (await request.json()) as ReadNotesRequest;
+    body = await request.json<ReadNotesRequest>();
   } catch {
     return json({ error: 'crops_invalid' }, { status: 400 });
   }
@@ -105,9 +105,9 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
 
   let payload: unknown;
   try {
-    const completion = (await res.json()) as {
+    const completion = await res.json<{
       choices?: { finish_reason?: string; message?: { content?: string } }[];
-    };
+    }>();
     const choice = completion.choices?.[0];
     const raw = choice?.message?.content;
     // A reasoning model spends part of the budget THINKING, so a batch can run

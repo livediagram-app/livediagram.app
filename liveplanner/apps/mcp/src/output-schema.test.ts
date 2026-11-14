@@ -267,7 +267,7 @@ async function api(request: Request): Promise<Response> {
       ? json({ sheet: { ...SHEET, id: (await request.json<{ id: string }>()).id, cells: [] } })
       : json({ sheets: [SHEET] });
   if (path.endsWith('/writes')) {
-    const { write } = (await request.json()) as { write: SheetWrite };
+    const { write } = await request.json<{ write: SheetWrite }>();
     const applied = applySheetWrite(sheetFromJson(SHEET), write, { now: 0, by: NOBODY }).applied;
     return json({ applied, rev: 2, cells: [] });
   }

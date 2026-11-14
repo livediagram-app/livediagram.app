@@ -186,10 +186,12 @@ describe('PUT presence', () => {
       error: 'focus_not_found',
       refs: ['nope'],
     });
-    const ambiguous = (await (await call({ body: { focus: ['web'] } })).json()) as {
+    const ambiguous = await (
+      await call({ body: { focus: ['web'] } })
+    ).json<{
       error: string;
       candidates: string[];
-    };
+    }>();
     expect(ambiguous).toMatchObject({ error: 'focus_ambiguous', ref: 'web' });
     expect(ambiguous.candidates).toHaveLength(2);
   });

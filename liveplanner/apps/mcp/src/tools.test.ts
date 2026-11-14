@@ -195,7 +195,7 @@ function harness(api: 'ok' | 'down' = 'down') {
   const handle = async (input: Request | string, init?: RequestInit) => {
     const request = typeof input === 'string' ? new Request(input, init) : input;
     if (new URL(request.url).pathname.endsWith('/events')) {
-      const body = (await request.json()) as { events: Emitted[] };
+      const body = await request.json<{ events: Emitted[] }>();
       emitted.push(...body.events);
       return new Response(null, { status: 204 });
     }

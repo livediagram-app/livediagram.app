@@ -61,7 +61,7 @@ describe('POST /api/projects/:id/archive', () => {
     const res = (await post('/api/projects/d1/archive'))!;
     expect(res.status).toBe(200);
     expect(calls.map((c) => `${c.method} ${c.path}`)).toEqual(['POST /items/d1/archive']);
-    const body = (await res.json()) as { project: { id: string; name: string } };
+    const body = await res.json<{ project: { id: string; name: string } }>();
     expect(body.project).toMatchObject({ id: 'd1', name: 'Old plan' });
   });
 
@@ -116,7 +116,7 @@ describe('GET /api/projects?archived=1', () => {
     );
     expect(res.status).toBe(200);
     expect(calls[0]!.path).toContain('view=archived');
-    const body = (await res.json()) as { projects: { id: string }[] };
+    const body = await res.json<{ projects: { id: string }[] }>();
     expect(body.projects.map((d) => d.id)).toEqual(['d1']);
   });
 });

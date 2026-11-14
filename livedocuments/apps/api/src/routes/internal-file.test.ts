@@ -121,7 +121,7 @@ describe('POST /api/internal/items/import', () => {
     const { db, send, file } = await exported();
     const res = await send('POST', 'import', { body: body(file) });
     expect(res.status).toBe(201);
-    const { id } = (await res.json()) as { id: string };
+    const { id } = await res.json<{ id: string }>();
     expect(id).not.toBe('A');
     expect(made).toEqual([
       {
@@ -150,8 +150,7 @@ describe('POST /api/internal/items/import', () => {
     ]);
     expect(tabs.map((t) => t.id)).not.toContain('t1');
     expect(tabs.map((t) => t.id)).not.toContain('t2');
-    const [first] = (JSON.parse(tabs[0]!.data) as Pick<Tab, 'elements'>)
-      .elements as ShapeElement[];
+    const [first] = (JSON.parse(tabs[0]!.data) as Pick<Tab, 'elements'>).elements as ShapeElement[];
     expect(first!.link).toEqual({ kind: 'tab', tabId: tabs[1]!.id });
     expect(meta.presentation).toContain(`"tabId":"${tabs[0]!.id}"`);
     // The new document exports as its own file.
@@ -174,9 +173,7 @@ describe('POST /api/internal/items/import', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { send, file } = await exported();
     const envelope = JSON.parse(file) as { document: { tabs: Tab[] } };
-    envelope.document.tabs[0]!.elements = [
-      { ...box('big'), label: 'x'.repeat(MAX_TAB_BYTES) },
-    ];
+    envelope.document.tabs[0]!.elements = [{ ...box('big'), label: 'x'.repeat(MAX_TAB_BYTES) }];
     const res = await send('POST', 'import', { body: body(JSON.stringify(envelope)) });
     expect(res.status).toBe(413);
     expect(await res.json()).toEqual({ error: 'too_large' });

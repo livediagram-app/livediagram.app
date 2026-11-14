@@ -57,7 +57,7 @@ describe('ItemTypePill', () => {
     expect(screen.getByText(TASK.label)).toBeTruthy();
     // A type added to the board: the picker comes back in place.
     rerender(pill(ITEM_TYPES));
-    const picker = screen.getByRole('combobox', { name: 'Card Type' }) as HTMLSelectElement;
+    const picker = screen.getByRole<HTMLSelectElement>('combobox', { name: 'Card Type' });
     expect(picker.options).toHaveLength(ITEM_TYPES.length);
     // And goes again when the other types go.
     rerender(pill([TASK]));

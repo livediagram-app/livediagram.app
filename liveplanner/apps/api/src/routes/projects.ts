@@ -162,7 +162,7 @@ async function forwardToPlan(ctx: RouteContext): Promise<Response> {
   }
   // An API client's create answers where the index filed it (the MCP names the folder it landed in).
   if (filed && res.status === 201) {
-    const answer = (await res.json()) as { project?: ProjectDTO | null };
+    const answer = await res.json<{ project?: ProjectDTO | null }>();
     if (answer.project) answer.project = { ...answer.project, ...filed };
     return json(answer, { status: 201 });
   }

@@ -87,7 +87,7 @@ describe('page changes', () => {
       ],
     });
     expect(res.status).toBe(200);
-    const body = (await res.json()) as PagesAnswer;
+    const body = await res.json<PagesAnswer>();
     expect(body.lines[0]).toBe('Added page 1 (logo, 1024 x 1024).');
     expect(body.pages.map((p) => [p.place, p.kind, p.name])).toEqual([
       [1, 'logo', null],
@@ -110,7 +110,7 @@ describe('page changes', () => {
     const { db, room } = await setUp();
     const layout = layoutCatalogueFor('logo').layouts[0]!.id;
     const res = await call(db, { pages: [{ op: 'add', kind: 'logo', layout }] });
-    const body = (await res.json()) as PagesAnswer;
+    const body = await res.json<PagesAnswer>();
     expect(body.changesetId).toMatch(/^cs_/);
     expect(body.pages[0]!.elements).toBeGreaterThan(0);
     expect(room.bodies.map((b) => b.op.kind)).toEqual(['changeset', 'tab-meta']);

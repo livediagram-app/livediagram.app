@@ -207,7 +207,7 @@ describe('POST /api/auth/token', () => {
     });
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
-    const body = (await res.json()) as Record<string, unknown>;
+    const body = await res.json<Record<string, unknown>>();
     expect(body).toMatchObject({
       signedIn: true,
       accessToken: 'access-1',
@@ -259,7 +259,7 @@ describe('POST /api/auth/sign-out', () => {
     const init = fetchMock.mock.calls[0]![1]!;
     expect(new Headers(init.headers).get('authorization')).toBe(`Basic ${btoa('client-lp:shh')}`);
     expect(sentJson(init)).toEqual({ token: 'refresh-1' });
-    const { next } = (await res.json()) as { next: string };
+    const { next } = await res.json<{ next: string }>();
     const hop = new URL(next);
     expect(hop.origin + hop.pathname).toBe('https://accounts.example/api/auth/end-session');
     expect(Object.fromEntries(hop.searchParams)).toEqual({
@@ -279,7 +279,7 @@ describe('POST /api/auth/sign-out', () => {
       method: 'POST',
       headers: { Cookie: 'lh_refresh=refresh-1' },
     });
-    const { next } = (await res.json()) as { next: string };
+    const { next } = await res.json<{ next: string }>();
     expect(new URL(new URL(next).searchParams.get('post_logout_redirect_uri')!).origin).toBe(APP);
   });
 
