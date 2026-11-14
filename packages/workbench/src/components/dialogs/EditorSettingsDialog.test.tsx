@@ -172,6 +172,13 @@ describe('EditorSettingsDialog This app or All', () => {
     open({ accountId: 'user_1' });
     expect(offered()).toBe(false);
     expect(account().renderTokens).toBeUndefined();
+    // Nothing syncs to the account, so the footer says where they are kept.
+    expect(screen.queryByText(/sync to your account/)).toBeNull();
+    expect(
+      screen.getByText(
+        'Settings are kept in this browser and apply to every document you open here.',
+      ),
+    ).toBeTruthy();
   });
 
   it('drops All the moment the api says it keeps none', () => {

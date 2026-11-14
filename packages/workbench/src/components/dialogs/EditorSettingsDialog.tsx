@@ -213,10 +213,13 @@ export function EditorSettingsDialog<C, P extends object>({
           onCategoryOpened={binding.onCategoryOpened}
           footer={
             <p className="text-[10px] text-slate-500 dark:text-slate-400">
-              {/* A guest has no account to sync to: their settings follow them in this browser only. */}
-              {signedIn
-                ? `Settings sync to your account and apply to every ${binding.noun} you open, on every device you sign in from.`
-                : `Settings are kept in this browser and apply to every ${binding.noun} you open. Sign in to have them on your other devices too.`}
+              {/* A guest has no account to sync to, and an account whose preferences the api keeps none of has nothing
+                  to sync them with: either way they stay in this browser only. */}
+              {!signedIn
+                ? `Settings are kept in this browser and apply to every ${binding.noun} you open. Sign in to have them on your other devices too.`
+                : keptLocally
+                  ? `Settings are kept in this browser and apply to every ${binding.noun} you open here.`
+                  : `Settings sync to your account and apply to every ${binding.noun} you open, on every device you sign in from.`}
             </p>
           }
         />
