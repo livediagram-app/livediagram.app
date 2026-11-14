@@ -16,7 +16,9 @@ const response = await fetch(META_URL, {
   headers: { accept: 'application/vnd.github+json', 'user-agent': 'liveplanner-hook-ranges' },
 });
 if (!response.ok) {
-  console.error(`[github-hooks] ${META_URL} answered ${response.status}; the saved copy is unchanged.`);
+  console.error(
+    `[github-hooks] ${META_URL} answered ${response.status}; the saved copy is unchanged.`,
+  );
   process.exit(1);
 }
 const meta = await response.json();
@@ -35,6 +37,10 @@ const gone = before.filter((h) => !hooks.includes(h));
 if (added.length === 0 && gone.length === 0) {
   console.log(`[github-hooks] unchanged: ${hooks.length} ranges.`);
 } else {
-  console.log(`[github-hooks] added: ${added.join(', ') || 'none'}; gone: ${gone.join(', ') || 'none'}.`);
-  console.log('[github-hooks] update GITHUB_HOOK_RANGES in src/github/refused-signatures.ts to match.');
+  console.log(
+    `[github-hooks] added: ${added.join(', ') || 'none'}; gone: ${gone.join(', ') || 'none'}.`,
+  );
+  console.log(
+    '[github-hooks] update GITHUB_HOOK_RANGES in src/github/refused-signatures.ts to match.',
+  );
 }

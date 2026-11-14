@@ -181,7 +181,8 @@ export const itemLs = defineVerb({
       'liveplanner item ls "Sprint 14"',
       'liveplanner item ls 3f9c --type task --status new',
     ],
-    prints: 'one item a line: #number, type, status, title, then its pull requests with their states',
+    prints:
+      'one item a line: #number, type, status, title, then its pull requests with their states',
   },
 });
 

@@ -1,7 +1,12 @@
 // A card's linked pull requests as agents read them (docs/specs/026-plan/github-pull-requests.md "Agents"): the board's
 // own pick, the ones with a state, never a state the api did not answer.
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type Item, type ItemTypeDef, type PullRequestStatus } from '@liveplanner/items';
+import {
+  ITEM_TYPES,
+  type Item,
+  type ItemTypeDef,
+  type PullRequestStatus,
+} from '@liveplanner/items';
 import { pullRequestLine, pullRequestLister } from './card-pull-requests';
 import { planListing } from './plan-listing';
 import type { PlanState } from './plan-state';
@@ -20,7 +25,7 @@ const card = (id: string, key: number, fields: Item['fields'], type = 'dev'): It
   updatedBy: by,
 });
 const DEV: ItemTypeDef = {
-  ...ITEM_TYPES[0]!,
+  ...ITEM_TYPES[0],
   id: 'dev',
   label: 'Dev',
   custom: [
@@ -29,10 +34,7 @@ const DEV: ItemTypeDef = {
   ],
 };
 const TYPES = [...ITEM_TYPES, DEV];
-const status = (
-  key: string,
-  over: Partial<PullRequestStatus> = {},
-): PullRequestStatus => ({
+const status = (key: string, over: Partial<PullRequestStatus> = {}): PullRequestStatus => ({
   key,
   url: `https://github.com/${key.replace('#', '/pull/')}`,
   title: `Title of ${key}`,

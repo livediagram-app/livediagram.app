@@ -531,27 +531,28 @@ action from the existing vocabulary, every type a fixed token.
   straight after it in one `role="img"` span whose label stays `pullRequestWords` ("acme/web#42: Checks Failing"), so
   touch reads the checks without a tooltip. The tooltip is unchanged.
 - `components/automations/github/GithubRepositories.tsx`: with more than `GITHUB_REPOSITORIES_MAX` listed it draws the
-  **Filter Repositories** field (`TextInput` `type="search"`, compact, `SearchIcon`) and the windowed list
+  **Search Repositories** field (`TextInput` `type="search"`, compact, `SearchIcon`) and the windowed list
   (`RepositoryWindow.tsx`); with 20 or fewer, the list as before. The filter matches `fullName` by case-folded
   substring (`repositoriesMatching`, one pass); its count reads "{shown} of {listed} shown" while a filter is set, else
-  "{picked} of {listed} heard". No match draws `NoMatches` ("repositories") with Clear Filter. Picks are kept across
+  "{picked} of {listed} heard". No match draws `NoMatches` ("repositories") with Clear Search. Picks are kept across
   filtering: a row filtered out keeps its switch's state.
-- `RepositoryWindow.tsx`: a scroll box `REPOSITORY_ROW_PX` (48) a row, `REPOSITORY_WINDOW_ROWS` (9.5, desktop) or
+- `RepositoryWindow.tsx`: `RepositoryRow` (memoised; the short list's rows too) and `RepositoryWindow`, a scroll box `REPOSITORY_ROW_PX` (48) a row, `REPOSITORY_WINDOW_ROWS` (9.5, desktop) or
   `REPOSITORY_WINDOW_ROWS_PHONE` (7.5) tall, so a cut row says it scrolls. It draws the rows in view plus
   `REPOSITORY_OVERSCAN` (8) each side between two spacers, from its `scrollTop` (read in `onScroll`, one state set per
-  row crossed); each row `RepositoryRow` is memoised on its repository, its pick and `saving`, so a flip redraws one
-  row. The list keeps `aria-setsize` / `aria-posinset` on each row; focus moving down scrolls the box and draws the
+  row crossed); each `RepositoryRow` is memoised on its repository, its pick and `saving`, with a stable flip, so a
+  flip redraws one row. A new search remounts the window at the top. A box holding fewer matches than it shows is only
+  as tall as they are. The list keeps `aria-setsize` / `aria-posinset` on each row; focus moving down scrolls the box and draws the
   rows after it, so a keyboard reaches every row.
 
 ### packages/agent-verbs
 
-- `plan/plan-state.ts` `readPlanState` keeps `GET /items`' `pullRequests` (absent: none).
-- `plan/card-pull-requests.ts` `pullRequestLister(statuses, types)`: none when there are no statuses (no card is
+- `packages/agent-verbs/src/plan/plan-state.ts` `readPlanState` keeps `GET /items`' `pullRequests` (absent: none).
+- `packages/agent-verbs/src/plan/card-pull-requests.ts` `pullRequestLister(statuses, types)`: none when there are no statuses (no card is
   parsed); else, per card, `cardLinkedPullRequests(item, typeIn(types, item.type), pullRequestStatuses(statuses))`, the
   board's own pick (`@liveplanner/items`), the ones with a state as `{ name, state, checks?, title, url, field? }`
   (`checks` only when `showsChecks`; `field` the field's label). The api's `pullRequestsFor` already decided what the
   caller may see, so the listing adds no rule of its own.
-- `plan/plan-listing.ts` puts the list on a card as `pullRequests` when it has any; `verbs/item.ts` `item ls` carries
+- `packages/agent-verbs/src/plan/plan-listing.ts` puts the list on a card as `pullRequests` when it has any; `packages/agent-verbs/src/verbs/item.ts` `item ls` carries
   it, and its text line ends with each one as "acme/web#42 open, checks failing".
 
 ### apps/api
@@ -570,11 +571,11 @@ action from the existing vocabulary, every type a fixed token.
 
 ### Testing (part 6)
 
-| Rule                                                                                       | Test                                                                        |
-| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| A face's mark carries the checks' mark for an open pull request or a draft, never a merged | `apps/editor/components/plan/PullRequestPill.test.tsx`                      |
-| The long list: the filter, its count, no match, picks kept, a window of rows               | `apps/editor/components/automations/github/GithubRepositories.test.tsx`     |
+| Rule                                                                                       | Test                                                                         |
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| A face's mark carries the checks' mark for an open pull request or a draft, never a merged | `apps/editor/components/plan/PullRequestPill.test.tsx`                       |
+| The long list: the filter, its count, no match, picks kept, a window of rows               | `apps/editor/components/automations/github/GithubRepositories.test.tsx`      |
 | 1,000 repositories open, scroll, filter and flip within a CPU budget                       | `apps/editor/components/automations/github/GithubRepositories.perf.test.tsx` |
-| `list_items` lists a card's linked states as the board picks them, none without states     | `packages/agent-verbs/src/plan/card-pull-requests.test.ts`                  |
-| `item ls` carries them and prints them                                                      | `packages/agent-verbs/src/verbs/item.test.ts`                               |
-| `GITHUB_HOOK_RANGES` is the saved copy of GitHub's `/meta` `hooks`                         | `apps/api/src/github/github-hook-ranges.test.ts`                            |
+| `list_items` lists a card's linked states as the board picks them, none without states     | `packages/agent-verbs/src/plan/card-pull-requests.test.ts`                   |
+| `item ls` carries them and prints them                                                     | `packages/agent-verbs/src/verbs/item.test.ts`                                |
+| `GITHUB_HOOK_RANGES` is the saved copy of GitHub's `/meta` `hooks`                         | `apps/api/src/github/github-hook-ranges.test.ts`                             |

@@ -849,7 +849,12 @@ describe('item ls: pull requests', () => {
         title: 'Fix the login',
         url: 'https://github.com/acme/web/pull/42',
       },
-      { name: 'acme/api#7', state: 'merged', title: 'API', url: 'https://github.com/acme/api/pull/7' },
+      {
+        name: 'acme/api#7',
+        state: 'merged',
+        title: 'API',
+        url: 'https://github.com/acme/api/pull/7',
+      },
     ]);
     expect(all.items.find((i) => i.key === 2)).not.toHaveProperty('pullRequests');
     expect(itemLs.text!(all).slice(1)).toEqual([
