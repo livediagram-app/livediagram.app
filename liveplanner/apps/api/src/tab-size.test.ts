@@ -13,11 +13,11 @@ import { handleProjects } from './routes/projects';
 const T0 = 1_700_000_000_000;
 
 // A tab whose stored data is exactly `bytes` long: one text element padded to fit.
-function tabOf(bytes: number, id = 't1'): Tab {
+function tabOf(bytes: number, id = 't1', kind: Record<string, unknown> = { type: 'text' }): Tab {
   const base = {
     id,
     name: 'Board',
-    elements: [{ id: 'x', type: 'text', x: 0, y: 0, width: 10, height: 10, label: '' }],
+    elements: [{ id: 'x', ...kind, x: 0, y: 0, width: 10, height: 10, label: '' }],
   } as unknown as Tab;
   const pad = bytes - tabDataBytes(base);
   return {
@@ -135,12 +135,14 @@ describe('the routes answer the named 413', () => {
     const warn = quiet();
     const db = sqliteD1();
     liveDoc(db, 'd1');
-    await upsertTab(db.env, 'd1', tabOf(MAX_TAB_BYTES - 10), 0);
+    // A Sheet's cell: canvas elements take no comment (docs/specs/026-plan/plan-mode.md).
+    const sheet = { type: 'shape', shape: 'plan-sheet' };
+    await upsertTab(db.env, 'd1', tabOf(MAX_TAB_BYTES - 10, 't1', sheet), 0);
     const res = await handleProjects(
       makeTestRouteContext('POST', '/api/projects/d1/tabs/t1/comments', {
         env: db.env,
         owner: 'owner',
-        body: { elementId: 'x', text: 'One more thought' },
+        body: { elementId: 'x', cell: 'row004:colb01', text: 'One more thought' },
       }),
     );
     expect(res?.status).toBe(413);
