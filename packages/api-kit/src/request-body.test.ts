@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { objectOrEmpty, readCappedBody, withCappedBody } from './request-body';
+import { objectOrEmpty, readCappedBody, releasingStream, withCappedBody } from './request-body';
 
 describe('objectOrEmpty', () => {
   it('keeps a plain object and reads anything else as empty', () => {
@@ -80,9 +80,41 @@ describe('withCappedBody', () => {
     expect(await capped.json()).toEqual({ a: 1 });
   });
 
+  it('hands a body that came in many chunks on as a stream of them, in order', async () => {
+    const capped = (await withCappedBody(post(chunked(3, 4)), 1024))!;
+    expect(Array.from(new Uint8Array(await capped.arrayBuffer()))).toEqual([
+      1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+    ]);
+  });
+
+  it('hands an empty body on as no bytes', async () => {
+    const capped = (await withCappedBody(post(chunked(0, 0)), 1024))!;
+    expect((await capped.arrayBuffer()).byteLength).toBe(0);
+  });
+
   it('refuses a chunked body over the cap that declares no length', async () => {
     const request = post(chunked(64, 1024));
     expect(request.headers.get('content-length')).toBeNull();
     expect(await withCappedBody(request, 16 * 1024)).toBeNull();
+  });
+});
+
+describe('releasingStream', () => {
+  it('lets go of each chunk as it hands it on', async () => {
+    const chunks = [new Uint8Array([1]), new Uint8Array([2])];
+    const reader = releasingStream(chunks).getReader();
+    expect(Array.from((await reader.read()).value!)).toEqual([1]);
+    expect(chunks[0]!.byteLength).toBe(0);
+    expect(Array.from((await reader.read()).value!)).toEqual([2]);
+    expect(chunks.every((c) => c.byteLength === 0)).toBe(true);
+    expect((await reader.read()).done).toBe(true);
+  });
+
+  it('lets go of every chunk left when its reader stops early', async () => {
+    const chunks = [new Uint8Array([1]), new Uint8Array([2]), new Uint8Array([3])];
+    const reader = releasingStream(chunks).getReader();
+    await reader.read();
+    await reader.cancel();
+    expect(chunks).toEqual([]);
   });
 });
