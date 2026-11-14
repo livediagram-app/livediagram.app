@@ -23,6 +23,24 @@ import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
+import type { Tab } from '@livedocuments/document';
+import {
+  useTabDrafts,
+  type TabDraftDoors,
+} from '@liveworkspace/workbench/hooks/persistence/useTabDrafts';
+import {
+  apiAdoptPeerSave,
+  apiDiscardDraft,
+  apiTakeDraftReplay,
+  onTabDraft,
+} from '@/lib/api-client';
+
+// This editor's tab calls' draft doors, for the shared drafts hook (read when called).
+const TAB_DRAFT_DOORS: TabDraftDoors<Tab> = {
+  takeReplay: (...args) => apiTakeDraftReplay(...args),
+  discard: (...args) => apiDiscardDraft(...args),
+  onDraft: (listener) => onTabDraft(listener),
+};
 
 // The room: in-place resync, the agent changeset feed, the selection-lock release, the WebSocket room and presence
 // broadcast, the lazy per-tab load, teams and comment mentions, the active tab, comment reactions, the editor mode,
@@ -90,6 +108,7 @@ export function useEditorCollaboration({
     setRemoteViewports,
     setFollowerIds,
     followingRef,
+    loadedTabIds,
     loadedTabIdsRef,
     setLoadedTabIds,
     setTabLoadErrors,
@@ -216,9 +235,30 @@ export function useEditorCollaboration({
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    // A peer's landed save moves this Editor's delta base copy, when its baseline proves to hold what was stored
+    // (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"). Nobody else saves deltas.
+    receiveTabSaved: (tab, rev, digest) => {
+      if (!documentId || !canEdit || participant.participating) return;
+      void apiAdoptPeerSave(documentId, tab, rev, digest);
+    },
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
     },
+  });
+
+  // This browser's drafts of unsaved changes: one a load put back goes on screen and saves, one overtaken is said
+  // (docs/specs/006-document/delta-saves.md "Drafts of unsaved changes").
+  useTabDrafts({
+    drafts: TAB_DRAFT_DOORS,
+    hydrated,
+    itemId: documentId,
+    selfId: selfParticipant.id,
+    mayEdit: canEdit && !participant.participating,
+    tabsRef,
+    lastSavedTabsRef,
+    loadedTabIds,
+    applyLoaded: applyRemoteOp,
+    toast,
   });
 
   // Broadcast local selection + active-tab focus to peers (presence

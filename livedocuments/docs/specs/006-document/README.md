@@ -5,6 +5,7 @@ Follow the references below only as needed; never upfront.
 - ./document.md - when naming things: a document holds tabs, a tab holds pages; one tab kind and one editor mode (Pages)
 - ./document-structure.md - when working on Document structure: Documents contain tabs; elements can link across tabs
 - ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own rows so autosave scope shrinks
+- ./delta-saves.md - when working on Delta saves: an Editor's autosave sends only the changed elements as element ops over the stored copy (POST .../tabs/:tabId/delta), proved by a digest, the whole tab on a refusal; a peer's announced save moves the base copy; drafts of the unload flush's tabs
 - ./tab-document-many-to-many.md - when working on Tab ↔ document many-to-many: Link table so a tab can live in multiple documents
 - ./tab-folders.md - when working on Tab folders: Group a document's tabs into one-level named folders that open in place from one chip
 - ./document-snapshots.md - when working on Document previews: livedocuments renders for liveworkspace's previews (the export door, an SVG of the first tab or one tab, drawn on request in the document's Durable Object); the platform stores and serves the Explorer thumbnail, the live image and the share card
