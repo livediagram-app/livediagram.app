@@ -1,6 +1,6 @@
 'use client';
 
-// Clear Styles for the element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md). Headless: it reads
+// What the element menu's Clear Styles resets (docs/specs/008-canvas/element-menu-quick-bar.md). Headless: it reads
 // the selection from the store, builds the Quick Style view from it (which elements Clear Styles resets) and publishes
 // that to the clear-styles-store, so a selection change renders this, never the editor root. livehuddle has no Quick
 // Style panel (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style); the view is what is left of it.

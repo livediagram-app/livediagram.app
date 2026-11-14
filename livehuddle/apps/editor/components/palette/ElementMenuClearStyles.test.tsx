@@ -4,10 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSticky, type BoxedElement } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';
 import { publishClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
-import { ElementMenuQuickBar } from './ElementMenuQuickBar';
+import { ElementMenuClearStyles } from './ElementMenuClearStyles';
 
 // docs/specs/008-canvas/element-menu-quick-bar.md, and docs/specs/002-project-scope/not-in-livehuddle.md "Comments,
-// actions, links and notes": the bar holds Clear Styles alone.
+// actions, links and notes": no quick bar, and Clear Styles alone of its five, as a menu row (Work Tracker 739).
 afterEach(() => {
   cleanup();
   publishClearStyles(null);
@@ -18,11 +18,11 @@ const square = (over: Partial<BoxedElement> = {}) =>
 
 const open = (target: BoxedElement = square()) => {
   const onClose = vi.fn();
-  render(<ElementMenuQuickBar target={target} onClose={onClose} />);
+  render(<ElementMenuClearStyles target={target} onClose={onClose} />);
   return { onClose };
 };
 
-describe('ElementMenuQuickBar', () => {
+describe('ElementMenuClearStyles', () => {
   it('offers no Assign Action, Comment, Link or Note, even on an element that carries all four', () => {
     const carrying = square({
       link: { kind: 'url', url: 'https://example.com' },
@@ -31,9 +31,11 @@ describe('ElementMenuQuickBar', () => {
     } as Partial<BoxedElement>);
     open(carrying);
     act(() => publishClearStyles({ targetIds: new Set(['sq']), clear: vi.fn() }));
-    expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+    expect(screen.getAllByRole('button').map((b) => b.textContent?.trim())).toEqual([
       'Clear Styles',
     ]);
+    // A row of the menu, not a toolbar band of its own.
+    expect(screen.queryByRole('toolbar')).toBeNull();
     for (const name of [/Action/, /Comment/, /Link/, /Note/])
       expect(screen.queryByRole('button', { name })).toBeNull();
   });
@@ -51,6 +53,6 @@ describe('ElementMenuQuickBar', () => {
   it('draws nothing for an element the quick style is not on, a stored arrow included', () => {
     open(storedPinnedArrow('ar', 'a', 'e', 'b', 'w') as BoxedElement);
     act(() => publishClearStyles({ targetIds: new Set(['other']), clear: vi.fn() }));
-    expect(screen.queryByRole('toolbar')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
   });
 });

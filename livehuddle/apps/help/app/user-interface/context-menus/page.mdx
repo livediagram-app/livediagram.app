@@ -18,17 +18,18 @@ export const metadata = helpMetadata({
 
 A **context menu** is the menu you get by right-clicking, or by pressing and holding for half a second on touch. Each one is scoped to whatever you clicked, so it only ever offers what makes sense there. On a phone the menus open as a sheet from the bottom of the screen.
 
-<Figure caption="Right-clicking a shape opens its menu: collapsible sections for arrange, size, shape, rotation, style, animation, text and collaboration.">
+<Figure caption="Right-clicking a shape opens its menu: collapsible sections for arrange, size, rotation, style and text, with Clear Styles under Style.">
   <ElementContextMenu />
 </Figure>
 
 ## On an element
 
-The element menu is where an element is **styled and described**. It is built from collapsible sections, with Style, Animation (when it has text) and Text opening to the side, and which ones appear depends on what you clicked. Along its top, a row of buttons: **Assign Action**, **Add Comment**, **Add Link** and **Add Note** at the left (tinted when the element already has one), and **Clear Styles** at the right. Below them, for a shape:
+The element menu is where an element is **styled and described**. It is built from collapsible sections, with Style, Animation (when it has text) and Text opening to the side, and which ones appear depends on what you clicked. For a shape:
 
 - **Arrange**: **Bring to Front**, **Send to Back** and its opacity.
-- **Size**, **Shape** (change the kind of shape) and **Rotation**.
+- **Size** and **Rotation**.
 - **Style**: **Colours** (text, background and border, with **Reset to Theme**) and **Border**.
+- **Clear Styles**, right under Style: one press puts the shape's colours, border width and line style back to the theme's.
 - **Animation**: a looping effect for the shape and, separately, for its text, with speed and repeat (see [Animations](/help/canvas/animations/)).
 - **Text** (once it has text): font, size, padding, alignment and markers.
 

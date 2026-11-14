@@ -1,25 +1,29 @@
 # Element menu quick bar
 
-The element menu (a right-click, a long-press, or a toolbar's More) opens on a **quick bar**: one row of glyph
-buttons above its first category. What gets reached for on any element sits there, one press away, instead of
-inside a category that has to be opened first.
+The other four products open the element menu (a right-click, a long-press, or a toolbar's More) on a **quick bar**:
+one row of glyph buttons above its first category, holding Assign Action, Add Comment, Add Link, Add Note and Clear
+Styles. **livehuddle has no quick bar** (Work Tracker 739): once its four attachment buttons left, the bar was a
+full-width band holding one eraser, so its one button moved into the menu as a row and the band is gone.
 
-## What it holds
+## Clear Styles
 
-- **Clear Styles**: the element's quick-style colours, width and line style back to the theme's, forgetting the style
-  memory of its kind. It shows while the element takes a quick style. livehuddle has no Quick Style panel
+- **Clear Styles** puts the element's quick-style colours, width and line style back to the theme's, forgetting the
+  style memory of its kind. livehuddle has no Quick Style panel
   ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-style)), so this is the one Clear Styles.
-- It has a Tooltip naming it, runs and closes the menu.
-
-With nothing to offer (an element that takes no quick style) the bar is not drawn.
+- It is a row of the menu's **Appearance** group, directly under the **Style** row whose colours and border it resets,
+  drawn as the menu's other rows are (the eraser in the icon slot, the label in the category rhythm). It runs on one
+  press and closes the menu, so it stays one click away.
+- It shows while the element takes a quick style (a shape or a text element that is not retired). On any other
+  element there is no row and nothing in its place.
 
 **Assign Action, Add Comment, Add Link and Add Note are gone** (owner, 2026-11-11, Work Tracker #714): livehuddle has
 no comments, actions, element links or notes ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#comments-actions-links-and-notes)),
-for any role. A link card keeps its own **Link** category. The other four products keep the four on their quick bars.
+for any role. A link card keeps its own **Link** category. The other four products keep the four on their quick bars,
+unchanged.
 
 ## Share roles
 
-The quick bar is an Editor's ([Share roles](../013-workspace/share-roles.md)). A Participant and a Viewer get the
+Clear Styles is an Editor's ([Share roles](../013-workspace/share-roles.md)). A Participant and a Viewer get the
 element menu below instead, and no selection toolbar: its one button for them, the comments, is gone.
 
 ## Element menu for Participants and Viewers
@@ -50,12 +54,15 @@ Every editor (livehuddle, liveplanner, livedocuments, livedesign) opens the same
 
 ## Implementation
 
-- `apps/editor/components/palette/ElementMenuQuickBar.tsx`: `ElementMenuQuickBar` (`role="toolbar"`, "Quick actions",
-  `data-element-quick-bar`), Clear Styles only; rendered first in `EditorContextMenu`.
+- `apps/editor/components/palette/ElementMenuClearStyles.tsx`: `ElementMenuClearStyles`, a `MenuActionRow`
+  (`@liveworkspace/workbench`'s `PortalMenu`) named "Clear Styles"; rendered by `ElementAppearanceSections` right after
+  the Style flyout. Only livehuddle's own menu files change; the shared menu primitives do not.
 - Clear Styles: `ClearStylesHost` (headless, `components/canvas/ClearStylesHost.tsx`) publishes the Quick Style view's targets and its `clearStyles` to
   `../packages/workbench/src/lib/clear-styles-store.ts` (`publishClearStyles`, `useClearStyles`) whenever the targets change, the
-  press running the latest; the bar shows it when the store's targets include the element. Its telemetry is
+  press running the latest; the row shows when the store's targets include the element. Its telemetry is
   `Element` / `Changed` / `QuickClearStyles`.
-- Tests: `ElementMenuQuickBar.test.tsx` (no Assign Action, Add Comment, Add Link or Add Note for any element),
+- Tests: `ElementMenuClearStyles.test.tsx` (no Assign Action, Add Comment, Add Link or Add Note for any element; the
+  row runs and closes; no row off a quick-style target), `EditorContextMenu.clear-styles.test.tsx` (no quick bar band;
+  the row sits under Style),
   `ReadOnlyElementMenuHost.test.tsx`, `CanvasSelectionToolbars.comments.test.tsx` (no toolbar for a Participant or a
   Viewer).

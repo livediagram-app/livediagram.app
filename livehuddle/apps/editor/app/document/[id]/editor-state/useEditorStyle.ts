@@ -121,7 +121,7 @@ export function useEditorStyle({
     checkpointBurst,
   });
 
-  // The Quick Style view (docs/specs/008-canvas/element-menu-quick-bar.md): what the quick bar's Clear Styles resets.
+  // The Quick Style view (docs/specs/008-canvas/element-menu-quick-bar.md): what the element menu's Clear Styles resets.
   // livehuddle has no Quick Style panel (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style).
   // Every input of the Quick Style view but the selection, which ClearStylesHost reads from the store.
   const quickStyleDeps: QuickStyleDeps = {
