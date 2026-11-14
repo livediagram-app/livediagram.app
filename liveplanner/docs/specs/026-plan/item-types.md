@@ -1663,6 +1663,42 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   as people do ([Plan for agents](plan-agents.md)); an agent naming a type the catalogue lacks is refused. An item
   stored with a type the catalogue lacks (made before that rule, or whose type was deleted) draws as "Item".
 
+## Changing a card's type
+
+A card changes type through the item panel's type picker, a board row By Card Type it is dropped into, a card
+table's Card Type cell, an agent's `change_items` (`set` with a `type`), and the Automations steps Change Card Type
+and the AI step's Set Card Type. Every one of them writes the card's custom fields by the same rule, so a value
+never goes missing behind an id the new type lacks:
+
+- **Built-in fields carry over as they are.** Title, Description, Priority, Assignee and the rest are the same field
+  on every type.
+- **A custom field maps by name.** Each custom field of the new type takes the value of the old type's custom field
+  with the same name (ignoring case and spaces at the ends) when their kinds are compatible: an Idea's App fills a
+  Work Item's App though their ids differ. A field both types share by id (an inherited one) already holds its
+  value and is left alone. The first of the old type's fields with that name and a value is the one read.
+- **Compatible kinds.** The same kind, Text and Long Text either way (a Long Text's lines run onto one line in a
+  Text field), and Choice and Multiple Choice either way. Within the same kind: a Rating whose score is over the
+  new field's scale, a Currency field of another currency, and a Card field whose Links To names a card type the
+  new field doesn't take are not mapped; one person from a field holding several keeps the first. Calculated,
+  Comments and Votes fields never map: a Calculated field works its value out, and Comments and Votes stay with
+  their threads and votes. A Long Text's formatting comes with its text into another Long Text.
+- **Choice values must be options.** A Choice or Multiple Choice value maps only as the new field's options hold it
+  (matched ignoring case, written as the new field spells the option); a value none of them holds is not written,
+  and a Multiple Choice keeps the picks that are options.
+- **Unmapped values are kept, hidden.** The old type's values stay on the card under their own ids: no type shows
+  them, filters and widgets of the new type never read them, and they show again if the card changes back to that
+  type. Nothing is cleared by a type change.
+- **The visible value wins.** A new type's field that already holds a hidden value (from an earlier visit to that
+  type) takes the mapped value over it, as the one the card was just showing; a field the old type also has keeps
+  its value. A value the same write sets on its own (an agent's `set`, a card table row's cell) is never replaced by
+  a mapped one.
+- **One write, one undo step.** The mapped values go in the same write as the type, so Undo puts the type and every
+  value back at once, and an Automations run log line counts it as the one Change to {Type} action.
+- **Share roles.** The mapping adds no right of its own: whoever may change a card's type (an Editor or a
+  Participant, who edit cards, as [share roles](../013-workspace/share-roles.md) say) gets its fields mapped, and a
+  Viewer, who changes no card, can trigger none of it, neither by hand nor through a rule a change of theirs would
+  start.
+
 ## Collaboration
 
 - A saved change reaches everyone with the project open at once: their cards, panels and palette redraw.
