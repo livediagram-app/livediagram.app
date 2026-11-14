@@ -976,6 +976,8 @@ describe('mermaidFromTab fallbacks and line forms', () => {
         node('c', { shape: undefined, label: 'No kind' }),
         node('d'),
         node('f', { shape: 'frame', x: 500, width: 100, height: 100 }),
+        // Joined, so the two blank nodes say something (an unjoined one is a key's swatch, left out).
+        arrow('1', 'a', 'd'),
       ],
     });
     expect(text).toBe(
@@ -987,6 +989,7 @@ describe('mermaidFromTab fallbacks and line forms', () => {
         '  n2["Blob"]',
         '  n3["No kind"]',
         '  n4[" "]',
+        '  n1 --> n4',
         '',
       ].join('\n'),
     );
@@ -1067,6 +1070,53 @@ describe('mermaidFromTab fallbacks and line forms', () => {
       ['', 'circle'],
     ]);
     expect(back.graph.clusters?.map((c) => c.label)).toEqual(['']);
+  });
+
+  // Work Tracker 444: a template key's swatches came out as a row of blank nodes.
+  it('leaves a key out: its blank, unjoined swatches and the Key card that held only them', () => {
+    const text = mermaidFromTab({
+      elements: [
+        node('a', { label: 'Start' }),
+        node('b', { label: 'Done', x: 0, y: 200 }),
+        arrow('1', 'a', 'b'),
+        node('key', { shape: 'frame', label: 'Key', x: 400, y: 0, width: 250, height: 200 }),
+        node('swatch-1', { x: 420, y: 40, width: 56, height: 24 }),
+        node('swatch-2', { shape: 'diamond', x: 420, y: 90, width: 56, height: 30 }),
+        {
+          id: 'caption',
+          type: 'text',
+          x: 490,
+          y: 40,
+          width: 120,
+          height: 28,
+          label: 'Step',
+        } as Element,
+        // A swimlane key: its title is text, its swatches loose on the canvas.
+        node('loose-swatch', { x: 0, y: 500, width: 40, height: 20 }),
+      ],
+    });
+    expect(text).toBe(['flowchart TD', '  n1["Start"]', '  n2["Done"]', '  n1 --> n2', ''].join('\n'));
+  });
+
+  it('keeps a frame that holds a real node beside a swatch, and a frame an arrow is pinned to', () => {
+    const text = mermaidFromTab({
+      elements: [
+        node('group', { shape: 'frame', label: 'Group', x: 0, y: 0, width: 400, height: 200 }),
+        node('a', { label: 'A', x: 20, y: 20, width: 80, height: 40 }),
+        node('swatch', { x: 200, y: 20, width: 40, height: 20 }),
+        node('pinned', { shape: 'frame', label: 'Pinned', x: 600, y: 0, width: 200, height: 200 }),
+        node('swatch-2', { x: 620, y: 20, width: 40, height: 20 }),
+        arrow('1', 'a', 'pinned'),
+      ],
+    });
+    expect(text.split('\n').slice(1, -1)).toEqual([
+      '  subgraph s1["Group"]',
+      '    n1["A"]',
+      '  end',
+      '  subgraph s2["Pinned"]',
+      '  end',
+      '  n1 --> s2',
+    ]);
   });
 
   it('spells undirected dashed and thick lines, circle heads, and skips free ends', () => {

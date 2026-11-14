@@ -109,8 +109,32 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
       typeof (e as { width?: unknown }).width === 'number' &&
       (e.type === 'shape' || e.type === 'sticky' || connected.has(e.id)),
   );
-  const frames = boxed.filter((e) => e.type === 'shape' && e.shape === 'frame');
-  const nodes = boxed.filter((e) => !(e.type === 'shape' && e.shape === 'frame'));
+  const allFrames = boxed.filter((e) => e.type === 'shape' && e.shape === 'frame');
+  // A key stays out (docs/specs/020-import-export/mermaid.md): a shape with no label, no data and no arrow says
+  // nothing a flowchart can, so a template key's swatches are not written as a row of blank boxes.
+  const isBlank = (e: BoxedShape) =>
+    e.type === 'shape' &&
+    !connected.has(e.id) &&
+    !(e.label ?? '').trim() &&
+    chartTextLines(e) === null;
+  const nonFrames = boxed.filter((e) => !(e.type === 'shape' && e.shape === 'frame'));
+  const nodes = nonFrames.filter((e) => !isBlank(e));
+  // ...and a frame whose only contents were those (a key's "Key" card) goes with them.
+  const keyCards = new Set<string>();
+  if (nodes.length < nonFrames.length) {
+    const held = new Map<string, { blank: number; kept: number }>();
+    for (const n of nonFrames) {
+      const holder = smallestHolder(boxCentre(n), allFrames);
+      if (!holder) continue;
+      const count = held.get(holder.id) ?? { blank: 0, kept: 0 };
+      if (isBlank(n)) count.blank++;
+      else count.kept++;
+      held.set(holder.id, count);
+    }
+    for (const [id, { blank, kept }] of held)
+      if (blank > 0 && kept === 0 && !connected.has(id)) keyCards.add(id);
+  }
+  const frames = allFrames.filter((f) => !keyCards.has(f.id));
 
   const idMap = new Map<string, string>();
   nodes.forEach((el, i) => idMap.set(el.id, `n${i + 1}`));
