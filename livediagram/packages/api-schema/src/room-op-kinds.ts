@@ -84,6 +84,10 @@ export const MUTATION_OP_KINDS = [
   // One answer, idea, checklist tick or comment change on one element
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
+  // An Editor's save landed, its revision and digest (docs/specs/006-document/delta-saves.md "A peer's save moves the
+  // base copy"). A mutation for its ORDER: it must reach peers after the save's element ops, and a reconnecting peer
+  // replays it after them. It writes nothing; a forged one only fails a peer's digest check.
+  'tab-saved',
   'document-meta',
   'poll-start',
   'poll-end',

@@ -45,6 +45,56 @@ describe('saveTabAndRelay', () => {
   });
 });
 
+// docs/specs/006-document/delta-saves.md "A peer's save moves the base copy".
+describe('announcing a landed save', () => {
+  const DIGEST = 'b'.repeat(64);
+  const roomLog = () => {
+    const sent: RoomOp[] = [];
+    const room: SaveRoom = {
+      send: (msg) => {
+        if (msg.kind === 'op') sent.push(msg.op);
+      },
+      sequence: async (op) => {
+        sent.push(op);
+        return true;
+      },
+    };
+    return { sent, room };
+  };
+
+  it('sends tab-saved with the revision and digest after the element ops, before the save settles', async () => {
+    const { sent, room } = roomLog();
+    const digestOf = vi.fn(async () => DIGEST);
+    const saved = saveTabAndRelay(
+      boxTab(0),
+      boxTab(40),
+      () => room,
+      async () => 7,
+      undefined,
+      digestOf,
+    );
+    await expect(saved).resolves.toBe(7);
+    expect(digestOf).toHaveBeenCalledWith('t1', 7);
+    expect(sent.map((op) => op.kind)).toEqual(['el', 'tab-saved']);
+    expect(sent[1]).toEqual({ kind: 'tab-saved', tabId: 't1', rev: 7, digest: DIGEST });
+  });
+
+  it('announces nothing without a held copy, a revision, a room, or when the digest fails', async () => {
+    const cases: [() => SaveRoom | null, unknown, () => Promise<string | null>][] = [];
+    const { sent, room } = roomLog();
+    cases.push([() => room, 7, async () => null]);
+    cases.push([() => room, null, async () => DIGEST]);
+    cases.push([() => null, 7, async () => DIGEST]);
+    cases.push([() => room, 7, () => Promise.reject(new Error('no crypto'))]);
+    for (const [live, rev, digestOf] of cases) {
+      await expect(
+        saveTabAndRelay(boxTab(0), boxTab(0), live, async () => rev, undefined, digestOf),
+      ).resolves.toBe(rev);
+    }
+    expect(sent.filter((op) => op.kind === 'tab-saved')).toEqual([]);
+  });
+});
+
 // docs/specs/013-workspace/share-roles.md "Integrity": a Participant's save is element ops to the room.
 describe('relayParticipantChanges', () => {
   const box = { x: 0, y: 0, width: 10, height: 10 };

@@ -32,6 +32,7 @@ const WELL_FORMED: Record<string, unknown>[] = [
   { kind: 'changeset', tabId: 't1', id: 'c', rev: 2, refetch: true, touched: [el.id] },
   { kind: 'vote', tabId: 't1', elementId: el.id, voter: 'v', delta: 1 },
   { kind: 'tab-meta', tabId: 't1', patch: { name: 'x' }, clear: ['timer'] },
+  { kind: 'tab-saved', tabId: 't1', rev: 3, digest: 'a'.repeat(64) },
   { kind: 'document-meta', name: 'Doc', tabs: [{ id: 't1', name: 'T', orderIndex: 0 }] },
   // Presence, and a kind this build does not know, pass as they always have.
   { kind: 'cursor', x: 1, y: 2 },
@@ -65,6 +66,20 @@ describe('roomOpIsWellFormed', () => {
       { kind: 'changeset', tabId: 't1', elementOps: [{ kind: 'patch', id: 'a', set: {} }] },
     ],
     ['a tab-meta without its patch', { kind: 'tab-meta', tabId: 't1' }],
+    [
+      'a tab-saved without a whole revision',
+      { kind: 'tab-saved', tabId: 't1', rev: 1.5, digest: 'a'.repeat(64) },
+    ],
+    [
+      'a tab-saved below revision 0',
+      { kind: 'tab-saved', tabId: 't1', rev: -1, digest: 'a'.repeat(64) },
+    ],
+    [
+      'a tab-saved whose digest is not hex',
+      { kind: 'tab-saved', tabId: 't1', rev: 1, digest: 'Z'.repeat(64) },
+    ],
+    ['a tab-saved without its digest', { kind: 'tab-saved', tabId: 't1', rev: 1 }],
+    ['a tab-saved without its tab', { kind: 'tab-saved', rev: 1, digest: 'a'.repeat(64) }],
     ['a document-meta without its tab list', { kind: 'document-meta', name: 'n' }],
     ['a document-meta tab without an id', { kind: 'document-meta', name: 'n', tabs: [null] }],
     ['no kind at all', { tabId: 't1' }],

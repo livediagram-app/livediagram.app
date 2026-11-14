@@ -74,6 +74,10 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // An Editor's save of a tab landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"):
+  // the revision it wrote and the digest of the elements now stored, sent after the save's element ops. A peer whose
+  // save baseline hashes to `digest` holds it as its delta base copy at `rev`. Changes no content.
+  | { kind: 'tab-saved'; tabId: string; rev: number; digest: string }
   | {
       kind: 'vote';
       tabId: string;
