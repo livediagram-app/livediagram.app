@@ -73,9 +73,9 @@ describe('tabStyleTourSteps', () => {
 
   it('brings the home forward for its steps, and the Finish panel for the finish', () => {
     const api = fakeApi('flexible');
-    for (const id of ['looks', 'mashup', 'pages', 'fine-tune']) byId(id).prepare!(api);
+    for (const id of ['looks', 'mashup', 'pages', 'fine-tune']) void byId(id).prepare!(api);
     expect(api.showHome).toHaveBeenCalledTimes(4);
-    byId('finish').prepare!(api);
+    void byId('finish').prepare!(api);
     expect(api.showFinish).toHaveBeenCalledOnce();
     expect(byId('mashup').selector!(api)).toContain('Mashup');
     expect(byId('finish').selector!(api)).toContain('Finish');
@@ -85,10 +85,10 @@ describe('tabStyleTourSteps', () => {
   it('wears another finish for its step and puts the person’s own back, once', () => {
     const step = byId('try-finish');
     const api = fakeApi('flexible');
-    step.prepare!(api);
+    void step.prepare!(api);
     expect(api.worn).toBe('sketch');
     // A second prepare (the engine re-running the step) keeps the person's own finish remembered.
-    step.prepare!(api);
+    void step.prepare!(api);
     expect(api.setFinish).toHaveBeenCalledOnce();
     step.cleanup!(api);
     expect(api.worn).toBe('flexible');
@@ -97,7 +97,7 @@ describe('tabStyleTourSteps', () => {
     expect(api.setFinish).toHaveBeenCalledTimes(2);
 
     const sketched = fakeApi('sketch');
-    step.prepare!(sketched);
+    void step.prepare!(sketched);
     expect(sketched.worn).toBe('marker');
     step.cleanup!(sketched);
     expect(sketched.worn).toBe('sketch');

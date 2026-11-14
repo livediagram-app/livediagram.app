@@ -2,7 +2,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OpenverseSearchError, type OpenverseImage } from '../../lib/image-search/openverse';
-import type { PickOutcome, PickStage } from '../../lib/image-search/pick';
+import type { PickOutcome } from '../../lib/image-search/pick';
 import { searchOpenverse } from '../../lib/image-search/search';
 import { storeSearchResult } from '../../lib/image-search/pick';
 import { createImageSearch } from './useImageSearch';
@@ -138,7 +138,7 @@ describe('useImageSearch', () => {
     store.mockImplementationOnce(async (_result, put, _fetch, onFallback, onStage) => {
       await put({ kind: 'blob', blob: new Blob(), name: 'a' });
       onFallback?.('cors');
-      onStage?.('saving' as PickStage);
+      onStage?.('saving');
       return new Promise<PickOutcome>((resolve) => (finish = resolve));
     });
     const { hook, onPicked } = setup();
@@ -174,7 +174,7 @@ describe('useImageSearch', () => {
     let finish!: (o: PickOutcome) => void;
     store.mockImplementationOnce(async (_r, _put, _f, _fallback, onStage) => {
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
-      onStage?.('saving' as PickStage);
+      onStage?.('saving');
       return new Promise<PickOutcome>((resolve) => (finish = resolve));
     });
     const { hook, onPicked } = setup();
