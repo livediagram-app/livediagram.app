@@ -28,6 +28,7 @@ import {
 import { frontWalkPoint } from '@/lib/front-walk-point';
 import { elementAt, onPaintedText } from '@/lib/avatar-press-target';
 import { avatarDoorPress } from '@/lib/avatar-door-press';
+import { avatarMomentPress, replayMoment } from '@/lib/avatar-moment-press';
 import type { Element as CanvasElement } from '@livehuddle/document';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
@@ -287,6 +288,14 @@ export function useCanvasSurfaceGestures({
             : 'walk';
           if (hit && outcome !== 'walk') {
             if (outcome === 'read') onReadElement?.(hit.id);
+            return;
+          }
+          // A moment piece you already stand beside (a tree, a kettle, a Window; never a seat) replays its moment
+          // where you stand, rather than a walk that goes nowhere (docs/specs/009-elements/piece-moments.md "A press
+          // beside it"). Farther away the click walks, and arriving plays it.
+          const moment = avatarMomentPress(hit, feet);
+          if (moment) {
+            replayMoment(moment);
             return;
           }
           // A Reception Desk or an Arcade Machine walks you to its front, where arriving says hello (walkPointFor),

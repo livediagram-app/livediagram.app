@@ -23,6 +23,8 @@ Derived from [Piece moments](../piece-moments.md).
 | `apps/editor/components/canvas/collab/PondView.tsx`               | Draws `PondMoment` over the water                                                                                                 |
 | `apps/editor/components/canvas/collab/SwimmingPoolView.tsx`       | Draws `PoolMoment` over the water                                                                                                 |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`               | Calls `usePieceMoments` beside `useSocialPieces`                                                                                  |
+| `apps/editor/lib/avatar-moment-press.ts`                          | A press beside a moment piece: `replaysOnPress`, `avatarMomentPress` (which piece, whether you are beside it), `replayMoment`     |
+| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`            | The walking click: after the Door and the piece's own press, a moment press replays it instead of walking                         |
 
 ## Domain and naming
 
@@ -39,6 +41,8 @@ Derived from [Piece moments](../piece-moments.md).
 | Part motion    | `PartMotion`, `PART_MOTIONS`              | One of the piece's own front parts (by index in its front drawing) moving in its moment: a motion class, a delay, a pivot, a side                                                                                                      |
 | Whole motion   | `wholeMotionOf(kind, front)`              | The class that moves the whole drawing: `sway`, `rustle`, `thunk`, `rattle`, `hum`, or `nudge` for a turned piece                                                                                                                      |
 | Drawn-over     | `PieceMoment`, `PoolMoment`, `PondMoment` | New things a moment draws over the art (leaves, steam, a dart, a duck), removed by nothing: they end invisible                                                                                                                         |
+| Moment press   | `MomentPress`, `avatarMomentPress`        | `{ id, kind, side }`: a walking click on a piece that replays on a press (`replaysOnPress`: a moment kind whose click intent is `walk` and that is no seat, `isSeatingShape` / `isFixedSeatShape`) with your feet beside it            |
+| Beside         | (in `avatarMomentPress`)                  | Your feet within `DOOR_REACH` (48) of the piece's stored box (rotation ignored but a Window's reach), or `inMomentReach(feet, piece)`                                                                                                  |
 | Moment length  | `MOMENT_MS[kind]`                         | How long a kind's moment plays, its longest part's delay plus duration, rounded up                                                                                                                                                     |
 
 ## Behaviour and state
@@ -55,6 +59,13 @@ Derived from [Piece moments](../piece-moments.md).
 - **Playing**: `usePieceMoments` calls `playMoment(id, side)` for each hit, only when `prefersReducedMotion()` is false
   at that moment. `playMoment` bumps the piece's `seq` in a module store (`useSyncExternalStore`), so only that piece's
   views re-render.
+- **Playing records its end**: `playMoment(id, side, ms, now)` also keeps `endsAt[id] = now + ms` (the trigger passes
+  `MOMENT_MS[hit.kind]`; a hit carries its `kind`), and `momentPlaying(id, now)` reads it.
+- **A press beside it**: the walking click (`useCanvasSurfaceGestures`) finds the piece under the click, then peers,
+  then the Door, then a `use` or `read` piece's own outcome; a `walk` piece next asks `avatarMomentPress(hit, feet)`.
+  A press answer calls `replayMoment(press)` and returns, with no walk. `replayMoment` does nothing when
+  `prefersReducedMotion()` or `momentPlaying(id)`, else `playMoment(id, side, MOMENT_MS[kind])`. A null answer walks
+  as before. The side is `momentSide(feet, piece)`, the trigger's own rule.
 - **Drawing**: `MomentDrawing` and `PieceMoment` read `usePieceMoment(id)` and remember the `seq` they mounted with; a
   `seq` above it draws the moment keyed by `seq` (a new moment remounts and replays its CSS), anything else draws
   nothing extra. So a tab switched back to never replays an old moment. `MomentDrawing` hands the fresh play to its
@@ -86,8 +97,10 @@ Derived from [Piece moments](../piece-moments.md).
 - `playsOnFace(kind: string): boolean`; `swingingNote(side, shown: number): number`.
 - `NoteSwing({ play, x, y, children })`, `LonePin({ play, x, y })`, `TickingHand({ play, cx, cy, width, children })`,
   `PageLift({ play, x, y })`, `WindowMoment({ id, light, gradient, pane })`.
-- `createMomentTrigger(opts?: { now?: () => number }): { step(feet: Point, pieces: readonly MomentPiece[]): readonly MomentHit[]; reset(): void }`, `MomentHit = { id: string; side: -1 | 1 }`.
-- `playMoment(id: string, side: -1 | 1): void`; `usePieceMoment(id: string): PieceMomentPlay | null`;
+- `createMomentTrigger(opts?: { now?: () => number }): { step(feet: Point, pieces: readonly MomentPiece[]): readonly MomentHit[]; reset(): void }`, `MomentHit = { id: string; kind: MomentKind; side: -1 | 1 }`.
+- `playMoment(id: string, side: -1 | 1, ms = 0, now = Date.now()): void`; `momentPlaying(id, now?): boolean`;
+  `momentSide(feet, piece): Side`; `replaysOnPress(kind): kind is MomentKind`;
+  `avatarMomentPress(hit: Element | null, feet: Point | null): MomentPress | null`; `replayMoment(press, now?): void`; `usePieceMoment(id: string): PieceMomentPlay | null`;
   `resetPieceMoments(): void` (tests).
 - `PartMotion = { part: number; motion: PartMotionName; delay?: number; pivot?: readonly [x, y]; side?: Side; vars?: Record<string, string> }`;
   `partMotionsOf(kind: string): readonly PartMotion[]`; `partMotionStyle(m, side, width): CSSProperties`.
@@ -113,6 +126,11 @@ board's life.
 - Walking out and back in mid-moment: still playing, so nothing restarts; the arrival after it ends plays.
 - A moment piece inside the placement preview: the preview's element id never plays, so it draws no moment.
 - Standing still inside a reach: no new arrival, nothing played.
+- A press beside a piece mid-moment (an arrival's or a press's): nothing plays and nothing walks.
+- A press beside a piece, then walking out and back in before the press's moment ends: the trigger keeps its own
+  `playingUntil`, so the arrival may start it again, as two arrivals' moments never overlap but a press and an arrival
+  may restart once. Harmless: the moment remounts and plays from the start.
+- A press under reduced motion: consumed, nothing shown, no walk.
 - A part index in `PART_MOTIONS` that the art no longer has: `piece-moment-motions.test.ts` holds every index against
   the front drawing's part (its tag and fill), so an art change that moves a part fails the test, not the screen.
 - A wrapped part keeps its own paint: the wrapper `<g>` only adds a transform or opacity.

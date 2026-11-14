@@ -203,7 +203,7 @@ export type MomentPiece = Box & {
   ux: number;
   uy: number;
 };
-export type MomentHit = { id: string; side: Side };
+export type MomentHit = { id: string; kind: MomentKind; side: Side };
 
 /**
  * A piece with its reach: its box from MOMENT_TOP of its height down to MOMENT_BELOW under it, widened by
@@ -275,6 +275,11 @@ export function inMomentReach(p: Point, piece: MomentPiece): boolean {
   return p.x >= piece.left && p.x <= piece.right && p.y >= piece.top && p.y <= piece.bottom;
 }
 
+/** Your side along the piece: left or right of its middle (-1 before it), or along a turned Window's wall. */
+export function momentSide(feet: Point, piece: MomentPiece): Side {
+  return (feet.x - piece.cx) * piece.ux + (feet.y - piece.cy) * piece.uy < 0 ? -1 : 1;
+}
+
 export type MomentTrigger = {
   /**
    * One step of your feet: every piece whose moment plays now, and the side you came from. The array is the
@@ -306,9 +311,7 @@ export function createMomentTrigger({
         const until = playingUntil.get(piece.id);
         if (until !== undefined && t < until) continue;
         playingUntil.set(piece.id, t + MOMENT_MS[piece.kind]);
-        // Your side along the piece: left or right of its middle, or along a Window's wall.
-        const along = (feet.x - piece.cx) * piece.ux + (feet.y - piece.cy) * piece.uy;
-        hits.push({ id: piece.id, side: along < 0 ? -1 : 1 });
+        hits.push({ id: piece.id, kind: piece.kind, side: momentSide(feet, piece) });
       }
       return hits;
     },
@@ -322,12 +325,21 @@ export function createMomentTrigger({
 export type PieceMomentPlay = { seq: number; side: Side };
 
 const plays = new Map<string, PieceMomentPlay>();
+// When each piece's latest moment ends, so a press never restarts one over itself (piece-moments.md "A press beside
+// it").
+const endsAt = new Map<string, number>();
 const listeners = createListeners();
 
-/** Plays a moment on this piece, from your side of it. */
-export function playMoment(id: string, side: Side): void {
+/** Plays a moment on this piece, from your side of it, for `ms` (its MOMENT_MS) from `now`. */
+export function playMoment(id: string, side: Side, ms = 0, now = Date.now()): void {
   plays.set(id, { seq: (plays.get(id)?.seq ?? 0) + 1, side });
+  endsAt.set(id, now + ms);
   listeners.notify();
+}
+
+/** Whether this piece's latest moment is still playing at `now`. */
+export function momentPlaying(id: string, now = Date.now()): boolean {
+  return now < (endsAt.get(id) ?? 0);
 }
 
 /** This piece's latest moment, or null when it never played; changes only for this piece. */
@@ -342,4 +354,5 @@ export function usePieceMoment(id: string): PieceMomentPlay | null {
 /** Forgets every moment (tests). */
 export function resetPieceMoments(): void {
   plays.clear();
+  endsAt.clear();
 }
