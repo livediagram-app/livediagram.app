@@ -425,6 +425,26 @@ with a CPU profile mapped through the build's source maps.
   change once 53 ms). The 52-64 ms of the first probe was the load, so the stroke needs nothing more
   locally; what the nightly still reads over is the hosted runner.
 
+## Lifting the dragged element above the board, round 8
+
+Measured 2026-11-14 on the reference board's diagram tab, local, interleaved over two pairs, reading
+each traced drag's raster tasks and the main thread's rendering steps.
+
+- **Tried: a riding element painted above every other element while it moves** (`z-index` on each
+  node the ride writer shifts, with `will-change: translate`, put back on release; a plane carrying a
+  very large move left alone). Round 6 found promoting the dragged element alone doubled raster,
+  because whatever painted above it had to be composited too; lifting it to the top was meant to
+  remove that overlap.
+- **It saves little.** Raster over the drag went from 205-238 ms to 165-190 ms at fit and from
+  125-139 ms to 76-94 ms at 100%, but Layerize rose from 315-374 ms to 363-398 ms, and Paint stayed
+  at 96-141 ms. The longest task was under 50 ms on both builds. It also changes what a drag looks
+  like (the element passes over what was above it), so it was not shipped.
+- **What a drag frame paints is the arrows.** Of the paints in a diagram drag, 106 were arrows'
+  canvas-sized `<svg>` roots (each re-routing arrow repaints its own root) and 30 the full-screen
+  alignment-guide overlay; the dragged box itself rides an offset and paints nothing. The raster the
+  hosted runner waits on follows those, so the next lever is the re-routing arrows' and the guides'
+  paint, not the moved box's layer.
+
 ## Not tried
 
 - A raster snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.
