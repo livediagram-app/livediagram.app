@@ -379,7 +379,8 @@ What the browser draws, beyond what the sections above pin (`@liveworkspace/sett
 `liveworkspace/apps/drive` (`liveworkspace-drive`, `-staging`), on liveworkspace.app's `/api/drive` route, and on each app's
 own address through its router's workspace proxy (`/api/drive`, cookies dropped). The browser authenticates with an
 account access token, verified offline against accounts' keys (issuer `<accounts>/api/auth`, any app API audience),
-exactly as the index does.
+exactly as the index does, the keys fetched through its `ACCOUNTS` service binding with the public route as fallback
+([index-service.md](../004-index/index-service.md#who-calls-it)).
 
 | Route                                       | For                                                                         |
 | ------------------------------------------- | --------------------------------------------------------------------------- |

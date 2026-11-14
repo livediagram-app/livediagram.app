@@ -20,6 +20,8 @@ export interface Env {
   DRIVE_PUBLIC_URL?: string;
   // The accounts origin: tokens are checked against `${ACCOUNTS_URL}/api/auth`.
   ACCOUNTS_URL?: string;
+  // The accounts Worker, which its key set is fetched through (auth.ts): a fetch to its route on this zone can stall.
+  ACCOUNTS?: Fetcher;
   // Comma-separated: every app's API resource. A token addressed to any of them is let in.
   INDEX_AUDIENCES?: string;
   // The index: its binding, else INDEX_URL (local development); the key it knows the service by.

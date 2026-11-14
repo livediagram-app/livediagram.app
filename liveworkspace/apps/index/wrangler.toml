@@ -89,6 +89,12 @@ simple = { limit = 60, period = 60 }
 binding = "DRIVE"
 service = "liveworkspace-drive"
 
+# Accounts, which access and guest tokens' key set is fetched through (src/auth.ts): a Worker's fetch to another
+# Worker's route on its own zone can stall (2026-11-13). Without it the public route is used.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
 # The webhook dispatcher (src/webhooks/durable-object.ts, liveworkspace/docs/specs/004-index/webhooks.md): one instance,
 # whose alarm sends the deliveries the outbox holds. It stores nothing of its own.
 [[durable_objects.bindings]]
@@ -150,6 +156,10 @@ simple = { limit = 60, period = 60 }
 [[env.staging.services]]
 binding = "DRIVE"
 service = "liveworkspace-drive-staging"
+
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
 
 [[env.staging.durable_objects.bindings]]
 name = "WEBHOOKS"

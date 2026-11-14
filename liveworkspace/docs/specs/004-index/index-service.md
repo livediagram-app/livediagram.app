@@ -37,7 +37,11 @@ apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (
 - **A browser**, through its own app's router (`/api/index/*` on the app's origin is forwarded here), with
   an accounts access token or a guest token as `Authorization: Bearer`. Both are checked offline against
   accounts' keys (`${ACCOUNTS_URL}/api/auth/jwks`), and the token's `aud` must be one of
-  `INDEX_AUDIENCES`. Team membership is the token's `teams` claim; the index keeps no copy of teams.
+  `INDEX_AUDIENCES`. The keys come through the `ACCOUNTS` service binding, not the public route: a Worker's
+  fetch to another Worker's route on its own zone is fragile (on 2026-11-13 those fetches stalled for 5 s
+  each and every signed-in Explorer call waited 10 s, then failed). Without the binding, or when it throws (a
+  local run without accounts), the public route is the fallback. `GET /jwks` is answered before any token is
+  read, so it never waits on accounts. Team membership is the token's `teams` claim; the index keeps no copy of teams.
 - **A link visitor**, with `X-Share-Code` (and `X-Share-Password` when the item has one), with or without
   a token.
 - **An app's server acting for an account** it checked itself (an API token's), with its key, `X-Index-App`,

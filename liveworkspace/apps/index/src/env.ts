@@ -17,6 +17,8 @@ export interface Env {
   // The accounts origin, e.g. https://www.liveworkspace.app: tokens are checked against
   // `${ACCOUNTS_URL}/api/auth`, and grants are issued as `${ACCOUNTS_URL}/api/index`.
   ACCOUNTS_URL?: string;
+  // The accounts Worker, which its key set is fetched through (auth.ts): a fetch to its route on this zone can stall.
+  ACCOUNTS?: Fetcher;
   // Comma-separated: every app's API resource. A token addressed to any of them is let in.
   INDEX_AUDIENCES?: string;
   // The private ES256 JWK, as JSON with its `kid`, that grants are signed with.

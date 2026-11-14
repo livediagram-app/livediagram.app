@@ -4,6 +4,7 @@
 import {
   createLocalJWKSet,
   createRemoteJWKSet,
+  customFetch,
   jwtVerify,
   type JSONWebKeySet,
   type JWTPayload,
@@ -22,6 +23,15 @@ export interface VerifierOptions {
   audience: string | string[];
   // Defaults to `${issuer}/jwks`. Tests pass a local key set instead.
   keys?: JWTVerifyGetKey;
+  // A service binding to the Worker that serves the keys (accounts, for a Worker on its own zone): the key set is
+  // fetched through it rather than the public route, which a same-zone Worker fetch can't always reach. The public
+  // route stays the fallback when the binding throws (a local run without that Worker).
+  keysFrom?: KeysFetcher;
+}
+
+/** What a service binding offers: `fetch` with a URL and init. */
+export interface KeysFetcher {
+  fetch(input: string, init?: RequestInit): Promise<Response>;
 }
 
 export interface AccountClaims {
@@ -62,17 +72,15 @@ const isGuestPayload = (payload: JWTPayload) => payload.kind === 'guest';
 // The accounts key set, from the issuer's host, else from its twin's: the same keys on both while the move to www.
 // lasts, so a check pointed at www. works before www. routes to accounts, and the other way round. The twin is asked
 // only when the first fails (an unknown key is retried after jose's own cooldown, so a forged `kid` stays cheap).
-export function remoteKeySet(issuer: string): JWTVerifyGetKey {
-  return remoteKeySetAt(`${issuer}/jwks`);
+export function remoteKeySet(issuer: string, via?: KeysFetcher): JWTVerifyGetKey {
+  return remoteKeySetAt(`${issuer}/jwks`, via);
 }
 
-/** As remoteKeySet, for a key set's own URL (the index's grant keys, say). */
-export function remoteKeySetAt(jwksUrl: string): JWTVerifyGetKey {
-  const [first, second] = withWwwTwin(jwksUrl).map((at) => createRemoteJWKSet(new URL(at)));
-  if (!second) return first!;
+// Ask `first`, and `second` only when it fails, throwing the first's error when both do.
+function eitherKeySet(first: JWTVerifyGetKey, second: JWTVerifyGetKey): JWTVerifyGetKey {
   return async (header, token) => {
     try {
-      return await first!(header, token);
+      return await first(header, token);
     } catch (error) {
       try {
         return await second(header, token);
@@ -83,8 +91,20 @@ export function remoteKeySetAt(jwksUrl: string): JWTVerifyGetKey {
   };
 }
 
+/** As remoteKeySet, for a key set's own URL (the index's grant keys, say). With `via`, through that binding first. */
+export function remoteKeySetAt(jwksUrl: string, via?: KeysFetcher): JWTVerifyGetKey {
+  const [first, second] = withWwwTwin(jwksUrl).map((at) => createRemoteJWKSet(new URL(at)));
+  const overRoute = second ? eitherKeySet(first!, second) : first!;
+  if (!via) return overRoute;
+  // jose's own cache, cooldown and timeout, only the fetch swapped for the binding's.
+  const bound = createRemoteJWKSet(new URL(jwksUrl), {
+    [customFetch]: (url, init) => via.fetch(url, init as RequestInit),
+  });
+  return eitherKeySet(bound, overRoute);
+}
+
 function payloadVerifier(options: VerifierOptions) {
-  const keys = options.keys ?? remoteKeySet(options.issuer);
+  const keys = options.keys ?? remoteKeySet(options.issuer, options.keysFrom);
   // Worked out once per verifier, not per token: a token minted before the move names the bare host
   // (liveworkspace/docs/specs/003-accounts/accounts.md "The move to www.").
   const issuer = withWwwTwin(options.issuer);
