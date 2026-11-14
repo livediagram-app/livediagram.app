@@ -65,6 +65,12 @@ export function typedPresenceName(value: unknown): string | null {
   return cutParticipantName(value.trim()) || null;
 }
 
+// A colour a client sent, as the room keeps it: a colour that could load something from outside is no colour
+// (@livehuddle/document unsafe-colours.ts), and a long one is cut. '' when it is none.
+export function presenceColour(value: unknown): string {
+  return typeof value === 'string' && isSafeColourValue(value) ? value.slice(0, MAX_COLOR_LEN) : '';
+}
+
 export function helloPresence(
   claimed: ClaimedPresence,
   // verifiedRole is optional on the attachment (it is absent for a session
@@ -85,11 +91,7 @@ export function helloPresence(
     id: session.presenceId,
     // Never the hello's `name`: a client could otherwise appear under any name it liked (Work Tracker 797).
     name: presenceNameFor({ ...session, visitorName }),
-    // A colour that could load something from outside is no colour (@livehuddle/document unsafe-colours.ts).
-    color:
-      typeof c.color === 'string' && isSafeColourValue(c.color)
-        ? c.color.slice(0, MAX_COLOR_LEN)
-        : '',
+    color: presenceColour(c.color),
     role: session.verifiedRole,
   };
   if (typeof c.tabId === 'string') presence.tabId = c.tabId.slice(0, MAX_TAB_ID_LEN);

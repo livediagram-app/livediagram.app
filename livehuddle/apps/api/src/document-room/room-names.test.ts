@@ -295,6 +295,144 @@ describe('a person renaming themselves (Work Tracker 801)', () => {
   });
 });
 
+// A colour change (docs/specs/014-identity/auth-and-guest-access.md "Presence colours"): any session, over its socket.
+const recolour = (ws: WebSocket, color: unknown) =>
+  room.webSocketMessage(ws, JSON.stringify({ kind: 'presence-colour', color }));
+function coloursSeenBy(ws: WebSocket): string[] {
+  const frames = (ws as unknown as Fake).sent
+    .map((f) => JSON.parse(f) as { kind: string; participants?: ParticipantPresence[] })
+    .filter((f) => f.kind === 'presence');
+  return (frames.at(-1)?.participants ?? []).map((p) => p.color);
+}
+const attendanceColours = () =>
+  (
+    db.prepare('SELECT color FROM tab_attendance WHERE left_at IS NULL ORDER BY id').all() as {
+      color: string;
+    }[]
+  ).map((r) => r.color);
+
+describe('a colour change reaching peers without a reconnect', () => {
+  it('shows a new colour to every peer and on the open Attendance visit, at every share level', async () => {
+    const host = await person('user_host', 'Hana Host');
+    const viewer = await person('guest_vi', 'Vi', 'view');
+    const guest = visitor('participate');
+    hello(host, 'x');
+    hello(viewer, 'x');
+    hello(guest, 'x', SECRET);
+    recolour(viewer, '#f97316');
+    recolour(guest, '#22c55e');
+    expect(coloursSeenBy(host).sort()).toEqual(['#22c55e', '#f97316']);
+    expect(session(viewer).presence?.color).toBe('#f97316');
+    expect(attendanceColours().sort()).toEqual(['#0ea5e9', '#22c55e', '#f97316']);
+  });
+
+  it('refuses an unsafe colour, a non-string, one before the hello, and sends nothing for the same colour', async () => {
+    const host = await person('user_host', 'Hana Host');
+    const peer = await person('guest_pe', 'Pe');
+    recolour(peer, '#f97316');
+    expect(session(peer).presence).toBeNull();
+    hello(host, 'x');
+    hello(peer, 'x');
+    const before = (host as unknown as Fake).sent.length;
+    recolour(peer, 'url(https://evil.example/x.png)');
+    recolour(peer, 42);
+    recolour(peer, '');
+    recolour(peer, '#0ea5e9');
+    expect((host as unknown as Fake).sent.length).toBe(before);
+    expect(session(peer).presence?.color).toBe('#0ea5e9');
+  });
+
+  it('still shows the colour when the visits cannot be recoloured', async () => {
+    const host = await person('user_host', 'Hana Host');
+    const peer = await person('guest_pe', 'Pe');
+    hello(host, 'x');
+    hello(peer, 'x');
+    db.exec('DROP TABLE tab_attendance');
+    recolour(peer, '#f97316');
+    expect(coloursSeenBy(host)).toEqual(['#f97316']);
+    expect(console.warn).toHaveBeenCalledWith(
+      '[presence-colour] visits not recoloured',
+      expect.anything(),
+    );
+  });
+});
+
+// The upgrade's X-Verified-Account reaching the session (liveworkspace/docs/specs/003-accounts/accounts.md "Profile
+// pictures"): it was read and then dropped before the attachment, so no session was ever an account's.
+describe('an account session through the real upgrade', () => {
+  const PICTURE = 'https://lh3.googleusercontent.com/a/ada=s96-c';
+  async function upgrade(id: string, account: boolean): Promise<WebSocket> {
+    const before = sockets.length;
+    await room.fetch(
+      new Request('https://room/ws', {
+        headers: {
+          Upgrade: 'websocket',
+          'X-Verified-Role': 'edit',
+          'X-Verified-Person': `tag-${id}`,
+          'X-Verified-Document': 'd1',
+          'X-Verified-Collab-Key': await collabKeyFor(id),
+          'X-Verified-Name': encodeURIComponent(id),
+          'X-Verified-Account': account ? '1' : '0',
+        },
+      }),
+    );
+    expect(sockets.length).toBe(before + 1);
+    return sockets.at(-1)!;
+  }
+  const helloWithPicture = (ws: WebSocket) =>
+    room.webSocketMessage(
+      ws,
+      JSON.stringify({
+        kind: 'hello',
+        participant: { name: 'x', color: '#0ea5e9', tabId: 't1', picture: PICTURE },
+      }),
+    );
+
+  beforeEach(() => {
+    // Node has no WebSocketPair and no 101 Response: the server side is our fake socket, and a 101 reads as a 200.
+    vi.stubGlobal(
+      'WebSocketPair',
+      class {
+        0 = socket();
+        1 = socket();
+      },
+    );
+    const RealResponse = Response;
+    vi.stubGlobal(
+      'Response',
+      class extends RealResponse {
+        constructor(body?: BodyInit | null, init?: ResponseInit) {
+          super(body, init?.status === 101 ? { ...init, status: 200 } : init);
+        }
+      },
+    );
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('keeps an account Google picture for account peers and marks its visit not a guest', async () => {
+    const ada = await upgrade('user_ada', true);
+    const bo = await upgrade('user_bo', true);
+    const guest = await upgrade('guest_cy', false);
+    expect(session(ada).account).toBe(true);
+    expect(session(guest).account).toBe(false);
+    helloWithPicture(ada);
+    helloWithPicture(guest);
+    hello(bo, 'x');
+    const seenByBo = (bo as unknown as Fake).sent
+      .map((f) => JSON.parse(f) as { kind: string; participants?: ParticipantPresence[] })
+      .filter((f) => f.kind === 'presence')
+      .at(-1)!.participants!;
+    expect(seenByBo.find((p) => p.name === 'user_ada')?.picture).toBe(PICTURE);
+    // A guest's picture is refused, as before.
+    expect(seenByBo.find((p) => p.name === 'guest_cy')?.picture).toBeUndefined();
+    const visits = db
+      .prepare('SELECT name, picture, guest FROM tab_attendance ORDER BY id')
+      .all() as { name: string; picture: string | null; guest: number }[];
+    expect(visits.find((v) => v.name === 'user_ada')).toMatchObject({ picture: PICTURE, guest: 0 });
+    expect(visits.find((v) => v.name === 'guest_cy')).toMatchObject({ picture: null, guest: 1 });
+  });
+});
+
 describe('a full room', () => {
   it('names ROOM_MAX_CONNECTIONS visitors and renames a person within a small budget', async () => {
     const people: WebSocket[] = [];

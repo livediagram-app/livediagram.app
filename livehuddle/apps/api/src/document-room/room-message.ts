@@ -12,6 +12,7 @@ import { storedTabName } from './room-content-state';
 import { noteCallSession, relayNudge } from './room-call-sessions';
 import { noteAttendance } from './room-attendance';
 import { nameVisitor, storedVisitorName } from './room-names';
+import { recolourSession } from './room-colour';
 import { isVisitorSecret, visitorCollabKey } from '../visitor-key';
 import { relaySessionOf, scopeOf } from './room-sockets';
 import type { DocumentRoom } from './document-room';
@@ -118,6 +119,10 @@ export function roomMessage(
   }
   if (msg.kind === 'visitor-name') {
     nameVisitor(room, ws, session, (msg as { name?: unknown }).name);
+    return;
+  }
+  if (msg.kind === 'presence-colour') {
+    recolourSession(room, ws, session, (msg as { color?: unknown }).color);
     return;
   }
   if (msg.kind === 'facilitator') {

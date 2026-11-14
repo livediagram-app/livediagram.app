@@ -56,6 +56,7 @@ export async function roomFetch(
     v.collabKey ?? null,
     v.reactionPerson ?? null,
     v.name ?? null,
+    v.account === true,
   );
   if (v.documentId) {
     room.bindDocument(v.documentId);

@@ -633,6 +633,9 @@ export class DocumentRoom extends DurableObject<Env> {
     // The person's presence name, their profile's (X-Verified-Name, docs/specs/014-identity/
     // auth-and-guest-access.md "Presence names"): none for a session with no identity.
     name: string | null = null,
+    // A verified account holds this session (X-Verified-Account): only such a session keeps a Google picture, and
+    // its Attendance visits are not a guest's (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
+    account = false,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -641,6 +644,7 @@ export class DocumentRoom extends DurableObject<Env> {
           collabKey,
           reactionPerson,
           name,
+          account,
           isOwner,
           tabScope,
           shareCode,
