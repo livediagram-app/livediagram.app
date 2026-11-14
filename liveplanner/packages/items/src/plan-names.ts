@@ -148,6 +148,28 @@ function personSlug(name: string, key: string, people: readonly ItemPerson[]): s
   return `${(slug || 'person').slice(0, 22).replace(/-+$/, '')}-${h.toString(36)}`;
 }
 
+// The Flag every card has whatever its type lists (docs/specs/026-plan/items.md "Flags"): `flagged`, stored true or
+// absent. An agent sets it by that id or as "Flag" (plan-agents.md "Flagging a card").
+export const FLAGGED_FIELD = 'flagged';
+const FLAG_ON = new Set(['true', 'yes', 'on', '1']);
+const FLAG_OFF = new Set(['false', 'no', 'off', '0', '']);
+
+// A flag as an agent writes it: true (or "true", "yes") flags the card, false, null or "" ("false", "no") unflags it.
+// Answers true to set, false to clear; anything else is refused with what it takes.
+export function flagValueOf(value: unknown): Named<{ on: boolean }> {
+  if (value === true || value === 1) return { ok: true, on: true };
+  if (value === false || value === null || value === 0) return { ok: true, on: false };
+  if (typeof value === 'string') {
+    const k = value.trim().toLowerCase();
+    if (FLAG_ON.has(k)) return { ok: true, on: true };
+    if (FLAG_OFF.has(k)) return { ok: true, on: false };
+  }
+  return refuse(
+    'value_invalid',
+    `${JSON.stringify(value) ?? 'undefined'} is not a flag: give true to flag the card, or false to unflag it.`,
+  );
+}
+
 // Built-in fields by the names the interface gives them, beside their ids.
 const BUILT_IN_ALIASES: Readonly<Record<string, string>> = {
   duedate: 'due',
@@ -156,6 +178,7 @@ const BUILT_IN_ALIASES: Readonly<Record<string, string>> = {
   label: 'labels',
   assignedto: 'assignee',
   owner: 'assignee',
+  flag: FLAGGED_FIELD,
 };
 
 interface FieldNaming {
@@ -191,12 +214,14 @@ export function fieldKeyOf(key: string, type: ItemTypeDef): Named<{ key: string 
   const k = statusKey(key);
   if (isBuiltInFieldId(key)) return { ok: true, key };
   if (isBuiltInFieldId(k)) return { ok: true, key: k };
+  if (k === FLAGGED_FIELD) return { ok: true, key: FLAGGED_FIELD };
   const field = type.custom?.find((f) => f.id === key || statusKey(f.label) === k);
   if (field) return { ok: true, key: field.id };
   const alias = BUILT_IN_ALIASES[k];
   if (alias) return { ok: true, key: alias };
   const names = [
     ...type.fields.filter((f) => isBuiltInFieldId(f)),
+    FLAGGED_FIELD,
     ...(type.custom ?? []).map((f) => f.label),
   ];
   return refuse(
@@ -246,6 +271,14 @@ export function resolveFields(
     // Pictures are uploaded in the card panel, never named (docs/specs/026-plan/items.md "Attachments").
     if (key === 'attachments')
       return refuse('value_invalid', 'Attachments are added in the card panel.');
+    // The Flag: true sets it, false or blank clears it (only a set has anything to clear).
+    if (key === FLAGGED_FIELD) {
+      const flag = flagValueOf(value);
+      if (!flag.ok) return flag;
+      if (flag.on) out[key] = true;
+      else clear.push(key);
+      continue;
+    }
     if (isBuiltInFieldId(key)) {
       const v = builtInValue(key, value, naming);
       if (!v.ok) return v;

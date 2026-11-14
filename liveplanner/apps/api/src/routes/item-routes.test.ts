@@ -453,6 +453,27 @@ describe('who may do what', () => {
     expect((await call({ method: 'GET', path: '/items', doc: 'nope' })).status).toBe(404);
   });
 
+  // docs/specs/026-plan/plan-agents.md "Flagging a card": the Flag is a card edit, so an Editor's token (an agent's
+  // change_items or item set) and a Participant's flag and unflag, and a Viewer's is refused.
+  it('lets an Editor and a Participant flag and unflag a card, never a Viewer', async () => {
+    const { id } = (await add({ title: 'A', status: 'todo' })).body.item;
+    const flag = (code: string, body: unknown) =>
+      call<ItemResponse>({ path: `/items/${id}`, owner: code.toLowerCase(), code, body });
+    const flagged = async () => (await db.readItem(sql.env, 'd1', id))!.fields['flagged'];
+    expect((await flag('VIEW', { set: { flagged: true } })).status).toBe(403);
+    expect(await flagged()).toBeUndefined();
+    const byEditor = await flag('EDIT', { set: { flagged: true } });
+    expect(byEditor.status).toBe(200);
+    expect(byEditor.body.item.fields['flagged']).toBe(true);
+    expect((await flag('VIEW', { clear: ['flagged'] })).status).toBe(403);
+    expect(await flagged()).toBe(true);
+    expect((await flag('PART', { clear: ['flagged'] })).status).toBe(200);
+    expect(await flagged()).toBeUndefined();
+    expect((await flag('PART', { set: { flagged: true } })).status).toBe(200);
+    expect((await flag('EDIT', { clear: ['flagged'] })).status).toBe(200);
+    expect(await flagged()).toBeUndefined();
+  });
+
   // docs/specs/013-workspace/share-roles.md "What a Participant changes": cards, never their deletion.
   it('lets a Participant add, edit and move cards, but never trash, archive or delete one', async () => {
     const as = { owner: 'p', code: 'PART' };
