@@ -11,14 +11,20 @@ import {
 import { BAND_LEAD, BAND_SECTION, BAND_TITLE } from '../lib/band-classes';
 import { EYEBROW } from '../lib/eyebrow';
 import { shelfScrollTarget } from '../lib/shelf-scroll';
+import { CategoryTiles } from './CategoryTiles';
+import { TemplateIndex, indexedTemplates } from './TemplateIndex';
 
 // "Browse every template" (each product's docs/specs/019-marketing/marketing-site.md), anchored #templates for the
 // hero's search: every template the editor ships, laid out as the editor's template step lays them out. ONE shelf
 // is open as a four-across carousel (the product's TemplateCarousel), the `initial` one on load; every other
-// category sits folded underneath as a card (the product's CategoryTiles) that opens it in the open one's place,
-// the shelf it replaces folding back. It only browses: the search is the hero's, which finds across every shelf.
+// category sits folded underneath as a card (CategoryTiles.tsx, its fan the product's) that opens it in the open one's
+// place, the shelf it replaces folding back. Only the open shelf's cards are drawn: a folded shelf's cards are rendered
+// when it opens, so the page's HTML does not grow with the catalogue, and its templates stay in the HTML as plain
+// links under the category cards (TemplateIndex.tsx), so every template is still a link a crawler can follow. It only browses: the search is the hero's, which finds across every shelf.
 // Every card (the product's TemplateCard) is a link that creates that template straight away in the editor.
-// Each product's components/TemplateGallery.tsx hands in its shelves, its pieces and its copy.
+// Each product's components/TemplateGallery.tsx hands in its shelves, its pieces, its create link and its copy.
+
+export type GalleryItem = { kind: string; title: string };
 
 export type TemplateShelf<Id extends string, T extends { kind: string }> = {
   id: Id;
@@ -26,7 +32,7 @@ export type TemplateShelf<Id extends string, T extends { kind: string }> = {
   templates: T[];
 };
 
-export type TemplateGalleryProps<Id extends string, T extends { kind: string }> = {
+export type TemplateGalleryProps<Id extends string, T extends GalleryItem> = {
   /** Every shelf, dealt once by the caller: the gallery has no filters, so they never change. */
   shelves: readonly TemplateShelf<Id, T>[];
   /** The shelf open on load. */
@@ -40,18 +46,22 @@ export type TemplateGalleryProps<Id extends string, T extends { kind: string }> 
     reveal?: boolean;
     children: ReactNode;
   }>;
-  Tiles: ComponentType<{ groups: TemplateShelf<Id, T>[]; onOpen: (id: Id) => void }>;
+  /** The product's fan of a category's first previews (its DeferredPreviewFan), on each folded category's card. */
+  Fan: ComponentType<{ kinds: readonly T['kind'][] }>;
   Card: ComponentType<{ template: T; source: 'Home.Gallery' }>;
+  /** Where a template's plain link goes: the same create link as its card. */
+  href: (template: T) => string;
 };
 
-export function TemplateGallery<Id extends string, T extends { kind: string }>({
+export function TemplateGallery<Id extends string, T extends GalleryItem>({
   shelves,
   initial,
   eyebrow,
   lead,
   Carousel,
-  Tiles,
+  Fan,
   Card,
+  href,
 }: TemplateGalleryProps<Id, T>) {
   // The open shelf; the initial one until the visitor opens another.
   const [openId, setOpenId] = useState<Id>(initial);
@@ -103,7 +113,15 @@ export function TemplateGallery<Id extends string, T extends { kind: string }>({
               </Carousel>
             ))}
           </div>
-          {folded.length > 0 ? <Tiles groups={folded} onOpen={openCategory} /> : null}
+          {folded.length > 0 ? (
+            <div className="flex flex-col gap-4">
+              <CategoryTiles groups={folded} onOpen={openCategory} Fan={Fan} />
+              <TemplateIndex
+                templates={indexedTemplates(folded, openShelf?.templates ?? [])}
+                href={href}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

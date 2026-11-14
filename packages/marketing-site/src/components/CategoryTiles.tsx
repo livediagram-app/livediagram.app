@@ -1,27 +1,24 @@
-import { PreviewFan } from '@livedocuments/template-previews';
-import {
-  BAND_CARD,
-  BAND_CONTROL_HOVER,
-  BAND_LABEL,
-} from '@liveworkspace/marketing-site/lib/band-classes';
-import type { GalleryShelf, ShelfId } from '@/lib/template-gallery';
+import type { ComponentType } from 'react';
+import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '../lib/band-classes';
+import type { TemplateShelf } from './TemplateGallery';
 
-// The template gallery's folded shelves (docs/specs/019-marketing/marketing-site.md): one card
-// per shelf not open (Blank Slate among them once another is), so they read as part of the gallery rather than a row of tags under
-// it. Each shows a fanned stack of its first three templates' previews (PreviewFan, shared with
-// the editor's template picker), its name and how many templates it holds. Hovering or
-// focusing a card fans the stack wider. Clicking opens the
-// category's carousel above, as the chips it replaced did.
+// The template gallery's folded shelves (each product's docs/specs/019-marketing/marketing-site.md): one card per
+// shelf not open, so they read as part of the gallery rather than a row of tags under it. Each shows a fanned stack
+// of its first three templates' previews (the product's DeferredPreviewFan: only the front card is in the page's
+// HTML, the other two are added when the browser is idle), its name and how many templates it holds. Hovering or
+// focusing a card fans the stack wider. Clicking opens the category's carousel above, as the chips it replaced did.
+// The folded shelves' templates themselves are plain links underneath (TemplateIndex.tsx), not cards.
 
-export function CategoryTiles({
+export function CategoryTiles<Id extends string, T extends { kind: string }>({
   groups,
   onOpen,
+  Fan,
 }: {
-  groups: GalleryShelf[];
-  onOpen: (id: ShelfId) => void;
+  groups: readonly TemplateShelf<Id, T>[];
+  onOpen: (id: Id) => void;
+  Fan: ComponentType<{ kinds: readonly T['kind'][] }>;
 }) {
-  // Blank Slate's blanks are on no category, so every folded shelf counts toward the "more templates" sum; a template
-  // cross-listed on two folded shelves counts once.
+  // A template cross-listed on two folded shelves counts once.
   const total = new Set(groups.flatMap((g) => g.templates.map((t) => t.kind))).size;
   return (
     <div>
@@ -40,7 +37,7 @@ export function CategoryTiles({
               onClick={() => onOpen(group.id)}
               className={`group flex h-full w-full cursor-pointer flex-col p-3 text-left ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
             >
-              <PreviewFan kinds={group.templates.map((t) => t.kind)} />
+              <Fan kinds={group.templates.map((t) => t.kind)} />
               <span className="mt-3 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {/* The tile's name is its own text, "Show Brainstorm 5 templates", so what it shows is
