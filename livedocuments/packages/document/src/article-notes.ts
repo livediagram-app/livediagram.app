@@ -121,9 +121,21 @@ export function articleNoteIds(
 ): Set<string> {
   const out = new Set<string>();
   for (const doc of Object.values(articles))
-    for (const b of doc.blocks as { runs?: { note?: string }[] }[])
-      for (const r of b.runs ?? []) if (r.note) out.add(r.note);
+    for (const id of notesOfBlocks(doc.blocks)) out.add(id);
   return out;
+}
+
+// The note ids in each article's blocks, by its blocks: asked of every article after each commit, which changes one.
+const blockNotes = new WeakMap<readonly unknown[], readonly string[]>();
+
+function notesOfBlocks(blocks: readonly unknown[]): readonly string[] {
+  const cached = blockNotes.get(blocks);
+  if (cached) return cached;
+  const ids: string[] = [];
+  for (const b of blocks as { runs?: { note?: string }[] }[])
+    for (const r of b.runs ?? []) if (r.note) ids.push(r.note);
+  blockNotes.set(blocks, ids);
+  return ids;
 }
 
 /** The tab without the markers of margin notes whose text is gone from the writing (`ids`): the

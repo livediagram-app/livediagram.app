@@ -197,6 +197,22 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
 - `apps/editor/hooks/editor/useArticleIntake.typing.test.ts` keeps it: a 100-card typing commit ticks nothing, and a
   settle over cards that do hold zones grows with the stack (10 to 100 cards under 30x CPU; the old per-card layout
   read about 60x).
+- A typing commit renders the editor once and reads only the card that changed (#728). Before, a commit rendered
+  the editor root three times: the commit, then the autosave's `'saving'`, then `'saved'` with its time, though
+  nothing draws either any more; `useEditorPersistence` (`app/document/[id]/editor-persistence.ts`) now holds the
+  status and the time in refs and raises a failed save's toast as the status is set. Each commit also read all 100
+  cards' writing again (`articlesOf`) and every keystroke's lock check read all 100 pages (`articleLocked` through
+  `pagesOf`); now `pagesOf` keeps its pages per stored `pages` array (frozen, so a caller cannot change them for the
+  next), `articlesOf` keeps each article's reading per stored article object (an unchanged card keeps its object),
+  and `hasZoneBlock` and `articleNoteIds` answer per article's `blocks`. A closed context menu reads only its state
+  (`EditorContextMenuHost`), not the 150 values its open menu needs. The page's starting tabs are made once.
+- Measured (#728, the #386 probe: a production `next build` export, This Browser, a 100-card stack with two lines a
+  card, 390x844 touch at 3x, CPU 4x, 60 keys 120 ms apart then 3 s of settling, five runs each way alternating, on a
+  shared machine at a load of 6 to 12): the longest busy stretch, before 27.9 to 29.8 ms (the commit's own render,
+  about 18 ms of it React's), after 18.3 to 21.2 ms in four runs and 30.7 ms in one (that run also had three keys
+  over 16 ms, the machine's noise). Long tasks over 50 ms: none either way. Components rendered per typing commit:
+  431 before (three root renders of about 140), 157 after. A key's own work no longer reads the 100 pages (1.3 ms of
+  its 9 ms before), and the 15 to 18 ms garbage collection pauses the profiles showed mid-typing were gone after.
 - The flip clones two nodes once per flip and animates `transform` and `opacity` only (compositor).
 
 ## Presentation and UX
@@ -223,21 +239,23 @@ SVG in the existing preview groups.
 
 ## Testing
 
-| Rule                                         | Test                                                        |
-| -------------------------------------------- | ----------------------------------------------------------- |
-| Parse, size, label, kind, own flows          | `packages/document/src/flashcards.test.ts`                  |
-| Speaking time and its label                  | `flashcards.test.ts`                                        |
-| Split and its refusals                       | `flashcards.test.ts`                                        |
-| Text-only guard                              | `packages/document/src/flashcard-guard.test.ts`             |
-| First page choice, add, no growth            | `flashcards.test.ts`                                        |
-| The stage and the stack sheets               | `apps/editor/lib/flashcard-stack.test.ts`                   |
-| Flip respects reduced motion, overlay clears | `apps/editor/lib/flashcard-flip.test.ts`                    |
-| Footer, marker, roles                        | `apps/editor/components/canvas/FlashcardStack.test.tsx`     |
-| Palette kind and toolbar cut                 | `apps/editor/lib/palette-kind.test.ts`, `PageToolbar` tests |
-| Templates build                              | `packages/templates` template tests                         |
-| Typing on a stack ticks no settle, linear    | `apps/editor/hooks/editor/useArticleIntake.typing.test.ts`  |
-| When the intake has work                     | `apps/editor/lib/article/intake-has-work.test.ts`           |
-| Zone-less writing fitted at once, one layout | `packages/document/src/article-intake.test.ts`              |
+| Rule                                          | Test                                                        |
+| --------------------------------------------- | ----------------------------------------------------------- |
+| Parse, size, label, kind, own flows           | `packages/document/src/flashcards.test.ts`                  |
+| Speaking time and its label                   | `flashcards.test.ts`                                        |
+| Split and its refusals                        | `flashcards.test.ts`                                        |
+| Text-only guard                               | `packages/document/src/flashcard-guard.test.ts`             |
+| First page choice, add, no growth             | `flashcards.test.ts`                                        |
+| The stage and the stack sheets                | `apps/editor/lib/flashcard-stack.test.ts`                   |
+| Flip respects reduced motion, overlay clears  | `apps/editor/lib/flashcard-flip.test.ts`                    |
+| Footer, marker, roles                         | `apps/editor/components/canvas/FlashcardStack.test.tsx`     |
+| Palette kind and toolbar cut                  | `apps/editor/lib/palette-kind.test.ts`, `PageToolbar` tests |
+| Templates build                               | `packages/templates` template tests                         |
+| Typing on a stack ticks no settle, linear     | `apps/editor/hooks/editor/useArticleIntake.typing.test.ts`  |
+| A save renders nothing                        | `apps/editor/app/document/[id]/editor-persistence.test.tsx` |
+| Pages and writing read once per stored object | `packages/document/src/read-caches.test.ts`                 |
+| When the intake has work                      | `apps/editor/lib/article/intake-has-work.test.ts`           |
+| Zone-less writing fitted at once, one layout  | `packages/document/src/article-intake.test.ts`              |
 
 ## Assets and external resources
 
