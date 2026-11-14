@@ -362,17 +362,19 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   `flowchart-grow.ts` binds `flowchartGrowth<Element>(createShape)` (`planFlowchartStep`, `addFlowchartLane`). New
   shared fields: a shape's `flowchartId`, `flowDirection` and `flowLaneId`. `src/testing/flowchart.ts` binds the same
   factories to the test builders, and the flowchart's tests moved in with it.
-- Left per product, and why: `mind-grow` and `component-factories` (D, P) build with each product's own
-  `createShape` and factories; `svg-render-sequence` and `svg-render-temperature` (D, P) draw through
-  each product's renderer and Collaborate kinds; `label-backdrop` and `tab-as-seen` read livediagram's wrapped or
-  livehuddle's own colours, themes and labels; `savable` and `malformed-ids` read each product's validator and
-  catalogue keys; the page modules (`page-lock`, `page-of`, `page-paint`) and `indicator-placement` (O, S) read each
-  product's page model and hit outlines.
+- Left per product, and why: `mind-grow` and `component-factories` (D, P) build with each product's own `createShape`
+  and factories; `svg-render-sequence` and `svg-render-temperature` (D, P) draw through each product's renderer and
+  Collaborate kinds; `label-backdrop` reads livediagram's wrapped or livehuddle's own colours; `savable` and
+  `malformed-ids` read each product's validator and catalogue keys; the page modules (`page-lock`, `page-of`,
+  `page-paint`) and `indicator-placement` (O, S) read each product's page model and hit outlines.
 - Moved (round 12): `collab-index-rows` (D, H, S) as `collabIndexRowsFor(isBoxed)`, each product's
   `collabIndexRowsFromElements` bound to its own boxed test (O keeps its copy over its own `element-action`);
   `page-ink-ground` (O, S) as `pageGroundFor(pageFillTone)`, each product binding its own fill tone; and the page half
-  of O's and S's `chart-ink` as `chart-page-grounds` (`chartPageGroundsFor({ isBoxed, pageAt, elementAnchorPoint,
-pageFillTone, layerBands, pageGroundUnder })`). Each binding is built once at module scope.
+  of O's and S's `chart-ink` as `chart-page-grounds` (`chartPageGroundsFor(deps)`, deps the product's `isBoxed`,
+  `pageAt`, `elementAnchorPoint`, `pageFillTone`, `layerBands` and `pageGroundUnder`). `tab-as-seen` (D, H) as
+  `tabAsSeenFor(() => deps)`, each product handing in its own themes, theme halves, stock colours and label inks; the
+  deps are read once on first use, since livehuddle's themes are still settling in its index cycle when the binding is
+  built. Each binding is built once at module scope.
 - Retired themes: `retired-themes` is the role-by-role rewrite (`bindRetiredThemes(retired, deps?)`, deps the
   product's `half` and `colourFields` when its theme engine is its own, livehuddle's; `UML_AS_RETIRED`, frozen), and
   `retired-uml` the retirement four products share (`RETIRED_THEME_IDS`, `THEMES` less UML, `RETIRED_THEMES` with UML
