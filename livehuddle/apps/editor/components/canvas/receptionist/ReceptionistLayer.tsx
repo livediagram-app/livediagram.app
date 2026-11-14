@@ -25,6 +25,7 @@ import { RECEPTIONIST_TOPICS } from '@/lib/receptionist/receptionist-topics';
 import { useReceptionist } from './useReceptionist';
 import { ReceptionistBubble } from './ReceptionistBubble';
 import { track } from '@/lib/telemetry';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // How long his farewell shows before he leaves the pad.
 const FAREWELL_MS = 2_000;
@@ -42,12 +43,19 @@ export function ReceptionistLayer({
   arrivals,
   self,
   zoom,
+  onStanding,
+  chipShift,
 }: {
   active: boolean;
   elements: readonly Element[];
   arrivals: readonly PadArrival[];
   self: AvatarPoint | null;
   zoom: number;
+  // Where he stands still, or null while he walks or is gone: told as he stops and sets off, never per frame, so his
+  // chip joins the characters' chip spread (avatar-mode.md "Standing neighbours' chips", Work Tracker 799).
+  onStanding?: (at: AvatarPoint | null) => void;
+  // How far his chip moves sideways, from that spread.
+  chipShift?: number;
 }) {
   const receptionist = useReceptionist({ active, elements, arrivals, self });
   const { chat } = useReceptionistState();
@@ -77,6 +85,13 @@ export function ReceptionistLayer({
 
   // His bubble closes when you walk away from him, or press Escape (not while typing in a field).
   const pose = receptionist?.pose ?? null;
+  const standX = pose && !pose.walking ? pose.at.x : null;
+  const standY = pose && !pose.walking ? pose.at.y : null;
+  const standingRef = useLatest(onStanding);
+  useEffect(() => {
+    standingRef.current?.(standX === null || standY === null ? null : { x: standX, y: standY });
+  }, [standX, standY, standingRef]);
+  useEffect(() => () => standingRef.current?.(null), [standingRef]);
   // Not while he walks you to a room: then he goes ahead and you follow.
   const leading =
     chat.open &&
@@ -127,6 +142,7 @@ export function ReceptionistLayer({
         name="Receptionist"
         host
         standingOn={null}
+        chipShift={chipShift}
       />
       <button
         type="button"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
@@ -9,17 +9,18 @@ import { AvatarSelfWalker } from '@livehuddle/avatar/components/AvatarSelfWalker
 import { AvatarPadArrivals } from '@livehuddle/avatar/components/AvatarPadArrivals';
 import { useAvatarPadArrivals } from '@livehuddle/avatar/hooks/useAvatarPadArrivals';
 import { useAvatarPose } from '@livehuddle/avatar/hooks/useAvatarPose';
-import { poseFeet } from '@livehuddle/avatar/pose';
+import { poseFeet, poseWalking } from '@livehuddle/avatar/pose';
 import { avatarStatusLabel, parseAvatarStatus } from '@livehuddle/avatar/status';
-import { seatedChipShifts, type ChipBearer } from '@livehuddle/avatar/chair-sitters';
+import { peerChipBearers, seatedChipShifts } from '@livehuddle/avatar/chair-sitters';
 import { useChipWidthOf } from '@livehuddle/avatar/chip-widths';
-import { avatarPads, padUnderFeet } from '@livehuddle/avatar/pad';
+import type { AvatarPoint } from '@livehuddle/avatar/walk';
 import { isDrinkKind } from '@livehuddle/avatar/office-geometry';
 import { headPoint } from '@livehuddle/avatar/speech';
 import { avatarScale, peerAvatarConfig } from '@livehuddle/avatar/config';
 import { reactionPose } from '@livehuddle/avatar/reactions';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ReceptionistLayer } from './receptionist/ReceptionistLayer';
+import { RECEPTIONIST_LOOK } from '@/lib/receptionist/receptionist-look';
 import { CallBubbles, useCallBubbleRects } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
 import { HearingRing } from '@/components/calls/HearingRing';
@@ -50,6 +51,9 @@ const wholeView = (v: View) => v;
 
 // Your own chip's key in the chip spread: no peer id is empty.
 const SELF_CHIP = '';
+// The Receptionist's chip's key: no peer id starts with a NUL.
+const HOST_CHIP = '\u0000receptionist';
+const HOST_SCALE = avatarScale(RECEPTIONIST_LOOK.size);
 
 type CanvasAvatar = ReturnType<typeof useCanvasAvatar>;
 
@@ -164,36 +168,19 @@ export function CanvasCharactersLayer({
   // Do Not Disturb quiets the join and leave chimes and the nudge too (join-and-leave-sounds.md "Settings").
   useQuietForDoNotDisturb(avatarStatus === 'dnd');
   // Neighbours' chips spread so none covers another (docs/specs/008-canvas/avatar-mode.md "Seated neighbours' chips
-  // never cover each other", "People on one pad"): everyone sitting or standing still on an Avatar Pad, and your own
-  // status chip while you sit or stand on one wearing it, each at its measured width (chip-widths.ts).
-  const pads = useMemo(() => avatarPads(walkElements), [walkElements]);
+  // never cover each other", "Standing neighbours' chips"): everyone sitting or standing still, the Receptionist while
+  // he stands, and your own status chip while you sit or stand still wearing one, each at its measured width
+  // (chip-widths.ts). Only chips within reach of another move.
+  const selfWalking = useAvatarPose(avatar.poseStore, poseWalking);
   const selfSeated = !!avatar.seatedOn;
-  const selfOnPad = inMode && feet !== null && !selfSeated && padUnderFeet(pads, feet) !== null;
-  const selfChipAt = inMode && (selfSeated || selfOnPad) ? feet : null;
+  const selfChipAt = inMode && (selfSeated || !selfWalking) ? feet : null;
+  // Where the Receptionist stands, from his own layer: set as he stops and cleared as he sets off, never per frame.
+  const [hostAt, setHostAt] = useState<AvatarPoint | null>(null);
   // Each chip's measured width, a new reader as chips are measured, so the spread runs again with the new widths.
   const chipWidthOf = useChipWidthOf();
   const chipShifts = useMemo(() => {
-    // Only the seated and those still on a pad take part, so a room of walkers parses nothing more per frame.
-    const bearers: ChipBearer[] = [];
-    for (const peer of remoteAvatars) {
-      const seated = !!peer.avatar.seatedOn;
-      const onPad =
-        !seated &&
-        !peer.avatar.walking &&
-        padUnderFeet(pads, { x: peer.avatar.x, y: peer.avatar.y }) !== null;
-      if (!seated && !onPad) continue;
-      const status = parseAvatarStatus(peer.avatar.status);
-      bearers.push({
-        key: peer.id,
-        x: peer.avatar.x,
-        y: peer.avatar.y,
-        scale: avatarScale(peerAvatarConfig(peer.avatar.config).size),
-        seated,
-        onPad,
-        name: peer.name,
-        status: status ? avatarStatusLabel(status) : null,
-      });
-    }
+    // A walker is passed over before anything is parsed, so a room of walkers costs a flag read each per frame.
+    const bearers = peerChipBearers(remoteAvatars);
     if (selfChipAt && avatarStatus)
       bearers.push({
         key: SELF_CHIP,
@@ -201,21 +188,22 @@ export function CanvasCharactersLayer({
         y: selfChipAt.y,
         scale: selfScale,
         seated: selfSeated,
-        onPad: selfOnPad,
+        still: !selfSeated,
         name: '',
         status: avatarStatusLabel(avatarStatus),
       });
+    if (inMode && hostAt)
+      bearers.push({
+        key: HOST_CHIP,
+        x: hostAt.x,
+        y: hostAt.y,
+        scale: HOST_SCALE,
+        seated: false,
+        still: true,
+        name: 'Receptionist',
+      });
     return seatedChipShifts(bearers, chipWidthOf);
-  }, [
-    remoteAvatars,
-    selfChipAt,
-    avatarStatus,
-    selfScale,
-    pads,
-    selfSeated,
-    selfOnPad,
-    chipWidthOf,
-  ]);
+  }, [remoteAvatars, selfChipAt, avatarStatus, selfScale, selfSeated, inMode, hostAt, chipWidthOf]);
   // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
   const callBubbleRects = useCallBubbleRects();
 
@@ -263,6 +251,8 @@ export function CanvasCharactersLayer({
           arrivals={padArrivals}
           self={feet}
           zoom={viewportZoom}
+          onStanding={setHostAt}
+          chipShift={chipShifts.get(HOST_CHIP)}
         />
       ) : null}
       {/* A reaction burst (docs/specs/008-canvas/avatar-mode.md "Reactions") thrown around the character,

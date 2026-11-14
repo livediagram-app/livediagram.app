@@ -8,6 +8,7 @@ import { avatarScale, peerAvatarConfig } from './config';
 import { seatsACharacter } from './office-geometry';
 import { isSceneShape, type AvatarSceneElement } from './scene';
 import { claimOf, type SeatClaim } from './seat-claims';
+import { avatarStatusLabel, parseAvatarStatus } from './status';
 import { drawnRect, seatPoints, type Seat, type SeatGrid } from './seats';
 import { AVATAR_HEAD_CHROME, AVATAR_HEIGHT } from './walk';
 
@@ -180,8 +181,8 @@ export function seatPillBottom(
   return top - SEAT_PILL_GAP;
 }
 
-// --- Seated neighbours' name chips (docs/specs/008-canvas/avatar-mode.md "Seated neighbours' chips never cover each
-// other", Work Tracker #597) ---------------------------------------------------------------------------------------
+// --- Neighbours' name chips, seated or standing (docs/specs/008-canvas/avatar-mode.md "Seated neighbours' chips never
+// cover each other", Work Tracker #597, 799) ------------------------------------------------------------------------
 
 // A chip's measures in canvas px (AvatarWalker): 10 px semibold text, 6 px padding each side, a peer's chip at most 120
 // wide (180 with a status), the status dot 8 wide with a 4 px gap. A character's width is taken a touch wide (Inter's
@@ -273,8 +274,8 @@ function spreadRow(row: readonly NameChip[], shifts: Map<string, number>) {
 }
 
 /**
- * A character as the chip spread reads it: its feet, its size, whether it sits (or stands still on an Avatar Pad), and
- * what its chip shows.
+ * A character as the chip spread reads it: its feet, its size, whether it sits or stands still, and what its chip
+ * shows.
  */
 export type ChipBearer = {
   key: string;
@@ -282,8 +283,9 @@ export type ChipBearer = {
   y: number;
   scale?: number;
   seated: boolean;
-  // Standing still on an Avatar Pad, where everyone arrives on the same spot (avatar-mode.md "People on one pad").
-  onPad?: boolean;
+  // Standing still anywhere (avatar-mode.md "Standing neighbours' chips", Work Tracker 799): on an Avatar Pad, where
+  // everyone arrives on the same spot, beside a full bench, shoulder to shoulder at an Arcade Machine or a desk.
+  still?: boolean;
   // A peer's name; none for your own character, whose chip is its status alone.
   name?: string | null;
   // The status's label ("Busy"), or none.
@@ -297,9 +299,10 @@ export type ChipWidthOf = (
 ) => number;
 
 /**
- * The sideways move of each seated character's chip (and each one standing still on an Avatar Pad), by key, so
- * neighbours' chips never cover each other. A walking character's chip stays over its head (it moves on at once), and
- * a character with no chip takes no room. `widthOf` is each chip's width: the measured one where the caller has it.
+ * The sideways move of each chip over a seated character or one standing still, by key, so neighbours' chips never
+ * cover each other: only chips that would come within NAME_CHIP_GAP of another move. A walking character's chip
+ * stays over its head (it moves on at once), and a character with no chip takes no room. `widthOf` is each chip's
+ * width: the measured one where the caller has it.
  */
 export function seatedChipShifts(
   bearers: readonly ChipBearer[],
@@ -307,11 +310,51 @@ export function seatedChipShifts(
 ): Map<string, number> {
   const chips: NameChip[] = [];
   for (const b of bearers) {
-    if (!b.seated && !b.onPad) continue;
+    if (!b.seated && !b.still) continue;
     const width = widthOf(b.name, b.status);
     if (width === 0) continue;
     const scale = b.scale ?? avatarScale('regular');
     chips.push({ key: b.key, x: b.x, top: b.y - AVATAR_HEIGHT * scale, width });
   }
   return spreadNameChips(chips);
+}
+
+/** A peer's character as the chip spread reads it, from their presence. */
+export type ChipPeer = {
+  id: string;
+  name: string;
+  avatar: {
+    x: number;
+    y: number;
+    walking?: boolean;
+    seatedOn?: string | null;
+    status?: unknown;
+    config?: unknown;
+  };
+};
+
+/**
+ * The chip bearers among peers: everyone seated or standing still, keyed by peer id. A walker is passed over before
+ * anything is parsed, so a room of walkers costs a flag read each per frame; a costume is parsed once per costume
+ * (peerAvatarConfig keeps them).
+ */
+export function peerChipBearers(peers: readonly ChipPeer[]): ChipBearer[] {
+  const bearers: ChipBearer[] = [];
+  for (const peer of peers) {
+    const { avatar } = peer;
+    const seated = !!avatar.seatedOn;
+    if (!seated && avatar.walking) continue;
+    const status = parseAvatarStatus(avatar.status);
+    bearers.push({
+      key: peer.id,
+      x: avatar.x,
+      y: avatar.y,
+      scale: avatarScale(peerAvatarConfig(avatar.config).size),
+      seated,
+      still: !seated,
+      name: peer.name,
+      status: status ? avatarStatusLabel(status) : null,
+    });
+  }
+  return bearers;
 }

@@ -49,5 +49,7 @@ export function mergePose(prev: AvatarPose, patch: Partial<AvatarPose>): AvatarP
 
 /** The pose's feet, or null: the slice most readers take. */
 export const poseFeet = (pose: AvatarPose): AvatarPoint | null => pose.pos;
+/** Whether the character is walking: changes as it sets off and stops, never per step. */
+export const poseWalking = (pose: AvatarPose): boolean => pose.walking;
 /** Whether the character stands somewhere (in the mode, placed). */
 export const posePlaced = (pose: AvatarPose): boolean => pose.pos !== null;
