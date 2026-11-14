@@ -4,6 +4,7 @@ import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livediagram/api-schema'
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import {
+  ledgerEntryKeys,
   ledgerKey,
   ledgerPrefix,
   recordInLedger,
@@ -338,6 +339,7 @@ export class DocumentRoom extends DurableObject<Env> {
       sequenceMutation: (from, op) => this.sequenceMutation(from, op),
       readSelections: (tabId, person) => this.selections.read(tabId, liveSessions(this), person),
       readLedger: (tabId, since) => this.ledger.read(tabId, since),
+      readLedgerEntries: (tabId, want) => this.ledger.readKeys(tabId, ledgerEntryKeys(tabId, want)),
       epoch: () => this.epoch,
     };
     this.baton = new RoomFacilitator({

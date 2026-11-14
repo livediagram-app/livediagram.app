@@ -72,10 +72,12 @@ are not drawn.
   frame or its `hello` claimed. A Participant's reaction is a participation delta: the room relays it
   only when `by` is the key the server pinned on its session, and writes it to the stored tab itself, as it writes a
   Participant's answers. A Viewer's is dropped.
-- The room's ledger keeps each person's latest on or off per comment and emoji, so an Editor's save made before a
-  reaction arrived cannot erase it.
-- A tab save keeps whatever reactions it carries, cleaned (malformed ones dropped); an Editor may already change
-  anything on the canvas.
+- The room's ledger keeps each person's latest on or off per comment and emoji, with the name and the `person` the
+  room stamped, so an Editor's save made before a reaction arrived cannot erase it.
+- A tab save, or any other write of a whole tab, keeps the writer's own reactions as it carries them, cleaned
+  (malformed ones dropped). Everyone else's follow the room's ledger, else the stored tab, whatever the write
+  carries, and a reaction left twice under an old browser key collapses into the new one
+  ([Whole-tab writes keep other people's entries](../013-workspace/share-roles.md#the-collab-key)).
 - Agents read reactions: the thread listing (`GET .../comments`, the CLI's `comment ls`) carries, per comment, one
   entry per emoji used with its glyph, name, count and who. Agents do not react.
 

@@ -633,3 +633,36 @@ describe("RoomLedgerStore: the save's index", () => {
     expect(counts.lists).toBe(2);
   });
 });
+
+describe("RoomLedgerStore: a whole-tab write's lock read", () => {
+  it('hands back the named entries whatever their seq, waiting for queued writes, never listing', async () => {
+    const { ledger, store, counts } = setup();
+    ledger.record(note('a', 'n1', 'one'), 1);
+    ledger.record(note('b', 'n1', 'two'), 2);
+    ledger.record({ kind: 'dot', tabId: 't1', id: 'v1' }, 3);
+    store.set('ledger:t1:el:bad', 'not an entry');
+    const lists = counts.lists;
+    const read = await ledger.readKeys('t1', [
+      'ledger:t1:el:a',
+      'ledger:t1:el:a',
+      'ledger:t1:vote',
+      'ledger:t1:el:bad',
+      'ledger:t1:el:missing',
+      'ledger:t2:el:a',
+    ]);
+    expect(read).toEqual({
+      elements: { a: { notes: { n1: { text: 'one', seq: 1 } } } },
+      dots: { dots: ['v1'] },
+    });
+    expect(counts.lists).toBe(lists);
+  });
+
+  it('asks the runtime in batches it allows', async () => {
+    const { ledger } = setup();
+    for (let i = 0; i < LEDGER_GET_BATCH + 5; i++) ledger.record(note(`e${i}`, 'n', 'x'), i + 1);
+    const keys = Array.from({ length: LEDGER_GET_BATCH + 5 }, (_, i) => `ledger:t1:el:e${i}`);
+    const read = await ledger.readKeys('t1', keys);
+    expect(Object.keys(read.elements)).toHaveLength(LEDGER_GET_BATCH + 5);
+    expect((await ledger.readKeys('t1', [])).elements).toEqual({});
+  });
+});

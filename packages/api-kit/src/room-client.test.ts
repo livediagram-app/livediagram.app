@@ -5,6 +5,7 @@ import {
   roomMutationInit,
   RoomUnavailableError,
 } from './room-client';
+import { LEDGER_LOCK_ELEMENTS_MAX } from './room-ledger-store';
 
 type Tab = { id: string; merged?: number };
 type Ledger = { elements?: Record<string, unknown> };
@@ -93,6 +94,62 @@ describe('the ledger merge', () => {
     expect(await client.fetchRoomLedger(answering(ok(null)).env, 'd1', 't', 'e:1')).toBeNull();
     expect(await client.fetchRoomLedger(answering(ok({})).env, 'd1', 't', 'e:1')).toBeNull();
     expect(await client.fetchRoomLedger(answering(down).env, 'd1', 't', 'e:1')).toBeNull();
+  });
+});
+
+describe('the lock read', () => {
+  it('posts the element ids and the vote, and answers the ledger', async () => {
+    const { env, fetch } = answering(ok({ elements: { a: 1 } }));
+    expect(
+      await client.fetchLedgerEntries(env, 'd1', 't1', { elementIds: ['a'], vote: true }),
+    ).toEqual({ elements: { a: 1 } });
+    expect(fetch.mock.calls[0]![0]).toBe('https://room/ledger-entries');
+    expect(JSON.parse(fetch.mock.calls[0]![1]!.body as string)).toEqual({
+      tab: 't1',
+      elements: ['a'],
+      vote: true,
+    });
+  });
+
+  it('asks for the vote alone, and for many elements in chunks it merges', async () => {
+    const one = answering(ok({ elements: {}, vote: 'v' }));
+    expect(
+      await client.fetchLedgerEntries(one.env, 'd1', 't1', { elementIds: [], vote: true }),
+    ).toEqual({ elements: {}, vote: 'v' });
+    let n = 0;
+    const many = answering(async () => {
+      n += 1;
+      return ok({ elements: { [`e${n}`]: n } });
+    });
+    const ids = Array.from({ length: LEDGER_LOCK_ELEMENTS_MAX + 1 }, (_, i) => `x${i}`);
+    const merged = await client.fetchLedgerEntries(many.env, 'd1', 't1', {
+      elementIds: ids,
+      vote: true,
+    });
+    expect(many.fetch).toHaveBeenCalledTimes(2);
+    expect(merged?.elements).toEqual({ e1: 1, e2: 2 });
+    const second = JSON.parse(many.fetch.mock.calls[1]![1]!.body as string) as {
+      elements: string[];
+      vote: boolean;
+    };
+    expect(second).toEqual({ tab: 't1', elements: [`x${LEDGER_LOCK_ELEMENTS_MAX}`], vote: false });
+  });
+
+  it('answers null for a refusal, a bad body, a throw, or a later chunk that fails', async () => {
+    const want = { elementIds: ['a'], vote: false };
+    const refused = answering(new Response('', { status: 500 })).env;
+    expect(await client.fetchLedgerEntries(refused, 'd1', 't', want)).toBeNull();
+    expect(await client.fetchLedgerEntries(answering(ok(null)).env, 'd1', 't', want)).toBeNull();
+    expect(await client.fetchLedgerEntries(answering(ok({})).env, 'd1', 't', want)).toBeNull();
+    expect(await client.fetchLedgerEntries(answering(down).env, 'd1', 't', want)).toBeNull();
+    let calls = 0;
+    const halfway = answering(() =>
+      calls++ === 0 ? Promise.resolve(ok({ elements: {} })) : down(),
+    );
+    const ids = Array.from({ length: LEDGER_LOCK_ELEMENTS_MAX + 1 }, (_, i) => `x${i}`);
+    expect(
+      await client.fetchLedgerEntries(halfway.env, 'd1', 't', { elementIds: ids, vote: false }),
+    ).toBeNull();
   });
 });
 

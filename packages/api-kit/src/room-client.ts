@@ -1,4 +1,5 @@
 import type { AgentPresenceWrite } from './room-agent-presence';
+import { LEDGER_LOCK_ELEMENTS_MAX } from './room-ledger-store';
 
 // The api Worker's calls into an item's realtime room (each product's docs/specs/012-collaboration/collab-race-hardening.md):
 // reading its collaboration ledger to merge a save, and handing it a change the api made. Every product's
@@ -182,6 +183,45 @@ export function createRoomClient<
       tab: config.mergeLedgerIntoTab(tab, fetched.ledger, fetched.seq),
       commentAuthors: config.ledgerCommentAuthors(fetched.ledger),
     };
+  }
+
+  // The ledger entries a whole-tab write's lock reads beside the stored tab (each product's docs/specs/013-workspace/
+  // share-roles.md "Whole-tab writes keep other people's entries"): every named element's entry, and the tab's vote
+  // when asked, whatever their seq. Asked in chunks of LEDGER_LOCK_ELEMENTS_MAX ids, one after another. Null when
+  // the room cannot answer any chunk: the lock then keeps the stored entries (it fails closed).
+  async function fetchLedgerEntries(
+    env: Env,
+    roomId: string,
+    tabId: string,
+    want: { elementIds: readonly string[]; vote: boolean },
+  ): Promise<Ledger | null> {
+    let out: Ledger | null = null;
+    const ids = [...want.elementIds];
+    for (let i = 0; i === 0 || i < ids.length; i += LEDGER_LOCK_ELEMENTS_MAX) {
+      const chunk = ids.slice(i, i + LEDGER_LOCK_ELEMENTS_MAX);
+      try {
+        const res = await roomStub(env, roomId).fetch('https://room/ledger-entries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tab: tabId, elements: chunk, vote: want.vote && i === 0 }),
+        });
+        if (!res.ok) return null;
+        const ledger = (await res.json()) as Ledger;
+        if (!ledger || typeof ledger !== 'object' || !ledger.elements) return null;
+        out = out
+          ? ({
+              ...(out as object),
+              elements: {
+                ...(out.elements as Record<string, unknown>),
+                ...(ledger.elements as Record<string, unknown>),
+              },
+            } as Ledger)
+          : ledger;
+      } catch {
+        return null;
+      }
+    }
+    return out;
   }
 
   // Hand the item's realtime room a change the api itself just wrote, so everyone connected sees it.
@@ -404,6 +444,7 @@ export function createRoomClient<
     broadcastOp,
     fetchRoomLedger,
     applyRoomLedger,
+    fetchLedgerEntries,
     relayElementDelta,
     relayChangeset,
     relayItemRename,

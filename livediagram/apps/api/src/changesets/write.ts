@@ -23,6 +23,7 @@ import {
 } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayChangeset } from '../room-client';
+import { lockTabWrite } from '../whole-tab-lock';
 import type { DocumentEnv } from '../types';
 import { mintChangesetId } from './changeset-id';
 import { agentKeyFor, changesetRoomOp } from './room-op';
@@ -63,9 +64,20 @@ type WriteOutcome =
 
 export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promise<WriteOutcome> {
   const before = w.stored?.tab.elements ?? [];
+  // A changeset writes the tab whole, so it is locked like a save (docs/specs/013-workspace/share-roles.md "The
+  // collab key"): a token changes nobody's reactions, responses or dots, a person's revert only their own.
+  const next = await lockTabWrite(
+    env,
+    w.documentId,
+    w.tabId,
+    w.next,
+    w.stored?.tab ?? null,
+    w.tokenId ? null : w.author.id,
+    'changeset',
+  );
   // What turns the stored elements into the next ones, so the record, the relay and the merge on
   // save all say exactly what landed (server rules included).
-  const elementOps = diffToElementOps(before, w.next.elements);
+  const elementOps = diffToElementOps(before, next.elements);
   const creates = w.stored === null;
   if (elementOps.length === 0 && !creates) return { kind: 'unchanged' };
   const inverse = invertElementOps(before, elementOps);
@@ -95,7 +107,7 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
     authorColor: w.author.color,
     tokenId: w.tokenId,
     summary: w.summary,
-    fingerprints: fingerprintsOf(before, w.next.elements, elementOps),
+    fingerprints: fingerprintsOf(before, next.elements, elementOps),
     counts: countsOf(elementOps),
     createdTab: creates,
     revertOf: w.revertOf,
@@ -109,7 +121,7 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
   for (let mint = 0; mint < 2; mint += 1) {
     try {
       const results = await env.DOCUMENT_DB.batch([
-        ...tabWriteStatements(env, w.documentId, w.next, w.orderIndex, { expected }, now),
+        ...tabWriteStatements(env, w.documentId, next, w.orderIndex, { expected }, now),
         insertChangesetStatement(env, record),
         insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
         insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
@@ -141,7 +153,7 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
       counts: record.counts,
       elementOps,
       ...(w.tokenId ? { agentKey: await agentKeyFor(w.tokenId) } : {}),
-      ...(creates ? { tab: tabFieldsOf(w.next) } : {}),
+      ...(creates ? { tab: tabFieldsOf(next) } : {}),
       revertOf: w.revertOf,
     }),
   );

@@ -4,6 +4,7 @@
 // internal and their bodies trusted. Every other request is a WebSocket upgrade, which the room answers itself.
 import { opForTheWire } from '@livediagram/document';
 import { parseAccessCloseMatch, type AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
+import { LEDGER_LOCK_ELEMENTS_MAX } from '@liveworkspace/api-kit/room-ledger-store';
 
 /** The room's surface the internal endpoints act on. */
 export type InternalRoom = {
@@ -19,6 +20,10 @@ export type InternalRoom = {
   sequenceMutation: (from: string, op: unknown) => number;
   readSelections: (tabId: string, person: string) => Promise<unknown>;
   readLedger: (tabId: string, since?: number) => Promise<unknown>;
+  readLedgerEntries: (
+    tabId: string,
+    want: { elementIds: readonly string[]; vote: boolean },
+  ) => Promise<unknown>;
   epoch: () => string;
 };
 
@@ -117,6 +122,31 @@ export async function answerInternal(
     const since = Number(url.searchParams.get('since') ?? Number.NaN);
     return Response.json(
       await room.readLedger(tabId, Number.isInteger(since) && since >= 0 ? since : undefined),
+    );
+  }
+  // Internal: the entries a whole-tab write's lock reads beside the stored tab (docs/specs/013-workspace/
+  // share-roles.md "The collab key"), named by element, whatever their seq or the room's epoch: each person's latest
+  // on or off is what the lock needs, however old. Same trust argument as /broadcast.
+  if (request.method === 'POST' && url.pathname === '/ledger-entries') {
+    const body = (await readBody(request)) as {
+      tab?: unknown;
+      elements?: unknown;
+      vote?: unknown;
+    } | null;
+    const elements = body?.elements;
+    if (
+      typeof body?.tab !== 'string' ||
+      !Array.isArray(elements) ||
+      elements.length > LEDGER_LOCK_ELEMENTS_MAX ||
+      !elements.every((id): id is string => typeof id === 'string')
+    ) {
+      return new Response('bad request', { status: 400 });
+    }
+    return Response.json(
+      await room.readLedgerEntries(body.tab, {
+        elementIds: elements,
+        vote: body.vote === true,
+      }),
     );
   }
   return null;

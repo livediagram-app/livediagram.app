@@ -425,6 +425,7 @@ export * from './element-deltas';
 // The room's record of those deltas, merged into each save so D1 keeps what
 // the room saw (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
 export * from './collab-ledger';
+export * from './whole-tab-lock';
 
 // Tab-folder grouping + order normalization (docs/specs/006-document/tab-folders.md). One home
 // shared by the tab-bar renderer, the client save path, and the
