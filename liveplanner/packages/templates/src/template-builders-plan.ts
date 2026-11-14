@@ -130,8 +130,11 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
         ? [{ tabId: ids[i]!, of: sp.board ? ('board' as const) : ('sheet' as const) }]
         : [],
     );
+    const forms = specs.flatMap((sp, i) =>
+      (sp.form ? (sp.figures ?? []) : []).map((metric) => ({ formTabId: ids[i]!, metric })),
+    );
     const { dashboard } = dashboardLayoutOf(
-      { tabs: work, notes: notes.map(noteOf) },
+      { tabs: work, forms, notes: notes.map(noteOf) },
       views,
       ids[0] ?? 't',
     );

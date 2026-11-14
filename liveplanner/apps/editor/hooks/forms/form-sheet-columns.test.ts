@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FormDefinition } from '@liveplanner/forms';
 import type { Cell } from '@liveplanner/sheets';
-import { formColumnsKey, formColumnsSync, headersByKey, topRowTexts } from './form-sheet-columns';
+import { formColumnsKey, formColumnsSync, headersByKey } from './form-sheet-columns';
 
 // A sheet form's columns as the builder keeps them (docs/specs/030-forms/forms.md "Columns before any response").
 
@@ -17,27 +17,6 @@ const form = (over: Partial<FormDefinition> = {}): FormDefinition => ({
 const sheet = (cells: [string, Cell][] = [], rows = ['r1', 'r2']) => ({
   layout: { rows, cols: ['ca', 'cb', 'cc'] },
   cells: new Map(cells),
-});
-
-describe('topRowTexts', () => {
-  it("reads the top rows' text, by row then column", () => {
-    expect(
-      topRowTexts(
-        sheet([
-          ['r1:ca', { input: { s: '#' } }],
-          ['r1:cb', { input: { n: 4 } }],
-          ['r1:cc', { format: { b: true } }],
-          ['r2:ca', { input: { s: 'below' } }],
-        ]),
-      ),
-    ).toEqual(
-      new Map([
-        ['r1', new Map([['ca', '#']])],
-        ['r2', new Map([['ca', 'below']])],
-      ]),
-    );
-    expect(topRowTexts(sheet([], []))).toEqual(new Map());
-  });
 });
 
 describe('formColumnsSync', () => {

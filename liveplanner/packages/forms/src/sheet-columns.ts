@@ -6,7 +6,9 @@
 // template's headers sit under its title, Contacts' on row 4), else row 1. Pure: the builder plans its header sync
 // here, and the api plans each response's row on the same plan.
 import {
+  cellKey,
   makeAxisIds,
+  type Sheet,
   type CellChange,
   type LayoutChange,
   type SheetWrite,
@@ -60,6 +62,22 @@ export function sheetHeaders(form: SheetForm): SheetHeader[] {
 
 // How many of a sheet's top rows are looked at for its header row (a template's title and subtitle sit above it).
 export const HEADER_SCAN_ROWS = 12;
+
+// The text of a sheet's top rows (where its header row is found) by row id, then column id.
+export function topRowTexts(
+  sheet: Pick<Sheet, 'layout' | 'cells'>,
+): Map<string, Map<string, string>> {
+  const out = new Map<string, Map<string, string>>();
+  for (const row of sheet.layout.rows.slice(0, HEADER_SCAN_ROWS)) {
+    const texts = new Map<string, string>();
+    for (const c of sheet.layout.cols) {
+      const input = sheet.cells.get(cellKey(row, c))?.input;
+      if (input && 's' in input) texts.set(c, input.s);
+    }
+    out.set(row, texts);
+  }
+  return out;
+}
 
 // The text cells of some of a sheet's rows: row id -> column id -> text.
 export type RowTexts = ReadonlyMap<string, ReadonlyMap<string, string>>;

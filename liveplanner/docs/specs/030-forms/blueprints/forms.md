@@ -299,10 +299,16 @@ fields?: Record<string, string> }`. `to` is a tab spec's `name` in the same temp
 - `templateForm`: `starterWithFields(formStarter(spec.starter), spec.fields)` (labels swapped, nothing else), then
   `buildStarter` with, for a board, the ready-made type of the board's first `addTypes` id (`READY_MADE_CARD_TYPES`)
   and `destination: { tabId, typeId, status: columns[0].status }`; for a Sheet, `starterBaseType(starter, [], ...)`
-  and `sheet: { tabId, sheetId }` (no `columns`: the builder and the first response find them). `heading` is the tab
+  and `sheet: { tabId, sheetId }` (no `columns` yet: `materialiseTemplateSheets` fills them, below). `heading` is the tab
   name. No `closesAt`, `limit` or link: unpublished.
 - `materialiseTemplateSheets` (`template-sheets.ts`) titles a made sheet after its tab when a tab in the same batch
-  has `form.sheet.sheetId` naming it (`formSheetTitles`); the tabs it takes may carry `name` and `form`.
+  has `form.sheet.sheetId` naming it (`formSheetTitles`); the tabs it takes may carry `name` and `form`. It also writes
+  that form's headers into the made sheet (`withFormHeaders`: `sheetHeadersWrite` over `topRowTexts`, applied with
+  `applySheetWrite`, the same plan the editor's `useFormSheetColumns` runs) and returns the Form tab with
+  `form.sheet.columns` set, so the editor's later sync finds every header and writes nothing.
+- A form spec's `figures` (`FormMetricKind[]`, both catalogue forms: `['responses']`) become `form-metric` slots on the
+  template's Overview: `planTemplateTabs` passes `forms: { formTabId: ids[i], metric }` to `dashboardLayoutOf`, which
+  places them after the metric tiles in the same rows (four a row).
 - Invariant (tested for every template): a board form's `buildStarter` returns the ready-made type unchanged, every
   question's mapping resolves on it and `publishProblems` and `destinationProblem` find nothing, so the template
   brings no field of its own and the form can be published as made.
