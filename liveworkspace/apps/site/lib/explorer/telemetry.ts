@@ -160,8 +160,9 @@ function send(app: TelemetrySender, category: string, action: string, type?: str
 
 // ---------- The Explorer's host hooks ------------------------------------------------------------------------
 
-// Home's own report: a failed read retried.
-export const trackHome: HomeTelemetry = (_action, type) => track('Home', 'Loaded', type);
+// Home's own reports: a failed read retried, and a card opened from Most Used or Recent or See More followed.
+export const trackHome: HomeTelemetry = (action, type) =>
+  action === 'Selected' ? track('Home', 'Selected', type) : track('Home', 'Loaded', type);
 
 // Folders, default folders, the Trash and team libraries. An event about one item (or one app's default folder)
 // counts for that app, whatever the page is filtered to; a folder's for the page's app. An item's team events name

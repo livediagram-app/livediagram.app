@@ -103,7 +103,10 @@ sent.
 ## The Explorer on liveworkspace.app
 
 The one Explorer lives on liveworkspace.app ([site.md](../010-site/site.md#the-explorer-explorer)), so the events
-each app's own Explorer used to send now come from there: Home's first run, the
+each app's own Explorer used to send now come from there: Home's first run, Home's picks (a card opened from Most
+Used or Recent, or See More followed: `Home·Selected·MostUsed` / `Recent` / `SeeMore`, which were
+`JumpBackIn.MostUsed` / `.Recent` / `.SeeMore` before November 2026; each app's Opened from Home chart reads both
+names, `apps/site/app/telemetry/_shared/home-picks.ts`), the
 filter lens, the Inbox, the List / Card / Details toggle, Home's banner closed and its Try Again
 (`Home·Loaded·Retry`), the Share dialog (links copied and revoked, and each link made by level,
 lifetime and tab, extended, rescoped or given a password: `<Noun>·Shared`), folders made,

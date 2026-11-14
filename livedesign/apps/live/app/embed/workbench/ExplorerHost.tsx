@@ -46,7 +46,10 @@ import {
 } from '@/lib/explorer-host';
 
 // A failed read of Home retried: a literal call, so the telemetry manifest scan sees the pair.
-const trackHome: HomeTelemetry = (_action, type) => track('Home', 'Loaded', type);
+// The frame counts Home's retries; Home's picks are counted on the Explorer page (liveworkspace.app).
+const trackHome: HomeTelemetry = (action, type) => {
+  if (action === 'Loaded') track('Home', 'Loaded', type);
+};
 
 // Home's first run: each a literal pair, so the telemetry manifest scan sees it.
 const trackWelcome = (type: WelcomeTelemetryType) => track('Home', 'Selected', type);

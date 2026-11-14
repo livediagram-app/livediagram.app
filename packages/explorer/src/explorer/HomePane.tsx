@@ -106,6 +106,9 @@ export function HomePane({ hero }: { hero: boolean }) {
   // A failed read says so once, under Recent's heading, with Try again, never "nothing yet".
   const failed = !recent.loading && Boolean(recent.error);
   const loading = recent.loading;
+  // A card opened from Most Used or Recent, or See More followed to the Recent view (Home·Selected).
+  const pickFrom = (section: 'MostUsed' | 'Recent') => (seeLink: boolean) =>
+    onHome?.('Selected', seeLink ? 'SeeMore' : section);
   const retry = () => {
     onHome?.('Loaded', 'Retry');
     recent.retry();
@@ -137,7 +140,12 @@ export function HomePane({ hero }: { hero: boolean }) {
           <HomeNew wide={wide} showApp={showApp} />
           {/* Most Used: left out once the read finds none, and while Home could not load (Recent says so). */}
           {loading || (!failed && mostUsed.length > 0) ? (
-            <HomeSection id="most-used" title={HOME_COPY.mostUsed} busy={loading}>
+            <HomeSection
+              id="most-used"
+              title={HOME_COPY.mostUsed}
+              busy={loading}
+              onPick={onHome ? pickFrom('MostUsed') : undefined}
+            >
               {loading ? (
                 <SectionSkeleton wide={wide} />
               ) : (
@@ -152,6 +160,7 @@ export function HomePane({ hero }: { hero: boolean }) {
               id="recent"
               title={HOME_COPY.recent}
               busy={loading}
+              onPick={onHome ? pickFrom('Recent') : undefined}
               link={
                 wide && !loading && !failed && recentRest.length > 0
                   ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
