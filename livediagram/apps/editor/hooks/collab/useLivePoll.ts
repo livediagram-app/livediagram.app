@@ -20,6 +20,7 @@ import { pollStyleUsesRoster } from '@livediagram/document';
 import { pollCollaboratorOptions, type PollCandidate } from '@/lib/poll-collaborators';
 import { ensureCollabSecret } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 
 type RoomHandle = { send: (msg: RoomOutgoing) => void };
 
@@ -106,6 +107,9 @@ export function useLivePoll(deps: {
   // was on screen — one poll at a time per document, like one timer per tab.
   const openPoll = useCallback(
     (next: LivePoll) => {
+      // Said politely (docs/specs/012-collaboration/live-poll.md "Announced politely"): the sheet takes no focus, so a
+      // screen reader would never hear it arrive. Once per poll: the room's replay of the one on screen says nothing.
+      if (pollRef.current?.id !== next.id) announce(`Poll started: ${next.question}`);
       setActivePoll(next);
       setAnswers(new Map());
       setMyAnswer(null);

@@ -160,6 +160,11 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    What follows from not blocking:
    - **No focus trap and no autofocus.** Focus stays where the person was
      working. Stealing it would be the modal's rudeness without the modal.
+   - **Announced politely.** With focus left where it was, a screen reader would never hear the sheet arrive, so a
+     poll's start is said through the canvas's polite live region (the shared announcer,
+     [Canvas accessibility](../004-interface-design/canvas-accessibility.md)): "Poll started: <question>", once per
+     poll, to whoever starts it and to everyone it reaches. The room's replay of a poll already on screen (a
+     reconnect) says nothing again.
    - **Escape still skips**, because the keyboard way out of a prompt should not
      depend on whether it happens to be modal, except while a text field or
      label editor has focus, where Escape belongs to the field, and when the

@@ -8,6 +8,11 @@ vi.mock('@/lib/telemetry', () => ({
   track: (...args: Parameters<typeof trackMock>) => trackMock(...args),
 }));
 
+const announceMock = vi.fn<(message: string) => void>();
+vi.mock('@liveworkspace/workbench/lib/announcer', () => ({
+  announce: (message: string) => announceMock(message),
+}));
+
 const { pollHostFor, useLivePoll } = await import('./useLivePoll');
 
 const poll = (id: string): LivePoll => ({
@@ -212,5 +217,28 @@ describe('pollHostFor', () => {
 
   it('is nobody once the poll has closed', () => {
     expect(pollHostFor({ ...base, open: false, facilitating: true })).toBe(false);
+  });
+});
+
+// Work Tracker 444 (docs/specs/012-collaboration/live-poll.md "Announced politely"): the sheet takes no focus, so its
+// arrival is said through the polite live region.
+describe('announcing a poll start', () => {
+  beforeEach(() => announceMock.mockReset());
+
+  it('says a poll from a peer once, and not again when the room replays it', () => {
+    const { result } = setup();
+    act(() => result.current.receivePoll(poll('p1')));
+    act(() => result.current.receivePoll(poll('p1')));
+    expect(announceMock.mock.calls).toEqual([['Poll started: Lunch?']]);
+  });
+
+  it('says the poll this person starts, and the next poll after it', () => {
+    const { result } = setup();
+    act(() => result.current.startPoll({ question: 'Ship it?', style: 'yes-no', options: [] }));
+    act(() => result.current.receivePoll({ ...poll('p2'), startedAt: Date.now() + 1000 }));
+    expect(announceMock.mock.calls.map(([m]) => m)).toEqual([
+      'Poll started: Ship it?',
+      'Poll started: Lunch?',
+    ]);
   });
 });
