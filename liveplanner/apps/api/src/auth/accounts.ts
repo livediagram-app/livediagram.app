@@ -39,15 +39,20 @@ type Verify = ReturnType<typeof createPersonVerifier>;
 
 // One verifier per issuer + audience for the life of the isolate: `createVerifier` caches the key
 // set, so building one per request would refetch it every time.
-const verifiers = new Map<string, Verify>();
+// The key set comes through the ACCOUNTS binding, the public route only when it is missing or throws. Kept with
+// the binding it was built over, so an env with another binding (a test's) builds its own.
+const verifiers = new Map<string, { via: Fetcher | undefined; verify: Verify }>();
 
-function verifierFor(issuer: string, audience: string | string[]): Verify {
+function verifierFor(
+  issuer: string,
+  audience: string | string[],
+  via: Fetcher | undefined,
+): Verify {
   const key = `${issuer} ${[audience].flat().join(' ')}`;
-  let verify = verifiers.get(key);
-  if (!verify) {
-    verify = createPersonVerifier({ issuer, audience });
-    verifiers.set(key, verify);
-  }
+  const held = verifiers.get(key);
+  if (held && held.via === via) return held.verify;
+  const verify = createPersonVerifier({ issuer, audience, keysFrom: via });
+  verifiers.set(key, { via, verify });
   return verify;
 }
 
@@ -70,7 +75,7 @@ export async function getPersonIdentity(
   // The Explorer's preview and tabs reads take any app's token (@liveworkspace/auth-client explorer-reads.ts): on
   // another app's address it asks as that app.
   const audience = audiencesFor(request, env.API_RESOURCE, 'projects');
-  const claims = await verifierFor(issuer, audience)(token);
+  const claims = await verifierFor(issuer, audience, env.ACCOUNTS)(token);
   if (!claims) {
     console.warn('[auth] access_token_rejected');
     return null;
