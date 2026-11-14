@@ -144,16 +144,16 @@ and media service, so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/editor/out` holds and never rebuilds it, so locally run
 `pnpm --filter @livehuddle/editor build` first; an old `out/` fails audits for code that has since changed.
 
-`scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
+`scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on. Its default ports sit in livehuddle's own block (editor 3502, api 9087, index 8519, media 8520), so no other product's default stack shares one (`liveworkspace/apps/site/lib/e2e-inspector-ports.test.ts` guards it):
 
-1. **index**: `wrangler dev --local` (liveworkspace/apps/index) on `E2E_INDEX_PORT` (8119; the index's, media's and api's wrangler inspectors sit 10 above their ports by default, set by `E2E_INDEX_INSPECTOR_PORT`, `E2E_MEDIA_INSPECTOR_PORT` and `E2E_API_INSPECTOR_PORT`, so the stack opens no port outside its own), its D1 a fresh
+1. **index**: `wrangler dev --local` (liveworkspace/apps/index) on `E2E_INDEX_PORT` (8519; the index's, media's and api's wrangler inspectors sit 10 above their ports by default, set by `E2E_INDEX_INSPECTOR_PORT`, `E2E_MEDIA_INSPECTOR_PORT` and `E2E_API_INSPECTOR_PORT`, so the stack opens no port outside its own), its D1 a fresh
    `liveworkspace/apps/index/.wrangler/e2e-state` each boot (migrations applied first), kept apart from a
    developer's own, sharing a test-only key with the api (the api's `INDEX_KEY`, the index's
    `INDEX_KEY_LIVEHUDDLE`). It trusts the same accounts the api does (the stand-in below), takes tokens addressed to the api's `API_RESOURCE`, and calls this api for its internal item routes.
    The stack forwards `/api/index/*` to it, cookies dropped, as the router does.
 2. **media**: liveworkspace's media service (`liveworkspace/apps/media`, booted by
    `liveworkspace/apps/media/scripts/e2e-media.mjs`, which every product's stack can share) under `wrangler dev --local` on
-   `E2E_MEDIA_PORT` (8120), its D1 and R2 fresh each boot under `liveworkspace/apps/media/.wrangler/e2e-state-<port>`
+   `E2E_MEDIA_PORT` (8520), its D1 and R2 fresh each boot under `liveworkspace/apps/media/.wrangler/e2e-state-<port>`
    (migrations applied first), keyed for livehuddle.app with a test-only key the api gets as `MEDIA_KEY` (and
    `MEDIA_URL` pointing at it). Uploads, the gallery and image bytes run end to end, as `import-images.spec.ts`
    and `drawio-import.spec.ts` need. So do previews: its `INDEX_URL` is the stack's index and its
