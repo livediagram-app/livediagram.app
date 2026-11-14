@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../person/profiles', () => import('../test-profiles'));
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { getHeapStatistics, setFlagsFromString } from 'node:v8';
+import { runInNewContext } from 'node:vm';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { ItemsImportStaged, ItemsResponse } from '@liveplanner/api-schema';
@@ -13,7 +15,12 @@ import {
 } from '@liveplanner/items';
 import { withImportedThreads, type ImportedCreate } from '@liveplanner/project';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { ITEM_IMPORT_HOLD_MS, sweepHeldImports } from '../db/item-imports';
+import {
+  ITEM_IMPORT_HOLD_MS,
+  ITEM_IMPORT_JSON_MAX,
+  jsonChars,
+  sweepHeldImports,
+} from '../db/item-imports';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
 
@@ -22,6 +29,8 @@ import { handleProjects } from './projects';
 
 let sql: SqliteD1;
 let relayed: { op: { kind: string; upserts: unknown[]; rev?: number } }[];
+// Called at each relay to the room, when a test listens.
+let onRelay: (() => void) | null = null;
 
 async function call<T = unknown>(body: unknown, opts: { code?: string; path?: string } = {}) {
   const pending: Promise<unknown>[] = [];
@@ -43,11 +52,18 @@ const count = (table: string) =>
   (sql.sql.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get() as { n: number }).n;
 
 // `n` imported cards, every `withComments`th one with an Imported comments thread of `comments` comments.
-function cards(n: number, opts: { withComments?: number; comments?: number; text?: number } = {}) {
+// `description` gives each card a description of that many characters.
+function cards(
+  n: number,
+  opts: { withComments?: number; comments?: number; text?: number; description?: number } = {},
+) {
   const creates: TrackerCreate[] = Array.from({ length: n }, (_, i) => ({
     id: newItemId(),
     type: 'task',
-    fields: { title: `Card ${i + 1}` },
+    fields: {
+      title: `Card ${i + 1}`,
+      ...(opts.description ? { description: 'd'.repeat(opts.description) } : {}),
+    },
     place: { status: 'todo' },
     importedComments:
       opts.withComments && i % opts.withComments === 0
@@ -70,11 +86,13 @@ async function send(creates: ImportedCreate[], importId = 'import-0001') {
 beforeEach(() => {
   sql = sqliteD1();
   relayed = [];
+  onRelay = null;
   (sql.env as unknown as { PLAN_ROOM: unknown }).PLAN_ROOM = {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (url: string, init: RequestInit) => {
         if (!url.endsWith('/purge')) relayed.push(sentJson(init) as (typeof relayed)[number]);
+        onRelay?.();
         return new Response(null, { status: 204 });
       },
     }),
@@ -351,5 +369,93 @@ describe('an import at the caps', () => {
     expect(count('card_threads')).toBe(ITEMS_MAX);
     expect(count('item_import_parts')).toBe(0);
     expect(ms).toBeLessThan(cpuBudgetMs(1_500));
+  });
+});
+
+// docs/specs/026-plan/blueprints/tracker-import.md "Performance and limits": the landing reads every held card into the
+// plan's Durable Object (128 MB), so an import's JSON is capped (ITEM_IMPORT_JSON_MAX) and an import at that cap lands
+// under the 64 MB budget. The peak is the live heap (a forced collection before each sample) at every write batch and
+// room relay of the last part, over the heap before it; measured about 57 MB.
+describe('the landing’s memory', () => {
+  const LANDING_HEAP_BUDGET = 64 * 1024 * 1024;
+
+  it('lands an import at the JSON cap under the memory budget', async () => {
+    // 2,000 cards and 20,000 comments, each card's description sized so the import sits just under the cap.
+    const base = jsonChars(cards(ITEMS_MAX, { withComments: 1, comments: 10, text: 570 }));
+    const description = Math.floor((ITEM_IMPORT_JSON_MAX * 0.995 - base) / ITEMS_MAX);
+    const creates = cards(ITEMS_MAX, { withComments: 1, comments: 10, text: 570, description });
+    expect(jsonChars(creates)).toBeGreaterThan(ITEM_IMPORT_JSON_MAX * 0.98);
+    expect(jsonChars(creates)).toBeLessThanOrEqual(ITEM_IMPORT_JSON_MAX);
+    const parts = importParts('import-heap', creates);
+    for (const part of parts.slice(0, -1)) expect((await call(part)).status).toBe(202);
+    const last = parts.pop()!;
+    creates.length = 0;
+    parts.length = 0;
+
+    setFlagsFromString('--expose-gc');
+    const gc = runInNewContext('gc') as () => void;
+    const heap = () => getHeapStatistics().used_heap_size;
+    let sampling = false;
+    let peak = 0;
+    const sample = () => {
+      if (!sampling) return;
+      gc();
+      peak = Math.max(peak, heap());
+    };
+    const db = sql.env.PLAN_DB;
+    const batch = db.batch.bind(db);
+    db.batch = (stmts) => {
+      sample();
+      return batch(stmts);
+    };
+    // The test's own record of the relays would grow with them: the room takes each op and keeps none.
+    onRelay = () => {
+      relayed.length = 0;
+      sample();
+    };
+    gc();
+    const before = heap();
+    sampling = true;
+    const landed = await call<ItemsResponse>(last);
+    sampling = false;
+    expect(landed.status).toBe(201);
+    expect(landed.body.items).toHaveLength(ITEMS_MAX);
+    expect(count('items')).toBe(ITEMS_MAX);
+    expect(count('item_import_parts')).toBe(0);
+    expect(peak - before).toBeGreaterThan(0);
+    expect(peak - before).toBeLessThan(LANDING_HEAP_BUDGET);
+  });
+
+  // A held body of `chars` characters, as part 0 of `importId` (only its length is read before the landing).
+  const holdChars = (importId: string, chars: number) =>
+    sql.sql
+      .prepare(
+        `INSERT INTO item_import_parts (plan_id, import_id, part, seq, body, created_at)
+         VALUES ('d1', ?, 0, 0, ?, ?)`,
+      )
+      .run(importId, 'x'.repeat(chars), Date.now());
+
+  it('holds a part up to the cap, and refuses one past it', async () => {
+    const [, middle] = importParts('import-big1', cards(3 * 200));
+    holdChars('import-big1', ITEM_IMPORT_JSON_MAX - jsonChars(middle!.items));
+    expect((await call(middle)).status).toBe(202);
+    // One character more held: the same part sent again passes the cap.
+    sql.sql.exec(`UPDATE item_import_parts SET body = body || 'x' WHERE part = 0`);
+    expect(await call(middle)).toMatchObject({
+      status: 413,
+      body: { error: 'import_too_large' },
+    });
+    expect(count('item_import_parts')).toBe(0);
+  });
+
+  it('refuses a last part that takes the import past the cap, and lands nothing', async () => {
+    const [, last] = importParts('import-big2', cards(2 * 200));
+    holdChars('import-big2', ITEM_IMPORT_JSON_MAX - jsonChars(last!.items) + 1);
+    expect(await call(last)).toMatchObject({
+      status: 413,
+      body: { error: 'import_too_large' },
+    });
+    expect(count('items')).toBe(0);
+    expect(count('item_import_parts')).toBe(0);
   });
 });

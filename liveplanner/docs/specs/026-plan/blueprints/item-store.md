@@ -291,7 +291,8 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
 `/items/import` is a whole import: its parts are held in the plan's SQLite (`item_import_parts`, 202
 `{ staged }`) and the last one lands every card, with its threads, in one transaction (201 `ItemsResponse`), or
 none (blueprint [tracker-import.md](tracker-import.md) "A whole import"). Its other answers: `409 import_incomplete`
-(a part missing at the last), `413 items_full` (past the plan's room, held parts counted), and those of `/items/bulk`.
+(a part missing at the last), `413 items_full` (past the plan's room, held parts counted), `413 import_too_large`
+(the import's JSON past `ITEM_IMPORT_JSON_MAX`, 26 MiB), and those of `/items/bulk`.
 
 - Tab-scoped grants: GET requires `tabId` matching the grant and filters to `itemIdsShownOnTab` of that tab's
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the
