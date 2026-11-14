@@ -486,7 +486,7 @@ as FAILED.
     skill's "Add the cards" fields, with Source `PR History`, and name the card and PR it came from in the
     description as "card N" and the PR link (never "Work Tracker N", which links the PR to it):
     `{"op": "add", "type": "Idea", "status": "Under Review", "title": "...", "fields": {"description": "<the
-problem, then: Came up building card 12 in <PR url>>", "f-solution": "...", "f-apps": [...], "f-kind": "Polish" or
+problem, then: Came up building card 12 in <PR url>>", "f-solution": "...", "f-apps": [...], "f-kind": "Polish", "Consistency", "Rework",
 "Extend" or "New Feature", "f-source": "PR History", "f-effort": "Small", "priority": "low"}}`. Never set
     Reviewed or Reason.
   - Unsure which? A follow-up is optional unless you can say what goes wrong without it.

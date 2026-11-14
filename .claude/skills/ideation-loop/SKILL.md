@@ -1,6 +1,6 @@
 ---
 name: ideation-loop
-description: One pass over the liveworkspace products that looks for genuinely good product ideas (gaps in the code on main, what competitors ship, telemetry and feedback) and logs the few that make the cut as Idea cards in the Work Tracker plan's Ideas board. The owner accepts or rejects each one through its Reviewed field. Paces itself by how many Ideas wait for review (hourly when few, never at 60 or more). Run with `/loop /ideation-loop`.
+description: One pass over the liveworkspace products that looks for genuinely good product ideas (gaps in the code, weak or inconsistent UI and UX, what competitors ship, telemetry and feedback) and logs the few that make the cut as Idea cards in the Work Tracker plan's Ideas board. The owner accepts or rejects each one through its Reviewed field. Paces itself by how many Ideas wait for review (hourly when few, never at 60 or more). Run with `/loop /ideation-loop`.
 ---
 
 # Ideation loop: one pass
@@ -37,12 +37,23 @@ to fill a quota. An idea makes the cut only when all of these hold:
 
 ## Kinds of idea
 
-Look for all three, every pass. Each card's **Kind** field says which it is:
+Look for every kind, every pass. Each card's **Kind** field says which it is. The goal behind all of them is
+to make each product the best in its category, in how it looks (UI) and how it works (UX).
 
 - **Polish** (`Polish`): make something we already have feel better. Rough edges in one flow taken together: too
   many steps, unclear wording, missing feedback (no progress, no undo, no confirmation), awkward defaults, weak
   empty states, jarring motion, a phone layout that works but feels cramped. Compare it with how the best tool in
   its category does the same thing. One card covers the whole flow, never a single nit.
+- **Consistency** (`Consistency`): the same thing done different ways. Menus, dialogs, toolbars, pickers,
+  empty states, tooltips, shortcuts, wording or spacing that differ between screens or products. Hand-rolled
+  controls that should use the shared `@liveworkspace/ui` primitives. Patterns that break the UI conventions
+  (Title Case, tooltips, tile vs row menus, pointer cursors). Name every place that differs, pick the best one as
+  the standard, and say how it moves into a shared component so they can't drift again.
+- **Rework** (`Rework`): a poor implementation or weak UI that polish won't save. A screen that's cluttered,
+  ugly, confusing or dated next to the category leaders; a flow built around how the code works rather than what
+  the user wants; a feature that's slow, fragile or tangled because of how it was built (duplicated logic, a god
+  component, state that fights itself), where users feel it. Say what's wrong with evidence (screenshots,
+  `file:line`, timings), what the best-in-class version does, and the proposed redesign or restructure.
 - **Extend** (`Extend`): make a feature we already have more valuable by taking it further. Who uses it, what do
   they do next, and where does it stop them? For example, a board filter that can be saved and shared, a template
   gallery people can add to, an import that also keeps comments, an export that also goes to another tool.
@@ -137,6 +148,20 @@ comes round every few passes.
    `prod-checks` memory for where it lives and how to read it): features with heavy use that hit a wall, and errors
    that point at a missing path. Community posts and feature requests on the products' Community pages. Help
    articles that explain a workaround.
+4. **UI and UX audit** (Source `UI Audit`). The main source for **Polish**, **Consistency** and **Rework**. Walk
+   the product's main screens and flows in a browser, the same read-only way as source 1, at desktop, tablet and
+   390px phone width, in light and dark, and save screenshots to the scratchpad as evidence. Judge it against:
+   - **The best in the category**: put the same flow in the category leader side by side (their public site,
+     docs, screenshots or a free account). Where theirs is clearly better, say exactly how.
+   - **The rest of our products**: open the same pattern (a share dialog, a menu, an empty state, a settings
+     page) in every product and note where they differ.
+   - **Our own standards**: the shared UI primitives in `packages/ui`, the design tokens, the product's
+     interface specs (`docs/specs/004-interface-design`) and the owner's UI conventions and quality bar memories.
+   - **The code behind it**: for a screen that feels wrong, read its components. Re-typed classes instead of
+     primitives, copies of a shared component, oversized components and tangled state are often why it looks or
+     behaves badly, and the fix belongs in the idea.
+     Basic UX checks along the way: is it clear what to do next, does every action give feedback, can it be undone,
+     does it work with a keyboard, is the text readable, does it hold up with long names and lots of items.
 
 ### Wider sources (two per pass, rotating, across every product)
 
@@ -227,9 +252,11 @@ Add every idea that survives the check in **one** `change_items` batch:
 - **Solution** (`f-solution`): the proposed shape in a few lines: what the user sees, where it lands in the code
   (packages and files), whether it's a platform capability and the main risk.
 - **App** (`f-apps`): every product it touches; `liveworkspace` for platform work.
-- **Kind** (`f-kind`): `Polish`, `Extend` or `New Feature` (see "Kinds of idea").
+- **Kind** (`f-kind`): `Polish`, `Consistency`, `Rework`, `Extend` or `New Feature` (see "Kinds of idea"). For
+  the first three, the description links or names the screenshots that show the problem, and the Solution says
+  what the improved version looks like and which shared component it uses or creates.
 - **Source** (`f-source`): where the strongest evidence came from, one of the sources in step 2 (`Code Gap`,
-  `Competitor`, `Telemetry`, `Feedback`, `Board History`, `PR History`, `Cloudflare Usage`, `Industry Trends`,
+  `Competitor`, `Telemetry`, `Feedback`, `UI Audit`, `Board History`, `PR History`, `Cloudflare Usage`, `Industry Trends`,
   `Standards`, `Owner Notes`). One value, even when several sources agree; the description lists them all. The
   Lessons track which kinds and sources the owner accepts most.
 - **Effort** (`f-effort`): a rough size from reading the code it would touch: `Small` (about a day), `Medium` (a
