@@ -63,7 +63,7 @@ export function layoutRenderSvg(
   // A plain page in dark chrome: what the slate paper sank is lifted off it, as on the canvas.
   const elements =
     appearance === 'dark' && !page.background?.fill
-      ? inkedOnPaper(placed, seenEls, plainPaper('dark'))
+      ? [...inkedOnPaper(placed, seenEls, plainPaper('dark'))]
       : seenEls;
   // A tile is a thumbnail: an animated background is drawn still (export-tab's `stillBackground`).
   return renderTabToSvg({ ...tab, elements }, { page: seen, stillBackground: true });
