@@ -1,7 +1,7 @@
-// The hero windows' cursors ride a polyline (CSS motion path), stopping at each point in turn
-// (docs/specs/019-marketing/marketing-site.md "Hero"). The keyframes fix when each stop is reached;
-// how far along the path each stop lies depends on the layout (a phone's portrait layout moves the
-// points), so it is worked out here and handed to the keyframes as --p1, --p2 ... (percentages).
+// The hero windows' cursors ride a polyline (CSS motion path), stopping at each point in turn (each product's
+// docs/specs/019-marketing/marketing-site.md "Hero"; livediagram's and livehuddle's hero boards). The keyframes fix
+// when each stop is reached; how far along the path each stop lies depends on the layout (a phone's portrait layout
+// moves the points), so it is worked out here and handed to the keyframes as --p1, --p2 ... (percentages).
 
 export type Point = readonly [number, number];
 
