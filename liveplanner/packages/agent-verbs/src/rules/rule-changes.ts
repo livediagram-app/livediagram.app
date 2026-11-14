@@ -54,12 +54,23 @@ const bodyOf = (r: AutomationRuleBody): RuleBodyInput => ({
   timeZone: r.timeZone,
 });
 
+// A body's own parts, as given: anything else it holds (list_rules' id, enabled, made and edited, when a rule read
+// back is written back) is left out, so the api never sees it (spec "A rule read back writes back").
+const bodyParts = (b: RuleParts): RuleParts => ({
+  ...(b.name !== undefined ? { name: b.name } : {}),
+  ...(b.trigger !== undefined ? { trigger: b.trigger } : {}),
+  ...(b.conditions !== undefined ? { conditions: b.conditions } : {}),
+  ...(b.steps !== undefined ? { steps: b.steps } : {}),
+  ...(b.chain !== undefined ? { chain: b.chain } : {}),
+  ...(b.timeZone !== undefined ? { timeZone: b.timeZone } : {}),
+});
+
 const fullBody = (b: RuleBodyInput): RuleBodyInput => ({
   conditions: [],
   steps: [],
   chain: false,
   timeZone: AGENT_RULE_TIME_ZONE,
-  ...b,
+  ...(bodyParts(b) as RuleBodyInput),
 });
 
 const onOff = (r: AutomationListedRule) => (r.enabled ? 'on' : 'off');
@@ -114,7 +125,7 @@ export async function applyRuleChanges(
         case 'set': {
           const { op: _op, rule: ref, ...parts } = change;
           const r = held(ref);
-          const body = namedRuleBody({ ...bodyOf(r), ...parts }, state);
+          const body = namedRuleBody({ ...bodyOf(r), ...bodyParts(parts) }, state);
           const { rule } = await send<AutomationRuleResponse>(
             `/${encodeURIComponent(r.id)}`,
             'PUT',

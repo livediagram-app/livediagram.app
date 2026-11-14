@@ -3,8 +3,8 @@
 // One rule in the Rules list (docs/specs/026-plan/automations.md "The Automations screen"): its switch, its name and
 // sentence, Last Run and This Week, and its ⋯ menu. A rule that paused itself is amber, with Paused, the reason and
 // Resume (and Fix Webhook, when a webhook it posts through stopped it); one naming something the plan lacks says what,
-// in words and never by id ("A column is gone · Someone is gone"), and a GitHub rule on a plan not connected offers
-// Connect GitHub.
+// in words and never by id ("A column is gone · Someone is gone"), a GitHub rule on a plan not connected offers
+// Connect GitHub, and one whose named repositories are all gone offers Manage Repositories.
 // A time rule that is on says its next moment under Last Run ("Next: Mon 9:00"). Clicking the name or sentence opens
 // the builder. On a phone the row stacks: the name, the sentence's trigger, "4 min ago · 38 runs this week", and the
 // switch at the right.
@@ -74,9 +74,16 @@ function PausedNote({
 }
 
 function NeedsNote({ attention }: { attention: readonly AutomationNeed[] }) {
-  // A GitHub rule on a plan not connected: the way to connect, where the dialog offers GitHub.
+  // A GitHub rule on a plan not connected, or whose named repositories are all gone: the way to fix it (the GitHub
+  // view), where the dialog offers GitHub. The dialog is a signed-in Editor's alone, so no other role sees either.
   const github = useGithubAutomations();
-  const connect = github?.enabled && attention.some((n) => n.kind === 'github');
+  const fix = !github?.enabled
+    ? null
+    : attention.some((n) => n.kind === 'github')
+      ? 'Connect GitHub'
+      : attention.some((n) => n.kind === 'repositories')
+        ? 'Manage Repositories'
+        : null;
   if (attention.length === 0) return null;
   return (
     <span
@@ -88,12 +95,12 @@ function NeedsNote({ attention }: { attention: readonly AutomationNeed[] }) {
       </span>
       <span>
         <span className="font-semibold">Needs Attention:</span> {needsWords(attention)}
-        {connect ? (
+        {fix ? (
           <>
             {' '}
             <span aria-hidden>·</span>{' '}
             <button type="button" className={`${LINK} z-[1]`} onClick={github?.openView}>
-              Connect GitHub
+              {fix}
             </button>
           </>
         ) : null}

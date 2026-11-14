@@ -179,6 +179,12 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
     runsPerDay: AUTOMATION_RUNS_PER_DAY,
     // What an agent names people by, and words them with (spec "Agents and the CLI").
     people: plan.outline.people.map((p) => ({ id: p.id, name: p.name })),
+    // The boards' saved filters by name, so an agent's sentence reads "Matches Open Bugs".
+    filters: plan.outline.savedFilters.map((f) => ({
+      tab: f.tab,
+      id: f.filter.id,
+      name: f.filter.name,
+    })),
   };
   return json(answer);
 }

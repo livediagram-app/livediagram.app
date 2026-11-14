@@ -21,7 +21,7 @@ import {
   type AutomationAiTask,
 } from './types';
 import { fieldDefOf, fieldName, statusName, typeHasField, type AutomationOutline } from './outline';
-import type { PlannedSegment, Walk } from './plan-walk';
+import type { PlannedSegment, RunCarry, Walk } from './plan-walk';
 
 // What the model is sent of a card, each part's cap (spec "The model and what it is sent").
 export const AI_TITLE_MAX = 200;
@@ -137,12 +137,19 @@ function someOf(names: readonly string[], joiner: 'or' | 'and'): string {
   return `${shown.slice(0, -1).join(', ')} ${joiner} ${shown.at(-1)!}`;
 }
 
-/** Test on a Card's line: what the step would do, asking nothing. */
+/** Test on a Card's line: what the step would do, asking nothing; `then`, steps follow it, which read its answer
+ *  when it writes the card (so they may differ from the test's, planned on the card as it is now). */
 export function aiDryLine(
   step: AutomationAi,
   outline: FieldNames,
   labels: readonly string[] = [],
+  then = false,
 ): string {
+  const line = aiDryWords(step, outline, labels);
+  return then && aiWritesCard(step) ? `${line}. ${AI_THEN_WORDS}` : line;
+}
+
+function aiDryWords(step: AutomationAi, outline: FieldNames, labels: readonly string[]): string {
   switch (step.task) {
     case 'summarise':
       return step.field
@@ -167,22 +174,42 @@ export function aiDryLine(
 
 // ---- The plan ------------------------------------------------------------------------------------------------------
 
-// An AI step the run will ask, in its place: the step's index, the step, the line the api settles, and `after`, the
-// writes of the steps between it and the next AI step (or the end), planned from `after.from` (the card as the steps
-// before it left it). The api writes `after` once the step answered or the day's cap skipped it, never after it failed.
+// An AI step the run will ask, in its place: the step's index, the step, the line the api settles, the run's counts
+// at it (`carry`, for planning the rest afresh once it answers), and `after`, the writes of the steps between it and
+// the next AI step (or the end), planned ahead from `after.from` (the card as the steps before it left it). The api
+// plans the rest again from the card the step left, once it answered or the day's cap skipped it (replan.ts), and
+// never writes anything after a step that failed.
 export interface PlannedAi {
   step: number;
   ai: AutomationAi;
   line: number;
+  carry: RunCarry;
   after?: PlannedSegment & { from: Item };
 }
 
 // What planActions does for an AI step: plans its call, with a line saying what it will do until the api settles it.
 export function planAi(step: AutomationAi, index: number, w: Walk): void {
   const run = w.plan.run;
-  run.ai.push({ step: index, ai: step, line: run.lines.length });
+  run.ai.push({
+    step: index,
+    ai: step,
+    line: run.lines.length,
+    carry: {
+      actions: run.actions,
+      turns: run.turns,
+      made: w.plan.madeBefore + w.plan.created.length,
+    },
+  });
   w.plan.line(aiStepChip(step, (id) => fieldName(w.ctx.outline, id, w.type)));
 }
+
+/** Whether the step writes the card (a field, its type, its priority or labels), so the steps after it read its
+ *  answer; a comment changes nothing a step reads. */
+export const aiWritesCard = (step: AutomationAi): boolean =>
+  step.task === 'triage' || (step.task === 'card_type' ? step.set : step.field !== undefined);
+
+// Test on a Card's word for the steps after a step that writes the card: it can't know the answer.
+export const AI_THEN_WORDS = 'The steps after it read the card as the AI leaves it';
 
 // ---- What the model is sent ----------------------------------------------------------------------------------------
 

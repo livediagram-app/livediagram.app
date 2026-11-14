@@ -2,7 +2,12 @@
 // card types use, and changing the types drops a pick no picked type uses.
 import { describe, expect, it } from 'vitest';
 import type { ItemTypeDef } from '@liveplanner/items';
-import { cardMovedColumns, withCardMovedTypes } from './card-moved-columns';
+import {
+  cardMovedColumns,
+  unusedPicks,
+  unusedPicksNote,
+  withCardMovedTypes,
+} from './card-moved-columns';
 
 const type = (id: string, over: Partial<ItemTypeDef> = {}): ItemTypeDef => ({
   id,
@@ -62,5 +67,27 @@ describe('withCardMovedTypes', () => {
       kind: 'card_moved',
       types: ['bug'],
     });
+  });
+});
+
+// Work Tracker 855: a picked column the plan still has that no picked type uses any more.
+describe('unusedPicks', () => {
+  it('answers the chosen columns the plan has that no picked type uses, in the order chosen', () => {
+    const names = (chosen?: string[], picked?: string[]) =>
+      unusedPicks(TYPES, picked, COLUMNS, chosen).map((c) => c.status);
+    expect(names(['done', 'todo', 'fixing'], ['bug'])).toEqual(['todo']);
+    expect(names(['todo', 'gone'], ['bug'])).toEqual(['todo']);
+    expect(names(['todo'], [])).toEqual([]);
+    expect(names(undefined, ['bug'])).toEqual([]);
+    expect(names(['todo', 'triage'], ['task'])).toEqual(['triage']);
+  });
+
+  it('says them in one note', () => {
+    expect(unusedPicksNote([])).toBeNull();
+    expect(unusedPicksNote(['Review'])).toBe("The picked card types don't use Review.");
+    expect(unusedPicksNote(['Review', 'QA'])).toBe("The picked card types don't use Review or QA.");
+    expect(unusedPicksNote(['Review', 'QA', 'Blocked'])).toBe(
+      "The picked card types don't use Review, QA or Blocked.",
+    );
   });
 });

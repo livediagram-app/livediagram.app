@@ -160,7 +160,9 @@ work. A rule does it every time, at once, and says that it did.
   blockers or children done in a group move, or one after the other; two cards dropped into a column together) run
   it once: on the card they concern, and on one card for a column. Several cards into a column before it runs
   (three into a column whose limit is one) run Column Over Limit once, on the card that came in one past the limit,
-  by when each card entered the column (then the lower number). One move runs Card Unblocked or Related Cards Done on
+  by when each card entered the column (then the lower number), even when their triggers are read in two wakes (a
+  busy queue): the run's id comes from the rule and the column's cards as they stand, each with when it entered the
+  column, so one going-over never runs twice, and a column that drops back under and goes over again runs anew. One move runs Card Unblocked or Related Cards Done on
   at most **100 cards**, the first by their number, as a branch's related cards are. Past that, the Run Log says
   "Ran on 100 of 340 cards: at most 100 a move", and the rest are left out (no later move runs it on them unless it
   concerns them again).
@@ -277,7 +279,9 @@ Finished**). Their engineering and their guarantees (once per delivery, never ba
   connection, the rule hears nothing, and the Rules list marks it **Needs Attention**, naming them ("acme/old isn't
   heard any more", "acme/old and acme/api aren't heard any more", past two "acme/old, acme/api and 2 more aren't
   heard any more"); agents read "Repository acme/old is not heard" ("Repositories acme/old, acme/api are not
-  heard"). While some named repository is still heard the rule is not marked: it still hears that one. The check
+  heard"). The line offers **Manage Repositories**, which opens the GitHub view, where the plan's repositories are
+  picked (or Change on GitHub adds one back), as a plan not connected offers Connect GitHub. While some named
+  repository is still heard the rule is not marked: it still hears that one. The check
   reads the plan's kept list of repositories (the one the GitHub view shows), never GitHub itself, so a moment GitHub
   can't be reached marks nothing. Changing the trigger from one GitHub trigger to another (Pull
   Request Merged to Checks Finished) keeps the picks; changing it to any other trigger drops them. The Rules list's sentence ends "in acme/web" (or "in acme/web or
@@ -324,7 +328,10 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
 - **Reached** from a **GitHub** button in the screen's header (GitHub's mark and "GitHub", icon-only on a phone, with
   its tooltip and name "GitHub Connection"), from a GitHub trigger's panel (its **Manage** or **Pick Repositories**
   while connected, or its compact **Connect GitHub First** card, which connects in place, while not), and so from
-  Pick a Trigger's GitHub group, whose heading is noted **Not Connected** while the plan is not. It is drawn as the builder
+  Pick a Trigger's GitHub group, whose heading is noted **Not Connected** while the plan is not, and from a rule's
+  Needs Attention line (**Connect GitHub** while the plan is not connected, **Manage Repositories** once every
+  repository the rule names is gone). Both links are on the Rules list, which only an Editor of the whole plan,
+  signed in, reaches, so only an Editor sees them. It is drawn as the builder
   is: a breadcrumb back to **Automations**, then the view.
 - **Not connected**: GitHub's mark, **Connect GitHub**, "Link pull requests to cards: a card shows its pull request's
   state, and rules run when one opens, merges, closes or its checks finish.", three short lines on what it asks
@@ -392,7 +399,8 @@ Each condition is one line in the builder, a chip sentence:
 
 A condition on a field the card's type lacks does not hold (it never errors). A condition naming a type, column,
 field, person or saved filter that is gone since does not hold, and the Rules list marks the rule **Needs Attention**
-with what is missing. So does a **Link Cards** step whose chosen card has since been deleted, a GitHub-triggered rule
+with what is missing. So does a **Link Cards** step whose chosen card has since been deleted or moved to the Trash (restored, it is back
+and the mark goes; the step's card finder never offers a trashed card), a GitHub-triggered rule
 on a plan not connected to GitHub ([GitHub triggers](#github-triggers)), and a **Set Field**
 whose picked person has left the plan (its run fails, "Someone is gone"). The editor never shows
 an id: the line says each kind of thing gone once, in words ("Needs Attention: A column is gone · Someone is gone",
@@ -466,6 +474,10 @@ step of the rule's top level only (never inside an If / Else or a branch), at mo
   rule changed while this run waited"; turning it on again does not bring the run back), the card deleted or trashed (Skipped, "The card is gone"). Archiving the card does not. A run
   whose time comes once the plan's 1,000 runs for the day are spent goes no further either (Skipped, "Daily limit
   reached: rules run again tomorrow"), so it never shows Waiting past its time.
+- **Each part counts**: the run up to a Wait and the run after it are two runs of the plan's 1,000 a day (a rule with
+  two Waits spends three), as each is its own row in the Audit Trail and does its own steps. The waiting row counts
+  as the run starts, so a Wait never lets a rule start past the day's limit; a part that matches nothing (its
+  conditions no longer hold after the wait) is a No Match and costs nothing.
 - **At most 500 runs wait** in a plan at once: past that, a Wait fails its run, "Too many runs are waiting in this
   plan".
 - A waiting run shows in the Audit Trail as **Waiting** (a pill of its own) with when it goes on ("Goes on Mon 14
@@ -524,7 +536,11 @@ Send Email can instead go to **addresses typed in**: anyone with an email addres
 
 **People in turn** keeps its place per rule: the first run assigns the first person, the next the second, and after
 the last back to the first. A person who has left the plan is passed over, their turn with them (and the rule needs
-attention). A branch assigning in turn gives each related card the next person. A run that
+attention). Left means no longer among the plan's people: its owner, its team's joined members and the people its
+cards name (an assignee, a Person field, who made or last changed a card). So a teammate taken off the team who is
+still named on a card keeps their turn until no card names them, as the plan's people pickers still list them: to a
+rule, a removed teammate and an Editor who came in through a share link look the same, and it never guesses between
+them. Take them out of the rule's list to pass them over now. A branch assigning in turn gives each related card the next person. A run that
 fails or matches nothing doesn't move the turn, and Test on a Card shows whose turn it is without taking it. Two runs of
 the rule at once (two Run Rules) take the next two people, never one twice.
 
@@ -575,8 +591,8 @@ steps only; the run is **Failed** if any did, naming them.
 - Every change a run makes lands as **one write per card** where it can (the step's changes to the triggering card
   are batched into one patch, in step order), so the card's history reads as one entry and the board moves once. A
   rule with AI actions splits at each one: the steps before an AI action land in one write, the AI action is asked,
-  then the steps up to the next AI action land in the next write (at most four writes, since a rule holds at most
-  three AI actions).
+  then the steps up to the next AI action, worked out afresh from the card it left, land in the next write (at most
+  four writes, since a rule holds at most three AI actions).
 
 ## AI actions
 
@@ -610,6 +626,12 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
 - It runs **in its place in the rule**: the card changes of the steps before it land first (in one write), then it
   is asked, one call, reading the card as those writes left it, then the card changes of the steps after it land.
   The run's outgoing messages go after every step. Its own writes are one more write each, by Automation.
+- **The steps after it read what it wrote**: once it has written (or the day's cap skipped it), the card is read
+  again and the steps up to the next AI step are worked out afresh from it, conditions, If / Else and all. So a
+  **Move to Column** after **Suggest Card Type** (set) is checked against the type it set, an If / Else on Priority
+  after **Triage** reads the priority it chose, and a person's edit made while the AI answered is read too. Each part
+  is worked out once, after the step before it, never ahead from the card as it was; a Wait's held run goes on the
+  same way from the step after its Wait.
 - **Someone editing the card meanwhile** keeps their change: a step's labels land on the card as it is when written,
   so a label a person added or took off while the AI answered (or while the run read the card) stays as they left
   it, and only the labels the step adds or takes off change. The same holds for Add Label, Remove Label and a Set
@@ -631,7 +653,9 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
     reason (above).
 - **Test on a Card** calls nothing and costs nothing: its line says what the step would do, "Would summarise the card
   into a comment", "Would suggest a card type from Bug, Task or Story and set it", "Would set priority and add labels
-  from billing, urgent and 3 more".
+  from billing, urgent and 3 more". It can't know the answer, so a step that writes the card (Summarise Card into a
+  field, Suggest Card Type set, Triage) with steps after it says so: "…and set it. The steps after it read the card
+  as the AI leaves it", and those steps are shown on the card as it is now.
 - **Time triggers** may use AI actions; each card's step counts toward the day's 100 like any other.
 
 ### The daily cap
@@ -1085,7 +1109,10 @@ place and the focus with it).
   then **From** and **To**. With types picked, From and To list only the columns those types use (each type's statuses,
   in the plan's column order); with none picked they list every column. Changing the types drops a picked From or To
   column no picked type uses, so the rule never keeps a column its cards can't be in; a column the plan deleted stays
-  shown as gone, as every panel shows one.
+  shown as gone, as every panel shows one. A picked column the plan still has that no picked type uses any more (a
+  type's statuses changed since) is not gone: it stays shown, picked, by its name, with a line under its field
+  saying so ("The picked card types don't use Review.", "… don't use Review or QA."), until it is unpicked or a type
+  that uses it is picked. Only a column the plan deleted reads as gone.
 - An action's step panel opens on its **Action** field: the action's icon and name and **Change**, which opens the same
   picker, titled **Change the Action**, offering what the step can become (the plain actions: every group but Timing, Other Tools and AI), the
   current one marked **Current**. Picking another starts that kind afresh, as before; picking the current one changes
@@ -1113,7 +1140,9 @@ place and the focus with it).
   changes anyone with edit or participate access makes."
 - **Test on a Card** picks a card (the card finder) and runs the rule as it stands in the builder, unsaved, without
   changing anything: the result shows as an Audit Trail row with its steps, each action saying what it would do.
-- Leaving with unsaved changes asks **Discard Changes?**. A save the api refuses keeps the builder open and marks
+- Leaving with unsaved changes asks **Discard Changes?**. A **New Rule** left as it opened (nothing changed) has
+  nothing to lose and leaves without asking; a template's start or Describe a Rule's draft asks even untouched, as
+  it holds work that would be lost. A save the api refuses keeps the builder open and marks
   the step at fault, in words, never a path: the api's message for agents leads with the part's path ("steps.2.text
   must be text of 1 to 2000 characters"), and the builder, which marks that part, says the rest as a sentence ("Must
   be text of 1 to 2000 characters."). A rule another Editor deleted since the builder opened is never saved back:
@@ -1188,7 +1217,7 @@ same words.
 - **`list_rules`** (read) takes a `projectId` and answers every rule in the plan's order: its id, name, whether it
   is on, **paused** (with the reason) and **needs attention** (what it names that the plan lacks), its trigger kind,
   its **sentence** (the Rules list's, in words: "When Card Moved to Done then Add Label shipped", or "When Card
-  Moved for Bug to Done ..." with Card Types picked), **last run**,
+  Moved for Bug to Done ..." with Card Types picked, a saved filter by its name, "Matches Open Bugs"), **last run**,
   **runs this week** and, for a time trigger, its **next run** (ISO times), then the day's runs and the day's limit.
   An optional `rule` (an id or the exact name) also answers that rule's whole body, in the format `change_rules`
   writes; `runs: true` also answers the recent Audit Trail, newest first (that rule's alone when `rule` is given;
@@ -1209,6 +1238,10 @@ same words.
     the run (the day's limit applies).
 - A rule is named by its **id** or its **exact name** (case aside); a name matching none is refused with the rules
   there are. A card is named as `list_items` names it (`#12`).
+- **A rule read back writes back**: a body copied from `list_rules`' `rule` (or `liveplanner rule get`) is taken by
+  `add`, `set` and `test` as it is. Its `id`, `enabled`, `made` and `edited` are accepted and ignored: an added rule
+  is a new rule (off until it has a trigger and an action, as ever), `on` and `off` turn one on or off, and the
+  stamps are the api's.
 - **The rule body** is the api's (`AutomationRuleBody`), described in full in the tool's input, so the tools are the
   whole reference: `name`, `trigger`, `conditions`, `steps`, `chain` and `timeZone`, with each trigger, condition and
   action kind and its fields, the values a text may hold, and the limits. Where a body names something of the plan,

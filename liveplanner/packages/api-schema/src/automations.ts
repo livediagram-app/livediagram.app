@@ -78,6 +78,8 @@ export interface AutomationsListResponse {
   runsPerDay: number;
   // The plan's people as rules name them (`assign { person }` takes the id), for agents; the editor reads its own.
   people?: { id: string; name: string }[];
+  // The boards' saved filters (each its board's tab, its id and name), for agents' sentences; the editor reads its own.
+  filters?: { tab: string; id: string; name: string }[];
 }
 
 export interface AutomationRuleResponse {

@@ -17,6 +17,8 @@ import {
   AI_FIELDS_MAX,
   AI_FIELD_TEXT_MAX,
   aiDryLine,
+  aiWritesCard,
+  AI_THEN_WORDS,
   aiOutcome,
   aiRequest,
   aiStepChip,
@@ -244,6 +246,35 @@ describe('words', () => {
       "Would set priority from the card's text",
     );
     expect(AI_CAPPED).toBe('This plan has used its 100 AI steps today');
+  });
+
+  // Work Tracker 846: a test can't know the answer the steps after a writing AI step read, so it says so.
+  it('says the steps after a step that writes the card read its answer', () => {
+    expect(aiDryLine({ kind: 'ai', task: 'card_type', set: true }, O, [], true)).toBe(
+      'Would suggest a card type from Bug, Note or Story and set it. The steps after it read the card as the AI leaves it',
+    );
+    expect(aiDryLine({ kind: 'ai', task: 'summarise', field: 'f-notes' }, O, [], true)).toBe(
+      `Would summarise the card into Notes. ${AI_THEN_WORDS}`,
+    );
+    expect(
+      aiDryLine({ kind: 'ai', task: 'triage', priority: true, labels: false }, O, [], true),
+    ).toBe(`Would set priority from the card's text. ${AI_THEN_WORDS}`);
+    // A comment changes nothing a step reads; and with no step after, there is nothing to say.
+    expect(aiDryLine({ kind: 'ai', task: 'summarise' }, O, [], true)).toBe(
+      'Would summarise the card into a comment',
+    );
+    expect(aiDryLine({ kind: 'ai', task: 'card_type', set: false }, O, [], true)).not.toContain(
+      AI_THEN_WORDS,
+    );
+    expect(aiDryLine({ kind: 'ai', task: 'card_type', set: true }, O)).not.toContain(AI_THEN_WORDS);
+  });
+
+  it('knows which steps write the card', () => {
+    expect(aiWritesCard({ kind: 'ai', task: 'summarise' })).toBe(false);
+    expect(aiWritesCard({ kind: 'ai', task: 'summarise', field: 'f-notes' })).toBe(true);
+    expect(aiWritesCard({ kind: 'ai', task: 'card_type', set: false })).toBe(false);
+    expect(aiWritesCard({ kind: 'ai', task: 'card_type', set: true })).toBe(true);
+    expect(aiWritesCard({ kind: 'ai', task: 'triage', priority: false, labels: true })).toBe(true);
   });
 });
 

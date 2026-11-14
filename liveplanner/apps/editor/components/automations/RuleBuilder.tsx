@@ -69,6 +69,7 @@ export function RuleBuilder({
   onDirty,
   trailing,
   picks = NO_PICKS,
+  blank = false,
   timeZone,
   scope,
   signedIn = false,
@@ -92,6 +93,8 @@ export function RuleBuilder({
   trailing?: React.ReactNode;
   // What the template it was opened from left to pick.
   picks?: readonly AutomationTemplatePickAt[];
+  // A New Rule, started blank: left untouched, it leaves without Discard Changes?.
+  blank?: boolean;
   // This browser's time zone: the rule is saved in it.
   timeZone: string;
   // The plan, for its webhooks; and whether the person is signed in (webhooks are an account's).
@@ -118,7 +121,10 @@ export function RuleBuilder({
   const dirty = !rule || !sameBody(body, saved);
   // A saved rule with nothing changed: nothing to save.
   const unchanged = !!rule && !dirty;
-  useEffect(() => onDirty(dirty), [dirty, onDirty]);
+  // Leaving asks first while there is work to lose: a New Rule left as it opened has none (a template's or a draft's
+  // start does, so it still asks).
+  const unsaved = dirty && !(blank && sameBody(body, saved));
+  useEffect(() => onDirty(unsaved), [unsaved, onDirty]);
   // A new rule as it stands, for Connect GitHub to keep for the round trip (github-return.ts).
   const github = useGithubAutomations();
   const keepDraft = github?.keepDraft;

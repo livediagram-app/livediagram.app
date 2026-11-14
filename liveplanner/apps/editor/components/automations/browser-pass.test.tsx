@@ -10,7 +10,7 @@ import { newRuleBody, type RulePart } from './rule-draft';
 import { StepPanel } from './StepPanel';
 import { StepCard } from './StepCard';
 import { RunRow } from './RunRow';
-import { NOW, outline, run } from './test-fixtures';
+import { NOW, card, outline, run } from './test-fixtures';
 
 afterEach(cleanup);
 
@@ -55,6 +55,28 @@ describe('Link Cards to a card the plan no longer has', () => {
     render(<Panel body={linkTo('')} part={{ part: 'step', index: 0 }} />);
     expect(screen.getByText('No card picked')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Pick a Card' })).toBeTruthy();
+  });
+
+  // Work Tracker 788 (spec "Conditions"): a card in the Trash is gone to a rule, and the finder never offers one.
+  it('reads a card in the Trash as gone, and leaves it out of the finder', () => {
+    const trashed = card(49, 'Old launch notes', { status: 'trash', trashedFrom: 'todo' });
+    const items = new Map([...outline().items, [trashed.id, trashed]]);
+    render(
+      <StepPanel
+        body={linkTo(trashed.id)}
+        part={{ part: 'step', index: 0 }}
+        onChange={() => {}}
+        outline={outline({ items })}
+        faultPath={null}
+        person="Ana Costa"
+        now={NOW}
+        timeZone="Europe/London"
+      />,
+    );
+    expect(screen.getByText('A card no longer here')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Change Card' }));
+    expect(screen.getByText('Publish pricing page')).toBeTruthy();
+    expect(screen.queryByText('Old launch notes')).toBeNull();
   });
 
   it('names a card it has by number and title', () => {

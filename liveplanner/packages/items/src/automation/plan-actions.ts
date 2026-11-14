@@ -24,6 +24,7 @@ import {
   ITEM_TITLE_MAX,
 } from '../limits';
 import { colourFieldOf } from '../item-colour';
+import { isTrashed } from '../board-model';
 import { blockingCycleOf, isBlocksField } from '../blocked-by';
 import { linkedCardIds } from '../several-values';
 import { validateFields } from '../fields';
@@ -67,6 +68,7 @@ import {
   type PlannedSegment,
   type PlannedWrites,
   Run,
+  type RunCarry,
   type Walk,
 } from './plan-walk';
 
@@ -80,6 +82,7 @@ export type {
   PlannedSegment,
   PlannedSend,
   PlannedWrites,
+  RunCarry,
 } from './plan-walk';
 
 // Whoever triggered the rule, when that is a person a card can name.
@@ -356,7 +359,9 @@ function linkCard(a: Extract<AutomationAction, { kind: 'link_card' }>, w: Walk) 
   const chosen = 'card' in a.to ? a.to.card : undefined;
   const to =
     chosen === undefined ? w.values.trigger?.card : ctx.items?.find((i) => i.id === chosen);
-  if (chosen !== undefined && ctx.items && !to) return fail('The card to link is gone');
+  // A card deleted, or in the Trash, is gone (the rule needs attention until it is back).
+  if (chosen !== undefined && ctx.items && (!to || isTrashed(to)))
+    return fail('The card to link is gone');
   const id = to?.id ?? chosen;
   if (!id) return fail('No card to link');
   if (id === plan.card.id) return fail("A card can't link to itself");
@@ -456,16 +461,18 @@ function branch(s: AutomationBranch, top: Walk) {
 
 // The run's steps against the card, worked out: the one patch, the comments, the card to make, the emails, the
 // related cards' writes and the messages, with a line per step; or where it failed and why. A Wait ends the plan
-// there (`wait`: the rest goes on later, from its next step); `from` starts at a step (the rest after a Wait), and
-// `through` plans past every Wait (Test on a Card: "Would wait 2 days, then:"). An AI step cuts the writes there: the
-// steps after it plan a fresh patch from the card as the steps before left it, its `after` (spec "How a step runs").
+// there (`wait`: the rest goes on later, from its next step); `from` starts at a step (the rest after a Wait, or after
+// an AI step, with `carry` the run's counts so far), and `through` plans past every Wait (Test on a Card: "Would wait 2
+// days, then:"). An AI step cuts the writes there: the steps after it plan a fresh patch from the card as the steps
+// before left it, its `after`, which the api plans again once the step answered (spec "How a step runs").
 export function planActions(
   steps: readonly AutomationStep[],
   ctx: PlanActionsContext,
-  opts: { from?: number; through?: boolean } = {},
+  opts: { from?: number; through?: boolean; carry?: RunCarry } = {},
 ): PlannedRun {
-  const run = new Run();
+  const run = new Run(opts.carry);
   let w = walkOf(ctx.card, run, ctx);
+  w.plan.madeBefore = opts.carry?.made ?? 0;
   // The segments cut so far (the first is the run's own fields), the card each later one is planned from, and where
   // the current one's related cards start.
   const cuts: PlannedSegment[] = [];
