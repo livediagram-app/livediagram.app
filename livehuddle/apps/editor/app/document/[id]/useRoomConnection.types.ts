@@ -13,6 +13,7 @@ import type { RemoteSelection } from '@/lib/presence-rows';
 import type { SaveBaselineRefs } from './save-baseline';
 import type { OwnElementWrites } from './own-element-writes';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
+import type { RoomNameSync } from './room-name-sync';
 
 // What useRoomConnection takes, split out of useRoomConnection.ts: the document and who we are, the page's state
 // the room drives, and the handlers each kind of message reaches.
@@ -113,4 +114,8 @@ export type RoomConnectionOptions = {
   // A Participant session's ticket (docs/specs/013-workspace/share-roles.md) carries the adder key the room
   // stamps on what it adds, and the key comes back for `onAdderKey`.
   onAdderKey?: (key: string | null) => void;
+  // Our presence name against the room's (room-name-sync.ts), and taking the room's name as ours without writing it
+  // back to the profile: the room picks every name, so our own avatar shows what peers see.
+  roomNameSync?: RoomNameSync;
+  adoptRoomName?: (name: string) => void;
 };

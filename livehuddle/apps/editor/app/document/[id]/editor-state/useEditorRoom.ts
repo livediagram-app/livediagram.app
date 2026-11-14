@@ -35,6 +35,7 @@ export function useEditorRoom({
     countAppliedOp,
     documentId,
     hydrated,
+    lastPersistedSelfRef,
     lastSavedNameRef,
     lastSavedTabsRef,
     loadedTabIdsRef,
@@ -170,8 +171,23 @@ export function useEditorRoom({
     [setSelectedId, setEditingId, setMultiSelectedIds, toast],
   );
 
+  // The room's name for us, taken as ours (docs/specs/014-identity/auth-and-guest-access.md "Presence names"). It is
+  // already the room's, so it is marked as saved: nothing is written back to the profile for it.
+  const adoptRoomName = useCallback(
+    (name: string) => {
+      const prev = lastPersistedSelfRef.current;
+      lastPersistedSelfRef.current = {
+        name,
+        color: prev?.color ?? selfParticipantRef.current.color,
+      };
+      setSelfParticipant((p) => (p.name === name ? p : { ...p, name }));
+    },
+    [lastPersistedSelfRef, selfParticipantRef, setSelfParticipant],
+  );
   useRoomConnection({
     onAdderKey: participant.setAdderKey,
+    roomNameSync: realtime.roomNameSync,
+    adoptRoomName,
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,

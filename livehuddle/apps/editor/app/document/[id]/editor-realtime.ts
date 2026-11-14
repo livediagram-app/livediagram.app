@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import type { CommunityShareInfo } from '@livehuddle/api-schema';
 import { connectRoom, type ShareRole } from '@/lib/api-client';
 import { mayShareDocument } from './editor-page-helpers';
+import { createRoomNameSync } from './room-name-sync';
 import { useChangesetSeen } from '@liveworkspace/workbench/hooks/editor/useChangesetSeen';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
@@ -26,6 +27,8 @@ export function useEditorRealtime() {
   // Single open room connection for the current document. Re-opens
   // whenever documentId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
+  // Our presence name against the room's (room-name-sync.ts): a name we chose waits for the room to show it.
+  const [roomNameSync] = useState(createRoomNameSync);
   // Whether the document is saved on the server, so it has a room (docs/specs/024-agents/
   // agent-changesets.md "Rooms for personal documents"): every server-stored document opens one,
   // personal ones included, since an agent is a second writer. False for an Offline Mode document
@@ -110,6 +113,7 @@ export function useEditorRealtime() {
     sessionCommunity,
     setSessionCommunity,
     roomRef,
+    roomNameSync,
     documentServerStored,
     setDocumentServerStored,
     changesetSeen,

@@ -46,6 +46,7 @@ export * from '@liveworkspace/workbench/lib/api/tokens';
 export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';
 export * from './api/room';
+export * from './api/room-name';
 export * from './api/images';
 export * from './api/preferences';
 export * from './api/capabilities';
