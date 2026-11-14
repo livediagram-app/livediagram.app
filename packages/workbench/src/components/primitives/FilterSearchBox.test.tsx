@@ -54,6 +54,8 @@ describe('FilterSearchBox', () => {
     expect(screen.getByText('Bug')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Clear Search' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Remove Card Type: Bug' })).toBeNull();
+    // A lock says the box is read-only on purpose.
+    expect(screen.getByRole('img', { name: 'Read Only' })).toBeTruthy();
   });
 
   it('names its search landmark, so two on one page are told apart', () => {

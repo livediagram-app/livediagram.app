@@ -89,6 +89,7 @@ export function BoardFilterField({
         onKeyDown={(e) => e.stopPropagation()}
         chips={chips}
         readOnly={readOnly}
+        readOnlyLabel="Set by Editors and Participants"
         {...(readOnly
           ? {}
           : { onRemoveChip: (i: number) => setFilters(filters.filter((_, j) => j !== i)) })}

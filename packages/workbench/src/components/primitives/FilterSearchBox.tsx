@@ -5,7 +5,7 @@
 // whole query; the control that adds a filter sits inside its right edge, with the clear. Backspace in an empty box
 // takes the last filter off. The caller owns what a chip and the filter control mean.
 import { useRef, type ReactNode } from 'react';
-import { CloseIcon, SearchIcon, Tooltip } from '@liveworkspace/ui';
+import { CloseIcon, LockIcon, SearchIcon, Tooltip } from '@liveworkspace/ui';
 
 // A surface's own colours (a Plan board's palette), in place of the app's slate and brand.
 export type FilterSearchTone = { border: string; text: string; muted: string; focus: string };
@@ -33,6 +33,7 @@ export function FilterSearchBox({
   clearLabel = 'Clear Search',
   chipsPlaceholder = 'Search these…',
   readOnly = false,
+  readOnlyLabel = 'Read Only',
 }: {
   query: string;
   onQuery: (q: string) => void;
@@ -56,6 +57,8 @@ export function FilterSearchBox({
   // Shown, not changed (someone who may only look): the words cannot be typed and there is no Clear. The caller
   // leaves out onRemoveChip and addFilter too.
   readOnly?: boolean;
+  // What the lock that marks a read-only box says: who may change it.
+  readOnlyLabel?: string;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const filled = query !== '' || chips.length > 0;
@@ -144,7 +147,7 @@ export function FilterSearchBox({
           autoFocus={autoFocus}
           aria-label={ariaLabel}
           placeholder={chips.length ? chipsPlaceholder : placeholder}
-          className={`min-w-[6rem] flex-1 bg-transparent py-0.5 text-xs outline-none ${tone ? 'placeholder:opacity-60' : 'text-slate-700 placeholder:text-slate-400 dark:text-slate-200'}`}
+          className={`min-w-[6rem] flex-1 bg-transparent py-0.5 text-xs outline-none ${readOnly ? 'cursor-default' : ''} ${tone ? 'placeholder:opacity-60' : 'text-slate-700 placeholder:text-slate-400 dark:text-slate-200'}`}
           style={tone ? { color: tone.text } : undefined}
           onChange={(e) => onQuery(e.target.value)}
           onKeyDown={(e) => {
@@ -170,6 +173,20 @@ export function FilterSearchBox({
             >
               <CloseIcon size={12} />
             </button>
+          </Tooltip>
+        ) : null}
+        {readOnly ? (
+          <Tooltip label={readOnlyLabel}>
+            <span
+              role="img"
+              aria-label={readOnlyLabel}
+              tabIndex={0}
+              className={`flex h-6 w-6 items-center justify-center rounded ${tone ? '' : 'text-slate-500 dark:text-slate-400'}`}
+              style={tone ? { color: tone.muted } : undefined}
+              data-filter-read-only
+            >
+              <LockIcon size={12} />
+            </span>
           </Tooltip>
         ) : null}
         {addFilter}
