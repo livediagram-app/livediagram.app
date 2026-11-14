@@ -6,6 +6,7 @@
 import {
   isAccountIdShape,
   type AccessLevel,
+  type RoomNameResponse,
   type RoomTicketResponse,
 } from '@livehuddle/api-schema';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
@@ -17,7 +18,11 @@ import {
   REACTION_PERSON_HEADER,
   reactionPersonFor,
 } from '@liveworkspace/api-kit/collab-key';
+import { getParticipant } from '../liveworkspace/profiles';
 import { personTagFor } from '../person-tag';
+import { relayPresenceName } from '../room-client';
+import { PRESENCE_NAME_HEADER, presenceNameHeader } from '../room-session';
+import { typedPresenceName } from '../document-room-rules';
 import { documentTrashed, forbidden, json, notFound } from '../responses';
 import { isCommunityCode } from './community-link';
 import { type RouteContext } from './context';
@@ -53,6 +58,30 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     return json(answer);
   }
 
+  // POST /api/documents/<id>/room-name: the caller renamed themselves (docs/specs/014-identity/auth-and-guest-access.md
+  // "Presence names"). The room shows the name their profile holds now, read fresh from liveworkspace and never taken
+  // from the request, on every session of theirs in this canvas's room. Any level may: a Viewer's name shows too. A
+  // link visitor has no profile; their editor names itself over the socket (`visitor-name`).
+  if (segments.length === 4 && segments[3] === 'room-name' && request.method === 'POST') {
+    const id = segments[2]!;
+    const grant = await resolveDocumentGrant(ctx, id);
+    if (grant instanceof Response) return grant;
+    if (!grant) return notFound();
+    if (grant.trashed) return documentTrashed();
+    if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
+    const person = linkCodeOf(grant.sub) ? null : grant.sub;
+    const name = person
+      ? typedPresenceName((await getParticipant(env, person, { fresh: true }))?.name)
+      : null;
+    if (!person || !name) {
+      console.info('[presence-name] no_profile', { person: person !== null });
+      return json({ name: null } satisfies RoomNameResponse);
+    }
+    const renamed = await relayPresenceName(env, id, await personTagFor(id, person), name);
+    if (renamed === null) console.warn('[presence-name] room_unavailable');
+    return json({ name } satisfies RoomNameResponse);
+  }
+
   if (segments.length === 4 && segments[3] === 'ws' && request.method === 'GET') {
     const id = segments[2]!;
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
@@ -66,6 +95,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
     const shareCode = linkCode ?? (url.searchParams.get('s')?.slice(0, 64) || null);
     if (linkCode && (await isCommunityCode(env, id, linkCode))) return forbidden('community_link');
+    // The person's presence name, their profile's (docs/specs/014-identity/auth-and-guest-access.md "Presence names"),
+    // asked for now and read below: the room never takes the name a hello claims. Remembered per isolate for a minute.
+    const profile = person ? getParticipant(env, person) : Promise.resolve(null);
     const forwarded = new Request(request);
     // Every trust header is stamped UNCONDITIONALLY: `new Request` copies the client's own headers, and the room
     // believes whatever arrives under these names (room-session.ts).
@@ -91,6 +123,10 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // and be sent others' (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). Set on every path, like the rest.
     forwarded.headers.set('X-Verified-Account', person && isAccountIdShape(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Adder', (await adderKeyOf(id, role, person)) ?? '');
+    forwarded.headers.set(
+      PRESENCE_NAME_HEADER,
+      presenceNameHeader(typedPresenceName((await profile)?.name)),
+    );
     forwarded.headers.set('X-Verified-Document', id);
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (document-room.ts).

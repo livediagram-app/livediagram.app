@@ -351,8 +351,8 @@ describe('DocumentRoom repeat hello', () => {
     const peer = makeSocket();
     room.acceptSession(asWs(viewer), 'view');
     room.acceptSession(asWs(peer), 'edit');
-    const hello = (ws: FakeSocket, name: string) =>
-      sendFrame(room, ws, { kind: 'hello', participant: { id: 'x', name, color: '#000' } });
+    const hello = (ws: FakeSocket, name: string, color = '#000') =>
+      sendFrame(room, ws, { kind: 'hello', participant: { id: 'x', name, color } });
     hello(viewer, 'Vic');
     hello(peer, 'Pat');
     const rosters = () => [
@@ -360,15 +360,17 @@ describe('DocumentRoom repeat hello', () => {
       receivedOf(peer, 'presence').length,
     ];
     const before = rosters();
-    for (let i = 0; i < 20; i++) hello(viewer, 'Vic');
+    // A hello's name is never read (docs/specs/014-identity/auth-and-guest-access.md "Presence names"), so a new
+    // one changes nothing on the roster either.
+    for (let i = 0; i < 20; i++) hello(viewer, i % 2 ? 'Vic' : 'Victor');
     expect(rosters()).toEqual(before);
-    hello(viewer, 'Victor');
+    hello(viewer, 'Vic', '#111');
     expect(rosters()).toEqual([before[0]! + 1, before[1]! + 1]);
     expect(
       receivedOf(peer, 'presence')
         .at(-1)!
-        .participants.map((p) => p.name),
-    ).toEqual(['Victor']);
+        .participants.map((p) => p.color),
+    ).toEqual(['#111']);
   });
 });
 
@@ -463,21 +465,21 @@ describe('DocumentRoom hello frame role forcing', () => {
     expect(stored?.role).toBeUndefined();
   });
 
-  it('clamps an oversized hello name so the attachment stays under the size limit', () => {
+  it('never stores an oversized hello name, so the attachment stays under the size limit', () => {
     const { room } = newRoom();
     const ws = makeSocket();
     room.acceptSession(asWs(ws), 'edit');
 
-    // serializeAttachment enforces a small per-socket limit, so the room
-    // length-clamps hello fields before persisting them. Without the
-    // clamp a hostile hello could make the persist throw.
+    // serializeAttachment enforces a small per-socket limit. The hello's name is never read now, and the room's own
+    // pick is at most MAX_PARTICIPANT_NAME_LEN, so a hostile hello cannot make the persist throw.
     sendFrame(room, ws, {
       kind: 'hello',
       participant: { id: 'p', name: 'x'.repeat(5000), color: '#fff' },
     });
 
     const stored = storedPresence(ws);
-    expect(stored?.name).toHaveLength(120);
+    expect(stored?.name).not.toContain('x');
+    expect(stored!.name.length).toBeLessThanOrEqual(120);
   });
 
   it('forwards op messages to peers but never echoes back to the sender', () => {
@@ -2139,8 +2141,25 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
   it("stores and relays a pinned note's author and a posted score's name as the sender's, not the frame's", async () => {
     const { room } = newRoom();
     const ws = makeSocket();
-    room.acceptSession(asWs(ws), 'participate', false, null, null, null, 'adder-ann');
-    sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'Ann', color: '#000' } });
+    // Ann's name is her profile's, as the api stamped it on the upgrade; her hello claims another.
+    room.acceptSession(
+      asWs(ws),
+      'participate',
+      false,
+      null,
+      null,
+      'tag-ann',
+      'adder-ann',
+      null,
+      null,
+      null,
+      null,
+      'Ann',
+    );
+    sendFrame(room, ws, {
+      kind: 'hello',
+      participant: { id: 'p', name: 'Their Boss', color: '#000' },
+    });
     const peer = editor(room);
     peer.sent.length = 0;
     const note = { id: 'n1', text: 'Lunch?', author: 'Their Boss', by: 'adder-ann', at: 1 };
@@ -2582,8 +2601,23 @@ describe('DocumentRoom and agent changesets', () => {
     role: 'edit' | 'view' = 'edit',
   ) {
     const ws = makeSocket();
-    room.acceptSession(asWs(ws), role, false, null, null, personTag);
-    sendFrame(room, ws, { kind: 'hello', participant: { id, name: `Name ${id}`, color: '#abc' } });
+    // The name the api stamped from the person's profile; the hello's is never read.
+    const named = `Name ${id}`;
+    room.acceptSession(
+      asWs(ws),
+      role,
+      false,
+      null,
+      null,
+      personTag,
+      null,
+      null,
+      null,
+      null,
+      null,
+      named,
+    );
+    sendFrame(room, ws, { kind: 'hello', participant: { id, name: 'forged', color: '#abc' } });
     ws.sent.length = 0;
     return ws;
   }

@@ -2,15 +2,37 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   admitFrame,
   helloPresence,
+  presenceNameFor,
   resolveCatchup,
+  typedPresenceName,
   MAX_TAB_ID_LEN,
   type LoggedOp,
   answersAsSelf,
 } from './document-room-rules';
-import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livehuddle/api-schema';
+import { guestNameForKey, MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livehuddle/api-schema';
 
 const SESSION = { presenceId: 'p-server', verifiedRole: 'view' as const };
 const SERVER_KEY = '0123456789abcdef0123456789abcdef';
+
+describe('presenceNameFor / typedPresenceName', () => {
+  it('prefers the profile name, then the typed name, then the guest name of the key or socket', () => {
+    expect(presenceNameFor({ presenceId: 'p', verifiedName: 'Ada', visitorName: 'Grace' })).toBe(
+      'Ada',
+    );
+    expect(presenceNameFor({ presenceId: 'p', visitorName: 'Grace', collabKey: 'k' })).toBe(
+      'Grace',
+    );
+    expect(presenceNameFor({ presenceId: 'p', collabKey: 'k' })).toBe(guestNameForKey('k'));
+    expect(presenceNameFor({ presenceId: 'p' })).toBe(guestNameForKey('p'));
+  });
+
+  it('trims and cuts a typed name, and reads a blank or a non-string as none', () => {
+    expect(typedPresenceName('  Grace  ')).toBe('Grace');
+    expect(typedPresenceName('n'.repeat(999))).toHaveLength(MAX_PARTICIPANT_NAME_LEN);
+    expect(typedPresenceName('   ')).toBeNull();
+    expect(typedPresenceName(42)).toBeNull();
+  });
+});
 
 describe('helloPresence', () => {
   it('overrides the id and role the client claimed', () => {
@@ -24,9 +46,34 @@ describe('helloPresence', () => {
     expect(p.role).toBe('view');
   });
 
-  it('keeps the name, colour and tab the client claimed', () => {
+  it('keeps the colour and tab the client claimed', () => {
     const p = helloPresence({ name: 'Ada', color: '#f00', tabId: 't1' }, SESSION);
-    expect(p).toMatchObject({ name: 'Ada', color: '#f00', tabId: 't1' });
+    expect(p).toMatchObject({ color: '#f00', tabId: 't1' });
+  });
+
+  // docs/specs/014-identity/auth-and-guest-access.md "Presence names" (Work Tracker 797): the room picks every name.
+  it("ignores a forged hello name: a person goes by their profile's name, at every level", () => {
+    for (const verifiedRole of ['edit', 'participate', 'view'] as const) {
+      const p = helloPresence(
+        { name: 'The Host', color: '#f00' },
+        { ...SESSION, verifiedRole, collabKey: SERVER_KEY, verifiedName: 'Ada Lovelace' },
+      );
+      expect(p.name).toBe('Ada Lovelace');
+      expect(p.role).toBe(verifiedRole);
+    }
+  });
+
+  it("names a visitor by the name their browser typed, else their key's guest name", () => {
+    const visitor = { ...SESSION, collabKey: SERVER_KEY };
+    expect(helloPresence({ name: 'The Host', color: '#f00' }, visitor, 'Grace').name).toBe('Grace');
+    expect(helloPresence({ name: 'The Host', color: '#f00' }, visitor).name).toBe(
+      guestNameForKey(SERVER_KEY),
+    );
+    // A reload (a new socket, a new presence id) is the same browser's key, so the same name.
+    const reloaded = { ...visitor, presenceId: 'p2' };
+    expect(helloPresence({ name: 'Other', color: '#f00' }, reloaded).name).toBe(
+      guestNameForKey(SERVER_KEY),
+    );
   });
 
   it("stamps the session's collab key, never the one the hello claims", () => {
@@ -59,7 +106,7 @@ describe('helloPresence', () => {
       },
       SESSION,
     );
-    expect(p.name).toHaveLength(MAX_PARTICIPANT_NAME_LEN);
+    expect(p.name).toBe(guestNameForKey(SESSION.presenceId));
     expect(p.color).toHaveLength(MAX_COLOR_LEN);
     expect(p.tabId).toHaveLength(MAX_TAB_ID_LEN);
   });
@@ -69,10 +116,10 @@ describe('helloPresence', () => {
       typeof helloPresence
     >[0];
     const p = helloPresence(hostile, SESSION);
-    expect(p.name).toBe('');
+    expect(p.name).toBe(guestNameForKey(SESSION.presenceId));
     expect(p.color).toBe('');
     expect('tabId' in p).toBe(false);
-    expect(helloPresence(null, SESSION)).toMatchObject({ name: '', color: '' });
+    expect(helloPresence(null, SESSION)).toMatchObject({ color: '' });
   });
 
   it('drops a colour that could load something from outside', () => {

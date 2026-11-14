@@ -18,6 +18,7 @@ export type InternalRoom = {
   readSelections: (tabId: string, person: string) => Promise<unknown>;
   readLedger: (tabId: string, since?: number) => Promise<unknown>;
   epoch: () => string;
+  renamePerson: (personTag: string, name: unknown) => number;
 };
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
@@ -62,6 +63,15 @@ export async function answerInternal(
   if (request.method === 'POST' && url.pathname === '/purge') {
     await room.purge();
     return new Response(null, { status: 204 });
+  }
+  // Internal: a person renamed themselves (docs/specs/014-identity/auth-and-guest-access.md "Presence names"), so their
+  // sessions here, found by their person tag, go by the profile name the api read. Same trust argument as /broadcast.
+  if (request.method === 'POST' && url.pathname === '/presence-name') {
+    const body = (await readBody(request)) as { personTag?: unknown; name?: unknown } | null;
+    if (typeof body?.personTag !== 'string' || !body.personTag) {
+      return new Response('missing person', { status: 400 });
+    }
+    return Response.json({ renamed: room.renamePerson(body.personTag, body.name) });
   }
   if (url.pathname === '/presence' && (request.method === 'PUT' || request.method === 'DELETE')) {
     return room.handleAgentPresence(request, url);

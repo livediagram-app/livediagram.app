@@ -55,6 +55,7 @@ export async function roomFetch(
     v.grantExp ?? null,
     v.collabKey ?? null,
     v.reactionPerson ?? null,
+    v.name ?? null,
   );
   if (v.documentId) {
     room.bindDocument(v.documentId);

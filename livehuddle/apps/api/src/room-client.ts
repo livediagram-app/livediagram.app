@@ -95,6 +95,35 @@ export const deleteAgentPresence: (
   tabId: string,
 ) => Promise<boolean> = room.deleteAgentPresence;
 
+// A person renamed themselves (docs/specs/014-identity/auth-and-guest-access.md "Presence names"): their sessions in
+// the document's room, by person tag, go by the profile name the api read. How many it renamed; null when the room
+// could not answer in time (its next upgrade still reads the name).
+export async function relayPresenceName(
+  env: Env,
+  documentId: string,
+  personTag: string,
+  name: string,
+): Promise<number | null> {
+  try {
+    const res = await roomFetch(
+      env,
+      documentId,
+      '/presence-name',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ personTag, name }),
+      },
+      ROOM_RELAY_TIMEOUT_MS,
+    );
+    if (!res.ok) return null;
+    const body = (await res.json()) as { renamed?: unknown };
+    return typeof body.renamed === 'number' ? body.renamed : 0;
+  } catch {
+    return null;
+  }
+}
+
 // A token's changeset or read refreshes its presence on the tab for the activity window (spec "Presence").
 export const refreshAgentPresence: (
   env: Env,

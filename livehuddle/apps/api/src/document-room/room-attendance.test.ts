@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ATTENDANCE_REJOIN_GRACE_MS } from '@livehuddle/api-schema';
+import { ATTENDANCE_REJOIN_GRACE_MS, guestNameForKey } from '@livehuddle/api-schema';
 import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import { nodeDurableState, nodeItemSql } from '@liveworkspace/index-app/testing';
 import { ROOM_MAX_CONNECTIONS } from '@livehuddle/api-schema';
@@ -63,6 +63,13 @@ const rows = () =>
     left_at: number | null;
   }[];
 
+// The name the api stamps from the person's profile (docs/specs/014-identity/auth-and-guest-access.md "Presence
+// names"): guest_ada is Ada, guest_7 is P7. The hello's name is never read.
+const profileNameOf = (person: string) => {
+  const bare = person.replace(/^guest_/, '');
+  return /^\d+$/.test(bare) ? `P${bare}` : bare.charAt(0).toUpperCase() + bare.slice(1);
+};
+
 async function connect(person: string, opts: { scope?: string; role?: 'edit' | 'view' } = {}) {
   const ws = socket() as unknown as WebSocket;
   const key = await collabKeyFor(person);
@@ -72,11 +79,13 @@ async function connect(person: string, opts: { scope?: string; role?: 'edit' | '
     false,
     opts.scope ?? null,
     null,
-    null,
+    `tag-${person}`,
     null,
     'd1',
     null,
     key,
+    null,
+    profileNameOf(person),
   );
   return { ws, key };
 }
@@ -250,7 +259,11 @@ describe('a visitor with no identity', () => {
     visit(stranger, OTHER_SECRET, 'Stranger');
     expect(keyOf(back)).toBe(keyOf(second));
     expect(keyOf(stranger)).not.toBe(keyOf(back));
-    expect(rows().map((r) => r.name)).toEqual(['Visitor', 'Stranger']);
+    // Each goes by their browser's guest name, the same across the reconnect; the hello's name is never read.
+    expect(rows().map((r) => r.name)).toEqual([
+      guestNameForKey(keyOf(back)!),
+      guestNameForKey(keyOf(stranger)!),
+    ]);
   });
 
   it("never takes a key from a later hello, from a malformed secret, or over an identity's", async () => {

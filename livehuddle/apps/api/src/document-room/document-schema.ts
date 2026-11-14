@@ -311,7 +311,17 @@ CREATE INDEX IF NOT EXISTS tab_attendance_by_person ON tab_attendance (person_ke
 CREATE INDEX IF NOT EXISTS tab_attendance_open ON tab_attendance (left_at) WHERE left_at IS NULL;
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7];
+// The names browsers with no identity typed in the join dialog (docs/specs/014-identity/auth-and-guest-access.md
+// "Presence names"; db/visitor-names.ts), by collab key: a link visitor keeps their name across reloads.
+const V8 = `
+CREATE TABLE IF NOT EXISTS visitor_names (
+  person_key TEXT    PRIMARY KEY,
+  name       TEXT    NOT NULL,
+  named_at   INTEGER NOT NULL
+);
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

@@ -805,6 +805,21 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 404, 410],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/room-name',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Show the caller\'s current profile name to everyone in the realtime room, on every session of theirs (docs/specs/014-identity/auth-and-guest-access.md "Presence names"). The name is read fresh from the profile, never from the request; `name` is null when the caller has none (a link visitor). Any share level.',
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { name: { type: ['string', 'null'] } },
+      required: ['name'],
+    },
+    statuses: [200, 403, 404, 410],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/ws',
     segment: 'documents',

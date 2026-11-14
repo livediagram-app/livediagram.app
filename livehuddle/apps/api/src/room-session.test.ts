@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { newSessionAttachment, readSessionAttachment, verifiedSessionOf } from './room-session';
+import { MAX_PARTICIPANT_NAME_LEN } from '@livehuddle/api-schema';
+import {
+  newSessionAttachment,
+  presenceNameHeader,
+  readSessionAttachment,
+  verifiedSessionOf,
+} from './room-session';
 
 const upgrade = (headers: Record<string, string>) =>
   new Request('https://room/ws', { headers: { Upgrade: 'websocket', ...headers } });
@@ -22,6 +28,7 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Grant-Exp': '1700000000',
         'X-Verified-Item-Owner': 'o',
         'X-Verified-Item-Team': '',
+        'X-Verified-Name': encodeURIComponent('  Zoë Ng  '),
       }),
     );
     expect(v).toEqual({
@@ -32,12 +39,31 @@ describe('verifiedSessionOf', () => {
       personTag: 'p',
       collabKey: '0123456789abcdef0123456789abcdef',
       reactionPerson: '0123456789abcdef01234567',
+      name: 'Zoë Ng',
       account: false,
       adderKey: 'a',
       documentId: 'd',
       grantExp: 1_700_000_000_000,
       head: { owner: 'o', team: null },
     });
+  });
+
+  // docs/specs/014-identity/auth-and-guest-access.md "Presence names": the name rides URI-encoded, so a name past
+  // Latin-1 survives the header, and the attachment holds it cut.
+  it('reads the presence name the api stamped, cut, and a bad or blank one as none', () => {
+    const named = (value: string) => verifiedSessionOf(upgrade({ 'X-Verified-Name': value })).name;
+    expect(named(presenceNameHeader('Ada 李'))).toBe('Ada 李');
+    expect(named('%E0%A4%A')).toBeNull();
+    expect(named(encodeURIComponent('   '))).toBeNull();
+    expect(named('')).toBeNull();
+    expect(presenceNameHeader(null)).toBe('');
+    const long = verifiedSessionOf(
+      upgrade({ 'X-Verified-Name': presenceNameHeader('n'.repeat(999)) }),
+    );
+    expect(newSessionAttachment(long, 'p1').verifiedName).toHaveLength(MAX_PARTICIPANT_NAME_LEN);
+    expect('verifiedName' in newSessionAttachment(verifiedSessionOf(upgrade({})), 'p1')).toBe(
+      false,
+    );
   });
 
   it('ignores a role it does not know', () => {

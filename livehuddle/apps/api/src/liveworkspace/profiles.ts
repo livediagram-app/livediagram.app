@@ -64,15 +64,18 @@ export function withoutPicture(p: ParticipantDTO): ParticipantDTO {
 // The participants of these owner ids, found ones only, in one accounts call per 100 ids not
 // remembered. Never throws: when liveworkspace can't be reached, or sign-in isn't configured (a
 // guest-only deployment), the ids are simply not found and callers show their fallback.
+// `fresh` asks liveworkspace even for an id remembered here: a rename read on another isolate than the write
+// (the room's presence name, routes/room-name-route.ts) must not take the minute-old name.
 export async function getParticipants(
   env: Env,
   ids: readonly string[],
+  opts: { fresh?: boolean } = {},
 ): Promise<Map<string, ParticipantDTO>> {
   const found = new Map<string, ParticipantDTO>();
   const now = Date.now();
   const ask: string[] = [];
   for (const id of new Set(ids)) {
-    const known = remembered.get(id);
+    const known = opts.fresh ? undefined : remembered.get(id);
     if (known && known.until > now) {
       if (known.participant) found.set(id, known.participant);
     } else if (liveworkspaceOwnerOf(id)) {
@@ -101,8 +104,12 @@ export async function getParticipants(
   return found;
 }
 
-export async function getParticipant(env: Env, id: string): Promise<ParticipantDTO | null> {
-  return (await getParticipants(env, [id])).get(id) ?? null;
+export async function getParticipant(
+  env: Env,
+  id: string,
+  opts: { fresh?: boolean } = {},
+): Promise<ParticipantDTO | null> {
+  return (await getParticipants(env, [id], opts)).get(id) ?? null;
 }
 
 // Sets the caller's own name and colour; `ownerId` is the verified caller. Null when this app can't
