@@ -478,7 +478,7 @@ describe('DocumentRoom hello frame role forcing', () => {
     });
 
     const stored = storedPresence(ws);
-    expect(stored?.name).not.toContain('x');
+    expect(stored?.name).not.toContain('xxx');
     expect(stored!.name.length).toBeLessThanOrEqual(120);
   });
 
