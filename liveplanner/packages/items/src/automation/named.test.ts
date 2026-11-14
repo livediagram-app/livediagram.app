@@ -13,6 +13,12 @@ const NAMES: RuleNames = {
 };
 
 describe('namedRuleBody', () => {
+  it('names Card Moved’s card types by name, keeping one the plan lacks', () => {
+    expect(
+      namedRuleBody({ trigger: { kind: 'card_moved', types: ['bug', 'Note', 'Epic'] } }, NAMES),
+    ).toEqual({ trigger: { kind: 'card_moved', types: ['bug', 'note', 'Epic'] } });
+  });
+
   it('names a trigger’s columns, fields, people and tab', () => {
     expect(
       namedRuleBody(

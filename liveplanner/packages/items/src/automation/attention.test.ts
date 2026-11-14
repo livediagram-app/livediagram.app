@@ -118,6 +118,19 @@ describe('ruleNeeds', () => {
       ruleNeeds(ruleBody({ trigger: { kind: 'form_response', formTab: 'form1' } }), OUTLINE),
     ).toEqual([]);
     expect(ruleNeeds(ruleBody({ trigger: { kind: 'card_moved' } }), OUTLINE)).toEqual([]);
+    // Card Moved's Card Types: a deleted type needs attention, as a gone column does.
+    expect(
+      ruleNeedItems(
+        ruleBody({ trigger: { kind: 'card_moved', types: ['bug', 'epic'], to: ['qa'] } }),
+        OUTLINE,
+      ),
+    ).toEqual([
+      { kind: 'type', id: 'epic' },
+      { kind: 'column', id: 'qa' },
+    ]);
+    expect(
+      ruleNeeds(ruleBody({ trigger: { kind: 'card_moved', types: ['bug'] } }), OUTLINE),
+    ).toEqual([]);
     expect(ruleNeeds(ruleBody({ trigger: { kind: 'manual' } }), OUTLINE)).toEqual([]);
   });
 });

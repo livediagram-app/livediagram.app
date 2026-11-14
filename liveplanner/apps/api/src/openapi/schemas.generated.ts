@@ -2949,6 +2949,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "type": "string"
             },
             "type": "array"
+          },
+          "types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
