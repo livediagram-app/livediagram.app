@@ -8,9 +8,9 @@ import {
   tileLabelFor,
   type OpenverseFilters,
   type OpenverseImage,
-} from '@/lib/image-search/openverse';
+} from '@liveworkspace/workbench/lib/image-search/openverse';
 import type { PickedImage } from '@/lib/upload-image';
-import type { PickStage } from '@/lib/image-search/pick';
+import type { PickStage } from '@liveworkspace/workbench/lib/image-search/pick';
 import {
   PlaceholderArt,
   PickOverlay,

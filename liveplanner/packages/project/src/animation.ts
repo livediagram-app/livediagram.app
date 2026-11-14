@@ -11,23 +11,14 @@
 // Arrow flow (ArrowFlow / ARROW_FLOWS) is deliberately NOT here: it is the
 // arrows' own vocabulary and stays beside them.
 
-// Animation / flow speed (docs/specs/008-canvas/canvas-and-palette.md). A multiplier on each animation's tuned
-// base duration (so every animation keeps its own feel; speed just scales it):
-// 'slowest' quadruples the duration, 'slow' doubles it, 'fast' halves it.
-// Shared by arrow flow (`flowSpeed`), icon animations, and the data-shape anims. 'slow' is the
-// default when unset (animations should whisper, not shout); renderers read
-// DEFAULT_ANIMATION_SPEED so the fallback can't drift per surface. The
-// renderer feeds the factor to CSS via a custom property the keyframe
-// classes multiply into their duration.
-export type AnimationSpeed = 'slowest' | 'slow' | 'normal' | 'fast';
-export const ANIMATION_SPEEDS: readonly AnimationSpeed[] = ['slowest', 'slow', 'normal', 'fast'];
-export const ANIMATION_SPEED_FACTOR: Record<AnimationSpeed, number> = {
-  slowest: 4,
-  slow: 2,
-  normal: 1,
-  fast: 0.5,
-};
-export const DEFAULT_ANIMATION_SPEED: AnimationSpeed = 'slow';
+// Animation / flow speed (docs/specs/008-canvas/canvas-and-palette.md): one copy for every product, in
+// @liveworkspace/model-core/animation, so the shared element types and this project name the same type.
+export {
+  ANIMATION_SPEEDS,
+  ANIMATION_SPEED_FACTOR,
+  DEFAULT_ANIMATION_SPEED,
+  type AnimationSpeed,
+} from '@liveworkspace/model-core/animation';
 
 // Looping animation for an `icon` shape's glyph (docs/specs/008-canvas/canvas-and-palette.md "Animated icons").
 // A separate, glyph-oriented set from the boxed-element ElementAnimation: any

@@ -28,7 +28,7 @@ import type {
 import { HoverCard } from '@livediagram/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 // What the swatch shows while the selection has no colour of its own.

@@ -8,7 +8,7 @@ import {
   elementBounds,
   type Element,
 } from '@livedocuments/document';
-import { useCanvasSurface } from './CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { ChangesetReveal, RevealStore } from '@/lib/changeset-reveals';
 
 // The outline an agent's changeset draws around what it touched, in its author's colour

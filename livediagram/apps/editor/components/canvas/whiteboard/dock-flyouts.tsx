@@ -27,7 +27,7 @@ import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { FlyoutHeading, FlyoutOption } from './WhiteboardFlyout';
 import { ColourPicker } from './ColourPicker';
 import { SnapColoursSection } from './SnapColoursSection';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { BackgroundGlyph, OffGlyph, RecogniseGlyph } from './whiteboard-icons';
 import { PenWidthIcon } from './PenWidthIcon';
 import { FillColourPicker } from './FillColourPicker';

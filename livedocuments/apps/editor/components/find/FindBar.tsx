@@ -23,7 +23,7 @@ import {
   TOOLBAR_CONTROL_PRESSED,
   TOOLBAR_CONTROL_REST,
   TOOLBAR_DIVIDER,
-} from '@/components/chrome/toolbar-surface';
+} from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 const UpIcon = lucideGlyph(lucideArrowUp, 16);
 const DownIcon = lucideGlyph(lucideArrowDown, 16);

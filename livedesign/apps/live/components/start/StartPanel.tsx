@@ -6,9 +6,9 @@
 // link for the start, whose × closes it.
 import { createStartPanel } from '@liveworkspace/workbench/components/start/StartPanel';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { StartCardGrid, startTint } from './StartCard';
+import { StartCardGrid, startTint } from '@liveworkspace/workbench/components/start/StartCard';
 
-export type { StartPanelCard } from './StartCard';
+export type { StartPanelCard } from '@liveworkspace/workbench/components/start/StartCard';
 
 export const StartPanel = createStartPanel({
   app: 'livedesign',

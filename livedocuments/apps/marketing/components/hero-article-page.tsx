@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { FONT, TEAMMATE, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 import { PageTwo } from './hero-article-page-two';
 import {
   BODY_SIZE,

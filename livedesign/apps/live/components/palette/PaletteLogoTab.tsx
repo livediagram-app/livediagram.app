@@ -7,7 +7,7 @@
 // changes re-arm it at once. The Fill tool stays in hand (FillToolRow).
 import { useContext, useState } from 'react';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { PenFlyoutBody, penFlyoutLabel } from '@/components/canvas/whiteboard/dock-flyouts';
 import { WhiteboardFlyout } from '@/components/canvas/whiteboard/WhiteboardFlyout';
 import type { MarkerPensModel } from '@/hooks/canvas/useMarkerPens';

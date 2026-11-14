@@ -36,7 +36,7 @@ import { ChipFace } from '@/components/canvas/ChipFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 
 // Tables are on few boards, so their face loads on demand; its code is fetched as the editor mounts
 // (lib/editor-deferred-code.ts), so a board that has one finds it already in.

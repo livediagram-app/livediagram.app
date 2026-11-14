@@ -1,7 +1,7 @@
 // The animated GIF export's timeline (docs/specs/020-import-export/animated-gif-export.md "The timeline"): which page
 // each frame shows, at what moment of that page's clock, how far through a transition it is, and how long it stays.
 // Pure: the capture and the encoder follow it frame by frame.
-import { cubicBezier } from '@/lib/page-motion-frame';
+import { cubicBezier } from '@liveworkspace/page-background/motion-frame';
 import type { SlideTransition } from '@/lib/presentation-config';
 
 export const GIF_FPS = 15;

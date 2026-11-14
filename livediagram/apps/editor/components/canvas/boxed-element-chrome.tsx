@@ -3,7 +3,7 @@ import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-par
 import { ShapeHitOutline, type outlineHit } from '@/components/canvas/ShapeHitOutline';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import type { describeVariant } from '@/components/canvas/element-variant';
-import type { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import type { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';

@@ -12,7 +12,7 @@ import { FILL_TRANSPARENT } from '@liveworkspace/workbench/lib/fill-choice';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, standardGroup } from '@/components/colour/colour-options';
 import { useThemeColours } from '@/components/colour/useThemeColours';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { WhiteboardFlyout } from '@/components/canvas/whiteboard/WhiteboardFlyout';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import { isFillIntent, type PendingDraw } from '@/lib/draw-mode';

@@ -12,7 +12,7 @@ import {
   PaletteTrayAction,
   usePaletteStripBox,
 } from '@liveworkspace/workbench/components/chrome/PaletteTray';
-import { TopCenterBanner } from '@/components/chrome/TopCenter';
+import { TopCenterBanner } from '@liveworkspace/workbench/components/chrome/TopCenter';
 import { restoreEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import { startClosedKey } from './start-closed-key';

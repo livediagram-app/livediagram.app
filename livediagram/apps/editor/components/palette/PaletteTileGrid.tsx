@@ -2,7 +2,7 @@ import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type { ComponentKind, ShapeKind } from '@livediagram/document';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
-import { tileCaption } from './tile-caption';
+import { tileCaption } from '@liveworkspace/workbench/components/palette/tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';

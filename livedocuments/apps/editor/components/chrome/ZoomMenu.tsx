@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { CheckIcon, Glyph, useMenu, type MenuInitialFocus } from '@livedocuments/ui';
 import { useHoverCloseTimer } from '@liveworkspace/workbench/hooks/ui/useHoverCloseTimer';
-import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // The zoom-percentage button in the middle of the ZoomControls dock
 // (desktop only — it's hidden below `sm`, like the readout it replaced).

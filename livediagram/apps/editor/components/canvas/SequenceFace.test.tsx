@@ -6,7 +6,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createShape, type ShapeElement } from '@livediagram/document';
 import { SequenceFace } from './SequenceFace';
-import { CanvasFinishProvider } from './CanvasFinishContext';
+import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 afterEach(cleanup);
 

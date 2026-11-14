@@ -35,7 +35,7 @@ All in `lib/gif-export/gif-timeline.ts`.
 | `SLIDE_EASE`         | `cubicBezier(0.4, 0, 0.2, 1)`              | `app/canvas-motion.css` `lvd-slide-forward`                                |
 | `FADE_EASE`          | `cubicBezier(0.25, 0.1, 0.25, 1)`          | CSS `ease`, `lvd-slide-fade`                                               |
 
-`cubicBezier` is exported from `lib/page-motion-frame.ts` (already written there) rather than restated.
+`cubicBezier` is exported from `../packages/page-background/src/motion-frame.ts` (already written there) rather than restated.
 
 In `lib/gif-export/gif-estimate.ts`: `GIF_HEADER_BYTES` 800 (D48) and `GIF_ESTIMATE_DELAY_MS` 250 (D47). In
 `lib/gif-export/snapshot-media.ts`: `TRANSPARENT_PIXEL`, a 1 x 1 see-through PNG (D49). In

@@ -359,7 +359,7 @@ export * from './legacy-groups';
 export * from './legacy-docks';
 export * from './legacy-stroke-points';
 export * from './stored-elements';
-export { isSafeColourValue } from './unsafe-colours';
+export { isSafeColourValue } from '@liveworkspace/element-model/unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 // What a save changed, merged over the stored tab by id (docs/specs/012-collaboration/collab-race-hardening.md).

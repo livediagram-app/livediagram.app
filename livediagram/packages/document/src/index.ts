@@ -396,7 +396,7 @@ export * from './legacy-groups';
 export * from './legacy-docks';
 export * from './legacy-stroke-points';
 export * from './stored-elements';
-export { isSafeColourValue } from './unsafe-colours';
+export { isSafeColourValue } from '@liveworkspace/element-model/unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';

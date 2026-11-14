@@ -7,6 +7,7 @@ import {
   findGroups,
   formatBaseline,
   isCandidate,
+  isFactoryBinding,
   isReexportBinding,
   parseBaseline,
   report,
@@ -55,6 +56,46 @@ test('a pure @liveworkspace re-export is a binding, anything more is not', () =>
     false,
   );
   assert.equal(isReexportBinding('// only a comment\n'), false);
+});
+
+test('a door that hands product modules to a shared factory is a binding', () => {
+  const door = (/** @type {string} */ body) =>
+    "'use client';\n// The dock.\nimport { createDock } from '@liveworkspace/workbench/dock';\n" +
+    "import * as shared from '@liveworkspace/element-model/factories';\n" +
+    "import dynamic from 'next/dynamic';\nimport * as layout from '@/lib/layout';\n" +
+    "import type { Element } from './index';\n" +
+    body;
+  const yes = [
+    'export const useDock = createDock<layout.Id>(layout);\n',
+    'export const { a, b: c } = createDock({\n  get base() {\n    return layout.BASE;\n  },\n  pick: (id) => layout.pick(id, { deep: true }),\n});\n',
+    'export function createText(x: number, y: { a: number; b: number }): Element {\n  return shared.createText(x, y);\n}\n',
+    'export const Lazy = dynamic(createDock(layout.load), { ssr: false });\nexport const DOCK = createDock(layout);\nexport const { open } = DOCK;\n',
+    "createDock(layout);\nexport const Bridge = layout.ON ? dynamic(() => import('./b').then((m) => m.B)) : null;\nexport const D = createDock(Bridge);\n",
+    "export { x } from './x';\nexport type Dock = ReturnType<typeof createDock>;\nexport const D = createDock(layout);\n",
+  ];
+  for (const body of yes) assert.equal(isFactoryBinding(door(body)), true, body);
+  const no = [
+    "export const STEPS = { row: 'in a row', column: 'in a column' };\n",
+    'export const n = createDock(layout) + 1;\n',
+    'export function pick(id: string) {\n  const d = createDock(layout);\n  return d.pick(id);\n}\n',
+    'export function pick(id: string): Element[] {\n  if (!id) return [];\n  return shared.pick(id);\n}\n',
+    'export const D = layout.make(createDock);\nexport const E = (a) => {\n  return createDock(a);\n};\n',
+    'export const D = createDock(layout);\nexport class Box {}\n',
+    'export const View = () => <div className="x" />;\nexport const D = createDock(layout);\n',
+    'export const D = layout.make(layout);\n',
+    'export const D = createDock(layout.items.filter((i) => i.on && i.ready));\n',
+  ];
+  for (const body of no) assert.equal(isFactoryBinding(door(body)), false, body);
+  assert.equal(
+    isFactoryBinding("import { make } from '@livediagram/document';\nexport const D = make(1);\n"),
+    false,
+  );
+  assert.equal(
+    isFactoryBinding(
+      "import type { ArrowOf } from '@liveworkspace/element-model/arrow';\nimport type { Link } from './index';\nexport type Arrow = ArrowOf<Link>;\n",
+    ),
+    true,
+  );
 });
 
 test('groups span two or more products, by blob, leaving out bindings', () => {

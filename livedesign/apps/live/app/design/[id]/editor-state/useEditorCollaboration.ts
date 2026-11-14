@@ -1,4 +1,4 @@
-import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
+import { useModeDefaultTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
 import { usePhotoPresence } from '@/hooks/editor/usePhotoPresence';
 import { useCallback, useEffect, useRef } from 'react';
 import type { Element } from '@livedesign/design';

@@ -13,7 +13,7 @@ import {
   isPolygonOutline,
   polygonStrokePx,
 } from '@livedocuments/document';
-import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useDrawingAnimation } from '@/components/canvas/drawing-animation';
 
 // Browser chrome rendered as fixed-pixel HTML rather than scaled SVG so
@@ -98,8 +98,7 @@ export function BrowserChrome({ stroke }: { stroke: string }) {
 // (with the per-element override), matching how other boxed elements
 // pick their accent.
 // The svg a freehand stroke draws in.
-const FREEHAND_SVG_CLASS =
-  'pointer-events-none absolute inset-0 h-full w-full overflow-visible';
+const FREEHAND_SVG_CLASS = 'pointer-events-none absolute inset-0 h-full w-full overflow-visible';
 
 export function FreehandSvg({
   element,

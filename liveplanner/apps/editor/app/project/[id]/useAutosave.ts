@@ -13,7 +13,7 @@ import {
   type AutosaveDeps,
   type AutosaveUnloadArgs,
 } from '@liveworkspace/workbench/hooks/persistence/useAutosaveCore';
-import { saveFailureStatus } from './save-failure';
+import { saveFailureStatus } from '@liveworkspace/workbench/lib/api/save-failure';
 import { isProjectDeleted } from '@/lib/project-tombstones';
 import { isProjectTrashedError } from '@/lib/project-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';

@@ -1,7 +1,7 @@
 'use client';
 
 import type { DragState } from '@/lib/canvas';
-import { TopCenterBanner } from '@/components/chrome/TopCenter';
+import { TopCenterBanner } from '@liveworkspace/workbench/components/chrome/TopCenter';
 import {
   PaletteTray,
   usePaletteStripBox,

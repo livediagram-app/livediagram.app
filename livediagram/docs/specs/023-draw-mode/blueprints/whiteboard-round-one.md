@@ -10,49 +10,49 @@ this file adds engineering precision. Defaults applied where the spec is silent 
 
 Scope, by file:
 
-| File                                                                | Role                                                                      |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `packages/document/src/editor-mode.ts`                              | `EditorMode`; Draw mode is `mode === 'draw'` (editor-modes blueprint)     |
-| `packages/document/src/whiteboard.ts`                               | Tokens, backgrounds, `WHITEBOARD_INKED_SHAPES`, `nearestBorderStroke`     |
-| `packages/document/src/whiteboard-stroke.ts`                        | Stroke geometry: `strokeTouchesBrush`, `eraseStrokePart`                  |
-| `packages/document/src/pen-stroke.ts`                               | The pen's ink: perfect-freehand options, outline path, centre line        |
-| `packages/document/src/factories.ts`                                | `freehandGeometry`: a freehand's box and points, shared with the live ink |
-| `apps/editor/lib/live-stroke.ts`                                    | `LiveStroke`: one stroke's raw samples, pressures and subscribers         |
-| `apps/editor/components/canvas/useWhiteboardPenGesture.ts`          | The whiteboard pen gesture: capture, pressure, commit                     |
-| `apps/editor/components/canvas/whiteboard/LiveInk.tsx`              | The stroke being drawn, laid out as it lands, written to the DOM          |
-| `apps/editor/components/canvas/whiteboard/WhiteboardPenPreview.tsx` | Live ink and recognised shape, inside the canvas's transformed layer      |
-| `apps/editor/lib/recognition-flip.ts`                               | Alt or the chip flips the stroke being drawn between ink and a shape      |
-| `apps/editor/components/canvas/whiteboard/RecognitionChip.tsx`      | The Make shape / Keep drawing chip at a held-still pen or finger          |
-| `packages/document/src/svg-render-shapes.ts`                        | `svgFreehandShape` honours `penWidth` on every stroke                     |
-| `packages/api-schema` + `apps/api/src/openapi`                      | `TabKind` enum regenerated; `Whiteboard` telemetry category               |
-| `packages/templates/src/templates.ts`                               | `'whiteboard'` template, descriptor, category, pattern, `opensIn`         |
-| `packages/templates/src/build-template.ts`                          | Whiteboard builds no elements                                             |
-| `packages/template-previews/src/template-preview-5.tsx`             | Whiteboard preview tile                                                   |
-| `apps/editor/lib/whiteboard-prefs.ts`                               | Pens, widths, colours, recognition, eraser mode; parse / load / save      |
-| `apps/editor/lib/whiteboard-tool.ts`                                | Active-tool derivation, pen intent, shapes, pointer routing               |
-| `apps/editor/lib/pen-seen.ts`                                       | Session-scoped "a pen has been used" flag                                 |
-| `apps/editor/lib/stock-colour-projector.ts`                         | `createStockColourProjector`: stock colours by name over a list, cached   |
-| `apps/editor/lib/whiteboard-erase.ts`                               | `strokesTouched`, `shapesTouched`, `partialEraseStep`: one eraser step    |
-| `packages/document/src/shape-hit.ts`                                | A shape's hit outline: `shapeHitOutline`, `shapeTouchesBrush`             |
-| `../packages/model-core/src/svg-path-outline.ts`                    | `svgPathSubpaths`: M L C A Z paths sampled into subpaths                  |
-| `apps/editor/components/canvas/ShapeHitOutline.tsx`                 | `outlineHit`, the invisible outline that picks an unselected shape        |
-| `apps/editor/lib/whiteboard-edit-target.ts`                         | `shapeToEditAt`, `routeBoardDoubleClick`: a double-click inside a shape   |
-| `apps/editor/lib/draw-mode.ts`                                      | `PendingDraw` whiteboard pen variant and arrow `ends`; `isHeldPenIntent`  |
-| `apps/editor/lib/draw-commit.ts`                                    | `buildDrawnArrow` takes `ends` and `unpainted`                            |
-| `apps/editor/hooks/canvas/commit-freehand.ts`                       | The whiteboard pen commit                                                 |
-| `apps/editor/hooks/canvas/useCanvasEraser.ts`                       | Whiteboard Stroke and Partial erase                                       |
-| `apps/editor/hooks/canvas/useWhiteboard.ts`                         | The dock's state and actions                                              |
-| `apps/editor/components/canvas/whiteboard/*`                        | The dock (layout: whiteboard-dock.md), flyouts, icons                     |
-| `apps/telemetry/app/*`                                              | `Whiteboard` colour, description, sentences and the Whiteboards stack     |
-| `apps/editor/components/canvas/boxed-element-overlays.tsx`          | `FreehandSvg` honours `penWidth` on every stroke                          |
-| `apps/editor/lib/style-presets.ts`                                  | A border width clears a stroke's `penWidth`                               |
-| `apps/editor/lib/view-backdrop.ts`                                  | `resolveViewBackdrop`: the person's Draw pattern in Draw mode             |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`                | Ink projection; whiteboard props                                          |
-| `apps/editor/components/canvas/CanvasChrome.tsx` and friends        | Hidden chrome; the dock's mount                                           |
-| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`              | Pen versus touch; the eraser frame                                        |
-| `apps/editor/components/canvas/useCanvasDrawGesture.ts`             | Hands a whiteboard pen press to `useWhiteboardPenGesture`                 |
-| `apps/editor/components/palette/NewDocumentWizard.tsx`              | The Draw mode card (Blank Whiteboard); no theme step                      |
-| `apps/help/app/canvas/draw-mode/page.mdx`                           | Help article, registered in `packages/help-registry`                      |
+| File                                                                      | Role                                                                      |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `packages/document/src/editor-mode.ts`                                    | `EditorMode`; Draw mode is `mode === 'draw'` (editor-modes blueprint)     |
+| `packages/document/src/whiteboard.ts`                                     | Tokens, backgrounds, `WHITEBOARD_INKED_SHAPES`, `nearestBorderStroke`     |
+| `packages/document/src/whiteboard-stroke.ts`                              | Stroke geometry: `strokeTouchesBrush`, `eraseStrokePart`                  |
+| `packages/document/src/pen-stroke.ts`                                     | The pen's ink: perfect-freehand options, outline path, centre line        |
+| `packages/document/src/factories.ts`                                      | `freehandGeometry`: a freehand's box and points, shared with the live ink |
+| `apps/editor/lib/live-stroke.ts`                                          | `LiveStroke`: one stroke's raw samples, pressures and subscribers         |
+| `apps/editor/components/canvas/useWhiteboardPenGesture.ts`                | The whiteboard pen gesture: capture, pressure, commit                     |
+| `apps/editor/components/canvas/whiteboard/LiveInk.tsx`                    | The stroke being drawn, laid out as it lands, written to the DOM          |
+| `apps/editor/components/canvas/whiteboard/WhiteboardPenPreview.tsx`       | Live ink and recognised shape, inside the canvas's transformed layer      |
+| `apps/editor/lib/recognition-flip.ts`                                     | Alt or the chip flips the stroke being drawn between ink and a shape      |
+| `packages/workbench/src/components/canvas/whiteboard/RecognitionChip.tsx` | The Make shape / Keep drawing chip at a held-still pen or finger          |
+| `packages/document/src/svg-render-shapes.ts`                              | `svgFreehandShape` honours `penWidth` on every stroke                     |
+| `packages/api-schema` + `apps/api/src/openapi`                            | `TabKind` enum regenerated; `Whiteboard` telemetry category               |
+| `packages/templates/src/templates.ts`                                     | `'whiteboard'` template, descriptor, category, pattern, `opensIn`         |
+| `packages/templates/src/build-template.ts`                                | Whiteboard builds no elements                                             |
+| `packages/template-previews/src/template-preview-5.tsx`                   | Whiteboard preview tile                                                   |
+| `apps/editor/lib/whiteboard-prefs.ts`                                     | Pens, widths, colours, recognition, eraser mode; parse / load / save      |
+| `apps/editor/lib/whiteboard-tool.ts`                                      | Active-tool derivation, pen intent, shapes, pointer routing               |
+| `apps/editor/lib/pen-seen.ts`                                             | Session-scoped "a pen has been used" flag                                 |
+| `apps/editor/lib/stock-colour-projector.ts`                               | `createStockColourProjector`: stock colours by name over a list, cached   |
+| `apps/editor/lib/whiteboard-erase.ts`                                     | `strokesTouched`, `shapesTouched`, `partialEraseStep`: one eraser step    |
+| `packages/document/src/shape-hit.ts`                                      | A shape's hit outline: `shapeHitOutline`, `shapeTouchesBrush`             |
+| `../packages/model-core/src/svg-path-outline.ts`                          | `svgPathSubpaths`: M L C A Z paths sampled into subpaths                  |
+| `apps/editor/components/canvas/ShapeHitOutline.tsx`                       | `outlineHit`, the invisible outline that picks an unselected shape        |
+| `apps/editor/lib/whiteboard-edit-target.ts`                               | `shapeToEditAt`, `routeBoardDoubleClick`: a double-click inside a shape   |
+| `apps/editor/lib/draw-mode.ts`                                            | `PendingDraw` whiteboard pen variant and arrow `ends`; `isHeldPenIntent`  |
+| `apps/editor/lib/draw-commit.ts`                                          | `buildDrawnArrow` takes `ends` and `unpainted`                            |
+| `apps/editor/hooks/canvas/commit-freehand.ts`                             | The whiteboard pen commit                                                 |
+| `apps/editor/hooks/canvas/useCanvasEraser.ts`                             | Whiteboard Stroke and Partial erase                                       |
+| `apps/editor/hooks/canvas/useWhiteboard.ts`                               | The dock's state and actions                                              |
+| `apps/editor/components/canvas/whiteboard/*`                              | The dock (layout: whiteboard-dock.md), flyouts, icons                     |
+| `apps/telemetry/app/*`                                                    | `Whiteboard` colour, description, sentences and the Whiteboards stack     |
+| `apps/editor/components/canvas/boxed-element-overlays.tsx`                | `FreehandSvg` honours `penWidth` on every stroke                          |
+| `apps/editor/lib/style-presets.ts`                                        | A border width clears a stroke's `penWidth`                               |
+| `apps/editor/lib/view-backdrop.ts`                                        | `resolveViewBackdrop`: the person's Draw pattern in Draw mode             |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`                      | Ink projection; whiteboard props                                          |
+| `apps/editor/components/canvas/CanvasChrome.tsx` and friends              | Hidden chrome; the dock's mount                                           |
+| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`                    | Pen versus touch; the eraser frame                                        |
+| `apps/editor/components/canvas/useCanvasDrawGesture.ts`                   | Hands a whiteboard pen press to `useWhiteboardPenGesture`                 |
+| `apps/editor/components/palette/NewDocumentWizard.tsx`                    | The Draw mode card (Blank Whiteboard); no theme step                      |
+| `apps/help/app/canvas/draw-mode/page.mdx`                                 | Help article, registered in `packages/help-registry`                      |
 
 ## Domain and naming
 
@@ -327,7 +327,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   `standardGroup('strong', board, 'name')` (Ink, Grey and the eight hued, by name; Ink maps to the
   pen's `null`), Custom colours from `useDocumentColours()` and + with `boardWarning`. The per-user Your
   colours list and its Remove menu are retired (`whiteboardYourColours` is dead).
-- `CustomColourEditor` (`components/colour/CustomColourEditor.tsx`): a saturation and brightness square (`role="slider"`, pointer drag with
+- `CustomColourEditor` (`packages/workbench/src/components/colour/CustomColourEditor.tsx`): a saturation and brightness square (`role="slider"`, pointer drag with
   capture, arrows 1%, Shift 10%, `aria-valuetext` "Saturation n%, brightness n%"), a hue range
   (0 to 359), a preview chip, a "Hex" field (valid `#rgb`/`#rrggbb` updates the square; Enter uses
   it), the eyedropper (`useEyeDropper`, only where supported) and **Use**. Opens on the custom colour
@@ -965,7 +965,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 | Rule                                                                                          | Test                                                                                                                    |
 | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| A stored whiteboard opens in Draw                                                             | `packages/document/src/legacy-whiteboard-tab.test.ts`                                                                   |
+| A stored whiteboard opens in Draw                                                             | `../packages/element-model/src/legacy-whiteboard-tab.test.ts`                                                           |
 | Tokens meet contrast                                                                          | `../packages/element-model/src/whiteboard.test.ts`                                                                      |
 | Stock colours drawn for the canvas                                                            | `packages/document/src/stock-colours.test.ts`                                                                           |
 | Stroke touch and partial split                                                                | `packages/document/src/whiteboard-stroke.test.ts`                                                                       |

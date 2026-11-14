@@ -125,19 +125,19 @@ a tab with nothing to migrate.
 
 ## Testing
 
-| Rule                                                   | Test                                                             |
-| ------------------------------------------------------ | ---------------------------------------------------------------- |
-| Detection (three branches)                             | `packages/design/src/retired-schemes.test.ts`, "retiredSchemeOf" |
-| Charcoal → Default, baked colours removed              | `retired-schemes.test.ts`, "a Charcoal tab"                      |
-| Choices kept (I2), untouched kinds, table cell fill    | `retired-schemes.test.ts`                                        |
-| Previous dark half → current; single-colour match kept | `retired-schemes.test.ts`, "Default's previous dark half"        |
-| Idempotent (I1), same object (I3)                      | `retired-schemes.test.ts`                                        |
-| Composition (I4)                                       | `packages/design/src/stored-tab.test.ts`                         |
-| Charcoal no longer resolves or is offered              | `packages/design/src/default-scheme.test.ts`                     |
-| api read path                                          | `apps/api/src/tab-row.test.ts`                                   |
-| Thumbnail path                                         | `apps/api/src/thumbnail.test.ts`                                 |
-| Offline read path                                      | `apps/live/lib/offline/offline-store.test.ts`                    |
-| Import path                                            | `apps/live/lib/import-merge.test.ts`                             |
+| Rule                                                   | Test                                                                       |
+| ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Detection (three branches)                             | `../packages/element-model/src/retired-schemes.test.ts`, "retiredSchemeOf" |
+| Charcoal → Default, baked colours removed              | `retired-schemes.test.ts`, "a Charcoal tab"                                |
+| Choices kept (I2), untouched kinds, table cell fill    | `retired-schemes.test.ts`                                                  |
+| Previous dark half → current; single-colour match kept | `retired-schemes.test.ts`, "Default's previous dark half"                  |
+| Idempotent (I1), same object (I3)                      | `retired-schemes.test.ts`                                                  |
+| Composition (I4)                                       | `packages/design/src/stored-tab.test.ts`                                   |
+| Charcoal no longer resolves or is offered              | `packages/design/src/default-scheme.test.ts`                               |
+| api read path                                          | `apps/api/src/tab-row.test.ts`                                             |
+| Thumbnail path                                         | `apps/api/src/thumbnail.test.ts`                                           |
+| Offline read path                                      | `apps/live/lib/offline/offline-store.test.ts`                              |
+| Import path                                            | `apps/live/lib/import-merge.test.ts`                                       |
 
 ## Constants and configuration
 
@@ -156,15 +156,15 @@ See [DEFAULTS.md](DEFAULTS.md), rows D7 and D8.
 
 Derived from [Retired colour schemes, UML](../retired-schemes.md#uml). Scope, by file:
 
-| File                                              | Role                                                                                                                             |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/element-model/src/retired-themes.ts`    | `bindRetiredThemes(retired, deps?)`, the role-by-role rewrite; `UML_AS_RETIRED`, frozen                                          |
-| `packages/element-model/src/retired-uml.ts`       | `RETIRED_THEME_IDS` (`uml`), `THEMES` (the shared catalogue less UML), `RETIRED_THEMES` (`uml` to `mono`), `migrateRetiredTheme` |
-| `packages/design/src/themes-data.ts`, `themes.ts` | Re-export `THEMES` (and `RETIRED_THEME_IDS`) from `retired-uml` over the shared modules                                          |
-| `packages/design/src/retired-themes.ts`           | `packages/design/src/retired-themes.ts` binds Autumn, Jewel and `RETIRED_UML` over the shared engine                             |
-| `packages/design/src/stored-tab.ts`               | `migrateStoredTab` runs `migrateRetiredTheme` on every read                                                                      |
-| `apps/live/lib/tab-looks.ts`                      | Textbook and Schematic wear `mono`; Textbook sits before Spectrum, Whiteboard after it                                           |
-| `apps/live/lib/themes-taxonomy.ts`                | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
+| File                                               | Role                                                                                                                             |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/element-model/src/retired-themes.ts`     | `bindRetiredThemes(retired, deps?)`, the role-by-role rewrite; `UML_AS_RETIRED`, frozen                                          |
+| `packages/element-model/src/retired-uml.ts`        | `RETIRED_THEME_IDS` (`uml`), `THEMES` (the shared catalogue less UML), `RETIRED_THEMES` (`uml` to `mono`), `migrateRetiredTheme` |
+| `packages/design/src/themes-data.ts`, `themes.ts`  | Re-export `THEMES` (and `RETIRED_THEME_IDS`) from `retired-uml` over the shared modules                                          |
+| `packages/design/src/retired-themes.ts`            | `packages/design/src/retired-themes.ts` binds Autumn, Jewel and `RETIRED_UML` over the shared engine                             |
+| `packages/design/src/stored-tab.ts`                | `migrateStoredTab` runs `migrateRetiredTheme` on every read                                                                      |
+| `apps/live/lib/tab-looks.ts`                       | Textbook and Schematic wear `mono`; Textbook sits before Spectrum, Whiteboard after it                                           |
+| `../packages/workbench/src/lib/themes-taxonomy.ts` | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
 
 Behaviour, `migrateRetiredTheme(tab)`:
 

@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/live/components/canvas/ArrowView.tsx`                     | Canvas caption colour through `defaultArrowLabelColor`                                   |
 | `apps/live/components/canvas/element-variant.ts`                | `DARK_SELECTION_RING` on every single selection                                          |
 | `apps/live/components/canvas/element-parts.tsx`                 | `RESIZE_HANDLE_CLASS`                                                                    |
-| `apps/live/hooks/ui/editor-accent.ts`                           | `editorAccentCss`: tint selectors that outrank the Steel base                            |
+| `../packages/workbench/src/hooks/ui/editor-accent.ts`           | `editorAccentCss`: tint selectors that outrank the Steel base                            |
 | `../packages/ui/src/identity-fill.ts`                           | `identityDeep`, `identityVars`, `IDENTITY_FILL`                                          |
 | `apps/live/components/chrome/TabPill.tsx`                       | Active pill's dark surface as `var(--color-slate-800)`                                   |
 | `apps/live/app/dark-palette.test.ts`                            | Source guards: tokens, light ramp, wordmark, solid fills, brand text, numerals, identity |
@@ -89,7 +89,7 @@ export function defaultArrowLabelColor(
   surface?: CanvasSurface, // default 'light'
 ): string; // textColor ?? strokeColor ?? (dark ? '#94a3b8' : defaultArrowStrokeColor('light'))
 
-// apps/live/hooks/ui/editor-accent.ts
+// ../packages/workbench/src/hooks/ui/editor-accent.ts
 export function editorAccentCss(accent: string): string; // `html:root{--color-brand-*}html.dark{--color-slate-600..950}`
 
 // ../packages/ui/src/identity-fill.ts

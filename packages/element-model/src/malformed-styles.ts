@@ -25,7 +25,8 @@ const isShadowLike = (v: unknown) =>
 
 // Each style field and the type it holds on every element. An arrow's stroke width is px; every other element's is
 // a named border weight.
-const STYLE_TYPES: readonly [string, (v: unknown, el: { type: string }) => boolean][] = [
+type StyleType = readonly [string, (v: unknown, el: { type: string }) => boolean];
+const STYLE_TYPES: readonly StyleType[] = [
   ['padding', isText],
   ['borderRadius', isText],
   ['strokeStyle', isText],
@@ -38,12 +39,15 @@ const STYLE_TYPES: readonly [string, (v: unknown, el: { type: string }) => boole
   ['strokeWidth', (v, el) => (el.type === 'arrow' ? isNumber(v) : isText(v))],
 ];
 
-/** The elements with every style field of the wrong type taken off; the same array when none had one. */
-export function dropMalformedStyles<E extends Element>(elements: E[]): E[] {
+// The products with pages (livedesign, livedocuments) also scale a text's or shape's label (their pages-mode spec,
+// "Sizes"): a label scale multiplies its size.
+const PAGE_STYLE_TYPES: readonly StyleType[] = [...STYLE_TYPES, ['textScale', isNumber]];
+
+function dropMalformed<E extends Element>(elements: E[], types: readonly StyleType[]): E[] {
   let out: E[] | null = null;
   elements.forEach((el, i) => {
     const raw = el as unknown as Record<string, unknown>;
-    const bad = STYLE_TYPES.filter(([k, ok]) => raw[k] !== undefined && !ok(raw[k], el));
+    const bad = types.filter(([k, ok]) => raw[k] !== undefined && !ok(raw[k], el));
     if (bad.length === 0) return;
     const next = { ...raw };
     for (const [k] of bad) delete next[k];
@@ -51,4 +55,14 @@ export function dropMalformedStyles<E extends Element>(elements: E[]): E[] {
     out[i] = next as unknown as E;
   });
   return out ?? elements;
+}
+
+/** The elements with every style field of the wrong type taken off; the same array when none had one. */
+export function dropMalformedStyles<E extends Element>(elements: E[]): E[] {
+  return dropMalformed(elements, STYLE_TYPES);
+}
+
+/** dropMalformedStyles for a product with pages, whose labels also carry a scale. */
+export function dropMalformedPageStyles<E extends Element>(elements: E[]): E[] {
+  return dropMalformed(elements, PAGE_STYLE_TYPES);
 }

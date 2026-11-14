@@ -8,7 +8,7 @@ import {
   CHART_MARK_CONTRAST,
   type ShapeElement,
 } from '@livedocuments/document';
-import { useChartGround } from './CanvasSurfaceContext';
+import { useChartGround } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { PageClip } from './PageClip';
 import { LineChartView } from './LineChartView';
 import { PieChartView } from './PieChartView';

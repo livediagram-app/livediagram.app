@@ -3,14 +3,14 @@
 // Every importer calls this between converting a file and replacing the tab.
 
 import type { Element } from '@livedesign/design';
-import { emptyImportImageReport } from './report';
+import { emptyImportImageReport } from '@liveworkspace/workbench/lib/import-images/report';
 import type {
   ImportImageOutcome,
   ImportImageProgress,
   ImportImageReport,
   ImportImageRequest,
   ImportImageSession,
-} from './types';
+} from '@liveworkspace/workbench/lib/import-images/types';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export async function attachImportImages(

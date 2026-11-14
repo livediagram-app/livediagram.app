@@ -5,7 +5,7 @@ import { ELEMENT_TYPES, isValidElement, isValidTab } from './validate';
 
 // The element vocabulary exists twice, like the shape vocabulary next door
 // (shape-kind.test.ts): as the `Element` union — nine boxed interfaces in
-// element-types.ts plus `ArrowElement` in arrow-types.ts, each with a literal
+// element-types.ts plus `ArrowElement` in element-model's arrow-types.ts, each with a literal
 // `type` discriminant — and as the runtime `ELEMENT_TYPES` set in validate.ts.
 //
 // This one is worth MORE than the shape guard, because the failure is bigger.
@@ -31,7 +31,8 @@ function read(name: string): string {
 }
 
 const BOXED_SRC = read('./element-types.ts');
-const ARROW_SRC = read('./arrow-types.ts');
+// The arrow's full type is the shared one (@liveworkspace/element-model/arrow-types), bound here to this model's link.
+const ARROW_SRC = read('../../../../packages/element-model/src/arrow-types.ts');
 const UNION_SRC = read('./element-union.ts');
 
 // Each element interface declares its discriminant as `  type: 'shape';`.

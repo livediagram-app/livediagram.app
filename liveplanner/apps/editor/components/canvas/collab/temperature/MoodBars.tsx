@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@liveplanner/project';
 import { tint } from '../collab-chrome';
 import { MOOD_GRID } from '@liveworkspace/workbench/components/canvas/collab/temperature/mood-grid';
-import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
+import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 export function MoodBars({ tally, textColor }: { tally: number[]; textColor: string }) {
   const [initial] = useState(tally);

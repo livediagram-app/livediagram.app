@@ -7,7 +7,7 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 import { cursorRide } from '@/lib/hero-motion';
 import {
   LEAF_H,

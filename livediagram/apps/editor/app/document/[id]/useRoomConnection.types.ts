@@ -8,7 +8,7 @@ import type {
 } from '@livediagram/api-schema';
 import type { Participant } from '@/lib/identity';
 import type { connectRoom } from '@/lib/api-client';
-import type { CursorPos, LaserTrail } from './presence-coalescer';
+import type { CursorPos, LaserTrail } from '@liveworkspace/workbench/lib/presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import type { PendingIdeaIds } from './room-op-apply';
 import type { SaveBaselineRefs } from './save-baseline';

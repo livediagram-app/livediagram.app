@@ -4,3 +4,10 @@
 export function drawnCount(tab: { elements?: unknown }): number {
   return Array.isArray(tab.elements) ? tab.elements.length : 0;
 }
+
+// A product with Form tabs (livedesign, liveplanner) also counts the tab's form: a form is not an element, so counting
+// elements alone read a form as an empty tab, with no Explorer snapshot.
+export function drawnCountWithForm(tab: { elements?: unknown; form?: unknown }): number {
+  const form = tab.form !== null && typeof tab.form === 'object' && !Array.isArray(tab.form);
+  return drawnCount(tab) + (form ? 1 : 0);
+}

@@ -9,7 +9,7 @@ import {
   SettingsIllustration,
   type SettingsIllustrationId,
 } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
-import { SettingsSignInLink } from './SettingsSignInLink';
+import { SettingsSignInLink } from '@liveworkspace/workbench/components/dialogs/settings/SettingsSignInLink';
 
 // What the shared Settings view (@liveworkspace/settings-ui) borrows from this editor: its glyphs,
 // search box, close button, help links, Sign In link and illustrations.

@@ -15,8 +15,8 @@ import {
   ChromeLabel,
 } from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { OpenExternalIcon } from './EmbedChrome';
-import { TOOLBAR_CONTROL_REST } from './toolbar-surface';
-import { ToolbarMenuCard } from './ToolbarMenuCard';
+import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
+import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/ToolbarMenuCard';
 
 function reconnectLine(workbenchName: string): string {
   return `Reconnect in ${workbenchName} to keep editing.`;

@@ -5561,6 +5561,10 @@ importers:
         version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   liveplanner/packages/sheets:
+    dependencies:
+      '@liveworkspace/template-previews':
+        specifier: workspace:^
+        version: link:../../../packages/template-previews
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -8046,9 +8050,15 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../auth-client
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../brand
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../community-ui
       '@liveworkspace/element-model':
         specifier: workspace:*
         version: link:../element-model

@@ -451,7 +451,7 @@ export * from '@liveworkspace/element-model/geometry-guides';
 export * from './layer-order';
 export * from './legacy-groups';
 export * from './stored-elements';
-export { isSafeColourValue } from './unsafe-colours';
+export { isSafeColourValue } from '@liveworkspace/element-model/unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';

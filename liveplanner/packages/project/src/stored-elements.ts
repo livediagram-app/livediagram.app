@@ -8,7 +8,7 @@ import { dropMalformedBends } from './malformed-bends';
 import { dropMalformedIds } from './malformed-ids';
 import { dropMalformedStyles } from './malformed-styles';
 import { settleChartRows } from './malformed-chart-rows';
-import { dropUnsafeColours } from './unsafe-colours';
+import { dropUnsafeColours } from '@liveworkspace/element-model/unsafe-colours';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {

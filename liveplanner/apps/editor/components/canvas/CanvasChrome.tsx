@@ -3,7 +3,7 @@ import type { MarqueeState } from '@liveworkspace/workbench/components/canvas/Ma
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { votesSpentBy } from '@liveplanner/project';
 import { participantKey } from '@/lib/identity';
-import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
+import { useVoteReviewOpener } from '@liveworkspace/workbench/hooks/canvas/useVoteReviewOpener';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load the visitor name prompt the same way ExportTabDialog + ShareDialog already are. It is gated on

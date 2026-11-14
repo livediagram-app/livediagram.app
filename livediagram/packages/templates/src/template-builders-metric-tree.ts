@@ -1,6 +1,6 @@
 // The Metric tree template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Plateful's north star, on-time
 // orders a week, broken into the inputs teams own. Every value on a card is worked out from the same inputs
-// (./template-analysis-data DRIVER_BASELINE, driverTree), so the tree adds up.
+// (@liveworkspace/template-previews/analysis-data DRIVER_BASELINE, driverTree), so the tree adds up.
 //
 // The tree reads top-down: the north star (violet, with a progress ring towards its goal), the outputs it is made
 // from (sky) and the inputs a team moves directly (green, tagged Input). Each card shows its value, a trend badge
@@ -27,7 +27,7 @@ import {
   driverTree,
   leverGain,
   type DriverInputKey,
-} from './template-analysis-data';
+} from '@liveworkspace/template-previews/analysis-data';
 import { rake } from './template-rake';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, MUTED, PAPER, SCAFFOLD, chipRow } from './template-report-kit';

@@ -2,7 +2,6 @@
 # Written by .github/scripts/duplicate-guard.mjs --update; it may only shrink (docs/ci.md).
 livedesign/apps/api/src/routes/community.ts	livedocuments/apps/api/src/routes/community.ts	liveplanner/apps/api/src/routes/community.ts
 livedesign/apps/api/src/routes/folders.ts	livediagram/apps/api/src/routes/folders.ts	livedocuments/apps/api/src/routes/folders.ts	liveplanner/apps/api/src/routes/folders.ts
-livedesign/apps/cli/src/dispatch/globals.ts	livediagram/apps/cli/src/dispatch/globals.ts	livedocuments/apps/cli/src/dispatch/globals.ts	liveplanner/apps/cli/src/dispatch/globals.ts
 livedesign/apps/cli/src/output/cli-error.ts	livediagram/apps/cli/src/output/cli-error.ts	livedocuments/apps/cli/src/output/cli-error.ts	liveplanner/apps/cli/src/output/cli-error.ts
 livedesign/apps/cli/src/render/png.ts	livediagram/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
 livedesign/apps/help/app/account-and-data/page.tsx	livediagram/apps/help/app/account-and-data/page.tsx	livedocuments/apps/help/app/account-and-data/page.tsx	livehuddle/apps/help/app/account-and-data/page.tsx	liveplanner/apps/help/app/account-and-data/page.tsx
@@ -26,34 +25,12 @@ livedesign/apps/help/app/user-interface/power-user-mode/page.tsx	livediagram/app
 livedesign/apps/help/components/ArticleLayout.tsx	livediagram/apps/help/components/ArticleLayout.tsx	livedocuments/apps/help/components/ArticleLayout.tsx	livehuddle/apps/help/components/ArticleLayout.tsx	liveplanner/apps/help/components/ArticleLayout.tsx
 livedesign/apps/help/components/category-art/index.tsx	livedocuments/apps/help/components/category-art/index.tsx
 livedesign/apps/help/lib/seo.ts	livediagram/apps/help/lib/seo.ts	livedocuments/apps/help/lib/seo.ts	livehuddle/apps/help/lib/seo.ts	liveplanner/apps/help/lib/seo.ts
-livedesign/apps/help/mdx-components.tsx	livediagram/apps/help/mdx-components.tsx	livedocuments/apps/help/mdx-components.tsx	livehuddle/apps/help/mdx-components.tsx
-livedesign/apps/live/app/design/[id]/EditorContext.tsx	livediagram/apps/editor/app/document/[id]/EditorContext.tsx	livedocuments/apps/editor/app/document/[id]/EditorContext.tsx	livehuddle/apps/editor/app/document/[id]/EditorContext.tsx	liveplanner/apps/editor/app/project/[id]/EditorContext.tsx
-livedesign/apps/live/app/design/[id]/presence-coalescer.ts	livedocuments/apps/editor/app/document/[id]/presence-coalescer.ts
-livedesign/apps/live/app/design/[id]/useFormatTool.ts	livediagram/apps/editor/app/document/[id]/useFormatTool.ts	livedocuments/apps/editor/app/document/[id]/useFormatTool.ts
-livedesign/apps/live/app/design/[id]/useSelectTab.ts	livediagram/apps/editor/app/document/[id]/useSelectTab.ts	livedocuments/apps/editor/app/document/[id]/useSelectTab.ts	livehuddle/apps/editor/app/document/[id]/useSelectTab.ts
 livedesign/apps/live/app/oauth/consent/page.tsx	livediagram/apps/editor/app/oauth/consent/page.tsx	livedocuments/apps/editor/app/oauth/consent/page.tsx	liveplanner/apps/editor/app/oauth/consent/page.tsx
 livedesign/apps/live/app/oauth/device/page.tsx	livediagram/apps/editor/app/oauth/device/page.tsx	livedocuments/apps/editor/app/oauth/device/page.tsx	liveplanner/apps/editor/app/oauth/device/page.tsx
-livedesign/apps/live/components/canvas/PaletteDragGhost.tsx	livedocuments/apps/editor/components/canvas/PaletteDragGhost.tsx
 livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor/components/canvas/boxed-shared.ts
 livedesign/apps/live/components/canvas/canvas-pattern-context.ts	liveplanner/apps/editor/components/canvas/canvas-pattern-context.ts
 livedesign/apps/live/components/canvas/useCanvasPointer.tsx	livediagram/apps/editor/components/canvas/useCanvasPointer.tsx
-livedesign/apps/live/components/canvas/usePaletteChrome.ts	livediagram/apps/editor/components/canvas/usePaletteChrome.ts	livedocuments/apps/editor/components/canvas/usePaletteChrome.ts	livehuddle/apps/editor/components/canvas/usePaletteChrome.ts
-livedesign/apps/live/components/chrome/ModeBanner.tsx	livediagram/apps/editor/components/chrome/ModeBanner.tsx	livedocuments/apps/editor/components/chrome/ModeBanner.tsx	livehuddle/apps/editor/components/chrome/ModeBanner.tsx
-livedesign/apps/live/components/chrome/OfflineBanner.tsx	livediagram/apps/editor/components/chrome/OfflineBanner.tsx	livedocuments/apps/editor/components/chrome/OfflineBanner.tsx	livehuddle/apps/editor/components/chrome/OfflineBanner.tsx
-livedesign/apps/live/components/colour/ColourPopover.tsx	livediagram/apps/editor/components/colour/ColourPopover.tsx	livedocuments/apps/editor/components/colour/ColourPopover.tsx	livehuddle/apps/editor/components/colour/ColourPopover.tsx	liveplanner/apps/editor/components/colour/ColourPopover.tsx
-livedesign/apps/live/components/dialogs/settings/SettingsSignInLink.tsx	livediagram/apps/editor/components/dialogs/settings/SettingsSignInLink.tsx	livedocuments/apps/editor/components/dialogs/settings/SettingsSignInLink.tsx	livehuddle/apps/editor/components/dialogs/settings/SettingsSignInLink.tsx	liveplanner/apps/editor/components/dialogs/settings/SettingsSignInLink.tsx
-livedesign/apps/live/components/dialogs/settings/test-pane.tsx	livediagram/apps/editor/components/dialogs/settings/test-pane.tsx	livedocuments/apps/editor/components/dialogs/settings/test-pane.tsx	livehuddle/apps/editor/components/dialogs/settings/test-pane.tsx	liveplanner/apps/editor/components/dialogs/settings/test-pane.tsx
-livedesign/apps/live/components/palette/AnimationPreviewTile.tsx	livediagram/apps/editor/components/palette/AnimationPreviewTile.tsx	livedocuments/apps/editor/components/palette/AnimationPreviewTile.tsx	livehuddle/apps/editor/components/palette/AnimationPreviewTile.tsx
-livedesign/apps/live/components/palette/IconPickerTab.tsx	livediagram/apps/editor/components/palette/IconPickerTab.tsx
-livedesign/apps/live/components/palette/PaletteTileGroup.tsx	livediagram/apps/editor/components/palette/PaletteTileGroup.tsx	livedocuments/apps/editor/components/palette/PaletteTileGroup.tsx	livehuddle/apps/editor/components/palette/PaletteTileGroup.tsx
-livedesign/apps/live/components/palette/StickerPickerTab.tsx	livediagram/apps/editor/components/palette/StickerPickerTab.tsx	livedocuments/apps/editor/components/palette/StickerPickerTab.tsx	livehuddle/apps/editor/components/palette/StickerPickerTab.tsx
-livedesign/apps/live/components/palette/TechPickerTab.tsx	livediagram/apps/editor/components/palette/TechPickerTab.tsx
-livedesign/apps/live/components/palette/ThemeBrowser.tsx	livedocuments/apps/editor/components/palette/ThemeBrowser.tsx
-livedesign/apps/live/components/palette/ToolbarStripRail.tsx	livediagram/apps/editor/components/palette/ToolbarStripRail.tsx
 livedesign/apps/live/components/palette/strip-rail-items.tsx	livediagram/apps/editor/components/palette/strip-rail-items.tsx
-livedesign/apps/live/components/palette/theme-picker-cards.tsx	livedocuments/apps/editor/components/palette/theme-picker-cards.tsx
-livedesign/apps/live/components/panels/EraserPanel.tsx	livediagram/apps/editor/components/panels/EraserPanel.tsx
-livedesign/apps/live/components/panels/SpotlightPanel.tsx	livediagram/apps/editor/components/panels/SpotlightPanel.tsx	livedocuments/apps/editor/components/panels/SpotlightPanel.tsx
 livedesign/apps/live/components/primitives/MenuErrorBoundary.tsx	livediagram/apps/editor/components/primitives/MenuErrorBoundary.tsx	livedocuments/apps/editor/components/primitives/MenuErrorBoundary.tsx	livehuddle/apps/editor/components/primitives/MenuErrorBoundary.tsx	liveplanner/apps/editor/components/primitives/MenuErrorBoundary.tsx
 livedesign/apps/live/components/split/SplitViewContext.tsx	livediagram/apps/editor/components/split/SplitViewContext.tsx	livedocuments/apps/editor/components/split/SplitViewContext.tsx	livehuddle/apps/editor/components/split/SplitViewContext.tsx	liveplanner/apps/editor/components/split/SplitViewContext.tsx
 livedesign/apps/live/components/tour/EditorTours.tsx	livedocuments/apps/editor/components/tour/EditorTours.tsx
@@ -64,81 +41,41 @@ livedesign/apps/live/components/tour/chevrons-tour-steps.ts	livedocuments/apps/e
 livedesign/apps/live/components/tour/stack-tour-steps.ts	livedocuments/apps/editor/components/tour/stack-tour-steps.ts
 livedesign/apps/live/hooks/canvas/drag-gesture.ts	livedocuments/apps/editor/hooks/canvas/drag-gesture.ts
 livedesign/apps/live/hooks/canvas/useEditorContextMenu.ts	livediagram/apps/editor/hooks/canvas/useEditorContextMenu.ts	livedocuments/apps/editor/hooks/canvas/useEditorContextMenu.ts	livehuddle/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveplanner/apps/editor/hooks/canvas/useEditorContextMenu.ts
-livedesign/apps/live/hooks/canvas/useEraserConfig.ts	livediagram/apps/editor/hooks/canvas/useEraserConfig.ts
-livedesign/apps/live/hooks/canvas/useLaserConfig.ts	livediagram/apps/editor/hooks/canvas/useLaserConfig.ts	livedocuments/apps/editor/hooks/canvas/useLaserConfig.ts
-livedesign/apps/live/hooks/editor/useModeDefaultTool.ts	livedocuments/apps/editor/hooks/editor/useModeDefaultTool.ts
-livedesign/apps/live/hooks/persistence/useCapabilities.ts	livedocuments/apps/editor/hooks/persistence/useCapabilities.ts	livehuddle/apps/editor/hooks/persistence/useCapabilities.ts
-livedesign/apps/live/hooks/persistence/useSignedGuestId.ts	livedocuments/apps/editor/hooks/persistence/useSignedGuestId.ts	liveplanner/apps/editor/hooks/persistence/useSignedGuestId.ts
-livedesign/apps/live/hooks/ui/useCornerDocking.ts	livediagram/apps/editor/hooks/ui/useCornerDocking.ts	livedocuments/apps/editor/hooks/ui/useCornerDocking.ts
 livedesign/apps/live/hooks/ui/useEditorAccent.ts	livediagram/apps/editor/hooks/ui/useEditorAccent.ts	livedocuments/apps/editor/hooks/ui/useEditorAccent.ts	livehuddle/apps/editor/hooks/ui/useEditorAccent.ts	liveplanner/apps/editor/hooks/ui/useEditorAccent.ts
-livedesign/apps/live/hooks/ui/useStripCrowdsCorners.ts	livehuddle/apps/editor/hooks/ui/useStripCrowdsCorners.ts
 livedesign/apps/live/lib/contents-placement.ts	livedocuments/apps/editor/lib/contents-placement.ts
 livedesign/apps/live/lib/guest-identity.ts	livediagram/apps/editor/lib/guest-identity.ts	livedocuments/apps/editor/lib/guest-identity.ts	livehuddle/apps/editor/lib/guest-identity.ts	liveplanner/apps/editor/lib/guest-identity.ts
-livedesign/apps/live/lib/image-search/pick.ts	livediagram/apps/editor/lib/image-search/pick.ts	livedocuments/apps/editor/lib/image-search/pick.ts	livehuddle/apps/editor/lib/image-search/pick.ts
-livedesign/apps/live/lib/image-search/search.ts	livedocuments/apps/editor/lib/image-search/search.ts
-livedesign/apps/live/lib/image-search/telemetry.ts	livediagram/apps/editor/lib/image-search/telemetry.ts	livedocuments/apps/editor/lib/image-search/telemetry.ts	livehuddle/apps/editor/lib/image-search/telemetry.ts
 livedesign/apps/live/lib/import-images/index.ts	livediagram/apps/editor/lib/import-images/index.ts
-livedesign/apps/live/lib/import-images/test-fakes.ts	livediagram/apps/editor/lib/import-images/test-fakes.ts	livedocuments/apps/editor/lib/import-images/test-fakes.ts	livehuddle/apps/editor/lib/import-images/test-fakes.ts
-livedesign/apps/live/lib/import-images/upload-error.ts	livediagram/apps/editor/lib/import-images/upload-error.ts	livedocuments/apps/editor/lib/import-images/upload-error.ts	livehuddle/apps/editor/lib/import-images/upload-error.ts
 livedesign/apps/live/lib/live-stroke-test-utils.ts	livediagram/apps/editor/lib/live-stroke-test-utils.ts
-livedesign/apps/live/lib/page-panel-request.ts	livedocuments/apps/editor/lib/page-panel-request.ts
-livedesign/apps/live/lib/settings-search-items.ts	livediagram/apps/editor/lib/settings-search-items.ts	livedocuments/apps/editor/lib/settings-search-items.ts	livehuddle/apps/editor/lib/settings-search-items.ts	liveplanner/apps/editor/lib/settings-search-items.ts
-livedesign/apps/live/lib/tidy-engine.ts	livediagram/apps/editor/lib/tidy-engine.ts	livedocuments/apps/editor/lib/tidy-engine.ts	liveplanner/apps/editor/lib/tidy-engine.ts
-livedesign/apps/live/scripts/icon-sheet/shoot.mjs	livediagram/apps/editor/scripts/icon-sheet/shoot.mjs	livedocuments/apps/editor/scripts/icon-sheet/shoot.mjs	livehuddle/apps/editor/scripts/icon-sheet/shoot.mjs	liveplanner/apps/editor/scripts/icon-sheet/shoot.mjs
 livedesign/apps/marketing/components/feature-art/features.tsx	livedocuments/apps/marketing/components/feature-art/features.tsx
 livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench/tasks/index.d.mts	livedocuments/apps/mcp/eval/bench/tasks/index.d.mts	liveplanner/apps/mcp/eval/bench/tasks/index.d.mts
 livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
-livedesign/packages/agent-verbs/src/folders.ts	livediagram/packages/agent-verbs/src/folders.ts	livedocuments/packages/agent-verbs/src/folders.ts	liveplanner/packages/agent-verbs/src/folders.ts
-livedesign/packages/agent-verbs/src/verbs/image.ts	livediagram/packages/agent-verbs/src/verbs/image.ts	livedocuments/packages/agent-verbs/src/verbs/image.ts
 livedesign/packages/design/src/chart-ink.ts	livedocuments/packages/document/src/chart-ink.ts
-livedesign/packages/design/src/indicator-placement.ts	livedocuments/packages/document/src/indicator-placement.ts
-livedesign/packages/design/src/label-backdrop.ts	livediagram/packages/document/src/label-backdrop.ts	livedocuments/packages/document/src/label-backdrop.ts	livehuddle/packages/document/src/label-backdrop.ts	liveplanner/packages/project/src/label-backdrop.ts
 livedesign/packages/design/src/page-ink-ground.ts	livedocuments/packages/document/src/page-ink-ground.ts
-livedesign/packages/design/src/page-lock.ts	livedocuments/packages/document/src/page-lock.ts
-livedesign/packages/design/src/page-of.ts	livedocuments/packages/document/src/page-of.ts
-livedesign/packages/design/src/page-paint.ts	livedocuments/packages/document/src/page-paint.ts
 livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/document/src/retired-patterns.ts	liveplanner/packages/project/src/retired-patterns.ts
-livedesign/packages/design/src/savable.ts	livedocuments/packages/document/src/savable.ts	liveplanner/packages/project/src/savable.ts
 livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts	livehuddle/packages/help-registry/src/telemetry.ts
 livedesign/packages/licences/src/overrides.ts	livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
 livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	livehuddle/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
 livedesign/packages/template-previews/src/index.ts	livedocuments/packages/template-previews/src/index.ts
-livedesign/packages/templates/src/template-catalogue.ts	livedocuments/packages/templates/src/template-catalogue.ts
-livedesign/packages/templates/src/template-search.ts	livediagram/packages/templates/src/template-search.ts	livedocuments/packages/templates/src/template-search.ts	livehuddle/packages/templates/src/template-search.ts	liveplanner/packages/templates/src/template-search.ts
 livedesign/packages/ui/src/Brand.tsx	livediagram/packages/ui/src/Brand.tsx	livedocuments/packages/ui/src/Brand.tsx	livehuddle/packages/ui/src/Brand.tsx
 livedesign/packages/ui/src/ExplorerLink.tsx	livediagram/packages/ui/src/ExplorerLink.tsx	livedocuments/packages/ui/src/ExplorerLink.tsx	livehuddle/packages/ui/src/ExplorerLink.tsx	liveplanner/packages/ui/src/ExplorerLink.tsx
-livedesign/packages/ui/src/SiteAccount.tsx	livediagram/packages/ui/src/SiteAccount.tsx	livedocuments/packages/ui/src/SiteAccount.tsx	livehuddle/packages/ui/src/SiteAccount.tsx	liveplanner/packages/ui/src/SiteAccount.tsx
 livedesign/packages/ui/src/SiteSwitcher.tsx	livediagram/packages/ui/src/SiteSwitcher.tsx	livedocuments/packages/ui/src/SiteSwitcher.tsx	livehuddle/packages/ui/src/SiteSwitcher.tsx	liveplanner/packages/ui/src/SiteSwitcher.tsx
 livedesign/packages/ui/src/WebVitalsReporter.tsx	livediagram/packages/ui/src/WebVitalsReporter.tsx	livedocuments/packages/ui/src/WebVitalsReporter.tsx	livehuddle/packages/ui/src/WebVitalsReporter.tsx	liveplanner/packages/ui/src/WebVitalsReporter.tsx
 livedesign/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livediagram/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livedocuments/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livehuddle/packages/ui/src/appearance/SiteAppearanceToggle.tsx	liveplanner/packages/ui/src/appearance/SiteAppearanceToggle.tsx
-livedesign/packages/ui/src/appearance/appearance-store.ts	livediagram/packages/ui/src/appearance/appearance-store.ts	livedocuments/packages/ui/src/appearance/appearance-store.ts	livehuddle/packages/ui/src/appearance/appearance-store.ts	liveplanner/packages/ui/src/appearance/appearance-store.ts
 livedesign/packages/ui/src/appearance/index.ts	livediagram/packages/ui/src/appearance/index.ts	livedocuments/packages/ui/src/appearance/index.ts	livehuddle/packages/ui/src/appearance/index.ts	liveplanner/packages/ui/src/appearance/index.ts
 livedesign/packages/ui/src/appearance/useAppearance.ts	livediagram/packages/ui/src/appearance/useAppearance.ts	livedocuments/packages/ui/src/appearance/useAppearance.ts	livehuddle/packages/ui/src/appearance/useAppearance.ts	liveplanner/packages/ui/src/appearance/useAppearance.ts
 livedesign/packages/ui/src/browser-repair/index.ts	livediagram/packages/ui/src/browser-repair/index.ts	livedocuments/packages/ui/src/browser-repair/index.ts	livehuddle/packages/ui/src/browser-repair/index.ts
-livedesign/packages/ui/src/browser-repair/repair.ts	livediagram/packages/ui/src/browser-repair/repair.ts	livedocuments/packages/ui/src/browser-repair/repair.ts	livehuddle/packages/ui/src/browser-repair/repair.ts	liveplanner/packages/ui/src/browser-repair/repair.ts
 livedesign/packages/ui/src/icons/index.ts	livediagram/packages/ui/src/icons/index.ts	livedocuments/packages/ui/src/icons/index.ts	livehuddle/packages/ui/src/icons/index.ts	liveplanner/packages/ui/src/icons/index.ts
-livedesign/packages/ui/src/seo.ts	livediagram/packages/ui/src/seo.ts	livedocuments/packages/ui/src/seo.ts	livehuddle/packages/ui/src/seo.ts	liveplanner/packages/ui/src/seo.ts
-livedesign/scripts/ci-test-filters.mjs	livediagram/scripts/ci-test-filters.mjs	livedocuments/scripts/ci-test-filters.mjs	livehuddle/scripts/ci-test-filters.mjs	liveplanner/scripts/ci-test-filters.mjs
-livedesign/scripts/git-hooks/install.mjs	livediagram/scripts/git-hooks/install.mjs	livedocuments/scripts/git-hooks/install.mjs	livehuddle/scripts/git-hooks/install.mjs	liveplanner/scripts/git-hooks/install.mjs
-livedesign/scripts/ts-source-hooks.mjs	livediagram/scripts/ts-source-hooks.mjs	livedocuments/scripts/ts-source-hooks.mjs	livehuddle/scripts/ts-source-hooks.mjs	liveplanner/scripts/ts-source-hooks.mjs
 livediagram/apps/api/src/db/content-summary.ts	livehuddle/apps/api/src/db/content-summary.ts
 livediagram/apps/api/src/legacy-request-forms.ts	livehuddle/apps/api/src/legacy-request-forms.ts
-livediagram/apps/api/src/liveworkspace/activity.ts	livehuddle/apps/api/src/liveworkspace/activity.ts
 livediagram/apps/api/src/redact-document.ts	livehuddle/apps/api/src/redact-document.ts
 livediagram/apps/api/src/routes/community.ts	livehuddle/apps/api/src/routes/community.ts
-livediagram/apps/api/src/routes/document-grant.ts	livehuddle/apps/api/src/routes/document-grant.ts
 livediagram/apps/api/src/routes/document-shared-tabs-route.ts	livehuddle/apps/api/src/routes/document-shared-tabs-route.ts
 livediagram/apps/api/src/routes/openapi.ts	livedocuments/apps/api/src/routes/openapi.ts	livehuddle/apps/api/src/routes/openapi.ts
 livediagram/apps/api/src/routes/preferences.ts	livehuddle/apps/api/src/routes/preferences.ts
 livediagram/apps/api/src/routes/share.ts	livehuddle/apps/api/src/routes/share.ts
 livediagram/apps/api/src/routes/tab-render-route.ts	livedocuments/apps/api/src/routes/tab-render-route.ts
 livediagram/apps/editor/app/document/[id]/page.tsx	livedocuments/apps/editor/app/document/[id]/page.tsx	livehuddle/apps/editor/app/document/[id]/page.tsx
-livediagram/apps/editor/app/document/[id]/resolve-participant.ts	livehuddle/apps/editor/app/document/[id]/resolve-participant.ts
 livediagram/apps/editor/app/document/[id]/room-refusal.ts	livehuddle/apps/editor/app/document/[id]/room-refusal.ts
-livediagram/apps/editor/app/document/[id]/save-failure.ts	livehuddle/apps/editor/app/document/[id]/save-failure.ts
-livediagram/apps/editor/app/document/[id]/useEditorDialogs.ts	livehuddle/apps/editor/app/document/[id]/useEditorDialogs.ts
-livediagram/apps/editor/app/document/[id]/useRoleIndicator.ts	livedocuments/apps/editor/app/document/[id]/useRoleIndicator.ts	livehuddle/apps/editor/app/document/[id]/useRoleIndicator.ts
-livediagram/apps/editor/app/document/[id]/useTabEntryEffects.ts	livehuddle/apps/editor/app/document/[id]/useTabEntryEffects.ts
 livediagram/apps/editor/app/document/[id]/useWorkbenchEnd.ts	livedocuments/apps/editor/app/document/[id]/useWorkbenchEnd.ts
 livediagram/apps/editor/app/embed/workbench/useWorkspaceNavigation.ts	livedocuments/apps/editor/app/embed/workbench/useWorkspaceNavigation.ts
 livediagram/apps/editor/app/get-started/page.tsx	livedocuments/apps/editor/app/get-started/page.tsx	livehuddle/apps/editor/app/get-started/page.tsx
@@ -149,17 +86,11 @@ livediagram/apps/editor/app/not-found.tsx	livedocuments/apps/editor/app/not-foun
 livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
 livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx
 livediagram/apps/editor/components/canvas/paper-kit.tsx	livehuddle/apps/editor/components/canvas/paper-kit.tsx
-livediagram/apps/editor/components/canvas/slide-transition.ts	livedocuments/apps/editor/components/canvas/slide-transition.ts
-livediagram/apps/editor/components/canvas/view-readers.tsx	livedocuments/apps/editor/components/canvas/view-readers.tsx
 livediagram/apps/editor/components/chrome/EllipsisMenuButton.tsx	livedocuments/apps/editor/components/chrome/EllipsisMenuButton.tsx
 livediagram/apps/editor/components/chrome/OpeningScreen.tsx	livedocuments/apps/editor/components/chrome/OpeningScreen.tsx	livehuddle/apps/editor/components/chrome/OpeningScreen.tsx
 livediagram/apps/editor/components/colour/useThemeColours.ts	livehuddle/apps/editor/components/colour/useThemeColours.ts
 livediagram/apps/editor/components/dialogs/ConversionHandoff.tsx	livehuddle/apps/editor/components/dialogs/ConversionHandoff.tsx
-livediagram/apps/editor/components/palette/ThemeBrowser.tsx	livehuddle/apps/editor/components/palette/ThemeBrowser.tsx	liveplanner/apps/editor/components/palette/ThemeBrowser.tsx
-livediagram/apps/editor/components/palette/theme-picker-cards.tsx	livehuddle/apps/editor/components/palette/theme-picker-cards.tsx	liveplanner/apps/editor/components/palette/theme-picker-cards.tsx
 livediagram/apps/editor/components/panels/LaserColourRow.tsx	livedocuments/apps/editor/components/panels/LaserColourRow.tsx
-livediagram/apps/editor/components/panels/LazyExplorer.tsx	livedocuments/apps/editor/components/panels/LazyExplorer.tsx	livehuddle/apps/editor/components/panels/LazyExplorer.tsx
-livediagram/apps/editor/components/panels/search-panel-sources.ts	livedocuments/apps/editor/components/panels/search-panel-sources.ts	livehuddle/apps/editor/components/panels/search-panel-sources.ts
 livediagram/apps/editor/components/start/StartCard.tsx	livehuddle/apps/editor/components/start/StartCard.tsx
 livediagram/apps/editor/components/start/StartViewTransition.tsx	livehuddle/apps/editor/components/start/StartViewTransition.tsx
 livediagram/apps/editor/components/start/start-closed-key.ts	livehuddle/apps/editor/components/start/start-closed-key.ts
@@ -167,34 +98,23 @@ livediagram/apps/editor/components/tour/TourStage.tsx	livehuddle/apps/editor/com
 livediagram/apps/editor/e2e/signed-in/session.ts	livehuddle/apps/editor/e2e/signed-in/session.ts
 livediagram/apps/editor/e2e/stored.ts	livedocuments/apps/editor/e2e/stored.ts	livehuddle/apps/editor/e2e/stored.ts
 livediagram/apps/editor/hooks/canvas/drag-gesture.ts	liveplanner/apps/editor/hooks/canvas/drag-gesture.ts
-livediagram/apps/editor/hooks/canvas/useAutoCopyParam.ts	livehuddle/apps/editor/hooks/canvas/useAutoCopyParam.ts
-livediagram/apps/editor/hooks/canvas/useDocumentActions.ts	livedocuments/apps/editor/hooks/canvas/useDocumentActions.ts	livehuddle/apps/editor/hooks/canvas/useDocumentActions.ts
-livediagram/apps/editor/hooks/canvas/useVoteReviewOpener.ts	liveplanner/apps/editor/hooks/canvas/useVoteReviewOpener.ts
 livediagram/apps/editor/hooks/collab/useFollowMe.ts	livehuddle/apps/editor/hooks/collab/useFollowMe.ts
 livediagram/apps/editor/hooks/persistence/useAfterApiWrite.ts	livehuddle/apps/editor/hooks/persistence/useAfterApiWrite.ts
 livediagram/apps/editor/hooks/persistence/useGuestId.ts	livehuddle/apps/editor/hooks/persistence/useGuestId.ts
-livediagram/apps/editor/hooks/persistence/useImageBlobUrl.ts	livehuddle/apps/editor/hooks/persistence/useImageBlobUrl.ts
 livediagram/apps/editor/hooks/persistence/useSettledOwnerId.ts	livehuddle/apps/editor/hooks/persistence/useSettledOwnerId.ts
 livediagram/apps/editor/hooks/ui/useColourPalette.ts	livedocuments/apps/editor/hooks/ui/useColourPalette.ts	livehuddle/apps/editor/hooks/ui/useColourPalette.ts
 livediagram/apps/editor/hooks/ui/useDocumentColours.ts	livedocuments/apps/editor/hooks/ui/useDocumentColours.ts	livehuddle/apps/editor/hooks/ui/useDocumentColours.ts
-livediagram/apps/editor/hooks/ui/useImageGallery.ts	livedocuments/apps/editor/hooks/ui/useImageGallery.ts	livehuddle/apps/editor/hooks/ui/useImageGallery.ts
 livediagram/apps/editor/hooks/ui/useImageSearch.ts	livehuddle/apps/editor/hooks/ui/useImageSearch.ts
-livediagram/apps/editor/hooks/ui/useLandscapeBars.ts	livehuddle/apps/editor/hooks/ui/useLandscapeBars.ts
 livediagram/apps/editor/lib/add-to-document-targets.ts	livedocuments/apps/editor/lib/add-to-document-targets.ts
 livediagram/apps/editor/lib/api/document-grants.ts	livehuddle/apps/editor/lib/api/document-grants.ts
 livediagram/apps/editor/lib/api/preferences.ts	livehuddle/apps/editor/lib/api/preferences.ts
-livediagram/apps/editor/lib/api/self.ts	livehuddle/apps/editor/lib/api/self.ts
 livediagram/apps/editor/lib/canvas-gesture.ts	livehuddle/apps/editor/lib/canvas-gesture.ts
 livediagram/apps/editor/lib/explorer-organise.ts	livedocuments/apps/editor/lib/explorer-organise.ts
 livediagram/apps/editor/lib/explorer-thumbnail.tsx	livehuddle/apps/editor/lib/explorer-thumbnail.tsx
-livediagram/apps/editor/lib/image-search/search.ts	livehuddle/apps/editor/lib/image-search/search.ts
-livediagram/apps/editor/lib/import-images/session.ts	livedocuments/apps/editor/lib/import-images/session.ts	livehuddle/apps/editor/lib/import-images/session.ts
 livediagram/apps/editor/lib/legacy-editor-path.ts	livehuddle/apps/editor/lib/legacy-editor-path.ts
-livediagram/apps/editor/lib/picker.ts	liveplanner/apps/editor/lib/picker.ts
 livediagram/apps/editor/lib/stub-resize-observer.ts	livehuddle/apps/editor/lib/stub-resize-observer.ts
 livediagram/apps/editor/lib/tour-tracks.ts	livehuddle/apps/editor/lib/tour-tracks.ts
 livediagram/apps/editor/lib/workbench-bindings.ts	livedocuments/apps/editor/lib/workbench-bindings.ts	livehuddle/apps/editor/lib/workbench-bindings.ts
-livediagram/apps/editor/scripts/build-signed-in.mjs	livehuddle/apps/editor/scripts/build-signed-in.mjs
 livediagram/apps/editor/test/no-document-grants.ts	livedocuments/apps/editor/test/no-document-grants.ts	livehuddle/apps/editor/test/no-document-grants.ts
 livediagram/apps/help/components/category-art/developers.tsx	livehuddle/apps/help/components/category-art/developers.tsx
 livediagram/apps/help/components/category-art/index.tsx	livehuddle/apps/help/components/category-art/index.tsx
@@ -203,31 +123,17 @@ livediagram/apps/help/components/category-art/tabs.tsx	livehuddle/apps/help/comp
 livediagram/apps/help/components/illustrations/tabs-side-by-side.tsx	livehuddle/apps/help/components/illustrations/tabs-side-by-side.tsx
 livediagram/apps/marketing/app/page.tsx	livehuddle/apps/marketing/app/page.tsx
 livediagram/apps/marketing/components/art-tokens.ts	livehuddle/apps/marketing/components/art-tokens.ts
-livediagram/apps/marketing/components/hero-cursor.tsx	livedocuments/apps/marketing/components/hero-cursor.tsx	liveplanner/apps/marketing/components/hero-cursor.tsx
 livediagram/apps/marketing/lib/hero-motion.ts	livehuddle/apps/marketing/lib/hero-motion.ts
 livediagram/apps/mcp/eval/bench/score.mjs	livedocuments/apps/mcp/eval/bench/score.mjs
 livediagram/apps/mcp/src/created-folder.ts	livedocuments/apps/mcp/src/created-folder.ts
 livediagram/apps/mcp/src/mcp-test-client.ts	livedocuments/apps/mcp/src/mcp-test-client.ts
-livediagram/packages/agent-verbs/src/addressing.ts	livedocuments/packages/agent-verbs/src/addressing.ts
-livediagram/packages/agent-verbs/src/api-refusal.ts	livedocuments/packages/agent-verbs/src/api-refusal.ts
-livediagram/packages/agent-verbs/src/mcp/archive-tools.ts	livedocuments/packages/agent-verbs/src/mcp/archive-tools.ts
-livediagram/packages/agent-verbs/src/verbs/archive.ts	livedocuments/packages/agent-verbs/src/verbs/archive.ts
-livediagram/packages/agent-verbs/src/verbs/folder.ts	livedocuments/packages/agent-verbs/src/verbs/folder.ts
 livediagram/packages/agent-verbs/src/verbs/shared.ts	livedocuments/packages/agent-verbs/src/verbs/shared.ts
 livediagram/packages/api-schema/src/document-conversion.ts	livedocuments/packages/api-schema/src/document-conversion.ts	livehuddle/packages/api-schema/src/document-conversion.ts
 livediagram/packages/api-schema/src/document-paths.ts	livehuddle/packages/api-schema/src/document-paths.ts
 livediagram/packages/api-schema/src/responses.ts	livedocuments/packages/api-schema/src/responses.ts
 livediagram/packages/api-schema/src/trash.ts	livehuddle/packages/api-schema/src/trash.ts
 livediagram/packages/document-views/src/__fixtures__/golden-path.ts	livedocuments/packages/document-views/src/__fixtures__/golden-path.ts	livehuddle/packages/document-views/src/__fixtures__/golden-path.ts
-livediagram/packages/document-views/src/freehand-runs.ts	livedocuments/packages/document-views/src/freehand-runs.ts	livehuddle/packages/document-views/src/freehand-runs.ts
 livediagram/packages/document/src/collab-index-rows.ts	livehuddle/packages/document/src/collab-index-rows.ts
-livediagram/packages/document/src/component-factories.ts	liveplanner/packages/project/src/component-factories.ts
-livediagram/packages/document/src/flowchart-grow.ts	liveplanner/packages/project/src/flowchart-grow.ts
-livediagram/packages/document/src/flowchart.ts	liveplanner/packages/project/src/flowchart.ts
-livediagram/packages/document/src/malformed-ids.ts	liveplanner/packages/project/src/malformed-ids.ts
-livediagram/packages/document/src/mind-grow.ts	liveplanner/packages/project/src/mind-grow.ts
-livediagram/packages/document/src/savable.ts	livehuddle/packages/document/src/savable.ts
-livediagram/packages/document/src/svg-render-sequence.ts	liveplanner/packages/project/src/svg-render-sequence.ts
 livediagram/packages/document/src/svg-render-temperature.ts	liveplanner/packages/project/src/svg-render-temperature.ts
 livediagram/packages/document/src/tab-as-seen.ts	livehuddle/packages/document/src/tab-as-seen.ts
 livediagram/packages/licences/src/apps.ts	livedocuments/packages/licences/src/apps.ts	liveplanner/packages/licences/src/apps.ts

@@ -42,7 +42,7 @@ import { BoardColourRow, QuickPenRows } from './QuickPenRows';
 import { QuickHighlighterRows } from './QuickHighlighterRows';
 import { QuickMoreColours } from './QuickMoreColours';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useCanvasSurface } from './CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import {
   QUICK_BORDER_PX,
   QUICK_COMPACT_PADDING_PX,

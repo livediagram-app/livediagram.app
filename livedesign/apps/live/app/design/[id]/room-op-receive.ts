@@ -2,7 +2,7 @@ import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { setRemoteBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import type { RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
-import type { PresenceCoalescer } from './presence-coalescer';
+import type { PresenceCoalescer } from '@liveworkspace/workbench/lib/presence-coalescer';
 import { applyRoomOpToTabs, remoteRoomOp } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { foldRemoteOpIntoBaseline } from './save-baseline';

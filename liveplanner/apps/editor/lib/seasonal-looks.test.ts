@@ -15,7 +15,7 @@ import {
   seasonOrder,
   seasonalLooksFor,
   type Season,
-} from './seasonal-looks';
+} from '@liveworkspace/workbench/lib/seasonal-looks';
 import { TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
 import type { Tab } from '@liveplanner/project';
 

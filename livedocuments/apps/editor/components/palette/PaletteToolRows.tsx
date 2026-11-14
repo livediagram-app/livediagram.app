@@ -16,7 +16,7 @@ import { useEffect, useRef } from 'react';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
-import { tileCaption } from './tile-caption';
+import { tileCaption } from '@liveworkspace/workbench/components/palette/tile-caption';
 import { tileDragStart } from './palette-tile-drag';
 import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 import { PointerWords } from '@liveworkspace/workbench/components/palette/PointerWords';

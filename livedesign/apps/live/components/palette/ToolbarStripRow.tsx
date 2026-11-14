@@ -4,8 +4,8 @@ import type { ReactNode, RefObject } from 'react';
 import { atLeastInset, safeInlinePadding } from '@livedesign/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
-import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
-import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { PHONE_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
+import { TOOLBAR_CARD } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // The strip's card, and the leading card beside it on a phone.
 export const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;

@@ -25,7 +25,7 @@ import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
 import { lucideGlyph } from '@livedesign/ui';
 import { lucideCircleDot } from '@liveworkspace/icons/lucide';
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
-import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // Data-shape rows (rail / rating / pie / progress editors + AnimTiles)
 // live in context-menu-data-rows.tsx; re-exported so importers keep

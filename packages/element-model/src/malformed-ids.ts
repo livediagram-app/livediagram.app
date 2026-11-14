@@ -12,6 +12,9 @@ export const ELEMENT_KEY_MAX = 256;
 
 /** The fields that hold a catalogue key. */
 export const ELEMENT_KEY_FIELDS = ['iconId', 'stickerId'] as const;
+/** The same in a product with flowcharts (livediagram, liveplanner): a flowchart step's `flowchartId` too, compared
+ *  as text wherever the chart is read, so a shape with a malformed one reads as no flowchart step. */
+export const FLOWCHART_ELEMENT_KEY_FIELDS = [...ELEMENT_KEY_FIELDS, 'flowchartId'] as const;
 
 /** Whether a value is a catalogue key: text of at most ELEMENT_KEY_MAX characters. */
 export function isElementKey(v: unknown): v is string {
@@ -20,10 +23,19 @@ export function isElementKey(v: unknown): v is string {
 
 /** The elements with every malformed catalogue key taken off; the same array when none had one. */
 export function dropMalformedIds<E extends Element>(elements: E[]): E[] {
+  return dropMalformedKeys(elements, ELEMENT_KEY_FIELDS);
+}
+
+/** dropMalformedIds for a product with flowcharts. */
+export function dropMalformedFlowchartIds<E extends Element>(elements: E[]): E[] {
+  return dropMalformedKeys(elements, FLOWCHART_ELEMENT_KEY_FIELDS);
+}
+
+function dropMalformedKeys<E extends Element>(elements: E[], fields: readonly string[]): E[] {
   let out: E[] | null = null;
   elements.forEach((el, i) => {
     const raw = el as unknown as Record<string, unknown>;
-    const bad = ELEMENT_KEY_FIELDS.filter((k) => raw[k] !== undefined && !isElementKey(raw[k]));
+    const bad = fields.filter((k) => raw[k] !== undefined && !isElementKey(raw[k]));
     if (bad.length === 0) return;
     const next = { ...raw };
     for (const k of bad) delete next[k];

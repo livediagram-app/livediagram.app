@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { SwatchChip } from './ColourSwatch';
-import { CustomColourEditor } from './CustomColourEditor';
+import { CustomColourEditor } from '@liveworkspace/workbench/components/colour/CustomColourEditor';
 
 // docs/specs/004-interface-design/forced-colors.md: colour that is the content keeps it under a contrast theme. A
 // repainted swatch was an empty square, and the colour could not be picked.

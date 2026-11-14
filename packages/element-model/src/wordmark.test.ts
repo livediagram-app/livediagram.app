@@ -3,6 +3,8 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   arcGeometry,
   arcText,
+  clampLetterSpacing,
+  clampTextArc,
   hasWordmarkType,
   resolvedFontWeight,
   wordmarkDisplayText,
@@ -102,5 +104,19 @@ describe('arc geometry', () => {
   it('never shrinks the circle below the font size', () => {
     const g = arcGeometry({ width: 20, height: 20 }, 270, 40);
     expect(g.length).toBeCloseTo(40 * 1.5 * Math.PI, 5);
+  });
+});
+
+describe('wordmark clamps', () => {
+  it('clamps tracking and arc to their ranges, none for zero or a non-number', () => {
+    expect(clampLetterSpacing(2)).toBe(1);
+    expect(clampLetterSpacing(-1)).toBe(-0.2);
+    expect(clampLetterSpacing(0.123)).toBe(0.12);
+    expect(clampLetterSpacing(0)).toBeUndefined();
+    expect(clampLetterSpacing(Number.NaN)).toBeUndefined();
+    expect(clampTextArc(400)).toBe(360);
+    expect(clampTextArc(-90.4)).toBe(-90);
+    expect(clampTextArc(0.2)).toBeUndefined();
+    expect(clampTextArc(Number.POSITIVE_INFINITY)).toBeUndefined();
   });
 });

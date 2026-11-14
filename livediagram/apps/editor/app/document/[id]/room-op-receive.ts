@@ -2,7 +2,7 @@ import { setRemoteBesideTab } from '@liveworkspace/workbench/lib/split-presence'
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
-import type { PresenceCoalescer } from './presence-coalescer';
+import type { PresenceCoalescer } from '@liveworkspace/workbench/lib/presence-coalescer';
 import { remoteSelectionOf } from '@/lib/presence-rows';
 import { applyRoomOpToTabs, remoteRoomOp, type PendingIdeaIds } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';

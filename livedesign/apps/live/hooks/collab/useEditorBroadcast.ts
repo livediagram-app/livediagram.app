@@ -13,7 +13,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RoomOutgoing } from '@livedesign/api-schema';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
+import { trimLaserBuffer, type LaserPoint } from '@liveworkspace/workbench/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 
 export const BROADCAST_THROTTLE_MS = 33;
@@ -109,8 +109,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   }
 
   const broadcastCursor = (pos: { x: number; y: number } | null) => {
-    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId))
-      return;
+    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId)) return;
     const send = (at: { x: number; y: number } | null) => {
       lastCursorSentRef.current = performance.now();
       deps.roomRef.current?.send({
@@ -150,8 +149,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     if (now - lastLaserSentRef.current < BROADCAST_THROTTLE_MS) return;
     lastLaserSentRef.current = now;
     setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
-    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId))
-      return;
+    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId)) return;
     deps.roomRef.current?.send({
       kind: 'op',
       // The pen rides the sample (docs/specs/008-canvas/laser-panel.md) so peers draw MY laser, not
@@ -167,8 +165,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     zoom: number,
     size: { width: number; height: number },
   ) => {
-    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId))
-      return;
+    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId)) return;
     const now = performance.now();
     if (now - lastViewportSentRef.current < VIEWPORT_THROTTLE_MS) return;
     lastViewportSentRef.current = now;

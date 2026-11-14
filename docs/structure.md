@@ -30,7 +30,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
 │  ├─ e2e-kit                  the editors' Playwright measuring sticks: the contrast audit, the optical audit and its snap, the canvas probe's runner (`canvas-probe`, its gestures) and calibration, interactive reading, trace tasks, budget and nightly report
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
-│  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, element defaults, themes, tables, charts, Sankey, entity and sequence rules, wordmarks, arrows and icons in the export, comment threads, fingerprints, stored-data repairs, the white under a picture
+│  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, element defaults, themes, tables, charts, Sankey, entity and sequence rules, wordmarks, arrows and icons in the export, comment threads, fingerprints, stored-data repairs, the white under a picture, element ops and factories, mind maps, the authoring normaliser, element refs, page locks, tab builders
 │  ├─ email                    the one caller of Cloudflare Email Service's `send_email` binding, for accounts and every app
 │  ├─ fake-google              an in-memory Google (Drive v3 and OAuth) for the Drive mirror's tests
 │  ├─ model-core               what every product's model shares and needs nothing of its element union (the Reaction Pad's five bursts among it); each re-exports it
@@ -41,7 +41,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ migration                the move from the historical livediagram.app: the payload contract and the splitter
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig), and the dev entry every app's dev script runs (scripts/next-dev.mjs, which refuses a busy port)
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
-│  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser, and an animated background's moving parts: pages and form covers
+│  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser, and an animated background's moving parts, and a page's background edit: pages and form covers
 │  ├─ prettier-config          the formatting settings, for the root and every product
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
@@ -50,7 +50,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
-│  ├─ template-previews        the template previews' hover motion, fan and story parts, and the template search and catalogue, for every editor
+│  ├─ template-previews        the template previews' hover motion, fan and story parts, the template search and catalogue, and the analysis templates' data, for every editor
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script, header and HTML sanitiser every app's pages share
@@ -58,7 +58,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
-├─ scripts/                    the root's own scripts: git-hooks, and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)
+├─ scripts/                    the root's own scripts: git-hooks, ts-source-hooks.mjs (Node type stripping for every product's repo scripts), and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
 │  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /community, /telemetry, /status, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product
@@ -615,6 +615,15 @@ Each step is its own PR, and both products build and pass their tests after ever
        the output is byte-identical.
      - Still per product: the lint and test configs (a few lines each), the CLI's version, png and io bindings,
        `room-scope.ts` (its op kinds are the product's) and `person-tag.ts`.
+   - Fourth slices, what the product CLIs, MCPs, apis, help and marketing apps still copied, each one copy now:
+     `api-kit`'s hosted-vars script (`scripts/hosted-vars.mjs`, each api's `scripts/hosted-vars.mjs` binding its
+     `hosted-vars.json`), the image reference index's SQL (`image-ref-index`) and the workbench pairing's room closer
+     (`room-access-client`); `auth-client`'s workbench session checker (`workbench-sessions`); `cli-kit`'s global
+     flags (`globals`) and entry (`bin`); `mcp-kit`'s test client (`testing/test-client`) and the benchmark's scorer
+     and task bank (`eval/score`, `eval/task-bank`); `marketing-site`'s template gallery, Start from a template band
+     and hero cursor; `help-site`'s Explorer Home illustration; `vitest-config`'s `workspace-manifests`. The product
+     folders' own `scripts/git-hooks`, `.githooks` and `ci-test-filters.mjs`, which the root's hooks and CI plan
+     replaced, are gone, and `ts-source-hooks.mjs` is one root script.
 
 6. **Avatar mode out of livediagram's editor**, so a second product (livehuddle) can walk the same characters.
    `@liveworkspace/avatar` (`packages/avatar` then) held the parts of Avatar mode that read no element union: the sprite

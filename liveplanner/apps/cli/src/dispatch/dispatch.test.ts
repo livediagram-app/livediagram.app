@@ -4,7 +4,6 @@ import { defineVerb, verbById, type Verb } from '@liveplanner/agent-verbs';
 import { CliError, type CliFailure } from '../output/cli-error';
 import { didYouMean } from '@liveworkspace/cli-kit/did-you-mean';
 import { fieldsOf, flagOf } from '@liveworkspace/cli-kit/fields';
-import { splitGlobals } from './globals';
 import { parseVerbArgs } from './parse-flags';
 import { route } from './route';
 
@@ -95,47 +94,6 @@ describe('fieldsOf', () => {
   it('writes a key as its kebab-case flag', () => {
     expect(flagOf('withToken')).toBe('--with-token');
     expect(flagOf('tab')).toBe('--tab');
-  });
-});
-
-describe('splitGlobals', () => {
-  it('takes the global flags wherever they stand and leaves the rest', () => {
-    expect(
-      splitGlobals([
-        '--profile',
-        'work',
-        'tab',
-        'ls',
-        'x',
-        '--json=name,id',
-        '-q',
-        '--host=https://h',
-      ]),
-    ).toEqual({
-      globals: {
-        profile: 'work',
-        host: 'https://h',
-        help: false,
-        version: false,
-        mode: { json: true, fields: ['name', 'id'], quiet: true },
-      },
-      words: ['tab', 'ls', 'x'],
-    });
-    expect(splitGlobals(['--json', '-h', '--version', '--quiet']).globals).toEqual({
-      help: true,
-      version: true,
-      mode: { json: true, quiet: true },
-    });
-  });
-
-  it('refuses a valued flag without its value', () => {
-    expect(failureOf(() => splitGlobals(['--host']))).toMatchObject({
-      exit: 2,
-      message: '--host needs a value',
-    });
-    expect(failureOf(() => splitGlobals(['--profile=']))).toMatchObject({
-      message: '--profile needs a value',
-    });
   });
 });
 

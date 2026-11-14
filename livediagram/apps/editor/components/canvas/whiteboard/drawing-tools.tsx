@@ -15,7 +15,7 @@ import {
 import { penColourCss } from '@livediagram/document';
 import { FillToolIcon } from '@livediagram/ui';
 import { FILL_TRANSPARENT } from '@liveworkspace/workbench/lib/fill-choice';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import type { DrawingTool } from '@/lib/whiteboard-dock-fold';

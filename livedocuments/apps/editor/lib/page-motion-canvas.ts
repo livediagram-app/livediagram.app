@@ -4,7 +4,7 @@
 // and under everything on it. Browser-only (canvas 2D); the parts and poses are tested pure.
 import { hexToRgb, pageGradientLine, type PageMotion } from '@livedocuments/document';
 import { motionPaint } from './page-motion';
-import { animOrigin, openingPose } from './page-motion-frame';
+import { animOrigin, openingPose } from '@liveworkspace/page-background/motion-frame';
 import {
   motionParts,
   waveLine,
@@ -15,7 +15,7 @@ import {
   type MotionGroup,
   type MotionNode,
   type MotionWave,
-} from './page-motion-parts';
+} from '@liveworkspace/page-background/motion-parts';
 
 type Ctx = CanvasRenderingContext2D;
 type Size = { w: number; h: number };

@@ -28,7 +28,7 @@ import {
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { pagesClipPath } from '@/components/canvas/PageClip';
 import { cardFlowsToMount } from '@/lib/flashcard-stack';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { ArticleInk } from '@/lib/article/article-style-vars';
 import {
   articleHandleOf,

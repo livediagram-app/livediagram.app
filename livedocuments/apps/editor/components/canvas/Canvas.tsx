@@ -1,7 +1,7 @@
 import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
 import dynamic from 'next/dynamic';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
-import { CanvasFinishProvider } from './CanvasFinishContext';
+import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
 import {
   useViewportOf,
@@ -55,7 +55,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
 import { loadArticleFlows, loadCanvasPages } from '@/lib/editor-deferred-code';
-import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
+import { SLIDE_VIEW_TRANSITION_UPDATE } from '@liveworkspace/workbench/components/canvas/slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
 // Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand

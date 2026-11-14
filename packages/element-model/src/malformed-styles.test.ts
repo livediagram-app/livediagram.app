@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from './element';
-import { dropMalformedStyles } from './malformed-styles';
+import { dropMalformedPageStyles, dropMalformedStyles } from './malformed-styles';
 import { createArrow, createShape } from './testing/elements';
 
 // Style fields have their types: the wrong type is dropped, an unknown value of the right type is kept.
@@ -65,5 +65,15 @@ describe('dropMalformedStyles', () => {
     expect(out).not.toBe(elements);
     expect(out[0]).toBe(good);
     expect(elements[1]).toHaveProperty('padding', 1);
+  });
+});
+
+describe('dropMalformedPageStyles', () => {
+  it('also types a label scale, which the products without pages leave alone', () => {
+    const elements = [shape({ textScale: 'big' }), shape({ textScale: 1.5 })];
+    const [bad, good] = dropMalformedPageStyles(elements);
+    expect(bad).not.toHaveProperty('textScale');
+    expect(good).toHaveProperty('textScale', 1.5);
+    expect(dropMalformedStyles(elements)).toBe(elements);
   });
 });

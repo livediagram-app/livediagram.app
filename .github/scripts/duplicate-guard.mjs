@@ -72,6 +72,119 @@ export function isReexportBinding(text) {
   );
 }
 
+/** The value names an import clause binds (`a`, `{ b, c as d }`, `* as e`), type-only names left out. */
+function importedNames(/** @type {string} */ clause) {
+  if (/^type\s/.test(clause)) return [];
+  const names = [];
+  const braces = /\{([^}]*)\}/.exec(clause);
+  for (const part of braces ? braces[1].split(',') : []) {
+    const name = part.trim();
+    if (name && !/^type\s/.test(name))
+      names.push(
+        name
+          .split(/\s+as\s+/)
+          .pop()
+          ?.trim() ?? '',
+      );
+  }
+  const outside = clause.replace(/\{[^}]*\}/, '');
+  for (const m of outside.matchAll(/(?:\*\s+as\s+)?([A-Za-z_$][\w$]*)/g)) names.push(m[1]);
+  return names.filter(Boolean);
+}
+
+/** A file's top-level statements: split at `;` outside brackets, and after a closing `}` at depth 0. */
+function topLevelStatements(/** @type {string} */ code) {
+  const statements = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < code.length; i++) {
+    const c = code[i];
+    if (c === '(' || c === '[' || c === '{') depth++;
+    else if (c === ')' || c === ']' || c === '}') depth--;
+    const blockEnd = c === '}' && depth === 0 && /^\s*\n/.test(code.slice(i + 1));
+    if ((c === ';' && depth === 0) || blockEnd) {
+      statements.push(code.slice(start, c === ';' ? i : i + 1).trim());
+      start = i + 1;
+    }
+  }
+  statements.push(code.slice(start).trim());
+  return statements.filter(Boolean);
+}
+
+/**
+ * Whether a file only hands a product's own modules to a shared @liveworkspace/* factory, a product's
+ * binding door such as `export const usePanelDock = createUsePanelDock(panelLayout)`. Its text can match in
+ * two products while each binds different code, so it is the end state of a move, not a copy. Besides
+ * imports, re-exports and types, every top-level statement is a call (or a name, or a `cond ? a : b` of
+ * those) assigned to a `const`, a bare call, or a function whose body is one `return` of a call, each call
+ * to an imported name, and at least one to a @liveworkspace/* one (or the file only names types over them). No control flow, classes, JSX, operators
+ * or block bodies anywhere, so a copied data table or helper never passes.
+ * @param {string} text
+ */
+export function isFactoryBinding(text) {
+  let code = text
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+    .replace(/^\s*['"]use (?:client|server)['"];?\s*$/gm, '');
+  const imported = new Set();
+  const shared = new Set();
+  let importsShared = false;
+  code = code.replace(
+    /^\s*import\s+([\s\S]*?)\s+from\s+['"]([^'"]+)['"];?/gm,
+    (_, /** @type {string} */ clause, /** @type {string} */ source) => {
+      if (source.startsWith('@liveworkspace/')) importsShared = true;
+      for (const name of importedNames(clause)) {
+        imported.add(name);
+        if (source.startsWith('@liveworkspace/')) shared.add(name);
+      }
+      return '';
+    },
+  );
+  if (!importsShared) return false;
+  code = code
+    .replace(/^\s*export\s+(?:type\s+)?(?:\*[^;]*?|\{[^}]*\})\s+from\s+['"][^'"]+['"];?/gm, '')
+    .replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\$])*`/g, "''");
+  for (let before = ''; before !== code;) {
+    before = code;
+    code = code.replace(/\{\s*return\s+((?:[^;{}]|\{[^;{}]*\})*?);?\s*\}/g, '=> ($1);');
+  }
+  if (
+    /\b(?:if|else|for|while|do|switch|case|try|catch|throw|class|new|await|yield|let|var)\b/.test(
+      code,
+    )
+  ) {
+    return false;
+  }
+  if (/<\/|\/>|==|!=|&&|\|\||\+|\*|%|\s-\s|=>\s*\{/.test(code)) return false;
+  /** @param {string} expr */
+  const bound = (expr) => {
+    const e = expr.trim();
+    const ternary = /^[\w$.!]+\s*\?([\s\S]+):([\s\S]+)$/.exec(e);
+    if (ternary) return bound(ternary[1]) && bound(ternary[2]);
+    if (/^(?:null|undefined|[\w$]+(?:\.[\w$]+)*)$/.test(e)) return true;
+    const call = /^([\w$]+)(?:\.[\w$]+)*\s*(?:<[^()]*>)?\s*\([\s\S]*\)$/.exec(e);
+    if (!call || !imported.has(call[1])) return false;
+    return true;
+  };
+  let onlyTypes = true;
+  const ok = topLevelStatements(code).every((s) => {
+    if (/^(?:export\s+)?(?:declare\s+)?(?:type|interface)\s/.test(s)) return true;
+    onlyTypes = false;
+    const declared = /^(?:export\s+)?const\s+(?:[\w$]+|\{[^}]*\})\s*(?::[^=]+)?=([\s\S]+)$/.exec(s);
+    if (declared) return bound(declared[1]);
+    const fn =
+      /^(?:export\s+)?function\s+[\w$]+\s*(?:<[^(]*>)?\([^)]*\)[^=]*=>\s*\(([\s\S]*)\)$/.exec(s);
+    if (fn) return bound(fn[1]);
+    return /\)$/.test(s) && bound(s);
+  });
+  const callsShared = [...shared].some((name) =>
+    new RegExp(
+      `(?<![\\w$.])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\.[\\w$]+)*\\s*(?:<[^()]*>)?\\(`,
+    ).test(code),
+  );
+  return ok && (callsShared || onlyTypes);
+}
+
 /**
  * The groups of identical candidate files that span two or more products, each sorted, the list sorted.
  * @param {string} lsFiles the output of `git ls-files -s`
@@ -94,7 +207,8 @@ export function findGroups(lsFiles, read) {
   const groups = [];
   for (const files of byBlob.values()) {
     if (new Set(files.map((f) => f.split('/')[0])).size < 2) continue;
-    if (isReexportBinding(read(files[0]))) continue;
+    const text = read(files[0]);
+    if (isReexportBinding(text) || isFactoryBinding(text)) continue;
     groups.push([...files].sort());
   }
   return groups.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));

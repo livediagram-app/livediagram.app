@@ -12,7 +12,9 @@ import { SETTINGS_CATEGORIES, type SettingsResetSettingsRowSpec } from './settin
 vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({ authLoaded: true, isSignedIn: false, user: null, signOut: vi.fn() }),
 }));
-vi.mock('@/components/chrome/auth-shared', () => ({
+// The Sign In link reads its hrefs from the workbench's auth routes.
+vi.mock('@liveworkspace/workbench/components/chrome/auth-routes', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
   useAuthHrefs: () => ({ signInHref: '/sign-in/' }),
 }));
 

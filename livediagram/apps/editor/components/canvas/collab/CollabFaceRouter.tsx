@@ -14,7 +14,7 @@ import {
   type TabTimer,
 } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { EstimateFace } from './EstimateFace';
 import { TemperatureFace } from './TemperatureFace';
 import { IdeaBoxFace } from './IdeaBoxFace';

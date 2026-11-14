@@ -14,7 +14,7 @@ import {
 } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { YOUR_COLOURS_MAX } from '@/lib/design-colours';
-import { CustomColourEditor } from './CustomColourEditor';
+import { CustomColourEditor } from '@liveworkspace/workbench/components/colour/CustomColourEditor';
 import { MoreColoursGlyph } from './MoreColoursGlyph';
 import { ColourSwatch } from './ColourSwatch';
 import { COLOUR_PICKER_WIDTH } from '@liveworkspace/workbench/components/colour/colour-metrics';

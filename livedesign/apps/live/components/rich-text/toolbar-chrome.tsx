@@ -22,7 +22,7 @@ import type { RunBoolKey } from '@livedesign/design';
 import {
   TOOLBAR_CONTROL_REST,
   TOOLBAR_DIVIDER as TOOLBAR_DIVIDER_CLASS,
-} from '@/components/chrome/toolbar-surface';
+} from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // `extra` exists for one caller: the note toolbar wraps its buttons
 // (flex-wrap), so its buttons take `shrink-0` to keep their square. The label

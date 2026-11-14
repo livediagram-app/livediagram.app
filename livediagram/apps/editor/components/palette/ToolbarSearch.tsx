@@ -14,7 +14,7 @@ import { searchCatalogueTiles } from './palette-catalogue-search';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { markerTiles } from './palette-marker-tiles';
 import { loadWhiteboardPrefs } from '@/lib/whiteboard-prefs';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // a button at the strip's far right, and the body of the popover it opens. The popover's card,

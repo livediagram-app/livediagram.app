@@ -7,7 +7,7 @@
 
 import type { CSSProperties, ReactNode } from 'react';
 import { canvasSurface, defaultStrokeColor, inkOn, type ShapeElement } from '@livediagram/document';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { tint } from './collab-chrome';
 
 export function CollabAccentScope({

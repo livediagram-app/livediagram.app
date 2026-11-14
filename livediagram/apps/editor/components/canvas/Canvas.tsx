@@ -1,6 +1,6 @@
 import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
-import { CanvasFinishProvider } from './CanvasFinishContext';
+import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
 import {
   useViewportOf,
@@ -52,7 +52,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
-import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
+import { SLIDE_VIEW_TRANSITION_UPDATE } from '@liveworkspace/workbench/components/canvas/slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it

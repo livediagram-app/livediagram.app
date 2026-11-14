@@ -4,4 +4,4 @@ export * from './design';
 export * from './compile';
 export * from './catalogue';
 export * from './template-design';
-export * from './analysis-data';
+export * from '@liveworkspace/template-previews/analysis-data';

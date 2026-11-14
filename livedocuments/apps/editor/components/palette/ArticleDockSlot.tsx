@@ -5,7 +5,7 @@
 // at the strip's own sizes, rather than over the page (lib/article/article-dock.ts).
 import { useCallback } from 'react';
 import { setArticleDock } from '@/lib/article/article-dock';
-import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
+import { STRIP_RAIL_SCROLL } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 export function ArticleDockSlot() {
   const ref = useCallback((el: HTMLDivElement | null) => setArticleDock(el), []);

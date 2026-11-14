@@ -5,7 +5,7 @@ import { Glyph } from '@livedocuments/ui';
 import { NAME_MAX_LENGTH } from '@livedocuments/document';
 import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { ToolbarMenuCard } from './ToolbarMenuCard';
+import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as

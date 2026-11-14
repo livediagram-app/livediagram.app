@@ -1,4 +1,4 @@
-import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
+import { useModeDefaultTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
 import { useCallback, useEffect, useRef } from 'react';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';

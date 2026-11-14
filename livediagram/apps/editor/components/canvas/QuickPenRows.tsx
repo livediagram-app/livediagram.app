@@ -15,7 +15,7 @@ import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 import { QuickMoreColours } from './QuickMoreColours';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useCanvasSurface } from './CanvasSurfaceContext';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 
 export function QuickPenRows({
   pen,

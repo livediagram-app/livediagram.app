@@ -3,7 +3,7 @@ import type { IconPrim } from '@liveworkspace/icons';
 import { Prims } from '@livediagram/ui';
 import { cursorRide, type Point } from '@/lib/hero-motion';
 import { FONT, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 
 // The marks the hero's Diagram window (hero-diagram-board.tsx) is drawn from, each as the editor
 // draws it on the Default theme (the --art-* palette): a node's icon and label centred together,

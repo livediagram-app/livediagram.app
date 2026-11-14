@@ -68,6 +68,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "Anchor": {
+    "description": "The sixteen anchors on a box's connector outline, clockwise from the top.",
     "enum": [
       "n",
       "nne",
@@ -444,6 +445,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "ArrowEnds": {
+    "description": "Which ends of an arrow carry a head.",
     "enum": [
       "from",
       "to",
@@ -2527,7 +2529,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       }
-    ]
+    ],
+    "description": "An arrow's end: free on the canvas, pinned to a box's anchor (an entity's field row, where one is named), or on another arrow's line."
   },
   "EntityField": {
     "additionalProperties": false,

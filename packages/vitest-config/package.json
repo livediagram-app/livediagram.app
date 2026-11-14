@@ -29,6 +29,10 @@
     "./axe": {
       "types": "./axe.d.ts",
       "default": "./axe.js"
+    },
+    "./workspace-manifests": {
+      "types": "./workspace-manifests.d.ts",
+      "default": "./workspace-manifests.js"
     }
   },
   "scripts": {

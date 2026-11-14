@@ -13,7 +13,8 @@ spec decides; this file only adds engineering precision.
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `../packages/api-kit/src/image-refs.ts`         | The extractor: what a reference is                                                                                     |
 | `apps/api/src/design-room/design-schema.ts`     | `image_refs`, its index, and the outbox triggers that queue the design's `media` key                                   |
-| `apps/api/src/db/image-refs.ts`                 | Every statement on `image_refs`                                                                                        |
+| `../packages/api-kit/src/image-ref-index.ts`    | Every statement on `image_refs`                                                                                        |
+| `apps/api/src/db/image-refs.ts`                 | Those statements bound to the design's database                                                                        |
 | `apps/api/src/db/tabs.ts`                       | `tabWriteStatements` (`upsertTab`, `upsertTabAtRev`), `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements |
 | `apps/api/src/design-room/design-content.ts`    | `importDesignCopy` indexes the copy's tabs from their copied bodies                                                    |
 | `apps/api/src/media.ts`                         | `designImageIds`, `pushDesignMediaRefs`, `announceMediaRefs`, `forgetDesignMediaRefs`                                  |

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PAGE_MOTIONS } from '@livedocuments/document';
 import { motionPaint } from './page-motion';
-import { motionParts, type MotionNode } from './page-motion-parts';
+import { motionParts, type MotionNode } from '@liveworkspace/page-background/motion-parts';
 
 // Every motion's parts, read by both the moving layer and the still export (docs/specs/007-editor/
 // pages-mode.md "Animated backgrounds"). The parts themselves are tested where they live,

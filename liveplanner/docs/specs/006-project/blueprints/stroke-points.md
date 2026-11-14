@@ -27,7 +27,7 @@ spec.
 | `../packages/model-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
 | `packages/project/src/freehand-points.ts`           | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
 | `packages/project/scripts/expand-stroke-points.ts`  | The debug script: a tab or project JSON file with every block expanded                                                                                   |
-| `scripts/ts-source-hooks.mjs`                       | Node resolve hook: lets repo scripts run workspace TypeScript sources                                                                                    |
+| `../scripts/ts-source-hooks.mjs`                    | Node resolve hook (the monorepo root's): lets repo scripts run workspace TypeScript sources                                                              |
 
 ## Interfaces and contracts
 

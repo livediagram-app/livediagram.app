@@ -1,6 +1,6 @@
 // The analysis templates (docs/specs/029-sheets/sheet.md "Sheet templates"): Threat Register, Driver Model and Value
 // Stream. Each the live numbers behind a drawing (the companion Sheets of the Threat model, Metric tree and Value
-// stream map templates), worked from analysis-data.ts so the drawing and the sheet start out agreeing.
+// stream map templates), worked from @liveworkspace/template-previews/analysis-data so the drawing and the sheet start out agreeing.
 import { CENTRE, HEAD_ROW, NUMBER1, PERCENT, WHOLE, type SheetDesign } from './design';
 import {
   DRIVER_BASELINE,
@@ -14,7 +14,7 @@ import {
   VALUE_STREAM_HOURS_PER_DAY,
   VALUE_STREAM_STEPS,
   type DriverInputKey,
-} from './analysis-data';
+} from '@liveworkspace/template-previews/analysis-data';
 import type { FormatPatch } from '../format';
 import type { StarterCell } from '../sheet-starters';
 

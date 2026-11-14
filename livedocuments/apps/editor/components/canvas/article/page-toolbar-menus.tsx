@@ -11,7 +11,7 @@ import {
   TOOLBAR_CONTROL_PRESSED,
   TOOLBAR_CONTROL_REST,
   TOOLBAR_DIVIDER,
-} from '@/components/chrome/toolbar-surface';
+} from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 /** A popover hung under `anchor`, in the page toolbar's keep-active zone. */
 export function ToolbarPopover({

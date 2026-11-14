@@ -5,7 +5,7 @@ import type { Element } from '@livedesign/design';
 import type { DragState } from '@/lib/canvas';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
-import { TopCenterBanner } from '@/components/chrome/TopCenter';
+import { TopCenterBanner } from '@liveworkspace/workbench/components/chrome/TopCenter';
 import {
   PaletteTray,
   usePaletteStripBox,

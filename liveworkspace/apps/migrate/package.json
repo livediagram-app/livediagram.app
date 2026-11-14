@@ -8,7 +8,7 @@
     "migrate": "./src/cli.ts"
   },
   "scripts": {
-    "migrate": "node --disable-warning=ExperimentalWarning --import ./ts-hooks.mjs src/cli.ts",
+    "migrate": "node --disable-warning=ExperimentalWarning --import ../../../scripts/ts-source-hooks.mjs src/cli.ts",
     "lint": "oxlint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

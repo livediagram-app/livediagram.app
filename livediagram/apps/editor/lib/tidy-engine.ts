@@ -3,6 +3,7 @@
 // tidier from the command palette, so they stay out of the editor's first load: the popover loads them as
 // it opens (before it judges anything), and a palette command loads them at the press.
 
+import { createLazyEngine } from '@liveworkspace/workbench/lib/lazy-engine';
 import type { cleanupElements } from './tab-cleanup';
 import type { assessCleanup, verdictNotice } from './tidy-verdict';
 
@@ -12,27 +13,19 @@ export type TidyEngine = {
   verdictNotice: typeof verdictNotice;
 };
 
-let engine: TidyEngine | null = null;
-let pending: Promise<TidyEngine> | null = null;
+const lazy = createLazyEngine<TidyEngine>(() =>
+  Promise.all([import('./tab-cleanup'), import('./tidy-verdict')]).then(([cleanup, verdict]) => ({
+    cleanupElements: cleanup.cleanupElements,
+    assessCleanup: verdict.assessCleanup,
+    verdictNotice: verdict.verdictNotice,
+  })),
+);
 
 /** Load the tidiers once; every later call resolves to the same engine. */
-export function loadTidyEngine(): Promise<TidyEngine> {
-  pending ??= Promise.all([import('./tab-cleanup'), import('./tidy-verdict')]).then(
-    ([cleanup, verdict]) =>
-      (engine = {
-        cleanupElements: cleanup.cleanupElements,
-        assessCleanup: verdict.assessCleanup,
-        verdictNotice: verdict.verdictNotice,
-      }),
-  );
-  return pending;
-}
+export const loadTidyEngine = lazy.load;
 
 /** The tidiers if they have loaded, else null. */
-export const tidyEngine = (): TidyEngine | null => engine;
+export const tidyEngine = lazy.current;
 
 /** Run `go` with the tidiers: now if they have loaded, once they have otherwise. */
-export function withTidyEngine(go: (engine: TidyEngine) => void): void {
-  if (engine) go(engine);
-  else void loadTidyEngine().then(go);
-}
+export const withTidyEngine = lazy.withEngine;
