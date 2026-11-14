@@ -27,7 +27,7 @@ async function withLanded(
   rev: number,
 ): Promise<Response> {
   if (done.size === 0) return refusal;
-  const body = (await refusal.json()) as Record<string, unknown>;
+  const body = await refusal.json<Record<string, unknown>>();
   console.info('[items] items.write.partial', { landed: done.size, error: body.error });
   const answer: ItemsResponse = { items: forCaller(caller, [...done.values()]), rev };
   return json({ ...body, ...answer }, { status: refusal.status });

@@ -133,13 +133,17 @@ describe('the editor adds a connected tab', () => {
   it('reads it back on the tab, in the outline, and in the project', async () => {
     const db = await plan();
     await addConnected(db);
-    const tab = (await (await call(db, 'GET', '/api/projects/D/tabs/t2')).json()) as {
+    const tab = await (
+      await call(db, 'GET', '/api/projects/D/tabs/t2')
+    ).json<{
       tab: { connection?: TabConnection };
-    };
+    }>();
     expect(tab.tab.connection).toEqual(CONNECTION);
-    const doc = (await (await call(db, 'GET', '/api/projects/D')).json()) as {
+    const doc = await (
+      await call(db, 'GET', '/api/projects/D')
+    ).json<{
       project: { tabs: { id: string; connection?: TabConnection }[] };
-    };
+    }>();
     expect(doc.project.tabs.find((t) => t.id === 't2')?.connection).toEqual(CONNECTION);
     expect(doc.project.tabs.find((t) => t.id === 't1')?.connection).toBeUndefined();
   });
@@ -381,9 +385,11 @@ describe('scope', () => {
   it('drops a connection with its name outside a tab-scoped visitor’s scope', async () => {
     const db = await plan();
     await addConnected(db);
-    const doc = (await (await call(db, 'GET', '/api/projects/D')).json()) as {
+    const doc = await (
+      await call(db, 'GET', '/api/projects/D')
+    ).json<{
       project: Parameters<typeof redactProjectForScope>[0];
-    };
+    }>();
     const scoped = redactProjectForScope(doc.project, 't1');
     expect(scoped.tabs.find((t) => t.id === 't2')).not.toHaveProperty('connection');
     expect(

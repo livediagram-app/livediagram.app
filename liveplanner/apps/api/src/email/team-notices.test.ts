@@ -315,11 +315,11 @@ describe('a mention', () => {
 
   it('a card thread’s comment emails each teammate it mentions, once, and opens the card on it', async () => {
     const item = (
-      (await (
+      await (
         await route('POST', '/api/projects/d1/items', {
           body: { type: 'task', fields: { title: 'A' } },
         })
-      ).json()) as ItemResponse
+      ).json<ItemResponse>()
     ).item;
     const res = await route('POST', `/api/projects/d1/items/${item.id}/threads`, {
       body: {

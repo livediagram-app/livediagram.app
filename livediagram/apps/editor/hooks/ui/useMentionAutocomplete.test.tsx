@@ -64,7 +64,7 @@ describe('mentions in the composer', () => {
         onSubmit={onSubmit}
       />,
     );
-    const field = screen.getByLabelText('Write a comment') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Write a comment');
     // The caret rides along, at the end of what was typed.
     const type = (value: string) =>
       fireEvent.change(field, {

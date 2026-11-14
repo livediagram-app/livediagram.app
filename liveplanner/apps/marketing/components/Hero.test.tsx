@@ -102,7 +102,7 @@ describe('the hero', () => {
     const assign = vi.fn();
     vi.stubGlobal('location', { ...window.location, assign });
     render(<Hero />);
-    const box = screen.getByLabelText('Search templates') as HTMLInputElement;
+    const box = screen.getByLabelText<HTMLInputElement>('Search templates');
     box.focus();
     fireEvent.change(box, { target: { value: 'kanban' } });
     fireEvent.keyDown(box, { key: 'ArrowDown' });

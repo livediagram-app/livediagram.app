@@ -10,7 +10,7 @@ describe('a debounced text field', () => {
   it('goes back to what is saved when a save is refused', async () => {
     const onSave = vi.fn(async () => false);
     render(<DebouncedText id="t" label="Title" value="Old" disabled={false} onSave={onSave} />);
-    const box = screen.getByLabelText('Title') as HTMLInputElement;
+    const box = screen.getByLabelText<HTMLInputElement>('Title');
     fireEvent.change(box, { target: { value: 'New' } });
     await act(async () => {
       fireEvent.blur(box);
@@ -34,7 +34,7 @@ describe('a debounced text field', () => {
     render(
       <DebouncedText id="t" label="Title" value="Old" disabled={false} onSave={async () => true} />,
     );
-    const box = screen.getByLabelText('Title') as HTMLInputElement;
+    const box = screen.getByLabelText<HTMLInputElement>('Title');
     fireEvent.change(box, { target: { value: 'New' } });
     await act(async () => {
       fireEvent.blur(box);
@@ -69,7 +69,7 @@ describe('a debounced text field', () => {
         onEnter={onEnter}
       />,
     );
-    const box = screen.getByLabelText('Title') as HTMLInputElement;
+    const box = screen.getByLabelText<HTMLInputElement>('Title');
     fireEvent.change(box, { target: { value: 'New' } });
     await act(async () => {
       fireEvent.keyDown(box, { key: 'Enter' });

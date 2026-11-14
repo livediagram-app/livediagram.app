@@ -44,7 +44,7 @@ export default {
       const stub = env.ROOM.get(env.ROOM.idFromName('room'));
       return stub.fetch(new Request(gated));
     }
-    const value = (await gated.json()) as { parts: string[] };
+    const value = await gated.json<{ parts: string[] }>();
     return Response.json({ parts: value.parts.length });
   },
 };

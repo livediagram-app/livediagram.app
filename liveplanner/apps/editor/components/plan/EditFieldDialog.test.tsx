@@ -94,7 +94,7 @@ describe('Edit Field', () => {
     const onSave = editor();
     const dialog = openEdit('Size');
     expect(within(dialog).getByText('Rename it, reshape it, or pick another type.')).toBeTruthy();
-    const name = within(dialog).getByLabelText('Name') as HTMLInputElement;
+    const name = within(dialog).getByLabelText<HTMLInputElement>('Name');
     expect(name.value).toBe('Size');
     fireEvent.change(name, { target: { value: 'Points' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));

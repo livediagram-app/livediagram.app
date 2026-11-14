@@ -216,7 +216,7 @@ describe('PUT /api/designs/:id/components/:componentId', () => {
       main('c1', { name: 'Nav', updatedAt: 3 }),
     );
     expect(res.status).toBe(200);
-    const { component } = (await res.json()) as { component: DesignComponent };
+    const { component } = await res.json<{ component: DesignComponent }>();
     expect(component.name).toBe('Nav');
     expect(component.updatedAt).toBeGreaterThan(3);
     expect((await readComponentRow(db.env, 'c1'))?.main).toEqual(component);
@@ -325,7 +325,7 @@ describe('PATCH /api/designs/:id/components/:componentId', () => {
       order: ['e3'],
       archived: true,
     });
-    const { component } = (await res.json()) as { component: DesignComponent };
+    const { component } = await res.json<{ component: DesignComponent }>();
     expect(component).toMatchObject({ name: 'Footer', archived: true });
     expect(component.elements.map((e) => e.id)).toEqual(['e3', 'e2']);
   });

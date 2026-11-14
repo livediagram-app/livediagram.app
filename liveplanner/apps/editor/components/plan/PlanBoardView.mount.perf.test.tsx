@@ -17,7 +17,7 @@ import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/us
 
 const counts = vi.hoisted(() => ({ face: 0 }));
 vi.mock('./PlanCardFace', async (orig) => {
-  const m = (await orig()) as typeof import('./PlanCardFace');
+  const m = await orig<typeof import('./PlanCardFace')>();
   const Face = m.PlanCardFace;
   return {
     ...m,

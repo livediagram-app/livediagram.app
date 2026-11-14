@@ -1,7 +1,17 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import {
+  COLOUR,
+  PAGE_SHEETS,
+  REPO,
+  SITE,
+  read,
+  scan,
+  tokensOf,
+  type Scanned,
+} from './lib/stylesheet-scan';
 
 // The site loads its own stylesheet (app/globals.css) on every page, and a page's own after it on three routes
 // (liveworkspace/docs/specs/010-site/site.md "Stylesheets"). Every sheet puts its utilities in one shared layer, and
@@ -12,62 +22,6 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 // menu's hovered row went pale). This guard reads what each sheet scans, as Tailwind does, finds every such pair,
 // and checks each page sheet's dark-pairs.css names the dark half (`@source inline`), so the page sheet emits it
 // after the light one. `vitest run dark-pair-guard.test.ts -u` writes those files again.
-
-const SITE = import.meta.dirname;
-const REPO = resolve(SITE, '../../..');
-const SCANNED = /\.(tsx?|jsx?|mjs|mdx?|html)$/;
-const PAGE_SHEETS = [
-  'app/telemetry/telemetry.css',
-  'app/explorer/explorer.css',
-  'app/community/community.css',
-];
-
-type Sheet = { sources: string[]; excluded: string[] };
-
-// What a sheet scans: its `@source` paths (and those of the stylesheets it imports, relative to each), less its
-// `@source not` paths, plus the app's own folder when it imports all of Tailwind (automatic detection).
-function readSheet(path: string, sheet: Sheet = { sources: [], excluded: [] }): Sheet {
-  const css = readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-  for (const [, not, source] of css.matchAll(/@source\s+(not\s+)?'([^']+)'/g)) {
-    (not ? sheet.excluded : sheet.sources).push(resolve(dirname(path), source!));
-  }
-  for (const [, spec, rest] of css.matchAll(/@import\s+'([^']+)'([^;]*);/g)) {
-    if (spec === 'tailwindcss' && !rest!.includes('source(none)')) sheet.sources.push(SITE);
-    const local = spec!.startsWith('.')
-      ? resolve(dirname(path), spec!)
-      : spec!.startsWith('@liveworkspace/')
-        ? join(REPO, 'packages', spec!.slice('@liveworkspace/'.length))
-        : null;
-    if (local?.endsWith('.css') && existsSync(local)) readSheet(local, sheet);
-  }
-  return sheet;
-}
-
-function walk(path: string, out: Set<string>): void {
-  if (statSync(path).isFile()) {
-    if (SCANNED.test(path)) out.add(path);
-    return;
-  }
-  for (const name of readdirSync(path)) {
-    if (name === 'node_modules' || name === 'out' || name.startsWith('.')) continue;
-    walk(join(path, name), out);
-  }
-}
-
-function filesOf(sheet: Sheet): Set<string> {
-  const all = new Set<string>();
-  for (const source of sheet.sources) if (existsSync(source)) walk(source, all);
-  return new Set(
-    [...all].filter((f) => !sheet.excluded.some((not) => f === not || f.startsWith(`${not}/`))),
-  );
-}
-
-// Every class-like token in a text, as Tailwind's scanner would see it (split on what can't be in a class).
-const tokensOf = (text: string) => text.split(/[\s'"`<>{};=]+/).map((t) => t.replace(/[),]+$/, ''));
-
-// A colour utility's family and variants: `dark:hover:bg-slate-800` is family `bg` under `hover`, dark.
-const COLOUR =
-  /^(.+?)-(white|black|transparent|current|\[[^\]]+\]|(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|brand)-\d{2,3})(\/[\w.[\]]+)?$/;
 
 function parse(token: string): { dark: boolean; variants: string; family: string } | null {
   const parts = token.split(':');
@@ -105,7 +59,6 @@ function pairsIn(file: string, text: string): Pair[] {
   return [...pairs.values()];
 }
 
-type Scanned = { path: string; files: Set<string>; tokens: Set<string> };
 type Clash = Pair & { sheet: string };
 
 // Each page sheet against every pair drawn from a file it doesn't scan: it clashes when it emits the light class and
@@ -119,20 +72,6 @@ function clashesOf(pages: Scanned[], pairs: Pair[]): Clash[] {
     }
   }
   return out;
-}
-
-const contents = new Map<string, string>();
-const read = (file: string) => {
-  let text = contents.get(file);
-  if (text === undefined) contents.set(file, (text = readFileSync(file, 'utf8')));
-  return text;
-};
-
-function scan(path: string): Scanned {
-  const files = filesOf(readSheet(join(SITE, path)));
-  const tokens = new Set<string>();
-  for (const file of files) for (const token of tokensOf(read(file))) tokens.add(token);
-  return { path, files, tokens };
 }
 
 // The dark halves a page sheet names in its dark-pairs.css.

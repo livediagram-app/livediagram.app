@@ -198,7 +198,7 @@ describe('POST /api/images?p=', () => {
   it("uploads into the uploader's gallery, grants the plan, and answers { image, deduped }", async () => {
     const res = await upload({ grant: grantOf('alice', 'edit') });
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { image: Record<string, unknown>; deduped: boolean };
+    const body = await res.json<{ image: Record<string, unknown>; deduped: boolean }>();
     expect(body.deduped).toBe(false);
     expect(body.image).toMatchObject({ id: 'img-1', contentType: 'image/png', width: 4 });
     expect(body.image).not.toHaveProperty('app');
@@ -211,9 +211,11 @@ describe('POST /api/images?p=', () => {
 
   it('grants the same bytes again when they come back deduped', async () => {
     await uploaded();
-    const again = (await (await upload({ grant: grantOf('alice', 'edit') })).json()) as {
+    const again = await (
+      await upload({ grant: grantOf('alice', 'edit') })
+    ).json<{
       deduped: boolean;
-    };
+    }>();
     expect(again.deduped).toBe(true);
     expect(granted).toEqual(['img-1', 'img-1']);
   });

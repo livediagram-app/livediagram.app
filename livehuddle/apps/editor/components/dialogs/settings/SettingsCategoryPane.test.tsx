@@ -52,7 +52,7 @@ describe('SettingsCategoryPane desktop-only rows', () => {
   it('locks the other Map rows on a phone too', () => {
     mobile.value = true;
     render(<SettingsCategoryPane category={MAP} settings={{}} onChange={vi.fn()} />);
-    const dim = screen.getByRole('switch', { name: /Dim Outside the View/ }) as HTMLButtonElement;
+    const dim = screen.getByRole<HTMLButtonElement>('switch', { name: /Dim Outside the View/ });
     expect(dim.disabled).toBe(true);
     const sizes = screen
       .getByRole('radiogroup', { name: 'Map Size' })

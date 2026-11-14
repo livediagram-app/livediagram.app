@@ -97,7 +97,7 @@ export function ValueInsertList({
       if (o) choose(o);
     }
   };
-  let index = -1;
+  const places = new Map(flat.map((o, i) => [o, i]));
   return (
     <div className="flex min-h-0 flex-col">
       <div className={phone ? 'flex px-4 pb-2' : 'flex p-2 pb-1'}>
@@ -141,8 +141,7 @@ export function ValueInsertList({
                 {g.label}
               </div>
               {g.options.map((o) => {
-                index += 1;
-                const i = index;
+                const i = places.get(o)!;
                 const on = i === at;
                 return (
                   <div

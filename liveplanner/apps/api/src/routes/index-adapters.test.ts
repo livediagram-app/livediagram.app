@@ -88,9 +88,9 @@ describe('GET /api/projects', () => {
     routes['GET /items'] = () => Response.json({ items: [item('A'), item('B')], nextCursor: null });
     const res = await handleProjectList(ctx('GET', '/api/projects'));
     expect(res.status).toBe(200);
-    const { projects } = (await res.json()) as {
+    const { projects } = await res.json<{
       projects: { id: string; name: string; stats: unknown }[];
-    };
+    }>();
     expect(projects.map((p) => [p.id, p.name])).toEqual([
       ['A', 'Plan A'],
       ['B', 'Plan B'],
@@ -200,9 +200,9 @@ describe('the Trash, folders, teams and links', () => {
         nextCursor: null,
       });
     const res = await handleTrash(ctx('GET', '/api/trash'));
-    const { trash } = (await res.json()) as {
+    const { trash } = await res.json<{
       trash: { id: string; teamName: string; purgeAt: number }[];
-    };
+    }>();
     expect(trash[0]).toMatchObject({ id: 'T', teamName: 'Design', trashedAt: 1000 });
     expect(trash[0]!.purgeAt).toBeGreaterThan(1000);
   });

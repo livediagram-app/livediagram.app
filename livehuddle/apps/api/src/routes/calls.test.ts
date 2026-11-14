@@ -203,7 +203,7 @@ describe('POST session', () => {
   it('mints a speaker’s session with TURN, leaving out port 53 and anything malformed', async () => {
     const res = await call('POST', 'session');
     expect(res.status).toBe(200);
-    const body = (await res.json()) as Record<string, unknown>;
+    const body = await res.json<Record<string, unknown>>();
     expect(body).toEqual({
       sessionId: 'sess1',
       sessionToken: (await speakerProof()).sessionToken,
@@ -228,7 +228,7 @@ describe('POST session', () => {
 
   it('mints a listener’s for a Viewer: no track token, no speaking', async () => {
     grant = grantAt('view');
-    const body = (await (await call('POST', 'session')).json()) as Record<string, unknown>;
+    const body = await (await call('POST', 'session')).json<Record<string, unknown>>();
     expect(body.canSpeak).toBe(false);
     expect(body).not.toHaveProperty('trackToken');
     expect(body.sessionToken).toBe((await listenerProof()).sessionToken);
@@ -338,7 +338,7 @@ describe('POST tracks', () => {
       expect(upstream[0]!.body).toEqual({
         tracks: [{ location: 'remote', sessionId: 'pub2', trackName: 'mic' }],
       });
-      const body = (await res.json()) as { tracks: unknown[] };
+      const body = await res.json<{ tracks: unknown[] }>();
       expect(body.tracks[0]).toEqual({
         sessionId: 'pub1',
         trackName: 'mic',
@@ -376,7 +376,7 @@ describe('POST tracks', () => {
     expect(upstream[0]!.body).toEqual({
       tracks: [{ location: 'remote', sessionId: 'pub2', trackName: 'mic' }],
     });
-    const body = (await res.json()) as { tracks: unknown[] };
+    const body = await res.json<{ tracks: unknown[] }>();
     expect(body.tracks.slice(0, 2)).toEqual([
       { sessionId: 'pub1', trackName: 'mic', errorCode: 'track_refused' },
       { sessionId: 'pub1', trackName: 'mic', errorCode: 'track_refused' },
@@ -518,9 +518,11 @@ describe('the kill switch', () => {
 
   it('mints audio while audio only, and says so on the session', async () => {
     const env = withMode('audio-only');
-    const session = (await (await call('POST', 'session', undefined, env)).json()) as {
+    const session = await (
+      await call('POST', 'session', undefined, env)
+    ).json<{
       mode: string;
-    };
+    }>();
     expect(session.mode).toBe('audio-only');
     const publish = await call(
       'POST',

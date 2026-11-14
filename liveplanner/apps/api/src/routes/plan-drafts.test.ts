@@ -143,7 +143,7 @@ describe('a draft', () => {
   it('answers the draft, from the request alone sent as data under fixed instructions', async () => {
     const res = await draft();
     expect(res.status).toBe(200);
-    const { draft: d } = (await res.json()) as PlanDraftResponse;
+    const { draft: d } = await res.json<PlanDraftResponse>();
     expect(d.title).toBe('Hiring Pipeline');
     expect(d.columns).toEqual(['Applied', 'Screen', 'Interview', 'Offer']);
     expect(d.cardTypes[0]).toMatchObject({ name: 'Candidate', glyph: 'person' });
@@ -223,7 +223,7 @@ describe('a draft', () => {
     replies = [{ outcome: 'plan', plan: { ...PLAN.plan, rules: [moved, mail] } }];
     const res = await draft();
     expect(res.status).toBe(200);
-    const { draft: d } = (await res.json()) as PlanDraftResponse;
+    const { draft: d } = await res.json<PlanDraftResponse>();
     expect(d.rules).toEqual([
       {
         name: 'Flag New Offers',

@@ -60,7 +60,7 @@ describe('the Header and Footer section', () => {
 
   it('writes on Enter, and nothing when the box is as it was', () => {
     const { onChange } = setup({ footer: { right: 'F' } });
-    const right = screen.getByLabelText('Footer Right') as HTMLInputElement;
+    const right = screen.getByLabelText<HTMLInputElement>('Footer Right');
     expect(right.value).toBe('F');
     fireEvent.focus(right);
     fireEvent.keyDown(right, { key: 'Enter' });
@@ -77,7 +77,7 @@ describe('the Header and Footer section', () => {
     // No box used yet: nothing to put it in.
     fireEvent.click(screen.getByRole('button', { name: 'Page Number' }));
     expect(onPreview).not.toHaveBeenCalled();
-    const centre = screen.getByLabelText('Footer Centre') as HTMLInputElement;
+    const centre = screen.getByLabelText<HTMLInputElement>('Footer Centre');
     fireEvent.focus(centre);
     fireEvent.change(centre, { target: { value: 'Page  of' } });
     centre.setSelectionRange(5, 5);
@@ -91,7 +91,7 @@ describe('the Header and Footer section', () => {
 
   it('refills from a change made elsewhere, unless a box is being typed in', () => {
     const { rerender, onChange, onPreview } = setup({ header: { left: 'A' } });
-    const left = screen.getByLabelText('Header Left') as HTMLInputElement;
+    const left = screen.getByLabelText<HTMLInputElement>('Header Left');
     rerender(
       <ArticleBandsSection
         style={{ header: { left: 'B' } }}

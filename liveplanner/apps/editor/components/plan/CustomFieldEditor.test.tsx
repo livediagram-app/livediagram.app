@@ -20,7 +20,7 @@ describe('CustomFieldEditor', () => {
       <CustomFieldEditor id="v" field={VALUE} value={undefined} disabled={false} onSave={onSave} />,
     );
     expect(screen.getByText('USD')).toBeTruthy();
-    const input = screen.getByRole('spinbutton') as HTMLInputElement;
+    const input = screen.getByRole<HTMLInputElement>('spinbutton');
     fireEvent.blur(input, { target: { value: '12.345' } });
     expect(onSave).toHaveBeenLastCalledWith(12.35);
     fireEvent.blur(input, { target: { value: '' } });
@@ -70,7 +70,7 @@ describe('CustomFieldEditor', () => {
     expect(screen.getByRole('link', { name: 'Email sam@acme.test' }).getAttribute('href')).toBe(
       'mailto:sam@acme.test',
     );
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    const input = screen.getByRole<HTMLInputElement>('textbox');
     fireEvent.blur(input, { target: { value: 'not an address' } });
     expect(onSave).not.toHaveBeenCalled();
     fireEvent.blur(input, { target: { value: ' jo@acme.test ' } });
@@ -82,7 +82,7 @@ describe('the type editor', () => {
   it('offers a currency field its currency, GBP storing no code', () => {
     const onChange = vi.fn();
     render(<CustomFieldForm field={VALUE} onChange={onChange} />);
-    const select = screen.getByLabelText('Currency') as HTMLSelectElement;
+    const select = screen.getByLabelText<HTMLSelectElement>('Currency');
     expect(select.value).toBe('USD');
     fireEvent.change(select, { target: { value: 'EUR' } });
     expect(onChange).toHaveBeenLastCalledWith({ currency: 'EUR' });

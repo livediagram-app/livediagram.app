@@ -244,9 +244,9 @@ describe('the tab PUT', () => {
       { rev: 99, documentId: 'X', orderIndex: 7, updatedAt: 1 },
     );
     expect(res.status).toBe(200);
-    const { tab } = (await res.json()) as {
+    const { tab } = await res.json<{
       tab: { rev: number; documentId: string; orderIndex: number };
-    };
+    }>();
     expect(tab).toMatchObject({ rev: 2, documentId: 'D', orderIndex: 0 });
     const data: unknown = JSON.parse(
       db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
