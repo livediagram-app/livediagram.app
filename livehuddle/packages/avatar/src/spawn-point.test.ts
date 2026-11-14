@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { FENCE_REACH, fenceSegments, pointSegmentDistance, type FenceSegment } from './collision';
 import { officeFootprints } from './office-geometry';
-import { freeSpawnPoint, SPAWN_BODY, SPAWN_SEARCH_MAX } from './spawn-point';
+import { AVATAR_SIZE_SCALE } from './size-scale';
+import { avatarFigureHeight } from './walk';
+import {
+  freeSpawnPoint,
+  SPAWN_BODY,
+  SPAWN_HEADROOM,
+  SPAWN_SEARCH_MAX,
+  spawnBody,
+} from './spawn-point';
 
 // docs/specs/009-elements/fence.md "What does not walk" (Work Tracker #610): a new character never appears inside a
 // footprint; it appears on the nearest free floor, clear of every wall's reach, below the piece first.
@@ -61,6 +69,39 @@ describe('freeSpawnPoint', () => {
     const far = { x: w / 2, y: water.y + water.height + SPAWN_BODY + 20 };
     expect(freeSpawnPoint(far, fences)).toBe(far);
   });
+
+  // Work Tracker 800: the margin is the whole figure, tallest hair included, and the pool's coping, at every size.
+  it.each([
+    ['swimming-pool', 320, 200],
+    ['pond', 160, 100],
+  ])(
+    'leaves the tallest hair and the coping clear of a %s’s water at every size',
+    (shape, w, h) => {
+      const el = piece(shape, 0, 0, w, h);
+      const fences = fenceSegments([el]);
+      const water = officeFootprints(el)[0]!;
+      for (const scale of Object.values(AVATAR_SIZE_SCALE)) {
+        const body = spawnBody(scale);
+        expect(body).toBe(avatarFigureHeight(scale) + SPAWN_HEADROOM);
+        for (const p of [
+          { x: w / 2, y: h / 2 },
+          { x: w / 2, y: water.y + water.height + 10 },
+        ]) {
+          const at = freeSpawnPoint(p, fences, FENCE_REACH, body);
+          // The top of the hair stands below the water, with the coping's room and air to spare.
+          expect(at.y - avatarFigureHeight(scale)).toBeGreaterThanOrEqual(
+            water.y + water.height + SPAWN_HEADROOM - 1e-9,
+          );
+        }
+      }
+      // A pool's coping is its deck: the head stands below the whole drawn pool, not over its edge.
+      if (shape === 'swimming-pool')
+        expect(
+          freeSpawnPoint({ x: w / 2, y: h / 2 }, fences).y -
+            avatarFigureHeight(AVATAR_SIZE_SCALE.regular),
+        ).toBeGreaterThan(h);
+    },
+  );
 
   it('keeps the body’s margin below the water the spot is in, not a pool beside it or one further down', () => {
     const pool = piece('swimming-pool', 0, 0, 320, 200);

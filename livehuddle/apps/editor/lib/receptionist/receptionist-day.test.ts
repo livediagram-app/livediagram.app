@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@livehuddle/document';
 import { buildNavGrid } from '@livehuddle/avatar/pathing';
 import { fenceReachFor, fenceSegments, shutDoorLines } from '@livehuddle/avatar/collision';
-import { roomInterior } from '@livehuddle/avatar/office-geometry';
+import { officeFootprints, roomInterior } from '@livehuddle/avatar/office-geometry';
+import { avatarFigureHeight } from '@livehuddle/avatar/walk';
+import { avatarScale } from '@livehuddle/avatar/config';
+import { SPAWN_HEADROOM } from '@livehuddle/avatar/spawn-point';
+import { RECEPTIONIST_LOOK } from './receptionist-look';
+import { greetDetour } from './receptionist-timeline';
 import {
   RECEPTIONIST_HOME_EVERY,
   RECEPTIONIST_LEG_MS,
@@ -50,6 +55,44 @@ describe('receptionistPad and receptionistWorld', () => {
     expect(world.home).toEqual({ at: { x: 108, y: 40 }, activity: 'home', face: 'down' });
     expect(world.area).toEqual({ kind: 'circle', at: { x: 40, y: 40 }, r: RECEPTIONIST_RADIUS });
     expect(world.stops).toEqual([]);
+  });
+
+  // Work Tracker 800: a pool or a pond beside his pad never has him standing in its water, or under its edge with his
+  // hair in it, at home or greeting from either side.
+  it.each([
+    ['swimming-pool', 320, 200],
+    ['pond', 160, 100],
+  ])('never stands him on a %s’s water beside his pad', (kind, w, h) => {
+    const scale = avatarScale(RECEPTIONIST_LOOK.size);
+    // Water on both sides of the pad, level with its middle, where he would stand.
+    const right = shape('right', kind, 100, 40 - h / 2, w, h);
+    const left = shape('left', kind, -20 - w, 40 - h / 2, w, h);
+    const elements = [pad, right, left];
+    const world = receptionistWorld(elements, gridFor(elements))!;
+    const waters = [right, left].map((el) => officeFootprints({ ...el, shape: kind })[0]!);
+    const spots = [world.home.at, world.beside.left, world.beside.right];
+    for (const at of spots)
+      for (const water of waters) {
+        const inWater =
+          at.x > water.x &&
+          at.x < water.x + water.width &&
+          at.y > water.y &&
+          at.y < water.y + water.height;
+        expect(inWater).toBe(false);
+        // Below the water, his whole figure and the coping's room clear of it.
+        if (
+          at.x > water.x - 20 &&
+          at.x < water.x + water.width + 20 &&
+          at.y >= water.y + water.height
+        )
+          expect(at.y - avatarFigureHeight(scale)).toBeGreaterThanOrEqual(
+            water.y + water.height + SPAWN_HEADROOM,
+          );
+      }
+    expect(world.home.at).toEqual(world.beside.right);
+    // A greeting walks to the freed spot on the side nearest him.
+    const greet = greetDetour(world, 0, null);
+    expect([world.beside.left, world.beside.right]).toContainEqual(greet.route.at(-1));
   });
 
   it('visits the pieces he has something to do at, in reach, facing them', () => {
