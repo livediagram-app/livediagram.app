@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ANONYMISED_NAME, ANONYMISED_PERSON, anonymiseJson, anonymiseJsonText } from './anonymise';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('anonymiseJson', () => {
   it('replaces their id and the display copies beside it, and nothing else', () => {
@@ -49,11 +50,11 @@ describe('anonymiseJson', () => {
       })),
     }));
     const text = JSON.stringify({ elements });
-    const started = performance.now();
+    const started = cpuNowMs();
     const out = anonymiseJsonText(text, 'user_a');
-    const ms = performance.now() - started;
+    const ms = cpuNowMs() - started;
     expect(out.changed).toBe(true);
     // ~2.6 MB of tab: well under a second on any machine that runs the suite.
-    expect(ms).toBeLessThan(1000);
+    expect(ms).toBeLessThan(cpuBudgetMs(1000));
   });
 });

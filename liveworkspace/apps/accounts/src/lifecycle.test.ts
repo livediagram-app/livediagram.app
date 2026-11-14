@@ -18,6 +18,7 @@ import {
 } from './lifecycle.ts';
 import { writeSettings } from './settings.ts';
 import { addUser, testD1 } from './test-d1.ts';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const DAY = 24 * 60 * 60 * 1000;
 const T0 = 1_000 * DAY;
@@ -242,13 +243,13 @@ describe('the series', () => {
   it('takes a bounded batch a stage, oldest first, within budget', async () => {
     const total = SWEEP_LIMIT + 50;
     for (let i = 0; i < total; i++) await account(`user_${String(i).padStart(4, '0')}`, T0 + i);
-    const started = performance.now();
+    const started = cpuNowMs();
     const result = await run(T0 + total, ['welcome']);
-    const took = performance.now() - started;
+    const took = cpuNowMs() - started;
     expect(result.welcome).toMatchObject({ sent: SWEEP_LIMIT });
     expect(sent[0]!.to).toBe('user_0000@example.com');
     expect((await run(T0 + total, ['welcome'])).welcome).toMatchObject({ sent: 50 });
-    expect(took).toBeLessThan(1000);
+    expect(took).toBeLessThan(cpuBudgetMs(1000));
   });
 });
 

@@ -7,6 +7,7 @@ import {
   snapToGuideTargets,
   snapToLogoGuides,
 } from './logo-guide-snap';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/logo-pages.md "Construction guides": snapping to the guides shown.
 const g = logoGuides({ x: 0, y: 0, width: 1024, height: 1024 });
@@ -44,9 +45,9 @@ describe('snapToLogoGuides', () => {
     expect(logoGuideCrossings(shapes).length).toBeGreaterThan(50);
     // Prepared once, as the editor does per page: a snap is then a scan of the crossings.
     const targets = logoGuideSnapTargets(g, all);
-    const t = performance.now();
+    const t = cpuNowMs();
     // About 11 us a snap at rest; unprepared it was about 1.75 ms, so 1000 would take 1.75 s.
     for (let i = 0; i < 1000; i++) snapToGuideTargets(targets, { x: i, y: 300 }, 10);
-    expect(performance.now() - t).toBeLessThan(500);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(500));
   });
 });

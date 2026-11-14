@@ -1,5 +1,7 @@
 /** CPU time (user + system, ms) this process spent running `fn`; see cpu-time.js. */
 export declare function cpuMsOf(fn: () => void): number;
+/** CPU time (user + system, ms) this process has spent so far: `performance.now()`'s stand-in for a budget; see cpu-time.js. */
+export declare function cpuNowMs(): number;
 /** CPU time (user + system, ms) this process spent while `fn`'s promise settled; see cpu-time.js. */
 export declare function cpuMsOfAsync(fn: () => Promise<unknown>): Promise<number>;
 /** How much slower a CI runner runs the same work; see cpu-time.js. */

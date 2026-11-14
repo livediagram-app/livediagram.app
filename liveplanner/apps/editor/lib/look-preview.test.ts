@@ -8,6 +8,7 @@ import {
 } from './look-preview';
 import { resolveTheme } from './themes';
 import { TAB_LOOKS, activeLookId, tabLookById } from './tab-looks';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // A look's card preview (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks").
 describe('lookPreviewSvg', () => {
@@ -73,8 +74,8 @@ describe('firstSelfClosingRect', () => {
 
   it('stays linear on a run of unclosed rects', () => {
     const svg = '<rect '.repeat(200_000);
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     expect(firstSelfClosingRect(svg)).toBeNull();
-    expect(performance.now() - t0).toBeLessThan(200);
+    expect(cpuNowMs() - t0).toBeLessThan(cpuBudgetMs(200));
   });
 });

@@ -3,6 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { GUEST_IDLE_MS, GUEST_SWEEP_LIMIT, noteGuestSeen, sweepIdleGuests } from './guest-sweep.ts';
 import { recordPendingPurge, retryPendingPurges } from './index-purge.ts';
 import { testD1 } from './test-d1.ts';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const guest = (n: number) => `guest_${n.toString(16).padStart(8, '0')}-6d7e-4f3b-9a51-2c1d0e9f8a7b`;
 const DAY = 24 * 60 * 60 * 1000;
@@ -78,16 +79,16 @@ describe('sweeping guests who can never come back', () => {
       insert.run(guest(i), i);
       keepFor(guest(i));
     }
-    const started = performance.now();
+    const started = cpuNowMs();
     expect(await sweepIdleGuests(db, NOW)).toBe(GUEST_SWEEP_LIMIT);
-    const took = performance.now() - started;
+    const took = cpuNowMs() - started;
     expect(count('guest_seen')).toBe(100);
     // The 500 longest unseen went first.
     expect(seenAt(guest(GUEST_SWEEP_LIMIT - 1))).toBeUndefined();
     expect(seenAt(guest(GUEST_SWEEP_LIMIT))).toBe(GUEST_SWEEP_LIMIT);
     expect(await sweepIdleGuests(db, NOW)).toBe(100);
     expect(count('profile')).toBe(0);
-    expect(took).toBeLessThan(500);
+    expect(took).toBeLessThan(cpuBudgetMs(500));
   });
 
   it("queues the purge of an idle guest's items, and of no one else", async () => {

@@ -15,6 +15,7 @@ import { pageLayoutById } from './layout-catalogue';
 import { WIREFRAME_LAYOUTS } from './wireframe-layouts';
 import { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 import type { PageLayoutId } from './page-layouts';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const TALL = { x: 0, y: 0, width: 700, height: 990 };
 const build = (id: PageLayoutId) => pageLayoutById(id).build(TALL);
@@ -168,13 +169,13 @@ describe('carryPageContent', () => {
   });
 
   it('stays within budget: placeholders warm in under 400 ms, a carry in under 20 ms', () => {
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     warmLayoutPlaceholders();
-    expect(performance.now() - t0).toBeLessThan(400);
+    expect(cpuNowMs() - t0).toBeLessThan(cpuBudgetMs(400));
     const big = Array.from({ length: 300 }, (_, i) => text(i * 3, `Line ${i} words`));
-    const t1 = performance.now();
+    const t1 = cpuNowMs();
     carryPageContent(big, build('wf-home-feed'));
-    expect(performance.now() - t1).toBeLessThan(20);
+    expect(cpuNowMs() - t1).toBeLessThan(cpuBudgetMs(20));
   });
 
   it('ignores arrows on the old page', () => {

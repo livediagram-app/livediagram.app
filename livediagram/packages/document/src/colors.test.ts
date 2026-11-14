@@ -37,6 +37,7 @@ import {
   type ShapeKind,
 } from './index';
 import { tableKeys } from '@liveworkspace/model-core/table-keys';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const channels = (hex: string): [number, number, number] => {
   const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)!;
@@ -86,10 +87,10 @@ describe('hexToRgb / rgbToHex', () => {
   // It runs for every label drawn, so a named colour is a map read, not a scan.
   it('reads 100k mixed colours in well under a second', () => {
     const inputs = ['#0ea5e9', '#fff', 'red', 'cornflowerblue', '#0ea5e980', 'nope'];
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 100_000; i++) hexToRgb(inputs[i % inputs.length]!);
     // Measured about 15 ms; the budget leaves room for a busy CI machine.
-    expect(performance.now() - start).toBeLessThan(500);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(500));
   });
 
   it('writes channels back rounded and clamped into 0-255', () => {

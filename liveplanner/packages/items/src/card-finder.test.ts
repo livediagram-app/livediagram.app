@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cardMatches, findCards, isOffBoard, type BoardStatusTypes } from './card-finder';
 import { item } from './test-items';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/026-plan/items.md "Finding a card".
 describe('card finder', () => {
@@ -63,12 +64,12 @@ describe('card finder', () => {
       item({ title: `Card ${n}`, status: 'todo', description: 'x'.repeat(10_000) }),
     );
     findCards(many, { query: 'warm', show: 'all', boardStatuses });
-    const start = performance.now();
+    const start = cpuNowMs();
     for (const q of ['c', 'ca', 'car', 'card', 'card 1', 'card 19']) {
       findCards(many, { query: q, show: 'all', boardStatuses });
     }
     // Six keystrokes over the cached text (17ms locally); the budget leaves room for a slow CI runner.
-    expect(performance.now() - start).toBeLessThan(600);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(600));
   });
 
   it('lists cards of custom types, finds them by type name, and narrows to chosen types', () => {

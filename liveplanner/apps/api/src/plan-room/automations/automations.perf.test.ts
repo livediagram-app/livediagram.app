@@ -171,7 +171,9 @@ describe('Automations cost', () => {
     expect(
       db.prepare("SELECT COUNT(*) AS n FROM automation_runs WHERE result = 'done'").get(),
     ).toEqual({ n: 1000 });
-    expect(wake).toBeLessThan(cpuBudgetMs(1500));
+    // Measured 690 ms of CPU alone, and over 1,500 on a machine under load (the pre-push hook runs it beside every
+    // other suite); the read-per-write it replaced took 7,530. 3,000 still catches that and passes under load.
+    expect(wake).toBeLessThan(cpuBudgetMs(3000));
   }, 60_000);
 
   // Card Unblocked (spec "Triggers"): a blocker of 2,000 cards finished seven times before one wake, under 17 Card

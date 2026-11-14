@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SVG_FRAME_FALLBACK, svgFrameOf } from './svg-frame';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/split-view.md "The other pane"
 describe('svgFrameOf', () => {
@@ -25,9 +26,9 @@ describe('svgFrameOf', () => {
   // minutes at the 200,000 here; reading the one tag is linear.
   it('stays linear on hostile markup', () => {
     const hostile = '<svg'.repeat(200_000) + ' width="1"';
-    const started = performance.now();
+    const started = cpuNowMs();
     svgFrameOf(hostile);
     svgFrameOf('<svg ' + ' width="x'.repeat(100_000) + '>');
-    expect(performance.now() - started).toBeLessThan(200);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(200));
   });
 });

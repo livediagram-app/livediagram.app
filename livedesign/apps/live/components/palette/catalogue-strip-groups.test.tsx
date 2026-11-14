@@ -6,6 +6,7 @@ import { ICON_CATEGORIES } from '@/lib/icons';
 import { STICKER_CATEGORIES } from '@liveworkspace/workbench/lib/stickers';
 import { CatalogueGroupTile, catalogueStripGroups } from './catalogue-strip-groups';
 import { BrowseStartGroup, PaletteCategoryBrowser } from './PaletteCategoryBrowser';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/toolbar-layout.md "More": Icons, Stickers and Technology show their browse groups on the
 // strip, each opening the browse on that group.
@@ -25,9 +26,9 @@ describe('catalogueStripGroups', () => {
 
   it('is built once the catalogues have loaded, not on every strip render', () => {
     expect(catalogueStripGroups('technology')).toBe(catalogueStripGroups('technology'));
-    const t = performance.now();
+    const t = cpuNowMs();
     for (let i = 0; i < 1000; i++) catalogueStripGroups('icons');
-    expect(performance.now() - t).toBeLessThan(50);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(50));
   });
 
   it('is null for a category of tiles', () => {

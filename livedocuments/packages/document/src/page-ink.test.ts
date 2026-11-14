@@ -7,6 +7,7 @@ import { pageBackgroundSet } from './pages-edits';
 import { worstContrast } from './page-ink-contrast';
 import { pageGroundUnder } from './page-ink-ground';
 import { pageInkFor, pagesInkFor, withPageInkFor, type InkMemory } from './page-ink';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/pages-mode.md "Re-inking": nothing on a page becomes hard to read
 // when its fill changes, and only what falls under its floor moves.
@@ -704,10 +705,10 @@ describe('re-inking cost', () => {
       );
     }
     const tab = tabOf(els);
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     withPageInkFor(tab, 'p', { fill: FILLS.steep! });
-    const ms = performance.now() - t0;
+    const ms = cpuNowMs() - t0;
     // Measured 44 ms on an M-series Mac (every element re-inked, the worst case); the budget leaves room for a loaded CI runner.
-    expect(ms).toBeLessThan(1500);
+    expect(ms).toBeLessThan(cpuBudgetMs(1500));
   });
 });

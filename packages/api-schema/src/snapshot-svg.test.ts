@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { scalableSnapshotSvg, svgBackgroundColor } from './snapshot-svg';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // The snapshot SVG helpers behind the Explorer's thumbnails (docs/specs/006-document/document-snapshots.md).
 describe('svgBackgroundColor', () => {
@@ -22,9 +23,9 @@ describe('scalableSnapshotSvg', () => {
   });
 
   it('stays fast on hostile markup', () => {
-    const t = performance.now();
+    const t = cpuNowMs();
     scalableSnapshotSvg('<svg' + ' '.repeat(100_000));
     svgBackgroundColor('<rect'.repeat(50_000));
-    expect(performance.now() - t).toBeLessThan(200);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(200));
   });
 });

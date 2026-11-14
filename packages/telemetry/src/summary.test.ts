@@ -6,6 +6,7 @@ import {
   type TelemetryDailyRow,
 } from './summary';
 import { TELEMETRY_APPS, type TelemetryApp } from './apps';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // The dashboard's windows must cover exactly the calendar days the trend line highlights: Today since
 // UTC midnight, Last 7 days from midnight six days back, Last 30 days from midnight 29 days back.
@@ -186,11 +187,11 @@ describe('summary cost', () => {
       for (const app of TELEMETRY_APPS)
         for (let e = 0; e < 1500; e++)
           rows.push({ ...at(start + d * DAY, `T${e}`, app), count: e + 1 });
-    const t = performance.now();
+    const t = cpuNowMs();
     const s = build(rows);
-    const ms = performance.now() - t;
+    const ms = cpuNowMs() - t;
     expect(s.windows.last30.rows).toHaveLength(1500);
-    expect(ms).toBeLessThan(1500);
+    expect(ms).toBeLessThan(cpuBudgetMs(1500));
   });
 });
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveGraphInput } from './graph-input';
 import { GRAPH_LAYOUT_MAX_EDGES, GRAPH_LAYOUT_MAX_NODES, graphTooLargeError } from './graph-limits';
 import { parseMermaid } from './mermaid';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // The layout's caps (docs/specs/020-import-export/mermaid.md "Limits"): a graph past them is refused
 // before anything lays it out. `a0&...&a119 --> b0&...&b119` used to become 14,400 edges and a 21 s
@@ -14,9 +15,9 @@ const fan = (n: number) => {
 
 describe('graph layout caps', () => {
   it('refuses a fan-out past the edge cap, quickly and before building every pair', () => {
-    const started = performance.now();
+    const started = cpuNowMs();
     const parsed = parseMermaid(fan(120));
-    expect(performance.now() - started).toBeLessThan(200);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(200));
     expect(parsed.ok).toBe(false);
     if (!parsed.ok) expect(parsed.error).toContain(`${GRAPH_LAYOUT_MAX_EDGES} connections`);
   });

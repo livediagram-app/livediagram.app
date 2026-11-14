@@ -14,6 +14,7 @@ import {
 import { layoutCatalogueFor, LOGO_LAYOUTS } from '@livedesign/templates';
 import { LayoutRenderThumb, layoutRenderSvg, PAGE_PAPER_DARK } from './layout-render-thumb';
 import { LayoutThumb } from './layout-thumb';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 afterEach(() => cleanup());
 
@@ -45,10 +46,10 @@ describe('logo layout tiles', () => {
   });
 
   it('render every logo layout quickly enough for a card of them', () => {
-    const t = performance.now();
+    const t = cpuNowMs();
     for (const l of LOGO_LAYOUTS) layoutRenderSvg(tab, page!, l.id);
     // 25 layouts; a card draws at most 7 at once plus 8 small ones.
-    expect(performance.now() - t).toBeLessThan(500);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(500));
   });
 });
 
@@ -72,8 +73,8 @@ describe('layout tiles', () => {
   });
 
   it('render all of them quickly enough for the whole gallery', () => {
-    const t = performance.now();
+    const t = cpuNowMs();
     for (const l of layouts) layoutRenderSvg(flow, screen!, l.id);
-    expect(performance.now() - t).toBeLessThan(1000);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(1000));
   });
 });

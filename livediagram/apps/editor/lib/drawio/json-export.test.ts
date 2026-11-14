@@ -10,6 +10,7 @@ import { importDrawio } from './import';
 import { jsonLabelText } from './json-export';
 import { DRAWIO_JSON_LOOSE_EDGE_PX } from './limits';
 import { fixtureBytes } from './test-support';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/020-import-export/drawio-import.md "The JSON export". Exports synthesised here.
 
@@ -205,9 +206,9 @@ describe('a graph-only export past the layout caps', () => {
     const cells: Cell[] = [layer];
     for (let i = 0; i < n; i++) cells.push(node(`n${i}`, `Node ${i}`));
     for (let i = 1; i < n; i++) cells.push(edge(`e${i}`, `n${Math.floor((i - 1) / 2)}`, `n${i}`));
-    const started = performance.now();
+    const started = cpuNowMs();
     const r = await run(exported([page('Big', cells)]));
-    const ms = performance.now() - started;
+    const ms = cpuNowMs() - started;
     const elements = r.pages[0]!.elements;
     const arrows = elements.filter((el) => el.type === 'arrow').length;
     expect(elements.length - arrows).toBe(GRAPH_LAYOUT_MAX_NODES);
@@ -218,6 +219,6 @@ describe('a graph-only export past the layout caps', () => {
       kind: 'content-truncated',
       count: n - GRAPH_LAYOUT_MAX_NODES + (n - 1 - kept),
     });
-    expect(ms).toBeLessThan(5_000);
+    expect(ms).toBeLessThan(cpuBudgetMs(5_000));
   });
 });

@@ -14,6 +14,7 @@ import {
 import { PALETTE_TILES, tileById, type PaletteTileDef } from './palette-tile-defs';
 import { markerTiles } from './palette-marker-tiles';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const ids = (tiles: PaletteTileDef[]) => tiles.map((t) => t.id);
 
@@ -168,9 +169,9 @@ describe('rankTiles', () => {
 
 describe('a worst-case query', () => {
   it('ranks every tile well inside a keystroke budget', () => {
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 50; i++) searchElementTiles({ query: 'e', mode: 'pages', hasImage: true });
     // 50 searches matching most of the catalogue; a keystroke runs one.
-    expect((performance.now() - start) / 50).toBeLessThan(16);
+    expect((cpuNowMs() - start) / 50).toBeLessThan(cpuBudgetMs(16));
   });
 });

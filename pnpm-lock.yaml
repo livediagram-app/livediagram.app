@@ -6414,6 +6414,9 @@ importers:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -6716,6 +6719,9 @@ importers:
         specifier: ^6.2.17
         version: 6.2.17
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -6735,6 +6741,9 @@ importers:
         specifier: workspace:^
         version: link:../sites
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -7140,6 +7149,9 @@ importers:
         specifier: workspace:^
         version: link:../model-core
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -7881,6 +7893,9 @@ importers:
 
   packages/telemetry:
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6

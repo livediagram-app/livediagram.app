@@ -15,6 +15,7 @@ import {
   cardTabResolver,
 } from './search-plan';
 import { buildSearchResults } from './search';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Search panel": inside a project, search finds its boards by title and
 // its cards by number, title or description, and opens a card on the tab whose board shows it.
@@ -199,11 +200,11 @@ describe('card search at the limit', () => {
     ];
     // The first pass fills the per-card text cache, as the first keystroke after opening does.
     cardResults('x', source);
-    const t = performance.now();
+    const t = cpuNowMs();
     for (const q of queries) cardResults(q, source);
-    const perKeystroke = (performance.now() - t) / queries.length;
+    const perKeystroke = (cpuNowMs() - t) / queries.length;
     expect(cardResults('#1999', source)[0]!.key).toBe(1999);
     // Measured at about 1 ms a keystroke on an M-series laptop; a loaded CI runner gets four times that.
-    expect(perKeystroke).toBeLessThan(16);
+    expect(perKeystroke).toBeLessThan(cpuBudgetMs(16));
   });
 });

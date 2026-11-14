@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { missingBoardStatuses, missingStatuses, pickableStatuses } from './board-status-picks';
 import { item } from './test-items';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/026-plan/plan-board.md "The column picker": the existing statuses a board can add as columns.
 const board = (columns: { status: string; name: string }[], addTypes?: string[]) => ({
@@ -140,11 +141,11 @@ describe('missingBoardStatuses', () => {
       title: `B${i}`,
       statuses: Array.from({ length: 12 }, (_, j) => `s${(i * 4 + j) % 200}`),
     }));
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     const out = missingBoardStatuses(board([]), many, { items: cards, boards: big });
-    const ms = performance.now() - t0;
+    const ms = cpuNowMs() - t0;
     expect(out).toHaveLength(200);
     expect(out[0]!.cards).toBe(100);
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 });

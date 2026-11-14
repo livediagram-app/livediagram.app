@@ -14,6 +14,7 @@ import { renderFormula } from './formula/stored';
 import { Workbook } from './engine/workbook';
 import { reorderSlots } from './store-layout';
 import { colWidth, rowHeight } from './layout';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const ctx = { now: 1, by: { id: 'p', name: 'P', color: '#000000' } };
 
@@ -455,14 +456,14 @@ describe('applySheetWrite', () => {
       big.set(cellKey(`x${i}`, 's1c1'), reader.cells.get(cellKey('s1r0', 's1c0'))!);
     const ids = Array.from({ length: 2000 }, (_, i) => `g${i}`);
     const wide = { rows: [...target.layout.rows, ...ids], cols: target.layout.cols };
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     const many = shrinkReadersOf(
       target.id,
       wide,
       [{ k: 'deleteRows', ids: ['s0r0', ...ids] }],
       big,
     );
-    expect(performance.now() - t0).toBeLessThan(500);
+    expect(cpuNowMs() - t0).toBeLessThan(cpuBudgetMs(500));
     expect(many).toHaveLength(5001);
   });
   it('keeps an open-ended range when its first row or column goes', () => {

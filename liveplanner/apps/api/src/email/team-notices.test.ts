@@ -24,6 +24,7 @@ import { handleProjects } from '../routes/projects';
 import { handleInternalItems } from '../routes/internal-items';
 import { sendEmail } from './client';
 import { notifyMentions, notifyMilestone } from './notifications';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // A fake EMAIL binding: only its presence matters here, since sendEmail itself is mocked.
 const fakeEmail = () => ({ send: vi.fn(async () => ({ messageId: 'm' })) }) as unknown as SendEmail;
@@ -464,13 +465,13 @@ describe('a mention', () => {
       authorColor: '#000',
       mentions: people.map((p) => mention(p.userId)),
     })) as Comment[];
-    const started = performance.now();
+    const started = cpuNowMs();
     await notifyMentions(db.env, {
       plan: { id: 'd1', name: 'Roadmap', teamId: TEAM },
       authorId: OWNER,
       comments,
     });
-    const took = performance.now() - started;
+    const took = cpuNowMs() - started;
     expect(sent()).toHaveLength(60);
     // The sender's email allowance is liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): one call however many are
     // mentioned.
@@ -480,6 +481,6 @@ describe('a mention', () => {
       '/settings/notify',
       '/teams/members',
     ]);
-    expect(took).toBeLessThan(250);
+    expect(took).toBeLessThan(cpuBudgetMs(250));
   });
 });

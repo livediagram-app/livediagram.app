@@ -10,6 +10,7 @@ import {
   refreshAccessToken,
   revokeToken,
 } from './google-oauth';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // The service's calls to Google's OAuth endpoint and `about` (liveworkspace/docs/specs/005-drive/drive.md "Tokens").
 
@@ -53,9 +54,9 @@ describe('google bases', () => {
 
   it('strips a long run of slashes in linear time', () => {
     const base = `http://x${'/'.repeat(100_000)}`;
-    const started = performance.now();
+    const started = cpuNowMs();
     expect(googleApiBase({ baseUrl: base })).toBe('http://x');
-    expect(performance.now() - started).toBeLessThan(200);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(200));
   });
 });
 

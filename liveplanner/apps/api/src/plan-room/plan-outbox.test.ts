@@ -20,6 +20,7 @@ import {
   type IndexAppClient,
   type ItemSummary,
 } from '@liveworkspace/index-client';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // What a plan pushes to the index (plan-outbox.ts): the triggers key each change in the write's own transaction,
 // and a drain pushes the keys with this app's key. Real SQLite (test-sqlite-d1.ts); the index is a recording fake.
@@ -473,12 +474,12 @@ describe('the cards push', () => {
     );
     await insertItems(db.env, 'P', cards);
     const index = fakeIndex();
-    const start = performance.now();
+    const start = cpuNowMs();
     await drainOutbox(db.env, 'P', index.client);
-    const took = performance.now() - start;
+    const took = cpuNowMs() - start;
     expect(index.collab.find((c) => c.tab === '~cards')!.push.actions).toHaveLength(500);
     // Measured about 17 ms on a laptop (500 hashes, 1,000 cards); the budget leaves room for a slow CI runner.
-    expect(took).toBeLessThan(1_000);
+    expect(took).toBeLessThan(cpuBudgetMs(1_000));
   });
 });
 

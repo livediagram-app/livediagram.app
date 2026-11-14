@@ -7,6 +7,7 @@ import { getLineArtIconCatalog } from '@/lib/icons';
 import { getStickerCatalog } from '@liveworkspace/workbench/lib/stickers';
 import { CATALOGUE_MATCH_LIMIT, searchCatalogueTiles } from './palette-catalogue-search';
 import type { PaletteTileDef } from './palette-tile-defs';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 beforeAll(async () => {
   await ensureIconCatalogs();
@@ -62,10 +63,10 @@ describe('searchCatalogueTiles', () => {
   });
 
   it('searches every catalogue well inside a keystroke budget', () => {
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 20; i++) searchCatalogueTiles({ query: 'e', mode: 'pages' });
     // A query matching most of every catalogue; a keystroke runs one.
-    expect((performance.now() - start) / 20).toBeLessThan(16);
+    expect((cpuNowMs() - start) / 20).toBeLessThan(cpuBudgetMs(16));
   });
 
   it('lists nothing until the catalogues have loaded', () => {

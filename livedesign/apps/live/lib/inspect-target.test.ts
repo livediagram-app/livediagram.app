@@ -7,6 +7,7 @@ import {
   inspectTarget,
   inspectTargetSpec,
 } from './inspect-target';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/wireframe-pages.md "Inspect": what the overlay and the panel both read.
 const pages = layOutPages([
@@ -131,9 +132,9 @@ describe('a busy tab', () => {
       many.push(box(`e${i}`, p.x + (i % 7) * 50, p.y + Math.floor(i / 14) * 2, 40, 1));
     }
     const t = inspectTarget('e1000', many, pages)!;
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 10; i++) inspectCanvasLines(t, null, many, pages);
-    const perCall = (performance.now() - start) / 10;
-    expect(perCall).toBeLessThan(16);
+    const perCall = (cpuNowMs() - start) / 10;
+    expect(perCall).toBeLessThan(cpuBudgetMs(16));
   });
 });

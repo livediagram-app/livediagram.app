@@ -26,6 +26,7 @@ import {
   writeUserPreferences,
   type UserPreferences,
 } from './user-preferences';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Saving preferences to the server (docs/specs/007-editor/user-preferences.md "Saving to the server").
 
@@ -138,10 +139,10 @@ describe('fitPreferences', () => {
       ...fullAccount(),
       customSwatches: Array.from({ length: 280 }, () => '#abcdef'),
     };
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 20; i++) fitPreferences(prefs);
     // Measured ~0.06 ms; a trim that re-serialised per dropped entry took ~6 ms. Generous for CI.
-    expect((performance.now() - start) / 20).toBeLessThan(3);
+    expect((cpuNowMs() - start) / 20).toBeLessThan(cpuBudgetMs(3));
   });
 });
 

@@ -4,13 +4,14 @@ import { describe, expect, it } from 'vitest';
 import { parseDateText } from './dates';
 import { parsePlainNumber } from './input';
 import { fillSeries } from './fill';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const N = 50_000;
-const BUDGET_MS = 250;
+const BUDGET_MS = cpuBudgetMs(250);
 const timed = (fn: () => unknown) => {
-  const t = performance.now();
+  const t = cpuNowMs();
   fn();
-  return performance.now() - t;
+  return cpuNowMs() - t;
 };
 
 describe('reading typed input', () => {
