@@ -160,6 +160,42 @@ describe('a rule with AI steps', () => {
     );
     expect(into.lines.map((l) => l.text)).toEqual(['Summarise Card into Notes']);
   });
+
+  // Work Tracker 816 (spec "How a step runs"): the writes split at each AI step, so the steps after a failed one can be
+  // left unwritten; each later segment is planned from the card as the steps before left it.
+  it('cuts the writes at each AI step, each after-segment planned from the card as it then stands', () => {
+    const card = story();
+    const r = planActions(
+      [
+        { kind: 'flag' },
+        summarise,
+        { kind: 'add_label', label: 'a' },
+        { kind: 'comment', text: 'hi' },
+        summarise,
+        { kind: 'unflag' },
+      ],
+      ctxFor(card, { outline: O }),
+    );
+    if ('failed' in r) throw new Error(r.failed);
+    expect(r.patch).toEqual({ set: { flagged: true } });
+    expect(r.comments).toEqual([]);
+    const [first, second] = r.ai!;
+    expect(first!.after).toMatchObject({ patch: { set: { labels: ['a'] } }, comments: ['hi'] });
+    expect(first!.after!.from.fields['flagged']).toBe(true);
+    expect(second!.after).toMatchObject({ patch: { clear: ['flagged'] }, comments: [] });
+    expect(second!.after!.from.fields['labels']).toEqual(['a']);
+  });
+
+  it('counts the cards a run makes across its segments, and keeps them on a failed plan', () => {
+    const r = planActions(
+      [{ kind: 'create_card', type: 'note', title: 't' }, summarise, { kind: 'copy_card' }],
+      ctxFor(story(), { outline: O }),
+    );
+    expect('failed' in r && r.failed).toBe('A run makes up to 1 card');
+    if (!('failed' in r)) return;
+    expect(r.done.created).toHaveLength(1);
+    expect(r.done.ai![0]!.after!.created).toEqual([]);
+  });
 });
 
 describe('words', () => {

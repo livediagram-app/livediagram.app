@@ -6,6 +6,7 @@ import {
   AI_NOT_SET_UP,
   AI_SLOW,
   AI_UNREADABLE,
+  STEP_NOT_DONE,
   defaultCatalogue,
   type AutomationRun,
   type AutomationStep,
@@ -292,6 +293,87 @@ describe('when the AI can’t answer', () => {
       [false, SEND_NOT_SENT],
     ]);
     expect(sent.flat().map((s) => [s.key, s.text])).toEqual([[`${run.id}:0`, 'Before']]);
+  });
+
+  // Work Tracker 816 (spec "How a step runs"): the card steps after a failed AI step are never written; those before
+  // it stay done.
+  it('leaves the card where it was when an AI step before a Move fails', async () => {
+    answer = () => Promise.reject(new Error('3040: capacity'));
+    const { c, run } = await ran([
+      { kind: 'add_label', label: 'seen' },
+      { kind: 'ai', task: 'summarise' },
+      { kind: 'move', status: 'doing' },
+      { kind: 'flag' },
+    ]);
+    expect(run).toMatchObject({ result: 'failed', reason: AI_FAILED });
+    const after = await card(c.id);
+    expect(after.fields['status']).toBe('done');
+    expect(after.fields['flagged']).toBeUndefined();
+    expect(after.fields['labels']).toEqual(['seen']);
+    expect(run.steps.slice(1).map((s) => ['ok' in s ? s.ok : null, s.text])).toEqual([
+      [true, 'Add Label seen'],
+      [false, AI_FAILED],
+      [false, STEP_NOT_DONE],
+      [false, STEP_NOT_DONE],
+    ]);
+  });
+
+  it('a failed AI step leaves a branch after it unwritten, and its reason beats a later planned failure', async () => {
+    answer = () => Promise.reject(new Error('3040: capacity'));
+    const { run } = await ran([
+      { kind: 'ai', task: 'summarise' },
+      { kind: 'for', related: { kind: 'linked' }, conditions: [], then: [{ kind: 'flag' }] },
+      { kind: 'move', status: 'gone' },
+    ]);
+    expect(run).toMatchObject({ result: 'failed', reason: AI_FAILED });
+    expect(run).not.toHaveProperty('gone');
+    expect(run.steps.slice(1).map((s) => [s.kind, 'ok' in s ? s.ok : null, s.text])).toEqual([
+      ['action', false, AI_FAILED],
+      ['branch', false, STEP_NOT_DONE],
+      ['action', false, STEP_NOT_DONE],
+    ]);
+  });
+
+  // Each AI step in its place: it reads the card as the steps before it left it, and the steps after it land after.
+  it('asks each AI step in its place, the card steps after it written once it answered', async () => {
+    const { c, run } = await ran([
+      { kind: 'move', status: 'doing' },
+      { kind: 'ai', task: 'summarise' },
+      { kind: 'add_label', label: 'summarised' },
+      { kind: 'move', status: 'todo' },
+    ]);
+    expect(run).toMatchObject({ result: 'done' });
+    expect(
+      JSON.parse((calls[0]!.inputs['messages'] as { content: string }[])[1]!.content),
+    ).toMatchObject({
+      card: { column: 'In Progress' },
+    });
+    const after = await card(c.id);
+    expect(after.fields['status']).toBe('todo');
+    expect(after.fields['labels']).toEqual(['summarised']);
+    // Two writes of the card by the rule, one each side of the AI step.
+    expect(tags(c.id).filter((t) => t === 'automation')).toHaveLength(2);
+  });
+
+  it('stops the run at a card write after an AI step that is refused, asking no later AI step', async () => {
+    // The card goes while the first step answers: its comment lands, the Flag after it can't.
+    answer = async () => {
+      plan()
+        .db.prepare("DELETE FROM items WHERE json_extract(fields, '$.title') = 'Gone soon'")
+        .run();
+      return { response: { summary: 'A summary.' } };
+    };
+    const { run } = await ran(
+      [
+        { kind: 'ai', task: 'summarise' },
+        { kind: 'flag' },
+        { kind: 'ai', task: 'card_type', set: true },
+      ],
+      { title: 'Gone soon' },
+    );
+    expect(run).toMatchObject({ result: 'failed', reason: 'The card is gone' });
+    expect(calls).toHaveLength(1);
+    expect(run.steps.map((s) => s.text)).toContain(AI_NOT_ASKED);
   });
 });
 
