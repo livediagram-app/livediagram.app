@@ -175,6 +175,10 @@ export type EditorContextMenuProps = {
   // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
   // them (an Editor, on an unlocked diagram), so the menu shows no Sankey section otherwise.
   sankey?: import('./SankeyMenuSection').SankeyMenuHandlers;
+  // Builds (docs/specs/012-collaboration/presentation-mode.md "Setting builds up"): every element on the slide the
+  // selection is on, present only when it is on one of the open tab's slides, so the menu shows no Build section
+  // otherwise.
+  build?: { slideElements: readonly import('@livedocuments/document').Element[] };
   // Map (docs/specs/009-elements/map.md "The menu"): present only for an Editor, on an unlocked map.
   map?: import('./MapMenuSection').MapMenuHandlers;
   // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the

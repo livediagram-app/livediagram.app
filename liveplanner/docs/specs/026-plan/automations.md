@@ -1164,10 +1164,12 @@ above, unchanged.
 
 - The item panel's footer says who last edited the card. A rule's change reads "Edited by **Done Means Wrapped Up**"
   with the bolt; a GitHub-triggered rule's, "Edited by **GitHub** · Move on Merge" with GitHub's mark on its dark disc,
-  as its History rows draw it. Which it was is the card's newest history entry's tag (`automation_github`), read only
-  while the card's last edit was Automation's: the read Set by Automation already makes, so it costs nothing more.
-  Until that read answers, the footer shows the bolt and the rule. A rule's name the footer cuts ("Done When t…") shows
-  whole in the row's tooltip ("Edited by GitHub · Done When the Pull Request Merges").
+  as its History rows draw it. A card a GitHub-triggered rule's Create Card made reads "Created by **GitHub** · Card
+  for Each Pull Request" with GitHub's mark the same way. Which it was is on the card's own stamp: a GitHub-triggered
+  run stamps its Automation person with its source (`via: "github"`, on `updatedBy` for its edits and on `createdBy`
+  for a card it makes), so the footer knows at once, with no history read and never the bolt first. A card stamped
+  before the stamp carried its source keeps the bolt and the rule. A rule's name the footer cuts ("Done When t…")
+  shows whole in the row's tooltip ("Edited by GitHub · Done When the Pull Request Merges").
 - A change Automation made reads in the card's **History** with the bolt glyph: "**Automation** set Completed On to
   11 Nov 2026 · Done Means Wrapped Up · 10:42" ([History](items.md#history)), and a field whose latest change in
   the history read was a rule's shows a small **Set by Automation** chip beside its value in the item panel.

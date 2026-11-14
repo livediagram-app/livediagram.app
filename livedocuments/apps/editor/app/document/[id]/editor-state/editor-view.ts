@@ -261,6 +261,10 @@ export function editorView({
     // instead of the tab's elements while it is non-null, which is what makes
     // a slide a slide.
     presentingElements: viewportSlice.presentingElements,
+    // What the canvas draws of the slide (presentation-mode.md "Builds"): its elements less the builds still to come,
+    // and the entrance the last build plays.
+    presentedElements: viewportSlice.presentedElements,
+    buildEntrance: viewportSlice.buildEntrance,
     // The page a page slide is presenting (docs/specs/007-editor/pages-mode.md "Slides"):
     // the canvas then shows that sheet alone, as it shows the slide's elements alone.
     presentingPageId: viewportSlice.presentingStep?.slide.pageId ?? null,

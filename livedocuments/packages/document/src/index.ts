@@ -415,6 +415,7 @@ export * from '@liveworkspace/model-core/fonts';
 // helpers a presentation is built from. Kept here rather than in apps/editor
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
+export * from './slide-builds';
 export * from './slide-deck-pages';
 export * from './slide-notes';
 export * from './slide-notes-merge';

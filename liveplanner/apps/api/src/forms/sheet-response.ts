@@ -3,10 +3,26 @@
 // and stored through the sheet store's own checks, caps and relay (storeSheetWrite) at the rev it was planned on,
 // unchecked against the sheet's validation rules so a response always lands. 'written' only when every cell did.
 import type { AnswerValue, FormSheetDestination } from '@liveplanner/forms';
-import { HEADER_SCAN_ROWS, responseRowWrite, type FormDefinition } from '@liveplanner/forms';
+import {
+  HEADER_SCAN_ROWS,
+  TABLE_GAP_ROWS,
+  headerRowIndex,
+  isTotalRow,
+  responseRowWrite,
+  type FormDefinition,
+  type SheetTable,
+} from '@liveplanner/forms';
 import type { SheetWriteResponse } from '@liveplanner/api-schema';
 import type { SheetPerson, SheetWrite } from '@liveplanner/sheets';
-import { lastUsedSheetRow, planHasTab, readRowTexts, readSheetHead } from '../db';
+import {
+  lastUsedSheetRow,
+  planHasTab,
+  readRowInputs,
+  readRowTexts,
+  readSheetHead,
+  usedSheetRows,
+} from '../db';
+import type { PlanEnv } from '../types';
 import type { PlanRouteContext } from '../routes/context';
 import { SHEET_WRITE_RETRIES } from '../routes/sheet-route-kit';
 import { storeSheetWrite } from '../routes/sheet-write-route';
@@ -50,6 +66,8 @@ export async function writeResponseRow(
       sheet.sheetId,
       head.layout.rows.slice(0, HEADER_SCAN_ROWS),
     );
+    // Only the last row holding a value places the response (responseRowWrite), unless it is a table's total.
+    const usedRows = await lastUsedSheetRow(env, projectId, sheet.sheetId, head.layout.rows);
     const write = responseRowWrite({
       form: input.form,
       answers: input.answers,
@@ -58,8 +76,12 @@ export async function writeResponseRow(
       at: Date.now(),
       layout: head.layout,
       rowTexts,
-      // Only the last row holding a value places the response (responseRowWrite).
-      usedRows: await lastUsedSheetRow(env, projectId, sheet.sheetId, head.layout.rows),
+      usedRows,
+      table: await tableOf(env, projectId, sheet.sheetId, {
+        rows: head.layout.rows,
+        head: headerRowIndex(input.form, head.layout.rows, rowTexts),
+        last: [...usedRows][0],
+      }),
       columns: sheet.columns,
     });
     const res = await storeSheetWrite(
@@ -86,6 +108,32 @@ export async function writeResponseRow(
   }
   console.warn('[forms] form.sheet.unwritten', { projectId, status: 409 });
   return 'busy';
+}
+
+// A template's table (forms.md "A template's table with a total"): when the last row holding a value sits under the
+// header row and is a total, its inputs and the first empty row among the table's first TABLE_GAP_ROWS rows. Else
+// undefined, and the response goes under the last value. Two indexed reads (three when a row is added, for the row
+// above's formulas), only for a sheet whose last row has one.
+async function tableOf(
+  env: PlanEnv,
+  projectId: string,
+  sheetId: string,
+  at: { rows: readonly string[]; head: number; last: string | undefined },
+): Promise<SheetTable | undefined> {
+  const total = at.last === undefined ? -1 : at.rows.indexOf(at.last);
+  if (total <= at.head) return undefined;
+  const totalInputs = await readRowInputs(env, projectId, sheetId, at.last!);
+  if (!isTotalRow(totalInputs.values())) return undefined;
+  const body = at.rows.slice(at.head + 1, Math.min(total, at.head + 1 + TABLE_GAP_ROWS));
+  const used = await usedSheetRows(env, projectId, sheetId, body);
+  const empty = body.find((r) => !used.has(r)) ?? null;
+  // No empty row: a new one goes above the total, taking the per-row formulas of the row above it (one more read).
+  const above = at.rows[total - 1]!;
+  const aboveInputs =
+    empty === null && total - 1 > at.head
+      ? await readRowInputs(env, projectId, sheetId, above)
+      : undefined;
+  return { total: at.last!, totalInputs, empty, aboveInputs };
 }
 
 const cellsOf = (w: SheetWrite) => (w.kind === 'title' ? [] : (w.cells ?? []));

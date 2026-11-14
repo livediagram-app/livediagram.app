@@ -386,7 +386,7 @@ function ItemPanelContent({
     </div>
   );
 
-  const meta = <ItemMeta item={item} now={now} editedByGithub={automationHistory.github} />;
+  const meta = <ItemMeta item={item} now={now} />;
   // Its required custom fields, marked after their names (docs/specs/026-plan/item-types.md "Required fields").
   const requiredIds = new Set(requiredCustomFieldsOf(type).map((r) => r.id));
 

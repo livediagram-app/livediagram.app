@@ -8621,6 +8621,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "via": {
+        "const": "github",
+        "type": "string"
       }
     },
     "required": [

@@ -55,10 +55,20 @@ export const AUTOMATION_EMAIL_ADDRESSES_MAX = 10;
 export const AUTOMATION_ADDRESS_EMAILS_PER_DAY = 50;
 
 // Who a rule's changes are by: `name` is the rule's name at the moment it ran, the history tag says it was a rule.
+// `via`: a GitHub-triggered run's stamp says so (automations.md "On cards").
 export const AUTOMATION_PERSON_ID = 'automation';
 export const AUTOMATION_COLOR = '#7c3aed';
-export function automationPerson(ruleName: string): ItemPerson {
-  return { id: AUTOMATION_PERSON_ID, name: ruleName, color: AUTOMATION_COLOR };
+export function automationPerson(ruleName: string, via?: 'github'): ItemPerson {
+  return {
+    id: AUTOMATION_PERSON_ID,
+    name: ruleName,
+    color: AUTOMATION_COLOR,
+    ...(via ? { via } : {}),
+  };
+}
+// Whether a card's stamp is a GitHub-triggered rule's: Automation's person with its source.
+export function isGithubStamp(person: ItemPerson | undefined): boolean {
+  return person?.id === AUTOMATION_PERSON_ID && person.via === 'github';
 }
 // Who an Incoming Webhook call is by: no person, so `{{person}}` (Who Did It) reads "Incoming webhook".
 export const INCOMING_WEBHOOK_PERSON: ItemPerson = {
