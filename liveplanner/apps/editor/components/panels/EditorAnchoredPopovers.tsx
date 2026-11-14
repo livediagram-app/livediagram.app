@@ -76,7 +76,7 @@ export function EditorAnchoredPopovers() {
   const actionSelfId = accountUserId ?? selfParticipant.id;
   const actionSelfName = accountDisplayName ?? selfParticipant.name;
   // A read-only session has no autosave, so its comment changes go through the comment endpoints; an editor's ride
-  // the room and its save (lib/comment-persistence.ts, shared with the Comment panel).
+  // the room and its save (lib/comment-persistence.ts).
   const persist = commentPersisters({
     readOnly: isReadOnly,
     projectId,

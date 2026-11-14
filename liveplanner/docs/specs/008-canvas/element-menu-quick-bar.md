@@ -8,19 +8,20 @@ inside a category that has to be opened first.
 
 - At the left, what attaches to the element, in this order:
   - **Assign Action**, reading **View Action** once the element has one ([Assigned actions](../012-collaboration/assigned-actions.md)).
-  - **Add Comment**, reading **View Comments** once it has a thread ([Comment pins](../012-collaboration/comment-pin.md)).
   - **Add Link**, reading **Edit Link** once it has one. Not on a link card or a video, whose link is their own
     **Link** category's.
   - **Add Note**, reading **Edit Note** once it has one.
 - At the right, apart from them, **Clear Styles**: the Quick Style panel's own Clear Styles
   ([Quick style panel](quick-style-panel.md)), the element's quick-style colours, width and line style back to the
   theme's. It shows while the element takes a quick style, whether or not the panel is on screen.
-- A button the element already uses (it has an action, a thread, a link or a note) is tinted in the brand colour and
+- A button the element already uses (it has an action, a link or a note) is tinted in the brand colour and
   pressed (`aria-pressed`), so the bar also says what the element carries.
 - Each button has a Tooltip naming it, runs its action and closes the menu, as the tiles it replaced did.
 
-The four attachments are offered only on boxed elements other than Plan items, as before
-([Plan mode](../026-plan/plan-mode.md) "Nothing attached to Plan items"); arrows take none. With nothing to offer (an
+The three attachments are offered only on boxed elements other than Plan items, as before
+([Plan mode](../026-plan/plan-mode.md) "Nothing attached to Plan items"); arrows take none. There is no **Add Comment**:
+comment threads on canvas elements are retired ([Plan mode](../026-plan/plan-mode.md) "No comment thread on any canvas
+element"); comments live on cards and Sheet cells. With nothing to offer (an
 arrow that takes no quick style) the bar is not drawn.
 
 They had their own categories, **Collaborate** (Assign Action, Add Comment) and **Resources** (Add Link, Add Note), at
@@ -29,7 +30,7 @@ the foot of the menu. Those categories are gone: the quick bar is their one plac
 ## Share roles
 
 The quick bar is an Editor's ([Share roles](../013-workspace/share-roles.md)). A Participant and a Viewer get the
-element menu below instead, and keep the selection toolbar's **Add Comment** (**Show Comments** for a Viewer).
+element menu below instead. Neither has a comment button on the selection toolbar.
 
 ## Element menu for Participants and Viewers
 
@@ -38,16 +39,14 @@ beside the element as an Editor's opens (a bottom sheet on a phone). It is a lis
 naming the element ("Square"), each row running its action and closing the menu. It holds only what the role may do,
 gated on the session's `can`:
 
-| Row                                                   | Participant                                 | Viewer                           |
-| ----------------------------------------------------- | ------------------------------------------- | -------------------------------- |
-| **Add Comment** / **View Comments** (it has a thread) | Yes (`can.takePart`)                        | No                               |
-| **Show Comments**                                     | No                                          | Only on an element with comments |
-| **Edit Text** / **Add Text**                          | Where `can.writeText(el)` and it takes text | No                               |
-| **Open Link**                                         | When the element has a link                 | When the element has a link      |
-| **View Note**                                         | When the element has a note                 | When the element has a note      |
-| **Copy Text**                                         | When the element has words                  | When the element has words       |
+| Row                          | Participant                                 | Viewer                      |
+| ---------------------------- | ------------------------------------------- | --------------------------- |
+| **Edit Text** / **Add Text** | Where `can.writeText(el)` and it takes text | No                          |
+| **Open Link**                | When the element has a link                 | When the element has a link |
+| **View Note**                | When the element has a note                 | When the element has a note |
+| **Copy Text**                | When the element has words                  | When the element has words  |
 
-- Comments rows show only where comments are shown (never in an embed's viewer).
+- No comment row, for either role: comment threads on canvas elements are retired.
 - **Copy Text** writes the element's words to the clipboard, so a Viewer can quote what it reads without selecting it.
 - An element with nothing for the role opens no menu: a right-click selects it and does nothing more.
 - An arrow offers **Copy Text** (its label) and, to a Participant, **Edit Text**; nothing attaches to an arrow.

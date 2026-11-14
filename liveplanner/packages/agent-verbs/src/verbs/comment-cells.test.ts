@@ -90,6 +90,8 @@ describe('comment verbs on a Sheet cell', () => {
       cell: 'B4',
     });
     expect(out.text).toBe('+ comment c9 on budget B4');
+    expect(commentAdd.quiet!(out)).toEqual(['c9']);
+    expect(commentAdd.text!(out)).toEqual(['+ comment c9 on budget B4']);
     expect(seen[0]!.body).toEqual({ elementId: 'budget-sheet', text: 'Check', cell: B4 });
   });
 

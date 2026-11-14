@@ -199,20 +199,20 @@ export function CollaboratePanel({
   );
 }
 
-// Derive comment rows from the active tab's boxed elements. Resolved
-// threads are INCLUDED (flagged) so the panel's Resolved view can list
+// Derive comment rows from the active tab's boxed elements: a Sheet's cell threads only. An element's own thread is
+// retired (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element"): kept as stored, never listed.
+// Resolved threads are INCLUDED (flagged) so the panel's Resolved view can list
 // them; the caller short-circuits the panel mount when the list (plus
 // the action list) is empty. Sorted newest-first on latestAt.
 export function commentRowsFromElements(elements: BoxedElement[]): CommentRow[] {
   const rows: CommentRow[] = [];
   for (const el of elements) {
-    // The element's own thread, then (on a Sheet) each cell's.
     for (const { cell, thread } of elementThreads(el)) {
-      if (thread.comments.length === 0) continue;
+      if (cell === undefined || thread.comments.length === 0) continue;
       const latest = thread.comments[thread.comments.length - 1]!;
       rows.push({
         elementId: el.id,
-        ...(cell !== undefined ? { cell } : {}),
+        cell,
         label: elementDisplayLabel(el),
         count: thread.comments.length,
         latestAuthorName: latest.authorName,

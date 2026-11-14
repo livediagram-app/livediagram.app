@@ -9,8 +9,8 @@ import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/us
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
-// docs/specs/013-workspace/share-roles.md: a Participant comments; a Viewer writes no comment, so it reads the thread
-// an element has behind Show Comments and is offered nothing on an element with none.
+// docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751): the selection
+// toolbar offers no comment button to any role, on an element with a stored thread or without one.
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 afterEach(cleanup);
@@ -32,7 +32,6 @@ function show(el: Element, takePart: boolean) {
     readOnly: true,
     takePart,
     canvasTool: 'select',
-    onOpenComments: vi.fn(),
     onBeginEdit: vi.fn(),
   } as unknown as CanvasProps;
   const store = createSelectionStore();
@@ -58,18 +57,21 @@ function show(el: Element, takePart: boolean) {
 const button = (name: string) => screen.queryByRole('button', { name });
 
 describe('the selection toolbar’s comment button', () => {
-  it('lets a Participant add a comment anywhere', () => {
-    show(bare, true);
-    expect(button('Add Comment')).not.toBeNull();
+  it('is gone for a Participant, with or without a stored thread', () => {
+    for (const el of [bare, discussed]) {
+      show(el, true);
+      expect(button('Add Comment')).toBeNull();
+      expect(button('Show Comments')).toBeNull();
+      cleanup();
+    }
   });
 
-  it('offers a Viewer only the comments there are, to read', () => {
-    show(bare, false);
-    expect(button('Add Comment')).toBeNull();
-    expect(button('Show Comments')).toBeNull();
-    cleanup();
-    show(discussed, false);
-    expect(button('Add Comment')).toBeNull();
-    expect(button('Show Comments')).not.toBeNull();
+  it('is gone for a Viewer, even on an element with comments', () => {
+    for (const el of [bare, discussed]) {
+      show(el, false);
+      expect(button('Add Comment')).toBeNull();
+      expect(button('Show Comments')).toBeNull();
+      cleanup();
+    }
   });
 });

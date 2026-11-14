@@ -35,7 +35,8 @@ import { svgElementBody } from './svg-render-body';
 import { svgPageFold } from './svg-render-page';
 import { svgHeroCaption } from './svg-render-web';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
-import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import { fitWholeWordLines, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import type { ExportLabel } from './svg-render-labels';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
 import type { BoxedElement } from './index';
 import { shadowFilterId, supportsShadow } from './shadow';
@@ -352,16 +353,14 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
             label.maxWidth,
             label.valign,
             label.fontFamily,
+            undefined,
+            undefined,
+            label.maxLines,
           )
         : svgWrappedLabel(
             // Wrapped in the face it paints in, or a wide face breaks at the
             // wrong words and runs out of its element.
-            wrapLabel(
-              label.text,
-              label.maxWidth,
-              labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
-              !(el.type === 'shape' && el.shape === 'icon'),
-            ),
+            wrappedLines(label, !(el.type === 'shape' && el.shape === 'icon')),
             label.x,
             label.y,
             label.anchor,
@@ -378,4 +377,13 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       ? `<g transform="rotate(-90 ${r2(label.turnAbout.x)} ${r2(label.turnAbout.y)})">${labelStr}</g>`
       : labelStr;
   return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${turned}</g>`;
+}
+
+// A label's lines as the canvas wraps them. One held to `maxLines` (a lane title in its gutter, docs/specs/009-elements/
+// lane.md "A title wraps in its gutter") reads in whole words (fitWholeWordLines).
+function wrappedLines(label: ExportLabel, breakWords: boolean): string[] {
+  const measure = labelMeasure(label.size, label.bold, label.italic, label.fontFamily);
+  return label.maxLines
+    ? fitWholeWordLines(label.text, label.maxWidth, label.maxLines, measure)
+    : wrapLabel(label.text, label.maxWidth, measure, breakWords);
 }

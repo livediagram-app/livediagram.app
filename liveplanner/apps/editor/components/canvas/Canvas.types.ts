@@ -6,7 +6,7 @@ import type { Dispatch, SetStateAction } from 'react';
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { CommentMention, Finish, FrameHandle } from '@liveplanner/project';
+import type { Finish, FrameHandle } from '@liveplanner/project';
 import type {
   BackgroundPattern,
   Element,
@@ -96,16 +96,8 @@ export type CanvasProps = {
   // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md):
   // the timer's length, the vote's dots.
   // Absent on a read-only surface, which renders the menu's trigger not at all.
-  // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, plus the thread mutators, so a panel
-  // shows and edits its thread in place. All keyed by element id, which is how
-  // the anchored popover already drives them.
+  // A stored Comment panel (docs/specs/012-collaboration/comment-pin.md, retired): who I am, for its read-only thread.
   commentSelfId?: string;
-  commentPanelActions?: {
-    add: (elementId: string, text: string, mentions?: CommentMention[]) => void;
-    remove: (elementId: string, commentId: string) => void;
-    resolve: (elementId: string) => void;
-    unresolve: (elementId: string) => void;
-  };
   // Action panel (docs/specs/012-collaboration/action-panel.md): who I am (for "Assigned to you"), plus the
   // docs/specs/012-collaboration/assigned-actions.md action mutators, keyed by element id like everything else that
   // drives an action. Absent on a read-only surface: the card renders inert.
@@ -308,7 +300,6 @@ export type CanvasProps = {
   onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   onShiftSelect: (id: string) => void;
   onFollowLink: (link: import('@liveplanner/project').ElementLink) => void;
-  onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in
   // read-only sessions too — visitors may read an action; the popover
   // gates its mutations itself.

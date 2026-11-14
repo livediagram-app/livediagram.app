@@ -260,6 +260,35 @@ describe('the tab PUT', () => {
   });
 });
 
+// docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751): retiring element
+// threads strips nothing, so a tab carrying them round-trips through a save unchanged.
+describe('a stored element comment thread', () => {
+  it('is kept exactly as stored through a save, on a shape and on a Comment panel', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const thread = {
+      resolved: true,
+      comments: [
+        {
+          id: 'c1',
+          text: 'Why here?',
+          createdAt: 5,
+          authorName: 'Priya',
+          authorColor: '#123456',
+          authorId: 'priya',
+        },
+      ],
+    };
+    const elements = [
+      { ...box('a'), commentThread: thread },
+      { ...box('p'), shape: 'comment-pin', commentThread: thread },
+    ] as Element[];
+    const db = await projectWith(elements);
+    expect((await save(db, [...elements, box('b')])).status).toBe(200);
+    const kept = stored(db) as (Element & { commentThread?: unknown })[];
+    expect(kept.map((e) => e.commentThread)).toEqual([thread, thread, undefined]);
+  });
+});
+
 describe('the tab read', () => {
   it('carries the revision in the body and as a weak ETag', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});

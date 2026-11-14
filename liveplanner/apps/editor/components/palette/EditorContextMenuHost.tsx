@@ -183,7 +183,6 @@ export function EditorContextMenuHost() {
     setTableHeaderColumnSelected,
     setTableZebraSelected,
     openNote,
-    openComments,
     openAssignAction,
   } = useEditorContext();
   // The selection the menu acts on, read from the store while a menu is open: a closed menu never
@@ -416,7 +415,6 @@ export function EditorContextMenuHost() {
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
       onToggleTableZebra={setTableZebraSelected}
       onOpenNote={openNote}
-      onOpenComments={openComments}
       onAssignAction={openAssignAction}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))

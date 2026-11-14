@@ -2,15 +2,14 @@
 
 // The element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): a row of glyph buttons above the
 // menu's first category, so what gets reached for on any element is one press away rather than inside a category.
-// Assign Action, Add Comment, Add Link and Add Note at the left (an element that has one says so, tinted, and the
-// button reads View / Edit); Clear Styles alone at the right, apart from them, as it changes the element's look rather
+// Assign Action, Add Link and Add Note at the left (an element that has one says so, tinted, and the button reads
+// View / Edit; no Add Comment: comment threads on canvas elements are retired, docs/specs/026-plan/plan-mode.md); Clear Styles alone at the right, apart from them, as it changes the element's look rather
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
 import type { ReactNode } from 'react';
 import { isBoxed, type BoxedElement, type Element } from '@liveplanner/project';
 import { Glyph, Tooltip } from '@liveplanner/ui';
 import {
   ActionMenuIcon,
-  CommentMenuIcon,
   LinkMenuIcon,
   NoteMenuIcon,
 } from '@/components/palette/context-menu-icons';
@@ -23,13 +22,8 @@ type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; 
 // their own Link category, so the generic Add Link is not offered on them.
 export function quickBarItems(
   target: BoxedElement,
-  props: Pick<
-    EditorContextMenuProps,
-    'onAssignAction' | 'onOpenComments' | 'onLinkElement' | 'onOpenNote'
-  >,
+  props: Pick<EditorContextMenuProps, 'onAssignAction' | 'onLinkElement' | 'onOpenNote'>,
 ): QuickBarItem[] {
-  const comments = (target as { commentThread?: { comments: readonly unknown[] } }).commentThread;
-  const hasComments = !!comments && comments.comments.length > 0;
   const items: QuickBarItem[] = [
     {
       key: 'action',
@@ -37,13 +31,6 @@ export function quickBarItems(
       icon: <ActionMenuIcon />,
       on: !!target.action,
       run: () => props.onAssignAction(target.id),
-    },
-    {
-      key: 'comment',
-      label: hasComments ? 'View Comments' : 'Add Comment',
-      icon: <CommentMenuIcon />,
-      on: hasComments,
-      run: () => props.onOpenComments(target.id),
     },
   ];
   if (target.type !== 'link-card' && target.type !== 'video')
@@ -79,13 +66,13 @@ export function ElementMenuQuickBar({
 }: {
   target: Element;
   props: EditorContextMenuProps;
-  // Whether the element takes actions, comments, links and notes (never a Plan item, never an arrow).
+  // Whether the element takes actions, links and notes (never a Plan item, never an arrow).
   attachments: boolean;
   onClose: () => void;
 }) {
   const clearStyles = useClearStyles();
   const canClear = !!clearStyles && clearStyles.targetIds.has(target.id);
-  // Only a boxed element takes them: arrows are never linked, noted, commented on or assigned.
+  // Only a boxed element takes them: arrows are never linked, noted or assigned.
   const items = attachments && isBoxed(target) ? quickBarItems(target, props) : [];
   if (!items.length && !canClear) return null;
   return (

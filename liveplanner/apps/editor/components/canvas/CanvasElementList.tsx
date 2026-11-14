@@ -87,7 +87,6 @@ type CanvasElementListProps = Pick<
   boxedShared: BoxedShared;
   arrowGeometry: ReadonlyMap<string, ReturnType<typeof arrowViewGeometry>>;
   arrowLabels: ArrowLabels;
-  commentActionsFor: ((id: string) => BoxedViewProp<'commentActions'>) | null;
   actionActionsFor: ((id: string) => BoxedViewProp<'actionActions'>) | null;
   // Bumped when webfonts land, so every fitted label measures again in its real face (useFontEpoch).
   fontEpoch: number;
@@ -187,7 +186,6 @@ function drawElement(
     canMove,
     canResize,
     voteReview,
-    commentActionsFor,
     actionActionsFor,
     tabFont,
     tabFinish,
@@ -272,7 +270,6 @@ function drawElement(
       movable={!readOnly || canMove?.(element) === true}
       resizable={!readOnly || canResize?.(element) === true}
       isVoteFocus={voteReview?.focusId === element.id}
-      commentActions={commentActionsFor?.(element.id)}
       actionActions={actionActionsFor?.(element.id)}
       // An explicit per-element font outranks the tab default.
       // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).

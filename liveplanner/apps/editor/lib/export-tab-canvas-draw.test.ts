@@ -89,4 +89,55 @@ describe('drawBoxed', () => {
     expect(seen.radius).toBe(22);
     expect(seen.moveTo[1]).toBe(2);
   });
+
+  // docs/specs/009-elements/lane.md "A title wraps in its gutter" (Work Tracker 824): the PNG holds a lane title to
+  // three whole-word lines in its gutter, as the SVG does.
+  describe('a lane title across its gutter', () => {
+    const texts = (el: BoxedElement) => {
+      const drawn: string[] = [];
+      const ctx = new Proxy<Record<string, unknown>>(
+        {},
+        {
+          get(target, key) {
+            if (key === 'fillText') return (s: string) => drawn.push(s);
+            if (key === 'measureText') return (s: string) => ({ width: s.length * 7 });
+            if (key in target) return target[key as string];
+            return () => undefined;
+          },
+          set(target, key, value) {
+            target[key as string] = value;
+            return true;
+          },
+        },
+      ) as unknown as CanvasRenderingContext2D;
+      drawBoxed(ctx, el, undefined, 1);
+      return drawn;
+    };
+    const long = 'Quarterly marketing programme review and sign off with every regional lead';
+    const lane = (o: Record<string, unknown>) =>
+      ({
+        ...createShape('lane', 0, 0),
+        width: 400,
+        height: 200,
+        textAlignX: 'left',
+        label: long,
+        ...o,
+      }) as unknown as BoxedElement;
+
+    it('wraps a plain title onto three whole-word lines, the last ending in an ellipsis', () => {
+      const lines = texts(lane({}));
+      expect(lines).toHaveLength(3);
+      expect(lines[2]).toMatch(/…$/);
+      for (const line of lines.slice(0, 2)) expect(long).toContain(line);
+    });
+
+    it('clamps a formatted title to three lines the same way', () => {
+      const rich = lane({
+        richText: [{ text: 'Quarterly', bold: true }, { text: long.slice('Quarterly'.length) }],
+      });
+      const drawn = texts(rich);
+      expect(drawn[0]).toBe('Quarterly');
+      expect(drawn.at(-1)).toMatch(/…$/);
+    });
+  });
 });

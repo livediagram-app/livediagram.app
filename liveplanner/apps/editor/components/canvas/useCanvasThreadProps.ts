@@ -1,16 +1,15 @@
-// The Canvas's comment and action props (docs/specs/012-collaboration/comment-pin.md, action-panel.md,
-// assigned-actions.md): the Comment and Action panels' actions, the Collaborate panel's rows and its jumps to a card.
+// The Canvas's comment and action props (docs/specs/012-collaboration/action-panel.md, assigned-actions.md): the Action
+// panel's actions, the Collaborate panel's rows and its jumps to a card or a Sheet cell. Comment threads on canvas
+// elements are retired (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element"): a stored Comment
+// panel reads its thread and drives nothing.
 // Split from EditorCanvasHost, which spreads them into the Canvas.
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
-import { isBoxed, threadAt } from '@liveplanner/project';
-import { commentPersisters } from '@/lib/comment-persistence';
 import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 
 export function useCanvasThreadProps(): Pick<
   CanvasProps,
   | 'commentSelfId'
-  | 'commentPanelActions'
   | 'actionSelfId'
   | 'actionPanelActions'
   | 'commentRows'
@@ -28,7 +27,6 @@ export function useCanvasThreadProps(): Pick<
     commentRows,
     commentsPanelPosition,
     isReadOnly,
-    can,
     openActionPopover,
     openAssignActionDialog,
     completeAction,
@@ -36,53 +34,22 @@ export function useCanvasThreadProps(): Pick<
     linkedActions,
     openComments,
     selfParticipant,
-    addComment,
-    deleteComment,
-    resolveThread,
-    unresolveThread,
     setCommentsPanelPosition,
     setSelectedId,
     activeTab,
     scrollIntoView,
-    projectId,
-    sessionShareCode,
   } = useEditorContext();
   // The Collaborate panel's jump to a conversation card (docs/specs/012-collaboration/assigned-actions.md §5):
   // true when the row's element is that kind of card, now centred in view.
-  const jumpToCard = (id: string, shape: 'comment-pin' | 'action-card'): boolean => {
+  const jumpToCard = (id: string, shape: 'action-card'): boolean => {
     const el = activeTab.elements.find((e) => e.id === id);
     if (!el || el.type !== 'shape' || el.shape !== shape) return false;
     scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
     return true;
   };
-  // How a comment change made on a Comment panel is kept: shared with the anchored popover.
-  const commentPersist = commentPersisters({
-    readOnly: isReadOnly,
-    projectId,
-    tabId: activeTab.id,
-    selfId: selfParticipant.id,
-    shareCode: sessionShareCode,
-  });
-  const threadOn = (elementId: string) => {
-    const el = activeTab.elements.find((e) => e.id === elementId);
-    return el && isBoxed(el) ? threadAt(el) : undefined;
-  };
   return {
-    // Comment panels (docs/specs/012-collaboration/comment-pin.md) drive the SAME thread machinery the anchored
-    // popover does: it is all keyed by element id already.
+    // A stored Comment panel's read-only thread puts my own comments on the right.
     commentSelfId: selfParticipant.id,
-    // Commenting is a Participant's too (docs/specs/013-workspace/share-roles.md); a Viewer only reads.
-    commentPanelActions: !can.takePart
-      ? undefined
-      : {
-          // A Participant has no autosave: its panel changes go through the comment endpoints, as the
-          // popover's do (lib/comment-persistence.ts); an Editor's ride the room and its save.
-          add: (id, text, mentions) =>
-            addComment(id, text, commentPersist.add(id, text, mentions), mentions),
-          remove: (id, cid) => deleteComment(id, cid, commentPersist.remove(cid)),
-          resolve: (id) => resolveThread(id, commentPersist.threadState(threadOn(id), true)),
-          unresolve: (id) => unresolveThread(id, commentPersist.threadState(threadOn(id), false)),
-        },
     // Action panels (docs/specs/012-collaboration/action-panel.md) drive the SAME action machinery the popover
     // and the Assign Action dialog do. The viewer identity is the one the
     // popover uses: the account, else the guest participant.
@@ -102,14 +69,12 @@ export function useCanvasThreadProps(): Pick<
     onOpenCommentsForElement: (id, cell) => {
       setSelectedId(id);
       // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): its cell selected, so the
-      // popover sits beside it.
+      // popover sits beside it. The panel lists no other thread (commentRowsFromElements), and an element's own
+      // opens nothing.
       if (cell !== undefined) {
         focusSheetCell(id, cell);
-        return openComments(id, cell);
+        openComments(id, cell);
       }
-      // A Comment panel IS the thread (docs/specs/012-collaboration/assigned-actions.md §5): go to it
-      // rather than open a popover repeating it beside the card.
-      if (!jumpToCard(id, 'comment-pin')) openComments(id);
     },
     actionRows,
     onOpenActionForElement: (id) => {

@@ -31,7 +31,6 @@ function renderToolbars(multi: boolean) {
     onDuplicateSelected: vi.fn(),
     onToggleLockSelected: vi.fn(),
     onDeleteSelected: vi.fn(),
-    onOpenComments: vi.fn(),
     onBeginEdit: vi.fn(),
   } as unknown as CanvasProps;
   const store = createSelectionStore();
