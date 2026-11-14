@@ -11,6 +11,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { useSelectionEditing } from './useSelectionEditing';
+import { leaveByEscape, markPlacedEdit } from '@/lib/placed-edit';
 
 // A mind node's lines measure this tall (jsdom lays nothing out).
 const mindLines = { height: 0 };
@@ -89,6 +90,33 @@ function setup(
 
 describe('commitLabel', () => {
   const cylinder = createShape('cylinder', 0, 0);
+
+  // docs/specs/008-canvas/canvas-and-palette.md "Labels" (Work Tracker 864): Escape out of the editor a drop opened.
+  it('leaves the selection when Escape leaves the editor a drop opened with nothing typed', () => {
+    const s = setup(cylinder, false, cylinder.id);
+    markPlacedEdit(cylinder.id);
+    leaveByEscape(() => s.editing.commitLabel(cylinder.id, ''));
+    expect(s.setEditingId).toHaveBeenLastCalledWith(null);
+    expect(s.setSelectedId).toHaveBeenLastCalledWith(null);
+  });
+
+  it('keeps the selection when something was typed, or when a click away leaves the dropped editor', () => {
+    const typed = setup(cylinder, false, cylinder.id);
+    markPlacedEdit(cylinder.id);
+    leaveByEscape(() => typed.editing.commitLabel(cylinder.id, 'Queue'));
+    expect(typed.saved().label).toBe('Queue');
+    expect(typed.setSelectedId).not.toHaveBeenCalled();
+    const blurred = setup(cylinder, false, cylinder.id);
+    markPlacedEdit(cylinder.id);
+    blurred.editing.commitLabel(cylinder.id, '');
+    expect(blurred.setSelectedId).not.toHaveBeenCalled();
+  });
+
+  it('keeps the selection when Escape leaves an editor opened on an existing element', () => {
+    const s = setup(cylinder, false, cylinder.id);
+    leaveByEscape(() => s.editing.commitLabel(cylinder.id, ''));
+    expect(s.setSelectedId).not.toHaveBeenCalled();
+  });
 
   // docs/specs/006-document/document-structure.md "The first label names the document, in every mode".
   it.each(['Untitled Whiteboard', 'Untitled Illustration', 'Untitled Plan', 'Untitled Session'])(

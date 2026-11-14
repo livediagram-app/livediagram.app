@@ -35,6 +35,7 @@ import { listStyleOfText } from '@/components/rich-text/block-type';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 import { useRichTextSession } from './useRichTextSession';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import { leaveByEscape } from '@/lib/placed-edit';
 
 export function RichTextEditor({
   element,
@@ -179,9 +180,10 @@ export function RichTextEditor({
           // Escape keeps what was typed and leaves (docs/specs/008-canvas/canvas-and-palette.md "Labels"), as a click
           // away does: it is how people finish typing on a canvas, so a cancel lost the label they had just written.
           // Undo takes it back.
+          // Out of the editor a placement opened, with nothing typed, it leaves the selection too (lib/placed-edit).
           if (e.key === 'Escape') {
             e.preventDefault();
-            commitNow();
+            leaveByEscape(commitNow);
             return;
           }
           // Cmd/Ctrl+B/I/U drive the toolbar's run toggle, never the browser's execCommand.

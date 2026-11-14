@@ -312,3 +312,93 @@ for (const n of [62, 1200]) {
     expect(landed.sides).toBeCloseTo(landed.top, 2);
   });
 }
+
+// docs/specs/008-canvas/drag-preview.md "An element's isometric side faces ride with it": a peer's live resize of a
+// few boxes (no more than LIVE_SIDE_FACES_MAX, 50) grows their side faces frame by frame, not only on release.
+const widthsOf = (page: Page, id: string) =>
+  page.locator(CANVAS).evaluate((root, id) => {
+    const w = (el: HTMLElement | null) => parseFloat(el?.style.width || 'NaN');
+    return {
+      top: w(root.querySelector<HTMLElement>(`[data-element-id="${id}"]`)),
+      sides: w(root.querySelector<HTMLElement>(`[data-iso-column][data-ride-id="${id}"]`)),
+    };
+  }, id);
+
+test('a collaborator in Isometric sees side faces follow a live resize', async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  test.slow();
+  const { ownerPage, peerPage } = await sharedBoard(page, browser, baseURL!, gridOf(6));
+  await expect(box(peerPage, 'm2')).toBeAttached();
+  await peerPage.locator(CANVAS).click({ position: { x: 5, y: 5 } });
+  await peerPage.keyboard.press('i');
+  await expect(peerPage.locator(`${CANVAS} [data-iso-column]`).first()).toBeAttached();
+  const start = await widthsOf(peerPage, 'm2');
+  expect(start.sides).toBe(start.top);
+
+  await ownerPage.keyboard.press('v');
+  const r = (await box(ownerPage, 'm2').boundingBox())!;
+  await ownerPage.mouse.click(r.x + r.width * 0.35, r.y + r.height * 0.35);
+  const grips = ownerPage.locator(`[data-grips-for="m2"] [data-canvas-handle]`);
+  await expect(grips.first()).toBeAttached();
+  // The bottom-right corner: the grip furthest along x + y.
+  const corner = await grips.evaluateAll((els) => {
+    const at = els.map((el) => el.getBoundingClientRect());
+    const best = at.reduce((a, b) => (b.x + b.y > a.x + a.y ? b : a));
+    return { x: best.x + best.width / 2, y: best.y + best.height / 2 };
+  });
+  await ownerPage.mouse.move(corner.x, corner.y);
+  await ownerPage.mouse.down();
+  for (let i = 1; i <= 12; i++) await ownerPage.mouse.move(corner.x + i * 6, corner.y + i * 3);
+
+  // Mid-gesture, the owner holding still: the peer's top and side faces have both grown, and match.
+  await expect
+    .poll(async () => (await widthsOf(peerPage, 'm2')).top)
+    .toBeGreaterThan(start.top + 20);
+  await expect
+    .poll(async () => {
+      const w = await widthsOf(peerPage, 'm2');
+      return w.sides - w.top;
+    })
+    .toBeCloseTo(0, 2);
+  if (SHOTS) await peerPage.screenshot({ path: `${SHOTS}/drag-live-peer-isometric-resize.png` });
+  await ownerPage.mouse.up();
+  await expect
+    .poll(async () => {
+      const w = await widthsOf(peerPage, 'm2');
+      return w.sides - w.top;
+    })
+    .toBeCloseTo(0, 2);
+});
+
+// A depth layer that mounts mid-gesture (the collaborator switches to Isometric while the owner holds a drag) draws
+// the side faces at the live place as it mounts, not a second later when the held drag's preview is sent again.
+test('a collaborator switching to Isometric mid-drag sees side faces at the live place at once', async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  test.slow();
+  const { ownerPage, peerPage } = await sharedBoard(page, browser, baseURL!, gridOf(12));
+  await expect(box(peerPage, 'm2')).toBeAttached();
+  const before = await leftOf(peerPage, 'm2');
+
+  await ownerPage.keyboard.press('v');
+  const r = (await box(ownerPage, 'm2').boundingBox())!;
+  await ownerPage.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
+  await ownerPage.mouse.down();
+  for (let i = 1; i <= 10; i++)
+    await ownerPage.mouse.move(r.x + r.width / 2 + i * 10, r.y + r.height / 2);
+  await expect.poll(() => leftOf(peerPage, 'm2')).toBeGreaterThan(before + 20);
+
+  await peerPage.locator(CANVAS).click({ position: { x: 5, y: 5 } });
+  await peerPage.keyboard.press('i');
+  await expect(peerPage.locator(`${CANVAS} [data-iso-column]`).first()).toBeAttached();
+  // Read at once, well inside the second before the held drag's preview comes again.
+  const now = await topAndSides(peerPage, 'm2');
+  expect(now.top).toBeGreaterThan(before + 20);
+  expect(now.sides).toBeCloseTo(now.top, 2);
+  await ownerPage.mouse.up();
+});

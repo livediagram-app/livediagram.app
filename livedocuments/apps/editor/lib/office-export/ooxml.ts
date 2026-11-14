@@ -26,6 +26,7 @@ export const REL = {
   styles: `${RT}/styles`,
   numbering: `${RT}/numbering`,
   settings: `${RT}/settings`,
+  fontTable: `${RT}/fontTable`,
   footer: `${RT}/footer`,
   header: `${RT}/header`,
   footnotes: `${RT}/footnotes`,

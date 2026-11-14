@@ -6,11 +6,12 @@
 // their last render. Outside a provider the zoom is 1.
 //
 // Two lighter ways to follow the zoom exist for the parts a large board carries by the thousand (a vote dot on
-// every note): `useCanvasZoomSelector` re-renders only when what it derives from the zoom changes, and
-// `ZoomFollowing` keeps a counter-scale without rendering at all, and without touching its element on each step: it
-// rides with the board while the zoom moves and settles to its size on screen when the zoom stops. A vote open on
-// 2,000 notes cost about 70 ms more per zoom frame in Chromium while each dot rendered and re-scaled on every step
-// (Work Tracker 778).
+// every note): `useSettledZoomSelector` re-renders only when what it derives from the zoom changes, and asks only once
+// the zoom stops, and `ZoomFollowing` keeps a counter-scale without rendering at all, and without touching its element
+// on each step: it rides with the board while the zoom moves and settles to its size on screen when the zoom stops. A
+// vote open on 2,000 notes cost about 70 ms more per zoom frame in Chromium while each dot rendered and re-scaled on
+// every step (Work Tracker 778), and asking its 4,000 selectors on each step was most of what remained (Work Tracker
+// 885). `useCanvasZoomSelector` asks on every step, for the few parts that change shape mid-zoom.
 
 import {
   createContext,
@@ -93,6 +94,32 @@ export function useCanvasZoomSelector<T extends string | number | boolean | null
       store?.listeners.add(onChange);
       return () => {
         store?.listeners.delete(onChange);
+      };
+    },
+    [store],
+  );
+  return useSyncExternalStore(
+    subscribe,
+    () => select(store?.zoom ?? 1),
+    () => select(1),
+  );
+}
+
+/**
+ * Like `useCanvasZoomSelector`, but asked only once the zoom has stood still for ZOOM_SETTLE_MS, never on a zoom
+ * step: for the parts a board carries by the thousand, which ride with the board while the zoom moves
+ * (`ZoomFollowing`) and so change shape when they take their size on screen, not mid-pinch. A zoom step then walks
+ * none of them (a vote open on 2,000 notes asked 4,000 selectors on every step; Work Tracker 885).
+ */
+export function useSettledZoomSelector<T extends string | number | boolean | null>(
+  select: (zoom: number) => T,
+): T {
+  const store = useContext(ZoomStoreContext);
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      store?.settled.add(onChange);
+      return () => {
+        store?.settled.delete(onChange);
       };
     },
     [store],

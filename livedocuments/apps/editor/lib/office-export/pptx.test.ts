@@ -135,6 +135,8 @@ describe('PowerPoint export', () => {
     expect(shape.body!.paragraphs[0]!.align).toBe('l');
     expect(shape.body!.anchor).toBe('t');
 
+    // The face carries its pitch and family, so an app without Poppins picks a sans (office-export.md "Fonts are named").
+    expect(new TextDecoder().decode(writePptx(built))).toContain('pitchFamily="34"');
     const read = await readPptx(await openOfficePackage(writePptx(built), 'powerpoint'));
     const item = read.slides[0]!.items[0]!;
     expect(item).toMatchObject({
