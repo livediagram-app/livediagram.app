@@ -50,6 +50,8 @@ describe('a side panel’s place', () => {
     expect(placed.top).toBe(300 - 12 - 4);
     // And the flyout's own top, where a phone's panel starts.
     expect(placed.flyoutTop).toBe(70 - 12);
+    // And its height, the least a phone's panel is, so none of the flyout's rows show below it.
+    expect(placed.flyoutHeight).toBe(50);
   });
 
   it('opens a left-column tile to the flyout’s left', () => {

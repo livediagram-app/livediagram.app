@@ -13,6 +13,7 @@ import {
   TrashIcon,
 } from '@livehuddle/ui';
 import {
+  lucideArrowLeftRight,
   lucideArrowRight,
   lucideBaseline,
   lucideBringToFront,
@@ -136,6 +137,9 @@ export function WallsMenuGlyph() {
     </Glyph>
   );
 }
+// The piece menu's "Type" section (docs/specs/009-elements/office.md "A piece's type"): two arrows passing, a piece
+// swapped for another of its kind in place.
+export const TypeMenuGlyph = lucideGlyph(lucideArrowLeftRight, MENU_ICON_PX);
 // The "Style" flyout row (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, distinct from
 // the Colours child's palette and the Presets child's wand.
 export const StyleMenuGlyph = lucideGlyph(lucidePaintbrush, MENU_ICON_PX);

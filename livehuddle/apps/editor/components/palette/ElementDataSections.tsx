@@ -13,7 +13,7 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { hasBuiltInDoorway } from '@livehuddle/document';
+import { changesType, hasBuiltInDoorway } from '@livehuddle/document';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
@@ -24,6 +24,7 @@ import { receptionistPad } from '@/lib/receptionist/receptionist-day';
 import { JukeboxMenuSection, WorldClockMenuSection } from '@/components/palette/SocialMenuSections';
 import { ScreenMenuSection } from '@/components/palette/ScreenMenuSection';
 import { ArcadeMenuSection } from '@/components/palette/ArcadeMenuSection';
+import { PieceTypeMenuSection } from '@/components/palette/PieceTypeMenuSection';
 import {
   // The office pieces' settings: a chair's facing and a room's doorway.
   ChairMenuSection,
@@ -55,12 +56,15 @@ export function ElementDataSections({
   flyoutProps,
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
+  // A Door's, Rug's, Corridor's or Meeting Table's type (docs/specs/009-elements/office.md "A piece's type").
+  const retypes = !!shapeTarget && changesType(shapeTarget.shape) && !!props.onSetPieceType;
   // The Tools flyout (docs/specs/008-canvas/canvas-and-palette.md): the kind-specific controls fold behind one
   // "Tools" row, the same side-flyout pattern as Style and Text, so a piece's menu doesn't grow a band of bespoke
   // rows. Animation stays top-level (every boxed element has it).
   const showTools =
     isPortal ||
     isChair ||
+    retypes ||
     (!!shapeTarget && hasBuiltInDoorway(shapeTarget)) ||
     // Every room's Walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls").
     shapeTarget?.shape === 'room' ||
@@ -74,6 +78,14 @@ export function ElementDataSections({
     <>
       {showTools ? (
         <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
+          {/* First, as the piece's biggest choice: which of its kind it is. */}
+          {retypes && shapeTarget ? (
+            <PieceTypeMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetType={props.onSetPieceType!}
+            />
+          ) : null}
           {/* Only an older room keeps a doorway of its own (docs/specs/009-elements/office.md "Older rooms keep their
           built-in doorway"): a new Room's and a custom room's ways in are Door pieces. */}
           {shapeTarget && hasBuiltInDoorway(shapeTarget) ? (

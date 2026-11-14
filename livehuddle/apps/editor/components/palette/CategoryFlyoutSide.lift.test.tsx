@@ -101,7 +101,7 @@ describe('CategoryFlyoutSide', () => {
     expect(panel.style.top).toBe('238px');
   });
 
-  it('on a phone covers the whole flyout from its top, and hides at once while a tile is dragged out', () => {
+  it('on a phone covers the whole flyout, top to bottom, and hides at once while a tile is dragged out', () => {
     const def = {
       id: 'tools:rug',
       label: 'Add Rug',
@@ -121,10 +121,15 @@ describe('CategoryFlyoutSide', () => {
       },
     };
     const { container, rerender } = render(
-      <CategoryFlyoutSide side={{ def, top: 300, right: 0, flyoutTop: 60 }} {...props} />,
+      <CategoryFlyoutSide
+        side={{ def, top: 300, right: 0, flyoutTop: 60, flyoutHeight: 520 }}
+        {...props}
+      />,
     );
     const panel = container.querySelector<HTMLElement>('[data-category-flyout-side]')!;
     expect(panel.style.top).toBe('60px');
+    // At least as tall as the flyout (Work Tracker 628): a short panel never leaves its bottom rows showing below.
+    expect(panel.style.minHeight).toBe('520px');
     expect(panel.className).not.toContain('opacity-0');
     rerender(
       <CategoryFlyoutSide

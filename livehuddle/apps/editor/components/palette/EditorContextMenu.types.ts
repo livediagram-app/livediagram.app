@@ -122,6 +122,9 @@ export type EditorContextMenuProps = {
   onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;
   // And its walls (docs/specs/009-elements/office.md "Glass walls"): Solid or Glass.
   onSetRoomWalls: (walls: import('@livehuddle/document').RoomWalls) => void;
+  // A Door's, Rug's, Corridor's or Meeting Table's type, changed in place (docs/specs/009-elements/office.md "A piece's
+  // type"): every selected piece of `kind` becomes `type`.
+  onSetPieceType?: (kind: string, type: string) => void;
   // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md): Who Can Speak and Show Cameras.
   onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
   // The Receptionist on the tab's first Avatar Pad (docs/specs/008-canvas/receptionist.md "Asking him to leave").

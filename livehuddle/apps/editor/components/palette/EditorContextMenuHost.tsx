@@ -78,6 +78,7 @@ export function EditorContextMenuHost() {
     setChairFacingSelected,
     setRoomDoorSelected,
     setRoomWallsSelected,
+    setPieceTypeSelected,
     setStageSelected,
     setPadReceptionistSelected,
     setScreenUrlSelected,
@@ -203,6 +204,7 @@ export function EditorContextMenuHost() {
       onSetChairFacing={setChairFacingSelected}
       onSetRoomDoor={setRoomDoorSelected}
       onSetRoomWalls={setRoomWallsSelected}
+      onSetPieceType={setPieceTypeSelected}
       onSetStage={setStageSelected}
       onSetPadReceptionist={setPadReceptionistSelected}
       onSetScreenUrl={setScreenUrlSelected}

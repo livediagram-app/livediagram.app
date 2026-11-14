@@ -228,6 +228,17 @@ export function MeetingTableIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// The Long Table (docs/specs/009-elements/office.md "Long Table"): the Meeting Table's glyph drawn long, four chairs a
+// side and one at each end, so the two read as a pair side by side in Seats.
+export function LongTableIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="3.5" y="9.5" width="17" height="5" rx="1.5" />
+      <path d="M5.5 6.5h2M9.2 6.5h2M12.8 6.5h2M16.5 6.5h2M5.5 17.5h2M9.2 17.5h2M12.8 17.5h2M16.5 17.5h2M1.25 10.75v2.5M22.75 10.75v2.5" />
+    </Glyph>
+  );
+}
+
 export function PlantIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>

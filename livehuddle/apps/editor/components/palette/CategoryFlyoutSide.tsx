@@ -19,8 +19,15 @@ export const SIDE_PX = 304;
 const SIDE_GAP_PX = 8;
 
 // `top` lines it up with its tile; `flyoutTop` is the flyout's own top, where a phone's panel starts so it covers the
-// whole flyout (none of its headings peeking out above).
-export type SideOpen = { def: PaletteTileDef; top: number; right: number; flyoutTop?: number };
+// whole flyout (none of its headings peeking out above), and `flyoutHeight` its height, the least a phone's panel is,
+// so a short panel (the Room's seven presets) never leaves the flyout's bottom rows showing below it (Work Tracker 628).
+export type SideOpen = {
+  def: PaletteTileDef;
+  top: number;
+  right: number;
+  flyoutTop?: number;
+  flyoutHeight?: number;
+};
 
 // How far clear of the canvas region's bottom (the tab bar below it) the panel keeps.
 const FLOOR_GAP_PX = 8;
@@ -68,7 +75,13 @@ export function sidePlacement(tile: HTMLElement, def: PaletteTileDef): SideOpen 
   else if (leftColumn) left = box.right + SIDE_GAP_PX;
   else left = box.left - SIDE_GAP_PX - SIDE_PX;
   const right = root.right - left - SIDE_PX;
-  return { def, top, right, flyoutTop: Math.max(0, flyout.top - root.top) };
+  return {
+    def,
+    top,
+    right,
+    flyoutTop: Math.max(0, flyout.top - root.top),
+    flyoutHeight: flyout.height,
+  };
 }
 
 export function CategoryFlyoutSide({
@@ -141,7 +154,7 @@ export function CategoryFlyoutSide({
       {...hoverHandlers}
       style={
         isMobile
-          ? { top: anchor - lift }
+          ? { top: anchor - lift, minHeight: side.flyoutHeight }
           : { ...uiUnscaleStyle(scale), top: side.top - lift, right: side.right }
       }
       className={`absolute ${isMobile ? 'inset-x-3' : 'w-[19rem]'} max-h-[calc(100dvh-10rem)] origin-top-left animate-dropdown-down ${seeThrough ? 'opacity-0' : 'transition-opacity duration-short'} overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/50`}

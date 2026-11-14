@@ -67,7 +67,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'seating',
     label: 'Seats',
     description:
-      'What people sit at: a chair, a desk, a sofa, a meeting table, a bean bag, a reading nook, a hot desk and a standing desk.',
+      'What people sit at: a chair, a desk, a sofa, a meeting table, a long table, a bean bag, a reading nook, a hot desk and a standing desk.',
     tagline: 'Somewhere to sit, alone or together.',
     icon: lucide(lucideArmchair),
   },

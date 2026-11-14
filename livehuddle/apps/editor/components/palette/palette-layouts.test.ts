@@ -97,6 +97,7 @@ describe('palette layouts', () => {
       'tools:desk',
       'tools:sofa',
       'tools:meeting-table',
+      'tools:long-table',
       'tools:bean-bag',
       'tools:reading-nook',
       'tools:hot-desk',
