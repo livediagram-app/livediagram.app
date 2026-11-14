@@ -22,10 +22,15 @@ import {
   CARD_MOVES_MAX,
   COLLAB_MAX_ACTIONS,
   COLLAB_MAX_THREADS,
+  COLLAB_PEOPLE_MAX,
+  COLLAB_TEXT_MAX,
+  INDEX_BODY_MAX_BYTES,
   IndexError,
   type AppEvent,
   type CardMove,
+  type CollabActionInput,
   type CollabPush,
+  type CollabThreadInput,
   type IndexAppClient,
   type ItemSummary,
 } from '@liveworkspace/index-client';
@@ -236,15 +241,94 @@ export function connectionLeftOf(key: string): ConnectionLeft | null {
 
 // ---------- The collab push ----------------------------------------------------------------------------------
 
-// A tab's threads and actions capped as the index caps one push: a tab past it keeps its newest.
-export function capCollabPush(push: CollabPush): CollabPush {
-  return {
-    ...push,
-    threads: [...push.threads].sort((a, b) => b.latestAt - a.latestAt).slice(0, COLLAB_MAX_THREADS),
-    actions: [...push.actions]
-      .sort((a, b) => b.updatedAt - a.updatedAt)
-      .slice(0, COLLAB_MAX_ACTIONS),
+// A tab's threads and actions as one push the index takes whole (one-explorer-contracts.md "What an item pushes"):
+// each row cut as the index cuts it (texts to COLLAB_TEXT_MAX; id lists to their first COLLAB_PEOPLE_MAX distinct
+// ids, past which it refuses the push), the newest COLLAB_MAX_THREADS threads and COLLAB_MAX_ACTIONS actions, then
+// threads and actions together, newest first, while the push's JSON fits `maxBytes` (the index's body limit). A push
+// replaces the tab's rows, so it cannot be split: one over the limit would be refused for good and park the key, and
+// the tab's Inbox would stop updating. The order is total (time, then ids), so the same tab always pushes the same rows.
+export function capCollabPush(
+  push: CollabPush,
+  maxBytes: number = INDEX_BODY_MAX_BYTES,
+): CollabPush {
+  const threads = push.threads
+    .map(cutThread)
+    .sort((a, b) => b.latestAt - a.latestAt || byText(a.elementId, b.elementId))
+    .slice(0, COLLAB_MAX_THREADS);
+  const actions = push.actions
+    .map(cutAction)
+    .sort(
+      (a, b) =>
+        b.updatedAt - a.updatedAt ||
+        byText(a.elementId, b.elementId) ||
+        byText(a.actionId, b.actionId),
+    )
+    .slice(0, COLLAB_MAX_ACTIONS);
+  // The push with no rows, then each row kept with the comma before it: the bytes the client's JSON.stringify sends.
+  const kept: CollabPush = { ...push, threads: [], actions: [] };
+  let used = jsonBytes(kept);
+  let t = 0;
+  let a = 0;
+  while (t < threads.length || a < actions.length) {
+    const thread = threads[t];
+    const action = actions[a];
+    const isThread =
+      thread !== undefined && (action === undefined || thread.latestAt >= action.updatedAt);
+    const row = isThread ? thread : action!;
+    const list: unknown[] = isThread ? kept.threads : kept.actions;
+    const cost = jsonBytes(row) + (list.length > 0 ? 1 : 0);
+    // The first row that does not fit ends the push: every row left out is older than every row kept.
+    if (used + cost > maxBytes) break;
+    used += cost;
+    list.push(row);
+    if (isThread) t++;
+    else a++;
+  }
+  return kept;
+}
+
+const byText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+const cutText = <T>(value: T): T =>
+  (typeof value === 'string' && value.length > COLLAB_TEXT_MAX
+    ? value.slice(0, COLLAB_TEXT_MAX)
+    : value) as T;
+
+// The index counts a list before it drops repeats, so a list is cut only once it is past the cap.
+const cutIds = <T>(ids: T): T =>
+  (Array.isArray(ids) && ids.length > COLLAB_PEOPLE_MAX
+    ? [...new Set(ids)].slice(0, COLLAB_PEOPLE_MAX)
+    : ids) as T;
+
+function cutThread(thread: CollabThreadInput): CollabThreadInput {
+  const out = {
+    ...thread,
+    latestText: cutText(thread.latestText),
+    participantIds: cutIds(thread.participantIds),
+    mentionedIds: cutIds(thread.mentionedIds),
   };
+  if (thread.agentIds !== undefined) out.agentIds = cutIds(thread.agentIds);
+  return out;
+}
+
+function cutAction(action: CollabActionInput): CollabActionInput {
+  return action.description === undefined
+    ? action
+    : { ...action, description: cutText(action.description) };
+}
+
+// A value's JSON as UTF-8 bytes, counted without encoding it. JSON.stringify escapes a lone surrogate, so every
+// surrogate left in its text is half of a pair: four bytes for the two.
+export function jsonBytes(value: unknown): number {
+  const text = JSON.stringify(value);
+  let bytes = text.length;
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code < 0x80) continue;
+    // 0x80 to 0x7ff take two bytes, the rest of the BMP three, each half of a surrogate pair two.
+    bytes += code < 0x800 || (code >= 0xd800 && code <= 0xdfff) ? 1 : 2;
+  }
+  return bytes;
 }
 
 // ---------- The drain ----------------------------------------------------------------------------------------
