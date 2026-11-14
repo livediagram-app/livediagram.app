@@ -30,6 +30,12 @@ decide becomes a question thread on the card.
   **Reviewed**; it also checks **Reviewed** and **Selected for Development** for work already on main, and moves
   delivered cards from any of the three to **Done**. The fields are Description, App, **Priority** (Low, Medium, High, Critical) and **Type**
   (Feature or Bug).
+- **Ideas** tab: **Idea** cards, which the ideation loop logs and the owner judges with their Reviewed field.
+  They share the Under Review column, so filter by type: this loop never reviews, moves or comments on an
+  Idea. An accepted Idea becomes a Work Item in Under Review and is reviewed like any other card. Until the
+  conversion copies fields, it arrives with its App and Solution on Idea-only fields (`f-apps`,
+  `f-solution`): set the Work Item's App from `f-apps`, and use the Solution when writing its Acceptance
+  Criteria.
 - **Comment threads** on each Work Item hold the questions and their answers. `list_threads` reads them and
   `change_threads` starts, replies to and resolves them. Each thread has an id, a title, a state (open or
   resolved) and its comments, each with `author`, `at` and `ai: true` when an agent wrote it.
@@ -158,16 +164,20 @@ For each card, in order:
 ### Labels
 
 Every Work Item you review gets the labels that describe it, when they're missing. Use the plan's own
-vocabulary: the labels already on its Work Items (`list_items` shows each card's `labels`), such as the product
-or area the work reaches. Label from where the work really lives in the code (step 3.2), not the App field.
+vocabulary: the labels already on its Work Items (`list_items` shows each card's `labels`) for the **area** the
+work reaches, such as `dashboards`, `automations`, `forms` or `explorer`. Label from where the work really lives
+in the code (step 3.2).
 
+- **Never use a product or app name as a label** (`liveworkspace`, `livediagram`, `liveplanner`, `livedocuments`,
+  `livedesign`, `livehuddle`, or a short form of one). The **App** field says which products a card reaches: set or
+  correct App instead, from where the work lives in the code.
 - Only add. Never remove or rename a label a person set, even one you think is wrong (say so in the report).
-  The labels this loop removes are its own `needs-owner` flag (see "Flag for the owner") and the rule's
-  `answered` (see step 1).
+  The labels this loop removes are its own `needs-owner` flag (see "Flag for the owner"), the rule's
+  `answered` (see step 1), and product or app names used as labels (fold them into App in the same `set`).
 - `set` replaces the whole list, so write the card's existing labels plus the new ones:
-  `{"op": "set", "item": "#12", "fields": {"labels": ["liveplanner", "dashboards"]}}`.
-- Add a label the plan doesn't use yet only when no existing one fits a product or area the card clearly
-  reaches, and keep it lowercase and short, like the others. Name new labels in the report.
+  `{"op": "set", "item": "#12", "fields": {"labels": ["dashboards", "automations"]}}`.
+- Add a label the plan doesn't use yet only when no existing one fits an area the card clearly reaches, and keep
+  it lowercase and short, like the others. Name new labels in the report.
 - Label cards in every state you review (New and Answered), including ones you move to Reviewed.
 
 ### Risk levels
@@ -256,9 +266,12 @@ Under Review, Reviewed or Selected for Development. Each pass checks those three
    against that file in one script. A `git log --grep` per card measured 0.55 s each, a minute for 120 cards.
    Keep `git log -S <symbol>` for the deep check of a single card.
 
-2. **Deep check, a rotating slice.** Also check, by reading the code, every New and Answered Under Review card
-   (step 3 already does this) and the Reviewed and Selected for Development cards whose number mod 8 equals
-   `(UTC hour / 3) mod 8`, so each card is read about once a day without the pass tracking state.
+2. **Deep check: all of Under Review, plus a rotating slice.** Also check, by reading the code, **every** Under
+   Review card on every pass (owner, 2026-11-14): New and Answered ones through step 3, and Waiting ones too, so a
+   card whose question was overtaken by a merged PR leaves the column. Send the Waiting cards to the Explore agents
+   with the others, asking only whether main delivers each one. For Reviewed and Selected for Development, check
+   the cards whose number mod 8 equals `(UTC hour / 3) mod 8`, so each card is read about once a day without the
+   pass tracking state.
 3. **Judge each candidate against its Acceptance Criteria** (or its description when it has none). Read the
    code at `origin/main`. Don't trust a commit message alone.
    - **Fully delivered:** every item is met on main. Move the card to **Done**, set its **Pull Request**

@@ -471,13 +471,25 @@ as FAILED.
   "Simple follow-ups go in this PR" covers goes back to the same agent with SendMessage, to build on the open
   PR, before anything is filed.
 - **File the follow-ups** (on DONE and FAILED): the owner never reads the chat or this loop's report, so a
-  follow-up left there is lost. Turn every item on the agent's Follow-ups list, and anything else you noticed
-  that needs doing later, into its own **new Work Item in Under Review**, in one `change_items` batch:
-  `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
+  follow-up left there is lost. Sort every item on the agent's Follow-ups list, and anything else you noticed
+  that needs doing later, into **must-do** or **optional**, then file them all in one `change_items` batch.
+  Check the board first and skip one an existing card (Work Item or Idea) already covers.
+  - **Must-do** becomes a **new Work Item in Under Review**: a bug, a risk the PR leaves open, a missing test or
+    help article, a deferred part of the card's own Acceptance Criteria, anything that leaves the product wrong
+    or worse if nobody does it.
+    `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
 "Bug", "App": [...], "description": "<the Problem>", "Acceptance Criteria": [{"text": "...", "done": false}], "Risks":
 "- ...", "Risk": "Low", "Related Work Item": "#12"}}`. Plain Title Case titles. Every card fills all four of
-  description (the Problem), Acceptance Criteria (one checklist item per thing to do and per check that proves it), Risks and Risk; see "Risk levels" in the review-loop skill. Check the board first and
-  skip one an existing card already covers.
+    description (the Problem), Acceptance Criteria (one checklist item per thing to do and per check that proves it), Risks and Risk; see "Risk levels" in the review-loop skill.
+  - **Optional** becomes a **new Idea in Under Review**, for the owner to accept or reject: a nice-to-have, a
+    polish pass, a way to take the feature further, anything the product is fine without. Follow the ideation-loop
+    skill's "Add the cards" fields, with Source `PR History`, and name the card and PR it came from in the
+    description as "card N" and the PR link (never "Work Tracker N", which links the PR to it):
+    `{"op": "add", "type": "Idea", "status": "Under Review", "title": "...", "fields": {"description": "<the
+problem, then: Came up building card 12 in <PR url>>", "f-solution": "...", "f-apps": [...], "f-kind": "Polish", "Consistency", "Rework",
+"Extend" or "New Feature", "f-source": "PR History", "f-effort": "Small", "priority": "low"}}`. Never set
+    Reviewed or Reason.
+  - Unsure which? A follow-up is optional unless you can say what goes wrong without it.
 - **Never file an owner-only step as a Work Item** (no "Owner: ..." cards). It belongs on the PR's Owner
   checklist, with `not-ready` if it must happen before merging. If the agent put one on its Follow-ups list,
   add it to the PR's checklist yourself (`gh pr edit`) and set the label when needed.
@@ -516,8 +528,8 @@ If the MCP refuses a change, report it and carry on with the other cards.
 
 - On the board, only ever do these: move Work Items from Selected for Development to Under Review or In
   Progress, from In Progress to Implemented or Development Failure, set their Pull Request link, start question threads on those cards, reply in the loop's own threads and resolve
-  them once their answers are built, take a Large card's next part from In Progress, and add follow-up Work
-  Items to Under Review (step 4). Never
+  them once their answers are built, take a Large card's next part from In Progress, and add follow-up Work Items and Ideas
+  to Under Review (step 4). Never
   edit titles, descriptions or other fields, never add Question cards, never resolve, edit or
   delete a thread or comment a person wrote, and never touch cards in any other column, except the step-4 sweep's
   one-line reply and resolve on a loop's own threads.
@@ -543,4 +555,4 @@ End each pass with a short table, plus one line on anything that went wrong:
 After the table, list what needs the owner's attention first, one line each: high-risk PRs (`not-ready`), PRs
 waiting on Owner steps (with the steps),
 decisions an agent took that a person might want to change, stale In Progress cards with no PR, and the
-follow-up Work Items this pass added (number and title).
+follow-up Work Items and Ideas this pass added (number and title).
