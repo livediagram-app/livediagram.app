@@ -65,7 +65,7 @@ One `list_items` call on the plan, no filters. Its output is large: save it and 
 From it:
 
 - The **Idea** type's fields, by id from `types[].custom`. Today: `description` (built in), `priority` (built
-  in, carries over on conversion), Solution `f-solution`, App `f-apps` and Reviewed `f-reviewed`. If the type
+  in, carries over on conversion), Solution `f-solution`, App `f-apps`, Source `f-source`, Effort `f-effort` and Reviewed `f-reviewed`. If the type
   has changed, follow what it says now and note it in the report.
 - Every card's title and description, of every type and in every column, to check for duplicates.
 - The owner's verdicts: Ideas in **Cancelled** with Reviewed `Rejected`, and cards that were Ideas and are now
@@ -116,6 +116,8 @@ For each idea that makes the cut, check the board once more for a duplicate (ste
     "description": "...",
     "f-solution": "...",
     "f-apps": ["livediagram"],
+    "f-source": "Competitor",
+    "f-effort": "Medium",
     "priority": "medium"
   }
 }
@@ -127,9 +129,13 @@ For each idea that makes the cut, check the board once more for a duplicate (ste
   link or path: the competitors that ship it, the telemetry numbers, the Community post, the spec or file on main
   that shows the gap. Three to eight lines.
 - **Solution** (`f-solution`): the proposed shape in a few lines: what the user sees, where it lands in the code
-  (packages and files), whether it's a platform capability, the main risk, and a rough size (Small: a day; Medium: a
-  few days; Large: needs splitting).
+  (packages and files), whether it's a platform capability and the main risk.
 - **App** (`f-apps`): every product it touches; `liveworkspace` for platform work.
+- **Source** (`f-source`): where the strongest evidence came from: `Code Gap`, `Competitor`, `Telemetry` or
+  `Feedback` (Community posts, help workarounds). One value, even when several sources agree; the description
+  lists them all. The Lessons track which sources the owner accepts most.
+- **Effort** (`f-effort`): a rough size from reading the code it would touch: `Small` (about a day), `Medium` (a
+  few days) or `Large` (needs splitting into parts).
 - **Priority** (built-in `priority`, written lowercase: `low`, `medium`, `high`): calibrated, not inflated.
   `high` only for a clear, evidenced gap that costs users today; `medium` for a solid improvement; `low` for nice
   to have. `urgent` (shown as Critical) is never right for an idea.
@@ -137,8 +143,8 @@ For each idea that makes the cut, check the board once more for a duplicate (ste
 - No comment threads on Idea cards. If an idea needs a question answered first, it isn't ready: keep it in
   Candidates.
 
-The rule converts the card's type but doesn't copy its fields (the App and Solution land on fields a Work Item
-doesn't show). Until that is fixed in the automation code, write the description so it stands alone: the review
+The rule converts the card's type but doesn't copy its fields (App, Solution, Source and Effort land on fields a Work
+Item doesn't show; Work Tracker 837). Until that is fixed in the automation code, write the description so it stands alone: the review
 loop reads it as the Work Item's Problem.
 
 ## 4. Wrap up
