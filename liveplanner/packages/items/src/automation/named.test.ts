@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { namedRuleBody, ruleWithTabIds, type RuleNames } from './named';
-import { ALI, BUG, NOTE, OUTLINE, SAM } from './test-fixtures';
+import { namedRuleBody, ruleWithRefs, ruleWithTabIds, type RuleNames } from './named';
+import { ruleNeeds } from './attention';
+import { ALI, BUG, NOTE, OUTLINE, SAM, ruleBody } from './test-fixtures';
 
 // docs/specs/026-plan/automations.md "Agents and the CLI", "Describe a Rule": names as the board shows them become ids.
 // The adapter's own cases are agent-verbs' rule-names.test.ts; these walk every part items reads.
@@ -131,6 +132,79 @@ describe('namedRuleBody', () => {
   it('answers anything but an object as it came', () => {
     expect(namedRuleBody('x', NAMES)).toBe('x');
     expect(namedRuleBody({ trigger: 'x', steps: 3 }, NAMES)).toEqual({ trigger: 'x', steps: 3 });
+  });
+});
+
+// docs/specs/026-plan/automations.md "Agents and the CLI": every part that takes a person names one by id or by the
+// name list_rules lists; a name nobody has, or two people share, is kept as written (the rule needs attention).
+describe('namedRuleBody, people', () => {
+  // Each part that takes a person, holding `p`.
+  const body = (p: string) => ({
+    trigger: { kind: 'mentioned', people: [p] },
+    conditions: [{ kind: 'who', who: [{ person: p }] }],
+    steps: [
+      { kind: 'mention', to: { person: p }, text: 'Look' },
+      { kind: 'email', to: { person: p }, subject: 's', body: 'b' },
+      { kind: 'assign', to: { person: p } },
+      { kind: 'assign', to: { rotate: [p, 'p-ali'] } },
+      { kind: 'set_field', field: 'assignee', value: { text: p } },
+      { kind: 'set_field', field: 'Owner', value: { text: p } },
+      {
+        kind: 'if',
+        conditions: [{ kind: 'who', who: [{ person: p }] }],
+        then: [{ kind: 'mention', to: { person: p }, text: 'Look' }],
+        else: [],
+      },
+    ],
+  });
+  const named = (p: string) => {
+    const out = body(p);
+    out.steps[5] = { kind: 'set_field', field: 'f-owner', value: { text: p } };
+    return out;
+  };
+
+  it.each([
+    ['their name', 'Sam Lee'],
+    ['their name, case and spacing aside', '  sam   LEE '],
+    ['their id', 'p-sam'],
+  ])('names a person by %s in every part that takes one', (_how, ref) => {
+    expect(namedRuleBody(body(ref), NAMES)).toEqual(named('p-sam'));
+  });
+
+  it('keeps a name nobody has as written, so the rule needs attention', () => {
+    expect(namedRuleBody(body('Thomas Gone'), NAMES)).toEqual(named('Thomas Gone'));
+  });
+
+  it('flags a name kept as written as a person gone, and nothing once it names someone', () => {
+    const rule = (p: string) =>
+      namedRuleBody(
+        ruleBody({ steps: [{ kind: 'mention', to: { person: p }, text: 'Look' }] }),
+        NAMES,
+      );
+    expect(ruleNeeds(rule('Thomas Gone'), OUTLINE)).toEqual(['Person Thomas Gone is gone']);
+    expect(ruleNeeds(rule('Sam Lee'), OUTLINE)).toEqual([]);
+  });
+
+  it('never guesses between two people of one name', () => {
+    const twins = { ...NAMES, people: [SAM, { id: 'p-sam2', name: 'Sam Lee' }, ALI] };
+    expect(namedRuleBody(body('Sam Lee'), twins)).toEqual(named('Sam Lee'));
+    // Each still named by id.
+    expect(namedRuleBody(body('p-sam2'), twins)).toEqual(named('p-sam2'));
+  });
+
+  it('leaves a Set Field’s value filled in, and a field that holds no person', () => {
+    const steps = [
+      { kind: 'set_field', field: 'assignee', value: { text: '{{person}}' } },
+      { kind: 'set_field', field: 'title', value: { text: 'Sam Lee' } },
+      { kind: 'set_field', field: 'f-owner', value: { from: 'assignee' } },
+      { kind: 'set_field', field: 'f-owner', value: { text: 7 } },
+    ];
+    expect(namedRuleBody({ steps }, NAMES).steps).toEqual(steps);
+  });
+
+  it('names no Set Field people through ruleWithRefs unless asked', () => {
+    const steps = [{ kind: 'set_field', field: 'assignee', value: { text: 'Sam Lee' } }];
+    expect(ruleWithRefs({ steps }, { person: () => 'x' }).steps).toEqual(steps);
   });
 });
 

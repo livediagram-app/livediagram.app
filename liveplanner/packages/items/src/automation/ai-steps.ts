@@ -55,6 +55,8 @@ export const AI_FAILED = "The AI couldn't answer: try again later";
 export const AI_SLOW = 'The AI took too long to answer';
 export const AI_UNREADABLE = "The AI's reply couldn't be read";
 export const AI_CAPPED = `This plan has used its ${AUTOMATION_AI_PER_DAY} AI steps today`;
+// A later AI step once one has failed: the run stopped there (spec "How a step runs").
+export const AI_NOT_ASKED = 'Not asked: a step before it failed';
 export const AI_EMPTY = "The AI's summary came out empty";
 export const AI_TYPE_UNKNOWN = "The AI picked a card type the plan doesn't have";
 export const AI_PRIORITY_UNKNOWN = 'The AI picked a priority outside Urgent, High, Medium and Low';

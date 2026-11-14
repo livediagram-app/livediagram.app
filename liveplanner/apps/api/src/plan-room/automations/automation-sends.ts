@@ -18,6 +18,8 @@ export type AutomationSendsClient = Pick<IndexAppClient, 'pushAutomationSends'>;
 
 export const SENDS_UNREACHABLE = "Couldn't reach webhooks: try again";
 export const SEND_EMPTY = 'The message came out empty';
+// A message after an AI step that failed: the run stopped there (spec "How a step runs").
+export const SEND_NOT_SENT = 'Not sent: a step before it failed';
 
 // The client the room sends through: the index's, or null without its settings (a local api with no index).
 export function sendsClient(env: PlanEnv): AutomationSendsClient | null {
@@ -32,6 +34,22 @@ export type SendsOutcome = {
 };
 
 const where = (s: PlannedSend) => s.name ?? 'the webhook';
+
+/** The messages to send once the run's AI steps are done: every one, or with `failedStep` (the AI step that failed)
+ *  only those of the steps before it, each later one's line in `lines` settled as not sent. */
+export function heldSends(
+  sends: readonly PlannedSend[],
+  failedStep: number | undefined,
+  lines: AutomationStepLine[],
+  offset: number,
+): readonly PlannedSend[] {
+  if (failedStep === undefined) return sends;
+  return sends.filter((s) => {
+    if (s.step < failedStep) return true;
+    lines[offset + s.line] = { kind: 'action', ok: false, text: SEND_NOT_SENT };
+    return false;
+  });
+}
 
 // The run's messages: sent (`dry`: only said), each step's line in `lines` (at `offset + s.line`) settled.
 export async function sendMessages(

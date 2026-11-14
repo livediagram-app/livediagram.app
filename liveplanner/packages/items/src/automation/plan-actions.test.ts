@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { planActions, type PlannedRun } from './plan-actions';
+import { planActions, setFieldLacked, type PlannedRun } from './plan-actions';
 import { automationPerson, type AutomationAction, type AutomationStep } from './types';
 import { ALI, OUTLINE, SAM, bug, ctxFor } from './test-fixtures';
 import type { Item } from '../item';
+import { item } from '../test-items';
 
 // docs/specs/026-plan/automations.md "Actions"; blueprint "The run" (one patch per card, Already so).
 const run = (steps: AutomationStep[], card: Item = bug(), extra = {}) =>
@@ -476,5 +477,65 @@ describe('fields no write changes', () => {
     [{ kind: 'clear_field', field: 'f-votes' }, 'Votes is never cleared by a rule'],
   ] as [AutomationAction, string][])('fails %o rather than write it', (action, reason) => {
     expect(failed(planActions([action], ctxFor(bug(), { outline })))).toBe(reason);
+  });
+});
+
+// docs/specs/026-plan/automations.md "Actions": in a plan of several card types, a Set Field on a field only some of
+// them have skips that step on the others, writing nothing, and the run goes on (no failure, so no pause).
+describe('a Set Field the card’s type lacks', () => {
+  const note = (fields = {}) =>
+    item({ title: 'Read me', status: 'todo', ...fields }, { type: 'note' });
+  const stamp: AutomationStep[] = [
+    { kind: 'set_field', field: 'f-when', value: { date: { today: 0 } } },
+    { kind: 'set_field', field: 'due', value: { date: { today: 1 } } },
+    { kind: 'flag' },
+  ];
+
+  it('writes nothing on a type without it, says so, and carries on', () => {
+    const r = done(run(stamp, note()));
+    expect(r.patch).toEqual({ set: { flagged: true } });
+    expect(r.lines).toEqual([
+      { kind: 'action', ok: true, text: 'Skipped: a Note card has no When' },
+      { kind: 'action', ok: true, text: setFieldLacked('Note', 'Due Date') },
+      { kind: 'action', ok: true, text: 'Flag' },
+    ]);
+  });
+
+  it('still sets it on a type that has it, in the same plan', () => {
+    const r = done(run(stamp, bug()));
+    expect(r.patch.set).toEqual({ 'f-when': '2026-11-11', due: '2026-11-12', flagged: true });
+  });
+
+  it('skips it on a related card of a type without it, the branch done', () => {
+    const linked = note();
+    const r = done(
+      run(
+        [
+          {
+            kind: 'for',
+            related: { kind: 'linked', field: 'f-parent' },
+            conditions: [],
+            then: [{ kind: 'set_field', field: 'f-when', value: { date: { today: 0 } } }],
+          },
+        ],
+        bug({ 'f-parent': linked.id }),
+        { items: [linked] },
+      ),
+    );
+    expect(r.related.map((x) => [x.patch, x.failed])).toEqual([[{}, undefined]]);
+    expect(r.lines.at(-1)).toEqual({
+      kind: 'action',
+      ok: true,
+      text: `#${linked.key} Skipped: a Note card has no When`,
+    });
+  });
+
+  it('still fails a field gone from the whole plan, and clears a field the type lacks', () => {
+    const gone = run([{ kind: 'set_field', field: 'f-gone', value: { text: 'x' } }], note());
+    expect(failed(gone)).toBe('Field f-gone is gone');
+    const r = done(
+      run([{ kind: 'clear_field', field: 'f-when' }], note({ 'f-when': '2026-01-01' })),
+    );
+    expect(r.patch).toEqual({ clear: ['f-when'] });
   });
 });

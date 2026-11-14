@@ -111,6 +111,10 @@ function assign(a: Extract<AutomationAction, { kind: 'assign' }>, w: Walk) {
   return plan.line(`Assign ${person.name}`, plan.write('assignee', person));
 }
 
+/** A Set Field's line on a card whose type lacks the field: the step skipped, nothing written (spec "Actions"). */
+export const setFieldLacked = (type: string, field: string): string =>
+  `Skipped: a ${type} card has no ${field}`;
+
 function setField(a: Extract<AutomationAction, { kind: 'set_field' | 'clear_field' }>, w: Walk) {
   const { plan, ctx, type } = w;
   const def = fieldDefOf(ctx.outline, a.field, type);
@@ -119,6 +123,10 @@ function setField(a: Extract<AutomationAction, { kind: 'set_field' | 'clear_fiel
   if (!planHasField(ctx.outline, a.field)) failGone({ kind: 'field', id: a.field });
   if (a.kind === 'set_field' && 'from' in a.value && !planHasField(ctx.outline, a.value.from))
     failGone({ kind: 'field', id: a.value.from });
+  // Another type's field (a mixed plan): never written onto this card where nobody sees it, and no failure either,
+  // so a rule for every type never pauses on the types without it. The run goes on.
+  if (a.kind === 'set_field' && !typeHasField(type, a.field))
+    return plan.line(setFieldLacked(type.label, name));
   if (def?.kind === 'calculated' || def?.calculation) fail(`${name} is worked out, never set`);
   // Time Spent's entries, a Votes tally and a Comments field change without a write: a rule never writes them.
   if (def && changeNeverHeard(def))
