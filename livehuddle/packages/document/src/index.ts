@@ -212,6 +212,7 @@ export * from './retired-arrow';
 export * from './retired-placeholder';
 export * from './shape-variants';
 export * from './piece-variants';
+export * from './piece-type';
 export * from './door-art';
 export * from './window-art';
 export * from './glass-walls';
