@@ -39,17 +39,31 @@ export function DeferredAccountMenu({
   const [pressed, setPressed] = useState(false);
   const [focused, setFocused] = useState(false);
   const asked = useRef(false);
+  // A pointer held down on the stand-in, and the menu's code if it landed meanwhile. Swapped mid-press, the press
+  // would go down on the stand-in and come up on the menu's button, and a click on neither would open nothing.
+  const holding = useRef(false);
+  const landed = useRef<ComponentType<DeferredMenuProps> | null>(null);
   const want = useCallback(() => {
     if (asked.current) return;
     asked.current = true;
     load().then(
-      (module) => setMenu({ Menu: module.default }),
+      (module) => {
+        if (holding.current) landed.current = module.default;
+        else setMenu({ Menu: module.default });
+      },
       // Not fetched (offline, say): the next approach asks again.
       () => {
         asked.current = false;
       },
     );
   }, [load]);
+  // The press is over (its click, or a pointer that left or was cancelled): what landed meanwhile takes its place.
+  const release = () => {
+    holding.current = false;
+    const Menu = landed.current;
+    landed.current = null;
+    if (Menu) setMenu({ Menu });
+  };
 
   if (menu) return <menu.Menu openOnMount={pressed} focusOnMount={focused} />;
   return (
@@ -60,6 +74,18 @@ export function DeferredAccountMenu({
         aria-expanded={false}
         aria-label={`${GUEST_LABEL}, account menu`}
         onPointerEnter={want}
+        onPointerDown={() => {
+          holding.current = true;
+          want();
+        }}
+        // Up on the button, its click follows in the same task: released after it, so the click lands here first.
+        onPointerUp={() => setTimeout(release, 0)}
+        onPointerCancel={release}
+        onPointerLeave={(e) => {
+          // A mouse press dragged off the button is no click: it lands with nothing pressed. (A touch leaves only
+          // after it is lifted, before its click, so it waits for that.)
+          if (holding.current && e.pointerType !== 'touch') release();
+        }}
         onFocus={() => {
           setFocused(true);
           want();
@@ -68,6 +94,7 @@ export function DeferredAccountMenu({
         onClick={() => {
           setPressed(true);
           want();
+          release();
         }}
         className={ACCOUNT_TRIGGER_CLASS}
       >
