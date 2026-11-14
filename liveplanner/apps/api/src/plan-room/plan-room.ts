@@ -109,6 +109,8 @@ import { optOutAddress } from './automations/automation-addresses';
 import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './github/github-room';
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
+import { purgedAt } from './plan-room-purged';
+import { notFound } from '../responses';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -225,6 +227,8 @@ export class PlanRoom extends DurableObject<Env> {
   planId: string | null = null;
   schemaReady = false;
   planRowReady = false;
+  // When the plan was purged (plan-room-purged.ts): null when it is not, undefined until read.
+  purgedAt: number | null | undefined = undefined;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
   flushAt: number | null = null;
   // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's once a
@@ -333,6 +337,9 @@ export class PlanRoom extends DurableObject<Env> {
       // Before the schedules restore, so a plan put away asks for no wake.
       this.standing.restore(await state.storage.get(STANDING_KEY));
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
+      // A room with no plan schema learns whether it was purged before any door runs (plan-room-purged.ts); a plan
+      // with content reads nothing more.
+      await purgedAt(this);
       this.armAlarm();
     });
   }
@@ -373,6 +380,14 @@ export class PlanRoom extends DurableObject<Env> {
 
   communityPostTitle(planId: string, code: string): Promise<string | null> {
     return communityPostTitle(this, planId, code);
+  }
+
+  // Whether this object holds no plan: an id nothing has written, or one purged (plan-room-purged.ts). The doors
+  // that read answer it as missing or empty, and store nothing.
+  holdsNothing(): boolean {
+    if (typeof this.purgedAt === 'number') return true;
+    const sql = this.state.storage.sql;
+    return this.planId === null && !hasPlanSchema((q) => sql.exec(q));
   }
 
   // Whether this object's SQLite holds a plan schema: an id nothing has written answers no post.
@@ -525,8 +540,7 @@ export class PlanRoom extends DurableObject<Env> {
 
   // On the home: the threads of `ids` listing a card of `via`. A plan with nothing stored holds none.
   async threadsFor(planId: string, ids: string[], via: string): Promise<CardThread[]> {
-    const sql = this.state.storage.sql;
-    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return [];
+    if (this.holdsNothing()) return [];
     this.bindPlan(planId);
     return threadsForVia(this.requireEnv(), planId, ids, via);
   }
@@ -538,9 +552,7 @@ export class PlanRoom extends DurableObject<Env> {
     op: ThreadOp,
     via: string,
   ): Promise<ThreadWriteResult> {
-    const sql = this.state.storage.sql;
-    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
-      return { ok: false, error: 'thread_not_found' };
+    if (this.holdsNothing()) return { ok: false, error: 'thread_not_found' };
     this.bindPlan(planId);
     return writeThread(this.requireEnv(), planId, threadId, op, via, (p) =>
       this.state.waitUntil(p),
@@ -549,9 +561,7 @@ export class PlanRoom extends DurableObject<Env> {
 
   // Another plan's write on a thread on this plan's cards. A plan with nothing stored holds no link to any.
   async threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]> {
-    const sql = this.state.storage.sql;
-    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
-      return relay.upserts.map((t) => t.id);
+    if (this.holdsNothing()) return relay.upserts.map((t) => t.id);
     this.bindPlan(planId);
     return threadsRelayed(this.requireEnv(), planId, relay);
   }
@@ -620,18 +630,20 @@ export class PlanRoom extends DurableObject<Env> {
     if (request.headers.get('Upgrade') !== 'websocket') {
       return new Response('Expected WebSocket', { status: 426 });
     }
+    // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
+    const v = verifiedSessionOf(request);
+    if (v.projectId) {
+      this.bindPlan(v.projectId);
+      // A purged plan takes no session (plan-room-purged.ts): its link answers as missing.
+      if ((await purgedAt(this)) !== null) return notFound();
+      if (v.head) await this.takeHead(v.head);
+    }
     const pair = new WebSocketPair();
     // WebSocketPair is a 2-property record keyed `0`/`1`. The "client"
     // side is returned to the connecting peer; the "server" side is
     // owned by this Durable Object.
     const client = pair[0];
     const server = pair[1];
-    // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
-    const v = verifiedSessionOf(request);
-    if (v.projectId) {
-      this.bindPlan(v.projectId);
-      if (v.head) await this.takeHead(v.head);
-    }
     const tabShowsAll = await scopedTabShowsAll(this, v.projectId, v.tabScope);
     this.acceptSession(
       server,

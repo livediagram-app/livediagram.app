@@ -2,6 +2,7 @@
 // outbox, the drains to the index and to shared tabs' holders, the daily upkeep, the Community post's checks and
 // the purge. Each takes the room it acts for.
 import { leaveGithub } from './github/github-room';
+import { markPurged, refuseIfPurged } from './plan-room-purged';
 import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
@@ -67,10 +68,12 @@ export function restoreContentState(room: PlanRoom, maintenanceAt: number | unde
 // The schema on first use (plan-schema.ts), and the plan's row once its id is known, so the content's
 // foreign keys always find it. A row made here has no dates (0): a create or a copy sets them, and the
 // summary push never moves saved_at back.
+// A purged plan is never given one again (plan-room-purged.ts): every door that would store something refuses.
 export function ensureSchema(room: PlanRoom): void {
   if (room.schemaReady && (room.planRowReady || room.planId === null)) return;
   const sql = room.state.storage.sql;
   if (!room.schemaReady) {
+    refuseIfPurged(room);
     migratePlanSchema((q) => sql.exec(q));
     room.schemaReady = true;
   }
@@ -242,6 +245,8 @@ export async function checkCommunity(room: PlanRoom, now: number): Promise<void>
 // That includes the plan's content: its SQLite goes with everything else.
 export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   if (planId !== undefined) room.bindPlan(planId);
+  // Asked again (the index retries): it is dropped and marked afresh, so its doors may run on the way.
+  room.purgedAt = null;
   closeSockets(room, () => [PROJECT_TRASHED_CLOSE, 'project-purged']);
   room.opLog = [];
   await leaveShares(room);
@@ -256,6 +261,8 @@ export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   const sentImages = lastSentImages(room);
   await disarmRoomAlarm(room.state.storage);
   await room.state.storage.deleteAll();
+  // The one key kept, so a grant from before the purge can't start the plan again (plan-room-purged.ts).
+  await markPurged(room, Date.now());
   room.schemaReady = false;
   room.planRowReady = false;
   room.flushAt = null;

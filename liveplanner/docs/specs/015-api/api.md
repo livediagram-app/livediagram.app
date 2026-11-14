@@ -507,6 +507,24 @@ The api worker reaches the DO through its stub (`env.PLAN_ROOM.get(...).fetch(..
 - **`PUT /presence`**, **`DELETE /presence`**: an agent's presence entry with its expiry ([Agent presence](../024-agents/agent-presence.md#presence)).
 - **`GET /ledger?tab=<tabId>&epoch=<epoch>&since=<seq>`**: the tab's collaboration ledger (with `since`, only the entries changed after that seq or in the last day), or an empty one when `epoch` isn't the room's current epoch (the saver's cursor can't be interpreted then).
 - **Purging a room** (the `purge` RPC; `POST /purge` reaches the same code): the plan was deleted for good, so the room closes every socket (`PROJECT_TRASHED_CLOSE`, reason `project-purged`), waits for the ledger's queued writes, drops its alarm and deletes all of its storage (`deleteAll`): the plan's content with it, and the ledger with its comment and answer text, the order state, selections and agent entries. The index asks for it (`DELETE /api/internal/items/:id`) whenever a plan leaves its Trash for good, by hand, by its daily sweep or by account deletion, and retries a plan it could not reach.
+- **A purged room stays purged** (`PURGED_KEY`, `plan-room-purged.ts`): after `deleteAll` the room keeps one key, the
+  purge's time, and nothing else. An editor or a script can still hold a grant the index signed before the purge (a
+  grant lives ten minutes), and a plan with nothing stored would otherwise start afresh on its first open with a
+  grant, empty and `Untitled`, under the deleted id. So a request on a room holding no plan schema reads the key
+  first (a plan with content never does: the open path costs nothing more), and on a purged room:
+  - every request whose grant may have been signed before the purge answers `404 { error: "not_found" }`, as an id
+    that never existed does, whatever its level (Editor, Participant or Viewer), and writes nothing: no schema, no
+    plan row, no head. A grant's `iat` has whole seconds, so one from the purge's own second counts as before it,
+    except on a create; one with no `iat` counts as before;
+  - a socket is refused with the same 404 before its upgrade;
+  - no RPC door starts it either: a room with no plan schema reads the mark as it wakes, the doors that read answer
+    as for an id nothing has written (missing, empty, `false`), and anything that would make the schema again
+    (`ensureSchema`) throws `PlanPurgedError` instead, so nothing is stored under the deleted id;
+  - a grant the index signed after the purge's second, or a create's from that second on (it grants an id again only once it holds the item again,
+    as when Sync Project puts a plan taken offline back under its own id, [Offline Mode](../006-project/offline-mode.md#save-to-server-offline--cloud))
+    lifts the mark: the request runs as on any plan never started, and the key goes.
+
+  The editor answers that 404 with its not-found page, as for any missing link.
 
 ### Conflict model
 
