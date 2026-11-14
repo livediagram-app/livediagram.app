@@ -26,8 +26,12 @@ avatar at once (`setSessionColour`). `signOut` resolves false when the API refus
 `/explorer?item=<id>` ([one-explorer.md](../../004-index/one-explorer.md#opening-from-an-open-item)): `pending` while
 the person is unknown and the place is looked up (This Browser's list, else one `GET /items/:id` through
 `resolveItemView`), during which ExplorerShell shows the skeleton; then `router.replace` to the place, or, when the
-index can't answer, the address without `item`. `arrivedItem` is the id while the view shown is that place (whatever
-the lens), handed to the Explorer, whose list views bring it into their window and mark it.
+index can't answer, the address without `item`. From the answer until the address first shows the place, the hook
+hands back the place as `view`, and ExplorerShell renders the Explorer on it rather than on the address's view, so
+the Explorer draws without waiting for the router's move (its lists key on the view's path, so the move fetches
+nothing again); once the address has shown the place the hook hands back the address's view, wherever the person
+goes. `arrivedItem` is the id while the view shown is that place (whatever the lens), handed to the Explorer, whose
+list views bring it into their window and mark it.
 
 ### Signing in (`components/account/SignInFlow.tsx`, `lib/accounts.ts`)
 
