@@ -60,15 +60,15 @@ export function PlanNewerFieldScene() {
         Everything else on the card works as usual.
       </Label>
       {/* The notice at the foot of the screen. */}
-      <rect x={58} y={172} width={304} height={38} rx={10} className="fill-slate-800" />
-      <Label x={72} y={195} size={11} weight={600} className="fill-white">
+      <rect x={24} y={172} width={372} height={38} rx={10} className="fill-slate-800" />
+      <Label x={38} y={195} size={11} weight={600} className="fill-white">
         A new version of liveplanner is ready
       </Label>
-      <rect x={268} y={180} width={46} height={22} rx={6} className="fill-brand-600" />
+      <rect x={266} y={180} width={50} height={22} rx={6} className="fill-brand-600" />
       <Label x={291} y={195} size={10} weight={600} anchor="middle" className="fill-white">
         Reload
       </Label>
-      <Label x={338} y={195} size={10} anchor="middle" className="fill-slate-300">
+      <Label x={352} y={195} size={10} anchor="middle" className="fill-slate-300">
         Not now
       </Label>
     </Scene>

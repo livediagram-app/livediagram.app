@@ -136,14 +136,14 @@ export function PlanCardTabIconsScene() {
       <line x1={20} y1={164} x2={196} y2={164} className="stroke-slate-200" strokeWidth={1} />
       {/* Reset To Default, while the icon isn't the default. */}
       <path
-        d="M101 186a6 6 0 1 0 2-5M101 178v4h4"
+        d="M85 186a6 6 0 1 0 2-5M85 178v4h4"
         fill="none"
         className="stroke-slate-500"
         strokeWidth={1.4}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <Label x={112} y={190} size={11} weight={600} tone="body">
+      <Label x={102} y={190} size={11} weight={600} tone="body">
         Reset To Default
       </Label>
 
@@ -188,10 +188,10 @@ export function PlanCardTabIconsScene() {
         </g>
       ))}
       <Glyph id="clock" x={234} y={198} size={10} className="stroke-slate-400" />
-      <Label x={248} y={206} size={9} tone="muted">
-        Activity and Details wear theirs too
+      <Glyph id="checklist" x={248} y={198} size={10} className="stroke-slate-400" />
+      <Label x={264} y={206} size={9} tone="muted">
+        Activity and Details too
       </Label>
-      <Glyph id="checklist" x={388} y={198} size={10} className="stroke-slate-400" />
     </Scene>
   );
 }

@@ -77,10 +77,8 @@ async function syncSheetHeaders(
 ): Promise<void> {
   const sheet = fresh ? null : await sheetById(api, d.world.projectId, sheetId);
   const { changes, added } = headerChanges(d.form, sheet);
-  if (fresh) {
-    if (!changes.some((c) => c.op === 'freeze')) changes.push({ op: 'freeze', rows: 1 });
-    changes.push({ op: 'rename', title: fresh.title });
-  }
+  // A new sheet's plan already freezes its header row: it always lacks the # and Submitted headers.
+  if (fresh) changes.push({ op: 'rename', title: fresh.title });
   if (!changes.length) return;
   const done = await changeSheet(api, d.world.projectId, { sheet: sheetId, changes }, client);
   // The sheet engine answers a refusal rather than throwing: a miss all the same.
@@ -124,14 +122,13 @@ export function headerChanges(
   const changes: SheetChange[] = [];
   const added: string[] = [];
   const bold: string[] = [];
+  // Given no renamed wording, the plan writes only the headers the sheet lacks: each one text, new and bold.
   for (const cell of plan.cells) {
-    const header = cell.i && 's' in cell.i ? cell.i.s : '';
+    const header = (cell.i as { s: string }).s;
     const col = columnLetters(cols.indexOf(cell.c));
     changes.push({ op: 'set', at: `${col}${row}`, rows: [[`'${header}`]] });
-    if (cell.f?.b) {
-      added.push(header);
-      bold.push(col);
-    }
+    added.push(header);
+    bold.push(col);
   }
   if (bold.length) {
     const from = bold[0]!;
