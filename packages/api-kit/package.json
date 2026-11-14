@@ -27,6 +27,7 @@
     "./image-ref-index": "./src/image-ref-index.ts",
     "./image-refs": "./src/image-refs.ts",
     "./oauth": "./src/oauth.ts",
+    "./openapi-route": "./src/openapi-route.ts",
     "./openapi-types": "./src/openapi-types.ts",
     "./origin-check": "./src/origin-check.ts",
     "./public-address": "./src/public-address.ts",
