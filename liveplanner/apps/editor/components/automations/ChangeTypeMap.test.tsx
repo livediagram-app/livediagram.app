@@ -122,6 +122,16 @@ describe('Map Fields', () => {
     });
   });
 
+  it('keeps the target when the new source fits no free field, so attention can flag it', () => {
+    render(
+      <Panel
+        start={{ kind: 'set_type', type: 'work', map: [{ from: 'f-solution', to: 'f-criteria' }] }}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText('Mapping 1: from'), { target: { value: 'f-size' } });
+    expect(latest).toMatchObject({ map: [{ from: 'f-size', to: 'f-criteria' }] });
+  });
+
   it('adds nothing when no source can fill a field of the new type', () => {
     render(<Panel start={{ kind: 'set_type', type: 'idea' }} />);
     // A Work Item's Acceptance Criteria can fill an Idea's Solution, so one is offered; a lone Number field has none.
