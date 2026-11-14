@@ -132,8 +132,10 @@ function namesOf(rule: AutomationRuleBody, o: AutomationOutline): Need[] {
   const out: Need[] = [];
   if (t.kind === 'card_created' && t.status) out.push({ kind: 'column', id: t.status });
   if (t.kind === 'form_response' && t.formTab) out.push({ kind: 'form', id: t.formTab });
-  if (t.kind === 'card_moved')
+  if (t.kind === 'card_moved') {
+    for (const id of t.types ?? []) out.push({ kind: 'type', id });
     for (const id of [...(t.from ?? []), ...(t.to ?? [])]) out.push({ kind: 'column', id });
+  }
   if (t.kind === 'field_changed') for (const id of t.fields) out.push({ kind: 'field', id });
   if (t.kind === 'column_limit') out.push({ kind: 'column', id: t.status });
   if (t.kind === 'stuck') for (const id of t.statuses ?? []) out.push({ kind: 'column', id });

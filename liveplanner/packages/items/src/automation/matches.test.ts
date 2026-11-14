@@ -39,6 +39,7 @@ describe('eventOfWrite', () => {
     const card = bug();
     expect(eventOf(card, after(card, { status: 'done', priority: 'high' }))).toMatchObject({
       kind: 'moved',
+      type: 'bug',
       from: 'todo',
       to: 'done',
       fields: ['priority'],
@@ -154,6 +155,23 @@ describe('triggerMatches', () => {
     expect(
       triggerMatches({ kind: 'card_moved', from: [], to: [] }, ev({ kind: 'changed' }), 'r'),
     ).toBe(false);
+  });
+
+  // Card Moved's Card Types: only a card of a picked type; none picked (an old rule) hears every type.
+  it('hears a move only of a card of one of its card types', () => {
+    const t = { kind: 'card_moved' as const, types: ['bug', 'task'], to: ['done'] };
+    expect(triggerMatches(t, ev({ kind: 'moved', type: 'bug', to: 'done' }), 'r')).toBe(true);
+    expect(triggerMatches(t, ev({ kind: 'moved', type: 'task', to: 'done' }), 'r')).toBe(true);
+    expect(triggerMatches(t, ev({ kind: 'moved', type: 'note', to: 'done' }), 'r')).toBe(false);
+    expect(triggerMatches(t, ev({ kind: 'moved', type: 'bug', to: 'todo' }), 'r')).toBe(false);
+    // An event queued before it carried a type is not heard by a rule naming types, never guessed at.
+    expect(triggerMatches(t, ev({ kind: 'moved', to: 'done' }), 'r')).toBe(false);
+    // A rule saved before Card Types, or with none picked, hears every type as before.
+    for (const old of [
+      { kind: 'card_moved' as const, to: ['done'] },
+      { ...t, types: [] },
+    ])
+      expect(triggerMatches(old, ev({ kind: 'moved', type: 'note', to: 'done' }), 'r')).toBe(true);
   });
 
   it('hears a change to one of its fields, in a move too', () => {

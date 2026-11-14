@@ -108,7 +108,9 @@ work. A rule does it every time, at once, and says that it did.
 | ------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------- |
 | **Card Created**         | a card is added, by anyone or anything (a person, Duplicate, an import, a Repeat, an agent)    | the column it lands in (optional) |
 | **Form Response**        | a [Form](../030-forms/forms.md) response makes a card                                          | which Form tab (optional)         |
-| **Card Moved**           | a card's status changes                                                                        | From columns, To columns          |
+| **Card Moved**           | a card's status changes (a card of one of the picked card types, when some are picked)         | Card Types (optional: none picked |
+|                          |                                                                                                | is any type), From columns, To    |
+|                          |                                                                                                | columns                           |
 | **Field Changed**        | any of the chosen fields changes value (title, description, assignee, priority, labels, start, | one or more fields, required      |
 |                          | due, estimate, checklist, flag or any custom field of the plan's card types)                   |                                   |
 | **Comment Added**        | someone starts a thread on a card or replies on one (not Automation's own comments)            | none                              |
@@ -362,6 +364,10 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
 
 - A Form Response also counts as Card Created: a rule on Card Created hears form cards too, a Form Response rule
   hears only them.
+- Card Moved's **Card Types** narrow it to cards of those types (the card's type once the write lands); none picked
+  hears every type, and a rule saved before Card Types existed reads as none picked. A picked type the plan deletes
+  reads as gone ("A card type no longer here") and the rule **Needs Attention**, as a gone column does; until it is
+  unpicked the rule hears only the types still picked, so it never quietly widens to every type.
 - A card leaving the Trash is not Card Created; a card moved into or out of the Trash is not Card Moved; archiving is
   not Card Moved. Undo of a person's own change triggers like the change it puts back, except a card put back
   whole: an undo of a card's delete (or a redo of its making, or an offline plan's sync) restores a card, not a new
@@ -1075,6 +1081,11 @@ place and the focus with it).
   only where GitHub is set up, or for a rule already on one, its heading noted "Not Connected" while the plan is not) and **Other
   Tools** (Incoming Webhook).
   The current trigger is marked **Current**; picking another starts that trigger afresh.
+- **Card Moved**'s panel shows **Card Types** first (chips of the plan's card types, "None picked: any card type."),
+  then **From** and **To**. With types picked, From and To list only the columns those types use (each type's statuses,
+  in the plan's column order); with none picked they list every column. Changing the types drops a picked From or To
+  column no picked type uses, so the rule never keeps a column its cards can't be in; a column the plan deleted stays
+  shown as gone, as every panel shows one.
 - An action's step panel opens on its **Action** field: the action's icon and name and **Change**, which opens the same
   picker, titled **Change the Action**, offering what the step can become (the plain actions: every group but Timing, Other Tools and AI), the
   current one marked **Current**. Picking another starts that kind afresh, as before; picking the current one changes
@@ -1176,7 +1187,8 @@ same words.
 
 - **`list_rules`** (read) takes a `projectId` and answers every rule in the plan's order: its id, name, whether it
   is on, **paused** (with the reason) and **needs attention** (what it names that the plan lacks), its trigger kind,
-  its **sentence** (the Rules list's, in words: "When Card Moved to Done then Add Label shipped"), **last run**,
+  its **sentence** (the Rules list's, in words: "When Card Moved to Done then Add Label shipped", or "When Card
+  Moved for Bug to Done ..." with Card Types picked), **last run**,
   **runs this week** and, for a time trigger, its **next run** (ISO times), then the day's runs and the day's limit.
   An optional `rule` (an id or the exact name) also answers that rule's whole body, in the format `change_rules`
   writes; `runs: true` also answers the recent Audit Trail, newest first (that rule's alone when `rule` is given;
@@ -1201,7 +1213,7 @@ same words.
   whole reference: `name`, `trigger`, `conditions`, `steps`, `chain` and `timeZone`, with each trigger, condition and
   action kind and its fields, the values a text may hold, and the limits. Where a body names something of the plan,
   the agent may write it as the board shows it and the engine puts in the id before it saves: a **column** by name
-  ("Done") for a status, a **card type** by name ("Bug"), a **field** by its name ("Completed On", "Due"), a
+  ("Done") for a status, a **card type** by name ("Bug"; Card Moved's `types` too), a **field** by its name ("Completed On", "Due"), a
   **person** by name ("Ana Costa", exactly as `list_rules` lists the plan's people, case and spacing aside) wherever a
   rule takes one (Mention, Send Email, Assign and its people in turn, a Set Field of the Assignee or a Person field,
   the Who Did It condition and the Mentioned trigger), and a **Form tab** by its name. An id is kept as it is, and a

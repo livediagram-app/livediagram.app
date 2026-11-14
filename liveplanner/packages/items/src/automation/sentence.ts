@@ -429,6 +429,10 @@ export function triggerParts(
       break;
     case 'card_moved':
       narrow(
+        'for',
+        (trigger.types ?? []).map((t) => outlineTypeName(t, outline)),
+      );
+      narrow(
         'from',
         (trigger.from ?? []).map((s) => outlineStatusName(s, outline)),
       );

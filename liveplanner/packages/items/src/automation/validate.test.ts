@@ -88,6 +88,7 @@ describe('readRuleBody', () => {
       { kind: 'form_response', formTab: 'f' },
       { kind: 'card_moved' },
       { kind: 'card_moved', from: ['a'], to: ['b'] },
+      { kind: 'card_moved', types: ['bug'], from: ['a'], to: ['b'] },
       { kind: 'comment_added' },
       { kind: 'manual' },
     ];
@@ -119,6 +120,11 @@ describe('readRuleBody', () => {
     ],
     ['from not a list', withRule({ trigger: { kind: 'card_moved', from: 'a' } }), 'trigger.from'],
     ['a bad id in to', withRule({ trigger: { kind: 'card_moved', to: [''] } }), 'trigger.to.0'],
+    [
+      'types not a list',
+      withRule({ trigger: { kind: 'card_moved', types: 'bug' } }),
+      'trigger.types',
+    ],
     ['no fields', withRule({ trigger: { kind: 'field_changed', fields: [] } }), 'trigger.fields'],
     [
       'too many ids',
