@@ -91,7 +91,8 @@ export function createAreaErrorBoundary<Area extends string>({
       if (this.state.failed && prev.resetKey !== this.props.resetKey) this.retry();
     }
 
-    private waitForOnline(wasOffline: boolean) {
+    // Public only because the class is made in a factory (a private member cannot leave an anonymous class).
+    waitForOnline(wasOffline: boolean) {
       if (this.state.offline === wasOffline) return;
       if (!this.state.offline) window.removeEventListener('online', this.retry);
       // Back online before this ran: no `online` event is coming.
@@ -99,7 +100,7 @@ export function createAreaErrorBoundary<Area extends string>({
       else window.addEventListener('online', this.retry);
     }
 
-    private readonly retry = () => this.setState({ failed: false, offline: false });
+    readonly retry = () => this.setState({ failed: false, offline: false });
 
     override render() {
       if (!this.state.failed) return this.props.children;
