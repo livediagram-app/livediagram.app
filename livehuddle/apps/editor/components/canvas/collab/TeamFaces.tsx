@@ -18,6 +18,8 @@ import { pieceControlProps } from '@/lib/piece-control';
 import { loadCalendarWallPanels, loadSuggestionBoxPanels } from '@/lib/editor-deferred-code';
 import { notesByDay } from './calendar-notes';
 import { Overlay, PILL, ReaderHit } from './SocialFaces';
+import { useFreshMoment } from './moment-kit';
+import { PageLift } from './WalkUpMoments';
 
 // The live faces of the Calendar Wall and the Suggestion Box (docs/specs/009-elements/team-pieces.md) laid over their
 // art: the calendar's month on the viewer's clock with its notes' tabs and its Calendar button, and the box's Suggest
@@ -92,6 +94,8 @@ function CalendarWallFace({ element, walking }: { element: ShapeElement; walking
   const { x, y, w, h, cols, rows } = CALENDAR_GRID;
   const cw = w / cols;
   const ch = h / rows;
+  // Walking up plays its answer (piece-moments.md): the sheet's bottom corner away from you lifts and falls back.
+  const play = useFreshMoment(element.id);
   return (
     <Overlay element={element}>
       <svg
@@ -179,6 +183,7 @@ function CalendarWallFace({ element, walking }: { element: ShapeElement; walking
             })}
           </>
         ) : null}
+        {play ? <PageLift play={play} x={play.side < 0 ? art.width : 0} y={art.height} /> : null}
       </svg>
       {walking ? <ReaderHit label="Open the Calendar" onOpen={() => setReading(true)} /> : null}
       <Tooltip label="Open Calendar">

@@ -12,6 +12,7 @@ import {
   type ShapeElement,
 } from '@livehuddle/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { WindowMoment } from './WalkUpMoments';
 
 // A glass pane's wash of the stroke (RoomBuilderViews' GLASS_OPACITY, the export's).
 const GLASS_OPACITY = 0.16;
@@ -93,6 +94,8 @@ export function WindowView({
           stroke={stroke}
           strokeWidth={FURNITURE_RAIL_STROKE}
         />
+        {/* Walking up brightens its light (docs/specs/009-elements/piece-moments.md). */}
+        <WindowMoment id={element.id} light={art.light} gradient={gradient} pane={art.pane} />
       </svg>
     </div>
   );

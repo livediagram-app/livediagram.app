@@ -9,6 +9,7 @@ import { hasMoment, MOMENT_KINDS, type MomentKind } from './piece-moments';
 import {
   drawsOverMoment,
   PART_MOTIONS,
+  playsOnFace,
   partMotionsOf,
   partMotionStyle,
   waveDelay,
@@ -44,6 +45,14 @@ const IS: Partial<Record<MomentKind, (i: number, p: FurniturePart) => boolean>> 
   'coat-rack': (i, p) => (i >= 10 ? fillOf(p) === '#57534e' : p.tag === 'path'),
   podium: (i, p) =>
     p.tag === 'ellipse' && (i === 11 ? fillOf(p) === '#1f2937' : fillOf(p) === '#ef4444'),
+  // The ropes and the spreader bars (lines), the sling and its band (the striped panels).
+  hammock: (i, p) =>
+    p.tag === 'path' &&
+    (i === 3 || i === 6 ? p.role === 'line' : fillOf(p) === '#38bdf8' || fillOf(p) === '#fb923c'),
+  // The note in the slot, and the writing on it.
+  'suggestion-box': (i, p) =>
+    p.tag === 'path' &&
+    (i === 9 ? p.role === 'panel' && p.d.startsWith('M26 22') : p.role === 'rail'),
 };
 
 describe('the part motions', () => {
@@ -73,16 +82,21 @@ describe('the part motions', () => {
     expect(partMotionsOf('chair')).toEqual([]);
   });
 
-  it('draws over every kind but the five whose own parts are the whole moment', () => {
-    const movesOnly = MOMENT_KINDS.filter((k) => !drawsOverMoment(k));
+  it('draws over every kind but the six whose own parts are the whole moment and the three faces', () => {
+    const notOver = MOMENT_KINDS.filter((k) => !drawsOverMoment(k));
+    const onFace = MOMENT_KINDS.filter(playsOnFace);
+    expect(onFace).toEqual(['notice-board', 'world-clock', 'calendar-wall']);
+    const movesOnly = notOver.filter((k) => !playsOnFace(k));
     expect(movesOnly).toEqual([
       'bookshelf',
       'pool-table',
       'coat-rack',
       'kitchen-counter',
       'stage-curtains',
+      'hammock',
     ]);
     for (const k of movesOnly) expect(partMotionsOf(k).length).toBeGreaterThan(0);
+    for (const k of onFace) expect(partMotionsOf(k)).toEqual([]);
   });
 
   it('turns a wave into delays from your end, and a pivot into a view-box origin', () => {
@@ -126,5 +140,13 @@ describe('the whole drawing', () => {
     expect(wholeMotionOf('lockers', true)).toBe('rattle');
     expect(wholeMotionOf('hand-dryer', true)).toBe('hum');
     expect(wholeMotionOf('kettle', true)).toBeNull();
+  });
+
+  it('keeps the art still where the live face plays the moment, at every facing', () => {
+    for (const kind of ['notice-board', 'world-clock', 'calendar-wall'] as const) {
+      expect(wholeMotionOf(kind, true)).toBeNull();
+      expect(wholeMotionOf(kind, false)).toBeNull();
+    }
+    expect(wholeMotionOf('hammock', false)).toBe('nudge');
   });
 });

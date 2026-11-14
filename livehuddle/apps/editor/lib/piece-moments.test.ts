@@ -58,7 +58,17 @@ function setup() {
 
 describe('which pieces have a moment', () => {
   it('names every static piece, and the three that play at every facing', () => {
-    expect(MOMENT_KINDS).toHaveLength(35);
+    // 35 static pieces and the six interactive ones with a walk-up answer (Work Tracker 626).
+    expect(MOMENT_KINDS).toHaveLength(41);
+    for (const k of [
+      'hammock',
+      'notice-board',
+      'world-clock',
+      'calendar-wall',
+      'suggestion-box',
+      'window',
+    ])
+      expect(hasMoment(k)).toBe(true);
     for (const k of MOMENT_KINDS) expect(hasMoment(k)).toBe(true);
     // Interactive and structural pieces have none (piece-moments.md "Which pieces have a moment").
     for (const k of [
@@ -107,6 +117,39 @@ describe('the reach', () => {
     const kettle = momentPiece({ id: 'k', kind: 'kettle', x: 0, y: 0, width: 32, height: 36 });
     expect(inMomentReach({ x: 16, y: 36 + COUNTER_REACH }, kettle)).toBe(true);
     expect(inMomentReach({ x: 16, y: 36 + COUNTER_REACH + 1 }, kettle)).toBe(false);
+    // The walk-up pieces that hang on a wall reach its floor too.
+    for (const kind of ['notice-board', 'world-clock', 'calendar-wall'] as const) {
+      const hung = momentPiece({ id: kind, kind, x: 0, y: 0, width: 176, height: 128 });
+      expect(inMomentReach({ x: 88, y: 128 + WALL_REACH }, hung)).toBe(true);
+      expect(inMomentReach({ x: 88, y: 128 + WALL_REACH + 1 }, hung)).toBe(false);
+    }
+  });
+
+  // A 120 x 24 window whose middle is (200, 100), its light on its own +y (room-builder.md "Window").
+  const pane = (rotation?: number) =>
+    momentPiece({ id: 'w', kind: 'window', x: 140, y: 88, width: 120, height: 24, rotation });
+
+  it("is the floor a window's light falls on, past each end, never the far side of its wall", () => {
+    const w = pane();
+    expect(inMomentReach({ x: 200, y: 100 + 12 + WALL_REACH }, w)).toBe(true);
+    expect(inMomentReach({ x: 200, y: 100 + 12 + WALL_REACH + 1 }, w)).toBe(false);
+    expect(inMomentReach({ x: 140 - MOMENT_REACH, y: 130 }, w)).toBe(true);
+    expect(inMomentReach({ x: 140 - MOMENT_REACH - 1, y: 130 }, w)).toBe(false);
+    // Outside the room, behind the wall.
+    expect(inMomentReach({ x: 200, y: 99 }, w)).toBe(false);
+  });
+
+  it("turns a window's reach with it onto its wall", () => {
+    // A quarter turn clockwise: the wall runs down the canvas and the light falls to the left.
+    const w = pane(90);
+    expect(inMomentReach({ x: 200 - 12 - WALL_REACH, y: 100 }, w)).toBe(true);
+    expect(inMomentReach({ x: 200 + 1, y: 100 }, w)).toBe(false);
+    expect(inMomentReach({ x: 170, y: 100 + 60 + MOMENT_REACH }, w)).toBe(true);
+    expect(inMomentReach({ x: 170, y: 100 + 60 + MOMENT_REACH + 1 }, w)).toBe(false);
+    // Turned right over: the light falls up the canvas.
+    const flipped = pane(180);
+    expect(inMomentReach({ x: 200, y: 60 }, flipped)).toBe(true);
+    expect(inMomentReach({ x: 200, y: 130 }, flipped)).toBe(false);
   });
 });
 
@@ -121,6 +164,21 @@ describe('the trigger', () => {
   it('says the right side when you come from the right', () => {
     const { trigger } = setup();
     expect(trigger.step({ x: 230, y: 250 }, [tree])).toEqual([{ id: 't', side: 1 }]);
+  });
+
+  it("says your side along a window's wall, whichever way it is turned", () => {
+    const w = momentPiece({
+      id: 'w',
+      kind: 'window',
+      x: 140,
+      y: 88,
+      width: 120,
+      height: 24,
+      rotation: 90,
+    });
+    // Turned a quarter clockwise, its own +x runs down the canvas: above its middle is its left end.
+    expect(createMomentTrigger().step({ x: 170, y: 70 }, [w])).toEqual([{ id: 'w', side: -1 }]);
+    expect(createMomentTrigger().step({ x: 170, y: 130 }, [w])).toEqual([{ id: 'w', side: 1 }]);
   });
 
   it('plays every arrival, every time (owner 2026-11-07)', () => {
