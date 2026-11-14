@@ -4,6 +4,7 @@ import {
   assignedPeople,
   choiceOption,
   fieldKeyOf,
+  flagValueOf,
   personNamed,
   resolveFields,
   resolveItem,
@@ -287,5 +288,62 @@ describe('fieldKeyOf', () => {
       ok: true,
       fields: { 'f-owner': 'Ana' },
     });
+  });
+});
+
+// docs/specs/026-plan/plan-agents.md "Flagging a card": every card's Flag, whatever its type lists.
+describe('the Flag', () => {
+  const naming = { statuses, items: [] };
+
+  it('reads flagged, Flagged and Flag as the Flag on any type', () => {
+    for (const name of ['flagged', 'Flagged', 'Flag', 'flag'])
+      expect(fieldKeyOf(name, bug)).toEqual({ ok: true, key: 'flagged' });
+  });
+
+  it('leaves a type its own field named Flagged or Flag, but flagged is always the Flag', () => {
+    const review: ItemTypeDef = {
+      ...bug,
+      custom: [
+        { id: 'f-flagged', label: 'Flagged', kind: 'text' },
+        { id: 'f-flag', label: 'Flag', kind: 'text' },
+      ],
+    };
+    expect(fieldKeyOf('Flagged', review)).toEqual({ ok: true, key: 'f-flagged' });
+    expect(fieldKeyOf('Flag', review)).toEqual({ ok: true, key: 'f-flag' });
+    expect(fieldKeyOf('flagged', review)).toEqual({ ok: true, key: 'flagged' });
+  });
+
+  it('sets it from true, and clears it from false or blank', () => {
+    for (const on of [true, 1, 'true', 'Yes', ' on ', '1'])
+      expect(resolveFields({ flagged: on }, bug, naming)).toEqual({
+        ok: true,
+        fields: { flagged: true },
+      });
+    for (const off of [false, 0, null, '', 'false', 'NO', 'off', '0'])
+      expect(resolveFields({ Flag: off }, bug, naming)).toEqual({
+        ok: true,
+        fields: {},
+        clear: ['flagged'],
+      });
+  });
+
+  it('refuses anything else, saying what it takes', () => {
+    for (const bad of ['maybe', 2, ['x'], { on: true }, undefined]) {
+      const r = flagValueOf(bad);
+      expect(r).toMatchObject({ ok: false, code: 'value_invalid' });
+      expect(!r.ok && r.message).toContain('give true to flag the card, or false to unflag it');
+    }
+    expect(resolveFields({ flagged: 'maybe' }, bug, naming)).toMatchObject({
+      ok: false,
+      code: 'value_invalid',
+    });
+  });
+
+  it('lists flagged among the fields an unknown one is refused with', () => {
+    const r = fieldKeyOf('Nope', bug);
+    expect(!r.ok && r.message).toBe(
+      'Bug cards have no field "Nope". Fields: title, status, assignee, flagged, Severity, Blocks, Repro Steps. ' +
+        'Add a custom field with change_card_types.',
+    );
   });
 });

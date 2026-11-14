@@ -70,6 +70,10 @@ id; `item set --fields <field>=<id>[,<id>]` then places it on an Image field, a 
 `--remove <field>=<id>` takes one off, and `<field>=` empties it. `item ls` lists each picture as its id and a link
 on the CLI's host that its token reads.
 
+**Flags.** `item add` and `item set` take `--fields flagged=true` to flag a card ([Flags](../026-plan/items.md#flags)),
+`item set --fields flagged=false` or `--clear flagged` unflags it, and `item ls` ends a flagged card's line with
+`flagged`, as the MCP's `change_items` and `list_items` do ([Flagging a card](../026-plan/plan-agents.md)).
+
 **Addressing.** `<project>` is a project name, an id prefix, or a pasted liveplanner URL; an ambiguous one is refused
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A
 pulled file's path reads its views offline. `--tab` takes a tab name or id prefix and defaults to the first tab.

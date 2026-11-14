@@ -52,7 +52,7 @@ describe('BackgroundKinds', () => {
     );
     expect(
       screen.getByRole('radiogroup', { name: 'Background kind' }).style.gridTemplateColumns,
-    ).toBe('repeat(2, minmax(0, 1fr))');
+    ).toBe('repeat(2, minmax(0px, 1fr))');
   });
 });
 
