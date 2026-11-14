@@ -62,7 +62,9 @@ Derived from [Workday pieces](../workday-pieces.md).
   yet: the spot is always the bed and the dog sleeps.
 - **Welcome**: `receptionAt(feet, desks)`: the desk whose front strip (`x - 0 .. x + width`, `y + 0.62 h .. y + h +
 RECEPTION_REACH`) holds your feet. A module store like the arcade's; a step re-renders nothing unless the answer
-  changes. A walking click on an unturned desk (or Arcade Machine) walks to `walkPointFor(el, point)`: `FRONT_STAND`
+  changes. The store also holds whether that desk's Welcome shows below it (`useReceptionBubbleBelow`), from the
+  desks a Room Sign's box overlaps above, worked out per board change by `bubbleBelow` (`piece-bubble.ts`, Work
+  Tracker 793). A walking click on an unturned desk (or Arcade Machine) walks to `walkPointFor(el, point)`: `FRONT_STAND`
   below its box under the click, clamped 12% in from its ends (`lib/avatar-click-intent.ts`).
   With another standing character's feet within `FRONT_SPOT_GAP` (24 px) of that spot, the walk goes to
   `frontWalkPoint(el, point, others, elements, fences)` (`lib/front-walk-point.ts`) instead: `freeFrontSpot`

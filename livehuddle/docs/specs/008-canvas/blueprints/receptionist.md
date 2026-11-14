@@ -37,6 +37,13 @@ Derived from [the Receptionist](../receptionist.md). The spec decides; this file
 - **The detour is keyed by his pad id**: an edit to the tab rebuilds the world and keeps the detour; another tab drops
   it. A greeting for you is a pending flag that outlives a pad change (a new Space draws the blank tab's pad first),
   so he greets you by whichever pad is his when you are there.
+- **Beside his pad** (`world.beside`, Work Tracker 800): the spots `BESIDE_PAD` past each side of the pad, level with
+  its middle, each through `freeSpawnPoint(spot, fences, FENCE_REACH, spawnBody(avatarScale(RECEPTIONIST_LOOK.size)))`
+  (the fences `useReceptionistWorld` already built), so neither is on or just under water. Home is `beside.right`; a
+  greeting walks to the side nearest him.
+- **His chip in the spread** (Work Tracker 799): `ReceptionistLayer` calls `onStanding(at)` when he stops and
+  `onStanding(null)` when he sets off or unmounts (an effect on his standing x and y, so never per frame), and draws
+  his chip at the `chipShift` the characters layer's spread gives his key.
 - **An open bubble holds him**: opening it turns a greeting's timed hold into an open one, released when it closes.
 - **The store** (`receptionist-store.ts`, `useSyncExternalStore`) carries `asks` and `greets` as counters, so each ask and
   each greeting is acted on once. The host never resets it; it only closes the bubble when it unmounts.

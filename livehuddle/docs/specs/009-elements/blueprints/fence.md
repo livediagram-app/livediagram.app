@@ -83,7 +83,8 @@ Invariants:
   `FENCE_CLEAR_ROUNDS` nudges do not clear it. A footprint's edges never nudge a point inside its box (the nudge would push it
   deeper); it walks out under I3a. `freeSpawnPoint(p, fences, reach, body)` (spawn-point.ts) runs first: a water
   footprint's edges carry `water: true` (`WATER_KINDS`: `swimming-pool`, `pond`), and a spot within `body`
-  (`AVATAR_HEIGHT x avatarScale(size)`, default `SPAWN_BODY`) under one, the body's half-width either side, is not
+  (`spawnBody(avatarScale(size))`: `avatarFigureHeight(scale)`, the figure with its tallest hair, plus
+  `SPAWN_HEADROOM`, `POOL_DECK + 2` = 16 px; default `SPAWN_BODY`, Work Tracker 800) under one, the body's half-width either side, is not
   free. A spot in or under water takes `(p.x, water bottom + body)` unless the rings, searched only out to the water's
   bottom edge plus the reach, find free floor nearer (Work Tracker 706).
 - **I5:** no walk ends within `FENCE_ON_LINE` of a line: it is under every size's reach, so only a spawn or an
