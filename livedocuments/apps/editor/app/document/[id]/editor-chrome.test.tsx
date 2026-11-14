@@ -109,7 +109,10 @@ const base = {
 
 // A typing commit: a new view-model, a new tab holding new writing, nothing else changed.
 const typed = (v: EditorContextValue): EditorContextValue => {
-  const next = { ...v.activeTab, articles: { 'card-1': { blocks: [{ id: 'b' }] } } } as unknown as Tab;
+  const next = {
+    ...v.activeTab,
+    articles: { 'card-1': { blocks: [{ id: 'b' }] } },
+  } as unknown as Tab;
   return { ...v, activeTab: next, tabs: [next] };
 };
 
