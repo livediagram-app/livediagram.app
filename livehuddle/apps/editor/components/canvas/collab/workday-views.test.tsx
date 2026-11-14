@@ -144,9 +144,18 @@ describe('the workday pieces on the canvas', () => {
   });
 });
 
-function AtDesk({ feet }: { feet: { x: number; y: number } | null }) {
+function AtDesk({
+  feet,
+  sign = null,
+}: {
+  feet: { x: number; y: number } | null;
+  sign?: { x: number; y: number } | null;
+}) {
   const desk = piece('reception-desk', 100, 100);
-  useWorkdayPieces({ active: true, feet, elements: [desk] });
+  const elements = sign
+    ? [desk, { ...createShape('room-sign', sign.x, sign.y), id: 'sign' } as ShapeElement]
+    : [desk];
+  useWorkdayPieces({ active: true, feet, elements });
   return (
     <CanvasSurfaceProvider surface="light">
       <PieceArt element={desk} stroke="#334155" fill="#ffffff" sitters={[]} />
@@ -241,6 +250,21 @@ describe('the Reception Desk', () => {
     expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'ReceptionBell');
     expect(screen.getByRole('button', { name: 'Bell rung' })).toHaveProperty('disabled', true);
     expect(container.querySelector('[data-bell-ringing]')).not.toBeNull();
+  });
+
+  // Work Tracker 793: a Room Sign placed by hand just above the desk would sit under the Welcome bubble.
+  it('shows the Welcome below the desk when a hand-placed Room Sign stands where it rises', () => {
+    const bubble = () => screen.getByRole('status');
+    const { rerender } = render(<AtDesk feet={{ x: 200, y: 230 }} />);
+    expect(bubble().hasAttribute('data-bubble-below')).toBe(false);
+    expect(bubble().className).toContain('bottom-[calc(100%+6px)]');
+    rerender(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 170, y: 40 }} />);
+    expect(bubble().hasAttribute('data-bubble-below')).toBe(true);
+    expect(bubble().className).toContain('top-[calc(100%+6px)]');
+    expect(bubble().style.getPropertyValue('--lh-bubble-rise')).toBe('-6px');
+    // A sign well clear of the bubble's room leaves it above.
+    rerender(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 700, y: 40 }} />);
+    expect(bubble().hasAttribute('data-bubble-below')).toBe(false);
   });
 });
 

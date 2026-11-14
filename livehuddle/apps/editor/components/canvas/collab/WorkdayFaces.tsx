@@ -17,7 +17,8 @@ import { seatPillBottom } from '@livehuddle/avatar/chair-sitters';
 import { drawnRect, type SeatGrid } from '@livehuddle/avatar/seats';
 import { pieceControlProps } from '@/lib/piece-control';
 import { ringBell, useBellRings, useBellRung } from '@/lib/office/reception-bell';
-import { useAtReception } from '@/lib/office/useWorkdayPieces';
+import { useAtReception, useReceptionBubbleBelow } from '@/lib/office/useWorkdayPieces';
+import { pieceBubbleSide, pieceBubbleStyle } from '@/lib/piece-bubble-style';
 import { Overlay } from './SocialFaces';
 import type { ChairSitter } from './FurnitureView';
 import { PetDog } from './OfficeDog';
@@ -340,13 +341,16 @@ function BellGlyph() {
 // The Welcome bubble above a reception desk, for you while you stand at it, with the Ring Bell button.
 function Welcome({ element }: { element: ShapeElement }) {
   const here = useAtReception(element.id);
+  // Below the desk when a Room Sign stands where the bubble rises (Work Tracker 793).
+  const below = useReceptionBubbleBelow(element.id);
   const rung = useBellRung();
   if (!here) return null;
   return (
     <Overlay element={element}>
       <span
-        className="lh-welcome-bubble pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 flex items-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-slate-800 bg-white py-1 pl-2.5 pr-1 text-[10px] font-bold text-slate-800 shadow-md dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100"
-        style={{ transform: 'translateX(-50%)' }}
+        data-bubble-below={below ? '' : undefined}
+        className={`lh-welcome-bubble pointer-events-none absolute ${pieceBubbleSide(below)} left-1/2 flex items-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-slate-800 bg-white py-1 pl-2.5 pr-1 text-[10px] font-bold text-slate-800 shadow-md dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100`}
+        style={pieceBubbleStyle(below)}
         role="status"
       >
         Welcome

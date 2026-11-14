@@ -10,8 +10,11 @@ import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-gua
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useOptionalEditorContext: () => null }));
-const near = vi.hoisted(() => ({ on: false }));
-vi.mock('./useSocialPieces', () => ({ useNearArcade: () => near.on }));
+const near = vi.hoisted(() => ({ on: false, below: false }));
+vi.mock('./useSocialPieces', () => ({
+  useNearArcade: () => near.on,
+  useArcadeBubbleBelow: () => near.on && near.below,
+}));
 
 import { isPieceControlPress } from '@/lib/piece-control';
 import { ArcadeFace } from './ArcadeFace';
@@ -22,6 +25,7 @@ const press = () => screen.queryByRole('button', { name: 'Play Moon Mail' });
 
 beforeEach(() => {
   near.on = true;
+  near.below = false;
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 });
 afterEach(() => {
@@ -44,6 +48,19 @@ describe('ArcadeFace', () => {
     expect(button.textContent).toBe('Insert Coin');
     expect(isPieceControlPress(button)).toBe(true);
     expect(button.hasAttribute('data-piece-main')).toBe(true);
+  });
+
+  // Work Tracker 793: a Room Sign placed by hand just above the machine would sit under the bubble.
+  it('shows Insert Coin below the cabinet when a Room Sign stands where it rises', () => {
+    const bubble = () => press()!.querySelector('.lh-coin-bubble') as HTMLElement;
+    const { rerender } = render(<ArcadeFace element={machine()} />);
+    expect(bubble().hasAttribute('data-bubble-below')).toBe(false);
+    expect(bubble().style.getPropertyValue('--lh-bubble-rise')).toBe('6px');
+    near.below = true;
+    rerender(<ArcadeFace element={{ ...machine() }} />);
+    expect(bubble().hasAttribute('data-bubble-below')).toBe(true);
+    expect(bubble().className).toContain('top-[calc(100%+6px)]');
+    expect(bubble().style.getPropertyValue('--lh-bubble-rise')).toBe('-6px');
   });
 
   it("adds the table's best under Insert Coin, and follows the table as it changes", () => {

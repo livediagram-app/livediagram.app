@@ -59,6 +59,7 @@
     "./pad": "./src/pad.ts",
     "./palette": "./src/palette.ts",
     "./pathing": "./src/pathing.ts",
+    "./piece-bubble": "./src/piece-bubble.ts",
     "./piece-seats": "./src/piece-seats.ts",
     "./placing-facing": "./src/placing-facing.ts",
     "./pod": "./src/pod.ts",

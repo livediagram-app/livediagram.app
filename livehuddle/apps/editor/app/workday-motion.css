@@ -112,7 +112,7 @@
 }
 @keyframes lh-welcome-bubble {
   from {
-    transform: translate(-50%, 6px);
+    transform: translate(-50%, var(--lh-bubble-rise, 6px));
     opacity: 0;
   }
   to {

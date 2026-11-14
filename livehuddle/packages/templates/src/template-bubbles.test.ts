@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livehuddle/document';
+import { boxesOverlap, bubbleAbove, BUBBLE_PIECES } from '@livehuddle/avatar/piece-bubble';
 import { buildTemplate } from './build-template';
 import { templateFloors } from './template-floors';
 import { TEMPLATES } from './templates';
@@ -7,24 +8,13 @@ import { TEMPLATES } from './templates';
 // The proximity bubbles (docs/specs/009-elements/social-pieces.md "Arcade Machine", workday-pieces.md "Reception
 // Desk"): standing at an Arcade Machine or a Reception Desk raises a bubble (Insert Coin with the machine's best,
 // Welcome with Ring Bell) 6 px above the piece, centred on it. Work Tracker 615: no template stands a Room Sign (a
-// room's status card) where that bubble rises, so the bubble never covers the card.
+// room's status card) where that bubble rises, so in every template it rises above its piece. A sign placed by hand
+// there flips the bubble below the piece instead (Work Tracker 793), by the same geometry (piece-bubble.ts).
 
 type Shape = Extract<Element, { type: 'shape' }>;
-type Box = { x: number; y: number; width: number; height: number };
 
-// The bubble's room, canvas px: as wide as Insert Coin with a long best line under it (its 140 px cap, padding and
-// border), as tall as those two lines, lifted 6 px off the piece's top.
-const BUBBLE_ROOM = { width: 160, height: 44, lift: 6 } as const;
-const BUBBLE_PIECES = new Set(['arcade-machine', 'reception-desk']);
-
-const bubbleOver = (p: Box): Box => ({
-  x: p.x + p.width / 2 - BUBBLE_ROOM.width / 2,
-  y: p.y - BUBBLE_ROOM.lift - BUBBLE_ROOM.height,
-  width: BUBBLE_ROOM.width,
-  height: BUBBLE_ROOM.height,
-});
-const overlaps = (a: Box, b: Box) =>
-  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+const bubbleOver = bubbleAbove;
+const overlaps = boxesOverlap;
 
 // Every tab of every template: its first and each floor after it.
 const tabs = TEMPLATES.flatMap((t) => [

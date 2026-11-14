@@ -16,7 +16,8 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { formatArcadeScore } from '@/lib/arcade/arcade-format';
 import { pieceControlProps } from '@/lib/piece-control';
 import { ReaderShell } from './ReaderShell';
-import { useNearArcade } from './useSocialPieces';
+import { pieceBubbleSide, pieceBubbleStyle } from '@/lib/piece-bubble-style';
+import { useArcadeBubbleBelow, useNearArcade } from './useSocialPieces';
 
 const ArcadePanel = lazy(() => import('./arcade/ArcadePanel'));
 
@@ -50,6 +51,8 @@ function useOpenKeys(on: boolean, open: () => void) {
 
 export function ArcadeFace({ element }: { element: ShapeElement }) {
   const near = useNearArcade(element.id);
+  // Below the cabinet when a Room Sign stands where the bubble rises (Work Tracker 793).
+  const below = useArcadeBubbleBelow(element.id);
   const [open, setOpen] = useState(false);
   useOpenKeys(near && !open, () => setOpen(true));
   const close = () => setOpen(false);
@@ -78,8 +81,9 @@ export function ArcadeFace({ element }: { element: ShapeElement }) {
           >
             <span
               aria-hidden
-              className="lh-coin-bubble absolute bottom-[calc(100%+6px)] left-1/2 whitespace-nowrap text-center rounded-xl border-2 border-slate-800 bg-white px-2 py-1 text-[10px] font-bold text-slate-800 shadow-md transition-colors group-hover:bg-amber-50 dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:group-hover:bg-slate-800"
-              style={{ transform: 'translateX(-50%)' }}
+              data-bubble-below={below ? '' : undefined}
+              className={`lh-coin-bubble absolute ${pieceBubbleSide(below)} left-1/2 whitespace-nowrap text-center rounded-xl border-2 border-slate-800 bg-white px-2 py-1 text-[10px] font-bold text-slate-800 shadow-md transition-colors group-hover:bg-amber-50 dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:group-hover:bg-slate-800`}
+              style={pieceBubbleStyle(below)}
             >
               Insert Coin
               {best ? (
