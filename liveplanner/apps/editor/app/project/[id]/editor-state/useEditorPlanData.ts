@@ -13,7 +13,7 @@ import { signalReconnect } from '@/lib/offline-queue/reconnect';
 import { type SheetsBridge, useSheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { tabNamedForSheet } from '@/lib/tab-named-plan';
 import { useRef, useEffect } from 'react';
-import { type Element, voteHidesCursors } from '@liveplanner/project';
+import { type Element, type Tab, voteHidesCursors } from '@liveplanner/project';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -25,6 +25,16 @@ import { useRoomConnection } from '../useRoomConnection';
 import { useRoomFullNotice } from '../useRoomFullNotice';
 import { usePresenceBroadcast } from '../usePresenceBroadcast';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import {
+  useTabDrafts,
+  type TabDraftDoors,
+} from '@liveworkspace/workbench/hooks/persistence/useTabDrafts';
+import {
+  apiAdoptPeerSave,
+  apiDiscardDraft,
+  apiTakeDraftReplay,
+  onTabDraft,
+} from '@/lib/api-client';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -32,6 +42,13 @@ import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorDialogsSlice } from './useEditorDialogs';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorPersistenceSlice } from './useEditorPersistence';
+
+// This editor's tab calls' draft doors, for the shared drafts hook (read when called).
+const TAB_DRAFT_DOORS: TabDraftDoors<Tab> = {
+  takeReplay: (...args) => apiTakeDraftReplay(...args),
+  discard: (...args) => apiDiscardDraft(...args),
+  onDraft: (listener) => onTabDraft(listener),
+};
 
 // A slice of the editor's state, composed by useEditorState in a fixed order (docs/development/architecture.md
 // "The editor's shape"). It takes the slices composed before it and returns what the slices after it, and the
@@ -59,6 +76,7 @@ export function useEditorPlanData(
     itemUndo,
     lastSavedNameRef,
     lastSavedTabsRef,
+    loadedTabIds,
     loadedTabIdsRef,
     markTabLoaded,
     ownWrites,
@@ -246,6 +264,12 @@ export function useEditorPlanData(
       await resyncFromServer();
     },
     receiveChangeset: changesetFeed.receiveChangeset,
+    // A peer's landed save moves this Editor's delta base copy, when its baseline proves to hold what was stored
+    // (docs/specs/006-project/delta-saves.md "A peer's save moves the base copy"). Nobody else saves deltas.
+    receiveTabSaved: (tab, rev, digest) => {
+      if (!projectId || !canEdit || participant.participating) return;
+      void apiAdoptPeerSave(projectId, tab, rev, digest);
+    },
     receiveItems: planItems.receive,
     receiveThreads: cardThreads.receive,
     receivePullRequests: pullRequests.receive,
@@ -265,6 +289,21 @@ export function useEditorPlanData(
       // A rejoined connection has a new presence id, which carries no hold until it is said again.
       planPresence.reannounce();
     },
+  });
+
+  // This browser's drafts of unsaved changes: one a load put back goes on screen and saves, one overtaken is said
+  // (docs/specs/006-project/delta-saves.md "Drafts of unsaved changes").
+  useTabDrafts({
+    drafts: TAB_DRAFT_DOORS,
+    hydrated,
+    itemId: projectId,
+    selfId: selfParticipant.id,
+    mayEdit: canEdit && !participant.participating,
+    tabsRef,
+    lastSavedTabsRef,
+    loadedTabIds,
+    applyLoaded: applyRemoteOp,
+    toast,
   });
 
   // Broadcast local selection + active-tab focus to peers (presence

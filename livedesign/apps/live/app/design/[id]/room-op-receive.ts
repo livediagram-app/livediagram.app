@@ -41,6 +41,7 @@ export function receiveRoomOp(
     setDesignName,
     receiveDesignTrashed,
     receiveChangeset,
+    receiveTabSaved,
     receiveComponent,
     receivePhotoPresence,
   } = opts;
@@ -150,6 +151,13 @@ export function receiveRoomOp(
       // The note rides in the address: the Explorer is on liveworkspace.app, another origin.
       window.location.assign(explorerHref('', '?ended=revoked'));
     } else if (effect === 'reload') window.location.reload();
+  } else if (op.kind === 'tab-saved') {
+    // A peer's save landed (docs/specs/006-design/delta-saves.md "A peer's save moves the base copy"): its element
+    // ops came first and are in the baseline, so the baseline's tab is what it stored unless something else differs.
+    // A tab not loaded here has no baseline to prove.
+    if (!loadedTabIdsRef.current.has(op.tabId)) return;
+    const tab = saveBaseline.tabs.current.find((t) => t.id === op.tabId);
+    if (tab) receiveTabSaved?.(tab, op.rev, op.digest);
   } else if (op.kind === 'changeset') {
     // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
     // the share ops: the room refuses one from a client socket.

@@ -28,7 +28,7 @@ import {
 import { offlineRecordOpen } from '../offline/offline-opens';
 import { ITEM_GRANT_HEADER } from '@liveworkspace/index-client/browser';
 import { heldDocumentGrant } from './document-grants';
-import { tabDraftStore } from './tab-draft-store';
+import { createTabDraftStore } from '@liveworkspace/workbench/lib/api/tab-draft-store';
 import {
   API_BASE,
   apiDelete,
@@ -43,6 +43,9 @@ import {
   apiFetch,
   saveTimeoutSignal,
 } from './core';
+
+// This browser's drafts of the unload flush's tabs (docs/specs/006-document/delta-saves.md "Drafts of unsaved changes").
+export const TAB_DRAFTS_DB = 'livediagram-drafts';
 
 // The unload flush's requests go at once, with the grant they hold (apiFetch `documentGrant: false`).
 const NO_GRANT_WAIT = { documentGrant: false } as const;
@@ -93,7 +96,7 @@ const calls = createTabCalls<Tab, typeof NO_GRANT_WAIT, TabSummary>({
   // The autosave sends the changed elements when a base copy is held (docs/specs/006-document/delta-saves.md).
   delta: { diff: diffToElementOps },
   // The unload flush keeps a draft of each tab it sends in this browser (delta-saves.md "Drafts of unsaved changes").
-  drafts: tabDraftStore,
+  drafts: createTabDraftStore(TAB_DRAFTS_DB),
 });
 
 // The full tab and its revision (docs/specs/024-agents/agent-changesets.md "The tab revision"), lazily when the user

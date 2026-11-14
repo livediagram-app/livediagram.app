@@ -56,6 +56,7 @@ export function receiveRoomOp(
     receiveFocusHere,
     receiveDocumentTrashed,
     receiveChangeset,
+    receiveTabSaved,
   } = opts;
   // Any op from a peer counts as "they're still here". Bumps
   // the idle timer used by the avatar's away/offline status
@@ -213,6 +214,13 @@ export function receiveRoomOp(
       noteAccessEnded(documentId, 'revoked');
       window.location.assign('/explorer');
     } else if (effect === 'reload') window.location.reload();
+  } else if (op.kind === 'tab-saved') {
+    // A peer's save landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"): its element
+    // ops came first and are in the baseline, so the baseline's tab is what it stored unless something else differs.
+    // A tab not loaded here has no baseline to prove.
+    if (!loadedTabIdsRef.current.has(op.tabId)) return;
+    const tab = saveBaseline.tabs.current.find((t) => t.id === op.tabId);
+    if (tab) receiveTabSaved?.(tab, op.rev, op.digest);
   } else if (op.kind === 'changeset') {
     // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
     // the share ops: the room refuses one from a client socket.

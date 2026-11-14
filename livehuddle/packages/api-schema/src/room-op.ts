@@ -1,4 +1,5 @@
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
+import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { ElementDelta, RoomElementOp, Tab } from '@livehuddle/document';
 import type { AvatarOp, AvatarPushOp } from '@livehuddle/avatar/wire';
 import type { AvatarSayOp } from '@livehuddle/avatar/wire-say';
@@ -62,6 +63,9 @@ export type RoomOp =
   // comment (docs/specs/012-collaboration/collab-race-hardening.md): a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people ticking the same checklist row lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // An Editor's save of a tab landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"): the
+  // revision it wrote and the digest of the elements now stored, sent after the save's element ops. Changes no content.
+  | TabSavedOp
   // Document-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the

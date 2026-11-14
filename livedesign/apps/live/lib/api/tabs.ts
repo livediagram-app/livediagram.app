@@ -7,7 +7,13 @@ import {
   INDEX_GRANT_HEADER,
   type TabSummary,
 } from '@livedesign/api-schema';
-import { normalizeTable, type CommentMention, type Tab } from '@livedesign/design';
+import {
+  diffToElementOps,
+  normalizeTable,
+  type CommentMention,
+  type Tab,
+} from '@livedesign/design';
+import { createTabDraftStore } from '@liveworkspace/workbench/lib/api/tab-draft-store';
 import {
   createTabCalls,
   createUnloadHeaders,
@@ -52,6 +58,9 @@ export const unloadHeaders = createUnloadHeaders({
   getSessionSharePassword: () => getSessionSharePassword(),
 });
 
+// This browser's drafts of the unload flush's tabs (docs/specs/006-design/delta-saves.md "Drafts of unsaved changes").
+export const TAB_DRAFTS_DB = 'livedesign-drafts';
+
 const calls = createTabCalls<Tab, typeof NO_GRANT_WAIT, TabSummary>({
   // Read at call time, as the calls always did: the modules import each other, so a value taken now could still be
   // unset.
@@ -92,17 +101,35 @@ const calls = createTabCalls<Tab, typeof NO_GRANT_WAIT, TabSummary>({
   saveChangesHeader: TAB_SAVE_CHANGES_HEADER,
   unloadHeaders,
   noGrantWait: NO_GRANT_WAIT,
+  // The autosave sends the changed elements when a base copy is held (docs/specs/006-design/delta-saves.md).
+  delta: { diff: diffToElementOps },
+  // The unload flush keeps a draft of each tab it sends in this browser (delta-saves.md "Drafts of unsaved changes").
+  drafts: createTabDraftStore(TAB_DRAFTS_DB),
 });
 
 // The full tab and its revision (docs/specs/024-agents/agent-changesets.md "The tab revision"), lazily when the user
 // opens a tab; `open` declares the read an open of the design (docs/specs/013-workspace/explorer-home.md "Opens").
-export const apiLoadTabRevisioned: (
+// Every editor load reads this browser's draft of the tab beside it (docs/specs/006-design/delta-saves.md "Drafts
+// of unsaved changes"): one put back waits in apiTakeDraftReplay, one dropped is told to onTabDraft.
+export const apiLoadTabRevisioned = (
   ownerId: string,
   designId: string,
   tabId: string,
   shareCode: string | null,
-  opts?: { open?: boolean },
-) => Promise<{ tab: Tab; rev: number } | null> = calls.loadTabRevisioned;
+  opts: { open?: boolean } = {},
+): Promise<{ tab: Tab; rev: number } | null> =>
+  calls.loadTabRevisioned(ownerId, designId, tabId, shareCode, { ...opts, draft: true });
+
+// A draft a load put back, once, for the editor to put on screen as an unsaved edit; and every draft put back or
+// dropped (useTabDrafts).
+export const apiTakeDraftReplay = calls.takeDraftReplay;
+export const apiDiscardDraft = calls.discardDraft;
+export const onTabDraft = calls.onDraft;
+
+// A peer's save moves the base copy (docs/specs/006-design/delta-saves.md): the digest a save of a tab that wrote a
+// revision announces to the room (`tab-saved`), and a peer's announcement taken over the tab as the baseline holds it.
+export const apiSavedTabDigest = calls.savedDigest;
+export const apiAdoptPeerSave = calls.adoptPeerSave;
 
 // The tab alone, for callers that need no revision (a duplicate, Take Offline, the Drive mirror).
 export const apiLoadTab = calls.loadTab;

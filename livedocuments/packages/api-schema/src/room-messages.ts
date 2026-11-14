@@ -1,4 +1,5 @@
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
+import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { CollabKeyMessage } from '@liveworkspace/api-schema/collab-key';
@@ -78,6 +79,10 @@ export const MUTATION_OP_KINDS = [
   'el',
   // One checklist tick or comment change on one element (docs/specs/012-collaboration/collab-race-hardening.md).
   'el-delta',
+  // An Editor's save landed, its revision and digest (docs/specs/006-document/delta-saves.md "A peer's save moves the
+  // base copy"). A mutation for its ORDER: it must reach peers after the save's element ops, and a reconnecting peer
+  // replays it after them. It writes nothing; a forged one only fails a peer's digest check.
+  'tab-saved',
   'document-meta',
   // One article's writing changing, block by block (docs/specs/007-editor/article-pages.md
   // "Collaboration"): two people writing different paragraphs merge, as `el` does for elements.
@@ -288,6 +293,9 @@ export type RoomOp =
   // whole-element `el` update replaced a peer's copy with the sender's snapshot, so two people pressing the same
   // done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // An Editor's save of a tab landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"): the
+  // revision it wrote and the digest of the elements now stored, sent after the save's element ops. Changes no content.
+  | TabSavedOp
   // An article's writing on a tab changed (docs/specs/007-editor/article-pages.md
   // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
   // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.

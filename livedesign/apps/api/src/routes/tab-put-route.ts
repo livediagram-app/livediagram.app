@@ -62,12 +62,37 @@ export async function handleTabPut(
   tabId: string,
   owner: string,
 ): Promise<Response> {
+  const read = await readBody(ctx);
+  if (read instanceof Response) return read;
+  const saved = await writeTabSave(ctx, existing, tabId, owner, read);
+  return saved instanceof Response ? saved : json({ tab: saved.tab });
+}
+
+// The stored tab as getTab answers it.
+type StoredTab = Awaited<ReturnType<typeof getTab>>;
+
+// What a whole-tab save wrote: the echo the PUT answers, the elements now stored and the revision written.
+export type SavedTab = {
+  tab: Tab & Record<string, unknown>;
+  elements: Tab['elements'];
+  rev: number;
+};
+
+// The whole-tab save's pipeline, from the body on: the PUT's, and the delta save's with the tab it rebuilt
+// (docs/specs/006-design/delta-saves.md). `stored` is a read the caller already made, used by the first attempt in
+// place of its own; a lost race reads again. Answers a Response for any refusal.
+export async function writeTabSave(
+  ctx: DesignRouteContext,
+  existing: TabSaveDesign,
+  tabId: string,
+  owner: string,
+  read: Record<string, unknown>,
+  opts: { stored?: StoredTab } = {},
+): Promise<Response | SavedTab> {
   const { request, env } = ctx;
   const id = existing.id;
   // A former stored shape (freehand points before docs/specs/006-design/stroke-points.md,
   // from a browser loaded before a deploy) is migrated, not refused.
-  const read = await readBody(ctx);
-  if (read instanceof Response) return read;
   const received = migrateIncomingTab(read) as Tab;
   // Structural schema gate (shared with the app, @livedesign/design): discriminant, required
   // fields, endpoints, array bounds + unique ids.
@@ -106,7 +131,7 @@ export async function handleTabPut(
     // first, so their before-image compare sees the save as sent; then the room's ledger.
     // The room's ledger is fetched alongside them (it needs only the tab's id), and merged after.
     const [existingTab, merge, fetchedLedger] = await Promise.all([
-      getTab(env, id, tabId),
+      attempt === 1 && opts.stored !== undefined ? opts.stored : getTab(env, id, tabId),
       mergeUnseenChangesets(ctx, incoming, seen),
       fetchRoomLedger(env, id, tabId, request.headers.get('X-Room-Cursor')),
     ]);
@@ -227,7 +252,7 @@ export async function handleTabPut(
       );
     // Echo what was just written instead of reading it back; folder is link metadata the client
     // strips before persisting, so it is absent by design.
-    return json({
+    return {
       tab: {
         ...sanitised,
         id: tabId,
@@ -238,7 +263,9 @@ export async function handleTabPut(
         rev,
         ...(kept ? { connection: kept } : {}),
       },
-    });
+      elements: sanitised.elements,
+      rev,
+    };
   }
   return conflict('tab_busy');
 }

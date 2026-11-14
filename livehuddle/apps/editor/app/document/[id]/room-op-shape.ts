@@ -7,6 +7,7 @@
 // apply passes, as it always has, to be ignored.
 import { isRecord } from '@livehuddle/document';
 import type { RoomOp } from '@livehuddle/api-schema';
+import { tabSavedIsWellFormed } from '@liveworkspace/api-schema/tab-delta';
 
 const isText = (v: unknown): v is string => typeof v === 'string';
 const isOptionalList = (v: unknown) => v === undefined || Array.isArray(v);
@@ -48,6 +49,8 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
         (op.elementOps === undefined ||
           (Array.isArray(op.elementOps) && op.elementOps.every((o) => isElementOpShape(o, false))))
       );
+    case 'tab-saved':
+      return tabSavedIsWellFormed(op);
     case 'tab-meta':
       return isText(op.tabId) && isRecord(op.patch) && isOptionalList(op.clear);
     case 'document-meta':

@@ -1,6 +1,7 @@
 import { diffToElementOps, type ElementOp, type Tab } from '@livediagram/document';
 import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
 import { placedImageIds } from '@liveworkspace/media';
+import { announceTabSave } from '@liveworkspace/workbench/lib/api/tab-saved';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
 
@@ -57,25 +58,8 @@ export async function saveTabAndRelay<R>(
     throw err;
   }
   relay(ops, room(), release);
-  if (digestOf && typeof saved === 'number') await announceSave(tab.id, saved, room, digestOf);
+  if (digestOf && typeof saved === 'number') await announceTabSave(tab.id, saved, room, digestOf);
   return saved;
-}
-
-// The revision a save wrote and the digest of what is stored at it, when this editor holds that copy. Never throws:
-// an announcement is an optimisation, and a peer without one saves whole as before.
-async function announceSave(
-  tabId: string,
-  rev: number,
-  room: () => SaveRoom | null,
-  digestOf: (tabId: string, rev: number) => Promise<string | null>,
-): Promise<void> {
-  if (!room()) return;
-  try {
-    const digest = await digestOf(tabId, rev);
-    if (digest) room()?.send({ kind: 'op', op: { kind: 'tab-saved', tabId, rev, digest } });
-  } catch {
-    // Nothing announced.
-  }
 }
 
 // Sends the ops in order. Held element ops go through `sequence`, and the hold is released once the room has

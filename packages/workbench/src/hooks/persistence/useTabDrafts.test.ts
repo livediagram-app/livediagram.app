@@ -1,32 +1,38 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
-import type { TabDraftEvent } from '@liveworkspace/workbench/lib/api/tab-drafts';
-import { draftDroppedMessage, draftRestoredMessage, useTabDrafts, withDraft } from './useTabDrafts';
+import type { TabDraftEvent } from '../../lib/api/tab-drafts';
+import {
+  draftDroppedMessage,
+  draftRestoredMessage,
+  useTabDrafts,
+  withDraft,
+  type TabDraftDoors,
+} from './useTabDrafts';
 
-// The editor's side of the drafts (docs/specs/006-document/delta-saves.md "Drafts of unsaved changes"): a draft a
-// load put back goes on screen over its stored tab for an Editor, and one overtaken is said.
+// The editor's side of the drafts (each product's docs/specs/006-*/delta-saves.md "Drafts of unsaved changes"): a
+// draft a load put back goes on screen over its stored tab for an Editor, and one overtaken is said.
+
+type Tab = { id: string; name: string; elements: unknown[]; folder?: string };
 
 const listeners = new Set<(e: TabDraftEvent) => void>();
 const replays = new Map<string, Tab>();
 const discarded: string[] = [];
-vi.mock('@/lib/api-client', () => ({
-  onTabDraft: (listener: (e: TabDraftEvent) => void) => {
+const drafts: TabDraftDoors<Tab> = {
+  onDraft: (listener) => {
     listeners.add(listener);
     return () => listeners.delete(listener);
   },
-  apiDiscardDraft: (ownerId: string, itemId: string, tabId: string) =>
-    void discarded.push(`${ownerId}/${itemId}/${tabId}`),
-  apiTakeDraftReplay: (ownerId: string, itemId: string, tabId: string) => {
+  discard: (ownerId, itemId, tabId) => void discarded.push(`${ownerId}/${itemId}/${tabId}`),
+  takeReplay: (ownerId, itemId, tabId) => {
     const key = `${ownerId}/${itemId}/${tabId}`;
     const tab = replays.get(key) ?? null;
     replays.delete(key);
     return tab;
   },
-}));
+};
 
-const el = (id: string, label: string) => ({ id, type: 'text', x: 0, y: 0, label }) as never;
+const el = (id: string, label: string) => ({ id, type: 'text', x: 0, y: 0, label });
 const storedTab: Tab = { id: 't1', name: 'Board', elements: [el('a', 'stored')], folder: 'F' };
 const draftTab: Tab = { id: 't1', name: 'Board', elements: [el('a', 'draft')] };
 
@@ -64,7 +70,7 @@ describe('useTabDrafts', () => {
     discarded.length = 0;
   });
 
-  function mount(over: { mayEdit?: boolean; loaded?: string[]; documentId?: string | null } = {}) {
+  function mount(over: { mayEdit?: boolean; loaded?: string[]; itemId?: string | null } = {}) {
     const tabsRef = { current: [storedTab] };
     const lastSavedTabsRef = { current: [storedTab] };
     const applied: Tab[][] = [];
@@ -74,8 +80,9 @@ describe('useTabDrafts', () => {
     });
     const toast = { info: vi.fn(), warning: vi.fn() };
     const props = {
+      drafts,
       hydrated: true,
-      documentId: over.documentId === undefined ? 'd1' : over.documentId,
+      itemId: over.itemId === undefined ? 'd1' : over.itemId,
       selfId: 'me',
       mayEdit: over.mayEdit ?? true,
       tabsRef,
@@ -123,8 +130,8 @@ describe('useTabDrafts', () => {
     expect(replays.has('me/d1/t1')).toBe(true);
   });
 
-  it('no document, nothing taken', () => {
-    const { emit, applyLoaded } = mount({ documentId: null });
+  it('no item, nothing taken', () => {
+    const { emit, applyLoaded } = mount({ itemId: null });
     replays.set('me/d1/t1', draftTab);
     emit({});
     expect(applyLoaded).not.toHaveBeenCalled();
@@ -147,7 +154,7 @@ describe('useTabDrafts', () => {
     expect(toast.info).toHaveBeenCalledWith(draftRestoredMessage(null));
   });
 
-  it('says when a draft was overtaken, for this document and person only', () => {
+  it('says when a draft was overtaken, for this item and person only', () => {
     const { emit, toast } = mount();
     emit({ kind: 'stale', name: 'Board', itemId: 'other' });
     emit({ kind: 'stale', name: 'Board', ownerId: 'someone' });
@@ -156,14 +163,14 @@ describe('useTabDrafts', () => {
     expect(toast.warning).toHaveBeenCalledWith(draftDroppedMessage('Board'));
   });
 
-  it('says a draft dropped before the document id is known, once it is', () => {
-    const { hook, props, emit, toast } = mount({ documentId: null });
+  it('says a draft dropped before the item id is known, once it is', () => {
+    const { hook, props, emit, toast } = mount({ itemId: null });
     emit({ kind: 'stale', name: 'Board' });
     expect(toast.warning).not.toHaveBeenCalled();
-    hook.rerender({ ...props, documentId: 'd1' });
+    hook.rerender({ ...props, itemId: 'd1' });
     expect(toast.warning).toHaveBeenCalledTimes(1);
     expect(toast.warning).toHaveBeenCalledWith(draftDroppedMessage('Board'));
-    hook.rerender({ ...props, documentId: 'd1', hydrated: false });
+    hook.rerender({ ...props, itemId: 'd1', hydrated: false });
     expect(toast.warning).toHaveBeenCalledTimes(1);
   });
 });

@@ -48,6 +48,7 @@
     "./room-presence-relay": "./src/room-presence-relay.ts",
     "./room-roster": "./src/room-roster.ts",
     "./sealed": "./src/sealed.ts",
+    "./tab-delta-door": "./src/tab-delta-door.ts",
     "./tab-order": "./src/tab-order.ts",
     "./tab-swap": "./src/tab-swap.ts",
     "./testing/service-d1": "./src/testing/service-d1.ts",

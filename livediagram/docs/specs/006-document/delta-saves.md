@@ -81,7 +81,8 @@ The autosave sends deltas, and so does the unload flush (below, [Unload](#unload
   save, retried as today ([Per-tab storage](per-tab-storage.md#a-refused-save-stops-a-failed-save-doesnt)). The
   whole save's own refusals (`409 empty_tab_overwrite_blocked`, `409 tab_busy`, `403`, `413`) reach the editor from
   a delta exactly as from the whole save.
-- Only livediagram's editor sends deltas; the other editors' saves stay whole until their own cards turn it on.
+- Every editor sends deltas the same way: liveplanner, livedocuments, livedesign and livehuddle bind the same door
+  (`@liveworkspace/api-kit/tab-delta-door`) and the same editor side (Work Tracker 802 to 805), each in its own spec.
 - The room relay and the own-write hold are unchanged: the ops are derived at the snapshot and relayed after the save
   lands, whichever way it went ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)).
 - The unload flush sends a delta where it has one, so a large tab's last edits fit the keepalive budget (Work Tracker
@@ -213,8 +214,9 @@ of each tab the flush sends, in this browser, and the next load decides what to 
   ops, so the delta path can never store anything a whole-tab save would not have.
 - **The other fields go whole.** A tab's name, kind, mode, layers and settings are a few hundred bytes; only elements
   grow with the board.
-- **livediagram first.** The other editors (liveplanner, livedocuments, livedesign, livehuddle) follow on their own
-  cards; the shared envelope (`@liveworkspace/api-schema/tab-delta`) is theirs to reuse.
+- **livediagram first, then one door for all.** The other editors (liveplanner, livedocuments, livedesign,
+  livehuddle) followed on their own cards (Work Tracker 802 to 805). The api's door (`answerTabDelta`), the drafts'
+  store and hook and the announcement moved into `packages/` then, so every product binds one copy.
 
 ## What this does not change
 

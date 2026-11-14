@@ -72,7 +72,11 @@ export async function handleTabPut(
 type StoredTab = Awaited<ReturnType<typeof getTab>>;
 
 // What a whole-tab save wrote: the echo the PUT answers, and the elements now stored.
-export type SavedTab = { tab: Tab & Record<string, unknown>; elements: Tab['elements'] };
+export type SavedTab = {
+  tab: Tab & Record<string, unknown>;
+  elements: Tab['elements'];
+  rev: number;
+};
 
 // The whole-tab save's pipeline, from the body on: the PUT's, and the delta save's with the tab it rebuilt
 // (docs/specs/006-document/delta-saves.md). `stored` is a read the caller already made, used by the first attempt
@@ -243,6 +247,7 @@ export async function writeTabSave(
         ...(kept ? { connection: kept } : {}),
       },
       elements: sanitised.elements,
+      rev,
     };
   }
   return conflict('tab_busy');

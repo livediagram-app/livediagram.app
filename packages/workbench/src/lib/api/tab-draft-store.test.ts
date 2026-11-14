@@ -1,14 +1,13 @@
 import 'fake-indexeddb/auto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TabDraftRecord } from '@liveworkspace/workbench/lib/api/tab-drafts';
-import {
-  TAB_DRAFTS_DB,
-  TAB_DRAFT_READ_TIMEOUT_MS,
-  resetTabDraftStoreForTests,
-  tabDraftStore,
-} from './tab-draft-store';
+import type { TabDraftRecord } from './tab-drafts';
+import { TAB_DRAFT_READ_TIMEOUT_MS, createTabDraftStore } from './tab-draft-store';
 
-// The drafts' IndexedDB store (docs/specs/006-document/delta-saves.md "Drafts of unsaved changes"): reads, writes and
+const TAB_DRAFTS_DB = 'test-drafts';
+const tabDraftStore = createTabDraftStore(TAB_DRAFTS_DB);
+const resetTabDraftStoreForTests = () => tabDraftStore.reset();
+
+// The drafts' IndexedDB store (each product's docs/specs/006-*/delta-saves.md "Drafts of unsaved changes"): reads, writes and
 // removes on one kept connection, and an editor that works on when IndexedDB does not.
 
 const record: TabDraftRecord = {
@@ -123,6 +122,34 @@ describe('tabDraftStore', () => {
     expect(await tabDraftStore.read('k')).toBeUndefined();
     // Closing a connection that is already gone is fine.
     expect(() => resetTabDraftStoreForTests()).not.toThrow();
+  });
+
+  it('opens again after the browser closes its connection', async () => {
+    let opens = 0;
+    const conn: Record<string, unknown> = {
+      transaction: () => ({
+        objectStore: () => ({
+          get: () => {
+            const req: Record<string, unknown> = { result: record };
+            setTimeout(() => (req.onsuccess as () => void)());
+            return req;
+          },
+        }),
+      }),
+      close: () => {},
+    };
+    vi.stubGlobal('indexedDB', {
+      open: () => {
+        opens += 1;
+        const req: Record<string, unknown> = { result: conn };
+        setTimeout(() => (req.onsuccess as () => void)());
+        return req;
+      },
+    });
+    expect(await tabDraftStore.read('k')).toEqual(record);
+    (conn.onclose as () => void)();
+    expect(await tabDraftStore.read('k')).toEqual(record);
+    expect(opens).toBe(2);
   });
 
   it('a read that never answers gives up after its time, so the load goes on', async () => {

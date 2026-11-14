@@ -81,6 +81,9 @@ export type RoomConnectionOptions = {
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
+  // A peer's save landed (docs/specs/006-project/delta-saves.md "A peer's save moves the base copy"): the tab as
+  // the autosave's baseline holds it, and the revision and digest the save announced. Absent, nothing is taken.
+  receiveTabSaved?: (tab: Tab, rev: number, digest: string) => void;
   // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). System-only.
   receiveItems: (op: ItemsRoomOp) => void;
   // A card comment thread's write (docs/specs/026-plan/items.md "Comments"), from any plan the thread is on.

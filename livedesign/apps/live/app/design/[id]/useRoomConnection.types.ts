@@ -88,6 +88,9 @@ export type RoomConnectionOptions = {
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
+  // A peer's save landed (docs/specs/006-design/delta-saves.md "A peer's save moves the base copy"): the tab as
+  // the autosave's baseline holds it, and the revision and digest the save announced. Absent, nothing is taken.
+  receiveTabSaved?: (tab: Tab, rev: number, digest: string) => void;
   // A main stored in the design's component library (docs/specs/009-elements/components.md "Sharing, collaboration
   // and storage"), announced by the worker to every session that may see it.
   receiveComponent?: (op: ComponentRoomOp) => void;

@@ -25,6 +25,24 @@ import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
+import type { Tab } from '@livedesign/design';
+import {
+  useTabDrafts,
+  type TabDraftDoors,
+} from '@liveworkspace/workbench/hooks/persistence/useTabDrafts';
+import {
+  apiAdoptPeerSave,
+  apiDiscardDraft,
+  apiTakeDraftReplay,
+  onTabDraft,
+} from '@/lib/api-client';
+
+// This editor's tab calls' draft doors, for the shared drafts hook (read when called).
+const TAB_DRAFT_DOORS: TabDraftDoors<Tab> = {
+  takeReplay: (...args) => apiTakeDraftReplay(...args),
+  discard: (...args) => apiDiscardDraft(...args),
+  onDraft: (listener) => onTabDraft(listener),
+};
 
 // No elements, one stable list (an empty design before its first tab).
 const NO_ELEMENTS: Element[] = [];
@@ -99,6 +117,7 @@ export function useEditorCollaboration({
     setRemoteViewports,
     setFollowerIds,
     followingRef,
+    loadedTabIds,
     loadedTabIdsRef,
     setLoadedTabIds,
     setTabLoadErrors,
@@ -242,6 +261,12 @@ export function useEditorCollaboration({
     receiveDesignTrashed: () => designTrashed.setDesignTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    // A peer's landed save moves this Editor's delta base copy, when its baseline proves to hold what was stored
+    // (docs/specs/006-design/delta-saves.md "A peer's save moves the base copy"). Nobody else saves deltas.
+    receiveTabSaved: (tab, rev, digest) => {
+      if (!designId || !canEdit || participant.participating) return;
+      void apiAdoptPeerSave(designId, tab, rev, digest);
+    },
     receiveComponent: componentLibrary.receiveComponent,
     receivePhotoPresence: photoPresence.receive,
     onRoomJoined: () => {
@@ -249,6 +274,21 @@ export function useEditorCollaboration({
       // A rejoined connection has a new presence id, which carries no hold until it is said again.
       photoPresence.reannounce();
     },
+  });
+
+  // This browser's drafts of unsaved changes: one a load put back goes on screen and saves, one overtaken is said
+  // (docs/specs/006-design/delta-saves.md "Drafts of unsaved changes").
+  useTabDrafts({
+    drafts: TAB_DRAFT_DOORS,
+    hydrated,
+    itemId: designId,
+    selfId: selfParticipant.id,
+    mayEdit: canEdit && !participant.participating,
+    tabsRef,
+    lastSavedTabsRef,
+    loadedTabIds,
+    applyLoaded: applyRemoteOp,
+    toast,
   });
 
   // Broadcast local selection + active-tab focus to peers (presence

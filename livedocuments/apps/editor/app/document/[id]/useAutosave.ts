@@ -1,6 +1,7 @@
 import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from 'react';
 import type { Tab } from '@livedocuments/document';
 import {
+  apiSavedTabDigest,
   apiDeleteTab,
   apiSaveDocumentMeta,
   apiSaveTab,
@@ -76,8 +77,11 @@ const DEPS: AutosaveDeps<
   prepareTabSave: (...args) => prepareTabSave(...args),
   relayParticipantChanges: (before, tab, room, writes) =>
     relayParticipantChanges(before, tab, room, writes),
+  // Each landed save is announced with its digest, so a peer's next save can be a delta (delta-saves.md).
   saveTabAndRelay: (before, tab, room, put, prepared) =>
-    saveTabAndRelay(before, tab, room, put, prepared),
+    saveTabAndRelay(before, tab, room, put, prepared, (tabId, rev) =>
+      apiSavedTabDigest(tabId, rev),
+    ),
   baseline: {
     open: (journal) => openSaveWindow(journal),
     close: (journal) => closeSaveWindow(journal),

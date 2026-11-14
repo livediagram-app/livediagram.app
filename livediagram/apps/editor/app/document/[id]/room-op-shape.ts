@@ -7,11 +7,10 @@
 // apply passes, as it always has, to be ignored.
 import { isRecord } from '@livediagram/document';
 import type { RoomOp } from '@livediagram/api-schema';
+import { tabSavedIsWellFormed } from '@liveworkspace/api-schema/tab-delta';
 
 const isText = (v: unknown): v is string => typeof v === 'string';
 const isOptionalList = (v: unknown) => v === undefined || Array.isArray(v);
-// A SHA-256 in lowercase hex, as the delta save's digest is spelled.
-const DIGEST = /^[0-9a-f]{64}$/;
 
 // One element op: an add or update carries an element with an id and a type, a remove an id, a reorder a list
 // of ids, a patch (the room's, for a Participant's change) an id and the fields it sets.
@@ -55,13 +54,7 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
     case 'tab-meta':
       return isText(op.tabId) && isRecord(op.patch) && isOptionalList(op.clear);
     case 'tab-saved':
-      return (
-        isText(op.tabId) &&
-        Number.isSafeInteger(op.rev) &&
-        (op.rev as number) >= 0 &&
-        isText(op.digest) &&
-        DIGEST.test(op.digest)
-      );
+      return tabSavedIsWellFormed(op);
     case 'document-meta':
       return (
         isText(op.name) &&

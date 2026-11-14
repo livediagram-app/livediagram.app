@@ -160,6 +160,22 @@ export function planTabDeltaSync<E extends { id: string }>(
   return planOf(draft, digest);
 }
 
+/** The room op an Editor sends once its save of a tab lands (delta-saves.md "A peer's save moves the base copy"): the
+ *  revision it wrote and the digest of the elements now stored, after the save's element ops. A peer whose save
+ *  baseline hashes to `digest` holds it as its base copy at `rev`. Changes no content; every product's room relays
+ *  it as a mutation op, for its order. */
+export type TabSavedOp = { kind: 'tab-saved'; tabId: string; rev: number; digest: string };
+
+/** Whether a received `tab-saved` op's fields are well formed: a tab id, a whole revision and a digest. */
+export function tabSavedIsWellFormed(op: Record<string, unknown>): boolean {
+  return (
+    typeof op.tabId === 'string' &&
+    isWhole(op.rev) &&
+    typeof op.digest === 'string' &&
+    DIGEST.test(op.digest)
+  );
+}
+
 function planOf(
   draft: NonNullable<ReturnType<typeof draftTabDelta>>,
   digest: string,

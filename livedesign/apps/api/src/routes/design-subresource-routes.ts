@@ -8,6 +8,8 @@ import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { tabEtag } from '@livedesign/api-schema';
 import { handlePhotoBlobRoutes } from './photo-blob-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
+import { handleTabDelta } from './tab-delta-route';
+import { TAB_DELTA_SEGMENT } from '@liveworkspace/api-schema/tab-delta';
 import { handleTabRename } from './tab-name-route';
 import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
@@ -70,6 +72,25 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
     request.method === 'PUT'
   ) {
     return handleTabRename(ctx, segments[2]!, segments[4]!);
+  }
+  if (
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === TAB_DELTA_SEGMENT &&
+    request.method === 'POST'
+  ) {
+    const id = segments[2]!;
+    const tabId = segments[4]!;
+    // The tab PUT's doors, in its order (docs/specs/006-design/delta-saves.md "How the api applies it").
+    const refused = refuseTokenTabPut(ctx, id, tabId);
+    if (refused) return refused;
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    const saving = await getDesignForSave(env, id);
+    if (!saving) return missingDesign(ctx, id);
+    const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
+    if (!allowed) return deniedEdit(ctx, id, tabId);
+    return handleTabDelta(ctx, saving, tabId, owner);
   }
   if (segments.length === 5 && segments[3] === 'tabs') {
     const id = segments[2]!;

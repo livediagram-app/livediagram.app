@@ -5,6 +5,7 @@ Follow the references below only as needed; never upfront.
 - ./project.md - when naming things: a project holds tabs; Board, Sheet, Dashboard and Form are tab kinds; every tab is in Plan
 - ./project-structure.md - when working on Project structure: Projects contain tabs; elements can link across tabs
 - ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own rows so autosave scope shrinks
+- ./delta-saves.md - when working on Delta saves: an Editor's autosave sends only the changed elements as element ops over the stored copy (POST .../tabs/:tabId/delta), proved by a digest, the whole tab on a refusal; a peer's announced save moves the base copy; drafts of the unload flush's tabs
 - ./tab-project-many-to-many.md - when working on Tab ↔ project many-to-many: tabs shared between plans, kept in step (Add to Plan is not offered)
 - ./tab-folders.md - when working on Tab folders: Group a project's tabs into one-level named folders that open in place from one chip
 - ./project-snapshots.md - when working on project previews: what a plan draws for liveworkspace's previews (the Explorer thumbnail, the live image, the share card) through its export door, and the Explorer thumbnail's cache, loader and empty rows
