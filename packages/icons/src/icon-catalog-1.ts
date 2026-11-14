@@ -317,7 +317,7 @@ export const ICON_CATALOG_1: IconDef[] = [
   },
   {
     id: 'check-circle',
-    label: 'Check',
+    label: 'Check circle',
     keywords: 'done complete success tick ok approved',
     prims: [
       { t: 'path', d: 'M22 11.08V12a10 10 0 1 1-5.93-9.14' },

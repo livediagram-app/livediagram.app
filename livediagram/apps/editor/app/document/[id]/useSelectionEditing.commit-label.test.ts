@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   PADDING_PX,
   createShape,
+  createSticky,
   createText,
   type Element,
   type ShapeElement,
@@ -31,14 +32,23 @@ function setup(
   let elements: Element[] = [el];
   const setEditingId = vi.fn();
   const setSelectedId = vi.fn();
-  const tab = { id: 't', name: 'Tab 1', elements } as Tab;
+  const tickTabs = vi.fn();
+  const adoptLayerName = vi.fn();
+  // The tab reads the elements as they are now, as the next render would, so a type-to-edit's seed shows in it.
+  const tab = {
+    id: 't',
+    name: 'Tab 1',
+    get elements() {
+      return elements;
+    },
+  } as Tab;
   const { result } = renderHook(() =>
     useSelectionEditing({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
       isReadOnly: false,
       tabLocked,
       layerInertIds: new Set(),
-      adoptLayerName: vi.fn(),
+      adoptLayerName,
       formatSourceId: null,
       formatToolActive: false,
       documentName,
@@ -50,7 +60,7 @@ function setup(
         elements = fn(elements);
       },
       discardLastStep: vi.fn(),
-      tickTabs: vi.fn(),
+      tickTabs,
       applyFormatFromSource: vi.fn(),
       lockedByOther: () => false,
       set: {
@@ -66,6 +76,9 @@ function setup(
   );
   return {
     setDocumentName,
+    tickTabs,
+    adoptLayerName,
+    result,
     setEditingId,
     setSelectedId,
     editing: result.current,
@@ -121,6 +134,51 @@ describe('commitLabel', () => {
     expect(s.saved().label).toBe('Yes');
     s.editing.commitLabel('a', '\n ');
     expect('label' in s.saved()).toBe(false);
+  });
+});
+
+// Work Tracker 750 (docs/specs/006-document/document-structure.md "Only a changed label names anything"): the
+// welcome card or a template's title is the first element, so opening its own label and leaving it unchanged used to
+// name an untitled document, its tab and its layer after it. Only a changed label names them.
+describe('the first label names the document, the tab and the layer only when it changed', () => {
+  // A note, as Draw mode (this setup's) takes typing on one.
+  const welcome = { ...createSticky(0, 0), id: 'welcome', label: 'Welcome' } as Element;
+
+  it('leaves every name alone when the first label is committed unchanged', () => {
+    const s = setup(welcome, false, 'welcome', 'Untitled canvas');
+    s.editing.commitLabel('welcome', 'Welcome');
+    // Whitespace the save trims away is no change either.
+    s.editing.commitLabel('welcome', ' Welcome\n');
+    expect(s.setDocumentName).not.toHaveBeenCalled();
+    expect(s.tickTabs).not.toHaveBeenCalled();
+    expect(s.adoptLayerName).not.toHaveBeenCalled();
+  });
+
+  it('still names them after a label someone typed', () => {
+    const s = setup(welcome, false, 'welcome', 'Untitled canvas');
+    s.editing.commitLabel('welcome', 'Launch plan');
+    expect(s.setDocumentName).toHaveBeenCalledWith('Launch plan');
+    expect(s.tickTabs).toHaveBeenCalledTimes(1);
+    const rename = s.tickTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
+    const tab = { id: 't', name: 'Tab 1', elements: [] } as unknown as Tab;
+    expect(rename([tab])[0]!.name).toBe('Launch plan');
+    expect(s.adoptLayerName).toHaveBeenCalledWith('welcome', 'Launch plan');
+  });
+
+  it('counts a type-to-edit by the label it replaced, so one typed letter still names them', () => {
+    const s = setup(welcome, false, null, 'Untitled canvas');
+    expect(s.editing.typeIntoSelected('welcome', 'W')).toBe(true);
+    s.result.current.commitLabel('welcome', 'W');
+    expect(s.setDocumentName).toHaveBeenCalledWith('W');
+    expect(s.tickTabs).toHaveBeenCalledTimes(1);
+  });
+
+  it('a type-to-edit that ends where the label began names nothing', () => {
+    const s = setup(welcome, false, null, 'Untitled canvas');
+    s.editing.typeIntoSelected('welcome', 'W');
+    s.result.current.commitLabel('welcome', 'Welcome');
+    expect(s.setDocumentName).not.toHaveBeenCalled();
+    expect(s.tickTabs).not.toHaveBeenCalled();
   });
 });
 

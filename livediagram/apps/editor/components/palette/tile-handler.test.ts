@@ -1,5 +1,5 @@
 // A tile pressed again while its tool is armed puts the tool down (docs/specs/008-canvas/canvas-and-palette.md
-// "Placement on add"); a marker keeps its press.
+// "Placement on add"), a held marker as well: its colour and width are Draw mode's to set (Work Tracker 756).
 import { describe, expect, it, vi } from 'vitest';
 import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 
@@ -36,13 +36,24 @@ describe('a palette tile pressed', () => {
     expect(a.cancelDraw).toHaveBeenCalledTimes(2);
   });
 
-  it('arms another tool over an armed one, and leaves a marker its own press', () => {
+  it('arms another tool over an armed one, and picks a marker up over another pen', () => {
     const a = actions();
     tileHandler(pen, a, { type: 'shape', kind: 'square' } as never)();
     expect(a.beginFreehand).toHaveBeenCalled();
     tileHandler(marker, a, { type: 'freehand' } as never)();
     expect(a.beginMarker).toHaveBeenCalledWith('marker');
     expect(a.cancelDraw).not.toHaveBeenCalled();
+  });
+
+  it('puts a held marker down when its tile is pressed again, as any tool', () => {
+    const a = actions();
+    tileHandler(marker, a, {
+      type: 'freehand',
+      variant: 'whiteboard',
+      penId: 'marker',
+    } as never)();
+    expect(a.cancelDraw).toHaveBeenCalledTimes(1);
+    expect(a.beginMarker).not.toHaveBeenCalled();
   });
 });
 

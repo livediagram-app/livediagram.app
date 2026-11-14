@@ -118,6 +118,28 @@ Their borders do not double up when flush, because a lane's outline is a
 single hairline drawn on the CSS box path rather than two frames' borders
 meeting.
 
+## A title wraps in its gutter
+
+A title reading across a side strip (pinned left, right, or centred both ways) lays out in **the strip**, not the
+whole lane (`acrossTitleStrip`, `packages/element-model/src/lane-gutter.ts`). A title longer than the gutter is wide
+wraps onto more lines inside it, rather than running on past the seam into the lane's work, and past
+`LANE_TITLE_MAX_LINES` (3) lines the last one ends in an ellipsis.
+
+- **Whole words.** A title breaks only between words, never inside one ("Customer Engineering" reads "Customer" /
+  "Engineering", never "Custom" / "er"). The strip keeps at most the small padding (6 px) from its edges
+  (`acrossTitlePadding`), so the default 132 px gutter gives the words 120 px.
+- **A long word steps down first.** When a word is wider than the line, a plain title draws a size or two smaller,
+  down to the small text size (14 px), so "Infrastructure" or "Development" still reads whole (`wholeWordFontPx`).
+  Only a word too wide even then ends in an ellipsis rather than splitting (`fitWholeWordLines`).
+- **The editor shows it all.** While a title is edited nothing clips and the editor hangs from the strip's top,
+  growing down past the lane if it must, so every line is in view and every word reachable, on desktop and phone.
+- The full title is still the label, and dragging the seam wider gives the words their room back. A band across the
+  top or bottom keeps the lane's width for its title, and an upright title wraps as below.
+
+The canvas (`lane-title-frame.ts`) and every export lay the title out alike: SVG and PNG, a plain title
+(`fitWholeWordLines`) and a formatted one (`clampExportRunLines`; on the canvas a CSS line clamp that keeps words
+whole).
+
 ## Upright titles
 
 A swimlane drawn as a stack of wide rows often reads its titles **upright**, turned a quarter to

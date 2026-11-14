@@ -105,6 +105,85 @@ export function wrapLabel(
   return out;
 }
 
+// Wrapped lines held to `maxLines`, the last ending in an ellipsis when any were left over, as the canvas's line
+// clamp draws it (a lane title in its gutter, docs/specs/009-elements/lane.md "A title wraps in its gutter").
+// Characters come off the kept last line, as a reader sees them, until it and the ellipsis fit.
+export function clampLabelLines(
+  lines: readonly string[],
+  maxLines: number,
+  maxWidth: number,
+  measure: (s: string) => number,
+): string[] {
+  if (lines.length <= maxLines) return [...lines];
+  const kept = lines.slice(0, Math.max(1, maxLines));
+  const chars = graphemes(kept[kept.length - 1]!.trimEnd());
+  while (chars.length > 0 && measure(`${chars.join('')}…`) > maxWidth) chars.pop();
+  kept[kept.length - 1] = `${chars.join('').trimEnd()}…`;
+  return kept;
+}
+
+// A title laid out in whole words (a lane title in its gutter, docs/specs/009-elements/lane.md "A title wraps in
+// its gutter"): wrapped only between words, never inside one; a single word wider than the line ends in an
+// ellipsis rather than splitting ("Customer" never becomes "Custom" / "er"); then held to `maxLines`.
+export function fitWholeWordLines(
+  text: string,
+  maxWidth: number,
+  maxLines: number,
+  measure: (s: string) => number,
+): string[] {
+  // The most of a word that fits beside an ellipsis, found by halving (a prefix only grows wider), so a pasted word
+  // thousands of characters long costs a few dozen measures, not one per character.
+  const cutWord = (word: string) => {
+    const chars = graphemes(word);
+    let lo = 0;
+    let hi = chars.length;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (measure(`${chars.slice(0, mid).join('')}…`) <= maxWidth) lo = mid;
+      else hi = mid - 1;
+    }
+    return `${chars.slice(0, lo).join('').trimEnd()}…`;
+  };
+  const lines = wrapLabel(text, maxWidth, measure, false).map((line) =>
+    measure(line) <= maxWidth ? line : cutWord(line),
+  );
+  if (lines.length <= maxLines) return lines;
+  // More lines than room: the last kept one ends in an ellipsis, losing whole words from its end first.
+  const kept = lines.slice(0, Math.max(1, maxLines));
+  const words = kept[kept.length - 1]!.replace(/…$/, '').split(' ').filter(Boolean);
+  while (words.length > 1 && measure(`${words.join(' ')}…`) > maxWidth) words.pop();
+  const end = `${words.join(' ')}…`;
+  kept[kept.length - 1] = measure(end) <= maxWidth ? end : cutWord(words.join(' '));
+  return kept;
+}
+
+// The px a whole-word title draws at (a lane title in its gutter): its own size when every word fits the line, else
+// the largest whole px down to `floor` (the small text size) at which they do, so "Infrastructure" steps down a size
+// or two and reads whole before any word ends in an ellipsis. Found by halving: a few measures per word.
+export function wholeWordFontPx(
+  text: string,
+  maxWidth: number,
+  px: number,
+  measureAt: (px: number) => (s: string) => number,
+  floor = 14,
+): number {
+  const words = text.split(/\s+/).filter(Boolean);
+  const fits = (size: number) => {
+    const measure = measureAt(size);
+    return words.every((word) => measure(word) <= maxWidth);
+  };
+  if (words.length === 0 || px <= floor || fits(px)) return px;
+  if (!fits(floor)) return floor;
+  let lo = floor;
+  let hi = Math.ceil(px) - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (fits(mid)) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo;
+}
+
 // The width of a label with no canvas to measure it: a rough share of the font size a character
 // (each product's lint, LN4, in its docs/specs/024-agents/blueprints). Headless renders and the lint both wrap with
 // it, so the lint judges the text an agent's preview shows.

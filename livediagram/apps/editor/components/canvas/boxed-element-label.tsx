@@ -4,7 +4,12 @@
 // on what it reads, as it did inline; its hooks run in the order they did there.
 import {
   PADDING_PX,
+  acrossTitlePadding,
+  acrossTitleStrip,
   defaultPadding,
+  hasRichFormatting,
+  labelFontPx,
+  type TextRun,
   isSelfDrawingShape,
   isUprightTitle,
   uprightTitleStrip,
@@ -14,7 +19,7 @@ import {
   type TextSize,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
-import { uprightTitleFrame } from '@/components/canvas/upright-title';
+import { laneTitleFrame, laneTitleText } from '@/components/canvas/lane-title-frame';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
@@ -80,7 +85,22 @@ export function useBoxedLabel(
     element.type === 'shape' && element.shape === 'lane' && isUprightTitle(element)
       ? uprightTitleStrip(element, element.width, element.height)
       : null;
-  const labelFrame = uprightStrip ? uprightTitleFrame(uprightStrip) : null;
+  // A title reading across a side gutter wraps in its strip, in whole words, ending in an ellipsis past three
+  // lines (docs/specs/009-elements/lane.md "A title wraps in its gutter"); an upright one turns in it.
+  const acrossStrip =
+    element.type === 'shape' && element.shape === 'lane'
+      ? acrossTitleStrip(element, element.width, element.height)
+      : null;
+  // A plain title at rest is laid out here, in whole words; a formatted one (its runs) is clamped by CSS.
+  const fitsTitle =
+    !!acrossStrip &&
+    !isEditing &&
+    textSize !== 'scale' &&
+    !hasRichFormatting((element as { richText?: TextRun[] }).richText);
+  const labelFrame =
+    element.type === 'shape' && element.shape === 'lane'
+      ? laneTitleFrame(element, uprightStrip, isEditing, fitsTitle)
+      : null;
 
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
@@ -90,7 +110,23 @@ export function useBoxedLabel(
   const labelPadding = uprightStrip
     ? // A one-line strip has no room for a roomy padding across it.
       Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
-    : PADDING_PX[element.padding ?? defaultPadding(element)];
+    : acrossStrip
+      ? // Nor a gutter: its width goes to the words (acrossTitlePadding).
+        acrossTitlePadding(PADDING_PX[element.padding ?? defaultPadding(element)])
+      : PADDING_PX[element.padding ?? defaultPadding(element)];
+  const fittedTitle =
+    fitsTitle && acrossStrip
+      ? laneTitleText(label, acrossStrip, labelPadding, {
+          px: labelFontPx(textSize),
+          bold: !!element.textBold,
+          italic: !!element.textItalic,
+          fontFamily,
+        })
+      : null;
+  const shownLabel = fittedTitle?.text ?? label;
+  // A word too wide for the gutter steps the title down a size or two first (an exact px size, wholeWordFontPx).
+  const shownTextSize =
+    fittedTitle && fittedTitle.px !== labelFontPx(textSize) ? fittedTitle.px : textSize;
   // The element's indicators, placed before the label so the content can move out of their way.
   const indicators = useElementIndicators(
     element,
@@ -106,10 +142,17 @@ export function useBoxedLabel(
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
     element,
-    label,
-    textSize,
+    shownLabel,
+    shownTextSize,
     uprightStrip ? uprightStrip.alongAlign : alignX,
-    uprightStrip ? 'middle' : iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
+    uprightStrip
+      ? 'middle'
+      : iconCaptionBand
+        ? captionBandAlignY(alignX, alignY)
+        : // An across title being edited hangs from the strip's top, so it grows down into view.
+          acrossStrip && isEditing
+          ? 'top'
+          : alignY,
     labelPadding,
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),

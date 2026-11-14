@@ -83,6 +83,20 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
 11. **Toggle.** The context menu's Text section shows **Upright Title** (switch) for a lane whose gutter
     edge is a side; on: `titleOrientation: 'upright'`, off: field removed; one `commit`. Telemetry
     `Element·Changed·LaneUprightTitle`.
+12. **Across title in a side strip.** `acrossTitleStrip(el, width, height)` is the strip (`uprightTitleStrip`'s
+    geometry, unturned) when the title is not upright and the gutter edge is `left`, `right` or `centre-x`, else
+    null. The padding inside it is `acrossTitlePadding(padding)` = `min(padding, PADDING_PX.sm)`. At rest the canvas
+    lays the label out in it (`laneTitleFrame`, `apps/editor/components/canvas/lane-title-frame.ts`: an absolute,
+    `overflow: hidden` box of the strip). A plain title is laid out ahead of render by `laneTitleText`: room =
+    `strip.width - 2 × padding - 1`, the px from `wholeWordFontPx` (the label's px when every word fits, else the
+    largest whole px down to 14 at which they do, found by halving), then `fitWholeWordLines` (wrap between words
+    only; a word still too wide keeps the most graphemes that fit beside `…`, found by halving; past 3 lines the
+    third drops whole words from its end, then is cut). It renders those lines joined by `\n` under
+    `whitespace-pre`, at the stepped px. A formatted title is clamped by `line-clamp-3` with `overflow-wrap: normal`.
+    While editing the frame is `overflow: visible`, unclamped, and the editor is top-aligned so it grows downward.
+    The export uses the same padding, `maxWidth`, `wholeWordFontPx` size (with `labelMeasure`) and `maxLines = 3`,
+    and `fitWholeWordLines`; a formatted title's runs go through `clampExportRunLines`. The PNG drawer
+    (`export-tab-canvas-draw.ts`) lays both out the same way. The stored label is never shortened.
 
 Guards:
 
@@ -117,6 +131,13 @@ export type UprightTitleStrip = { x: number; y: number; width: number; height: n
 export function uprightTitleStrip(el: LaneLike, width: number, height: number): UprightTitleStrip;
 export function isUprightTitle(el: LaneLike): boolean;
 // LaneLike gains: titleOrientation?: 'upright' | undefined
+export const LANE_TITLE_MAX_LINES = 3;
+export type LaneTitleStrip = { x: number; y: number; width: number; height: number };
+export function acrossTitleStrip(el: LaneLike, width: number, height: number): LaneTitleStrip | null;
+export function acrossTitlePadding(padding: number): number;
+// packages/element-model/src/svg-render-primitives.ts
+export function fitWholeWordLines(text: string, maxWidth: number, maxLines: number, measure: (s: string) => number): string[];
+export function wholeWordFontPx(text: string, maxWidth: number, px: number, measureAt: (px: number) => (s: string) => number, floor?: number): number;
 
 // packages/document/src/lane-seam-snapping.ts
 export const SEAM_SNAP_THRESHOLD = 8;

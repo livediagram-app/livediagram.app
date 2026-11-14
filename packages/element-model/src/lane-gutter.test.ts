@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   LANE_BAND_PX,
   LANE_GUTTER_PX,
+  LANE_TITLE_MAX_LINES,
+  acrossTitlePadding,
+  acrossTitleStrip,
   isUprightTitle,
   laneDrawnSize,
   laneSizeOfElement,
@@ -77,5 +80,51 @@ describe('laneDrawnSize', () => {
 
   it('measures a band against the lane height', () => {
     expect(laneDrawnSize({ textAlignY: 'top', headerSize: 90 }, 600, 50)).toBe(49);
+  });
+});
+
+// docs/specs/009-elements/lane.md "A title wraps in its gutter" (Work Tracker 444).
+describe('acrossTitleStrip', () => {
+  it('lays an across title out in its side strip, on whichever side the gutter hugs', () => {
+    expect(acrossTitleStrip({ textAlignX: 'left' }, 900, 200)).toEqual({
+      x: 0,
+      y: 0,
+      width: LANE_GUTTER_PX,
+      height: 200,
+    });
+    expect(acrossTitleStrip({ textAlignX: 'right', headerSize: 100 }, 900, 200)).toEqual({
+      x: 800,
+      y: 0,
+      width: 100,
+      height: 200,
+    });
+    expect(acrossTitleStrip({ textAlignX: 'center', textAlignY: 'middle' }, 900, 200)).toEqual({
+      x: 384,
+      y: 0,
+      width: LANE_GUTTER_PX,
+      height: 200,
+    });
+    // A gutter wider than the lane is held to it.
+    expect(acrossTitleStrip({ textAlignX: 'left', headerSize: 500 }, 300, 200)?.width).toBe(300);
+  });
+
+  it('has no strip for a band or an upright title', () => {
+    expect(acrossTitleStrip({ textAlignX: 'center', textAlignY: 'top' }, 900, 200)).toBeNull();
+    expect(acrossTitleStrip({ textAlignX: 'center', textAlignY: 'bottom' }, 900, 200)).toBeNull();
+    expect(
+      acrossTitleStrip({ textAlignX: 'left', titleOrientation: 'upright' }, 900, 200),
+    ).toBeNull();
+  });
+
+  it('wraps onto at most three lines', () => {
+    expect(LANE_TITLE_MAX_LINES).toBe(3);
+  });
+});
+
+describe('acrossTitlePadding', () => {
+  it('keeps at most the small padding across the strip, so the gutter goes to the words', () => {
+    expect(acrossTitlePadding(24)).toBe(6);
+    expect(acrossTitlePadding(14)).toBe(6);
+    expect(acrossTitlePadding(0)).toBe(0);
   });
 });

@@ -1,7 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import type { LabelFrame } from '@/components/canvas/lane-title-frame';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isRetiredElement } from '@livediagram/document';
 import {
   PADDING_PX,
@@ -122,8 +123,8 @@ export type ElementFaceRouterProps = Pick<
   inlineIcon: string | false | undefined;
   marker: ShapeMarker | undefined;
   iconCaptionBand: string | null;
-  // An upright lane title's turned frame (upright-title.ts), or null.
-  labelFrame: CSSProperties | null;
+  // A lane title's frame in its side strip, turned for an upright title (lane-title-frame.ts), or null.
+  labelFrame: LabelFrame | null;
   // A pen stroke or a path is picked by its drawn line (selected, its box catches pointers too).
   hitLine: boolean;
 };
@@ -416,9 +417,11 @@ export function ElementFaceRouter(props: ElementFaceRouterProps) {
             </div>
           </div>
         ) : labelFrame ? (
-          // An upright lane title (docs/specs/009-elements/lane.md "Upright titles"): the label and its
-          // editor turn together in the strip.
-          <div style={labelFrame}>{labelNode}</div>
+          // A lane title in its side strip (docs/specs/009-elements/lane.md "A title wraps in its gutter",
+          // "Upright titles"): the label and its editor lay out (and, upright, turn) together in the strip.
+          <div style={labelFrame.style} className={labelFrame.className}>
+            {labelNode}
+          </div>
         ) : iconCaptionBand ? (
           // Icon caption band (docs/specs/010-palette/technology-icons.md): the label (and the inline editor while
           // typing) fills this positioned container instead of the whole box,

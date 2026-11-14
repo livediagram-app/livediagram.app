@@ -185,7 +185,9 @@ A strip shows one category at a time, so finding an element means knowing which 
   Marker 1, 2 and 3 are built as tiles when the popover opens, from this browser's pens, each in
   its colour and width (`palette-marker-tiles`). They are always another mode's, since the strip is
   never shown in Draw. Picking one picks the pen up as the dock does, held until another tool,
-  Escape or a mode switch ([Draw mode](../023-draw-mode/draw-mode.md#pens)). The dock's other
+  Escape or a mode switch ([Draw mode](../023-draw-mode/draw-mode.md#pens)). The tile only picks
+  the pen up: its colour and width are changed in Draw mode, in the dock, never from the tile (picking it
+  closes Search, so a tile held to open a flyout was never there to press again). The dock's other
   tools are the palette's own already (Text, the shapes, the eraser), all but the Path tool, which
   the search does not offer. A
   tile matches on its name, label, blurb, description and the same synonym line the global Search

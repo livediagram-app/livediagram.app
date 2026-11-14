@@ -6,7 +6,7 @@
 // box with its title floating in the middle of the work. The editor's
 // LaneGutter component owns the drag / snapping; only the geometry is here.
 
-import type { TextAlignX, TextAlignY } from '@liveworkspace/model-core/basics';
+import { PADDING_PX, type TextAlignX, type TextAlignY } from '@liveworkspace/model-core/basics';
 
 /** Thickness of the title gutter along a lane's side, in element space. */
 export const LANE_GUTTER_PX = 132;
@@ -106,4 +106,37 @@ export function uprightTitleStrip(el: LaneLike, width: number, height: number): 
   const size = Math.min(Math.max(laneSizeOfElement(el), 0), width);
   const x = edge === 'right' ? width - size : edge === 'centre-x' ? (width - size) / 2 : 0;
   return { x, y: 0, width: size, height, alongAlign: ALONG[el.textAlignY ?? 'middle'] };
+}
+
+/** The lines a title reading across a side gutter wraps onto before it ends in an ellipsis
+ *  (docs/specs/009-elements/lane.md "A title wraps in its gutter"). */
+export const LANE_TITLE_MAX_LINES = 3;
+
+/** A side strip in element space. */
+export type LaneTitleStrip = { x: number; y: number; width: number; height: number };
+
+/**
+ * Where a title reading across a side gutter lays out (docs/specs/009-elements/lane.md "A title wraps in its
+ * gutter"): its strip, clamped like the gutter, so a title longer than the gutter is wide wraps there rather than
+ * running on into the lane's body. Null for a band across the top or bottom (its title has the lane's width) and for
+ * an upright title (`uprightTitleStrip`). Both renderers read it.
+ */
+export function acrossTitleStrip(
+  el: LaneLike,
+  width: number,
+  height: number,
+): LaneTitleStrip | null {
+  if (isUprightTitle(el) || isLaneBand(laneEdgeOfElement(el))) return null;
+  const strip = uprightTitleStrip(el, width, height);
+  return { x: strip.x, y: strip.y, width: strip.width, height: strip.height };
+}
+
+/**
+ * The padding a title across a side gutter keeps from the strip's edges: at most the small padding
+ * (`PADDING_PX.sm`, 6), as an upright title keeps. The lane's own padding (large by default, 24) took 48 of the
+ * gutter's 132 px and split "Customer Engineering" mid-word; the small one leaves 120 px, room for common one- and
+ * two-word names to read whole (docs/specs/009-elements/lane.md "A title wraps in its gutter").
+ */
+export function acrossTitlePadding(padding: number): number {
+  return Math.min(padding, PADDING_PX.sm);
 }

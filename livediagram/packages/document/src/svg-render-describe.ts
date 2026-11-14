@@ -28,7 +28,7 @@ import { fontIdsUsed, resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
 import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
 import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
-import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
+import { fontSizeFor, labelMaxWidth, labelMeasure, wholeWordFontPx } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
 import { isRetiredElement } from './retired-elements';
@@ -39,7 +39,13 @@ import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
 import { borderOf } from './svg-render-border';
 import { chipColours, chipLookOf, isChipShape } from './chip';
-import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
+import {
+  LANE_TITLE_MAX_LINES,
+  acrossTitlePadding,
+  acrossTitleStrip,
+  isUprightTitle,
+  uprightTitleStrip,
+} from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from '@liveworkspace/model-core/label-font';
 import { resolveStockColours } from './stock-colours';
@@ -341,30 +347,48 @@ export function describeBoxedExport(
       },
     };
   }
+  // A title reading across a side gutter wraps in its strip, onto three lines at most (docs/specs/009-elements/lane.md
+  // "A title wraps in its gutter"), as the canvas lays it out.
+  const across =
+    el.type === 'shape' && el.shape === 'lane' ? acrossTitleStrip(el, el.width, el.height) : null;
+  const boxX = across ? el.x + across.x : el.x;
+  const boxW = across ? across.width : el.width;
+  // Across the strip, at most the small padding, so the gutter's width goes to the words.
+  const padX = across ? acrossTitlePadding(pad) : pad;
+  const maxWidth = across ? Math.max(0, across.width - 2 * padX) : labelMaxWidth(el, pad);
+  // A plain across title steps down a size or two before a word too wide for the gutter is cut (wholeWordFontPx).
+  const size =
+    across && !runs && el.label
+      ? wholeWordFontPx(el.label, maxWidth, baseSize, (px) =>
+          labelMeasure(px, !!el.textBold, !!el.textItalic, fontFamily),
+        )
+      : baseSize;
+  const padY = across ? padX : pad;
   const label: ExportLabel | null = el.label
     ? {
         text: eventStormingLabelText(el, el.label),
         x:
           alignX === 'right'
-            ? el.x + el.width - pad
+            ? boxX + boxW - padX
             : alignX === 'left'
-              ? el.x + pad + bodyInset
-              : el.x + el.width / 2,
+              ? boxX + padX + bodyInset
+              : boxX + boxW / 2,
         y:
           alignY === 'top'
-            ? bodyTop + pad + baseSize / 2
+            ? bodyTop + padY + size / 2
             : alignY === 'bottom'
-              ? bodyBottom - pad - baseSize / 2
+              ? bodyBottom - padY - size / 2
               : (bodyTop + bodyBottom) / 2,
         anchor: alignX === 'right' ? 'end' : alignX === 'left' ? 'start' : 'middle',
         valign: alignY,
-        maxWidth: labelMaxWidth(el, pad),
+        maxWidth,
         color: baseColor,
-        size: baseSize,
+        size,
         bold: !!el.textBold,
         italic: !!el.textItalic,
         fontFamily,
         runs,
+        ...(across ? { maxLines: LANE_TITLE_MAX_LINES } : {}),
       }
     : null;
   return { opacity, shape, label };

@@ -4,7 +4,7 @@
 // drawer. Split from svg-render.ts alongside the -primitives / -shapes /
 // -table siblings; svg-render re-exports everything so importers keep
 // resolving.
-import { LABEL_LINE_HEIGHT, labelMeasure, r2, xmlEscape } from './svg-render-primitives';
+import { LABEL_LINE_HEIGHT, graphemes, labelMeasure, r2, xmlEscape } from './svg-render-primitives';
 
 // One resolved span of a rich label (run + element defaults).
 import { MUTED_RUN_OPACITY } from '@liveworkspace/model-core/title-caption';
@@ -58,6 +58,9 @@ export type ExportLabel = {
   // An upright lane title (docs/specs/009-elements/lane.md "Upright titles"): laid out in its turned
   // frame and turned a quarter anticlockwise about this point, as the canvas turns it.
   turnAbout?: { x: number; y: number };
+  // The most lines the wrapped text may take, the last then ending in an ellipsis (a lane title in its gutter,
+  // docs/specs/009-elements/lane.md "A title wraps in its gutter"). Unset wraps without limit.
+  maxLines?: number;
 };
 
 // Wordmark type on a wrapped label (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): tracking
@@ -190,6 +193,44 @@ export function wrapExportRuns(
   return lines.filter((l, i) => l.length > 0 || i < lines.length - 1);
 }
 
+// A rich label's wrapped lines held to `maxLines`, as clampLabelLines holds a plain one (a lane title in its gutter,
+// docs/specs/009-elements/lane.md "A title wraps in its gutter"): the first lines kept, and characters taken off the
+// end of the last kept line, fragment by fragment, until it and an ellipsis in its last fragment's style fit.
+export function clampExportRunLines(
+  lines: ExportRun[][],
+  maxLines: number,
+  maxWidth: number,
+  fontFamily?: string,
+  trackingPx = 0,
+): ExportRun[][] {
+  if (lines.length <= maxLines) return lines;
+  const kept = lines.slice(0, Math.max(1, maxLines));
+  // Only the line's end loses its white space: a space between two fragments stays.
+  const line = kept[kept.length - 1]!;
+  const last = line.map((run, j) =>
+    j === line.length - 1 ? { ...run, text: run.text.trimEnd() } : run,
+  );
+  const widthOf = (run: ExportRun, s: string) =>
+    labelMeasure(run.size, run.bold, run.italic, fontFamily)(s) + trackingPx * [...s].length;
+  // A blank last line has no style to end in: it stays as it is.
+  const styleRun = last[last.length - 1];
+  if (!styleRun) return kept;
+  const chars = last.map((run) => graphemes(run.text));
+  const total = () =>
+    last.reduce((sum, run, j) => sum + widthOf(run, chars[j]!.join('')), 0) +
+    widthOf(styleRun, '…');
+  while (chars.some((c) => c.length > 0) && total() > maxWidth) {
+    let j = chars.length - 1;
+    while (j > 0 && chars[j]!.length === 0) j--;
+    chars[j]!.pop();
+  }
+  const clamped = last.map((run, j) => ({ ...run, text: chars[j]!.join('') }));
+  const end = clamped[clamped.length - 1]!;
+  end.text = `${end.text.trimEnd()}…`;
+  kept[kept.length - 1] = clamped;
+  return kept;
+}
+
 // A word-wrapped rich label: one anchored <text>, a positioned outer
 // <tspan> per line, a styled inner <tspan> per fragment.
 export function svgRichWrappedLabel(
@@ -203,12 +244,17 @@ export function svgRichWrappedLabel(
   wordmark?: WordmarkAttrs,
   // Names the label's gradient defs (textEffectIdPrefix of its element), unique in the drawing.
   effectIds = 'tg',
+  // The most lines it may take, the last ending in an ellipsis (ExportLabel.maxLines); unset is no limit.
+  maxLines?: number,
 ): string {
   const maxSize = Math.max(...runs.map((r) => r.size));
   const trackingPx = wordmark?.letterSpacing
     ? wordmark.letterSpacing * (wordmark.basePx ?? maxSize)
     : 0;
-  const lines = wrapExportRuns(runs, maxWidth, fontFamily, trackingPx);
+  const wrapped = wrapExportRuns(runs, maxWidth, fontFamily, trackingPx);
+  const lines = maxLines
+    ? clampExportRunLines(wrapped, maxLines, maxWidth, fontFamily, trackingPx)
+    : wrapped;
   const lineH = LABEL_LINE_HEIGHT * maxSize;
   const firstY = blockFirstY(y, lines.length, lineH, valign);
   // Text effects need each fragment's place on its line; a label without any skips the measuring.
