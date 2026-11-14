@@ -17,6 +17,8 @@ import {
   AI_FIELDS_MAX,
   AI_FIELD_TEXT_MAX,
   aiDryLine,
+  aiWritesCard,
+  AI_THEN_WORDS,
   aiOutcome,
   aiRequest,
   aiStepChip,
@@ -160,6 +162,42 @@ describe('a rule with AI steps', () => {
     );
     expect(into.lines.map((l) => l.text)).toEqual(['Summarise Card into Notes']);
   });
+
+  // Work Tracker 816 (spec "How a step runs"): the writes split at each AI step, so the steps after a failed one can be
+  // left unwritten; each later segment is planned from the card as the steps before left it.
+  it('cuts the writes at each AI step, each after-segment planned from the card as it then stands', () => {
+    const card = story();
+    const r = planActions(
+      [
+        { kind: 'flag' },
+        summarise,
+        { kind: 'add_label', label: 'a' },
+        { kind: 'comment', text: 'hi' },
+        summarise,
+        { kind: 'unflag' },
+      ],
+      ctxFor(card, { outline: O }),
+    );
+    if ('failed' in r) throw new Error(r.failed);
+    expect(r.patch).toEqual({ set: { flagged: true } });
+    expect(r.comments).toEqual([]);
+    const [first, second] = r.ai!;
+    expect(first!.after).toMatchObject({ patch: { set: { labels: ['a'] } }, comments: ['hi'] });
+    expect(first!.after!.from.fields['flagged']).toBe(true);
+    expect(second!.after).toMatchObject({ patch: { clear: ['flagged'] }, comments: [] });
+    expect(second!.after!.from.fields['labels']).toEqual(['a']);
+  });
+
+  it('counts the cards a run makes across its segments, and keeps them on a failed plan', () => {
+    const r = planActions(
+      [{ kind: 'create_card', type: 'note', title: 't' }, summarise, { kind: 'copy_card' }],
+      ctxFor(story(), { outline: O }),
+    );
+    expect('failed' in r && r.failed).toBe('A run makes up to 1 card');
+    if (!('failed' in r)) return;
+    expect(r.done.created).toHaveLength(1);
+    expect(r.done.ai![0]!.after!.created).toEqual([]);
+  });
 });
 
 describe('words', () => {
@@ -208,6 +246,35 @@ describe('words', () => {
       "Would set priority from the card's text",
     );
     expect(AI_CAPPED).toBe('This plan has used its 100 AI steps today');
+  });
+
+  // Work Tracker 846: a test can't know the answer the steps after a writing AI step read, so it says so.
+  it('says the steps after a step that writes the card read its answer', () => {
+    expect(aiDryLine({ kind: 'ai', task: 'card_type', set: true }, O, [], true)).toBe(
+      'Would suggest a card type from Bug, Note or Story and set it. The steps after it read the card as the AI leaves it',
+    );
+    expect(aiDryLine({ kind: 'ai', task: 'summarise', field: 'f-notes' }, O, [], true)).toBe(
+      `Would summarise the card into Notes. ${AI_THEN_WORDS}`,
+    );
+    expect(
+      aiDryLine({ kind: 'ai', task: 'triage', priority: true, labels: false }, O, [], true),
+    ).toBe(`Would set priority from the card's text. ${AI_THEN_WORDS}`);
+    // A comment changes nothing a step reads; and with no step after, there is nothing to say.
+    expect(aiDryLine({ kind: 'ai', task: 'summarise' }, O, [], true)).toBe(
+      'Would summarise the card into a comment',
+    );
+    expect(aiDryLine({ kind: 'ai', task: 'card_type', set: false }, O, [], true)).not.toContain(
+      AI_THEN_WORDS,
+    );
+    expect(aiDryLine({ kind: 'ai', task: 'card_type', set: true }, O)).not.toContain(AI_THEN_WORDS);
+  });
+
+  it('knows which steps write the card', () => {
+    expect(aiWritesCard({ kind: 'ai', task: 'summarise' })).toBe(false);
+    expect(aiWritesCard({ kind: 'ai', task: 'summarise', field: 'f-notes' })).toBe(true);
+    expect(aiWritesCard({ kind: 'ai', task: 'card_type', set: false })).toBe(false);
+    expect(aiWritesCard({ kind: 'ai', task: 'card_type', set: true })).toBe(true);
+    expect(aiWritesCard({ kind: 'ai', task: 'triage', priority: false, labels: true })).toBe(true);
   });
 });
 
@@ -570,6 +637,28 @@ describe('aiOutcome', () => {
     });
     expect(aiOutcome(set, { type: 'Admin' }, ctx())).toEqual({ failed: AI_TYPE_UNKNOWN });
     expect(aiOutcome(set, { kind: 'Bug' }, ctx())).toEqual({ failed: AI_UNREADABLE });
+  });
+
+  // item-types.md "Changing a card's type": the AI step's Set Card Type maps fields as every type change does.
+  it('sets a card type with its custom fields mapped by name', () => {
+    const set: AutomationAi = { kind: 'ai', task: 'card_type', set: true };
+    const from: ItemTypeDef = {
+      ...BUG,
+      id: 'idea',
+      label: 'Idea',
+      custom: [{ id: 'f-apps', label: 'App', kind: 'multichoice', options: ['API'] }],
+    };
+    const to: ItemTypeDef = {
+      ...BUG,
+      id: 'work',
+      label: 'Work Item',
+      custom: [{ id: 'f-app', label: 'App', kind: 'choice', options: ['API'] }],
+    };
+    const outline = { ...O, types: [from, to] };
+    const card = { ...story({ 'f-apps': ['API'] }), type: 'idea' };
+    expect(
+      aiOutcome(set, { type: 'Work Item' }, { card, outline, input: aiCardInput(card, outline) }),
+    ).toMatchObject({ patch: { type: 'work', set: { 'f-app': 'API' } }, already: false });
   });
 
   it('triages with a priority from the four and up to 3 of the plan’s own labels', () => {

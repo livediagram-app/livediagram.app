@@ -8,7 +8,7 @@ import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { track } from '@/lib/telemetry';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
-import { StartViewTransition } from '@/components/start/StartViewTransition';
+import { StartViewTransition } from '@liveworkspace/workbench/components/start/StartViewTransition';
 import { templateStartMode } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 import { useReplayState } from '@/lib/replay/replay-store';

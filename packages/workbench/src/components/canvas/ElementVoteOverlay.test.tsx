@@ -187,7 +187,9 @@ describe('ElementVoteOverlay at a phone’s full Fit of a large board', () => {
     expect(r.container.querySelector('.lvd-vote-stepper')).toBeNull();
     const d = dot(r)!;
     expect(d.className).toContain('pointer-events-none');
-    expect(d.style.transform).toBe(`scale(${1 / 0.13})`);
+    // The style serialises the factor to six significant digits, as a browser does.
+    const [, factor] = /^scale\(([\d.]+)\)$/.exec(d.style.transform)!;
+    expect(Number(factor)).toBeCloseTo(1 / 0.13, 4);
     expect(d.querySelector('[aria-label="1 vote on Idea"]')!.className).toContain('bg-brand-700');
   });
 
@@ -196,7 +198,11 @@ describe('ElementVoteOverlay at a phone’s full Fit of a large board', () => {
     expect(dot(others)!.firstElementChild!.className).toContain('bg-slate-700');
     others.unmount();
     const empty = overlay(0.13, { box: SMALL, vote: vote({ votes: {} }) });
-    expect(dot(empty)!.firstElementChild!.className).toContain('ring-slate-400');
+    // Hollow in both themes: nothing filled inside the ring, so the note shows through (never `dark:bg-slate-900`).
+    const hollow = dot(empty)!.firstElementChild!.className;
+    expect(hollow).toContain('bg-transparent');
+    expect(hollow).toContain('ring-slate-700');
+    expect(hollow).not.toMatch(/(^|\s)(dark:)?bg-(white|slate)/);
     expect(dot(empty)!.firstElementChild!.getAttribute('aria-label')).toBe('0 votes on Idea');
   });
 

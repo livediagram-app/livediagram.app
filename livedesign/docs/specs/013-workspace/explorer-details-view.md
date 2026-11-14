@@ -106,7 +106,7 @@ by any column.
   duplicate's copied tab), so it never drifts from the tab it describes, and it lives apart from the tab body.
 - **A design's stats** are summed over its tabs: elements, comments and bytes added, the mode taken from the tab
   written last. The design's Durable Object pushes them to liveworkspace's index in the item's content summary
-  (`stats: { mode, elements, comments, bytes }`, `apps/api/src/db/content-summary.ts`), after any write changes a
+  (`stats: { mode, elements, comments, bytes }`, `../packages/index-app/src/content-summary.ts`), after any write changes a
   tab's stats (an outbox trigger on `tab_stats`), so the shared Explorer's lists carry them on every row, or
   `null` when the design has no tabs ([API](../015-api/api.md) "Storage").
 

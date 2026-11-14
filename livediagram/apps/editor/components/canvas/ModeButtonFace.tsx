@@ -17,7 +17,7 @@
 //     a sticky :hover after a tap reads as a stuck button.
 
 import { SELECTION_MODE_LABEL, type ButtonMode, type SelectionMode } from '@livediagram/document';
-import { keycapEdge } from '@/components/canvas/paper-kit';
+import { keycapEdge } from '@liveworkspace/workbench/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
   EraserIcon,

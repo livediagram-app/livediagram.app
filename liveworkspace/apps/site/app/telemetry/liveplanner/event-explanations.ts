@@ -98,7 +98,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Activity|Selected|FormResponses':
     "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
   'Activity|Selected|Thread':
-    "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
+    "Someone clicked a Sheet cell's comment-thread row in the Explorer's Inbox, jumping to the cell.",
   'Canvas|Used|WaterCooler':
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
@@ -130,9 +130,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Zoomed|Out': 'Someone tapped the zoom-out button.',
   'Canvas|Zoomed|Preset':
     'Someone jumped straight to a preset zoom level from the zoom-percentage popover.',
-  'Comment|Added|': 'A comment was added to an element thread.',
+  'Comment|Added|': 'A comment was added to a Sheet cell thread.',
   'Comment|Deleted|': 'A comment was removed from a thread.',
-  'Comment|Opened|': 'Someone opened the comment popover on an element.',
+  'Comment|Opened|': 'Someone opened the comment popover on a Sheet cell.',
   'Comment|Mentioned|': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved|': 'A comment thread was marked resolved.',
   'Comment|Unresolved|': 'A resolved comment thread was reopened.',
@@ -572,6 +572,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and found no matching article: a direct list of articles worth writing. The search words are never recorded.',
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
+  'Home|Selected|MostUsed':
+    "Someone opened a plan from Home's Most Used, the ones they used on the most days.",
+  'Home|Selected|Recent':
+    "Someone opened a plan from Home's Recent, the ones they used most recently.",
+  'Home|Selected|SeeMore': "Someone followed See More from Home's Recent to the Recent page.",
   'Home|Selected|WhatHappened':
     "Someone opened a plan from an entry in Explorer Home's What Happened: what other people did to their plans.",
   'Home|Selected|SeeTimeline': "Someone followed See Timeline from Explorer Home's What Happened.",
@@ -753,6 +758,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Changed|SavedFilter':
     'Someone updated a saved filter to the filters showing on the board now.',
   'Plan|Removed|SavedFilter': 'Someone deleted one of a board’s saved filters.',
+  'Plan|Opened|HiddenValues':
+    'Someone opened a card’s Hidden tab, which lists the values it keeps from fields its type doesn’t show.',
+  'Plan|Copied|HiddenValue':
+    'Someone copied a value from a card’s Hidden tab into one of its type’s fields (Copy To Field).',
+  'Plan|Removed|HiddenValue': 'Someone removed a value from a card’s Hidden tab.',
   'Plan|Started|Timer': 'Someone started a timer on a card’s Time Spent field.',
   'Plan|Ended|Timer':
     'Someone stopped a timer on a card’s Time Spent field, recording its time as an entry.',

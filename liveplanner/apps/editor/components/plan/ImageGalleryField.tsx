@@ -165,10 +165,11 @@ export function ImageGalleryField({
       }}
       onDrop={drop}
     >
+      {/* 4 to a row with room, 3 on a touch screen, whose always-shown grip and cross would cover a small tile. */}
       <ul
         ref={listRef}
         aria-label={`${label} images`}
-        className={`grid grid-cols-3 gap-2 rounded-lg transition @xs:grid-cols-4 motion-reduce:transition-none ${
+        className={`grid grid-cols-3 gap-2 rounded-lg transition @xs:not-pointer-coarse:grid-cols-4 motion-reduce:transition-none ${
           over ? 'outline-dashed outline-2 outline-offset-4 outline-brand-500' : ''
         }`}
       >

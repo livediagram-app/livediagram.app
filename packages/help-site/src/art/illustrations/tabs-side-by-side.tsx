@@ -86,8 +86,11 @@ function ChromeTopRow({ x, y, right }: { x: number; y: number; right: number }) 
   );
 }
 
+/** The first tab's name, open in the left pane: `Plan` unless the article names its own. */
+type FirstTab = { firstTab?: string };
+
 /** Dragging a tab toward the right edge: the drop zone's ghost shows the pane it will open. */
-export function SideBySideDrag() {
+export function SideBySideDrag({ firstTab = 'Plan' }: FirstTab = {}) {
   const ghostX = W * 0.52;
   return (
     <Scene w={W} h={H}>
@@ -130,7 +133,7 @@ export function SideBySideDrag() {
       </Label>
       <Footer
         tabs={[
-          { label: 'Plan', x: 10, w: 48, active: true },
+          { label: firstTab, x: 10, w: 48, active: true },
           { label: 'Timeline', x: 64, w: 60 },
         ]}
       />
@@ -150,7 +153,7 @@ export function SideBySideDrag() {
 
 /** The open split: one header and one tab bar across both panes, the editor's chrome in the left
  *  pane (being edited), the other tab live on the right, and the seam's Fit and Close buttons. */
-export function SideBySideOpen() {
+export function SideBySideOpen({ firstTab = 'Plan' }: FirstTab = {}) {
   const seam = W / 2;
   const top = HEADER;
   return (
@@ -220,7 +223,7 @@ export function SideBySideOpen() {
       <Header title="Launch plan" />
       <Footer
         tabs={[
-          { label: 'Plan', x: 10, w: 48, active: true },
+          { label: firstTab, x: 10, w: 48, active: true },
           { label: 'Timeline', x: 64, w: 60, beside: true },
           { label: 'Budget', x: 130, w: 54 },
         ]}

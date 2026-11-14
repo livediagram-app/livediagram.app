@@ -5,34 +5,34 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                                                  | Role                                                                                                         |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `packages/project/src/sankey-model.ts`                                                | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits |
-| `packages/project/src/sankey-layout.ts`                                               | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`              |
-| `packages/project/src/sankey-frame.ts`                                                | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                           |
-| `../packages/element-model/src/sankey-text.ts`                                        | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                   |
-| `packages/project/src/svg-render-sankey.ts`                                           | `svgSankey`: the export                                                                                      |
-| `packages/project/src/shape-kind.ts`, `validate.ts`                                   | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                  |
-| `packages/project/src/validate-shape.ts`                                              | Field checks                                                                                                 |
-| `packages/project/src/element-normalise.ts`                                           | `normaliseSankey`: agent input                                                                               |
-| `packages/project/src/shape-default-size.ts`, `packages/project/src/shape-factory.ts` | Default size and starter flows                                                                               |
-| `packages/project/src/data-shapes.ts`                                                 | `isSelfDrawingShape` membership, `takesChartPalette`                                                         |
-| `packages/project/src/colors.ts`                                                      | `SELF_PAINTING_SHAPES` member                                                                                |
-| `apps/editor/components/canvas/SankeyView.tsx`                                        | Canvas view (lazy chunk), hover, animations                                                                  |
-| `apps/editor/components/palette/SankeyMenuSection.tsx`                                | The Sankey flyout: Flows, Bands, Layout, Labels, Leftovers, Text sections                                    |
-| `apps/editor/components/dialogs/SankeyFlowsDialog.tsx`                                | Flows dialog shell, tabs, preview, import                                                                    |
-| `apps/editor/components/dialogs/SankeyFlowsTable.tsx`                                 | Table tab: steps, node groups, Add a Flow area, leftover switches                                            |
-| `apps/editor/components/dialogs/SankeyFlowRow.tsx`                                    | One row: → To, Amount, Send On, remove (a loose row adds its From)                                           |
-| `apps/editor/lib/sankey-flow-levels.ts`                                               | `flowLevels` (rows into steps and node groups), `flowTotals`, `flowNodeColors`                               |
-| `apps/editor/components/palette/sankey-menu-glyphs.tsx`                               | The Display option glyphs (on the raw-SVG art allowlist)                                                     |
-| `apps/editor/components/dialogs/SankeyNodeStrip.tsx`                                  | Node chips and rename                                                                                        |
-| `apps/editor/components/tour/SankeyFlowsTour.tsx`, `sankey-flows-tour-steps.ts`       | Show Me on the Flows dialog: button, stage, steps fixed at the press                                         |
-| `../packages/workbench/src/lib/sankey-tour-focus.ts`, `sankey-flows-dialog-handle.ts` | The band or node a tour step lifts (`data-sankey-band` / `data-sankey-node`); the open dialog's tab switches |
-| `apps/editor/lib/sankey-flow-rows.ts`                                                 | Draft rows, reasons copy, balance notes, paste, `rowFrom`, `withTrailingBlank`                               |
-| `apps/editor/lib/sankey-edit.ts`                                                      | `canEditSankey`                                                                                              |
-| `apps/editor/hooks/canvas/useSankeySetters.ts`                                        | `setSankeyFlows`, `setSankeyNodeColorSelected`, `setSankeyOptionSelected`                                    |
-| `apps/editor/app/canvas-motion.css`                                                   | `lvd-sankey-grow`, `-flow`, `-cascade`, `-pulse`, `-rise`                                                    |
-| `apps/editor/components/palette/palette-tile-defs.tsx`                                | Tile `tools:sankey`, section `build`                                                                         |
+| File                                                                                  | Role                                                                                                                  |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `packages/project/src/sankey-model.ts`                                                | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits          |
+| `packages/project/src/sankey-layout.ts`                                               | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`                       |
+| `packages/project/src/sankey-frame.ts`                                                | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                                    |
+| `../packages/element-model/src/sankey-text.ts`                                        | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                            |
+| `packages/project/src/svg-render-sankey.ts`                                           | `svgSankey`: the export                                                                                               |
+| `packages/project/src/shape-kind.ts`, `validate.ts`                                   | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                           |
+| `packages/project/src/validate-shape.ts`                                              | Field checks                                                                                                          |
+| `packages/project/src/element-normalise.ts`                                           | `normaliseSankey`: agent input                                                                                        |
+| `packages/project/src/shape-default-size.ts`, `packages/project/src/shape-factory.ts` | Default size and starter flows                                                                                        |
+| `packages/project/src/data-shapes.ts`                                                 | `isSelfDrawingShape` membership, `takesChartPalette`                                                                  |
+| `packages/project/src/colors.ts`                                                      | `SELF_PAINTING_SHAPES` member                                                                                         |
+| `apps/editor/components/canvas/SankeyView.tsx`                                        | Canvas view (lazy chunk), hover, animations                                                                           |
+| `apps/editor/components/palette/SankeyMenuSection.tsx`                                | The Sankey flyout: Flows, Bands, Layout, Labels, Leftovers, Text sections                                             |
+| `apps/editor/components/dialogs/SankeyFlowsDialog.tsx`                                | Flows dialog shell, tabs, preview, import                                                                             |
+| `apps/editor/components/dialogs/SankeyFlowsTable.tsx`                                 | Table tab: steps, node groups, Add a Flow area, leftover switches                                                     |
+| `apps/editor/components/dialogs/SankeyFlowRow.tsx`                                    | One row: → To, Amount, Send On, remove (a loose row adds its From)                                                    |
+| `apps/editor/lib/sankey-flow-levels.ts`                                               | `flowLevels` (rows into steps and node groups), `flowTotals`, `flowNodeColors`                                        |
+| `apps/editor/components/palette/sankey-menu-glyphs.tsx`                               | The Display option glyphs (on the raw-SVG art allowlist)                                                              |
+| `apps/editor/components/dialogs/SankeyNodeStrip.tsx`                                  | Node chips and rename                                                                                                 |
+| `apps/editor/components/tour/SankeyFlowsTour.tsx`, `sankey-flows-tour-steps.ts`       | Show Me on the Flows dialog, binding the workbench's `createSankeyFlowsTour`: button, stage, steps fixed at the press |
+| `../packages/workbench/src/lib/sankey-tour-focus.ts`, `sankey-flows-dialog-handle.ts` | The band or node a tour step lifts (`data-sankey-band` / `data-sankey-node`); the open dialog's tab switches          |
+| `apps/editor/lib/sankey-flow-rows.ts`                                                 | Draft rows, reasons copy, balance notes, paste, `rowFrom`, `withTrailingBlank`                                        |
+| `apps/editor/lib/sankey-edit.ts`                                                      | `canEditSankey`                                                                                                       |
+| `apps/editor/hooks/canvas/useSankeySetters.ts`                                        | `setSankeyFlows`, `setSankeyNodeColorSelected`, `setSankeyOptionSelected`                                             |
+| `apps/editor/app/canvas-motion.css`                                                   | `lvd-sankey-grow`, `-flow`, `-cascade`, `-pulse`, `-rise`                                                             |
+| `apps/editor/components/palette/palette-tile-defs.tsx`                                | Tile `tools:sankey`, section `build`                                                                                  |
 
 ## Domain and naming
 

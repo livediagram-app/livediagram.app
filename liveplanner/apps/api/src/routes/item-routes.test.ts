@@ -453,6 +453,27 @@ describe('who may do what', () => {
     expect((await call({ method: 'GET', path: '/items', doc: 'nope' })).status).toBe(404);
   });
 
+  // docs/specs/026-plan/plan-agents.md "Flagging a card": the Flag is a card edit, so an Editor's token (an agent's
+  // change_items or item set) and a Participant's flag and unflag, and a Viewer's is refused.
+  it('lets an Editor and a Participant flag and unflag a card, never a Viewer', async () => {
+    const { id } = (await add({ title: 'A', status: 'todo' })).body.item;
+    const flag = (code: string, body: unknown) =>
+      call<ItemResponse>({ path: `/items/${id}`, owner: code.toLowerCase(), code, body });
+    const flagged = async () => (await db.readItem(sql.env, 'd1', id))!.fields['flagged'];
+    expect((await flag('VIEW', { set: { flagged: true } })).status).toBe(403);
+    expect(await flagged()).toBeUndefined();
+    const byEditor = await flag('EDIT', { set: { flagged: true } });
+    expect(byEditor.status).toBe(200);
+    expect(byEditor.body.item.fields['flagged']).toBe(true);
+    expect((await flag('VIEW', { clear: ['flagged'] })).status).toBe(403);
+    expect(await flagged()).toBe(true);
+    expect((await flag('PART', { clear: ['flagged'] })).status).toBe(200);
+    expect(await flagged()).toBeUndefined();
+    expect((await flag('PART', { set: { flagged: true } })).status).toBe(200);
+    expect((await flag('EDIT', { clear: ['flagged'] })).status).toBe(200);
+    expect(await flagged()).toBeUndefined();
+  });
+
   // docs/specs/013-workspace/share-roles.md "What a Participant changes": cards, never their deletion.
   it('lets a Participant add, edit and move cards, but never trash, archive or delete one', async () => {
     const as = { owner: 'p', code: 'PART' };
@@ -1579,5 +1600,77 @@ describe('moving many items at once', () => {
     const rb = (await db.readItem(sql.env, 'd1', b.id))!;
     expect([ra.fields['status'], rb.fields['status']]).toEqual(['done', 'done']);
     expect(ra.rank < rb.rank).toBe(true);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "The REST API maps too".
+describe('a type change through the api', () => {
+  const catalogue = {
+    version: 1,
+    types: [
+      {
+        id: 'task',
+        label: 'Idea',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['title', 'status', 'f-app', 'f-why'],
+        custom: [
+          { id: 'f-app', label: 'App', kind: 'text' },
+          { id: 'f-why', label: 'Why', kind: 'longtext' },
+        ],
+      },
+      {
+        id: 'note',
+        label: 'Work Item',
+        color: '#16a34a',
+        glyph: 'task',
+        fields: ['title', 'status', 'f-apps'],
+        custom: [{ id: 'f-apps', label: 'app', kind: 'longtext' }],
+      },
+    ],
+  };
+  const setUp = async () => {
+    expect(
+      (await call({ method: 'PUT', path: '/item-types', body: { itemTypes: catalogue } })).status,
+    ).toBe(200);
+    return (await add({ title: 'T', 'f-app': 'Editor', 'f-why': 'Because' })).body.item;
+  };
+
+  it('carries same-name compatible fields on a patch, keeping the old values', async () => {
+    const t = await setUp();
+    const res = await call<ItemResponse>({ path: `/items/${t.id}`, body: { type: 'note' } });
+    expect(res.status).toBe(200);
+    expect(res.body.item.type).toBe('note');
+    expect(res.body.item.fields).toMatchObject({ 'f-apps': 'Editor', 'f-app': 'Editor' });
+  });
+
+  it('never maps over a value the write sets itself, so a mapped write is not mapped twice', async () => {
+    const t = await setUp();
+    const res = await call<ItemResponse>({
+      path: `/items/${t.id}`,
+      body: { type: 'note', set: { 'f-apps': 'Mine' } },
+    });
+    expect(res.body.item.fields['f-apps']).toBe('Mine');
+  });
+
+  it('maps a move and a patch among many, but never an undo', async () => {
+    const a = await setUp();
+    const moved = await call<ItemResponse>({
+      path: `/items/${a.id}/move`,
+      body: { status: 'done', type: 'note' },
+    });
+    expect(moved.body.item.fields['f-apps']).toBe('Editor');
+    const b = (await add({ title: 'B', 'f-app': 'API' })).body.item;
+    const many = await call<ItemsResponse>({
+      path: '/items/patches',
+      body: { items: [{ id: b.id, type: 'note' }] },
+    });
+    expect(many.body.items[0]!.fields['f-apps']).toBe('API');
+    const c = (await add({ title: 'C', 'f-app': 'Help' })).body.item;
+    const undone = await call<ItemResponse>({
+      path: `/items/${c.id}`,
+      body: { type: 'note', undo: true },
+    });
+    expect(undone.body.item.fields['f-apps']).toBeUndefined();
   });
 });

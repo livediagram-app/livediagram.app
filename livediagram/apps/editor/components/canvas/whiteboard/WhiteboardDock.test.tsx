@@ -650,7 +650,7 @@ describe('WhiteboardDock flyouts at the toolbar UI scale', () => {
       expect(root.className).toContain('max-w-[calc(100vw-1.5rem)]');
       // No wider than the window less its margins once zoomed: the zoomed card's own units divide the zoom out.
       expect(flyoutCardStyle(1.5)?.maxWidth).toBe('min(20rem, calc((100vw - 1.5rem) / 1.5))');
-      expect(card('Settings').style.maxWidth).toMatch(/^min\(20rem, .*100vw - 1\.5rem/);
+      expect(card('Settings').style.maxWidth).toMatch(/^min\(20rem, .*vw\)$/);
       // The opener's centre is 558px, 270px into the card: 180 card px at 1.5.
       const tip = root.querySelector<HTMLElement>('[data-flyout-tip]')!;
       expect(tip.style.left).toBe(`${180 - 5}px`);

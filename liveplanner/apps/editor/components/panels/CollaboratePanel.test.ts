@@ -3,8 +3,8 @@ import type { BoxedElement, Comment } from '@liveplanner/project';
 import { commentRowsFromElements } from '@/components/panels/CollaboratePanel';
 
 // commentRowsFromElements turns a tab's element list into the rows
-// the floating Comments panel renders (one per element-with-
-// comments, newest-first). A regression here breaks the panel
+// the floating Comments panel renders (one per Sheet cell thread,
+// newest-first; an element's own thread is retired and never listed). A regression here breaks the panel
 // silently: it renders the wrong label, the wrong author dot, the
 // wrong "X minutes ago" stamp, or the wrong order with discussion
 // at the bottom. Cover every visible branch.
@@ -13,6 +13,8 @@ function mkComment(text: string, createdAt: number, author = 'Alice', color = '#
   return { id: `c-${createdAt}`, text, createdAt, authorName: author, authorColor: color };
 }
 
+// A Sheet whose cell B1 holds `comments`.
+const CELL = 'r1:cb';
 function mkShape(
   id: string,
   comments: Comment[],
@@ -21,14 +23,14 @@ function mkShape(
   return {
     id,
     type: 'shape',
-    shape: 'square',
+    shape: 'plan-sheet',
     x: 0,
     y: 0,
     width: 100,
     height: 100,
     ...(opts.label !== undefined ? { label: opts.label } : {}),
     ...(comments.length > 0
-      ? { commentThread: { comments, resolved: opts.resolved ?? false } }
+      ? { cellComments: { [CELL]: { comments, resolved: opts.resolved ?? false } } }
       : {}),
   };
 }
@@ -38,7 +40,24 @@ describe('commentRowsFromElements', () => {
     expect(commentRowsFromElements([])).toEqual([]);
   });
 
-  it('skips elements without a commentThread', () => {
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751).
+  it('lists no element’s own stored thread, Sheet or shape', () => {
+    const thread = { comments: [mkComment('old', 100)], resolved: false };
+    const shape = {
+      id: 's',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      commentThread: thread,
+    } as BoxedElement;
+    const sheet = { ...mkShape('sh', []), commentThread: thread } as BoxedElement;
+    expect(commentRowsFromElements([shape, sheet])).toEqual([]);
+  });
+
+  it('skips elements without a cell thread', () => {
     const plain = mkShape('a', []);
     expect(commentRowsFromElements([plain])).toEqual([]);
   });
@@ -47,25 +66,26 @@ describe('commentRowsFromElements', () => {
     // Threads with comments: [] occur after a user deletes every
     // comment on an element. We treat that as "no discussion to
     // show", same shape as never-commented.
-    const empty: BoxedElement = {
+    const empty = {
       id: 'e',
       type: 'shape',
-      shape: 'square',
+      shape: 'plan-sheet',
       x: 0,
       y: 0,
       width: 10,
       height: 10,
-      commentThread: { comments: [], resolved: false },
-    };
+      cellComments: { [CELL]: { comments: [], resolved: false } },
+    } as unknown as BoxedElement;
     expect(commentRowsFromElements([empty])).toEqual([]);
   });
 
-  it('emits one row per element with at least one comment', () => {
+  it('emits one row per cell thread with at least one comment', () => {
     const el = mkShape('a', [mkComment('hi', 100)], { label: 'Node A' });
     const rows = commentRowsFromElements([el]);
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
       elementId: 'a',
+      cell: CELL,
       label: 'Node A',
       count: 1,
       latestText: 'hi',

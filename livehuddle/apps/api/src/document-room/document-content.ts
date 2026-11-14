@@ -4,7 +4,7 @@
 
 import { remapTabLinks, type Element } from '@livehuddle/document';
 import { redactTabDataAuthors } from '../comments';
-import { redactTabDataForCommunity } from '../community-redact';
+import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { servableImageIds } from '../db/image-grants';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';

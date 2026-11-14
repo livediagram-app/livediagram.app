@@ -53,8 +53,12 @@ export type RenderItemMark = (item: Item, at: 'title' | 'time') => ReactNode;
 /** An app's logo, or the platform's for `'all'`: the filter's two choices wear them (the host owns the brands). */
 export type RenderAppLogo = (app: App | 'all') => ReactNode;
 
-/** What Home reports: a failed read of Home retried (`Loaded`, `Retry`). */
-export type HomeTelemetry = (action: 'Loaded', type: string) => void;
+/** What Home reports: a failed read of Home retried (`Loaded`, `Retry`), and a pick from it (`Selected`): a card
+ *  opened from Most Used (`MostUsed`) or Recent (`Recent`), or See More followed to the Recent view (`SeeMore`). */
+export type HomeTelemetry = (
+  action: 'Loaded' | 'Selected',
+  type: 'Retry' | 'MostUsed' | 'Recent' | 'SeeMore',
+) => void;
 
 /** What the Explorer reports about keeping things in order, as `Category·Action`, the names the apps' own Explorers
  *  always sent:

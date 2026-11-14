@@ -103,12 +103,10 @@ function BoxedElementViewImpl({
   onSetSessionConfig,
   onOpenElementSettings,
   commentSelfId,
-  commentActions,
   actionSelfId,
   actionActions,
   onRollPicker,
   collab,
-  onOpenComments,
   onOpenAction,
   onOpenNote,
   onEditLink,
@@ -286,7 +284,7 @@ function BoxedElementViewImpl({
   // The element's indicators, placed before the label so the content can move out of their way.
   const indicators = useElementIndicators(
     element,
-    { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries },
+    { onFollowLink, onOpenAction, onOpenNote, tabSummaries },
     { text: label, textSize, padding: labelPadding, alignX, alignY, inlineIcon: !!inlineIcon },
     cornerPx,
   );
@@ -448,7 +446,6 @@ function BoxedElementViewImpl({
             readOnly={readOnly}
             fontFamily={fontFamily}
             collab={collab}
-            commentActions={commentActions}
             actionSelfId={actionSelfId}
             actionActions={actionActions}
             commentSelfId={commentSelfId}

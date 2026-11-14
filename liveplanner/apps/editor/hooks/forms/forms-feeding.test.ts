@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@liveplanner/project';
 import { FORM_TAB_DELETE_WARNING, deleteTabWarning, formsFeeding } from './forms-feeding';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Deleting a board or sheet a form sends to says first that it pauses the form
 // (docs/specs/030-forms/forms.md "Publishing and the form link").
@@ -59,8 +60,8 @@ describe('formsFeeding', () => {
     const many = Array.from({ length: 200 }, (_, i) =>
       i % 4 === 0 ? formTab(`f${i}`, `F${i}`, { board: 'b0' }) : tab(`b${i}`, { kind: 'board' }),
     );
-    const start = performance.now();
+    const start = cpuNowMs();
     for (const t of many) deleteTabWarning(many, t.id);
-    expect(performance.now() - start).toBeLessThan(50);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(50));
   });
 });

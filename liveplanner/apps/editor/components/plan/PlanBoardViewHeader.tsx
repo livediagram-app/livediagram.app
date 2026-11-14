@@ -14,6 +14,7 @@ import { chipsShown } from './card-type-chips';
 import { MaximisePlanButton } from './MaximisedPlanLayer';
 import { FocusElementButton } from './FocusElementButton';
 import type { PlanBoardViewValues } from './plan-board-view-values';
+import { boardFilterFrom } from '@liveplanner/items';
 
 export function planBoardViewHeader(v: PlanBoardViewValues) {
   const {
@@ -43,6 +44,7 @@ export function planBoardViewHeader(v: PlanBoardViewValues) {
     columnName,
     configuredFromCluster,
     canEdit,
+    canFilter,
   } = v;
   return simplified ? (
     <SlotBoardHeader
@@ -77,12 +79,16 @@ export function planBoardViewHeader(v: PlanBoardViewValues) {
         trackSetup(part);
       }}
       showWidgets={look.widgets}
-      onWidgets={(next) => {
-        plan?.updateBoard(element.id, { ...setup, widgets: next });
+      onWidgets={(next, kept) => {
+        // A widget taken off takes its narrowing off the board's filter in the same write.
+        const { filter: was, ...rest } = setup;
+        const filter = kept ? boardFilterFrom(kept) : was;
+        plan?.updateBoard(element.id, { ...rest, widgets: next, ...(filter ? { filter } : {}) });
         trackSetup('Widgets');
       }}
       quick={quick}
       onQuick={setQuick}
+      canFilter={canFilter}
       canFilterMine={self?.id ?? null}
       planItems={items}
       {...(statusNames ? { statusNames } : {})}

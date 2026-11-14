@@ -1,6 +1,6 @@
 import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
-import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
+import { MenuErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { useState, type ReactNode } from 'react';
 import {
   TAB_BAR_CLASS,

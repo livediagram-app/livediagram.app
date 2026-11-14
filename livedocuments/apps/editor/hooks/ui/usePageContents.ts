@@ -6,7 +6,13 @@
 // card's speaking time), where a dropped page lands (an article's pages move as one), the page's place in the deck on its ⋯ menu, and the
 // pictures, each page framed as its slide.
 import { useMemo } from 'react';
-import { MAX_PAGES, type LaidOutPage, type PageKind } from '@livedocuments/document';
+import {
+  MAX_PAGES,
+  pageKindOf,
+  slideBuildOrders,
+  type LaidOutPage,
+  type PageKind,
+} from '@livedocuments/document';
 import {
   usePageContents as useSharedPageContents,
   type PageContents as SharedPageContents,
@@ -47,6 +53,13 @@ export function usePageContents({
     const byPage = elementsByPage(pages, settled);
     return new Map(unnamed.map((p) => [p.id, pageTitleOf(byPage.get(p.id) ?? [])]));
   }, [pages, settled]);
+  // Each slide page's builds, read from its elements as they settle; nothing is read on a tab where nothing builds.
+  const builds = useMemo(() => {
+    const slides = pages.filter((p) => pageKindOf(p) === 'slide');
+    if (slides.length === 0 || !settled.some((el) => 'build' in el && el.build)) return null;
+    const byPage = elementsByPage(pages, settled);
+    return new Map(slides.map((p) => [p.id, slideBuildOrders(byPage.get(p.id) ?? []).length]));
+  }, [pages, settled]);
   const rows = useMemo(
     () =>
       contentsRows(pages, {
@@ -58,8 +71,9 @@ export function usePageContents({
           : {}),
         ...(view.articles ? { articles: view.articles.flows } : {}),
         ...(titles ? { titleOf: (id: string) => titles.get(id) } : {}),
+        ...(builds ? { buildsOf: (id: string) => builds.get(id) ?? 0 } : {}),
       }),
-    [pages, deck, view.articles, titles],
+    [pages, deck, view.articles, titles, builds],
   );
   const contents = useSharedPageContents({
     view,

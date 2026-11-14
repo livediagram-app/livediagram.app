@@ -85,6 +85,21 @@ The defaults: a Viewer only looks; a Participant takes part and adds content but
 session or changes settings; the rest is an Editor's. The role tests (the participant rule's leak test, the editor
 capabilities, the Participant palette, the room) keep a new feature from widening a role by accident.
 
+## Tests
+
+Each feature ships role tests: one per level for each gate in the two tables above ("The levels" and "What a
+Participant changes"), including the room's refusal of a Viewer's poll answer, reaction and dot. The tables are held
+whole by two matrices, one block per row and one case per level: the room's (`apps/api/src/share-roles.test.ts`: the
+op gate, the participant content rule and the baton) and the editor's (`apps/editor/lib/share-roles.test.ts`: `can`,
+the session gates read from it, the palette and the selection modes). A row added to either table gets its cases in
+both.
+
+- **The editor's Editor-only gates read `can`.** Running a session tool (a collaboration element's reveal, clear, roll
+  and round verbs, the Q&A board's and the Quiz's, the Session strip), Bring Focus, a session button and an estimate's
+  scale ask `roleGates(can, runBlocked)` (`apps/editor/lib/editor-capabilities.ts`): `run` (an Editor, and the
+  facilitator's while someone holds the baton), `shape` (an Editor) and `takePart` (an Editor or a Participant). They
+  never ask `isReadOnly` alone, which is true for every level below an Editor and so cannot tell what each may do.
+
 ## The Participant palette
 
 - **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: an Event
@@ -184,9 +199,14 @@ browser never chooses it.
     cannot answer keeps the stored entry, and that person's own next save puts theirs back.
   - **A clear still clears.** A new round on a card or a new vote empties the round for everyone, as it always did; a
     deleted element or comment takes its entries with it. A copy (a duplicate, a paste) carries no one's entries.
-  - **A new document keeps what it carries.** A create is not an overwrite: nobody else's entry exists there yet, and
-    a canvas taken offline and synced back keeps the answers and reactions it went offline with. A new tab in a
-    stored document is locked like any write.
+  - **A new document keeps only its creator's entries** (decided 2026-11-14, Work Tracker 817). Nobody else's entry
+    exists there yet, so a create carrying a reaction, response or dot under another person's collab key could only
+    be made up: it is dropped, as an agent's (a token's create keeps no one's). What a create keeps is the creator's
+    own: under their collab key, or under a browser's own key, which is not a collab key's shape. A canvas made in
+    This Browser records its creator's entries under that browser's key (the editor has no collab key before the
+    room answers), so a canvas taken offline and synced back keeps the answers and reactions it went offline with,
+    and a browser key names no one, so keeping it shows nothing as anyone else's. A new tab in a stored document is
+    locked like any write. livediagram alone has the whole-tab lock; the other products take this rule with it.
   - **Not tab state:** a live poll's answers live in the room alone ([Vote integrity](../012-collaboration/vote-integrity.md)),
     so no tab write reaches them.
 - **Duplicates from old editors collapse.** An editor from before the collab key kept its browser's key, so its save
@@ -194,7 +214,14 @@ browser never chooses it.
   write keeps one: a reaction whose key is not a collab key's shape goes when the same comment holds the same emoji,
   under the same name, from a collab key. A browser-keyed reaction can no longer be taken back on its own (only the
   key that left it could, and nobody holds that any more), but reacting again with the same emoji folds it into the
-  new one.
+  new one, and un-reacting then takes both away: two clicks, kept on purpose (decided 2026-11-14, Work Tracker 817).
+  A one-click take-back would have to match the old reaction by its name alone, and a name is whatever a person
+  typed, so anyone who took the same name could take away someone else's reaction.
+- **Duplicate responses from old editors stay.** A response (a done check, an estimate, a temperature check, a quiz
+  answer) carries only its key, its value and its time, no name, so nothing ties a browser-keyed response to the
+  collab-keyed one beside it: collapsing them would mean guessing, and a wrong guess drops another person's answer.
+  The two count as two until the card's next round clears them, and each person's own answer under their collab key
+  is the one that reads as theirs (decided 2026-11-14, Work Tracker 817).
 - **Answers and reactions left before this** were filed under each browser's own key. They still show and count,
   but no longer as yours; answering or reacting again records yours under the new key.
 - **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions

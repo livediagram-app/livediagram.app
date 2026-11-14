@@ -99,7 +99,7 @@ describe('QuickConnectRing menu on a narrow screen', () => {
     place(359);
     const { container } = render(ring(true));
     // Natural left 359 + 20 = 379, so its right edge 419 overshoots 390 less the margin.
-    expect(menu(container)?.style.translate).toMatch(/^-\d+(\.\d+)?px 0px$/);
+    expect(menu(container)?.style.translate).toMatch(/^-\d+(\.\d+)?px$/);
     const dx = parseFloat(menu(container)!.style.translate);
     expect(379 + 40 + dx).toBeLessThanOrEqual(390);
   });

@@ -32,6 +32,7 @@ export function momentPiecesOf(elements: readonly Element[]): MomentPiece[] {
         y: el.y,
         width: el.width,
         height: el.height,
+        rotation: el.rotation,
       }),
     );
   }

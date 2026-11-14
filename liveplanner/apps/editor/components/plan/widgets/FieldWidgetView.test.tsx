@@ -139,7 +139,7 @@ describe('FieldWidgetView', () => {
   describe('pressing a value', () => {
     const chip = (field: string, key: string) => ({ by: 'field', field, key });
 
-    it('presses a Breakdown value into a field chip, for a Viewer too', () => {
+    it('presses a Breakdown value into a field chip, for a Participant too', () => {
       const onQuick = vi.fn();
       show('field:breakdown:f-sev', { canEdit: false, onQuick });
       expect(pill().getAttribute('role')).toBe('group');
@@ -147,6 +147,22 @@ describe('FieldWidgetView', () => {
       expect(high.getAttribute('aria-pressed')).toBe('false');
       fireEvent.click(high);
       expect(onQuick).toHaveBeenCalledWith({ filters: [chip('f-sev', 'f:"High"')] });
+    });
+
+    // The board's filter is shared (board-widgets.md "The board's filter"): a Viewer sees the pressed value only.
+    it('shows a Viewer the pressed value, disabled', () => {
+      const onQuick = vi.fn();
+      show('field:breakdown:f-sev', {
+        canEdit: false,
+        canFilter: false,
+        quick: { filters: [chip('f-sev', 'f:"High"')] as never },
+        onQuick,
+      });
+      const high = screen.getByRole<HTMLButtonElement>('button', { name: 'Only Severity: High' });
+      expect(high.getAttribute('aria-pressed')).toBe('true');
+      expect(high.disabled).toBe(true);
+      fireEvent.click(high);
+      expect(onQuick).not.toHaveBeenCalled();
     });
 
     it('shows the value pressed while its chip is on, and a second press takes it off', () => {

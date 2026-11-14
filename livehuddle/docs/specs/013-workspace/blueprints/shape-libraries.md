@@ -125,19 +125,20 @@ CREATE TABLE shape_libraries (
 
 ## Errors and edge cases
 
-| Case                                           | Handling                                                                                               |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| An owner at the cap imports another            | 409; that library is a failure with the cap copy; the rest import                                      |
-| Items over the byte budget                     | 413; the client checks first with `shapeLibraryItemsBytes` and skips the call                          |
-| The same file imported twice                   | Two libraries, the second "(2)"                                                                        |
-| Every picture in a library fails to store      | The library still lands; its image elements stay placeholders; the images block of the report says why |
-| An empty library after deleting every shape    | Kept, "0 shapes", hidden from My shapes (no items)                                                     |
-| A rename to the same name                      | Saved as is (no clash with itself)                                                                     |
-| A library deleted in another window            | The next list load drops it; a change against it gets 404 and reloads                                  |
-| Inserting on a read-only tab                   | The palette is absent read-only                                                                        |
-| An item that would pass `MAX_ELEMENTS_PER_TAB` | Refused, logged `[shape-libraries] insert refused` `{ reason: 'tab full' }`                            |
-| A drag carrying an unknown library or item     | Ignored, logged                                                                                        |
-| Thumbnail rendering throws                     | The tile shows its title; logged once per item                                                         |
+| Case                                           | Handling                                                                                                                                            |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| An owner at the cap imports another            | 409; that library is a failure with the cap copy; the rest import                                                                                   |
+| Items over the byte budget                     | 413; the client checks first with `shapeLibraryItemsBytes` and skips the call                                                                       |
+| The same file imported twice                   | Two libraries, the second "(2)"                                                                                                                     |
+| Every picture in a library fails to store      | The library still lands; its image elements stay placeholders; the images block of the report says why                                              |
+| An empty library after deleting every shape    | Kept, "0 shapes", hidden from My shapes (no items)                                                                                                  |
+| A rename to the same name                      | Saved as is (no clash with itself)                                                                                                                  |
+| A library deleted in another window            | The next list load drops it; a change against it gets 404 and reloads                                                                               |
+| Inserting on a read-only tab                   | The palette is absent read-only                                                                                                                     |
+| An item that would pass `MAX_ELEMENTS_PER_TAB` | Refused, logged `[shape-libraries] insert refused` `{ reason: 'tab full' }`                                                                         |
+| A drag carrying an unknown library or item     | Ignored, logged                                                                                                                                     |
+| Thumbnail rendering throws                     | The tile shows its title; logged once per item                                                                                                      |
+| Previews pass `SHAPE_PREVIEWS_MAX_BYTES`       | The rest are left out, in library order, their tiles plain; `[shape-libraries] previews budget reached` logged once with the drawn and total counts |
 
 ## Security and trust
 
@@ -153,6 +154,13 @@ CREATE TABLE shape_libraries (
   (`setTimeout(0)`), only while My shapes shows it, cached per item id for the
   session; a failed drawing is not retried in that session.
 - Insert is one `duplicateElements` over the item's elements and one commit.
+- Previews (`shapePreviews`): every item drawn with `renderElementsToSvg(..., { retiredOutlines: true })`, so a retired
+  element is its placeholder's outline (`svgRetiredElement`'s `outline`) and a stored arrow its line and the card's
+  outline, never the words. The largest library a person may keep (`MAX_SHAPE_LIBRARY_ITEMS` items, each a square, a
+  circle, a diamond and an arrow) measures 1,059,904 bytes and 72 ms CPU (2,287,904 bytes and 68 to 93 ms with the
+  words), asserted under 1,200,000 bytes and `cpuBudgetMs(200)`. The running byte count (each drawing's quoted id and
+  quoted SVG) stops the drawing at `SHAPE_PREVIEWS_MAX_BYTES`, so a library of kept kinds with rich faces (5.8 to
+  7.5 MB drawn whole) answers within it too, and the drawing past it costs no CPU (D15).
 
 ## Presentation and UX
 
@@ -193,22 +201,23 @@ CREATE TABLE shape_libraries (
 
 ## Testing
 
-| Rule                                                                                                                                                                                    | Test                                                                                |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Names: unique suffix, case, length; items validation and reasons                                                                                                                        | `packages/api-schema/src/shape-libraries.test.ts`                                   |
-| Row mapping, corrupt items                                                                                                                                                              | `apps/api/src/shape-library-row.test.ts`                                            |
-| Routes against real stores: auth, 400 / 404 / 409 / 413, clash suffix, rename, an untouched store                                                                                       | `apps/api/src/routes/shape-libraries.test.ts`                                       |
-| Sign-up move with clash renaming; account deletion                                                                                                                                      | `apps/api/src/db/account-owner-columns.test.ts` (the owner-column ledger)           |
-| OpenAPI covers the routes; the route stays probeable                                                                                                                                    | `apps/api/src/openapi/route-parity.test.ts`, `apps/api/src/route-resources.test.ts` |
-| Client calls and error copy                                                                                                                                                             | `../livediagram/apps/editor/lib/api/shape-libraries.test.ts`                        |
-| Provider: load, create, rename, delete, delete item, failures                                                                                                                           | `ShapeLibraryProvider.test.tsx`                                                     |
-| Import: libraries listed and made, failures, telemetry, outcome                                                                                                                         | `useDrawioFileImport.test.ts`, `library-store.test.ts`                              |
-| Report links                                                                                                                                                                            | `../livediagram/apps/editor/components/dialogs/ImportImageReport.test.tsx`          |
-| Palette: hidden when empty, sections, search, tile names, disabled                                                                                                                      | `PaletteMyShapesTab.test.tsx`                                                       |
-| Insert: centred, fresh ids, connections, one commit, selection, read-only; consecutive clicks line up and never cover, a moved or deleted insert frees its spot, drops keep their point | `../livediagram/apps/editor/hooks/canvas/useLibraryShapeInsert.test.ts`             |
-| Drop: the MIME reaches the host with the point                                                                                                                                          | `usePaletteDrop.test.ts`                                                            |
-| Previews: every shape as SVG, 404 for a missing library                                                                                                                                 | `apps/api/src/routes/shape-libraries.test.ts`                                       |
-| End to end: gone with the palette's My shapes (Work Tracker #423 part 3); livediagram keeps it                                                                                          | none in livehuddle                                                                  |
+| Rule                                                                                                                                                                                    | Test                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Names: unique suffix, case, length; items validation and reasons                                                                                                                        | `packages/api-schema/src/shape-libraries.test.ts`                                                 |
+| Row mapping, corrupt items                                                                                                                                                              | `apps/api/src/shape-library-row.test.ts`                                                          |
+| Routes against real stores: auth, 400 / 404 / 409 / 413, clash suffix, rename, an untouched store                                                                                       | `apps/api/src/routes/shape-libraries.test.ts`                                                     |
+| Sign-up move with clash renaming; account deletion                                                                                                                                      | `apps/api/src/db/account-owner-columns.test.ts` (the owner-column ledger)                         |
+| OpenAPI covers the routes; the route stays probeable                                                                                                                                    | `apps/api/src/openapi/route-parity.test.ts`, `apps/api/src/route-resources.test.ts`               |
+| Client calls and error copy                                                                                                                                                             | `../livediagram/apps/editor/lib/api/shape-libraries.test.ts`                                      |
+| Provider: load, create, rename, delete, delete item, failures                                                                                                                           | `ShapeLibraryProvider.test.tsx`                                                                   |
+| Import: libraries listed and made, failures, telemetry, outcome                                                                                                                         | `useDrawioFileImport.test.ts`, `library-store.test.ts`                                            |
+| Report links                                                                                                                                                                            | `../livediagram/apps/editor/components/dialogs/ImportImageReport.test.tsx`                        |
+| Palette: hidden when empty, sections, search, tile names, disabled                                                                                                                      | `PaletteMyShapesTab.test.tsx`                                                                     |
+| Insert: centred, fresh ids, connections, one commit, selection, read-only; consecutive clicks line up and never cover, a moved or deleted insert frees its spot, drops keep their point | `../livediagram/apps/editor/hooks/canvas/useLibraryShapeInsert.test.ts`                           |
+| Drop: the MIME reaches the host with the point                                                                                                                                          | `usePaletteDrop.test.ts`                                                                          |
+| Previews: every shape as SVG, 404 for a missing library                                                                                                                                 | `apps/api/src/routes/shape-libraries.test.ts`                                                     |
+| Previews: retired elements as outlines, the largest library under 1.2 MB and 200 ms CPU, the byte budget stops a larger answer in library order                                         | `apps/api/src/routes/shape-libraries.test.ts`, `packages/document/src/svg-render-retired.test.ts` |
+| End to end: gone with the palette's My shapes (Work Tracker #423 part 3); livediagram keeps it                                                                                          | none in livehuddle                                                                                |
 
 ## Constants and configuration
 
@@ -224,6 +233,7 @@ CREATE TABLE shape_libraries (
 | `LIBRARY_SHAPE_DND_MIME`          | `application/x-livehuddle-library-shape` | Beside the palette's other drag MIMEs                                             |
 | `SHAPE_LIBRARY_CARD_PREVIEWS`     | 8                                        | Spec ("the first eight")                                                          |
 | `LIBRARY_INSERT_GAP`              | 24                                       | The paste offset (`PASTE_OFFSET`), as the gap between consecutive clicked inserts |
+| `SHAPE_PREVIEWS_MAX_BYTES`        | 1 200 000                                | Work Tracker 695: the largest retired-kind library (1.06 MB) fits whole (D15)     |
 | `DRAWIO_MAX_LIBRARY_ITEMS`        | `MAX_SHAPE_LIBRARY_ITEMS`                | The importer keeps what the api accepts                                           |
 
 ## Assets and external resources
@@ -233,4 +243,4 @@ CREATE TABLE shape_libraries (
 
 ## Defaults ledger
 
-Rows D7 to D14 in [DEFAULTS.md](DEFAULTS.md).
+Rows D7 to D15 in [DEFAULTS.md](DEFAULTS.md).

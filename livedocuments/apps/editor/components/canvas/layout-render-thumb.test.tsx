@@ -8,6 +8,7 @@ import { layOutPages, newSlidePage, type Tab } from '@livedocuments/document';
 import { SLIDE_LAYOUTS } from '@livedocuments/templates';
 import { LayoutRenderThumb, layoutRenderSvg, PAGE_PAPER_DARK } from './layout-render-thumb';
 import { LayoutThumb } from './infographic-layout-thumb';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 afterEach(() => cleanup());
 
@@ -70,8 +71,8 @@ describe('slide layout tiles', () => {
   });
 
   it('render all sixty-four quickly enough for the whole gallery', () => {
-    const t = performance.now();
+    const t = cpuNowMs();
     for (const l of SLIDE_LAYOUTS) layoutRenderSvg(deck, slide!, l.id);
-    expect(performance.now() - t).toBeLessThan(1000);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(1000));
   });
 });

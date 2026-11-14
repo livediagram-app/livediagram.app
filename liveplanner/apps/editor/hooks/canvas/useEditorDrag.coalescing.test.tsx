@@ -106,7 +106,7 @@ function runFrame() {
   const queued = frame;
   frame = [];
   act(() => {
-    for (const cb of queued) cb(performance.now());
+    for (const cb of queued) cb(performance.now()); // wall-clock: a fake frame's timestamp, not a budget
   });
 }
 

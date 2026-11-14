@@ -186,6 +186,48 @@ describe('item writes', () => {
   });
 });
 
+// docs/specs/015-api/cli.md "Flags": flagged=true flags a card, false or --clear unflags it, item ls says so.
+describe('item flags', () => {
+  it('flags on add and set, and unflags with false or --clear', async () => {
+    const { ctx, seen } = api();
+    await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ project: DOC_A, title: 'New', fields: ['flagged=true'] }),
+    );
+    await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['Flag=true'] }),
+    );
+    await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['flagged=false'] }),
+    );
+    await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', clear: ['flagged'] }),
+    );
+    expect(seen.map((s) => s.body)).toEqual([
+      { type: 'task', fields: { flagged: true, title: 'New' } },
+      { set: { flagged: true } },
+      { clear: ['flagged'] },
+      { clear: ['flagged'] },
+    ]);
+  });
+
+  it('ends a flagged card’s line with flagged', async () => {
+    const { ctx } = api({
+      [path]: () =>
+        Response.json({
+          items: [item(1, 'itembbb111', { title: 'Fix login', status: 'doing', flagged: true })],
+          rev: 4,
+        }),
+    });
+    const all = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
+    expect(all.items[0]!.fields).toMatchObject({ flagged: true });
+    expect(itemLs.text!(all)).toContain('#1  task  Doing  "Fix login"  flagged');
+  });
+});
+
 describe('item output and refusals', () => {
   it('prints each write as a line, and its number when quiet', async () => {
     const { ctx, seen } = api();

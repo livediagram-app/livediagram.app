@@ -320,6 +320,27 @@ describe('plan templates', () => {
     }
   });
 
+  // plan-tabs.md "Form Metrics": a template's form brings its Responses figure to the Overview.
+  it('puts Help Desk’s and Event Planner’s form Responses figure on their Overview, naming the form tab', () => {
+    for (const [kind, form] of [
+      ['help-desk', 'Contact Form'],
+      ['event-planner', 'RSVP'],
+    ] as const) {
+      const defs = planTemplateTabs(kind);
+      const ids = defs.map((_, i) => `id${i}`);
+      const dash = defs.findIndex((d) => d.tab?.(ids).kind === 'dashboard');
+      const slots = defs[dash]!.tab!(ids).dashboard!.rows.flatMap((r) => r.slots);
+      const figures = slots.flatMap((s) => (s.content?.type === 'form-metric' ? [s.content] : []));
+      expect(figures, kind).toEqual([
+        {
+          type: 'form-metric',
+          metric: 'responses',
+          formTabId: ids[defs.findIndex((d) => d.name === form)],
+        },
+      ]);
+    }
+  });
+
   it('gathers every view and note on the Dashboard, which shows each Board and Sheet tab', () => {
     for (const kind of PLAN_TEMPLATE_KINDS) {
       const defs = planTemplateTabs(kind);

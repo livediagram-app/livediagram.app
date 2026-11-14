@@ -6,7 +6,11 @@ recover cleanly. Two mechanisms shipped for this. A third (a full field-level
 CRDT for concurrent edits to the _same_ element) was scoped and **deliberately
 dropped** (see the decision at the end). Same-element collisions therefore
 remain last-writer-wins; the advisory selection lock makes them rare, it does
-not prevent them.
+not prevent them. The lock lasts until the holder's change to an element has
+landed, not just while it is selected ([Editor app](../007-editor/editor-app.md) "Held until the holder's
+change lands"): a peer's label typed just after the owner added, moved and let go of a box used to be replaced by
+the owner's save of the move, because the lock was gone before that save reached the room
+(Work Tracker 659, `realtime-peer-label.spec.ts`).
 
 ## The problem it fixed
 

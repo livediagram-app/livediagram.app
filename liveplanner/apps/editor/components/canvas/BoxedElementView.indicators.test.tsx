@@ -21,8 +21,22 @@ const cloud = {
   textSize: 'md',
   iconId: 'cloud',
   iconPosition: 'above',
+  // At the top, so the label meets the cluster and must move out of its way.
+  textAlignY: 'top',
   note: 'A note',
   link: { kind: 'url', url: 'https://example.com' },
+  action: {
+    id: 'a',
+    name: 'Follow up',
+    description: '',
+    assignee: { userId: 'u_sam', name: 'Sam Reed' },
+    teamId: null,
+    assignerId: 'me',
+    assignerName: null,
+    status: 'open',
+    createdAt: 0,
+    updatedAt: 0,
+  },
   commentThread: {
     resolved: false,
     comments: [
@@ -56,7 +70,6 @@ function draw(
       onCommitLabel={vi.fn()}
       onCancelEdit={vi.fn()}
       onFollowLink={vi.fn()}
-      onOpenComments={vi.fn()}
       onOpenAction={vi.fn()}
       onOpenNote={vi.fn()}
       onSetPageHeading={vi.fn()}
@@ -75,6 +88,8 @@ describe('BoxedElementView indicators', () => {
     const { container, getByText } = draw(cloud);
     const cluster = container.querySelector<HTMLElement>('[data-indicators="top"]')!;
     expect(cluster).not.toBeNull();
+    // The link, the note and the action; never the stored comments (docs/specs/026-plan/plan-mode.md "No comment
+    // thread on any canvas element").
     expect(cluster.querySelectorAll('button')).toHaveLength(3);
     // The content area starts below the cluster.
     const moved = getByText('Cloud').closest<HTMLElement>('.inset-x-0')!;

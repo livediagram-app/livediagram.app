@@ -13,6 +13,8 @@ and run over liveworkspace's account API through the router (`/api/workspace/acc
 livedesign's settings in place, and any `?settings=` address opens them here too. A workbench's
 workspace frame keeps its own copy of the Explorer (`apps/live/app/embed/workbench/ExplorerHost.tsx`).
 
+**From an open design.** The editor's doors to the Explorer from an open design, the header's logo (`apps/live/components/chrome/EditorHeader.tsx`) and **Open Explorer** in the Explorer panel's ⋯ menu (`apps/live/components/panels/ExplorerHeaderMenu.tsx`), pass only the design's id (`/explorer?item=<id>`, `explorerItemHref`). The Explorer opens the place that holds it, with the design marked: its My Work folder or My Work, its team's library at its folder, This Browser at its local folder, or Shared With Me ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item"). Back returns to the design. Every other door (a page with no design, a trashed design's card) opens the Explorer as before.
+
 **Browser Storage.** The owner renamed This Browser to **Browser Storage** in the Explorer on 2026-11-10, for clarity
 ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser, a Space"): its Space
 row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's groups, and the

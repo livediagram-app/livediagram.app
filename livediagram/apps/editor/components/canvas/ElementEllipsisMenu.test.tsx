@@ -160,7 +160,7 @@ describe('ElementEllipsisMenu placement', () => {
     mountInFace({});
     const panel = openMenu();
     rect.mockRestore();
-    const shift = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(panel.style.transform);
+    const shift = /translate\((-?[\d.]+)px(?:, (-?[\d.]+)px)?\)/.exec(panel.style.transform);
     expect(shift).not.toBeNull();
     expect(40 - 288 + Number(shift![1])).toBeGreaterThanOrEqual(0);
   });
@@ -196,7 +196,7 @@ describe('ElementEllipsisMenu placement', () => {
     act(() => resized());
     rect.mockRestore();
     vi.unstubAllGlobals();
-    const shift = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(panel.style.transform);
+    const shift = /translate\((-?[\d.]+)px(?:, (-?[\d.]+)px)?\)/.exec(panel.style.transform);
     expect(shift).not.toBeNull();
     expect(40 - 288 + Number(shift![1])).toBeGreaterThanOrEqual(0);
   });

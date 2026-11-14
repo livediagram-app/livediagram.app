@@ -135,7 +135,7 @@ describe('isometric side faces during a peer drag', () => {
     };
     let best = Infinity;
     for (let i = 0; i < 5; i++) best = Math.min(best, cpuMsOf(frame));
-    expect(s.depth().style.transform).toBe(`translate(${dx}px, 0px)`);
+    expect(s.depth().style.transform).toBe(`translate(${dx}px)`);
     expect(best).toBeLessThan(cpuBudgetMs(16));
   });
 });

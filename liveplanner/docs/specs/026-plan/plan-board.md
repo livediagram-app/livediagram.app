@@ -19,10 +19,10 @@ is about.
 | **swimlane**     | One row of the board, grouping its cards by a field (assignee, type, any field, ...) | lane, row                 |
 | **WIP limit**    | The most cards a column should hold                                                  | cap, max                  |
 | **unplaced**     | Items whose status is none of the board's columns                                    | orphans, hidden           |
-| **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)      | filter setting            |
+| **quick filter** | The board's filter: what its widgets narrow it to, kept and shared with everyone     | filter setting            |
 | **face-down**    | A card drawn as its colour and author only, while its board hides writing            | hidden, private           |
 | **selection**    | The cards one person has picked on one board to change together (theirs, unsaved)    | multi-select, batch       |
-| **saved filter** | A named quick filter kept on the board set-up, shared, that anyone may apply         | view, preset, smart list  |
+| **saved filter** | A named quick filter kept on the board set-up, that an Editor or Participant applies | view, preset, smart list  |
 
 ## The board set-up
 
@@ -153,7 +153,11 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Saved filters**: up to 8 named quick filters ([Board widgets](board-widgets.md#saved-filters)), shown as
   chips in the Filter widget. Each keeps the words, Only Mine, the field chips and the widget narrowings it was
   saved with; saving, renaming, updating and deleting one is an Editor's set-up change (undone as any), while
-  applying one is each person's own quick filter.
+  applying one (an Editor or a Participant) sets the board's filter for everyone.
+- **The board's filter** (the quick filter): what the Filter, Only Mine and the other widgets narrow the board to is
+  kept on the set-up and shared live with everyone on the board, and is still there after a tab switch or a reload.
+  An Editor or a Participant changes it; a Viewer sees it applied, read-only ([Board
+  widgets](board-widgets.md#the-boards-filter)).
 - **Hide writing**: off, or on: each person's cards on this board are face-down to everyone else until the board
   is revealed. It hides the face, not the data; it is a facilitation aid, not a privacy boundary.
 
@@ -572,7 +576,8 @@ In Plan mode:
   closes with Escape or the close button, and follows the item if someone else moves it. **Enter** in the title
   saves it and closes the panel (a refused save leaves it open, the title put back, with the reason). On a desktop, opening
   it puts the caret at the end of its **title**; on a phone focus rests on the panel itself, so no keyboard rises.
-  The type picker never takes the first focus. Tab moves on through the controls.
+  The type picker never takes the first focus. Tab moves on through the controls. **Cmd/Ctrl+Z** and redo work
+  while it is open, outside its text fields ([Keyboard shortcuts](../008-canvas/canvas-and-palette.md#keyboard-shortcuts)).
   - **A card just made opens at once**: one this person adds with **Add Card**, places from the palette into a
     column, or makes with **New {Type}** in a card's Linked as sections opens in its panel, its
     title ("New task") selected on a desktop so typing replaces it. A card made by someone else, brought back by

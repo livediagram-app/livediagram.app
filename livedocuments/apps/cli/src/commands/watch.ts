@@ -4,7 +4,7 @@
 
 import { documentOf, resolveTab, tabPath, type VerbContext } from '@livedocuments/agent-verbs';
 import { computeRefs, type Tab } from '@livedocuments/document';
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { classifyRoomOp, onTab, watchLines, type Names, type RoomEvent } from '../room/room-events';
 import { openRoomStream } from '../room/room-stream';

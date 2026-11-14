@@ -161,6 +161,8 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
 - An anchored panel focuses its first control on opening. One whose first control is a text field it should not
   raise a keyboard for on a touch screen (a search) may ask to focus the panel itself instead
   (`initialFocus: 'panel'`): focus is inside it, for Escape and assistive technology, and no keyboard rises.
+  One whose control sits in a sideways-scrolling row (a board header's widgets) may ask to move the focus in, and
+  back to its control on closing, without scrolling anything (`preventScroll`), so the row stays where it was.
 - While focus is in a popover (an anchored panel, a confirm popover), Tab and Shift+Tab wrap at its ends. It is drawn
   at the end of the page, outside the dialog it opened over, so Tab past its last control would otherwise fall to the
   page and on to the editor behind the dialog. Escape closes it and hands focus back to its control. Focus outside it

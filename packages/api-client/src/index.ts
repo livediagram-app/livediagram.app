@@ -7,3 +7,4 @@ export {
   postEvents,
   type ApiClient,
 } from './client';
+export { createCapabilitiesClient, type CapabilitiesClient } from './capabilities';

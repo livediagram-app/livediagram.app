@@ -131,6 +131,19 @@ export async function newComment(
   };
 }
 
+// Comment threads on canvas elements are retired (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas
+// element"): a new comment, or a reply, on an element's own thread is refused. A cell's thread takes both, and a stored
+// element thread still resolves, reopens and loses its author's own comments.
+function elementThreadRetired(): Response {
+  return json(
+    {
+      error: 'element_comments_retired',
+      message: 'canvas elements take no comments; comment on a Sheet cell or a card',
+    },
+    { status: 400 },
+  );
+}
+
 // Which comment route a path of this many segments is; a thread verb names itself (its last segment).
 const COMMENT_ROUTE_NAMES: Record<number, string> = { 4: 'list', 6: 'add', 7: 'delete' };
 
@@ -216,6 +229,7 @@ async function addComment(ctx: PlanRouteContext, id: string, tabId: string): Pro
   // A Sheet cell's thread, by its cell key (`rowId:colId`).
   const cell = body.cell === undefined ? undefined : body.cell;
   if (cell !== undefined && !isCellKey(cell)) return badRequest('invalid cell');
+  if (cell === undefined) return elementThreadRetired();
   const comment = await newComment(ctx, caller.owner, body);
   if (comment instanceof Response) return comment;
   const written = await writeTab(ctx, id, tabId, (tab) => appended(tab, elementId, comment, cell));
@@ -271,7 +285,10 @@ async function threadVerb(
     if (comment instanceof Response) return comment;
     const written = await writeTab(ctx, id, tabId, (tab) => {
       const host = findCommentHost(tab.elements, commentId);
-      return host ? appended(tab, host.elementId, comment, host.cell) : notFound();
+      if (!host) return notFound();
+      return host.cell === undefined
+        ? elementThreadRetired()
+        : appended(tab, host.elementId, comment, host.cell);
     });
     if (written instanceof Response) return written;
     afterCommentPosted(ctx, caller, comment);

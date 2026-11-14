@@ -21,6 +21,14 @@ One `GET /api/auth/get-session` per page load, however many parts ask (`useSessi
 session is the one that counts (`components/explorer/AppAccountControl.tsx`). A colour picked in Settings repaints the
 avatar at once (`setSessionColour`). `signOut` resolves false when the API refused.
 
+### Opening from an open item (`components/explorer/useItemArrival.ts`)
+
+`/explorer?item=<id>` ([one-explorer.md](../../004-index/one-explorer.md#opening-from-an-open-item)): `pending` while
+the person is unknown and the place is looked up (This Browser's list, else one `GET /items/:id` through
+`resolveItemView`), during which ExplorerShell shows the skeleton; then `router.replace` to the place, or, when the
+index can't answer, the address without `item`. `arrivedItem` is the id while the view shown is that place (whatever
+the lens), handed to the Explorer, whose list views bring it into their window and mark it.
+
 ### Signing in (`components/account/SignInFlow.tsx`, `lib/accounts.ts`)
 
 Steps `email` → `code` → `name` (only when the account has no name) → `done`:

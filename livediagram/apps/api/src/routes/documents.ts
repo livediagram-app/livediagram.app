@@ -47,11 +47,12 @@ import {
 } from '../redact-document';
 import { answerOverview, parseViewQuery } from './document-views-route';
 import { notifyMilestone } from '../email/notifications';
-import { reportOwnerActivity } from '../liveworkspace/activity';
+import { reportOwnerActivity } from '@liveworkspace/index-app';
+import { accountCredentials } from '../auth/accounts';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { relayDocumentRename } from '../room-client';
-import { lockRecommittedTabs } from '../whole-tab-lock';
+import { lockCreatedTabs, lockRecommittedTabs } from '../whole-tab-lock';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
 import { compileSeededTabs, seedIntentOf } from './document-seed';
@@ -359,11 +360,12 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       // ids they carry: the editor's welcome flow ships the templated tab inline so the first per-tab fetch
       // already has data.
       if (incomingTabs) {
-        // A re-commit (what an offline sync sends) writes over the stored tabs, so it is locked like a save
-        // (docs/specs/013-workspace/share-roles.md "The collab key"); a create has nobody else's entries to keep.
+        // A re-commit (what an offline sync sends) writes over the stored tabs, so it is locked like a save; a create
+        // keeps only its creator's entries (docs/specs/013-workspace/share-roles.md "The collab key").
+        const writer = ctx.token ? null : owner;
         const seeded = clash
-          ? await lockRecommittedTabs(env, body.id, incomingTabs, ctx.token ? null : owner)
-          : incomingTabs;
+          ? await lockRecommittedTabs(env, body.id, incomingTabs, writer)
+          : await lockCreatedTabs(body.id, incomingTabs, writer);
         try {
           await seedTabs(env, body.id, seeded, savedAt);
         } catch (error) {
@@ -376,8 +378,8 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         console.info('[documents] created', { documentId: body.id, marked: making.markUsed });
       // A genuine create may be the owner's tenth canvas (docs/specs/014-identity/transactional-email.md #6).
       if (!clash) ctx.waitUntil?.(notifyMilestone(env, owner));
-      // liveworkspace's onboarding series: they made something (liveworkspace/activity.ts).
-      if (!clash) ctx.waitUntil?.(reportOwnerActivity(env, owner, Date.now()));
+      // liveworkspace's onboarding series: they made something (@liveworkspace/index-app reportOwnerActivity).
+      if (!clash) ctx.waitUntil?.(reportOwnerActivity(accountCredentials(env), owner, Date.now()));
       return json({ document: liveDoc }, { status: 201 });
     }
   }

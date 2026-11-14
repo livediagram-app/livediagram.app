@@ -12,7 +12,7 @@ export * from './feature-art/canvas';
 export * from './feature-art/together';
 export * from './feature-art/sharing';
 export * from './feature-art/foundations';
-export * from './feature-art/features';
+export * from '@liveworkspace/marketing-site/components/feature-art/features';
 export * from './feature-art/reach';
 export * from './feature-art/versatility-more';
 // Presentation mode (docs/specs/012-collaboration/presentation-mode.md): decks, the full-screen slide, notes, and the

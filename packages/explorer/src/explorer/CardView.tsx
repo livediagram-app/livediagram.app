@@ -17,6 +17,7 @@ import { CARD_GRID } from '../ui/classes';
 import { useExplorer } from './context';
 import { FolderCard, ItemCard, type RowOptions } from './rows';
 import { useCardWindow } from './useCardWindow';
+import { revealAt, useRevealArrived } from './arrived-item';
 
 export const CARD_BATCH = 60;
 
@@ -90,15 +91,43 @@ export function CardView({
   const shownItems = end - shownFolders;
   const spacerAbove = useRef<HTMLDivElement>(null);
   const runFirstId = useRef<string | null>(null);
-  const win = useCardWindow(grid, shownFolders, shownItems, () => {
-    // Where the run of item-only rows starts as drawn: the spacer above it, else its first card.
+  // Where the run of item-only rows starts as drawn: the spacer above it, else its first card.
+  const runStartOf = () => {
     if (spacerAbove.current) return spacerAbove.current;
     const id = runFirstId.current;
     return id
       ? (grid.current?.querySelector<HTMLElement>(`[data-item-card="${CSS.escape(id)}"]`) ?? null)
       : null;
-  });
+  };
+  const win = useCardWindow(grid, shownFolders, shownItems, runStartOf);
   runFirstId.current = win.start < win.end ? items[win.start]!.id : null;
+  // The item an editor's door came from: loaded, revealed past the batches shown and brought into the card window, so
+  // it is drawn and marked.
+  useRevealArrived({
+    items,
+    offset: 0,
+    hasMore,
+    loadingMore,
+    onLoadMore,
+    reveal: (at) => {
+      // Past the cards revealed so far: reveal through its batch; the next render tries again.
+      if (folders.length + at >= limit) {
+        setShown({
+          key: resetKey,
+          count: Math.ceil((folders.length + at + 1) / CARD_BATCH) * CARD_BATCH,
+        });
+        return true;
+      }
+      // Until the window has measured the grid there is no row to scroll to: the render after it measures tries
+      // again. A card on the last folder row always draws.
+      if (win.cols < 1 || at < win.shared) return false;
+      const run = runStartOf();
+      if (!grid.current || !run) return false;
+      const row = Math.floor((at - win.shared) / win.cols);
+      revealAt(grid.current, run.offsetTop + row * win.pitch, win.pitch - win.gap);
+      return true;
+    },
+  });
   const cards = [];
   for (let i = 0; i < shownFolders; i++) {
     const f = folders[i]!;
@@ -134,7 +163,7 @@ export function CardView({
 
   return (
     <>
-      <div ref={grid} className={`${CARD_GRID} ${cascade ? 'lw-cascade' : ''}`}>
+      <div ref={grid} className={`relative ${CARD_GRID} ${cascade ? 'lw-cascade' : ''}`}>
         {cards}
       </div>
       {more ? (

@@ -13,6 +13,7 @@ import {
   type PlanVisualisation,
 } from '@liveplanner/items';
 import type { StarterId } from '@liveplanner/forms';
+import type { FormMetricKind } from '@liveplanner/project';
 import type { TemplateStartId } from '@liveplanner/sheets';
 import { PLAN_TEMPLATE_KINDS, type PlanTemplateKind } from './plan-template-kinds';
 
@@ -56,6 +57,8 @@ export type PlanTabSpec = {
   board?: BoardSpec;
   sheet?: SheetSpec;
   form?: FormSpec;
+  // Form tab only: the figures its responses bring to the template's Overview (plan-tabs.md "Form Metrics").
+  figures?: readonly FormMetricKind[];
   metrics?: readonly MetricKind[];
   charts?: readonly PlanVisualisation[];
   // The Gantt chart's card types: the dated cards of the board above it (absent: Projects, the chart's own default).
@@ -818,7 +821,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
       sheet: { start: 'guest-list', width: 1000, height: 520, fillTab: true },
     },
     // The Event RSVP form, its replies rows on the blank sheet after it (forms.md "In a plan template").
-    { name: 'RSVP', form: { starter: 'rsvp', to: 'RSVP Responses' } },
+    { name: 'RSVP', form: { starter: 'rsvp', to: 'RSVP Responses' }, figures: ['responses'] },
     {
       name: 'RSVP Responses',
       sheet: { start: 'blank-spreadsheet', width: 1000, height: 520, fillTab: true },
@@ -915,6 +918,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
     {
       name: 'Contact Form',
       form: { starter: 'contact', to: 'Tickets', fields: { 'Requested By': 'Customer' } },
+      figures: ['responses'],
     },
     {
       name: 'Knowledge Base',

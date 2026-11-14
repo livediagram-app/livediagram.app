@@ -96,12 +96,42 @@ describe('the account palette', () => {
     },
   );
 
+  // Tailwind v4's slate in sRGB (its oklch values, rounded to hex), for the WCAG ratio of a hovered row's hint.
+  const SLATE: Record<string, string> = {
+    'var(--color-slate-100)': '#f1f5f9',
+    'var(--color-slate-500)': '#62748e',
+    'var(--color-slate-600)': '#45556c',
+  };
+  function contrast(a: string, b: string): number {
+    const lum = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((i) => {
+        const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+        return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      }) as [number, number, number];
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const [lo, hi] = [lum(a), lum(b)].sort((x, y) => x - y) as [number, number];
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  it('darkens a hovered row’s hint to AA in light mode and keeps dark mode’s hint', () => {
+    const hover = SLATE[LIGHT.get('--account-hover')!]!;
+    // The resting hint on the hover fill is just under AA (4.35:1), the reason the token exists.
+    expect(contrast(SLATE[LIGHT.get('--account-hint')!]!, hover)).toBeLessThan(4.5);
+    expect(LIGHT.get('--account-hint-hover')).toBe('var(--color-slate-600)');
+    expect(contrast(SLATE[LIGHT.get('--account-hint-hover')!]!, hover)).toBeGreaterThanOrEqual(4.5);
+    expect(DARK.get('--account-hint-hover')).toBe(DARK.get('--account-hint'));
+  });
+
   it('paints a hovered and a keyboard-focused item from the palette', () => {
     opened(<AccountMenu name="Ada" explorerHref="/explorer" onSignOut={signOut} />);
     for (const item of screen.getAllByRole('menuitem')) {
       expect(item.className).toContain('hover:bg-(--account-hover)');
       expect(item.className).toContain('focus-visible:bg-(--account-hover)');
       expect(item.className).not.toMatch(/(^|\s)(hover|focus-visible):bg-slate-/);
+      // Its hints read the darker hover hint while it is hovered or focused.
+      expect(item.className).toContain('hover:[--account-hint:var(--account-hint-hover)]');
+      expect(item.className).toContain('focus-visible:[--account-hint:var(--account-hint-hover)]');
     }
   });
 });

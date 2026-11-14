@@ -81,10 +81,9 @@ export interface PlannedRelated {
   gone?: AutomationGone;
 }
 
-// What a run writes: the triggering card's one patch, the threads it starts, the card it makes, its emails, its
-// related cards' writes, its outgoing messages, and how many turns Assign in Turn took. `ai`: its AI steps, asked
-// after the card writes (present only when it has one).
-export interface PlannedWrites {
+// The writes of the steps between two AI steps (or before the first, or after the last): the triggering card's one
+// patch, the threads it starts, the card it makes, its emails and its related cards' writes (spec "How a step runs").
+export interface PlannedSegment {
   patch: ItemPatch;
   comments: string[];
   created: PlannedCard[];
@@ -92,9 +91,15 @@ export interface PlannedWrites {
   mentions: PlannedMention[];
   // Resolve Threads: the card's open threads resolved.
   resolve: boolean;
+  related: PlannedRelated[];
+}
+
+// What a run writes: the writes of the steps before its first AI step (all of them, with none), its outgoing
+// messages, and how many turns Assign in Turn took. `ai`: its AI steps (present only when it has one), each asked
+// in its place, its `after` the writes of the steps after it.
+export interface PlannedWrites extends PlannedSegment {
   // A Wait reached: how long, and the step the rest of the rule goes on from.
   wait?: { hours: number; from: number };
-  related: PlannedRelated[];
   sends: PlannedSend[];
   turns: number;
   ai?: PlannedAi[];
@@ -115,8 +120,22 @@ export class Run {
   readonly sends: PlannedSend[] = [];
   readonly related: PlannedRelated[] = [];
   readonly ai: PlannedAi[] = [];
-  actions = 0;
-  turns = 0;
+  actions: number;
+  turns: number;
+
+  // `carry`: the counts of the run so far, when the rest of it is planned afresh after an AI step.
+  constructor(carry?: RunCarry) {
+    this.actions = carry?.actions ?? 0;
+    this.turns = carry?.turns ?? 0;
+  }
+}
+
+// A run's counts at a step: the actions it planned, the Assign in Turn turns it took and the cards it made, carried
+// into the rest of it when that is planned afresh from the card an AI step left (spec "How a step runs").
+export interface RunCarry {
+  actions: number;
+  turns: number;
+  made: number;
 }
 
 // One card's walk: the card as the steps so far left it, and the one patch that gets it there. Its lines go to the
@@ -132,6 +151,8 @@ export class Plan {
   // Change Card Type: the type the card becomes.
   type: string | undefined;
   card: Item;
+  // The cards the run's earlier segments make (AUTOMATION_CREATED_PER_RUN counts the whole run's).
+  madeBefore = 0;
 
   private readonly was: ItemFields;
 

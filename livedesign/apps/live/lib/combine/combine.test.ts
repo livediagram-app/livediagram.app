@@ -9,6 +9,7 @@ import {
 import { combineElements, multiPolygonToPath, type CombineOp } from './combine';
 import { elementRings, isCombinable } from './outline';
 import { simplifyRing } from './simplify';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/logo-pages.md "Combine".
 const sq = (id: string, x: number, y: number, s: number, extra: Partial<ShapeElement> = {}) =>
@@ -145,9 +146,9 @@ describe('combine', () => {
   it('stays within budget for two maximally detailed discs', async () => {
     const big = (id: string, x: number) => disc(id, x, 0, 1024);
     expect(elementRings(big('p', 0))[0]!.length).toBeLessThan(400);
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     await run('unite', [big('p', 0), big('q', 300)]);
-    expect(performance.now() - t0).toBeLessThan(500);
+    expect(cpuNowMs() - t0).toBeLessThan(cpuBudgetMs(500));
   });
 });
 

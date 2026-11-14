@@ -199,7 +199,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   if (isRetiredElement(el)) {
     // A kind or type livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): its
     // placeholder card, in place of its body, border and label.
-    return `<g${opAttr}${rotAttr}>${svgRetiredElement(el, surface, fontFamily)}</g>`;
+    return `<g${opAttr}${rotAttr}>${svgRetiredElement(el, surface, fontFamily, !!opts.retiredOutlines)}</g>`;
   }
   if (shape.kind === 'image') {
     shapeStr =
@@ -418,6 +418,8 @@ export function renderElementsToSvg(
     resolveIconArt?: ResolveIconArt;
     resolveStickerArt?: ResolveStickerArt;
     resolveEmojiArt?: ResolveEmojiArt;
+    // Retired elements as their placeholder's outline alone (BoxedExportOptions.retiredOutlines).
+    retiredOutlines?: boolean;
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
@@ -454,7 +456,13 @@ export function renderElementsToSvg(
   parts.push(
     ...paintOrder(tab.elements).map((el) =>
       el.type === 'arrow'
-        ? svgRetiredArrow(el, tabIndex(), surface, exportFontFamily({}, tab.font, tab.finish))
+        ? svgRetiredArrow(
+            el,
+            tabIndex(),
+            surface,
+            exportFontFamily({}, tab.font, tab.finish),
+            opts.retiredOutlines,
+          )
         : svgBoxed(el, {
             resolveImageHref: opts.resolveImageHref,
             resolveIconArt: opts.resolveIconArt,
@@ -465,6 +473,7 @@ export function renderElementsToSvg(
             sketchBackdrop: backdrops.has(el.id),
             surface,
             paper: bg,
+            retiredOutlines: opts.retiredOutlines,
           }),
     ),
   );

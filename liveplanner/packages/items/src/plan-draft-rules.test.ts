@@ -202,6 +202,9 @@ describe('planDraftNeedWords', () => {
       'Field Changed never hears Votes.',
     );
     expect(planDraftNeedWords({ kind: 'github' })).toContain('not connected');
+    expect(planDraftNeedWords({ kind: 'repositories', names: ['acme/old'] })).toContain(
+      'not connected',
+    );
     expect(planDraftNeedWords({ kind: 'person', id: 'Ana' })).toBe(
       'This rule names something a new plan won’t have.',
     );

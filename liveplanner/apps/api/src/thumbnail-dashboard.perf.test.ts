@@ -19,6 +19,7 @@ const db = vi.hoisted(() => ({
 vi.mock('./db', () => db);
 
 import { drawPlan } from './thumbnail';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 let ids = 0;
 const tabs = buildTemplateTabs({ id: 't0', name: 'Roadmap' }, 'project-planner', () => `t${++ids}`);
@@ -77,9 +78,9 @@ async function timed(n: number) {
   const runs: number[] = [];
   let svg = '';
   for (let i = 0; i < 5; i++) {
-    const t = performance.now();
+    const t = cpuNowMs();
     svg = (await drawPlan(env, project, null)) ?? '';
-    runs.push(performance.now() - t);
+    runs.push(cpuNowMs() - t);
   }
   runs.sort((a, b) => a - b);
   return { ms: runs[2]!, svg };
@@ -144,6 +145,6 @@ describe('a Dashboard’s live image at size', () => {
     console.info('[perf] fullest dashboard live image', { ms: Math.round(ms * 10) / 10 });
     expect(svg.length).toBeGreaterThan(0);
     // Measured at about 37 ms on an M-series laptop: the 48 pictures are most of it (plan-view-art.perf.test.ts).
-    expect(ms).toBeLessThan(2000);
+    expect(ms).toBeLessThan(cpuBudgetMs(2000));
   });
 });

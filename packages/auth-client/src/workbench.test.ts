@@ -5,6 +5,7 @@ import {
   takeAllowance,
   type WorkbenchSessionCheck,
 } from './workbench';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const CREDENTIALS = {
   accountsUrl: 'https://liveworkspace.app/',
@@ -107,10 +108,10 @@ describe('createWorkbenchSessionChecker', () => {
   it('answers 1,000 checks of one session with one request', async () => {
     const { fetcher, calls } = fakeFetch(() => Response.json(SESSION));
     const check = createWorkbenchSessionChecker(CREDENTIALS, { fetcher, now: () => 1_000 });
-    const started = performance.now();
+    const started = cpuNowMs();
     for (let i = 0; i < 1_000; i++) await check(SECRET);
     expect(calls).toHaveLength(1);
-    expect(performance.now() - started).toBeLessThan(1_000);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(1_000));
   });
 });
 

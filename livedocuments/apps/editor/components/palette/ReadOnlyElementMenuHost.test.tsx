@@ -70,6 +70,17 @@ describe('ReadOnlyElementMenuHost', () => {
     expect(rows()).toEqual(['Show Comments']);
   });
 
+  // docs/specs/012-collaboration/presentation-mode.md "Setting builds up": builds are set by an Editor.
+  it('gives a Participant or a Viewer no Build section on a built element', () => {
+    for (const level of ['view', 'participate'] as const) {
+      open(level, square({ label: 'A', build: { order: 1, effect: 'fade' } }));
+      expect(screen.queryByText('Build')).toBeNull();
+      expect(screen.queryByText('Animation')).toBeNull();
+      expect(screen.queryByRole('button', { name: /^(Fade|Rise|Appear)/ })).toBeNull();
+      cleanup();
+    }
+  });
+
   it('opens nothing where the role has nothing to do', () => {
     open('view', square());
     expect(screen.queryByRole('dialog')).toBeNull();

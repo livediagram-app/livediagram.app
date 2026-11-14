@@ -7,6 +7,7 @@ import {
   imageGrantSqlOf,
   type ImageGrantDeps,
 } from './image-grants';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Which images an item may serve: its owner's, an entitled person's (an editor since the last push, a joined
 // teammate), and those it holds a grant for, in the item's own SQLite.
@@ -94,14 +95,14 @@ describe('servableImageIds', () => {
     members.set('t1', ['user_bob']);
     const g = createImageGrants(deps);
     const item = { ownerId: 'user_ada', teamId: 't1' };
-    const cold = performance.now();
+    const cold = cpuNowMs();
     expect((await g.servableImageIds(sql(), item, ids, [])).size).toBe(500);
-    const coldMs = performance.now() - cold;
-    const warm = performance.now();
+    const coldMs = cpuNowMs() - cold;
+    const warm = cpuNowMs();
     expect((await g.servableImageIds(sql(), item, ids, [])).size).toBe(500);
-    const warmMs = performance.now() - warm;
-    expect(coldMs).toBeLessThan(2_000);
-    expect(warmMs).toBeLessThan(100);
+    const warmMs = cpuNowMs() - warm;
+    expect(coldMs).toBeLessThan(cpuBudgetMs(2_000));
+    expect(warmMs).toBeLessThan(cpuBudgetMs(100));
   });
 });
 

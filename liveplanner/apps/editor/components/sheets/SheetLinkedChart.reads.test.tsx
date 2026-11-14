@@ -11,6 +11,7 @@ import * as api from '@/lib/api/sheets';
 import { SheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { forgetSheetStores } from './sheet-store-client';
 import { SheetLinkedChart } from './SheetLinkedChart';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 vi.mock('@liveplanner/sheets', async (importOriginal) => {
   const real = await importOriginal<typeof import('@liveplanner/sheets')>();
@@ -114,15 +115,15 @@ describe('a chart drawn from a big sheet', () => {
     await waitFor(() => expect(screen.getByTestId('chart').textContent).toBe('500'));
     reads.mockClear();
     // Scroll frames: the same element, a new render function each time.
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     for (let frame = 1; frame <= 60; frame++) act(() => r.rerender(view(chart, frame)));
-    const perFrame = (performance.now() - t0) / 60;
+    const perFrame = (cpuNowMs() - t0) / 60;
     expect(reads).not.toHaveBeenCalled();
     // A resize draws a new element of the same source each frame: still no new read.
     for (let frame = 1; frame <= 10; frame++)
       act(() => r.rerender(view({ ...chart, width: 260 + frame }, frame)));
     expect(reads).not.toHaveBeenCalled();
     // A budget a frame can afford (16 ms), with room for a loaded CI machine.
-    expect(perFrame).toBeLessThan(8);
+    expect(perFrame).toBeLessThan(cpuBudgetMs(8));
   });
 });

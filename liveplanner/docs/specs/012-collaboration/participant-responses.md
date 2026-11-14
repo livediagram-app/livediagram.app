@@ -133,7 +133,7 @@ and some controls, so a canvas of them read as one repeated component in
 thirteen sizes. The thing each of them IS (a clipboard, a ballot box, a ticket
 stub, a filed record) was carried entirely by the words on it.
 
-The **paper kit** (`components/canvas/paper-kit.tsx`) is the shared set of
+The **paper kit** (`packages/workbench/src/components/canvas/paper-kit.tsx`) is the shared set of
 textures that fixes that. Its one rule: everything is built from
 `tint(textColor, alpha)`, so a card is drawn in ITS OWN colour and the tab
 theme still owns the palette ([Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)). A pink canvas stays a pink canvas. All

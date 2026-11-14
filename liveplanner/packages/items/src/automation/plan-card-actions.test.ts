@@ -42,6 +42,63 @@ describe('Change Card Type', () => {
     expect(r.lines[0]).toMatchObject({ text: 'Change to Bug', already: true });
   });
 
+  // item-types.md "Changing a card's type": the Work Tracker's Progress Idea, an Idea's App reaching the Work Item's.
+  it('maps custom fields by name into the new type in the same patch, keeping the old values', () => {
+    const idea: ItemTypeDef = {
+      ...NOTE,
+      id: 'idea',
+      label: 'Idea',
+      fields: ['title', 'status', 'f-apps', 'f-solution'],
+      custom: [
+        { id: 'f-apps', label: 'App', kind: 'multichoice', options: ['Editor', 'API'] },
+        { id: 'f-solution', label: 'Solution', kind: 'longtext' },
+      ],
+    };
+    const work: ItemTypeDef = {
+      ...NOTE,
+      id: 'work',
+      label: 'Work Item',
+      fields: ['title', 'status', 'f-app'],
+      custom: [{ id: 'f-app', label: 'App', kind: 'choice', options: ['Editor', 'API'] }],
+    };
+    const card: Item = {
+      ...bug({ 'f-severity': undefined, 'f-apps': ['API'], 'f-solution': 'Ship it' }),
+      type: 'idea',
+    };
+    const ctx = ctxFor(card, { outline: { ...OUTLINE, types: [idea, work] } });
+    const only = done(planActions([{ kind: 'set_type', type: 'work' }], ctx));
+    // Solution and the old App stay on the card, hidden: nothing is cleared.
+    expect(only.patch).toEqual({ type: 'work', set: { 'f-app': 'API' } });
+    expect(only.lines).toEqual([{ kind: 'action', ok: true, text: 'Change to Work Item' }]);
+    // A later step reads and writes the mapped field as the new type's.
+    const then = done(
+      planActions(
+        [
+          { kind: 'set_type', type: 'work' },
+          { kind: 'set_field', field: 'f-app', value: { text: 'Editor' } },
+        ],
+        ctx,
+      ),
+    );
+    expect(then.patch).toEqual({ type: 'work', set: { 'f-app': 'Editor' } });
+    // Map Fields (item-types.md "Explicit mappings", Work Tracker 843): Solution into the Description, over its value.
+    const mapped = done(
+      planActions(
+        [{ kind: 'set_type', type: 'work', map: [{ from: 'f-solution', to: 'description' }] }],
+        ctxFor(
+          { ...card, fields: { ...card.fields, description: 'Old' } },
+          {
+            outline: { ...OUTLINE, types: [idea, work] },
+          },
+        ),
+      ),
+    );
+    expect(mapped.patch).toEqual({
+      type: 'work',
+      set: { 'f-app': 'API', description: 'Ship it' },
+    });
+  });
+
   it.each([
     [{ kind: 'set_type', type: 'epic' }, bug(), 'Card type epic is gone'],
     [{ kind: 'set_type', type: 'note' }, bug({ status: 'done' }), "A Note card can't be in Done"],
@@ -142,6 +199,17 @@ describe('Add a Checklist', () => {
 
 describe('Link Cards', () => {
   const target = bug({ title: 'Target' });
+
+  // Spec "Conditions": a chosen card in the Trash is gone, as a deleted one is; restored, it links again.
+  it('fails a chosen card that is in the Trash, and links it once it is back', () => {
+    const card = note();
+    const trashed = { ...target, fields: { ...target.fields, status: 'trash' } };
+    const link: AutomationAction = { kind: 'link_card', field: 'f-links', to: { card: target.id } };
+    expect(failed(run([link], card, { items: [card, trashed] }))).toBe('The card to link is gone');
+    expect(done(run([link], card, { items: [card, target] })).patch).toEqual({
+      set: { 'f-links': [target.id] },
+    });
+  });
 
   it('adds the card to a field of several, once, naming it on the line', () => {
     const card = note();

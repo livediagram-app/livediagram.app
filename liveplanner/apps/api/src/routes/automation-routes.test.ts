@@ -152,6 +152,13 @@ describe('an agent (an API token) at the rules', () => {
     for (const p of list.people!) expect(Object.keys(p).sort()).toEqual(['id', 'name']);
   });
 
+  // Work Tracker 788: an agent's sentence names a saved filter by its name, so the list carries the boards' filters.
+  it('lists the boards’ saved filters by name, for an agent’s sentence', async () => {
+    const list = await body<AutomationsListResponse>(w.call('GET', '', undefined, 'token'));
+    expect(Array.isArray(list.filters)).toBe(true);
+    for (const f of list.filters!) expect(Object.keys(f).sort()).toEqual(['id', 'name', 'tab']);
+  });
+
   it('runs a Run from a Card rule as an agent, for Who Did It', async () => {
     const asAgent = await w.rule({
       name: 'Agents only',
@@ -348,6 +355,21 @@ describe('the rules', () => {
     const [rule] = (await listOf()).rules;
     expect(rule!.needs).toEqual(['Column qa is gone']);
     expect(rule!.attention).toEqual([{ kind: 'column', id: 'qa' }]);
+  });
+
+  // Spec "Conditions": a Link Cards step's chosen card in the Trash is gone until it is restored.
+  it('marks a Link Cards step whose card is in the Trash, and clears it once the card is back', async () => {
+    const c = await w.make('A', { title: 'Linked to' });
+    await w.rule({ steps: [{ kind: 'link_card', field: 'f-x', to: { card: c.id } }] });
+    const marked = async () =>
+      (await listOf()).rules[0]!.attention.some((n) => n.kind === 'card' && n.id === c.id);
+    expect(await marked()).toBe(false);
+    const set = (fields: Record<string, unknown>) =>
+      w.send('POST', `/api/projects/A/items/${c.id}`, { set: fields });
+    expect((await set({ status: 'trash', trashedFrom: 'todo' })).status).toBe(200);
+    expect(await marked()).toBe(true);
+    expect((await set({ status: 'todo' })).status).toBe(200);
+    expect(await marked()).toBe(false);
   });
 });
 

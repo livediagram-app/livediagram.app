@@ -346,6 +346,23 @@ describe('the rule builder', () => {
     expect(screen.getByRole('textbox', { name: 'Comment' })).toBeTruthy();
   });
 
+  // Work Tracker 788: a New Rule left as it opened has nothing to lose, so it leaves without asking; changed, it asks.
+  it('leaves an untouched New Rule without asking, and asks once it is changed', async () => {
+    list();
+    wrap(<Harness initial={{ view: 'rule', ruleId: null }} />);
+    await screen.findByRole('textbox', { name: 'Rule name' });
+    fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
+    expect(screen.queryByText('Discard Changes?')).toBeNull();
+    expect(await screen.findByRole('tab', { name: 'Rules · 1' })).toBeTruthy();
+    cleanup();
+    wrap(<Harness initial={{ view: 'rule', ruleId: null }} />);
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Rule name' }), {
+      target: { value: 'Mine' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
+    expect(screen.getByText('Discard Changes?')).toBeTruthy();
+  });
+
   it('asks Discard Changes? before leaving with unsaved changes', async () => {
     list();
     wrap(<Harness initial={{ view: 'rule', ruleId: 'r1' }} />);

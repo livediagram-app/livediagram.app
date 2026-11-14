@@ -9,6 +9,7 @@ import {
   SLIDE_DECK_OPENED,
 } from './features';
 import { chart } from '../../_shared/catalogue-helpers';
+import { HOME_PICK_TYPES, HOME_START_TYPES } from '../../_shared/home-picks';
 
 export const VOTES_ENDED = chart(
   'Tab',
@@ -673,6 +674,17 @@ export const HOME_DOCUMENTS_OPENED = chart(
   'Selected',
   'Starts Taken from Home',
   'A start taken from the first-run Home: a blank, a template, all templates, search or sign in.',
+  { types: HOME_START_TYPES },
+);
+
+// Home's picks under both their names (_shared/home-picks.ts): Most Used, Recent and See More since November
+// 2026, Jump Back In's before, so the series runs on across the rename.
+export const HOME_PICKS = chart(
+  'Home',
+  'Selected',
+  'Opened from Home',
+  "A document opened from Home's Most Used or Recent, or See More followed to the Recent page (Jump Back In's picks, before November 2026).",
+  { types: HOME_PICK_TYPES },
 );
 
 export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read of Home retried.');
@@ -684,6 +696,7 @@ export const HOME_AND_ACTIVITY: MetricStack = {
   members: [
     HOME_WELCOMES,
     HOME_DOCUMENTS_OPENED,
+    HOME_PICKS,
     HOME_LOADS,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,

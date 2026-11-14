@@ -1,9 +1,8 @@
 // An element's indicators (docs/specs/008-canvas/element-indicators.md), worked out for
-// BoxedElementView: which indicators it carries (link, note, open action, unresolved comments, a
-// mind root's commands), what each opens, and where the cluster and the content go. Its own hook so
+// BoxedElementView: which indicators it carries (link, note, open action, a mind root's commands; never comments,
+// whose threads on canvas elements are retired, docs/specs/026-plan/plan-mode.md), what each opens, and where the cluster and the content go. Its own hook so
 // the element view only wires the result in.
 import {
-  activeCommentCount,
   isOpenAction,
   takesAttachments,
   type BoxedElement,
@@ -13,7 +12,6 @@ import {
 } from '@liveplanner/project';
 import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
-import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
 import {
   buildIndicatorItems,
@@ -24,24 +22,19 @@ import type { BoxedElementViewProps } from './BoxedElementView.types';
 
 type Handlers = Pick<
   BoxedElementViewProps,
-  'onFollowLink' | 'onOpenComments' | 'onOpenAction' | 'onOpenNote' | 'tabSummaries'
+  'onFollowLink' | 'onOpenAction' | 'onOpenNote' | 'tabSummaries'
 >;
 
 /** The element's indicator items, from its state and the view's handlers. Pure. */
-export function elementIndicatorItems(
-  element: BoxedElement,
-  handlers: Handlers,
-  // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md): no
-  // comment indicator.
-  showComments = true,
-): IndicatorItem[] {
+export function elementIndicatorItems(element: BoxedElement, handlers: Handlers): IndicatorItem[] {
   // A Plan item carries no link, note, action or comments (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan
   // items"): any left on one from before are kept in the project but not shown.
   if (!takesAttachments(element)) return [];
-  const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
+  const { onFollowLink, onOpenAction, onOpenNote, tabSummaries } = handlers;
   const shape = element.type === 'shape' ? element.shape : undefined;
-  // A comment pin and an action panel show theirs on their face; a link card IS its link; an
-  // annotation's marker is its note. A done action stops showing.
+  // An action panel shows its actions on its face; a link card IS its link; an annotation's marker is its note. A
+  // done action stops showing. No element shows a comment indicator: a stored thread is kept, not marked
+  // (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element").
   const link =
     element.type !== 'link-card' &&
     element.link &&
@@ -67,11 +60,6 @@ export function elementIndicatorItems(
           color: colorForKey(assignee.userId ?? assignee.memberId ?? assigneeName),
         }
       : undefined,
-    comments: {
-      count:
-        shape === 'comment-pin' || !showComments ? 0 : activeCommentCount(element.commentThread),
-      onOpen: () => onOpenComments(element.id),
-    },
   });
 }
 
@@ -90,7 +78,7 @@ export function useElementIndicators(
   // The element's drawn corner radius.
   cornerPx: number,
 ): { items: IndicatorItem[]; layout: IndicatorLayout | null; cornerPx: number } {
-  const items = elementIndicatorItems(element, handlers, useCommentBadges());
+  const items = elementIndicatorItems(element, handlers);
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A circle or a pill is fully round however its corner preset reads.
   const indicatorCornerPx = shape === 'circle' || shape === 'stadium' ? Infinity : cornerPx;

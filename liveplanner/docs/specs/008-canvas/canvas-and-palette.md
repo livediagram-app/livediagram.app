@@ -175,7 +175,7 @@ Tab-level styling + tools: **Theme**, **Canvas** (background) and **Font** live 
 
 ### Selected Element section
 
-Per-element controls live in the **right-click element context menu** (Layer / Shape / Rotation / Progress / Animation / Colours / Border / arrow Line + Pointer / Text / Icon / Image / Table / Link categories, with Assign Action, Comment, Link, Note and Clear Styles on its [quick bar](element-menu-quick-bar.md)) and the floating selection toolbar.
+Per-element controls live in the **right-click element context menu** (Layer / Shape / Rotation / Progress / Animation / Colours / Border / arrow Line + Pointer / Text / Icon / Image / Table / Link categories, with Assign Action, Link, Note and Clear Styles on its [quick bar](element-menu-quick-bar.md)) and the floating selection toolbar.
 
 When an element is selected, these per-element controls are available from its **right-click context menu** (and the floating selection toolbar), grouped into **collapsible categories**. Each category is **closed by default**; clicking its header toggles it open. Category contents follow the house **tile pattern**: options render as icon-over-label `MenuTile` grids (`MenuTileGrid`, 2 to 4 columns), not vertical rows of buttons. Fixed-action dropdown menus app-wide use the same tile grids (the Explorer panel's + New header menu, the folder / team / project row menus, the /explorer page's row and card menus, the marquee toolbar's selection filter); one-per-row lists remain for dynamic list pickers (copy-to-project, move-to-folder), where a scrolling list of user content reads better than a grid, and for the Share dialog's Embed / Live image copy menus, a short list of "Copy …" verbs that reads down like a normal dropdown (plain `MenuActionRow`s, icon left).
 
@@ -184,7 +184,7 @@ When an element is selected, these per-element controls are available from its *
 1. **Placement**: Layer, Shape, Rotation.
 2. **Appearance**: Progress, Animation, Colours, Border.
 3. **Content**: Line, Pointer, Text, Icon, Image, Table, Link.
-4. **Collaboration**: assign action, comments, link and note, on the menu's [quick bar](element-menu-quick-bar.md) above every category.
+4. **Collaboration**: assign action, link and note (no comment: [retired on canvas elements](#comments)), on the menu's [quick bar](element-menu-quick-bar.md) above every category.
 
 Every category renders conditionally (hidden when its gate doesn't apply), but a shown category always lands in this order, so the menu never reshuffles between element kinds. The multi-selection menu has **parity with the single-element menu for every formatting category**: Layer (front/back, move-to-layer, opacity, aspect lock), Shape morph (with Reset Aspect Ratio), Rotation, Presets, Animation, Colours (with Reset to Theme), Border (strength / pattern / radius), Icon size, Typography (Font / Size / Padding), Alignment, Markers, Table structure, and the arrow Line / Pointer / Text categories all appear when any member of the selection matches, each applying selection-wide (display values read off the first matching member), so anything you can restyle on one element works on a marquee too. The multi menu is **never empty**: the placement band applies to every element kind, so even an image-only marquee gets Layer / opacity / Rotation. Animation is **type-aware on homogeneous selections** (all-charts get the slice set, all-icons the glyph set; mixed selections fall back to the shared boxed set). Both menus use the **Style** and **Text** side-flyout groupings identically (Style = Presets + Colours + Border; Text = Typography + Alignment + Markers), and the Text row sits inside the style band, with no separator of its own. Only the truly per-element categories (Image pick/replace, the link-card Link, Note, Comments, Assign Action, and the data-shape editors: Progress / Timeline / Rating / Chart Data) stay single-element.
 
@@ -677,6 +677,16 @@ The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts
 | `F`       | Frame                                                                         |
 | `Z`       | Zen mode (focus)                                                              |
 
+**While a dialog is open** the shortcuts stand down: the dialog owns the keyboard (the modal guard), so no key acts on
+the canvas behind it. One dialog is the exception: **the item panel takes undo and redo** (Work Tracker 746). While it
+is the only dialog open, `⌘Z` undoes and `⌘⇧Z` / `Ctrl Y` redo the plan's changes (a field changed in the panel, a
+picture added, moved or removed), as they would with the panel closed, for whoever may undo (an Editor and a
+Participant; a Viewer has nothing to undo). Focus in a text field, a text area or a contentEditable inside the panel (its
+title, a Text field, the description) keeps the browser's own text undo; so does a menu open in the panel. A dialog
+opened over the panel (a confirmation, Search) takes the keyboard back, and every other dialog keeps standing down for
+every key. Nothing else passes through: Escape closes the panel, and Delete, the arrows and every other chord stay
+with the panel.
+
 **Add elements**: no key adds an element; there is no palette to place from ([Plan mode](../026-plan/plan-mode.md#no-palette)).
 
 **Edit** (with `⌘`):
@@ -763,14 +773,13 @@ Out of scope (deliberate): element text in **other** projects (issue #13: needs 
 
 ## Comments
 
-Every boxed element can carry a **comment thread**. Stored as `commentThread?: { comments: Comment[]; resolved: boolean }` on the element. Each `Comment` carries the text, `createdAt` ms timestamp, and a denormalised copy of the author's `name` + `color` taken from the current [participant](#welcome--identity-section). Author is recorded at write-time so renaming yourself later doesn't rewrite historical comments.
+**Retired on canvas elements** (Work Tracker 751, [No comment thread on any canvas element](../026-plan/plan-mode.md#no-comment-thread-on-any-canvas-element)). Comments live on **cards** and on **Sheet cells** (below). An element's own thread (`commentThread?: { comments: Comment[]; resolved: boolean }`, from an older project or an import) is kept as stored but nothing opens it, adds to it or shows its indicator. What follows describes the `Comment` values and the `CommentThreadPopover`, which cell threads use.
+
+Each `Comment` carries the text, `createdAt` ms timestamp, and a denormalised copy of the author's `name` + `color` taken from the current [participant](#welcome--identity-section). Author is recorded at write-time so renaming yourself later doesn't rewrite historical comments.
 
 ### Opening the thread
 
-Two entry points open the same `CommentThreadPopover`:
-
-- **Selection popover → comments button** (speech-bubble icon), for **read-only sessions only** (a Participant or a Viewer), who have no element menu. A Participant's reads **Add Comment** and posts; a Viewer's reads **Show Comments**, opens the thread read-only, and is there only on an element that already has comments ([Share roles](../013-workspace/share-roles.md): a Viewer writes no comment). Editors open the thread from the element menu's quick bar **Add Comment** instead (the toolbar button would duplicate it). Absent where the reader has no comments to open (an embed's viewer).
-- **Comment indicator** on the element itself. Shown only when the thread has unresolved comments (resolved threads hide it): a comment glyph with the count beside it, among the element's other indicators (link, note, action), drawn in the style the person picked: along the inside of the element's top by default, in a footer row, or not at all. Where they sit on every shape, the fallback pip for elements too small to hold them, and the zoom rules are in [Element indicators](element-indicators.md).
+A Sheet cell's thread opens from the cell ([Cell comments](../029-sheets/sheet.md#cell-comments)), the Collaborate panel's row for it, or an Inbox link naming the cell. No element entry point opens one: there is no quick bar **Add Comment**, no read-only toolbar comment button and no element comment indicator.
 
 The popover is portal-rendered (it escapes the canvas transform), anchored to the right edge of the element, and flips to the left edge if it would overflow the viewport. It closes on outside click and on Escape.
 
@@ -795,7 +804,7 @@ A Sheet element also carries a thread per cell (`cellComments`, [Cell comments](
 
 ### On Plan cards
 
-A Plan card's item carries the same `CommentThread` in its `comments` field ([Items](../026-plan/items.md#comments)): the same comment values, the same who-may rules and author redaction, and the same thread list, composer and resolve control, which the popover and the item panel share (`CommentThreadList`, `CommentComposer`, `CommentResolveToggle`). The popover draws them `compact`; the item panel `comfortable` (larger text, a feed with your avatar beside the composer). Either way the composer grows with its text, waits for text before **Comment**, and shows the send shortcut (**⌘ Enter to send**, or **Ctrl Enter to send** off Apple devices) only while focused; the time on a comment carries its full date in a tooltip; an empty thread reads **No comments yet. Start the conversation.**; and a resolved thread shows a green **Resolved** badge with **Reopen** beside it. The thread ops themselves (append, remove, resolve) are one set of pure functions in `@liveplanner/project` that element deltas and item comment writes both apply.
+A Plan card holds **comment threads** of its own ([Items](../026-plan/items.md#comments)): rows of the api's `card_threads` table, joined to cards by `card_thread_links` (`apps/api/src/plan-room/card-thread-schema.ts`), read and written through `routes/card-thread-routes.ts`, not a field on the item. A thread's comments are the same comment values, with the same who-may rules and author redaction, drawn with the same thread list, composer and resolve control, which the popover and the item panel share (`CommentThreadList`, `CommentComposer`, `CommentResolveToggle`). The popover draws them `compact`; the item panel `comfortable` (larger text, a feed with your avatar beside the composer). Either way the composer grows with its text, waits for text before **Comment**, and shows the send shortcut (**⌘ Enter to send**, or **Ctrl Enter to send** off Apple devices) only while focused; the time on a comment carries its full date in a tooltip; an empty thread reads **No comments yet. Start the conversation.**; and a resolved thread shows a green **Resolved** badge with **Reopen** beside it. The thread ops themselves (append, remove, resolve) are one set of pure functions in `@liveplanner/project` that element deltas and item comment writes both apply.
 
 ## Motion and animations
 
@@ -855,7 +864,7 @@ There is **no paintbrush** on the popover, and no format painter ([Format painte
 Relationships:
 
 - **Link Element** (or **Edit link**): opens the shared `LinkPickerDialog` (Tab / Project / External URL modes, plus Remove). Picking writes `link: { kind: 'tab', tabId }`, `{ kind: 'project', projectId, name }`, or `{ kind: 'url', url }` onto the element; the target opens on a follow-link click. See [Element links](#element-links).
-- **Add Comment** for a Participant, **Show Comments** for a Viewer on an element with comments (read-only sessions only; editors use the element menu's Collaborate section): opens the `CommentThreadPopover` for the element's comment thread, read-only for a Viewer. See [Comments](#comments).
+- No comment button: comment threads on canvas elements are retired ([Comments](#comments)).
 
 State + destructive:
 

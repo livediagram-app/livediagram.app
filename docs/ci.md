@@ -194,7 +194,8 @@ packs on every run that reaches it (Build).
 ## Speed budgets
 
 A test that holds code to a speed budget measures CPU time, with `cpuMsOf` / `cpuMsOfAsync` and
-`cpuBudgetMs` from `@liveworkspace/vitest-config/cpu-time`, never `performance.now()`. CI's runners
+`cpuBudgetMs` from `@liveworkspace/vitest-config/cpu-time`, never `performance.now()` (where a test times several
+statements, `cpuNowMs()` is the same clock read in CPU time: `cpuNowMs() - start`). CI's runners
 are shared two-core machines running several suites at once: a wall-clock budget counts the time a
 test waits for a core and failed at random on `main`, where CPU time barely moves under contention and
 still catches a real regression. A test that seeds a large fixture sets its own timeout (seeding isn't
@@ -240,10 +241,9 @@ through it: liveplanner's target-noting check, timed one size after the other, r
 (2026-11-11), where in turns it reads 4.8 to 5.6 (40 runs) and a quadratic `includes` scan still reads 17.4.
 
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
-the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
-for a pass of their own, and so is a copy of one: a line another product already has at the same path
-(a fork, such as livehuddle's of livediagram) isn't new. A line that truly needs the wall clock says why
-in a `wall-clock:` comment.
+the pre-push hook) fails a change that adds `performance.now()` to a test file. No test outside `e2e/` holds one for a budget
+any more (Work Tracker 217 moved the last ones); the few left, such as a fake frame's timestamp, say why in a
+`wall-clock:` comment, as does a line that truly needs the wall clock.
 
 ## Lint disables and console.log
 

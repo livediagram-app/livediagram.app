@@ -4,9 +4,9 @@
 // picker or a drop. Every file is checked before anything is sent (PNG, JPEG, WebP or GIF, up to 10 MB, not empty)
 // and gets its own place in the queue, shown as its own tile; files upload one after another, and each joins the end
 // of the field's list as it lands, in one write of the list read from the card as it is then, so a picture someone
-// else added meanwhile is kept. A file refused, or past the field's 20, is skipped and said; the rest still land. A
-// file's tile can be cancelled (Work Tracker 794): a waiting one leaves the queue, an uploading one stops, and one that
-// had already finished is not added; nothing is said either way.
+// else added meanwhile is kept. A file refused, past the field's 20, or a picture the field already holds is skipped
+// and said; the rest still land. A file's tile can be cancelled (Work Tracker 794): a waiting one leaves the queue, an
+// uploading one stops, and one that had already finished is not added; nothing is said either way.
 import { useCallback, useRef, useState } from 'react';
 import {
   IMAGE_FIELD_PICTURES_MAX,
@@ -29,6 +29,11 @@ const IMAGE_NOT_SAVED = "The image couldn't be added to the card. Try again.";
 /** What a full field says: "Designs holds up to 20." */
 export const imagesFullMessage = (label: string) =>
   `${label} holds up to ${IMAGE_FIELD_PICTURES_MAX}.`;
+
+/** What a picture the field already holds says (the same bytes are the same media id): "photo.png is already in
+ *  Designs." */
+export const imagesDuplicateMessage = (name: string, label: string) =>
+  `${name} is already in ${label}.`;
 
 /** A file on its way: waiting its turn, or uploading, with the share of its bytes sent (0 to 1, in whole percents)
  *  once the browser says. */
@@ -166,7 +171,9 @@ export function useImageFieldUpload(
               const had = storedImageIds(card.fields[fieldId]);
               const { ids, skipped } = withImagesAdded(had, [image.id]);
               if (skipped > 0) said.push(imagesFullMessage(label));
-              else if (ids.length > had.length) {
+              else if (ids.length === had.length)
+                said.push(imagesDuplicateMessage(job.name, label));
+              else {
                 // Never empty here: it holds the picture that just landed.
                 const saved = await latest.patchItem(itemId, {
                   set: { [fieldId]: imageFieldValue(def ?? field, ids)! },

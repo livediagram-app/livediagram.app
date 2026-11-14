@@ -807,3 +807,40 @@ describe('Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-ex
     ]);
   });
 });
+
+// Locally each downstream is an origin, and one that isn't running (a stack started without it) answers 502 through
+// @liveworkspace/sites forwardOr502, never a bare 500 "Network connection lost" (Work Tracker 850).
+describe('an unreachable origin', () => {
+  it.each([
+    ['marketing', '/'],
+    ['the api', '/api/x'],
+    ['the editor', '/live/x.js'],
+    ['help', '/help/x'],
+    ['the index', '/api/index/items'],
+    ['the Drive mirror', '/api/drive/x'],
+    ['the previews service', '/api/previews/items/x'],
+  ])('answers 502 for %s', async (_, path) => {
+    vi.stubGlobal('fetch', async () => {
+      throw new Error('Network connection lost.');
+    });
+    try {
+      const res = await dispatch(path, {
+        DEPLOY_ENV: 'local',
+        MARKETING_ORIGIN: 'http://127.0.0.1:3901',
+        EDITOR_ORIGIN: 'http://127.0.0.1:3902',
+        LIVE_ORIGIN: 'http://127.0.0.1:3902',
+        API_ORIGIN: 'http://127.0.0.1:3906',
+        HELP_ORIGIN: 'http://127.0.0.1:3904',
+        INDEX_ORIGIN: 'http://127.0.0.1:3907',
+        DRIVE_ORIGIN: 'http://127.0.0.1:3908',
+        PREVIEWS_ORIGIN: 'http://127.0.0.1:3909',
+      } as unknown as Env);
+      expect(res.status).toBe(502);
+      expect(await res.text()).toMatch(
+        /^router: .+ at http:\/\/127\.0\.0\.1:39\d\d could not be reached$/,
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

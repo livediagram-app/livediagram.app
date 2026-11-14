@@ -199,3 +199,30 @@ describe('EditorHeader logo', () => {
     expect(screen.queryByRole('menu')).toBeNull();
   });
 });
+
+// The logo opens the Explorer on the place that holds the open plan (liveworkspace/docs/specs/004-index/one-explorer.md
+// "Opening from an open item"); with no plan, the Explorer as before.
+describe('EditorHeader logo', () => {
+  const logo = (container: HTMLElement) =>
+    container.querySelector<HTMLAnchorElement>('header a[href^="/explorer"]')?.getAttribute('href');
+
+  it('names the open plan', () => {
+    const { container } = render(
+      <EditorHeader
+        itemId="d 1"
+        projectName="Untitled project"
+        showShare
+        shareable={false}
+        onMakeCopy={() => {}}
+        onOpenShare={() => {}}
+        onRename={() => {}}
+      />,
+    );
+    expect(logo(container)).toBe('/explorer?item=d%201');
+  });
+
+  it('opens the Explorer as before with no plan', () => {
+    const { container } = renderHeader();
+    expect(logo(container)).toBe('/explorer');
+  });
+});

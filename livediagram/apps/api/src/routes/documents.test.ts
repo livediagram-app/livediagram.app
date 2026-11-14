@@ -7,6 +7,7 @@ import {
   type ItemGrant,
 } from '../index-service';
 import type { GrantClaims } from '@liveworkspace/index-client';
+import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 
 // The index as these doors call it: the canvas's share links (a deleted tab's go with it), and the list.
 const { index } = vi.hoisted(() => ({
@@ -37,6 +38,7 @@ vi.mock('../index-service', async (importOriginal) => ({
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import { handleDocumentList } from './document-index-routes';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // /api/documents/<id> on the index's grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): a document answers
 // whoever holds a grant on it, as the grant says (level, tab), and answers anyone else as missing. Real SQLite
@@ -188,6 +190,77 @@ describe('a create', () => {
     expect(db.sql.prepare("SELECT owner_id, name FROM document WHERE id = 'P'").get()).toEqual({
       owner_id: 'owner',
       name: 'Roadmap',
+    });
+  });
+
+  // Work Tracker 817 (docs/specs/013-workspace/share-roles.md "A new document keeps only its creator's entries").
+  describe("keeps only its creator's entries", () => {
+    const OLD = '6f2c1d3e-9a7b-4c5d-8e1f-0a2b3c4d5e6f';
+    const created = async (by: string, opts: Opts = {}) => {
+      const card = {
+        ...box('card'),
+        shape: 'estimate',
+        responses: [
+          { participantId: by, value: '8', at: 1 },
+          { participantId: OLD, value: '5', at: 1 },
+          { participantId: 'b'.repeat(32), value: '1', at: 1 },
+        ],
+        commentThread: {
+          resolved: false,
+          comments: [
+            {
+              id: 'c1',
+              text: 'hi',
+              createdAt: 1,
+              authorName: 'Me',
+              authorColor: '#f00',
+              reactions: [
+                { emoji: 'heart', by: 'b'.repeat(32), name: 'Ana' },
+                { emoji: 'heart', by, name: 'Me' },
+                { emoji: 'laugh', by: OLD, name: 'Me' },
+              ],
+            },
+          ],
+        },
+      };
+      const db = sqliteD1();
+      const res = await call(db, 'POST', '/api/documents', {
+        ...opts,
+        body: { id: 'N', name: 'New', tabs: [{ id: 't1', name: 'T', elements: [card] }] },
+      });
+      expect(res.status).toBe(201);
+      const tab = await call(db, 'GET', '/api/documents/N/tabs/t1');
+      const el = (
+        await tab.json<{
+          tab: {
+            elements: {
+              responses?: { participantId: string }[];
+              commentThread: { comments: { reactions?: { by: string }[] }[] };
+            }[];
+          };
+        }>()
+      ).tab.elements[0]!;
+      return {
+        answers: el.responses?.map((r) => r.participantId),
+        reactions: el.commentThread.comments[0]!.reactions?.map((r) => r.by),
+      };
+    };
+
+    it("drops another person's reaction and answer, and keeps the creator's and an offline canvas's own", async () => {
+      const mine = await collabKeyFor('owner');
+      const info = vi.spyOn(console, 'info');
+      expect(await created(mine)).toEqual({ answers: [mine, OLD], reactions: [mine, OLD] });
+      expect(info).toHaveBeenCalledWith('[whole-tab-lock] locked', {
+        documentId: 'N',
+        tabId: 't1',
+        write: 'create',
+      });
+    });
+
+    it("lets an agent's token create keep no collab key's entry", async () => {
+      const token = { id: 'tok1', readOnly: false, name: 'CI' };
+      const mine = await collabKeyFor('owner');
+      expect(await created(mine, { token })).toEqual({ answers: [OLD], reactions: [OLD] });
     });
   });
 
@@ -455,9 +528,9 @@ describe('the tabs alone', () => {
       let best = Infinity;
       let bytes = 0;
       for (let k = 0; k < 5; k++) {
-        const t = performance.now();
+        const t = cpuNowMs();
         bytes = (await (await call(db, 'GET', path)).text()).length;
-        best = Math.min(best, performance.now() - t);
+        best = Math.min(best, cpuNowMs() - t);
       }
       return { ms: best, bytes };
     };
@@ -468,7 +541,7 @@ describe('the tabs alone', () => {
       `[tabs] 60 tabs of 150 elements: whole document ${whole.ms.toFixed(1)} ms ${whole.bytes} B, tabs ${tabs.ms.toFixed(1)} ms ${tabs.bytes} B`,
     );
     expect(tabs.bytes).toBeLessThan(whole.bytes);
-    expect(tabs.ms).toBeLessThan(50);
+    expect(tabs.ms).toBeLessThan(cpuBudgetMs(50));
   });
 });
 

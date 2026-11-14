@@ -11,6 +11,7 @@ import {
   type TokenExpiryEmail,
 } from './token-expiry.ts';
 import { mintApiToken, revokeApiToken } from './tokens.ts';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const BASE = 'https://liveworkspace.app';
 const DAY = 24 * 60 * 60 * 1000;
@@ -159,9 +160,9 @@ describe('the expiring-token warning', () => {
       },
     } as D1Database;
 
-    const started = performance.now();
+    const started = cpuNowMs();
     const result = await sweepExpiringTokens(counted, env, send, NOW);
-    expect(performance.now() - started).toBeLessThan(1_000);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(1_000));
 
     expect(result).toEqual({ sent: TOKEN_EXPIRY_SWEEP_LIMIT, failed: 0 });
     expect(statements).toEqual(['SELECT', 'UPDATE']);

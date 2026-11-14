@@ -134,6 +134,17 @@ made bold) carries on that word: no space is put in and no line breaks there.
 
 The one small known gap is the Callout body's indent, a few pixels off the canvas's.
 
+## File names
+
+A downloaded export is named `<plan> - <tab>` (and `- selection`), a sheet's CSV after its title and a form's
+QR code after its heading, each run through the shared `sanitizeFilename`
+(`../packages/model-core/src/file-name.ts`, the one rule every product's exports use) so it is safe on
+Windows, macOS and Linux: brackets `() [] {}` are dropped, any other character that is not a letter or digit
+(in any script), dot, dash, underscore or space (a colon, slash, question mark) becomes a dash, repeated
+dashes collapse to one, and dashes and spaces left at either end are trimmed. A tab named "Poster (9:16)"
+downloads as `Poster 9-16`, never `Poster -9-16-`. A name left with nothing downloads as `project`, `Sheet`
+or `Form`.
+
 ## Checking it
 
 `packages/project/src/export-consistency.test.ts` holds the wiring rather than

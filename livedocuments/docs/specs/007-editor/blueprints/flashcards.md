@@ -169,12 +169,19 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   title's -0.01em tracking counted, each style stretch (bold, italic) measured in its own face, a line fitting while
   its width is within `FIT_SLACK_PX` (0.01) of the room. WebKit (`fitsWordByWord`: `AppleWebKit/` without `Chrome/`
   or `Chromium/`, so every iOS browser) adds a line's words up one by one, Blink and Gecko measure the candidate line
-  whole (the kerning between words counted); the measure's `wordByWord` picks which. Tables and contents entries keep
-  `wrapEstimated`. Without a measure (node, the API's summaries, the SVG render) every block keeps `wrapEstimated`.
+  whole (the kerning between words counted); the measure's `wordByWord` picks which. Table cells (each in the face it is
+  drawn in: a header row 650, a bold run 700, else 400) and contents entries (the first line only, the page number's
+  width and the leader's start measured too) wrap by `wrapMeasured` as well. Without a measure (node, the API's summaries, the SVG render) every block keeps `wrapEstimated`.
   Measured (#387, a 100-card stack, a heading and a 10 to 60 word body with a bold stretch per card, hyphens and
   number ranges, each line read off a div set as `app/article-pages.css` sets the writing, Playwright Chromium and
   WebKit, the default, serif, modern and friendly styles): lines that differ from the browser's, average glyph 315
   to 340 of 451 to 456 (85 to 92 cards), measured 0 in every style and both engines; measuring the stack 14 to 25 ms.
+  Re-measured (Work Tracker 812, 100 cards of 10 to 60 words with hyphens and number ranges, three faces, each line read
+  off a div with `white-space: pre-wrap; overflow-wrap: break-word` by a range per character): 0 of 100 cards differ in
+  Chromium 156 and WebKit (Playwright), measuring the stack 7 to 10 ms and 4 to 7 ms. Firefox could not be launched on
+  the build machine (Playwright's Firefox 157 exits "Could not find profile folder"), so it stays assumed to fit a line
+  whole like Blink; re-run the same comparison (`wrapMeasured`'s lines against the div's own) in Firefox
+  when one launches.
   Tests: `packages/document/src/article-layout-measured.test.ts`, `apps/editor/lib/article/canvas-text-measure.test.ts`.
   Find's block pages put an unmounted one-page card's blocks on its page.
 - Measured (#234, a 100-card stack with two lines a card, 390x844 touch, CPU 4x, the dev build): before, 100

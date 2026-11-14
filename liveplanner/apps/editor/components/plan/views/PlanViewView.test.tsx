@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { createShape, type PlanViewRef, type ShapeElement } from '@liveplanner/project';
 import { ITEM_TYPES, planViewSize, type Item, type PlanViewId } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from '../PlanContext';
@@ -185,6 +186,19 @@ describe('plan views', () => {
     draw('priority-matrix', planWith(cards));
     expect(screen.getByRole('cell', { name: 'Urgent, Done: 1' })).toBeTruthy();
     expect(screen.getByRole('cell', { name: 'No Priority, Not Started: 1' })).toBeTruthy();
+  });
+
+  // The matrix is a table of rows, headers and cells: axe finds no header outside one, nor a cell without a row.
+  it('draws the priority matrix as a table axe finds nothing wrong with', async () => {
+    draw(
+      'priority-matrix',
+      planWith([
+        item({ title: 'a', status: 'done', priority: 'high' }),
+        item({ title: 'b', status: 'todo' }),
+      ]),
+    );
+    // The view sits in a card of the canvas, not a landmark of its own: "region" judges the page around it.
+    expect(await axeViolations({ disable: ['region'] })).toEqual([]);
   });
 
   // A table's column headers sit in a row (ARIA's required parent), and none is nameless.

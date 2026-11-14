@@ -12,6 +12,7 @@ import {
   AUTOMATION_PERSON_ID,
   GITHUB_PERSON,
   dayLabel,
+  isGithubStamp,
   itemStampPerson,
   itemStampTime,
   stampDay,
@@ -127,24 +128,17 @@ export function ItemDetailsRow({
 
 // Who last edited the card and who made it (made last, at the very bottom), and when: a quiet footer pinned to the bottom of Details (its parent is a
 // flex column; docs/specs/026-plan/plan-board.md "Look", items.md "Created and Last Edited"), each row left out when
-// the card holds no one for it, never a guess. `editedByGithub`: the card's history says a GitHub-triggered rule made
-// its last edit, so the row names GitHub and the rule with GitHub's mark (automations.md "On cards").
-export function ItemMeta({
-  item,
-  now,
-  editedByGithub = false,
-}: {
-  item: Item;
-  now: number;
-  editedByGithub?: boolean;
-}) {
+// the card holds no one for it, never a guess. A GitHub-triggered rule's stamp (`via: 'github'`) names GitHub and the
+// rule with GitHub's mark, read from the card itself, so never the bolt first (automations.md "On cards").
+export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const response = readFromForm(item.fields[FROM_FORM_FIELD]);
   const maker = itemStampPerson(item, 'createdBy');
   const made = itemStampTime(item, 'createdAt');
   const editor = itemStampPerson(item, 'updatedBy');
   const edited = itemStampTime(item, 'updatedAt');
   if (!maker && !response && !editor) return null;
-  const github = editedByGithub && editor?.id === AUTOMATION_PERSON_ID;
+  const github = isGithubStamp(editor);
+  const madeByGithub = isGithubStamp(maker);
   return (
     <footer
       data-item-meta=""
@@ -185,13 +179,24 @@ export function ItemMeta({
         ) : null}
         {maker ? (
           <MetaRow
-            lead={<PersonDisc person={maker} />}
+            lead={<PersonDisc person={madeByGithub ? GITHUB_PERSON : maker} />}
             // A form's response says when on its own row.
             at={response ? undefined : made}
             when={made !== undefined ? stampDayLabel(made) : ''}
-            full={maker.id === AUTOMATION_PERSON_ID ? `Created by ${maker.name}` : undefined}
+            full={
+              maker.id === AUTOMATION_PERSON_ID
+                ? `Created by ${madeByGithub ? 'GitHub · ' : ''}${maker.name}`
+                : undefined
+            }
           >
-            Created by <span className={META_NAME}>{maker.name}</span>
+            Created by{' '}
+            {madeByGithub ? (
+              <>
+                <span className={META_NAME}>GitHub</span> · {maker.name}
+              </>
+            ) : (
+              <span className={META_NAME}>{maker.name}</span>
+            )}
           </MetaRow>
         ) : null}
       </div>

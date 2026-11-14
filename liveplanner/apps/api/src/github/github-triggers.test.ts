@@ -81,6 +81,12 @@ describe('a rule on a GitHub trigger', () => {
     expect((await pr({ title: `A #${named.key}` })).status).toBe(202);
     await room().alarm();
     for (const id of [byField.id, named.id]) expect(itemStatus(await card(id))).toBe('review');
+    // The stamp says GitHub (automations.md "On cards"), so the footer needs no history read.
+    expect((await card(byField.id)).updatedBy).toMatchObject({
+      id: 'automation',
+      name: 'Review on Open',
+      via: 'github',
+    });
     const [entry] = await history(byField.id);
     expect(entry).toMatchObject({
       by: { name: 'Review on Open' },
@@ -94,6 +100,27 @@ describe('a rule on a GitHub trigger', () => {
       text: 'GitHub: acme/repo-11#42 opened',
       by: { name: 'GitHub' },
     });
+  });
+
+  // Work Tracker 822: a card a GitHub rule makes says Created by GitHub; a rule a person starts stamps no source.
+  it('stamps a card a GitHub rule makes as GitHub', async () => {
+    await w.rule({
+      name: 'Card for Each Pull Request',
+      trigger: { kind: 'pull_request_opened' },
+      steps: [{ kind: 'create_card', type: 'task', title: 'Review {{card.title}}' }],
+    });
+    const c = await linked();
+    await pr();
+    await room().alarm();
+    const made = (await w.items('A')).find((i) => i.id !== c.id)!;
+    expect(made.createdBy).toEqual({
+      id: 'automation',
+      name: 'Card for Each Pull Request',
+      color: '#7c3aed',
+      via: 'github',
+    });
+    expect(made.updatedBy.via).toBe('github');
+    expect((await card(c.id)).updatedBy.via).toBeUndefined();
   });
 
   it("keeps a held run GitHub's after its Wait, in the card's history", async () => {
@@ -291,6 +318,23 @@ describe('a GitHub rule on a plan not connected', () => {
       attention: [{ kind: 'github' }],
     });
     expect(rules.find((r) => r.name === 'Plain')!.attention).toEqual([]);
+  });
+
+  // Work Tracker 821: a rule whose named repositories all left the connection hears nothing, so it needs attention,
+  // naming them; one still hearing a named repository doesn't. Read from the kept list, never GitHub.
+  it('needs attention once every repository it names has left the connection', async () => {
+    await moveOn({ kind: 'pull_request_merged', repositories: ['acme/old'] }, 'done', 'All Gone');
+    await moveOn(
+      { kind: 'pull_request_merged', repositories: ['acme/old', 'ACME/repo-11'] },
+      'done',
+      'Some Gone',
+    );
+    const rules = await listed();
+    expect(rules.find((r) => r.name === 'All Gone')).toMatchObject({
+      needs: ['Repository acme/old is not heard'],
+      attention: [{ kind: 'repositories', names: ['acme/old'] }],
+    });
+    expect(rules.find((r) => r.name === 'Some Gone')!.attention).toEqual([]);
   });
 });
 

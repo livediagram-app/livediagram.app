@@ -3,7 +3,10 @@
 The marks on an element that say it carries something you cannot otherwise see: a **link**, a
 **note**, an open assigned **action** ([Assigned actions](../012-collaboration/assigned-actions.md))
 or unresolved **comments**. A Plan item (a board, card, view or Sheet) carries none: nothing is attached to Plan
-items ([Plan mode](../026-plan/plan-mode.md)), so indicators show only on the canvas elements a tab arrives with.
+items ([Plan mode](../026-plan/plan-mode.md)), so indicators show only on the canvas elements a tab arrives with. No
+element shows a **comment** indicator any more: comment threads on canvas elements are retired ([Plan
+mode](../026-plan/plan-mode.md) "No comment thread on any canvas element"), so a stored thread is kept but not marked.
+The comment rules below describe the indicator as it was.
 
 ## Why
 

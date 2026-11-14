@@ -5,6 +5,7 @@ import { pageLabel, type LaidOutPage, type Tab } from '@livedocuments/document';
 import { exportTabAsPng, exportTabAsSvg, type ImageExportOpts } from './export-tab';
 import { exportPagesAsPdf } from './export-tab-pdf';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 
 export type PageScope = 'all' | 'one';
 export type PageExportFormat = 'pdf' | 'png' | 'svg';
@@ -16,19 +17,6 @@ export const DEFAULT_PAGE_SCOPE: Record<PageExportFormat, PageScope> = {
   svg: 'one',
 };
 
-// Filesystem-safe filename (docs/specs/020-import-export/export-fidelity.md "File names"): brackets are
-// dropped, any other character that isn't a letter or digit (in any script, so "会議メモ" stays itself), a dot, a
-// dash, an underscore or a space becomes a dash, runs of dashes collapse and dashes and spaces at the ends are
-// trimmed, so "(9:16)" reads "9-16", "? - Board" reads "Board", and the name is safe on Windows, macOS and Linux.
-export function sanitizeFilename(name: string): string {
-  return name
-    .replace(/[()[\]{}]+/g, '')
-    .replace(/[^\p{L}\p{M}\p{N}._\- ]+/gu, '-')
-    .replace(/-+/g, '-')
-    .replace(/\s+/g, ' ')
-    .replace(/^[-\s]+|[-\s]+$/g, '');
-}
-
 /** A page's label as the export names it (its name, or "Page n", then its size). */
 export function exportPageLabel(page: LaidOutPage, count: number): string {
   return pageLabel(page, page.index, Math.max(2, count));
@@ -37,7 +25,7 @@ export function exportPageLabel(page: LaidOutPage, count: number): string {
 /** The files a zip of every page holds: `NN <label>.<ext>`, in order. */
 export function zipEntryName(page: LaidOutPage, count: number, ext: string): string {
   const place = String(page.index + 1).padStart(2, '0');
-  return `${place} ${sanitizeFilename(exportPageLabel(page, count))}.${ext}`;
+  return `${place} ${sanitizeFilename(exportPageLabel(page, count), 'page')}.${ext}`;
 }
 
 /** The file for the chosen pages and format, with its extension. */

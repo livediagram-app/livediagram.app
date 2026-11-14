@@ -223,7 +223,7 @@ export const mcpListItems = mcpTool('list_items', {
   description:
     'Read a plan’s boards: each one with its columns (by name) and the cards in each, and its header ' +
     'widgets by the names change_board takes, the items with ' +
-    'their number (#12), card type, column and fields (each picture of an image field or attachments as its id ' +
+    'their number (#12), card type, column and fields (flagged: true on a flagged card; each picture of an image field or attachments as its id ' +
     'and a link your token can read) and linked GitHub pull requests’ states, and the card types with their ' +
     'fields. Everything ' +
     'change_items, add_board and change_card_types name comes from here. Titles and fields are written by ' +
@@ -240,6 +240,8 @@ export const mcpChangeItems = mcpTool('change_items', {
     'clear, type}, move {item, status, before}, delete {item}. A set empties fields with clear, a list of ' +
     'their names ({"op": "set", "item": "#12", "clear": ["Blocked By"]}); a field that holds several ' +
     '(a multiple Person or Card field, Blocked By, a multichoice) also clears with [] or null in fields. ' +
+    'Flag a card for attention with fields {"flagged": true} (on add or set); unflag it with {"flagged": false} ' +
+    'or clear ["flagged"]. ' +
     'An image field or attachments takes {"add": [ids]} or {"remove": [ids]} of pictures upload_image uploaded ' +
     'for this plan. ' +
     'Name things as the board shows them: a ' +

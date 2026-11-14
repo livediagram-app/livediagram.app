@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { stubResizeObserver } from '@/lib/stub-resize-observer';
+import { stubResizeObserver } from '@liveworkspace/vitest-config/stub-resize-observer';
 import { MindMapMenuSections } from './MindMapMenuSections';
 
 // docs/specs/009-elements/mind-node.md "The Mind Map menu": a Mind Map flyout row holding Outline, Branching and

@@ -524,7 +524,9 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
   `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once. Its
   description and `clear` argument say how a `set` empties a field (`"clear": ["Blocked By"]`), and that a field
   holding several also clears with `[]` or `null` in `fields`
-  ([Clearing a field](../026-plan/plan-agents.md)). A `set` adds and removes the pictures of an Image field, a Several
+  ([Clearing a field](../026-plan/plan-agents.md)). Its description and `fields` argument say that `flagged: true`
+  flags a card and `flagged: false` or `clear: ["flagged"]` unflags it, and `list_items`' description and its
+  `fields` output say a flagged card lists `flagged: true` ([Flagging a card](../026-plan/plan-agents.md)). A `set` adds and removes the pictures of an Image field, a Several
   Images field and Attachments by the ids `upload_image` answered ([§4.5b](#45b-upload_image-pictures-for-a-plans-cards)).
 - **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset
   ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).

@@ -20,7 +20,7 @@
 }
 
 /* The teammate's cursor: in from the edge onto Events, then onto each idea as they add it. The
-   path and its stops (--p1 ...) come from the layout (lib/hero-motion.ts cursorRide). */
+   path and its stops (--p1 ...) come from the layout (@liveworkspace/marketing-site lib/hero-motion.ts cursorRide). */
 .mm-jr {
   transform-box: view-box;
   transform-origin: 0 0;

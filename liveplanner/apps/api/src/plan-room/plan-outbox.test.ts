@@ -20,6 +20,7 @@ import {
   type IndexAppClient,
   type ItemSummary,
 } from '@liveworkspace/index-client';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // What a plan pushes to the index (plan-outbox.ts): the triggers key each change in the write's own transaction,
 // and a drain pushes the keys with this app's key. Real SQLite (test-sqlite-d1.ts); the index is a recording fake.
@@ -186,10 +187,11 @@ describe('the outbox', () => {
     await upsertTab(db.env, 'P', { id: 't1', name: 'Sheet', elements: [sheet, unstored] }, 0);
     const index = fakeIndex();
     await drainOutbox(db.env, 'P', index.client);
+    // Threads of the same time push in element id order (capCollabPush's total order): 'sh2' sorts before 'sh:'.
     expect(index.collab[0]!.push.threads.map((t) => [t.elementId, t.elementLabel])).toEqual([
+      ['sh2:row001:cola01', 'Ledger'],
       ['sh:row002:colb01', 'Budget!B2'],
       ['sh:row999:colb01', 'Budget (Deleted Cell)'],
-      ['sh2:row001:cola01', 'Ledger'],
     ]);
   });
 
@@ -472,12 +474,12 @@ describe('the cards push', () => {
     );
     await insertItems(db.env, 'P', cards);
     const index = fakeIndex();
-    const start = performance.now();
+    const start = cpuNowMs();
     await drainOutbox(db.env, 'P', index.client);
-    const took = performance.now() - start;
+    const took = cpuNowMs() - start;
     expect(index.collab.find((c) => c.tab === '~cards')!.push.actions).toHaveLength(500);
     // Measured about 17 ms on a laptop (500 hashes, 1,000 cards); the budget leaves room for a slow CI runner.
-    expect(took).toBeLessThan(1_000);
+    expect(took).toBeLessThan(cpuBudgetMs(1_000));
   });
 });
 

@@ -10,8 +10,12 @@ vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', () => ({
   clampToViewport: () => ({ x: 0, y: 0 }),
 }));
 
+const { assignAppLocation } = vi.hoisted(() => ({ assignAppLocation: vi.fn() }));
+vi.mock('@liveworkspace/workbench/lib/app-location', () => ({ assignAppLocation }));
+
 afterEach(() => {
   vi.restoreAllMocks();
+  assignAppLocation.mockReset();
 });
 
 function openMenu() {
@@ -38,5 +42,21 @@ describe('ExplorerHeaderMenu', () => {
     fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Licences' }));
     expect(open).toHaveBeenCalledWith('/licences', '_blank', 'noopener,noreferrer');
     expect(screen.queryByRole('menu')).toBeNull();
+  });
+});
+
+// Open Explorer opens the place that holds the open canvas (liveworkspace/docs/specs/004-index/one-explorer.md
+// "Opening from an open item"); with none, the Explorer as before.
+describe('ExplorerHeaderMenu Open Explorer', () => {
+  it.each([
+    ['d1', '/explorer?item=d1'],
+    [null, '/explorer'],
+  ])('with %s opens %s', (itemId, href) => {
+    render(<ExplorerHeaderMenu itemId={itemId} />);
+    fireEvent.click(screen.getByRole('button', { name: 'More' }));
+    fireEvent.click(
+      within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Open Explorer' }),
+    );
+    expect(assignAppLocation).toHaveBeenCalledWith(href);
   });
 });

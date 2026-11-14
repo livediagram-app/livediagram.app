@@ -11,18 +11,13 @@ import { ChipToggles, PanelField, PanelNote, PanelSelect } from '../step-panels/
 import { useGithubAutomations } from './github-automations';
 import { GithubConnectCard } from './GithubConnectCard';
 import { useGithubConnection } from './use-github-connection';
+import { heardRepositories } from './repository-words';
 import type { AutomationsScope } from '../automations-client';
 
 type GithubTrigger = Extract<AutomationTrigger, { kind: GithubTriggerKind }>;
 
 export const GITHUB_CARDS_NOTE =
   'Runs once on each card the pull request links: by a Pull Request field, a Link field, or its title or body naming the card, like “Work Tracker #12”.';
-
-/** "acme/web", "acme/web and acme/api", "acme/web, acme/api and 2 more". */
-export function heardRepositories(names: readonly string[]): string {
-  if (names.length <= 2) return names.join(' and ');
-  return `${names.slice(0, 2).join(', ')} and ${names.length - 2} more`;
-}
 
 /** The Repositories chips' choices: each repository the plan hears, then each the trigger names that it no longer
  *  hears ("acme/old · Not Heard"), so the panel shows what the rule holds and it can be unpicked. Names match any

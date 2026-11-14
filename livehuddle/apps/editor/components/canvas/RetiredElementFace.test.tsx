@@ -314,7 +314,7 @@ describe('the placeholder Delete button', () => {
       expect(button(container)!.className).toContain('h-6 w-6');
       const slot = container.querySelector<HTMLElement>('[data-retired-delete-slot]')!;
       expect(slot.style.transform).toBe(`scale(${1 / zoom})`);
-      expect(slot.style.transformOrigin).toBe('0 0');
+      expect(slot.style.transformOrigin).toBe('0px 0px');
       // 12 screen pixels in from the top and right edges, measured back into the card's units.
       expect(parseFloat(slot.style.top)).toBeCloseTo(RETIRED_DELETE_INSET / zoom);
       expect(parseFloat(slot.style.left)).toBeCloseTo(

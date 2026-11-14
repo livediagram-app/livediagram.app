@@ -1,8 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
 import type { Env } from '../types';
-import { reportOwnerActivity } from './activity';
+import { reportOwnerActivity as reportActivityOf } from '@liveworkspace/index-app';
+import { accountCredentials } from '../auth/accounts';
 import { claimMilestone, getOwnerEmails } from './emails';
+
+// This api's send: index-app's report with the accounts credentials (routes/documents.ts, document-outbox.ts).
+const reportOwnerActivity = (env: Env, ownerId: string, at: number) =>
+  reportActivityOf(accountCredentials(env), ownerId, at);
 
 const GUEST = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
 

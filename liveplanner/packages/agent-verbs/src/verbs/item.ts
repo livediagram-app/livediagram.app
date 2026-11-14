@@ -7,6 +7,7 @@ import {
   itemStatus,
   itemSummary,
   itemTitle,
+  FLAGGED_FIELD,
   resolveItem,
   type Item,
   type ItemFields,
@@ -170,6 +171,7 @@ export const itemLs = defineVerb({
         i.type,
         i.status ?? '-',
         JSON.stringify(i.title) +
+          (i.fields[FLAGGED_FIELD] === true ? '  flagged' : '') +
           (i.pullRequests?.length ? `  ${i.pullRequests.map(pullRequestLine).join('; ')}` : ''),
       ]),
     ),
@@ -182,7 +184,7 @@ export const itemLs = defineVerb({
       'liveplanner item ls 3f9c --type task --status new',
     ],
     prints:
-      'one item a line: #number, type, status, title, then its pull requests with their states',
+      'one item a line: #number, type, status, title, flagged on a flagged card, then its pull requests with their states',
   },
 });
 
@@ -229,7 +231,8 @@ export const itemSet = defineVerb({
   id: 'item.set',
   summary: 'Change an item',
   description:
-    'Sets fields of an item as key=value, clears fields by name, or changes its type. An Image field or attachments ' +
+    'Sets fields of an item as key=value, clears fields by name, or changes its type. flagged=true flags it, ' +
+    'flagged=false or --clear flagged unflags it. An Image field or attachments ' +
     'takes picture ids from image add (key=<id>, several as a comma list, added at the end); --remove takes them off.',
   behaviour: 'write',
   input: z.object({
@@ -264,7 +267,7 @@ export const itemSet = defineVerb({
   cli: {
     positionals: ['project', 'item'],
     examples: [
-      'liveplanner item set "Sprint 14" "#12" --fields priority=urgent',
+      'liveplanner item set "Sprint 14" "#12" --fields priority=urgent flagged=true',
       'liveplanner item set 3f9c 12 --clear due --type project',
     ],
     prints: '~ #<number> [<type>] <title>',

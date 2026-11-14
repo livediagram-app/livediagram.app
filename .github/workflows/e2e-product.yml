@@ -67,7 +67,7 @@ jobs:
     timeout-minutes: 10
     # The shards' container, so the Turbopack cache this job restores and saves builds as it always has.
     container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
       options: --user 1001 --ipc=host
     defaults:
       run:
@@ -130,7 +130,7 @@ jobs:
     # Twice the 5-minute budget: a hung shard stops well before GitHub's six hours.
     timeout-minutes: 10
     container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
       options: --user 1001 --ipc=host
     defaults:
       run:
@@ -182,7 +182,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
       options: --user 1001 --ipc=host
     defaults:
       run:
@@ -259,7 +259,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
       options: --user 1001 --ipc=host
     defaults:
       run:

@@ -183,7 +183,8 @@ describe('playStripMorph', () => {
     expect(bar.keyframes[1]).toMatchObject({ left: '250px', width: '500px' });
     const clip = animations.find((a) => a.el === next.card)!;
     expect(clip.keyframes[0]!.clipPath).toBe('inset(0px 50px 0px 50px round 0px)');
-    expect(next.card.style.background).toBe('transparent');
+    expect(next.card.style.backgroundColor).toBe('transparent');
+    expect(next.card.style.backgroundImage).toBe('none');
   });
 
   it('rides the toggle and its divider along the bar edge and glides the pill to Walk', () => {

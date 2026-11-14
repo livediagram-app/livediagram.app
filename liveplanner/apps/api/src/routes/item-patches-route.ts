@@ -28,6 +28,7 @@ import {
   blockersRefused,
   editorOnly,
   writer,
+  mappedWrite,
 } from './item-route-kit';
 import { writeItemsWithRetry } from './item-write-loop';
 import { historyTagOf } from './item-history-route';
@@ -74,8 +75,10 @@ export async function patches(ctx: PlanRouteContext, projectId: string): Promise
       if (read.attempt === 1 && read.missing > 0) return itemNotFound();
       // Each item's patches applied in order: an item patched twice is written once, as it ends.
       const nexts = new Map<string, Item>();
-      for (const { id, patch } of pending)
-        nexts.set(id, applyPatch(nexts.get(id) ?? stored.get(id)!, patch, { now, by }));
+      for (const { id, patch } of pending) {
+        const at = nexts.get(id) ?? stored.get(id)!;
+        nexts.set(id, applyPatch(at, mappedWrite(caller, at, patch, undo), { now, by }));
+      }
       // Every item is checked before any of this attempt's batch is written.
       for (const [id, next] of nexts) {
         if (excludedStatus(caller, next, stored.get(id)!, undo))

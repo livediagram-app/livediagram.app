@@ -10,3 +10,10 @@ export function explorerHref(path = '', search = ''): string {
   const query = search.replace(/^\?/, '');
   return `/explorer${tail ? `/${tail}` : ''}${query ? `?${query}` : ''}`;
 }
+
+/** The Explorer opened from an open item: the place that holds item `id` (its folder, its team's, This Browser's or
+ *  Shared With Me), which the Explorer works out from the id (liveworkspace/docs/specs/004-index/one-explorer.md "Opening
+ *  from an open item"). With no item, the Explorer as any other door opens it. */
+export function explorerItemHref(id?: string | null): string {
+  return id ? explorerHref('', `?item=${encodeURIComponent(id)}`) : explorerHref();
+}

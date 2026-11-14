@@ -110,6 +110,7 @@ const comment = (id: string, authorId: string, extra: Partial<Comment> = {}): Co
   ...extra,
 });
 
+const CELL = 'row004:colb01';
 const box = (comments: Comment[]) =>
   ({
     id: 'e1',
@@ -195,16 +196,17 @@ describe('a comment in a tab save', () => {
 
 describe('a comment posted over REST', () => {
   it('a tab comment tells the owner; an API token’s tells no one', async () => {
-    await save([box([])]);
+    // On a Sheet's cell: canvas elements take no comment (docs/specs/026-plan/plan-mode.md).
+    await save([{ ...box([]), shape: 'plan-sheet' } as Element]);
     const post = (as: string, token = false) =>
       route('POST', '/api/projects/d1/tabs/t1/comments', {
-        body: { elementId: 'e1', text: 'hello' },
+        body: { elementId: 'e1', cell: CELL, text: 'hello' },
         as,
         token,
       });
     expect((await post(BOB)).status).toBe(201);
     expect(fake.pushes.map((p) => [p.userId, p.kind, p.url])).toEqual([
-      [OWNER, 'comment', `${BASE}/project/d1#t=t1&el=e1&open=comments`],
+      [OWNER, 'comment', `${BASE}/project/d1#t=t1&el=e1%3Arow004%3Acolb01&open=comments`],
     ]);
     fake.pushes.length = 0;
     expect((await post(BOB, true)).status).toBe(201);
@@ -212,7 +214,8 @@ describe('a comment posted over REST', () => {
   });
 
   it('a reply in a tab thread tells who wrote in it', async () => {
-    await save([box([comment('c1', BOB)])], BOB);
+    const cellThread = { [CELL]: { comments: [comment('c1', BOB)], resolved: false } };
+    await save([{ ...box([]), shape: 'plan-sheet', cellComments: cellThread } as Element], BOB);
     fake.pushes.length = 0;
     const res = await route('POST', '/api/projects/d1/tabs/t1/comments/c1/reply', {
       body: { text: 'thanks' },

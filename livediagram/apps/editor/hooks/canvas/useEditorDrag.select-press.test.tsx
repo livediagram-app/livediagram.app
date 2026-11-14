@@ -2,7 +2,10 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DragMode } from '@/lib/canvas';
-import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
+import {
+  canvasGestureNow,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { createShape, type Element, type Tab } from '@livediagram/document';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
@@ -104,7 +107,7 @@ describe('a plain press on a boxed element', () => {
 describe('the gesture a drag opens', () => {
   const syncFrames = () => {
     vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
-      cb(performance.now());
+      cb(performance.now()); // wall-clock: a fake frame's timestamp, not a budget
       return 0;
     });
     vi.stubGlobal('cancelAnimationFrame', () => {});

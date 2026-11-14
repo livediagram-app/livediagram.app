@@ -5,7 +5,7 @@
 import { designOf, resolveTab, tabPath, type VerbContext } from '@livedesign/agent-verbs';
 import { revOfEtag, type DesignCommentsResponse } from '@livedesign/api-schema';
 import { threadListingLines } from '@livedesign/design-views';
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { classifyRoomOp, onTab, type RoomEvent } from '../room/room-events';

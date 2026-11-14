@@ -36,6 +36,7 @@ import { SearchField } from './SearchField';
 import { Sidebar } from './Sidebar';
 import { SectionsBar, SectionsDrawer } from './PhoneSections';
 import { useHeroPresence } from './useHeroPresence';
+import { ArrivedItemContext, useArrivedItem } from './arrived-item';
 import { HostExtrasProvider } from './host';
 import { ThisBrowserPane, useThisBrowserItems } from './ThisBrowser';
 import { SignInBanner } from './SignInBanner';
@@ -111,6 +112,7 @@ function ExplorerInner({
   onHideHero,
   helpHref,
   trashedOnArrival,
+  arrivedItem,
   onHome,
   onOrganise,
   lensTemplates,
@@ -156,6 +158,7 @@ function ExplorerInner({
   const openNav = useCallback(() => setNavOpenAt(viewKey), [viewKey]);
   const closeNav = useCallback(() => setNavOpenAt(null), []);
   const driveMarks = useDriveMarks(drive);
+  useArrivedItem(arrivedItem);
   const renderItemMark = useMemo(
     () => withDriveMarks(hostItemMark, driveMarks),
     [hostItemMark, driveMarks],
@@ -248,7 +251,9 @@ function ExplorerInner({
                 </aside>
                 {navOpen ? <SectionsDrawer id={drawerId} onClose={closeNav} /> : null}
                 <section className="min-w-0 flex-1">
-                  <Pane view={view} hero={heroOnHome} />
+                  <ArrivedItemContext.Provider value={arrivedItem ?? null}>
+                    <Pane view={view} hero={heroOnHome} />
+                  </ArrivedItemContext.Provider>
                 </section>
               </main>
               {signInBanner && signedIn === false && signInHref ? (

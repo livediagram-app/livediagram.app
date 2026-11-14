@@ -11,6 +11,7 @@ import { tabToJsonText, tabToMarkdownText, type ExportedTabEnvelope } from './ex
 import { tabExportItems, type TabPlanData } from './export-tab-plan';
 import { planBoardLayout, PLAN_CARD_H } from './plan-board-layout';
 import type { BoxedElement, Tab } from './index';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // A tab's Plan items in its JSON and Markdown exports (docs/specs/026-plan/items.md "Copies and exports").
 
@@ -158,10 +159,10 @@ describe('a full store', () => {
       full.set(`f${i}`, item(`f${i}`, i + 1, { title: `Card ${i}`, status: 'todo' }));
     }
     const fullPlan = { ...plan, items: full };
-    const t = performance.now();
+    const t = cpuNowMs();
     const env = JSON.parse(tabToJsonText(tabOf(board), fullPlan)) as ExportedTabEnvelope;
     tabToMarkdownText(tabOf(board), fullPlan);
-    expect(performance.now() - t).toBeLessThan(250);
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(250));
     expect(env.items).toHaveLength(2000);
   });
 });

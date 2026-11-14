@@ -129,7 +129,7 @@ describe('the hover turn', () => {
     const top = () => container.querySelector('path')!.getAttribute('d');
     const rest = top();
     const step = (ms: number) =>
-      act(() => frames.splice(0).forEach((cb) => cb(performance.now() + ms)));
+      act(() => frames.splice(0).forEach((cb) => cb(performance.now() + ms))); // wall-clock: a fake frame's timestamp, not a budget
 
     fireEvent.pointerEnter(container.querySelector('a')!, { pointerType: 'mouse' });
     step(1000);
@@ -171,10 +171,10 @@ describe('the wordmark gleam', () => {
 
     expect(gleam.style.opacity).toBe('');
     fireEvent.pointerEnter(link, { pointerType: 'mouse' });
-    step(performance.now() + 300);
+    step(performance.now() + 300); // wall-clock: a fake frame's timestamp, not a budget
     expect(gleam.style.opacity).toBe('1');
     fireEvent.pointerLeave(link);
-    step(performance.now() + 5000);
+    step(performance.now() + 5000); // wall-clock: a fake frame's timestamp, not a budget
     expect(gleam.style.opacity).toBe('0');
     expect(gleam.style.backgroundPosition).toBe('0% 0px');
     vi.restoreAllMocks();

@@ -23,9 +23,13 @@ export type StartPanelCard = {
   picture: ReactNode;
   // One badge at most, beside the name (Community, on a Community tile).
   badge?: string;
-  // What a screen reader hears after the name ("from the Community").
+  // A count on the right of the name row (a template's tabs).
+  tag?: string;
+  // What a screen reader hears after the name ("from the Community", a kind).
   ariaKind?: string;
-  // Under the line at every width (a Community tile's credit).
+  // Under the line (a board's card-type chips), on a desktop only.
+  footer?: ReactNode;
+  // Under the line at every width (a Community tile's credit, where the card leads).
   note?: ReactNode;
 };
 
@@ -75,6 +79,14 @@ function StartCard({
                 {card.badge}
               </span>
             ) : null}
+            {card.tag ? (
+              <span
+                className="ml-auto shrink-0 rounded-full border px-1.5 py-px text-[10px] font-semibold tabular-nums"
+                style={{ borderColor: palette.border, color: palette.muted }}
+              >
+                {card.tag}
+              </span>
+            ) : null}
           </span>
           <span
             // In full, on a phone too: a card's line is short, and cut it misleads.
@@ -83,6 +95,7 @@ function StartCard({
           >
             {card.line}
           </span>
+          {card.footer ? <span className="max-sm:hidden">{card.footer}</span> : null}
           {card.note ? <span className="flex">{card.note}</span> : null}
         </span>
       </button>

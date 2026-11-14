@@ -4,6 +4,7 @@
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { SESSION_TIMER_OPENED, SESSION_VOTE_OPENED } from './features';
 import { chart } from '../../_shared/catalogue-helpers';
+import { HOME_PICK_TYPES, HOME_START_TYPES } from '../../_shared/home-picks';
 
 export const VOTES_ENDED = chart(
   'Tab',
@@ -397,6 +398,17 @@ export const HOME_STARTS = chart(
   'Selected',
   'Starts Taken from Home',
   'A start taken from the first-run Home: a blank, a template, all templates, search or sign in.',
+  { types: HOME_START_TYPES },
+);
+
+// Home's picks under both their names (_shared/home-picks.ts): Most Used, Recent and See More since November
+// 2026, Jump Back In's before, so the series runs on across the rename.
+export const HOME_PICKS = chart(
+  'Home',
+  'Selected',
+  'Opened from Home',
+  "A plan opened from Home's Most Used or Recent, or See More followed to the Recent page (Jump Back In's picks, before November 2026).",
+  { types: HOME_PICK_TYPES },
 );
 
 export const HOME_RETRIES = chart(
@@ -608,7 +620,7 @@ export const HOME: MetricStack = {
   stack: true,
   title: 'Home',
   blurb: 'Explorer Home: the first-run Home shown, starts taken from it, and failed reads retried.',
-  members: [HOME_WELCOMES, HOME_STARTS, HOME_RETRIES],
+  members: [HOME_WELCOMES, HOME_STARTS, HOME_PICKS, HOME_RETRIES],
   headline: HOME_STARTS,
 };
 

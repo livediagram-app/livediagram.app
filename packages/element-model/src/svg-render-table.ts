@@ -47,6 +47,12 @@ const cumulative = (sizes: number[]): number[] => {
  *  column; the other products leave it off, so their tables draw as before. */
 export type TableRenderOptions = { comparison?: boolean };
 
+// Under Marker (docs/specs/008-canvas/finish.md "Tables") the canvas draws a table's grid as whole marker rules and
+// leaves its cells' colours flat: the export marks the same parts so svgMarkerFace does the same, a rule at any width
+// in the canvas's ink, a cell's colour never coloured in or edged.
+const CELL_FILL = ' data-finish-keep=""';
+const GRID_RULE = ' data-marker-rule=""';
+
 export function svgTableShape(
   el: TableElement,
   surface: CanvasSurface = 'light',
@@ -107,29 +113,29 @@ export function svgTableShape(
       // matching the editor's #RRGGBB11 tint.
       if (cs?.bg) {
         parts.push(
-          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(cs.bg)}"/>`,
+          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(cs.bg)}"${CELL_FILL}/>`,
         );
       } else if (highlight && c === hc && el.headerRow && r === 0) {
         // The highlighted column's header cell is the accent itself.
         parts.push(
-          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(highlight.header)}"/>`,
+          `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(highlight.header)}"${CELL_FILL}/>`,
         );
       } else if (isHeader) {
         if (header.fill !== 'transparent') {
           parts.push(
-            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(header.fill)}"/>`,
+            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(header.fill)}"${CELL_FILL}/>`,
           );
         }
       } else {
         // A highlighted body cell takes the accent's wash, under any zebra stripe.
         if (highlight && c === hc) {
           parts.push(
-            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(highlight.wash)}"/>`,
+            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(highlight.wash)}"${CELL_FILL}/>`,
           );
         }
         if (zebra) {
           parts.push(
-            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(stroke)}" opacity="0.07"/>`,
+            `<rect x="${r2(cx0)}" y="${r2(cy0)}" width="${r2(cw)}" height="${r2(ch)}" fill="${xmlEscape(stroke)}" opacity="0.07"${CELL_FILL}/>`,
           );
         }
       }
@@ -218,12 +224,12 @@ export function svgTableShape(
   if (borderW > 0) {
     for (let c = 1; c < cols; c++) {
       parts.push(
-        `<line x1="${r2(xs[c]!)}" y1="${r2(el.y)}" x2="${r2(xs[c]!)}" y2="${r2(el.y + el.height)}" fill="none"${lineAttrs}/>`,
+        `<line x1="${r2(xs[c]!)}" y1="${r2(el.y)}" x2="${r2(xs[c]!)}" y2="${r2(el.y + el.height)}" fill="none"${lineAttrs}${GRID_RULE}/>`,
       );
     }
     for (let r = 1; r < rows; r++) {
       parts.push(
-        `<line x1="${r2(el.x)}" y1="${r2(ys[r]!)}" x2="${r2(el.x + el.width)}" y2="${r2(ys[r]!)}" fill="none"${lineAttrs}/>`,
+        `<line x1="${r2(el.x)}" y1="${r2(ys[r]!)}" x2="${r2(el.x + el.width)}" y2="${r2(ys[r]!)}" fill="none"${lineAttrs}${GRID_RULE}/>`,
       );
     }
     parts.push(

@@ -1,21 +1,15 @@
-// The Comment panel's thread as a conversation (docs/specs/012-collaboration/comment-pin.md "The look"):
+// A stored Comment panel's thread as a conversation, read-only (docs/specs/012-collaboration/comment-pin.md, retired):
 // bubbles under their author, your own on the right in the accent, everyone
 // else's on the left. Consecutive comments by one author group under one
 // name, the way a chat does, so a three-part remark reads as one voice.
 
 import { reactionDef, reactionGroups, type Comment } from '@liveplanner/project';
-import { Glyph, GlyphDisc, IDENTITY_FILL, PictureDisc, identityVars } from '@liveplanner/ui';
+import { IDENTITY_FILL, PictureDisc, identityVars } from '@liveplanner/ui';
 import { useOwnPicture } from '@/lib/own-picture';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
 import { tint } from '../collab-chrome';
-import { COLLAB_ACCENT, stopPointer } from '../collab-parts';
-
-const CrossGlyph = () => (
-  <Glyph size={8} units={16}>
-    <path d="m4 4 8 8M12 4l-8 8" />
-  </Glyph>
-);
+import { COLLAB_ACCENT } from '../collab-parts';
 
 // Runs of consecutive comments by the same author.
 export function groupByAuthor(comments: readonly Comment[]): Comment[][] {
@@ -39,20 +33,13 @@ export function CommentBubbles({
   selfId,
   textColor,
   now,
-  freshFrom,
-  onDelete,
 }: {
   comments: readonly Comment[];
   selfId: string;
   textColor: string;
   now: number;
-  // Comments at or past this index arrived while the card was on screen, and
-  // settle in rather than simply appearing.
-  freshFrom: number;
-  onDelete?: (commentId: string) => void;
 }) {
   const { picture: ownPicture } = useOwnPicture();
-  let index = 0;
   return (
     <ul className="flex flex-col gap-2.5">
       {groupByAuthor(comments).map((group) => {
@@ -88,14 +75,13 @@ export function CommentBubbles({
                 </span>
               </span>
               {group.map((c) => {
-                const fresh = index++ >= freshFrom;
                 const reactions = reactionGroups(c.reactions);
                 return [
                   <span
                     key={c.id}
-                    className={`group/bubble relative max-w-full whitespace-pre-wrap break-words px-2.5 py-1.5 text-[11.5px] leading-snug ${
+                    className={`relative max-w-full whitespace-pre-wrap break-words px-2.5 py-1.5 text-[11.5px] leading-snug ${
                       mine ? 'rounded-2xl rounded-tr-md' : 'rounded-2xl rounded-tl-md'
-                    } ${fresh ? 'collab-enter' : ''}`}
+                    }`}
                     style={{
                       color: textColor,
                       backgroundColor: mine ? tint(COLLAB_ACCENT, 0.16) : tint(textColor, 0.06),
@@ -111,25 +97,6 @@ export function CommentBubbles({
                         backgroundColor: tint(`var(--collab-accent, ${textColor})`, 0.16),
                       }}
                     />
-                    {/* Your own comments only: the rule the popover applies,
-                        so a panel cannot become a way around it. */}
-                    {mine && onDelete ? (
-                      <GlyphDisc
-                        size={16}
-                        as="button"
-                        type="button"
-                        aria-label="Delete this comment"
-                        {...stopPointer}
-                        onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          onDelete(c.id);
-                        }}
-                        className="pointer-events-auto absolute -left-1.5 -top-1.5 cursor-pointer opacity-0 shadow-sm transition-opacity group-hover/bubble:opacity-100"
-                        style={{ color: textColor, backgroundColor: tint(textColor, 0.14) }}
-                      >
-                        <CrossGlyph />
-                      </GlyphDisc>
-                    ) : null}
                   </span>,
                   // Its reactions, as a quiet line under the bubble (docs/specs/012-collaboration/comment-reactions.md):
                   // read here, left from the thread's popover.

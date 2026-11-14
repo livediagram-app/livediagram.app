@@ -70,6 +70,7 @@ describe('a split row’s look', () => {
 const views: EditorView[] = [];
 afterEach(() => {
   views.splice(0).forEach((v) => v.destroy());
+  document.body.replaceChildren();
 });
 
 const pages = [0, 1].map(
@@ -155,7 +156,8 @@ const lines = (ops: ArticleDrawOp[]) =>
 
 describe('a split row, as an export draws it', () => {
   function splitTable(header = false) {
-    const root = document.createElement('div');
+    // Computed style needs the tree in the document: a detached element has none, as in a browser.
+    const root = document.body.appendChild(document.createElement('div'));
     const tableEl = el('table', 'border-top: 1px solid rgb(0, 0, 0)', [rect(0, 0, 100, 200)], root);
     tableEl.className = 'article-table';
     const row = el(

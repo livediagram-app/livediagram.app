@@ -4,6 +4,7 @@ import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import type { PlanGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // /api/projects/<id> on the index's grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): a plan answers
 // whoever holds a grant on it, as the grant says (level, tab), and answers anyone else as missing. Real SQLite
@@ -341,9 +342,9 @@ describe('the tabs alone', () => {
       let best = Infinity;
       let bytes = 0;
       for (let k = 0; k < 5; k++) {
-        const t = performance.now();
+        const t = cpuNowMs();
         bytes = (await (await call(db, 'GET', path)).text()).length;
-        best = Math.min(best, performance.now() - t);
+        best = Math.min(best, cpuNowMs() - t);
       }
       return { ms: best, bytes };
     };
@@ -354,7 +355,7 @@ describe('the tabs alone', () => {
       `[tabs] 60 tabs of 150 elements: whole plan ${whole.ms.toFixed(1)} ms ${whole.bytes} B, tabs ${tabs.ms.toFixed(1)} ms ${tabs.bytes} B`,
     );
     expect(tabs.bytes).toBeLessThan(whole.bytes);
-    expect(tabs.ms).toBeLessThan(50);
+    expect(tabs.ms).toBeLessThan(cpuBudgetMs(50));
   });
 });
 

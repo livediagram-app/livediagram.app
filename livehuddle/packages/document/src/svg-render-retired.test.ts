@@ -293,6 +293,32 @@ describe('a stored arrow, drawing, path and annotation in the export', () => {
     );
   });
 
+  // A Shape Library preview (Work Tracker 695): the outline alone, no words, for a box and a stored arrow alike.
+  it('draws the outline alone, without words, when asked for outlines', () => {
+    const boxed = svgRetiredElement(
+      retired('qa-board', { label: 'Sprint' }),
+      'light',
+      undefined,
+      true,
+    );
+    expect(boxed).toMatch(/^<rect [^>]*stroke-dasharray="6 4"\/>$/);
+    const line = svgRetiredArrow(arrow(), elements, 'light', undefined, true);
+    expect(line).toContain('<line data-retired-arrow-line=""');
+    expect(line).toContain('<rect');
+    expect(texts(line)).toEqual([]);
+    const svg = renderElementsToSvg(
+      {
+        id: 't',
+        name: 'T',
+        elements: [arrow(), retired('qa-board', { label: 'Sprint' }), ...elements],
+      },
+      { retiredOutlines: true },
+    );
+    expect(texts(svg)).not.toContain('Arrow');
+    expect(texts(svg)).not.toContain('Q&amp;A Board');
+    expect(svg).not.toContain('No longer supported');
+  });
+
   it.each([
     [
       'freehand',

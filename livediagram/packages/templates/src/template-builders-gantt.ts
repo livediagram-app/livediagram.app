@@ -36,7 +36,7 @@ import {
   WEEK_DATES,
 } from './template-gantt-plan';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
-import { PAPER_INK as INK } from './template-inks';
+import { PAPER_INK as INK } from '@liveworkspace/template-previews/template-inks';
 
 const MUTED = '#64748b';
 const GRID_LINE = '#e2e8f0';

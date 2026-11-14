@@ -5,7 +5,7 @@
 
 import { ApiError, type ApiClient } from '@liveworkspace/api-client';
 import { DOCUMENT_TRASHED_CLOSE, ROOM_FULL_CLOSE } from '@livedocuments/api-schema';
-import type { CliIo, RoomSocket } from '../io';
+import type { CliIo, RoomSocket } from '@liveworkspace/cli-kit/io';
 
 export const ROOM_RECONNECT_MIN_MS = 1_000;
 export const ROOM_RECONNECT_MAX_MS = 30_000;

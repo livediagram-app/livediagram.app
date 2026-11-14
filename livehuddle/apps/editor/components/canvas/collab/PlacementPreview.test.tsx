@@ -275,7 +275,10 @@ describe('DoorPlacementPreview', () => {
     expect(turned.l + turned.w / 2).toBeCloseTo(400);
     expect(turned.t + turned.h / 2).toBeCloseTo(300);
     const { piece } = placementLanding('sofa', { x: 400, y: 300 }, [], undefined, 'e');
-    expect(piece).toMatchObject({ chairFacing: 'e', width: turned.w, height: turned.h });
+    // The style keeps six significant digits of the piece's size, as a browser does.
+    expect(piece).toMatchObject({ chairFacing: 'e' });
+    expect(piece.width).toBeCloseTo(turned.w, 3);
+    expect(piece.height).toBeCloseTo(turned.h, 3);
     resetPlacingFacing();
   });
 

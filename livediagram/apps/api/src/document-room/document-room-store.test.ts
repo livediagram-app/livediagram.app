@@ -1212,10 +1212,16 @@ describe("whole-tab writes keep other people's entries", () => {
       cursor ? { 'X-Room-Cursor': cursor } : {},
     );
 
+  // A create keeps only its creator's entries (share-roles.md "A new document keeps only its creator's entries"), so
+  // other people's are put in the stored tab directly, as their own writes would have left them.
   async function start(first: Element) {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const w = world();
-    await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [first] }]);
+    await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [] }]);
+    const db = w.documents.get('A')!.db;
+    const row = db.prepare("SELECT data FROM tabs WHERE id = 't1'").get();
+    const data = { ...(JSON.parse(String(row!.data)) as object), elements: [first] };
+    db.prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'").run(JSON.stringify(data));
     return { w, room: w.documents.get('A')!.room };
   }
 
@@ -1271,7 +1277,7 @@ describe("whole-tab writes keep other people's entries", () => {
     expect(reacted(w)).toEqual([BO]);
   });
 
-  it('locks a re-commit (an offline sync) over the stored tabs, and leaves a create as it came', async () => {
+  it("locks a re-commit (an offline sync) over the stored tabs, and a create keeps a browser key's answer", async () => {
     const { w } = await start(card(['bo']));
     const again = await w.send('POST', '/api/documents', {
       id: 'A',
@@ -1280,7 +1286,7 @@ describe("whole-tab writes keep other people's entries", () => {
     });
     expect(again.status).toBe(201);
     expect(answered(w)).toEqual(['bo']);
-    // The create itself kept the answer it carried.
+    // The create itself kept the answer it carried: a browser key names nobody, as an offline canvas's own do.
     const fresh = world();
     await createDocument(fresh, 'A', [{ id: 't1', name: 'Board', elements: [card(['cy'])] }]);
     expect(answered(fresh)).toEqual(['cy']);

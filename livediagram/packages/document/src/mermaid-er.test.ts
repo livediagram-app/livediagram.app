@@ -4,6 +4,7 @@ import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
 import { edgeToArrow, graphToElements } from './graph-authoring';
 import { entityHeight } from './entity-geometry';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Tested through parseMermaid so the dispatch is covered too.
 describe('parseMermaid: ER diagrams', () => {
@@ -299,8 +300,8 @@ describe('parseMermaid: ER syntax from Mermaid’s own examples', () => {
 
   it('fails a long line that is no relationship quickly', () => {
     const hostile = 'erDiagram\n  A' + ' to'.repeat(4000) + ' x';
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     parseMermaid(hostile);
-    expect(performance.now() - t0).toBeLessThan(1000);
+    expect(cpuNowMs() - t0).toBeLessThan(cpuBudgetMs(1000));
   });
 });

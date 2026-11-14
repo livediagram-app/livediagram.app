@@ -13,6 +13,7 @@ import {
   itemLabels,
   itemStatus,
   itemTitle,
+  type Item,
   type ItemFields,
   type ItemPerson,
 } from '../item';
@@ -23,11 +24,13 @@ import {
   ITEM_TITLE_MAX,
 } from '../limits';
 import { colourFieldOf } from '../item-colour';
+import { isTrashed } from '../board-model';
 import { blockingCycleOf, isBlocksField } from '../blocked-by';
 import { linkedCardIds } from '../several-values';
 import { validateFields } from '../fields';
 import { isEmptyFieldValue, requiredCustomFieldsOf } from '../required-fields';
 import { typeAllowsStatus } from '../type-catalogue';
+import { typeChangeFields } from '../card-retype-fields';
 import { AUTOMATION_SUBJECT_MAX } from './validate';
 import {
   AUTOMATION_ACTIONS_MAX,
@@ -62,8 +65,10 @@ import {
   type Plan,
   type PlanActionsContext,
   type PlannedRun,
+  type PlannedSegment,
   type PlannedWrites,
   Run,
+  type RunCarry,
   type Walk,
 } from './plan-walk';
 
@@ -74,8 +79,10 @@ export type {
   PlannedMention,
   PlannedRelated,
   PlannedRun,
+  PlannedSegment,
   PlannedSend,
   PlannedWrites,
+  RunCarry,
 } from './plan-walk';
 
 // Whoever triggered the rule, when that is a person a card can name.
@@ -212,6 +219,13 @@ function apply(a: AutomationAction, w: Walk) {
       if (status && !typeAllowsStatus(to, status))
         fail(`A ${to.label} card can't be in ${statusName(o, status)}`);
       const changed = plan.retype(to.id);
+      // Its custom fields map by name into the new type's, one write with the type (item-types.md "Changing a
+      // card's type").
+      if (changed)
+        for (const [field, value] of Object.entries(
+          typeChangeFields(plan.card.fields, type, to, a.map, o.types),
+        ))
+          plan.write(field, value);
       w.type = to;
       return plan.line(`Change to ${typeName(o, to.id)}`, changed);
     }
@@ -265,7 +279,7 @@ function apply(a: AutomationAction, w: Walk) {
 function createCard(a: Extract<AutomationAction, { kind: 'create_card' }>, w: Walk) {
   const { plan, ctx } = w;
   const o = ctx.outline;
-  if (plan.created.length >= AUTOMATION_CREATED_PER_RUN)
+  if (plan.madeBefore + plan.created.length >= AUTOMATION_CREATED_PER_RUN)
     fail(`A run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
   const type = o.types.find((t) => t.id === a.type);
   if (!type) return failGone({ kind: 'type', id: a.type });
@@ -299,7 +313,7 @@ const noCardField = (field: string, label: string, w: Walk): never =>
 function copyCard(a: Extract<AutomationAction, { kind: 'copy_card' }>, w: Walk) {
   const { plan, ctx } = w;
   const o = ctx.outline;
-  if (plan.created.length >= AUTOMATION_CREATED_PER_RUN)
+  if (plan.madeBefore + plan.created.length >= AUTOMATION_CREATED_PER_RUN)
     fail(`A run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
   if (a.status && !o.statuses.some((s) => s.status === a.status))
     failGone({ kind: 'column', id: a.status });
@@ -347,7 +361,9 @@ function linkCard(a: Extract<AutomationAction, { kind: 'link_card' }>, w: Walk) 
   const chosen = 'card' in a.to ? a.to.card : undefined;
   const to =
     chosen === undefined ? w.values.trigger?.card : ctx.items?.find((i) => i.id === chosen);
-  if (chosen !== undefined && ctx.items && !to) return fail('The card to link is gone');
+  // A card deleted, or in the Trash, is gone (the rule needs attention until it is back).
+  if (chosen !== undefined && ctx.items && (!to || isTrashed(to)))
+    return fail('The card to link is gone');
   const id = to?.id ?? chosen;
   if (!id) return fail('No card to link');
   if (id === plan.card.id) return fail("A card can't link to itself");
@@ -447,15 +463,43 @@ function branch(s: AutomationBranch, top: Walk) {
 
 // The run's steps against the card, worked out: the one patch, the comments, the card to make, the emails, the
 // related cards' writes and the messages, with a line per step; or where it failed and why. A Wait ends the plan
-// there (`wait`: the rest goes on later, from its next step); `from` starts at a step (the rest after a Wait), and
-// `through` plans past every Wait (Test on a Card: "Would wait 2 days, then:").
+// there (`wait`: the rest goes on later, from its next step); `from` starts at a step (the rest after a Wait, or after
+// an AI step, with `carry` the run's counts so far), and `through` plans past every Wait (Test on a Card: "Would wait 2
+// days, then:"). An AI step cuts the writes there: the steps after it plan a fresh patch from the card as the steps
+// before left it, its `after`, which the api plans again once the step answered (spec "How a step runs").
 export function planActions(
   steps: readonly AutomationStep[],
   ctx: PlanActionsContext,
-  opts: { from?: number; through?: boolean } = {},
+  opts: { from?: number; through?: boolean; carry?: RunCarry } = {},
 ): PlannedRun {
-  const run = new Run();
-  const w = walkOf(ctx.card, run, ctx);
+  const run = new Run(opts.carry);
+  let w = walkOf(ctx.card, run, ctx);
+  w.plan.madeBefore = opts.carry?.made ?? 0;
+  // The segments cut so far (the first is the run's own fields), the card each later one is planned from, and where
+  // the current one's related cards start.
+  const cuts: PlannedSegment[] = [];
+  const froms: Item[] = [];
+  let relatedFrom = 0;
+  const cut = () => {
+    cuts.push(segmentOf(w.plan, relatedFrom));
+    froms.push(w.plan.card);
+    relatedFrom = run.related.length;
+    const made = w.plan.madeBefore + w.plan.created.length;
+    w = walkOf(w.plan.card, run, ctx);
+    w.plan.madeBefore = made;
+  };
+  const writes = (): PlannedWrites => {
+    const all = [...cuts, segmentOf(w.plan, relatedFrom)];
+    run.ai.forEach((p, i) => {
+      p.after = { ...all[i + 1]!, from: froms[i]! };
+    });
+    return {
+      ...all[0]!,
+      sends: run.sends,
+      turns: run.turns,
+      ...(run.ai.length ? { ai: run.ai } : {}),
+    };
+  };
   let wait: { hours: number; from: number } | undefined;
   try {
     for (let index = opts.from ?? 0; index < steps.length; index += 1) {
@@ -481,6 +525,7 @@ export function planActions(
       if (s.kind === 'ai') {
         count(run);
         planAi(s, index, w);
+        cut();
         continue;
       }
       if (s.kind !== 'if') {
@@ -502,21 +547,19 @@ export function planActions(
       failed: error.message,
       ...(error.gone ? { gone: error.gone } : {}),
       lines: run.lines,
-      done: writesOf(w.plan),
+      done: writes(),
     };
   }
-  return { ...writesOf(w.plan), ...(wait ? { wait } : {}), lines: run.lines };
+  return { ...writes(), ...(wait ? { wait } : {}), lines: run.lines };
 }
 
-const writesOf = (plan: Plan): PlannedWrites => ({
+// One segment's writes: its walk's patch and threads, and the related cards its branches planned (from `relatedFrom`).
+const segmentOf = (plan: Plan, relatedFrom: number): PlannedSegment => ({
   patch: plan.patch(),
   comments: plan.comments,
   created: plan.created,
   emails: plan.emails,
   mentions: plan.mentions,
   resolve: plan.resolve,
-  related: plan.run.related,
-  sends: plan.run.sends,
-  turns: plan.run.turns,
-  ...(plan.run.ai.length ? { ai: plan.run.ai } : {}),
+  related: plan.run.related.slice(relatedFrom),
 });

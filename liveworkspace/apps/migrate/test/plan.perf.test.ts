@@ -6,6 +6,7 @@ import { expect, it } from 'vitest';
 import { createPictureDrawer } from '../src/pictures.ts';
 import { DAY, NOW, oldDatabase, put, shape } from './fixture.ts';
 import { fakeDrawer, planScenario } from './helpers.ts';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const DOCS = 10_000;
 // Generous for a laptop under load; a quadratic step would blow far past it.
@@ -193,11 +194,11 @@ it('draws a picture in bounded time', { timeout: 60_000 }, async () => {
   await draw(inputOf(1), { tabId: 't', elementId: null }, upgrade); // loads resvg and the fonts once
   for (const count of [20, 200]) {
     const input = inputOf(count);
-    const started = performance.now();
+    const started = cpuNowMs();
     const n = 10;
     for (let i = 0; i < n; i++) await draw(input, { tabId: 't', elementId: null }, upgrade);
-    const each = (performance.now() - started) / n;
+    const each = (cpuNowMs() - started) / n;
     console.log(`picture: a ${count}-element tab in ${each.toFixed(1)} ms`);
-    expect(each).toBeLessThan(2_000);
+    expect(each).toBeLessThan(cpuBudgetMs(2_000));
   }
 });

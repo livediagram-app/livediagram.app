@@ -1,7 +1,7 @@
 // The CLI's pictures (docs/specs/015-api/blueprints/cli.md "Previews", CLI30, CLI31): @liveworkspace/cli-kit's SVG
 // or PNG writer, naming this CLI's package when its renderer's files are missing.
 
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { writePicture as writePictureOf, type Picture } from '@liveworkspace/cli-kit/png';
 import { NPM_PACKAGE } from '../config/version';
 

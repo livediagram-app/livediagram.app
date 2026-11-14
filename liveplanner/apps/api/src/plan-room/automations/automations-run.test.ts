@@ -48,6 +48,25 @@ describe('a rule on its trigger', () => {
     expect(run).toMatchObject({ result: 'done', ruleName: 'Done stamp', card: { id: c.id } });
     expect(room().automations.schedule.at).toBeNull();
   });
+
+  // Card Moved's Card Types (spec "Triggers"): a card of an unpicked type moving starts nothing; a picked one runs.
+  it('runs a Card Moved rule naming a type only for a card of that type', async () => {
+    await w.rule({ trigger: { kind: 'card_moved', types: ['bug'], to: ['done'] } });
+    const res = await w.send('POST', '/api/projects/A/items', {
+      type: 'bug',
+      fields: { title: 'Crash' },
+      place: { status: 'todo' },
+    });
+    expect(res.status).toBe(201);
+    const bug = (await res.json<{ item: Item }>()).item;
+    const task = await w.make('A', { title: 'Write docs' });
+    await move(task.id, 'done');
+    await move(bug.id, 'done');
+    await room().alarm();
+    expect((await card(task.id)).fields['labels']).toBeUndefined();
+    expect((await card(bug.id)).fields['labels']).toEqual(['shipped']);
+    expect(await runs()).toMatchObject([{ result: 'done', card: { id: bug.id } }]);
+  });
 });
 
 describe('runs, limits and loops', () => {

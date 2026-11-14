@@ -1,6 +1,6 @@
 import { at, TEAMMATE, YOU } from '@/components/art-tokens';
 import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
-import { cursorRide, type Point } from '@/lib/hero-motion';
+import { cursorRide, type Point } from '@liveworkspace/marketing-site/lib/hero-motion';
 import { Heading, type Box } from './hero-townhall-parts';
 import {
   Agenda,

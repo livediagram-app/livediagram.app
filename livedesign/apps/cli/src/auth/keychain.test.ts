@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ToolRun } from '../io';
+import type { ToolRun } from '@liveworkspace/cli-kit/io';
 import { fakeIo, TOKEN } from '../testing/fake-io';
 import {
   forgetCredential,

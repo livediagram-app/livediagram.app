@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderElementsToSvg } from './svg-render';
+import { boxedNeedsSvgRaster, renderElementsToSvg, svgBoxed } from './svg-render';
 import { createShape } from './factories';
 import type { ShapeElement } from './index';
 
@@ -29,14 +29,27 @@ const action = (status: 'open' | 'done') => ({
   updatedAt: 0,
 });
 
+// A stored Comment panel is read only (comment-pin.md, retired; docs/specs/026-plan/plan-mode.md "No comment thread
+// on any canvas element", Work Tracker 751): no Resolve chip, composer or Reopen Thread bar in any export.
+const INVITES = [
+  '>Resolve<',
+  'Reply…',
+  'Write a comment…',
+  'Reopen Thread',
+  'Start the Conversation',
+];
+const noInvites = (svg: string) => {
+  for (const s of INVITES) expect(svg).not.toContain(s);
+};
+
 describe('Comment panel export', () => {
-  it('invites a first comment when the thread is empty', () => {
+  it('says it has no comments, and invites none, when the thread is empty', () => {
     const svg = svgOf(createShape('comment-pin', 0, 0));
-    expect(svg).toContain('Start the Conversation');
-    expect(svg).toContain('Write a comment…');
+    expect(svg).toContain('No Comments Yet');
+    noInvites(svg);
   });
 
-  it('draws the thread as authored bubbles with the composer', () => {
+  it('draws the thread as authored bubbles, with no Resolve or composer', () => {
     const el = {
       ...createShape('comment-pin', 0, 0),
       commentThread: {
@@ -45,19 +58,34 @@ describe('Comment panel export', () => {
       },
     };
     const svg = svgOf(el);
-    for (const s of ['Tom', 'Priya', 'Should this be async?', 'Agreed.', 'Reply…'])
-      expect(svg).toContain(s);
+    for (const s of ['Tom', 'Priya', 'Should this be async?', 'Agreed.']) expect(svg).toContain(s);
+    noInvites(svg);
   });
 
-  it('drops the composer and says Resolved once resolved', () => {
+  it('says Resolved once resolved, with no Reopen Thread', () => {
     const el = {
       ...createShape('comment-pin', 0, 0),
       commentThread: { resolved: true, comments: [comment(1, 'Tom', 'Done here.')] },
     };
     const svg = svgOf(el);
     expect(svg).toContain('>Resolved<');
-    expect(svg).toContain('Reopen Thread');
-    expect(svg).not.toContain('Reply…');
+    expect(svg).toContain('Done here.');
+    noInvites(svg);
+  });
+
+  // The PNG / PDF export draws a Comment panel by rasterising this same svgBoxed fragment (export-tab.ts), so it
+  // holds no invite either.
+  it('is rasterised for PNG from the same read-only fragment', () => {
+    for (const resolved of [false, true]) {
+      const el = {
+        ...createShape('comment-pin', 0, 0),
+        commentThread: { resolved, comments: [comment(1, 'Tom', 'Done here.')] },
+      };
+      expect(boxedNeedsSvgRaster(el)).toBe(true);
+      const fragment = svgBoxed(el);
+      expect(fragment).toContain('Done here.');
+      noInvites(fragment);
+    }
   });
 });
 

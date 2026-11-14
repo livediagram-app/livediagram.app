@@ -43,6 +43,8 @@ export interface AutomationEvent {
   // Statuses: where it was and where it went (moved), or where it was made (created).
   from?: string;
   to?: string;
+  // The card's type as the write left it (moved), for Card Moved's Card Types.
+  type?: string;
   // The fields the write changed (changed; a moved write can change fields too).
   fields?: string[];
   // The Form tab whose response made the card.
@@ -166,6 +168,7 @@ export function eventOfWrite(
     return {
       ...base,
       kind: 'moved',
+      type: after.type,
       ...(moved.from ? { from: moved.from } : {}),
       ...(moved.to ? { to: moved.to } : {}),
       ...(fields.length ? { fields } : {}),
@@ -195,6 +198,7 @@ export function triggerMatches(
     case 'card_moved':
       return (
         event.kind === 'moved' &&
+        (!trigger.types?.length || (!!event.type && trigger.types.includes(event.type))) &&
         (!trigger.from?.length || (!!event.from && trigger.from.includes(event.from))) &&
         (!trigger.to?.length || (!!event.to && trigger.to.includes(event.to)))
       );

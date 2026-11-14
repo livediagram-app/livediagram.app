@@ -2,6 +2,7 @@
 // otherwise where they came from, the last app this browser used and what the address hands over (a notice, an item
 // just sent to the Trash). Read once per visit, as a stable snapshot, and forgotten when the Explorer unmounts.
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
+import { ITEM_PARAM } from '@liveworkspace/explorer';
 import type { AppName } from '@liveworkspace/sites';
 import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
 import {
@@ -42,6 +43,8 @@ export type Landing =
       lastApp: AppName | null;
       notice: string | null;
       trashed: Trashed | null;
+      // The open item an editor's door came from (`?item=`): the page opens the place that holds it (useItemArrival).
+      item: string | null;
       strip: boolean;
     };
 
@@ -73,6 +76,7 @@ function readLanding(): Landing {
     lastApp,
     notice: arrivalNotice(search, found.app),
     trashed: trashedId ? { id: trashedId, title: params.get(TITLE_PARAM) } : null,
+    item: params.get(ITEM_PARAM) || null,
     strip: params.has(ENDED_PARAM) || trashedId !== null,
   };
 }

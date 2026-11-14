@@ -14,7 +14,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { EXPLORER_TELEMETRY_EVENTS } from '@liveworkspace/telemetry';
+import { EXPLORER_TELEMETRY_EVENTS, HOME_FRAME_PICKS } from '@liveworkspace/telemetry';
 import { platformComputedEmitters } from '../platform-emitters';
 import {
   LEVEL_TELEMETRY_TYPE,
@@ -328,7 +328,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: TEMPLATE_WHY,
   },
   'apps/editor/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
-  // A failed read of Home retried, through the Explorer's onHome prop (@liveworkspace/explorer).
+  // A card picked from Home's Most Used or Recent, or See More followed, through the Explorer's onHome prop
+  // (@liveworkspace/explorer), then a failed read of Home retried.
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
+    values: HOME_FRAME_PICKS,
+  },
   'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Loaded': {
     values: EXPLORER_TELEMETRY_EVENTS['Home·Loaded'],
   },
@@ -386,10 +390,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/hooks/ui/usePageContents.ts UI·Used': {
     values: ['PageContentsJump', 'PageContentsReorder'],
   },
-  'apps/editor/hooks/ui/useImageSearch.ts Error·Warning': {
+  'packages/workbench/src/hooks/ui/useImageSearch.ts Error·Warning': {
     values: IMAGE_SEARCH_WARNINGS,
   },
-  'apps/editor/components/primitives/AreaErrorBoundary.tsx Error·Client': {
+  'packages/workbench/src/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
     open: 'Render.<Area>.<ErrorName>',
   },
@@ -472,6 +476,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'StackPadding',
       'StackAlign',
       'ConceptAnim',
+      'Build',
     ],
   },
   // The element menu's whole-tab writes (apps/editor/lib/element-style-ops.ts `commitTab`).

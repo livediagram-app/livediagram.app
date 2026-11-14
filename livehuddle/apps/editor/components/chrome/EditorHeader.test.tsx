@@ -204,3 +204,40 @@ describe('EditorHeader logo', () => {
     expect(screen.queryByRole('menu')).toBeNull();
   });
 });
+
+// The logo opens the Explorer on the place that holds the open document (liveworkspace/docs/specs/004-index/one-explorer.md
+// "Opening from an open item"); with no document, the Explorer as before.
+describe('EditorHeader logo', () => {
+  const logo = (container: HTMLElement) =>
+    container.querySelector<HTMLAnchorElement>('header a[href^="/explorer"]')?.getAttribute('href');
+
+  it('names the open document', () => {
+    const { container } = render(
+      <EditorHeader
+        itemId="d 1"
+        documentName="Untitled canvas"
+        showShare
+        shareable={false}
+        onMakeCopy={() => {}}
+        onOpenShare={() => {}}
+        onRename={() => {}}
+      />,
+    );
+    expect(logo(container)).toBe('/explorer?item=d%201');
+  });
+
+  it('opens the Explorer as before with no document', () => {
+    const { container } = renderHeader();
+    expect(logo(container)).toBe('/explorer');
+  });
+});
+
+// livehuddle's items are spaces (docs/specs/007-editor/editor-app.md "Tab bar"): the name field says so.
+describe('EditorHeader name field', () => {
+  it('names the rename field Space name', () => {
+    renderHeader();
+    fireEvent.click(screen.getByRole('button', { name: /Untitled canvas/ }));
+    expect(screen.getByRole('textbox', { name: 'Space name' })).toBeTruthy();
+    expect(screen.queryByRole('textbox', { name: 'Diagram name' })).toBeNull();
+  });
+});

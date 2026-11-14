@@ -11,6 +11,7 @@ import {
   queryElementGrid,
   updateElementGrid,
 } from './element-grid';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/008-canvas/canvas-performance.md "Questions about neighbours ask a spatial index".
 
@@ -77,9 +78,9 @@ describe('element grid', () => {
     const grid = buildElementGrid([inside, corner, outside]);
     // 2.5 million px each way: billions of cells to walk one by one.
     const rect = { x: -2_000_000, y: -2_000_000, width: 2_500_000, height: 2_500_000 };
-    const start = performance.now();
+    const start = cpuNowMs();
     const hits = queryElementGrid(grid, rect);
-    expect(performance.now() - start).toBeLessThan(50);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(50));
     expect(ids(hits)).toEqual([inside.id, corner.id]);
   });
 

@@ -14,7 +14,6 @@ afterEach(() => {
 
 const handlers = () => ({
   onAssignAction: vi.fn(),
-  onOpenComments: vi.fn(),
   onLinkElement: vi.fn(),
   onOpenNote: vi.fn(),
 });
@@ -22,10 +21,9 @@ const square = (over: Partial<BoxedElement> = {}) =>
   ({ ...createShape('square', 0, 0), id: 'sq', ...over }) as BoxedElement;
 
 describe('quickBarItems', () => {
-  it('offers Action, Comment, Link and Note, each reading View / Edit once the element has one', () => {
+  it('offers Action, Link and Note, each reading View / Edit once the element has one', () => {
     expect(quickBarItems(square(), handlers()).map((i) => i.label)).toEqual([
       'Assign Action',
-      'Add Comment',
       'Add Link',
       'Add Note',
     ]);
@@ -36,19 +34,27 @@ describe('quickBarItems', () => {
     const items = quickBarItems(has, handlers());
     expect(items.map((i) => [i.label, i.on])).toEqual([
       ['Assign Action', false],
-      ['Add Comment', false],
       ['Edit Link', true],
       ['Edit Note', true],
     ]);
   });
 
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751).
+  it('offers no Add or View Comments, even on an element with a stored thread', () => {
+    const threaded = square({
+      commentThread: {
+        resolved: false,
+        comments: [{ id: 'c1', text: 'old', createdAt: 1, authorName: 'A', authorColor: '#000' }],
+      },
+    });
+    const labels = quickBarItems(threaded, handlers()).map((i) => i.label);
+    expect(labels).not.toContain('Add Comment');
+    expect(labels).not.toContain('View Comments');
+  });
+
   it('leaves Add Link to a link card’s own Link category', () => {
     const card = { ...square(), type: 'link-card' } as unknown as BoxedElement;
-    expect(quickBarItems(card, handlers()).map((i) => i.key)).toEqual([
-      'action',
-      'comment',
-      'note',
-    ]);
+    expect(quickBarItems(card, handlers()).map((i) => i.key)).toEqual(['action', 'note']);
   });
 });
 

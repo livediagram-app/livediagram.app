@@ -12,7 +12,7 @@ import {
   type TextRun,
 } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
-import { PAPER_INK } from './template-inks';
+import { PAPER_INK } from '@liveworkspace/template-previews/template-inks';
 
 // Empathy map: a persona card over Says / Thinks / Does / Feels quadrants,
 // with the Pains / Gains strip the modern canvas adds beneath. Same bones as

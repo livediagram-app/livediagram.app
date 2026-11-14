@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@liveworkspace/api-client';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
+import type { AutomationTrigger } from '@liveplanner/items';
 import { DOC_A, fakeApi } from '../testing/fake-api';
 import { CARD, listed, listOf, PLAN, run } from '../testing/rules';
 import { applyRuleChanges, type RuleChange } from './rule-changes';
 import { readRuleListing } from './rule-read';
 import { ruleRefusalOf } from './rule-refusals';
-import { readRuleRuns, readRulesState, rulesPath, type RulesState } from './rule-state';
+import { listedRule, listedRuleBody } from './rule-listing';
+import {
+  readRuleRuns,
+  readRulesState,
+  rulesPath,
+  sentenceOutlineOf,
+  type RulesState,
+} from './rule-state';
 
 // docs/specs/026-plan/automations.md "Agents and the CLI": the reads, the changes in order, and the refusals' words.
 const base = rulesPath(DOC_A);
@@ -143,6 +151,61 @@ describe('changing the rules', () => {
       steps: [{ kind: 'move', status: 'todo' }],
     });
     expect(r.bodies.slice(2)).toEqual([{ enabled: false }, { enabled: true }]);
+  });
+
+  // Spec "A rule read back writes back": list_rules' rule (or rule get) pasted into add, set or test is taken, its id,
+  // enabled and stamps left out of what the api is sent.
+  it('takes a rule read back whole, sending the api only its body', async () => {
+    const read = {
+      id: 'r1',
+      enabled: true,
+      made: { by: { id: 'p1', name: 'Ana Costa' }, at: 1 },
+      edited: { by: { id: 'p1', name: 'Ana Costa' }, at: 2 },
+      name: 'Pasted',
+      trigger: { kind: 'card_moved', to: ['done'] },
+      conditions: [],
+      steps: [{ kind: 'add_label', label: 'shipped' }],
+      chain: false,
+      timeZone: 'Europe/London',
+    };
+    const r = await apply([
+      { op: 'add', rule: read },
+      { op: 'set', ...read, rule: 'Done stamp' },
+      { op: 'test', rule: read, card: '#12' },
+    ]);
+    expect(r.refusal).toBeUndefined();
+    const sentKeys = ['chain', 'conditions', 'name', 'steps', 'timeZone', 'trigger'];
+    expect(Object.keys(r.bodies[0] as object).sort()).toEqual(sentKeys);
+    expect(Object.keys(r.bodies[1] as object).sort()).toEqual(sentKeys);
+    expect(Object.keys((r.bodies[2] as { rule: object }).rule).sort()).toEqual(sentKeys);
+  });
+
+  // Card Moved's Card Types round trip: written by name, saved by id, listed back by name in the sentence.
+  it('writes Card Moved’s card types by name and lists them back', async () => {
+    const r = await apply([
+      {
+        op: 'add',
+        rule: {
+          name: 'Bug done',
+          trigger: { kind: 'card_moved', types: ['Bug'], from: ['To Do'], to: ['Done'] },
+          steps: [{ kind: 'add_label', label: 'shipped' }],
+        },
+      },
+    ]);
+    expect(r.refusal).toBeUndefined();
+    const trigger: AutomationTrigger = {
+      kind: 'card_moved',
+      types: ['bug'],
+      from: ['todo'],
+      to: ['done'],
+    };
+    expect(r.bodies[0]).toMatchObject({ trigger });
+    const saved = listed({ trigger });
+    const state = await readRulesState(world([saved]).api, DOC_A);
+    expect(listedRule(saved, sentenceOutlineOf(state)).sentence).toBe(
+      'When Card Moved for Bug from To Do to Done then Add Label shipped',
+    );
+    expect(listedRuleBody(saved).trigger).toEqual(trigger);
   });
 
   it('says when a saved rule needs attention', async () => {

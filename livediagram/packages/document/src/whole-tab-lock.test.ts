@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { CommentReaction } from '@liveworkspace/model-core/comment-reactions';
 import type { Comment, ElementLedger, ShapeElement, Tab, TabLedger, TabVote } from './index';
-import { lockWholeTab, wholeTabLockNeeds, type WholeTabWriter } from './index';
+import { lockCreatedTab, lockWholeTab, wholeTabLockNeeds, type WholeTabWriter } from './index';
 
 // Collab keys are 32 hex; an old editor's browser key is a UUID.
 const ME = 'a'.repeat(32);
@@ -235,6 +235,90 @@ describe('lockWholeTab: cost', () => {
         expect(needs.elementIds).toHaveLength(0);
       }
     });
+    expect(ms / 5).toBeLessThan(cpuBudgetMs(25));
+  });
+});
+
+// Work Tracker 817: a create keeps only its creator's entries (share-roles.md "A new document keeps only its creator's
+// entries"); and an old editor's leftovers (share-roles.md "Duplicates from old editors collapse", "Duplicate responses
+// from old editors stay").
+describe('lockCreatedTab', () => {
+  const answer = (participantId: string, value = '3') => ({ participantId, value, at: 1 });
+
+  it("drops another person's reaction, response and dot, and keeps the creator's and a browser key's", () => {
+    const made = tab(
+      [
+        threaded([react(ANA), react(ME), react(OLD, 'Me', 'thumbs-up')], {
+          responses: [answer(ANA), answer(ME, '8'), answer(OLD, '5')],
+        }),
+      ],
+      vote({ card: [ANA, ME, OLD] }),
+    );
+    const out = lockCreatedTab(made, me);
+    expect(reactionsOf(out)).toEqual([ME, OLD]);
+    expect(answers(out)).toEqual([answer(ME, '8'), answer(OLD, '5')]);
+    expect(out.vote?.votes).toEqual({ card: [ME, OLD] });
+  });
+
+  it("keeps an offline canvas's own entries whole: the same tab", () => {
+    const offline = tab(
+      [threaded([react(OLD, 'Me')], { responses: [answer(OLD)] }), card({ id: 'plain' })],
+      vote({ card: [OLD] }),
+    );
+    expect(lockCreatedTab(offline, me)).toBe(offline);
+    expect(lockCreatedTab(tab([card()]), me)).toEqual(tab([card()]));
+  });
+
+  it("lets an agent's create keep no collab key's entry, and drops a list left empty", () => {
+    const out = lockCreatedTab(tab([threaded([react(ME)], { responses: [answer(ME)] })]), agent);
+    expect(reactionsOf(out)).toBeUndefined();
+    expect(answers(out)).toBeUndefined();
+    expect('responses' in out.elements[0]!).toBe(false);
+  });
+
+  it("collapses an old editor's duplicate reaction beside the creator's own", () => {
+    const out = lockCreatedTab(tab([threaded([react(OLD, 'Me'), react(ME)])]), me);
+    expect(reactionsOf(out)).toEqual([ME]);
+  });
+
+  it('leaves a thread without comments, and an element that takes no responses, alone', () => {
+    const sticky = { ...card({ id: 's' }), type: 'sticky', text: 'n' } as unknown as ShapeElement;
+    const empty = tab([card({ commentThread: { comments: [], resolved: false } }), sticky]);
+    expect(lockCreatedTab(empty, me)).toBe(empty);
+  });
+
+  it("keeps a person's browser-keyed response beside their collab-keyed one: no name to match them by", () => {
+    const both = tab([card({ responses: [answer(OLD, '5'), answer(ME, '8')] })]);
+    expect(write(both, both, EMPTY).tab).toBe(both);
+  });
+
+  it('takes back an old browser-keyed reaction in two clicks: react again, then un-react', () => {
+    const stored = tab([threaded([react(OLD, 'Me')])]);
+    const again = write(tab([threaded([react(OLD, 'Me'), react(ME)])]), stored, EMPTY).tab;
+    expect(reactionsOf(again)).toEqual([ME]);
+    const undone = write(tab([threaded([])]), again, EMPTY).tab;
+    expect(reactionsOf(undone)).toEqual([]);
+  });
+});
+
+describe('lockCreatedTab: cost', () => {
+  it('walks a 2,000-element create with threads, answers and dots within budget', () => {
+    const elements = Array.from({ length: 2_000 }, (_, i) =>
+      card({
+        id: `e${i}`,
+        responses: [
+          { participantId: ME, value: '3', at: 1 },
+          { participantId: ANA, value: '3', at: 1 },
+        ],
+        commentThread: { comments: [comment([react(ME), react(ANA)])], resolved: false },
+      }),
+    );
+    const made = tab(elements, vote(Object.fromEntries(elements.map((e) => [e.id, [ME, ANA]]))));
+    let out = made;
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 5; i++) out = lockCreatedTab(made, me);
+    });
+    expect(reactionsOf(out)).toEqual([ME]);
     expect(ms / 5).toBeLessThan(cpuBudgetMs(25));
   });
 });

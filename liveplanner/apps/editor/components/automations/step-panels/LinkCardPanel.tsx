@@ -5,7 +5,7 @@
 // gains it; a single one is replaced.
 
 import { useId, useMemo, useState } from 'react';
-import { itemTitle, type AutomationAction } from '@liveplanner/items';
+import { isTrashed, itemTitle, type AutomationAction } from '@liveplanner/items';
 import { Button } from '@liveplanner/ui';
 import { CardPickerDialog } from '@/components/plan/CardPickerDialog';
 import { byNewestChange, pickCardOf, useCardPickerSearch } from '@/components/plan/card-picker';
@@ -42,16 +42,23 @@ export function LinkCardPanel({
 }) {
   const fields = useMemo(() => cardFields(outline), [outline]);
   const [picking, setPicking] = useState(false);
+  // The cards to link: never one in the Trash (a run counts it gone).
   const rows = useMemo(
-    () => [...outline.items.values()].map((i) => pickCardOf(i, outline.types)).sort(byNewestChange),
+    () =>
+      [...outline.items.values()]
+        .filter((i) => !isTrashed(i))
+        .map((i) => pickCardOf(i, outline.types))
+        .sort(byNewestChange),
     [outline.items, outline.types],
   );
   const picker = useCardPickerSearch(rows);
   const known = fields.some((f) => f.id === action.field);
   const to = 'trigger' in action.to ? TRIGGER : CHOSEN;
-  const chosen =
+  const held =
     'card' in action.to && action.to.card ? outline.items.get(action.to.card) : undefined;
-  // A card the rule holds that the plan has since lost: shown as gone, never as nothing picked.
+  const chosen = held && !isTrashed(held) ? held : undefined;
+  // A card the rule holds that the plan has since lost (deleted, or in the Trash): shown as gone, never as nothing
+  // picked.
   const gone = 'card' in action.to && !!action.to.card && !chosen;
   const cardLineId = useId();
   if (!fields.length)

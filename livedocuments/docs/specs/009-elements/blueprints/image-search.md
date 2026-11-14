@@ -7,27 +7,27 @@ storage path is the [Import image pipeline](../../020-import-export/import-image
 
 Scope, by file:
 
-| File                                                                           | Role                                                                    |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `packages/document/src/image-credit.ts`                                        | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`           |
-| `packages/document/src/element-types.ts`                                       | `ImageElement.credit`                                                   |
-| `packages/document/src/validate.ts`                                            | Image branch calls `isImageCredit` on `credit`                          |
-| `apps/editor/lib/upload-image.ts`                                              | `PickedImage`: what every picker tab hands back                         |
-| `../packages/workbench/src/lib/image-search/openverse.ts`                      | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
-| `../packages/workbench/src/lib/image-search/search.ts`                         | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
-| `../packages/workbench/src/lib/image-search/telemetry.ts`                      | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
-| `../packages/workbench/src/lib/image-search/pick.ts`                           | `storeSearchResult`: download (full, else thumbnail) and store          |
-| `../packages/workbench/src/lib/image-search/read-capped.ts`                    | `readCapped`: read a body, refusing past a byte cap                     |
-| `apps/editor/hooks/ui/useImageSearch.ts`                                       | Search tab state: query, pages, status, picking                         |
-| `apps/editor/components/panels/ImageSearchPane.tsx`                            | The Search tab's form, grid, states and footer credit                   |
-| `apps/editor/components/panels/ImagePicker.tsx`                                | Third tab; `onSelect(image: PickedImage)` carries the credit            |
-| `apps/editor/hooks/canvas/useEditorImages.ts`                                  | `applyImageToElement` sets / drops `credit`; detach drops it            |
-| `apps/editor/components/palette/ImageCreditRow.tsx`                            | Credit line, mounted in `ElementContentSections`' Image section         |
-| `apps/editor/lib/telemetry-manifest.ts`                                        | `Element·Searched` in the emitted-pairs manifest                        |
-| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/content.ts`  | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
-| `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts` | Sentences for the two events                                            |
-| `apps/help/app/palette/tools/images/page.mdx`                                  | "Searching for an image" section                                        |
-| liveworkspace.app/privacy (the shared policy, in the liveworkspace site)       | Openverse named under Service providers                                 |
+| File                                                                           | Role                                                                                        |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `packages/document/src/image-credit.ts`                                        | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`                               |
+| `packages/document/src/element-types.ts`                                       | `ImageElement.credit`                                                                       |
+| `packages/document/src/validate.ts`                                            | Image branch calls `isImageCredit` on `credit`                                              |
+| `apps/editor/lib/upload-image.ts`                                              | `PickedImage`: what every picker tab hands back                                             |
+| `../packages/workbench/src/lib/image-search/openverse.ts`                      | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`                             |
+| `../packages/workbench/src/lib/image-search/search.ts`                         | `searchOpenverse`: one page over an injected `fetch`, typed errors                          |
+| `../packages/workbench/src/lib/image-search/telemetry.ts`                      | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token                     |
+| `../packages/workbench/src/lib/image-search/pick.ts`                           | `storeSearchResult`: download (full, else thumbnail) and store                              |
+| `../packages/workbench/src/lib/image-search/read-capped.ts`                    | `readCapped`: read a body, refusing past a byte cap                                         |
+| `apps/editor/hooks/ui/useImageSearch.ts`                                       | Search tab state: query, pages, status, picking (binds the workbench's `createImageSearch`) |
+| `apps/editor/components/panels/ImageSearchPane.tsx`                            | The Search tab's form, grid, states and footer credit                                       |
+| `apps/editor/components/panels/ImagePicker.tsx`                                | Third tab; `onSelect(image: PickedImage)` carries the credit                                |
+| `apps/editor/hooks/canvas/useEditorImages.ts`                                  | `applyImageToElement` sets / drops `credit`; detach drops it                                |
+| `apps/editor/components/palette/ImageCreditRow.tsx`                            | Credit line, mounted in `ElementContentSections`' Image section                             |
+| `apps/editor/lib/telemetry-manifest.ts`                                        | `Element·Searched` in the emitted-pairs manifest                                            |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/content.ts`  | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing                                   |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts` | Sentences for the two events                                                                |
+| `apps/help/app/palette/tools/images/page.mdx`                                  | "Searching for an image" section                                                            |
+| liveworkspace.app/privacy (the shared policy, in the liveworkspace site)       | Openverse named under Service providers                                                     |
 
 ## Domain and naming
 

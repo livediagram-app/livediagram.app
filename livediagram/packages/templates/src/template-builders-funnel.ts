@@ -13,7 +13,7 @@ import {
   pyramidLayout,
   type Element,
 } from '@livediagram/document';
-import { CANVAS_TONES } from './template-inks';
+import { CANVAS_TONES } from '@liveworkspace/template-previews/template-inks';
 
 // A funnel that tells a conversion story rather than just drawing a shape.
 // Four AIDA tiers (Awareness / Interest / Decision / Action) ramp from a

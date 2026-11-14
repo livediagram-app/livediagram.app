@@ -9,7 +9,6 @@ import { elementIndicatorItems, useElementIndicators } from './useElementIndicat
 
 const handlers = () => ({
   onFollowLink: vi.fn(),
-  onOpenComments: vi.fn(),
   onOpenAction: vi.fn(),
   onOpenNote: vi.fn(),
   tabSummaries: [],
@@ -52,7 +51,9 @@ describe('elementIndicatorItems', () => {
     expect(kinds(el)).toEqual([]);
   });
 
-  it('lists everything a shape carries', () => {
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751): a stored thread is
+  // kept but never marked.
+  it('lists everything a shape carries but its stored comments', () => {
     const el = {
       ...createShape('square', 0, 0),
       link: { kind: 'url', url: 'https://example.com' },
@@ -60,7 +61,7 @@ describe('elementIndicatorItems', () => {
       action: action('open'),
       commentThread: thread(2),
     } as BoxedElement;
-    expect(kinds(el)).toEqual(['link', 'note', 'action', 'comment']);
+    expect(kinds(el)).toEqual(['link', 'note', 'action']);
   });
 
   it('opens what each one stands for', () => {
@@ -77,7 +78,6 @@ describe('elementIndicatorItems', () => {
     expect(h.onFollowLink).toHaveBeenCalledWith(link);
     expect(h.onOpenNote).toHaveBeenCalledWith(el.id);
     expect(h.onOpenAction).toHaveBeenCalledWith(el.id);
-    expect(h.onOpenComments).toHaveBeenCalledWith(el.id);
   });
 
   it('leaves out a done action, resolved comments and an unlinked kind', () => {
@@ -141,7 +141,7 @@ describe('elementIndicatorItems', () => {
       note: 'Its marker is the note',
       commentThread: thread(1),
     } as unknown as BoxedElement;
-    expect(kinds(annotation)).toEqual(['comment']);
+    expect(kinds(annotation)).toEqual([]);
   });
 
   it('shows no note without a way to open it', () => {
@@ -172,9 +172,10 @@ describe('useElementIndicators', () => {
       link: { kind: 'url', url: 'https://example.com' },
     } as BoxedElement;
     const { result } = renderHook(() =>
-      useElementIndicators(el, handlers(), { ...label, inlineIcon: true }, 8),
+      // A top-aligned block meets the cluster, so it must move out of its way.
+      useElementIndicators(el, handlers(), { ...label, alignY: 'top', inlineIcon: true }, 8),
     );
-    expect(result.current.items).toHaveLength(4);
+    expect(result.current.items).toHaveLength(3);
     expect(result.current.layout?.form).toBe('top');
     expect(result.current.layout?.inset.top).toBeGreaterThan(0);
   });

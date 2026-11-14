@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { canManageWebhooks as canManageWebhooksOf } from '@liveworkspace/workbench/lib/can-manage-webhooks';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { ExplorerMenuActions } from '@/components/panels/Explorer.types';
@@ -30,8 +31,13 @@ export function useCanvasHostExplorer(): {
   // The document's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
   // edits the whole document (not a Viewer, a Participant or a one-tab link); the index checks again on every call.
   const [webhooksOpen, setWebhooksOpen] = useState(false);
-  const canManageWebhooks =
-    hydrated && Boolean(accountUserId) && !isReadOnly && !participating && sessionTabScope === null;
+  const canManageWebhooks = canManageWebhooksOf({
+    hydrated,
+    accountUserId,
+    isReadOnly,
+    participating,
+    sessionTabScope,
+  });
   return {
     webhooksOpen,
     setWebhooksOpen,

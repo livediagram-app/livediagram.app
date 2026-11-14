@@ -111,9 +111,9 @@ export const TELEMETRY_CATEGORIES = [
   'Timeline',
   // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
   // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) ('Group', a
-  // What happened summary expanded, is retired); 'Selected' with 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent'
-  // (a document opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
-  // more followed to the Recent page) | 'WhatHappened' (retired) | 'Hero.Documents' | 'Hero.Inbox' (a hero
+  // What happened summary expanded, is retired); 'Selected' with 'MostUsed' | 'Recent'
+  // (a document opened from Home's Most Used or Recent; 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent' before
+  // November 2026), 'SeeMore' (See More followed to the Recent page; 'JumpBackIn.SeeMore' before) | 'WhatHappened' (retired) | 'Hero.Documents' | 'Hero.Inbox' (a hero
   // status pill followed) | 'Hero.NewDocument' (the hero's New document) | 'Welcome.Blank' | 'Welcome.Template' |
   // 'Welcome.AllTemplates' | 'Welcome.Search' | 'Welcome.StartBlank' | 'Welcome.SignIn' (a start taken from the
   // first-run Home); 'Opened' with 'Welcome' (the first-run Home shown); 'Loaded' with 'Retry' (a failed read

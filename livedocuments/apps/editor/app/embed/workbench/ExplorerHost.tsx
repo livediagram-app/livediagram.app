@@ -63,8 +63,13 @@ function loadWelcome(): Promise<WelcomeManifest> {
   return welcomeLoad;
 }
 
-// A failed read of Home retried: a literal call, so the telemetry manifest scan sees the pair.
-const trackHome: HomeTelemetry = (_action, type) => track('Home', 'Loaded', type);
+// Home's reports from this frame: a failed read retried (`Home·Loaded`) and a card picked from Most Used or Recent,
+// or See More followed (`Home·Selected`). Computed pairs, so the site lists them in computed-emitters.ts. A pick is
+// reported by the Explorer that was clicked: this frame's, or the Explorer page's (liveworkspace.app), never both.
+const trackHome: HomeTelemetry = (action, type) => {
+  if (action === 'Loaded') track('Home', 'Loaded', type);
+  else track('Home', 'Selected', type);
+};
 
 // The filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value, never the
 // value. Literal calls, so the telemetry manifest scan sees the pair.

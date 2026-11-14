@@ -148,6 +148,12 @@ runs in the editor (as you type) and on the worker (authoritative). Tags stored 
 and `-`) are already in this form, so they stay as stored and still match; a tag that once lost its accent (`caf`)
 keeps that spelling until its author edits the listing.
 
+**Verified in the full flow (2026-11-14, Work Tracker 724).** With a signed-in owner on a private local stack, Share >
+Community with the tags `café, 日本語` kept both chips whole in the dialog (a draft still in the field commits when
+Share is pressed), stored `['café', '日本語']`, showed `#café` and `#日本語` whole on the post page, and each chip opened
+`/community?q=%23caf%C3%A9` and `/community?q=%23%E6%97%A5%E6%9C%AC%E8%AA%9E`, whose tag filter and search box showed the
+tag whole and listed the post. Checked on desktop and a 390 px phone.
+
 ## The Community page
 
 livediagram keeps no Community pages of its own. `/community` and everything under it is liveworkspace.app's one

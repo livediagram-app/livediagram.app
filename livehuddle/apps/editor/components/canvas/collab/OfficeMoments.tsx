@@ -46,6 +46,7 @@ const OFFICE_KINDS = [
   'photo-wall',
   'pillar',
   'column',
+  'suggestion-box',
 ] as const satisfies readonly MomentKind[];
 export type OfficeMomentKind = (typeof OFFICE_KINDS)[number];
 const OFFICE_SET: ReadonlySet<string> = new Set(OFFICE_KINDS);
@@ -229,6 +230,21 @@ export function OfficeMomentParts({ kind, side }: { kind: OfficeMomentKind; side
       return <PillarLight />;
     case 'column':
       return <Sparrow side={side} />;
+    case 'suggestion-box':
+      // An idea: the lightbulb on its plate glows as the note peeks out of the slot (piece-moment-motions.ts).
+      return (
+        <>
+          <circle
+            cx={32}
+            cy={45}
+            r={9}
+            fill="#fef08a"
+            className="lh-moment lh-moment-pulse"
+            style={vars({ '--peak': 0.75, '--dur': '1.2s', '--delay': '0.3s' })}
+          />
+          <Sparkle x={40} y={38} size={3.5} delay={0.5} />
+        </>
+      );
   }
 }
 

@@ -290,9 +290,12 @@ Under reduced motion nothing animates: no skeleton pulse, no smooth scrolling.
 
 One-liners on the closed vocabulary ([Telemetry](../017-telemetry/telemetry.md)), never a name or an id:
 
-- `Home·Selected·JumpBackIn.MostUsed` / `JumpBackIn.Recent`: a design opened from Most Used or Recent, by the section
-  it belongs to (the names keep their older prefix, so stored rows still chart).
-- `Home·Selected·JumpBackIn.SeeMore`: See More followed to the Recent page (the link or the phone's tile).
+- `Home·Selected·MostUsed` / `Recent`: a design opened from Most Used or Recent, by the section it belongs to.
+- `Home·Selected·SeeMore`: See More followed to the Recent page (the link or the phone's tile).
+- These are sent from the Explorer that was clicked: the one on liveworkspace.app, or the one in the editor's workbench
+  frame (`app/embed/workbench/ExplorerHost.tsx`, through `onHome`), never both for one pick.
+- Before November 2026 these were `Home·Selected·JumpBackIn.MostUsed` / `.Recent` / `.SeeMore`; the dashboard's
+  Opened from Home chart reads both names as one series, so stored rows still chart.
 - `Home·Loaded·Retry`: a failed read retried.
 - Retired with What Happened: `Home·Selected·WhatHappened`, `Home·Selected·SeeTimeline` and `Home·Opened·Group`.
 - Retired when the Explorer moved to liveworkspace.app: `Home·Opened·Landing` / `Nav`, Home shown as the page the

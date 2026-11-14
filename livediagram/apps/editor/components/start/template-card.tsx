@@ -6,7 +6,7 @@
 import { TemplatePreview } from '@livediagram/template-previews';
 import type { TemplateKind } from '@livediagram/templates';
 import { templateOf } from './start-template-items';
-import type { StartPanelCard } from './StartCard';
+import type { StartPanelCard } from '@liveworkspace/workbench/components/start/StartCard';
 
 export function TemplatePicture({ kind }: { kind: TemplateKind }) {
   return (

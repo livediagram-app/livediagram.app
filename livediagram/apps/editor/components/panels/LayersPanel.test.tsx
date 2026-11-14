@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Layer } from '@livediagram/document';
 
-import { stubResizeObserver } from '@/lib/stub-resize-observer';
+import { stubResizeObserver } from '@liveworkspace/vitest-config/stub-resize-observer';
 import { LayersPanel, SINGLE_LAYER_HINT } from './LayersPanel';
 
 beforeAll(stubResizeObserver);

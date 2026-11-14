@@ -6,7 +6,7 @@
 import type { ReadCopies, ReadCopy } from '@livedocuments/agent-verbs';
 import { cacheDir } from '../config/paths';
 import type { DebugLog } from '../debug';
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { sha256Hex } from '@livedocuments/api-schema';
 
 export const READ_COPY_REVS_PER_TAB = 3;

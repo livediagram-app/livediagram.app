@@ -15,7 +15,7 @@ import {
   SearchGlyph,
 } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, Glyph } from '@livediagram/ui';
-import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
+import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import type { ExplorerMenuActions } from './Explorer.types';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
@@ -30,9 +30,12 @@ import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/ItemW
 export function ExplorerHeaderMenu({
   onNewDocument,
   actions = {},
+  itemId = null,
 }: {
   onNewDocument?: () => void;
   actions?: ExplorerMenuActions;
+  // The open item's id: Open Explorer opens the place that holds it.
+  itemId?: string | null;
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const close = () => setAnchor(null);
@@ -60,7 +63,7 @@ export function ExplorerHeaderMenu({
           icon={<OpenIcon />}
           label="Open Explorer"
           onClick={run(() => {
-            assignAppLocation(explorerHref());
+            assignAppLocation(explorerItemHref(itemId));
           })}
         />,
       ],

@@ -5,7 +5,7 @@ import {
   lucideSparkles,
   lucideUser,
 } from '@liveworkspace/icons/lucide';
-import type { Point } from '@/lib/hero-motion';
+import type { Point } from '@liveworkspace/marketing-site/lib/hero-motion';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import {
   Connector,

@@ -32,6 +32,7 @@ import {
   revokeApiToken,
   revokeApiTokenBySecret,
 } from './tokens.ts';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const NOW = Date.UTC(2026, 9, 23, 9, 17);
 const INDEX_URL = 'https://liveworkspace.app/api/index';
@@ -321,10 +322,10 @@ describe('the outbox’s bound', () => {
 
   it('trims a worst-case backlog, ten times the limit, within budget', async () => {
     fill(EVENTS_OUTBOX_MAX * 10);
-    const started = performance.now();
+    const started = cpuNowMs();
     expect(await trimEventOutbox(db)).toBe(EVENTS_OUTBOX_MAX * 9);
-    const ms = performance.now() - started;
+    const ms = cpuNowMs() - started;
     expect(count()).toBe(EVENTS_OUTBOX_MAX);
-    expect(ms).toBeLessThan(2_000);
+    expect(ms).toBeLessThan(cpuBudgetMs(2_000));
   });
 });

@@ -53,6 +53,7 @@ import { useExtras } from './extras';
 import { FolderMenu, ItemMenu } from './menus';
 import { ROW_HEIGHT, useFolderBits, useItemBits, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
+import { revealAt, useRevealArrived } from './arrived-item';
 
 // Name, Type, Comments, Access, Size, Created, Updated, the menu: each column shows from the list's width up (a
 // container query: the pane, not the window, is what they share), the name taking what is left. Type is wide enough
@@ -152,6 +153,20 @@ export function DetailsView({
     if (hasMore && !loadingMore && end >= count - LOAD_AHEAD) onLoadMore();
   }, [end, count, hasMore, loadingMore, onLoadMore]);
 
+  // The item an editor's door came from: loaded and brought into the window, so it is drawn and marked.
+  useRevealArrived({
+    items: sorted.items,
+    offset: sorted.folders.length,
+    hasMore,
+    loadingMore,
+    onLoadMore,
+    reveal: (index) => {
+      if (!body.current) return false;
+      revealAt(body.current, index * ROW_HEIGHT, ROW_HEIGHT);
+      return true;
+    },
+  });
+
   const rows = [];
   for (let i = start; i < end; i++) {
     if (i < sorted.folders.length) {
@@ -226,7 +241,7 @@ export function DetailsView({
       <div
         ref={body}
         role="rowgroup"
-        className={`divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
+        className={`relative divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
       >
         {start > 0 ? <div aria-hidden style={{ height: start * ROW_HEIGHT }} /> : null}
         {rows}

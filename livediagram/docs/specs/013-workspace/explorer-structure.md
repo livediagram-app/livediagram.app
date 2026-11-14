@@ -7,6 +7,8 @@ the person's session, This Browser's canvases and livediagram's colours come alo
 ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "The Explorer on each app's address"). The editor
 serves no `/explorer` page of its own; its links to it go through `explorerHref` (`../packages/workbench/src/lib/explorer-href.ts`).
 
+**From an open canvas.** The editor's doors to the Explorer from an open canvas, the header's logo (`apps/editor/components/chrome/EditorHeader.tsx`) and **Open Explorer** in the Explorer panel's ⋯ menu (`apps/editor/components/panels/ExplorerHeaderMenu.tsx`), pass only the canvas's id (`/explorer?item=<id>`, `explorerItemHref`). The Explorer opens the place that holds it, with the canvas marked: its My Work folder or My Work, its team's library at its folder, This Browser at its local folder, or Shared With Me ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item"). Back returns to the canvas. Every other door (a page with no canvas, a trashed canvas's card) opens the Explorer as before.
+
 **Browser Storage.** The owner renamed This Browser to **Browser Storage** in the Explorer on 2026-11-10, for clarity
 ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser, a Space"): its Space
 row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's groups, and the

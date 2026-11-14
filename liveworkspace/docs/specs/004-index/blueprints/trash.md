@@ -46,7 +46,7 @@ person's `a:` scope with their own, and `sweepEmpty` passes archived items by ([
 
 A `DELETE` that moves a live item to the Trash, and a restore of a trashed one, tell its app where it stands after
 the batch (`POST <app>/api/internal/items/:id/standing {archived, trashed, at}`, `waitUntil`, `standing.ts`), so the
-app's own clock stops in the Trash and starts again on restore. One already in the Trash is not told again, and the
+app's own clock stops in the Trash and starts again on restore (a call that fails is retried once, about a second later). One already in the Trash is not told again, and the
 daily empty clean-up tells nobody ([one-explorer-contracts.md](../one-explorer-contracts.md) "Where an item
 stands").
 
@@ -138,7 +138,7 @@ configured counts as confirmed; a failure gets `attempts + 1`.
 | `liveworkspace/apps/index/src/app.test.ts` (15)             | the daily purge; the empty clean-up                                    |
 | `liveworkspace/apps/index/src/account-purge.test.ts` (9)    | `POST /internal/purge-person`; telling the apps about a closed account |
 | `packages/index-app/src/purge.test.ts`, `anonymise.test.ts` | each app dropping rooms and anonymising                                |
-| `liveworkspace/apps/index/src/standing.test.ts`             | the app told on trash and restore, once, and a failed call dropped     |
+| `liveworkspace/apps/index/src/standing.test.ts`             | the app told on trash and restore, once, a failed call retried once    |
 | `packages/index-app/src/standing-door.test.ts`              | the app's `standing` door: the body, no handler, a handler that throws |
 
 ## Constants and configuration

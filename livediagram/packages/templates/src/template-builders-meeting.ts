@@ -21,7 +21,7 @@ import {
   phaseBand,
 } from './template-planner-parts';
 import { meetingRoom } from './template-meeting-room';
-import { CANVAS_TONES } from './template-inks';
+import { CANVAS_TONES } from '@liveworkspace/template-previews/template-inks';
 
 // Plateful's weekly product sync, the meeting a team runs every Tuesday,
 // read left to right as Before / During / After (a phase band over the

@@ -6,7 +6,7 @@ import {
   beginCanvasGesture,
   resetCanvasGesturesForTests,
   type CanvasGesture,
-} from '@/lib/canvas-gesture';
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';

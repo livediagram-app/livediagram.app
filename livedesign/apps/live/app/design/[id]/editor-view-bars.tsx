@@ -64,6 +64,7 @@ export function editorViewHeader(
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="Header" fallback="panel">
         <EditorHeader
+          itemId={designId}
           designName={designName}
           hideTitle={anyWelcomeOpen}
           showShare={canShareDesign && hydrated && !anyWelcomeOpen}

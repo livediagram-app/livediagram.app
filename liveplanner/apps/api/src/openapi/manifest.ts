@@ -608,13 +608,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Plans',
     summary:
-      'Add a comment to an element on a tab; an API token is recorded on it for the audit trail.',
+      'Add a comment to a Sheet cell on a tab; canvas elements take none (400 element_comments_retired). An API token is recorded on it for the audit trail.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
       type: 'object',
-      properties: { elementId: { type: 'string' }, text: { type: 'string' } },
-      required: ['elementId', 'text'],
+      properties: {
+        elementId: { type: 'string' },
+        cell: { type: 'string' },
+        text: { type: 'string' },
+      },
+      required: ['elementId', 'cell', 'text'],
     },
     statuses: [201, 400, 401, 403, 404, 409, 410, 413],
   },
@@ -633,7 +637,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/projects/{id}/tabs/{tabId}/comments/{commentId}/reply',
     segment: 'projects',
     tag: 'Plans',
-    summary: 'Reply on the thread that holds a comment; it reopens a resolved thread.',
+    summary:
+      'Reply on the Sheet cell thread that holds a comment; it reopens a resolved thread. An element thread takes no reply (400 element_comments_retired).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {

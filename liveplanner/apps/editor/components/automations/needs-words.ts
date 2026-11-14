@@ -1,11 +1,13 @@
 // A rule's Needs Attention line as the Rules list words it (docs/specs/026-plan/automations.md "Conditions"): never an
 // id, as the step panels' gone picks never show one. Each kind of thing gone is said once, counted ("A column is gone",
 // "2 columns are gone", "Someone is gone"), in the order the rule names them; a field Field Changed never hears keeps
-// its name; a GitHub rule on a plan not connected says so. Pure.
+// its name; a GitHub rule on a plan not connected says so, and one whose named repositories all left the connection
+// names them. Pure.
 
 import { goneIdsWords, type AutomationGone, type AutomationNeed } from '@liveplanner/items';
+import { heardRepositories } from './github/repository-words';
 
-type GoneKind = Exclude<AutomationNeed['kind'], 'unheard' | 'github'>;
+type GoneKind = Exclude<AutomationNeed['kind'], 'unheard' | 'github' | 'repositories'>;
 
 // What one, and several, of each kind read as.
 const GONE: Readonly<Record<GoneKind, readonly [one: string, many: string]>> = {
@@ -22,6 +24,10 @@ const GONE: Readonly<Record<GoneKind, readonly [one: string, many: string]>> = {
 /** A GitHub rule's line on a plan not connected to GitHub. */
 export const GITHUB_UNCONNECTED = 'GitHub isn’t connected';
 
+/** A GitHub rule's line when every repository it names left the connection: "acme/old isn’t heard any more". */
+export const repositoriesGone = (names: readonly string[]): string =>
+  `${heardRepositories(names)} ${names.length === 1 ? 'isn’t' : 'aren’t'} heard any more`;
+
 export function needsWords(attention: readonly AutomationNeed[]): string {
   const counts = new Map<GoneKind, number>();
   const lines: ({ gone: GoneKind } | { text: string })[] = [];
@@ -32,6 +38,10 @@ export function needsWords(attention: readonly AutomationNeed[]): string {
     }
     if (need.kind === 'github') {
       lines.push({ text: GITHUB_UNCONNECTED });
+      continue;
+    }
+    if (need.kind === 'repositories') {
+      lines.push({ text: repositoriesGone(need.names) });
       continue;
     }
     const n = counts.get(need.kind) ?? 0;

@@ -4,7 +4,7 @@
 // them (docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site"). A second's
 // grace first gives the index's merge time to land.
 
-import { useAfterApiWrite } from './useAfterApiWrite';
+import { useAfterApiWrite } from '@liveworkspace/workbench/hooks/persistence/useAfterApiWrite';
 
 const fromClaim = (signal: { claimed?: true }) => signal.claimed === true;
 

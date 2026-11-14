@@ -39,7 +39,7 @@ const cell = (held: 'over' | 'refused' | null, overLimit = false) => {
 describe('CollapsedColumnCell', () => {
   it('reads its count and name, and expands on a press', () => {
     const { onExpand, box } = cell(null);
-    expect(box.style.outline).toBe('none');
+    expect(box.style.outlineStyle).toBe('none');
     fireEvent.click(screen.getByRole('button', { name: 'Expand Column, Done, 4 items' }));
     expect(onExpand).toHaveBeenCalledOnce();
   });
@@ -49,7 +49,7 @@ describe('CollapsedColumnCell', () => {
   });
 
   it('lights red when the card cannot go there', () => {
-    expect(cell('refused').box.style.outline).toContain('#dc2626');
+    expect(cell('refused').box.style.outline).toContain('rgb(220, 38, 38)');
   });
 
   it('shows no count badge, its count said only in its name', () => {

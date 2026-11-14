@@ -128,6 +128,12 @@ the api's other routes):
 - `GET /api/shape-libraries/:id/previews` → `{ previews: Record<shapeId, svg> }`: every shape of one library drawn
   as an SVG, for the shared Explorer, which cannot draw them itself. One request a library, cached privately for
   five minutes (`?v=<updatedAt>` keys it to the library's version); 404 for a missing library or someone else's.
+  A retired element (a kind livehuddle no longer has, as the square, circle and diamond an import stored are) is
+  drawn as its placeholder's dashed outline alone, without its words: a tile is too small to read them, and they
+  doubled the answer (Work Tracker 695). One answer carries at most 1.2 MB of drawings (`SHAPE_PREVIEWS_MAX_BYTES`,
+  measured as its JSON before compression); the shapes past it, in library order, are left out and their tiles stay
+  plain, as a shape the renderer cannot draw does. The largest library a person may keep, of retired kinds, fits
+  whole.
 
 Items are validated as the tab endpoints validate elements (`isValidElement`, after the same
 element migration), and stored as JSON in one column. 400 for a missing or invalid field, an item

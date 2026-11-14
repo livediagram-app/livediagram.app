@@ -29,6 +29,7 @@ import {
   type Deck,
   type NoteCard,
   type PageSlideDetail,
+  type PresentingBuild,
   type Slide,
   type Tab,
 } from '@livedocuments/document';
@@ -84,6 +85,9 @@ export function useSlideDeck({
   // The tab a show runs (presentation-mode.md "One tab, one show"): the open tab, held from Present until the show
   // ends, so a show never changes under the presenter when the open tab does.
   const [showTabId, setShowTabId] = useState<string | null>(null);
+  // How far the slide on screen has built (presentation-mode.md "Builds"), by its id; null is unbuilt. Set by the
+  // running deck (PresentationHost) beside each move, and forgotten as a show starts or ends.
+  const [presentingBuild, setPresentingBuild] = useState<PresentingBuild | null>(null);
   const [startingDeck, setStartingDeck] = useState(false);
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"), the person's own, following
   // their account in the preferences. Read here rather than in the overlay because the FIT reads them too: "Actual
@@ -277,6 +281,7 @@ export function useSlideDeck({
       setSelectedId(null);
       setMultiSelectedIds(new Set());
       setShowTabId(tabId);
+      setPresentingBuild(null);
       setPresenting(positionAt(Math.max(0, from), runnable));
       track('UI', 'Started', 'Presentation');
     },
@@ -284,6 +289,7 @@ export function useSlideDeck({
   );
 
   const exitPresentation = useCallback(() => {
+    setPresentingBuild(null);
     setPresenting((at) => {
       if (at === null) return null;
       track('UI', 'Closed', 'Presentation');
@@ -303,6 +309,8 @@ export function useSlideDeck({
     toggleSlideHidden,
     presentingAt,
     setPresentingAt,
+    presentingBuild,
+    setPresentingBuild,
     config,
     updateConfig,
     startingDeck,

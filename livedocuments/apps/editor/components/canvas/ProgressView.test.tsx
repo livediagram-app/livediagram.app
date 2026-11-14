@@ -55,10 +55,10 @@ describe('ProgressView bar label', () => {
     );
     const [onTrack, onFill] = labels(container);
     expect(onTrack!.style.color).toBe(rgb(inks.onTrack));
-    expect(onTrack!.style.clipPath).toBe('inset(0 0 0 73%)');
+    expect(onTrack!.style.clipPath).toBe('inset(0px 0px 0px 73%)');
     expect(onTrack!.getAttribute('aria-hidden')).toBeNull();
     expect(onFill!.style.color).toBe(rgb(inks.onFill));
-    expect(onFill!.style.clipPath).toBe('inset(0 27% 0 0)');
+    expect(onFill!.style.clipPath).toBe('inset(0px 27% 0px 0px)');
     expect(onFill!.getAttribute('aria-hidden')).toBe('true');
   });
 

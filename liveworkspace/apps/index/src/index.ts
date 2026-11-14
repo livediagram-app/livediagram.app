@@ -14,6 +14,7 @@ import type { PersonContext, RouteContext } from './context';
 import { indexEnabled, type Env } from './env';
 import { handleFolders } from './folders';
 import { publicKeys } from './grants';
+import { warnIfLocalDatabaseStale } from './local-db-hint';
 import { fail, forbidden, json, notFound, unauthorized } from './http';
 import { handleInbox } from './inbox';
 import { createItem, handleItem, handleItemList, handleTrash } from './items';
@@ -230,7 +231,11 @@ const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const queued = queuedCount();
     const response = await guardRequest(
-      () => serve(request, env, ctx),
+      () =>
+        serve(request, env, ctx).catch((err: unknown) => {
+          warnIfLocalDatabaseStale(env, err);
+          throw err;
+        }),
       () => ({ route: routeLabel(request.method, request.url), json }),
     );
     if (queuedCount() !== queued) ctx.waitUntil(kickWebhooks(env));

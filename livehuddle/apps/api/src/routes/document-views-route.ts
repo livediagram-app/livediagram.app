@@ -31,7 +31,7 @@ import {
   type OverviewTabInput,
   type ViewRequest,
 } from '@livehuddle/document-views';
-import { redactTabForCommunity } from '../community-redact';
+import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';

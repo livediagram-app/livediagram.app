@@ -295,7 +295,7 @@ describe('image placeholder theme', () => {
 
   it("sets the label in the element's font", () => {
     const { container } = draw(image(), { fontFamily: '"Kalam", cursive' });
-    expect(box(container).style.fontFamily).toBe('"Kalam", cursive');
+    expect(box(container).style.fontFamily).toBe('Kalam, cursive');
   });
 
   it('leaves the broken state rose whatever the theme', () => {
@@ -472,7 +472,9 @@ describe('the white under a picture', () => {
       draw(image({ imageId: 'x', naturalWidth: 500, naturalHeight: 500 })).container,
     );
     expect(frame.style.backgroundClip).toBe('content-box');
-    expect(bandsOf(frame)).toBe('inset 150px 0px 0 0 #fff, inset -150px 0px 0 0 #fff');
+    expect(bandsOf(frame)).toBe(
+      'rgb(255, 255, 255) 150px 0px inset, rgb(255, 255, 255) -150px 0px inset',
+    );
   });
 
   it('learns a picture size it was not given when the picture loads, for its bands', () => {
@@ -482,7 +484,9 @@ describe('the white under a picture', () => {
     Object.defineProperty(img, 'naturalWidth', { value: 300 });
     Object.defineProperty(img, 'naturalHeight', { value: 300 });
     fireEvent.load(img);
-    expect(bandsOf(box(container))).toBe('inset 150px 0px 0 0 #fff, inset -150px 0px 0 0 #fff');
+    expect(bandsOf(box(container))).toBe(
+      'rgb(255, 255, 255) 150px 0px inset, rgb(255, 255, 255) -150px 0px inset',
+    );
   });
 
   it('insets the white all round a cover picture, which fills the box', () => {

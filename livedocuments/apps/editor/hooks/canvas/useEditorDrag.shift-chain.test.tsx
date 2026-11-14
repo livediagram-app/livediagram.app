@@ -60,7 +60,7 @@ const ptr = (type: string, x: number, y: number, shiftKey = false) =>
 
 beforeEach(() => {
   vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
-    cb(performance.now());
+    cb(performance.now()); // wall-clock: a fake frame's timestamp, not a budget
     return 0;
   });
   vi.stubGlobal('cancelAnimationFrame', () => {});

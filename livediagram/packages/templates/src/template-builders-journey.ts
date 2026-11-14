@@ -12,7 +12,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
-import { PAPER_INK } from './template-inks';
+import { PAPER_INK } from '@liveworkspace/template-previews/template-inks';
 
 const MUTED = '#64748b';
 

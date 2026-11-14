@@ -14,6 +14,7 @@ import { getBuiltInTheme } from '@livedocuments/document';
 import { layoutCatalogueFor } from '@livedocuments/templates';
 import { applyPageChanges, backgroundPatch } from './page-changes';
 import { pageSummaries } from './summary';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/024-agents/pages-for-agents.md "Which tab", "Naming a page", "change_pages".
 
@@ -503,10 +504,10 @@ describe('worst case', () => {
         ? { op: 'move', page: (i % 90) + 1, to: 1 }
         : { op: 'set', page: (i % 90) + 1, name: `N${i}` },
     );
-    const started = performance.now();
+    const started = cpuNowMs();
     run(tab, changes);
     // Measured 29 to 57 ms on a loaded machine (load average 50); held at 2,000 ms for CI under load.
-    expect(performance.now() - started).toBeLessThan(2000);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(2000));
   });
 });
 

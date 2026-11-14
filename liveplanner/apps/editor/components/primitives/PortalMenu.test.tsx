@@ -117,7 +117,7 @@ describe('PortalMenu', () => {
     const menu = screen.getByRole('menu');
     expect(menu.style.left).toBe('40px');
     expect(menu.style.top).toBe('130px');
-    expect(menu.style.transform).toBe('translate(0, 4px)');
+    expect(menu.style.transform).toBe('translate(0px, 4px)');
   });
 });
 

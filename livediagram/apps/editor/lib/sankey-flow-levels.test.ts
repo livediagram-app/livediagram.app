@@ -3,6 +3,7 @@ import { SANKEY_MAX_FLOWS } from '@livediagram/document';
 import { flowLevels, flowNodeColors } from './sankey-flow-levels';
 import { rowFrom, rowsFromFlows, type SankeyDraftRow } from './sankey-flow-rows';
 import { sankeyGraph } from '@livediagram/document';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const row = (from: string, to: string, value: string): SankeyDraftRow => ({
   key: 0,
@@ -54,9 +55,9 @@ describe('the Flows table’s levels', () => {
         value: i + 1,
       })),
     );
-    const t0 = performance.now();
+    const t0 = cpuNowMs();
     for (let i = 0; i < 20; i++) flowLevels(rows);
-    expect((performance.now() - t0) / 20).toBeLessThan(8);
+    expect((cpuNowMs() - t0) / 20).toBeLessThan(cpuBudgetMs(8));
   });
 
   it('colours a node as the diagram does: its own colour first, then the ramp by first appearance', () => {

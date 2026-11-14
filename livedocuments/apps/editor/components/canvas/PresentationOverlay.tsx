@@ -35,11 +35,14 @@ import type { PresentationConfig } from '@/lib/presentation-config';
 
 export type PresentationStep = { slide: Slide; tab: Tab; index: number };
 
+const NO_BUILDS = { shown: 0, count: 0 };
+
 export function PresentationOverlay({
   steps,
   canvasTool,
   onSetCanvasTool,
   at,
+  build = NO_BUILDS,
   onGo,
   onExit,
   /** The direction the last move travelled, for the slide transition. */
@@ -56,6 +59,8 @@ export function PresentationOverlay({
   onSetCanvasTool: (tool: 'laser' | 'spotlight' | 'select') => void;
   /** Index into `steps`, or steps.length for the end state. */
   at: number;
+  /** The slide on screen's builds (presentation-mode.md "Builds"): how many show, of how many. */
+  build?: { shown: number; count: number };
   /** A move to `next`; a step (Next, Back, a click, auto-advance) names its direction too, so the host counts it
    *  from the slide last asked for and decides Loop and the end there. Answers where it went (null: the deck
    *  ended), or nothing. */
@@ -125,6 +130,8 @@ export function PresentationOverlay({
   const [startedAt] = useState(() => Date.now());
   const [slideEnteredAt, setSlideEnteredAt] = useState(() => Date.now());
   const [now, setNow] = useState(() => Date.now());
+  // The last step's arrival, a slide or one of its builds: the auto-advance timer runs from here.
+  const [stepEnteredAt, setStepEnteredAt] = useState(() => Date.now());
   const slideMinutes = step?.slide.minutes;
   const wantsClock = config.showElapsed || (config.showBudget && !!slideMinutes);
   useEffect(() => {
@@ -139,7 +146,6 @@ export function PresentationOverlay({
       // first card, so a speaker's cards are up for the whole talk.
       setSettingsOpen(false);
       setJumpOpen(false);
-      setCardOf(null);
       setDetail(null);
       if (next < 0 && step === undefined) return;
       // Every slide change while the deck runs comes through here (the host
@@ -147,9 +153,16 @@ export function PresentationOverlay({
       // entered; a move that lands where it already is keeps the clock. A step
       // goes with its direction: the host places it from a move still on its
       // way, and says where it landed.
+      // A build plays on the same slide (presentation-mode.md "Builds"): it restarts the auto-advance timer but keeps
+      // the slide's clock and its note card.
       const enter = (target: number) => {
         const landed = onGo(target, step);
-        if (landed !== null && (landed ?? target) !== at) setSlideEnteredAt(Date.now());
+        if (landed === null) return;
+        setStepEnteredAt(Date.now());
+        if ((landed ?? target) !== at) {
+          setSlideEnteredAt(Date.now());
+          setCardOf(null);
+        }
       };
       if (next < 0) {
         enter(0);
@@ -187,6 +200,7 @@ export function PresentationOverlay({
     return () => window.clearTimeout(id);
   }, [
     slideEnteredAt,
+    stepEnteredAt,
     atEnd,
     config.autoAdvanceSeconds,
     detail,
@@ -243,6 +257,14 @@ export function PresentationOverlay({
   useEffect(() => {
     sayWhere();
   }, [atEnd, slideId]);
+  // A build played forward says which ("Build 2 of 3"); one taken back, or the slide arriving finished, says nothing.
+  const lastBuild = useRef<{ slideId: string | undefined; shown: number }>({ slideId, shown: 0 });
+  useEffect(() => {
+    const before = lastBuild.current;
+    lastBuild.current = { slideId, shown: build.shown };
+    if (before.slideId === slideId && build.shown > before.shown)
+      announce(`Build ${build.shown} of ${build.count}`);
+  }, [slideId, build.shown, build.count]);
 
   // Give the tool back on the way out. Exiting already restores the tab, the
   // viewport and the chrome (docs/specs/012-collaboration/presentation-mode.md); a presenter who armed the laser for one
@@ -503,7 +525,8 @@ export function PresentationOverlay({
               ? { minutes: slideMinutes, onSlideMs: now - slideEnteredAt }
               : null
           }
-          onBack={at > 0 ? () => go(at - 1, -1) : undefined}
+          // Back takes a build off before it leaves the slide, so it is there while one shows.
+          onBack={at > 0 || build.shown > 0 ? () => go(at - 1, -1) : undefined}
           onNext={() => go(at + 1, 1)}
           onClose={onExit}
           hidden={idle}

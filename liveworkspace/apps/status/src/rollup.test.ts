@@ -2,6 +2,7 @@ import type { CheckResult } from '@liveworkspace/status';
 import { describe, expect, it } from 'vitest';
 import { type Incident, stepIncidents } from './incidents';
 import { percentile, rollupDay, uptimeTenths } from './rollup';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // liveworkspace/docs/specs/009-status/status.md "The hourly run": a day's rollup, and incidents from consecutive checks.
 
@@ -38,9 +39,9 @@ describe('rollupDay', () => {
 
   it('rolls up a worst-case day quickly: 24 checks for 35 services, a thousand times', () => {
     const checks = Array.from({ length: 24 }, (_, i) => ({ state: 'up' as const, ms: 50 + i }));
-    const started = performance.now();
+    const started = cpuNowMs();
     for (let i = 0; i < 1000; i++) for (let s = 0; s < 35; s++) rollupDay(checks);
-    expect(performance.now() - started).toBeLessThan(1000);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(1000));
   });
 });
 

@@ -55,7 +55,7 @@ function setup(props: Partial<Parameters<typeof Board>[0]> = {}) {
 describe('useViewportTransform', () => {
   it('draws the first frame from the view', () => {
     const { wrapper, main } = setup();
-    expect(wrapper.style.transform).toBe('scale(1) translate(0px, 0px)');
+    expect(wrapper.style.transform).toBe('scale(1) translate(0px)');
     expect(main.style.backgroundPosition).toBe('0px 0px');
   });
 
@@ -101,6 +101,6 @@ describe('useViewportTransform', () => {
     const { store, wrapper, unmount } = setup();
     unmount();
     act(() => store.setOffset({ x: 9, y: 9 }));
-    expect(wrapper.style.transform).toBe('scale(1) translate(0px, 0px)');
+    expect(wrapper.style.transform).toBe('scale(1) translate(0px)');
   });
 });

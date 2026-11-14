@@ -411,6 +411,7 @@ export function Strip({
               navigate({ kind: 'recent' });
             }}
             className={`group block shrink-0 snap-start rounded-md ${FOCUS_RING}`}
+            data-see-link=""
           >
             <span className="flex h-20 w-32 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-xs font-medium text-brand-700 transition group-hover:border-slate-400 group-hover:bg-slate-100 dark:border-slate-600 dark:text-brand-300 dark:group-hover:border-slate-500 dark:group-hover:bg-slate-800/70">
               <ChevronRightIcon size={16} />

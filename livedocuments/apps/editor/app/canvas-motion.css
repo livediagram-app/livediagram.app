@@ -1118,6 +1118,9 @@
   .lvd-concept-build-loop .lvd-cg-row,
   .lvd-concept-pulse .lvd-cg-row,
   .lvd-concept-flow .lvd-cg-arc,
+  .lvd-build-mini-appear,
+  .lvd-build-mini-fade,
+  .lvd-build-mini-rise,
   .lvd-pointer-tip-pulse {
     animation: none;
   }
@@ -1251,5 +1254,61 @@ html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
   }
   to {
     transform: translateX(0);
+  }
+}
+
+/* The Build section's miniatures (docs/specs/012-collaboration/presentation-mode.md "Setting builds up"): a slide
+   whose last line builds in, waits, and clears, on a loop; AnimationPreviewTile freezes it on a telling frame and
+   plays it while hovered. The canvas's own build plays once, through the Web Animations API (useBuildEntrance.ts). */
+.lvd-build-mini-appear {
+  animation: lvd-build-mini-appear 1.6s steps(1, end) infinite;
+}
+.lvd-build-mini-fade {
+  animation: lvd-build-mini-fade 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.lvd-build-mini-rise {
+  animation: lvd-build-mini-rise 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes lvd-build-mini-appear {
+  0%,
+  20% {
+    opacity: 0;
+  }
+  21%,
+  85% {
+    opacity: 1;
+  }
+  86%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes lvd-build-mini-fade {
+  0%,
+  15% {
+    opacity: 0;
+  }
+  45%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes lvd-build-mini-rise {
+  0%,
+  15% {
+    opacity: 0;
+    translate: 0 5px;
+  }
+  45%,
+  85% {
+    opacity: 1;
+    translate: 0 0;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 0;
   }
 }

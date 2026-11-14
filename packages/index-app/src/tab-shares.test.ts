@@ -21,6 +21,7 @@ import {
   type SharedTabBody,
 } from './tab-shares';
 import { nodeItemSql, nodeSql, nodeTransaction } from './test-sqlite';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // A tab shared between items, each item on its own SQLite as each is its own Durable Object in production. The
 // app here is the smallest one: `tabs`, a link table, a saved time, and a derived row (`stats`) a body keeps.
@@ -497,7 +498,7 @@ describe('who may link a tab', () => {
 });
 
 // The hot paths: a save to a shared tab (one more primary-key read, from the trigger) and its fan-out to every other
-// holder (one call each, the body read once). Wall-clock budgets, generous for a loaded machine.
+// holder (one call each, the body read once). CPU-time budgets, generous for a loaded machine.
 describe('cost', () => {
   it(`fans a 1 MB edit out to ${MAX_TAB_HOLDERS - 1} holders within budget`, async () => {
     const w = world();
@@ -508,32 +509,32 @@ describe('cost', () => {
     }
     await w.drain('A', ...Array.from({ length: MAX_TAB_HOLDERS - 1 }, (_, i) => `S${i + 1}`));
     const big = JSON.stringify({ v: 'x'.repeat(1_000_000) });
-    const saveStart = performance.now();
+    const saveStart = cpuNowMs();
     await w.save('A', big);
-    const saveMs = performance.now() - saveStart - 2;
+    const saveMs = cpuNowMs() - saveStart - 2;
     w.calls.length = 0;
-    const start = performance.now();
+    const start = cpuNowMs();
     await w.drain('A');
-    const fanOutMs = performance.now() - start;
+    const fanOutMs = cpuNowMs() - start;
     expect(w.calls).toHaveLength(MAX_TAB_HOLDERS - 1);
     expect(w.dataOf(`S${MAX_TAB_HOLDERS - 1}`)).toBe(big);
     console.info('[perf] 1 MB shared-tab edit', { holders: MAX_TAB_HOLDERS, saveMs, fanOutMs });
-    expect(fanOutMs).toBeLessThan(2_000);
+    expect(fanOutMs).toBeLessThan(cpuBudgetMs(2_000));
   });
 
   it('adds next to nothing to a save of a tab that is not shared', async () => {
     const w = world();
     withTab(w, 'A');
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 1_000; i++) {
       w.get('A')
         .raw.prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'")
         .run(`{"i":${i}}`);
     }
-    const ms = performance.now() - start;
+    const ms = cpuNowMs() - start;
     expect(w.owed('A')).toBe(0);
     console.info('[perf] 1,000 saves of an unshared tab', { ms });
-    expect(ms).toBeLessThan(1_000);
+    expect(ms).toBeLessThan(cpuBudgetMs(1_000));
   });
 });
 

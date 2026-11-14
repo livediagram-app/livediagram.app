@@ -4,7 +4,7 @@
 // under a document id lives here.
 
 import { redactCommentAuthorIds } from '../comments';
-import { redactTabForCommunity } from '../community-redact';
+import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { indexFor } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
@@ -133,7 +133,7 @@ export async function handleDocumentSubresources(
       // no-op). Same anti-claim posture as redactOwner on the document.
       //
       // A Community visitor gets the board without its conversation or its people
-      // (docs/specs/025-community/community.md, community-redact.ts).
+      // (docs/specs/025-community/community.md, @liveworkspace/community/app redact.ts).
       const communityVisit = owner !== existing.ownerId && grant.community;
       const safe =
         owner === existing.ownerId

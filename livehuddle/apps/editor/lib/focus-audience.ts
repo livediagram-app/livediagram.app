@@ -7,7 +7,7 @@
 // say. Same question, so one answer: a second copy of this arithmetic would
 // drift, and the two ends would disagree about who was asked.
 
-import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
+import type { RemoteViewport } from '@liveworkspace/workbench/hooks/collab/useFollowMe';
 
 /** A view as either end can describe it: a canvas size, a pan, and a zoom. */
 type FocusView = {

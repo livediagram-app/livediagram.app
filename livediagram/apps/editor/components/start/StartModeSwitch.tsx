@@ -8,7 +8,7 @@
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { ModeMenuChip } from '@/components/chrome/editor-mode/ModeMenuChip';
 import { startTypedTransition } from '@liveworkspace/workbench/lib/view-transition';
-import { START_MODE_TRANSITION } from './StartViewTransition';
+import { START_MODE_TRANSITION } from '@liveworkspace/workbench/components/start/StartViewTransition';
 
 export function StartModeSwitch() {
   const editorMode = useEditorModeState();

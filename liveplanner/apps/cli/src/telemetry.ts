@@ -8,7 +8,7 @@ import { ApiError, postEvents } from '@liveworkspace/api-client';
 import type { ConfigFile } from '@liveworkspace/cli-kit/config-file';
 import { cacheDir } from './config/paths';
 import type { DebugLog } from './debug';
-import type { CliIo } from './io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { isNetworkFailure } from './output/failure-of';
 
 const TELEMETRY_FLUSH_TIMEOUT_MS = 300;

@@ -54,9 +54,12 @@ describe('restingRect: the sidebar measured where it comes to rest', () => {
   it('leaves out the slide home after a drop on the other side', () => {
     const panel = document.createElement('aside');
     panel.style.translate = '640px';
+    // Computed style needs the panel in the document: a detached element has none, as in a browser.
+    document.body.append(panel);
     // Pinned right, still carried 640 px further by the drag's translate as it slides home.
     panel.getBoundingClientRect = () => rect(1604, 1840);
     expect(restingRect(panel)).toEqual({ left: 964, right: 1200, top: 130, bottom: 860 });
+    panel.remove();
   });
 });
 

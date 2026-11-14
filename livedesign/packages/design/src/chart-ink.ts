@@ -6,21 +6,17 @@
 // keeping its hue, by the least that reaches 3:1; the chart's own small text (axis labels, the
 // key) is held to 4.5:1. Never stored. The canvas and every export draw through these, so the two
 // match. Pure.
-import { canvasSurface, type CanvasSurface } from './colors';
-import { elementIndexFor } from './geometry';
-import { pageAt, type LaidOutPage } from './page';
+// What finds the ground a chart sits on is @liveworkspace/element-model/chart-page-grounds, bound here to this
+// model's pages.
+import { chartPageGroundsFor } from '@liveworkspace/element-model/chart-page-grounds';
+import { pageAt } from './page';
 import { elementAnchorPoint, pageFillTone } from './page-content';
-import { isChartShape } from './data-shapes';
-import { isSankeyShape } from './sankey-model';
 import { layerBands } from './layers';
 import { pageGroundUnder } from './page-ink-ground';
-import { boxFill, inkKindOf, keptCover } from './page-ink-rules';
-import { isBoxed, type Element } from './index';
-import type { Layer } from './layers';
-import { pointInRect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
+import { isBoxed } from './index';
 
 // The adapting itself (the floors, the memory, chartMarkInk and chartTextInk): one copy for every product,
-// @liveworkspace/element-model/chart-mark-ink. What is here finds the ground a chart sits on, on a page.
+// @liveworkspace/element-model/chart-mark-ink.
 export {
   CHART_MARK_CONTRAST,
   CHART_TEXT_CONTRAST,
@@ -29,66 +25,16 @@ export {
   chartTextInk,
 } from '@liveworkspace/element-model/chart-mark-ink';
 
-/** Whether an element is a chart whose series come from a palette: a pie, doughnut, bar, column,
- *  line, area, scatter or Sankey. */
-function isPaletteChart(el: Element): boolean {
-  return el.type === 'shape' && (isChartShape(el.shape) || isSankeyShape(el.shape));
-}
-
-// A surface under later elements: its box and tone, or null for a surface of unknown tone.
-type Cover = { box: Rect; tone: string | null };
-
 /**
  * What each chart on a page with a fill of its own sits on, by element id: the tones re-inking
- * would measure it against (the topmost card under its centre, as drawn, else the page under its
- * box: a gradient's every tone across it). A chart on the plain paper, on no page, or over a
- * surface of unknown tone (a picture, a widget, a Sheet) is absent and drawn as it is.
+ * would measure it against. A chart on the plain paper, on no page, or over a surface of unknown
+ * tone is absent and drawn as it is.
  */
-export function chartPageGrounds(
-  elements: readonly Element[],
-  pages: readonly LaidOutPage[],
-  layers?: Layer[],
-): Map<string, readonly string[]> {
-  const out = new Map<string, readonly string[]>();
-  if (!pages.some((p) => p.background?.fill) || !elements.some(isPaletteChart)) return out;
-  const index = elementIndexFor(elements);
-  // Each element's page, once; only pages with a fill and a chart on them are walked.
-  const pageOf = new Map<string, LaidOutPage>();
-  const walked = new Set<LaidOutPage>();
-  for (const el of elements) {
-    const page = pageAt(pages, elementAnchorPoint(el, index));
-    if (!page?.background?.fill) continue;
-    pageOf.set(el.id, page);
-    if (isPaletteChart(el)) walked.add(page);
-  }
-  const painted = layerBands(elements as Element[], layers, { includeHidden: true }).flatMap(
-    (b) => b.elements,
-  );
-  for (const page of walked) {
-    const surface: CanvasSurface = canvasSurface(pageFillTone(page.background!.fill!));
-    const covers: Cover[] = [];
-    for (const el of painted) {
-      if (pageOf.get(el.id) !== page || !isBoxed(el)) continue;
-      const box = { x: el.x, y: el.y, width: el.width, height: el.height };
-      if (isPaletteChart(el)) {
-        const at = elementAnchorPoint(el, index);
-        let ground: readonly string[] | null | undefined;
-        for (let i = covers.length - 1; i >= 0 && ground === undefined; i -= 1) {
-          if (pointInRect(covers[i]!.box, at)) ground = covers[i]!.tone ? [covers[i]!.tone!] : null;
-        }
-        if (ground === undefined) ground = pageGroundUnder(page.background, page.rect, box).tones;
-        if (ground) out.set(el.id, ground);
-        continue;
-      }
-      const kind = inkKindOf(el);
-      if (kind === 'keep') {
-        const tone = keptCover(el, surface);
-        if (tone !== undefined) covers.push({ box, tone });
-      } else if (kind === 'box' || (kind === 'table' && el.fillColor)) {
-        const tone = boxFill(el, surface);
-        if (tone) covers.push({ box, tone });
-      }
-    }
-  }
-  return out;
-}
+export const chartPageGrounds = chartPageGroundsFor({
+  isBoxed,
+  pageAt,
+  elementAnchorPoint,
+  pageFillTone,
+  layerBands,
+  pageGroundUnder,
+});

@@ -8,7 +8,7 @@ import {
 import { Glyph, Prims } from '@livediagram/ui';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
-import { cursorRide } from '@/lib/hero-motion';
+import { cursorRide } from '@liveworkspace/marketing-site/lib/hero-motion';
 import {
   LEAF_H,
   NODE_GLYPH,

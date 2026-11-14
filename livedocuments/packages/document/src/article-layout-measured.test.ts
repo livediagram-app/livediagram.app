@@ -112,4 +112,66 @@ describe('wrapMeasured', () => {
     // A 50,000-character word with no space breaks in linear time too.
     expect(cpuMsOf(() => wrap('x'.repeat(50_000), 300))).toBeLessThan(cpuBudgetMs(400));
   });
+
+  it('breaks a table cell and a contents entry by measure, the leader starting where the text ends', () => {
+    const texts = (m?: ArticleTextMeasure) => {
+      const tab = {
+        id: 't',
+        name: 'Tab',
+        elements: [],
+        pages: [newFlashcardPage('p0', 'f0')],
+        articles: {
+          f0: {
+            blocks: [
+              { id: 'toc', type: 'toc' },
+              {
+                id: 'h',
+                type: 'paragraph',
+                style: 'h1',
+                runs: [
+                  {
+                    text: 'i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i',
+                  },
+                ],
+              },
+              {
+                id: 'tb',
+                type: 'table',
+                cols: [{ id: 'c0', w: 1 }],
+                rows: [
+                  {
+                    id: 'r0',
+                    cells: [
+                      [
+                        {
+                          text: 'i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i i',
+                        },
+                      ],
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      };
+      const pages = laidOutPagesOf(tab as never);
+      const ops = [...estimateArticle(tab as never, 'f0', pages, '#000', m).ops.values()].flat();
+      return {
+        text: ops.filter((o) => o.k === 'text').map((o) => (o as { text: string }).text),
+        leader: ops.find((o) => o.k === 'line' && (o as { dash?: boolean }).dash) as
+          { x1: number } | undefined,
+      };
+    };
+    // Narrow "i"s: the average glyph (8.3 px) fits far fewer per line than the 3 px measure does.
+    const narrow: ArticleTextMeasure = (t) => [...t].reduce((w, c) => w + (c === 'i' ? 3 : 4), 0);
+    const estimated = texts();
+    const measured = texts(narrow);
+    const cell = (r: { text: string[] }) =>
+      r.text.filter((t) => t.startsWith('i i') && t.length > 20);
+    expect(cell(measured).length).toBeLessThan(cell(estimated).length);
+    // The entry is one line, the longest the measure fits: longer than the estimate's.
+    const entry = (r: { text: string[] }) => r.text[1] ?? '';
+    expect(entry(measured).length).toBeGreaterThan(entry(estimated).length);
+  });
 });

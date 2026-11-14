@@ -17,7 +17,7 @@ editor views.
 | WIP limit          | `PlanColumn.wipLimit`                                                                                                                                                                                                                      |
 | done column        | `PlanColumn.done` (a flag); `isDoneColumn`, `doneColumnsOf`, `finishedStatuses`, `isDoneName` (`@liveplanner/items` `done-columns.ts`)                                                                                                     |
 | unplaced           | projection `unplaced`                                                                                                                                                                                                                      |
-| quick filter       | `QuickFilter` (per person, React state, never stored)                                                                                                                                                                                      |
+| quick filter       | `QuickFilter` (resolved from `PlanBoardSetup.filter`, a `BoardFilter`)                                                                                                                                                                     |
 | face-down          | `cardIsFaceDown(item, setup, viewerId)`                                                                                                                                                                                                    |
 | board preset       | `PLAN_BOARD_PRESETS` (`@liveplanner/items` `presets.ts`), id `PlanBoardPresetId`                                                                                                                                                           |
 | suggested statuses | `SUGGESTED_STATUSES`, `suggestedStatuses(taken)`, `suggestionIndex(names, name)` (`@liveplanner/items` `suggested-statuses.ts`), a row `SuggestedStatus`                                                                                   |
@@ -749,6 +749,11 @@ PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family
   "Open {Name} settings", "Add", "A board holds up to 12 columns.", "Move and Remove", "Keep It",
   "Linked as {Field}", "No cards link here as {Field} yet.", "Linked Cards", "No Linked Cards Yet", "Cards that link
   to this one show here.", "Make one already linked, or link one you already have.", "Archived", "Card trail".
+- Item panel undo (canvas spec "Keyboard shortcuts"): the panel renders a hidden marker carrying `TAKES_HISTORY_ATTR`
+  (`apps/editor/hooks/canvas/panel-history.ts`). `useEditorKeyboardShortcuts`, with a modal open, runs only what
+  `modalTakesHistory(e, mod)` passes into `runModShortcut`: Cmd/Ctrl+Z or +Y, `openModalCount() === 1`, the target not
+  a typing target nor in a menu surface, and inside (or the body under) the `[data-dialog-panel]` holding the marker.
+  Tests: `panel-history.test.ts`, `useEditorKeyboardShortcuts.dom.test.tsx` "the item panel takes undo".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
   handle below `sm`), max height 44rem, header with type picker + key (`ItemTypePill`: `typeChoices(types,
 statusTypes, item)` from `type-choices.ts`, the catalogue types the boards naming the card's status take, the

@@ -46,6 +46,8 @@ scene on unbroken ground: never cropped, and never shrunk to a strip of icons.
   piece of work on three devices, one search box, the API from outside, the keyboard) is drawn once, in
   `../packages/help-site/src/art/scenes/<slug>.tsx`, and takes the product's content as props: its words, its
   share host, its formats, its work drawn on each screen. The app's `components/category-art/<slug>.tsx` binds it.
+  The Tabs, Developers and Supported Devices scenes, the same in livediagram, are drawn once in
+  `../packages/help-site/src/art/diagram/<slug>.tsx`, which `index.tsx` maps straight to the category.
   Every other scene is the product's own. The Getting Started scene in particular tells this product's first
   three steps, on three numbered cards.
 - Labels in a scene are the editor's own (real shortcuts, real API fields), checked against the articles.

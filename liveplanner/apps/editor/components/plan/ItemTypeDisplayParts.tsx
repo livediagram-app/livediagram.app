@@ -13,11 +13,12 @@ import { lucideImage } from '@liveworkspace/icons/lucide';
 import { FIELD_GLYPHS } from './card-field-glyphs';
 import { CARD_FIELD_LABELS } from './board-setup-edits';
 import { PlanTypeGlyph } from './plan-type-glyph';
-import { customFieldIcon } from './CustomFieldKindParts';
+import { fieldIconOf } from './CustomFieldKindParts';
 
 const PicturesGlyph = lucideGlyph(lucideImage, 14);
 
-// A field's name and icon: a built-in's own, or a custom field's (its label, its kind's icon).
+// A field's name and icon: a built-in's own, or a custom field's (its label, its Add Field tile's icon: a Several
+// Images field's stacked pictures, not the single Image's).
 const customOf = (type: ItemTypeDef, f: CardField) =>
   isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
 export const fieldLabel = (type: ItemTypeDef, f: CardField) =>
@@ -28,7 +29,9 @@ export const fieldIcon = (type: ItemTypeDef, f: CardField, size = 14) => {
   if (custom)
     return (
       <span className="flex" style={{ width: size, height: size }}>
-        <span className="flex [&_svg]:h-full [&_svg]:w-full">{customFieldIcon(custom)}</span>
+        <span className="flex [&_svg]:h-full [&_svg]:w-full">
+          {fieldIconOf(custom.id, custom).node}
+        </span>
       </span>
     );
   // Attachments draws its picture glyph, as on the card.

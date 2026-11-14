@@ -643,6 +643,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11.3 12h.01M13.2 12h.01" />
     </Glyph>
   ),
+  // A slide whose last line is still rising into place: a build.
+  'slide-builds': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M7 8.5h6M7 12h10" />
+      <path d="M7 16.5h7" strokeDasharray="1.5 2" />
+      <path d="M17 18.5v-4M15.2 16.2l1.8-1.8 1.8 1.8" />
+    </Glyph>
+  ),
   // Two panes side by side, a tab on each, and the seam between them: the split, not a single tab.
   'side-by-side': (
     <Glyph>

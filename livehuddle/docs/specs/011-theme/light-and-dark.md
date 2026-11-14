@@ -60,7 +60,7 @@ never rewritten. Named colours are a map read built once, since the parse runs f
   translucent wash mixed over what is under it), else the canvas. A label with no colour of its own takes the viewer's
   ink, light on the dark canvas, so words on a panel whose fill the template fixes (a pale key, a pastel lane) carry a
   dark ink (`PAPER_INK`), and coloured words straight on the canvas take a tone that reads on both halves'
-  (`CANVAS_TONES`), both in `packages/templates/src/template-inks.ts`. `apps/editor/lib/template-overlay-contrast.test.ts`
+  (`CANVAS_TONES`), both in `../packages/template-previews/src/template-inks.ts`. `apps/editor/lib/template-overlay-contrast.test.ts`
   checks every template.
 - **A theme never sinks a label into what is behind it.** Picking a theme or a look, or drawing a tab in the other
   half, repaints each colour on its own, so it can move a label's backdrop (a panel the theme paints, the canvas)

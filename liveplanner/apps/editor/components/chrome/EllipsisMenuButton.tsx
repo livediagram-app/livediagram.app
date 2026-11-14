@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
-import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
+import { MenuErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
 import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
 

@@ -46,6 +46,9 @@ packages/items/src/automation/
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
   matches.ts          AutomationEvent; eventOfWrite(before, after, changes, source) → the event a landed write makes
                       (or null); triggerMatches(trigger, event, ruleId) → boolean; TRIGGER_EVENT_KINDS
+                      A moved event carries the card's `type` (as the write left it); Card Moved's `types`
+                      (absent or empty: any type) hears only a card of one of them, so an event without a type (one
+                      queued before the field) is not heard by a rule that names types
   plan-actions.ts     planActions(steps, ctx) → { patch, comments, created, emails, lines } | { failed, lines }:
                       the pure run: walks steps and If / Else, folds every change to the triggering card into ONE
                       patch (set / clear, in order), marks "Already so", never touches storage; a Set or Clear
@@ -322,7 +325,7 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
   in the batch that records the run. A run under way holds the turns it planned in memory
   (`AutomationStore.take`, read and planned with no await between; `giveBack` as it settles), and `turn(id)` counts
   them, so two Run Rules at once take the next two people.
-- **Notify**: after the card writes, the run's notify steps go in one `POST /app/items/:id/automation-sends`
+- **Notify**: after every step (its card writes and AI steps), the run's notify steps go in one `POST /app/items/:id/automation-sends`
   (index binding, the app's server credentials as card-moves uses), key `${runId}:${stepIndex}`, message filled by
   `values.ts`; each result marks its step done ("Queued for Launch Channel") or failed with the reason. The index
   unreachable is a failed step, "Couldn't reach webhooks: try again". A rule's `paused.webhook` holds the webhook id
@@ -446,6 +449,14 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   as one "holder" (`HolderStep`, `holderOf`, `sideOf`); a branch has no Else. `templates.ts` is in the items package,
   as designed, with `picksLeft(body, picks)`, which the builder runs on each change, so a mark goes as its step is
   filled.
+- **Card Moved's Card Types** (`card-moved-columns.ts`): `cardMovedColumns(types, picked, columns)` lists the
+  columns the picked types use (`typeStatusesOf` per type, legacy types as every column less their exclusions), in the
+  plan's column order, every column when none is picked or every picked type is gone; `withCardMovedTypes(trigger,
+types, outline)` sets the types and drops each From or To pick that the plan still has but no picked type uses (a
+  column the plan deleted stays, shown gone). `TriggerPanel.tsx` puts the Card Types chips above From and To. The
+  stored `types` is optional, so a rule without it reads as any type and an older editor's Card Moved panel, which
+  spreads the trigger, keeps it through a save: no PROJECT_FORMAT bump (rules are not in the format's reads).
+  `attention.ts` names each type, `named.ts` names it by the type's name, `sentence.ts` reads "for <types>".
 - **Holders.** The `RulePart` paths are the api's (`steps.i.conditions.j`, `steps.i.then.j`) for both kinds, so a
   refusal inside a branch marks its step as one inside an If does. Add Action in a branch leaves out Create Card and
   the outgoing actions; at the top level the outgoing ones join the menu while the rule holds fewer than 5.
@@ -672,9 +683,27 @@ midnight> AND s.value ->> '$.ai' = 1`, read into `RunState.ai` before a call whe
   before its answer comes; the settled row replaces it with the run's lines, the same calls marked. Describe a Rule
   checks the count before each ask, its first too, after its plan reads. No
   schema step: the Audit Trail keeps every run of the day (at most 1,000 counted runs, under its 2,000).
-- `runAiSteps(deps, input, planned, lines, offset)`: after `applyPlannedRun` and the branches, before `sendMessages`.
+- **Writes split at each AI step.** `planActions` cuts the run's writes at each top-level AI step into segments
+  (`PlannedSegment`: the triggering card's one patch, its threads, the card it makes, its emails and mentions,
+  Resolve Threads and the branches' related cards). The writes of the steps before the first AI step stay the
+  `PlannedWrites` fields themselves (a rule with no AI step plans exactly as before); each `PlannedAi` carries
+  `after`, the segment of the steps between it and the next AI step (or the end), planned from the card as the steps
+  before it left it (`after.from`, the card `patchCard` rebases labels from). The run's created-card cap counts every
+  segment's. Sends, turns and a Wait stay the run's own.
+- The runner writes the first segment (`writeSegment`: `applyPlannedRun`, then each related card), then
+  `runAiSteps` with an `after(p)` hook that writes `p.after` once that step answered or the day's cap skipped it; a
+  refused write of the triggering card stops the run there, Failed with the write's reason, any later AI step "Not
+  asked". At most four writes of the triggering card a run (three AI steps), each landing only when the steps before
+  it did; measured by a perf test on a full plan.
+- `heldCardSteps(lines, offset, from, to, skip)`: after a failed AI step, each card step's line after it (actions,
+  branches and their related cards' lines; not the AI steps' or messages' own, which say "Not asked" and "Not sent")
+  is settled `STEP_NOT_DONE` "Not done: a step before it failed" (`ok: false`). The run's reason is the first
+  failure in step order: a related card's earlier failure, else the AI step's; a planned failure later in the rule is
+  never reached, so its reason and `gone` drop.
+- `runAiSteps(deps, input, planned, lines, offset, after?)`: after the first segment and its branches, before
+  `sendMessages`.
   Per step: dry → the "Would …" line; after a failed step → the line `AI_NOT_ASKED` "Not asked: a step before it
-  failed" (`ok: false`, nothing asked) and `failedStep` the first failed step's index; no binding → `AI_NOT_SET_UP`;
+  failed" (`ok: false`, nothing asked) and `failedStep` the first failed step's index (`failedLine` its line); no binding → `AI_NOT_SET_UP`;
   `state.ai >= 100` → that step's line `AI_CAPPED` and `skipped`, the next step going on; the runner folds `skipped`
   into the run's `capped` (as the addresses limit's), so a Wait still holds the run (**waiting**) and otherwise the
   result is **skipped** unless something failed (a skipped run still advances Assign in Turn, since its writes
@@ -959,6 +988,20 @@ The spec's "The rule builder" (Add an Action) and "Motion".
 Change Card Type, Set Colour, Restore From Archive, Copy Card, Add a Checklist, Link Cards, Mention Someone, Resolve
 Threads and Wait (spec "Actions", "Wait").
 
+- **Change Card Type maps fields** (item-types.md "Changing a card's type"): `plan-actions.ts`'s `set_type`, once
+  `plan.retype` changed the card, writes `typeChangeFields(plan.card.fields, from, to)` (`card-retype-fields.ts`)
+  through `plan.write`, so the mapped values ride the same patch and a later step reads them as the new type's; the
+  AI step's Set Card Type (`ai-steps.ts`) returns `withTypeChangeFields(card, { type }, types)`. The editor's writes
+  (`usePlanItemWrites`: `patchItem`, `patchItems`, `moveItem`, `moveItems`) and agents' `change_items` `set`
+  (`agent-verbs/src/plan/item-changes.ts`) add them the same way.
+- **Map Fields** (item-types.md "Explicit mappings"): `set_type` takes `map?: { from, to }[]` (1 to
+  `AUTOMATION_TYPE_MAPS_MAX` = 13, each `to` once, `to` a custom field id or `description`; absent on older rules,
+  which read as before). `validate.ts` refuses a repeated target (`steps.N.map.K.to`); `named.ts` names `from` across
+  every type and `to` within the step's type first; `attention.ts` needs each field; `sentence.ts` reads
+  "Change to Work Item (Solution to Description)"; `rule-format.ts` describes it for MCP `change_rules`;
+  `plan-actions.ts` passes the map to `typeChangeFields`. The editor's `SetTypePanel` (`CardActionPanels.tsx`) hosts
+  `TypeFieldMapEditor.tsx`: a row per mapping (From: every type's custom fields, grouped by type; To: the new type's
+  fields that can take it and Description), **Add Mapping**, and a remove button per row.
 - **Shapes** (`packages/items/src/automation/types.ts`): `set_type`, `set_colour` (`#rrggbb` or null), `restore`,
   `copy_card` (`status?`), `add_checklist` (`items`, 1 to 20), `link_card` (`field`, `to: {card} | {trigger}`),
   `mention` (`to`, `text`), `resolve_threads`; and the step `AutomationWait` (`hours`, 1 to 720). `validate.ts` reads
@@ -1100,8 +1143,8 @@ The spec's six GitHub rows of the Templates table, on the GitHub triggers of git
 
 ## GitHub rules on an unconnected plan (Work Tracker 764)
 
-- `packages/items/src/automation/attention.ts`: `ruleNeedItems(rule, outline, webhooks?, githubConnected?)` adds
-  the need `{ kind: 'github' }` when the rule's trigger is a GitHub trigger and `githubConnected` is `false`
+- `packages/items/src/automation/attention.ts`: `ruleNeedItems(rule, outline, webhooks?, github?)` adds
+  the need `{ kind: 'github' }` when the rule's trigger is a GitHub trigger and `github` is `false`
   (`undefined`, not checked, adds nothing: the draft preview and any caller without the connection). `needLine`
   reads it "GitHub is not connected".
 - `apps/api/src/routes/automation-routes.ts`: the list and a rule's answer read the connection once a call
@@ -1114,6 +1157,25 @@ The spec's six GitHub rows of the Templates table, on the GitHub triggers of git
 - Tests: `attention.test.ts` (marked only when unconnected and a GitHub trigger), `automation-routes` (the list
   marks it, and reads no connection without a GitHub rule), `needs-words.test.ts`, `GithubTemplates.test.tsx`
   (the row's Connect GitHub opens the view).
+
+## GitHub rules whose named repositories are all gone (Work Tracker 821)
+
+- `ruleNeedItems`'s fourth argument is `github?: readonly string[] | false`: `false` the plan is not connected (the
+  need `{ kind: 'github' }`, as above), a list the names of the repositories the connection hears (its chosen
+  ones), `undefined` not checked. With a list, a GitHub trigger naming repositories (`trigger.repositories`) none of
+  which the list holds (any case) adds `{ kind: 'repositories'; names }`, the names as the rule holds them. A trigger
+  naming none, or naming one still heard, adds nothing.
+- `needLine`: "Repository acme/old is not heard", "Repositories acme/old, acme/api are not heard".
+- `automation-routes.ts` `githubConnected` answers the kept list (`readConnection`'s `repositories` where `chosen`,
+  their `fullName`), read from D1 as before: no call to GitHub, so GitHub unreachable marks nothing; a failed read
+  checks nothing.
+- `needs-words.ts`: "acme/old isn't heard any more", "acme/old and acme/api aren't heard any more", past two
+  "acme/old, acme/api and 2 more aren't heard any more" (`heardRepositories`' shortening, moved out of `GithubTriggerFields.tsx` into the pure
+  `apps/editor/components/automations/github/repository-words.ts`, which both import).
+- `AutomationNeed` in the api's OpenAPI schema gains the `repositories` shape (`pnpm gen:openapi`).
+- Tests: `attention.test.ts` (some gone: unmarked; all gone: marked naming them; any case; not checked without the
+  list), `needs-words.test.ts` (one, two, past two), `automation-routes.test.ts` (the list marks a rule whose named
+  repositories all left the connection).
 
 ## Describe a Rule (Work Item 759)
 
@@ -1362,3 +1424,56 @@ item stands"); the plan never asks, so a time wake costs no index call.
   `MIN` reads of a restore.
 - **Tests**: `plan-room/plan-standing.test.ts` (archive, trash, restore, an older `at`, a grant that mends, a plan that
   never heard: the unreachable index), `routes/internal-items.test.ts` (the door).
+
+## Small rule gaps, steps after an AI step, Manage Repositories, unused Card Moved columns (Work Tracker 788, 846, 847, 855)
+
+Each gap the overnight bug hunt (PR #1671) left is decided in the spec ([automations.md](../automations.md)):
+
+- **A Wait counts each part (kept).** `runsToday` counts every run row that is not a No Match or one of the Audit
+  Trail's own lines, so the waiting row (settled `done` once it goes on) and the run after it are two runs. Spec
+  "Wait", "Each part counts". No code change; `automations-triggers.test.ts` "counts the run up to a Wait and the
+  run after it as two of the day" pins it.
+- **Assign in Turn keeps a removed teammate a card still names (kept).** `inTurn` passes over an id `personOf` no
+  longer finds in `outline.people` (the owner, the team's joined members, `cardPeople`). Nothing the plan holds tells
+  a removed teammate from a share-link Editor, so the spec defines "left" as the outline does. No code change;
+  `plan-actions.test.ts` "keeps the turn of someone a card still names" pins it.
+- **Link Cards' trashed card is gone (fixed).** `readAutomationPlan`'s `outline.cards` leaves out trashed cards
+  (`isTrashed`), so `ruleNeedItems` marks the step `card`; `linkCard` fails "The card to link is gone" for a chosen
+  card in the Trash. The editor's `LinkCardPanel` leaves trashed cards out of its finder and reads a trashed pick as
+  "A card no longer here".
+- **list_rules names saved filters (fixed).** `AutomationsListResponse` gains `filters?: { tab; id; name }[]` (the
+  outline's `savedFilters`), filled by `automation-routes.ts` `list`; `sentenceOutlineOf` builds
+  `RuleSentenceOutline.filters` from it with `savedFilterKey`.
+- **change_rules takes a rule read back (fixed).** `rule-schema.ts`'s body and `set` accept `id`, `enabled`, `made`
+  and `edited` (any value, described as ignored); `rule-changes.ts` `bodyParts` keeps only `name`, `trigger`,
+  `conditions`, `steps`, `chain` and `timeZone` for `add`, `set` and `test`, so the api never sees the rest. The
+  CLI's `rule add` and `rule set` go through the same engine.
+- **An untouched New Rule leaves without asking (fixed).** `RuleBuilder` takes `blank` (the dialog's `'new'` key);
+  `onDirty` reports `dirty && !(blank && sameBody(body, saved))`, while Save Rule still reads unsaved.
+- **Column Over Limit across wakes (fixed).** `derivedMoments`' column moment holds each column card's id with
+  `itemStatusSince` (`id@since`), and `derivedFor` gives Column Over Limit events the moment-hash id the other derived
+  triggers take (`d:<card>:<sha256(moment)>`), so `claimRun` refuses a second run of one going-over in a later wake.
+  The per-wake `tipped` set goes.
+
+**Steps after an AI step (846).** `planActions` takes `carry?: { actions; turns; made }` (the run's counts so far),
+and `PlannedAi` records `carry` at its step. In `automation-runner.ts` the AI hook, once a step answered or the cap
+skipped it, reads the card again (`readItem`) and re-plans the rest,
+`planActions(rule.steps, { ...ctx, card }, { from: p.step + 1, carry: p.carry })`, then `replanAfter`
+(`packages/items/src/automation/replan.ts`) splices it into the run's live plan: the lines after the AI step's are
+replaced by the new plan's, the later AI steps and outgoing messages by the new plan's (their lines shifted), and the
+Wait, the planning failure and the turns taken by the new plan's; the hook writes the new plan's first segment. Notes
+the writes add (typed-in addresses) are held apart and appended as the run settles, so a splice never moves them.
+Test on a Card plans once: `aiDryLine(step, outline, labels, then)` adds ". The steps after it read the card as the
+AI leaves it" when the step writes the card (`aiWritesCard`) and steps follow. Cost: one `readItem` and one
+`planActions` per AI step (at most 3 a run), beside a model call of up to 15 s; `ai-steps.perf.test.ts` "re-plans
+after each AI step on 2,000 cards" bounds the planning.
+
+**Manage Repositories (847).** `RuleRow.tsx` `NeedsNote` adds **Manage Repositories** (the GitHub context's
+`openView`) when a need is `repositories`, as **Connect GitHub** for `github`; both only while the dialog offers
+GitHub (`github.enabled`). The Rules list is reached only through `automationsScopeFor` (a signed-in Editor of the
+whole plan), so no other role sees either.
+
+**Unused Card Moved columns (855).** `card-moved-columns.ts` `unusedPicks(types, picked, columns, chosen)` answers
+the chosen From or To columns the plan has that no picked type uses. `TriggerPanel` offers them as chips by name
+after the types' columns, and `ChipToggles`' `note` says "The picked card types don't use Review." (several joined
+with "or"). A column the plan lacks still reads `GONE_COLUMN`.

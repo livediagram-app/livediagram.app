@@ -140,7 +140,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number; tabLayers?: Lay
     quickRingOpen: null,
     setQuickRingOpen: fresh(),
     commentSelfId: 'me',
-    commentPanelActions: { add: fresh(), remove: fresh(), resolve: fresh(), unresolve: fresh() },
     actionSelfId: 'me',
     actionPanelActions: { configure: fresh(), complete: fresh(), reopen: fresh() },
     onPauseTimer: fresh(),
@@ -407,14 +406,14 @@ describe('a move riding an offset', () => {
     const { container } = mount();
     act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id, b.id]), 7, 0), BOARD));
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
-    expect(translateOf(container, ab.id)).toEqual(['7px 0px']);
+    expect(translateOf(container, ab.id)).toEqual(['7px']);
   });
 
   it('drops the offsets in the paint the released board is drawn in', () => {
     const { container, rerender } = mount();
     const next = shifted(BOARD, new Set([a.id]), 12, 0);
     act(() => setLocalPreview('t', next, BOARD));
-    expect(translateOf(container, a.id)).toEqual(['12px 0px']);
+    expect(translateOf(container, a.id)).toEqual(['12px']);
     act(() => {
       clearLocalPreview('landed');
       rerender(<CanvasElementsLayer {...layerProps({ elements: next })} />);
@@ -428,7 +427,7 @@ describe('a move riding an offset', () => {
     act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id]), 12, 0), BOARD));
     act(() => clearLocalPreview('cancelled'));
     // Held until the next frame, so a release's write lands in the same paint.
-    expect(translateOf(container, a.id)).toEqual(['12px 0px']);
+    expect(translateOf(container, a.id)).toEqual(['12px']);
     await act(() => new Promise((r) => requestAnimationFrame(() => r(undefined))));
     expect(translateOf(container, a.id)).toEqual(['']);
   });

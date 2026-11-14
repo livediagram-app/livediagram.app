@@ -29,6 +29,8 @@ export type CardWindow = {
   rowsAfter: number;
   pitch: number;
   gap: number;
+  // The grid's columns (0 without layout).
+  cols: number;
 };
 
 type Metrics = { cols: number; pitch: number; gap: number };
@@ -44,7 +46,16 @@ export function cardWindowOf(args: {
 }): CardWindow {
   const { folders, count, metrics, runTop, viewport } = args;
   if (!metrics || metrics.pitch <= 0 || metrics.cols < 1)
-    return { shared: 0, start: 0, end: count, rowsBefore: 0, rowsAfter: 0, pitch: 0, gap: 0 };
+    return {
+      shared: 0,
+      start: 0,
+      end: count,
+      rowsBefore: 0,
+      rowsAfter: 0,
+      pitch: 0,
+      gap: 0,
+      cols: 0,
+    };
   const { cols, pitch, gap } = metrics;
   // The items that share the last folder row always draw; the run of item-only rows starts after them.
   const shared = Math.min(count, (cols - (folders % cols)) % cols);
@@ -61,6 +72,7 @@ export function cardWindowOf(args: {
     rowsAfter: runRows - endRow,
     pitch,
     gap,
+    cols,
   };
 }
 
@@ -71,7 +83,8 @@ const sameWindow = (a: CardWindow, b: CardWindow) =>
   a.rowsBefore === b.rowsBefore &&
   a.rowsAfter === b.rowsAfter &&
   a.pitch === b.pitch &&
-  a.gap === b.gap;
+  a.gap === b.gap &&
+  a.cols === b.cols;
 
 /**
  * The card window for a grid (`grid`) of `folders` folder cards then `count` item cards. `runStart` finds the first

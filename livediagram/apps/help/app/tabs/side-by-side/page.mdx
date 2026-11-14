@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SideBySideDrag, SideBySideOpen } from '@/components/illustrations/tabs-side-by-side';
+import {
+  SideBySideDrag,
+  SideBySideOpen,
+} from '@liveworkspace/help-site/art/illustrations/tabs-side-by-side';
 
 export const metadata = helpMetadata({
   title: 'Side by Side Tabs',
@@ -19,7 +22,7 @@ Tabs keep related boards together: the context diagram and the detail, the retro
 Drag a tab from the tab bar toward the **right edge** of the screen. A glowing rail wakes along the edge as you head for it, and once you're close, a preview of the pane slides in showing that tab's drawing. Let go there, and the tab opens on the right.
 
 <Figure caption="Drag a tab to the right edge; the preview shows what will open there.">
-  <SideBySideDrag />
+  <SideBySideDrag firstTab="Goals" />
 </Figure>
 
 - Drag a **different** tab and it opens on the right, while you keep working where you are on the left.
@@ -33,7 +36,7 @@ You can also open the tab's menu (the **⋯** button on the active tab, or right
 Each tab keeps its side. The site header runs across the top of both, and the tab bar across the bottom, just as with one tab. Your toolbars and panels (the palette, the Explorer, the map and zoom) sit in the pane you're working in.
 
 <Figure caption="One header and one tab bar across both panes; the toolbars sit with the tab you're editing.">
-  <SideBySideOpen />
+  <SideBySideOpen firstTab="Goals" />
 </Figure>
 
 To work on the other tab, **click** in its pane, or simply **rest the pointer** there for a moment. The toolbars glide across to it. Neither drawing moves: each tab stays exactly where it was on screen, at the same zoom.

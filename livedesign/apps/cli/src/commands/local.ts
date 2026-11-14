@@ -21,7 +21,7 @@ import {
 } from '../auth/credentials';
 import type { Profile } from '../config/profiles';
 import { inputReader } from '@liveworkspace/cli-kit/input';
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 

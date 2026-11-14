@@ -3,7 +3,12 @@
 // author, and only the app's api can say who that is, so it asks the service for them. Personal, so never cached.
 
 import { parseCommunityListQuery } from '../query';
-import { communityKeyHeaders, type CommunityAppClient, type CommunityAppEnv } from './client';
+import {
+  communityKeyHeaders,
+  communityOn,
+  type CommunityAppClient,
+  type CommunityAppEnv,
+} from './client';
 import type { CommunityResponses } from './owner-route';
 
 export async function answerCommunityMine(req: {
@@ -29,4 +34,37 @@ export async function answerCommunityMine(req: {
     status: 200,
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'private, no-store' },
   });
+}
+
+/** What `/api/community/<...>` reads of an app's request context. */
+export type CommunityMineContext = {
+  request: Request;
+  env: CommunityAppEnv;
+  segments: readonly string[];
+  accountUserId?: string | null;
+};
+
+/**
+ * An app's `/api/community/*` handler, built once at module scope from its service client and answers: switched off
+ * (`communityOn`), there is no Community to answer for, and the one route under it is `GET /api/community/mine`.
+ */
+export function createCommunityMineRoute(deps: {
+  service: CommunityAppClient;
+  responses: Pick<CommunityResponses, 'json' | 'notFound' | 'signInRequired'>;
+}): (ctx: CommunityMineContext) => Promise<Response> {
+  const { service, responses } = deps;
+  return async (ctx) => {
+    const { request, env, segments } = ctx;
+    if (!communityOn(env)) return responses.notFound();
+    if (segments.length !== 3 || segments[2] !== 'mine' || request.method !== 'GET') {
+      return responses.notFound();
+    }
+    return answerCommunityMine({
+      request,
+      env,
+      service,
+      accountUserId: ctx.accountUserId ?? null,
+      responses,
+    });
+  };
 }

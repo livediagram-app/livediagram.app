@@ -16,7 +16,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
-import { beginCanvasGesture } from '@/lib/canvas-gesture';
+import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { createStateStore, type ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { isPressableControl } from '@livediagram/ui';

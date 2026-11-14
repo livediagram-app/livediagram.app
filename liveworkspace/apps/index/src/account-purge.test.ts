@@ -9,6 +9,7 @@ import {
 } from './account-purge';
 import { drainPersonNotices, NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './person-notices';
 import { body, call, h, settle, useHarness } from './test-support';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 useHarness();
 
@@ -513,9 +514,9 @@ describe('POST /internal/purge-person', () => {
     h.db.sql.exec('COMMIT');
 
     const budget = { deadline: Date.now() + 120_000, calls: 300 };
-    const started = performance.now();
+    const started = cpuNowMs();
     const outcome = await purgePerson(h.db.env, ADA, [], budget);
-    const ms = performance.now() - started;
+    const ms = cpuNowMs() - started;
     const calls = 300 - budget.calls;
     console.log(`[purge 50k] ${ms.toFixed(0)} ms, ${calls} D1 calls, done ${outcome.done}`);
 
@@ -526,7 +527,7 @@ describe('POST /internal/purge-person', () => {
     expect(count('SELECT COUNT(*) AS n FROM favourites')).toBe(0);
     expect(count('SELECT COUNT(*) AS n FROM collab_threads')).toBe(5_000);
     // A generous ceiling for a slow CI machine; locally it is a few seconds.
-    expect(ms).toBeLessThan(60_000);
+    expect(ms).toBeLessThan(cpuBudgetMs(60_000));
   }, 180_000);
 });
 

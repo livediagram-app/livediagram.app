@@ -59,7 +59,8 @@ archived_at IS NULL AND trashed_at IS NULL`.
    the owner's Drive mirror (and, out of a team, nobody else's) is touched.
 8. After the batch, the app hears `POST /items/:id/standing {archived: true, trashed: false, at}` (`waitUntil`,
    `tellStanding` in `standing.ts`; [one-explorer-contracts.md](../one-explorer-contracts.md) "Where an item stands"),
-   so its own clock (liveplanner's time rules) stops.
+   so its own clock (liveplanner's time rules) stops. A call that fails is tried once more about a second later, in the
+   same `waitUntil` (`STANDING_RETRY_MS`), then logged and dropped.
 
 ### Who may archive
 
@@ -147,7 +148,7 @@ one `items_live` range: pinned by `lists.test.ts` "query plans".
 | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/src/archive.test.ts`     | the archive, its deletions, the refusals, previews, lists, move out, Trash, team, roles, guest merge |
 | `liveworkspace/apps/index/src/lists.test.ts`       | the Archived, Search and Trash plans                                                                 |
-| `liveworkspace/apps/index/src/standing.test.ts`    | the app told on archive and move out, once, and a failed call dropped                                |
+| `liveworkspace/apps/index/src/standing.test.ts`    | the app told on archive and move out, once, a failed call retried once, then dropped                 |
 | `packages/explorer/src/explorer/archived.test.tsx` | the sidebar row, the view and empty state, the menu, the dialog, Change Folder's space, `?move=`     |
 
 ## Constants and configuration

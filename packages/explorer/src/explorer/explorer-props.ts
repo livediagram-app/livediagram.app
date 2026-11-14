@@ -101,7 +101,10 @@ export type ExplorerProps = {
   /** An item the host trashed just before landing here (the plan open in its editor): the Explorer says so, once,
    *  with an Undo that restores it and re-reads the lists. */
   trashedOnArrival?: { id: string; title: string | null } | null;
-  /** Home's reports (a failed read retried), for the host's telemetry. */
+  /** The item an editor's door came from (`?item=`), once the host has opened the place that holds it: its row or
+   *  card is scrolled into view and marked (one-explorer.md "Opening from an open item"). */
+  arrivedItem?: string | null;
+  /** Home's reports (a failed read retried, a card or See More followed), for the host's telemetry. */
   onHome?: HomeTelemetry;
   /** Folders made, moved and deleted, default folders set and cleared, the Trash restored from, deleted from and
    *  emptied, and items moved into, within and out of a team (OrganiseTelemetry), for the host's telemetry. */
