@@ -96,7 +96,7 @@ describe('useSeen rechecks a tile mounted mid-motion', () => {
   });
 
   it('is seen by the timed recheck when no motion event comes', () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const states: boolean[] = [];
     rect = { top: 100, left: 300, width: 80, height: 80 };
     render(<Tile onSeen={(s) => states.push(s)} />);
@@ -120,6 +120,26 @@ describe('useSeen rechecks a tile mounted mid-motion', () => {
     expect(seenWaiting()).toBe(1);
     unmount();
     expect(seenWaiting()).toBe(0);
+  });
+
+  // A big board's covers scrolled out of view never pile up: past its window only the observer watches a tile, so a
+  // hover's transition measures only tiles mounted in the last SEEN_RECHECK_MS.
+  it('stops waiting after its last look while off screen, leaving it to the observer', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const states: boolean[] = [];
+    render(<Tile onSeen={(s) => states.push(s)} />);
+    expect(seenWaiting()).toBe(1);
+    act(() => {
+      vi.advanceTimersByTime(SEEN_RECHECK_MS);
+      nextFrame();
+    });
+    expect(states.at(-1)).toBe(false);
+    expect(seenWaiting()).toBe(0);
+    // A transition ending later measures nothing.
+    act(() => {
+      document.body.dispatchEvent(new Event('transitionend', { bubbles: true }));
+    });
+    expect(frames).toHaveLength(0);
   });
 
   it('never counts a detached element as seen', () => {

@@ -693,9 +693,10 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `card-file-drop.ts` (`useCardFileDrop`, in `PlanBoardCard`, handing the card's pill `progress` for its
   `UploadRing onBrand`: the state lives in that card's own hook, so only the uploading card re-renders); the cover and the count chip in `CardCover.tsx`, drawn by `PlanCardFace` when the type's
   Detailed Header holds `cover`. Both pictures' URLs come from `use-image-url.ts` (`useImageUrl`, `useSeen`, shared
-  with `ImageField.tsx`; `useSeen` adds to its IntersectionObserver one recheck by the element's own rectangle
-  against the viewport (`SEEN_MARGIN_PX`, 200) on the next `transitionend` or `animationend` anywhere and
-  `SEEN_RECHECK_MS` (800 ms) after it mounts, shared by every waiting element (`seen-recheck.ts`), because an
+  with `ImageField.tsx`; `useSeen` adds to its IntersectionObserver rechecks by the element's own rectangle
+  against the viewport (`SEEN_MARGIN_PX`, 200) on any `transitionend` or `animationend` in its first
+  `SEEN_RECHECK_MS` (800 ms) and once at its end, then leaves it to the observer, so only tiles mounted in the last
+  800 ms are ever measured, one pass a frame for all of them (`seen-recheck.ts`), because an
   observer reports only crossings and a tile mounted inside a panel still moving in can be missed when the motion
   runs on the compositor), at `IMAGE_COVER_EDGE` (640) and `IMAGE_ROW_EDGE` (160). The card fields `attachments` and
   `cover` are in `CARD_FIELDS`; `cardSlotFits` keeps `cover` to Detailed's `head`, and `typeOffersCardField` offers it
