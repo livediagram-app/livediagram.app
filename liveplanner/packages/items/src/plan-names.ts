@@ -179,6 +179,7 @@ const BUILT_IN_ALIASES: Readonly<Record<string, string>> = {
   assignedto: 'assignee',
   owner: 'assignee',
   flag: FLAGGED_FIELD,
+  flagged: FLAGGED_FIELD,
 };
 
 interface FieldNaming {
@@ -214,7 +215,8 @@ export function fieldKeyOf(key: string, type: ItemTypeDef): Named<{ key: string 
   const k = statusKey(key);
   if (isBuiltInFieldId(key)) return { ok: true, key };
   if (isBuiltInFieldId(k)) return { ok: true, key: k };
-  if (k === FLAGGED_FIELD) return { ok: true, key: FLAGGED_FIELD };
+  // The Flag's id always means the Flag; "Flagged" or "Flag" mean it unless the type has its own field so named.
+  if (key === FLAGGED_FIELD) return { ok: true, key: FLAGGED_FIELD };
   const field = type.custom?.find((f) => f.id === key || statusKey(f.label) === k);
   if (field) return { ok: true, key: field.id };
   const alias = BUILT_IN_ALIASES[k];

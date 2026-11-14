@@ -300,6 +300,19 @@ describe('the Flag', () => {
       expect(fieldKeyOf(name, bug)).toEqual({ ok: true, key: 'flagged' });
   });
 
+  it('leaves a type its own field named Flagged or Flag, but flagged is always the Flag', () => {
+    const review: ItemTypeDef = {
+      ...bug,
+      custom: [
+        { id: 'f-flagged', label: 'Flagged', kind: 'text' },
+        { id: 'f-flag', label: 'Flag', kind: 'text' },
+      ],
+    };
+    expect(fieldKeyOf('Flagged', review)).toEqual({ ok: true, key: 'f-flagged' });
+    expect(fieldKeyOf('Flag', review)).toEqual({ ok: true, key: 'f-flag' });
+    expect(fieldKeyOf('flagged', review)).toEqual({ ok: true, key: 'flagged' });
+  });
+
   it('sets it from true, and clears it from false or blank', () => {
     for (const on of [true, 1, 'true', 'Yes', ' on ', '1'])
       expect(resolveFields({ flagged: on }, bug, naming)).toEqual({
