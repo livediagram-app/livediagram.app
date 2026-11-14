@@ -63,10 +63,11 @@ export function useItemArrival({
         latest.current.replace(explorerPath(place));
         return;
       }
-      // Not one the index answers: the page stays where it was, without the handed-over id.
+      // Not one the index answers: the page stays where it was, without the handed-over id. Null, not
+      // history.state: Next skips its own state, so useSearchParams would keep the old address.
       const url = new URL(window.location.href);
       url.searchParams.delete(ITEM_PARAM);
-      window.history.replaceState(window.history.state, '', url);
+      window.history.replaceState(null, '', url);
     });
     return () => {
       live = false;
