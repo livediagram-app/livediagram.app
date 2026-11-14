@@ -1090,12 +1090,14 @@ describe('mermaidFromTab fallbacks and line forms', () => {
           width: 120,
           height: 28,
           label: 'Step',
-        } as Element,
+        },
         // A swimlane key: its title is text, its swatches loose on the canvas.
         node('loose-swatch', { x: 0, y: 500, width: 40, height: 20 }),
       ],
     });
-    expect(text).toBe(['flowchart TD', '  n1["Start"]', '  n2["Done"]', '  n1 --> n2', ''].join('\n'));
+    expect(text).toBe(
+      ['flowchart TD', '  n1["Start"]', '  n2["Done"]', '  n1 --> n2', ''].join('\n'),
+    );
   });
 
   it('keeps a frame that holds a real node beside a swatch, and a frame an arrow is pinned to', () => {
