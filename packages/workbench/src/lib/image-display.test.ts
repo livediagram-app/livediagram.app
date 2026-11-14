@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  DISPLAY_CACHE_SIZE,
+  DISPLAY_CACHE_BYTES_DESKTOP,
+  DISPLAY_CACHE_BYTES_TOUCH,
+  DISPLAY_CACHE_MAX_ENTRIES,
   DISPLAY_EDGE_DESKTOP,
   DISPLAY_EDGE_TOUCH,
   cachedDisplayCopy,
   displayCopy,
+  displayCacheBytes,
   displayEdge,
   fitWithin,
   releaseShownUrl,
@@ -179,13 +182,73 @@ describe('cachedDisplayCopy', () => {
     expect(await cachedDisplayCopy('flaky', 2048, load)).not.toBeNull();
   });
 
-  it('keeps only the most recent copies', async () => {
-    const load = vi.fn(async () => picture(10, 10));
-    for (let i = 0; i <= DISPLAY_CACHE_SIZE; i++) await cachedDisplayCopy(`img${i}`, 2048, load);
-    await cachedDisplayCopy(`img${DISPLAY_CACHE_SIZE}`, 2048, load);
-    expect(load).toHaveBeenCalledTimes(DISPLAY_CACHE_SIZE + 1);
+  // A blob `bytes` long, not decoded (displayCopy hands a small one back as itself).
+  const sized = (bytes: number) => new Blob([new Uint8Array(bytes)], { type: 'image/png' });
+
+  it('keeps copies up to a byte budget, then lets the least recently shown go', async () => {
+    const each = DISPLAY_CACHE_BYTES_DESKTOP / 4;
+    const load = vi.fn(async () => sized(each));
+    for (let i = 0; i < 4; i++) await cachedDisplayCopy(`img${i}`, 2048, load);
+    // Showing img0 again makes img1 the oldest.
     await cachedDisplayCopy('img0', 2048, load);
-    expect(load).toHaveBeenCalledTimes(DISPLAY_CACHE_SIZE + 2);
+    expect(load).toHaveBeenCalledTimes(4);
+    await cachedDisplayCopy('img4', 2048, load);
+    await Promise.resolve();
+    expect(load).toHaveBeenCalledTimes(5);
+    await cachedDisplayCopy('img0', 2048, load);
+    expect(load).toHaveBeenCalledTimes(5);
+    await cachedDisplayCopy('img1', 2048, load);
+    expect(load).toHaveBeenCalledTimes(6);
+  });
+
+  it('refetches nothing a 20-picture panel and a picture board showed a moment ago', async () => {
+    // Twenty full-size copies of ~1.5 MB beside forty small tiles: 60 copies, over the old count of 24.
+    const load = vi.fn(async () => sized(1.5 * 1024 * 1024));
+    const tile = vi.fn(async () => sized(40 * 1024));
+    for (let i = 0; i < 20; i++) await cachedDisplayCopy(`panel${i}`, 2048, load);
+    for (let i = 0; i < 40; i++) await cachedDisplayCopy(`card${i}`, 512, tile);
+    for (let i = 0; i < 20; i++) await cachedDisplayCopy(`panel${i}`, 2048, load);
+    for (let i = 0; i < 40; i++) await cachedDisplayCopy(`card${i}`, 512, tile);
+    expect(load).toHaveBeenCalledTimes(20);
+    expect(tile).toHaveBeenCalledTimes(40);
+  });
+
+  it('holds a phone to a smaller budget than a desktop', () => {
+    expect(displayCacheBytes()).toBe(DISPLAY_CACHE_BYTES_DESKTOP);
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: true }) });
+    expect(displayCacheBytes()).toBe(DISPLAY_CACHE_BYTES_TOUCH);
+    expect(DISPLAY_CACHE_BYTES_TOUCH).toBeLessThan(DISPLAY_CACHE_BYTES_DESKTOP);
+  });
+
+  it('keeps the newest copy even when it alone is over the budget', async () => {
+    const load = vi.fn(async () => sized(DISPLAY_CACHE_BYTES_DESKTOP + 1));
+    await cachedDisplayCopy('huge', 2048, load);
+    await Promise.resolve();
+    await cachedDisplayCopy('huge', 2048, load);
+    expect(load).toHaveBeenCalledTimes(1);
+    await cachedDisplayCopy('next', 2048, load);
+    await Promise.resolve();
+    await cachedDisplayCopy('huge', 2048, load);
+    expect(load).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not count a copy that left the cache while it loaded', async () => {
+    let release: (blob: Blob) => void = () => undefined;
+    const slow = vi.fn(() => new Promise<Blob | null>((resolve) => (release = resolve)));
+    const pending = cachedDisplayCopy('slow', 2048, slow);
+    resetDisplayCacheForTests();
+    release(sized(10));
+    await pending;
+    void cachedDisplayCopy('slow', 2048, slow);
+    expect(slow).toHaveBeenCalledTimes(2);
+  });
+
+  it('bounds copies still loading by count', () => {
+    const load = vi.fn(() => new Promise<Blob | null>(() => undefined));
+    for (let i = 0; i <= DISPLAY_CACHE_MAX_ENTRIES; i++)
+      void cachedDisplayCopy(`p${i}`, 2048, load);
+    void cachedDisplayCopy('p0', 2048, load);
+    expect(load).toHaveBeenCalledTimes(DISPLAY_CACHE_MAX_ENTRIES + 2);
   });
 });
 

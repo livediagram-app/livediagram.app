@@ -524,7 +524,7 @@ Migrations, in order:
 | `COLLAB_MAX_THREADS`            | `500`                                                                                  | `constants.ts`                        |
 | `COLLAB_MAX_ACTIONS`            | `500`                                                                                  | `constants.ts`                        |
 | `COLLAB_CARDS_TAB`              | `'~cards'`                                                                             | `constants.ts`                        |
-| `TITLE_MAX`                     | `500`                                                                                  | `constants.ts`                        |
+| `TITLE_MAX`                     | `500` (what is read of a title before it is cut to the 60-character name cap)          | `constants.ts`                        |
 | `FOLDER_NAME_MAX`               | `500`                                                                                  | `constants.ts`                        |
 | `SHARE_PASSWORD_MAX`            | `256`                                                                                  | `constants.ts`                        |
 | `SHARE_PASSWORD_MIN`            | `6`                                                                                    | `constants.ts`                        |

@@ -1,14 +1,14 @@
 // One item's routes, /items/:id and below (items.ts): reading, renaming and moving, the Trash, copies and grants.
 
 import { inTeamNow } from '../fresh-teams';
-import { TITLE_MAX } from '@liveworkspace/index-client';
+import { copyName } from '@liveworkspace/model-core/names';
 import { loadItem } from '../access';
 import { archiveItem, isArchived, archivedRefusal } from '../archive';
 import { callApp } from '../app-calls';
 import { archivedScope, scopeOf } from '../auth';
 import { touchItem } from '../drive';
 import type { RouteContext } from '../context';
-import { readName, getFolderRow } from '../folders';
+import { readTitle, getFolderRow } from '../folders';
 import { mintGrant } from '../grants';
 import { notFound, json, readObject, badRequest, forbidden, noContent, fail } from '../http';
 import { purgeRows, drainTombstonesSoon } from '../purge';
@@ -65,7 +65,7 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
 
   let title = row.title;
   if (body.title !== undefined) {
-    const read = readName(body.title, TITLE_MAX);
+    const read = readTitle(body.title, row.title);
     if (!read) return badRequest('invalid_title');
     title = read;
   }
@@ -278,9 +278,9 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
   if (isArchived(from)) return archivedRefusal();
   const body = await readObject(request);
   if (!body) return badRequest();
-  let title = `${from.title} (copy)`.slice(0, TITLE_MAX);
+  let title = copyName(from.title);
   if (body.title !== undefined) {
-    const read = readName(body.title, TITLE_MAX);
+    const read = readTitle(body.title);
     if (!read) return badRequest('invalid_title');
     title = read;
   }

@@ -370,6 +370,9 @@ importers:
       '@livedesign/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
@@ -1459,6 +1462,9 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
@@ -2629,6 +2635,9 @@ importers:
       '@livedocuments/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
@@ -3721,6 +3730,9 @@ importers:
       '@livehuddle/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
@@ -4764,6 +4776,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
@@ -6036,6 +6051,9 @@ importers:
       '@liveworkspace/migration':
         specifier: workspace:^
         version: link:../../../packages/migration
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../../../packages/model-core
       '@liveworkspace/sites':
         specifier: workspace:^
         version: link:../../../packages/sites

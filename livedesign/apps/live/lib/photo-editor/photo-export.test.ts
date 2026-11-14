@@ -21,7 +21,7 @@ describe('All Sizes', () => {
     ).toEqual([
       'Instagram Post 1080x1350.png',
       'Page 1 4000x3000.png',
-      'X Post 1600x900.png',
+      'X-Post 1600x900.png',
       'Instagram Post 1080x1350 2.png',
       'Instagram Post 1080x1350 3.png',
     ]);

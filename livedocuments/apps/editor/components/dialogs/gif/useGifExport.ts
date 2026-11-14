@@ -11,7 +11,8 @@ import {
 import { pageWritingFonts } from '@/lib/article/article-export';
 import { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';
 import { embeddedFontFaceCss } from '@/lib/export-fonts';
-import { exportPageLabel, sanitizeFilename, type PageScope } from '@/lib/export-pages';
+import { exportPageLabel, type PageScope } from '@/lib/export-pages';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { estimateGifBytes, GIF_ESTIMATE_DELAY_MS } from '@/lib/gif-export/gif-estimate';
 import { openGifEncoder } from '@/lib/gif-export/gif-encoder';
 import { GifExportError, type GifExportErrorCode } from '@/lib/gif-export/gif-export-error';
@@ -174,7 +175,7 @@ export function useGifExport({
       const name =
         scope === 'all'
           ? baseName
-          : `${baseName} - ${sanitizeFilename(exportPageLabel(page, pages.length))}`;
+          : `${baseName} - ${sanitizeFilename(exportPageLabel(page, pages.length), 'page')}`;
       downloadBlob(new Blob([bytes as BlobPart], { type: 'image/gif' }), `${name}.gif`);
       if (scope === 'all') track('Document', 'Exported', 'PagesGIFPages');
       else track('Document', 'Exported', 'PagesGIF');

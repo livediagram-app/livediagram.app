@@ -108,6 +108,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Form·Shared',
   'Form·Toggled',
   'Home·Loaded',
+  // A Home pick (Most Used, Recent, See More) in the workbench frame (docs/specs/013-workspace/explorer-home.md).
+  'Home·Selected',
   'Layer·Added',
   'Layer·Changed',
   'Layer·Cleared',

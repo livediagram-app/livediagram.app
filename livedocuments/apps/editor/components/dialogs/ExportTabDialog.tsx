@@ -20,9 +20,9 @@ import {
   DEFAULT_PAGE_SCOPE,
   exportPageLabel,
   exportPages,
-  sanitizeFilename,
   type PageScope,
 } from '@/lib/export-pages';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { ExportPagePicker } from './ExportPagePicker';
 import { PrintPanel } from './PrintPanel';
 import { printDocumentHtml, printSheets, printTabCount, type PrintScope } from '@/lib/print-pages';
@@ -169,8 +169,10 @@ export function ExportTabDialog({
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
   // A name of nothing safe ("?") downloads as "document", never a bare ".png".
-  const baseName =
-    sanitizeFilename(`${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`) || 'document';
+  const baseName = sanitizeFilename(
+    `${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`,
+    'document',
+  );
 
   // Image / avatar bitmaps + icon catalogues for the image-format preview, loaded once an image format is picked
   // and reused by the export (export-tab-dialog.tsx).
@@ -268,7 +270,7 @@ export function ExportTabDialog({
         const name =
           pageScope === 'all'
             ? baseName
-            : `${baseName} - ${sanitizeFilename(exportPageLabel(page, pages.length))}`;
+            : `${baseName} - ${sanitizeFilename(exportPageLabel(page, pages.length), 'page')}`;
         downloadBlob(blob, `${name}.${ext}`);
         track(
           'Document',

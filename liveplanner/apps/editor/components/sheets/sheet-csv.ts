@@ -12,12 +12,13 @@ import {
   type Workbook,
 } from '@liveplanner/sheets';
 import { track } from '@/lib/telemetry';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';
 import type { SheetController } from './sheet-controller';
 
 // The file Download CSV saves: made safe for a spreadsheet to open (no field runs as a formula, sheet.md "CSV").
 export function downloadSheetCsv(wb: Workbook, sheet: Sheet): void {
-  const name = `${sheet.title.replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'Sheet'}.csv`;
+  const name = `${sanitizeFilename(sheet.title, 'Sheet')}.csv`;
   downloadBlob(new Blob([sheetCsvText(wb, sheet)], { type: 'text/csv;charset=utf-8' }), name);
   track('Sheet', 'Exported', 'Csv');
 }

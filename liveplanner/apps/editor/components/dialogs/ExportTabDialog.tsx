@@ -19,7 +19,7 @@ import {
 } from '@liveplanner/project';
 import { downloadBlob, exportTabAsPng, exportTabAsSvg, renderTabToSvg } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
-import { sanitizeFilename } from '@/lib/sanitize-filename';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -224,7 +224,10 @@ export function ExportTabDialog({
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
-  const baseName = sanitizeFilename(`${projectName || 'project'} - ${tab.name || 'tab'}${suffix}`);
+  const baseName = sanitizeFilename(
+    `${projectName || 'project'} - ${tab.name || 'tab'}${suffix}`,
+    'project',
+  );
 
   // A new load (format picked, tab changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.
