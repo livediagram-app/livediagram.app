@@ -2,8 +2,8 @@
 // the dialog, run on the dialog itself. The home's steps bring it forward (a panel may be open) and scroll their
 // control into view; the Finish steps open the Finish panel, and one of them really redraws the tab in another finish,
 // putting the person's own back as it ends, however it ends.
-import type { Finish } from '@livedesign/design';
-import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
+import type { Finish } from '@liveworkspace/element-model/finish';
+import type { TourStepOf } from './tour-step';
 
 export type TabStyleTourApi = {
   // Brings the home (the looks and the Fine-tune rows) forward.
