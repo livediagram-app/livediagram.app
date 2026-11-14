@@ -30,6 +30,12 @@ decide becomes a question thread on the card.
   **Reviewed**; it also checks **Reviewed** and **Selected for Development** for work already on main, and moves
   delivered cards from any of the three to **Done**. The fields are Description, App, **Priority** (Low, Medium, High, Critical) and **Type**
   (Feature or Bug).
+- **Ideas** tab: **Idea** cards, which the ideation loop logs and the owner judges with their Reviewed field.
+  They share the Under Review column, so filter by type: this loop never reviews, moves or comments on an
+  Idea. An accepted Idea becomes a Work Item in Under Review and is reviewed like any other card. Until the
+  conversion copies fields, it arrives with its App and Solution on Idea-only fields (`f-apps`,
+  `f-solution`): set the Work Item's App from `f-apps`, and use the Solution when writing its Acceptance
+  Criteria.
 - **Comment threads** on each Work Item hold the questions and their answers. `list_threads` reads them and
   `change_threads` starts, replies to and resolves them. Each thread has an id, a title, a state (open or
   resolved) and its comments, each with `author`, `at` and `ai: true` when an agent wrote it.
