@@ -43,7 +43,8 @@ app's logo stacked, overlapping, where a row's icon goes, the host's too) lists 
   this <host kind> can edit the file you connect." A file whose app does not offer the chosen role (livehuddle has no
   Viewer) is listed but cannot be picked while it is chosen, saying so ("livehuddle has no Viewer role").
 - **Add connection to both files**: off by default, with no line under it; a screen reader hears what it does, or
-  why it cannot be turned on, with the switch.
+  why it cannot be turned on, with the switch. In a start panel drawn in its tab's theme, the switch takes the theme's
+  colours on and off, as the panel's other switches do.
 - **Find a file**: narrows the list by name as the person types.
 
 One tap on an item connects it. The host gains a connected tab at the end of its tab bar, loose, and it becomes the

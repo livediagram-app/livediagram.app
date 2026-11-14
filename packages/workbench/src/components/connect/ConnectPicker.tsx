@@ -43,6 +43,9 @@ export type ConnectInk = {
 const DEFAULT_INK =
   '[--cp-text:#0f172a] [--cp-muted:#475569] [--cp-border:#e2e8f0] [--cp-surface:#f8fafc] [--cp-column:#f1f5f9] [--cp-card:#ffffff] [--cp-accent:var(--color-brand-700)] [--cp-on-accent:#ffffff] dark:[--cp-text:#e2e8f0] dark:[--cp-muted:#94a3b8] dark:[--cp-border:#334155] dark:[--cp-surface:#111827] dark:[--cp-column:#1e293b] dark:[--cp-card:#0f172a] dark:[--cp-accent:var(--color-brand-400)] dark:[--cp-on-accent:#0f172a]';
 
+// The both-ways switch's off track in a themed panel: the theme's muted ink, faint, as SaveSwitchRow draws it.
+const THEMED_OFF_TRACK = 'color-mix(in srgb, var(--cp-muted) 45%, transparent)';
+
 function inkStyle(ink: ConnectInk | undefined): CSSProperties {
   const base = {
     '--cp-hover': 'color-mix(in srgb, var(--cp-text) 6%, transparent)',
@@ -162,6 +165,8 @@ export function ConnectPicker({
             disabled={!hostManaged}
             aria-describedby={bothLineId}
             onColor="var(--cp-accent)"
+            // Off in the theme too, as the start panel's Save switch (SaveSwitchRow); unthemed, the shared slate.
+            offColor={ink ? THEMED_OFF_TRACK : undefined}
             className="min-h-9 rounded-[10px] border border-[var(--cp-border)] px-3 py-1.5 text-[13px] font-medium hover:bg-[var(--cp-hover)] disabled:hover:bg-transparent"
           >
             Add connection to both files

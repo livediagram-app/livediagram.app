@@ -220,7 +220,9 @@ tabId, level, both }, grant)`, then the app's `addTab(made)` (its whole-tab save
 - **`components/connect/ConnectPicker.tsx`**: the list in a start panel's content area, painted from `ink` (the
   start panel's palette: `text`, `muted`, `border`, `surface`, `column`, `accent`) through CSS variables, else the
   app's light or dark look. The role is a `radiogroup` of three (`ConnectRolePicker`), Editor chosen; the both-ways
-  `SwitchRow`, disabled with its reason when `hostManaged` is false; Find a file (a plain substring match on the
+  `SwitchRow`, disabled with its reason when `hostManaged` is false, its track the palette's both ways (on in
+  `--cp-accent`, and off, with an `ink`, in `--cp-muted` at 45%, as the start panel's Save switch; without one the
+  shared slate); Find a file (a plain substring match on the
   lower-cased title, no regex); then the rows (`ConnectRow`). One connect at a time: while a row is busy every other
   row is `aria-disabled`. A row in `connected` (a `Map<itemId, tabId>` from the host's tabs) shows Connected and
   calls `onGoTo(tabId)`.

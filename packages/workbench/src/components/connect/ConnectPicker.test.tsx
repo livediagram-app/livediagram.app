@@ -251,6 +251,20 @@ describe('ConnectPicker', () => {
     expect(root.style.getPropertyValue('--cp-accent')).toBe('#0055aa');
     expect(root.style.getPropertyValue('--cp-on-accent')).toBe('#ffffff');
     expect(root.className).not.toContain('[--cp-text:');
+    // The both-ways switch takes the theme's colours off as on (Work Tracker 634).
+    const track = () => container.querySelector('[data-switch-track]') as HTMLElement;
+    expect(track().style.backgroundColor).toContain('var(--cp-muted)');
+    expect(track().className).not.toContain('bg-slate-300');
+    fireEvent.click(screen.getByRole('switch'));
+    expect(track().style.backgroundColor).toBe('var(--cp-accent)');
+    await screen.findByRole('list', { name: 'Recent files' });
+  });
+
+  it('keeps the shared slate off track without a theme', async () => {
+    const { container } = setup();
+    const track = container.querySelector('[data-switch-track]') as HTMLElement;
+    expect(track.className).toContain('bg-slate-300');
+    expect(track.style.backgroundColor).toBe('');
     await screen.findByRole('list', { name: 'Recent files' });
   });
 });
