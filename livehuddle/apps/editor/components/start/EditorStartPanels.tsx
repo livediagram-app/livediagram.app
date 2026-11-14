@@ -7,7 +7,7 @@ import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { roleGates } from '@/lib/editor-capabilities';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
-import { StartViewTransition } from '@/components/start/StartViewTransition';
+import { StartViewTransition } from '@liveworkspace/workbench/components/start/StartViewTransition';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 
 // The template starts (docs/specs/007-editor/start-diagramming.md) carry every template's preview: loaded the first time

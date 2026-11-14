@@ -237,6 +237,7 @@
     "./components/start/RailFoot": "./src/components/start/RailFoot.tsx",
     "./components/start/useStartHeaderTheme": "./src/components/start/useStartHeaderTheme.ts",
     "./components/start/StartCard": "./src/components/start/StartCard.tsx",
+    "./components/start/StartViewTransition": "./src/components/start/StartViewTransition.tsx",
     "./components/toast/ToastCard": "./src/components/toast/ToastCard.tsx",
     "./components/toast/ToastStack": "./src/components/toast/ToastStack.tsx",
     "./components/toast/toast-floor": "./src/components/toast/toast-floor.ts",

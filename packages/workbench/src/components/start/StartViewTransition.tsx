@@ -2,7 +2,7 @@
 
 import { ViewTransition, type ReactNode } from 'react';
 
-// The start panels' View Transition (docs/specs/007-editor/start-diagramming.md "Changing mode"): wrapped around
+// The start panels' View Transition (docs/specs/007-editor/start-diagramming.md "Changing mode", in the editors with modes): wrapped around
 // every start the editor can show, so a mode change that swaps one start for another reads as the same panel
 // turning in place. Only a `start-mode` transition (StartModeSwitch) animates it; every other transition leaves it be.
 export const START_MODE_TRANSITION = 'start-mode';
