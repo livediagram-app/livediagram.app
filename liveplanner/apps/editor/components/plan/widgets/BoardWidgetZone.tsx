@@ -1,7 +1,8 @@
 'use client';
 
 // A board header's widget zone (docs/specs/026-plan/board-widgets.md "Placing and arranging widgets"):
-// the board's widgets in order, one row that scrolls sideways when full. Someone who may edit drags a
+// the board's widgets in order, one row that scrolls sideways when full, the Filter then holding the zone's start
+// outside the scroll and a fade at each edge with more past it (zone-overflow.ts). Someone who may edit drags a
 // widget left or right to reorder it (a bar shows where it lands), moves a focused one with Alt+← and
 // Alt+→, and takes one off with its × (shown on every widget while the zone is in edit mode, which Edit Widgets after
 // the + turns on) or Delete. The + at the zone's end opens the widget gallery (BoardWidgetPicker): a widget pressed
@@ -11,7 +12,6 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import {
   placeWidget,
   removeWidget,
-  nudgeWidget,
   toggleWidget,
   type BoardField,
   type BoardWidgetId,
@@ -25,6 +25,14 @@ import { InfoArt } from '../plan-tile-art';
 import { widgetSlotAt } from '@/hooks/plan/widget-slot';
 import { BoardWidgetPicker } from './BoardWidgetPicker';
 import { HEADER_ARRIVAL_CLASS, headerArrivalIndex, headerArrivalRow } from '../header-arrival';
+import {
+  PINNED_WIDGET,
+  edgeFade,
+  nudgeInRow,
+  scrollingWidgets,
+  slotInList,
+  useZoneOverflow,
+} from './zone-overflow';
 
 const PencilIcon = lucideGlyph(lucidePencil, 14);
 
@@ -111,6 +119,13 @@ export function BoardWidgetZone({
   suggest?: (() => WidgetSuggestion[]) | undefined;
 }) {
   const zone = useRef<HTMLDivElement>(null);
+  // The row that scrolls sideways, and its list of widgets (a drag's landmarks).
+  const row = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
+  const overflow = useZoneOverflow(zone, row, widgets.includes(PINNED_WIDGET), widgets.length > 0);
+  const pinned = overflow.pinned;
+  // The widgets the row holds: all of them, or all but the pinned Filter. A drag's slot and a nudge are in its order.
+  const rowWidgets = scrollingWidgets(widgets, pinned);
   const [reorder, setReorder] = useState<Reorder | null>(null);
   // Edit mode: every widget shows its ×. This person's alone, never saved; it ends on Done, Escape, a press outside the
   // zone, or the last widget going.
@@ -167,12 +182,15 @@ export function BoardWidgetZone({
     if (removed && widgets.includes(pending.kind)) return;
     refocus.current = null;
     const wrappers = [...(zone.current?.querySelectorAll<HTMLElement>('[data-widget]') ?? [])];
+    const wrapperOf = (kind: BoardWidgetId) => wrappers.find((w) => w.dataset.widget === kind);
     let el: HTMLElement | null | undefined;
-    if (!removed) el = wrappers.find((w) => w.dataset.widget === pending.kind);
-    else if (wrappers.length === 0)
+    if (!removed) el = wrapperOf(pending.kind);
+    else if (widgets.length === 0)
       el = zone.current?.querySelector<HTMLElement>('button[aria-label="Add a widget"]');
     else {
-      const next = wrappers[Math.min(pending.at, wrappers.length - 1)]!;
+      // The widget now at its place in the board's list, wherever it is drawn (the pinned Filter too).
+      const next = wrapperOf(widgets[Math.min(pending.at, widgets.length - 1)]!);
+      if (!next) return;
       el =
         pending.control === 'remove'
           ? (next.querySelector<HTMLElement>('button[aria-label^="Remove "]') ?? next)
@@ -219,12 +237,12 @@ export function BoardWidgetZone({
     if (!canEdit || e.button !== 0) return;
     // Typing in the Filter box is not a drag.
     if ((e.target as HTMLElement).closest('input, select, textarea')) return;
-    setReorder({ kind, startX: e.clientX, dx: 0, slot: widgets.indexOf(kind), moved: false });
+    setReorder({ kind, startX: e.clientX, dx: 0, slot: rowWidgets.indexOf(kind), moved: false });
     // No pointer capture yet: a press that stays put is a click on the widget's own control, and
     // capturing here would hand that click to this wrapper instead.
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!reorder || !zone.current) return;
+    if (!reorder || !list.current) return;
     const dx = e.clientX - reorder.startX;
     const moved = reorder.moved || Math.abs(dx) > REORDER_THRESHOLD_PX;
     if (!moved) return;
@@ -234,14 +252,18 @@ export function BoardWidgetZone({
       ...reorder,
       dx,
       moved,
-      slot: widgetSlotAt(zone.current, e.clientX, reorder.kind),
+      slot: widgetSlotAt(list.current, e.clientX, reorder.kind),
     });
   };
   const onPointerUp = () => {
     if (!reorder) return;
     if (reorder.moved) {
       suppressClick.current = true;
-      const next = placeWidget(widgets, reorder.kind, reorder.slot);
+      const next = placeWidget(
+        widgets,
+        reorder.kind,
+        slotInList(widgets, rowWidgets, reorder.slot),
+      );
       if (next.join() !== widgets.join()) onChange(next);
     }
     setReorder(null);
@@ -280,116 +302,142 @@ export function BoardWidgetZone({
     );
   }
 
+  // One widget: in the row, a list item that drags to reorder; pinned at the zone's start (the Filter while the row
+  // overflows), a group that stays put, its Delete and its × still taking it off.
+  const item = (kind: BoardWidgetId, i: number, atStart = false) => {
+    const dragged = !atStart && reorder?.moved && reorder.kind === kind;
+    return (
+      <div
+        key={kind}
+        data-widget={kind}
+        role={atStart ? 'group' : 'listitem'}
+        tabIndex={canEdit ? 0 : undefined}
+        aria-label={canEdit || atStart ? `${labelOf(kind)} widget` : undefined}
+        aria-keyshortcuts={
+          canEdit ? (atStart ? 'Delete' : 'Alt+ArrowLeft Alt+ArrowRight Delete') : undefined
+        }
+        className={`${HEADER_ARRIVAL_CLASS} relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
+          canEdit && !atStart ? 'cursor-grab active:cursor-grabbing' : ''
+        }`}
+        style={{
+          transform: dragged ? `translateX(${reorder.dx}px)` : undefined,
+          zIndex: dragged ? 2 : undefined,
+          opacity: dragged ? 0.85 : 1,
+          ['--tw-ring-color' as string]: palette.focus,
+          ...headerArrivalIndex(i),
+        }}
+        onPointerDown={atStart ? (e) => e.stopPropagation() : onPointerDown(kind)}
+        onPointerMove={atStart ? undefined : onPointerMove}
+        onPointerUp={atStart ? undefined : onPointerUp}
+        onPointerCancel={atStart ? undefined : () => setReorder(null)}
+        onClickCapture={(e) => {
+          if (!suppressClick.current) return;
+          suppressClick.current = false;
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onKeyDown={(e) => {
+          if (!canEdit || e.target !== e.currentTarget) return;
+          if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+            if (atStart) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const next = nudgeInRow(widgets, kind, e.key === 'ArrowLeft' ? -1 : 1, pinned);
+            if (next.join() === widgets.join()) return;
+            refocus.current = { kind, moved: true };
+            onChange(next);
+          } else if (e.key === 'Delete' || e.key === 'Backspace') {
+            e.preventDefault();
+            e.stopPropagation();
+            remove(kind, 'widget');
+          }
+        }}
+      >
+        {render(kind)}
+        {active ? (
+          <button
+            type="button"
+            aria-label={`Remove ${labelOf(kind)}`}
+            className="absolute -right-1 -top-1 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border shadow-sm"
+            style={{
+              backgroundColor: palette.card,
+              borderColor: palette.border,
+              color: palette.muted,
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              remove(kind, 'remove');
+            }}
+          >
+            <CloseIcon size={9} />
+          </button>
+        ) : null}
+      </div>
+    );
+  };
+
   return (
     <div
       ref={zone}
       data-widget-zone
-      className="flex h-9 min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overflow-y-hidden rounded-md px-1 [scrollbar-width:thin]"
+      data-widget-zone-pinned={pinned ? '' : undefined}
+      className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-md"
       // The widgets, then the + and Edit Widgets, fan in as the header mounts (header-arrival.ts).
       style={headerArrivalRow}
     >
-      {/* The widgets are the list; the Add button follows it rather than sitting in it, since a list holds only its
-          items. Empty, it takes no room. */}
+      {pinned ? (
+        <div data-widget-pin className="flex shrink-0 items-center pl-1">
+          {item(PINNED_WIDGET, widgets.indexOf(PINNED_WIDGET), true)}
+        </div>
+      ) : null}
       <div
-        role="list"
-        aria-label="Board widgets"
-        className="flex items-center gap-1.5 empty:hidden"
+        ref={row}
+        data-widget-row
+        className="flex h-full min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overflow-y-hidden px-1 [scrollbar-width:thin]"
+        style={edgeFade(overflow.start, overflow.end)}
       >
-        {widgets.map((kind, i) => {
-          const dragged = reorder?.moved && reorder.kind === kind;
-          return [
-            barAt === i && !dragged ? bar(`bar-${i}`) : null,
-            <div
-              key={kind}
-              data-widget={kind}
-              role="listitem"
-              tabIndex={canEdit ? 0 : undefined}
-              aria-label={canEdit ? `${labelOf(kind)} widget` : undefined}
-              aria-keyshortcuts={canEdit ? 'Alt+ArrowLeft Alt+ArrowRight Delete' : undefined}
-              className={`${HEADER_ARRIVAL_CLASS} relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
-                canEdit ? 'cursor-grab active:cursor-grabbing' : ''
-              }`}
-              style={{
-                transform: dragged ? `translateX(${reorder.dx}px)` : undefined,
-                zIndex: dragged ? 2 : undefined,
-                opacity: dragged ? 0.85 : 1,
-                ['--tw-ring-color' as string]: palette.focus,
-                ...headerArrivalIndex(i),
-              }}
-              onPointerDown={onPointerDown(kind)}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={() => setReorder(null)}
-              onClickCapture={(e) => {
-                if (!suppressClick.current) return;
-                suppressClick.current = false;
-                e.preventDefault();
+        {/* The widgets are the list; the Add button follows it rather than sitting in it, since a list holds only its
+            items. Empty, it takes no room. */}
+        <div
+          ref={list}
+          role="list"
+          aria-label="Board widgets"
+          className="flex items-center gap-1.5 empty:hidden"
+        >
+          {rowWidgets.map((kind, i) => {
+            const dragged = reorder?.moved && reorder.kind === kind;
+            return [
+              barAt === i && !dragged ? bar(`bar-${i}`) : null,
+              item(kind, widgets.indexOf(kind)),
+            ];
+          })}
+          {barAt === rowWidgets.length ? bar('bar-end') : null}
+        </div>
+        {canEdit ? addButton('md', widgets.length) : null}
+        {canEdit ? (
+          <Tooltip label={active ? 'Done Editing Widgets' : 'Edit Widgets'}>
+            <ZoneButton
+              size="md"
+              palette={palette}
+              pressed={active}
+              enter={widgets.length + 1}
+              aria-label={active ? 'Done Editing Widgets' : 'Edit Widgets'}
+              aria-pressed={active}
+              onClick={(e) => {
                 e.stopPropagation();
-              }}
-              onKeyDown={(e) => {
-                if (!canEdit || e.target !== e.currentTarget) return;
-                if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const next = nudgeWidget(widgets, kind, e.key === 'ArrowLeft' ? -1 : 1);
-                  if (next.join() === widgets.join()) return;
-                  refocus.current = { kind, moved: true };
-                  onChange(next);
-                } else if (e.key === 'Delete' || e.key === 'Backspace') {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  remove(kind, 'widget');
-                }
+                setEditing(!active);
               }}
             >
-              {render(kind)}
               {active ? (
-                <button
-                  type="button"
-                  aria-label={`Remove ${labelOf(kind)}`}
-                  className="absolute -right-1 -top-1 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border shadow-sm"
-                  style={{
-                    backgroundColor: palette.card,
-                    borderColor: palette.border,
-                    color: palette.muted,
-                  }}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    remove(kind, 'remove');
-                  }}
-                >
-                  <CloseIcon size={9} />
-                </button>
-              ) : null}
-            </div>,
-          ];
-        })}
-        {barAt === widgets.length ? bar('bar-end') : null}
+                <CheckIcon size={CHECK_SIZE} weight={ZONE_GLYPH_WEIGHT} />
+              ) : (
+                <PencilIcon size={PENCIL_SIZE} weight={ZONE_GLYPH_WEIGHT} />
+              )}
+            </ZoneButton>
+          </Tooltip>
+        ) : null}
       </div>
-      {canEdit ? addButton('md', widgets.length) : null}
-      {canEdit ? (
-        <Tooltip label={active ? 'Done Editing Widgets' : 'Edit Widgets'}>
-          <ZoneButton
-            size="md"
-            palette={palette}
-            pressed={active}
-            enter={widgets.length + 1}
-            aria-label={active ? 'Done Editing Widgets' : 'Edit Widgets'}
-            aria-pressed={active}
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditing(!active);
-            }}
-          >
-            {active ? (
-              <CheckIcon size={CHECK_SIZE} weight={ZONE_GLYPH_WEIGHT} />
-            ) : (
-              <PencilIcon size={PENCIL_SIZE} weight={ZONE_GLYPH_WEIGHT} />
-            )}
-          </ZoneButton>
-        </Tooltip>
-      ) : null}
       {picker}
     </div>
   );

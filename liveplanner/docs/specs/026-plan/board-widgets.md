@@ -20,7 +20,14 @@ header; they are not in the palette.
 - The header holds, left to right: the board's **title**, its **card type chips** (for someone who may add cards,
   [Plan board](plan-board.md#card-type-chips)), the **widget zone**, then the controls a board needs
   whatever its widgets are (**Reveal** on a hide-writing board, **Retry** when items failed to load).
-- The widget zone is one row. Widgets keep their order; when they do not fit, the zone scrolls sideways.
+- The widget zone is one row. Widgets keep their order; when they do not fit, the zone scrolls sideways, and:
+  - the **Filter** widget holds the zone's start, outside the scroll, so it is always in reach however the rest are
+    scrolled (the others keep their order after it, and drag and Alt+← / Alt+→ move them among themselves; the
+    Filter stays put, its Delete and edit mode's × still taking it off). With room again (a little more than it
+    needs, so a count growing a digit never flips it back and forth) it is back in its own place;
+  - a soft fade at an edge with more widgets past it says the row scrolls;
+  - nothing a widget opens scrolls the row: a field widget's **+n** legend opens (and closes) with the row where the
+    person left it (Work Tracker 823).
 - Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours,
   each led by a picture of what it measures (its glyph, a ring, a split bar, column bars or pips).
 - A board with no widgets shows nothing in the zone. Only while the board is selected does it say, to someone
@@ -75,7 +82,8 @@ header; they are not in the palette.
   filters](../004-interface-design/search-and-filters.md)), drawn header-sized: the filter glyph, a **chip** per field
   filter ("Card Type: Bug", its cross removing it), the words being typed ("Filter cards", or "Filter these…" with
   chips), then inside its right edge **Clear Filter** (a cross, while there are words or chips) and **Add Filter**
-  (a plus). It is one row: past its room it scrolls sideways within the zone, as the zone does.
+  (a plus). It is one row: past its room it scrolls sideways within itself. In a zone too full for its widgets it
+  holds the zone's start ([The header](#the-header)).
 - **Field chips** are Find a Card's and Card Search's ([Card Search](plan-views.md#card-search)): Add Filter lists the
   fields the board's shown cards' types offer (Card Type while they hold more than one type), less those already
   filtered; picking one lists its values among the cards the board shows under the other narrowings, each with its
