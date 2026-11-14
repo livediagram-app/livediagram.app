@@ -53,6 +53,10 @@ The editor route (`apps/editor/app/document/[id]/`) is split three ways so no fi
 
 - `useEditorState.ts` is the orchestration hook: it calls each concern's slice in `app/document/[id]/editor-state/` in one fixed order, passes each the slices before it, and returns the view-model `app/document/[id]/editor-state/editor-view.ts` picks out of them.
 - `EditorContext.tsx` carries that view-model as `EditorContextValue = ReturnType<typeof useEditorState>`.
+  The same file holds the chrome store: the page publishes each render's view-model to it after the commit
+  (`usePublishEditorChrome`), and chrome that never reads the document (the header, the tab bar, the dialog hosts)
+  reads it a slice at a time (`useEditorChrome(select)`), so a typing commit renders none of it. Handlers read the
+  newest value when they run (`useEditorChromeStore().get()`).
 - `EditorView.tsx` renders the JSX, leaving `editor-page.tsx` a thin page shell.
 
 ### Editor state

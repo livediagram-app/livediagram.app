@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livedocuments/document';
 
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
 
 const SettingsDialog = dynamic(
@@ -20,7 +20,17 @@ const CanvasThemeDialog = dynamic(
 // rather than carrying ~45 lines of dialog wiring. Comment/link/image
 // popovers stay inline in EditorView — they're anchored to canvas elements,
 // not global modals.
+// Settings and the canvas theme dialog, open or not.
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// limits"): a typing commit renders nothing here.
 export function EditorModals() {
+  const open = useEditorChrome(
+    (s) => s.settingsOpen || (s.canvasThemeTab !== null && !s.isReadOnly),
+  );
+  return open ? <OpenEditorModals /> : null;
+}
+
+function OpenEditorModals() {
   const {
     settingsOpen,
     settingsFocus,

@@ -16,7 +16,7 @@ import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditMap } from '@/lib/map-edit';
 import { MAP_DEFAULT_ACCENT, resolveStockColours } from '@livedocuments/document';
 import { getTheme, themeChartPalette } from '@/lib/themes';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 
 const LinkPickerDialog = dynamic(
@@ -48,7 +48,24 @@ const ImagePicker = dynamic(
 // matching "open for id" state and reads everything from EditorContext, so
 // EditorView just renders <EditorElementDialogs />. Distinct from the
 // global modals (EditorModals) and the tab/share dialogs (EditorTabDialogs).
+// The element dialogs, open or not.
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// limits"): a typing commit renders nothing here.
 export function EditorElementDialogs() {
+  const open = useEditorChrome(
+    (s) =>
+      !!s.linkPickerOpenForId ||
+      !!s.cellLinkPickerOpenFor ||
+      !!s.lineDataOpenForId ||
+      !!s.codeEditOpenForId ||
+      !!s.sankeyFlowsOpenForId ||
+      !!s.mapDialogOpenForId ||
+      !!s.imagePickerOpenFor,
+  );
+  return open ? <OpenEditorElementDialogs /> : null;
+}
+
+function OpenEditorElementDialogs() {
   const {
     linkPickerOpenForId,
     isReadOnly,
