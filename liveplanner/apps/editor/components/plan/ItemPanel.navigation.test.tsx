@@ -172,33 +172,59 @@ describe('the item panel’s authorship', () => {
     expect(footer.closest('aside')!.lastElementChild).toBe(footer);
   });
 
-  // Work Tracker 768 (docs/specs/026-plan/automations.md "On cards"): a GitHub-triggered rule's edit names GitHub and
-  // the rule, on GitHub's mark; any other rule's keeps the bolt and the rule's name.
+  // Work Tracker 768, Work Tracker 822 (docs/specs/026-plan/automations.md "On cards"): a GitHub-triggered rule's stamp
+  // names GitHub and the rule, on GitHub's mark, from the first draw; any other rule's (or an older stamp without its
+  // source) keeps the bolt and the rule's name.
   it('names GitHub and the rule, on GitHub’s mark, after a GitHub-triggered run', () => {
-    const task = {
-      ...item('t', 1, 'task'),
-      updatedBy: { id: 'automation', name: 'Done on Merge', color: '#7c3aed' },
-    };
-    const { rerender } = render(<ItemMeta item={task} now={Date.now()} editedByGithub />);
+    const rule = { id: 'automation', name: 'Done on Merge', color: '#7c3aed' };
+    const task = { ...item('t', 1, 'task'), updatedBy: { ...rule, via: 'github' as const } };
+    const { rerender } = render(<ItemMeta item={task} now={Date.now()} />);
     const row = () => screen.getByText(/^Edited by/).closest('[data-item-meta-row]')!;
     expect(row().textContent).toMatch(/^Edited by GitHub · Done on Merge/);
     expect(row().querySelector('[data-github-disc] svg')).toBeTruthy();
     expect(row().querySelector('[data-automation-disc]')).toBeNull();
-    rerender(<ItemMeta item={task} now={Date.now()} />);
+    rerender(<ItemMeta item={{ ...task, updatedBy: rule }} now={Date.now()} />);
     expect(row().textContent).toMatch(/^Edited by Done on Merge/);
     expect(row().querySelector('[data-automation-disc]')).toBeTruthy();
-    // A person's edit after it is theirs, whatever the history said before.
-    const person = { ...task, updatedBy: { id: 'q', name: 'Robin Lee', color: '#16a34a' } };
-    rerender(<ItemMeta item={person} now={Date.now()} editedByGithub />);
+    // A person's stamp never reads as GitHub's, whatever it carries.
+    const person = {
+      ...task,
+      updatedBy: { id: 'q', name: 'Robin Lee', color: '#16a34a', via: 'github' as const },
+    };
+    rerender(<ItemMeta item={person} now={Date.now()} />);
     expect(row().textContent).toMatch(/^RLEdited by Robin Lee/);
+  });
+
+  it('says Created by GitHub and the rule for a card a GitHub rule made', async () => {
+    const rule = { id: 'automation', name: 'Card for Each Pull Request', color: '#7c3aed' };
+    const task = { ...item('t', 1, 'task'), createdBy: { ...rule, via: 'github' as const } };
+    const { rerender } = render(<ItemMeta item={task} now={Date.now()} />);
+    const row = () => screen.getByText(/^Created by/).closest('[data-item-meta-row]')!;
+    expect(row().textContent).toMatch(/^Created by GitHub · Card for Each Pull Request/);
+    expect(row().querySelector('[data-github-disc] svg')).toBeTruthy();
+    expect(row().querySelector('[data-automation-disc]')).toBeNull();
+    // An older card, stamped before the stamp carried its source, keeps the bolt.
+    rerender(<ItemMeta item={{ ...task, createdBy: rule }} now={Date.now()} />);
+    expect(row().textContent).toMatch(/^Created by Card for Each Pull Request/);
+    expect(row().querySelector('[data-automation-disc]')).toBeTruthy();
+    rerender(<ItemMeta item={task} now={Date.now()} />);
+    fireEvent.pointerEnter(screen.getByText(/^Created by/), { pointerType: 'mouse' });
+    expect((await screen.findByRole('tooltip')).textContent).toBe(
+      'Created by GitHub · Card for Each Pull Request',
+    );
   });
 
   it('shows a rule’s whole name on hover, where the footer cuts it', async () => {
     const task = {
       ...item('t', 1, 'task'),
-      updatedBy: { id: 'automation', name: 'Done When the Pull Request Merges', color: '#7c3aed' },
+      updatedBy: {
+        id: 'automation',
+        name: 'Done When the Pull Request Merges',
+        color: '#7c3aed',
+        via: 'github' as const,
+      },
     };
-    render(<ItemMeta item={task} now={Date.now()} editedByGithub />);
+    render(<ItemMeta item={task} now={Date.now()} />);
     const words = screen.getByText(/^Edited by/);
     fireEvent.pointerEnter(words, { pointerType: 'mouse' });
     expect((await screen.findByRole('tooltip')).textContent).toBe(

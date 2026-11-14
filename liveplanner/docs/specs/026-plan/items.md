@@ -101,7 +101,9 @@ they are the same family: filled in automatically, never typed.
   - a **thread** write ([Writes](#writes)), and the plan's own upkeep (the schema's moves, a closed account's
     anonymising, which rewrites the name to **Deleted account**, and the migration door).
 - **People** are shown as the item holds them today, a name and colour beside the hashed id, never more: the same
-  identity the panel's foot has always shown.
+  identity the panel's foot has always shown. A rule's stamp (Automation, with the rule's name) also says where its
+  run came from when that was GitHub (`via: "github"`, [Automations](automations.md#on-cards)), so the foot draws
+  GitHub's mark; a stamp without it, every other one and every card from before it, reads as it always has.
 - **A closed account** reads **Deleted account** in Created By and Last Edited By on every card it made or last
   edited, in grey, never its old name. The anonymising matches the card's person by their hashed id (the column holds
   the person, not their account id) and writes the Deleted account person (id `deleted`) in its place; a card from

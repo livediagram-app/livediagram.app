@@ -42,7 +42,7 @@ function parsePerson(text: string): ItemPerson {
       typeof p.name === 'string' &&
       typeof p.color === 'string' &&
       isSafeColourValue(p.color)
-      ? { id: p.id, name: p.name, color: p.color }
+      ? { id: p.id, name: p.name, color: p.color, ...(p.via === 'github' ? { via: p.via } : {}) }
       : UNKNOWN_PERSON;
   } catch {
     return UNKNOWN_PERSON;
