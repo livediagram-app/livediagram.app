@@ -32,6 +32,7 @@
     "@livehuddle/template-previews": "workspace:*",
     "@livehuddle/templates": "workspace:*",
     "@livehuddle/ui": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
