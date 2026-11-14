@@ -29,6 +29,8 @@ import { ArcadeFace } from './ArcadeFace';
 import { PingPongGame } from './PingPongGame';
 import { NoticeBoardPopover, NoticeBoardReader } from './NoticeBoardPopover';
 import { WorldClockReader } from './WorldClockReader';
+import { useFreshMoment } from './moment-kit';
+import { LonePin, NoteSwing, swingingNote, TickingHand } from './WalkUpMoments';
 
 // The live faces of the social pieces (docs/specs/009-elements/social-pieces.md) laid over their art: the Notice
 // Board's cards and Notes button, the World Clock's dials, the Jukebox's Play / Mute button and the Arcade Machine's
@@ -153,6 +155,9 @@ function NoticeBoardFace({ element, walking }: { element: ShapeElement; walking:
   const cw = (w - 18) / 2;
   const ch = (h - 18) / 2;
   const tilt = [-2.5, 2, 1.5, -2];
+  // Walking up plays its answer (piece-moments.md): the top note on your side swings, or a pin wobbles on bare cork.
+  const play = useFreshMoment(element.id);
+  const swings = play ? swingingNote(play.side, shown.length) : -1;
   return (
     <Overlay element={element}>
       <svg
@@ -177,7 +182,7 @@ function NoticeBoardFace({ element, walking }: { element: ShapeElement; walking:
             const cx = x + 6 + (i % 2) * (cw + 6);
             const cy = y + 6 + Math.floor(i / 2) * (ch + 6);
             const title = note.title?.trim() || note.text;
-            return (
+            const card = (
               <g
                 key={note.id}
                 transform={`rotate(${tilt[i]} ${cx + cw / 2} ${cy + ch / 2})`}
@@ -221,8 +226,18 @@ function NoticeBoardFace({ element, walking }: { element: ShapeElement; walking:
                 </text>
               </g>
             );
+            return play && i === swings ? (
+              <NoteSwing key={note.id} play={play} x={cx + cw / 2} y={cy + 4}>
+                {card}
+              </NoteSwing>
+            ) : (
+              card
+            );
           })
         )}
+        {play && shown.length === 0 ? (
+          <LonePin play={play} x={play.side < 0 ? x + 22 : x + w - 18} y={y + 16} />
+        ) : null}
         {more > 0 ? (
           <g>
             <rect
@@ -301,6 +316,8 @@ function WorldClockFace({ element, walking }: { element: ShapeElement; walking: 
   const { x, w } = CLOCK_FACE;
   const step = w / zones.length;
   const r = 13;
+  // Walking up plays its answer (piece-moments.md): each minute hand ticks once round, dial by dial from your side.
+  const play = useFreshMoment(element.id);
   return (
     <Overlay element={element}>
       <svg
@@ -352,16 +369,31 @@ function WorldClockFace({ element, walking }: { element: ShapeElement; walking: 
                     strokeLinecap="round"
                     transform={`rotate(${hourA} ${cx} ${cy})`}
                   />
-                  <line
-                    x1={cx}
-                    y1={cy}
-                    x2={cx}
-                    y2={cy - r * 0.8}
-                    stroke="#1f2937"
-                    strokeWidth={1.1}
-                    strokeLinecap="round"
-                    transform={`rotate(${minuteA} ${cx} ${cy})`}
-                  />
+                  {play ? (
+                    <TickingHand play={play} cx={cx} cy={cy} width={art.width}>
+                      <line
+                        x1={cx}
+                        y1={cy}
+                        x2={cx}
+                        y2={cy - r * 0.8}
+                        stroke="#1f2937"
+                        strokeWidth={1.1}
+                        strokeLinecap="round"
+                        transform={`rotate(${minuteA} ${cx} ${cy})`}
+                      />
+                    </TickingHand>
+                  ) : (
+                    <line
+                      x1={cx}
+                      y1={cy}
+                      x2={cx}
+                      y2={cy - r * 0.8}
+                      stroke="#1f2937"
+                      strokeWidth={1.1}
+                      strokeLinecap="round"
+                      transform={`rotate(${minuteA} ${cx} ${cy})`}
+                    />
+                  )}
                 </>
               ) : null}
               <circle cx={cx} cy={cy} r={1.4} fill="#b45309" />
