@@ -208,6 +208,21 @@ describe('a draft of the unload flush', () => {
     expect(await storedDrafts()).toHaveLength(0);
   });
 
+  it('a draft the editor could not put on screen is removed, so no later load brings it back', async () => {
+    const { documentId } = await closeWithAnEdit(() => {
+      api.next.refuse = 'digest_mismatch';
+      page.deaf = true;
+    });
+    page.gone = false;
+    page.deaf = false;
+    const next = await newPage();
+    await next.apiLoadTabRevisioned('guest_1', documentId, 't1', null);
+    next.apiDiscardDraft('guest_1', documentId, 't1');
+    expect(next.apiTakeDraftReplay('guest_1', documentId, 't1')).toBeNull();
+    await idle();
+    expect(await storedDrafts()).toHaveLength(0);
+  });
+
   it('another person in this browser never sees the draft', async () => {
     const { documentId } = await closeWithAnEdit(() => {
       api.next.refuse = 'digest_mismatch';

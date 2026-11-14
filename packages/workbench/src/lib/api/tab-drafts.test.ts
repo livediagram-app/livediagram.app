@@ -151,6 +151,15 @@ describe('the next load', () => {
     expect(map.has(KEY)).toBe(false);
   });
 
+  it('discards a draft the editor could not put on screen: stored and waiting, both gone', async () => {
+    const { map, drafts, keep, load } = setup();
+    keep();
+    expect((await load(4, [])).kind).toBe('replay');
+    drafts.discard('me', 'd1', 't1');
+    expect(map.has(KEY)).toBe(false);
+    expect(drafts.takeReplay('me', 'd1', 't1')).toBeNull();
+  });
+
   it('puts the draft back as kept when the product normalises nothing', async () => {
     const { keep, load } = setup();
     keep();

@@ -10,11 +10,14 @@ import { draftDroppedMessage, draftRestoredMessage, useTabDrafts, withDraft } fr
 
 const listeners = new Set<(e: TabDraftEvent) => void>();
 const replays = new Map<string, Tab>();
+const discarded: string[] = [];
 vi.mock('@/lib/api-client', () => ({
   onTabDraft: (listener: (e: TabDraftEvent) => void) => {
     listeners.add(listener);
     return () => listeners.delete(listener);
   },
+  apiDiscardDraft: (ownerId: string, itemId: string, tabId: string) =>
+    void discarded.push(`${ownerId}/${itemId}/${tabId}`),
   apiTakeDraftReplay: (ownerId: string, itemId: string, tabId: string) => {
     const key = `${ownerId}/${itemId}/${tabId}`;
     const tab = replays.get(key) ?? null;
@@ -58,6 +61,7 @@ describe('useTabDrafts', () => {
   beforeEach(() => {
     listeners.clear();
     replays.clear();
+    discarded.length = 0;
   });
 
   function mount(over: { mayEdit?: boolean; loaded?: string[]; documentId?: string | null } = {}) {
@@ -97,6 +101,7 @@ describe('useTabDrafts', () => {
     expect(applyLoaded).toHaveBeenCalledTimes(1);
     expect(tabsRef.current[0]!.elements).toEqual(draftTab.elements);
     expect(toast.info).toHaveBeenCalledWith(draftRestoredMessage('Board'));
+    expect(discarded).toEqual([]);
     emit({});
     expect(applyLoaded).toHaveBeenCalledTimes(1);
   });
@@ -125,13 +130,14 @@ describe('useTabDrafts', () => {
     expect(applyLoaded).not.toHaveBeenCalled();
   });
 
-  it('a tab edited since its load keeps its edits, and nothing is said', () => {
+  it('a tab edited since its load keeps its edits, the draft goes, and nothing is said', () => {
     const { emit, applyLoaded, toast, tabsRef } = mount();
     tabsRef.current = [{ ...storedTab, elements: [el('a', 'typed')] }];
     replays.set('me/d1/t1', { ...draftTab, name: 7 as never });
     emit({});
     expect(applyLoaded).not.toHaveBeenCalled();
     expect(toast.info).not.toHaveBeenCalled();
+    expect(discarded).toEqual(['me/d1/t1']);
   });
 
   it('a restored draft with no name says this tab', () => {

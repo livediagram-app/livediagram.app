@@ -19,22 +19,22 @@ Derived from [Delta saves](../delta-saves.md). Engineering precision only; desig
 
 ## Modules
 
-| File                                                  | Responsibility                                                                                                                                                                              |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/tab-delta.ts`             | The envelope every product shares: constants, `TabDeltaOp`, `TabDeltaBody`, `parseTabDelta`, `elementsDigest`, `planTabDelta`, `planTabDeltaSync`, the refusal names                        |
-| `apps/api/src/routes/tab-delta-route.ts`              | `handleTabDelta`: parse, refuse, rebuild with `applyElementOps`, prove by digest, hand to `writeTabSave`                                                                                    |
-| `apps/api/src/routes/tab-put-route.ts`                | `writeTabSave`: the whole-tab save's pipeline, shared by the PUT and the delta door; `handleTabPut`                                                                                         |
-| `apps/api/src/routes/document-subresource-routes.ts`  | Dispatch: `POST /api/documents/:id/tabs/:tabId/delta` behind the PUT's doors                                                                                                                |
-| `apps/api/src/openapi/manifest.ts`                    | The route's OpenAPI entry                                                                                                                                                                   |
-| `../packages/workbench/src/lib/api/tab-delta-save.ts` | The editor's side: `createTabDeltaSaves`, the base copies (`hold`, `drop`), `send` (one delta save or null to save whole) and `planUnload`                                                  |
-| `../packages/workbench/src/lib/api/tab-calls.ts`      | `createTabCalls` with `delta`: holds the load's and the whole save's base copies, tries `send` before the whole `PUT`; `flushSavesBeacon` tries `planUnload` within the keepalive budget    |
-| `apps/editor/lib/api/tabs.ts`                         | livediagram's binding: `delta: { diff: diffToElementOps }`, `drafts: tabDraftStore`; `apiSavedTabDigest`, `apiAdoptPeerSave`, `apiTakeDraftReplay`, `onTabDraft`                            |
-| `../packages/workbench/src/lib/api/tab-drafts.ts`     | The drafts of unsaved changes over any store: `createTabDrafts` (`write`, `saveStarted`, `saveLanded`, `read`, `settle`, `takeReplay`, `subscribe`), `judgeTabDraft`, `TAB_DRAFT_MAX_CHARS` |
-| `apps/editor/lib/api/tab-draft-store.ts`              | `tabDraftStore`: the drafts' IndexedDB store (`livediagram-drafts`), one kept connection, a read timeout                                                                                    |
-| `apps/editor/app/document/[id]/useTabDrafts.ts`       | The editor's side of a draft: puts a replay on screen for an Editor, the restored and dropped toasts                                                                                        |
-| `apps/editor/app/document/[id]/tab-save-flow.ts`      | `saveTabAndRelay` announces a landed save (`tab-saved`) after its element ops                                                                                                               |
-| `apps/editor/app/document/[id]/room-op-receive.ts`    | A received `tab-saved` goes to `receiveTabSaved` with the baseline tab; `useEditorRoom` hands it to `apiAdoptPeerSave` for an Editor                                                        |
-| `apps/editor/lib/api/tab-api-test-kit.ts`             | Tests only: the fake api (`fakeApi`) and the tab fixtures the delta, peer and draft tests share                                                                                             |
+| File                                                  | Responsibility                                                                                                                                                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `../packages/api-schema/src/tab-delta.ts`             | The envelope every product shares: constants, `TabDeltaOp`, `TabDeltaBody`, `parseTabDelta`, `elementsDigest`, `planTabDelta`, `planTabDeltaSync`, the refusal names                                   |
+| `apps/api/src/routes/tab-delta-route.ts`              | `handleTabDelta`: parse, refuse, rebuild with `applyElementOps`, prove by digest, hand to `writeTabSave`                                                                                               |
+| `apps/api/src/routes/tab-put-route.ts`                | `writeTabSave`: the whole-tab save's pipeline, shared by the PUT and the delta door; `handleTabPut`                                                                                                    |
+| `apps/api/src/routes/document-subresource-routes.ts`  | Dispatch: `POST /api/documents/:id/tabs/:tabId/delta` behind the PUT's doors                                                                                                                           |
+| `apps/api/src/openapi/manifest.ts`                    | The route's OpenAPI entry                                                                                                                                                                              |
+| `../packages/workbench/src/lib/api/tab-delta-save.ts` | The editor's side: `createTabDeltaSaves`, the base copies (`hold`, `drop`), `send` (one delta save or null to save whole) and `planUnload`                                                             |
+| `../packages/workbench/src/lib/api/tab-calls.ts`      | `createTabCalls` with `delta`: holds the load's and the whole save's base copies, tries `send` before the whole `PUT`; `flushSavesBeacon` tries `planUnload` within the keepalive budget               |
+| `apps/editor/lib/api/tabs.ts`                         | livediagram's binding: `delta: { diff: diffToElementOps }`, `drafts: tabDraftStore`; `apiSavedTabDigest`, `apiAdoptPeerSave`, `apiTakeDraftReplay`, `apiDiscardDraft`, `onTabDraft`                    |
+| `../packages/workbench/src/lib/api/tab-drafts.ts`     | The drafts of unsaved changes over any store: `createTabDrafts` (`write`, `saveStarted`, `saveLanded`, `read`, `settle`, `takeReplay`, `discard`, `subscribe`), `judgeTabDraft`, `TAB_DRAFT_MAX_CHARS` |
+| `apps/editor/lib/api/tab-draft-store.ts`              | `tabDraftStore`: the drafts' IndexedDB store (`livediagram-drafts`), one kept connection, a read timeout                                                                                               |
+| `apps/editor/app/document/[id]/useTabDrafts.ts`       | The editor's side of a draft: puts a replay on screen for an Editor, the restored and dropped toasts                                                                                                   |
+| `apps/editor/app/document/[id]/tab-save-flow.ts`      | `saveTabAndRelay` announces a landed save (`tab-saved`) after its element ops                                                                                                                          |
+| `apps/editor/app/document/[id]/room-op-receive.ts`    | A received `tab-saved` goes to `receiveTabSaved` with the baseline tab; `useEditorRoom` hands it to `apiAdoptPeerSave` for an Editor                                                                   |
+| `apps/editor/lib/api/tab-api-test-kit.ts`             | Tests only: the fake api (`fakeApi`) and the tab fixtures the delta, peer and draft tests share                                                                                                        |
 
 ## Interfaces and contracts
 
@@ -194,8 +194,8 @@ received body as an argument, and with `stored` its first attempt uses that read
   removed id is gone).
 - A peer edited the same elements after this flush landed: the draft's changes are no longer stored as drafted, so
   it is removed with the dropped toast though the flush did land (a false alarm, never lost work).
-- A replay that changes nothing on screen (the tab already edited since it loaded) leaves the draft in place until a
-  later save of the tab lands; a session that may not edit leaves it too.
+- A replay that changes nothing on screen (the tab already edited since it loaded) removes the draft then
+  (`discardDraft`), so no later load brings it back over those edits; a session that may not edit leaves it waiting.
 - A `tab-saved` for a tab not loaded here, from a Viewer's or Participant's session, or whose digest the peer's
   baseline does not hash to moves nothing: that peer's next save is a refused delta and then whole, as before.
 - Our own save landing while a peer's announcement is being hashed: `adopt` checks again after the hash and never

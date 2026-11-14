@@ -2,14 +2,14 @@
 
 // This browser's drafts of unsaved changes, on the editor's side (docs/specs/006-document/delta-saves.md "Drafts of
 // unsaved changes"). A tab's load decides on its draft (lib/api/tabs.ts): one put back is taken here and put on
-// screen as an unsaved edit over the stored tab, so the autosave saves it and relays it to the room like any edit;
-// one somebody's newer save overtook is said in a toast. Only an Editor takes one back: a session that may not save
+// screen as an unsaved edit over the stored tab, so the autosave saves it and relays it to the room like any edit
+// (a tab already edited since it loaded keeps its edits, and the draft goes); one somebody's newer save overtook is said in a toast. Only an Editor takes one back: a session that may not save
 // leaves the draft where it is, for a later load that can.
 import { useEffect, useState, type MutableRefObject } from 'react';
 import type { Tab } from '@livediagram/document';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { apiTakeDraftReplay, onTabDraft } from '@/lib/api-client';
+import { apiDiscardDraft, apiTakeDraftReplay, onTabDraft } from '@/lib/api-client';
 
 /** The toast when a draft was dropped: somebody saved the tab since it was made. */
 export function draftDroppedMessage(tabName: string | null): string {
@@ -70,7 +70,11 @@ export function useTabDrafts(opts: {
       const draft = apiTakeDraftReplay(selfId, documentId, tab.id);
       if (!draft) continue;
       const baseline = o.lastSavedTabsRef.current;
-      if (withDraft(o.tabsRef.current, baseline, draft) === o.tabsRef.current) continue;
+      // A tab edited since it loaded keeps those edits: the draft goes, so no later load brings it back over them.
+      if (withDraft(o.tabsRef.current, baseline, draft) === o.tabsRef.current) {
+        apiDiscardDraft(selfId, documentId, tab.id);
+        continue;
+      }
       o.applyLoaded((tabs) => withDraft(tabs, baseline, draft));
       o.toast.info(draftRestoredMessage(typeof draft.name === 'string' ? draft.name : null));
     }

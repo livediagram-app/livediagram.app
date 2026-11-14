@@ -562,6 +562,8 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
   // (onDraft). Without drafts, nothing is ever put back.
   const takeDraftReplay = (ownerId: string, itemId: string, tabId: string): Tab | null =>
     drafts ? drafts.takeReplay(ownerId, itemId, tabId) : null;
+  const discardDraft = (ownerId: string, itemId: string, tabId: string): void =>
+    drafts?.discard(ownerId, itemId, tabId);
   const onDraft = (listener: (event: TabDraftEvent) => void): (() => void) =>
     drafts ? drafts.subscribe(listener) : () => {};
 
@@ -578,6 +580,7 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     savedDigest,
     adoptPeerSave,
     takeDraftReplay,
+    discardDraft,
     onDraft,
   };
 }

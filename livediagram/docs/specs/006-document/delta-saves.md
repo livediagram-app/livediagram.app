@@ -169,7 +169,8 @@ of each tab the flush sends, in this browser, and the next load decides what to 
   - otherwise, the api still holds the draft's revision: nobody saved the tab since. The draft is put on screen as an
     unsaved edit over the stored tab (the autosave's baseline stays the stored tab), so the autosave saves it and
     relays it to the room as any edit, a delta over the base copy where it can be. An info toast says "Restored your
-    last unsaved edit to “Tab name”." A tab already edited since it loaded keeps those edits instead;
+    last unsaved edit to “Tab name”." A tab already edited since it loaded keeps those edits instead, and the draft is removed
+    then, so no later load brings it back over them;
   - otherwise somebody saved the tab since the draft's revision. The draft never overwrites their work: it is
     removed, and a warning toast says "Couldn't apply your last unsaved edit to “Tab name”: the tab changed since."
 - **Another browser** never sees a draft: it lives in the browser that wrote it. A draft written in one browser while

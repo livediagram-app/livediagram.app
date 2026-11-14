@@ -112,6 +112,7 @@ export const apiLoadTabRevisioned = (
 // A draft a load put back, once, for the editor to put on screen as an unsaved edit; and every draft put back or
 // dropped (useTabDrafts).
 export const apiTakeDraftReplay = calls.takeDraftReplay;
+export const apiDiscardDraft = calls.discardDraft;
 export const onTabDraft = calls.onDraft;
 
 // A peer's save moves the base copy (docs/specs/006-document/delta-saves.md): the digest a save of a tab that wrote a

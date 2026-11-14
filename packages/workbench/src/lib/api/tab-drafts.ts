@@ -223,13 +223,21 @@ export function createTabDrafts<T extends { id: string }>(store: TabDraftStore) 
     return tab;
   }
 
+  /** The editor could not put the tab's draft on screen (the tab was edited since it loaded): it goes, so no later
+   *  load brings it back over newer edits. */
+  function discard(ownerId: string, itemId: string, tabId: string): void {
+    const key = keyOf(ownerId, itemId, tabId);
+    replays.delete(key);
+    remove(key);
+  }
+
   /** Hear each draft a load puts back or drops. Answers the unsubscribe. */
   function subscribe(listener: (event: TabDraftEvent) => void): () => void {
     listeners.add(listener);
     return () => listeners.delete(listener);
   }
 
-  return { write, saveStarted, saveLanded, read, settle, takeReplay, subscribe };
+  return { write, saveStarted, saveLanded, read, settle, takeReplay, discard, subscribe };
 }
 
 export type TabDrafts<T extends { id: string }> = ReturnType<typeof createTabDrafts<T>>;
