@@ -116,6 +116,17 @@ To cut down on two people fighting over the same element, an element another par
   boundary's tab) keeps its own colours.
 - **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
 - **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room; there's no sticky server state to clean up.
+- **Held until the holder's change lands** (Work Tracker 862, as livediagram since Work Tracker 659). Letting go of
+  an element the holder has just changed (moved, resized, retyped) does not free it at once: their change is still on
+  its way (the autosave waits, writes the tab, then the room orders its element ops), and a peer who opened it in that
+  window would have their edit replaced by the holder's whole-element write, on every screen and in storage. So an
+  element the holder let go of stays in their `select` op's `elementIds` while it differs from their save baseline or
+  their save of it waits for the room, and drops out once the room confirms it. It looks exactly like the selection
+  did (the holder's border, disc and "Locked to <name>"), for about the autosave's delay plus a round trip. Bounded by
+  `WRITE_HOLD_MAX_MS` (10 s) so an element whose save keeps failing is never held for good; a tab switch ends it with
+  the rest of the selection. One shared home for every editor:
+  `@liveworkspace/workbench/lib/selection-write-hold` (the hold and the selection broadcast) and
+  `@liveworkspace/workbench/lib/own-writes` (the holds on our saves the room has not ordered yet).
 - **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, and marquee (which filters locked ids out of its hit set), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover card reads "Locked to <name>" (each disc takes the pointer so the card opens; presses still reach the element).
 - **A Viewer's selection holds nothing.** A Viewer only looks, so their selection shows its disc and border but locks nothing: the element stays selectable and editable, and the disc's hover card reads "Selected by <name>" with "They're only viewing, so you can still edit it." Every lock check reads the selector's `holds` flag (false for a Viewer).
 - The user-set element **lock** (`element.locked`, the padlock badge) is a separate, persisted feature; this concurrent-selection lock is ephemeral and presence-only.
