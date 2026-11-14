@@ -937,7 +937,8 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     an image glyph and **Add an Image** ("PNG, JPEG, WebP or GIF, up to 10 MB" under it); pressing it (or Enter or
     Space) opens the file picker, and a file dropped on it uploads too. While it uploads it reads **Uploading…** with
     a ring that fills by the bytes sent (**Uploading 40%** once the browser says how far it has got, below) and
-    takes no other file. With a picture, the picture itself, fitted to the row's width and at most 12
+    takes no other file; **Cancel** under it (named "Cancel Upload"; in place of Remove, beside Replace, while a replacement uploads) stops the
+    upload, keeps the field as it was and says nothing. With a picture, the picture itself, fitted to the row's width and at most 12
     rem (192 px) tall on a soft grey ground, and under it **Replace** and **Remove** (each an icon and its word); its
     accessible name is "{Field}: image". A picture that cannot be read (deleted at the service, or not shown to this
     person) draws a quiet broken-image tile saying "This image can't be shown", with Replace and Remove still there.
@@ -949,7 +950,12 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     still ring and "Waiting" until its turn, then a ring and its name while it uploads, the ring filling from the top,
     clockwise, by the share of the file's bytes sent (it turns only until the browser first says how far it has
     got, and stays full while the server stores the picture); files upload one after another, and each joins the
-    list as it lands, in one
+    list as it lands. Each such tile's ring is its **Cancel Upload** button, with a small cross at its centre
+    (accessible name "Cancel upload of photo.png"): a waiting file leaves the queue, an uploading one stops, and
+    either way its tile goes with nothing said and the next file goes on. A file whose upload had already finished
+    when Cancel was pressed is not added either (its picture stays in the uploader's gallery, as a removed one does).
+    A landed picture shows at once from the file's own bytes, never fetched back from the server (on a slow line that
+    fetch held each new tile on its grey placeholder for seconds). Each lands in one
     write of the list read from the card as it is then (someone else may have added meanwhile). A file refused, or
     past the field's 20, is skipped and said under the grid ("photo.heic: Use a PNG, JPEG, WebP or GIF image.",
     "{Field} holds up to 20."), the rest still land, and what landed is announced ("3 images added").
