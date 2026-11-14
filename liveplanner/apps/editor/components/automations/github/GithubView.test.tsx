@@ -162,11 +162,16 @@ describe('GithubView: connected', () => {
     client.readGithub.mockResolvedValue(connection({ repositories: many }));
     view();
     await screen.findByText('Pick up to 20 repositories for this plan to hear.');
-    const switches = screen.getAllByRole('switch');
-    for (const s of switches.slice(0, 21)) fireEvent.click(s);
+    // Past 20 the list draws a window of rows (Work Tracker 769): the rest draw once it scrolls.
+    const flip = (n: number) => fireEvent.click(screen.getByRole('switch', { name: `acme/r${n}` }));
+    for (let n = 1; n <= 18; n += 1) flip(n);
+    const box = document.querySelector<HTMLElement>('[data-github-repository-window]')!;
+    box.scrollTop = 10 * 48;
+    fireEvent.scroll(box);
+    for (let n = 19; n <= 21; n += 1) flip(n);
     expect(screen.getByRole('alert').textContent).toBe('Pick up to 20.');
     expect(button('Save Repositories')).toHaveProperty('disabled', true);
-    fireEvent.click(switches[20]!);
+    flip(21);
     client.chooseGithubRepositories.mockRejectedValueOnce(
       new GithubRefusal(409, 'github_repository_full'),
     );

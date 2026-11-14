@@ -72,6 +72,9 @@ never told a change worked when it shows on no board.
   **Not on a board**. This is the text `board` view [Plan mode](plan-mode.md#agents) named as a later step. A filter
   by card type or column names them exactly as `change_items` does (`in-progress` reads In Progress; `Trash` the
   Trash), and a name the project does not have is refused with the names it has, never answered with no items.
+- A card linked to pull requests the plan has a state for lists them as `pullRequests` (each its `name`, `state`,
+  `checks` when an open one or a draft has them, `title`, `url`, and the `field` holding it), with exactly the
+  visibility the board gives the caller ([GitHub pull requests](github-pull-requests.md#agents)).
 - A repeating card lists its rule as `repeat` (`rule` in words, the `next` day, the `timeZone`), not as a raw field
   ([Items](items.md#repeating-cards)). `change_items` sets no repeat: a rule needs the setter's time zone, and only an
   Editor sets one, in the editor.

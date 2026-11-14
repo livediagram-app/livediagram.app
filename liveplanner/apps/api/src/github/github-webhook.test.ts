@@ -431,10 +431,16 @@ describe('refused signatures', () => {
   });
 
   it('knows GitHub’s webhook ranges and nothing else', () => {
-    const inside = ['192.30.252.1', '185.199.111.255', '140.82.127.0', '143.55.79.255'];
+    const inside = [
+      ...['192.30.252.1', '185.199.111.255', '140.82.127.0', '143.55.79.255'],
+      ...['9.234.98.160', '9.234.98.191', '9.234.106.63'],
+    ];
     const v6Inside = ['2a0a:a440::1', '2a0a:a447:ffff::1', '2606:50c0::', '::ffff:192.30.253.4'];
     for (const ip of [...inside, ...v6Inside]) expect(isGithubHookAddress(ip), ip).toBe(true);
-    const outside = ['192.30.251.255', '185.199.112.0', '140.82.128.1', '143.55.80.0', '8.8.8.8'];
+    const outside = [
+      ...['192.30.251.255', '185.199.112.0', '140.82.128.1', '143.55.80.0', '8.8.8.8'],
+      ...['9.234.98.159', '9.234.98.192', '9.234.106.64'],
+    ];
     const odd = ['2a0a:a448::1', '2606:50c1::1', 'anonymous', '1.2.3', '1.2.3.x', '1.2.3.1234'];
     for (const ip of [...outside, ...odd, '1.2.3.256', '1..2.3']) {
       expect(isGithubHookAddress(ip), ip).toBe(false);

@@ -76,6 +76,7 @@ import {
 } from '@liveplanner/items';
 import { widgetName } from './board-widget-change';
 import type { PictureLink } from './card-pictures';
+import { pullRequestLister, type ListedPullRequest } from './card-pull-requests';
 import type { PlanState } from './plan-state';
 
 export const NO_BOARD_HINT =
@@ -121,6 +122,9 @@ interface ListedItem {
   blocks?: string[];
   // A repeating card's rule (docs/specs/026-plan/items.md "Repeating cards"), in words; only on one.
   repeat?: ListedRepeat;
+  // Its linked pull requests with a state (docs/specs/026-plan/github-pull-requests.md "Agents"); only on a card with
+  // any.
+  pullRequests?: ListedPullRequest[];
 }
 
 interface ListedRepeat {
@@ -418,6 +422,8 @@ function listedValue(
 
 const withTime = (time: Record<string, ListedTime> | undefined) => (time ? { time } : {});
 const withRepeat = (repeat: ListedRepeat | undefined) => (repeat ? { repeat } : {});
+const withPullRequests = (pullRequests: ListedPullRequest[] | undefined) =>
+  pullRequests ? { pullRequests } : {};
 
 // A card type as list_items answers it: everything change_card_types sets, by the names it takes. Its Default
 // State by column name when `statuses` has it.
@@ -556,6 +562,8 @@ export function planListing(
   const calc = hasCalculatedFields(plan.types)
     ? { index: childIndexOf(state.items, plan.types), isDone }
     : null;
+  // Linked pull requests' states, as the board picks them, and only when the api answered any.
+  const prsOf = pullRequestLister(state.pullRequests, plan.types);
   const items = [...state.items]
     .filter((i) => !filter.type || i.type === filter.type)
     .filter((i) => !filter.status || itemStatus(i) === filter.status)
@@ -591,6 +599,7 @@ export function planListing(
       ),
       ...withRepeat(listedRepeat(i, now)),
       ...(blocking ? listedBlocking(blocking, i.id) : {}),
+      ...withPullRequests(prsOf(i)),
     }));
   return {
     boards,

@@ -4,13 +4,21 @@
 // the installation lists, a lock on a private one, and a switch for each the plan hears; Save Repositories while the
 // picks differ from what is saved, up to 20. A private one picked says what that shares. The api checks each against
 // the installation again; its refusals are said here in words, and one saying the list is out of date reads it again.
+// With more than 20 listed (up to 1,000), Search Repositories narrows the list and the rows draw in a window of their
+// own (RepositoryWindow.tsx), so a long list opens, scrolls and filters without a pause.
 
-import { useId, useMemo, useState } from 'react';
-import type { GithubConnectionView } from '@liveplanner/api-schema';
-import { Button, LockIcon, Switch } from '@liveplanner/ui';
+import { useCallback, useId, useMemo, useState } from 'react';
+import type { GithubConnectionView, GithubRepositoryView } from '@liveplanner/api-schema';
+import { Button, NoMatches, SearchIcon, TextInput } from '@liveplanner/ui';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { AutomationsScope } from '../automations-client';
 import { GithubRefusal, chooseGithubRepositories } from './github-client';
+import {
+  REPOSITORY_BOX_CLASSES,
+  REPOSITORY_LIST_CLASSES,
+  RepositoryRow,
+  RepositoryWindow,
+} from './RepositoryWindow';
 import { loadGithub, setGithub } from './use-github-connection';
 
 /** The most repositories one plan hears (the api's REPOSITORIES_MAX). */
@@ -37,6 +45,30 @@ const STALE: ReadonlySet<string> = new Set([
 const sameSet = (a: ReadonlySet<number>, b: ReadonlySet<number>) =>
   a.size === b.size && [...a].every((id) => b.has(id));
 
+/** The repositories whose `owner/name` holds the words, any case; every one for none. One pass. */
+export function repositoriesMatching(
+  repositories: readonly GithubRepositoryView[],
+  query: string,
+): readonly GithubRepositoryView[] {
+  const q = query.trim().toLowerCase();
+  return q ? repositories.filter((r) => r.fullName.toLowerCase().includes(q)) : repositories;
+}
+
+const byName = (a: GithubRepositoryView, b: GithubRepositoryView) =>
+  a.fullName.localeCompare(b.fullName, 'en', { sensitivity: 'base', numeric: true });
+
+/**
+ * A long list's order: the ones the plan hears (as saved, so a row never jumps while it is flipped) pinned first, then
+ * the rest, each part by name. One sort.
+ */
+export function pinnedFirst(
+  repositories: readonly GithubRepositoryView[],
+): readonly GithubRepositoryView[] {
+  return [...repositories].sort((a, b) => Number(b.chosen) - Number(a.chosen) || byName(a, b));
+}
+
+const count = (n: number) => n.toLocaleString('en-GB');
+
 export function GithubRepositories({
   scope,
   connection,
@@ -62,13 +94,17 @@ export function GithubRepositories({
   const dirty = !sameSet(picked, saved);
   const over = picked.size > GITHUB_REPOSITORIES_MAX;
   const privatePicked = connection.repositories.some((r) => r.private && picked.has(r.id));
-  const flip = (id: number, on: boolean) => {
-    const next = new Set(picked);
-    if (on) next.add(id);
-    else next.delete(id);
-    setPicked(next);
+  // Stable, so a flip redraws only the row it flips (RepositoryRow is memoised).
+  const flip = useCallback((id: number, on: boolean) => {
+    setPicked((held) => {
+      const next = new Set(held);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
     setError(null);
-  };
+  }, []);
+  const [query, setQuery] = useState('');
   const save = async () => {
     if (saving || over) return;
     setSaving(true);
@@ -89,6 +125,14 @@ export function GithubRepositories({
     }
   };
   const listed = connection.repositories;
+  const long = listed.length > GITHUB_REPOSITORIES_MAX;
+  // Pinned first, sorted once per listing; a search keeps that order, so a heard one shows first only if it matches.
+  const ordered = useMemo(() => (long ? pinnedFirst(listed) : listed), [listed, long]);
+  const matching = useMemo(
+    () => (long ? repositoriesMatching(ordered, query) : ordered),
+    [ordered, long, query],
+  );
+  const searching = long && query.trim().length > 0;
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-3">
@@ -96,47 +140,59 @@ export function GithubRepositories({
           Repositories
         </h3>
         <span className="text-[12px] tabular-nums text-slate-500 dark:text-slate-400">
-          {picked.size} of {listed.length} heard
+          {searching
+            ? `${count(matching.length)} of ${count(listed.length)} shown`
+            : `${picked.size} of ${count(listed.length)} heard`}
         </span>
       </div>
+      {long ? (
+        <div className="relative">
+          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <SearchIcon size={14} />
+          </span>
+          <TextInput
+            compact
+            type="search"
+            aria-label="Search Repositories"
+            placeholder="Search repositories"
+            className="pl-8"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      ) : null}
       {listed.length === 0 ? (
         <p className="rounded-lg bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
           The installation lists no repositories you can reach. Add some on GitHub with Change on
           GitHub.
         </p>
-      ) : (
-        <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900">
-          {listed.map((r) => {
-            const nameId = `${headingId}-${r.id}`;
-            return (
-              <li
-                key={r.id}
-                data-github-repository=""
-                className="flex min-h-12 items-center gap-3 px-3.5 py-2"
-              >
-                <span
-                  id={nameId}
-                  className="flex min-w-0 flex-1 items-center gap-2 text-[13px] text-slate-800 dark:text-slate-100"
-                >
-                  <span className="truncate font-medium">{r.fullName}</span>
-                  {r.private ? (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                      <LockIcon size={11} aria-hidden />
-                      Private
-                    </span>
-                  ) : null}
-                </span>
-                <Switch
-                  size="sm"
-                  checked={picked.has(r.id)}
-                  labelledBy={nameId}
-                  disabled={saving}
-                  onChange={(on) => flip(r.id, on)}
-                />
-              </li>
-            );
-          })}
+      ) : !long ? (
+        <ul className={`${REPOSITORY_BOX_CLASSES} ${REPOSITORY_LIST_CLASSES}`}>
+          {listed.map((r) => (
+            <RepositoryRow
+              key={r.id}
+              repository={r}
+              picked={picked.has(r.id)}
+              saving={saving}
+              onFlip={flip}
+              nameId={`${headingId}-${r.id}`}
+            />
+          ))}
         </ul>
+      ) : matching.length === 0 ? (
+        <NoMatches things="repositories" query={query} onClear={() => setQuery('')} />
+      ) : (
+        // A new search starts at the top of its matches.
+        <RepositoryWindow
+          key={query.trim().toLowerCase()}
+          repositories={matching}
+          picked={picked}
+          saving={saving}
+          onFlip={flip}
+          phone={phone}
+          idPrefix={headingId}
+          label="Repositories"
+        />
       )}
       {picked.size === 0 && listed.length > GITHUB_REPOSITORIES_MAX && !dirty ? (
         <p className="text-[12px] text-slate-600 dark:text-slate-300">

@@ -15,6 +15,7 @@ import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { applyItemChanges, type ItemChange } from '../plan/item-changes';
 import { FIELD_HINT } from '../plan/api-refusal';
 import { pictureLinkFor } from '../plan/card-pictures';
+import { listedPullRequestSchema, pullRequestLine } from '../plan/card-pull-requests';
 import { planListing, resolveListingFilter } from '../plan/plan-listing';
 import { readPlanState, type PlanState } from '../plan/plan-state';
 import { columns, projectOf } from './shared';
@@ -29,6 +30,12 @@ const itemOut = z.object({
   status: z.string().nullable(),
   title: z.string(),
   fields: z.record(z.string(), z.unknown()),
+});
+
+// A card's linked pull requests with a state, as list_items lists them (docs/specs/026-plan/github-pull-requests.md
+// "Agents").
+const listedItemOut = itemOut.extend({
+  pullRequests: z.array(listedPullRequestSchema).optional(),
 });
 
 const outOf = (item: Item) => ({
@@ -119,7 +126,7 @@ export const itemLs = defineVerb({
     type: z.string().optional().describe('Only items of this type (task, note, project...)'),
     status: z.string().optional().describe('Only items with this status (a column)'),
   }),
-  output: z.object({ items: z.array(itemOut), boards: z.array(z.string()) }),
+  output: z.object({ items: z.array(listedItemOut), boards: z.array(z.string()) }),
   listKey: 'items',
   run: async (ctx, input) => {
     const { projectId, state } = await planOf(ctx, input.project);
@@ -150,12 +157,22 @@ export const itemLs = defineVerb({
         status: i.column ?? i.status,
         title: i.title,
         fields: i.fields,
+        ...(i.pullRequests ? { pullRequests: i.pullRequests } : {}),
       })),
     };
   },
+  // A card's linked pull requests end its line: "acme/web#42 open, checks failing; acme/api#7 merged".
   text: ({ items, boards }) => [
     ...boards,
-    ...columns(items.map((i) => [`#${i.key}`, i.type, i.status ?? '-', JSON.stringify(i.title)])),
+    ...columns(
+      items.map((i) => [
+        `#${i.key}`,
+        i.type,
+        i.status ?? '-',
+        JSON.stringify(i.title) +
+          (i.pullRequests?.length ? `  ${i.pullRequests.map(pullRequestLine).join('; ')}` : ''),
+      ]),
+    ),
   ],
   quiet: ({ items }) => items.map((i) => `#${i.key}`),
   cli: {
@@ -164,7 +181,8 @@ export const itemLs = defineVerb({
       'liveplanner item ls "Sprint 14"',
       'liveplanner item ls 3f9c --type task --status new',
     ],
-    prints: 'one item a line: #number, type, status, title',
+    prints:
+      'one item a line: #number, type, status, title, then its pull requests with their states',
   },
 });
 

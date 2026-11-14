@@ -18,7 +18,8 @@ import { PlanCardFace } from './PlanCardFace';
 import { PullRequestStoreContext } from './pull-request-store';
 import { useValueStore } from './value-store';
 import { planPalette } from './plan-palette';
-import { PullRequestChip, pullRequestWords } from './PullRequestPill';
+import { contrastRatio } from '@liveplanner/project';
+import { CHECKS_TONES_DARK, PullRequestChip, checksInk, pullRequestWords } from './PullRequestPill';
 
 // Pull request state on cards (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards"): the face's
 // pill and marks, the panel's chip and title under the field, and its Pull Requests list.
@@ -121,6 +122,38 @@ describe('the card face', () => {
         f.getAttribute('aria-label'),
       ),
     ).toEqual(['acme/web#9: Merged']);
+  });
+
+  // The running dot in dark mode: GitHub's dark amber, unmixed, not the light tone leaned brown toward the ink.
+  it('inks each check to read on a light and a dark card, the running one amber in dark', () => {
+    const dark = planPalette('dark');
+    expect(checksInk('running', dark)).toBe(CHECKS_TONES_DARK.running);
+    for (const palette of [planPalette('light'), dark])
+      for (const c of ['passing', 'running', 'failing'] as const)
+        expect(contrastRatio(checksInk(c, palette), palette.card), c).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // Work Tracker 758: on a compact or phone card no tooltip shows, so a mark carries its checks itself.
+  it.each<[string, Partial<PullRequestStatus>, string | null, string]>([
+    ['open, passing', { checks: 'passing' }, 'passing', 'Checks Passing'],
+    ['open, failing', { checks: 'failing' }, 'failing', 'Checks Failing'],
+    ['open, running', { checks: 'running' }, 'running', 'Checks Running'],
+    ['a draft, failing', { state: 'draft', checks: 'failing' }, 'failing', 'Draft, Checks Failing'],
+    ['a draft, no checks', { state: 'draft' }, null, 'Draft'],
+    ['open, no checks yet', {}, null, 'Open'],
+    ['merged, checks passed', { state: 'merged', checks: 'passing' }, null, 'Merged'],
+    ['closed, checks failed', { state: 'closed', checks: 'failing' }, null, 'Closed'],
+  ])('a mark for %s shows its checks without a tooltip', (_, o, checks, words) => {
+    face(card(), pullRequestStatuses([status(5, { ...o, cards: ['c'] })]));
+    const flag = document.querySelector('[data-pull-request-flag]')!;
+    expect(flag.getAttribute('aria-label')).toBe(`acme/web#5: ${words}`);
+    expect(flag.getAttribute('data-pull-request-checks')).toBe(checks);
+    expect(flag.querySelector('[data-checks-mark]')?.getAttribute('data-checks-mark') ?? null).toBe(
+      checks,
+    );
+    // Each check reads by its own shape, not by colour alone: a tick, a cross, a dot.
+    if (checks === 'running') expect(flag.querySelector('[data-checks-mark] svg')).toBeNull();
+    else if (checks) expect(flag.querySelector('[data-checks-mark] svg')).toBeTruthy();
   });
 });
 

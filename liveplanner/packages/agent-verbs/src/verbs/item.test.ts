@@ -820,3 +820,46 @@ describe('required fields (docs/specs/026-plan/item-types.md "Required fields")'
     expect(refusal.message).toMatch(/required custom field would be left empty/);
   });
 });
+
+// A card's linked pull requests (docs/specs/026-plan/github-pull-requests.md "Agents"): the states GET /items answered.
+describe('item ls: pull requests', () => {
+  it('carries each card’s linked states and ends its line with them', async () => {
+    const pr = (key: string, state: string, checks: string, title: string) => ({
+      key,
+      url: `https://github.com/${key.replace('#', '/pull/')}`,
+      title,
+      state,
+      checks,
+      cards: ['itembbb111'],
+      updatedAt: 1,
+    });
+    const pullRequests = [
+      pr('acme/web#42', 'open', 'failing', 'Fix the login'),
+      pr('acme/api#7', 'merged', 'passing', 'API'),
+    ];
+    const { ctx } = api({
+      [path]: () => Response.json({ items: ITEMS, rev: 4, pullRequests }),
+    });
+    const all = await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: undefined });
+    expect(all.items.find((i) => i.key === 1)!.pullRequests).toEqual([
+      {
+        name: 'acme/web#42',
+        state: 'open',
+        checks: 'failing',
+        title: 'Fix the login',
+        url: 'https://github.com/acme/web/pull/42',
+      },
+      {
+        name: 'acme/api#7',
+        state: 'merged',
+        title: 'API',
+        url: 'https://github.com/acme/api/pull/7',
+      },
+    ]);
+    expect(all.items.find((i) => i.key === 2)).not.toHaveProperty('pullRequests');
+    expect(itemLs.text!(all).slice(1)).toEqual([
+      '#1  bug   Doing  "Fix login"  acme/web#42 open, checks failing; acme/api#7 merged',
+      '#2  task  To Do  "Docs"',
+    ]);
+  });
+});

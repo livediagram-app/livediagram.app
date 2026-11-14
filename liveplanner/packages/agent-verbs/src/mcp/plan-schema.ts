@@ -2,6 +2,7 @@
 // §4.9b): list_items, change_items, add_board and change_card_types. Everything is named as people name it (a
 // column name, a card type's name, a custom field's name, a person's name, "#12"); the server resolves the ids.
 import { z } from 'zod';
+import { listedPullRequestSchema } from '../plan/card-pull-requests';
 import { uploadImageOutput, uploadImageShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
 import {
   CALCULATIONS,
@@ -842,6 +843,13 @@ const listedItem = z.object({
     .optional()
     .describe(
       'A repeating card’s rule: a fresh copy is made on each day it names. Only an Editor sets one, in the editor.',
+    ),
+  pullRequests: z
+    .array(listedPullRequestSchema)
+    .optional()
+    .describe(
+      'Its linked GitHub pull requests the plan has a state for (a Pull Request or Link field’s, then the ones ' +
+        'naming the card), as the board shows them to you.',
     ),
 });
 
