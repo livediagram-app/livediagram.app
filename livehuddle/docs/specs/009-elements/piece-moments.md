@@ -43,7 +43,7 @@ Every piece you place is one of three:
 | Portal, Avatar Pad, Elevator, Stairs, Directory, Signpost                                                                                                                                | Interactive | You travel, or a press takes you                                                                                          |
 | Notice Board                                                                                                                                                                             | Interactive | A press opens it. **Walk-up: a pin wobbles**: the top note on your side swings on its pin; on a bare board a pin wobbles  |
 | World Clock                                                                                                                                                                              | Interactive | A press opens it. **Walk-up: ticking on**: each minute hand ticks once round its dial, dial by dial from your side        |
-| Calendar Wall                                                                                                                                                                            | Interactive | A press opens it. **Walk-up: the page lifts**: the sheet's bottom corner on your side curls up and falls back             |
+| Calendar Wall                                                                                                                                                                            | Interactive | A press opens it. **Walk-up: the page lifts**: the bottom corner away from you curls up and falls back                    |
 | Suggestion Box                                                                                                                                                                           | Interactive | A press opens it. **Walk-up: a note peeks**: the note in the slot rises and sinks back, and the lightbulb glows           |
 | Screen, Room Sign, Timer, Stopwatch, Mode Button, Focus Button, Link Card, Video                                                                                                         | Interactive | A press uses it, or its face is live                                                                                      |
 | Window                                                                                                                                                                                   | Interactive | It lets light in. **Walk-up: brightening**: the light on the floor brightens and fades back, and a glint crosses the pane |
@@ -89,8 +89,8 @@ makes a sound, and the piece is back exactly as it was when the moment ends.
 
 The side a moment plays from is yours: a tree, a coat rack or an umbrella's canopy rocks away from where you stand; a
 pebble, a coin or a dart comes from your side; a wave of books starts at your end; the locker, cupboard, car or bike
-that moves is the one nearest you; a sparrow flies off away from you; a hammock rocks away from you; the note, the page
-corner and the first clock to tick are on your side; a glint crosses a window's pane from your end.
+that moves is the one nearest you; a sparrow flies off away from you; a hammock rocks away from you; the note and the
+first clock to tick are on your side, and the calendar's page lifts at its far corner, clear of your character; a glint crosses a window's pane from your end.
 
 **Turned pieces.** A moment's art sits on the front drawing (a fire's flames, a book on its shelf). A piece turned to
 show its back or its side ([furniture-facing.md](furniture-facing.md)) plays a **nudge** instead: the whole drawing

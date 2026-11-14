@@ -72,8 +72,8 @@ Derived from [Piece moments](../piece-moments.md).
   play re-renders that face only. The Notice Board wraps note `swingingNote(side, shown)` (0 on your left or when one
   note shows, else 1) in `NoteSwing` about its pin, or with no notes draws `LonePin` at the cork's top corner on your
   side (`x + 22` or `x + w - 18`, `y + 16`). The World Clock wraps each dial's minute hand in `TickingHand` about its
-  centre, delayed by `waveDelay(cx, side, width)`. The Calendar Wall draws `PageLift` at the sheet's bottom corner on
-  your side, `(0, 160)` or `(200, 160)`.
+  centre, delayed by `waveDelay(cx, side, width)`. The Calendar Wall draws `PageLift` at the sheet's bottom corner away
+  from you (the near one is under your character), `(200, 160)` from the left or `(0, 160)` from the right.
 - **The Window**: `WindowView` draws `WindowMoment`, which reads `useFreshMoment(id)` and draws, keyed by the play, a
   second wash of the light (`lh-moment-pulse`, peak 1) and a glint clipped to the pane, sweeping `pane.w + 8` px from
   your end.
@@ -172,7 +172,7 @@ linear but a thrown thing's travel across. A swing peaks at its `--swing` and da
 | Hammock         | Ropes, sling, band and spreader bars swing 4 degrees on (76, 16), 1.8 s           | Nothing                                                        | 1.9 s  |
 | Notice Board    | The top note on your side swings 6 degrees on its pin, 1.6 s (on its face)        | On bare cork: a red pin pops in at your corner, wobbles, fades | 1.7 s  |
 | World Clock     | Each minute hand ticks once round in 12 steps, 1.2 s, a wave from you (its face)  | Nothing                                                        | 1.7 s  |
-| Calendar Wall   | Nothing                                                                           | A 28 px dog-ear curling up at your bottom corner, 1.3 s        | 1.4 s  |
+| Calendar Wall   | Nothing                                                                           | A 28 px dog-ear curling up at the far bottom corner, 1.3 s     | 1.4 s  |
 | Suggestion Box  | The note in the slot and its writing rise 5 px and sink back, 1.1 s               | The bulb's glow (r 9, peak 0.75) and a sparkle beside it       | 1.5 s  |
 | Window          | Nothing                                                                           | The light's second wash (1.6 s); a glint across the pane       | 1.7 s  |
 | Stage Curtains  | Each drape, with its tie-back and tassel, swings 2 degrees from the rail          | Nothing                                                        | 1.9 s  |

@@ -97,10 +97,13 @@ export function TickingHand({
 // The page's corner: how far up and in the curl reaches, in the calendar's grid.
 const CURL = 28;
 
-/** The Calendar Wall's sheet lifting at its bottom corner on your side, (x, y) being that corner. */
+/**
+ * The Calendar Wall's sheet lifting at its bottom corner away from you, (x, y) being that corner: the near one is
+ * under your character as you stand at the wall.
+ */
 export function PageLift({ play, x, y }: { play: PieceMomentPlay; x: number; y: number }) {
-  // Inward from the corner: right from the left one, left from the right one.
-  const dir = play.side < 0 ? 1 : -1;
+  // Inward from the corner: left from the right one (you on the left), right from the left one.
+  const dir = play.side < 0 ? -1 : 1;
   const fold = `M${x + dir * CURL} ${y}L${x} ${y - CURL}`;
   const tip = { x: x + dir * CURL * 0.86, y: y - CURL * 0.86 };
   return (

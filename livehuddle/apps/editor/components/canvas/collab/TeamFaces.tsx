@@ -94,7 +94,7 @@ function CalendarWallFace({ element, walking }: { element: ShapeElement; walking
   const { x, y, w, h, cols, rows } = CALENDAR_GRID;
   const cw = w / cols;
   const ch = h / rows;
-  // Walking up plays its answer (piece-moments.md): the sheet's bottom corner on your side lifts and falls back.
+  // Walking up plays its answer (piece-moments.md): the sheet's bottom corner away from you lifts and falls back.
   const play = useFreshMoment(element.id);
   return (
     <Overlay element={element}>
@@ -183,7 +183,7 @@ function CalendarWallFace({ element, walking }: { element: ShapeElement; walking
             })}
           </>
         ) : null}
-        {play ? <PageLift play={play} x={play.side < 0 ? 0 : art.width} y={art.height} /> : null}
+        {play ? <PageLift play={play} x={play.side < 0 ? art.width : 0} y={art.height} /> : null}
       </svg>
       {walking ? <ReaderHit label="Open the Calendar" onOpen={() => setReading(true)} /> : null}
       <Tooltip label="Open Calendar">

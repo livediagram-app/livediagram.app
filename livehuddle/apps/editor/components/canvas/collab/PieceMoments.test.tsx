@@ -282,7 +282,7 @@ describe('a piece moment on screen', () => {
     expect(hands[0]!.style.transformOrigin).toBe('46px 32px');
   });
 
-  it('lifts the calendar page at the bottom corner on your side', () => {
+  it('lifts the calendar page at the bottom corner away from you, clear of your character', () => {
     const corner = (id: string, side: -1 | 1) => {
       const { container } = draw('calendar-wall', id);
       act(() => playMoment(id, side));
@@ -290,8 +290,8 @@ describe('a piece moment on screen', () => {
         '[data-moment-parts="calendar-wall"] .lh-moment-lift',
       )!.style.transformOrigin;
     };
-    expect(corner('cl', -1)).toBe('0px 160px');
-    expect(corner('cr', 1)).toBe('200px 160px');
+    expect(corner('cl', -1)).toBe('200px 160px');
+    expect(corner('cr', 1)).toBe('0px 160px');
   });
 
   it("brightens a window's light and runs a glint across its pane from your end", () => {
