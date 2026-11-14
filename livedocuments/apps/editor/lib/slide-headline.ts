@@ -3,9 +3,11 @@
 // most weight on it: its type size (textSize by textScale) times its length (up to
 // HEADLINE_LENGTH_CAP characters), so a heading outweighs a huge short figure ("86k") and a large
 // statement outweighs a small eyebrow; the topmost on a tie. On one line, cut to
-// SLIDE_HEADLINE_MAX characters. Pure.
+// SLIDE_HEADLINE_MAX characters. Only text showing at step 0 counts ("Jump to a slide"): text a build brings in
+// later never names the slide, so the name never gives away what is still to come. Pure.
 import {
   pagesOf,
+  presentedBuild,
   LABEL_FONT_PX,
   resolveSlide,
   type Slide,
@@ -30,7 +32,7 @@ function sizeWeight(size: TextSize | undefined): number {
 export function slideHeadline(slide: Slide, tab: Tab | undefined): string | null {
   if (!tab) return null;
   let best: { label: string; size: number; y: number } | null = null;
-  for (const el of resolveSlide(slide, tab)) {
+  for (const el of presentedBuild(resolveSlide(slide, tab), 0).shown) {
     if (el.type !== 'text') continue;
     const label = (el.label ?? '').replace(/\s+/g, ' ').trim();
     if (!label) continue;
