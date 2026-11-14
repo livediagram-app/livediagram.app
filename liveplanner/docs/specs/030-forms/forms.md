@@ -813,7 +813,11 @@ board settings, for switching back.
   last edit (so typing a wording writes one header, not one per letter). A question whose wording changes takes its
   column's header with it while that header still reads the old wording; a header renamed in the sheet is kept. A
   question still reading **Untitled Question** (no wording typed yet) gets no column: its first real wording finds or
-  makes one as any header does, so a question named slowly still matches the template's column of that name. These
+  makes one as any header does, so a question named slowly still matches the template's column of that name. A
+  question renamed while its column holds no answer yet moves to another column whose header reads its new wording
+  (one no other question holds), so a name typed letter by letter, with a pause after its first letters, still lands
+  in the template's column; the half-typed header it leaves is cleared, and the column stays. A column that holds an
+  answer never moves: the question keeps it and its header follows the wording, as above. These
   writes are no undo step and change nothing but headers. A tab-scoped link's Editor does not write them (the sheet is
   on another tab); the first response does.
 - **Linked by column, not by heading**: the form remembers each column it uses (`form.sheet.columns`, question id →
