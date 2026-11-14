@@ -33,6 +33,14 @@ describe('every page’s first load', () => {
     expect(staticImports(read('components/page-error-title.ts'))).toEqual(['react']);
   });
 
+  it('the not-found card is drawn on the server, so it adds no script to any page', () => {
+    // Next carries app/not-found.tsx's tree in every page: it and its card stay server components (Work Tracker 446).
+    for (const file of ['app/not-found.tsx', 'components/ErrorCard.tsx']) {
+      expect(read(file)).not.toMatch(/^['"]use client['"]/m);
+      expect(staticImports(read(file))).not.toContain('@/components/PageError');
+    }
+  });
+
   it('the build checks each watched page against its budget', () => {
     const { scripts } = JSON.parse(read('package.json')) as { scripts: { build: string } };
     const build = scripts.build;

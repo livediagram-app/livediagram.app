@@ -6,7 +6,13 @@ import { WORKBENCH_DEFAULTS, configureWorkbench } from '../../bindings';
 import { createListeners } from '../../lib/listeners';
 import { LIVE_BUILD_MAX_CHECKS, LIVE_BUILD_POLL_MS } from '../../hooks/ui/useNewerEditorLive';
 import { RELOAD_SAVE_WAIT_MS } from '../../lib/reload-when-saved';
-import { NewVersionPrompt, STILL_ARRIVING, type NewVersionPromptProps } from './NewVersionPrompt';
+import { setStartPanelOpen } from '../start/start-panel-open';
+import {
+  NewVersionPrompt,
+  OVER_START_SHEET,
+  STILL_ARRIVING,
+  type NewVersionPromptProps,
+} from './NewVersionPrompt';
 
 // docs/specs/016-platform/new-version-prompt.md "When the prompt shows" and "The prompt", in each product.
 const EDITOR_FORMAT = 4;
@@ -84,6 +90,49 @@ describe('NewVersionPrompt', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'NewVersionPrompt');
     expect(track).toHaveBeenCalledTimes(1);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // Work Tracker 784: on a phone, an empty tab's start sheet (the overlay layer) hid it until a board was picked.
+  it('stands over a start panel’s phone sheet while one is open, and back on the chrome layer after', async () => {
+    mount();
+    newer();
+    await flush();
+    const status = screen.getByRole('status');
+    expect(status.className).toContain('z-[var(--z-chrome)]');
+    expect(status.className).not.toContain('--z-overlay');
+    act(() => setStartPanelOpen(true));
+    for (const cls of OVER_START_SHEET.split(' ')) expect(status.classList).toContain(cls);
+    // One above the overlay layer only: never as high as the canvas modal or a dialog.
+    expect(OVER_START_SHEET).not.toMatch(/z-modal|z-canvas-modal|z-popover|z-toast/);
+    act(() => setStartPanelOpen(false));
+    expect(status.className).not.toContain('--z-overlay');
+  });
+
+  it('stands above the start sheet’s foot row (the Save switch) while both show, never lower than usual', async () => {
+    const footer = document.createElement('footer');
+    footer.setAttribute('data-start-footer', '');
+    // A phone's sheet: its foot row's top 150px above the bottom of an 844px screen, across the column.
+    footer.getBoundingClientRect = () =>
+      ({ top: 694, bottom: 744, left: 0, right: 390, width: 390, height: 50 }) as DOMRect;
+    document.body.append(footer);
+    vi.stubGlobal('innerWidth', 390);
+    vi.stubGlobal('innerHeight', 844);
+    try {
+      mount();
+      newer();
+      await flush();
+      const status = screen.getByRole('status');
+      expect(status.style.getPropertyValue('--start-clear')).toBe('');
+      act(() => setStartPanelOpen(true));
+      // 844 - 694 and the toasts' gap over chrome: clear of the row, whatever its height.
+      const clear = parseInt(status.style.getPropertyValue('--start-clear'), 10);
+      expect(clear).toBeGreaterThan(150);
+      expect(OVER_START_SHEET).toContain('max-sm:bottom-[max(5rem,var(--start-clear))]');
+      act(() => setStartPanelOpen(false));
+      expect(status.style.getPropertyValue('--start-clear')).toBe('');
+    } finally {
+      footer.remove();
+    }
   });
 
   it('renders nothing in the static export, whatever the server says', () => {

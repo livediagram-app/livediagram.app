@@ -50,7 +50,10 @@ facts.
 ## The prompt
 
 - A small panel at the bottom centre of the screen, above the canvas, in the app's chrome
-  colours, light and dark. It never covers the dialogs and never takes focus.
+  colours, light and dark. It never covers the dialogs and never takes focus. On a phone or a short window, where an
+  empty tab's start panel is a sheet over the canvas, it stands over that sheet (still under
+  every dialog), above the sheet's foot row (the Save switch) so both stay in reach, and Reload is
+  there before anything is picked.
 - Copy: **"A new version of livedesign is ready."** with two buttons, **"Reload"** and
   **"Not now"**.
 - `role="status"`, so a screen reader announces it once, politely; both buttons are in the tab

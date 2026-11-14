@@ -101,7 +101,10 @@ white name and a slate-400 hint; in light mode slate-100 on white. On an app's o
 (`/api/auth/sign-in?return_to=<the page>`) and Create account the same with `&screen=sign-up`, and the Guest button
 is a stand-in from the package's light entry (`DeferredAccountMenu` in `@liveworkspace/account-menu/placeholder`):
 the menu's code is fetched only when the pointer or focus reaches it, and a press made before it arrives opens the
-menu once it has, so a visitor who never touches it costs no request. Until hydration the static HTML holds the
+menu once it has, so a visitor who never touches it costs no request. A press always opens it, however the code's
+arrival falls: a click, tap or Enter before it, and a press whose pointer went down before it landed and comes up
+after (the stand-in stays until the press ends, so the press lands on one button). The menu opens on arriving only
+once, however often its arrival is run (React's development checks run it twice). Until hydration the static HTML holds the
 Guest button's place (`AccountMenuPlaceholder`: the avatar's disc, with the room for "Guest" and the chevron kept
 but unseen), so a visitor's bar never shifts when the Guest button arrives; a signed-in name moves it only by its own
 length.
@@ -936,12 +939,20 @@ pressable again, and so does coming Back to a page the browser kept.
   as its address. A script in the page applies it before first paint (one lookup of the address, one read of
   storage), and the page's Appearance switch reads and writes the same key.
 - A page that fails to render never shows the framework's bare error screen. It shows the site's own: the
-  title "Something went wrong · liveworkspace", a main landmark holding one card (the shared empty state) with
+  title "Something went wrong · liveworkspace", a main landmark holding the logo (a link home) over one card (the
+  shared empty state) with
   the heading "Something went wrong", a line saying nothing was lost, **Try Again** (which renders the page
-  again) and **Go to the Home Page**. A failure in the root layout itself gets the same card in a page of its
-  own, with `lang`, the stylesheet and the appearance setting, so it is light or dark as the rest of the site.
-  The card's code loads only when a page fails, so it costs no page its first load; when that code can't load
-  (offline), the same title, heading, line and two actions show without the card's styling.
+  again) and **Go to the Home Page**, and under them a quieter line, "Still not working? **Check the Status
+  Page**", linking [Status](#status-status) (`/status`, which an app's address sends here). A failure in the root
+  layout itself gets the same card in a page of its own, with `lang`, the stylesheet and the appearance setting,
+  so it is light or dark as the rest of the site. The card's code loads only when a page fails, so it costs no
+  page its first load; when that code can't load (offline), the same title, heading, line and actions show
+  without the card's styling.
+- An address the site has no page for shows the same card, drawn on the server so it needs no script: the title
+  "Nothing here · liveworkspace" (never indexed, and no home page's description or Open Graph address), the
+  heading "Nothing here", the line "That page doesn't exist. Your work is in its app, and every app is a click
+  away from the home page.", **Go to the Home Page**, and under it "Followed a link that should work? **Check the
+  Status Page**".
 - A button that starts work it waits for keeps the keyboard while it works (busy, never `disabled`;
   [busy buttons](../../../livediagram/docs/specs/004-interface-design/busy-buttons.md)).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.

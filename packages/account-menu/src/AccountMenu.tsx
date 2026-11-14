@@ -91,7 +91,7 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
   const [leaving, setLeaving] = useState(false);
   // The last Sign Out was refused or never reached the server: said on the item and read out, until the menu closes.
   const [refused, setRefused] = useState(false);
-  const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
+  const { open, openMenu, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
   const ref = useRef<HTMLDivElement>(null);
   const { attach, surfaceProps } = useMenu({
@@ -112,11 +112,12 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
     },
     [setTrigger],
   );
+  // Opened, never toggled: React's development checks run an effect twice, and a toggle closed it again.
   const [arrival] = useState({ openOnMount, focusOnMount });
   useEffect(() => {
     if (arrival.openOnMount || arrival.focusOnMount) triggerEl.current?.focus();
-    if (arrival.openOnMount) toggle();
-  }, [arrival, toggle]);
+    if (arrival.openOnMount) openMenu();
+  }, [arrival, openMenu]);
 
   const guest = props.guest ?? null;
   const account: SignedIn | null = props.guest ? null : props;

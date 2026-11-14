@@ -30,7 +30,13 @@ describe('LazyPageError without its chunk', () => {
     expect(main.querySelector('h1')?.textContent).toBe('Something went wrong');
     expect(main.textContent).toContain('Nothing you made was lost');
     expect(document.title).toBe(PAGE_ERROR_TITLE);
-    expect(main.querySelector('a[href="/"]')?.textContent).toBe('Go to the Home Page');
+    const links = [...main.querySelectorAll('a')].map((a) => [
+      a.getAttribute('href'),
+      a.textContent,
+    ]);
+    expect(links).toContainEqual(['/', 'Go to the Home Page']);
+    // And the status page, for a failure that is not this page's alone (Work Tracker 446).
+    expect(links).toContainEqual(['/status', 'Check the Status Page']);
     act(() => main.querySelector('button')!.click());
     expect(retry).toHaveBeenCalledTimes(1);
     act(() => root.unmount());

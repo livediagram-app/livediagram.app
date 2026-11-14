@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AccountMenu, SIGN_OUT_REFUSED } from './AccountMenu';
@@ -484,6 +485,96 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Guest, account menu' }));
     await act(async () => arrive());
     expect(load).toHaveBeenCalledOnce();
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+  });
+
+  // Work Tracker 734: the code landing mid-press swapped the button under the pointer, and the click opened nothing.
+  function heldLoad() {
+    let arrive!: () => void;
+    const load = vi.fn(
+      () =>
+        new Promise<{ default: typeof Menu }>((resolve) => {
+          arrive = () => resolve({ default: Menu });
+        }),
+    );
+    return { load, arrive: () => act(async () => arrive()) };
+  }
+  const standIn = () => screen.getByRole('button', { name: 'Guest, account menu' });
+
+  it('keeps the stand-in through a press its code lands in, and opens on that press’s click', async () => {
+    const { load, arrive } = heldLoad();
+    render(<DeferredAccountMenu load={load} />);
+    const pressedOn = standIn();
+    fireEvent.pointerDown(pressedOn, { pointerType: 'mouse' });
+    await arrive();
+    // Still the stand-in under the pointer, so the press comes up where it went down.
+    expect(standIn()).toBe(pressedOn);
+    fireEvent.pointerUp(pressedOn, { pointerType: 'mouse' });
+    fireEvent.click(pressedOn);
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+  });
+
+  it('waits for a lifted touch’s click, then opens', async () => {
+    vi.useFakeTimers();
+    try {
+      const { load, arrive } = heldLoad();
+      render(<DeferredAccountMenu load={load} />);
+      const pressedOn = standIn();
+      fireEvent.pointerDown(pressedOn, { pointerType: 'touch' });
+      await arrive();
+      fireEvent.pointerUp(pressedOn, { pointerType: 'touch' });
+      // A touch leaves the button as it is lifted, before its click: that is not the end of the press.
+      fireEvent.pointerLeave(pressedOn, { pointerType: 'touch' });
+      expect(standIn()).toBe(pressedOn);
+      fireEvent.click(pressedOn);
+      act(() => vi.runAllTimers());
+      expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('arrives closed after a press that never clicked: lifted elsewhere, dragged off or cancelled', async () => {
+    vi.useFakeTimers();
+    try {
+      for (const end of ['up', 'leave', 'cancel'] as const) {
+        const { load, arrive } = heldLoad();
+        const { unmount } = render(<DeferredAccountMenu load={load} />);
+        const pressedOn = standIn();
+        fireEvent.pointerDown(pressedOn, { pointerType: 'mouse' });
+        await arrive();
+        if (end === 'up') fireEvent.pointerUp(pressedOn, { pointerType: 'mouse' });
+        if (end === 'leave') fireEvent.pointerLeave(pressedOn, { pointerType: 'mouse' });
+        if (end === 'cancel') fireEvent.pointerCancel(pressedOn, { pointerType: 'mouse' });
+        act(() => vi.runAllTimers());
+        expect(standIn()).not.toBe(pressedOn);
+        expect(standIn().getAttribute('aria-expanded')).toBe('false');
+        unmount();
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('takes focus on arriving when the stand-in had it, and lets it go on blur', async () => {
+    const { load, arrive } = heldLoad();
+    render(<DeferredAccountMenu load={load} />);
+    fireEvent.focus(standIn());
+    fireEvent.blur(standIn());
+    fireEvent.focus(standIn());
+    expect(load).toHaveBeenCalledOnce();
+    await arrive();
+    expect(document.activeElement).toBe(standIn());
+    expect(standIn().getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('opens on arriving once, though React’s development checks run its arrival twice', () => {
+    render(
+      <StrictMode>
+        <AccountMenu guest={{ signInHref: '/a', signUpHref: '/b' }} openOnMount />
+      </StrictMode>,
+    );
+    expect(standIn().getAttribute('aria-expanded')).toBe('true');
     expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
   });
 

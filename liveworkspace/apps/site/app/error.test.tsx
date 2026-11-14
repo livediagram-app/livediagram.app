@@ -33,7 +33,13 @@ describe('the error page', () => {
     const main = host.querySelector('main')!;
     expect(main.querySelectorAll('h1')).toHaveLength(1);
     expect(main.querySelector('h1')?.textContent).toBe('Something went wrong');
-    expect(main.querySelector('a[href="/"]')?.textContent).toBe('Go to the Home Page');
+    const links = [...main.querySelectorAll('a')].map((a) => [
+      a.getAttribute('href'),
+      a.textContent,
+    ]);
+    expect(links).toContainEqual(['/', 'Go to the Home Page']);
+    // And the status page, for a failure that is not this page's alone (Work Tracker 446).
+    expect(links).toContainEqual(['/status', 'Check the Status Page']);
     const retry = [...main.querySelectorAll('button')].find((b) => b.textContent === 'Try Again')!;
     act(() => retry.click());
     expect(reset).toHaveBeenCalledTimes(1);
