@@ -63,6 +63,9 @@ const centreOf = (b: Box) => ({
 });
 const area = (b: Box) => num(b.width) * num(b.height);
 
+/** A label's ink and the colour drawn behind it. */
+type Backdrop = { ink: string; behind: string };
+
 /** How many walked inks are kept: a tab repeats a handful of ink-on-backdrop pairs, so a small cache answers nearly
  *  every label (4,000 sunk labels: 115 ms of walking uncached). Cleared whole when full; safe range 64..4096. */
 const READABLE_INK_CACHE_SIZE = 512;
@@ -88,13 +91,26 @@ export function labelInks<E extends { id: string; type: string }>(colours: Label
     return HEX.test(ink) ? ink : null;
   }
 
+  // Each board's answer by canvas, kept while the board is: a redraw asks the same question of the same board more than
+  // once (the 3:1 walk and the paper walk both read the stored board, and the drawn one when the walk changed nothing).
+  const BACKDROPS = new WeakMap<readonly E[], Map<string, ReadonlyMap<number, Backdrop>>>();
+
   /** Each label's ink and the colour drawn behind it, by element index: its own fill (a shape, but not a cycle, which
    *  writes between its discs), else the topmost filled element under its centre that is larger than it (a translucent
-   *  one mixed over what is under it), else the canvas. Labels whose ink or backdrop is not a hex colour are left out. */
-  function labelBackdrops(
-    elements: readonly E[],
-    canvas: string,
-  ): Map<number, { ink: string; behind: string }> {
+   *  one mixed over what is under it), else the canvas. Labels whose ink or backdrop is not a hex colour are left out.
+   *  Answered once per board and canvas (elements are never changed in place). */
+  function labelBackdrops(elements: readonly E[], canvas: string): ReadonlyMap<number, Backdrop> {
+    let byCanvas = BACKDROPS.get(elements);
+    const known = byCanvas?.get(canvas);
+    if (known) return known;
+    const out = backdropsOf(elements, canvas);
+    if (!byCanvas)
+      BACKDROPS.set(elements, (byCanvas = new Map<string, ReadonlyMap<number, Backdrop>>()));
+    byCanvas.set(canvas, out);
+    return out;
+  }
+
+  function backdropsOf(elements: readonly E[], canvas: string): Map<number, Backdrop> {
     const surface = canvasSurface(canvas);
     const boxes = elements.map(boxOf);
     // Panels by grid cell, in paint order.
@@ -119,7 +135,7 @@ export function labelInks<E extends { id: string; type: string }>(colours: Label
         }
     });
 
-    const out = new Map<number, { ink: string; behind: string }>();
+    const out = new Map<number, Backdrop>();
     boxes.forEach((b, i) => {
       if (!isLabel(b)) return;
       const ink = inkOf(b, surface);
@@ -192,7 +208,7 @@ export function labelInks<E extends { id: string; type: string }>(colours: Label
   ): readonly T[] {
     const now = labelBackdrops(after, afterCanvas);
     if (now.size === 0) return after;
-    let was: Map<number, { ink: string; behind: string }> | null = null;
+    let was: ReadonlyMap<number, Backdrop> | null = null;
     let beforeIndex: Map<string, number> | null = null;
     // The label as it was before the change: its element, and its ink and backdrop then.
     const priorOf = (i: number) => {

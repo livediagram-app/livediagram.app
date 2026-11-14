@@ -385,6 +385,7 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
   interleaved (both builds served at once, runs alternating), a diagram stroke's release went from
   142-151 ms to 111-120 ms over four pairs, its restyle from 2,760 nodes and 41-43 ms to 246 nodes
   and 10-11 ms.
+
 - **Interleave A/B runs on a shared machine.** Measured one build after the other, whiteboard zoom at
   fit read about 5 ms worse with the plane; another session's test suite was running alongside
   (load average 17-26). Interleaved over five pairs the two builds could not be told apart, each
@@ -395,6 +396,30 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
 - **The isometric rule** `:root:has([data-iso]) [data-floating-panel]` makes the browser re-check the
   root on each insertion and restyle the floating panels (ten times in one release); rewriting it
   without `:has` saved only 3-4 ms, so it stays.
+
+## A diagram stroke's release, round 8
+
+Measured 2026-11-14 on the reference board, local, calibrated 2.9-3.2x, against main at `ea335e2834`,
+with a CPU profile mapped through the build's source maps.
+
+- **Where the board stands locally.** The whole probe: 36 of 38 rows in budget; only the diagram
+  stroke is over (52-64 ms at fit, 52-58 ms at 100%). The nightly's other misses (drag, marquee, pan,
+  zoom, open) read in budget here, so they are the hosted runner's software raster (see livehuddle's
+  research notes, "The hosted runner").
+- **The release is script.** Its longest task is the `pointerup`: 42-48 ms of script, then 7 ms of
+  restyle (351 nodes), 6-7 ms of layout and 5 ms of pre-paint. No one function owns it. A release
+  holds about 8 ms in `useEdgeAwarePlacement`'s `getBoundingClientRect` (the frame's own layout,
+  pulled forward: moving it gains nothing, as round 7 found), about 8 ms of garbage collection,
+  about 5 ms of arrow geometry and endpoint spreading (already incremental), about 3 ms of label
+  backdrops, and React's render and commit.
+- **The label backdrops were read twice.** A redraw on a dark paper ran `labelBackdrops` over the
+  whole board up to four times: the 3:1 walk and the paper walk each read the stored board, and the
+  paper walk read the drawn board again when the 3:1 walk changed nothing. It is now kept per board
+  and paper. Unthrottled, on the 1,000-element board, both walks for one commit went from 4.9-6.8 ms
+  to 2.0-4.0 ms over three runs each.
+- **The probe cannot see that.** Interleaved over two pairs with the machine's load at about 25, the
+  stroke row read 51-73 ms on main and 51-66 ms with the change: the swing between runs of one build
+  is ten times what the change saves.
 
 ## Not tried
 

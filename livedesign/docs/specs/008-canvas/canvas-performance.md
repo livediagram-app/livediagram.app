@@ -239,6 +239,10 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   moved again (each box's markup is carried over by its element while nothing it reads changed) and
   re-sets in the page only the parts whose markup changed, so the browser parses, restyles and lays
   out those, not the page's thousand. The parts drawn together are the picture drawn whole.
+- **A board's labels are read once a redraw.** What each label is read against (its own fill, the panel
+  under it, the paper) is worked out once per board and paper, and kept while that board is. A redraw
+  that lifts sunk labels (the 3:1 walk, then the plain-paper walk) asks it of the stored board and the
+  drawn one at most once each, not once per walk.
 
 ## Later
 
