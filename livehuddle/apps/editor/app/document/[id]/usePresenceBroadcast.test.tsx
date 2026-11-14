@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MAX_SELECTION_IDS } from '@livehuddle/api-schema';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import { WRITE_HOLD_MAX_MS } from '@liveworkspace/workbench/lib/selection-write-hold';
+import { createOwnElementWrites, holdOwnWrites } from './own-element-writes';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 
 // Selection and tab focus reach every server-stored document's room, personal ones included, so
@@ -87,6 +89,80 @@ describe('usePresenceBroadcast', () => {
       elementId: 'a',
       tabId: 't2',
       elementIds: ['b', 'c', 'a'],
+    });
+  });
+  // docs/specs/007-editor/editor-app.md "Held until the holder's change lands" (Work Tracker 862): the hook hands this
+  // document's tabs, save baseline and save holds to the shared broadcast; its two-client and timing cases are in
+  // @liveworkspace/workbench/lib/selection-write-hold.test.ts and e2e/realtime-peer-label.spec.ts.
+  describe('an element we let go of while our change to it has not landed', () => {
+    const box = (id: string, x = 0) => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x,
+      y: 0,
+      width: 10,
+      height: 10,
+    });
+    const tab = (...elements: ReturnType<typeof box>[]) => ({ id: 't1', name: 'T', elements });
+    afterEach(() => vi.useRealTimers());
+
+    function holding() {
+      vi.useFakeTimers();
+      const send = vi.fn();
+      const selection = createSelectionStore();
+      selection.setSelection({ selectedId: 'a', multiSelectedIds: new Set(['b']) });
+      const writing = {
+        tabs: { current: [tab(box('a', 150), box('b'))] },
+        baseline: { current: [tab(box('a'), box('b'))] },
+        writes: createOwnElementWrites(),
+      };
+      const view = renderHook(() =>
+        usePresenceBroadcast({
+          hydrated: true,
+          documentId: 'd1',
+          documentServerStored: true,
+          selection,
+          activeId: 't1',
+          roomRef: { current: { send } as never },
+          writing,
+        }),
+      );
+      const selects = () =>
+        send.mock.calls
+          .map((c) => (c[0] as { op: Record<string, unknown> }).op)
+          .filter((op) => op.kind === 'select');
+      return { selection, writing, view, selects };
+    }
+
+    it('holds it until the save lands, then sends the selection without it', () => {
+      const { selection, writing, selects } = holding();
+      const release = holdOwnWrites(writing.writes, 't1', [
+        { kind: 'update', element: box('a') } as never,
+      ]);
+      act(() => selection.setSelection({ selectedId: null, multiSelectedIds: new Set() }));
+      // `a` was moved and its save waits for the room: still held. `b` is as saved: let go.
+      expect(selects().at(-1)).toEqual({
+        kind: 'select',
+        elementId: null,
+        tabId: 't1',
+        elementIds: ['a'],
+      });
+      // The save landed: the baseline has the move and the room has sequenced it.
+      writing.baseline.current = writing.tabs.current;
+      act(() => release());
+      act(() => void vi.advanceTimersByTime(0));
+      expect(selects().at(-1)).toEqual({ kind: 'select', elementId: null, tabId: 't1' });
+    });
+
+    it(`holds it no longer than ${WRITE_HOLD_MAX_MS} ms, and stops listening when unmounted`, () => {
+      const { selection, writing, view, selects } = holding();
+      act(() => selection.setSelection({ selectedId: null, multiSelectedIds: new Set() }));
+      expect(selects().at(-1)!.elementIds).toEqual(['a']);
+      act(() => void vi.advanceTimersByTime(WRITE_HOLD_MAX_MS));
+      expect(selects().at(-1)).toEqual({ kind: 'select', elementId: null, tabId: 't1' });
+      view.unmount();
+      expect(writing.writes.released.size).toBe(0);
     });
   });
 });

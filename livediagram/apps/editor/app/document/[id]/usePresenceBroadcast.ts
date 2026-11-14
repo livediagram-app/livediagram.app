@@ -3,9 +3,11 @@ import { useLocalBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
 
 import type { connectRoom } from '@/lib/api-client';
-import type { Selection, SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
-import { onOwnWritesReleased } from './own-element-writes';
-import { nextWriteHolds, WRITE_HOLD_MAX_MS, type WriteHoldSources } from './selection-write-hold';
+import type { SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import {
+  broadcastSelection,
+  type WriteHoldSources,
+} from '@liveworkspace/workbench/lib/selection-write-hold';
 
 interface PresenceBroadcastDeps {
   hydrated: boolean;
@@ -18,16 +20,9 @@ interface PresenceBroadcastDeps {
   selection: SelectionStore;
   activeId: string;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
-  // Where an element we let go of is read as still being written (selection-write-hold.ts): absent, the lock ends
+  // Where an element we let go of is read as still being written (selection-write-hold): absent, the lock ends
   // with the selection.
   writing?: WriteHoldSources;
-}
-
-// The whole selection, as the canvas reads it (the multi-selection plus the primary element), capped.
-function selectionIds({ selectedId, multiSelectedIds }: Selection): string[] {
-  const ids = new Set(multiSelectedIds);
-  if (selectedId) ids.add(selectedId);
-  return [...ids].slice(0, MAX_SELECTION_IDS);
 }
 
 // Outbound realtime presence: our selection and active-tab focus, so peers render "Tom is working on
@@ -55,57 +50,22 @@ export function usePresenceBroadcast({
   // WRITE_HOLD_MAX_MS bound, sends the selection again without it. A tab switch starts afresh.
   useEffect(() => {
     if (!hydrated || !documentId || !documentServerStored) return;
-    let previous = new Set<string>();
-    let held: ReadonlyMap<string, number> = new Map();
-    let expiry: ReturnType<typeof setTimeout> | null = null;
-    const publish = (current: Selection, ids: string[]) => {
-      const kept = held.size ? [...held.keys()].filter((id) => !previous.has(id)) : [];
-      const elementIds = kept.length ? [...ids, ...kept].slice(0, MAX_SELECTION_IDS) : ids;
-      roomRef.current?.send({
-        kind: 'op',
-        op: {
-          kind: 'select',
-          elementId: current.selectedId,
-          tabId: activeId,
-          ...(elementIds.length > 0 ? { elementIds } : {}),
-        },
-      });
-    };
-    // Re-reads the holds against the selection `ids`; true when they changed.
-    const update = (ids: ReadonlySet<string>): boolean => {
-      if (!writing) return false;
-      const next = nextWriteHolds(held, previous, ids, activeId, writing, Date.now());
-      if (next === held) return false;
-      held = next;
-      if (expiry) clearTimeout(expiry);
-      expiry = held.size > 0 ? setTimeout(recheck, WRITE_HOLD_MAX_MS) : null;
-      return true;
-    };
-    const send = () => {
-      const current = selection.get();
-      const ids = selectionIds(current);
-      const now = new Set(ids);
-      update(now);
-      previous = now;
-      publish(current, ids);
-    };
-    // A hold ended or ran out: send the selection again when that frees an element.
-    function recheck() {
-      if (held.size === 0) return;
-      const current = selection.get();
-      if (update(previous)) publish(current, [...previous]);
-    }
-    send();
-    const stopSelection = selection.subscribe(send);
-    // Read after the save's own continuation, which moves the baseline the release follows.
-    const stopReleases = writing
-      ? onOwnWritesReleased(writing.writes, () => void setTimeout(recheck, 0))
-      : null;
-    return () => {
-      stopSelection();
-      stopReleases?.();
-      if (expiry) clearTimeout(expiry);
-    };
+    return broadcastSelection({
+      selection,
+      tabId: activeId,
+      maxIds: MAX_SELECTION_IDS,
+      writing,
+      send: (elementId, elementIds) =>
+        roomRef.current?.send({
+          kind: 'op',
+          op: {
+            kind: 'select',
+            elementId,
+            tabId: activeId,
+            ...(elementIds.length > 0 ? { elementIds } : {}),
+          },
+        }),
+    });
   }, [hydrated, documentId, documentServerStored, selection, activeId, roomRef, writing]);
 
   // Fires both on initial room connect (when the dependencies first satisfy)

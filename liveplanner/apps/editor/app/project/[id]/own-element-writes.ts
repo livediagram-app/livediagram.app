@@ -5,6 +5,12 @@ import {
   type RoomElementOp,
 } from '@liveplanner/project';
 import type { RoomOp } from '@liveplanner/api-schema';
+import {
+  createOwnWrites,
+  holdOwnWriteKeys,
+  ownWriteKey as keyOf,
+  type OwnWrites,
+} from '@liveworkspace/workbench/lib/own-writes';
 
 // This editor's element writes the room has not sequenced yet (docs/specs/012-collaboration/realtime-conflict-resolution.md
 // "Same-element edits converge").
@@ -21,13 +27,11 @@ import type { RoomOp } from '@liveplanner/api-schema';
 // an `add` is a new id. A hold is released when the room confirms the op, when the
 // write fails, or when the room cannot say (a closed socket, a timeout), so an element is never held for good.
 
-export type OwnElementWrites = { held: Map<string, number> };
+// The counts live in the tracker every editor shares (@liveworkspace/workbench/lib/own-writes); this file turns this
+// editor's op shapes into its keys.
+export type OwnElementWrites = OwnWrites;
 
-export function createOwnElementWrites(): OwnElementWrites {
-  return { held: new Map() };
-}
-
-const keyOf = (tabId: string, elementId: string) => `${tabId}␟${elementId}`;
+export const createOwnElementWrites = createOwnWrites;
 
 // The element an op writes in full, if any: an add or an update.
 function writtenId(op: RoomElementOp): string | null {
@@ -44,17 +48,7 @@ export function holdOwnWrites(
     const id = writtenId(op);
     return id === null ? [] : [keyOf(tabId, id)];
   });
-  for (const key of keys) writes.held.set(key, (writes.held.get(key) ?? 0) + 1);
-  let released = false;
-  return () => {
-    if (released) return;
-    released = true;
-    for (const key of keys) {
-      const n = (writes.held.get(key) ?? 0) - 1;
-      if (n > 0) writes.held.set(key, n);
-      else writes.held.delete(key);
-    }
-  };
+  return holdOwnWriteKeys(writes, keys);
 }
 
 // A Dashboard's layout fields work the same way (docs/specs/012-collaboration/collab-race-hardening.md "A
@@ -69,17 +63,7 @@ export function holdOwnDashboardWrites(
   patch: DashboardPatch,
 ): () => void {
   const keys = dashboardPatchFields(patch).map((field) => dashboardKeyOf(tabId, field));
-  for (const key of keys) writes.held.set(key, (writes.held.get(key) ?? 0) + 1);
-  let released = false;
-  return () => {
-    if (released) return;
-    released = true;
-    for (const key of keys) {
-      const n = (writes.held.get(key) ?? 0) - 1;
-      if (n > 0) writes.held.set(key, n);
-      else writes.held.delete(key);
-    }
-  };
+  return holdOwnWriteKeys(writes, keys);
 }
 
 /** A peer's op without the layout fields this editor is writing (ordered before our write, so ours wins); null
