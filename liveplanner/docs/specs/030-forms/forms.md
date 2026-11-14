@@ -123,7 +123,11 @@ on its sheet. Help Desk's **Contact Form** sends Contact to its **Tickets** boar
   `create_project` and the api's seeded create), as a pure part of the tab, so it exists the moment its project does,
   with nothing for the editor to finish. A replace (`add_tab`) makes only a template's first tab, never a Form tab.
 - A Sheet a template's form feeds is titled after its tab ("RSVP Responses"), as a Responses sheet Start Planning
-  makes is; every other template sheet keeps its own title.
+  makes is; every other template sheet keeps its own title. It is made **with the form's headers** (#, Submitted and
+  every question, bold, the first row frozen) and the form remembers each header's column, so a new Event Planner's
+  RSVP Responses is not blank before its form is opened, and opening the form writes nothing twice.
+- The template's Overview shows the form's **Responses** figure ([Form Metrics](../026-plan/plan-tabs.md#form-metrics)),
+  placed after its metric tiles: Help Desk's Contact Form, Event Planner's RSVP.
 - It starts **unpublished**, as every new form does: no form link until an Editor publishes it from Share Form.
 - Once made it is an ordinary Form tab: renamed, rebuilt, pointed elsewhere or deleted like any other.
 

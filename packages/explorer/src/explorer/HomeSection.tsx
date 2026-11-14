@@ -3,7 +3,7 @@
 // The parts every Home section shares (HomePane, HomeSpaces): the section with its heading and its See link, the
 // surfaces its cards are drawn on, and the failed read's notice, so a new section looks like the ones around it.
 
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import { FOCUS_RING, SECTION_LINK } from '../ui/classes';
 import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
@@ -22,18 +22,30 @@ export function HomeSection({
   title,
   link,
   busy,
+  onPick,
   children,
 }: {
   id: string;
   title: string;
   link?: { view: ExplorerView; label: string; onFollow?: () => void };
   busy: boolean;
+  /** A link in the section followed (a click, a tap or Enter): `true` for its See link (the heading's, or the
+   *  phone strip's tile), `false` for a card. Read from the one click as it rises, so no card carries a handler. */
+  onPick?: (seeLink: boolean) => void;
   children: ReactNode;
 }) {
   const { viewHref, navigate } = useExplorer();
   const headingId = `home-${id}`;
+  const picked = onPick
+    ? (e: MouseEvent<HTMLElement>) => {
+        const followed = (e.target as Element).closest?.('a[href]');
+        // Only a link drawn in the section: a menu opened from a card renders elsewhere in the page.
+        if (followed && e.currentTarget.contains(followed))
+          onPick(followed.hasAttribute('data-see-link'));
+      }
+    : undefined;
   return (
-    <section aria-labelledby={headingId} aria-busy={busy} data-home-section={id}>
+    <section aria-labelledby={headingId} aria-busy={busy} data-home-section={id} onClick={picked}>
       <div className="mb-4 flex items-baseline justify-between gap-4">
         <h2 id={headingId} className={SECTION_HEADING}>
           {title}
@@ -48,6 +60,7 @@ export function HomeSection({
               navigate(link.view);
             }}
             className={`${SECTION_LINK} ${FOCUS_RING}`}
+            data-see-link=""
           >
             {link.label}
           </a>

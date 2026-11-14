@@ -140,7 +140,11 @@ function ExplorerImpl({
       // A phone's sheet drops the ⋯ menu: every entry is a tap away there already.
       headerActions={
         sheet ? undefined : (
-          <ExplorerHeaderMenu onNewDocument={onNewDocument} actions={menuActions} />
+          <ExplorerHeaderMenu
+            onNewDocument={onNewDocument}
+            actions={menuActions}
+            itemId={currentDocumentId}
+          />
         )
       }
       popoverOpen={popoverOpen}

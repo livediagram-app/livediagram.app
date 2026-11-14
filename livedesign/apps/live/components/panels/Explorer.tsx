@@ -150,7 +150,13 @@ function ExplorerImpl({
       popoverSheet={sheet}
       onMoveTo={NO_MOVE}
       headerActions={
-        sheet ? undefined : <ExplorerHeaderMenu onNewDesign={onNewDesign} actions={menuActions} />
+        sheet ? undefined : (
+          <ExplorerHeaderMenu
+            onNewDesign={onNewDesign}
+            actions={menuActions}
+            itemId={currentDesignId}
+          />
+        )
       }
       popoverOpen={popoverOpen}
       onPopoverClose={onPopoverClose}

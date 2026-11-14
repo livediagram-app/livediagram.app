@@ -1,6 +1,6 @@
 'use client';
 
-import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
+import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
@@ -30,9 +30,12 @@ import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/ItemW
 export function ExplorerHeaderMenu({
   onNewDesign,
   actions = {},
+  itemId = null,
 }: {
   onNewDesign?: () => void;
   actions?: ExplorerMenuActions;
+  // The open item's id: Open Explorer opens the place that holds it.
+  itemId?: string | null;
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const close = () => setAnchor(null);
@@ -60,7 +63,7 @@ export function ExplorerHeaderMenu({
           icon={<OpenIcon />}
           label="Open Explorer"
           onClick={run(() => {
-            assignAppLocation(explorerHref());
+            assignAppLocation(explorerItemHref(itemId));
           })}
         />,
       ],

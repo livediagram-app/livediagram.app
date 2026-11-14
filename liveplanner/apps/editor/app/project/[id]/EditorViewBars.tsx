@@ -65,6 +65,7 @@ export function renderEditorHeader(
     <LandscapeBarFold shown={barsShown}>
       <AreaErrorBoundary area="Header" fallback="panel">
         <EditorHeader
+          itemId={projectId}
           projectName={projectName}
           hideTitle={anyWelcomeOpen}
           showShare={canShareProject && hydrated && !anyWelcomeOpen}

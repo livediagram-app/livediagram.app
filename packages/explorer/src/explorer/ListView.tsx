@@ -12,6 +12,7 @@ import { LIST_CARD, LIST_HEADER } from '../ui/classes';
 import { useExplorer } from './context';
 import { FolderRow, ItemRow, ROW_HEIGHT, rowGrid, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
+import { revealAt, useRevealArrived } from './arrived-item';
 import { useCascade } from '../ui/useCascade';
 import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 
@@ -70,6 +71,20 @@ export function ListView({
     placedEpoch,
   });
 
+  // The item an editor's door came from: loaded and brought into the window, so it is drawn and marked.
+  useRevealArrived({
+    items: items,
+    offset: folders.length,
+    hasMore,
+    loadingMore,
+    onLoadMore,
+    reveal: (index) => {
+      if (!body.current) return false;
+      revealAt(body.current, index * ROW_HEIGHT, ROW_HEIGHT);
+      return true;
+    },
+  });
+
   const rows = [];
   for (let i = start; i < end; i++) {
     if (i < folders.length) {
@@ -103,7 +118,7 @@ export function ListView({
       </div>
       <ul
         ref={body}
-        className={`divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
+        className={`relative divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
       >
         {start > 0 ? <li aria-hidden style={{ height: start * ROW_HEIGHT }} /> : null}
         {rows}

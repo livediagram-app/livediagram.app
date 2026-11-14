@@ -164,3 +164,28 @@
 .dark .lw-work-art .help-art-as-drawn {
   --color-white: #ffffff;
 }
+
+/* The item an editor's door came from, in the place that holds it (src/explorer/arrived-item.ts): a row wears the
+   selected ring in the host's brand over a faint wash of it, a card the ring just outside its edge (an inset one would
+   sit under its picture), until the person leaves the view. Unlayered, so it holds over a row's hover. */
+[data-explorer] [data-arrived] {
+  scroll-margin-block: 6rem;
+}
+[data-explorer] [data-item-row][data-arrived],
+[data-explorer] [data-this-browser-row][data-arrived] {
+  border-radius: 0.5rem;
+  background-color: color-mix(in oklab, var(--color-brand-500) 8%, transparent);
+  box-shadow: inset 0 0 0 2px var(--color-brand-500);
+}
+[data-explorer] [data-item-card][data-arrived] {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+.dark [data-explorer] [data-item-row][data-arrived],
+.dark [data-explorer] [data-this-browser-row][data-arrived] {
+  background-color: color-mix(in oklab, var(--color-brand-400) 14%, transparent);
+  box-shadow: inset 0 0 0 2px var(--color-brand-400);
+}
+.dark [data-explorer] [data-item-card][data-arrived] {
+  outline-color: var(--color-brand-400);
+}
