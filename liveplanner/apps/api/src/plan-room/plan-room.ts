@@ -109,6 +109,8 @@ import { optOutAddress } from './automations/automation-addresses';
 import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './github/github-room';
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
+import { purgedAt } from './plan-room-purged';
+import { notFound } from '../responses';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -225,6 +227,8 @@ export class PlanRoom extends DurableObject<Env> {
   planId: string | null = null;
   schemaReady = false;
   planRowReady = false;
+  // When the plan was purged (plan-room-purged.ts): null when it is not, undefined until read.
+  purgedAt: number | null | undefined = undefined;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
   flushAt: number | null = null;
   // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's once a
@@ -620,18 +624,20 @@ export class PlanRoom extends DurableObject<Env> {
     if (request.headers.get('Upgrade') !== 'websocket') {
       return new Response('Expected WebSocket', { status: 426 });
     }
+    // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
+    const v = verifiedSessionOf(request);
+    if (v.projectId) {
+      this.bindPlan(v.projectId);
+      // A purged plan takes no session (plan-room-purged.ts): its link answers as missing.
+      if ((await purgedAt(this)) !== null) return notFound();
+      if (v.head) await this.takeHead(v.head);
+    }
     const pair = new WebSocketPair();
     // WebSocketPair is a 2-property record keyed `0`/`1`. The "client"
     // side is returned to the connecting peer; the "server" side is
     // owned by this Durable Object.
     const client = pair[0];
     const server = pair[1];
-    // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
-    const v = verifiedSessionOf(request);
-    if (v.projectId) {
-      this.bindPlan(v.projectId);
-      if (v.head) await this.takeHead(v.head);
-    }
     const tabShowsAll = await scopedTabShowsAll(this, v.projectId, v.tabScope);
     this.acceptSession(
       server,

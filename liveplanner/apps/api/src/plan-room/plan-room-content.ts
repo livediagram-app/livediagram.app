@@ -2,6 +2,7 @@
 // outbox, the drains to the index and to shared tabs' holders, the daily upkeep, the Community post's checks and
 // the purge. Each takes the room it acts for.
 import { leaveGithub } from './github/github-room';
+import { markPurged } from './plan-room-purged';
 import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
@@ -256,6 +257,8 @@ export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   const sentImages = lastSentImages(room);
   await disarmRoomAlarm(room.state.storage);
   await room.state.storage.deleteAll();
+  // The one key kept, so a grant from before the purge can't start the plan again (plan-room-purged.ts).
+  await markPurged(room, Date.now());
   room.schemaReady = false;
   room.planRowReady = false;
   room.flushAt = null;

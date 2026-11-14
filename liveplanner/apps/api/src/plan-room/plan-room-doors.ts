@@ -37,6 +37,8 @@ import type { PlanRoom } from './plan-room';
 import { ensureSchema, noteWrite } from './plan-room-content';
 import { closeSessionsOfChangedLink } from './plan-room-sockets';
 import { clearAgentsFor } from './plan-room-presence';
+import { admitAfterPurge } from './plan-room-purged';
+import { notFound } from '../responses';
 
 // What the export door answers a drawing as.
 const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
@@ -49,6 +51,9 @@ export async function route(
 ): Promise<Response> {
   room.bindPlan(planId);
   const env = room.requireEnv();
+  // A purged plan answers a grant from before its purge as an id that never existed, and stores nothing again.
+  if (!(await admitAfterPurge(room, identity.grant?.item === planId ? identity.grant : null)))
+    return notFound();
   if (identity.grant?.item === planId) {
     await room.takeHead(identity.grant);
     await room.takeGrantStanding(identity.grant);

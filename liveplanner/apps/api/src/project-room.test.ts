@@ -9,6 +9,7 @@ import {
   SYSTEM_OP_KINDS,
 } from '@liveplanner/api-schema';
 import { PlanRoom } from './plan-room/plan-room';
+import { PURGED_KEY } from './plan-room/plan-room-purged';
 import type { Env } from './types';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
@@ -2089,7 +2090,8 @@ describe('PlanRoom /purge', () => {
 
     expect(res.status).toBe(204);
     expect(ws.closed).toEqual([4004, 'project-purged']);
-    expect(state.store.size).toBe(0);
+    // Nothing but the purge's time (plan-room-purged.ts), which keeps a stale grant from starting it again.
+    expect([...state.store.keys()]).toEqual([PURGED_KEY]);
     expect(state.alarms.at(-1)).toBeNull();
   });
 });
