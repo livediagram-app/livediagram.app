@@ -262,9 +262,12 @@ Under Review, Reviewed or Selected for Development. Each pass checks those three
    against that file in one script. A `git log --grep` per card measured 0.55 s each, a minute for 120 cards.
    Keep `git log -S <symbol>` for the deep check of a single card.
 
-2. **Deep check, a rotating slice.** Also check, by reading the code, every New and Answered Under Review card
-   (step 3 already does this) and the Reviewed and Selected for Development cards whose number mod 8 equals
-   `(UTC hour / 3) mod 8`, so each card is read about once a day without the pass tracking state.
+2. **Deep check: all of Under Review, plus a rotating slice.** Also check, by reading the code, **every** Under
+   Review card on every pass (owner, 2026-11-14): New and Answered ones through step 3, and Waiting ones too, so a
+   card whose question was overtaken by a merged PR leaves the column. Send the Waiting cards to the Explore agents
+   with the others, asking only whether main delivers each one. For Reviewed and Selected for Development, check
+   the cards whose number mod 8 equals `(UTC hour / 3) mod 8`, so each card is read about once a day without the
+   pass tracking state.
 3. **Judge each candidate against its Acceptance Criteria** (or its description when it has none). Read the
    code at `origin/main`. Don't trust a commit message alone.
    - **Fully delivered:** every item is met on main. Move the card to **Done**, set its **Pull Request**
