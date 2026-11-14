@@ -167,7 +167,8 @@ export function EditorHeader({
                 </button>
               </HoverCard>
             )}
-            <span className="hidden sm:contents">
+            {/* The pills never shrink: the name truncates first, so a pill never runs into the next one. */}
+            <span className="hidden shrink-0 items-center gap-1 sm:flex">
               <SharedBadge
                 shareable={shareable}
                 team={teamDocument}

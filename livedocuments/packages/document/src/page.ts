@@ -378,8 +378,18 @@ function withOneRowAnchor(pages: Page[]): Page[] {
   });
 }
 
+// The pages read from each stored `pages` array: a tab's pages are read on every render and every keystroke's checks
+// (a lock, a page's kind), and a typing commit changes the writing, never the pages, so the array is the same.
+// Frozen, array and pages, so a caller that changed what it was handed would throw rather than change it for the
+// next.
+const parsedPages = new WeakMap<object, readonly Page[]>();
+
 /** The row anchor the pages carry: the first page's centre (the canvas origin when none does). */
 export function pagesOf(tab: { pages?: unknown; pageOrientation?: unknown } | undefined): Page[] {
+  if (Array.isArray(tab?.pages)) {
+    const cached = parsedPages.get(tab.pages);
+    if (cached) return cached as Page[];
+  }
   const seen = new Set<string>();
   const stored = Array.isArray(tab?.pages)
     ? tab.pages.map(parsePage).filter((p): p is Page => {
@@ -388,8 +398,14 @@ export function pagesOf(tab: { pages?: unknown; pageOrientation?: unknown } | un
         return true;
       })
     : [];
-  if (stored.length > 0)
-    return withArticlesTogether(withOwnCardFlows(withOneRowAnchor(stored.slice(0, MAX_PAGES))));
+  if (stored.length > 0) {
+    const pages = withArticlesTogether(
+      withOwnCardFlows(withOneRowAnchor(stored.slice(0, MAX_PAGES))),
+    );
+    for (const p of pages) Object.freeze(p);
+    parsedPages.set(tab!.pages as object, Object.freeze(pages));
+    return pages;
+  }
   const orientation = isPageOrientation(tab?.pageOrientation) ? tab.pageOrientation : 'portrait';
   return [{ id: FIRST_PAGE_ID, orientation }];
 }

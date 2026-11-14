@@ -73,7 +73,8 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   pages are freed. Nothing is lost: the blocks are kept.
 - **A table splits between its rows**: a row that does not fit at the foot of a page moves to the next
   page whole, and a table with a header row repeats that row at the top of every page it continues
-  on. A row taller than a whole page breaks inside, between its lines. Above a page's footnotes the
+  on. A header row is never left alone at a page's foot: when the first row under it does not fit
+  there, the whole table starts the next page, with or without notes. A row taller than a whole page breaks inside, between its lines. Above a page's footnotes the
   notes' top is the foot (see "Footnotes"). A contents block splits
   between its entries.
 - **Page numbers** sit centred in the bottom margin of each page of an article ("2"), in small

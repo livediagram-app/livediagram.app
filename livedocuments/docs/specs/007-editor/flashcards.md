@@ -133,7 +133,9 @@ side by side shows its cards in a row, as slides stand, with no fan, footer nav 
   stack of 100 cards opens, types and flips on a mid-range phone as one of a few cards does. What settles after
   each typed change (the zones an article fits to its pictures and drawings) looks only at writing that has zones,
   which a card never has, so typing on a card does no work for the rest of the stack: no pause over 50 ms while
-  typing on a throttled phone.
+  typing on a throttled phone. A typed change renders the editor once, not again as it saves, and reads again only
+  the card that changed, so its longest busy stretch stays under about 30 ms on a phone four times slower than a
+  laptop.
 - **The + to add a card** sits beside the card in front ("Add Card"), adding a card right after the card in front
   (pages-mode.md "Where a new page goes"), as Contents' Add Card does, and the view flips to it.
 

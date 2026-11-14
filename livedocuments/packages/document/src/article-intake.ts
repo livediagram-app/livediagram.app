@@ -84,8 +84,16 @@ type ArticlesTab = Pick<Tab, 'elements'> & { pages?: unknown; articles?: unknown
 /** Whether the writing holds a zone (a picture, an object or a drawing set into it): writing without one has
  *  nothing for the intake to fit. */
 export function hasZoneBlock(doc: Pick<ArticleFlow, 'blocks'>): boolean {
-  return doc.blocks.some((b) => b.type === 'zone');
+  const cached = zoneBlockSeen.get(doc.blocks);
+  if (cached !== undefined) return cached;
+  const has = doc.blocks.some((b) => b.type === 'zone');
+  zoneBlockSeen.set(doc.blocks, has);
+  return has;
 }
+
+// Whether each article's blocks hold a zone, by its blocks: the intake asks of every article after each commit, and a
+// commit changes one (a typing commit on a 100-card stack), so the rest are answered from here.
+const zoneBlockSeen = new WeakMap<readonly unknown[], boolean>();
 
 /**
  * An article's zones fitted to their elements (docs/specs/007-editor/article-pages.md "Zones"):

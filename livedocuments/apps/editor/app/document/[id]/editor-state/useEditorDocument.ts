@@ -35,7 +35,9 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
   const surface = opts.surface ?? 'app';
   const { embedMode, workbenchMode, appChrome } = surfaceFlags(surface);
   const workbench = useWorkbenchDocumentSession();
-  const initialTabs: Tab[] = [createTab('Tab 1')];
+  // The tabs before the document loads: only their first value is read (the history's start, the first active tab), so
+  // they are made once, not at every render.
+  const [initialTabs] = useState<Tab[]>(() => [createTab('Tab 1')]);
 
   // Embed page-view telemetry (docs/specs/013-workspace/embeds.md) is emitted by editor-page.tsx —
   // exactly one site, so an embed render can't be double-counted.

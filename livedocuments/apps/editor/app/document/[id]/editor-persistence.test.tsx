@@ -52,4 +52,43 @@ describe('useEditorPersistence save toast', () => {
     expect(toastAfter('saving')).toEqual([]);
     expect(toastAfter('saved')).toEqual([]);
   });
+
+  it('raises a failed save once, however often the autosave says so', () => {
+    const toast = { error: vi.fn() };
+    const { result } = renderHook(() =>
+      useEditorPersistence({
+        toast: toast as unknown as Parameters<typeof useEditorPersistence>[0]['toast'],
+      }),
+    );
+    act(() => result.current.setSaveStatus('error'));
+    act(() => result.current.setSaveStatus(() => 'error'));
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    act(() => result.current.setSaveStatus('saving'));
+    act(() => result.current.setSaveStatus('error'));
+    expect(toast.error).toHaveBeenCalledTimes(2);
+  });
+});
+
+// docs/specs/007-editor/blueprints/flashcards.md "Performance and limits" (Work Tracker 728): a save renders nothing.
+// As state, the status and the time of the last write rendered the whole editor twice more after every typing commit.
+describe('useEditorPersistence while saving', () => {
+  it('renders nothing as a save starts, lands or is timed', () => {
+    let renders = 0;
+    const toast = { error: vi.fn() };
+    const { result } = renderHook(() => {
+      renders++;
+      return useEditorPersistence({
+        toast: toast as unknown as Parameters<typeof useEditorPersistence>[0]['toast'],
+      });
+    });
+    const before = renders;
+    act(() => {
+      result.current.setSaveStatus('saving');
+      result.current.setSaveStatus('saved');
+      result.current.setSavedAt(1);
+      result.current.setSavedAt((t) => (t ?? 0) + 1);
+    });
+    expect(renders).toBe(before);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
 });

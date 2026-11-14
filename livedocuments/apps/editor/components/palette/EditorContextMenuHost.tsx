@@ -30,7 +30,19 @@ const ReadOnlyElementMenuHost = dynamic(
 // everything straight from EditorContext — the same host pattern as
 // EditorModals / EditorAnchoredPopovers — and resolves the selection
 // member set the menu's multi variant acts on.
+//
+// Only the menu's state is read until a menu is open: the editor renders on every change of the document (each typing
+// commit), and the open menu's wiring (about 150 of the editor's values) costs a render of its own each time
+// (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits").
 export function EditorContextMenuHost() {
+  const { contextMenu, isReadOnly } = useEditorContext();
+  if (isReadOnly) return contextMenu?.mode === 'element' ? <ReadOnlyElementMenuHost /> : null;
+  if (!contextMenu || contextMenu.mode === 'canvas') return null;
+  return <OpenEditorContextMenu />;
+}
+
+// An editor's open element menu, with everything it acts with.
+function OpenEditorContextMenu() {
   const {
     contextMenu,
     activeTab,

@@ -48,6 +48,16 @@
 .article-flow table.article-table tr:has(> th) {
   background-color: color-mix(in srgb, var(--article-accent) 9%, transparent);
 }
+/* A header row keeps with the row after it: when that row moves to the next page, the header row goes with it rather
+   than standing alone at the page's foot (docs/specs/007-editor/article-pages.md "Flowing onto pages"). A repeated
+   copy is a header row too, so it keeps with the row it heads. WebKit does not honour the avoid between rows, so the
+   header-row pass also starts such a table on the next page (article-table-repeat.ts keepsHeader). */
+.article-flow table.article-table tr:has(> th):not(:last-child) {
+  break-after: avoid;
+}
+.article-flow table.article-table.article-table-keep {
+  break-before: column;
+}
 .article-flow table.article-table th {
   font-weight: 650;
   color: var(--article-heading-color);

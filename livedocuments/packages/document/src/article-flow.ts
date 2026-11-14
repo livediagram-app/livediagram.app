@@ -385,10 +385,24 @@ export function articlesOf(tab: object | undefined): Readonly<Record<string, Art
   if (cached) return cached;
   const out: Record<string, ArticleFlow> = {};
   for (const [flow, raw] of Object.entries(articles)) {
-    if (isId(flow)) out[flow] = parseArticleFlow(raw, `${flow}-b0`);
+    if (isId(flow)) out[flow] = parsedFlowOf(flow, raw);
   }
   parsedArticles.set(articles, out);
   return out;
+}
+
+// Each stored article's writing as read, by its stored object: a typing commit changes one article of the tab, so the
+// rest are read once, not again at every commit (100 cards of a flashcard stack), and keep the same object for readers
+// that memo on it. Keyed with the flow id too, which names an empty article's block.
+const parsedFlows = new WeakMap<object, { flow: string; parsed: ArticleFlow }>();
+
+function parsedFlowOf(flow: string, raw: unknown): ArticleFlow {
+  if (!raw || typeof raw !== 'object') return parseArticleFlow(raw, `${flow}-b0`);
+  const cached = parsedFlows.get(raw);
+  if (cached && cached.flow === flow) return cached.parsed;
+  const parsed = parseArticleFlow(raw, `${flow}-b0`);
+  parsedFlows.set(raw, { flow, parsed });
+  return parsed;
 }
 
 const EMPTY_ARTICLES: Readonly<Record<string, ArticleFlow>> = Object.freeze({});
