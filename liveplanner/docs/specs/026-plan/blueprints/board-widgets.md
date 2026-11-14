@@ -240,6 +240,46 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
 
 See DEFAULTS.md D17 to D19, and D74 to D79 for field widgets and the gallery.
 
+## The board's filter (board-widgets.md "The board's filter")
+
+- **Naming**: `BoardFilter` (`board-filter.ts`, packages/items): a `SavedBoardFilter` without its id and name (`text?`,
+  `mine?: true`, `filters?`, `person?`, `type?`, `priority?`, `due?: 'overdue' | 'soon'`), kept as
+  `PlanBoardSetup.filter?: BoardFilter`. The editor's `QuickFilter` is it resolved for this viewer and today.
+- **Pure helpers** (`board-filter.ts`): `isBoardFilter(v)` (the same field checks as a saved filter's,
+  `savedFilterFieldsValid`: words up to `SAVED_FILTER_TEXT_MAX` 200, at most `CARD_SEARCH_FILTERS_MAX` 8 chips);
+  `readBoardFilter(v)` (normaliseBoardSetup keeps a valid one that narrows, else drops it); `boardFilterFrom(quick)`
+  (the words kept as typed, so a trailing space survives the round trip, cut to 200; Only Mine as a flag; a due window
+  as `overdue`/`soon`; undefined when nothing narrows); `resolveBoardFilter(filter, opts)` (as `resolveSavedFilter`);
+  `boardFilterKey(filter)` (a comparable string).
+- **Contracts**: `validate-shape.ts`' `planBoard` rule refuses a `filter` that `isBoardFilter` rejects;
+  `plan-board-patch.ts` SETUP_KEYS gains `filter` (it travels whole); the participant content rule
+  (`participant-content.ts`, `PARTICIPANT_BOARD_FIELDS = ['filter']`) takes `planBoard.filter` from a Participant's
+  update of a `plan-board` and keeps every other set-up field as stored, so a Participant's board change can only move
+  the filter (refused `invalid` when the result fails validation); a Viewer's ops never pass `room-op-gate.ts`.
+  `field-filter-removal.ts` `boardWithoutFieldFilters` strips the field's clauses from `filter` too (an emptied filter
+  goes).
+- **Write**: `usePlanElementWrites.setBoardFilter(boardId, filter | undefined)` (on `PlanContext`) sets or clears only
+  `planBoard.filter` on the stored set-up as it is (never the normalised copy), so a Participant's commit passes
+  `participantTabChange` untouched.
+- **State** (`components/plan/useBoardFilter.ts`): `useBoardFilter({ stored, mine, today, finished, canChange,
+write })` answers `{ quick, setQuick }`: `quick` is the stored filter resolved (memoised on its key, the viewer, the
+  day and the done statuses) or, while typing waits, the local draft. `setQuick(q)` does nothing without `canChange`;
+  a change of the words alone waits `BOARD_FILTER_TYPING_MS` (400) after the last key, anything else writes at once
+  (flushing waiting words first); unmounting flushes. `PlanBoardView` passes `canChange = interactive &&
+canEditCards`, `write = plan.setBoardFilter(element.id, ·)`.
+- **Read-only** (a Viewer): `WidgetContext.canFilter` and `FilterPress.canFilter` false disable every narrowing press
+  (Only Mine, People, Unassigned, Card Types, Due Soon, Priorities, field values, saved filter chips) and hide Show all;
+  `BoardFilterField` passes `readOnly` to `FilterSearchBox` (workbench), which makes the words `readOnly`, drops the
+  chips' crosses and Clear, and the field draws no Add Filter.
+- **Taking a widget off**: `PlanBoardHeader` hands the trimmed filter with the widgets (`onWidgets(next, kept)`), one
+  set-up write, so the second write never puts back the filter the first cleared.
+- **Phone and slot**: `shownQuick` still applies none there.
+- **Testing**: `board-filter.test.ts` (checks, read, from, resolve, key), `participant-content.board-filter.test.ts`
+  (a Participant's filter lands, other set-up fields stay, a bad filter is refused), `validate-shape` and
+  `plan-board-patch` cases, `useBoardFilter.test.tsx` (two clients over one store converge, a remount restores, typing
+  debounced and flushed on unmount, a Viewer cannot change it), widget role tests (Viewer disabled, Participant
+  presses).
+
 ## Filter field and saved filters (board-widgets.md "The Filter widget", "Saved filters")
 
 - **Naming**: `QuickFilter.filters?: CardSearchFilter[]` (the field chips, packages/items `board.ts`);
@@ -269,7 +309,8 @@ today, soonDays, finished })` (the viewer's id or none; the window from today); 
 - **Contracts**: `plan-board-patch.ts` SETUP_KEYS gains `savedFilters` (a set-up delta, like `widgets`);
   `validate-shape.ts`' `planBoard` rule also refuses a stored `savedFilters` that `isSavedBoardFilters` rejects
   (more than 8, a bad id or name, words past 200, chips past 8 or malformed, an unknown due window or priority).
-- **Roles**: `canEdit` (an Editor's set-up) shows Save Filter and each chip's chevron; everyone applies.
+- **Roles**: `canEdit` (an Editor's set-up) shows Save Filter and each chip's chevron; `canFilter` (an Editor or a
+  Participant) applies; a Viewer's chips are disabled.
 - **Errors**: a name taken says "A saved filter already has this name."; an empty name keeps Save disabled; at 8,
   Save Filter hides; a filter whose field or value is gone matches nothing.
 - **Telemetry**: `Plan` · `Used` / `Added` / `Renamed` / `Changed` / `Removed` · `SavedFilter`.

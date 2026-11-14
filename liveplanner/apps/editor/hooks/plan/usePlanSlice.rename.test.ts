@@ -98,6 +98,29 @@ describe('a board or chart changed', () => {
   });
 });
 
+// docs/specs/026-plan/board-widgets.md "The board's filter": only `planBoard.filter` changes, on the set-up as stored.
+describe("the board's filter written", () => {
+  it('sets and clears only the filter, leaving the stored set-up and tab name as they were', () => {
+    const { context, commitTabs } = slice();
+    context.setBoardFilter?.('b', { text: 'login', mine: true });
+    const set = commitTabs.mock.calls[0]![0](boardTab());
+    const boardOf = (tabs: Tab[]) =>
+      (tabs[0]!.elements[0] as unknown as { planBoard: Record<string, unknown> }).planBoard;
+    expect(boardOf(set)).toEqual({
+      title: 'Bugs',
+      columns: [],
+      filter: { text: 'login', mine: true },
+    });
+    expect(set[0]?.name).toBe('Bugs copy');
+    context.setBoardFilter?.('b', undefined);
+    expect(boardOf(commitTabs.mock.calls[1]![0](set))).toEqual({ title: 'Bugs', columns: [] });
+    // Another board's id changes nothing.
+    context.setBoardFilter?.('other', { text: 'x' });
+    const tabs = boardTab();
+    expect(commitTabs.mock.calls[2]![0](tabs)).toBe(tabs);
+  });
+});
+
 // docs/specs/026-plan/plan-board.md "Done columns": a board as written flags its columns, an older board's as it read.
 describe('a board written', () => {
   it('flags its columns: kept ones as they counted, a new one by its name', () => {

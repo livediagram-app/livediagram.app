@@ -480,7 +480,10 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
     runtime's own zone, "2026-10-31 17:00" too, and stamps the runtime's zone; without `local` an offset is
     required); `instantIso(v)` (`YYYY-MM-DDTHH:MM:SSZ`, the zone dropped; agents and CSV); `zonedParts(ms, tz?)`
     (year, month, date, hour, minute in `tz`, else the runtime's zone through the Date getters; one cached
-    `Intl.DateTimeFormat` per zone), `zonedDay(ms, tz?)` (that day as a day number), `zonedInstant(day, hour, minute,
+    `Intl.DateTimeFormat` per zone). Its caches (`zoneChecks`, `partFormatters`, `textFormatters`) are each held to
+    `ZONE_CACHE_MAX` (64) entries, the oldest evicted first (`cacheSet`), and `isTimeZone` caches only a zone the
+    runtime knows, so zone strings from stored or typed data never grow a long-lived Worker isolate without end;
+    `zoneCacheSizes()` reports them for tests, `zonedDay(ms, tz?)` (that day as a day number), `zonedInstant(day, hour, minute,
 tz?)` (the inverse, a clock change resolved as the platform does: a skipped time moves forward, a repeated one
     takes the first); `shiftInstant(v, days, tz?)` (whole days keeping the wall-clock time and the zone);
     `instantOnDay(v | undefined, day, tz?)` (an instant moved to `day` keeping its time, or a new one at
@@ -702,7 +705,12 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `card-file-drop.ts` (`useCardFileDrop`, in `PlanBoardCard`, handing the card's pill `progress` for its
   `UploadRing onBrand`: the state lives in that card's own hook, so only the uploading card re-renders); the cover and the count chip in `CardCover.tsx`, drawn by `PlanCardFace` when the type's
   Detailed Header holds `cover`. Both pictures' URLs come from `use-image-url.ts` (`useImageUrl`, `useSeen`, shared
-  with `ImageField.tsx`), at `IMAGE_COVER_EDGE` (640) and `IMAGE_ROW_EDGE` (160). The card fields `attachments` and
+  with `ImageField.tsx`; `useSeen` adds to its IntersectionObserver rechecks by the element's own rectangle
+  against the viewport (`SEEN_MARGIN_PX`, 200) on any `transitionend` or `animationend` in its first
+  `SEEN_RECHECK_MS` (800 ms) and once at its end, then leaves it to the observer, so only tiles mounted in the last
+  800 ms are ever measured, one pass a frame for all of them (`seen-recheck.ts`), because an
+  observer reports only crossings and a tile mounted inside a panel still moving in can be missed when the motion
+  runs on the compositor), at `IMAGE_COVER_EDGE` (640) and `IMAGE_ROW_EDGE` (160). The card fields `attachments` and
   `cover` are in `CARD_FIELDS`; `cardSlotFits` keeps `cover` to Detailed's `head`, and `typeOffersCardField` offers it
   while the type has `attachments`. Add Field's Ready to use lists Attachments under Image (`BUILT_INS_OF_KIND`). The
   api's reporting is `plan-room/image-refs.ts` (schema step V11: `media_refs` and the `outbox_images_*` triggers;

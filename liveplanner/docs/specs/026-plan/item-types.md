@@ -956,7 +956,9 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     either way its tile goes with nothing said and the next file goes on. A file whose upload had already finished
     when Cancel was pressed is not added either (its picture stays in the uploader's gallery, as a removed one does).
     A landed picture shows at once from the file's own bytes, never fetched back from the server (on a slow line that
-    fetch held each new tile on its grey placeholder for seconds). Each lands in one
+    fetch held each new tile on its grey placeholder for seconds). A tile fetches its picture once it is near the
+    screen, and a tile that appeared while its panel was still moving in is checked again once the motion ends, so a
+    tile on screen never stays on its placeholder. Each lands in one
     write of the list read from the card as it is then (someone else may have added meanwhile). A file refused, or
     past the field's 20, is skipped and said under the grid ("photo.heic: Use a PNG, JPEG, WebP or GIF image.",
     "{Field} holds up to 20."), and so is a picture the field already holds (the same bytes are the same picture:
@@ -1520,7 +1522,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       left with nothing to narrow by is removed whole). For a built-in field (below) only those that would match
       nothing come off: on a board or view whose every card type has stopped holding the built-in. The line over
       Save counts them: "2 filters on it will be removed." (with the values line when there is one). A board's
-      quick filter (each person's own, never stored) is left to its owner.
+      filter (the quick filter, kept on the board, [Board widgets](board-widgets.md#the-boards-filter)) loses the
+      field's clauses the same way.
     - **Saving the type** happens **all or none**: the cards' changed values are written first, as one write; the
       type is saved with them; the filters come off when both have landed. When the values can't be written
       (offline, refused, part of them refused), any that landed are put back and the type stays as it was; when

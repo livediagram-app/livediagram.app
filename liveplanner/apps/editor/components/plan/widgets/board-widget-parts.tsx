@@ -35,6 +35,9 @@ export type WidgetContext = {
   onQuick: (q: QuickFilter) => void;
   // The viewer's person id, when they can be "mine".
   canFilterMine: string | null;
+  // Whether this viewer changes the board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): false
+  // for a Viewer, who sees the narrowing read-only. Absent is true.
+  canFilter?: boolean;
   trayOpen: boolean;
   onToggleTray: () => void;
   now: Date;
@@ -47,6 +50,10 @@ export type WidgetContext = {
   planItems?: ReadonlyMap<string, Item> | undefined;
   statusNames?: ReadonlyMap<string, string> | undefined;
 };
+
+// A Viewer's widgets: every narrowing press disabled, the board's filter shown as it is.
+export const filterLocked = (ctx: Pick<WidgetContext, 'canFilter'>): boolean =>
+  ctx.canFilter === false;
 
 export const NO_PLAN_ITEMS: ReadonlyMap<string, Item> = new Map();
 
