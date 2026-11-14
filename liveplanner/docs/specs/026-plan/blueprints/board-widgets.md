@@ -304,7 +304,7 @@ canEditCards`, `write = plan.setBoardFilter(element.id, ·)`.
   Participant presses), `PlanBoardView.filter-empty.test.tsx` (the hint for an Editor and a Participant with Show
   All, a Viewer without it, per viewer, one card, never on an empty board, a phone or a slot),
   `PlanBoardView.filter.perf.test.tsx` (2,000 cards: one projection, no widget recount, within the CPU budget),
-  `useDrawnSetup.test.ts`, `widgets/kept-stat.test.ts`.
+  `useDrawnSetup.test.ts`, `kept-stat.test.ts`.
 
 ## Filter field and saved filters (board-widgets.md "The Filter widget", "Saved filters")
 

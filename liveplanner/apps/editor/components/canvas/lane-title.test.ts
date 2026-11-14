@@ -12,16 +12,15 @@ import { laneTitleOf } from './lane-title';
 
 const LONG = 'Quarterly marketing programme review and sign off with every regional lead';
 
-const lane = (extra: Partial<ShapeElement> = {}): ShapeElement =>
-  ({
-    ...createShape('lane', 0, 0),
-    id: 'l1',
-    label: LONG,
-    textSize: 'md',
-    textAlignX: 'left',
-    textAlignY: 'middle',
-    ...extra,
-  }) as ShapeElement;
+const lane = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
+  ...createShape('lane', 0, 0),
+  id: 'l1',
+  label: LONG,
+  textSize: 'md',
+  textAlignX: 'left',
+  textAlignY: 'middle',
+  ...extra,
+});
 
 const of = (el: BoxedElement, editing = false) =>
   laneTitleOf(
@@ -81,7 +80,9 @@ describe('laneTitleOf', () => {
   });
 
   it('clamps a formatted title by CSS, and a fitted-size one is laid out only at a set size', () => {
-    const formatted = of(lane({ richText: [{ text: 'Quarterly', bold: true }, { text: ' plan' }] }));
+    const formatted = of(
+      lane({ richText: [{ text: 'Quarterly', bold: true }, { text: ' plan' }] }),
+    );
     expect(formatted.label).toBe(LONG);
     expect(formatted.frame?.className).toContain('line-clamp-3');
     expect(of(lane({ textSize: 'scale' })).label).toBe(LONG);

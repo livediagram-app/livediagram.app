@@ -299,9 +299,9 @@ describe('hasNewComments (docs/specs/014-identity/transactional-email.md #1)', (
   it("is false when the only new comment is a peer's that reached the writer live", () => {
     // Credited from the room: no author id until its author's own save claims it.
     const peer = cm('c2', null);
-    expect(
-      hasNewComments([mkCell('e1', [cm('c1'), peer])], [mkCell('e1', [cm('c1')])], 'w'),
-    ).toBe(false);
+    expect(hasNewComments([mkCell('e1', [cm('c1'), peer])], [mkCell('e1', [cm('c1')])], 'w')).toBe(
+      false,
+    );
     expect(
       hasNewComments([mkCell('e1', [cm('c1'), cm('c3', 'x')])], [mkCell('e1', [cm('c1')])], 'w'),
     ).toBe(false);
