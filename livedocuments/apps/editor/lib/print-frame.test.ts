@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   PRINT_FONTS_WAIT_MS,
   PRINT_FRAME_ATTR,
@@ -8,6 +8,18 @@ import {
 } from './print-frame';
 
 // docs/specs/020-import-export/print.md "How it prints". jsdom loads no srcdoc, so each test fires the frame's load.
+// jsdom does fire a load of its own as the frame goes in (its empty about:blank, synchronously, where a browser loads
+// the srcdoc later): held back here, so the frame loads only when a test says.
+const holdJsdomLoad = (e: Event) => {
+  if (
+    e.isTrusted &&
+    e.target instanceof HTMLIFrameElement &&
+    e.target.hasAttribute(PRINT_FRAME_ATTR)
+  ) {
+    e.stopPropagation();
+  }
+};
+beforeEach(() => document.addEventListener('load', holdJsdomLoad, true));
 
 const frameNow = () => document.querySelector<HTMLIFrameElement>(`iframe[${PRINT_FRAME_ATTR}]`);
 const load = (print: () => void = vi.fn()) => {
@@ -18,6 +30,7 @@ const load = (print: () => void = vi.fn()) => {
 };
 
 afterEach(() => {
+  document.removeEventListener('load', holdJsdomLoad, true);
   frameNow()?.remove();
   vi.useRealTimers();
 });

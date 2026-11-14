@@ -72,11 +72,11 @@ describe('the pod, bar and garden views', () => {
     };
     expect(door('n', [])).toEqual({
       at: [54, 134, 68, 9],
-      slide: 'translate(68px, 0px)',
+      slide: 'translate(68px)',
       mirrored: false,
     });
     expect(door('s', []).at).toEqual([54, 7, 68, 30]);
-    expect(door('s', []).slide).toBe('translate(-68px, 0px)');
+    expect(door('s', []).slide).toBe('translate(-68px)');
     expect(door('e', [])).toEqual({
       at: [0, 68, 9, 68],
       slide: 'translate(0px, 68px)',
@@ -84,7 +84,7 @@ describe('the pod, bar and garden views', () => {
     });
     // Facing right is the side mirrored, the door with it.
     expect(door('w', []).mirrored).toBe(true);
-    expect(door('e', [sitter('Ada'), sitter('Grace')]).slide).toBe('translate(0px, 0px)');
+    expect(door('e', [sitter('Ada'), sitter('Grace')]).slide).toBe('translate(0px)');
   });
 
   it('rings a bar stool’s sitter, and on a pod only the bench seat its sitter holds', () => {

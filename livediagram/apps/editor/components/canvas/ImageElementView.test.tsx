@@ -272,7 +272,7 @@ describe('image placeholder theme', () => {
 
   it("sets the label in the element's font", () => {
     const { container } = draw(image(), { fontFamily: '"Kalam", cursive' });
-    expect(box(container).style.fontFamily).toBe('"Kalam", cursive');
+    expect(box(container).style.fontFamily).toBe('Kalam, cursive');
   });
 
   it('leaves the broken state rose whatever the theme', () => {
@@ -412,7 +412,9 @@ describe('the white under a picture', () => {
     const el = image({ imageId: 'x', naturalWidth: 500, naturalHeight: 500 });
     const frame = box(draw(el).container);
     const side = (el.width - el.height) / 2;
-    expect(bandsOf(frame)).toBe(`inset ${side}px 0px 0 0 #fff, inset -${side}px 0px 0 0 #fff`);
+    expect(bandsOf(frame)).toBe(
+      `rgb(255, 255, 255) ${side}px 0px inset, rgb(255, 255, 255) -${side}px 0px inset`,
+    );
   });
 
   it('learns a picture size it was not given when the picture loads, for its bands', () => {
@@ -423,7 +425,7 @@ describe('the white under a picture', () => {
     Object.defineProperty(img, 'naturalWidth', { value: 300 });
     Object.defineProperty(img, 'naturalHeight', { value: 300 });
     fireEvent.load(img);
-    expect(bandsOf(box(container))).toMatch(/^inset /);
+    expect(bandsOf(box(container))).toMatch(/ inset$/);
   });
 
   it('lays the picture over the whole box, so it alone meets the edge', () => {
