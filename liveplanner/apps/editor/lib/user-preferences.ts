@@ -323,7 +323,7 @@ export function __forgetPreferenceLoads(): void {
 async function loadUserPreferences(ownerId: string): Promise<UserPreferences | null> {
   const remote = await apiGetPreferences(ownerId);
   if (remote === 'local') {
-    keepPreferencesLocally();
+    keepPreferencesLocally(ownerId);
     return null;
   }
   if (remote === null) return null;
