@@ -10,6 +10,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // runs a typed name as a formula in an admin's spreadsheet. And the tab swap: a gap there loses a Participant's write or answers it wrongly.
 // And the image embedder: a gap draws a picture past the preview's budget or out of document order.
 // And the reader redactions: a gap hands a stranger the owner's id or an edit link.
+// And the preferences route: a gap there stores a patch past the cap or loses a refusal.
 // And the ledger store: a gap there cuts an entry a save still needs, or hands a save less than it merges.
 // And the tab order: a gap there lands a new tab on a place another holds.
 // And the delta door: a gap there stores a rebuilt tab no digest proved.
@@ -33,6 +34,7 @@ export default defineProject({
         'src/d1-compound.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/d1-compound-guard.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-body.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/preferences-route.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/public-address.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/public-fetch.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/redact-item.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
