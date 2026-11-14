@@ -70,7 +70,7 @@ function resolveElement(
     return {
       refusal: {
         error: TARGET_NOT_FOUND_ERROR,
-        message: `no element "${input}"; deleted since your read? tab diff shows what changed`,
+        message: `no element "${input}"; deleted since your read? read the tab again for its current refs`,
         input,
         candidates,
         stale: false,

@@ -688,7 +688,7 @@ the tab and its `rev`.
 | E15  | Id shorter than 4                              | The full id is the ref                                                                   |
 | E16  | Slug id that is another id's prefix            | Exact match wins; the longer id's ref grows past the common prefix                       |
 | E17  | Prefix ambiguous after a collaborator's add    | 400 `target_ambiguous`, `stale: true`, candidates; never a guess                         |
-| E18  | Ref of a deleted element                       | 404 `target_not_found` with nearest refs; the message suggests `tab diff`                |
+| E18  | Ref of a deleted element                       | 404 `target_not_found` with nearest refs; the message suggests reading the tab again     |
 | E18a | `id:"n1"` after `n1` is deleted, `n10` present | `not-found`; never `n10` by prefix                                                       |
 | E19  | `only` on any element                          | The element's line alone                                                                 |
 | E20  | Budget below the header                        | Header and elision line still print                                                      |

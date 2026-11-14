@@ -671,10 +671,9 @@ What every part does:
     toolbar's Delete.
   - **An arrow has no box**: it is two ends, each a free point, pinned to an element's anchor, or a point along another
     arrow. A retired arrow draws as a faint dashed straight line between its ends, in the placeholder's quiet ink,
-    with the placeholder card (160 by 96) centred on the line's middle. The card is what selects, takes comments, opens
-    the context menu and holds the Delete button; the line takes no press. Its menu's quick bar offers what a boxed
-    placeholder's does: Assign Action, Add Comment and Add Note (no new link), and its comment, note and action open
-    anchored to the card, through the comment endpoints as for any element. A free end sits at its point, a pinned end
+    with the placeholder card (160 by 96) centred on the line's middle. The card is what selects, opens the context
+    menu and holds the Delete button; the line takes no press. Its menu offers what a boxed placeholder's
+    does; there is no quick bar and no comment, note or action (Work Tracker 714, Work Tracker 739). A free end sits at its point, a pinned end
     at its anchor on its element's box (turned with the element), and an end on another arrow at its fraction of that
     arrow's straight line (four hops at most). An end whose element is gone, or is not one with a box, takes the
     other end's point; an arrow with neither end left draws its card at the canvas origin, so it can still be
