@@ -81,7 +81,8 @@ and right-click opens the ordinary element menu.
   (`commentPersisters` in `apps/editor/lib/comment-persistence.ts`, shared by both surfaces); an Editor's ride the room
   and the tab save. Before the two shared it, a Participant's panel comment stayed on its own screen, unsaved.
 - **Export** draws the header (with **Resolved** once resolved) and the newest
-  comments as bubbles with their authors (`svg-render-faces.ts`), so the card reads the same in a PNG.
+  comments as bubbles with their authors (`svg-render-panel-faces.ts`), read only like the canvas face: no Resolve
+  chip, composer or Reopen Thread bar, in the SVG and the PNG (which rasterises the same fragment).
 - **It does not collapse.** A collapse-to-summary was built and then dropped: a
   panel you have deliberately put on the canvas is there to be READ, and folding
   it left an element whose whole purpose sat behind another click. "I don't

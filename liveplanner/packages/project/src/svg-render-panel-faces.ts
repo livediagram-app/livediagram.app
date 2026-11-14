@@ -1,9 +1,9 @@
 // The Comment and Action panels in the headless render (docs/specs/012-collaboration/comment-pin.md "The
 // look", docs/specs/012-collaboration/action-panel.md "The card"), drawn as their canvas faces draw them
 // (CommentPanelFace + CommentBubbles, ActionPanelFace + ActionRow): the
-// thread as grouped bubbles under their authors with the composer at the
-// foot, and the action checklist with the Add Action bar. Motion, hover and
-// the composer's live states are left out, as for every face in a still image
+// thread as grouped bubbles under their authors, read only (no composer, comment-pin.md is retired),
+// and the action checklist with the Add Action bar. Motion, hover and
+// live states are left out, as for every face in a still image
 // (docs/specs/020-import-export/export-fidelity.md). The accent is the element's stroke (collabAccent).
 
 import { COLLAB_DONE_COLOR as DONE } from './colors';
@@ -25,11 +25,8 @@ import {
 import {
   ACCENT_BAR_H,
   accentBar,
-  accentChip,
   BODY_GAP,
   BODY_TOP,
-  COMPOSER_BARE_H,
-  composer,
   GLYPH,
   glyph,
   relativeSince,
@@ -70,50 +67,22 @@ export function svgCommentPanel(el: Face, title: string, color: string, a: Colla
   const resolved = thread?.resolved === true;
   return collabCard(el, title || 'Comments', undefined, color, (w, h) => {
     const inner = w - PAD_X * 2;
-    // The header's slot: the Resolve chip once there is a thread, or the
-    // green Resolved chip once resolved.
-    let out = resolved
-      ? doneChip(w - PAD_X, 'Resolved')
-      : comments.length
-        ? accentChip(
-            w - PAD_X - ('Resolve'.length * 5.8 + 22),
-            PAD_Y + 2,
-            'Resolve',
-            a,
-            GLYPH.check,
-          )
-        : '';
-    const composerY = h - PAD_Y - COMPOSER_BARE_H;
-    if (!resolved) {
-      out += composer(
-        PAD_X,
-        composerY,
-        inner,
-        comments.length ? 'Reply…' : 'Write a comment…',
-        color,
-        a,
-      );
-    } else {
-      out += accentBar(PAD_X, h - PAD_Y - ACCENT_BAR_H, inner, 'Reopen Thread', a, GLYPH.reopen);
-    }
-    const bottom = (resolved ? h - PAD_Y - ACCENT_BAR_H : composerY) - BODY_GAP;
+    // Read only, as the canvas face (docs/specs/012-collaboration/comment-pin.md, retired): the green Resolved
+    // chip once resolved, and no Resolve chip, composer or Reopen Thread bar. The thread takes the card down to
+    // its bottom padding.
+    const out = resolved ? doneChip(w - PAD_X, 'Resolved') : '';
+    const bottom = h - PAD_Y;
     if (comments.length === 0) {
       const cy = (BODY_TOP + bottom) / 2;
       return (
         out +
-        `<circle cx="${r2(w / 2)}" cy="${r2(cy - 22)}" r="14" fill="${xmlEscape(a.accent)}" fill-opacity="0.14"/>` +
-        glyph(w / 2, cy - 22, 14, a.ink, GLYPH.bubble) +
-        text(w / 2, cy + 8, 'Start the Conversation', {
+        `<circle cx="${r2(w / 2)}" cy="${r2(cy - 12)}" r="14" fill="${xmlEscape(a.accent)}" fill-opacity="0.14"/>` +
+        glyph(w / 2, cy - 12, 14, a.ink, GLYPH.bubble) +
+        text(w / 2, cy + 18, 'No Comments Yet', {
           size: 12.5,
           weight: 600,
           color,
           anchor: 'middle',
-        }) +
-        text(w / 2, cy + 26, 'Replies stay on the canvas for everyone to read.', {
-          size: 11,
-          color,
-          anchor: 'middle',
-          opacity: 0.55,
         })
       );
     }

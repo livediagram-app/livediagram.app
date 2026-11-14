@@ -1,6 +1,6 @@
 // The small parts the modern Collaborate cards are built from, for the
 // headless render (docs/specs/020-import-export/export-fidelity.md): the same parts the canvas composes its
-// cards from (CollabComposer, CollabPanel), at
+// cards from (CollabPanel), at
 // the canvas's own sizes, so a card built from them exports the way it looks.
 // Every size here is a canvas class, noted beside it.
 
@@ -16,14 +16,11 @@ export const BODY_GAP = 10;
 // ── Glyphs: the canvas's own 16-unit paths, dropped in at size ────────────
 
 export const GLYPH = {
-  check: 'm3.5 8.5 3 3 6-7',
-  send: 'M8 13V3.5M3.8 7.5 8 3.3l4.2 4.2',
   plus: 'M8 3.5v9M3.5 8h9',
   bubble:
     'M3 2.8h10a1.2 1.2 0 0 1 1.2 1.2v6.2a1.2 1.2 0 0 1-1.2 1.2H7.4L4.2 14v-2.6H3a1.2 1.2 0 0 1-1.2-1.2V4A1.2 1.2 0 0 1 3 2.8Z',
   clipboard:
     'M5.5 2.8h5M5.5 2.8a1 1 0 0 0-1 1v.2h7v-.2a1 1 0 0 0-1-1M4.5 3.4H3.6a1 1 0 0 0-1 1v8.6a1 1 0 0 0 1 1h8.8a1 1 0 0 0 1-1V4.4a1 1 0 0 0-1-1h-.9M5.6 9.2l1.7 1.7 3.2-3.6',
-  reopen: 'M4 6.5A4.5 4.5 0 1 1 3.5 10M4 3v3.5h3.5',
 } as const;
 
 /** A 16-unit stroke glyph centred at (cx, cy), `size` across, 1.5px lines. */
@@ -103,43 +100,5 @@ export function accentBar(
           anchor: 'middle',
         })
       : '')
-  );
-}
-
-export const COMPOSER_H = 64;
-export const COMPOSER_BARE_H = 40;
-
-/** The composer at a board's foot (CollabComposer): a rounded field with the
- *  round accent send button, and a line of meta under it. */
-export function composer(
-  x: number,
-  y: number,
-  w: number,
-  placeholder: string,
-  color: string,
-  a: CollabAccent,
-  // The line under the field; absent, the composer is just the field (40px).
-  meta?: string,
-): string {
-  const h = meta ? COMPOSER_H : COMPOSER_BARE_H;
-  return (
-    roundRect(x, y, w, h, 16, color, 0.03, { color, opacity: 0.16 }) +
-    text(x + 14, y + 25, placeholder, { size: 12, color, opacity: 0.45 }) +
-    // The send button as it rests with nothing typed: the whole button at 35%
-    // (disabled:opacity-35), arrow included.
-    `<g opacity="0.35"><circle cx="${r2(x + w - 20)}" cy="${r2(y + 20)}" r="14" fill="${xmlEscape(a.accent)}"/>` +
-    glyph(x + w - 20, y + 20, 13, a.on, GLYPH.send) +
-    '</g>' +
-    (meta ?? '')
-  );
-}
-
-/** A small chip in the accent, with a glyph. */
-export function accentChip(x: number, y: number, label: string, a: CollabAccent, icon?: string) {
-  const w = label.length * 5.8 + (icon ? 22 : 12);
-  return (
-    roundRect(x, y, w, 18, 9, a.accent, 0.14) +
-    (icon ? glyph(x + 10, y + 9, 11, a.ink, icon) : '') +
-    text(x + (icon ? 19 : 6), y + 12.5, label, { size: 10, weight: 600, color: a.ink })
   );
 }
