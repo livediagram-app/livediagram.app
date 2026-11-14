@@ -9,6 +9,8 @@ import { tabEtag } from '@liveplanner/api-schema';
 import { handleFormLinkRoutes } from './form-link-routes';
 import { pushFormInbox } from '../forms/form-inbox';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
+import { handleTabDelta } from './tab-delta-route';
+import { TAB_DELTA_SEGMENT } from '@liveworkspace/api-schema/tab-delta';
 import { handleTabRename } from './tab-name-route';
 import { handleTabForm } from './tab-form-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
@@ -76,6 +78,26 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
     request.method === 'PUT'
   ) {
     return handleTabRename(ctx, segments[2]!, segments[4]!);
+  }
+  // /api/projects/<id>/tabs/<tabId>/delta: the same save as the PUT, sent as the element ops since a stored base
+  // copy (docs/specs/006-project/delta-saves.md), behind the PUT's doors in the PUT's order.
+  if (
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === TAB_DELTA_SEGMENT &&
+    request.method === 'POST'
+  ) {
+    const id = segments[2]!;
+    const tabId = segments[4]!;
+    const refused = refuseTokenTabPut(ctx, id, tabId);
+    if (refused) return refused;
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    const saving = await getProjectForSave(env, id);
+    if (!saving) return missingProject(ctx, id);
+    const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
+    if (!allowed) return deniedEdit(ctx, id, tabId);
+    return handleTabDelta(ctx, saving, tabId, owner);
   }
   if (segments.length === 5 && segments[3] === 'tabs') {
     const id = segments[2]!;

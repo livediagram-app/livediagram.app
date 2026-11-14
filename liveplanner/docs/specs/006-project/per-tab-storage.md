@@ -121,6 +121,8 @@ renders immediately rather than showing a spinner over real content.
 
 ### Saving
 
+- An Editor's save of a tab it holds a stored copy of sends only the changed elements ([Delta saves](delta-saves.md)),
+  falling back to the whole tab; what is stored is the same either way.
 - Changes save 600 ms after the last edit (the debounce). A page going to the background saves at once, since a
   phone may discard it there without another event.
 - What the debounce still holds goes out when the editor goes: on `beforeunload`, on `pagehide` (iOS, a discarded

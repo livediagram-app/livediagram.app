@@ -17,6 +17,7 @@ import { TAB_VIEW_NAMES, TEAM_RECENT_INCLUDE, TEAM_RECENT_LIMIT } from '@livepla
 import { NAME_MAX_LENGTH } from '@liveplanner/project';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@liveplanner/project-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
+import { TAB_DELTA_OPENAPI } from '@liveworkspace/api-kit/tab-delta-door';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
@@ -516,6 +517,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'Tab',
     responseSchema: wrap('tab', 'TabRecord'),
     statuses: [200, 400, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/tabs/{tabId}/delta',
+    segment: 'projects',
+    tag: 'Plans',
+    auth: 'guest-or-clerk',
+    ...TAB_DELTA_OPENAPI,
   },
   {
     method: 'POST',

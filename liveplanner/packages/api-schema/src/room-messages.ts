@@ -1,4 +1,5 @@
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
+import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { CollabKeyMessage } from '@liveworkspace/api-schema/collab-key';
@@ -58,6 +59,10 @@ export const MUTATION_OP_KINDS = [
   // One answer, idea, checklist tick or comment change on one element
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
+  // An Editor's save landed, its revision and digest (docs/specs/006-project/delta-saves.md "A peer's save moves the
+  // base copy"). A mutation for its ORDER: it must reach peers after the save's element ops, and a reconnecting peer
+  // replays it after them. It writes nothing; a forged one only fails a peer's digest check.
+  'tab-saved',
   'project-meta',
   // One change to a Dashboard's layout (docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's layout
   // travels as deltas"). A mutation like `el-delta`: sequenced, logged, recorded in the ledger, and an Editor's alone
@@ -305,6 +310,9 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // An Editor's save of a tab landed (docs/specs/006-project/delta-saves.md "A peer's save moves the base copy"): the
+  // revision it wrote and the digest of the elements now stored, sent after the save's element ops. Changes no content.
+  | TabSavedOp
   // ONE change to a Dashboard's layout, by row and slot id (docs/specs/012-collaboration/collab-race-hardening.md
   // "A Dashboard's layout travels as deltas"): the `el-delta` reasoning for the one tab field two Editors change at
   // once. The whole layout used to ride `tab-meta`, so each receiver took the other's layout and lost its own change.

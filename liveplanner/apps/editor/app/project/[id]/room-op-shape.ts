@@ -7,6 +7,7 @@
 // apply passes, as it always has, to be ignored.
 import { isDashboardPatch, isRecord } from '@liveplanner/project';
 import type { RoomOp } from '@liveplanner/api-schema';
+import { tabSavedIsWellFormed } from '@liveworkspace/api-schema/tab-delta';
 
 const isText = (v: unknown): v is string => typeof v === 'string';
 const isOptionalList = (v: unknown) => v === undefined || Array.isArray(v);
@@ -51,6 +52,8 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
       );
     case 'vote':
       return isText(op.tabId) && isText(op.elementId) && isText(op.voter);
+    case 'tab-saved':
+      return tabSavedIsWellFormed(op);
     case 'tab-meta':
       return isText(op.tabId) && isRecord(op.patch) && isOptionalList(op.clear);
     case 'dashboard-delta':
