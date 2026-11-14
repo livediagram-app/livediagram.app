@@ -273,11 +273,13 @@ index nothing while it runs).
   empty clean-up tells nobody: an item with nothing in it has nothing to run.
 - The app keeps the newest standing it has heard (a call with an older `at` than its stored one changes nothing, so
   two calls that cross land in order). It treats the item as **put away** while either flag is true.
-- **Fails open.** A call that can't be delivered (the app down, a timeout) is logged (`[index] standing not
-delivered`) and dropped, never retried: an app that has heard nothing runs the item as before. A grant says
-  again where the item stands when it is signed (an archived item is never granted; a trashed one carries
-  `trashed`), so the app takes a grant signed after its stored `at` as the item's standing too: a lost move out or
-  restore mends itself the next time anyone opens the item or renews a grant on it.
+- **Retried once, then fails open.** A call that can't be delivered (the app down, a timeout, a refusal) is tried
+  once more about a second later, inside the same `waitUntil` (so a call that is lost twice takes at most about 20 s
+  with the 10 s timeout). One retry only, never a loop, so an app that refuses every call is asked twice and no more.
+  A call still undelivered is logged (`[index] standing not delivered`) and dropped: an app that has heard nothing
+  runs the item as before. A grant says again where the item stands when it is signed (an archived item is never
+  granted; a trashed one carries `trashed`), so the app takes a grant signed after its stored `at` as the item's
+  standing too: a restore lost twice mends itself the next time anyone opens the item or renews a grant on it.
 - Every app's door is `@liveworkspace/index-app` `handleInternalItems` (the `standing` handler); the body's type and
   parser are `@liveworkspace/index-client` `standing.ts`. An app without the handler answers `200 {ok: true}` and does
   nothing: livediagram, livedocuments, livedesign and livehuddle keep no clock of their own for an item today, so only

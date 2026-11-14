@@ -203,7 +203,11 @@ corepack pnpm dev                     # the API, http://localhost:8793/api/index
 ```
 
 Its `dev` script makes `.dev.vars` from `.dev.vars.example` when there is none (never over one) and applies the
-local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)).
+local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)). A `wrangler dev` that
+hot-reloads after a pull keeps the database it started with, so a read of a column added since (Most Used reads
+`opens`, `0007_use_days_opens.sql`) would fail as a bare 500: in development only, a request that fails on a missing
+table or column also logs `[index] the local database is behind the migrations`, naming the fix (`corepack pnpm
+db:migrate:local` in `apps/index`, or restart `dev`). Remote migrations are never touched.
 
 `corepack pnpm dev:workspace` from the repo root runs it with the other liveworkspace APIs, and
 `corepack pnpm dev:index` runs it alone. Each app's router forwards `/api/index/*` to
