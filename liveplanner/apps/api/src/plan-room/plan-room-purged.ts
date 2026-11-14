@@ -33,6 +33,19 @@ export async function purgedAt(room: PurgedRoom): Promise<number | null> {
   return room.purgedAt;
 }
 
+// Thrown by a door that would store something on a purged room (plan-room-content.ts ensureSchema).
+export class PlanPurgedError extends Error {
+  constructor() {
+    super('plan purged');
+    this.name = 'PlanPurgedError';
+  }
+}
+
+// The synchronous guard every schema write passes: the mark as the room last read it (on its wake, or the purge).
+export function refuseIfPurged(room: Pick<PurgedRoom, 'purgedAt'>): void {
+  if (typeof room.purgedAt === 'number') throw new PlanPurgedError();
+}
+
 // Whether a grant signed at `iat` (epoch seconds, the index's claim) may predate a purge at `at` (epoch ms). The
 // claim has whole seconds, so a grant from the purge's own second could be from either side: it counts as before,
 // except on a create (`POST /api/projects`), so Sync Project's delete then same-id upload is never refused. A grant

@@ -516,6 +516,33 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(tables()).toBe(0);
   });
 
+  // No RPC door starts a purged room either: the reads answer missing or empty, anything that would store refuses.
+  it('refuses every RPC door on a purged room and stores nothing, also once woken again', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createPlan(w, 'A');
+    expect((await w.send('DELETE', '/api/internal/items/A', undefined, auth)).status).toBe(200);
+    const plan = w.plans.get('A')!;
+    const tables = () =>
+      Number(
+        plan.db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get()!.n,
+      );
+    const doors = async (room: Plan['room']) => {
+      await expect(room.outline('A')).rejects.toThrow('plan purged');
+      await expect(room.item('A', 'card')).rejects.toThrow('plan purged');
+      await expect(room.hasTab('A', 't1')).rejects.toThrow('plan purged');
+      expect(await room.servesImage('A', 'img')).toBe(false);
+      expect(await room.grantedImages('A', ['img'])).toEqual([]);
+      expect(await room.threadsRelayed('A', { upserts: [{ id: 'th' }] } as never)).toEqual(['th']);
+      expect(tables()).toBe(0);
+    };
+    await doors(plan.room);
+    const woken = plan.restart();
+    // The wake's restore (blockConcurrencyWhile in the runtime, which the stand-in does not hold doors behind).
+    await new Promise((r) => setTimeout(r, 0));
+    await doors(woken);
+  });
+
   // docs/specs/006-project/offline-mode.md "Save to server": Sync Project puts a plan taken offline back under its
   // own id, which the index grants afresh after the purge.
   it('reads no purge mark on the open of a plan with content, even freshly woken', async () => {

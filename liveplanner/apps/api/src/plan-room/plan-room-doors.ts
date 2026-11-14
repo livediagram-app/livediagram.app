@@ -12,7 +12,6 @@ import { getTab, planHasTab } from '../db/tabs';
 import { itemIdsShownOnTab, tabShowsEveryCard } from '@liveplanner/items';
 import { drawPlan } from '../thumbnail';
 import { planShares, type ShareAnswer, type ShareMessage } from './tab-shares';
-import { hasPlanSchema } from './plan-schema';
 import { planGrantedImages, planServesImage } from './image-grants';
 import { exportPlanCopy, readPlanMeta, readPlanOutline } from './plan-content';
 import {
@@ -146,8 +145,7 @@ export async function exportImage(
   planId: string,
   query: ExportQuery,
 ): Promise<ExportResult> {
-  const sql = room.state.storage.sql;
-  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
+  if (room.holdsNothing()) return { status: 'not_found' };
   room.bindPlan(planId);
   const env = room.requireEnv();
   const { meta, savedAt, itemTypes } = await readPlanOutline(env, planId);
@@ -183,8 +181,7 @@ export async function exportFile(
   planId: string,
   query: ExportQuery,
 ): Promise<ExportResult> {
-  const sql = room.state.storage.sql;
-  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
+  if (room.holdsNothing()) return { status: 'not_found' };
   room.bindPlan(planId);
   return exportProjectFile(room.requireEnv(), planId, query.ifVersion);
 }
@@ -193,8 +190,7 @@ export async function exportComments(
   room: PlanRoom,
   planId: string,
 ): Promise<ExportCommentsResult> {
-  const sql = room.state.storage.sql;
-  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
+  if (room.holdsNothing()) return { status: 'not_found' };
   room.bindPlan(planId);
   return exportPlanComments(room.requireEnv(), planId);
 }
@@ -207,8 +203,7 @@ export async function addConnectedTab(
   planId: string,
   write: ConnectedTabWrite,
 ): Promise<ConnectedTabOutcome> {
-  const sql = room.state.storage.sql;
-  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return 'not_found';
+  if (room.holdsNothing()) return 'not_found';
   room.bindPlan(planId);
   const env = room.requireEnv();
   const outcome = await addConnectedPlanTab(env, planId, write);
@@ -230,7 +225,7 @@ export async function servesImage(
   tabScope: string | null = null,
 ): Promise<boolean> {
   const sql = room.state.storage.sql;
-  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return false;
+  if (room.holdsNothing()) return false;
   room.bindPlan(planId);
   ensureSchema(room);
   let onlyCards: string[] | null = null;
@@ -250,7 +245,7 @@ export function grantedImages(
   imageIds: readonly string[],
 ): string[] {
   const sql = room.state.storage.sql;
-  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return [];
+  if (room.holdsNothing()) return [];
   room.bindPlan(planId);
   ensureSchema(room);
   return planGrantedImages(sql, planId, imageIds);
@@ -333,8 +328,7 @@ export async function receiveShares(
   from: string,
   messages: ShareMessage[],
 ): Promise<ShareAnswer[]> {
-  const sql = room.state.storage.sql;
-  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return messages.map(() => 'gone');
+  if (room.holdsNothing()) return messages.map(() => 'gone');
   room.bindPlan(planId);
   return planShares.receive(room.requireEnv(), planId, from, messages);
 }
@@ -343,8 +337,7 @@ export async function receiveShares(
 // plan-export.ts): every board and Sheet as CSV, and every comment thread with its real authors. A plan never
 // started is not found, and asking does not start it.
 export async function exportTables(room: PlanRoom, planId: string): Promise<ExportTablesResult> {
-  const sql = room.state.storage.sql;
-  if (room.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
+  if (room.holdsNothing()) return { status: 'not_found' };
   room.bindPlan(planId);
   return exportPlanTables(room.requireEnv(), planId);
 }

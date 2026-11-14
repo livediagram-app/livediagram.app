@@ -337,6 +337,9 @@ export class PlanRoom extends DurableObject<Env> {
       // Before the schedules restore, so a plan put away asks for no wake.
       this.standing.restore(await state.storage.get(STANDING_KEY));
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
+      // A room with no plan schema learns whether it was purged before any door runs (plan-room-purged.ts); a plan
+      // with content reads nothing more.
+      await purgedAt(this);
       this.armAlarm();
     });
   }
@@ -377,6 +380,14 @@ export class PlanRoom extends DurableObject<Env> {
 
   communityPostTitle(planId: string, code: string): Promise<string | null> {
     return communityPostTitle(this, planId, code);
+  }
+
+  // Whether this object holds no plan: an id nothing has written, or one purged (plan-room-purged.ts). The doors
+  // that read answer it as missing or empty, and store nothing.
+  holdsNothing(): boolean {
+    if (typeof this.purgedAt === 'number') return true;
+    const sql = this.state.storage.sql;
+    return this.planId === null && !hasPlanSchema((q) => sql.exec(q));
   }
 
   // Whether this object's SQLite holds a plan schema: an id nothing has written answers no post.
@@ -529,8 +540,7 @@ export class PlanRoom extends DurableObject<Env> {
 
   // On the home: the threads of `ids` listing a card of `via`. A plan with nothing stored holds none.
   async threadsFor(planId: string, ids: string[], via: string): Promise<CardThread[]> {
-    const sql = this.state.storage.sql;
-    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return [];
+    if (this.holdsNothing()) return [];
     this.bindPlan(planId);
     return threadsForVia(this.requireEnv(), planId, ids, via);
   }
@@ -542,9 +552,7 @@ export class PlanRoom extends DurableObject<Env> {
     op: ThreadOp,
     via: string,
   ): Promise<ThreadWriteResult> {
-    const sql = this.state.storage.sql;
-    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
-      return { ok: false, error: 'thread_not_found' };
+    if (this.holdsNothing()) return { ok: false, error: 'thread_not_found' };
     this.bindPlan(planId);
     return writeThread(this.requireEnv(), planId, threadId, op, via, (p) =>
       this.state.waitUntil(p),
@@ -553,9 +561,7 @@ export class PlanRoom extends DurableObject<Env> {
 
   // Another plan's write on a thread on this plan's cards. A plan with nothing stored holds no link to any.
   async threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]> {
-    const sql = this.state.storage.sql;
-    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
-      return relay.upserts.map((t) => t.id);
+    if (this.holdsNothing()) return relay.upserts.map((t) => t.id);
     this.bindPlan(planId);
     return threadsRelayed(this.requireEnv(), planId, relay);
   }

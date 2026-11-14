@@ -517,6 +517,9 @@ The api worker reaches the DO through its stub (`env.PLAN_ROOM.get(...).fetch(..
     plan row, no head. A grant's `iat` has whole seconds, so one from the purge's own second counts as before it,
     except on a create; one with no `iat` counts as before;
   - a socket is refused with the same 404 before its upgrade;
+  - no RPC door starts it either: a room with no plan schema reads the mark as it wakes, the doors that read answer
+    as for an id nothing has written (missing, empty, `false`), and anything that would make the schema again
+    (`ensureSchema`) throws `PlanPurgedError` instead, so nothing is stored under the deleted id;
   - a grant the index signed after the purge's second, or a create's from that second on (it grants an id again only once it holds the item again,
     as when Sync Project puts a plan taken offline back under its own id, [Offline Mode](../006-project/offline-mode.md#save-to-server-offline--cloud))
     lifts the mark: the request runs as on any plan never started, and the key goes.
