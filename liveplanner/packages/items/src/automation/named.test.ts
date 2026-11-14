@@ -135,6 +135,84 @@ describe('namedRuleBody', () => {
     expect(body).toEqual(before);
   });
 
+  // item-types.md "Explicit mappings": a source named across every type, a target within the new type first.
+  it('names a Change Card Type mapping’s fields, keeping one the plan lacks', () => {
+    expect(
+      namedRuleBody(
+        {
+          steps: [
+            {
+              kind: 'set_type',
+              type: 'Note',
+              map: [
+                { from: 'Severity', to: 'links' },
+                { from: 'f-points', to: 'Description' },
+                { from: 'Gone', to: 'Nowhere' },
+              ],
+            },
+          ],
+        },
+        NAMES,
+      ),
+    ).toEqual({
+      steps: [
+        {
+          kind: 'set_type',
+          type: 'note',
+          map: [
+            { from: 'f-severity', to: 'f-links' },
+            { from: 'f-points', to: 'description' },
+            { from: 'Gone', to: 'Nowhere' },
+          ],
+        },
+      ],
+    });
+    // A copy's refs keep a mapping's fields through the field map.
+    expect(
+      ruleWithRefs(
+        { steps: [{ kind: 'set_type', type: 'a', map: [{ from: 'x', to: 'y' }] }] },
+        { field: (f) => `${f}2` },
+      ),
+    ).toEqual({ steps: [{ kind: 'set_type', type: 'a', map: [{ from: 'x2', to: 'y2' }] }] });
+    // An unknown type names its targets across the plan; a malformed target and no field map pass through.
+    expect(
+      namedRuleBody(
+        {
+          steps: [{ kind: 'set_type', type: 'Nope', map: [{ from: 'Severity', to: 'Severity' }] }],
+        },
+        NAMES,
+      ),
+    ).toMatchObject({ steps: [{ map: [{ from: 'f-severity', to: 'f-severity' }] }] });
+    expect(
+      ruleWithRefs(
+        {
+          steps: [
+            {
+              kind: 'set_type',
+              type: 'a',
+              map: [
+                { from: 'x', to: 3 },
+                { from: 'x', to: 'y' },
+              ],
+            },
+          ],
+        },
+        {},
+      ),
+    ).toEqual({
+      steps: [
+        {
+          kind: 'set_type',
+          type: 'a',
+          map: [
+            { from: 'x', to: 3 },
+            { from: 'x', to: 'y' },
+          ],
+        },
+      ],
+    });
+  });
+
   it('answers anything but an object as it came', () => {
     expect(namedRuleBody('x', NAMES)).toBe('x');
     expect(namedRuleBody({ trigger: 'x', steps: 3 }, NAMES)).toEqual({ trigger: 'x', steps: 3 });

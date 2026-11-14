@@ -432,7 +432,9 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 | **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                   |
 | **Change Card Type**            | sets the card's type to one of the plan's card types (its column must suit the new type)          |
 |                                 | and maps its custom fields by name, as every type change does                                     |
-|                                 | ([Changing a card's type](item-types.md#changing-a-cards-type))                                   |
+|                                 | ([Changing a card's type](item-types.md#changing-a-cards-type)); **Map Fields** names fields      |
+|                                 | whose names differ, a source field into a field of the new type or its Description, winning over  |
+|                                 | name matching and overwriting the target's value                                                  |
 | **Set Colour**                  | sets the card's Colour to one of the standard colours, or none                                    |
 | **Restore From Archive**        | brings an archived card back                                                                      |
 | **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one               |

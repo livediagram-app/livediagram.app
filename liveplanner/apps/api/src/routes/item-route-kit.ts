@@ -14,6 +14,7 @@ import {
   statusExcluded,
   repeatChanged,
   typesOf,
+  withTypeChangeFields,
   blocksValueChanged,
   blockingCycleOf,
   blockingLoopMessage,
@@ -72,6 +73,18 @@ export function rejected(error: ItemRejection, field?: string): Response {
 }
 
 export const itemNotFound = () => json({ error: 'item_not_found' }, { status: 404 });
+
+// A write that changes the card's type, with its custom fields mapped on the card as stored (docs/specs/026-plan/
+// item-types.md "The REST API maps too"): never over a value the write sets or clears itself, so a write the editor or
+// an agent already mapped is not mapped twice; an undo puts back exactly what it carries, unmapped.
+export function mappedWrite<W extends { set?: Item['fields']; clear?: string[]; type?: string }>(
+  caller: ItemCaller,
+  item: Item,
+  write: W,
+  undo: boolean,
+): W {
+  return undo ? write : withTypeChangeFields(item, write, typesOf(caller.doc?.itemTypes));
+}
 
 // An item moved into a status its card type leaves out: statusExcluded against the project's types.
 export function excludedStatus(

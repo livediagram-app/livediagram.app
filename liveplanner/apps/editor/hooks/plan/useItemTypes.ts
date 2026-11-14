@@ -110,9 +110,12 @@ export function useItemTypes(opts: {
   const catalogue = useMemo(() => applied(stored.itemTypes, pending), [stored, pending]);
   const types = useMemo(() => typesOf(catalogue), [catalogue]);
 
+  // `refused`: the api's own word on what is stored (a 409), taken even below the revision held: a plan synced from
+  // This Browser in place counted its own revisions, and the server's count starts again (item-types.md "Storage and
+  // sync").
   const keepStored = useCallback(
-    (next: SavedItemTypes) => {
-      if (next.itemTypesRev < storedRef.current.value.itemTypesRev) return;
+    (next: SavedItemTypes, refused = false) => {
+      if (!refused && next.itemTypesRev < storedRef.current.value.itemTypesRev) return;
       storedRef.current = { projectId: storedRef.current.projectId, value: next };
       setStored(next);
     },
@@ -156,7 +159,7 @@ export function useItemTypes(opts: {
         } catch (err) {
           if (err instanceof ItemTypesStaleError) {
             debugLog('[item-types] save stale', { attempt, rev: err.stored.itemTypesRev });
-            keepStored(err.stored);
+            keepStored(err.stored, true);
             continue;
           }
           debugLog('[item-types] save failed', { error: String(err) });
