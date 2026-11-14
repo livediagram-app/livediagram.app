@@ -7,14 +7,15 @@ import { redirectProblems } from '@liveworkspace/comparisons';
 import { COMPARISONS } from './alternatives';
 
 // livehuddle compared itself with Miro and FigJam for meetings and workshops until the meet-first refocus (Work
-// Tracker #423, packages/comparisons/README.md "livehuddle"). Those addresses redirect permanently to the hub, and no
+// Tracker #423, packages/comparisons/README.md "livehuddle"), and dropped Teamflow, whose virtual office looks closed
+// (Work Tracker 767). Those addresses redirect permanently to the hub, and no
 // rule in public/_redirects may catch the hub or a live comparison.
 const redirects = readFileSync(
   fileURLToPath(new URL('../public/_redirects', import.meta.url)),
   'utf8',
 );
 
-const RETIRED = ['miro', 'figjam'];
+const RETIRED = ['miro', 'figjam', 'teamflow'];
 
 describe('the Meetings feature page', () => {
   it('takes the old Workshops address permanently', () => {
