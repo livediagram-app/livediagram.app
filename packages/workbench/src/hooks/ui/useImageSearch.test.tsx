@@ -34,7 +34,7 @@ const session = { store: vi.fn() };
 const openImportSession = vi.fn(async () => session);
 const useImageSearch = createImageSearch({ track, openImportSession });
 
-function setup(filters?: { aspect_ratio?: 'wide' }) {
+function setup(filters?: { aspectRatio?: 'wide' }) {
   const onPicked = vi.fn();
   const hook = renderHook(() =>
     useImageSearch({ ownerId: 'o1', documentId: 'd1', onPicked, filters }),
@@ -55,7 +55,7 @@ afterEach(() => {
 describe('useImageSearch', () => {
   it('ignores a blank query, searches a trimmed one with the filters, and loads more without repeats', async () => {
     search.mockResolvedValueOnce(page(1, 2, ['a', 'b']));
-    const { hook } = setup({ aspect_ratio: 'wide' });
+    const { hook } = setup({ aspectRatio: 'wide' });
     act(() => hook.result.current.submit('   '));
     expect(search).not.toHaveBeenCalled();
     // Nothing loaded yet, so there is no more to load.
@@ -66,7 +66,7 @@ describe('useImageSearch', () => {
     expect(track).toHaveBeenCalledWith('Element', 'Searched', 'Image');
     expect(hook.result.current.pendingQuery).toBe('cats');
     await waitFor(() => expect(hook.result.current.status).toBe('ready'));
-    expect(search).toHaveBeenCalledWith('cats', 1, fetch, { aspect_ratio: 'wide' });
+    expect(search).toHaveBeenCalledWith('cats', 1, fetch, { aspectRatio: 'wide' });
     expect(hook.result.current.hasMore).toBe(true);
 
     search.mockResolvedValueOnce(page(2, 2, ['b', 'c']));
@@ -94,11 +94,13 @@ describe('useImageSearch', () => {
 
     search.mockRejectedValueOnce(new Error('offline'));
     act(() => hook.result.current.submit('c'));
-    await waitFor(() => expect(console.warn).toHaveBeenCalledWith(
-      '[image-search] search failed',
-      'kind=failed',
-      'status=0',
-    ));
+    await waitFor(() =>
+      expect(console.warn).toHaveBeenCalledWith(
+        '[image-search] search failed',
+        'kind=failed',
+        'status=0',
+      ),
+    );
 
     // Two in flight: the first to be asked answers last, and is dropped, success or failure.
     let first!: (v: unknown) => void;
@@ -135,7 +137,7 @@ describe('useImageSearch', () => {
     let finish!: (o: PickOutcome) => void;
     store.mockImplementationOnce(async (_result, put, _fetch, onFallback, onStage) => {
       await put({ kind: 'blob', blob: new Blob(), name: 'a' });
-      onFallback?.();
+      onFallback?.('cors');
       onStage?.('saving' as PickStage);
       return new Promise<PickOutcome>((resolve) => (finish = resolve));
     });

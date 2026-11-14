@@ -48,9 +48,7 @@ describe('createTabStyleTour', () => {
       track,
     });
     renderHook(() => useTabStyleTour(fakeApi('flexible')));
-    expect(engine.last!.steps.map((s) => s.id)).toEqual(
-      tabStyleTourSteps().map((s) => s.id),
-    );
+    expect(engine.last!.steps.map((s) => s.id)).toEqual(tabStyleTourSteps().map((s) => s.id));
     engine.last!.onStepView();
     engine.last!.onFinish('completed');
     engine.last!.onFinish('skipped');

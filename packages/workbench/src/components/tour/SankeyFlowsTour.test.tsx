@@ -39,7 +39,9 @@ function bind() {
 describe('createSankeyFlowsTour', () => {
   it('sends Started before the editor starts the tour, and closes on the Sankey article', () => {
     const { track, SankeyFlowsShowMeButton, SankeyFlowsTourStage } = bind();
-    const onStart = vi.fn(() => expect(track).toHaveBeenCalledWith('UI', 'Started', 'SankeyFlowsTour'));
+    const onStart = vi.fn(() =>
+      expect(track).toHaveBeenCalledWith('UI', 'Started', 'SankeyFlowsTour'),
+    );
     const tour = { active: false } as never;
     render(
       <>
@@ -55,7 +57,8 @@ describe('createSankeyFlowsTour', () => {
   it('reports how it ended, and freezes its steps from the dialog as it is at the press', () => {
     const { track, useSankeyFlowsTour } = bind();
     const { result, rerender } = renderHook(
-      (context: { hasNodes: boolean; hasBalanceNotes: boolean }) => useSankeyFlowsTour(context, api),
+      (context: { hasNodes: boolean; hasBalanceNotes: boolean }) =>
+        useSankeyFlowsTour(context, api),
       { initialProps: { hasNodes: false, hasBalanceNotes: false } },
     );
     const before = engine.last!.steps.map((s) => s.id);

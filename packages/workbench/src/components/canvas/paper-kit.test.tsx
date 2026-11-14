@@ -21,7 +21,15 @@ describe('paper kit', () => {
     expect(dial!.children).toHaveLength(24);
     // Every sixth tick is a quarter mark, taller than the rest.
     const ticks = [...short!.children] as HTMLElement[];
-    expect(ticks.map((t) => t.style.height)).toEqual(['7px', '4px', '4px', '4px', '4px', '4px', '7px']);
+    expect(ticks.map((t) => t.style.height)).toEqual([
+      '7px',
+      '4px',
+      '4px',
+      '4px',
+      '4px',
+      '4px',
+      '7px',
+    ]);
     expect(ticks.at(-1)!.style.left).toBe('100%');
   });
 
