@@ -465,7 +465,9 @@ built once here. It is shown here and, through each switched-on app's router, at
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
   app side opens as the guest's panel. `?settings=` is dropped from the address as the panel closes.
   `?ended=revoked` says, once, that the link a plan was open through was revoked. `?trashed=<id>&title=` offers Undo
-  for an item just moved to the Trash. Each is dropped from the address once read.
+  for an item just moved to the Trash. Each is dropped from the address once read. `?item=<id>` (an editor's door
+  from an open item) opens the place that holds the item, with it marked, and the address becomes that place's
+  ([one-explorer.md](../004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item").
 - **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
   `/explorer/generated` to a search for items made by AI, `/explorer/unsorted` and `/explorer/dynamic` to My Work (`/explorer/all`; there is no Unsorted view, since My Work's root already lists what is in no folder), `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view (on an app's
   address, This Browser's own view).
