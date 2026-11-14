@@ -105,6 +105,23 @@ export function wrapLabel(
   return out;
 }
 
+// Wrapped lines held to `maxLines`, the last ending in an ellipsis when any were left over, as the canvas's line
+// clamp draws it (a lane title in its gutter, docs/specs/009-elements/lane.md "A title wraps in its gutter").
+// Characters come off the kept last line, as a reader sees them, until it and the ellipsis fit.
+export function clampLabelLines(
+  lines: readonly string[],
+  maxLines: number,
+  maxWidth: number,
+  measure: (s: string) => number,
+): string[] {
+  if (lines.length <= maxLines) return [...lines];
+  const kept = lines.slice(0, Math.max(1, maxLines));
+  const chars = graphemes(kept[kept.length - 1]!.trimEnd());
+  while (chars.length > 0 && measure(`${chars.join('')}…`) > maxWidth) chars.pop();
+  kept[kept.length - 1] = `${chars.join('').trimEnd()}…`;
+  return kept;
+}
+
 // The width of a label with no canvas to measure it: a rough share of the font size a character
 // (each product's lint, LN4, in its docs/specs/024-agents/blueprints). Headless renders and the lint both wrap with
 // it, so the lint judges the text an agent's preview shows.

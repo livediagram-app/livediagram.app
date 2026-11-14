@@ -107,3 +107,26 @@ export function uprightTitleStrip(el: LaneLike, width: number, height: number): 
   const x = edge === 'right' ? width - size : edge === 'centre-x' ? (width - size) / 2 : 0;
   return { x, y: 0, width: size, height, alongAlign: ALONG[el.textAlignY ?? 'middle'] };
 }
+
+/** The lines a title reading across a side gutter wraps onto before it ends in an ellipsis
+ *  (docs/specs/009-elements/lane.md "A title wraps in its gutter"). */
+export const LANE_TITLE_MAX_LINES = 3;
+
+/** A side strip in element space. */
+export type LaneTitleStrip = { x: number; y: number; width: number; height: number };
+
+/**
+ * Where a title reading across a side gutter lays out (docs/specs/009-elements/lane.md "A title wraps in its
+ * gutter"): its strip, clamped like the gutter, so a title longer than the gutter is wide wraps there rather than
+ * running on into the lane's body. Null for a band across the top or bottom (its title has the lane's width) and for
+ * an upright title (`uprightTitleStrip`). Both renderers read it.
+ */
+export function acrossTitleStrip(
+  el: LaneLike,
+  width: number,
+  height: number,
+): LaneTitleStrip | null {
+  if (isUprightTitle(el) || isLaneBand(laneEdgeOfElement(el))) return null;
+  const strip = uprightTitleStrip(el, width, height);
+  return { x: strip.x, y: strip.y, width: strip.width, height: strip.height };
+}

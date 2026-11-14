@@ -1,6 +1,7 @@
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
+  clampLabelLines,
   estimatedLabelMeasure,
   fontSizeFor,
   graphemes,
@@ -53,6 +54,31 @@ describe('wrapLabel', () => {
     expect(lines).toHaveLength(200);
     // Measured about 20 ms of CPU (it took 83 s before the fit was halved); cpuBudgetMs scales it for a CI runner.
     expect(spent).toBeLessThan(cpuBudgetMs(200));
+  });
+});
+
+// A lane title in its gutter (docs/specs/009-elements/lane.md "A title wraps in its gutter").
+describe('clampLabelLines', () => {
+  it('leaves lines within the limit as they are', () => {
+    expect(clampLabelLines(['one', 'two'], 3, 10, chars)).toEqual(['one', 'two']);
+  });
+
+  it('keeps the first lines and ends the last in an ellipsis that fits', () => {
+    expect(clampLabelLines(['aaaa', 'bbbb', 'cccc', 'dddd'], 3, 4, chars)).toEqual([
+      'aaaa',
+      'bbbb',
+      'ccc\u2026',
+    ]);
+    // Room to spare: the ellipsis joins the whole line, without a trailing space before it.
+    expect(clampLabelLines(['ab ', 'cd', 'ef'], 1, 10, chars)).toEqual(['ab\u2026']);
+  });
+
+  it('never cuts an emoji in half', () => {
+    expect(clampLabelLines(['a\u{1F680}b', 'c'], 1, 3, chars)).toEqual(['a\u{1F680}\u2026']);
+  });
+
+  it('keeps at least the ellipsis on a line too narrow for anything', () => {
+    expect(clampLabelLines(['abc', 'def'], 1, 0, chars)).toEqual(['\u2026']);
   });
 });
 

@@ -31,7 +31,8 @@ import { svgTableShape } from './svg-render-table';
 import { svgElementBody } from './svg-render-body';
 import { svgPageFold } from './svg-render-page';
 import { svgHeroCaption } from './svg-render-web';
-import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import { clampLabelLines, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import type { ExportLabel } from './svg-render-labels';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
 import { svgWordmarkLabel } from './svg-render-wordmark';
 import { hasWordmarkType } from './wordmark';
@@ -342,12 +343,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
           : svgWrappedLabel(
               // Wrapped in the face it paints in, or a wide face breaks at the
               // wrong words and runs out of its element.
-              wrapLabel(
-                label.text,
-                label.maxWidth,
-                labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
-                !(el.type === 'shape' && el.shape === 'icon'),
-              ),
+              wrappedLines(label, !(el.type === 'shape' && el.shape === 'icon')),
               label.x,
               label.y,
               label.anchor,
@@ -364,4 +360,11 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       ? `<g transform="rotate(-90 ${r2(label.turnAbout.x)} ${r2(label.turnAbout.y)})">${labelStr}</g>`
       : labelStr;
   return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${turned}</g>`;
+}
+
+// A label's lines as the canvas wraps them, held to its `maxLines` (a lane title in its gutter) when it has one.
+function wrappedLines(label: ExportLabel, breakWords: boolean): string[] {
+  const measure = labelMeasure(label.size, label.bold, label.italic, label.fontFamily);
+  const lines = wrapLabel(label.text, label.maxWidth, measure, breakWords);
+  return label.maxLines ? clampLabelLines(lines, label.maxLines, label.maxWidth, measure) : lines;
 }

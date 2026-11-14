@@ -83,6 +83,14 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
 11. **Toggle.** The context menu's Text section shows **Upright Title** (switch) for a lane whose gutter
     edge is a side; on: `titleOrientation: 'upright'`, off: field removed; one `commit`. Telemetry
     `Element·Changed·LaneUprightTitle`.
+12. **Across title in a side strip.** `acrossTitleStrip(el, width, height)` is the strip (`uprightTitleStrip`'s
+    geometry, unturned) when the title is not upright and the gutter edge is `left`, `right` or `centre-x`, else
+    null. The canvas lays the label out in it (`laneTitleFrame`, `apps/editor/components/canvas/lane-title-frame.ts`:
+    an absolute, `overflow: hidden` box of the strip), wrapping at the strip's width less the padding, and while
+    not editing clamps the text block to `LANE_TITLE_MAX_LINES` (3) lines with an ellipsis (`line-clamp-3`). The
+    export places the label in the same strip with `maxWidth = strip.width - 2 × padding` and `maxLines = 3`,
+    and `clampLabelLines` keeps the first three wrapped lines, taking characters (graphemes) off the third until it
+    and `…` fit. The stored label is never shortened.
 
 Guards:
 
@@ -117,6 +125,9 @@ export type UprightTitleStrip = { x: number; y: number; width: number; height: n
 export function uprightTitleStrip(el: LaneLike, width: number, height: number): UprightTitleStrip;
 export function isUprightTitle(el: LaneLike): boolean;
 // LaneLike gains: titleOrientation?: 'upright' | undefined
+export const LANE_TITLE_MAX_LINES = 3;
+export type LaneTitleStrip = { x: number; y: number; width: number; height: number };
+export function acrossTitleStrip(el: LaneLike, width: number, height: number): LaneTitleStrip | null;
 
 // packages/document/src/lane-seam-snapping.ts
 export const SEAM_SNAP_THRESHOLD = 8;

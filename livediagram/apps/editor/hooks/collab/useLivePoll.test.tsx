@@ -234,7 +234,7 @@ describe('announcing a poll start', () => {
 
   it('says the poll this person starts, and the next poll after it', () => {
     const { result } = setup();
-    act(() => result.current.startPoll({ question: 'Ship it?', style: 'yes-no', options: [] }));
+    act(() => result.current.startPoll({ question: 'Ship it?', style: 'yesNo', options: [] }));
     act(() => result.current.receivePoll({ ...poll('p2'), startedAt: Date.now() + 1000 }));
     expect(announceMock.mock.calls.map(([m]) => m)).toEqual([
       'Poll started: Ship it?',

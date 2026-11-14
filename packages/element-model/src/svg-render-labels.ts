@@ -58,6 +58,9 @@ export type ExportLabel = {
   // An upright lane title (docs/specs/009-elements/lane.md "Upright titles"): laid out in its turned
   // frame and turned a quarter anticlockwise about this point, as the canvas turns it.
   turnAbout?: { x: number; y: number };
+  // The most lines the wrapped text may take, the last then ending in an ellipsis (a lane title in its gutter,
+  // docs/specs/009-elements/lane.md "A title wraps in its gutter"). Unset wraps without limit.
+  maxLines?: number;
 };
 
 // Wordmark type on a wrapped label (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): tracking

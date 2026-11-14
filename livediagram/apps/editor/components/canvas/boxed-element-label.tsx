@@ -14,7 +14,7 @@ import {
   type TextSize,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
-import { uprightTitleFrame } from '@/components/canvas/upright-title';
+import { laneTitleFrame } from '@/components/canvas/lane-title-frame';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
@@ -80,7 +80,12 @@ export function useBoxedLabel(
     element.type === 'shape' && element.shape === 'lane' && isUprightTitle(element)
       ? uprightTitleStrip(element, element.width, element.height)
       : null;
-  const labelFrame = uprightStrip ? uprightTitleFrame(uprightStrip) : null;
+  // A title reading across a side gutter wraps in its strip, ending in an ellipsis past three lines
+  // (docs/specs/009-elements/lane.md "A title wraps in its gutter"); an upright one turns in it.
+  const labelFrame =
+    element.type === 'shape' && element.shape === 'lane'
+      ? laneTitleFrame(element, uprightStrip, isEditing)
+      : null;
 
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);

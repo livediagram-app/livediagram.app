@@ -118,6 +118,17 @@ Their borders do not double up when flush, because a lane's outline is a
 single hairline drawn on the CSS box path rather than two frames' borders
 meeting.
 
+## A title wraps in its gutter
+
+A title reading across a side strip (pinned left, right, or centred both ways) lays out in **the strip**, not the
+whole lane (`acrossTitleStrip`, `packages/element-model/src/lane-gutter.ts`). A title longer than the gutter is wide
+wraps onto more lines inside it, rather than running on past the seam into the lane's work, and past
+`LANE_TITLE_MAX_LINES` (3) lines the last one ends in an ellipsis. The full title is still the label: the editor is
+never clamped, so every word can be reached while typing, and dragging the seam wider gives the words their room
+back. A band across the top or bottom keeps the lane's width for its title, and an upright title wraps as below.
+The canvas (`lane-title-frame.ts`) and every export (`svg-render-describe`, `clampLabelLines`) lay the title out
+alike.
+
 ## Upright titles
 
 A swimlane drawn as a stack of wide rows often reads its titles **upright**, turned a quarter to

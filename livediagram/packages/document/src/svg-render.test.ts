@@ -955,6 +955,31 @@ describe('chrome the canvas draws on a box', () => {
     expect(svg).toMatch(/<g transform="rotate\(-90 0 200\)">[^]*Approvals/);
   });
 
+  // docs/specs/009-elements/lane.md "A title wraps in its gutter" (Work Tracker 444).
+  it('wraps an across title in its gutter, three lines at most, the last ending in an ellipsis', () => {
+    const svg = renderElementsToSvg(
+      tab([
+        laneAt({
+          label: 'Quarterly marketing programme review and sign off with every regional lead',
+          x: 0,
+          y: 0,
+        }),
+      ]),
+    );
+    const lines = [...svg.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]!);
+    expect(lines).toHaveLength(3);
+    expect(lines[2]).toMatch(/…$/);
+    // Each line starts inside the gutter, not out in the lane's body.
+    const xs = [...svg.matchAll(/<text[^>]* x="([\d.]+)"/g)].map((m) => Number(m[1]));
+    expect(Math.max(...xs)).toBeLessThan(132);
+  });
+
+  it('keeps a short across title on one line in its gutter', () => {
+    const svg = renderElementsToSvg(tab([laneAt({ label: 'Sales', x: 0, y: 0 })]));
+    expect(svg).toContain('>Sales<');
+    expect(svg).not.toContain('…');
+  });
+
   it('gives a browser frame its window chrome', () => {
     const svg = renderElementsToSvg(
       tab([shape('br', { shape: 'browser', width: 300, height: 200 })]),

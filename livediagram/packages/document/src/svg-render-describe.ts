@@ -39,7 +39,12 @@ import { PADDING_PX } from './index';
 import { pageBodyTop } from './svg-render-page';
 import { borderOf } from './svg-render-border';
 import { chipColours, chipLookOf, isChipShape } from './chip';
-import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
+import {
+  LANE_TITLE_MAX_LINES,
+  acrossTitleStrip,
+  isUprightTitle,
+  uprightTitleStrip,
+} from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from '@liveworkspace/model-core/label-font';
 import { resolveStockColours } from './stock-colours';
@@ -341,15 +346,21 @@ export function describeBoxedExport(
       },
     };
   }
+  // A title reading across a side gutter wraps in its strip, onto three lines at most (docs/specs/009-elements/lane.md
+  // "A title wraps in its gutter"), as the canvas lays it out.
+  const across =
+    el.type === 'shape' && el.shape === 'lane' ? acrossTitleStrip(el, el.width, el.height) : null;
+  const boxX = across ? el.x + across.x : el.x;
+  const boxW = across ? across.width : el.width;
   const label: ExportLabel | null = el.label
     ? {
         text: eventStormingLabelText(el, el.label),
         x:
           alignX === 'right'
-            ? el.x + el.width - pad
+            ? boxX + boxW - pad
             : alignX === 'left'
-              ? el.x + pad + bodyInset
-              : el.x + el.width / 2,
+              ? boxX + pad + bodyInset
+              : boxX + boxW / 2,
         y:
           alignY === 'top'
             ? bodyTop + pad + baseSize / 2
@@ -358,13 +369,14 @@ export function describeBoxedExport(
               : (bodyTop + bodyBottom) / 2,
         anchor: alignX === 'right' ? 'end' : alignX === 'left' ? 'start' : 'middle',
         valign: alignY,
-        maxWidth: labelMaxWidth(el, pad),
+        maxWidth: across ? Math.max(0, across.width - 2 * pad) : labelMaxWidth(el, pad),
         color: baseColor,
         size: baseSize,
         bold: !!el.textBold,
         italic: !!el.textItalic,
         fontFamily,
         runs,
+        ...(across ? { maxLines: LANE_TITLE_MAX_LINES } : {}),
       }
     : null;
   return { opacity, shape, label };
