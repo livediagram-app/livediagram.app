@@ -58,7 +58,10 @@ Home's What Happened section, what other people did to the items the person coul
 Timeline (November 2026, [History](history.md)). Home ends with Shared With You Recently; what happened to one item
 is its History.
 
-Telemetry, through the Explorer's `onHome` prop: `Home·Loaded·Retry` (a failed read of Home tried again). The What
+Telemetry, through the Explorer's `onHome` prop (the workbench frame's `app/embed/workbench/ExplorerHost.tsx`):
+`Home·Loaded·Retry` (a failed read of Home tried again) and `Home·Selected·MostUsed` / `Recent` / `SeeMore` (a card
+opened from Most Used or Recent, or See More followed, in the frame; the Explorer page counts its own picks, so one pick is
+one event). The What
 Happened events (`Home·Selected·WhatHappened`, `Home·Selected·SeeTimeline`, `Home·Opened·Group`) are no longer sent.
 
 What liveplanner still does is say when a plan is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the plan. The index keeps the time for Recent and counts the open on that day for Most Used (opens over the last 14 days), and Most Used and Recent reads both in one request.

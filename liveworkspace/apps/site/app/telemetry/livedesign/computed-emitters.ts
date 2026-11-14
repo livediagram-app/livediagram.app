@@ -314,8 +314,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: TEMPLATE_WHY,
   },
   'apps/live/app/design/[id]/useDesignTrashed.ts Trash·Restored': { values: TRASH_TYPES },
-  // Home's first-run welcome, through the Explorer's welcome host, and a failed read of Home retried, through its
-  // onHome prop (@liveworkspace/explorer).
+  // Home's first-run welcome, through the Explorer's welcome host, and a card picked from Most Used or Recent (or See
+  // More followed) and a failed read of Home retried, through its onHome prop (@liveworkspace/explorer).
   'apps/live/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
     values: EXPLORER_TELEMETRY_EVENTS['Home·Selected'],
   },
