@@ -16,6 +16,8 @@ import {
   CURRENCY_DEFAULT,
   ratingScaleOf,
   detailsLabelOf,
+  detailsGlyphOf,
+  tabGlyphOf,
   isCustomCardField,
   namedDisplay,
   PARENT_FIELD_ID,
@@ -238,8 +240,10 @@ export interface ListedType {
   statuses: string[];
   // What its cards show per size, by place and field name, as change_card_types takes it.
   display: Record<string, Record<string, string[]>>;
-  tabs: { name: string; fields: string[] }[];
+  // Each tab's icon and Details' (item-types.md "Tab icons"), the defaults filled in.
+  tabs: { name: string; fields: string[]; glyph: string }[];
   detailsLabel: string;
+  detailsGlyph: string;
   // An inherited type's base type by name and its own fields by name (docs/specs/026-plan/item-types.md "Inherited
   // types"); every other part is the base's.
   inherits?: string;
@@ -469,8 +473,13 @@ export function listedType(
       statuses.map((s) => s.status),
     ).flatMap((id) => statuses.filter((s) => s.status === id).map((s) => s.name)),
     display: namedDisplay(t, (size) => typeCardLayout(t, size)),
-    tabs: tabsOf(t).map((tab) => ({ name: tab.label, fields: tab.fields.map(fieldName) })),
+    tabs: tabsOf(t).map((tab) => ({
+      name: tab.label,
+      fields: tab.fields.map(fieldName),
+      glyph: tabGlyphOf(tab),
+    })),
     detailsLabel: detailsLabelOf(t),
+    detailsGlyph: detailsGlyphOf(t),
     ...(t.inherits
       ? {
           inherits: types.find((b) => b.id === t.inherits)?.label ?? t.inherits,

@@ -1,4 +1,7 @@
+import { readItemTypeCatalogue } from '@liveplanner/items';
 import { saveOfflineToCloud, SyncStillSavingError } from '@/lib/offline/offline-convert';
+import { apiLoadProject } from '@/lib/api/projects';
+import type { SavedItemTypes } from '@/lib/api/item-types';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -18,6 +21,9 @@ export function useSyncInPlace(deps: {
   hasUnsavedChanges: () => boolean;
   setProjectServerStored: (stored: boolean) => void;
   refreshProjectList: (ownerId: string) => void;
+  // The card types as the server now stores them, taken in place of this browser's count (item-types.md "Storage and
+  // sync"), so the first card types save after the sync names the server's revision.
+  adoptItemTypes: (saved: SavedItemTypes) => void;
 }): () => Promise<void> {
   const latest = useLatest(deps);
   return async () => {
@@ -33,6 +39,14 @@ export function useSyncInPlace(deps: {
     const now = latest.current;
     now.setProjectServerStored(true);
     now.refreshProjectList(ownerId);
+    // Best effort: without it the first save is refused stale once and made again to the server's catalogue.
+    const cloud = await apiLoadProject(ownerId, projectId).catch(() => null);
+    if (cloud)
+      now.adoptItemTypes({
+        itemTypes: readItemTypeCatalogue(cloud.itemTypes ?? null),
+        itemTypesRev: cloud.itemTypesRev ?? 0,
+        adopt: true,
+      });
     debugLog('[offline-sync] synced in place');
     track('Project', 'Moved', 'SavedToCloud');
   };

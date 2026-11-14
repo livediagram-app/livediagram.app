@@ -609,6 +609,10 @@ In Plan mode:
     On a phone, the panel's side column becomes a tab too, **Details** (the type's Details name), and it is the
     **last** tab, at the far right after Activity. A card always opens on the type's **first** tab (Overview), on a
     phone as on a desktop. The tab bar scrolls sideways when its tabs do not fit; arrow keys move between the tabs.
+    Each tab shows its [icon](item-types.md#tab-icons) (14 px, the tab's text colour) before its name, on a desktop
+    and in a phone's strip alike, and the Details column's heading shows Details' icon too. The icons are decorative
+    (hidden from assistive technology): a tab's name stays its accessible name and is its tooltip. A name longer
+    than the strip allows (past 10 rem) is cut with an ellipsis, the tooltip giving it whole.
   - **Maximised**: on a desktop the header holds a **Maximise Card** button (the maximise glyph a board's own
     Maximise uses) just left of the close button, after the ⋯ menu. Pressed, the panel grows to fill the window
     less a 1 rem margin on every side (corners kept rounded, the dimmed editor showing as a thin frame, so it

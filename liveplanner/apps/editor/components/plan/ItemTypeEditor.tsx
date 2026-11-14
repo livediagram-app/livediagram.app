@@ -22,6 +22,9 @@ import {
   inheritedFieldIds,
   inheritingTypesOf,
   retypeBuiltInIn,
+  newerKeysOf,
+  ITEM_TYPE_KEYS,
+  withDetailsGlyph,
   type ItemFieldId,
   type ItemTypeDef,
 } from '@liveplanner/items';
@@ -117,6 +120,11 @@ export function ItemTypeEditor({
   }));
   const { tabs } = layout;
   const [detailsLabel, setDetailsLabel] = useState(detailsLabelOf(start));
+  // Details' icon (item-types.md "Tab icons"): undefined is the default.
+  const [detailsGlyph, setDetailsGlyph] = useState(start.detailsGlyph);
+  // Keys a newer liveplanner stored on the type, kept so this save writes them back (item-types.md "Settings from a
+  // newer version"); its tabs and custom fields carry theirs as objects. Read once, as the rest of the draft is.
+  const [newer] = useState(() => newerKeysOf(start, ITEM_TYPE_KEYS));
   const plan = usePlan();
   const statusNames = plan?.statusNames;
   // The statuses it uses, in order, edited as the rest is (docs/specs/026-plan/item-types.md "The statuses a type
@@ -166,6 +174,7 @@ export function ItemTypeEditor({
       Object.entries(layout.fieldLabels ?? {}).filter(([id]) => layout.fields.includes(id)),
     );
     const made: ItemTypeDef = {
+      ...newer,
       id: type?.id ?? newItemTypeId(name || 'type', types),
       label: name,
       newTitle: type && type.label === name ? type.newTitle : defaultNewTitle(name),
@@ -178,6 +187,7 @@ export function ItemTypeEditor({
       ...(detailsLabel.trim() && detailsLabel.trim() !== DETAILS_LABEL_DEFAULT
         ? { detailsLabel: detailsLabel.trim() }
         : {}),
+      ...withDetailsGlyph({}, detailsGlyph),
       statuses: used,
       ...(defaultStatus && used.includes(defaultStatus) ? { defaultStatus } : {}),
       ...(Object.keys(display).length ? { display } : {}),
@@ -196,6 +206,7 @@ export function ItemTypeEditor({
     // Each built-in made a custom field takes its place (docs/specs/026-plan/item-types.md "Edit Field": Another type).
     return retypesOf(layout).reduce((t, [id, def]) => retypeBuiltInIn(t, id, def), made);
   }, [
+    newer,
     base,
     inheritedIds,
     type,
@@ -206,6 +217,7 @@ export function ItemTypeEditor({
     layout,
     tabs,
     detailsLabel,
+    detailsGlyph,
     used,
     defaultStatus,
     display,
@@ -280,6 +292,7 @@ export function ItemTypeEditor({
       ...(resolved.fieldLabels ? { fieldLabels: { ...resolved.fieldLabels } } : {}),
     });
     setDetailsLabel(detailsLabelOf(resolved));
+    setDetailsGlyph(resolved.detailsGlyph);
     setUsed([...typeStatusesOf(resolved, statusNames?.keys() ?? [])]);
     setDefaultStatus(resolved.defaultStatus ?? '');
     setDisplay({ ...resolved.display });
@@ -334,6 +347,8 @@ export function ItemTypeEditor({
               onLayout={setLayout}
               detailsLabel={detailsLabel}
               onDetailsLabel={setDetailsLabel}
+              detailsGlyph={detailsGlyph}
+              onDetailsGlyph={setDetailsGlyph}
               removedSome={removedSome}
               inherited={inherited}
               inheritance={

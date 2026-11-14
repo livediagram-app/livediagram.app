@@ -9,6 +9,7 @@
 import { useMemo, useState } from 'react';
 import { useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { FieldRow } from './ItemTypeFieldRow';
+import { TabGlyphButton } from './TabGlyphButton';
 import { fieldIconOf } from './CustomFieldKindParts';
 import {
   BUILT_IN_FIELD_IDS,
@@ -24,7 +25,11 @@ import {
   isNewerField,
   isRenamableBuiltIn,
   newCustomFieldId,
+  DETAILS_GLYPH_DEFAULT,
+  defaultTabGlyph,
+  withTabGlyph,
   type ItemFieldId,
+  type PlanGlyphId,
 } from '@liveplanner/items';
 import { ArrowDownIcon, ArrowUpIcon, CloseIcon, PlusIcon } from '@liveplanner/ui';
 import { BUILT_IN_FIELD_LABELS, DASHED_ADD_BUTTON, ICON_BUTTON } from './ItemTypeFieldForms';
@@ -66,6 +71,9 @@ export function ItemTypeLayoutEditor({
   onChange,
   detailsLabel,
   onDetailsLabel,
+  detailsGlyph,
+  onDetailsGlyph,
+  colour = '#71717a',
   removedSome,
   inherited,
 }: {
@@ -76,6 +84,11 @@ export function ItemTypeLayoutEditor({
   // What this type calls Details: renamed here, never moved or removed.
   detailsLabel: string;
   onDetailsLabel: (label: string) => void;
+  // Details' icon (undefined: the default) and the type's colour, which the icons are tinted with
+  // (item-types.md "Tab icons").
+  detailsGlyph?: PlanGlyphId | undefined;
+  onDetailsGlyph?: ((glyph: PlanGlyphId | undefined) => void) | undefined;
+  colour?: string | undefined;
   // A field has come off since the editor opened: say what happens to its values.
   removedSome: boolean;
   // An inherited type (docs/specs/026-plan/item-types.md "Inherited types"): its base type's name and the fields it
@@ -298,15 +311,25 @@ export function ItemTypeLayoutEditor({
         {/* Details, as the card's panel shows it: a column on the right on desktop; on a phone, after On the Card. */}
         <LayoutGroup
           title={
-            <input
-              aria-label="Details name"
-              readOnly={lockedLayout}
-              className={`${NAME_INPUT} border-transparent`}
-              value={detailsLabel}
-              maxLength={ITEM_TYPE_TAB_LABEL_MAX}
-              placeholder={DETAILS_LABEL_DEFAULT}
-              onChange={(e) => onDetailsLabel(e.target.value)}
-            />
+            <>
+              <TabGlyphButton
+                value={detailsGlyph}
+                fallback={DETAILS_GLYPH_DEFAULT}
+                colour={colour}
+                tabName={detailsLabel.trim() || DETAILS_LABEL_DEFAULT}
+                readOnly={lockedLayout || !onDetailsGlyph}
+                onChange={(g) => onDetailsGlyph?.(g)}
+              />
+              <input
+                aria-label="Details name"
+                readOnly={lockedLayout}
+                className={`${NAME_INPUT} border-transparent`}
+                value={detailsLabel}
+                maxLength={ITEM_TYPE_TAB_LABEL_MAX}
+                placeholder={DETAILS_LABEL_DEFAULT}
+                onChange={(e) => onDetailsLabel(e.target.value)}
+              />
+            </>
           }
           tag="Side column"
           footer={addForm(null)}
@@ -320,27 +343,42 @@ export function ItemTypeLayoutEditor({
           <LayoutGroup
             key={t.id}
             title={
-              <input
-                aria-label={`Tab ${i + 1} name`}
-                readOnly={lockedLayout}
-                autoFocus={!lockedLayout && !t.label && t.fields.length === 0}
-                className={`${NAME_INPUT} ${
-                  !t.label.trim() && t.fields.length > 0
-                    ? 'border-rose-400 dark:border-rose-500'
-                    : 'border-transparent'
-                }`}
-                value={t.label}
-                maxLength={ITEM_TYPE_TAB_LABEL_MAX}
-                placeholder="Name this tab"
-                onChange={(e) =>
-                  onChange({
-                    ...draft,
-                    tabs: draft.tabs.map((x) =>
-                      x.id === t.id ? { ...x, label: e.target.value } : x,
-                    ),
-                  })
-                }
-              />
+              <>
+                <TabGlyphButton
+                  value={t.glyph}
+                  fallback={defaultTabGlyph(t)}
+                  colour={colour}
+                  tabName={t.label.trim() || `Tab ${i + 1}`}
+                  readOnly={lockedLayout}
+                  onChange={(g) =>
+                    onChange({
+                      ...draft,
+                      tabs: draft.tabs.map((x) => (x.id === t.id ? withTabGlyph(x, g) : x)),
+                    })
+                  }
+                />
+                <input
+                  aria-label={`Tab ${i + 1} name`}
+                  readOnly={lockedLayout}
+                  autoFocus={!lockedLayout && !t.label && t.fields.length === 0}
+                  className={`${NAME_INPUT} ${
+                    !t.label.trim() && t.fields.length > 0
+                      ? 'border-rose-400 dark:border-rose-500'
+                      : 'border-transparent'
+                  }`}
+                  value={t.label}
+                  maxLength={ITEM_TYPE_TAB_LABEL_MAX}
+                  placeholder="Name this tab"
+                  onChange={(e) =>
+                    onChange({
+                      ...draft,
+                      tabs: draft.tabs.map((x) =>
+                        x.id === t.id ? { ...x, label: e.target.value } : x,
+                      ),
+                    })
+                  }
+                />
+              </>
             }
             tag="Tab"
             actions={

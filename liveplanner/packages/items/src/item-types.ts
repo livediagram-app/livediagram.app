@@ -246,6 +246,8 @@ export interface ItemTypeTab {
   id: string;
   label: string;
   fields: readonly string[];
+  // Its icon (docs/specs/026-plan/item-types.md "Tab icons"); absent, its default (tab-glyphs.ts).
+  glyph?: PlanGlyphId;
 }
 
 export interface ItemTypeDef {
@@ -262,6 +264,8 @@ export interface ItemTypeDef {
   custom?: readonly CustomFieldDef[];
   // The name the panel gives Details (its side column, and the phone's first tab); absent is "Details".
   detailsLabel?: string;
+  // The icon Details wears ("Tab icons"); absent, the checklist (tab-glyphs.ts).
+  detailsGlyph?: PlanGlyphId;
   // The panel's tabs; absent is one Overview tab (tabsOf).
   tabs?: readonly ItemTypeTab[];
   // The statuses this type uses, in order (docs/specs/026-plan/item-types.md "The statuses a type uses"): a card of

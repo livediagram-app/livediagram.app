@@ -141,6 +141,7 @@ export function useEditorPersistence(
     hasUnsavedChanges,
     setProjectServerStored: realtime.setProjectServerStored,
     refreshProjectList: () => refreshProjectList(),
+    adoptItemTypes: setProjectItemTypes,
   });
   // Take Offline in place, for the start screen's switch (docs/specs/006-project/offline-mode.md "Taking offline in place").
   const takeOfflineInPlace = useTakeOfflineInPlace({

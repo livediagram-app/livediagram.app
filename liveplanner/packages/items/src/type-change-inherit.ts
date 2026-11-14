@@ -45,6 +45,7 @@ export interface InheritedPartsInput {
   display?: unknown;
   tabs?: unknown;
   detailsLabel?: unknown;
+  detailsGlyph?: unknown;
   assigneeNotifies?: unknown;
 }
 
@@ -54,6 +55,7 @@ const PART_NAMES: Readonly<Record<keyof InheritedPartsInput, string>> = {
   display: 'display',
   tabs: 'tabs',
   detailsLabel: 'Details name',
+  detailsGlyph: 'Details icon',
   assigneeNotifies: 'Assignee notifications',
 };
 

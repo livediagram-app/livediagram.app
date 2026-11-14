@@ -300,16 +300,20 @@ detailed: { header, headerEnd, underTitle, footer, bottomRight } }`, each a list
       a size left out keeps its own. A `compact` size (retired) is ignored, as a stored one is. A field a size
       cannot draw (Minimal draws Number, Priority, Due and Assignee; Detailed every field) or the type lacks is
       refused naming what the size draws (`display_invalid`).
-    - `tabs`: the item panel's tabs, `[{ name, fields }]`, up to 6, fields by name (Title never, it heads the
-      panel); `detailsLabel`: what the panel calls Details. `set` replaces them whole when given.
+    - `tabs`: the item panel's tabs, `[{ name, fields, glyph? }]`, up to 6, fields by name (Title never, it heads the
+      panel); `detailsLabel`: what the panel calls Details. `set` replaces them whole when given. A tab's `glyph` is
+      its [icon](item-types.md#tab-icons), a Plan glyph id (an unknown one refused naming the glyphs); left out, a tab
+      of the same name keeps its icon and a new one takes the default; `null` puts the default back. `detailsGlyph`
+      (a glyph id, or `null` for the default) sets Details' icon. `list_items` lists each tab's `glyph` and the type's
+      `detailsGlyph`, defaults filled in.
   - `add` and `set` take `inherits`: a card type's name or id, its [base type](item-types.md#inherited-types). The
     type then takes the base type's fields, custom fields (same ids), tabs, statuses, Default State and display,
     keeping its own name, colour and glyph; its own fields follow the base's. `set` with `inherits: null` detaches
     it, keeping a copy of the base type's settings. A base type that itself inherits, or a type that others
     inherit from being given a base, is refused (`type_change_invalid`, "Work inherits from Item, and a type
     inherits only from one that inherits from none."). On an inherited type, `removeFields`, `removeCustom` or
-    `editCustom` naming an inherited field, and `statuses`, `defaultStatus`, `display`, `tabs`, `detailsLabel` or
-    `assigneeNotifies`, are refused naming the base type ("Bug takes its statuses from Work: change Work, or
+    `editCustom` naming an inherited field, and `statuses`, `defaultStatus`, `display`, `tabs`, `detailsLabel`,
+    `detailsGlyph` or `assigneeNotifies`, are refused naming the base type ("Bug takes its statuses from Work: change Work, or
     detach Bug with inherits: null."). A change to a base type reaches every type that inherits from it in the
     same save.
   - `delete` `{ type }`: as the type editor's Delete Type: the type goes and its cards (out of the Trash) move to the

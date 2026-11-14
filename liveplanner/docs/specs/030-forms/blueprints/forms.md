@@ -244,7 +244,9 @@ was read, and the row is planned again (`SHEET_WRITE_RETRIES`); a stored answer 
 planned is `busy`. The builder's sync: `useFormSheetColumns` (`hooks/forms/useFormSheetColumns.ts`, run by the
 editor state for the active Form tab when the session may edit structure) waits `FORM_COLUMNS_SYNC_MS` (800 ms) after
 the form last changed, loads the sheet's tab in the sheet store (fetched lazily, as `makeFormSheet`), and when
-`sheetHeadersWrite` finds work reloads the tab and plans again, then writes it (`undoable: false, unchecked: true`)
+`sheetHeadersWrite` (with `namedOnly`: a question whose prompt is blank, still reading "Untitled Question", is left
+out of `sheetHeaders`, so it claims and remembers no column; the api's `responseRowWrite` plans without it and still
+places such answers) finds work reloads the tab and plans again, then writes it (`undoable: false, unchecked: true`)
 and saves the new `columns` with `changeFormQuietly`; it keeps the headers it last saw per form (`renamed`). The sheet store retries a create refused `tab_not_found` (`CREATE_TAB_RETRIES` 4, `CREATE_TAB_RETRY_MS` 800 ms
 a step), for a sheet on a tab not saved yet. Live: `sheetsOf(tabs)`, `setResponsesTo`, `newResponsesSheet`
 (a new Sheet tab, its sheet made through `makeSheet` so the form stays open; `placeNewSheet` and opened where nothing can make it), `DestinationPicker` (`SheetDestination` / `BoardDestination`),
@@ -775,8 +777,10 @@ showIfBroken?, questions: [{ id, type, typeName, prompt, …settings, goesTo?, g
 - **Settings**: `closesAt` an ISO time; one with no offset is UTC (a `Z` appended before `Date.parse`).
 - **Sheet columns** (`syncSheetHeaders`): a new responses sheet is given every header, then `freeze` 1 and `rename`
   its tab's name; an existing sheet form's sheet, when the form asks for a header it did not (`sheetHeaders` of the
-  form as read against the form as changed) or its sheet changed, is read (`A1:ZZ1`) and given the headers it lacks
-  after its last one (bold, `resize` fit), never over one. A failed sync is said in `made`, never fatal. Read answers carry each
+  form as read against the form as changed) or its sheet changed, is read from the workbook (its top
+  `HEADER_SCAN_ROWS` rows, `topRowTexts`) and planned by `sheetColumnPlan` with the form's remembered `columns` and
+  `namedOnly`, as the builder's sync: the headers it lacks go on the header row (`headerRowIndex`) after its last one
+  (bold, `resize` fit), never over one, and a remembered header still reading its old wording follows the new one. A failed sync is said in `made`, never fatal. Read answers carry each
   question's `column` on a sheet form.
 - **Placing a question**: `before` a question (its index), else `after` one (its index + 1), else the end of
   `section` (`placeQuestion`); `move_question` needs one of them.

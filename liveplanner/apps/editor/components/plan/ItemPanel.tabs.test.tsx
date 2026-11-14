@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
+import { ITEM_TYPES, planGlyphPath, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { ItemPanel } from './ItemPanel';
 import { CardThreadsProvider } from './threads/CardThreadsContext';
 import { contextOf, fakeThreads } from './threads/thread-test-kit';
@@ -143,5 +143,41 @@ describe('the item panel’s tabs', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Activity' }));
     await act(async () => {});
     expect(fetchItemHistory).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Work Tracker 858: each tab wears its icon (item-types.md "Tab icons"), decorative, before its name; so does the
+// Details column's heading, and the phone's Details tab.
+describe('tab icons', () => {
+  const iconOf = (el: Element) => el.querySelector('svg path')?.getAttribute('d');
+  const tabbed: ItemTypeDef = {
+    ...ITEM_TYPES[1],
+    id: 'tabbed',
+    detailsGlyph: 'info',
+    tabs: [
+      { id: 't-overview', label: 'Overview', fields: ['description'] },
+      { id: 't-design', label: 'Design', fields: ['checklist'], glyph: 'code' },
+      { id: 't-notes', label: 'Notes', fields: ['comments'] },
+    ],
+  };
+
+  it('draws each tab’s icon before its name, the defaults where none is chosen, hidden from assistive tech', () => {
+    panel([tabbed], true, 'tabbed');
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs.map(iconOf)).toEqual(
+      ['page', 'code', 'kanban', 'clock'].map((g) => planGlyphPath(g)),
+    );
+    for (const t of tabs) expect(t.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    // The name stays the accessible name.
+    expect(screen.getByRole('tab', { name: 'Design' })).toBeTruthy();
+    // The Details column's heading wears Details' icon.
+    const heading = screen.getByRole('heading', { name: 'Details' });
+    expect(iconOf(heading)).toBe(planGlyphPath('info'));
+  });
+
+  it('on a phone draws Details’ icon on its tab', () => {
+    env.mobile = true;
+    panel();
+    expect(iconOf(screen.getByRole('tab', { name: 'Details' }))).toBe(planGlyphPath('checklist'));
   });
 });

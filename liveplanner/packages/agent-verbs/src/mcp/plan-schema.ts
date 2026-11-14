@@ -490,14 +490,29 @@ const displayArg = z
       'or a custom field by name). Any size draws custom fields. A size given replaces that size; one left out keeps its own. A field ' +
       'shows on a card only when the type has it and the card has a value.',
   );
+const glyphIdArg = z.string().nullable();
 const tabsArg = z
-  .array(z.object({ name: z.string().min(1).max(24), fields: fieldList }))
+  .array(
+    z.object({
+      name: z.string().min(1).max(24),
+      fields: fieldList,
+      glyph: glyphIdArg
+        .optional()
+        .describe(
+          'The tab’s icon, a Plan glyph id (the type glyphs); left out, a tab of the same name keeps its icon ' +
+            'and a new tab takes the default; null, the default.',
+        ),
+    }),
+  )
   .max(6)
   .describe(
     'The item panel’s tabs, left to right, fields by name (never Title or Votes; each field in one tab). ' +
       'Fields in no tab show under Details. Replaces the tabs whole.',
   );
 const detailsLabelArg = z.string().describe('What the panel calls Details (1-24 characters).');
+const detailsGlyphArg = glyphIdArg.describe(
+  'The icon Details wears, a Plan glyph id; null puts the default (checklist) back.',
+);
 const customFieldEdit = z.object({
   field: z.string().describe('The custom field, by name.'),
   name: z.string().optional().describe('A new name.'),
@@ -553,6 +568,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     display: displayArg.optional(),
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
+    detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
     inherits: typeArg
       .optional()
@@ -595,6 +611,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     display: displayArg.optional(),
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
+    detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
     inherits: typeArg
       .nullable()
@@ -747,10 +764,16 @@ const listedType = z.object({
       z.object({
         name: z.string().describe('The tab’s name.'),
         fields: z.array(z.string()).describe('Its fields, by name.'),
+        glyph: z.string().describe('Its icon, a Plan glyph id (its default when none was chosen).'),
       }),
     )
     .describe('Its item panel’s tabs; fields in none show under Details.'),
   detailsLabel: z.string().describe('What its panel calls Details.'),
+  detailsGlyph: z
+    .string()
+    .describe(
+      'The icon its panel’s Details wears, a Plan glyph id (its default when none was chosen).',
+    ),
   assigneeNotifies: z
     .literal(false)
     .optional()

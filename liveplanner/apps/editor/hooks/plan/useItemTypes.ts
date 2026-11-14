@@ -93,7 +93,8 @@ export function useItemTypes(opts: {
   const pendingRef = useRef<readonly Pending[]>([]);
   const nextId = useRef(0);
   // The stored catalogue at its newest, read by the saves between renders: a save's answer lands here at once, a
-  // newer seed or room op on the next commit. A different project's seed always lands.
+  // newer seed or room op on the next commit. A different project's seed always lands, and so does the server's
+  // catalogue after a sync in place (`adopt`), so the first save after it names the server's revision.
   const storedRef = useRef<{ projectId: string | null; value: SavedItemTypes }>({
     projectId: opts.projectId,
     value: stored,
@@ -101,7 +102,11 @@ export function useItemTypes(opts: {
   const projectId = opts.projectId;
   useInsertionEffect(() => {
     const held = storedRef.current;
-    if (held.projectId !== projectId || stored.itemTypesRev >= held.value.itemTypesRev)
+    if (
+      held.projectId !== projectId ||
+      stored.adopt ||
+      stored.itemTypesRev >= held.value.itemTypesRev
+    )
       storedRef.current = { projectId, value: stored };
   }, [projectId, stored]);
   // Saves run one at a time, so each names the revision the one before it left.

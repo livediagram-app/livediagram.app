@@ -811,7 +811,9 @@ board settings, for switching back.
 - **Columns before any response**: while an Editor has the Form tab open, the sheet holds a column for **#**,
   **Submitted** and every question as soon as the sheet is chosen and as each question is added, a moment after the
   last edit (so typing a wording writes one header, not one per letter). A question whose wording changes takes its
-  column's header with it while that header still reads the old wording; a header renamed in the sheet is kept. These
+  column's header with it while that header still reads the old wording; a header renamed in the sheet is kept. A
+  question still reading **Untitled Question** (no wording typed yet) gets no column: its first real wording finds or
+  makes one as any header does, so a question named slowly still matches the template's column of that name. These
   writes are no undo step and change nothing but headers. A tab-scoped link's Editor does not write them (the sheet is
   on another tab); the first response does.
 - **Linked by column, not by heading**: the form remembers each column it uses (`form.sheet.columns`, question id →
@@ -825,7 +827,10 @@ board settings, for switching back.
   sheet has none, so row 1 becomes it, as before. Headers the form adds go on that row after its last header, and the
   response goes below it (never on or above it). The builder's header sync and the api's response row both find it
   with `headerRowIndex` in `@liveplanner/forms`, so a form pointed at Contacts fills rows under the template's headers
-  instead of writing a second header row on row 1.
+  instead of writing a second header row on row 1. An agent pointing a form at a sheet (MCP or CLI) plans its headers
+  on the same `sheetColumnPlan` the builder uses, honouring the form's remembered columns, so both pick the same
+  columns. A sheet where an agent already wrote a second set of headers on row 1 (before it read the header row) is
+  left as it is: that row now matches the form's headers first, so its answers keep going under it.
 - **The row** (`responseRowWrite`, `@liveplanner/forms`): the sheet's header row holds the headers, **#**,
   **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its remembered column,
   else its column by its header, ignoring case, and one with neither takes the next free column after the last header
