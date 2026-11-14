@@ -7,8 +7,12 @@
 import { hashId, seeded, type Element } from '@livehuddle/document';
 import { drinkFrom, roomInterior, type DrinkKind } from '@livehuddle/avatar/office-geometry';
 import { findWalkPath, type NavGrid } from '@livehuddle/avatar/pathing';
+import { fenceSegments, type FenceSegment } from '@livehuddle/avatar/collision';
+import { avatarScale } from '@livehuddle/avatar/config';
+import { freeSpawnPoint, spawnBody, spawnHalfWidth } from '@livehuddle/avatar/spawn-point';
 import type { AvatarFacing } from '@livehuddle/avatar/walk';
 import type { AvatarReactionKind } from '@livehuddle/avatar/reactions';
+import { RECEPTIONIST_LOOK } from './receptionist-look';
 
 /** One leg of his day: he sets off at its start, strolls to its stop, then does the stop's thing. */
 export const RECEPTIONIST_LEG_MS = 16_000;
@@ -57,6 +61,9 @@ export type ReceptionistWorld = {
   padId: string;
   pad: Box;
   home: ReceptionistStop;
+  // Where he stands beside the pad on each side (a greeting takes the side nearest him), never on water: home is the
+  // right one.
+  beside: { left: Point; right: Point };
   area: { kind: 'box'; box: Box } | { kind: 'circle'; at: Point; r: number };
   stops: readonly ReceptionistStop[];
   // A spot just inside each other room's floor, by its front wall: where Rooms and Meetings walks you.
@@ -131,11 +138,13 @@ export function receptionistPad(
 
 /**
  * The Receptionist's world on this tab, or null when it has no Avatar Pad or he was asked to leave it. `grid` is the walk's route grid for these walls (null
- * when nothing blocks). His area is the innermost Room whose floor holds the pad's middle, else a circle round it.
+ * when nothing blocks), `fences` their segments (worked out from the elements when not given). His area is the
+ * innermost Room whose floor holds the pad's middle, else a circle round it.
  */
 export function receptionistWorld(
   elements: readonly Element[],
   grid: NavGrid | null,
+  fences?: readonly FenceSegment[],
 ): ReceptionistWorld | null {
   const pad = receptionistPad(elements);
   // Asked to leave this pad for good (docs/specs/008-canvas/receptionist.md "Asking him to leave"): no Receptionist.
@@ -160,12 +169,21 @@ export function receptionistWorld(
           },
         }
       : { kind: 'circle', at, r: RECEPTIONIST_RADIUS };
-  // He stands beside the pad's right edge, level with its middle, facing down the canvas toward whoever arrives.
-  const home: ReceptionistStop = {
-    at: { x: pad.x + pad.width + BESIDE_PAD, y: at.y },
-    activity: 'home',
-    face: 'down',
+  // He stands beside the pad's right edge, level with its middle, facing down the canvas toward whoever arrives;
+  // never in a pool's or a pond's water or under it, where a person entering would not appear either (Work Tracker 800,
+  // freeSpawnPoint at his size).
+  const walls = fences ?? fenceSegments(elements);
+  const scale = avatarScale(RECEPTIONIST_LOOK.size);
+  const body = spawnBody(scale);
+  // Half his width clear beside water too: a pool just past the pad's edge has him step back from its coping.
+  const half = spawnHalfWidth(scale);
+  const free = (p: Point): Point =>
+    walls.length === 0 ? p : freeSpawnPoint(p, walls, undefined, body, half);
+  const beside = {
+    left: free({ x: pad.x - BESIDE_PAD, y: at.y }),
+    right: free({ x: pad.x + pad.width + BESIDE_PAD, y: at.y }),
   };
+  const home: ReceptionistStop = { at: beside.right, activity: 'home', face: 'down' };
   const base = { area, grid, home };
   const stops: ReceptionistStop[] = [];
   for (const el of elements) {
@@ -187,7 +205,7 @@ export function receptionistWorld(
     if (holds(f, at)) continue;
     rooms.push({ x: f.x + f.width / 2, y: f.y + f.height - ROOM_FRONT });
   }
-  return { padId: pad.id, pad, home, area, stops, rooms, grid };
+  return { padId: pad.id, pad, home, beside, area, stops, rooms, grid };
 }
 
 /** The nearest other room's spot to `from`, as the crow flies, or null on a tab with no other room. */

@@ -6,19 +6,14 @@ import { mergePose, type AvatarPose } from '../pose';
 import type { DrinkKind } from '../office-geometry';
 import type { AvatarSceneElement } from '../scene';
 import { fenceReachFor, type FenceSegment } from '../collision';
-import { freeSpawnPoint } from '../spawn-point';
+import { freeSpawnPoint, spawnBody, spawnHalfWidth } from '../spawn-point';
 import { avatarScale, type AvatarConfig } from '../config';
 import { NO_KEYS_HELD, type AvatarHeldKeys } from './useAvatarKeys';
 import { padEntry } from '../pad';
 import type { SeatClaim } from '../seat-claims';
 import { avatarBindings } from '../bindings';
 import type { NavGrid } from '../pathing';
-import {
-  AVATAR_HEIGHT,
-  viewportOffsetCentredOn,
-  type AvatarFacing,
-  type AvatarPoint,
-} from '../walk';
+import { viewportOffsetCentredOn, type AvatarFacing, type AvatarPoint } from '../walk';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 import type { StateStore } from '@liveworkspace/workbench/lib/state-store';
 import type { AvatarSnapshot, HeldDrink, PlayingReaction, WalkRects } from './avatarWalkTypes';
@@ -146,10 +141,13 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
     // a footprint (a pool's water, a plant's pot) appears on the nearest free floor instead (Work Tracker #610), a body's
     // height below any water.
     const reach = fenceReachFor(avatarScale(config.size));
-    // A body's height clear below water (a pool, a pond), at the character's size (Work Tracker 706).
-    const body = AVATAR_HEIGHT * avatarScale(config.size);
+    // A body's height clear below water (a pool, a pond), tallest hair and the coping included, at the character's
+    // size (Work Tracker 706, 800).
+    const body = spawnBody(avatarScale(config.size));
+    // And half its width clear beside water (Work Tracker 800).
+    const half = spawnHalfWidth(avatarScale(config.size));
     const place = (point: AvatarPoint) => {
-      const clear = freeSpawnPoint(point, fences, reach, body);
+      const clear = freeSpawnPoint(point, fences, reach, body, half);
       posRef.current = clear;
       setPos(clear);
       setFacing('down');
@@ -190,7 +188,7 @@ export function useAvatarWalkEntry<E extends AvatarSceneElement>({
     const current = posRef.current;
     if (!(current && onScreen(current))) place(centre);
     // The remembered spot stays, unless a wall or a piece was put beside it or on it while the mode was off.
-    else if (freeSpawnPoint(current, fences, reach, body) !== current) place(current);
+    else if (freeSpawnPoint(current, fences, reach, body, half) !== current) place(current);
   });
   useEffect(() => {
     enterOrLeave(active);

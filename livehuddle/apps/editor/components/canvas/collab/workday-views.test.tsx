@@ -17,6 +17,20 @@ import { drawnRect } from '@livehuddle/avatar/seats';
 
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useOptionalEditorContext: () => null }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// A drawn box on screen, for a bubble's measured place.
+const screenRect = (x: number, y: number, width: number, height: number) =>
+  ({
+    x,
+    y,
+    width,
+    height,
+    left: x,
+    top: y,
+    right: x + width,
+    bottom: y + height,
+    toJSON: () => ({}),
+  }) as DOMRect;
+
 const reduced = vi.hoisted(() => ({ on: false }));
 vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
   prefersReducedMotion: () => reduced.on,
@@ -144,9 +158,18 @@ describe('the workday pieces on the canvas', () => {
   });
 });
 
-function AtDesk({ feet }: { feet: { x: number; y: number } | null }) {
+function AtDesk({
+  feet,
+  sign = null,
+}: {
+  feet: { x: number; y: number } | null;
+  sign?: { x: number; y: number } | null;
+}) {
   const desk = piece('reception-desk', 100, 100);
-  useWorkdayPieces({ active: true, feet, elements: [desk] });
+  const elements = sign
+    ? [desk, { ...createShape('room-sign', sign.x, sign.y), id: 'sign' } as ShapeElement]
+    : [desk];
+  useWorkdayPieces({ active: true, feet, elements });
   return (
     <CanvasSurfaceProvider surface="light">
       <PieceArt element={desk} stroke="#334155" fill="#ffffff" sitters={[]} />
@@ -241,6 +264,35 @@ describe('the Reception Desk', () => {
     expect(track).toHaveBeenCalledWith('Canvas', 'Used', 'ReceptionBell');
     expect(screen.getByRole('button', { name: 'Bell rung' })).toHaveProperty('disabled', true);
     expect(container.querySelector('[data-bell-ringing]')).not.toBeNull();
+  });
+
+  // Work Tracker 793: a Room Sign placed by hand just above the desk would sit under the Welcome bubble.
+  it('shows the Welcome beside the desk when a hand-placed Room Sign stands where it rises', () => {
+    const bubble = () => screen.getByRole('status');
+    const { rerender } = render(<AtDesk feet={{ x: 200, y: 230 }} />);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('above');
+    expect(bubble().className).toContain('bottom-[calc(100%+6px)]');
+    rerender(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 170, y: 40 }} />);
+    // The sign hangs past the desk's right end, so the left has the most room.
+    expect(bubble().getAttribute('data-bubble-side')).toBe('left');
+    expect(bubble().className).toContain('right-[calc(100%+6px)]');
+    expect(bubble().style.getPropertyValue('--lh-bubble-x')).toBe('0px');
+    // A sign well clear of the bubble's room leaves it above.
+    rerender(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 700, y: 40 }} />);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('above');
+  });
+
+  // A phone's view holds the desk and little more: a Welcome beside it would leave the screen, so it shows below.
+  it('shows the Welcome below the desk when beside it would leave the view', () => {
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(screenRect(window.innerWidth - 60, 100, 150, 28));
+    render(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 170, y: 40 }} />);
+    const bubble = screen.getByRole('status');
+    expect(bubble.getAttribute('data-bubble-side')).toBe('below');
+    expect(bubble.className).toContain('top-[calc(100%+6px)]');
+    expect(screen.getByRole('button', { name: 'Ring the bell' })).toBeTruthy();
+    rect.mockRestore();
   });
 });
 

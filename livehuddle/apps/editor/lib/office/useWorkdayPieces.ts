@@ -12,6 +12,7 @@ import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import { PET_FLOOR_KINDS, petArea, type Element, type PetArea } from '@livehuddle/document';
 import { officeFootprint } from '@livehuddle/avatar/office-geometry';
 import type { SeatFacing } from '@livehuddle/avatar/facing';
+import { bubbleSide, signGrid, type PieceBubbleSide } from '@livehuddle/avatar/piece-bubble';
 
 /** How far in front of a reception desk's counter your feet may be for its Welcome. */
 export const RECEPTION_REACH = 32;
@@ -25,11 +26,15 @@ const TURNED_FRONT_DEPTH = 0.3;
 type Point = { x: number; y: number };
 
 let atDesk: string | null = null;
+// Where that desk's Welcome shows: above it, or beside (or below) it when a Room Sign stands where it would rise
+// (piece-bubble.ts).
+let atDeskSide: PieceBubbleSide = 'above';
 const listeners = createListeners();
 
-function setAtReception(id: string | null): void {
-  if (atDesk === id) return;
+function setAtReception(id: string | null, side: PieceBubbleSide = 'above'): void {
+  if (atDesk === id && atDeskSide === side) return;
   atDesk = id;
+  atDeskSide = side;
   listeners.notify();
 }
 
@@ -39,6 +44,15 @@ export function useAtReception(id: string): boolean {
     listeners.subscribe,
     () => atDesk === id,
     () => false,
+  );
+}
+
+/** Where the Welcome bubble of this desk shows while you stand at it (Work Tracker 793). */
+export function useReceptionBubbleSide(id: string): PieceBubbleSide {
+  return useSyncExternalStore(
+    listeners.subscribe,
+    () => (atDesk === id ? atDeskSide : 'above'),
+    () => 'above',
   );
 }
 
@@ -141,11 +155,18 @@ export function useWorkdayPieces({
   feet: Point | null;
   elements: readonly Element[];
 }): void {
-  const desks = useMemo(() => {
+  const { desks, sides } = useMemo(() => {
     const found: Desk[] = [];
-    for (const el of elements)
-      if (el.type === 'shape' && el.shape === 'reception-desk') found.push(el);
-    return found;
+    const signs: Box[] = [];
+    for (const el of elements) {
+      if (el.type !== 'shape') continue;
+      if (el.shape === 'reception-desk') found.push(el);
+      else if (el.shape === 'room-sign') signs.push(el);
+    }
+    // Where each desk's bubble shows, each reading only the signs near it (piece-bubble.ts).
+    const grid = signs.length > 0 && found.length > 0 ? signGrid(signs) : null;
+    const placed = new Map(grid ? found.map((d) => [d.id, bubbleSide(d, grid)] as const) : []);
+    return { desks: found, sides: placed };
   }, [elements]);
   const areas = useMemo(() => petAreasOf(elements), [elements]);
   useEffect(() => setPetAreas(areas), [areas]);
@@ -156,8 +177,9 @@ export function useWorkdayPieces({
       setAtReception(null);
       return;
     }
-    setAtReception(receptionAt({ x: fx, y: fy }, desks));
-  }, [active, fx, fy, desks]);
+    const desk = receptionAt({ x: fx, y: fy }, desks);
+    setAtReception(desk, (desk !== null && sides.get(desk)) || 'above');
+  }, [active, fx, fy, desks, sides]);
   // Leaving the board (a tab switch, the editor closing) takes the bubble away.
   useEffect(
     () => () => {

@@ -155,6 +155,18 @@ describe('ReceptionistLayer', () => {
     expect(getReceptionistState().here).toBe(false);
   });
 
+  // Work Tracker 799: his chip joins the characters' chip spread, so he tells the layer where he stands.
+  it('tells where he stands still, and nowhere once gone, and moves his chip by the spread', () => {
+    const onStanding = vi.fn();
+    const { unmount, container } = render(layer({ onStanding, chipShift: 30 }));
+    expect(onStanding).toHaveBeenLastCalledWith(home);
+    const chip = screen.getByText('Receptionist').parentElement!;
+    expect(chip.style.transform).toBe('translateX(30px)');
+    expect(container.querySelector('[data-avatar="host"]')).not.toBeNull();
+    unmount();
+    expect(onStanding).toHaveBeenLastCalledWith(null);
+  });
+
   it('opens at a bell you rang where he stands, with motion reduced, and not for someone else’s', () => {
     render(layer({ elements: [pad, desk] }));
     act(() => ring('tab-sam'));

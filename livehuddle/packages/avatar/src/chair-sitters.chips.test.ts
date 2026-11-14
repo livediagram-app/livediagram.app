@@ -4,7 +4,10 @@ import {
   NAME_CHIP_GAP,
   NAME_CHIP_HEIGHT,
   nameChipWidth,
+  peerChipBearers,
   seatedChipShifts,
+  type ChipBearer,
+  type ChipPeer,
   spreadNameChips,
   type NameChip,
 } from './chair-sitters';
@@ -71,7 +74,8 @@ describe('spreadNameChips', () => {
       { key: 'c', x: 120, top: 0, width: 80 },
     ];
     expectNoOverlap(chips);
-    expect(spreadNameChips(chips).get('b')).toBeUndefined();
+    // It stays put, but has its entry: the run's chips draw raised over every figure.
+    expect(spreadNameChips(chips).get('b')).toBe(0);
   });
 
   it('merges a run into the one it pushes into', () => {
@@ -203,7 +207,7 @@ describe('seatedChipShifts', () => {
       x: 100,
       y: 200 + i,
       seated: false,
-      onPad: true,
+      still: true,
       name,
     }));
     const shifts = seatedChipShifts(onPad);
@@ -222,12 +226,105 @@ describe('seatedChipShifts', () => {
       x: 100 + (i % 7),
       y: 200 + (i % 5),
       seated: false,
-      onPad: true,
+      still: true,
       name: `Person ${i}`,
     }));
     const ms = cpuMsOf(() => {
       for (let i = 0; i < 20; i++) seatedChipShifts(crowd);
     });
     expect(ms).toBeLessThan(cpuBudgetMs(60));
+  });
+});
+
+// Work Tracker 799 (avatar-mode.md "Standing neighbours' chips"): everyone standing still, not only on a pad, and the
+// Receptionist beside his pad.
+describe('standing chips', () => {
+  // Each bearer's chip once spread, sorted left to right, as [left, right] edges.
+  function placedEdges(bearers: readonly ChipBearer[]) {
+    const shifts = seatedChipShifts(bearers);
+    return bearers
+      .filter((b) => b.seated || b.still)
+      .map((b) => {
+        const x = b.x + (shifts.get(b.key) ?? 0);
+        const w = nameChipWidth(b.name, b.status);
+        return { key: b.key, left: x - w / 2, right: x + w / 2 };
+      })
+      .sort((a, b) => a.left - b.left);
+  }
+  function expectApart(bearers: readonly ChipBearer[]) {
+    const e = placedEdges(bearers);
+    for (let i = 1; i < e.length; i++)
+      expect(e[i]!.left - e[i - 1]!.right).toBeGreaterThanOrEqual(NAME_CHIP_GAP - 1e-9);
+  }
+  const peer = (id: string, x: number, y: number, over: Partial<ChipPeer['avatar']> = {}) => ({
+    id,
+    name: id,
+    avatar: { x, y, walking: false, ...over },
+  });
+
+  it('spreads three people standing shoulder to shoulder at one Arcade Machine, FRONT_SPOT_GAP apart', () => {
+    // The machine's front spot and the two beside it, 24 px apart (front-spot.ts).
+    const bearers = peerChipBearers([
+      peer('Calm Tiger', 100, 200),
+      peer('Clever Walrus', 124, 200),
+      peer('Brave Otter', 76, 200),
+    ]);
+    expect(bearers.every((b) => b.still && !b.seated)).toBe(true);
+    expect(seatedChipShifts(bearers).size).toBeGreaterThan(0);
+    expectApart(bearers);
+  });
+
+  it('takes the Receptionist beside a pad into the row with the people on it', () => {
+    // A pad at 0..80 and its core at the middle: two arrivals there, the Receptionist 28 px past its right edge.
+    const people = peerChipBearers([peer('Calm Tiger', 40, 40), peer('Clever Walrus', 40, 41)]);
+    const host: ChipBearer = {
+      key: 'host',
+      x: 108,
+      y: 40,
+      seated: false,
+      still: true,
+      name: 'Receptionist',
+    };
+    const bearers = [...people, host];
+    expect(seatedChipShifts(bearers).has('host')).toBe(true);
+    expectApart(bearers);
+  });
+
+  it('moves only the chips within reach of another, never a lone one or a walker', () => {
+    const bearers = peerChipBearers([
+      peer('Calm Tiger', 0, 200),
+      peer('Clever Walrus', 20, 200),
+      peer('Far Away', 900, 200),
+      peer('Walker', 10, 200, { walking: true }),
+    ]);
+    expect(bearers.map((b) => b.key)).toEqual(['Calm Tiger', 'Clever Walrus', 'Far Away']);
+    const shifts = seatedChipShifts(bearers);
+    expect([...shifts.keys()].sort()).toEqual(['Calm Tiger', 'Clever Walrus']);
+  });
+
+  it('reads a seated peer as seated, with their status and size', () => {
+    const [b] = peerChipBearers([
+      peer('Calm Tiger', 0, 0, { seatedOn: 'sofa', status: 'busy', config: { size: 'tall' } }),
+    ]);
+    expect(b).toMatchObject({ seated: true, still: false, scale: avatarScale('tall') });
+    expect(b!.status).toBeTruthy();
+    expect(peerChipBearers([peer('A', 0, 0, { status: 'nonsense' })])[0]!.status).toBeNull();
+  });
+
+  // The spread runs on every frame anyone walks: 200 people, a third walking, the rest in threes at machines and
+  // desks across the floor, read from presence and spread 60 times (one second of frames).
+  it('reads and spreads a floor of 200 people cheaply', () => {
+    const crowd = Array.from({ length: 200 }, (_, i) =>
+      peer(`Person ${i}`, (Math.floor(i / 3) % 12) * 160 + (i % 3) * 24, Math.floor(i / 36) * 140, {
+        walking: i % 3 === 0 && i % 2 === 0,
+        status: i % 5 === 0 ? 'busy' : undefined,
+      }),
+    );
+    let shifts = new Map<string, number>();
+    const ms = cpuMsOf(() => {
+      for (let f = 0; f < 60; f++) shifts = seatedChipShifts(peerChipBearers(crowd));
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(60));
+    expect(shifts.size).toBeGreaterThan(0);
   });
 });

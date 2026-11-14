@@ -302,7 +302,15 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
 - **Clear of a room's status card** (Work Tracker 615): the bubble rises up to 50 px above the cabinet, 160 px wide
   centred on it, so no template stands a [Room Sign](screen-and-room-sign.md) there: the Startup HQ Games Room's
   machines stand 100 px into the room, below the sign on its back wall. The Reception Desk's Welcome bubble keeps the
-  same room. `packages/templates/src/template-bubbles.test.ts` checks every tab of every template.
+  same room. `packages/templates/src/template-bubbles.test.ts` checks every tab of every template. **A sign placed by
+  hand** there (Work Tracker 793) moves the bubble beside the piece, 6 px off its side and level with its top, on the
+  side with the most free room (the right on a tie), clear of the people standing at its front; only when a sign
+  takes both sides does it show below the piece, dropping in from above. A bubble beside the piece that would leave
+  the visible view (a wide Reception Desk on a phone, whose screen holds the desk and little more) shows below it
+  too, so its button is never cut off. It never covers the card. The bubble draws
+  **over the characters** (and their chips), never under them, so nobody standing at the piece covers its text. The
+  signs are put in a coarse grid once per change of the board, and each bubble reads only the
+  signs in the few cells its room touches (`packages/avatar/src/piece-bubble.ts`), never every element.
 - A click anywhere on the cabinet walks you to its front, 16 px below it under the click (`walkPointFor` in
   `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen. A cabinet turned to face another
   way ([Turning furniture](furniture-facing.md)) has its front there: a click walks you 16 px beyond its base on

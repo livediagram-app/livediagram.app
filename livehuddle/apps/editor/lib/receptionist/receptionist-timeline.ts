@@ -174,11 +174,9 @@ export function greetDetour(
 ): ReceptionistDetour {
   const at = receptionistPose(world, now, current).at;
   const { pad } = world;
-  const mid = pad.y + pad.height / 2;
   const left = at.x < pad.x + pad.width / 2;
-  const to = left
-    ? { x: pad.x - BESIDE_PAD, y: mid }
-    : { x: pad.x + pad.width + BESIDE_PAD, y: mid };
+  // Beside the pad on that side, off any water (receptionistWorld's `beside`).
+  const to = left ? world.beside.left : world.beside.right;
   return detourTo(world, now, current, 'greet', to, left ? 'right' : 'left', RECEPTIONIST_GREET_MS);
 }
 

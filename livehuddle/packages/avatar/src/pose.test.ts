@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergePose, NO_POSE, poseFeet, posePlaced } from './pose';
+import { mergePose, NO_POSE, poseFeet, posePlaced, poseWalking } from './pose';
 
 describe('mergePose', () => {
   it('hands back the same pose for a patch that changes nothing', () => {
@@ -23,5 +23,7 @@ describe('mergePose', () => {
     expect(poseFeet(NO_POSE)).toBeNull();
     expect(posePlaced(NO_POSE)).toBe(false);
     expect(posePlaced({ ...NO_POSE, pos: { x: 0, y: 0 } })).toBe(true);
+    expect(poseWalking(NO_POSE)).toBe(false);
+    expect(poseWalking({ ...NO_POSE, walking: true })).toBe(true);
   });
 });

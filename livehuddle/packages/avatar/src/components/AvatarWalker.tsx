@@ -72,7 +72,7 @@ function AvatarWalkerView({
   host = false,
   status = null,
   glideMs = 0,
-  chipShift = 0,
+  chipShift,
 }: {
   // Feet position in canvas coords.
   pos: { x: number; y: number };
@@ -114,10 +114,13 @@ function AvatarWalkerView({
   glideMs?: number;
   // How far the chip over the head moves sideways, in canvas px, so a seated neighbour's chip never covers it
   // (docs/specs/008-canvas/avatar-mode.md "Seated neighbours' chips never cover each other"; seatedChipShifts).
+  // Given (0 included) for a chip in a spread row: that chip then draws in a box of its own over every character's
+  // figure, so a neighbour's hair never covers it (Work Tracker 799). Absent, the chip rides in the figure's box.
   chipShift?: number;
 }) {
   // A transform on top of the chip's centring (the `translate` of -translate-x-1/2), so the two add up.
   const chipMove = chipShift ? `translateX(${chipShift}px)` : undefined;
+  const chipInRow = chipShift !== undefined;
   const chip = useChipMeasure(name, status ? avatarStatusLabel(status) : null);
   const scale = avatarScale(config.size);
   const box = avatarBox(scale);
@@ -127,6 +130,7 @@ function AvatarWalkerView({
   // walking step slides and a jump (a portal, a pad, a seat) lands at once. Written to the element rather than the
   // style prop: whether a move glides depends on where the character stood before it.
   const placed = useRef<HTMLDivElement>(null);
+  const chipBox = useRef<HTMLDivElement>(null);
   const from = useRef(pos);
   // By coordinates: a caller hands a fresh `pos` each render, and a render for anything else must not re-judge the glide.
   const { x, y } = pos;
@@ -135,8 +139,48 @@ function AvatarWalkerView({
     const at = { x, y };
     const glides = avatarGlides(from.current, at, glideMs, walking);
     from.current = at;
-    if (el) el.style.transition = glides ? `transform ${glideMs}ms linear` : '';
+    const transition = glides ? `transform ${glideMs}ms linear` : '';
+    if (el) el.style.transition = transition;
+    if (chipBox.current) chipBox.current.style.transition = transition;
   }, [x, y, glideMs, walking]);
+  const placement = `translate(${pos.x - box.offsetX}px, ${pos.y - box.offsetY}px)`;
+  const chipEl = name ? (
+    <div
+      ref={chip}
+      className={`absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${status ? 'max-w-[180px]' : 'max-w-[120px]'} ${IDENTITY_FILL}`}
+      // Pinned just above the HEAD, not the (headroom-extended) box, and
+      // tracking the size choice so it hugs a small character too.
+      style={{
+        ...avatarBindings.identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
+        top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_NAME_CHIP_RISE - headroom,
+        transform: chipMove,
+      }}
+    >
+      {status ? <StatusDot status={status} /> : null}
+      {/* Its own box, so a long name ends in an ellipsis: a flex item's bare text cannot. */}
+      <span className="min-w-0 truncate">{name}</span>
+      {status ? (
+        // The dot's label ("Status": every dot is labelled): whole, the name gives way first.
+        <span aria-hidden className="shrink-0 whitespace-nowrap font-medium opacity-90">
+          · {avatarStatusLabel(status)}
+        </span>
+      ) : null}
+    </div>
+  ) : status ? (
+    // Your own character has no name chip: its labelled status sits where the chip would be, on a quiet chip.
+    <div
+      ref={chip}
+      data-own-status
+      className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
+      style={{
+        top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_STATUS_CHIP_RISE - headroom,
+        transform: chipMove,
+      }}
+    >
+      <StatusDot status={status} />
+      <span aria-hidden>{avatarStatusLabel(status)}</span>
+    </div>
+  ) : null;
   return (
     <>
       {/* The status for a screen reader (docs/specs/008-canvas/avatar-mode.md "Status"): the character itself is
@@ -183,48 +227,12 @@ function AvatarWalkerView({
           // characters, not the canvas"), and a peer's glide is a transition of it.
           left: 0,
           top: 0,
-          transform: `translate(${pos.x - box.offsetX}px, ${pos.y - box.offsetY}px)`,
+          transform: placement,
           width: box.width,
           height: box.height,
         }}
       >
-        {name ? (
-          <div
-            ref={chip}
-            className={`absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${status ? 'max-w-[180px]' : 'max-w-[120px]'} ${IDENTITY_FILL}`}
-            // Pinned just above the HEAD, not the (headroom-extended) box, and
-            // tracking the size choice so it hugs a small character too.
-            style={{
-              ...avatarBindings.identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
-              top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_NAME_CHIP_RISE - headroom,
-              transform: chipMove,
-            }}
-          >
-            {status ? <StatusDot status={status} /> : null}
-            {/* Its own box, so a long name ends in an ellipsis: a flex item's bare text cannot. */}
-            <span className="min-w-0 truncate">{name}</span>
-            {status ? (
-              // The dot's label ("Status": every dot is labelled): whole, the name gives way first.
-              <span aria-hidden className="shrink-0 whitespace-nowrap font-medium opacity-90">
-                · {avatarStatusLabel(status)}
-              </span>
-            ) : null}
-          </div>
-        ) : status ? (
-          // Your own character has no name chip: its labelled status sits where the chip would be, on a quiet chip.
-          <div
-            ref={chip}
-            data-own-status
-            className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
-            style={{
-              top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_STATUS_CHIP_RISE - headroom,
-              transform: chipMove,
-            }}
-          >
-            <StatusDot status={status} />
-            <span aria-hidden>{avatarStatusLabel(status)}</span>
-          </div>
-        ) : null}
+        {chipInRow ? null : chipEl}
         {status === 'away' ? (
           // Away: a slow Zz rising over the head (a CSS loop, still under reduced motion).
           <div
@@ -256,6 +264,19 @@ function AvatarWalkerView({
           />
         </div>
       </div>
+      {/* A chip in a spread row: the same box, its own sibling, raised over every character's figure (z-[1] in the
+          characters' layer; speech and call bubbles stand higher still). */}
+      {chipInRow && chipEl ? (
+        <div
+          ref={chipBox}
+          aria-hidden
+          data-avatar-chip=""
+          className="pointer-events-none absolute z-[1]"
+          style={{ left: 0, top: 0, transform: placement, width: box.width, height: box.height }}
+        >
+          {chipEl}
+        </div>
+      ) : null}
     </>
   );
 }

@@ -10,8 +10,28 @@ import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-gua
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useOptionalEditorContext: () => null }));
-const near = vi.hoisted(() => ({ on: false }));
-vi.mock('./useSocialPieces', () => ({ useNearArcade: () => near.on }));
+// A drawn box on screen, for a bubble's measured place.
+const screenRect = (x: number, y: number, width: number, height: number) =>
+  ({
+    x,
+    y,
+    width,
+    height,
+    left: x,
+    top: y,
+    right: x + width,
+    bottom: y + height,
+    toJSON: () => ({}),
+  }) as DOMRect;
+
+const near = vi.hoisted(() => ({
+  on: false,
+  side: 'above' as 'above' | 'left' | 'right' | 'below',
+}));
+vi.mock('./useSocialPieces', () => ({
+  useNearArcade: () => near.on,
+  useArcadeBubbleSide: () => (near.on ? near.side : 'above'),
+}));
 
 import { isPieceControlPress } from '@/lib/piece-control';
 import { ArcadeFace } from './ArcadeFace';
@@ -22,6 +42,7 @@ const press = () => screen.queryByRole('button', { name: 'Play Moon Mail' });
 
 beforeEach(() => {
   near.on = true;
+  near.side = 'above';
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 });
 afterEach(() => {
@@ -44,6 +65,44 @@ describe('ArcadeFace', () => {
     expect(button.textContent).toBe('Insert Coin');
     expect(isPieceControlPress(button)).toBe(true);
     expect(button.hasAttribute('data-piece-main')).toBe(true);
+  });
+
+  // Work Tracker 793: a Room Sign placed by hand just above the machine would sit under the bubble.
+  it('shows Insert Coin beside the cabinet, or below it, when a Room Sign stands where it rises', () => {
+    const bubble = () => press()!.querySelector('.lh-coin-bubble') as HTMLElement;
+    const { rerender } = render(<ArcadeFace element={machine()} />);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('above');
+    expect(bubble().style.getPropertyValue('--lh-bubble-rise')).toBe('6px');
+    expect(bubble().style.getPropertyValue('--lh-bubble-x')).toBe('-50%');
+    near.side = 'right';
+    rerender(<ArcadeFace element={{ ...machine() }} />);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('right');
+    expect(bubble().className).toContain('left-[calc(100%+6px)]');
+    expect(bubble().style.getPropertyValue('--lh-bubble-x')).toBe('0px');
+    near.side = 'left';
+    rerender(<ArcadeFace element={{ ...machine() }} />);
+    expect(bubble().className).toContain('right-[calc(100%+6px)]');
+    near.side = 'below';
+    rerender(<ArcadeFace element={{ ...machine() }} />);
+    expect(bubble().className).toContain('top-[calc(100%+6px)]');
+    expect(bubble().style.getPropertyValue('--lh-bubble-rise')).toBe('-6px');
+    // The bubble is the cabinet's press too.
+    expect(isPieceControlPress(bubble())).toBe(true);
+  });
+
+  // A wide view keeps it beside the cabinet; one it would leave (a phone) shows it below.
+  it('shows Insert Coin below the cabinet when beside it would leave the view', () => {
+    near.side = 'right';
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(screenRect(40, 100, 76, 27));
+    const bubble = () => press()!.querySelector('.lh-coin-bubble') as HTMLElement;
+    const { unmount } = render(<ArcadeFace element={machine()} />);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('right');
+    unmount();
+    rect.mockReturnValue(screenRect(window.innerWidth - 20, 100, 76, 27));
+    render(<ArcadeFace element={machine()} />);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('below');
   });
 
   it("adds the table's best under Insert Coin, and follows the table as it changes", () => {

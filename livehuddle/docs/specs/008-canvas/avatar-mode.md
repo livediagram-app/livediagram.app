@@ -556,6 +556,15 @@ the pointer).
 - **People on one pad** (Work Tracker 706). Everyone arriving by an Avatar Pad lands on its core, so two or more
   people standing still on one pad spread their chips the same way, and none covers another. A walker on the pad keeps
   its chip over its head.
+- **Standing neighbours' chips** (Work Tracker 799). Not only on a pad: everyone standing still takes part in the
+  same spread, so people shoulder to shoulder beside a full bench, at a crowded Arcade Machine or desk
+  (`FRONT_SPOT_GAP`, 24 px apart) never cover each other's chips. Only chips that would come within the gap of
+  another move; a lone chip stays over its head. The Receptionist's chip joins the row while he stands (his layer says
+  where he stands as he stops and sets off, never per frame). A walker is passed over before anything about it is
+  read (`peerChipBearers`, chair-sitters.ts), so the spread costs little per frame with 200 people on the board.
+  **A chip in a spread row draws over every character's figure**, so a neighbour's hair (your own, drawn last) never
+  covers the chip in the middle; speech, call and piece bubbles still stand over the chips. Any other chip rides with
+  its character.
 - Peer characters render **whether or not you are in Avatar mode yourself**: someone else walking you through their canvas is worth seeing from the Select tool.
 - **You can push each other.** Clicking a peer's character (in Avatar mode) walks yours over to them and, on arrival, sends an `avatar-push` op naming them plus a unit direction. Only that participant acts on it, by sliding their own character a short way (70 canvas px) along the direction, so a push is a **request to the owner**, never a remote write, and someone who has already left the mode simply ignores it. **A seated character cannot be pushed** ([Chair](../009-elements/chair.md) "Sitting"): clicking one walks you up beside them and sends nothing, and the owner ignores any push that reaches them while they sit. Same presence trust level as `avatar`: unordered, any role, never logged, never replayed. It is not throttled, because it is an event rather than a sample. A push whose ids are not short strings, or whose direction is not two finite numbers (not both zero), reaches nobody: the room drops it and addresses only the checked copy, its direction made a unit vector, and a receiver ignores any direction that is not finite, so a hand-made push can never send a character off the canvas.
 - A presenter still sees nobody else's character ([Presentation mode](../012-collaboration/presentation-mode.md)).

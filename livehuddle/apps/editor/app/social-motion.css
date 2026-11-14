@@ -200,11 +200,11 @@
 }
 @keyframes lh-coin-bubble {
   from {
-    transform: translate(-50%, 6px);
+    transform: translate(var(--lh-bubble-x, -50%), var(--lh-bubble-rise, 6px));
     opacity: 0;
   }
   to {
-    transform: translate(-50%, 0);
+    transform: translate(var(--lh-bubble-x, -50%), 0);
     opacity: 1;
   }
 }

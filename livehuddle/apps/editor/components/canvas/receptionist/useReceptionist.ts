@@ -64,7 +64,7 @@ function useReceptionistWorld(
     if (!active) return null;
     const fences = fenceSegments(elements);
     const grid = buildNavGrid(fences, fenceReachFor(1), shutDoorLines(elements));
-    return receptionistWorld(elements, grid);
+    return receptionistWorld(elements, grid, fences);
   }, [active, elements]);
 }
 
