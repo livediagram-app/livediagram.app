@@ -5,8 +5,9 @@ import { freshUserId, installSession } from './session';
 
 // Agent presence end to end (docs/specs/024-agents/agent-presence.md): Webber has his own unshared project open
 // while his agent works on it with an API token. The agent shows itself with a status line and a focus; his stack
-// shows it as an avatar of its own beside his, a ring marks what it is looking at, a short ttl takes it away, and the comments it
-// writes through the REST thread verbs land live.
+// shows it as an avatar of its own beside his, a ring marks what it is looking at, and a short ttl takes it away. A
+// comment it tries on a canvas element is refused (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas
+// element", Work Tracker 751).
 
 test.use({ colorScheme: 'dark', viewport: { width: 1440, height: 860 } });
 
@@ -26,7 +27,7 @@ function comments(page: Page, s: Setup, path: string, data?: unknown) {
   });
 }
 
-test('an agent shows its status and focus to its owner, expires on its ttl, and comments live', async ({
+test('an agent shows its status and focus to its owner, expires on its ttl, and comments on no element', async ({
   page,
   baseURL,
   pageErrors,
@@ -73,21 +74,13 @@ test('an agent shows its status and focus to its owner, expires on its ttl, and 
   });
   await expect(page.locator('[data-agent-focus-id]')).toHaveCount(0);
 
-  // Comments through the REST verbs land live: the add, a reply, then the resolve takes the badge away. They go on
-  // Webber's box: a Plan item (the API view) takes no comments and shows no badge (docs/specs/026-plan/plan-mode.md
-  // "Nothing attached to Plan items").
+  // A comment on Webber's box, with no Sheet cell, is refused and nothing lands on the canvas.
   const added = await comments(page, s, '', {
     elementId: PERSON_BOX.id,
     text: 'Should this be idempotent?',
   });
-  expect(added.status()).toBe(201);
-  const { comment } = (await added.json()) as { comment: { id: string } };
-  await expect(page.getByRole('button', { name: 'Open 1 comment' })).toBeVisible();
-  expect(
-    (await comments(page, s, `/${comment.id}/reply`, { text: 'Yes, keyed by order id.' })).status(),
-  ).toBe(201);
-  await expect(page.getByRole('button', { name: 'Open 2 comments' })).toBeVisible();
-  expect((await comments(page, s, `/${comment.id}/resolve`)).status()).toBe(204);
+  expect(added.status()).toBe(400);
+  expect(((await added.json()) as { error: string }).error).toBe('element_comments_retired');
   await expect(page.getByRole('button', { name: /^Open \d+ comments?$/ })).toHaveCount(0);
   expect(pageErrors).toEqual([]);
 });
