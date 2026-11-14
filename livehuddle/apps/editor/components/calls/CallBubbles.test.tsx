@@ -118,7 +118,7 @@ describe('CallBubbles', () => {
     const rowOf = (container: HTMLElement, id: string) =>
       container.querySelector<HTMLElement>(`[data-call-bubbles="${id}"] [data-call-bubbles-row]`)!;
     const nudge = (row: HTMLElement) =>
-      Number(/translate\((-?[\d.]+)px,/.exec(row.style.transform)![1]);
+      Number(/translate\((-?[\d.]+)px[,)]/.exec(row.style.transform)![1]);
 
     it('slides two people side by side apart, tails still on their heads, and hands on where they went', () => {
       const rects = { current: [] as readonly BubbleRect[] };
@@ -294,7 +294,8 @@ describe('CallBubbles', () => {
       container.querySelector<HTMLElement>(`[data-call-bubbles="${id}"] [data-call-bubbles-row]`)!;
     const tail = (id: string) =>
       container.querySelector<HTMLElement>(`[data-call-bubbles="${id}"] [data-call-bubble-tail]`)!;
-    expect(row('p1').style.transform).toMatch(/, 0px\)$/);
+    // Not lifted: the style drops a 0 y.
+    expect(row('p1').style.transform).toMatch(/^translate\(-?[\d.]+px\)$/);
     // Lifted a bubble's height (16:9 of its width) and a gap onto the row above.
     const lift = (BUBBLE_WIDTH_PX * 9) / 16 + BUBBLE_GAP_PX;
     expect(row('p3').style.transform.endsWith(`, -${lift}px)`)).toBe(true);

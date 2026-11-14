@@ -76,7 +76,7 @@ describe('an option with a choice', () => {
     const grid = screen
       .getByRole('listbox', { name: 'Thing' })
       .querySelector('.grid') as HTMLElement;
-    expect(grid.style.gridTemplateColumns).toBe('repeat(2, minmax(0, 1fr))');
+    expect(grid.style.gridTemplateColumns).toBe('repeat(2, minmax(0px, 1fr))');
   });
 
   it("shows the blend modes in their families, a brush's own last", () => {

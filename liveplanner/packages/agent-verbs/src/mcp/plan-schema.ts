@@ -54,7 +54,8 @@ const fieldsArg = z
       '(urgent|high|medium|low), labels (["seo","copy"] or "seo, copy"), estimate (0-999), start and due ' +
       '(YYYY-MM-DD), color (a #rrggbb colour, e.g. ' +
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
-      '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
+      '), checklist [{text,done}], parent ("#12", a Project), flagged (every card: true flags it for attention, ' +
+      'false unflags it), and the card type’s custom fields by name ' +
       '("Severity": "S2"; a Card field takes "#12"; a field marked multiple takes a list or a comma list, "Sam, Ana" or ' +
       '"#3, #5", and [] or null clears it; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
       'change_card_types. A new card must give every custom field list_items marks required. An image field ' +
@@ -98,7 +99,7 @@ const itemChange = z.discriminatedUnion('op', [
       .optional()
       .describe(
         'Fields to clear, by name or id (never title), e.g. ["Blocked By", "due"]: empties any field, ' +
-          'a field that holds several values among them.',
+          'a field that holds several values among them; ["flagged"] unflags the card.',
       ),
     type: typeArg
       .optional()
@@ -817,7 +818,8 @@ const listedItem = z.object({
     .describe(
       'Every field, title and status included; custom fields by their names, as change_items takes them. A ' +
         'calculated field’s value is worked out (a count, a whole percentage, a formula’s number, text, ' +
-        'true or false or ISO date, or null) and read-only. A duration reads as text ("2h 30m").',
+        'true or false or ISO date, or null) and read-only. A duration reads as text ("2h 30m"). A flagged ' +
+        'card has flagged: true.',
     ),
   time: z
     .record(

@@ -187,7 +187,9 @@ describe('ElementVoteOverlay at a phone’s full Fit of a large board', () => {
     expect(r.container.querySelector('.lvd-vote-stepper')).toBeNull();
     const d = dot(r)!;
     expect(d.className).toContain('pointer-events-none');
-    expect(d.style.transform).toBe(`scale(${1 / 0.13})`);
+    // The style serialises the factor to six significant digits, as a browser does.
+    const [, factor] = /^scale\(([\d.]+)\)$/.exec(d.style.transform)!;
+    expect(Number(factor)).toBeCloseTo(1 / 0.13, 4);
     expect(d.querySelector('[aria-label="1 vote on Idea"]')!.className).toContain('bg-brand-700');
   });
 

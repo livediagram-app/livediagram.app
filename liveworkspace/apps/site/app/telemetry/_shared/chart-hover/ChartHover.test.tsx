@@ -125,14 +125,16 @@ const key = (el: Element, k: string) =>
     el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
   });
 
-// jsdom matches no :focus-visible; a keyboard focus does.
-function keyboardFocus(el: HTMLElement) {
+// jsdom matches :focus-visible on every focus, with no pointer heuristic: pin it to the kind of focus a test means.
+function focusAs(el: HTMLElement, visible: boolean) {
   const matches = Element.prototype.matches;
   vi.spyOn(Element.prototype, 'matches').mockImplementation(function (this: Element, sel: string) {
-    return sel === ':focus-visible' || matches.call(this, sel);
+    return sel === ':focus-visible' ? visible : matches.call(this, sel);
   });
   act(() => el.focus());
 }
+const keyboardFocus = (el: HTMLElement) => focusAs(el, true);
+const mouseFocus = (el: HTMLElement) => focusAs(el, false);
 
 const tooltip = () => document.querySelector<HTMLElement>('[data-chart-tooltip]');
 const rowKeys = () =>
@@ -186,7 +188,7 @@ describe('ChartHover', () => {
     pointer(chart, 'pointermove', 100 + 0.25 * 500);
     flushFrames();
     // Crosshair at 225 px: the tooltip starts 14 px right of it, level with the plot's top.
-    expect(tooltip()!.style.transform).toBe('translate3d(239px, 300px, 0)');
+    expect(tooltip()!.style.transform).toBe('translate3d(239px, 300px, 0px)');
     expect(tooltip()!.dataset.side).toBe('right');
     Object.defineProperty(document.documentElement, 'clientWidth', {
       configurable: true,
@@ -195,7 +197,7 @@ describe('ChartHover', () => {
     pointer(chart, 'pointermove', 600);
     flushFrames();
     // Crosshair at 600 px in a 700 px viewport: the tooltip ends 14 px left of it.
-    expect(tooltip()!.style.transform).toBe('translate3d(386px, 300px, 0)');
+    expect(tooltip()!.style.transform).toBe('translate3d(386px, 300px, 0px)');
     expect(tooltip()!.dataset.side).toBe('left');
   });
 
@@ -287,7 +289,7 @@ describe('ChartHover', () => {
 
   it('keeps the live region quiet for a mouse, and shows nothing on a mouse focus', () => {
     const chart = mount();
-    act(() => chart.focus());
+    mouseFocus(chart);
     expect(tooltip()).toBeNull();
     pointer(chart, 'pointermove', 100);
     flushFrames();
