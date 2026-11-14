@@ -159,6 +159,16 @@ export const PART_MOTIONS: Partial<Record<MomentKind, readonly PartMotion[]>> = 
     { part: 11, motion: 'jiggle' },
     { part: 12, motion: 'wink', delay: 0.15 },
   ],
+  // The ropes, the sling, its band and its spreader bars rocking on the ropes' height: the ropes' tops slide a little
+  // on the posts, so nothing comes away from them.
+  hammock: swingAll([3, 4, 5, 6], [76, 16], '4deg', {
+    vars: { '--swing': '4deg', '--dur': '1.8s' },
+  }),
+  // The note half posted through the slot rises out of it and sinks back.
+  'suggestion-box': [
+    { part: 9, motion: 'hop', vars: { '--up': '-5px', '--tip': '0deg', '--dur': '1.1s' } },
+    { part: 10, motion: 'hop', vars: { '--up': '-5px', '--tip': '0deg', '--dur': '1.1s' } },
+  ],
 };
 
 /** The parts this kind moves in its moment. */
@@ -192,21 +202,34 @@ const MOVES_ONLY: ReadonlySet<string> = new Set([
   'coat-rack',
   'kitchen-counter',
   'stage-curtains',
+  'hammock',
 ]);
+
+// The kinds whose live face plays their moment over the art (SocialFaces, TeamFaces, FaceMoments): a note on the
+// notice board, the clock's hands, the calendar's page. Their faces show at every facing, so they play at every facing.
+const ON_FACE: ReadonlySet<string> = new Set(['notice-board', 'world-clock', 'calendar-wall']);
+
+/** Whether this kind's moment is played by its live face rather than on its art. */
+export function playsOnFace(kind: string): boolean {
+  return ON_FACE.has(kind);
+}
 
 /** Whether this kind's moment draws anything over its art (PieceMoment). */
 export function drawsOverMoment(kind: string): boolean {
-  return !MOVES_ONLY.has(kind);
+  return !MOVES_ONLY.has(kind) && !ON_FACE.has(kind);
 }
 
 export type WholeMotion = 'sway' | 'rustle' | 'thunk' | 'rattle' | 'hum' | 'nudge';
 
 /**
  * How the whole drawing moves: a tree's sway and a plant's rustle at every facing; on the front, a dartboard's thunk,
- * the lockers' rattle and a hand dryer's hum; turned, every other piece's nudge (its moment is drawn on the front).
+ * the lockers' rattle and a hand dryer's hum; turned, every other piece's nudge (its moment is drawn on the front),
+ * but for a piece whose live face plays its moment, whose art keeps still.
  */
 export function wholeMotionOf(kind: MomentKind, front: boolean): WholeMotion | null {
   if (swaysOnMoment(kind)) return kind === 'tree' ? 'sway' : 'rustle';
+  // The face plays it, at every facing: the art keeps still.
+  if (playsOnFace(kind)) return null;
   if (!front) return 'nudge';
   if (kind === 'dartboard') return 'thunk';
   if (kind === 'lockers') return 'rattle';

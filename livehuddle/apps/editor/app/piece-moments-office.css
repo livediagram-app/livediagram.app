@@ -635,3 +635,72 @@
     transform: scaleY(-0.6);
   }
 }
+
+/* The walk-up answers (Work Tracker 626). A pin popping into bare cork and wobbling on its point, then gone. */
+.lh-moment-pin {
+  transform-origin: 100% 100%;
+  animation: lh-moment-pin 1.6s ease-in-out both;
+}
+@keyframes lh-moment-pin {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    transform: scale(1.15) rotate(0deg);
+    opacity: 1;
+  }
+  24% {
+    transform: scale(1) rotate(calc(var(--lean, 1) * 14deg));
+  }
+  42% {
+    transform: scale(1) rotate(calc(var(--lean, 1) * -9deg));
+  }
+  60% {
+    transform: scale(1) rotate(calc(var(--lean, 1) * 5deg));
+  }
+  78% {
+    transform: scale(1) rotate(calc(var(--lean, 1) * -2deg));
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* A clock's minute hand ticking once round its dial, a tick at a time, back on the time it shows. */
+.lh-moment-tick {
+  animation: lh-moment-tick 1.2s steps(12, end) both;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes lh-moment-tick {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* A page's corner curling up from its corner and falling back flat. */
+.lh-moment-lift {
+  animation: lh-moment-lift 1.3s ease-in-out both;
+}
+@keyframes lh-moment-lift {
+  0% {
+    transform: scale(0);
+  }
+  30% {
+    transform: scale(1);
+  }
+  55% {
+    transform: scale(0.55);
+  }
+  75% {
+    transform: scale(0.75);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
