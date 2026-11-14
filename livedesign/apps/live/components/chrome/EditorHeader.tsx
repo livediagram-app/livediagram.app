@@ -14,7 +14,7 @@ import {
   HEADER_ACTION_BTN,
   HeaderGlyph,
 } from '@liveworkspace/workbench/components/chrome/header-action';
-import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
+import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 
 // The autosave's sync state. No header pill shows it any more: the failure
 // states each raise a toast (editor-persistence.ts), so silent failures
@@ -33,6 +33,9 @@ export type SaveStatus =
   'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden' | 'tooLarge';
 
 type EditorHeaderProps = {
+  // The open item's id: the logo opens the Explorer on the place that holds it
+  // (liveworkspace/docs/specs/004-index/one-explorer.md "Opening from an open item").
+  itemId?: string | null;
   designName: string;
   // Hides the centred design title while the first-run welcome modal
   // is up (no design exists yet, naming it makes no sense). Brand and
@@ -90,6 +93,7 @@ export function EditorHeader({
   onRename,
   renameNonce = 0,
   rolePill,
+  itemId = null,
 }: EditorHeaderProps) {
   const [editing, setEditing] = useState(false);
 
@@ -126,7 +130,7 @@ export function EditorHeader({
             A plain logo, with no site switcher: in an editor it stays out of the way of the work
             (liveworkspace/docs/specs/010-site/site-switcher.md "Where it shows"). */}
         <Brand
-          href={explorerHref()}
+          href={explorerItemHref(itemId)}
           size="md"
           wordmarkClassName="hidden sm:inline"
           className="relative touch-target"
