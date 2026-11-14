@@ -28,9 +28,9 @@ to fill a quota. An idea makes the cut only when all of these hold:
   stops short.
 - **It fits.** It suits the product it is for and the platform's direction (read the product's specs and
   `liveworkspace/docs/specs`). Shared capabilities belong to the platform once, not to each product.
-- **It's new.** Main doesn't already do it, and no card covers it (any type, any column, including Done and
-  Cancelled). A rejected idea, or a close cousin of one, never comes back unless something material has changed,
-  and then the card says what.
+- **It's new.** Main doesn't already do it, no open PR is building it, and no card covers it: no Work Item or Idea,
+  in any column (see "Check for an existing card" in step 3). A rejected idea, or a close cousin of one, never comes
+  back unless something material has changed, and then the card says what.
 - **It's feasible.** You read the code it would touch and can say roughly where it lands and what makes it hard.
 - **It's worth it.** The value clearly beats the cost and the risk. Not a bug fix (that's the bug loop) and not a
   polish nit.
@@ -105,8 +105,34 @@ evidence, not prose.
 
 ## 3. Write the cards
 
-For each idea that makes the cut, check the board once more for a duplicate (step 1), then add every card in
-**one** `change_items` batch:
+### Check for an existing card
+
+This check matters most: a duplicate wastes the owner's review and can split one piece of work across two cards.
+Before writing, check every idea against the board you read in step 1, by meaning, not by title:
+
+- **Search wide.** `jq` over every card's title, description and Acceptance Criteria (Work Items) or Solution
+  (Ideas), case-insensitive, for the idea's key nouns **and their synonyms** ("version history", "revisions",
+  "snapshots", "restore", "undo history"). Cover **every column**: On Hold, Under Review, Reviewed, Selected for
+  Development, In Progress, Implemented, Done, Development Failure and Cancelled.
+- **Read the near matches in full**, including their comment threads (`list_threads` with their `item`), since
+  decisions often live there.
+- **Check open work**: `gh pr list --state open --search "<keywords>"` and the titles of open PRs, since a PR can be
+  building it before its card exists.
+- **Then decide:**
+  - **Covered** by a card in any open column, or by an open PR: skip it.
+  - **Done**, or Implemented: main has it or soon will. Skip it, or pitch only the part that's clearly beyond what
+    that card built, and name the card.
+  - **Cancelled** (a Work Item, or an Idea Rejected or not): the owner turned it down. Treat it as rejected (see the
+    bar).
+  - **On Hold**: parked on purpose. Skip it unless new evidence changes why it was parked, and then say so.
+  - **Partly covered**: pitch only the part no card covers, and name the related card in the description
+    ("Builds on card 742, which covers X but not Y"). Write "card N", never "Work Tracker N".
+- In the report, list every idea dropped as a duplicate with the card that covers it, so the owner can see the
+  check ran.
+
+### Add the cards
+
+Add every idea that survives the check in **one** `change_items` batch:
 
 ```json
 {
