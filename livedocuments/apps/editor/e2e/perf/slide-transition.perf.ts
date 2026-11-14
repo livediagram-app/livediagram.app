@@ -22,6 +22,8 @@ const SLIDES_PER_DECK = 6;
 // Normal speed (lib/presentation-config.ts SLIDE_SPEEDS) plus room for the move to settle.
 const MOVE_SETTLE_MS = 380 + 400;
 const RAPID_GAP_MS = 80;
+// How long opening a deck may wait on the Present button.
+const OPEN_TIMEOUT_MS = 60_000;
 // One throttle for every variant, so two builds measured at different times compare (SLIDE_THROTTLE).
 const FIXED_THROTTLE = Number(process.env.SLIDE_THROTTLE ?? 0);
 // Seven moves a row, forward and back, read as medians: one move swings too much to compare on.
@@ -122,7 +124,11 @@ async function openDeck(
   await page.keyboard.press('Escape');
   // The header's Present starts the open tab's show at its slide 1 (presentation-mode.md "The header's Present
   // button"; the Slide Deck panel it once opened from is retired).
-  await page.getByRole('button', { name: 'Present', exact: true }).click();
+  // Bounded: a deck that never opens (a retired control, 2026-11-12 and 11-13) fails here in a minute with the
+  // control's name, not by waiting out the whole 15-minute test.
+  await page
+    .getByRole('button', { name: 'Present', exact: true })
+    .click({ timeout: OPEN_TIMEOUT_MS });
   await page.waitForTimeout(1500);
   await cdp?.send('Emulation.setCPUThrottlingRate', { rate: throttle });
   return { ctx, page, cdp: cdp! };
