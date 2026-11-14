@@ -122,6 +122,29 @@ describe('the card face', () => {
       ),
     ).toEqual(['acme/web#9: Merged']);
   });
+
+  // Work Tracker 758: on a compact or phone card no tooltip shows, so a mark carries its checks itself.
+  it.each<[string, Partial<PullRequestStatus>, string | null, string]>([
+    ['open, passing', { checks: 'passing' }, 'passing', 'Checks Passing'],
+    ['open, failing', { checks: 'failing' }, 'failing', 'Checks Failing'],
+    ['open, running', { checks: 'running' }, 'running', 'Checks Running'],
+    ['a draft, failing', { state: 'draft', checks: 'failing' }, 'failing', 'Draft, Checks Failing'],
+    ['a draft, no checks', { state: 'draft' }, null, 'Draft'],
+    ['open, no checks yet', {}, null, 'Open'],
+    ['merged, checks passed', { state: 'merged', checks: 'passing' }, null, 'Merged'],
+    ['closed, checks failed', { state: 'closed', checks: 'failing' }, null, 'Closed'],
+  ])('a mark for %s shows its checks without a tooltip', (_, o, checks, words) => {
+    face(card(), pullRequestStatuses([status(5, { ...o, cards: ['c'] })]));
+    const flag = document.querySelector('[data-pull-request-flag]')!;
+    expect(flag.getAttribute('aria-label')).toBe(`acme/web#5: ${words}`);
+    expect(flag.getAttribute('data-pull-request-checks')).toBe(checks);
+    expect(flag.querySelector('[data-checks-mark]')?.getAttribute('data-checks-mark') ?? null).toBe(
+      checks,
+    );
+    // Each check reads by its own shape, not by colour alone: a tick, a cross, a dot.
+    if (checks === 'running') expect(flag.querySelector('[data-checks-mark] svg')).toBeNull();
+    else if (checks) expect(flag.querySelector('[data-checks-mark] svg')).toBeTruthy();
+  });
 });
 
 describe('the card panel', () => {

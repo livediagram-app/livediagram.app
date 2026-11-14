@@ -53,9 +53,22 @@ const FailingMark = lucideGlyph(lucideX, 11);
 // The most a face shows beside the title's flags.
 export const PULL_REQUEST_MARKS_MAX = 3;
 
-/** "acme/web#42: Merged"; the short name alone while the plan has no state for it. */
-export const pullRequestWords = (ref: PullRequestRef, status?: PullRequestStatus): string =>
-  status ? `${pullRequestText(ref)}: ${pullRequestStatusLabel(status)}` : pullRequestText(ref);
+const CHECKS_WORDS: Record<PullRequestChecks, string> = {
+  passing: 'Checks Passing',
+  running: 'Checks Running',
+  failing: 'Checks Failing',
+};
+
+/**
+ * "acme/web#42: Merged"; a draft whose checks reported names them too, as its marks show them ("acme/web#42: Draft,
+ * Checks Failing"); the short name alone while the plan has no state for it.
+ */
+export function pullRequestWords(ref: PullRequestRef, status?: PullRequestStatus): string {
+  if (!status) return pullRequestText(ref);
+  const draftChecks =
+    status.state === 'draft' && showsChecks(status) ? `, ${CHECKS_WORDS[status.checks!]}` : '';
+  return `${pullRequestText(ref)}: ${pullRequestStatusLabel(status)}${draftChecks}`;
+}
 
 export function PullRequestMark({
   state,
@@ -135,7 +148,11 @@ export function PullRequestPill({
   );
 }
 
-/** The linked pull requests no pill shows, as their states' marks beside the title's flags, up to 3. */
+/**
+ * The linked pull requests no pill shows, as their states' marks beside the title's flags, up to 3. An open one (or a
+ * draft) whose checks reported adds the checks' mark straight after, in the checks' colour, so a compact or phone
+ * card, where no tooltip shows, still tells passing from failing from running.
+ */
 export function PullRequestMarks({
   prs,
   palette,
@@ -148,11 +165,13 @@ export function PullRequestMarks({
     <>
       {shown.map(({ ref, status }) => {
         const words = pullRequestWords(ref, status);
+        const checks = showsChecks(status!) ? status!.checks! : undefined;
         return (
           <Tooltip key={pullRequestText(ref)} label={words}>
             <span
               data-pull-request-flag={status!.state}
-              className="mt-0.5 inline-flex shrink-0 items-center"
+              {...(checks ? { 'data-pull-request-checks': checks } : {})}
+              className="mt-0.5 inline-flex shrink-0 items-center gap-px"
               role="img"
               aria-label={words}
             >
@@ -161,6 +180,9 @@ export function PullRequestMarks({
                 size={13}
                 color={chipInkOn(PULL_REQUEST_TONES[status!.state], palette)}
               />
+              {checks ? (
+                <ChecksMark checks={checks} color={chipInkOn(CHECKS_TONES[checks], palette)} />
+              ) : null}
             </span>
           </Tooltip>
         );

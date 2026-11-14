@@ -209,7 +209,8 @@ the editor:
   mark beside the title's flags, up to 3, so a card linked by its mention alone still says where its code stands. An
   open pull request (or a draft) whose checks reported adds the checks' mark straight after its state's mark, in the
   checks' colour (a tick, a cross, or a dot while running), so a compact or phone card, where no tooltip shows, still
-  tells passing from failing from running.
+  tells passing from failing from running. A draft whose checks reported names them in its words too ("acme/web#42:
+  Draft, Checks Failing"), as its marks show them.
   Each says its short name and state in words to a screen reader and in its tooltip ("acme/web#42: Merged").
 - **The card panel** shows the state beside each Pull Request field (a chip in the state's colour, the pull
   request's title after it), and lists under **Pull Requests**, after the fields, every linked pull request a field
