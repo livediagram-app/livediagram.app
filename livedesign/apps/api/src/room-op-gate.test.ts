@@ -15,6 +15,17 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'share-revoked', code: 'x' }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/006-design/delta-saves.md "A peer's save moves the base copy": sequenced after the save's ops, an
+  // Editor's alone, and a scoped session's for its own tab only.
+  it("relays an Editor's tab-saved as a mutation, never a Participant's or a Viewer's", () => {
+    const saved = { kind: 'tab-saved', tabId: 't', rev: 3, digest: 'a'.repeat(64) };
+    expect(gateClientOp(saved, as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(saved, as('participate'))).toEqual(DROP);
+    expect(gateClientOp(saved, as('view'))).toEqual(DROP);
+    expect(gateClientOp(saved, as('edit', { tabScope: 'other' }))).toEqual(DROP);
+    expect(gateClientOp(saved, as('edit', { tabScope: 't' }))).toEqual(relay(false));
+  });
+
   it('relays presence from anyone, mutations from an editor only', () => {
     expect(gateClientOp({ kind: 'cursor' }, as('view'))).toEqual(relay(true));
     expect(gateClientOp({ kind: 'tab', tabId: 't', tab: { id: 't' } }, as('edit'))).toEqual(

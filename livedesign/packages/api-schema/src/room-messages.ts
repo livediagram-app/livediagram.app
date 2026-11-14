@@ -1,4 +1,5 @@
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
+import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { DesignComponent, ElementDelta, RoomElementOp, Tab } from '@livedesign/design';
 import type { ParticipantPresence } from './index';
@@ -79,6 +80,10 @@ export const MUTATION_OP_KINDS = [
   'el',
   // One checklist tick or comment change on one element (docs/specs/012-collaboration/collab-race-hardening.md).
   'el-delta',
+  // An Editor's save landed, its revision and digest (docs/specs/006-design/delta-saves.md "A peer's save moves the
+  // base copy"). A mutation for its ORDER: it must reach peers after the save's element ops, and a reconnecting peer
+  // replays it after them. It writes nothing; a forged one only fails a peer's digest check.
+  'tab-saved',
   'design-meta',
   // One photo page's layers changing, layer by layer (docs/specs/031-photo/photo-store.md "Live
   // sync"): two people changing different layers both keep their changes.
@@ -294,6 +299,9 @@ export type RoomOp =
   // whole-element `el` update replaced a peer's copy with the sender's snapshot, so two people pressing the same
   // done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // An Editor's save of a tab landed (docs/specs/006-design/delta-saves.md "A peer's save moves the base copy"): the
+  // revision it wrote and the digest of the elements now stored, sent after the save's element ops. Changes no content.
+  | TabSavedOp
   // A photo page's picture changed (docs/specs/031-photo/photo-store.md "Live sync"): its ops,
   // applied by layer id, or the whole photo gone (`removed`). `Tab.photos` never rides a `tab-meta`
   // patch, which would replace every photo wholesale.

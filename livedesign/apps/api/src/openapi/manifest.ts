@@ -23,6 +23,7 @@ import {
 } from '@livedesign/design';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/design-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
+import { TAB_DELTA_OPENAPI } from '@liveworkspace/api-kit/tab-delta-door';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
@@ -504,6 +505,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'Tab',
     responseSchema: wrap('tab', 'TabRecord'),
     statuses: [200, 400, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/designs/{id}/tabs/{tabId}/delta',
+    segment: 'designs',
+    tag: 'Designs',
+    auth: 'guest-or-account',
+    ...TAB_DELTA_OPENAPI,
   },
   {
     method: 'POST',

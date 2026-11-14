@@ -2,6 +2,7 @@ import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from 'reac
 import { photoUploads } from '@/lib/photo-editor/upload-queue';
 import type { Tab } from '@livedesign/design';
 import {
+  apiSavedTabDigest,
   apiClaimPlacedImages,
   apiDeleteTab,
   apiSaveDesignMeta,
@@ -77,8 +78,11 @@ const DEPS: AutosaveDeps<
   computeTabSaveDiff: (...args) => computeTabSaveDiff(...args),
   prepareTabSave: (...args) => prepareTabSave(...args),
   relayParticipantChanges: (...args) => relayParticipantChanges(...args),
+  // Each landed save is announced with its digest, so a peer's next save can be a delta (delta-saves.md).
   saveTabAndRelay: (before, tab, room, put, prepared) =>
-    saveTabAndRelay(before, tab, room, put, prepared),
+    saveTabAndRelay(before, tab, room, put, prepared, (tabId, rev) =>
+      apiSavedTabDigest(tabId, rev),
+    ),
   baseline: {
     open: (journal) => openSaveWindow(journal),
     close: (journal) => closeSaveWindow(journal),
