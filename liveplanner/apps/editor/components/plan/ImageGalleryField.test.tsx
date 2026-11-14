@@ -416,8 +416,8 @@ describe('the card panel, for an Editor or a Participant', () => {
       // The others slide to where they will be.
       const tileOf = (id: string) =>
         document.querySelector<HTMLElement>(`[data-reorder-id="${id}"]`)!;
-      expect(tileOf('b').style.transform).toBe('translate(-88px, 0px)');
-      expect(tileOf('a').style.transform).toBe('translate(180px, 0px)');
+      expect(tileOf('b').style.transform).toBe('translate(-88px)');
+      expect(tileOf('a').style.transform).toBe('translate(180px)');
       fireEvent.pointerUp(thumb, { pointerId: 1 });
       expect(onSave).toHaveBeenCalledWith(['b', 'c', 'a', 'd']);
       // The click that ends a drag opens nothing.
