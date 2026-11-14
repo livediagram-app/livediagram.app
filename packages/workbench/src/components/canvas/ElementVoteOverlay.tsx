@@ -7,7 +7,7 @@ import {
   type VoteRulesVote,
 } from '@liveworkspace/model-core/vote-rules';
 import { HoverCard, SOLID_BRAND_DARK } from '@liveworkspace/ui';
-import { useCanvasZoomSelector, ZoomFollowing } from './CanvasZoomContext';
+import { useSettledZoomSelector, ZoomFollowing } from './CanvasZoomContext';
 import { voteBadgeShrinks } from './vote-badge';
 import { VoteDot } from './VoteDot';
 import { VoteStepper, type VoteKeyShortcuts } from './VoteStepper';
@@ -145,7 +145,7 @@ function ReadOnlyCount({
   voteTotal: number;
   tallyHidden: boolean;
 }) {
-  const shrunk = useCanvasZoomSelector((zoom) => voteBadgeShrinks(box, zoom));
+  const shrunk = useSettledZoomSelector((zoom) => voteBadgeShrinks(box, zoom));
   const countLabel = tallyHidden ? `Your ${plural(voteTotal, 'dot')}` : plural(voteTotal, 'vote');
   if (shrunk) {
     return <VoteDot label={`${countLabel} on ${name}`} myVotes={myVotes} voteTotal={voteTotal} />;
