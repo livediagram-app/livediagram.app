@@ -6,7 +6,7 @@ import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { writeUserPreferences } from '@/lib/user-preferences';
 import { apiAnnounceRoomName, apiSaveSelf } from '@/lib/api-client';
 import { getGuestSelfId } from '@/lib/local-identity';
-import { announceRoomName } from '../room-name-sync';
+import { announceRoomColour, announceRoomName } from '../room-name-sync';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
 import { useDocumentShareState } from '@liveworkspace/workbench/hooks/persistence/useDocumentShareState';
 import { autosaveReadOnly } from '../editor-page-helpers';
@@ -257,6 +257,10 @@ export function useEditorPersistence({
         documentId ? apiAnnounceRoomName(selfParticipant.id, documentId, sessionShareCode) : null,
     }),
   );
+  // A new colour reaches peers over the socket, at once (room-name-sync.ts announceRoomColour).
+  const tellRoomColour = useEffectEvent((color: string) =>
+    announceRoomColour(documentId ? roomRef.current : null, color),
+  );
   useEffect(() => {
     // The placeholder never writes the participant record: a document in This Browser opens before the reader
     // is known (docs/specs/006-document/offline-mode.md "Instant open"), and 'self' is nobody's row.
@@ -270,6 +274,7 @@ export function useEditorPersistence({
       () => true,
       () => false,
     );
+    if (prev && prev.color !== selfParticipant.color) tellRoomColour(selfParticipant.color);
     // A new name reaches peers only by telling the room, which picks every name (room-name-sync.ts).
     if (prev && prev.name !== selfParticipant.name) {
       const name = selfParticipant.name;
@@ -295,6 +300,7 @@ export function useEditorPersistence({
         setSelfParticipant(next);
         // Already stored, so the room can read it at once.
         if (next.name !== current.name) void tellRoomName(next.name, true);
+        if (next.color !== current.color) tellRoomColour(next.color);
       }),
     [lastPersistedSelfRef, setSelfParticipant],
   );

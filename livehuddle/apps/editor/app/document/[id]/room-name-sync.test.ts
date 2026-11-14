@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { announceRoomName, createRoomNameSync, ROOM_NAME_PENDING_MS } from './room-name-sync';
+import {
+  announceRoomColour,
+  announceRoomName,
+  createRoomNameSync,
+  ROOM_NAME_PENDING_MS,
+} from './room-name-sync';
 
 // docs/specs/014-identity/auth-and-guest-access.md "Presence names" (Work Tracker 797 and 801).
 
@@ -84,5 +89,16 @@ describe('announceRoomName', () => {
       announce,
     });
     expect(announce).not.toHaveBeenCalled();
+  });
+});
+
+describe('announceRoomColour', () => {
+  it("sends any session's new colour over the socket, and nothing with no room or no colour", () => {
+    const room = { send: vi.fn() };
+    announceRoomColour(room, '#f97316');
+    expect(room.send).toHaveBeenCalledWith({ kind: 'presence-colour', color: '#f97316' });
+    announceRoomColour(room, '');
+    announceRoomColour(null, '#f97316');
+    expect(room.send).toHaveBeenCalledOnce();
   });
 });

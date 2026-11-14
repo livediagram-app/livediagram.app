@@ -78,7 +78,8 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
   } = opts;
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
-  // change goes out over the open socket rather than warranting a reconnect.
+  // change goes out over the open socket rather than warranting a reconnect (`visitor-name` or the room-name door,
+  // and `presence-colour`, from useEditorPersistence; docs/specs/014-identity/auth-and-guest-access.md).
   //
   // A signed-in session says hello with its Google picture unless Show My Google Picture is off; the room keeps it
   // only from an account session and sends it only to account sessions (liveworkspace/docs/specs/003-accounts/accounts.md "Profile

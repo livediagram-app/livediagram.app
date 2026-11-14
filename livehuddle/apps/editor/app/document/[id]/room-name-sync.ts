@@ -61,3 +61,14 @@ export async function announceRoomName(a: RoomNameAnnounce): Promise<void> {
   a.sync.chose(a.name);
   await a.announce();
 }
+
+/**
+ * Tell the room our new colour (docs/specs/014-identity/auth-and-guest-access.md "Presence colours"): any session,
+ * over its socket, since the room takes a session's colour from the session itself. Nothing with no room open.
+ */
+export function announceRoomColour(
+  room: { send: (msg: RoomOutgoing) => void } | null,
+  color: string,
+): void {
+  if (room && color) room.send({ kind: 'presence-colour', color });
+}
