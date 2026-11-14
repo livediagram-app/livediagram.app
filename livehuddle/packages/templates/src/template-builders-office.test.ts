@@ -250,9 +250,11 @@ describe('the space templates', () => {
     expect(firstRow - (stage!.y + stage!.height)).toBeGreaterThanOrEqual(60);
     expect(count(els, 'rug')).toBe(0);
     expect(els.some((e) => e.type === 'text' && e.label === 'Stage')).toBe(false);
-    // A raised hand is Behaviour › Wave, which everyone sees; a Reactions burst plays on its sender's screen only.
+    // A raised hand is the Call dock's Raise Hand, offered only while someone is on the stage, so the line says when
+    // (Work Tracker 511); a Reactions burst plays on its sender's screen only.
     const hint = els.find((e) => e.type === 'text' && /take a seat/.test(e.label ?? ''));
-    expect(hint?.label).toMatch(/Wave/);
+    expect(hint?.label).toMatch(/Raise Hand when someone is on the stage/);
+    expect(hint?.label).not.toMatch(/Wave/);
     expect(hint?.label).not.toMatch(/reactions/i);
   });
 });

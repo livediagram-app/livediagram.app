@@ -281,7 +281,7 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
         x: cx,
         y: cy + 76,
         hintW: 140,
-        hint: 'You arrive on the Avatar Pad: take a seat, and Wave to raise a hand.',
+        hint: 'You arrive on the Avatar Pad: take a seat, and Raise Hand when someone is on the stage.',
       }),
     ],
   );

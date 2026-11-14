@@ -368,5 +368,8 @@ in it ([Office](../009-elements/office.md#share-roles)). What the spaces add fol
   ([Bring Focus](bring-focus.md#rules)).
 - **The Team Board's stickies**: an Editor and a Participant write on, move and recolour them; a Viewer reads them
   ([Share roles](../013-workspace/share-roles.md)).
-- The **raised hand** an attendee is told to use is Behaviour › Wave, which every role may do and everyone sees;
-  a Reactions burst plays on its sender's screen only ([Avatar mode](../008-canvas/avatar-mode.md)).
+- The **raised hand** an attendee is told to use is the Call dock's **Raise Hand**, offered while someone is on the
+  stage and the attendee is in its audience ([Meeting rooms and the stage](meeting-rooms-and-stage.md)). The hall's
+  how-to line under its Avatar Pad says so conditionally: "You arrive on the Avatar Pad: take a seat, and Raise Hand
+  when someone is on the stage." (Work Tracker 511, now calls are live). An Editor and a Participant may raise a hand;
+  a Viewer is not offered it. A Reactions burst plays on its sender's screen only, so the line never points at one.
