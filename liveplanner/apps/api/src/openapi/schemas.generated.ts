@@ -1360,6 +1360,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "const": "set_type",
             "type": "string"
           },
+          "map": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "type": "string"
+                },
+                "to": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "type": {
             "type": "string"
           }
