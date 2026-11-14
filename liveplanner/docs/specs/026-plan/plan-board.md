@@ -572,7 +572,8 @@ In Plan mode:
   closes with Escape or the close button, and follows the item if someone else moves it. **Enter** in the title
   saves it and closes the panel (a refused save leaves it open, the title put back, with the reason). On a desktop, opening
   it puts the caret at the end of its **title**; on a phone focus rests on the panel itself, so no keyboard rises.
-  The type picker never takes the first focus. Tab moves on through the controls.
+  The type picker never takes the first focus. Tab moves on through the controls. **Cmd/Ctrl+Z** and redo work
+  while it is open, outside its text fields ([Keyboard shortcuts](../008-canvas/canvas-and-palette.md#keyboard-shortcuts)).
   - **A card just made opens at once**: one this person adds with **Add Card**, places from the palette into a
     column, or makes with **New {Type}** in a card's Linked as sections opens in its panel, its
     title ("New task") selected on a desktop so typing replaces it. A card made by someone else, brought back by

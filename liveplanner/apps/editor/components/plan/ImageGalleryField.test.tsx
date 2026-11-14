@@ -12,7 +12,9 @@ import { ImageGalleryField } from './ImageGalleryField';
 import { ItemFieldEditor, type ItemFieldContext } from './ItemFieldEditor';
 import { customKindPill } from './CustomKindPill';
 import { addedField } from './AddFieldShape';
-import { shapeOf } from './edit-field-values';
+import { lossMessage, shapeOf } from './edit-field-values';
+import { fieldIcon } from './ItemTypeDisplayParts';
+import { PICK_KIND_ICONS } from './CustomFieldKindParts';
 import type { PlanPalette } from './plan-palette';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
@@ -304,6 +306,27 @@ describe('the card panel, for an Editor or a Participant', () => {
     expect(screen.getByRole('alert').textContent).toBe('Designs holds up to 20.');
   });
 
+  // Work Tracker 746: the same bytes are the same media id, so a picture the field holds is said, never dropped quietly.
+  it('says a picture the field already holds, and the rest still land', async () => {
+    gallery(['a']);
+    api.upload.mockImplementationOnce(async () => ({ image: { id: 'a' }, deduped: true }));
+    pick([file('again.png'), file('new.png')]);
+    await flush();
+    expect(patchItem).toHaveBeenCalledTimes(1);
+    expect(patchItem).toHaveBeenCalledWith(item.id, { set: { 'f-designs': ['a', 'img-1'] } });
+    expect(screen.getByRole('alert').textContent).toBe('again.png is already in Designs.');
+    expect(announce).toHaveBeenCalledWith('Image added');
+  });
+
+  // Work Tracker 746: a touch screen always shows each tile's grip and cross, so its grid keeps to 3 a row.
+  it('keeps the grid to 3 a row on a touch screen, 4 with room otherwise', () => {
+    gallery(['a', 'b']);
+    const grid = screen.getByRole('list', { name: 'Designs images' });
+    expect(grid.className).toMatch(/(^| )grid-cols-3( |$)/);
+    expect(grid.className).toContain('@xs:not-pointer-coarse:grid-cols-4');
+    expect(grid.className).not.toMatch(/(^| )@xs:grid-cols-4( |$)/);
+  });
+
   it('says a failed upload by file, and stops offering uploads where the server has none', async () => {
     const { ImageUploadError } = await import('@/lib/api/images');
     api.upload.mockRejectedValue(new ImageUploadError('images_unavailable'));
@@ -566,6 +589,29 @@ describe('Add Field and Edit Field', () => {
       multiple: true,
     });
     expect(addedField({ label: 'Note', kind: 'text', multiple: true }).multiple).toBeUndefined();
+  });
+
+  // Work Tracker 746: the Display tab's Available Fields chip wears the Add Field tile's icon, the stacked pictures.
+  it("draws a Several Images field's Display chip with the images glyph, not the single Image's", () => {
+    const html = (node: React.ReactNode) => render(<>{node}</>).container.innerHTML;
+    const chip = html(fieldIcon(TYPE, 'f-designs'));
+    cleanup();
+    const images = html(PICK_KIND_ICONS.images);
+    cleanup();
+    const single = html(PICK_KIND_ICONS.image);
+    expect(chip).toContain(images);
+    expect(chip).not.toContain(single);
+  });
+
+  // Work Tracker 746: the field-change line names what the trimmed cards keep part of.
+  it('says what a trimmed card keeps part of, one or several', () => {
+    const outcome = (trimmed: number, cleared = 0) => ({ held: 3, trimmed, cleared, patches: [] });
+    expect(lossMessage(outcome(1), 'Image')).toBe(
+      '3 cards have a value; 1 will keep only part of its value.',
+    );
+    expect(lossMessage(outcome(2, 1), 'Image')).toBe(
+      '3 cards have a value; 1 can’t be kept as an Image and will be cleared, and 2 will keep only part of their values.',
+    );
   });
 
   it('lets an Image become Several Images and back, and nothing else', () => {

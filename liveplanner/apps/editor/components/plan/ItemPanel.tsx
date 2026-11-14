@@ -74,6 +74,7 @@ import { track } from '@/lib/telemetry';
 import { CardActivityTab } from './threads/CardActivity';
 import { CardThreads } from './threads/CardThreads';
 import { PRACTICE_KEY } from '@/hooks/plan/practice-items';
+import { TAKES_HISTORY_ATTR } from '@/hooks/canvas/panel-history';
 
 const NO_GROUPS: readonly LinkedGroup[] = [];
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();
@@ -178,6 +179,8 @@ export function ItemPanel(props: ItemPanelProps) {
       resizeTransition={PANEL_RESIZE_TRANSITION}
     >
       <span ref={morphProbe} hidden />
+      {/* Cmd/Ctrl+Z and redo reach the plan while the panel is open (hooks/canvas/panel-history.ts). */}
+      <span hidden {...{ [TAKES_HISTORY_ATTR]: '' }} />
       <ItemPanelContent
         key={item.id}
         {...props}
