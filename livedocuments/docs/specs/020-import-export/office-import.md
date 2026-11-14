@@ -164,6 +164,14 @@ Each failure is named and shown in the panel; nothing on the tab changes.
 
 (The PowerPoint messages say "PowerPoint deck (.pptx)", ".ppt" and "Word" in place of their Word wording.)
 
+## Real files
+
+The import is tested against files the apps themselves wrote, kept unchanged in
+`apps/editor/lib/office-import/real-files/` beside their licences and a README naming each one's source: Word
+paragraphs, styles, tables and runs in other faces, and a PowerPoint slide with placeholders and one of named
+typefaces. Builders in `test-fixtures.ts` still cover what no small real file shows (tracked changes, footnotes,
+hidden slides). A Google Docs and a Google Slides export are added the same way once the owner supplies them.
+
 ## Performance
 
 The reader (zip, XML, both formats) is its own chunk, loaded on the first Word or PowerPoint import only, so the
