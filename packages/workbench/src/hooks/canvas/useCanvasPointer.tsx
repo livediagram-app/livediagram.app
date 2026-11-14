@@ -1,14 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { pointerToCanvas } from '@/lib/canvas';
-import { useSpotlight } from '@liveworkspace/workbench/hooks/canvas/useSpotlight';
-import { useSpotlightConfig } from '@liveworkspace/workbench/hooks/canvas/useSpotlightConfig';
-import { spotlightRadius } from '@liveworkspace/workbench/lib/spotlight-config';
-import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import { useState, type PointerEvent, type Ref, type RefObject } from 'react';
+import { useSpotlight } from './useSpotlight';
+import { useSpotlightConfig } from './useSpotlightConfig';
+import { spotlightRadius } from '../../lib/spotlight-config';
 
-type CanvasPointerInput = Pick<CanvasProps, 'canvasTool' | 'mainRef' | 'onCanvasPointerMove'> & {
-  wrapperRef: React.RefObject<HTMLDivElement | null>;
+// The slice of an editor's Canvas props this reads (its components/canvas/Canvas.types).
+type CanvasPointerInput = {
+  canvasTool: string;
+  mainRef: Ref<HTMLElement>;
+  // `target` is what the pointer is over, so a paste can tell the canvas from a floating panel lying on top of it.
+  onCanvasPointerMove: (
+    canvasX: number | null,
+    canvasY: number | null,
+    target?: EventTarget | null,
+  ) => void;
+  wrapperRef: RefObject<HTMLDivElement | null>;
   viewportZoom: number;
 };
 
@@ -36,7 +43,7 @@ export function useCanvasPointer({
 
   // Broadcast the local pointer position to peers (canvas-coords).
   // Throttling lives in page.tsx so the Canvas stays prop-driven.
-  const handlePointerMoveCanvas = (e: React.PointerEvent) => {
+  const handlePointerMoveCanvas = (e: PointerEvent) => {
     // Spotlight tracks the cursor in SCREEN space (px relative to <main>),
     // not canvas-coords: its light must stay put on screen as the canvas
     // pans / zooms under it. <main> is `position: relative` with no border,
@@ -52,8 +59,13 @@ export function useCanvasPointer({
     }
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    onCanvasPointerMove(sx, sy, e.target);
+    // Screen to canvas coords, pre-pan: shift by the canvas's top-left, then undo the zoom (the editor's lib/canvas
+    // pointerToCanvas, inlined on this per-move path).
+    onCanvasPointerMove(
+      (e.clientX - rect.left) / viewportZoom,
+      (e.clientY - rect.top) / viewportZoom,
+      e.target,
+    );
   };
   const handlePointerLeaveCanvas = () => {
     onCanvasPointerMove(null, null);

@@ -41,7 +41,7 @@ import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 
-import { useCanvasPointer } from './useCanvasPointer';
+import { useCanvasPointer } from '@liveworkspace/workbench/hooks/canvas/useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 import { useCanvasSelectionInput } from './useCanvasSelectionInput';
 

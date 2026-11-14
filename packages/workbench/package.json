@@ -600,6 +600,7 @@
     "./hooks/canvas/useFormatConfig": "./src/hooks/canvas/useFormatConfig.ts",
     "./hooks/canvas/useSpotlightConfig": "./src/hooks/canvas/useSpotlightConfig.ts",
     "./hooks/canvas/useDebouncedCanvasTelemetry": "./src/hooks/canvas/useDebouncedCanvasTelemetry.ts",
+    "./hooks/canvas/useCanvasPointer": "./src/hooks/canvas/useCanvasPointer.tsx",
     "./hooks/persistence/useAutosaveCore": "./src/hooks/persistence/useAutosaveCore.ts",
     "./hooks/persistence/tab-folder-reporting": "./src/hooks/persistence/tab-folder-reporting.ts",
     "./lib/changeset-seen": "./src/lib/changeset-seen.ts",
