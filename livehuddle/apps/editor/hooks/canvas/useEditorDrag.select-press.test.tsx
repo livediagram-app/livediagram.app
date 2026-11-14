@@ -2,7 +2,10 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DragMode } from '@/lib/canvas';
-import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
+import {
+  canvasGestureNow,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { createSticky, type Element, type Tab } from '@livehuddle/document';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';

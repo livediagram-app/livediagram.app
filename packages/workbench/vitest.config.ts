@@ -47,6 +47,8 @@ const HELD_AT_100 = [
   'src/components/chrome/NewVersionPrompt.tsx',
   'src/hooks/ui/useNewerEditorLive.ts',
   'src/lib/live-editor-build.ts',
+  // Round 12: editor copies the products held byte for byte, one home each.
+  'src/hooks/collab/useFollowMe.ts',
 ];
 
 export default defineProject({

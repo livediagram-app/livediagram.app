@@ -225,7 +225,7 @@ Community link behaviour (keyed off the canvas's `community_post.share_code`):
 - `DocumentGrant` carries `community: boolean`. A community grant is refused by every door that has not opted in with
   `COMMUNITY_CONTENT` (`gateGrant`, `apps/api/src/routes/context.ts`), the comment listing included. The document GET
   and the tab GET opt in; the document is redacted with `redactDocumentForCommunity` and the tab with
-  `redactTabForCommunity` (`apps/api/src/community-redact.ts`, a binding of `@liveworkspace/community/app`).
+  `redactTabForCommunity` (`../packages/community/src/app/redact.ts`, `@liveworkspace/community/app`).
 - Copy: the api's copy door (`apps/api/src/routes/document-index-routes.ts`) names a copy through the post's link
   after the post (`communityPostTitle`) and counts it (`countCommunityCopy`, with the copier's network) before the
   index copies; the index's copy (`copy` in `apps/api/src/routes/internal-items.ts`) takes the source through
@@ -248,7 +248,7 @@ an article href and its telemetry id, sent as `UI·Opened·<id>`). livehuddle's 
 Picture and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/room-rpc.ts`,
 `drawDocument` in `apps/api/src/thumbnail.ts`) draws from the redacted board when asked with the open post's code;
 liveworkspace's previews keep that picture apart from the owner's (`liveworkspace/docs/specs/006-media/previews.md`);
-`redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the
+`redactDocumentForCommunity` (`apps/api/src/redact-document.ts`, over `../packages/api-kit/src/redact-item.ts`) strips owner name, colour, folder and origin from the
 document a community grant reads. `clientRateKey(request)` is the copier's network the api passes with a copy;
 the service maps it (`communityNetwork`, `../packages/community/src/network.ts`).
 
@@ -353,7 +353,7 @@ address by the router:
   refuses it unless the door passes `COMMUNITY_CONTENT`. Doors that pass it: the document GET (and its views), the tab
   GET (and its views), images, the copy and the room ticket (which then refuses with 403 `community_link`). Every other
   door (comments, comment pictures, changesets, timeline, Q&A board, and any new one) refuses by default.
-- `redactElementsForCommunity` / `redactTabDataForCommunity` (`apps/api/src/community-redact.ts`, a binding of `@liveworkspace/community/app`): comment threads
+- `redactElementsForCommunity` / `redactTabDataForCommunity` (`../packages/community/src/app/redact.ts`, `@liveworkspace/community/app`): comment threads
   dropped; each action keeps its text and status, its assignee, team, assigner id and assigner name blanked. Applied
   to the tab GET for a community visit and to the copy's source (`exportCopy` in
   `apps/api/src/document-room/document-content.ts`), so the copy is built from the redacted data.

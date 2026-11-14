@@ -9,6 +9,7 @@ import {
   addDays,
   defaultCatalogue,
   localDay,
+  type AutomationStep,
   type ItemTypeDef,
 } from '@liveplanner/items';
 import { AUTOMATION_NO_MATCH_LOG_MAX, runsToday } from './automation-log';
@@ -265,6 +266,51 @@ describe('Automations cost', () => {
     expect(done).toHaveLength(AUTOMATION_BRANCH_CARDS_MAX);
     for (let i = 1; i < done.length; i += 1) expect(done[i]!.rank > done[i - 1]!.rank).toBe(true);
     expect(wake).toBeLessThan(cpuBudgetMs(400));
+  }, 60_000);
+
+  // Work Tracker 816 (spec "How a step runs"): a rule's writes split at its AI step, one write each side, on a full
+  // plan, a wake of 25 triggers, against the same steps with the AI step last (one write). Measured on an M-series
+  // Mac under load: 47 to 50 ms CPU split against 57 to 60 ms whole (the order of the two wakes, not the split,
+  // decides which is cheaper): the second write reads no cards afresh, the move taking the cards the wake holds.
+  it('a rule split at its AI step costs a full plan little more than one write', async () => {
+    const answer = { response: { summary: 'A summary.' } };
+    Reflect.set(w.env, 'AI', { run: () => Promise.resolve(answer) });
+    w.plans.get('A')!.restart();
+    const c = await w.make('A', { title: 'Busy' });
+    fill(c.id);
+    // The card's own Card Created event out of the way, so each wake runs its 25 saves.
+    await room().alarm();
+    // Every save changes the priority, across both wakes.
+    let saved = 0;
+    const wake = async (name: string, steps: AutomationStep[]) => {
+      const rule = await w.rule({
+        name,
+        trigger: { kind: 'field_changed', fields: ['priority'] },
+        conditions: [],
+        steps,
+      });
+      for (let i = 0; i < AUTOMATION_EVENTS_PER_WAKE; i += 1, saved += 1)
+        await w.send('POST', `/api/projects/A/items/${c.id}`, {
+          set: { priority: saved % 2 ? 'low' : 'high' },
+        });
+      room().automations.schedule.at = Date.now();
+      const ms = await cpuMsOfAsync(() => room().alarm());
+      await w.call('DELETE', `/${rule.id}`);
+      // The run's own changes (queued, starting nothing) drained, so the next wake runs its own 25.
+      room().automations.schedule.at = Date.now();
+      await room().alarm();
+      return ms;
+    };
+    const title = { kind: 'set_field', field: 'title', value: { from: 'priority' } } as const;
+    const ai = { kind: 'ai', task: 'summarise' } as const;
+    const whole = await wake('Whole', [title, { kind: 'move', status: 'doing' }, ai]);
+    const split = await wake('Split', [title, ai, { kind: 'move', status: 'review' }]);
+    const db = w.plans.get('A')!.db;
+    expect(
+      db.prepare("SELECT COUNT(*) AS n FROM automation_runs WHERE result = 'done'").get(),
+    ).toEqual({ n: 2 * AUTOMATION_EVENTS_PER_WAKE });
+    expect(split).toBeLessThan(cpuBudgetMs(1500));
+    expect(split - whole).toBeLessThan(cpuBudgetMs(500));
   }, 60_000);
 
   // Phase 2 (docs/specs/026-plan/automations.md "Time triggers"; blueprint "The wake"): a full plan and 50 time

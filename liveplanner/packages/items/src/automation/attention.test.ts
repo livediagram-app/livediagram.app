@@ -182,7 +182,7 @@ describe('a GitHub rule on a plan not connected', () => {
   it('needs attention only when the caller says the plan is not connected', () => {
     expect(ruleNeedItems(github, OUTLINE, undefined, false)).toEqual([{ kind: 'github' }]);
     expect(ruleNeeds(github, OUTLINE)).toEqual([]);
-    expect(ruleNeedItems(github, OUTLINE, undefined, true)).toEqual([]);
+    expect(ruleNeedItems(github, OUTLINE, undefined, ['acme/web'])).toEqual([]);
     expect(needLine({ kind: 'github' })).toBe('GitHub is not connected');
   });
 
@@ -196,6 +196,43 @@ describe('a GitHub rule on a plan not connected', () => {
       'github',
       'column',
     ]);
+  });
+});
+
+// Work Tracker 821 ("GitHub triggers"): a GitHub trigger whose named repositories all left the connection hears
+// nothing, so it needs attention naming them; while one is still heard it doesn't.
+describe('a GitHub rule whose named repositories are gone', () => {
+  const naming = (...repositories: string[]) =>
+    ruleBody({ trigger: { kind: 'pull_request_opened', repositories } });
+
+  it('needs attention when every named repository is gone, naming them as the rule holds them', () => {
+    expect(
+      ruleNeedItems(naming('acme/old', 'acme/gone'), OUTLINE, undefined, ['acme/web']),
+    ).toEqual([{ kind: 'repositories', names: ['acme/old', 'acme/gone'] }]);
+    expect(ruleNeedItems(naming('acme/old'), OUTLINE, undefined, [])).toEqual([
+      { kind: 'repositories', names: ['acme/old'] },
+    ]);
+  });
+
+  it('needs none while some named repository is still heard, any case', () => {
+    expect(ruleNeedItems(naming('acme/old', 'ACME/Web'), OUTLINE, undefined, ['acme/web'])).toEqual(
+      [],
+    );
+  });
+
+  it('checks nothing without the connection, nor a trigger naming none or another trigger', () => {
+    expect(ruleNeedItems(naming('acme/old'), OUTLINE)).toEqual([]);
+    expect(ruleNeedItems(naming(), OUTLINE, undefined, [])).toEqual([]);
+    expect(ruleNeedItems(ruleBody(), OUTLINE, undefined, [])).toEqual([]);
+  });
+
+  it('reads as agents read it', () => {
+    expect(needLine({ kind: 'repositories', names: ['acme/old'] })).toBe(
+      'Repository acme/old is not heard',
+    );
+    expect(needLine({ kind: 'repositories', names: ['acme/old', 'acme/gone'] })).toBe(
+      'Repositories acme/old, acme/gone are not heard',
+    );
   });
 });
 

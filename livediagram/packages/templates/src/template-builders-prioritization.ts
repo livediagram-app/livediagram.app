@@ -7,7 +7,7 @@
 import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { matrixAxes } from './template-discovery-parts';
-import { CANVAS_TONES } from './template-inks';
+import { CANVAS_TONES } from '@liveworkspace/template-previews/template-inks';
 
 // An impact / effort matrix a team has just run. The plot is four tinted
 // quadrants named for what you do with the work in them, the names every

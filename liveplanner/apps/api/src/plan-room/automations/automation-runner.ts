@@ -8,6 +8,8 @@
 // one at once, a test changing nothing. Phase 2: a time trigger's event runs its one rule (the scan matched it; the
 // conditions are checked again); a branch's related cards are written one patch each, a card failing alone; Assign in
 // Turn's place moves on only after a done run; the run's messages go after its card writes (automation-sends.ts).
+// Phase 3: the writes split at each AI step, each AI step asked in its place; one that fails leaves the card steps
+// after it unwritten (automation-ai.ts heldCardSteps).
 // Phase 3: an Incoming Webhook call's event runs its one rule on its card, or with no card when it named none and
 // the rule's steps need none (a blank card, `card.…` values reading nothing, no card on the run or its messages).
 import {
@@ -40,6 +42,8 @@ import {
   type AutomationRule,
   type AutomationRun,
   type AutomationStepLine,
+  type PlannedAi,
+  type PlannedSegment,
 } from '@liveplanner/items';
 import { getItemsRev, listItems, readItem } from '../../db/items';
 import type { Item } from '@liveplanner/items';
@@ -60,7 +64,7 @@ import type { AutomationSchedule } from './automation-queue';
 import type { AutomationStore, Sql } from './automation-store';
 import { applyPlannedRun, type WriteDeps } from './automation-writes';
 import { heldSends, sendMessages, sendsClient } from './automation-sends';
-import { aiClient, runAiSteps } from './automation-ai';
+import { aiClient, heldCardSteps, runAiSteps } from './automation-ai';
 import { tallyRun, type AutomationTally } from './automation-telemetry';
 
 // Triggers one wake runs; the rest wait AUTOMATION_MORE_MS for the next.
@@ -339,13 +343,11 @@ export async function runRule(
       taken = writes.turns;
       deps.store.take(rule.id, taken);
     }
-    let failed = 'failed' in planned ? planned.failed : null;
-    let gone = 'failed' in planned ? planned.gone : undefined;
-    const related = writes.related.filter((r) => r.failed);
-    if (failed === null && related.length) {
-      failed = relatedFailure(related);
-      gone = related[0]!.gone;
-    }
+    // The planning's own failure, the last step it reached; and the first failure of the writes, in step order.
+    const planFailed = 'failed' in planned ? planned.failed : null;
+    const planGone = 'failed' in planned ? planned.gone : undefined;
+    let failed: string | null = null;
+    let gone: AutomationGone | undefined;
     const messages = {
       client: opts.dry ? null : sendsClient(deps.env),
       planId: deps.planId,
@@ -362,7 +364,7 @@ export async function runRule(
       // A GitHub delivery's run, and the rest of one going on after its Wait (the resume keeps what GitHub heard).
       ...(event.kind === 'github' || (resume && event.github) ? { via: 'github' as const } : {}),
     };
-    const ai = (dry: boolean) =>
+    const ai = (dry: boolean, after?: (p: PlannedAi) => Promise<boolean>) =>
       runAiSteps(
         writer,
         {
@@ -381,50 +383,88 @@ export async function runRule(
         writes.ai ?? [],
         lines,
         offset,
+        after,
       );
     if (opts.dry) {
       await ai(true);
       await sendMessages(messages, writes.sends, lines, offset);
-      return end(failed === null ? 'done' : 'failed', failed ?? undefined, gone);
+      const related = writes.related.filter((r) => r.failed);
+      const reason = planFailed ?? (related.length ? relatedFailure(related) : null);
+      return end(
+        reason === null ? 'done' : 'failed',
+        reason ?? undefined,
+        planFailed !== null ? planGone : related[0]?.gone,
+      );
     }
-    const out = await applyPlannedRun(writer, plan, rule, item, writes, source, ctx.url);
-    if (!out.ok) {
-      lines.push({ kind: 'action', ok: false, text: out.reason });
-      return end('failed', out.reason);
-    }
-    // An email to typed-in addresses the day's limit held back (spec "Typed-in addresses"): Skipped once the rest
-    // is done, as the AI cap's.
-    if (out.notes) lines.push(...out.notes);
-    let capped = out.skipped;
+    let capped: string | undefined;
     const refused: string[] = [];
-    for (const r of writes.related) {
-      const writes_ = r.patch.set || r.patch.clear || r.patch.type;
-      if (!writes_ && !r.comments.length && !r.emails.length && !r.mentions.length && !r.resolve)
-        continue;
-      const url = cardUrl(deps.env, deps.planId, r.card.id);
-      const one = {
-        patch: r.patch,
-        comments: r.comments,
-        created: [],
-        emails: r.emails,
-        mentions: r.mentions,
-        resolve: r.resolve,
-      };
-      const wrote = await applyPlannedRun(writer, plan, rule, r.card, one, source, url);
-      if (wrote.ok) {
-        for (const note of wrote.notes ?? [])
-          lines.push({ ...note, text: `#${r.card.key} ${note.text}` });
-        capped ??= wrote.skipped;
-        continue;
+    // One segment's writes (the steps before the first AI step, or between two): the card's one patch and threads
+    // planned from `from`, then each related card's. The reason when the card refused it (the run stops there).
+    const writeSegment = async (segment: PlannedSegment, from: Item): Promise<string | null> => {
+      const out = await applyPlannedRun(writer, plan, rule, from, segment, source, ctx.url);
+      if (!out.ok) {
+        lines.push({ kind: 'action', ok: false, text: out.reason });
+        return out.reason;
       }
-      lines.push({ kind: 'action', ok: false, text: `#${r.card.key} ${wrote.reason}` });
-      refused.push(`#${r.card.key}`);
-      failed ??= `Failed on ${refused[0]}: ${wrote.reason}`;
+      // An email to typed-in addresses the day's limit held back (spec "Typed-in addresses"): Skipped once the rest
+      // is done, as the AI cap's.
+      if (out.notes) lines.push(...out.notes);
+      capped ??= out.skipped;
+      const bad = segment.related.filter((r) => r.failed);
+      if (failed === null && bad.length) {
+        failed = relatedFailure(bad);
+        gone = bad[0]!.gone;
+      }
+      for (const r of segment.related) {
+        const writes_ = r.patch.set || r.patch.clear || r.patch.type;
+        if (!writes_ && !r.comments.length && !r.emails.length && !r.mentions.length && !r.resolve)
+          continue;
+        const url = cardUrl(deps.env, deps.planId, r.card.id);
+        const one = {
+          patch: r.patch,
+          comments: r.comments,
+          created: [],
+          emails: r.emails,
+          mentions: r.mentions,
+          resolve: r.resolve,
+        };
+        const wrote = await applyPlannedRun(writer, plan, rule, r.card, one, source, url);
+        if (wrote.ok) {
+          for (const note of wrote.notes ?? [])
+            lines.push({ ...note, text: `#${r.card.key} ${note.text}` });
+          capped ??= wrote.skipped;
+          continue;
+        }
+        lines.push({ kind: 'action', ok: false, text: `#${r.card.key} ${wrote.reason}` });
+        refused.push(`#${r.card.key}`);
+        failed ??= `Failed on ${refused[0]}: ${wrote.reason}`;
+      }
+      return null;
+    };
+    const first = await writeSegment(writes, item);
+    if (first !== null) return end('failed', first);
+    // The AI steps, each in its place: one call, counted against the plan's day, then the writes of the steps after
+    // it. One that fails stops the run there: the card steps and messages after it are not written or sent (spec
+    // "How a step runs").
+    let stoppedBy: string | null = null;
+    const asked = await ai(false, async (p) => {
+      if (!p.after) return true;
+      stoppedBy = await writeSegment(p.after, p.after.from);
+      return stoppedBy === null;
+    });
+    if (stoppedBy !== null) return end('failed', stoppedBy);
+    if (asked.failedLine !== undefined) {
+      const skip = new Set([
+        ...(writes.ai ?? []).map((p) => p.line),
+        ...writes.sends.map((s) => s.line),
+      ]);
+      heldCardSteps(lines, offset, asked.failedLine + 1, planned.lines.length, skip);
+      // The planning's failure lies past the failed AI step, never reached.
+      failed ??= asked.failed ?? null;
+    } else if (planFailed !== null) {
+      failed = planFailed;
+      gone = planGone;
     }
-    // The AI steps, after the card writes: each one call, counted against the plan's day. One that fails stops the
-    // run there: the messages of the steps after it are not sent (spec "How a step runs").
-    const asked = await ai(false);
-    failed ??= asked.failed ?? null;
     const sends = heldSends(writes.sends, asked.failedStep, lines, offset);
     const sent = await sendMessages(messages, sends, lines, offset);
     if (failed === null && sent.failed !== undefined) {

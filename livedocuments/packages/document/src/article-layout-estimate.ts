@@ -387,14 +387,29 @@ function layoutOnce(
     }
     const rows = t.rows.map((row, r) => {
       const bold = !!t.header && r === 0;
-      const cells = row.cells.map((cell, c) =>
-        wrapEstimated(
-          runsText(cell),
-          width * t.cols[c]!.w - CELL_PAD_X * 2,
-          size,
-          bold || (cell.length > 0 && cell.every((run) => run.b)),
-        ),
-      );
+      const cells = row.cells.map((cell, c) => {
+        const text = runsText(cell);
+        const cellWidth = width * t.cols[c]!.w - CELL_PAD_X * 2;
+        // Measured in the face the cell is drawn in (a header row 650, a bold run 700), as the body is.
+        return measure
+          ? wrapMeasured(
+              text,
+              charStyles(cell, bold, false),
+              cellWidth,
+              {
+                fontOf: (sg) => `${sg.b ? (bold ? '650' : '700') : '400'} ${size}px ${body}`,
+                px: size,
+                tracking: 0,
+              },
+              measure,
+            )
+          : wrapEstimated(
+              text,
+              cellWidth,
+              size,
+              bold || (cell.length > 0 && cell.every((run) => run.b)),
+            );
+      });
       return { cells, bold, h: Math.max(1, ...cells.map((l) => l.length)) * line + CELL_PAD_Y * 2 };
     });
     const draw = (r: (typeof rows)[number]) => {
@@ -462,8 +477,26 @@ function layoutOnce(
       const x = page().rect.x + margin + TOC_INDENT * (entry.level - 1);
       const right = page().rect.x + margin + width;
       const n = tocPages?.get(entry.id);
-      const numberW = n === undefined ? 0 : String(n).length * size * CHAR_EM + 8;
-      const text = wrapEstimated(entry.text, right - x - numberW - 16, size, false)[0] ?? '';
+      const numberW =
+        n === undefined
+          ? 0
+          : (measure
+              ? measure(String(n), `400 ${size}px ${body}`)
+              : String(n).length * size * CHAR_EM) + 8;
+      const avail = right - x - numberW - 16;
+      const font = `400 ${size}px ${body}`;
+      // The entry's first line only: measured where there is a browser, so a leader starts where the text ends.
+      const text =
+        (measure
+          ? wrapMeasured(
+              entry.text,
+              charStyles([{ text: entry.text }], false, false),
+              avail,
+              { fontOf: () => font, px: size, tracking: 0 },
+              measure,
+            )
+          : wrapEstimated(entry.text, avail, size, false))[0] ?? '';
+      const textW = measure ? measure(text, font) : text.length * size * CHAR_EM;
       const baseline = y + (line - size) / 2 + size * 0.8;
       push({
         k: 'text',
@@ -477,7 +510,7 @@ function layoutOnce(
         color: ink.text,
       });
       if (n !== undefined) {
-        const from = x + text.length * size * CHAR_EM + 6;
+        const from = x + textW + 6;
         if (right - numberW > from)
           push({
             k: 'line',

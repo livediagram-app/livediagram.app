@@ -11,6 +11,7 @@ import { itemLabels, itemStatus, itemTitle, type Item, type ItemPatch } from '..
 import { ITEM_LABELS_MAX } from '../limits';
 import { PRIORITIES, PRIORITY_LABELS, validateFields, type Priority } from '../fields';
 import { typeIn } from '../type-catalogue';
+import { withTypeChangeFields } from '../card-retype-fields';
 import {
   AUTOMATION_AI_LABELS_MAX,
   AUTOMATION_AI_PER_DAY,
@@ -20,7 +21,7 @@ import {
   type AutomationAiTask,
 } from './types';
 import { fieldDefOf, fieldName, statusName, typeHasField, type AutomationOutline } from './outline';
-import type { Walk } from './plan-walk';
+import type { PlannedSegment, Walk } from './plan-walk';
 
 // What the model is sent of a card, each part's cap (spec "The model and what it is sent").
 export const AI_TITLE_MAX = 200;
@@ -57,6 +58,8 @@ export const AI_UNREADABLE = "The AI's reply couldn't be read";
 export const AI_CAPPED = `This plan has used its ${AUTOMATION_AI_PER_DAY} AI steps today`;
 // A later AI step once one has failed: the run stopped there (spec "How a step runs").
 export const AI_NOT_ASKED = 'Not asked: a step before it failed';
+// A card step after a failed AI step: never written (spec "How a step runs").
+export const STEP_NOT_DONE = 'Not done: a step before it failed';
 export const AI_EMPTY = "The AI's summary came out empty";
 export const AI_TYPE_UNKNOWN = "The AI picked a card type the plan doesn't have";
 export const AI_PRIORITY_UNKNOWN = 'The AI picked a priority outside Urgent, High, Medium and Low';
@@ -164,11 +167,14 @@ export function aiDryLine(
 
 // ---- The plan ------------------------------------------------------------------------------------------------------
 
-// An AI step the run will ask, after its card writes: the step's index, the step, and the line the api settles.
+// An AI step the run will ask, in its place: the step's index, the step, the line the api settles, and `after`, the
+// writes of the steps between it and the next AI step (or the end), planned from `after.from` (the card as the steps
+// before it left it). The api writes `after` once the step answered or the day's cap skipped it, never after it failed.
 export interface PlannedAi {
   step: number;
   ai: AutomationAi;
   line: number;
+  after?: PlannedSegment & { from: Item };
 }
 
 // What planActions does for an AI step: plans its call, with a line saying what it will do until the api settles it.
@@ -517,8 +523,9 @@ function typed(
       comment: `Suggested card type: ${type.label}`,
       line: `Suggested card type ${type.label} in a comment`,
     };
+  // Its custom fields map into the new type's with it (item-types.md "Changing a card's type").
   return {
-    patch: { type: type.id },
+    patch: withTypeChangeFields(ctx.card, { type: type.id }, ctx.outline.types),
     line: `Set the card type to ${type.label}`,
     already: ctx.card.type === type.id,
   };

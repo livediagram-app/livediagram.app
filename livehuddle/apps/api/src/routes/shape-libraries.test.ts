@@ -11,7 +11,7 @@ import { personStore } from '../person-client';
 import { testPersonStores } from '../test-person-store';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
-import { handleShapeLibraries, shapePreviews } from './shape-libraries';
+import { handleShapeLibraries, SHAPE_PREVIEWS_MAX_BYTES, shapePreviews } from './shape-libraries';
 
 // handleShapeLibraries (docs/specs/013-workspace/blueprints/shape-libraries.md "Interfaces and
 // contracts"): each person's libraries in their own store, read-only since Work Tracker #515 (the
@@ -209,11 +209,40 @@ describe('GET /api/shape-libraries/:id/previews', () => {
     });
     const bytes = JSON.stringify({ previews }).length;
     expect(Object.keys(previews)).toHaveLength(MAX_SHAPE_LIBRARY_ITEMS);
-    // CPU time, so a busy runner's waiting doesn't count (wall-clock 500 ms failed CI at 534). Measured 68 ms and
-    // 2.29 MB (before compression) on a laptop: the square, circle and diamond a stored library holds are retired
-    // elements now (not-in-livehuddle.md "The element engine", part 5), each drawn as its labelled placeholder,
-    // where they were 1.2 MB as plain outlines. cpuBudgetMs leaves CI room.
+    // CPU time, so a busy runner's waiting doesn't count (wall-clock 500 ms failed CI at 534). The square, circle and
+    // diamond a stored library holds are retired elements (not-in-livehuddle.md "The element engine", part 5), drawn
+    // in a preview as their placeholder's outline alone (Work Tracker 695): measured 1.06 MB and 72 ms on a laptop,
+    // where the labelled placeholders were 2.29 MB and 68 to 93 ms. cpuBudgetMs leaves CI room.
     expect(ms).toBeLessThan(cpuBudgetMs(200));
-    expect(bytes).toBeLessThan(2_500_000);
+    expect(bytes).toBeLessThan(1_200_000);
+    expect(bytes).toBeLessThanOrEqual(SHAPE_PREVIEWS_MAX_BYTES);
+    // An outline, never the placeholder's words.
+    expect(previews.i0).toContain('stroke-dasharray="6 4"');
+    expect(previews.i0).not.toContain('<text');
+  });
+
+  // A library of kept kinds draws rich faces (a library saved before the read-only cut may hold any): it stops at the
+  // byte budget, the rest of its tiles staying plain, so no answer is unbounded.
+  it('stops drawing at the byte budget, in library order', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const big = 'x'.repeat(4000);
+    const items = Array.from({ length: 400 }, (_, i) => ({
+      id: `k${i}`,
+      title: `Kept ${i}`,
+      width: 200,
+      height: 120,
+      elements: [{ id: `t${i}`, type: 'text', x: 0, y: 0, width: 200, height: 120, label: big }],
+    })) as unknown as ShapeLibraryItem[];
+    const previews = shapePreviews(items);
+    const drawn = Object.keys(previews);
+    expect(drawn.length).toBeGreaterThan(0);
+    expect(drawn.length).toBeLessThan(items.length);
+    expect(drawn).toEqual(items.slice(0, drawn.length).map((it) => it.id));
+    expect(JSON.stringify({ previews }).length).toBeLessThanOrEqual(SHAPE_PREVIEWS_MAX_BYTES);
+    expect(warn).toHaveBeenCalledWith('[shape-libraries] previews budget reached', {
+      drawn: drawn.length,
+      items: items.length,
+    });
+    warn.mockRestore();
   });
 });

@@ -322,7 +322,7 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
   in the batch that records the run. A run under way holds the turns it planned in memory
   (`AutomationStore.take`, read and planned with no await between; `giveBack` as it settles), and `turn(id)` counts
   them, so two Run Rules at once take the next two people.
-- **Notify**: after the card writes, the run's notify steps go in one `POST /app/items/:id/automation-sends`
+- **Notify**: after every step (its card writes and AI steps), the run's notify steps go in one `POST /app/items/:id/automation-sends`
   (index binding, the app's server credentials as card-moves uses), key `${runId}:${stepIndex}`, message filled by
   `values.ts`; each result marks its step done ("Queued for Launch Channel") or failed with the reason. The index
   unreachable is a failed step, "Couldn't reach webhooks: try again". A rule's `paused.webhook` holds the webhook id
@@ -672,9 +672,27 @@ midnight> AND s.value ->> '$.ai' = 1`, read into `RunState.ai` before a call whe
   before its answer comes; the settled row replaces it with the run's lines, the same calls marked. Describe a Rule
   checks the count before each ask, its first too, after its plan reads. No
   schema step: the Audit Trail keeps every run of the day (at most 1,000 counted runs, under its 2,000).
-- `runAiSteps(deps, input, planned, lines, offset)`: after `applyPlannedRun` and the branches, before `sendMessages`.
+- **Writes split at each AI step.** `planActions` cuts the run's writes at each top-level AI step into segments
+  (`PlannedSegment`: the triggering card's one patch, its threads, the card it makes, its emails and mentions,
+  Resolve Threads and the branches' related cards). The writes of the steps before the first AI step stay the
+  `PlannedWrites` fields themselves (a rule with no AI step plans exactly as before); each `PlannedAi` carries
+  `after`, the segment of the steps between it and the next AI step (or the end), planned from the card as the steps
+  before it left it (`after.from`, the card `patchCard` rebases labels from). The run's created-card cap counts every
+  segment's. Sends, turns and a Wait stay the run's own.
+- The runner writes the first segment (`writeSegment`: `applyPlannedRun`, then each related card), then
+  `runAiSteps` with an `after(p)` hook that writes `p.after` once that step answered or the day's cap skipped it; a
+  refused write of the triggering card stops the run there, Failed with the write's reason, any later AI step "Not
+  asked". At most four writes of the triggering card a run (three AI steps), each landing only when the steps before
+  it did; measured by a perf test on a full plan.
+- `heldCardSteps(lines, offset, from, to, skip)`: after a failed AI step, each card step's line after it (actions,
+  branches and their related cards' lines; not the AI steps' or messages' own, which say "Not asked" and "Not sent")
+  is settled `STEP_NOT_DONE` "Not done: a step before it failed" (`ok: false`). The run's reason is the first
+  failure in step order: a related card's earlier failure, else the AI step's; a planned failure later in the rule is
+  never reached, so its reason and `gone` drop.
+- `runAiSteps(deps, input, planned, lines, offset, after?)`: after the first segment and its branches, before
+  `sendMessages`.
   Per step: dry → the "Would …" line; after a failed step → the line `AI_NOT_ASKED` "Not asked: a step before it
-  failed" (`ok: false`, nothing asked) and `failedStep` the first failed step's index; no binding → `AI_NOT_SET_UP`;
+  failed" (`ok: false`, nothing asked) and `failedStep` the first failed step's index (`failedLine` its line); no binding → `AI_NOT_SET_UP`;
   `state.ai >= 100` → that step's line `AI_CAPPED` and `skipped`, the next step going on; the runner folds `skipped`
   into the run's `capped` (as the addresses limit's), so a Wait still holds the run (**waiting**) and otherwise the
   result is **skipped** unless something failed (a skipped run still advances Assign in Turn, since its writes
@@ -959,6 +977,12 @@ The spec's "The rule builder" (Add an Action) and "Motion".
 Change Card Type, Set Colour, Restore From Archive, Copy Card, Add a Checklist, Link Cards, Mention Someone, Resolve
 Threads and Wait (spec "Actions", "Wait").
 
+- **Change Card Type maps fields** (item-types.md "Changing a card's type"): `plan-actions.ts`'s `set_type`, once
+  `plan.retype` changed the card, writes `typeChangeFields(plan.card.fields, from, to)` (`card-retype-fields.ts`)
+  through `plan.write`, so the mapped values ride the same patch and a later step reads them as the new type's; the
+  AI step's Set Card Type (`ai-steps.ts`) returns `withTypeChangeFields(card, { type }, types)`. The editor's writes
+  (`usePlanItemWrites`: `patchItem`, `patchItems`, `moveItem`, `moveItems`) and agents' `change_items` `set`
+  (`agent-verbs/src/plan/item-changes.ts`) add them the same way.
 - **Shapes** (`packages/items/src/automation/types.ts`): `set_type`, `set_colour` (`#rrggbb` or null), `restore`,
   `copy_card` (`status?`), `add_checklist` (`items`, 1 to 20), `link_card` (`field`, `to: {card} | {trigger}`),
   `mention` (`to`, `text`), `resolve_threads`; and the step `AutomationWait` (`hours`, 1 to 720). `validate.ts` reads
@@ -1100,8 +1124,8 @@ The spec's six GitHub rows of the Templates table, on the GitHub triggers of git
 
 ## GitHub rules on an unconnected plan (Work Tracker 764)
 
-- `packages/items/src/automation/attention.ts`: `ruleNeedItems(rule, outline, webhooks?, githubConnected?)` adds
-  the need `{ kind: 'github' }` when the rule's trigger is a GitHub trigger and `githubConnected` is `false`
+- `packages/items/src/automation/attention.ts`: `ruleNeedItems(rule, outline, webhooks?, github?)` adds
+  the need `{ kind: 'github' }` when the rule's trigger is a GitHub trigger and `github` is `false`
   (`undefined`, not checked, adds nothing: the draft preview and any caller without the connection). `needLine`
   reads it "GitHub is not connected".
 - `apps/api/src/routes/automation-routes.ts`: the list and a rule's answer read the connection once a call
@@ -1114,6 +1138,25 @@ The spec's six GitHub rows of the Templates table, on the GitHub triggers of git
 - Tests: `attention.test.ts` (marked only when unconnected and a GitHub trigger), `automation-routes` (the list
   marks it, and reads no connection without a GitHub rule), `needs-words.test.ts`, `GithubTemplates.test.tsx`
   (the row's Connect GitHub opens the view).
+
+## GitHub rules whose named repositories are all gone (Work Tracker 821)
+
+- `ruleNeedItems`'s fourth argument is `github?: readonly string[] | false`: `false` the plan is not connected (the
+  need `{ kind: 'github' }`, as above), a list the names of the repositories the connection hears (its chosen
+  ones), `undefined` not checked. With a list, a GitHub trigger naming repositories (`trigger.repositories`) none of
+  which the list holds (any case) adds `{ kind: 'repositories'; names }`, the names as the rule holds them. A trigger
+  naming none, or naming one still heard, adds nothing.
+- `needLine`: "Repository acme/old is not heard", "Repositories acme/old, acme/api are not heard".
+- `automation-routes.ts` `githubConnected` answers the kept list (`readConnection`'s `repositories` where `chosen`,
+  their `fullName`), read from D1 as before: no call to GitHub, so GitHub unreachable marks nothing; a failed read
+  checks nothing.
+- `needs-words.ts`: "acme/old isn't heard any more", "acme/old and acme/api aren't heard any more", past two
+  "acme/old, acme/api and 2 more aren't heard any more" (`heardRepositories`' shortening, moved out of `GithubTriggerFields.tsx` into the pure
+  `apps/editor/components/automations/github/repository-words.ts`, which both import).
+- `AutomationNeed` in the api's OpenAPI schema gains the `repositories` shape (`pnpm gen:openapi`).
+- Tests: `attention.test.ts` (some gone: unmarked; all gone: marked naming them; any case; not checked without the
+  list), `needs-words.test.ts` (one, two, past two), `automation-routes.test.ts` (the list marks a rule whose named
+  repositories all left the connection).
 
 ## Describe a Rule (Work Item 759)
 

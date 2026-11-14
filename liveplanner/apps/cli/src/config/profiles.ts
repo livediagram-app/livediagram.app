@@ -2,7 +2,7 @@
 // --host, else --profile, else LIVEPLANNER_HOST, else LIVEPLANNER_PROFILE, else the config's default profile,
 // else https://liveplanner.app. --host and --profile together are a usage error.
 
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { parseConfig, type ConfigFile } from '@liveworkspace/cli-kit/config-file';

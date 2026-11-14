@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useEffectEvent } from 'react';
-import { useFollowMe } from '@/hooks/collab/useFollowMe';
+import { useFollowMe } from '@liveworkspace/workbench/hooks/collab/useFollowMe';
 import { useShowFollowersMyView } from '@liveworkspace/workbench/hooks/collab/useShowFollowersMyView';
 import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';

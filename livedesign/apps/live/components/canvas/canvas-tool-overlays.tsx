@@ -8,7 +8,7 @@ import { SpotlightOverlay } from '@liveworkspace/workbench/components/canvas/Spo
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { InspectOverlay } from './inspect/InspectOverlay';
-import type { useCanvasPointer } from './useCanvasPointer';
+import type { useCanvasPointer } from '@liveworkspace/workbench/hooks/canvas/useCanvasPointer';
 
 type Pointer = ReturnType<typeof useCanvasPointer>;
 

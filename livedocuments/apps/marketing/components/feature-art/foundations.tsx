@@ -5,7 +5,15 @@
 //
 // Split from FeatureArt.tsx; see ./shared for Frame and the colour constants.
 
-import { Arrow, MiniWindow, Node, PANEL, PanelShadow, STRONG, SUBTLE } from './features-parts';
+import {
+  Arrow,
+  MiniWindow,
+  Node,
+  PANEL,
+  PanelShadow,
+  STRONG,
+  SUBTLE,
+} from '@liveworkspace/marketing-site/components/feature-art/features-parts';
 import {
   EMERALD,
   Frame,

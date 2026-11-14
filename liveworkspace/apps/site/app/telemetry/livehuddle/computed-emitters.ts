@@ -333,10 +333,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'Workspace',
     ],
   },
-  'apps/editor/hooks/ui/useImageSearch.ts Error·Warning': {
+  'packages/workbench/src/hooks/ui/useImageSearch.ts Error·Warning': {
     values: IMAGE_SEARCH_WARNINGS,
   },
-  'apps/editor/components/primitives/AreaErrorBoundary.tsx Error·Client': {
+  'packages/workbench/src/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
     open: 'Render.<Area>.<ErrorName>',
   },

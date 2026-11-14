@@ -1351,6 +1351,48 @@ describe('every branch of the engine', () => {
     );
   });
 
+  // docs/specs/026-plan/item-types.md "Changing a card's type": an agent's type change maps custom fields by name, as
+  // the editor's and Automations' do, never over a field the same change gives.
+  it('maps custom fields by name on a set that changes the type, never over a given field', async () => {
+    const TRIAGE = {
+      ...BUG,
+      id: 'triage',
+      label: 'Triage',
+      fields: ['title', 'status', 'f-level'],
+      custom: [
+        { id: 'f-level', label: 'Severity', kind: 'choice' as const, options: ['S2', 'S3'] },
+      ],
+    };
+    const cards = [item(9, 'hhh999', { title: 'T', status: 'todo~x', 'f-sev': 'S2' }, 'bug')];
+    const { api: a, seen } = api(
+      {
+        [`/projects/${D}/items`]: { items: cards, rev: 1 },
+        [`/projects/${D}/items/hhh999`]: (r: Request) =>
+          r.text().then((body) => {
+            seen.push({ method: r.method, path: 'hhh999', body: JSON.parse(body) });
+            return Response.json({ item: { ...cards[0], rev: 2 }, rev: 2 });
+          }),
+      },
+      { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, BUG, TRIAGE] },
+    );
+    const state = await readPlanState(a, D);
+    const r = await applyItemChanges(
+      a,
+      D,
+      [
+        { op: 'set', item: '#9', type: 'Triage' },
+        { op: 'set', item: '#9', type: 'Triage', fields: { Severity: 'S3' } },
+      ],
+      state,
+    );
+    expect(r.refusal).toBeUndefined();
+    const sent = seen.filter((s) => s.path === 'hhh999').map((s) => s.body);
+    expect(sent).toEqual([
+      { set: { 'f-level': 'S2' }, type: 'triage' },
+      { set: { 'f-level': 'S3' }, type: 'triage' },
+    ]);
+  });
+
   it('notes a clear-only set, says nothing for a type-only set, and knows a name already assigned', async () => {
     const withRobin = [
       ...ITEMS,

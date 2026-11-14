@@ -20,6 +20,19 @@ describe('needsWords', () => {
     );
   });
 
+  // Work Tracker 821: a GitHub rule whose named repositories all left the connection names them.
+  it('names the repositories a GitHub rule no longer hears', () => {
+    expect(needsWords([{ kind: 'repositories', names: ['acme/old'] }])).toBe(
+      'acme/old isn’t heard any more',
+    );
+    expect(needsWords([{ kind: 'repositories', names: ['acme/old', 'acme/api'] }])).toBe(
+      'acme/old and acme/api aren’t heard any more',
+    );
+    expect(needsWords([{ kind: 'repositories', names: ['a/1', 'a/2', 'a/3', 'a/4'] }])).toBe(
+      'a/1, a/2 and 2 more aren’t heard any more',
+    );
+  });
+
   it('counts several of a kind', () => {
     expect(
       needsWords([

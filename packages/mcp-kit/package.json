@@ -6,6 +6,7 @@
   "sideEffects": false,
   "exports": {
     "./app": "./src/app.ts",
+    "./created-folder": "./src/created-folder.ts",
     "./env": "./src/env.ts",
     "./listing": "./src/listing.ts",
     "./oauth": "./src/oauth.ts",
@@ -35,6 +36,7 @@
   },
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "ajv": "^8.17.1",

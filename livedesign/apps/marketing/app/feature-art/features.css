@@ -1,4 +1,4 @@
-/* ── Editor-feature and connection cards (components/feature-art/features.tsx,
+/* ── Editor-feature and connection cards (@liveworkspace/marketing-site components/feature-art/features.tsx,
    foundations.tsx). Every loop runs 6s and shares one timeline: a pointer arrives (fa-b-go) by
    28%, its press lands at 32% (fa-b-press), and what it caused arrives at 40% (fa-b-late) as what
    it replaced leaves (fa-b-early). Moving pieces read their destination from --tx / --ty (and

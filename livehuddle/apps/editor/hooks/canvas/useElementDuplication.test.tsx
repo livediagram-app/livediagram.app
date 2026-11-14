@@ -49,3 +49,83 @@ describe('duplicateMultiSelected', () => {
     expect(copies.filter((c) => c.type === 'arrow')).toHaveLength(1);
   });
 });
+
+// Duplicate puts the copy in the nearest free spot beside the original, selected (Work Tracker 636,
+// lib/duplicate-placement.ts holds the rule and its cases).
+describe('duplicateSelected', () => {
+  it('puts the copy beside the original, clear of it, and selects it', () => {
+    const arcade = shape('m', { shape: 'arcade-machine', x: 100, y: 100, width: 96, height: 144 });
+    let committed: Element[] = [arcade];
+    const setSelectedId = vi.fn();
+    const { result } = renderHook(() =>
+      useElementDuplication({
+        readSelection: () => ({ selectedId: 'm', multiSelectedIds: new Set() }),
+        activeTab: { id: 't', name: 'T', elements: [arcade] },
+        commit: (m) => {
+          committed = m(committed);
+        },
+        setSelectedId,
+        setMultiSelectedIds: vi.fn(),
+      }),
+    );
+    result.current.duplicateSelected();
+    const copy = committed[1] as ShapeElement;
+    expect(copy).toMatchObject({ shape: 'arcade-machine', x: 100 + 96 + 24, y: 100 });
+    expect(setSelectedId).toHaveBeenCalledWith(copy.id);
+  });
+});
+
+describe('duplicateMultiSelected placement', () => {
+  it('moves the copies as one group beside the selection', () => {
+    const copies = duplicate([shape('x'), shape('y', { x: 100 })], ['x', 'y']);
+    expect(copies.map((c) => (c as ShapeElement).x)).toEqual([150 + 24, 250 + 24]);
+    expect(copies.map((c) => (c as ShapeElement).y)).toEqual([0, 0]);
+  });
+
+  it('snaps a copied Door whose Room stayed behind onto the nearest wall', () => {
+    const room = shape('r', {
+      shape: 'room',
+      x: 0,
+      y: 0,
+      width: 480,
+      height: 360,
+      roomDoor: 'none',
+    });
+    // A Door and a plant standing free just outside the room's front wall: the group's copy lands right of them, the
+    // Door's copy still within reach of that wall.
+    const door = shape('d', { shape: 'door', x: 200, y: 380, width: 96, height: 24 });
+    const plant = shape('p', { shape: 'plant', x: 320, y: 380, width: 40, height: 40 });
+    const copies = duplicate([room, door, plant], ['d', 'p']);
+    const doorCopy = copies.find((c) => (c as ShapeElement).shape === 'door') as ShapeElement;
+    // Snapped onto the front wall: centred on its line (y = 360 - 5).
+    expect(doorCopy.y + doorCopy.height / 2).toBeCloseTo(355);
+  });
+});
+
+describe('duplicate with nothing to copy', () => {
+  it('commits nothing for an empty selection, a missing element or a stored arrow', () => {
+    const arrow = {
+      id: 'l',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 10, y: 0 },
+    } as Element;
+    const commit = vi.fn();
+    const run = (selectedId: string | null, ids: string[]) =>
+      renderHook(() =>
+        useElementDuplication({
+          readSelection: () => ({ selectedId, multiSelectedIds: new Set(ids) }),
+          activeTab: { id: 't', name: 'T', elements: [arrow] },
+          commit,
+          setSelectedId: vi.fn(),
+          setMultiSelectedIds: vi.fn(),
+        }),
+      ).result.current;
+    run(null, []).duplicateSelected();
+    run('gone', []).duplicateSelected();
+    run('l', []).duplicateSelected();
+    run(null, []).duplicateMultiSelected();
+    run(null, ['gone']).duplicateMultiSelected();
+    expect(commit).not.toHaveBeenCalled();
+  });
+});

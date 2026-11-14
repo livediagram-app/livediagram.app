@@ -28,7 +28,7 @@ import {
 import { COMMUNITY_LISTED_QUERY } from '@liveworkspace/community/app';
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { designStatsSql } from '../db/tab-stats';
-import { isEmptyCount, type ContentSummary } from '../db/content-summary';
+import { isEmptyCount, type ContentSummary } from '@liveworkspace/index-app';
 import { indexAppClient } from '../index-service';
 import { accountsClient } from '../accounts/client';
 import { grantPlacedImages } from '../db/image-grants';
@@ -96,7 +96,7 @@ function elementsOf(data: string): Element[] {
 
 // ---------- Summary ------------------------------------------------------------------------------------------
 
-// The design's listing summary (db/content-summary.ts) and its last save, read from its own tables, never a body.
+// The design's listing summary (@liveworkspace/index-app content-summary.ts) and its last save, read from its own tables, never a body.
 export async function readContentSummary(
   env: DesignEnv,
   designId: string,
