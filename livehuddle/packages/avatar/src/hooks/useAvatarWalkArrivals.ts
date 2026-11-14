@@ -8,9 +8,9 @@ import { clearOfFences, fenceReachFor, type FenceSegment } from '../collision';
 import { avatarScale, type AvatarConfig } from '../config';
 import { seatPoints } from '../seats';
 import { catchArea } from '../lectern';
-import type { SeatClaim } from '../seat-claims';
+import { besideBox, claimOf, SEAT_GONE, type SeatClaim } from '../seat-claims';
 import { sitsOnEntry, type AvatarFacing, type AvatarPoint } from '../walk';
-import type { RefObject } from 'react';
+import type { Dispatch, RefObject, SetStateAction } from 'react';
 import { SEAT_FOLLOW_EPSILON } from './avatarWalkTypes';
 
 export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
@@ -32,6 +32,8 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
   setPos,
   setFacing,
   publishIdle,
+  setSeatClaim,
+  stepAside,
   onWalkIntoPortal,
   onWalkIntoChair,
   onWalkIntoReactionPad,
@@ -55,6 +57,9 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
   setPos: (at: AvatarPoint) => void;
   setFacing: (facing: AvatarFacing) => void;
   publishIdle: (at: AvatarPoint, faceTo?: AvatarFacing) => void;
+  setSeatClaim: Dispatch<SetStateAction<SeatClaim | null>>;
+  // Stand up at a point without walking (useAvatarWalk's `stepAside`).
+  stepAside: (to: AvatarPoint) => void;
   onWalkIntoPortal?: (element: SceneShapeOf<E>) => void;
   onWalkIntoChair?: (element: SceneShapeOf<E>, feet: AvatarPoint, aim?: AvatarPoint) => void;
   onWalkIntoReactionPad?: (element: SceneShapeOf<E>) => void;
@@ -65,13 +70,31 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
   // and we stay seated. Read off the board on every change of it; a piece that is gone, or no longer seats anyone,
   // leaves us where we are. Only the sitter's own machine moves them, as with every move, so the room sees it in our
   // presence rather than working it out itself.
+  // A table that changed how many seats it has (a Long Table made shorter, a type change in place; chair.md "A table
+  // that loses seats", Work Tracker 831) keeps us on our seat while it still has it, renumbered with the same `at` and
+  // `tie`, and stands us up beside it when it has lost it, never leaving us floating where the old chair was.
   const followSeat = useEffectEvent(() => {
     const id = seatedRef.current;
     const from = posRef.current;
     if (!id || !from) return;
     const el = elements.find((e) => e.id === id);
     if (!el || !isSceneShape(el) || !seatsACharacter(el.shape) || !hasSceneBox(el)) return;
-    const seat = seatPoints({ ...el, shape: el.shape })[claimRef.current?.index ?? 0];
+    const seats = seatPoints({ ...el, shape: el.shape });
+    const claim = claimRef.current;
+    let index = claim?.index ?? 0;
+    let renumbered = false;
+    if (claim && claim.of !== undefined && claim.of !== seats.length) {
+      const moved = claimOf(seats, { ...from, seat: claim });
+      if (moved.index === SEAT_GONE) {
+        stepAside(besideBox(el, from));
+        return;
+      }
+      claimRef.current = moved;
+      setSeatClaim(moved);
+      index = moved.index;
+      renumbered = true;
+    }
+    const seat = seats[index];
     if (!seat) return;
     const at = clearOfFences(
       { x: seat.x, y: seat.y },
@@ -82,7 +105,7 @@ export function useAvatarWalkArrivals<E extends AvatarSceneElement>({
       Math.abs(at.x - from.x) < SEAT_FOLLOW_EPSILON &&
       Math.abs(at.y - from.y) < SEAT_FOLLOW_EPSILON
     ) {
-      if (seat.facing !== facingRef.current) {
+      if (seat.facing !== facingRef.current || renumbered) {
         setFacing(seat.facing);
         publishIdle(from, seat.facing);
       }

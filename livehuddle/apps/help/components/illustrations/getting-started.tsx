@@ -44,7 +44,7 @@ export function GuestVsAccount() {
       <circle cx={77} cy={87} r={2.5} className="fill-slate-300" />
       <Shape x={70} y={108} w={36} h={22} kind="rect" />
       <Shape x={120} y={132} w={34} h={20} kind="circle" accent />
-      <Arrow from={[106, 119]} to={[120, 142]} tone="muted" head={false} width={2} />
+      <Arrow connector from={[106, 119]} to={[120, 142]} tone="muted" head={false} width={2} />
       <Label x={110} y={196} anchor="middle" size={10} tone="muted">
         Per-browser id
       </Label>

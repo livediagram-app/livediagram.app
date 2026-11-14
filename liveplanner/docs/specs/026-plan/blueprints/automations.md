@@ -1467,6 +1467,10 @@ Test on a Card plans once: `aiDryLine(step, outline, labels, then)` adds ". The 
 AI leaves it" when the step writes the card (`aiWritesCard`) and steps follow. Cost: one `readItem` and one
 `planActions` per AI step (at most 3 a run), beside a model call of up to 15 s; `ai-steps.perf.test.ts` "re-plans
 after each AI step on 2,000 cards" bounds the planning.
+A write after an AI step that the card refuses (`stoppedBy`: the card deleted, or moved to the Trash, while the model answered:
+`patchCard` and the hook's re-read both treat a trashed card as gone) holds the rest: `heldCardSteps` marks the lines from there "Not
+done" and `heldSends` the messages "Not sent" (`automations-ai.test.ts` "a card deleted / moved to the Trash while the AI
+answered").
 
 **Manage Repositories (847).** `RuleRow.tsx` `NeedsNote` adds **Manage Repositories** (the GitHub context's
 `openView`) when a need is `repositories`, as **Connect GitHub** for `github`; both only while the dialog offers

@@ -26,7 +26,7 @@ import {
 import { avatarScale } from '../config';
 import type { AvatarReactionKind } from '../reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from './useAvatarKeys';
-import { newSeatClaim, type SeatClaim } from '../seat-claims';
+import { newSeatClaim, seatCountOn, type SeatClaim } from '../seat-claims';
 import { avatarBindings } from '../bindings';
 import { buildNavGrid, findWalkPath, type NavGrid } from '../pathing';
 import {
@@ -306,7 +306,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     setSeatedOn(chairId);
     // Sitting down, never where (docs/specs/009-elements/chair.md "Telemetry").
     avatarBindings.track('Canvas', 'Used', 'Sit');
-    const claim = newSeatClaim(index);
+    // The claim says how many seats the piece has, so a table that later grows or shrinks reads the seat it was
+    // (chair.md "A table that loses seats").
+    const claim = newSeatClaim(index, undefined, undefined, seatCountOn(elements, chairId));
     claimRef.current = claim;
     setSeatClaim(claim);
     // Remembered as "what the feet are on" so standing up and staying put
@@ -468,6 +470,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     setPos,
     setFacing,
     publishIdle,
+    setSeatClaim,
+    stepAside,
     onWalkIntoPortal,
     onWalkIntoChair,
     onWalkIntoReactionPad,

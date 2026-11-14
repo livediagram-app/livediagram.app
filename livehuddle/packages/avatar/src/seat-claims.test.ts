@@ -5,13 +5,15 @@ import {
   claimBeats,
   claimOf,
   newSeatClaim,
+  SEAT_GONE,
+  seatCountOn,
   seatOnArrival,
   seatToYield,
   takenSeats,
   yieldFrom,
   type SeatHolder,
 } from './seat-claims';
-import { seatPoints } from './seats';
+import { LONG_TABLE_VARIANT, remapSeat, seatPoints } from './seats';
 
 // docs/specs/009-elements/chair.md "Sitting" and "Occupancy is presence"
 const chair = { id: 'c', x: 0, y: 0, width: 64, height: 72, shape: 'chair' as const };
@@ -227,5 +229,75 @@ describe('yieldFrom', () => {
     expect(yieldFrom(board, 'gone', own, earlier)).toBeNull();
     expect(yieldFrom(board, 'n', own, earlier)).toBeNull();
     expect(yieldFrom(board, 'k', own, earlier)).toBeNull();
+  });
+});
+
+// docs/specs/009-elements/chair.md "A table that loses seats" (Work Tracker 831).
+describe('a table that loses seats', () => {
+  // A Long Table at 560 has seven a side: far 0-6, near 7-13, left end 14, right end 15. A Meeting Table has two a
+  // side: far 0-1, near 2-3, left end 4, right end 5.
+  const long = { ...table, id: 't', width: 560, variant: LONG_TABLE_VARIANT };
+  const claim = (index: number, of: number, at = 10, tie = 0.5) => ({ index, at, tie, of });
+  const on = (index: number, of: number, at = 10): SeatHolder => ({
+    x: 0,
+    y: 0,
+    seatedOn: 't',
+    seat: claim(index, of, at),
+  });
+
+  it('remapSeat keeps each row’s places and the ends, and drops what the table lost', () => {
+    expect(seatPoints(long)).toHaveLength(16);
+    expect(seatPoints(table)).toHaveLength(6);
+    // Long to Meeting: the first two of each row and both ends remain.
+    expect([0, 1, 7, 8, 14, 15].map((i) => remapSeat(i, 16, 6))).toEqual([0, 1, 2, 3, 4, 5]);
+    for (const i of [2, 3, 4, 5, 6, 9, 10, 11, 12, 13]) expect(remapSeat(i, 16, 6)).toBe(SEAT_GONE);
+    // Meeting back to Long, and a Long Table dragged longer: every seat remains, in its row.
+    expect([0, 1, 2, 3, 4, 5].map((i) => remapSeat(i, 6, 16))).toEqual([0, 1, 7, 8, 14, 15]);
+    expect(remapSeat(9, 16, 20)).toBe(11);
+    expect(remapSeat(3, 16, 16)).toBe(3);
+    expect(remapSeat(16, 16, 6)).toBe(SEAT_GONE);
+    // Counts outside the table's shape keep an index the piece still has.
+    expect(remapSeat(1, 2, 1)).toBe(SEAT_GONE);
+    expect(remapSeat(0, 2, 1)).toBe(0);
+  });
+
+  it('reads a claim on a remaining seat as that seat, keeping when they sat', () => {
+    expect(claimOf(seatPoints(table), on(14, 16, 7))).toEqual({
+      index: 4,
+      at: 7,
+      tie: 0.5,
+      of: 6,
+    });
+    // A claim taken on this very table reads as it is.
+    expect(claimOf(seatPoints(table), on(3, 6))).toEqual(claim(3, 6));
+  });
+
+  it('a claim on a seat the table lost holds nothing: no seat taken, nobody yields to it', () => {
+    expect(claimOf(seatPoints(table), on(5, 16)).index).toBe(SEAT_GONE);
+    expect([...takenSeats(table, [on(5, 16), on(15, 16)])]).toEqual([5]);
+    // Our seat 0 stays ours against a stale peer whose lost seat would once have read as the nearest, earliest one.
+    expect(seatToYield(table, claim(0, 6, 50), [{ ...on(5, 16, 1), x: 0, y: 0 }])).toBeNull();
+    // A stale peer on a seat that remains still settles by when they sat.
+    expect(seatToYield(table, claim(4, 6, 50), [on(14, 16, 1)])).not.toBeNull();
+    expect(seatToYield(table, claim(4, 6, 50), [on(14, 16, 99)])).toBeNull();
+  });
+
+  it('reads our own stale claim the same way, and never yields from a seat we lost', () => {
+    // Ours was the left end of the long table: now the Meeting Table's 4, which a later peer does not take.
+    expect(seatToYield(table, claim(14, 16, 5), [on(4, 6, 9)])).toBeNull();
+    expect(seatToYield(table, claim(14, 16, 50), [on(4, 6, 9)])).not.toBeNull();
+    // Ours is gone: followSeat stands us up, not the yield.
+    expect(seatToYield(table, claim(9, 16, 50), [on(2, 6, 1)])).toBeNull();
+  });
+
+  it('counts a piece’s seats for a claim, none for a piece gone or that seats nobody', () => {
+    const els = [
+      { type: 'shape', ...long },
+      { id: 'p', type: 'shape', shape: 'plant', x: 0, y: 0, width: 10, height: 10 },
+    ];
+    expect(seatCountOn(els, 't')).toBe(16);
+    expect(seatCountOn(els, 'p')).toBeUndefined();
+    expect(seatCountOn(els, 'gone')).toBeUndefined();
+    expect(newSeatClaim(4, 1, 0.5, 6)).toEqual(claim(4, 6, 1));
   });
 });

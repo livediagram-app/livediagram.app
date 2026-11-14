@@ -42,7 +42,25 @@ Derived from [Canvas and palette](../canvas-and-palette.md) "Duplicate" and [Roo
    `duplicateOffset` (never as a Room); `{ DUPLICATE_GAP, DUPLICATE_GAP }` when none of the ids is on the tab. The hook
    moves every copy by it through `duplicateElements`, then `snapMovedDoors` over the copies: a wall piece riding a
    copied Room is already on that Room's wall (a no-op), one whose Room stayed behind snaps onto a wall in reach.
-5. The hook commits the copies (one undo step) and selects them, as before.
+5. The hook commits the copies (one undo step) and selects them, as before, and notes the pair in
+   `apps/editor/lib/duplicate-origin.ts` (`noteDuplicate(sourceIds, copyIds)`, one slot, the latest duplicate).
+
+## The toolbar keeps clear of the original
+
+Work Tracker 849 (spec "Selection popover", "It never covers what you just duplicated").
+
+- `useDuplicateOrigin(selectedIds, elements)` (`duplicate-origin.ts`, a `useSyncExternalStore` over the slot) answers
+  the union of the sources' `elementBounds` while the selection is exactly the noted copies (same ids, any order),
+  and null otherwise; a source deleted since reads as null. `CanvasSelectionToolbars` passes it as `avoid` to the
+  `SelectionPopover` (single) and `FloatingToolbar` (multi).
+- `useEdgeAwarePlacement(bounds, offset, zoom, gap, suspended, avoid)` (`packages/workbench`): inside the existing
+  once-per-geometry flip guard, after the edge and chrome checks, when the box on its current side would intersect
+  `avoid` (its canvas rect worked out from the measured size over `zoom`, centred on the selection with the current
+  horizontal nudge) and the box on the other side would not, and the other side fits inside the canvas area, it flips
+  there. Without `avoid` (livediagram, livedocuments, livedesign, liveplanner, and every selection here but a fresh
+  copy) nothing changes.
+- One slot only: a later duplicate replaces it, and nothing else clears it; it is never read unless the selection is
+  exactly those copies, so a stale slot costs one id comparison per toolbar render.
 
 ## Errors and edge cases
 

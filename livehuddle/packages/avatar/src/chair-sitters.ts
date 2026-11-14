@@ -7,7 +7,7 @@ import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { avatarScale, peerAvatarConfig } from './config';
 import { seatsACharacter } from './office-geometry';
 import { isSceneShape, type AvatarSceneElement } from './scene';
-import { claimOf, type SeatClaim } from './seat-claims';
+import { claimOf, SEAT_GONE, type SeatClaim } from './seat-claims';
 import { avatarStatusLabel, parseAvatarStatus } from './status';
 import { drawnRect, seatPoints, type Seat, type SeatGrid } from './seats';
 import { AVATAR_HEAD_CHROME, AVATAR_HEIGHT } from './walk';
@@ -52,7 +52,8 @@ export function seatsOnBoard(elements: readonly AvatarSceneElement[]): SeatsOf {
 }
 
 // The seat a sitter holds: their claim, or (an older client, a claim on a seat the piece no longer has) the seat
-// nearest their feet, by the same rule the seat claims settle on (seat-claims.ts claimOf).
+// nearest their feet, by the same rule the seat claims settle on (seat-claims.ts claimOf). SEAT_GONE for a seat a
+// table has lost (chair.md "A table that loses seats").
 function seatIndex(source: SitterSource, seats: readonly Seat[] | null): number | undefined {
   if (!seats || seats.length === 0) return source.seat?.index;
   return claimOf(seats, { x: source.x ?? 0, y: source.y ?? 0, seat: source.seat }).index;
@@ -96,8 +97,10 @@ export function sittersByChair(
   const add = (source: SitterSource) => {
     const chairId = source.seatedOn;
     if (!chairId) return;
-    const sitter: Sitter = { name: source.name, color: source.color };
     const seat = seatIndex(source, seatsOf?.(chairId) ?? null);
+    // On a seat the table has lost: no ring and no name on it while their own machine stands them up.
+    if (seat === SEAT_GONE) return;
+    const sitter: Sitter = { name: source.name, color: source.color };
     if (seat !== undefined) sitter.seat = seat;
     if (source.scale !== undefined) sitter.scale = source.scale;
     const list = byChair.get(chairId);

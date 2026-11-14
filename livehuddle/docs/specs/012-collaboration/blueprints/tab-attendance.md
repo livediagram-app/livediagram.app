@@ -101,10 +101,12 @@ person_key = 'anonymised', name = 'Deleted account', picture = NULL WHERE person
   - 200 `TabAttendanceResponse` (`@livehuddle/api-schema` `tab-attendance.ts`):
     `{ visits: AttendanceVisit[]; retentionDays: number; perTabMax: number }`, `AttendanceVisit =
 { id: number; name: string; color: string; picture?: string; guest: boolean; self: boolean; joinedAt: number;
-leftAt: number | null }`. Newest first by `joined_at`, then id; at most `ATTENDANCE_TAB_MAX`; closed visits past
+leftAt: number | null; key?: string }`. Newest first by `joined_at`, then id; at most `ATTENDANCE_TAB_MAX`; closed visits past
     retention left out.
   - `picture` only when the caller is a signed-in account (`ctx.accountUserId`), as the roster sends pictures.
   - `self`: the visit's key is `collabKeyFor(caller)`.
+  - `key`: the visit's `person_key`, only while `left_at IS NULL` (spec "The wire"); an anonymised visit is always
+    closed, so `anonymised` is never sent.
   - Any other method: 405.
 - Editor: `apiListAttendance(ownerId, documentId, tabId, shareCode)` (`apps/editor/lib/api/attendance.ts`).
 
@@ -150,6 +152,12 @@ leftAt: number | null }`. Newest first by `joined_at`, then id; at most `ATTENDA
   - Loading: three placeholder rows (`aria-busy`). Error: message and **Try Again**. Empty: "Nobody has been in this
     tab yet." and "Visits show here for 90 days."
   - A refresh each time it opens; a "Here Now" visit's duration ticks with `useRelativeNow`.
+  - Live names and colours (Work Tracker 825): `TabAttendanceHost` passes `live`, a `Map<key, { name, color }>` of the
+    room's roster (`livePresence` by `Participant.key`, plus `selfParticipant` under its pinned key), memoised on the
+    roster's name and colour signature so a cursor or a status tick builds no new map. `liveVisit(visit, live)`
+    (`lib/tab-attendance.ts`) lays the roster's name and colour over an open visit with a `key` and returns the same
+    object when nothing differs, and `VisitRow` is `memo`, so a rename re-renders only that person's rows. Closed
+    visits are never overlaid.
 
 ## Accessibility
 
@@ -180,8 +188,9 @@ leftAt: number | null }`. Newest first by `joined_at`, then id; at most `ATTENDA
 - `routes/attendance-routes.test.ts`: Editor and Participant 200, Viewer 403, another tab's scoped link 404, picture
   only for an account caller, `self`, retention filter.
 - Editor: `editor-capabilities.test.ts` (`seeAttendance` true for Editor and Participant, false for Viewer),
-  `tab-attendance.test.ts` (day groups with a pinned clock, lengths), `TabAttendanceDialog.test.tsx` (rows, empty,
-  error), `TabPortalMenu` attendance-only menu.
+  `tab-attendance.test.ts` (day groups with a pinned clock, lengths, `liveVisit`), `TabAttendanceDialog.test.tsx`
+  (rows, empty, error, a rename and a recolour arriving while open reach only the open row), `TabPortalMenu`
+  attendance-only menu.
 
 ## Constants and configuration
 

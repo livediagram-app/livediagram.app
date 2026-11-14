@@ -79,6 +79,10 @@ describe('the scene’s people', () => {
       peerSeat(presence({ seatedOn: 'gone', seat: { index: 0, at: 0, tie: 0 } }), seatsOf),
     ).toBe(0);
     expect(peerSeat(presence({ seatedOn: 'bare' }), seatsOf)).toBeNull();
+    // A seat a table has lost since it was claimed (chair.md "A table that loses seats") is no seat.
+    expect(
+      peerSeat(presence({ seatedOn: 'table', seat: { index: 5, at: 0, tie: 0, of: 6 } }), seatsOf),
+    ).toBeNull();
   });
 
   it('lists you first, then each peer with their seat and say', () => {

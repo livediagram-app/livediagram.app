@@ -181,7 +181,15 @@ export function FormatPanelScene() {
         fill="fill-brand-50"
         stroke="stroke-brand-500"
       />
-      <Arrow from={[122, 112]} to={[150, 160]} kind="curved" tone="muted" dashed />
+      {/* The paint stroke from source to target, not a connector between them. */}
+      <Arrow
+        connector={false}
+        from={[122, 112]}
+        to={[150, 160]}
+        kind="curved"
+        tone="muted"
+        dashed
+      />
       <Shape
         x={110}
         y={160}
@@ -238,7 +246,7 @@ export function WalkingTogether() {
       <Shape x={40} y={60} w={96} h={48} label="Sign up" />
       <Shape x={250} y={60} w={150} h={48} accent label="Payment" />
       {/* No ring under Priya: only your own character rings what it stands on (Canvas.tsx). */}
-      <Arrow from={[136, 84]} to={[250, 84]} tone="muted" />
+      <Arrow connector from={[136, 84]} to={[250, 84]} tone="muted" />
       <PixelCharacter fx={92} fy={196} />
       <PixelCharacter fx={204} fy={186} shirt="emerald" name="Sam" hair="fill-slate-800" />
       <PixelCharacter fx={272} fy={112} shirt="violet" name="Priya" hair="fill-slate-900" />

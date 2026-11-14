@@ -5,17 +5,29 @@
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { seatsACharacter } from './office-geometry';
-import { isSceneShape, type AvatarSceneElement } from './scene';
-import { seatPoints, type Seat, type SeatedBox } from './seats';
+import { hasSceneBox, isSceneShape, type AvatarSceneElement } from './scene';
+import { remapSeat, seatPoints, type Seat, type SeatedBox } from './seats';
 import { isLecternShape, lecternAside } from './lectern';
 import type { AvatarFacing, AvatarPoint } from './walk';
 
-/** Which seat a sitter holds (its `seatPoints` index), when they sat (their epoch ms) and their random tiebreak. */
-export type SeatClaim = { index: number; at: number; tie: number };
+/**
+ * Which seat a sitter holds (its `seatPoints` index), when they sat (their epoch ms), their random tiebreak, and how
+ * many seats the piece had when that index was taken (`of`; absent from an older client), so a table that has since
+ * grown or shrunk reads the seat it was (chair.md "A table that loses seats").
+ */
+export type SeatClaim = { index: number; at: number; tie: number; of?: number };
 
-/** Our claim on sitting down now: the seat, this moment and a fresh random tiebreak. */
-export function newSeatClaim(index: number, at = Date.now(), tie = Math.random()): SeatClaim {
-  return { index, at, tie };
+/** A claim's index for a seat the piece no longer has. */
+export const SEAT_GONE = -1;
+
+/** Our claim on sitting down now: the seat among `of`, this moment and a fresh random tiebreak. */
+export function newSeatClaim(
+  index: number,
+  at = Date.now(),
+  tie = Math.random(),
+  of?: number,
+): SeatClaim {
+  return { index, at, tie, ...(of === undefined ? {} : { of }) };
 }
 
 /** A peer as the seat rules read their presence: where their feet are, what they sit on and their claim. */
@@ -50,24 +62,37 @@ function nearestIndex(
 const ANY = () => true;
 
 /**
- * A peer's claim on a piece it sits on. A packet without one (an older client) holds the seat nearest its feet and
- * counts as the earliest, since that client never gives a seat up; so does a claim on a seat the piece no longer has.
+ * A peer's claim on a piece it sits on, read against the seats the piece has now. A claim that says how many seats it
+ * was taken among (`of`) is remapped to the seat it was (`remapSeat`): index `SEAT_GONE` when the piece has lost it,
+ * so it holds nothing until its sitter's machine stands them up (chair.md "A table that loses seats"). A packet
+ * without a claim (an older client) holds the seat nearest its feet and counts as the earliest, since that client
+ * never gives a seat up; so does an older claim (no `of`) on a seat the piece no longer has.
  */
 export function claimOf(seats: readonly Seat[], holder: SeatHolder): SeatClaim {
   const claim = holder.seat;
-  if (claim && Number.isInteger(claim.index) && claim.index >= 0 && claim.index < seats.length)
-    return claim;
+  if (claim && Number.isInteger(claim.index) && claim.index >= 0) {
+    const of = claim.of;
+    if (typeof of === 'number' && Number.isInteger(of) && of > 0 && of !== seats.length) {
+      const index = remapSeat(claim.index, of, seats.length);
+      return { ...claim, index, of: seats.length };
+    }
+    if (claim.index < seats.length) return claim;
+  }
   return { index: nearestIndex(seats, holder, ANY), at: 0, tie: 0 };
 }
 
-/** The seat indices of `el` the peers sitting on it hold. */
+/** The seat indices of `el` the peers sitting on it hold (never a seat it has lost). */
 export function takenSeats(
   el: SeatedBox & { id: string },
   peers: readonly SeatHolder[],
 ): Set<number> {
   const seats = seatPoints(el);
   const taken = new Set<number>();
-  for (const peer of peers) if (peer.seatedOn === el.id) taken.add(claimOf(seats, peer).index);
+  for (const peer of peers) {
+    if (peer.seatedOn !== el.id) continue;
+    const { index } = claimOf(seats, peer);
+    if (index !== SEAT_GONE) taken.add(index);
+  }
   return taken;
 }
 
@@ -135,14 +160,17 @@ export function seatOnArrival(
  */
 export function seatToYield(
   el: SeatedBox & { id: string },
-  own: SeatClaim,
+  claimed: SeatClaim,
   peers: readonly SeatHolder[],
 ): AvatarPoint | null {
   const seats = seatPoints(el);
+  // Our own claim read as the peers read it: a seat the table lost is followSeat's to stand us up from, not a yield.
+  const own = claimed.of === undefined ? claimed : claimOf(seats, { x: 0, y: 0, seat: claimed });
+  if (own.index < 0 || own.index >= seats.length) return null;
   for (const peer of peers) {
     if (peer.seatedOn !== el.id) continue;
     const theirs = claimOf(seats, peer);
-    // A peer's claim always names a seat the piece has, so a match is our seat too.
+    // A peer's claim names a seat the piece has or SEAT_GONE, which never matches ours.
     if (theirs.index === own.index && claimBeats(theirs, own))
       return stopBeside(el, seats[own.index]!, seats[own.index]!);
   }
@@ -163,4 +191,14 @@ export function yieldFrom<E extends AvatarSceneElement>(
   const el = elements.find((e) => e.id === seatedOn);
   if (!el || !isSceneShape(el) || !seatsACharacter(el.shape)) return null;
   return seatToYield({ ...el, shape: el.shape }, own, peers);
+}
+
+/** How many seats the piece `id` has on the board, for a claim's `of`; undefined when it is gone or seats nobody. */
+export function seatCountOn<E extends AvatarSceneElement>(
+  elements: readonly E[],
+  id: string,
+): number | undefined {
+  const el = elements.find((e) => e.id === id);
+  if (!el || !isSceneShape(el) || !seatsACharacter(el.shape) || !hasSceneBox(el)) return undefined;
+  return seatPoints({ ...el, shape: el.shape }).length;
 }

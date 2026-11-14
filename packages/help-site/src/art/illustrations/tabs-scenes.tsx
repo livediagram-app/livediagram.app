@@ -16,8 +16,8 @@ export function TabBarOverview() {
       <Shape x={84} y={56} w={92} h={44} kind="rect" accent label="Overview" />
       <Shape x={256} y={24} w={80} h={40} kind="rect" label="API" />
       <Shape x={256} y={92} w={80} h={40} kind="rect" label="Web" />
-      <Arrow from={[176, 78]} to={[256, 44]} kind="elbow" tone="muted" />
-      <Arrow from={[176, 78]} to={[256, 112]} kind="elbow" tone="muted" />
+      <Arrow connector from={[176, 78]} to={[256, 44]} kind="elbow" tone="muted" />
+      <Arrow connector from={[176, 78]} to={[256, 112]} kind="elbow" tone="muted" />
       <TabBar y={barY} w={420} />
       <TabPill x={14} y={barY + 8} w={98} label="Overview" active />
       <TabPill x={118} y={barY + 8} w={66} label="Systems" />
@@ -169,7 +169,7 @@ export function CrossTabLink() {
       </Label>
 
       {/* The jump */}
-      <Arrow from={[140, 84]} to={[252, 84]} kind="curved" />
+      <Arrow connector from={[140, 84]} to={[252, 84]} kind="curved" />
 
       {/* The target tab's content */}
       <Shape x={258} y={58} w={120} h={52} kind="rect" accent label="DB internals" />
@@ -195,9 +195,9 @@ export function CleanupBeforeAfter() {
       <Shape x={108} y={64} w={56} h={30} kind="rect" />
       <Shape x={44} y={104} w={56} h={30} kind="rect" />
       <Shape x={128} y={132} w={56} h={30} kind="rect" />
-      <Arrow from={[76, 55]} to={[108, 75]} tone="muted" />
-      <Arrow from={[60, 70]} to={[60, 104]} tone="muted" />
-      <Arrow from={[142, 94]} to={[152, 132]} tone="muted" />
+      <Arrow connector from={[76, 55]} to={[108, 75]} tone="muted" />
+      <Arrow connector from={[60, 70]} to={[60, 104]} tone="muted" />
+      <Arrow connector from={[142, 94]} to={[152, 132]} tone="muted" />
 
       {/* Divider arrow */}
       <Arrow from={[196, 105]} to={[226, 105]} kind="straight" />
@@ -210,9 +210,9 @@ export function CleanupBeforeAfter() {
       <Shape x={332} y={48} w={56} h={30} kind="rect" accent />
       <Shape x={250} y={120} w={56} h={30} kind="rect" accent />
       <Shape x={332} y={120} w={56} h={30} kind="rect" accent />
-      <Arrow from={[306, 63]} to={[332, 63]} />
-      <Arrow from={[278, 78]} to={[278, 120]} />
-      <Arrow from={[360, 78]} to={[360, 120]} />
+      <Arrow connector from={[306, 63]} to={[332, 63]} />
+      <Arrow connector from={[278, 78]} to={[278, 120]} />
+      <Arrow connector from={[360, 78]} to={[360, 120]} />
     </Scene>
   );
 }
