@@ -9,6 +9,12 @@
 import { avatarGlideMs } from '@livehuddle/avatar/relay';
 import type { AccessLevel, AvatarPresence } from '@livehuddle/api-schema';
 import { participantKey, statusFromIdleMs, type Participant } from './identity';
+import { MAX_SELECTION_IDS } from '@livehuddle/api-schema';
+import {
+  heldElementIds,
+  remoteSelectionOf as readRemoteSelection,
+  type RemoteSelection,
+} from '@liveworkspace/workbench/lib/remote-selection';
 
 // Row shapes the builders below return. Module-private: only this file's own
 // functions name them, so they carry no `export` (consumers get the inferred
@@ -289,11 +295,15 @@ export function resolveOwnerBadge(input: {
   return null;
 }
 
-// A peer's current selection: the element id plus the tab it lives on.
-// `tabId` is optional for wire compatibility (an older peer's frame
-// omits it and is treated as tab-unknown — visible everywhere, the old
-// behaviour).
-export type RemoteSelection = { elementId: string | null; tabId?: string };
+// A peer's `select` op as the badges and lock read it (@liveworkspace/workbench/lib/remote-selection: the whole
+// selection holds, docs/specs/007-editor/editor-app.md "The whole selection holds"), capped like the sender caps it.
+export type { RemoteSelection };
+
+export const remoteSelectionOf = (op: {
+  elementId: string | null;
+  tabId?: string;
+  elementIds?: unknown;
+}): RemoteSelection => readRemoteSelection(op, MAX_SELECTION_IDS);
 
 // Per-element map of which remote participants have it selected (for the
 // on-element badges). Drops self + null (deselected) entries, and — like
@@ -309,19 +319,23 @@ export function buildRemoteSelectionsByElement(
 ): Map<string, RemoteSelector[]> {
   const out = new Map<string, RemoteSelector[]>();
   for (const [participantId, selection] of remoteSelections) {
-    if (!selection.elementId) continue;
+    const held = heldElementIds(selection);
+    if (held.length === 0) continue;
     if (selection.tabId !== undefined && selection.tabId !== activeTabId) continue;
     if (participantId === selfId) continue;
     const participant = livePresenceById.get(participantId);
     if (!participant) continue;
-    const list = out.get(selection.elementId) ?? [];
-    list.push({
+    const selector: RemoteSelector = {
       id: participant.id,
       name: participant.name,
       color: participant.color,
       holds: participant.role !== 'view',
-    });
-    out.set(selection.elementId, list);
+    };
+    for (const elementId of held) {
+      const list = out.get(elementId) ?? [];
+      list.push(selector);
+      out.set(elementId, list);
+    }
   }
   return out;
 }

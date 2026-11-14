@@ -8,6 +8,11 @@
 // rather than read from Date.now() / a ref, keeping the functions pure.
 import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
 import { participantKey, statusFromIdleMs, type Participant } from './identity';
+import {
+  heldElementIds,
+  remoteSelectionOf as readRemoteSelection,
+  type RemoteSelection,
+} from '@liveworkspace/workbench/lib/remote-selection';
 import type { LaserPoint } from '@liveworkspace/workbench/lib/laser-buffer';
 import type { LaserConfig } from './laser-config';
 
@@ -267,32 +272,15 @@ export function resolveOwnerBadge(input: {
   return null;
 }
 
-// A peer's current selection: the element id plus the tab it lives on.
-// `tabId` is optional for wire compatibility (an older peer's frame
-// omits it and is treated as tab-unknown — visible everywhere, the old
-// behaviour).
-//
-// `elementIds` is the peer's whole selection (a marquee or shift multi-selection holds every element in
-// it, docs/specs/007-editor/editor-app.md "The whole selection holds"); absent on an older peer's frame,
-// which holds its single `elementId`.
-export type RemoteSelection = { elementId: string | null; tabId?: string; elementIds?: string[] };
+// A peer's `select` op as the badges and lock read it (@liveworkspace/workbench/lib/remote-selection: the whole
+// selection holds, docs/specs/007-editor/editor-app.md "The whole selection holds"), capped like the sender caps it.
+export type { RemoteSelection };
 
-// A peer's `select` op as the badges and lock read it. The op is another client's, so `elementIds` is
-// kept only as strings and capped like the sender caps it.
-export function remoteSelectionOf(op: {
+export const remoteSelectionOf = (op: {
   elementId: string | null;
   tabId?: string;
   elementIds?: unknown;
-}): RemoteSelection {
-  const ids = Array.isArray(op.elementIds)
-    ? op.elementIds.filter((id): id is string => typeof id === 'string').slice(0, MAX_SELECTION_IDS)
-    : [];
-  return {
-    elementId: op.elementId,
-    tabId: op.tabId,
-    ...(ids.length > 0 ? { elementIds: ids } : {}),
-  };
-}
+}): RemoteSelection => readRemoteSelection(op, MAX_SELECTION_IDS);
 
 // Per-element map of which remote participants have it selected (for the
 // on-element badges). Drops self + null (deselected) entries, and — like
@@ -308,11 +296,7 @@ export function buildRemoteSelectionsByElement(
 ): Map<string, RemoteSelector[]> {
   const out = new Map<string, RemoteSelector[]>();
   for (const [participantId, selection] of remoteSelections) {
-    const held = selection.elementIds?.length
-      ? new Set(selection.elementIds)
-      : selection.elementId
-        ? [selection.elementId]
-        : [];
+    const held = heldElementIds(selection);
     if (selection.tabId !== undefined && selection.tabId !== activeTabId) continue;
     if (participantId === selfId) continue;
     const participant = livePresenceById.get(participantId);
