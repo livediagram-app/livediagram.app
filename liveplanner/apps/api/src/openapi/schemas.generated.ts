@@ -3484,6 +3484,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "BoardFilter": {
+    "additionalProperties": false,
+    "properties": {
+      "due": {
+        "$ref": "#/components/schemas/SavedDueWindow"
+      },
+      "filters": {
+        "items": {
+          "$ref": "#/components/schemas/CardSearchFilter"
+        },
+        "type": "array"
+      },
+      "mine": {
+        "const": true,
+        "type": "boolean"
+      },
+      "person": {
+        "type": "string"
+      },
+      "priority": {
+        "$ref": "#/components/schemas/Priority"
+      },
+      "text": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
   "BoardSortDir": {
     "enum": [
       "asc",
@@ -10767,6 +10798,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "fillTab": {
         "type": "boolean"
+      },
+      "filter": {
+        "$ref": "#/components/schemas/BoardFilter"
       },
       "hideWriting": {
         "type": "boolean"

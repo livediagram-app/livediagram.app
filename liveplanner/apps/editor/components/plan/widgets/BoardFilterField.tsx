@@ -34,6 +34,7 @@ export function BoardFilterField({
   palette,
   quick,
   onQuick,
+  readOnly = false,
 }: {
   // The board as drawn, under every narrowing: what Add Filter offers and counts.
   projection: BoardProjection;
@@ -44,6 +45,8 @@ export function BoardFilterField({
   palette: PlanPalette;
   quick: QuickFilter;
   onQuick: (q: QuickFilter) => void;
+  // A Viewer's: the board's filter shown as it is, nothing to type, add, remove or clear.
+  readOnly?: boolean;
 }) {
   const filters = quick.filters ?? NO_FILTERS;
   const shown = useMemo(() => boardItems(projection), [projection]);
@@ -85,7 +88,10 @@ export function BoardFilterField({
         }}
         onKeyDown={(e) => e.stopPropagation()}
         chips={chips}
-        onRemoveChip={(i) => setFilters(filters.filter((_, j) => j !== i))}
+        readOnly={readOnly}
+        {...(readOnly
+          ? {}
+          : { onRemoveChip: (i: number) => setFilters(filters.filter((_, j) => j !== i)) })}
         onClear={() => {
           const q: QuickFilter = { ...quick };
           delete q.text;
@@ -93,7 +99,7 @@ export function BoardFilterField({
           onQuick(q);
         }}
         addFilter={
-          filters.length < CARD_SEARCH_FILTERS_MAX && fields.length > 0 ? (
+          !readOnly && filters.length < CARD_SEARCH_FILTERS_MAX && fields.length > 0 ? (
             <AddFilterPicker
               inBox
               fields={fields.map((f) => ({ id: filterKey(f), label: f.label }))}

@@ -32,6 +32,7 @@ export function FilterSearchBox({
   tone,
   clearLabel = 'Clear Search',
   chipsPlaceholder = 'Search these…',
+  readOnly = false,
 }: {
   query: string;
   onQuery: (q: string) => void;
@@ -52,6 +53,9 @@ export function FilterSearchBox({
   clearLabel?: string;
   // The words' placeholder once there are chips.
   chipsPlaceholder?: string;
+  // Shown, not changed (someone who may only look): the words cannot be typed and there is no Clear. The caller
+  // leaves out onRemoveChip and addFilter too.
+  readOnly?: boolean;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const filled = query !== '' || chips.length > 0;
@@ -136,6 +140,7 @@ export function FilterSearchBox({
           ref={input}
           type="text"
           value={query}
+          readOnly={readOnly}
           autoFocus={autoFocus}
           aria-label={ariaLabel}
           placeholder={chips.length ? chipsPlaceholder : placeholder}
@@ -152,7 +157,7 @@ export function FilterSearchBox({
         />
       </div>
       <div className={`flex shrink-0 items-center gap-0.5 ${compact ? '' : 'self-start'}`}>
-        {filled ? (
+        {filled && !readOnly ? (
           <Tooltip label={clearLabel}>
             <button
               type="button"

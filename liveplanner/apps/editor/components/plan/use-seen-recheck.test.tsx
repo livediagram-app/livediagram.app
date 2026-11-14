@@ -8,7 +8,10 @@ import { awaitSeen, recheckSeen, SEEN_RECHECK_MS, seenWaiting } from './seen-rec
 
 // An observer that reports the first entry (off screen, as mid-motion) and never a crossing after.
 class MissingObserver {
-  constructor(private readonly cb: IntersectionObserverCallback) {}
+  private readonly cb: IntersectionObserverCallback;
+  constructor(cb: IntersectionObserverCallback) {
+    this.cb = cb;
+  }
   observe(el: Element) {
     this.cb(
       [{ target: el, isIntersecting: false } as IntersectionObserverEntry],
@@ -33,15 +36,14 @@ function nextFrame() {
 // Where the tile is: off screen to the right while its panel slides in, then in place.
 let rect = { top: 100, left: 5000, width: 80, height: 80 };
 function place(el: Element) {
-  el.getBoundingClientRect = () =>
-    ({
-      ...rect,
-      right: rect.left + rect.width,
-      bottom: rect.top + rect.height,
-      x: rect.left,
-      y: rect.top,
-      toJSON: () => ({}),
-    }) as DOMRect;
+  el.getBoundingClientRect = () => ({
+    ...rect,
+    right: rect.left + rect.width,
+    bottom: rect.top + rect.height,
+    x: rect.left,
+    y: rect.top,
+    toJSON: () => ({}),
+  });
 }
 
 function Tile({ onSeen }: { onSeen: (seen: boolean) => void }) {

@@ -255,7 +255,11 @@ type DateTimeStyle = 'short' | 'medium';
 const textFormatters = new Map<string, Intl.DateTimeFormat>();
 
 // How many entries each zone cache holds now (tests: never past ZONE_CACHE_MAX).
-export function zoneCacheSizes(): { zoneChecks: number; partFormatters: number; textFormatters: number } {
+export function zoneCacheSizes(): {
+  zoneChecks: number;
+  partFormatters: number;
+  textFormatters: number;
+} {
   return {
     zoneChecks: zoneChecks.size,
     partFormatters: partFormatters.size,

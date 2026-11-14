@@ -20,6 +20,7 @@ import {
   Lead,
   NO_PLAN_ITEMS,
   WIDGET_PILL,
+  filterLocked,
   type WidgetContext,
 } from './board-widget-parts';
 import { mineWidget, peopleWidget, typesWidget, unplacedWidget } from './board-widget-filters';
@@ -46,6 +47,21 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
         (n, c) => n + c.lanes.reduce((m, l) => m + l.items.length, 0),
         0,
       );
+      // A Viewer reads the count without Show all: the board's filter is not theirs to clear.
+      if (quickNarrows(ctx.quick) && filterLocked(ctx))
+        return (
+          <span
+            className={WIDGET_PILL}
+            style={{ borderColor: palette.focus, color: palette.muted }}
+            data-filter-count
+          >
+            <Lead kind="count" color={palette.focus} />
+            <span className="sr-only">Showing </span>
+            <Figure palette={palette}>{shown}</Figure>
+            of {projection.total}
+            <span className="sr-only"> items</span>
+          </span>
+        );
       if (quickNarrows(ctx.quick))
         return (
           <button
@@ -131,6 +147,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
             palette={palette}
             quick={ctx.quick}
             onQuick={ctx.onQuick}
+            readOnly={filterLocked(ctx)}
           />
           <SavedFilterChips
             setup={setup}
@@ -138,6 +155,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
             quick={ctx.quick}
             onQuick={ctx.onQuick}
             mine={ctx.canFilterMine}
+            canApply={!filterLocked(ctx)}
             now={ctx.now}
             canEdit={ctx.canEdit}
             onSetup={ctx.onSetup}

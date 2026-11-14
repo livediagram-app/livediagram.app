@@ -15,6 +15,7 @@ import {
   SOON_AMBER,
   TYPES_SHOWN,
   WIDGET_PILL,
+  filterLocked,
   toggle,
   type WidgetContext,
   type WidgetPill,
@@ -28,7 +29,7 @@ export function mineWidget(ctx: WidgetContext): React.JSX.Element {
       type="button"
       className={`${WIDGET_PILL} transition enabled:cursor-pointer disabled:opacity-50`}
       aria-pressed={on}
-      disabled={!ctx.canFilterMine}
+      disabled={!ctx.canFilterMine || filterLocked(ctx)}
       style={{
         borderColor: on ? palette.focus : palette.border,
         color: on ? palette.focus : palette.muted,
@@ -78,7 +79,8 @@ export function peopleWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.El
               type="button"
               aria-pressed={on}
               aria-label={`Only ${p.name}'s cards`}
-              className="cursor-pointer rounded-full ring-2 transition hover:z-10 hover:scale-110"
+              disabled={filterLocked(ctx)}
+              className="rounded-full ring-2 transition enabled:cursor-pointer enabled:hover:z-10 enabled:hover:scale-110"
               style={{
                 ['--tw-ring-color' as string]: on ? palette.focus : palette.surface,
                 opacity: ctx.quick.person && !on ? 0.45 : 1,
@@ -176,6 +178,7 @@ export function typesWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Ele
             type="button"
             aria-pressed={on}
             aria-label={`Only ${c.def.label} cards, ${c.count}`}
+            disabled={filterLocked(ctx)}
             className={PRESSABLE}
             style={{
               backgroundColor: on ? `${palette.focus}1f` : undefined,
