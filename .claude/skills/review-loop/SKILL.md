@@ -164,16 +164,20 @@ For each card, in order:
 ### Labels
 
 Every Work Item you review gets the labels that describe it, when they're missing. Use the plan's own
-vocabulary: the labels already on its Work Items (`list_items` shows each card's `labels`), such as the product
-or area the work reaches. Label from where the work really lives in the code (step 3.2), not the App field.
+vocabulary: the labels already on its Work Items (`list_items` shows each card's `labels`) for the **area** the
+work reaches, such as `dashboards`, `automations`, `forms` or `explorer`. Label from where the work really lives
+in the code (step 3.2).
 
+- **Never use a product or app name as a label** (`liveworkspace`, `livediagram`, `liveplanner`, `livedocuments`,
+  `livedesign`, `livehuddle`, or a short form of one). The **App** field says which products a card reaches: set or
+  correct App instead, from where the work lives in the code.
 - Only add. Never remove or rename a label a person set, even one you think is wrong (say so in the report).
-  The labels this loop removes are its own `needs-owner` flag (see "Flag for the owner") and the rule's
-  `answered` (see step 1).
+  The labels this loop removes are its own `needs-owner` flag (see "Flag for the owner"), the rule's
+  `answered` (see step 1), and product or app names used as labels (fold them into App in the same `set`).
 - `set` replaces the whole list, so write the card's existing labels plus the new ones:
-  `{"op": "set", "item": "#12", "fields": {"labels": ["liveplanner", "dashboards"]}}`.
-- Add a label the plan doesn't use yet only when no existing one fits a product or area the card clearly
-  reaches, and keep it lowercase and short, like the others. Name new labels in the report.
+  `{"op": "set", "item": "#12", "fields": {"labels": ["dashboards", "automations"]}}`.
+- Add a label the plan doesn't use yet only when no existing one fits an area the card clearly reaches, and keep
+  it lowercase and short, like the others. Name new labels in the report.
 - Label cards in every state you review (New and Answered), including ones you move to Reviewed.
 
 ### Risk levels
