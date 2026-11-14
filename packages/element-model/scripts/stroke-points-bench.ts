@@ -84,7 +84,7 @@ function boards() {
     const id = `stroke-${i.toString(36).padStart(4, '0')}-${'x'.repeat(28)}`;
     const raw = s.map(({ x, y }) => ({ x, y }));
     const pressures = s.map((q) => q.p);
-    packed.push({ ...createFreehand(raw, false, pressures), id, ...style } as FreehandElement);
+    packed.push({ ...createFreehand(raw, false, pressures), id, ...style });
     const geometry = freehandGeometry(raw);
     former.push({ id, type: 'freehand', ...geometry, closed: false, pressures, ...style });
   });
@@ -233,7 +233,11 @@ export function runStrokePointsBench(migrateStoredTab: (tab: never) => unknown):
     ],
     ['Objects allocated by JSON.parse', `${countObjects(former)}`, `${countObjects(packed)}`],
     ['Heap held after parse', kb(heapAfterParse(formerText)), kb(heapAfterParse(packedText))],
-    ['JSON.parse', ms(time(() => JSON.parse(formerText))), ms(time(() => JSON.parse(packedText)))],
+    [
+      'JSON.parse',
+      ms(time(() => void JSON.parse(formerText))),
+      ms(time(() => void JSON.parse(packedText))),
+    ],
     [
       'Parse + draw one viewport',
       ms(time(() => drawFormer(formerText, true))),

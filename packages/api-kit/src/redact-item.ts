@@ -26,7 +26,7 @@ export type ReaderRedactable = {
 export function redactItemForReader<T extends ReaderRedactable>(item: T, caller: string | null): T {
   return caller && caller === item.ownerId
     ? item
-    : ({ ...item, ownerId: '', shareCode: null, communityState: null } as T);
+    : { ...item, ownerId: '', shareCode: null, communityState: null };
 }
 
 /** The fields the Community redaction drops. */
@@ -52,7 +52,7 @@ export function redactItemForCommunity<T extends CommunityRedactable>(item: T): 
     folderId: null,
     source: null,
     tabs: item.tabs.map(({ connection: _connection, ...tab }) => tab),
-  } as T;
+  };
 }
 
 /** The fields the tab-scope redaction reads: the deck, and tabs with their place. */
@@ -88,5 +88,5 @@ export function redactItemForScope<T extends ScopeRedactable>(
             outOfScope: true,
           },
     ),
-  } as T;
+  };
 }
