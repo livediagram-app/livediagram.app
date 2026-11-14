@@ -1,9 +1,7 @@
 # Source files byte-identical in two or more products, one group per line (tab-separated).
 # Written by .github/scripts/duplicate-guard.mjs --update; it may only shrink (docs/ci.md).
-livedesign/apps/api/src/routes/community.ts	livedocuments/apps/api/src/routes/community.ts	liveplanner/apps/api/src/routes/community.ts
-livedesign/apps/api/src/routes/folders.ts	livediagram/apps/api/src/routes/folders.ts	livedocuments/apps/api/src/routes/folders.ts	liveplanner/apps/api/src/routes/folders.ts
 livedesign/apps/cli/src/output/cli-error.ts	livediagram/apps/cli/src/output/cli-error.ts	livedocuments/apps/cli/src/output/cli-error.ts	liveplanner/apps/cli/src/output/cli-error.ts
-livedesign/apps/cli/src/render/png.ts	livediagram/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
+livedesign/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
 livedesign/apps/help/app/account-and-data/page.tsx	livediagram/apps/help/app/account-and-data/page.tsx	livedocuments/apps/help/app/account-and-data/page.tsx	livehuddle/apps/help/app/account-and-data/page.tsx	liveplanner/apps/help/app/account-and-data/page.tsx
 livedesign/apps/help/app/canvas/page.tsx	livediagram/apps/help/app/canvas/page.tsx	livedocuments/apps/help/app/canvas/page.tsx	livehuddle/apps/help/app/canvas/page.tsx
 livedesign/apps/help/app/collaboration/page.tsx	livediagram/apps/help/app/collaboration/page.tsx	livedocuments/apps/help/app/collaboration/page.tsx	livehuddle/apps/help/app/collaboration/page.tsx	liveplanner/apps/help/app/collaboration/page.tsx
@@ -46,7 +44,6 @@ livedesign/apps/live/lib/contents-placement.ts	livedocuments/apps/editor/lib/con
 livedesign/apps/live/lib/guest-identity.ts	livediagram/apps/editor/lib/guest-identity.ts	livedocuments/apps/editor/lib/guest-identity.ts	livehuddle/apps/editor/lib/guest-identity.ts	liveplanner/apps/editor/lib/guest-identity.ts
 livedesign/apps/live/lib/import-images/index.ts	livediagram/apps/editor/lib/import-images/index.ts
 livedesign/apps/live/lib/live-stroke-test-utils.ts	livediagram/apps/editor/lib/live-stroke-test-utils.ts
-livedesign/apps/marketing/components/feature-art/features.tsx	livedocuments/apps/marketing/components/feature-art/features.tsx
 livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench/tasks/index.d.mts	livedocuments/apps/mcp/eval/bench/tasks/index.d.mts	liveplanner/apps/mcp/eval/bench/tasks/index.d.mts
 livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
 livedesign/packages/design/src/chart-ink.ts	livedocuments/packages/document/src/chart-ink.ts
@@ -65,13 +62,7 @@ livedesign/packages/ui/src/appearance/index.ts	livediagram/packages/ui/src/appea
 livedesign/packages/ui/src/appearance/useAppearance.ts	livediagram/packages/ui/src/appearance/useAppearance.ts	livedocuments/packages/ui/src/appearance/useAppearance.ts	livehuddle/packages/ui/src/appearance/useAppearance.ts	liveplanner/packages/ui/src/appearance/useAppearance.ts
 livedesign/packages/ui/src/browser-repair/index.ts	livediagram/packages/ui/src/browser-repair/index.ts	livedocuments/packages/ui/src/browser-repair/index.ts	livehuddle/packages/ui/src/browser-repair/index.ts
 livedesign/packages/ui/src/icons/index.ts	livediagram/packages/ui/src/icons/index.ts	livedocuments/packages/ui/src/icons/index.ts	livehuddle/packages/ui/src/icons/index.ts	liveplanner/packages/ui/src/icons/index.ts
-livediagram/apps/api/src/db/content-summary.ts	livehuddle/apps/api/src/db/content-summary.ts
-livediagram/apps/api/src/legacy-request-forms.ts	livehuddle/apps/api/src/legacy-request-forms.ts
-livediagram/apps/api/src/redact-document.ts	livehuddle/apps/api/src/redact-document.ts
-livediagram/apps/api/src/routes/community.ts	livehuddle/apps/api/src/routes/community.ts
 livediagram/apps/api/src/routes/document-shared-tabs-route.ts	livehuddle/apps/api/src/routes/document-shared-tabs-route.ts
-livediagram/apps/api/src/routes/openapi.ts	livedocuments/apps/api/src/routes/openapi.ts	livehuddle/apps/api/src/routes/openapi.ts
-livediagram/apps/api/src/routes/preferences.ts	livehuddle/apps/api/src/routes/preferences.ts
 livediagram/apps/api/src/routes/share.ts	livehuddle/apps/api/src/routes/share.ts
 livediagram/apps/api/src/routes/tab-render-route.ts	livedocuments/apps/api/src/routes/tab-render-route.ts
 livediagram/apps/editor/app/document/[id]/page.tsx	livedocuments/apps/editor/app/document/[id]/page.tsx	livehuddle/apps/editor/app/document/[id]/page.tsx
@@ -116,16 +107,10 @@ livediagram/apps/editor/lib/stub-resize-observer.ts	livehuddle/apps/editor/lib/s
 livediagram/apps/editor/lib/tour-tracks.ts	livehuddle/apps/editor/lib/tour-tracks.ts
 livediagram/apps/editor/lib/workbench-bindings.ts	livedocuments/apps/editor/lib/workbench-bindings.ts	livehuddle/apps/editor/lib/workbench-bindings.ts
 livediagram/apps/editor/test/no-document-grants.ts	livedocuments/apps/editor/test/no-document-grants.ts	livehuddle/apps/editor/test/no-document-grants.ts
-livediagram/apps/help/components/category-art/developers.tsx	livehuddle/apps/help/components/category-art/developers.tsx
 livediagram/apps/help/components/category-art/index.tsx	livehuddle/apps/help/components/category-art/index.tsx
-livediagram/apps/help/components/category-art/supported-devices.tsx	livehuddle/apps/help/components/category-art/supported-devices.tsx
-livediagram/apps/help/components/category-art/tabs.tsx	livehuddle/apps/help/components/category-art/tabs.tsx
-livediagram/apps/help/components/illustrations/tabs-side-by-side.tsx	livehuddle/apps/help/components/illustrations/tabs-side-by-side.tsx
 livediagram/apps/marketing/app/page.tsx	livehuddle/apps/marketing/app/page.tsx
 livediagram/apps/marketing/components/art-tokens.ts	livehuddle/apps/marketing/components/art-tokens.ts
-livediagram/apps/marketing/lib/hero-motion.ts	livehuddle/apps/marketing/lib/hero-motion.ts
 livediagram/apps/mcp/eval/bench/score.mjs	livedocuments/apps/mcp/eval/bench/score.mjs
-livediagram/apps/mcp/src/created-folder.ts	livedocuments/apps/mcp/src/created-folder.ts
 livediagram/apps/mcp/src/mcp-test-client.ts	livedocuments/apps/mcp/src/mcp-test-client.ts
 livediagram/packages/agent-verbs/src/verbs/shared.ts	livedocuments/packages/agent-verbs/src/verbs/shared.ts
 livediagram/packages/api-schema/src/document-conversion.ts	livedocuments/packages/api-schema/src/document-conversion.ts	livehuddle/packages/api-schema/src/document-conversion.ts
