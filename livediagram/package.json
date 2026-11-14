@@ -28,7 +28,7 @@
     "@liveworkspace/prettier-config": "workspace:*",
     "esbuild": "^0.28.2",
     "oxlint": "^1.90.0",
-    "oxlint-tsgolint": "^7.0.2005",
+    "oxlint-tsgolint": "^7.0.2006",
     "prettier": "^3.10.0",
     "turbo": "^2.11.7",
     "typescript": "^7.0.2",
