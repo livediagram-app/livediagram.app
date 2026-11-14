@@ -1146,7 +1146,7 @@ The spec's six GitHub rows of the Templates table, on the GitHub triggers of git
   checks nothing.
 - `needs-words.ts`: "acme/old isn't heard any more", "acme/old and acme/api aren't heard any more", past two
   "acme/old, acme/api and 2 more aren't heard any more" (`heardRepositories`' shortening, moved out of `GithubTriggerFields.tsx` into the pure
-  `github/repository-words.ts`, which both import).
+  `apps/editor/components/automations/github/repository-words.ts`, which both import).
 - `AutomationNeed` in the api's OpenAPI schema gains the `repositories` shape (`pnpm gen:openapi`).
 - Tests: `attention.test.ts` (some gone: unmarked; all gone: marked naming them; any case; not checked without the
   list), `needs-words.test.ts` (one, two, past two), `automation-routes.test.ts` (the list marks a rule whose named
