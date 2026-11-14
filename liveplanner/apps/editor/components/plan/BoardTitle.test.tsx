@@ -43,7 +43,7 @@ describe('renaming a board', () => {
   it('turns the title into a selected field on a double-click, and saves on Enter', () => {
     const { onSetup, outer } = header(true);
     fireEvent.doubleClick(screen.getByText(setup.title));
-    const field = screen.getByRole('textbox', { name: 'Board title' }) as HTMLInputElement;
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Board title' });
     expect(document.activeElement).toBe(field);
     expect(field.selectionStart).toBe(0);
     expect(field.selectionEnd).toBe(setup.title.length);

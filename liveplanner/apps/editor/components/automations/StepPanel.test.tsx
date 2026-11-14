@@ -558,7 +558,7 @@ describe('StepPanel', () => {
         part={{ part: 'step', index: 0 }}
       />,
     );
-    const area = screen.getByRole('textbox', { name: 'Comment' }) as HTMLTextAreaElement;
+    const area = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Comment' });
     area.setSelectionRange(11, 11);
     fireEvent.click(screen.getByRole('button', { name: 'Insert a Value into Comment' }));
     fireEvent.click(screen.getByRole('option', { name: /^Who Did It/ }));

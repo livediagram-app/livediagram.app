@@ -58,7 +58,7 @@ export function SectionsBar({
         aria-haspopup="dialog"
         aria-label={SECTIONS_COPY.open(current)}
         style={GUTTER}
-        className={`flex h-12 w-full cursor-pointer items-center gap-3 text-left text-slate-900 transition-colors hover:bg-slate-100/70 active:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800/50 dark:active:bg-slate-800/70 ${FOCUS_RING_INSET}`}
+        className={`flex h-12 w-full cursor-pointer items-center gap-3 text-left text-slate-900 transition-colors hover:bg-slate-100/70 active:bg-slate-100 active:hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800/50 dark:active:bg-slate-800/70 dark:active:hover:bg-slate-800/70 ${FOCUS_RING_INSET}`}
       >
         <span aria-hidden className="flex shrink-0 text-slate-500 dark:text-slate-400">
           <HamburgerIcon />

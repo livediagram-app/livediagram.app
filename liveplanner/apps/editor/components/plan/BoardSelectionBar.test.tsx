@@ -199,7 +199,7 @@ describe('BoardSelectionBar', () => {
     ]);
     pick('Set Field');
     fireEvent.click(within(dialog()).getByRole('button', { name: 'Points' }));
-    const set = within(dialog()).getByRole('button', { name: 'Set' }) as HTMLButtonElement;
+    const set = within(dialog()).getByRole<HTMLButtonElement>('button', { name: 'Set' });
     expect(set.disabled).toBe(true);
     fireEvent.change(within(dialog()).getByRole('spinbutton', { name: 'Points' }), {
       target: { value: '5' },

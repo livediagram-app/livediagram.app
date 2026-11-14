@@ -8,7 +8,9 @@
 //
 // Drawn as the viewer sees the page, not as an export prints it: placed as a press places it (in the
 // tab's theme, themedForTab), then drawn in the viewer's half (elementAsSeen), and on a dark-chrome
-// viewer's plain page on the dark paper the canvas shows (PAGE_PAPER_DARK), not an export's white.
+// viewer's plain page on the dark paper the canvas shows (PAGE_PAPER_DARK), not an export's white, with what that
+// paper sinks lifted off it as the canvas lifts it (inkedOnPaper: ink marks, then labels), so the tile matches the page
+// (docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen").
 import { useMemo } from 'react';
 import {
   pageIsDark,
@@ -21,12 +23,13 @@ import type { PageLayoutId } from '@livedesign/templates';
 import { builtMarkup, htmlProps, useAppearance } from '@livedesign/ui';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { renderTabToSvg } from '@/lib/export-tab';
-import { elementAsSeen } from '@/lib/stock-colour-projector';
+import { elementAsSeen, inkedOnPaper, plainPaper } from '@/lib/stock-colour-projector';
+import { CANVAS_PAPER } from '@/lib/page-paint';
 import { themeViewMap } from '@/lib/themes';
 import { buildPageLayout } from '@livedesign/templates';
 
 // A plain page's paper in dark chrome, as CanvasPages paints it (dark:bg-slate-900).
-export const PAGE_PAPER_DARK = '#0f172a';
+export const PAGE_PAPER_DARK = CANVAS_PAPER.dark;
 
 /** The page as the viewer sees it: a plain page in dark chrome takes the dark paper. */
 function pageAsSeen(page: LaidOutPage, appearance: Appearance): LaidOutPage {
@@ -56,7 +59,12 @@ export function layoutRenderSvg(
       : 'light'
     : appearance;
   const map = themeViewMap(tab.theme, surface);
-  const elements = placed.map((el) => elementAsSeen(el, surface, map));
+  const seenEls = placed.map((el) => elementAsSeen(el, surface, map));
+  // A plain page in dark chrome: what the slate paper sank is lifted off it, as on the canvas.
+  const elements =
+    appearance === 'dark' && !page.background?.fill
+      ? [...inkedOnPaper(placed, seenEls, plainPaper('dark'))]
+      : seenEls;
   // A tile is a thumbnail: an animated background is drawn still (export-tab's `stillBackground`).
   return renderTabToSvg({ ...tab, elements }, { page: seen, stillBackground: true });
 }

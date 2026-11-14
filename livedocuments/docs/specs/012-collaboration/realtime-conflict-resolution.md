@@ -4,7 +4,11 @@ Simultaneous multi-user editing is **robust**: two people working the same tab a
 other, and a dropped connection recovers cleanly. Two mechanisms do this: element-level ops, and an ordered room with
 reconnect catch-up. A full field-level CRDT for concurrent edits to the _same_ element is deliberately not built (see
 the decision at the end), so same-element collisions are last-writer-wins; the advisory selection lock makes them
-rare, it does not prevent them.
+rare, it does not prevent them. The lock lasts until the holder's change to an element has
+landed, not just while it is selected ([Editor app](../007-editor/editor-app.md) "Held until the holder's
+change lands"): a peer's label typed just after the owner moved and let go of a box would otherwise be replaced by
+the owner's save of the move, because the lock was gone before that save reached the room
+(Work Tracker 862, `realtime-peer-label.spec.ts`).
 
 ## The problem
 

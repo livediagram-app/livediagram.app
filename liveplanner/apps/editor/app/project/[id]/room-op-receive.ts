@@ -10,6 +10,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from '@liveworkspace/workbench/lib/share-link-ops';
 import { endPeerDragPreview, receivePeerDragPreview } from '@/hooks/collab/peer-drag-previews';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
+import { remoteSelectionOf } from '@/lib/presence-rows';
 
 type RoomOpFrom = Parameters<NonNullable<RoomHandlers['onOp']>>[0];
 type RoomOp = Parameters<NonNullable<RoomHandlers['onOp']>>[1];
@@ -113,7 +114,8 @@ export function receiveRoomOp(
       const next = new Map(prev);
       // tabId scopes the badge + docs/specs/007-editor/editor-app.md lock to the sender's tab;
       // absent (older peer) = tab-unknown, shown everywhere.
-      next.set(from, { elementId: op.elementId, tabId: op.tabId });
+      // elementIds = the whole selection, and what they let go of until it lands, so all of it holds.
+      next.set(from, remoteSelectionOf(op));
       return next;
     });
   } else if (op.kind === 'cursor') {

@@ -118,7 +118,7 @@ describe('add', () => {
       token: 'tok_1',
     });
     expect(res.status).toBe(201);
-    const { comment: posted } = (await res.json()) as { comment: Comment };
+    const { comment: posted } = await res.json<{ comment: Comment }>();
     expect(posted).toMatchObject({
       text: 'hello',
       authorName: 'Webber',

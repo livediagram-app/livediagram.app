@@ -51,9 +51,13 @@ async function freePort(offset: number): Promise<number> {
 
 // The Worker's isolate through its inspector: what V8 holds (heap used plus ArrayBuffer backing stores).
 async function inspect(inspectorPort: number) {
-  const [target] = (await (await fetch(`http://127.0.0.1:${inspectorPort}/json`)).json()) as {
-    webSocketDebuggerUrl: string;
-  }[];
+  const [target] = await (
+    await fetch(`http://127.0.0.1:${inspectorPort}/json`)
+  ).json<
+    {
+      webSocketDebuggerUrl: string;
+    }[]
+  >();
   // Node's WebSocket sends a User-Agent, so wrangler's inspector proxy asks for a local Origin too.
   const ws = new WebSocket(target!.webSocketDebuggerUrl, {
     headers: { Origin: 'http://localhost' },

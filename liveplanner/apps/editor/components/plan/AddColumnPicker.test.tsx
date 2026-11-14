@@ -135,7 +135,7 @@ describe('AddColumnPicker', () => {
     fireEvent.keyDown(field(), { key: 'ArrowDown' });
     fireEvent.change(field(), { target: { value: 'DOING' } });
     expect(screen.getByText('This board already has Doing')).toBeTruthy();
-    const add = screen.getByRole('button', { name: 'Add Column' }) as HTMLButtonElement;
+    const add = screen.getByRole<HTMLButtonElement>('button', { name: 'Add Column' });
     expect(add.disabled).toBe(true);
     fireEvent.keyDown(field(), { key: 'Enter' });
     expect(h.onName).not.toHaveBeenCalled();

@@ -15,7 +15,7 @@ import {
   transformedBounds,
   translate,
 } from './matrix';
-import { resizeRaster, sampleInto } from './resample';
+import { resizePlan, resizeRaster, resizeRegion, resizeSourceRect, sampleInto } from './resample';
 import { transformRaster } from './warp';
 
 describe('matrices', () => {
@@ -135,5 +135,68 @@ describe('geometry', () => {
     expect(rotatePoint(10, 5, from, 90)).toEqual({ x: 45, y: 10 });
     expect(rotatePoint(10, 5, from, 180)).toEqual({ x: 90, y: 45 });
     expect(rotatePoint(10, 5, from, 270)).toEqual({ x: 5, y: 90 });
+  });
+});
+
+// Make Sizes resizes a large picture a tile at a time (docs/specs/031-photo/photo-pages.md "Making sizes"): each
+// output tile drawn from only the source pixels it reads matches the whole resize there.
+describe('resizing a region at a time', () => {
+  /** A picture of noise with some transparency, the same each run. */
+  function noise(w: number, h: number, seed: number) {
+    const r = createRaster(w, h);
+    let v = seed;
+    for (let i = 0; i < r.data.length; i++) {
+      v = (v * 1103515245 + 12345) % 2147483648;
+      r.data[i] = i % 4 === 3 && v % 7 === 0 ? 0 : v % 256;
+    }
+    return r;
+  }
+  const crop = (r: ReturnType<typeof createRaster>, x: number, y: number, w: number, h: number) => {
+    const out = createRaster(w, h);
+    for (let j = 0; j < h; j++)
+      out.data.set(
+        r.data.subarray(((y + j) * r.width + x) * 4, ((y + j) * r.width + x + w) * 4),
+        j * w * 4,
+      );
+    return out;
+  };
+
+  const cases: [number, number, number, number][] = [
+    [97, 61, 23, 17], // a big shrink: averaged by blocks first
+    [97, 61, 40, 30], // a small shrink
+    [31, 19, 70, 45], // an enlargement
+    [120, 40, 13, 29], // a shrink one way, an enlargement the other
+  ];
+  for (const how of ['bicubic', 'bilinear', 'nearest'] as const)
+    for (const [W, H, w, h] of cases)
+      it(`${how}: ${W}x${H} to ${w}x${h}, tile by tile, matches the whole`, () => {
+        const pic = noise(W, H, W * 31 + h);
+        const whole = resizeRaster(pic, w, h, how);
+        const plan = resizePlan(W, H, w, h, how);
+        const T = 7;
+        let worst = 0;
+        for (let ty = 0; ty < h; ty += T)
+          for (let tx = 0; tx < w; tx += T) {
+            const out = { x: tx, y: ty, width: Math.min(T, w - tx), height: Math.min(T, h - ty) };
+            const src = resizeSourceRect(plan, out);
+            expect(src.x).toBeGreaterThanOrEqual(0);
+            expect(src.x + src.width).toBeLessThanOrEqual(W);
+            const tile = resizeRegion(crop(pic, src.x, src.y, src.width, src.height), plan, out);
+            for (let y = 0; y < out.height; y++)
+              for (let x = 0; x < out.width; x++)
+                for (let c = 0; c < 4; c++) {
+                  const a = tile.data[(y * out.width + x) * 4 + c]!;
+                  const b = whole.data[((ty + y) * w + tx + x) * 4 + c]!;
+                  worst = Math.max(worst, Math.abs(a - b));
+                }
+          }
+        // At most a rounding step apart (a sample's place worked from the tile's corner).
+        expect(worst).toBeLessThanOrEqual(1);
+      });
+
+  it('plans no averaging for a gentle shrink, nor for Nearest', () => {
+    expect(resizePlan(100, 100, 60, 60)).toMatchObject({ bx: 1, by: 1, fromW: 100 });
+    expect(resizePlan(1000, 1000, 60, 60, 'nearest')).toMatchObject({ bx: 1, by: 1 });
+    expect(resizePlan(1000, 100, 60, 60)).toMatchObject({ bx: 8, by: 1, fromW: 125, fromH: 100 });
   });
 });

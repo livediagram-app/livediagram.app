@@ -68,9 +68,9 @@ export function looseOnArticles(
         at.y <= p.rect.y + p.rect.height,
     );
     if (!page?.flow || !articles[page.flow]) continue;
-    const inZone = (zones.get(page.flow) ?? []).some(
-      (r) => at.x >= r.x && at.x <= r.x + r.width && at.y >= r.y && at.y <= r.y + r.height,
-    );
+    const inZone = zones
+      .get(page.flow)!
+      .some((r) => at.x >= r.x && at.x <= r.x + r.width && at.y >= r.y && at.y <= r.y + r.height);
     if (inZone) continue;
     const list = out.get(page.flow);
     if (list) list.push(id);

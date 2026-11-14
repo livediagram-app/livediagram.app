@@ -19,6 +19,7 @@ import {
   applyPatch,
   automationPerson,
   calculatedWritten,
+  isTrashed,
   createRefusal,
   fieldsWithinBounds,
   itemLabels,
@@ -146,7 +147,8 @@ export async function patchCard(
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const now = Date.now();
     const before = await readItem(deps.env, deps.planId, card.id);
-    if (!before) return { ok: false, reason: 'The card is gone' };
+    // A card moved to the Trash counts as gone, as one deleted does (readItem answers both).
+    if (!before || isTrashed(before)) return { ok: false, reason: 'The card is gone' };
     const patch = rebaseLabels(planned, card, before);
     const status = patch.set?.['status'];
     const { status: _status, ...set } = patch.set ?? {};

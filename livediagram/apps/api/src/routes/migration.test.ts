@@ -1,7 +1,11 @@
 // The browser's one-time doors of the move (routes/migration.ts): the legacy guest claim's forwarding and answers,
 // and a This Browser document's parts handed to the index, with the real splitter and with a stub one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HandoffRequest, LocalSplitResult, MigrationRoomPayload } from '@liveworkspace/migration';
+import type {
+  HandoffRequest,
+  LocalSplitResult,
+  MigrationRoomPayload,
+} from '@liveworkspace/migration';
 import type { Env } from '../types';
 import { localPartId } from '../migration/local-parts';
 import { handleLegacyGuestClaim } from './legacy-guest';
@@ -40,8 +44,11 @@ function stubFetch(answer: (call: Call) => Response | Promise<Response>) {
   return calls;
 }
 
-const ctxOf = (path: string, body: unknown, opts: Parameters<typeof makeTestRouteContext>[2] = {}) =>
-  makeTestRouteContext('POST', path, { owner: CALLER, env: envOf(), body, ...opts });
+const ctxOf = (
+  path: string,
+  body: unknown,
+  opts: Parameters<typeof makeTestRouteContext>[2] = {},
+) => makeTestRouteContext('POST', path, { owner: CALLER, env: envOf(), body, ...opts });
 
 beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {});
@@ -153,10 +160,10 @@ describe('POST /api/migration/local-parts', () => {
     const calls = stubFetch(() => Response.json({ ok: true }, { status: 201 }));
     const res = await send({ id: 'local-1', name: 'Mine', tabs: [diagram, deck] });
     expect(res.status).toBe(200);
-    const answer = (await res.json()) as {
+    const answer = await res.json<{
       parts: { app: string; id: string; url: string; tabIds: string[] }[];
       keep: unknown[];
-    };
+    }>();
     const id = localPartId(CALLER, 'local-1:livedocuments');
     expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
     expect(answer.parts).toEqual([
@@ -212,14 +219,12 @@ describe('POST /api/migration/local-parts', () => {
         imageOwners: [{ imageId: 'i', owner: 'someone' }],
         imageGrants: [{ imageId: 'i', createdAt: 1 }],
       }) as unknown as MigrationRoomPayload;
-    const split = vi.fn(
-      (): LocalSplitResult => ({
-        keep: [diagram],
-        parts: [part('livedocuments', 'p-docs'), part('livedesign', 'p-design')],
-        crossReferences: [],
-        notes: [],
-      }),
-    );
+    const split = vi.fn((): LocalSplitResult => ({
+      keep: [diagram],
+      parts: [part('livedocuments', 'p-docs'), part('livedesign', 'p-design')],
+      crossReferences: [],
+      notes: [],
+    }));
     const handedOff: MigrationRoomPayload[] = [];
     const handOff = vi.fn(async (_env: Env, _caller: string, p: MigrationRoomPayload) => {
       handedOff.push(p);
@@ -251,9 +256,12 @@ describe('POST /api/migration/local-parts', () => {
   });
 
   it('passes the raw record’s fields to the splitter, and refuses a malformed request', async () => {
-    const split = vi.fn(
-      (): LocalSplitResult => ({ keep: [], parts: [], crossReferences: [], notes: [] }),
-    );
+    const split = vi.fn((): LocalSplitResult => ({
+      keep: [],
+      parts: [],
+      crossReferences: [],
+      notes: [],
+    }));
     const handOff = vi.fn(async () => 'landed' as const);
     const record = {
       id: 'l',

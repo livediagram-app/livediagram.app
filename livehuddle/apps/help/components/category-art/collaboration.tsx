@@ -28,7 +28,7 @@ export function CollaborationArt() {
         fill="fill-amber-100"
         stroke="stroke-amber-400"
       />
-      <Arrow from={[80, 106]} to={[92, 144]} tone="muted" />
+      <Arrow connector from={[80, 106]} to={[92, 144]} tone="muted" />
 
       {/* Sam's live selection on Research. */}
       <rect

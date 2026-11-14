@@ -163,7 +163,7 @@ describe('Report This Form', () => {
     render(<FormRespondPage />);
     await screen.findByRole('heading', { name: 'Feedback' });
     fireEvent.click(screen.getByRole('button', { name: 'Report This Form' }));
-    const send = screen.getByRole('button', { name: 'Send Report' }) as HTMLButtonElement;
+    const send = screen.getByRole<HTMLButtonElement>('button', { name: 'Send Report' });
     expect(send.disabled).toBe(true);
     fireEvent.click(screen.getByRole('radio', { name: 'Phishing or Asking for Passwords' }));
     fireEvent.change(screen.getByRole('textbox', { name: /Anything else/ }), {

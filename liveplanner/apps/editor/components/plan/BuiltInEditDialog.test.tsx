@@ -119,7 +119,7 @@ describe('Edit Field on a built-in field', () => {
     expect(within(dialog).getByText('Urgent to Low, for sorting and swimlanes')).toBeTruthy();
     // No Options, Required or Try It: a built-in's values and rules are its own.
     expect(within(dialog).queryByRole('group', { name: 'Options' })).toBeNull();
-    const name = within(dialog).getByLabelText('Name') as HTMLInputElement;
+    const name = within(dialog).getByLabelText<HTMLInputElement>('Name');
     expect(name.placeholder).toBe('Priority');
     fireEvent.change(name, { target: { value: '' } });
     expect(within(dialog).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true);

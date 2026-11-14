@@ -14,12 +14,12 @@ const OUT = process.env.ICON_SHEET_DIR ?? '/tmp/icon-sheet';
 
 type Cell = { name: string; node: ReactNode };
 
-const modules = import.meta.glob(
+const modules = import.meta.glob<Record<string, Record<string, unknown>>>(
   ['../../components/**/*-icons.tsx', '../../components/**/*-glyphs.tsx'],
   {
     eager: true,
   },
-) as Record<string, Record<string, unknown>>;
+);
 
 const isIconExport = (name: string, v: unknown): v is ComponentType =>
   typeof v === 'function' && /^[A-Z]/.test(name) && /(Icon|Glyph)$/.test(name);

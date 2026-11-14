@@ -190,7 +190,7 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
   }
   // An API client's create answers where the index filed it (the MCP names the folder it landed in).
   if (filed && res.status === 201) {
-    const answer = (await res.json()) as { document?: DocumentDTO | null };
+    const answer = await res.json<{ document?: DocumentDTO | null }>();
     if (answer.document) answer.document = { ...answer.document, ...filed };
     return json(answer, { status: 201 });
   }

@@ -20,7 +20,7 @@ import { FROM_FORM_FIELD } from '@liveplanner/forms';
 
 const counts = vi.hoisted(() => ({ face: 0 }));
 vi.mock('./PlanCardFace', async (orig) => {
-  const m = (await orig()) as typeof import('./PlanCardFace');
+  const m = await orig<typeof import('./PlanCardFace')>();
   const Face = m.PlanCardFace;
   return {
     ...m,

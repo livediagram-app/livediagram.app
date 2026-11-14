@@ -165,9 +165,9 @@ describe('GET /api/internal/items/:id/export?format=csv', () => {
     ]);
     const res = await get('A/export?format=csv');
     expect(res.status).toBe(200);
-    const { tables } = (await res.json()) as {
+    const { tables } = await res.json<{
       tables: { name: string; kind: string; csv: string }[];
-    };
+    }>();
     expect(tables.map((t) => [t.name, t.kind])).toEqual([
       ['Work', 'board'],
       ['Costs', 'sheet'],
@@ -351,9 +351,11 @@ describe('GET /api/internal/items/:id/export?format=comments', () => {
         }),
       ),
     ]);
-    const { threads } = (await (await get('A/export?format=comments')).json()) as {
+    const { threads } = await (
+      await get('A/export?format=comments')
+    ).json<{
       threads: { id: string; on: string | null; comments: { id: string; text: string }[] }[];
-    };
+    }>();
     expect(threads.map((t) => [t.id, t.on])).toEqual([
       ['th-a', 'elsewhere'],
       ['th-b', 'card1'],

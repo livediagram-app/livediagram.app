@@ -19,6 +19,11 @@ puts the api on the same origin as production does; the editor's own port can't 
 | livedesign    | 3400              | 3402 (`apps/live`) | 8989                      |
 | livehuddle    | 3500              | 3502               | 9087                      |
 
+- A verifier starts a product in its own port block from the shared verify kit (`.verify-kit/` beside `.turbo/`, local and
+  gitignored): `.verify-kit/<product>/start.sh <worktree> <first port> <out dir>` for livediagram, livedocuments,
+  livehuddle and liveplanner, which puts the router on the first port, the editor on +2, the api on +6 and the
+  inspectors on +8 and +9, each wrangler with its own registry and state. liveplanner reads its sign-in client from
+  `clients/liveplanner-<first port>.env` (copy another, change the port). The kit README lists the helpers.
 - Check what's already listening first: `lsof -nP -iTCP:3100 -sTCP:LISTEN` (and the api port). The
   owner usually has the dev servers running. Never start a second `pnpm dev` over a running one, and
   never `pkill` dev servers or workers: the registry is machine-wide and other sessions use them.
@@ -63,7 +68,8 @@ clients sit beside it. Ask before editing a `.dev.vars` you didn't make.
   `-- --persist-to <dir>` when its state is elsewhere), so the local client takes your router as a redirect. The accounts Worker accepts a sign-in on an
   app's own address only on that app's first port (3500 for livehuddle), so give it
   `SIGN_IN_ON_APP_ORIGINS=false` there: sign-in then runs on the site's address and comes back to the app.
-- Running two e2e stacks (`scripts/e2e-stack.mjs`) side by side: give each its own `E2E_EDITOR_PORT`, `E2E_API_PORT`,
+- Running two e2e stacks (`scripts/e2e-stack.mjs`) side by side: every product defaults to its own ports (a test guards
+  that no two clash), so two products' defaults run together; for two of one product give each its own `E2E_EDITOR_PORT`, `E2E_API_PORT`,
   `E2E_INDEX_PORT` and `E2E_MEDIA_PORT`. The wrangler inspectors of the index, media and api follow them (each port + 10),
   so no port falls outside the stack's own; set `E2E_INDEX_INSPECTOR_PORT`, `E2E_MEDIA_INSPECTOR_PORT` or `E2E_API_INSPECTOR_PORT` to place one elsewhere.
 - Without the api's accounts vars the editor still opens: nobody can sign in, guests have no identity

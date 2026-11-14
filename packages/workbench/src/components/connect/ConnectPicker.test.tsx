@@ -133,9 +133,9 @@ describe('ConnectPicker', () => {
   it('holds both ways off, and says why, when the host is not the person’s to share', async () => {
     const { onConnect } = setup({ hostManaged: false });
     await screen.findByRole('list', { name: 'Recent files' });
-    const both = screen.getByRole('switch', {
+    const both = screen.getByRole<HTMLButtonElement>('switch', {
       name: 'Add connection to both files',
-    }) as HTMLButtonElement;
+    });
     expect(both.disabled).toBe(true);
     expect(screen.getByText("Only this diagram's owner can connect it both ways.")).toBeTruthy();
     fireEvent.click(row('plan1'));

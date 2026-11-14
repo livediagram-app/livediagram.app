@@ -73,7 +73,7 @@
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.8",
     "jsdom": "^31.0.0",
-    "oxlint": "^1.90.0",
+    "oxlint": "^1.93.0",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"

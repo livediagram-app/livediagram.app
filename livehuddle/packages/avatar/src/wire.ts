@@ -150,8 +150,10 @@ export type AvatarPresence = {
   // Which of the piece's seats (its `seatPoints` index), when the sitter sat (the sender's epoch ms) and a random
   // tiebreak drawn then (docs/specs/009-elements/chair.md "Occupancy is presence"): a seat takes one sitter, and two
   // who sat at once settle it the same way on every machine, the earlier `at` then the lower `tie` keeping it.
-  // Optional so an older client's packet parses: it holds the seat nearest its feet. Sent only while seated.
-  seat?: { index: number; at: number; tie: number } | null;
+  // Optional so an older client's packet parses: it holds the seat nearest its feet. Sent only while seated. `of` is
+  // how many seats the piece had when the index was taken, so a table that grew or shrank since reads the seat it was
+  // (chair.md "A table that loses seats"); absent from an older client.
+  seat?: { index: number; at: number; tie: number; of?: number } | null;
   // A drink in the hand (docs/specs/009-elements/office.md "Using it"), from a water cooler or a coffee machine,
   // or none. Presence like the seat: put down after a minute or on leaving the mode, never in the document.
   // Optional so an older client's packet parses as empty-handed; anything else draws nothing.

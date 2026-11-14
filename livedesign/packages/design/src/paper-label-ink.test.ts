@@ -3,7 +3,12 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { contrastRatio } from './colors';
 import { hexOklch } from './pen-colours';
 import { LABEL_BACKDROP_CONTRAST } from './label-backdrop';
-import { PAPER_INK_CACHE_SIZE, withPaperLabelInks } from './paper-label-ink';
+import {
+  PAPER_INK_CACHE_SIZE,
+  paperMarkBackdrops,
+  withPaperLabelInks,
+  withPaperMarkInks,
+} from './paper-label-ink';
 import type { Element } from './index';
 
 // docs/specs/011-theme/light-and-dark.md "Words on the plain paper keep the contrast they were made with";
@@ -124,6 +129,126 @@ describe('withPaperLabelInks', () => {
     }
     expect(1600).toBeGreaterThan(PAPER_INK_CACHE_SIZE);
     const ms = cpuMsOf(() => withPaperLabelInks(els, WHITE, els, SLATE));
+    expect(ms).toBeLessThan(cpuBudgetMs(400));
+  });
+});
+
+// docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen" (Work Tracker 748).
+const part = (id: string, fillColor: string, extra: Record<string, unknown> = {}, x = 100) =>
+  ({
+    id,
+    type: 'shape',
+    shape: 'rectangle',
+    x,
+    y: 100,
+    width: 80,
+    height: 40,
+    fillColor,
+    ...extra,
+  }) as unknown as Element;
+const glyph = (id: string, strokeColor: unknown, x = 100) =>
+  ({
+    id,
+    type: 'shape',
+    shape: 'icon',
+    iconId: 'home',
+    x,
+    y: 100,
+    width: 24,
+    height: 24,
+    strokeColor,
+  }) as unknown as Element;
+const colours = (el: Element | undefined) =>
+  el as unknown as { fillColor?: string; strokeColor?: string };
+
+describe('withPaperMarkInks', () => {
+  it('walks an ink fill on the paper to 3:1 on the slate, its matching stroke with it', () => {
+    const els = [
+      part('button', SLATE),
+      part('arrow', SLATE, { strokeColor: SLATE }, 300),
+      part('framed', SLATE, { strokeColor: '#cbd5e1' }, 500),
+    ];
+    const out = withPaperMarkInks(els, WHITE, els, SLATE);
+    for (const el of out) {
+      const ratio = contrastRatio(colours(el).fillColor!, SLATE);
+      expect(ratio).toBeGreaterThanOrEqual(LABEL_BACKDROP_CONTRAST - 0.01);
+      // The least walk: just past the floor, not white.
+      expect(ratio).toBeLessThan(LABEL_BACKDROP_CONTRAST + 0.5);
+    }
+    expect(colours(out[1]).strokeColor).toBe(colours(out[1]).fillColor);
+    expect(colours(out[2]).strokeColor).toBe('#cbd5e1');
+  });
+
+  it('walks an icon to the contrast it had on white, keeping a chosen glyph above a muted one', () => {
+    const els = [glyph('chosen', '#0f172a'), glyph('muted', '#5f6f86', 300)];
+    const out = withPaperMarkInks(els, WHITE, els, SLATE);
+    const chosen = contrastRatio(colours(out[0]).strokeColor!, SLATE);
+    const muted = contrastRatio(colours(out[1]).strokeColor!, SLATE);
+    expect(muted).toBeGreaterThanOrEqual(contrastRatio('#5f6f86', WHITE) - 0.01);
+    expect(chosen).toBeGreaterThan(muted);
+  });
+
+  it('changes nothing in the light editor, nor where no part sinks', () => {
+    const els = [part('button', SLATE), part('soft', '#e2e8f0', {}, 300)];
+    expect(withPaperMarkInks(els, WHITE, els, WHITE)).toBe(els);
+    const light = [els[1]!];
+    expect(withPaperMarkInks(light, WHITE, light, SLATE)).toBe(light);
+  });
+
+  it('leaves a part on a card, a translucent wash, a cycle, a word and an icon with no stroke colour', () => {
+    const els = [
+      part('card', '#ffffff', { width: 600, height: 400, x: 0, y: 0 }),
+      part('on-card', SLATE, {}, 100),
+      part('wash', SLATE, { opacity: 0.5 }, 700),
+      part('cycle', SLATE, { shape: 'cycle' }, 900),
+      label('word', SLATE, 1100),
+      glyph('bare', undefined, 1300),
+      glyph('named', 'ink', 1500),
+    ];
+    expect(withPaperMarkInks(els, WHITE, els, SLATE)).toBe(els);
+  });
+
+  it('leaves a part new since the stored list, or one that sat on a card as stored', () => {
+    const now = [part('new', SLATE, {}, 300), part('moved', SLATE, {}, 900)];
+    const stored = [
+      part('card', '#f1f5f9', { width: 600, height: 400, x: 800, y: 0 }),
+      part('moved', SLATE, {}, 900),
+    ];
+    expect(withPaperMarkInks(stored, WHITE, now, SLATE)).toBe(now);
+  });
+
+  it('leaves a part that read no better as stored (a pale fill a theme darkened)', () => {
+    const stored = [part('p', '#eeeeee')];
+    const now = [part('p', '#1e293b')];
+    expect(withPaperMarkInks(stored, WHITE, now, SLATE)).toBe(now);
+  });
+
+  it('keeps every untouched element by identity', () => {
+    const els = [part('soft', '#e2e8f0'), part('button', SLATE, {}, 300)];
+    const out = withPaperMarkInks(els, WHITE, els, SLATE);
+    expect(out[0]).toBe(els[0]);
+    expect(out[1]).not.toBe(els[1]);
+  });
+
+  it('answers every mark’s backdrop when no ids are given', () => {
+    const els = [
+      part('card', '#ffffff', { width: 600, height: 400, x: 0, y: 0 }),
+      glyph('g', SLATE),
+    ];
+    const found = paperMarkBackdrops(els, SLATE);
+    expect(found.get('g')).toEqual({ colour: SLATE, behind: '#ffffff' });
+    expect(found.get('card')).toEqual({ colour: '#ffffff', behind: SLATE });
+  });
+
+  it('walks a full board of sunk parts within budget', () => {
+    const els: Element[] = [];
+    for (let i = 0; i < 4000; i += 1)
+      els.push(
+        i % 2
+          ? glyph(`g${i}`, SLATE, (i % 80) * 200)
+          : part(`p${i}`, SLATE, { y: Math.floor(i / 80) * 60 }, (i % 80) * 200),
+      );
+    const ms = cpuMsOf(() => withPaperMarkInks(els, WHITE, els, SLATE));
     expect(ms).toBeLessThan(cpuBudgetMs(400));
   });
 });

@@ -154,7 +154,7 @@ describe('createMcpApp server card', () => {
     const res = await app.request(`https://mcp.liveexample.app${SERVER_CARD_PATH}`);
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('public, max-age=3600');
-    const card = (await res.json()) as { transport: { endpoint: string } };
+    const card = await res.json<{ transport: { endpoint: string } }>();
     expect(card.transport.endpoint).toBe('https://mcp.liveexample.app/mcp');
 
     const again = await app.request(`https://mcp.liveexample.app${SERVER_CARD_PATH}`);
@@ -164,7 +164,7 @@ describe('createMcpApp server card', () => {
   it('keeps a bounded cache of origins', async () => {
     for (let i = 0; i < 10; i++) {
       const res = await app.request(`http://localhost:${9000 + i}${SERVER_CARD_PATH}`);
-      const card = (await res.json()) as { transport: { endpoint: string } };
+      const card = await res.json<{ transport: { endpoint: string } }>();
       expect(card.transport.endpoint).toBe(`http://localhost:${9000 + i}/mcp`);
     }
   });

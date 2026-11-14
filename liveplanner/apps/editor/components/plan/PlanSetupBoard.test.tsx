@@ -43,7 +43,7 @@ describe('Setup Board', () => {
     expect(screen.getByRole('dialog', { name: 'Set Up Your Board' })).toBeTruthy();
     expect(screen.queryAllByRole('checkbox', { checked: true })).toHaveLength(0);
     expect(screen.getByText('Pick at least one card type.')).toBeTruthy();
-    const next = screen.getByRole('button', { name: 'Next: Columns' }) as HTMLButtonElement;
+    const next = screen.getByRole<HTMLButtonElement>('button', { name: 'Next: Columns' });
     expect(next.disabled).toBe(true);
     fireEvent.click(screen.getByRole('checkbox', { name: /Task/ }));
     expect(next.disabled).toBe(false);
@@ -57,7 +57,7 @@ describe('Setup Board', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: /Note/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
     expect(screen.getByText('No columns yet. Add one below.')).toBeTruthy();
-    const next = screen.getByRole('button', { name: 'Next: Layout' }) as HTMLButtonElement;
+    const next = screen.getByRole<HTMLButtonElement>('button', { name: 'Next: Layout' });
     expect(next.disabled).toBe(true);
     // An existing state's tile names it and where it is used.
     fireEvent.click(screen.getByRole('button', { name: 'Add To Do' }));
@@ -180,7 +180,7 @@ describe('Setup Board', () => {
     render(<PlanSetupBoard {...props} />);
     expect(screen.getByText('Step 1 of 3')).toBeTruthy();
     toColumns();
-    const next = screen.getByRole('button', { name: 'Next: Layout' }) as HTMLButtonElement;
+    const next = screen.getByRole<HTMLButtonElement>('button', { name: 'Next: Layout' });
     expect(next.disabled).toBe(true);
     // Create Board is the Layout step's alone.
     expect(screen.queryByRole('button', { name: 'Create Board' })).toBeNull();

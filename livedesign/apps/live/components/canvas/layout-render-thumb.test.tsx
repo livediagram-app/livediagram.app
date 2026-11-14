@@ -9,9 +9,12 @@ import {
   newLogoPage,
   newWireframePage,
   pageDeviceClass,
+  type Element,
   type Tab,
 } from '@livedesign/design';
-import { layoutCatalogueFor, LOGO_LAYOUTS } from '@livedesign/templates';
+import { buildPageLayout, layoutCatalogueFor, LOGO_LAYOUTS } from '@livedesign/templates';
+import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-projector';
+import { themeViewMap } from '@/lib/themes';
 import { LayoutRenderThumb, layoutRenderSvg, PAGE_PAPER_DARK } from './layout-render-thumb';
 import { LayoutThumb } from './layout-thumb';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
@@ -76,5 +79,33 @@ describe('layout tiles', () => {
     const t = cpuNowMs();
     for (const l of layouts) layoutRenderSvg(flow, screen!, l.id);
     expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(1000));
+  });
+
+  it('render all of them in dark chrome, with the paper walks, quickly enough for the whole gallery', () => {
+    const t = cpuNowMs();
+    for (const l of layouts) layoutRenderSvg(flow, screen!, l.id, 'dark');
+    expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(1000));
+  });
+
+  // docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen": a tile on the dark paper lifts
+  // what the paper sinks as the canvas does, so a primary button is the canvas's mid slate, not slate on slate.
+  it('draw a dark tile’s ink button as the canvas draws it', () => {
+    const placed = buildPageLayout('wf-sign-in', screen!);
+    const drawn = createStockColourProjector()(
+      placed,
+      'dark',
+      themeViewMap(undefined, 'dark'),
+      plainPaper('dark'),
+    );
+    const fills = (els: readonly Element[]) =>
+      els.map((el) => (el as { fillColor?: string }).fillColor);
+    const lifted = fills(drawn).filter(
+      (fill, i) => fill !== fills(placed)[i] && fills(placed)[i] === PAGE_PAPER_DARK,
+    );
+    expect(lifted.length).toBeGreaterThan(0);
+    const svg = layoutRenderSvg(flow, screen!, 'wf-sign-in', 'dark');
+    for (const fill of lifted) expect(svg).toContain(fill);
+    // In light chrome the button keeps its ink.
+    expect(layoutRenderSvg(flow, screen!, 'wf-sign-in', 'light')).not.toContain(lifted[0]);
   });
 });

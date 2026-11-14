@@ -259,6 +259,26 @@ function longTableFront(width: number): FixedSeatGrid {
   };
 }
 
+/**
+ * Seat `index` of a piece that had `from` seats, read against the `to` it has now (livehuddle's chair.md "A table that
+ * loses seats"): the same index when the count is unchanged. The only piece whose count changes is the Meeting Table
+ * (a Long Table's length, a type change in place), whose seats run far row, near row, left end, right end (`2n + 2`):
+ * a row seat keeps its place along its row while the new row has it, the ends stay the ends, and a seat the table no
+ * longer has is -1. Any other change keeps an index the piece still has and drops the rest.
+ */
+export function remapSeat(index: number, from: number, to: number): number {
+  if (from === to) return index;
+  const table = (count: number) => count >= 4 && count % 2 === 0;
+  if (!table(from) || !table(to)) return index < to ? index : -1;
+  const n = (from - 2) / 2;
+  const m = (to - 2) / 2;
+  if (index >= 2 * n) return index < from ? 2 * m + (index - 2 * n) : -1;
+  const near = index >= n;
+  const slot = near ? index - n : index;
+  if (slot >= m) return -1;
+  return near ? m + slot : slot;
+}
+
 /** Where a long table of `length` puts its side chairs down it on its side (the Meeting Table's 86 and 134 at 232). */
 export function longTableSideYs(length: number): number[] {
   const k = (length - 184) / Math.max(1, length - 172);

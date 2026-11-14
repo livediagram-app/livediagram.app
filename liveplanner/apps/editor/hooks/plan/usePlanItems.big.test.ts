@@ -13,7 +13,7 @@ vi.mock('@/lib/api/items', () => api);
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const transitions = vi.hoisted(() => ({ count: 0 }));
 vi.mock('react', async (orig) => {
-  const react = (await orig()) as typeof import('react');
+  const react = await orig<typeof import('react')>();
   return {
     ...react,
     startTransition: (fn: () => void) => {

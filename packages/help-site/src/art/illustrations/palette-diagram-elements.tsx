@@ -184,7 +184,7 @@ export function BadgesAndSteps() {
       {boxes.map((b, i) => (
         <g key={b.label}>
           <Shape x={b.x} y={56} w={108} h={52} label={b.label} />
-          {i < boxes.length - 1 && <Arrow from={[b.x + 110, 82]} to={[b.x + 126, 82]} />}
+          {i < boxes.length - 1 && <Arrow connector from={[b.x + 110, 82]} to={[b.x + 126, 82]} />}
           <StepDisc cx={b.x} cy={56} n={i + 1} />
         </g>
       ))}

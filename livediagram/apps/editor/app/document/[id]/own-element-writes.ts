@@ -1,5 +1,11 @@
 import type { RoomElementOp } from '@livediagram/document';
 import type { RoomOp } from '@livediagram/api-schema';
+import {
+  createOwnWrites,
+  holdOwnWriteKeys,
+  ownWriteKey as keyOf,
+  type OwnWrites,
+} from '@liveworkspace/workbench/lib/own-writes';
 
 // This editor's element writes the room has not sequenced yet (docs/specs/012-collaboration/realtime-conflict-resolution.md
 // "Same-element edits converge").
@@ -16,31 +22,11 @@ import type { RoomOp } from '@livediagram/api-schema';
 // an `add` is a new id. A hold is released when the room confirms the op, when the
 // write fails, or when the room cannot say (a closed socket, a timeout), so an element is never held for good.
 
-//
-// Whoever needs to know when a hold ends (the selection lock, which keeps holding an element we let go of until our
-// change to it lands: usePresenceBroadcast, selection-write-hold.ts) listens through `onOwnWritesReleased`.
-export type OwnElementWrites = { held: Map<string, number>; released: Set<() => void> };
+// The counts live in the tracker every editor shares (@liveworkspace/workbench/lib/own-writes); this file turns this
+// editor's op shapes into its keys.
+export type OwnElementWrites = OwnWrites;
 
-export function createOwnElementWrites(): OwnElementWrites {
-  return { held: new Map(), released: new Set() };
-}
-
-const keyOf = (tabId: string, elementId: string) => `${tabId}␟${elementId}`;
-
-/** Whether this editor is writing `elementId` on `tabId`: its save's op has not been sequenced yet. */
-export function isOwnWriteHeld(
-  writes: OwnElementWrites,
-  tabId: string,
-  elementId: string,
-): boolean {
-  return writes.held.has(keyOf(tabId, elementId));
-}
-
-/** Calls `listener` after every release of a hold; the returned function stops it. */
-export function onOwnWritesReleased(writes: OwnElementWrites, listener: () => void): () => void {
-  writes.released.add(listener);
-  return () => void writes.released.delete(listener);
-}
+export const createOwnElementWrites = createOwnWrites;
 
 // The element an op writes in full, if any: an add or an update.
 function writtenId(op: RoomElementOp): string | null {
@@ -57,18 +43,7 @@ export function holdOwnWrites(
     const id = writtenId(op);
     return id === null ? [] : [keyOf(tabId, id)];
   });
-  for (const key of keys) writes.held.set(key, (writes.held.get(key) ?? 0) + 1);
-  let released = false;
-  return () => {
-    if (released) return;
-    released = true;
-    for (const key of keys) {
-      const n = (writes.held.get(key) ?? 0) - 1;
-      if (n > 0) writes.held.set(key, n);
-      else writes.held.delete(key);
-    }
-    for (const listener of writes.released) listener();
-  };
+  return holdOwnWriteKeys(writes, keys);
 }
 
 /** Whether a peer's op is a whole-element update of an element this editor is writing, ordered before our write. */

@@ -89,7 +89,7 @@ describe('the tab rename route', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db } = await setUp();
     const res = await call(db, 'PUT', '/api/documents/D/tabs/t1/name', { name: 'x'.repeat(500) });
-    const { tab } = (await res.json()) as { tab: { name: string } };
+    const { tab } = await res.json<{ tab: { name: string } }>();
     expect(tab.name.length).toBeLessThan(500);
   });
 

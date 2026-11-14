@@ -209,7 +209,7 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
 
   it('refuses a key typed past the limit, but trims text dropped in at once', () => {
     layer([], { head: { x: 0, y: 0 }, coolingDown: false, onSend: () => true, onCancel: () => {} });
-    const box = screen.getByRole('textbox', { name: 'Message' }) as HTMLTextAreaElement;
+    const box = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Message' });
     const put = (value: string, inputType: string) => {
       // Through the native setter, as a browser writes it, so React sees the change.
       Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(

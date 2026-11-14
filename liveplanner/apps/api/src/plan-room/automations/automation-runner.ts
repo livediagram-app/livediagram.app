@@ -467,9 +467,15 @@ export async function runRule(
     // The AI steps, each in its place: one call, counted against the plan's day, then the steps after it planned
     // again from the card it left and written. One that fails stops the run there: the card steps and messages after
     // it are not written or sent (spec "How a step runs").
+    // The lines of the AI steps and messages, which say "Not asked" and "Not sent" in their own words.
+    const asideLines = () =>
+      new Set([...live.ai.map((a) => a.line), ...live.sends.map((m) => m.line)]);
     let stoppedBy: string | null = null;
+    let stoppedAt = 0;
     const asked = await ai(false, async (p) => {
-      const left = cardless ? null : await readItem(deps.env, deps.planId, item.id);
+      const read = cardless ? null : await readItem(deps.env, deps.planId, item.id);
+      // A card moved to the Trash during the AI call counts as gone, as one deleted does: planned from what it was.
+      const left = read && !isTrashed(read) ? read : null;
       const from = left ?? p.after?.from ?? item;
       const next = planActions(
         rule.steps,
@@ -479,12 +485,18 @@ export async function runRule(
       const segment = replanAfter(live, p, next);
       holdTurns(live.turns);
       stoppedBy = await writeSegment(segment, from);
+      stoppedAt = p.line;
       return stoppedBy === null;
     });
-    if (stoppedBy !== null) return end('failed', stoppedBy);
+    if (stoppedBy !== null) {
+      // A write after an AI step refused: the steps from there are not done and no message goes (the AI steps' own
+      // lines already say "Not asked").
+      heldCardSteps(lines, offset, stoppedAt + 1, lines.length - offset, asideLines());
+      heldSends(live.sends, 0, lines, offset);
+      return end('failed', stoppedBy);
+    }
     if (asked.failedLine !== undefined) {
-      const skip = new Set([...live.ai.map((p) => p.line), ...live.sends.map((s) => s.line)]);
-      heldCardSteps(lines, offset, asked.failedLine + 1, lines.length - offset, skip);
+      heldCardSteps(lines, offset, asked.failedLine + 1, lines.length - offset, asideLines());
       // The planning's failure lies past the failed AI step, never reached.
       failed ??= asked.failed ?? null;
     } else if (live.failed !== null) {

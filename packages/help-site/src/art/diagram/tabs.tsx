@@ -56,8 +56,8 @@ export function TabsArt() {
           fill="fill-emerald-100"
           stroke="stroke-emerald-400"
         />
-        <Arrow from={[104, 115]} to={[125, 115]} />
-        <Arrow from={[186, 115]} to={[205, 115]} />
+        <Arrow connector from={[104, 115]} to={[125, 115]} />
+        <Arrow connector from={[186, 115]} to={[205, 115]} />
         <Label x={46} y={64} size={10.5} weight={700} tone="strong">
           System Architecture
         </Label>

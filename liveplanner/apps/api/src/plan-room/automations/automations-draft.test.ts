@@ -121,7 +121,7 @@ describe('a draft', () => {
   it('answers a rule over the plan’s ids, unsaved, off and cleaned', async () => {
     const res = await draft();
     expect(res.status).toBe(200);
-    const { rule, picks } = (await res.json()) as AutomationDraftResponse;
+    const { rule, picks } = await res.json<AutomationDraftResponse>();
     expect(rule).toEqual({
       name: 'Stamp Done Cards',
       trigger: { kind: 'card_moved', to: ['done'] },
@@ -135,7 +135,7 @@ describe('a draft', () => {
     });
     expect(picks).toEqual([]);
     // Nothing saved.
-    const list = (await (await w.call('GET', '')).json()) as { rules: unknown[] };
+    const list = await (await w.call('GET', '')).json<{ rules: unknown[] }>();
     expect(list.rules).toEqual([]);
     expect(calls).toHaveLength(1);
     expect(calls[0]!.model).toBe(AUTOMATION_AI_MODEL);
@@ -186,7 +186,7 @@ describe('a draft', () => {
       timeZone: 'UTC',
     });
     expect(res.status).toBe(422);
-    const body = (await res.json()) as AutomationErrorBody;
+    const body = await res.json<AutomationErrorBody>();
     expect(body).toEqual({ error: 'automation_draft_off_topic', message: AI_DRAFT_OFF_TOPIC });
     expect(calls).toHaveLength(1);
   });

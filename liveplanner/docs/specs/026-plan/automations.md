@@ -594,7 +594,9 @@ steps only; the run is **Failed** if any did, naming them.
   are batched into one patch, in step order), so the card's history reads as one entry and the board moves once. A
   rule with AI actions splits at each one: the steps before an AI action land in one write, the AI action is asked,
   then the steps up to the next AI action, worked out afresh from the card it left, land in the next write (at most
-  four writes, since a rule holds at most three AI actions).
+  four writes, since a rule holds at most three AI actions). A card deleted or moved to the Trash while an AI action
+  was being asked counts as gone, as it does at the start of a run: the writes after it are refused ("The card is
+  gone"), the steps from there read "Not done", no message goes, and the run Failed.
 
 ## AI actions
 

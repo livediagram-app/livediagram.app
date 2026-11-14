@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createMask, FilterCancelled } from '@livedesign/photo-engine';
+import {
+  createMask,
+  FilterCancelled,
+  resizePlan,
+  resizeSourceRect,
+} from '@livedesign/photo-engine';
 import { PhotoWorkers } from './photo-worker-client';
 import { solid } from './photo-test-utils';
 import { runPhotoTask, transfersOf, type PhotoTask, type PhotoTaskResult } from './worker-tasks';
@@ -203,8 +208,16 @@ describe('the photo tasks', () => {
     hole[12 * 24 + 4] = 1;
     const filled = await runPhotoTask({ kind: 'fill', raster: pic, hole, seed: 3 });
     expect(filled.kind).toBe('fill');
-    // Make Sizes' resampling (image-ops.ts coverSize).
-    const resized = await runPhotoTask({ kind: 'resize', raster: pic, width: 6, height: 3 });
+    // Make Sizes' resampling, a tile at a time (image-ops.ts coverSize).
+    const plan = resizePlan(pic.width, pic.height, 6, 3);
+    const out = { x: 0, y: 0, width: 6, height: 3 };
+    expect(resizeSourceRect(plan, out)).toEqual({
+      x: 0,
+      y: 0,
+      width: pic.width,
+      height: pic.height,
+    });
+    const resized = await runPhotoTask({ kind: 'resize-region', region: pic, plan, out });
     expect(resized.kind === 'resize' && [resized.raster.width, resized.raster.height]).toEqual([
       6, 3,
     ]);
@@ -225,5 +238,14 @@ describe('the photo tasks', () => {
     expect(results.map((r) => transfersOf(r).length)).toEqual([1, 1, 1, 1, 1, 1, 0]);
     expect(transfersOf(encodeTask())).toHaveLength(1);
     expect(transfersOf({ kind: 'decode', bytes, type: 'image/png' })).toEqual([]);
+    const plan = resizePlan(1, 1, 1, 1);
+    expect(
+      transfersOf({
+        kind: 'resize-region',
+        region: raster,
+        plan,
+        out: { x: 0, y: 0, width: 1, height: 1 },
+      }),
+    ).toEqual([raster.data.buffer]);
   });
 });
