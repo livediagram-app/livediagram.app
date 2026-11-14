@@ -4,6 +4,7 @@ import { cleanup, renderHook } from '@testing-library/react';
 import { useEditorKeyboardShortcuts } from './useEditorKeyboardShortcuts';
 import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
+import { TAKES_HISTORY_ATTR } from './panel-history';
 
 // The listener itself, in a DOM: Delete AND Backspace delete the selection
 // (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
@@ -306,5 +307,103 @@ describe('undo and redo from the start search', () => {
     pressIn(input, 'c', { metaKey: true });
     expect(copySelection).not.toHaveBeenCalled();
     input.remove();
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Keyboard shortcuts" (Work Tracker 746): the item panel takes undo and
+// redo while it is the only dialog open, outside its text fields; every other dialog and every other key stand down.
+describe('the item panel takes undo', () => {
+  function panel(takesHistory = true) {
+    const dialog = document.createElement('div');
+    dialog.setAttribute('data-dialog-panel', '');
+    if (takesHistory) {
+      const marker = document.createElement('span');
+      marker.setAttribute(TAKES_HISTORY_ATTR, '');
+      dialog.appendChild(marker);
+    }
+    const button = document.createElement('button');
+    const input = document.createElement('input');
+    dialog.append(button, input);
+    document.body.appendChild(dialog);
+    modalOpened();
+    return {
+      dialog,
+      button,
+      input,
+      remove: () => {
+        modalClosed();
+        dialog.remove();
+      },
+    };
+  }
+  function pressOn(el: Element, key: string, init: KeyboardEventInit = {}) {
+    const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+    el.dispatchEvent(e);
+    return e;
+  }
+
+  it('undoes and redoes from the panel, and from the page with focus nowhere', () => {
+    const undo = vi.fn();
+    const redo = vi.fn();
+    renderHook(() => useEditorKeyboardShortcuts(deps({ undo, redo }).bag));
+    const p = panel();
+    expect(pressOn(p.button, 'z', { metaKey: true }).defaultPrevented).toBe(true);
+    pressOn(p.dialog, 'z', { ctrlKey: true, shiftKey: true });
+    pressOn(document.body, 'y', { ctrlKey: true });
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(redo).toHaveBeenCalledTimes(2);
+    p.remove();
+  });
+
+  it("leaves a text field's own undo, and every other key, to the panel", () => {
+    const undo = vi.fn();
+    const copySelection = vi.fn();
+    const { bag, spies } = deps({ undo, copySelection });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    const p = panel();
+    expect(pressOn(p.input, 'z', { metaKey: true }).defaultPrevented).toBe(false);
+    pressOn(p.button, 'c', { metaKey: true });
+    pressOn(p.button, 'Delete');
+    pressOn(p.button, 'z');
+    expect(undo).not.toHaveBeenCalled();
+    expect(copySelection).not.toHaveBeenCalled();
+    expect(spies.deleteSelected).not.toHaveBeenCalled();
+    p.remove();
+  });
+
+  it('stands down for any other dialog, for one opened over the panel, and for a key already claimed', () => {
+    const undo = vi.fn();
+    renderHook(() => useEditorKeyboardShortcuts(deps({ undo }).bag));
+    const other = panel(false);
+    pressOn(other.button, 'z', { metaKey: true });
+    other.remove();
+    const p = panel();
+    modalOpened();
+    pressOn(p.button, 'z', { metaKey: true });
+    modalClosed();
+    const claim = (e: Event) => e.preventDefault();
+    p.button.addEventListener('keydown', claim);
+    pressOn(p.button, 'z', { metaKey: true });
+    p.button.removeEventListener('keydown', claim);
+    expect(undo).not.toHaveBeenCalled();
+    p.remove();
+  });
+
+  it('gives a Viewer nothing, and a Participant its own undo', () => {
+    const viewer = vi.fn();
+    renderHook(() => useEditorKeyboardShortcuts(deps({ undo: viewer, isReadOnly: true }).bag));
+    const p = panel();
+    pressOn(p.button, 'z', { metaKey: true });
+    expect(viewer).not.toHaveBeenCalled();
+    cleanup();
+    const participant = vi.fn();
+    renderHook(() =>
+      useEditorKeyboardShortcuts(
+        deps({ undo: participant, isReadOnly: true, participant: true }).bag,
+      ),
+    );
+    pressOn(p.button, 'z', { metaKey: true });
+    expect(participant).toHaveBeenCalledTimes(1);
+    p.remove();
   });
 });

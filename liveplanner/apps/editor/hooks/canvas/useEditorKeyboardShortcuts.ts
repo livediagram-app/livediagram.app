@@ -28,6 +28,7 @@ import {
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
 import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
+import { modalTakesHistory } from './panel-history';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -49,8 +50,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // A modal dialog owns the keyboard while open: its buttons /
       // toggles aren't text inputs, so without this gate `R` dropped a
       // rectangle (and Backspace deleted the selection) on the canvas
-      // BEHIND the modal.
-      if (anyModalOpen()) return;
+      // BEHIND the modal. The one exception: the item panel takes undo and redo (panel-history.ts).
+      if (anyModalOpen()) {
+        const mod = e.metaKey || (e.ctrlKey && !altGraphHeld(e));
+        if (!e.defaultPrevented && modalTakesHistory(e, mod)) runModShortcut(e, liveRef.current);
+        return;
+      }
       // While focus is inside a menu of either kind the canvas stands down: an arrow there never
       // nudges, Delete never deletes, Tab never grows a mind map
       // (docs/specs/004-interface-design/menus.md).
