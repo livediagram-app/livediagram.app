@@ -843,6 +843,7 @@ Popping every element in on open would start a thousand animations at once on th
 When a shape is selected, a small **popover menu** appears next to it with action buttons (icon-only).
 
 - **Position:** above the shape if there is room between the shape and the canvas top edge, and it would not sit on the floating chrome over the canvas (the palette toolbar, a panel: any `data-floating-panel`); otherwise below it, as at the header. Horizontally centred on the shape.
+- **It never covers what you just duplicated** (Work Tracker 849). Straight after a Duplicate the copy is selected; when the popover above it would sit on the original (the copy landed below it), it goes below the copy instead, and when the popover below would sit on the original (the copy landed above it) it goes above, as long as that side has room in the canvas. A copy beside the original keeps the popover above, which clears it. This holds while the copy stays selected, through a second Duplicate (the new copy keeps clear of the one it came from), and for the multi-selection toolbar over a duplicated group. Every other selection places exactly as before.
 - **Layout:** small rounded panel with the same styling language as the palette (border, shadow).
 - **Overflow:** the buttons sit in a strip at most **95vw** wide. When they outgrow it (a busy element's full set
   on a phone) the strip scrolls sideways under a finger or trackpad, with no visible scrollbar, and the card and its
