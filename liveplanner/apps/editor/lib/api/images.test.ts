@@ -23,7 +23,9 @@ const {
   IMAGE_THUMB_EDGE,
   IMAGE_UPLOAD_MESSAGES,
   ImageUploadError,
+  LOCAL_ORIGINALS_MAX,
   releaseImageUrl,
+  resetLocalOriginalsForTests,
 } = await import('./images');
 const { API_BASE, setSessionSharePassword } = await import('./core');
 
@@ -55,6 +57,7 @@ const header = (call: Call, name: string) => new Headers(call.init.headers).get(
 beforeEach(() => {
   __setOfflineBackend(memBackend());
   resetDisplayCacheForTests();
+  resetLocalOriginalsForTests();
   setSessionSharePassword(null);
   grants.planGrant.mockReset();
   grants.planGrant.mockResolvedValue({ grant: 'G1', level: 'edit', tabId: null, expiresAt: 9e12 });
@@ -353,6 +356,67 @@ describe('apiImageUrl', () => {
     await offlinePutRecord(testRecord({ id: 'p1' }));
     expect(await apiImageUrl(SCOPE, 'img-2')).toMatch(/^blob:/);
     expect(calls[0]!.url).toBe(`${API_BASE}/images/img-2`);
+  });
+
+  // Work Tracker 795: a just-uploaded picture's tile waited on a fetch back of its whole original.
+  it('shows a picture just uploaded from this browser from its own bytes, fetching nothing', async () => {
+    let shownFrom: Blob | null = null;
+    URL.createObjectURL = vi.fn((blob: Blob) => {
+      shownFrom = blob;
+      return 'blob:mine';
+    });
+    const file = png();
+    answer = () =>
+      Response.json({
+        image: {
+          id: 'img-9',
+          contentType: 'image/png',
+          byteSize: 7,
+          width: 4,
+          height: 3,
+          createdAt: 1,
+        },
+        deduped: false,
+      });
+    decodesAs({ width: 4, height: 3 });
+    await apiUploadImage(SCOPE, file);
+    vi.stubGlobal('createImageBitmap', undefined);
+    calls = [];
+    expect(await apiImageUrl(SCOPE, 'img-9', { maxEdge: IMAGE_THUMB_EDGE })).toBe('blob:mine');
+    expect(shownFrom).toBe(file);
+    expect(calls).toHaveLength(0);
+    // Another plan's (or link's) read of the same id is its own, through the api.
+    await apiImageUrl({ ...SCOPE, projectId: 'p2' }, 'img-9');
+    expect(calls).toHaveLength(1);
+  });
+
+  it('keeps only the last few uploaded files, oldest out first', async () => {
+    let n = 0;
+    answer = () =>
+      Response.json({
+        image: {
+          id: `up-${n++}`,
+          contentType: 'image/png',
+          byteSize: 7,
+          width: 4,
+          height: 3,
+          createdAt: 1,
+        },
+        deduped: false,
+      });
+    decodesAs({ width: 4, height: 3 });
+    for (let i = 0; i <= LOCAL_ORIGINALS_MAX; i++) await apiUploadImage(SCOPE, png());
+    // The same picture again moves it to the newest place, rather than adding it twice.
+    n = LOCAL_ORIGINALS_MAX;
+    await apiUploadImage(SCOPE, png());
+    vi.stubGlobal('createImageBitmap', undefined);
+    answer = () => new Response(PNG, { headers: { 'Content-Type': 'image/png' } });
+    calls = [];
+    await apiImageUrl(SCOPE, 'up-0');
+    expect(calls).toHaveLength(1);
+    await apiImageUrl(SCOPE, 'up-1');
+    await apiImageUrl(SCOPE, `up-${LOCAL_ORIGINALS_MAX}`);
+    expect(calls).toHaveLength(1);
   });
 
   it('answers null when it cannot be shown, and asks again next time', async () => {
