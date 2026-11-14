@@ -292,6 +292,23 @@ describe('a GitHub rule on a plan not connected', () => {
     });
     expect(rules.find((r) => r.name === 'Plain')!.attention).toEqual([]);
   });
+
+  // Work Tracker 821: a rule whose named repositories all left the connection hears nothing, so it needs attention,
+  // naming them; one still hearing a named repository doesn't. Read from the kept list, never GitHub.
+  it('needs attention once every repository it names has left the connection', async () => {
+    await moveOn({ kind: 'pull_request_merged', repositories: ['acme/old'] }, 'done', 'All Gone');
+    await moveOn(
+      { kind: 'pull_request_merged', repositories: ['acme/old', 'ACME/repo-11'] },
+      'done',
+      'Some Gone',
+    );
+    const rules = await listed();
+    expect(rules.find((r) => r.name === 'All Gone')).toMatchObject({
+      needs: ['Repository acme/old is not heard'],
+      attention: [{ kind: 'repositories', names: ['acme/old'] }],
+    });
+    expect(rules.find((r) => r.name === 'Some Gone')!.attention).toEqual([]);
+  });
 });
 
 // Work Tracker 762 and 763 (docs/specs/026-plan/automations.md "GitHub triggers"): a GitHub rule's text names the pull

@@ -271,7 +271,13 @@ Finished**). Their engineering and their guarantees (once per delivery, never ba
   hears more than one (or the rule names some). None pressed (the default, and every rule saved before) hears every repository the plan hears; with some pressed, a pull request of
   any other repository starts nothing. A trigger names up to 20 (`REPOSITORIES_MAX`) by `owner/name`, any case,
   each once. A named repository the plan no longer hears stays as a pressed chip, "acme/old · Not Heard", so it can be
-  unpicked; while it is named the rule never hears it. Changing the trigger from one GitHub trigger to another (Pull
+  unpicked; while it is named the rule never hears it. When **every** repository a rule names has left the plan's
+  connection, the rule hears nothing, and the Rules list marks it **Needs Attention**, naming them ("acme/old isn't
+  heard any more", "acme/old and acme/api aren't heard any more", past two "acme/old, acme/api and 2 more aren't
+  heard any more"); agents read "Repository acme/old is not heard" ("Repositories acme/old, acme/api are not
+  heard"). While some named repository is still heard the rule is not marked: it still hears that one. The check
+  reads the plan's kept list of repositories (the one the GitHub view shows), never GitHub itself, so a moment GitHub
+  can't be reached marks nothing. Changing the trigger from one GitHub trigger to another (Pull
   Request Merged to Checks Finished) keeps the picks; changing it to any other trigger drops them. The Rules list's sentence ends "in acme/web" (or "in acme/web or
   acme/api"). Test on a Card runs as if one of the named repositories' pull requests had done it.
 - **Pull request values.** A GitHub rule's text may hold the pull request's values ([Values](#values)):
@@ -561,7 +567,10 @@ steps only; the run is **Failed** if any did, naming them.
   carries on. It is no failure, so it never counts toward pausing the rule. A field gone from the whole plan still
   fails the step as gone (the rule needs attention).
 - Every change a run makes lands as **one write per card** where it can (the step's changes to the triggering card
-  are batched into one patch, in step order), so the card's history reads as one entry and the board moves once.
+  are batched into one patch, in step order), so the card's history reads as one entry and the board moves once. A
+  rule with AI actions splits at each one: the steps before an AI action land in one write, the AI action is asked,
+  then the steps up to the next AI action land in the next write (at most four writes, since a rule holds at most
+  three AI actions).
 
 ## AI actions
 
@@ -592,8 +601,9 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
 - An AI action stands at the rule's **top level**: never inside an If / Else or a branch (`automation_step_unsupported`),
   since a branch would cost one call per related card. A rule holds at most **3** AI actions; each counts as one of
   the rule's 20 actions.
-- It runs **after the run's card writes**, in step order, each one call, and reads the card as those writes left it;
-  the run's outgoing messages go after. Its own writes are one more write each, by Automation.
+- It runs **in its place in the rule**: the card changes of the steps before it land first (in one write), then it
+  is asked, one call, reading the card as those writes left it, then the card changes of the steps after it land.
+  The run's outgoing messages go after every step. Its own writes are one more write each, by Automation.
 - **Someone editing the card meanwhile** keeps their change: a step's labels land on the card as it is when written,
   so a label a person added or took off while the AI answered (or while the run read the card) stays as they left
   it, and only the labels the step adds or takes off change. The same holds for Add Label, Remove Label and a Set
@@ -602,8 +612,10 @@ own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says 
   card type to Bug", "Set priority High, added labels billing, urgent". A step that fails fails the run with its
   reason, as any action does, after the steps before it landed. The run stops there: **no later AI step is asked**
   (its line says "Not asked: a step before it failed") and **no later outgoing message is sent** ("Not sent: a step
-  before it failed"), while a message from a step before it still goes. The card changes the rule's other steps
-  make land in the run's one write before any AI step is asked, so they stay done. A step fails:
+  before it failed"), while a message from a step before it still goes. The card steps before it stay done, and
+  **no later card step is written** either (its line says "Not done: a step before it failed"): a rule "Summarise
+  Card, then Move to Done" leaves the card where it was when the summary fails, as it would for any failed action. A
+  step the day's cap skips skips only itself, and the steps after it still land. A step fails:
   - no model here (a self-hosted copy with no `AI` binding): "AI isn't set up here". Local `wrangler dev` reaches the
     real Workers AI through the developer's wrangler sign-in (the binding is always remote), so local runs spend that
     account's Neurons within the same 100 a day; signed out, they fail "The AI couldn't answer";

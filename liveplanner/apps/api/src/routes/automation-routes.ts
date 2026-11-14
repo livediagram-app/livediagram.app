@@ -105,16 +105,21 @@ const stampOf = (g: Gated) => ({
   ...(g.ai ? { ai: true as const } : {}),
 });
 
-// Whether the plan is connected to GitHub, read only where the deployment has the App and a rule hears GitHub
-// (undefined: not checked, so no rule is marked; spec automations.md "GitHub triggers"). A failed read checks nothing.
+// The plan's GitHub connection as Needs Attention reads it: false for none, else the names of the repositories it
+// hears (its kept list, never a call to GitHub, so GitHub unreachable marks nothing). Read only where the deployment
+// has the App and a rule hears GitHub (undefined: not checked, so no rule is marked; spec automations.md "GitHub
+// triggers"). A failed read checks nothing.
 async function githubConnected(
   ctx: PlanRouteContext,
   projectId: string,
   rules: readonly AutomationRule[],
-): Promise<boolean | undefined> {
+): Promise<string[] | false | undefined> {
   if (!githubConfig(ctx.env) || !rules.some((r) => isGithubTrigger(r.trigger))) return undefined;
   try {
-    return (await readConnection(ctx.env.PLAN_DB, projectId)) !== null;
+    const connection = await readConnection(ctx.env.PLAN_DB, projectId);
+    return connection
+      ? connection.repositories.filter((r) => r.chosen).map((r) => r.fullName)
+      : false;
   } catch (error) {
     console.warn('[automations] github.connection.failed', { error: String(error) });
     return undefined;
@@ -129,8 +134,8 @@ function listed(
   nextAts: ReadonlyMap<string, number>,
   // An Incoming Webhook rule's address and secret (never the secret itself).
   hooks: ReadonlyMap<string, AutomationHookInfo> = new Map(),
-  // Whether the plan is connected to GitHub (undefined: not checked).
-  github?: boolean,
+  // The plan's GitHub connection: false for none, else the repositories it hears (undefined: not checked).
+  github?: string[] | false,
 ): AutomationListedRule {
   const s = stats.get(rule.id);
   const info = hooks.get(rule.id);
