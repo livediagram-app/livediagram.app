@@ -1,19 +1,17 @@
-// The drawing parts the editor-feature, tab and connection illustrations (./features,
-// ./foundations) are built from: a collaborator's pointer with its name tag, a small editor
+// The drawing parts livedocuments's and livedesign's editor-feature, tab and connection illustrations (./features,
+// and each app's components/feature-art/foundations) are built from: a collaborator's pointer with its name tag, a small editor
 // window, a node on the canvas, an arrow between nodes, and a key cap. Every part reads the
 // canvas palette (--art-*) or pairs its light colour with a dark: one, so a card reads the same
 // in either appearance.
 //
 // Feature-specific on purpose: ./shared holds what every feature-art file uses (Frame and the
-// colour constants), and none of these are wanted elsewhere.
+// colour constants).
 
 import type { CSSProperties, ReactNode } from 'react';
-import { Cursor, SKY } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import { Cursor, SKY } from './shared';
 
 // Panel chrome in an SVG scene: the white of the editor's panels, slate-900 in dark.
 export const PANEL = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700';
-// A muted rule or placeholder line inside a panel.
-export const MUTED = 'fill-slate-200 dark:fill-slate-700';
 // Secondary text inside a panel.
 export const SUBTLE = 'fill-slate-500 dark:fill-slate-400';
 // Primary text inside a panel.
@@ -173,49 +171,8 @@ export function MiniWindow({
 }
 
 // ── Scene-specific parts for ./features: the tab bar's pills, a window's tabs and its roadmap,
-// the undo cluster, a layer plane and an eye, a photograph and its selection
+// the undo cluster, a photograph and its selection
 // handles, and a palette tile with its key.
-
-// One tab pill in the bottom bar: the mode glyph (a small diagram mark) in the tab's accent, its
-// name, and on the active tab a tint and the people on it.
-export function TabPill({
-  x,
-  name,
-  color,
-  w,
-  active = false,
-  className,
-}: {
-  x: number;
-  name: string;
-  color: string;
-  w: number;
-  active?: boolean;
-  className?: string;
-}) {
-  return (
-    <g className={className}>
-      {active ? (
-        <rect x={x} y="71" width={w} height="16" rx="4" fill={color} fillOpacity="0.14" />
-      ) : null}
-      <g fill="none" stroke={color} strokeWidth="1" transform={`translate(${x + 5} 75.5)`}>
-        <rect x="0" y="0" width="3.2" height="3.2" rx="0.6" />
-        <rect x="4.6" y="3.8" width="3.2" height="3.2" rx="0.6" />
-        <path d="M1.6 3.2 V5.4 H4.6" />
-      </g>
-      <text
-        className={active ? undefined : SUBTLE}
-        x={x + 15}
-        y="81.3"
-        fontSize="6.5"
-        fontWeight={active ? 700 : 500}
-        fill={active ? color : undefined}
-      >
-        {name}
-      </text>
-    </g>
-  );
-}
 
 // The canvas cluster's undo and redo buttons, bottom right, as the editor draws them.
 export function UndoCluster({ x, y }: { x: number; y: number }) {
@@ -246,47 +203,6 @@ export function UndoCluster({ x, y }: { x: number; y: number }) {
         <path d="M35 6.5 H30.5 a3 3 0 0 0 0 6 H35.5" />
         <path d="M33.5 4.3 L35.8 6.5 L33.5 8.7" />
       </g>
-    </g>
-  );
-}
-
-// One layer plane in the isometric stack, centred at (110, y).
-export function Plane({
-  y,
-  fill,
-  stroke,
-  className,
-  children,
-}: {
-  y: number;
-  fill: string;
-  stroke: string;
-  className?: string;
-  children?: ReactNode;
-}) {
-  return (
-    <g className={className}>
-      <g transform={`translate(76 ${y})`}>
-        <path d="M-50 0 0 15 50 0 0 -15 Z" className={fill} strokeWidth="1.2" />
-        <path d="M-50 0 0 15 50 0 0 -15 Z" fill="none" className={stroke} strokeWidth="1.2" />
-        {children}
-      </g>
-    </g>
-  );
-}
-
-// An eye: open, or struck through once the layer is hidden.
-export function Eye({ x, y, hides = false }: { x: number; y: number; hides?: boolean }) {
-  return (
-    <g
-      transform={`translate(${x} ${y})`}
-      className="stroke-slate-500 dark:stroke-slate-400"
-      fill="none"
-      strokeWidth="0.9"
-    >
-      <path d="M-4 0 C-2.2 -2.6 2.2 -2.6 4 0 C2.2 2.6 -2.2 2.6 -4 0 Z" />
-      <circle r="1.1" />
-      {hides ? <path className="fa-b-late" d="M-4 3 L4 -3" strokeWidth="1.1" /> : null}
     </g>
   );
 }

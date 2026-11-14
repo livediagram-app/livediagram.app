@@ -1,14 +1,14 @@
-// Feature illustrations for the editor's own surfaces: the tab bar, copying a tab, undo, locking,
+// livedocuments's and livedesign's feature illustrations for the editor's own surfaces: the tab bar, copying a tab, undo, locking,
 // shift-drag and layers (images, keyboard shortcuts and the session tools are in ./features-more). Each is a small,
 // faithful mock of what the editor draws, on the Default scheme's canvas (--art-*) with panel
 // chrome that has a light and a dark half, moving on a shared 6s loop (fa-b-* in
-// app/feature-art/features.css). Under reduced motion every scene shows its finished state.
+// each app's app/feature-art/features.css). Under reduced motion every scene shows its finished state.
 //
 // Split from FeatureArt.tsx; see ./shared for Frame and the colour constants, ./features-parts
 // for the pointer, window, node, arrow and key cap the scenes are drawn from.
 
 import { UndoCluster, Node, Pointer, to, VIEW } from './features-parts';
-import { Frame, PINK, SKY } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import { Frame, PINK, SKY } from './shared';
 
 /** Undo that is yours alone: your move steps back, a teammate's edit beside it stays. */
 export function UndoRedoArt() {
