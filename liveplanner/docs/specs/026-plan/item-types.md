@@ -1742,10 +1742,9 @@ copied across or tidied up.
   them. A value whose field (or whose type) was deleted, so no type defines it, is listed last under **Removed
   Fields**, each labelled **Removed Field**, as plain text (a list joined with commas, a person by name, Yes or No).
 - **Copy To Field** (an Editor): a menu of the card's own type's fields that can take the value, by the type-change
-  rules (the same compatible kinds, Choice options and Rating scale; Description takes Text and Long Text); a removed
-  field's value offers none. Picking one writes the value into it, replacing what it holds ("Replaces its value" says
-  so in the menu), as one write and one undo step. With no field that can take it, the menu says "No field on {Type}
-  can take this value."
+  rules (the same compatible kinds, Choice options and Rating scale; Description takes Text and Long Text). Picking one writes the value into it, replacing what it holds ("Replaces its value" says
+  so in the menu), as one write and one undo step. With no field that can take it, Copy To Field is disabled, its
+  tooltip saying "No field on {Type} can take this value."; a removed field's value has no Copy To Field.
 - **Remove** (an Editor): deletes that one value (and its formatting) from the card, as one write and one undo step;
   never a bulk clear.
 - **Share roles.** An Editor copies and removes. A Participant and a Viewer see the tab, read-only, with neither

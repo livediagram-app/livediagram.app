@@ -727,7 +727,18 @@ export const PLAN_REMOVED = chart(
   'Removed',
   'Filters Removed',
   "A filter taken off a Card Search view, or one of a board's saved filters deleted.",
-  { rising: 'neutral' },
+  // A hidden value removed is Hidden Values'.
+  { rising: 'neutral', typeIn: (type) => type !== 'HiddenValue' },
+);
+
+// A card's Hidden tab (docs/specs/026-plan/item-types.md "The Hidden tab", in the liveplanner folder): opened, and the
+// values copied into a field of the card's type or removed. Never a field or a value.
+export const PLAN_HIDDEN_VALUES = chart(
+  'Plan',
+  'Opened',
+  'Hidden Values',
+  "A card's Hidden tab opened, and the values it lists copied into one of the card's fields (Copy To Field) or removed.",
+  { actionIn: ['Copied', 'Removed'], types: ['HiddenValues', 'HiddenValue'], rising: 'neutral' },
 );
 
 export const PLAN_CARDS_SELECTED = chart(
@@ -757,6 +768,8 @@ export const PLAN_ITEMS_OPENED = chart(
   'Opened',
   'Items Opened',
   'An item opened in the item panel, from a board or a Plan card.',
+  // A card's Hidden tab opened is Hidden Values'.
+  { typeIn: (type) => type !== 'HiddenValues' },
 );
 
 export const PLAN_ITEMS_DELETED = chart(
@@ -1430,6 +1443,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_ITEMS_DELETED,
   PLAN_ITEMS_RESTORED,
   PLAN_REMOVED,
+  PLAN_HIDDEN_VALUES,
   PLAN_CARDS_SELECTED,
   PLAN_SAVED_FILTERS_USED,
   PLAN_SAVED_FILTERS_RENAMED,

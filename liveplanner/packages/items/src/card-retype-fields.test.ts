@@ -268,7 +268,8 @@ describe('explicit mappings', () => {
   it('maps through withTypeChangeFields, never over the write’s own value or its formatting', () => {
     const card = { type: 'idea', fields: solution };
     const map = [{ from: 'f-solution', to: 'f-criteria' }];
-    expect(withTypeChangeFields(card, { type: 'work' }, [IDEA, WORK], map).set).toMatchObject({
+    const bare: { type: string; set?: ItemFields } = { type: 'work' };
+    expect(withTypeChangeFields(card, bare, [IDEA, WORK], map).set).toMatchObject({
       'f-criteria': 'Do the thing',
     });
     const own = { type: 'work', set: { 'f-criteria': 'Mine' } };

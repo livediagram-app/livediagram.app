@@ -758,6 +758,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Changed|SavedFilter':
     'Someone updated a saved filter to the filters showing on the board now.',
   'Plan|Removed|SavedFilter': 'Someone deleted one of a board’s saved filters.',
+  'Plan|Opened|HiddenValues':
+    'Someone opened a card’s Hidden tab, which lists the values it keeps from fields its type doesn’t show.',
+  'Plan|Copied|HiddenValue':
+    'Someone copied a value from a card’s Hidden tab into one of its type’s fields (Copy To Field).',
+  'Plan|Removed|HiddenValue': 'Someone removed a value from a card’s Hidden tab.',
   'Plan|Started|Timer': 'Someone started a timer on a card’s Time Spent field.',
   'Plan|Ended|Timer':
     'Someone stopped a timer on a card’s Time Spent field, recording its time as an entry.',

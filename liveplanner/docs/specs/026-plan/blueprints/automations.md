@@ -998,7 +998,7 @@ Threads and Wait (spec "Actions", "Wait").
   `AUTOMATION_TYPE_MAPS_MAX` = 13, each `to` once, `to` a custom field id or `description`; absent on older rules,
   which read as before). `validate.ts` refuses a repeated target (`steps.N.map.K.to`); `named.ts` names `from` across
   every type and `to` within the step's type first; `attention.ts` needs each field; `sentence.ts` reads
-  "Change to Work Item (Solution to Description)"; `rule-format.ts` documents it for MCP `change_rules`;
+  "Change to Work Item (Solution to Description)"; `rule-format.ts` describes it for MCP `change_rules`;
   `plan-actions.ts` passes the map to `typeChangeFields`. The editor's `SetTypePanel` (`CardActionPanels.tsx`) hosts
   `TypeFieldMapEditor.tsx`: a row per mapping (From: every type's custom fields, grouped by type; To: the new type's
   fields that can take it and Description), **Add Mapping**, and a remove button per row.

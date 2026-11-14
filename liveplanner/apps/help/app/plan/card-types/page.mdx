@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { PlanCardTypesScene } from '@/components/illustrations/plan';
+import { PlanCardHiddenTabScene, PlanCardTypesScene } from '@/components/illustrations/plan';
 
 export const metadata = helpMetadata({
   title: 'Card Types',
@@ -94,11 +94,35 @@ Only an Editor sets or changes inheritance. AI agents can set it too, through th
 
 Open the type and press **Delete**, then confirm (the last type can go too). Any cards of that type move to the **Trash** with it, so you can restore them there; a restored card shows as a plain Item card, keeping its fields. If a board showed that type alone, it shows and takes every type again; pick the ones it should show in its menu's **Supported Cards**.
 
+## Change a Card's Type
+
+Change a card's type from the picker at the top of its panel, by dropping it into another type's row on a board, or
+with a rule's **Change Card Type**. Its fields go with it:
+
+- **Built-in fields** (Title, Description, Priority, Assignee and the rest) stay as they are: every type has them.
+- **Your own fields carry over by name.** Each field of the new type takes the value of the old type's field of the
+  same name when the two hold the same kind of thing: an Idea's **App** fills a Work Item's **App**. A Choice value
+  carries only when the new field has that option.
+- **A rule can name more.** In a rule's **Change Card Type**, **Map Fields** sends a field into one whose name differs,
+  like an Idea's **Solution** into a Work Item's **Acceptance Criteria** or its **Description**. It replaces what that
+  field holds.
+- **Nothing is lost.** A value the new type has no field for stays on the card. Its panel shows it on a tab of its own,
+  **Hidden**, last of the card's tabs, grouped by the type it came from (**From Idea**). A value whose field or type
+  was deleted shows there too, as **Removed Field**. Change the card back and the values show in their fields again.
+
+<Figure caption="An Idea turned into a Work Item: its Solution and Effort wait on the Hidden tab.">
+  <PlanCardHiddenTabScene />
+</Figure>
+
+On the **Hidden** tab an Editor can **Copy To Field**, which copies a value into one of the card's own fields that can
+take it, or **Remove** it from the card. Each is one change you can undo. A Participant or a Viewer sees the tab but
+can't change it. The tab shows only while the card keeps such a value.
+
 ## Where Your Types Show
 
 - **+ Add card** on a board offers the types that board shows, set in its menu's **Supported Cards**.
 - **Add Card Type** at the bottom of **Add a Card** makes a new type right from the board: only that board's states start switched on, and once you save, the board offers it.
-- A card's panel lets you change its type from the picker at the top.
+- A card's panel lets you change its type from the picker at the top ([Change a Card's Type](#change-a-card-s-type)).
 - A board's rows can be one per type (**Type** under **Swimlanes**), in this panel's order.
 
 When someone saves a change, everyone with the plan open sees their cards and panels update at once. If two people save the same type at the same moment, the later save wins.
