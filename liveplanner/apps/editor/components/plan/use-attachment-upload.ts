@@ -89,8 +89,8 @@ export function useAttachmentUpload(
       stops.current.add(stop);
       let left = taken.length;
       setUploading((n) => n + left);
+      // A cancel lands in an upload's await, so each break below is where it is heard.
       for (const file of taken) {
-        if (stop.signal.aborted) break;
         try {
           setProgress(undefined);
           let shown = -1;
