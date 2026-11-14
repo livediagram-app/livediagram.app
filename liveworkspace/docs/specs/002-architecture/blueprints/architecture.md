@@ -174,8 +174,8 @@ Production names and bindings (staging adds `-staging` to every Worker, database
 | Service   | Worker                    | Routes                                                                                                            | D1                        | R2                    | Durable Objects  | Service bindings              | Crons                        | Dev port |
 | --------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------- | --------------------- | ---------------- | ----------------------------- | ---------------------------- | -------- |
 | accounts  | `liveworkspace-accounts`  | `/api/auth/*`, `/api/account/*`, `/.well-known/openid-configuration*`, `/.well-known/oauth-authorization-server*` | `liveworkspace-accounts`  |                       | `WorkbenchStore` | `INDEX`, `TELEMETRY`, `DRIVE` | `17 * * * *`, `*/15 * * * *` | 8787     |
-| index     | `liveworkspace-index`     | `/api/index*`                                                                                                     | `liveworkspace-index`     |                       |                  | `DRIVE`                       | `23 4 * * *`, `*/15 * * * *` | 8793     |
-| drive     | `liveworkspace-drive`     | `/api/drive*`                                                                                                     |                           |                       | `DriveMirror`    | `INDEX`                       | (alarms per Durable Object)  | 3011     |
+| index     | `liveworkspace-index`     | `/api/index*`                                                                                                     | `liveworkspace-index`     |                       |                  | `DRIVE`, `ACCOUNTS`           | `23 4 * * *`, `*/15 * * * *` | 8793     |
+| drive     | `liveworkspace-drive`     | `/api/drive*`                                                                                                     |                           |                       | `DriveMirror`    | `INDEX`, `ACCOUNTS`           | (alarms per Durable Object)  | 3011     |
 | media     | `liveworkspace-media`     | `/api/media*`, `/api/previews*`                                                                                   | `liveworkspace-media`     | `liveworkspace-media` |                  | `INDEX`                       | `41 3 * * *`                 | 8792     |
 | community | `liveworkspace-community` | `/api/community*`                                                                                                 | `liveworkspace-community` |                       |                  |                               |                              | 8791     |
 | telemetry | `liveworkspace-telemetry` | `/api/telemetry*`                                                                                                 | `liveworkspace-telemetry` |                       |                  |                               | `17 3 * * *`                 | 8790     |
@@ -184,6 +184,11 @@ Production names and bindings (staging adds `-staging` to every Worker, database
 
 Every route is on the `liveworkspace.app` zone and every `wrangler.toml` pins `account_id =
 "851be7d244b76a6557bcbe6c4ded80f5"`. `apps/migrate` has no `wrangler.toml`: it is never deployed.
+
+Each product's API Worker (`<product>-api`, `-staging`) binds `ACCOUNTS` to `liveworkspace-accounts` and `INDEX` to
+`liveworkspace-index` (`-staging` each), and fetches accounts' token keys and the index's grant keys through them
+(`@liveworkspace/auth-client` `keysFrom`), its items' Durable Objects included; the public route is the fallback
+when a binding is missing or throws, as on a local run without that service.
 
 ## Root scripts
 
