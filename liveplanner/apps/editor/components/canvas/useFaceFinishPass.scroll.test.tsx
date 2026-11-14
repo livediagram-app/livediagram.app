@@ -3,8 +3,19 @@ import { act, cleanup, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SKETCH_INK_SETTLE_MS } from '@liveworkspace/workbench/components/canvas/settle-watch';
-import { watchFaceArrivals } from './face-arrivals';
-import { drawMarkerFace, useFaceFinishPass } from './useFaceFinishPass';
+import type { RefObject } from 'react';
+import {
+  drawMarkerFace as drawSharedFace,
+  useFaceFinishPass as useSharedPass,
+} from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
+import type { Finish } from '@liveplanner/project';
+import { PLAN_BOARD } from './plan-face-finish';
+
+// The shared pass as liveplanner runs it: with the Plan board's hooks (plan-face-finish.ts).
+const drawMarkerFace = (root: HTMLElement, id: string, pen?: 'marker' | 'pencil', page?: boolean) =>
+  drawSharedFace(root, id, pen, page, PLAN_BOARD);
+const useFaceFinishPass = (ref: RefObject<HTMLElement | null>, finish: Finish, id: string) =>
+  useSharedPass(ref, finish, id, { board: PLAN_BOARD });
 
 // Scrolling a busy Plan board under Marker (docs/specs/026-plan/plan-board.md "Marker draws what is in view"): a take
 // skips the cards the browser is not drawing (content-visibility), and a card scrolled into view changes nothing in
@@ -263,47 +274,5 @@ describe('a phone board in marker (Minimal cards)', () => {
     scroll(between(14, 28));
     await vi.advanceTimersByTimeAsync(SKETCH_INK_SETTLE_MS * 2);
     for (let i = 14; i < 28; i++) expect(faceInked(container, i)).toBe(true);
-  });
-});
-
-describe('watchFaceArrivals', () => {
-  it('waits at most SKETCH_INK_MAX_WAIT_MS while cards keep arriving', async () => {
-    vi.useFakeTimers();
-    const arrive = vi.fn();
-    const arrivals = watchFaceArrivals(arrive);
-    const cards = Array.from({ length: 200 }, () => document.createElement('div'));
-    arrivals.watch(cards);
-    // A card a frame for over a second: the take still comes within the cap.
-    for (const [i, el] of cards.entries()) {
-      FakeObserver.all[0]!.callback([entry(el, true)]);
-      await vi.advanceTimersByTimeAsync(16);
-      if (arrive.mock.calls.length) {
-        expect(i * 16).toBeLessThanOrEqual(1000);
-        break;
-      }
-    }
-    expect(arrive).toHaveBeenCalledTimes(1);
-    arrivals.stop();
-  });
-
-  it('does nothing without IntersectionObserver', () => {
-    vi.stubGlobal('IntersectionObserver', undefined);
-    const arrivals = watchFaceArrivals(() => {});
-    expect(() => {
-      arrivals.watch([document.createElement('div')]);
-      arrivals.stop();
-    }).not.toThrow();
-  });
-
-  it('stops a pending take', async () => {
-    vi.useFakeTimers();
-    const arrive = vi.fn();
-    const arrivals = watchFaceArrivals(arrive);
-    const el = document.createElement('div');
-    arrivals.watch([el]);
-    FakeObserver.all[0]!.callback([entry(el, true)]);
-    arrivals.stop();
-    await vi.advanceTimersByTimeAsync(SKETCH_INK_SETTLE_MS * 4);
-    expect(arrive).not.toHaveBeenCalled();
   });
 });

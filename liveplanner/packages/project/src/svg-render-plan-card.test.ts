@@ -599,9 +599,9 @@ describe('a Board under Marker', () => {
     );
   // The marker part drawn after each card's frame.
   const cardParts = (svg: string) =>
-    [...svg.matchAll(/<rect [^>]*rx="8"[^>]*data-marker-frame=""\/><g data-marker-part="(\w+)"/g)].map(
-      (m) => m[1],
-    );
+    [
+      ...svg.matchAll(/<rect [^>]*rx="8"[^>]*data-marker-frame=""\/><g data-marker-part="(\w+)"/g),
+    ].map((m) => m[1]);
 
   it('outlines a Minimal card as a frame, never colouring it in, as a Detailed one', () => {
     const minimal = image('minimal');

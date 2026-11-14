@@ -25,7 +25,8 @@ import {
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
 import { useFaceFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
+import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
+import { PLAN_BOARD } from '@/components/canvas/plan-face-finish';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
@@ -146,7 +147,7 @@ export function MaximisableSlot({
 function OverFace({ id, over, children }: { id: string; over: boolean; children: ReactNode }) {
   const finish = useFaceFinish();
   const ref = useRef<HTMLDivElement>(null);
-  useFaceFinishPass(ref, over ? finish : undefined, id, { page: true });
+  useFaceFinishPass(ref, over ? finish : undefined, id, { page: true, board: PLAN_BOARD });
   return (
     <div
       ref={ref}

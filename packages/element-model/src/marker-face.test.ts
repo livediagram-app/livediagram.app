@@ -239,7 +239,8 @@ describe('svgMarkerFace', () => {
   });
 
   it('outlines a box marked a frame under the least size (a Minimal Plan card), never colouring it in', () => {
-    const card = '<rect x="0" y="0" width="200" height="36" rx="8" fill="#fff" stroke="#ccc" stroke-width="1"';
+    const card =
+      '<rect x="0" y="0" width="200" height="36" rx="8" fill="#fff" stroke="#ccc" stroke-width="1"';
     expect(svgMarkerFace(`${card}/>`, 'el', face)).toContain('<g data-marker-part="shape"');
     expect(svgMarkerFace(`${card} data-marker-frame=""/>`, 'el', face)).toMatch(
       /^<rect [^>]*fill="#fff" data-marker-frame=""\/><g data-marker-part="frame"/,

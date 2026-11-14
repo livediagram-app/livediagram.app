@@ -395,8 +395,11 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
   IndexedDB backend, names and versions stay its own) and `@liveworkspace/workbench/lib/api/tab-calls` (each
   `lib/api/tabs.ts`). Each product's file keeps its old path and names, binds the shared one once, and lists what
   it hands in.
-- `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of livediagram,
-  livedocuments, livedesign and livehuddle; liveplanner keeps its own (its Plan boards spend a frame budget).
+- `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of all five editors.
+  liveplanner hands it a board (`FaceFinishBoard`: `ownerOf` seeds a part by its card or column, `unseen` leaves a
+  busy board's off-screen card for `face-arrivals.ts` to take when it scrolls into view, `ignore` skips the pointer's
+  own feedback), and a face given a board counts its frames apart from its other parts; the other four pass none
+  and keep one count.
 - `@liveworkspace/workbench/components/chrome/NewVersionPrompt` is the new version prompt of all five editors, with
   its wait for a newer editor (`hooks/ui/useNewerEditorLive` over `lib/live-editor-build`: one GET of the page, its
   build meta against the editor's build id). Each editor's `components/chrome/NewVersionPrompt.tsx` binds it with its

@@ -8,7 +8,19 @@ import { MARKER_FACE_MAX_FRAMES, MARKER_FACE_MAX_PARTS } from '@liveplanner/proj
 import { flushFaceTakes } from '@liveworkspace/workbench/components/canvas/face-take-batch';
 import { COLUMN_HOVER_ATTR } from '@/components/plan/useColumnHover';
 import { SPOTLIGHT_X, SPOTLIGHT_Y } from '@/components/plan/useCardSpotlight';
-import { drawMarkerFace, useFaceFinishPass } from './useFaceFinishPass';
+import type { RefObject } from 'react';
+import {
+  drawMarkerFace as drawSharedFace,
+  useFaceFinishPass as useSharedPass,
+} from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
+import type { Finish } from '@liveplanner/project';
+import { PLAN_BOARD } from './plan-face-finish';
+
+// The shared pass as liveplanner runs it: with the Plan board's hooks (plan-face-finish.ts).
+const drawMarkerFace = (root: HTMLElement, id: string, pen?: 'marker' | 'pencil', page?: boolean) =>
+  drawSharedFace(root, id, pen, page, PLAN_BOARD);
+const useFaceFinishPass = (ref: RefObject<HTMLElement | null>, finish: Finish, id: string) =>
+  useSharedPass(ref, finish, id, { board: PLAN_BOARD });
 
 // A busy Plan board under Marker (docs/specs/008-canvas/finish.md "Marker", docs/specs/026-plan/plan-board.md "Card
 // hover"): every card keeps its marker edge, and the pointer moving over the board (a column's tint, a card's light)

@@ -1,6 +1,14 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { clearMarkerFace, drawMarkerFace } from './useFaceFinishPass';
+import {
+  clearMarkerFace,
+  drawMarkerFace as drawSharedFace,
+} from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
+import { PLAN_BOARD } from './plan-face-finish';
+
+// The shared pass as liveplanner runs it: with the Plan board's hooks (plan-face-finish.ts).
+const drawMarkerFace = (root: HTMLElement, id: string, pen?: 'marker' | 'pencil', page?: boolean) =>
+  drawSharedFace(root, id, pen, page, PLAN_BOARD);
 
 // docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes". jsdom lays nothing out, so each box is given
 // its size through data-w / data-h.

@@ -1,12 +1,10 @@
-// The cards a face's take skipped (useFaceFinishPass's offScreenCard: a busy board's card the browser is not drawing),
-// watched until they come into view (docs/specs/026-plan/plan-board.md "Marker draws what is in view"). A card that
+// The cards a face's take skipped (useFaceFinishPass's FaceFinishBoard `unseen`: on a liveplanner Plan board, a busy
+// board's card the browser is not drawing), watched until they come into view (liveplanner's
+// docs/specs/026-plan/plan-board.md "Marker draws what is in view"). A card that
 // scrolls into view changes nothing in the DOM, so the settle watch never hears it: without this it kept its plain
 // line until the next edit. One IntersectionObserver watches only the skipped cards, so scrolling costs nothing until
 // one of them crosses into view; arrivals then re-take once they pause, never on every frame of the scroll.
-import {
-  SKETCH_INK_MAX_WAIT_MS,
-  SKETCH_INK_SETTLE_MS,
-} from '@liveworkspace/workbench/components/canvas/settle-watch';
+import { SKETCH_INK_MAX_WAIT_MS, SKETCH_INK_SETTLE_MS } from './settle-watch';
 
 export type FaceArrivals = {
   /** Watches these cards (the last take's skipped ones) in place of the ones watched before. */
