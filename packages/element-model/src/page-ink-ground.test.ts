@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { pageFillTone } from './page-content';
-import { gradientPosition, pageGroundUnder, PAPER_TONE } from './page-ink-ground';
+import { gradientPosition, pageGroundFor, PAPER_TONE } from './page-ink-ground';
+
+// A product's fill tone, as its page model reads one: a solid's colour, a picture's tone.
+type Fill =
+  | { kind: 'solid'; color: string }
+  | { kind: 'image'; imageId: string; tone: string }
+  | { kind: 'gradient'; from: string; to: string; angle: number };
+const pageFillTone = (fill: Fill): string =>
+  fill.kind === 'solid' ? fill.color : fill.kind === 'image' ? fill.tone : fill.from;
+const pageGroundUnder = pageGroundFor(pageFillTone);
 
 // docs/specs/007-editor/pages-mode.md "Re-inking": what the page is under an element.
 const rect = { x: 100, y: 200, width: 400, height: 800 };

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from './index';
-import { collabIndexRowsFromElements } from './collab-index-rows';
+import { collabIndexRowsFor } from './collab-index-rows';
+import { isBoxed, type Element } from './element';
+
+const collabIndexRowsFromElements = collabIndexRowsFor<Element>(isBoxed);
 
 // The pure projection every tab write feeds the collaboration index
 // with (docs/specs/013-workspace/inbox.md §2.1). What it gets wrong, the Inbox shows
@@ -10,7 +12,7 @@ const shape = (id: string, label: string, extra: Record<string, unknown> = {}): 
   ({
     id,
     type: 'shape',
-    shape: 'focus-button',
+    shape: 'square',
     x: 0,
     y: 0,
     width: 10,
