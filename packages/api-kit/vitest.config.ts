@@ -9,6 +9,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // leaks a refresh token or a webhook's URL. And typed text: a gap lets a name turn the words around it backwards. And CSV: a gap
 // runs a typed name as a formula in an admin's spreadsheet. And the tab swap: a gap there loses a Participant's write or answers it wrongly.
 // And the image embedder: a gap draws a picture past the preview's budget or out of document order.
+// And the reader redactions: a gap hands a stranger the owner's id or an edit link.
 // And the ledger store: a gap there cuts an entry a save still needs, or hands a save less than it merges.
 // And the tab order: a gap there lands a new tab on a place another holds.
 // And the delta door: a gap there stores a rebuilt tab no digest proved.
@@ -34,6 +35,7 @@ export default defineProject({
         'src/request-body.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/public-address.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/public-fetch.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/redact-item.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-failure.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-access-client.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-client.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },

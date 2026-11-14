@@ -247,7 +247,7 @@ an article href and its telemetry id, sent as `UI·Opened·<id>`). livediagram's
 Picture and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/room-rpc.ts`,
 `drawDocument` in `apps/api/src/thumbnail.ts`) draws from the redacted board when asked with the open post's code;
 liveworkspace's previews keep that picture apart from the owner's (`liveworkspace/docs/specs/006-media/previews.md`);
-`redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the
+`redactDocumentForCommunity` (`apps/api/src/redact-document.ts`, over `../packages/api-kit/src/redact-item.ts`) strips owner name, colour, folder and origin from the
 document a community grant reads. `clientRateKey(request)` is the copier's network the api passes with a copy;
 the service maps it (`communityNetwork`, `../packages/community/src/network.ts`).
 

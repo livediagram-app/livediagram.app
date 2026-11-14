@@ -31,6 +31,7 @@
     "./origin-check": "./src/origin-check.ts",
     "./public-address": "./src/public-address.ts",
     "./public-fetch": "./src/public-fetch.ts",
+    "./redact-item": "./src/redact-item.ts",
     "./refusal-log": "./src/refusal-log.ts",
     "./request-auth": "./src/request-auth.ts",
     "./request-body": "./src/request-body.ts",
