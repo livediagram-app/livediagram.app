@@ -43,7 +43,7 @@ import { useSnapGuideState } from './useSnapGuideState';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { beginCanvasGesture } from '@/lib/canvas-gesture';
+import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { applyOverlay, clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';
 

@@ -2,7 +2,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFreehand, createShape, type Element } from '@livediagram/document';
-import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
+import {
+  canvasGestureNow,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasEraser } from './useCanvasEraser';
 
 // What the pointer is over: nothing, unless a test says so.

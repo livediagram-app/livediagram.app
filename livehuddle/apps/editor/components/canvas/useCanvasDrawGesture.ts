@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment } from '@livehuddle/document';
 import { pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { beginCanvasGesture } from '@/lib/canvas-gesture';
+import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 

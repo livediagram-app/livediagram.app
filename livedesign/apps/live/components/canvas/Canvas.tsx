@@ -38,7 +38,7 @@ import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useC
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
-import { useCanvasPointer } from './useCanvasPointer';
+import { useCanvasPointer } from '@liveworkspace/workbench/hooks/canvas/useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 import { useCanvasSelectionInput } from './useCanvasSelectionInput';
 

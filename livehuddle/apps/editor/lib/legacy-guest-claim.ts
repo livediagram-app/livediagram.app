@@ -9,7 +9,7 @@ import {
 } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { apiClaimLegacyGuest } from './api/migration';
-import { notifyApiWrite } from './api/write-signal';
+import { notifyApiWrite } from '@liveworkspace/workbench/lib/api/write-signal';
 import { LOCAL_IDENTITY_KEYS } from './local-identity';
 import { track } from './telemetry';
 
