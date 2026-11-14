@@ -18,6 +18,33 @@ import {
 
 type Stored<E> = { rev: number; elements: E[] };
 
+/** The door's OpenAPI entry parts, every product's manifest the same: its summary, request and response. */
+export const TAB_DELTA_OPENAPI: {
+  summary: string;
+  requestSchema: Record<string, unknown>;
+  responseSchema: Record<string, unknown>;
+  statuses: number[];
+} = {
+  summary:
+    "The editor's tab save sent as the element ops since the stored copy at `baseRev`: rebuilt over the stored tab, stored only when the SHA-256 of the rebuilt elements' JSON is `digest`, then saved as the whole-tab save is. Anything that does not line up is 409 `delta_refused` with a `reason` (`too_many_ops`, `no_base`, `stale_base`, `digest_mismatch`), answered by saving the tab whole. An API token is refused with 405 `use_changesets`.",
+  requestSchema: {
+    type: 'object',
+    properties: {
+      baseRev: { type: 'integer', minimum: 0 },
+      digest: { type: 'string', pattern: '^[0-9a-f]{64}$' },
+      ops: { type: 'array', maxItems: TAB_DELTA_MAX_OPS, items: { type: 'object' } },
+      tab: { type: 'object' },
+    },
+    required: ['baseRev', 'digest', 'ops', 'tab'],
+  },
+  responseSchema: {
+    type: 'object',
+    properties: { rev: { type: 'integer' }, digest: { type: 'string' } },
+    required: ['rev', 'digest'],
+  },
+  statuses: [200, 400, 401, 403, 404, 405, 409, 410, 413],
+};
+
 export type TabDeltaDoor<E extends { id: string }, S extends Stored<E>> = {
   // The parsed request body.
   body: unknown;
