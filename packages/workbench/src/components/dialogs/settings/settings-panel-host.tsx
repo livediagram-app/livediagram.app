@@ -24,7 +24,7 @@ import { workbench } from '../../../bindings';
 // account API through the app's router (`/api/workspace/account`), with the person's access token (the workbench's
 // `api.currentBearer` binding, read when a request goes out), as the Explorer panel's teams are; nothing is asked (or
 // loaded) until All is first chosen, and what is read is kept for the page's lifetime. Each editor's
-// components/dialogs/settings/settings-panel-host.tsx binds it once with its app name.
+// components/dialogs/settings/settings-panel-host.ts binds it once with its app name.
 
 /** The account's Account > Profile, where Google's way back and Cloud Sync's return land. */
 export const ACCOUNT_SETTINGS_PARAM = 'account:account';
