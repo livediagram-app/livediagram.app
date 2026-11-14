@@ -394,7 +394,7 @@ export function EditorView() {
                         />
                       ) : null}
                       {footerInColumn}
-                      {/* Clear Styles for the element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md).
+                      {/* What the element menu's Clear Styles resets (docs/specs/008-canvas/element-menu-quick-bar.md).
             Headless: livehuddle has no Quick Style panel (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style). */}
                       <AreaErrorBoundary area="QuickStyle">
                         <ClearStylesHost deps={quickStyleDeps} />

@@ -64,8 +64,8 @@ stay, marked **Gone from livehuddle**, because the stored data they describe sta
 reads it cites them.
 
 - **Gone from every door**, for every role:
-  - the element menu's quick bar offers no **Assign Action**, **Add Comment**, **Add Link** or **Add Note**; it
-    keeps **Clear Styles** alone ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md));
+  - the element menu has no quick bar and offers no **Assign Action**, **Add Comment**, **Add Link** or **Add Note**;
+    **Clear Styles** is a row under its Style row ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md));
   - the Participant's and the Viewer's element menu has no comments, **Open Link** or **View Note** row; it keeps
     **Copy Text**;
   - the selection toolbar has no **Add Comment** or **Show Comments**, so a Participant and a Viewer, whose only
@@ -347,17 +347,17 @@ carry a **Gone from livehuddle** banner and record what livehuddle had.
   same way; nothing in livehuddle shows or edits them any more.
 - **What stays for styling**: the element menu (right-click, long-press or a toolbar's More) stays the complete home
   of every element setting, as it always was: its **Style** flyout (colours, border, shadow, opacity, corners), the
-  Text category, the colour picker with Custom colours, and the quick bar's **Clear Styles**
+  Text category, the colour picker with Custom colours, and the **Clear Styles** row under Style
   ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md)), which still puts the element's colours, width
   and line style back to the theme's. The multi-selection menu restyles a whole selection. **Tab Style** themes the
   tab. **Style memory** (the next element of a kind takes its last style) keeps working from the menu.
 - **Telemetry**: the panel's `Element Changed` tokens (`QuickStroke`, `QuickBackground`, `QuickTextColour`,
   `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`), `UI Changed QuickSwatchCustom` and
-  `QuickSwatchReset`, and `QuickStylePanelOn` / `Off` are no longer sent. `QuickClearStyles` stays: the quick bar's
+  `QuickSwatchReset`, and `QuickStylePanelOn` / `Off` are no longer sent. `QuickClearStyles` stays: the menu's
   Clear Styles still sends it.
 - **The code.** The panel's components (`QuickStylePanel`, its rows, More colours, the Marker and Highlighter rows,
   the swatch override popover) are deleted with their tests. A headless `ClearStylesHost` keeps the Quick Style view
-  (`useQuickStyle`), which works out what Clear Styles resets, and publishes it to the quick bar. The panel's
+  (`useQuickStyle`), which works out what Clear Styles resets, and publishes it to the menu's Clear Styles row. The panel's
   placement hook and the Clear Styles store are `@liveworkspace/workbench`'s, shared with livediagram, and stay.
 
 ## Icons
@@ -671,10 +671,9 @@ What every part does:
     toolbar's Delete.
   - **An arrow has no box**: it is two ends, each a free point, pinned to an element's anchor, or a point along another
     arrow. A retired arrow draws as a faint dashed straight line between its ends, in the placeholder's quiet ink,
-    with the placeholder card (160 by 96) centred on the line's middle. The card is what selects, takes comments, opens
-    the context menu and holds the Delete button; the line takes no press. Its menu's quick bar offers what a boxed
-    placeholder's does: Assign Action, Add Comment and Add Note (no new link), and its comment, note and action open
-    anchored to the card, through the comment endpoints as for any element. A free end sits at its point, a pinned end
+    with the placeholder card (160 by 96) centred on the line's middle. The card is what selects, opens the context
+    menu and holds the Delete button; the line takes no press. Its menu offers what a boxed placeholder's
+    does; there is no quick bar and no comment, note or action (Work Tracker 714, Work Tracker 739). A free end sits at its point, a pinned end
     at its anchor on its element's box (turned with the element), and an end on another arrow at its fraction of that
     arrow's straight line (four hops at most). An end whose element is gone, or is not one with a box, takes the
     other end's point; an arrow with neither end left draws its card at the canvas origin, so it can still be
@@ -847,8 +846,8 @@ comments on it; a Viewer sees it).
   gap over a box (`CanvasSelectionToolbars.gap.test.tsx`), Settings has no Quick-Add on Hover row
   (`settings-catalogue.test.ts`), and the router pins the old help address.
 - Quick Style: Settings has no Quick Style page (`settings-catalogue.test.ts`, `SettingsDialog.test.tsx`), the editor
-  loads no panel chunk (`document-lazy-load.test.ts`), the quick bar's Clear Styles still resets a selection
-  (`ElementMenuQuickBar.test.tsx`, `useQuickStyle.test.tsx`), and the router pins the old help address.
+  loads no panel chunk (`document-lazy-load.test.ts`), the menu's Clear Styles still resets a selection
+  (`ElementMenuClearStyles.test.tsx`, `useQuickStyle.test.tsx`), and the router pins the old help address.
 - Icons: the palette and the category bar offer no Icons category (`palette-layouts.test.ts`,
   `bar-categories.test.tsx`), the strip Search and the search panel list no icon (`palette-catalogue-search.test.ts`,
   `palette-search.test.ts`), a stored icon still draws and its menu still edits it, and the router pins the old help
@@ -891,7 +890,7 @@ comments on it; a Viewer sees it).
   a stored square sent back by a `replace` stays as stored (`packages/edit-operations`); a changeset's `lint` is
   `null` and `view=lint` is refused (`apps/api`); the palette and Search offer no shape (`palette-search.test.ts`);
   every Space template still builds and validates (`packages/templates`).
-- Comments, actions, links and notes: the quick bar offers Clear Styles alone (`ElementMenuQuickBar.test.tsx`), the
+- Comments, actions, links and notes: the element menu has no quick bar and offers Clear Styles alone of the five (`ElementMenuClearStyles.test.tsx`), the
   read-only menu offers no comments, link or note row (`ReadOnlyElementMenuHost.test.tsx`), the command palette has
   no note or comment command (`editor-commands.test.ts`), a copy drops the four (`duplicate.test.ts`,
   `clipboard-payload.test.ts`), the outbox pushes no collab (`document-outbox.test.ts`), the comment write routes and

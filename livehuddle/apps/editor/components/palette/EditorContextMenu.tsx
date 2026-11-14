@@ -48,7 +48,6 @@ import { OpacityRow } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
-import { ElementMenuQuickBar } from './ElementMenuQuickBar';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
@@ -132,8 +131,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         flush
         anchorBottom={anchorBottom}
       >
-        {/* The quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): Clear Styles, above every category. */}
-        <ElementMenuQuickBar target={target} onClose={onClose} />
+        {/* No quick bar above the categories (docs/specs/008-canvas/element-menu-quick-bar.md): Clear Styles is a row
+            under Style, in the appearance group. */}
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +

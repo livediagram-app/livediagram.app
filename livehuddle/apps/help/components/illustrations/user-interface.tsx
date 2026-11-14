@@ -315,24 +315,21 @@ export function MultiSelectToolbar() {
 }
 
 /** The element menu for a shape: collapsible sections, Arrange first, then
- *  Size, Shape, Rotation, the Style and Text flyouts, Collaborate and
- *  Resources. */
+ *  Size, Rotation, the Style flyout with the Clear Styles row under it, and
+ *  the Text flyout. No quick bar above them (Work Tracker 739). */
 export function ElementContextMenu() {
-  const sections: { label: string; flyout?: boolean }[] = [
+  const sections: { label: string; flyout?: boolean; action?: boolean }[] = [
     { label: 'Arrange' },
     { label: 'Size' },
-    { label: 'Shape' },
     { label: 'Rotation' },
     { label: 'Style', flyout: true },
-    { label: 'Animation', flyout: true },
+    { label: 'Clear Styles', action: true },
     { label: 'Text', flyout: true },
-    { label: 'Collaborate' },
-    { label: 'Resources' },
   ];
   const mx = 214;
   const my = 16;
   return (
-    <Scene w={420} h={256}>
+    <Scene w={420} h={196}>
       <Shape x={56} y={60} w={112} h={56} accent label="Order" />
       <SelectionBox x={56} y={60} w={112} h={56} />
       <Panel x={mx} y={my} w={160} h={8 + sections.length * 25}>
@@ -353,17 +350,20 @@ export function ElementContextMenu() {
               >
                 {sec.label}
               </Label>
-              <path
-                d={
-                  sec.flyout
-                    ? `M${mx + 142} ${ry + 8} l4 4 l-4 4`
-                    : `M${mx + 140} ${ry + 10} l4 4 l4 -4`
-                }
-                className="stroke-slate-400"
-                strokeWidth={1.4}
-                fill="none"
-                strokeLinecap="round"
-              />
+              {/* An action row runs on a press: no chevron. */}
+              {sec.action ? null : (
+                <path
+                  d={
+                    sec.flyout
+                      ? `M${mx + 142} ${ry + 8} l4 4 l-4 4`
+                      : `M${mx + 140} ${ry + 10} l4 4 l4 -4`
+                  }
+                  className="stroke-slate-400"
+                  strokeWidth={1.4}
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              )}
             </g>
           );
         })}

@@ -10,8 +10,8 @@ import type { useContextMenuScaffold } from './useContextMenuScaffold';
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
 // The lower, content / metadata sections of the single-element context menu:
-// Image and Link. Assign Action, Comments, Link and Note are on
-// the menu's quick bar above every category (ElementMenuQuickBar). Split out of EditorContextMenu;
+// Image and Link. Assign Action, Comments, Link and Note left livehuddle, and with them the
+// quick bar (docs/specs/008-canvas/element-menu-quick-bar.md). Split out of EditorContextMenu;
 // shares the accordion + colour scaffolding via props so only one section
 // opens at a time across the whole menu.
 type ElementContentSectionsProps = {

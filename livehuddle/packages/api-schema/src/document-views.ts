@@ -198,20 +198,6 @@ export type FindView = {
   elision: Elision;
 };
 
-// No api door serves it (it came over from livediagram, whose CLI prints it with `--json`).
-export type DiffView = {
-  header: ViewHeader;
-  since: number;
-  changes: {
-    op: '+' | '-' | '~';
-    ref: string;
-    kind: string;
-    label: string | null;
-    changes: { field: string; before: unknown; after: unknown }[];
-  }[];
-  elision: Elision;
-};
-
 export type OverviewTab = { outOfScope: true; ref: string } | (ViewHeader & { outOfScope: false });
 
 export type OverviewView = {

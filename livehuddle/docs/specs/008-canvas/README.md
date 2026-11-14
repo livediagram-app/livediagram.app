@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./canvas-and-palette.md - when working on Canvas and palette: The canvas and its palette strip: canvas tools, every element kind, drawing, rich-text labels
-- ./element-menu-quick-bar.md - when working on the element menu's quick bar: Assign Action, Comment, Link and Note, and Clear Styles, above every category
+- ./element-menu-quick-bar.md - when working on the element menu's Clear Styles row, or why livehuddle has no quick bar
 - ./arrow-anchors.md - (Gone from livehuddle, Work Tracker #459 part 4) when working on Arrow anchors and auto-rebind: The sixteen anchor ids, the anchors each shape offers and where they sit, outline projection, the creation anchor, the converging fan, and the auto-rebind that moves an end to the facing side (same position class) only when its drawn path runs through a shape, plus same-side crossing swaps
 - ./blueprints/README.md - when implementing a canvas spec that has a blueprint (arrow anchors, labels, bending, quick style panel)
 - ./layout-cleanup.md - when working on Layout cleanup: the command palette's tidier, Auto-align (grid snap); Auto Layout (gone from livehuddle's editor in Work Tracker #423 part 4, its engine kept for graph input: deterministic graph layout / Tidy up: fewer crossings, long-edge lanes, neighbour placement, flow-face anchors, two-bend angled lines); no Tidy Up button (Work Tracker #583); no locks

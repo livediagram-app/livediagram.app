@@ -115,7 +115,8 @@ describe('renderView refusals (R4, R5, E17, E18)', () => {
     const result = render({ view: 'show', ref: 'abce' }, tab);
     expect(!result.ok && result.refusal).toMatchObject({
       error: 'target_not_found',
-      message: 'no element "abce"; deleted since your read? tab diff shows what changed',
+      message:
+        'no element "abce"; deleted since your read? read the tab again for its current refs',
       candidates: [{ ref: 'abcd0' }, { ref: 'abcd1' }, { ref: 'arr' }],
     });
     expect(render({ view: 'show' }, tab)).toMatchObject({
