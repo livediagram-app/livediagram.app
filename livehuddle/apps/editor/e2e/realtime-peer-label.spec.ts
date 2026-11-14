@@ -12,10 +12,10 @@ import type { StoredTab } from './stored';
 
 // Work Tracker 862: a peer's label typed just after the owner moves a box must stay
 // (docs/specs/007-editor/editor-app.md "Held until the holder's change lands", as livediagram's own
-// realtime-peer-label.spec.ts since Work Tracker 659). The owner moves a square and lets go of it; the peer opens it
+// realtime-peer-label.spec.ts since Work Tracker 659). The owner moves a sticky and lets go of it; the peer opens it
 // and types. Without the hold the owner's lock ended at once while its save of the move (the autosave's delay, the tab
 // write, then the room ordering its element ops) was still on its way, so that save reached the room after the peer's
-// label and its whole-element write replaced the label on both screens and in storage. Now the owner holds the square
+// label and its whole-element write replaced the label on both screens and in storage. Now the owner holds the sticky
 // until the move has landed, so the peer's label is the later write.
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -57,10 +57,10 @@ for (const gap of WINDOWS) {
     const owner = await mintGuest(page.request);
     const id = crypto.randomUUID();
     const tabId = crypto.randomUUID();
-    const square = (elId: string, x: number) => ({
+    // livehuddle's boards hold stickies (it keeps no diagram shapes).
+    const sticky = (elId: string, x: number) => ({
       id: elId,
-      type: 'shape',
-      shape: 'square',
+      type: 'sticky',
       x,
       y: 200,
       width: 160,
@@ -69,7 +69,7 @@ for (const gap of WINDOWS) {
     const seeded = await seedDocumentItem(page.request, owner, {
       id,
       name: 'Room',
-      tabs: [{ id: tabId, name: 'Board', elements: [square('box', 500), square('still', 1000)] }],
+      tabs: [{ id: tabId, name: 'Board', elements: [sticky('box', 500), sticky('still', 1000)] }],
     });
     expect(seeded.ok()).toBe(true);
     const headers = await documentHeaders(page.request, owner, id, {
@@ -92,7 +92,7 @@ for (const gap of WINDOWS) {
       await p.keyboard.press('v');
     }
 
-    // 1. The owner drags the square 150 px down; it stays selected on the owner's screen.
+    // 1. The owner drags the sticky 150 px down; it stays selected on the owner's screen.
     const start = (await elementOf(a, 'box').boundingBox())!;
     const [x, y] = [start.x + start.width / 2, start.y + start.height / 2];
     await a.mouse.move(x, y);
@@ -101,7 +101,7 @@ for (const gap of WINDOWS) {
     await a.mouse.move(x, y + 150, { steps: 4 });
     await a.mouse.up();
 
-    // 2. Once both screens agree, the owner's selection holds the square: the peer's double-click opens no editor.
+    // 2. Once both screens agree, the owner's selection holds the sticky: the peer's double-click opens no editor.
     await expect
       .poll(
         async () => {
@@ -116,7 +116,7 @@ for (const gap of WINDOWS) {
     await expect(editor).toHaveCount(0);
 
     // 3. The owner lets go while its save of the move may still be on its way; `gap` later the peer tries to open the
-    // square, again and again until the lock lets it (once the owner's move has landed), and types.
+    // sticky, again and again until the lock lets it (once the owner's move has landed), and types.
     await a.keyboard.press('Escape');
     if (gap > 0) await b.waitForTimeout(gap);
     await expect

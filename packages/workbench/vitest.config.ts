@@ -60,6 +60,7 @@ const HELD_AT_100 = [
   // (docs/specs/007-editor/editor-app.md "Held until the holder's change lands", Work Tracker 862).
   'src/lib/own-writes.ts',
   'src/lib/selection-write-hold.ts',
+  'src/lib/remote-selection.ts',
 ];
 
 export default defineProject({

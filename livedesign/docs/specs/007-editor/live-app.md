@@ -105,6 +105,11 @@ To cut down on two people fighting over the same element, an element another par
 - **Shown as an outline, never a recolour.** A held element wears the holder's colour as its border (and their disc); a
   face that paints its content from the element's accent (a Card's header band and media, a banner's bar) keeps
   its own colours.
+- **The whole selection holds** (Work Tracker 862, as livediagram). A participant holding several elements (a
+  marquee, shift-clicks, Select All) holds every one of them: each wears their border and disc and is locked for
+  everyone else, read from the `select` op's `elementIds` (at most `MAX_SELECTION_IDS`). A frame from an older client
+  without it holds its single `elementId`. The same list carries the elements held until the holder's change lands
+  (below), which have no primary element. Read through `@liveworkspace/workbench/lib/remote-selection`.
 - **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
 - **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room; there's no sticky server state to clean up.
 - **Held until the holder's change lands** (Work Tracker 862, as livediagram since Work Tracker 659). Letting go of
