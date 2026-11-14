@@ -5,10 +5,11 @@
 // screen as an unsaved edit over the stored tab, so the autosave saves it and relays it to the room like any edit
 // (a tab already edited since it loaded keeps its edits, and the draft goes); one somebody's newer save overtook is said in a toast. Only an Editor takes one back: a session that may not save
 // leaves the draft where it is, for a later load that can.
-import { useEffect, useState, type MutableRefObject } from 'react';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import type { Tab } from '@livediagram/document';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import type { TabDraftEvent } from '@liveworkspace/workbench/lib/api/tab-drafts';
 import { apiDiscardDraft, apiTakeDraftReplay, onTabDraft } from '@/lib/api-client';
 
 /** The toast when a draft was dropped: somebody saved the tab since it was made. */
@@ -47,21 +48,31 @@ export function useTabDrafts(opts: {
   toast: { info: (message: string) => void; warning: (message: string) => void };
 }): void {
   const latest = useLatest(opts);
-  // Bumped when a load puts a draft back, so the effect below takes it once its tab is in place.
+  // Bumped when a load puts a draft back or drops one, so the effects below act once the document is known.
   const [replays, setReplays] = useState(0);
+  // Drafts a load dropped, waiting to be said: the first tab's load can settle before the editor knows its document
+  // id, and the draft is already gone by then, so the toast must not be lost.
+  const dropped = useRef<TabDraftEvent[]>([]);
 
   useEffect(
     () =>
       onTabDraft((event) => {
-        const o = latest.current;
-        if (event.itemId !== o.documentId || event.ownerId !== o.selfId) return;
-        if (event.kind === 'stale') o.toast.warning(draftDroppedMessage(event.name));
-        else setReplays((n) => n + 1);
+        if (event.kind === 'stale') dropped.current.push(event);
+        setReplays((n) => n + 1);
       }),
     [latest],
   );
 
   const { hydrated, documentId, selfId, mayEdit, loadedTabIds } = opts;
+  useEffect(() => {
+    if (!documentId || dropped.current.length === 0) return;
+    const said = dropped.current;
+    dropped.current = [];
+    for (const event of said) {
+      if (event.itemId !== documentId || event.ownerId !== selfId) continue;
+      latest.current.toast.warning(draftDroppedMessage(event.name));
+    }
+  }, [replays, documentId, selfId, latest]);
   useEffect(() => {
     if (!hydrated || !documentId || !mayEdit) return;
     const o = latest.current;

@@ -155,4 +155,15 @@ describe('useTabDrafts', () => {
     emit({ kind: 'stale', name: 'Board' });
     expect(toast.warning).toHaveBeenCalledWith(draftDroppedMessage('Board'));
   });
+
+  it('says a draft dropped before the document id is known, once it is', () => {
+    const { hook, props, emit, toast } = mount({ documentId: null });
+    emit({ kind: 'stale', name: 'Board' });
+    expect(toast.warning).not.toHaveBeenCalled();
+    hook.rerender({ ...props, documentId: 'd1' });
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+    expect(toast.warning).toHaveBeenCalledWith(draftDroppedMessage('Board'));
+    hook.rerender({ ...props, documentId: 'd1', hydrated: false });
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+  });
 });
