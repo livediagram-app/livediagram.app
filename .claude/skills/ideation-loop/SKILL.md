@@ -32,8 +32,22 @@ to fill a quota. An idea makes the cut only when all of these hold:
   in any column (see "Check for an existing card" in step 3). A rejected idea, or a close cousin of one, never comes
   back unless something material has changed, and then the card says what.
 - **It's feasible.** You read the code it would touch and can say roughly where it lands and what makes it hard.
-- **It's worth it.** The value clearly beats the cost and the risk. Not a bug fix (that's the bug loop) and not a
-  polish nit.
+- **It's worth it.** The value clearly beats the cost and the risk. Not a bug fix (that's the bug loop). Polish
+  counts when it changes how a whole flow feels, not when it's one nit.
+
+## Kinds of idea
+
+Look for all three, every pass. Each card's **Kind** field says which it is:
+
+- **Polish** (`Polish`): make something we already have feel better. Rough edges in one flow taken together: too
+  many steps, unclear wording, missing feedback (no progress, no undo, no confirmation), awkward defaults, weak
+  empty states, jarring motion, a phone layout that works but feels cramped. Compare it with how the best tool in
+  its category does the same thing. One card covers the whole flow, never a single nit.
+- **Extend** (`Extend`): make a feature we already have more valuable by taking it further. Who uses it, what do
+  they do next, and where does it stop them? For example, a board filter that can be saved and shared, a template
+  gallery people can add to, an import that also keeps comments, an export that also goes to another tool.
+- **New Feature** (`New Feature`): something missing that would make a product clearly more valuable, the kind of
+  thing a user moving from a competitor expects, or that opens a new use for the product.
 
 A typical pass logs 0 to 5. If you have more than 5 candidates, keep the strongest 5 and save the rest in the
 state file's "Candidates" list for a later pass to re-check.
@@ -65,7 +79,7 @@ One `list_items` call on the plan, no filters. Its output is large: save it and 
 From it:
 
 - The **Idea** type's fields, by id from `types[].custom`. Today: `description` (built in), `priority` (built
-  in, carries over on conversion), Solution `f-solution`, App `f-apps`, Source `f-source`, Effort `f-effort`, Reviewed `f-reviewed` and Reason `f-reason` (the owner's). If the type
+  in, carries over on conversion), Solution `f-solution`, App `f-apps`, Kind `f-kind`, Source `f-source`, Effort `f-effort`, Reviewed `f-reviewed` and Reason `f-reason` (the owner's). If the type
   has changed, follow what it says now and note it in the report.
 - Every card's title and description, of every type and in every column, to check for duplicates.
 - The owner's verdicts: Ideas in **Cancelled** with Reviewed `Rejected`, and cards that were Ideas and are now
@@ -83,20 +97,54 @@ worktree (`git worktree add <scratchpad>/main origin/main`, removed at the end).
 
 Each pass takes the **next two products** after "Last products", rotating through liveworkspace (the platform),
 livediagram, liveplanner, livedocuments, livedesign and livehuddle, plus whatever cross-product idea you meet on
-the way. For each product, use all three sources:
+the way. It also takes the **next two wider sources** after "Last sources" (below), rotating, so every source
+comes round every few passes.
 
-1. **Gaps in the code.** Read its specs, its help centre's article list and its editor's main flows on main. Look
+### Product sources (every pass, for each of the two products)
+
+1. **Gaps in the code** (Source `Code Gap`). Read its specs, its help centre's article list and its editor's main flows on main. Look
    for flows that stop short (you can create but not reorder, import but not export, share but not revoke), features
    one product has and its siblings lack (a platform idea, not a copy), options every user expects, and specs that
-   name later work.
-2. **Competitors.** Web search what the product's category leaders ship (for example Miro, Lucidchart and
+   name later work. For **Polish** and **Extend**, use the product too: walk one or two of its main flows in a
+   browser, at desktop and phone width, on a dev server that's already running (read-only: never start, stop or
+   restart one) or on staging. Note every step that feels slow, unclear or unfinished, and every place you wanted
+   to go one step further and couldn't.
+2. **Competitors** (Source `Competitor`). Web search what the product's category leaders ship (for example Miro, Lucidchart and
    Excalidraw for livediagram; Trello, Asana, Linear and Notion databases for liveplanner; Notion and Google Docs
    for livedocuments; Figma and Canva for livedesign; Gather and Zoom for livehuddle). Favour features users
    mention in reviews, changelogs and "why we switched" posts over feature-matrix filler. Compare on the
    competitor's ground: what a user of that tool would miss here.
-3. **Telemetry and feedback.** The public telemetry summary (see the `prod-checks` memory for where it lives and
-   how to read it): features with heavy use that hit a wall, and errors that point at a missing path. Community
-   posts and feature requests on the products' Community pages. Help articles that explain a workaround.
+3. **Telemetry and feedback** (Source `Telemetry` or `Feedback`). The public telemetry summary (see the
+   `prod-checks` memory for where it lives and how to read it): features with heavy use that hit a wall, and errors
+   that point at a missing path. Community posts and feature requests on the products' Community pages. Help
+   articles that explain a workaround.
+
+### Wider sources (two per pass, rotating, across every product)
+
+4. **Board history** (Source `Board History`). The Work Tracker itself: Done cards whose PR or threads name a
+   later step nobody filed; Cancelled cards whose reason has since changed; On Hold cards whose blocker is gone;
+   and clusters of Bug cards in one area, which point at a design that needs rethinking rather than another fix.
+   Ideas the dev loop filed as optional follow-ups sit here too: never duplicate them.
+5. **PR history** (Source `PR History`). Merged PRs from the last few weeks
+   (`gh pr list --state merged --limit 50 --json number,title,body`) and their review comments: "later", "out of
+   scope", "follow-up" and "not in this PR" notes that never became a card. Also GitHub issues and Dependabot
+   alerts that hint at a bigger change.
+6. **Cloudflare usage** (Source `Cloudflare Usage`). The GraphQL Analytics API, read-only (the `prod-checks`
+   memory has how): Workers, Durable Objects and D1 hotspots by cost, time or error rate. An idea here is a change
+   that cuts cost or speeds up a hot path without users noticing, with the numbers.
+7. **Industry trends** (Source `Industry Trends`). Launches, funding news and new product categories beyond the
+   direct competitors: patterns users will soon expect (AI assists, new collaboration styles, new file formats).
+   Pitch only trends with real adoption, not hype, and say how ours would differ.
+8. **Standards** (Source `Standards`). New browser APIs that are Baseline or close to it, WCAG updates, MCP spec
+   changes, and import and export formats of other tools. An idea here is something a standard now makes possible
+   or expected.
+9. **Owner notes** (Source `Owner Notes`). Parked ideas in the project's Claude memory (files named `*-idea.md`,
+   and project notes with open questions) and the "Not planned" or "Later" tables in the specs. Recheck each one
+   against new evidence. Never pitch one of the declined ideas, and never revive a "Not planned" item without
+   saying what changed.
+
+Set **Source** to where the strongest evidence came from, even if a product source and a wider source both
+found it.
 
 Spend the effort on depth: an idea with evidence and a clear landing spot beats three hunches. Run independent
 searches and reads in parallel. Do this yourself, without subagents, unless a product's research is too big for
@@ -144,6 +192,7 @@ Add every idea that survives the check in **one** `change_items` batch:
     "description": "...",
     "f-solution": "...",
     "f-apps": ["livediagram"],
+    "f-kind": "Extend",
     "f-source": "Competitor",
     "f-effort": "Medium",
     "priority": "medium"
@@ -159,9 +208,11 @@ Add every idea that survives the check in **one** `change_items` batch:
 - **Solution** (`f-solution`): the proposed shape in a few lines: what the user sees, where it lands in the code
   (packages and files), whether it's a platform capability and the main risk.
 - **App** (`f-apps`): every product it touches; `liveworkspace` for platform work.
-- **Source** (`f-source`): where the strongest evidence came from: `Code Gap`, `Competitor`, `Telemetry` or
-  `Feedback` (Community posts, help workarounds). One value, even when several sources agree; the description
-  lists them all. The Lessons track which sources the owner accepts most.
+- **Kind** (`f-kind`): `Polish`, `Extend` or `New Feature` (see "Kinds of idea").
+- **Source** (`f-source`): where the strongest evidence came from, one of the sources in step 2 (`Code Gap`,
+  `Competitor`, `Telemetry`, `Feedback`, `Board History`, `PR History`, `Cloudflare Usage`, `Industry Trends`,
+  `Standards`, `Owner Notes`). One value, even when several sources agree; the description lists them all. The
+  Lessons track which kinds and sources the owner accepts most.
 - **Effort** (`f-effort`): a rough size from reading the code it would touch: `Small` (about a day), `Medium` (a
   few days) or `Large` (needs splitting into parts).
 - **Priority** (built-in `priority`, written lowercase: `low`, `medium`, `high`): calibrated, not inflated.
