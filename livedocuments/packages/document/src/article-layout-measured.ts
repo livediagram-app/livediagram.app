@@ -102,7 +102,13 @@ export function wrapMeasured(
         out.push(line.slice(0, cut));
         line = line.slice(cut);
         lineStart = from + cut;
-        lineW = advance(lineStart, offset + end);
+        // Measuring the whole rest of a 50,000-character word after every cut made the break quadratic: a prefix of
+        // the rest twice the cut's length already wider than the line says it breaks again. The rest is measured
+        // whole only once it is that short, or when the prefix fits (a measure that narrows a longer text).
+        const rest = offset + end;
+        const probe = Math.min(rest, lineStart + 2 * cut + 2);
+        lineW = advance(lineStart, probe);
+        if (probe < rest && lineW <= width + FIT_SLACK_PX) lineW = advance(lineStart, rest);
       }
       i = end;
     }

@@ -213,7 +213,7 @@ Bugs triaged by priority, then fixed, reviewed and released.
 | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Triage | Board **Triage**: New, Needs Info (amber), Confirmed ⇄, Won't Fix, Duplicate (no done column); a row per priority; Bugs. How we triage |
 | Fixing | Board **Fixing**: Confirmed ⇄, Fixing (WIP 4), In Review, Fixed (done), Released; a row per person; Bugs                               |
-| Health | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status, Cards by Field, Due Calendar                           |
+| Health | Dashboard: Item Count, Priorities, Stale Cards, Unassigned, Contact Form's Responses; Priority by Status, Cards by Field, Due Calendar |
 
 - How we triage: Urgent is broken for everyone (fix now), High blocks someone, Medium has a workaround, Low is
   polish; give each confirmed bug an owner.
@@ -319,7 +319,7 @@ with what is due on a calendar.
 | Guest List     | Sheet **Guest List**, filling the tab: the Guest List sheet template (invitations, RSVPs, plus-ones and dietary needs, the headcount and a pie chart)                             |
 | RSVP           | Form **RSVP**: the Event RSVP starter (Name, Email, Attending?, Dietary needs), each reply a row on RSVP Responses; unpublished                                                   |
 | RSVP Responses | Sheet **RSVP Responses**, filling the tab: a blank sheet, its headers written by the form                                                                                         |
-| Overview       | Dashboard: the views and note above, beside each tab                                                                                                                              |
+| Overview       | Dashboard: the views and note above, and RSVP's Responses figure, beside each tab                                                                                                 |
 
 - How this works: add a Workstream for each part of the event (venue, catering, speakers), with its dates; break each
   into Tasks on Tasks, under its workstream; publish RSVP and share its link, each reply landing on RSVP Responses;

@@ -29,7 +29,10 @@ const SHARE_TYPES = [
 export const TEAM_ITEM_TYPES = ['Project', 'Design', 'Document'] as const;
 
 export const EXPLORER_TELEMETRY_EVENTS = {
-  // Home: the first run's welcome. (The Timeline's events and What Happened's went with them in November 2026.)
+  // Home: the first run's welcome, and a card opened from Most Used or Recent or See More followed to the Recent
+  // view (named `JumpBackIn.MostUsed` / `.Recent` / `.SeeMore` until November 2026, when Jump Back In became Most
+  // Used and Recent; the dashboards read both names in one chart). (The Timeline's events and What Happened's went
+  // with them in November 2026.)
   'Home·Selected': [
     'Welcome.Blank',
     'Welcome.Template',
@@ -37,6 +40,9 @@ export const EXPLORER_TELEMETRY_EVENTS = {
     'Welcome.Search',
     'Welcome.StartBlank',
     'Welcome.SignIn',
+    'MostUsed',
+    'Recent',
+    'SeeMore',
   ],
   'Home·Opened': ['Welcome'],
   // A failed read of Home retried.

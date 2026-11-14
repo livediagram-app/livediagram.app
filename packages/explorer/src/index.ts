@@ -33,6 +33,7 @@ export {
 } from './dialogs/ShareDialogWithCommunity';
 export {
   explorerPath,
+  sameView,
   viewFromLocation,
   DEFAULT_BASE_PATH,
   SIDEBAR_LABELS,
@@ -40,6 +41,13 @@ export {
   type ExplorerView,
   type ExplorerViewKind,
 } from './views';
+export {
+  ITEM_PARAM,
+  resolveItemView,
+  viewOfItem,
+  viewOfLocalItem,
+  type ItemViewer,
+} from './item-view';
 export { kindWords, heroWords, type AppFilter, type HeroWords, type Words } from './words';
 export type { LensOption, LensTelemetryType } from './lens';
 export type { FolderShown, NavigateOptions } from './explorer/context';
