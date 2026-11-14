@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DialTicks } from '@/components/canvas/paper-kit';
+import { DialTicks } from '@liveworkspace/workbench/components/canvas/paper-kit';
 
 import { formatTimerClock, timerDone, type TabTimer } from '@livediagram/document';
 

@@ -637,6 +637,7 @@
     "./components/canvas/usePaletteChrome": "./src/components/canvas/usePaletteChrome.ts",
     "./components/canvas/view-readers": "./src/components/canvas/view-readers.tsx",
     "./components/canvas/PaletteDragGhost": "./src/components/canvas/PaletteDragGhost.tsx",
+    "./components/canvas/paper-kit": "./src/components/canvas/paper-kit.tsx",
     "./lib/editor-viewport-defaults": "./src/lib/editor-viewport-defaults.ts",
     "./lib/hex-colour": "./src/lib/hex-colour.ts"
   },
