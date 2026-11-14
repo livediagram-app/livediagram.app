@@ -1,16 +1,16 @@
 'use client';
 
-import { PrivateDotIcon, SharedDotIcon } from '@livedocuments/ui';
+import { PrivateDotIcon, SharedDotIcon } from '@liveworkspace/ui';
 import { COMMUNITY_PUBLIC_BADGE, COMMUNITY_PUBLIC_LABEL } from '@liveworkspace/community-ui/badge';
-import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import {
   THIS_BROWSER_DESCRIPTION,
   THIS_BROWSER_LABEL,
   THIS_BROWSER_TONE,
-} from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
+  ThisBrowserIcon,
+} from '../primitives/ThisBrowserPill';
 
-// A document's visibility states (docs/specs/006-document/offline-mode.md, 025-community/community.md): their
-// words and tones, shared by the pill beside the title (SharedBadge) and its legend (VisibilityLegend).
+// An item's visibility states, the same in every editor (each editor's docs/specs/006-<kind>/offline-mode.md,
+// docs/specs/025-community/community.md): their words and tones, shared by the pill beside the title (SharedBadge) and its legend (VisibilityLegend).
 
 export type ShareState = 'private' | 'shared' | 'team' | 'community' | 'offline';
 
@@ -49,7 +49,7 @@ export const SHARE_STATE_META: Record<
     badge: COMMUNITY_PUBLIC_BADGE,
     dot: 'text-pink-500',
   },
-  // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the
+  // Offline Mode (docs/specs/006-<kind>/offline-mode.md): saved only in this browser, never on the
   // server. The This Browser pill's words, sentence and teal tone (text 4.5:1 on its fill, ring 3:1):
   // teal is no app's accent and no status colour.
   offline: {

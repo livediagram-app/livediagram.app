@@ -27,6 +27,11 @@ import {
   removeLocalStorageSafe,
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
+import {
+  __resetPreferencesKeptLocally,
+  preferencesKeptLocally,
+  rememberPreferencesKeptLocally,
+} from '@liveworkspace/workbench/lib/preferences-local-only';
 
 // How big the whole set may grow, in characters of `{"prefs":...}`. The api takes a PUT body of twice
 // this (apps/api/src/routes/preferences.ts PREFERENCES_PUT_MAX), so a patch of the whole set with a
@@ -74,20 +79,17 @@ export function preferencesUnsynced(ownerId: string): boolean {
 // What the server holds for each owner, as far as this page knows: the set fetched at load, then each
 // set a save confirmed. A save sends what differs from it.
 const synced = new Map<string, UserPreferences>();
-// The api answered that this deployment keeps no preferences: they stay in this browser.
-let serverKeepsNone = false;
 
 export function markPreferencesSynced(ownerId: string, prefs: UserPreferences): void {
   synced.set(ownerId, prefs);
 }
 
+// The api keeps no preferences for this owner: they stay in this browser. Recorded for every reader (the Settings
+// host's This app / All rule, @liveworkspace/workbench/lib/preferences-local-only), and this device's unconfirmed
+// mark dropped, since nothing will ever confirm it.
 export function markPreferencesNotStored(ownerId: string): void {
-  serverKeepsNone = true;
+  rememberPreferencesKeptLocally(ownerId);
   if (preferencesUnsynced(ownerId)) removeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY);
-}
-
-export function preferencesStoredOnServer(): boolean {
-  return !serverKeepsNone;
 }
 
 // The keys of `next` whose value differs from `base`, each whole, and null for each key `base` has
@@ -148,7 +150,7 @@ function sendNow(): void {
 // Queue the set for the server, sent PREFERENCES_SAVE_DEBOUNCE_MS after the last change. Marked
 // unsynced at once, so a tab closed before it is sent keeps its copy on the next load.
 export function savePreferences(ownerId: string, prefs: UserPreferences): void {
-  if (serverKeepsNone) return;
+  if (preferencesKeptLocally(ownerId)) return;
   writeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY, ownerId);
   waiting = { ownerId, prefs };
   if (timer) clearTimeout(timer);
@@ -169,5 +171,5 @@ export function __resetPreferencesSync(): void {
   inFlight = false;
   waiting = null;
   synced.clear();
-  serverKeepsNone = false;
+  __resetPreferencesKeptLocally();
 }

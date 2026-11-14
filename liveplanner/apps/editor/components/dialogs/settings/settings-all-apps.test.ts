@@ -20,7 +20,7 @@ describe('rowSharedAcrossApps', () => {
   });
 
   it('marks nothing where preferences stay in this browser', () => {
-    keepPreferencesLocally();
+    keepPreferencesLocally('owner-1');
     expect(rowSharedAcrossApps('reduceMotion')).toBe(false);
   });
 });

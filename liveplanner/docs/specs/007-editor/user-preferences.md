@@ -720,7 +720,9 @@ and the dialog stays as the one complete, browsable index of them.
   list). It knows nothing of this app: it is driven by a plain model
   (categories with an icon, rows with a value and an `onChange`) and is handed the app's pieces (the
   search box, close button, help link, Sign In link, illustrations) through `SettingsUiKit`. The app
-  keeps `SettingsDialog.tsx` (the frame, the tours it relaunches on close, the footer),
+  keeps `SettingsDialog.tsx`, a thin door over the shared host (`EditorSettingsDialog`, which holds the frame,
+  the This app / All rule, the Account section and the footer for every editor) that hands in what is its own: the
+  tours it relaunches on close, its view memory key, its nouns and its catalogue's inputs,
   `settings-catalogue.ts`, `settings-model.tsx` (its catalogue bound to the live preferences: the
   standard kinds through the package's `bindRow` (`packages/settings-ui/src/bind.ts`), which tracks each change before writing it,
   and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
@@ -776,8 +778,12 @@ and the dialog stays as the one complete, browsable index of them.
   and Your Data (the shared panels of `@liveworkspace/settings-ui/account-panels`, each loaded when its category is
   first opened): none links to liveworkspace.app. Nothing of All is fetched
   until All is first chosen: its code and the three other apps' catalogues are their own chunks, one
-  read per other app, kept for the page's lifetime. All is offered only to a signed-in account
-  outside a workbench (a guest's settings stay in this browser); the dialog always opens on liveplanner, whatever was chosen last time (nothing is remembered; All is
+  read per other app, kept for the page's lifetime. All is offered by one rule, the same in every editor
+  (`allowAll` in the shared host, `../packages/workbench/src/components/dialogs/EditorSettingsDialog.tsx`): signed in,
+  not in a workbench, and preferences not kept only in this browser (`preferencesKeptLocally`,
+  `../packages/workbench/src/lib/preferences-local-only.ts`, set when the api keeps none for the account). A guest's
+  settings stay in this browser, a workbench's Settings reach only its one plan, and with preferences kept locally there is no account copy
+  for All to show (before 14 November 2026 livediagram, livedesign and livehuddle still offered All then); the footer then says they are kept in this browser, never that they sync to the account; the dialog always opens on liveplanner, whatever was chosen last time (nothing is remembered; All is
   one press away). The host part is `settings-panel-host.tsx` (the app's id, its logos
   and the bearer request); the switch, the Account section and All's merged categories are the package's.
 

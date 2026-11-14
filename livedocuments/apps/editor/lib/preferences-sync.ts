@@ -22,6 +22,11 @@ import {
   removeLocalStorageSafe,
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
+import {
+  __resetPreferencesKeptLocally,
+  preferencesKeptLocally,
+  rememberPreferencesKeptLocally,
+} from '@liveworkspace/workbench/lib/preferences-local-only';
 
 // The most the whole preferences blob may take, in characters of `{"prefs":...}`. Safe range
 // 2048..12288: the accounts database keeps at most 16 KB a scope.
@@ -72,8 +77,6 @@ type Prefs = Record<string, unknown>;
 
 // What the server holds for an owner, as last read or saved: what a save is measured against.
 let server: { ownerId: string; prefs: Prefs } | null = null;
-// The server said it keeps no preferences: this browser is their only home for the page's life.
-let keptLocally = false;
 let inFlight = false;
 let waiting: { ownerId: string; prefs: Prefs } | null = null;
 let timer: ReturnType<typeof setTimeout> | null = null;
@@ -82,16 +85,15 @@ export function setServerPreferences(ownerId: string, prefs: Prefs): void {
   server = { ownerId, prefs };
 }
 
-export function keepPreferencesLocally(): void {
-  keptLocally = true;
+// The api keeps no preferences for this owner: this browser is their only home for the page's life. Recorded for
+// every reader (the Settings host's This app / All rule, @liveworkspace/workbench/lib/preferences-local-only), and
+// nothing waiting is sent.
+export function keepPreferencesLocally(ownerId: string): void {
+  rememberPreferencesKeptLocally(ownerId);
   waiting = null;
   if (timer !== null) clearTimeout(timer);
   timer = null;
   removeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY);
-}
-
-export function preferencesKeptLocally(): boolean {
-  return keptLocally;
 }
 
 const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.stringify(b);
@@ -115,7 +117,7 @@ async function drain(): Promise<void> {
   if (inFlight) return;
   inFlight = true;
   try {
-    while (waiting && !keptLocally) {
+    while (waiting && !preferencesKeptLocally(waiting.ownerId)) {
       const save = waiting;
       waiting = null;
       const base = server?.ownerId === save.ownerId ? server.prefs : null;
@@ -126,7 +128,7 @@ async function drain(): Promise<void> {
       }
       const result = await apiPutPreferences(save.ownerId, patch);
       if (result === 'local') {
-        keepPreferencesLocally();
+        keepPreferencesLocally(save.ownerId);
       } else if (result === 'failed') {
         console.warn('[preferences] save-not-confirmed, device copy kept');
       } else {
@@ -138,14 +140,14 @@ async function drain(): Promise<void> {
     inFlight = false;
   }
   // A save that came in while the last was in flight goes on its own timer.
-  if (waiting && timer === null && !keptLocally)
+  if (waiting && timer === null && !preferencesKeptLocally(waiting.ownerId))
     timer = setTimeout(() => void drain(), SAVE_DEBOUNCE_MS);
 }
 
 // Queue the preferences for the server. Marked unsynced at once, so a tab closed before the save
 // goes still keeps its copy on the next load.
 export function savePreferences(ownerId: string, prefs: UserPreferences): void {
-  if (keptLocally) return;
+  if (preferencesKeptLocally(ownerId)) return;
   writeLocalStorageSafe(PREFERENCES_UNSYNCED_KEY, ownerId);
   waiting = { ownerId, prefs };
   if (timer !== null) clearTimeout(timer);
@@ -172,5 +174,5 @@ export function __resetPreferencesSync(): void {
   inFlight = false;
   waiting = null;
   server = null;
-  keptLocally = false;
+  __resetPreferencesKeptLocally();
 }
