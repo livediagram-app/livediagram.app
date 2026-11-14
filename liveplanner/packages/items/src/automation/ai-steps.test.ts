@@ -572,6 +572,28 @@ describe('aiOutcome', () => {
     expect(aiOutcome(set, { kind: 'Bug' }, ctx())).toEqual({ failed: AI_UNREADABLE });
   });
 
+  // item-types.md "Changing a card's type": the AI step's Set Card Type maps fields as every type change does.
+  it('sets a card type with its custom fields mapped by name', () => {
+    const set: AutomationAi = { kind: 'ai', task: 'card_type', set: true };
+    const from: ItemTypeDef = {
+      ...BUG,
+      id: 'idea',
+      label: 'Idea',
+      custom: [{ id: 'f-apps', label: 'App', kind: 'multichoice', options: ['API'] }],
+    };
+    const to: ItemTypeDef = {
+      ...BUG,
+      id: 'work',
+      label: 'Work Item',
+      custom: [{ id: 'f-app', label: 'App', kind: 'choice', options: ['API'] }],
+    };
+    const outline = { ...O, types: [from, to] };
+    const card = { ...story({ 'f-apps': ['API'] }), type: 'idea' };
+    expect(
+      aiOutcome(set, { type: 'Work Item' }, { card, outline, input: aiCardInput(card, outline) }),
+    ).toMatchObject({ patch: { type: 'work', set: { 'f-app': 'API' } }, already: false });
+  });
+
   it('triages with a priority from the four and up to 3 of the plan’s own labels', () => {
     const both: AutomationAi = { kind: 'ai', task: 'triage', priority: true, labels: true };
     const plan = ['billing', 'Urgent', 'mobile', 'ios', 'web'];

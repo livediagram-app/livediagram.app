@@ -11,6 +11,7 @@ import { itemLabels, itemStatus, itemTitle, type Item, type ItemPatch } from '..
 import { ITEM_LABELS_MAX } from '../limits';
 import { PRIORITIES, PRIORITY_LABELS, validateFields, type Priority } from '../fields';
 import { typeIn } from '../type-catalogue';
+import { withTypeChangeFields } from '../card-retype-fields';
 import {
   AUTOMATION_AI_LABELS_MAX,
   AUTOMATION_AI_PER_DAY,
@@ -517,8 +518,9 @@ function typed(
       comment: `Suggested card type: ${type.label}`,
       line: `Suggested card type ${type.label} in a comment`,
     };
+  // Its custom fields map into the new type's with it (item-types.md "Changing a card's type").
   return {
-    patch: { type: type.id },
+    patch: withTypeChangeFields(ctx.card, { type: type.id }, ctx.outline.types),
     line: `Set the card type to ${type.label}`,
     already: ctx.card.type === type.id,
   };

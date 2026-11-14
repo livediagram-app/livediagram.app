@@ -959,6 +959,12 @@ The spec's "The rule builder" (Add an Action) and "Motion".
 Change Card Type, Set Colour, Restore From Archive, Copy Card, Add a Checklist, Link Cards, Mention Someone, Resolve
 Threads and Wait (spec "Actions", "Wait").
 
+- **Change Card Type maps fields** (item-types.md "Changing a card's type"): `plan-actions.ts`'s `set_type`, once
+  `plan.retype` changed the card, writes `typeChangeFields(plan.card.fields, from, to)` (`card-retype-fields.ts`)
+  through `plan.write`, so the mapped values ride the same patch and a later step reads them as the new type's; the
+  AI step's Set Card Type (`ai-steps.ts`) returns `withTypeChangeFields(card, { type }, types)`. The editor's writes
+  (`usePlanItemWrites`: `patchItem`, `patchItems`, `moveItem`, `moveItems`) and agents' `change_items` `set`
+  (`agent-verbs/src/plan/item-changes.ts`) add them the same way.
 - **Shapes** (`packages/items/src/automation/types.ts`): `set_type`, `set_colour` (`#rrggbb` or null), `restore`,
   `copy_card` (`status?`), `add_checklist` (`items`, 1 to 20), `link_card` (`field`, `to: {card} | {trigger}`),
   `mention` (`to`, `text`), `resolve_threads`; and the step `AutomationWait` (`hours`, 1 to 720). `validate.ts` reads

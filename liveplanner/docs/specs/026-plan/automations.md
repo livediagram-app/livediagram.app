@@ -419,6 +419,8 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 | **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks |
 | **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                   |
 | **Change Card Type**            | sets the card's type to one of the plan's card types (its column must suit the new type)          |
+|                                 | and maps its custom fields by name, as every type change does                                     |
+|                                 | ([Changing a card's type](item-types.md#changing-a-cards-type))                                   |
 | **Set Colour**                  | sets the card's Colour to one of the standard colours, or none                                    |
 | **Restore From Archive**        | brings an archived card back                                                                      |
 | **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one               |
