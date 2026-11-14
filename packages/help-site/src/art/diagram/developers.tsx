@@ -1,5 +1,8 @@
-import { Arrow, Shape } from '@liveworkspace/help-site/art/primitives';
-import { CODE_TONES, DevelopersArt as Scene } from '@liveworkspace/help-site/art/scenes/developers';
+// A diagram editor's category scene, the same in livediagram and livehuddle (art/diagram in the README); each
+// app's components/category-art/index.tsx maps it to its category.
+
+import { Arrow, Shape } from '../primitives';
+import { CODE_TONES, DevelopersArt as Scene } from '../scenes/developers';
 
 // Developers: the shared scene (docs/specs/018-help/help-pages.md "Category art"). `POST /api/documents` and the
 // Service map diagram it creates.

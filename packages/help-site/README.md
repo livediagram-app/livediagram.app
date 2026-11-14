@@ -24,6 +24,8 @@ What every help centre draws alike lives once in `src/art/`:
   `MiniWireframe` and the rest), each scaled to the box it is handed, for the scenes that draw a product's work on a
   screen or a thumbnail. They live once in `@liveworkspace/ui/work-art`, because the Explorer's Home draws the same
   pictures for what each app makes; this entry re-exports them for the help apps.
+- `art/diagram`: the diagram editors' category scenes (Tabs, Developers, Supported Devices), the same in
+  livediagram and livehuddle, which each map them in their `components/category-art/index.tsx`.
 - `art/tool-picker`: the Pages editors' tool picker (Edit, Present and Preview bands), which livedocuments's and
   livedesign's Selection Modes scenes open beside their own work.
 
