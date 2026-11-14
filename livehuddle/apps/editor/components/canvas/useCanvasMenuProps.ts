@@ -87,7 +87,9 @@ export function useCanvasMenuProps(
         // dismiss, since element pointerdown stops propagation) got
         // closed by the next right-click instead of reopening, so the
         // group menu "wouldn't open".
-        (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy }),
+        // The member right-clicked rides along, so the menu offers its kind's Type.
+        (sx, sy, id) =>
+          setContextMenu({ mode: 'multi', x: sx, y: sy, ...(id ? { elementId: id } : {}) }),
     onOpenMultiContextMenu: isReadOnly
       ? undefined
       : (sx, sy) =>

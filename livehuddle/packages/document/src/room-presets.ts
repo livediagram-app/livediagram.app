@@ -8,7 +8,6 @@ import { ROOM_BACK_FACE, ROOM_DOOR_WIDTH } from '@livehuddle/avatar/office-geome
 import type { ChairFacing, ShapeElement, ShapeKind } from './index';
 import { createShape } from './shape-factory';
 import { RESTROOM_VARIANT, applyShapeVariant } from './shape-variants';
-import { roomPreset } from './room-preset-shapes';
 import { turnPiece, turnsWithFacing } from './furniture-facing';
 
 /** A piece a preset furnishes its room with: its kind, its top-left room-relative (px, for the room at the preset's
@@ -119,19 +118,17 @@ function presetPiece({ kind, x, y, facing, variant, width }: PresetPiece): Shape
 }
 
 /**
- * The pieces a room preset places with its room, in canvas px, each in the room's stroke when it has one (as its Door
- * is), the Restroom's Room Sign last. A room placed larger or smaller than its preset spreads them with it (each keeps
- * its own size). None for a room with no furnished preset, or anything that is not a room.
+ * The pieces a room preset places with its room, in canvas px from the room's top left, each in the room's stroke when
+ * it has one (as its Door is), the Restroom's Room Sign last. A preset always lands at its own size (office.md "Room
+ * presets": a Room is dropped, then sized), so each piece stands where its layout puts it. None for a room with no
+ * furnished preset, or anything that is not a room.
  */
 export function roomPresetCompanions(room: ShapeElement, variant?: string): ShapeElement[] {
   if (room.shape !== 'room' || !variant || !Object.hasOwn(ROOM_PRESET_LAYOUTS, variant)) return [];
   const ink = room.strokeColor ? { strokeColor: room.strokeColor } : {};
-  const size = roomPreset(variant) ?? createShape('room', 0, 0);
-  const sx = room.width / size.width;
-  const sy = room.height / size.height;
   const pieces = ROOM_PRESET_LAYOUTS[variant]!.map((p) => {
     const made = presetPiece(p);
-    return { ...made, x: room.x + p.x * sx, y: room.y + p.y * sy, ...ink };
+    return { ...made, x: room.x + p.x, y: room.y + p.y, ...ink };
   });
   if (variant !== RESTROOM_VARIANT) return pieces;
   const base = createShape('room-sign', 0, 0);

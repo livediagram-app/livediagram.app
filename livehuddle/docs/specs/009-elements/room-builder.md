@@ -108,8 +108,9 @@ closes, and a closed one blocks walking). Only its drawing and its width differ.
 - **The field** is `ShapeElement.variant?: string`, the type of a piece within its kind. It is general: a
   [Rug](office.md#rug-types) and a [Corridor](corridor.md) keep theirs in it too, and so will the windows and glass
   walls that follow. Absent is a kind's first type (the Door here); a value its kind does not take draws as the first
-  type, so an unknown value never breaks a drawing. It is written once, when the piece is placed from its preset, and
-  travels with copies, templates and exports like any field. Validation: lowercase letters and hyphens, 1 to 32
+  type, so an unknown value never breaks a drawing. It is written when the piece is placed from its preset, and
+  changed in place from the element menu's **Type** ([A piece's type](office.md#a-pieces-type)), and travels with
+  copies, templates and exports like any field. Validation: lowercase letters and hyphens, 1 to 32
   characters.
 - **Its height stays 24** (the wall's band); a Revolving Door's drum is drawn past its box, across the wall, as its
   swing arc is. The box is what selects it, so a click on the drum's middle selects it.

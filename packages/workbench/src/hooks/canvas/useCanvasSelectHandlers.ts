@@ -29,7 +29,8 @@ export function useCanvasSelectHandlers({
   onDeselect: () => void;
   onShiftSelect: (id: string) => void;
   onElementContextMenu?: (id: string, screenX: number, screenY: number) => void;
-  onMultiContextMenu?: (screenX: number, screenY: number) => void;
+  // `elementId` is the member right-clicked.
+  onMultiContextMenu?: (screenX: number, screenY: number, elementId?: string) => void;
 }) {
   // Stable wrapper for the element-right-click flow. BoxedElementView
   // is memoed; passing inline arrows for `onContextSelect` would
@@ -46,7 +47,7 @@ export function useCanvasSelectHandlers({
       const { multiSelectedIds } = readSelection();
       const inMarquee = multiSelectedIds.size > 1 && multiSelectedIds.has(id);
       if (inMarquee && onMultiContextMenu) {
-        onMultiContextMenu(sx, sy);
+        onMultiContextMenu(sx, sy, id);
         return;
       }
       onSelect(id);

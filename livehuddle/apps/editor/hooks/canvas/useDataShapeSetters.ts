@@ -9,6 +9,7 @@ import {
   type RoomWalls,
   GLASS_ROOM_VARIANT,
   type ClockZone,
+  retypePiece,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { shapeTelemetryToken } from '@/lib/element-telemetry';
@@ -59,6 +60,19 @@ export function useDataShapeSetters({
   // And its walls (office.md "Glass walls"): Glass stores `variant: 'glass'`, Solid clears it.
   const setRoomWalls = (walls: RoomWalls) =>
     setRoomDoorSelected({ variant: walls === 'glass' ? GLASS_ROOM_VARIANT : undefined }, 'Room');
+
+  // A piece's type (docs/specs/009-elements/office.md "A piece's type"): every selected piece of `kind` changed in
+  // place, others left alone; a Door on a wall stays inside it, and keeps its type when the new one is wider than the
+  // wall (retypePiece). One change, reported once, and nothing at all when no piece changes.
+  const setPieceTypeSelected = (kind: string, type: string) => {
+    const ids = currentSelectionIds();
+    const retype = (els: readonly Element[]) => (el: Element) =>
+      ids.has(el.id) && el.type === 'shape' && el.shape === kind ? retypePiece(el, type, els) : el;
+    const now = elements();
+    if (!now.some((el) => retype(now)(el) !== el)) return;
+    commit((els) => els.map(retype(els)));
+    track('Element', 'Changed', shapeTelemetryToken(kind));
+  };
 
   // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in"): Who Can Speak and Show
   // Cameras, on every selected stage and nothing else.
@@ -121,6 +135,7 @@ export function useDataShapeSetters({
     turnSelected,
     setRoomDoorSelected: setRoomDoor,
     setRoomWallsSelected: setRoomWalls,
+    setPieceTypeSelected,
     setStageSelected,
     setScreenUrlSelected,
     setScreenUrlOf,

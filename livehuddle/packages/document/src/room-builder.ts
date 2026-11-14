@@ -220,6 +220,17 @@ export function onRoomWall(piece: ShapeElement, room: ShapeElement): boolean {
   return wallLines(room).some((w) => doorSpanOnWall(w, line) !== null);
 }
 
+/** The wall (uncut) a door or a window stands on among `elements`' rooms and corridors, or null for one standing free. */
+export function wallUnder(
+  piece: ShapeElement,
+  elements: readonly Element[],
+): { a: OutlinePoint; b: OutlinePoint } | null {
+  if (!isWallPiece(piece)) return null;
+  const line = doorLine(piece);
+  const hit = wallsOf(elements).find((w) => doorSpanOnWall(w, line) !== null);
+  return hit ? { a: hit.a, b: hit.b } : null;
+}
+
 /** Whether a Door stands on one of the room's walls (so it cuts its wall; a Walk There heads for it). Never a Window. */
 export function doorOnRoom(door: ShapeElement, room: ShapeElement): boolean {
   return door.shape === 'door' && onRoomWall(door, room);

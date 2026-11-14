@@ -124,12 +124,33 @@ type Turnable = Rect & {
  * as it was.
  */
 export function turnPiece<E extends Turnable>(el: E, to: SeatFacing): E {
+  // A rug is a flat pattern drawn to its box, whatever its type (office.md "Rug"): on its side its box's sides swap
+  // about its centre, so a Round rug stays a circle and a Runner keeps its length (Work Tracker 628).
+  if (el.shape === 'rug') return turnFlat(el, to);
   // A Long Table's drawings are built for its box (office.md "Long Table"), so it turns from its own.
   const art = isLongTable(el)
     ? longTableArt(el.width, el.height, pieceFacing(el))
     : pieceArt(el.shape);
   if (!art || !turnsWithFacing(el.shape)) return el;
   return turnWithArt(el, art, pieceFacing(el), to);
+}
+
+const sideways = (f: SeatFacing) => f === 'e' || f === 'w';
+
+// A flat piece turned: its box's sides swapped about its centre when it goes onto its side or back, else kept.
+function turnFlat<E extends Turnable>(el: E, to: SeatFacing): E {
+  const swap = sideways(pieceFacing(el)) !== sideways(to);
+  const width = swap ? el.height : el.width;
+  const height = swap ? el.width : el.height;
+  const { rotation: _dropped, ...rest } = el;
+  return {
+    ...rest,
+    x: el.x + (el.width - width) / 2,
+    y: el.y + (el.height - height) / 2,
+    width,
+    height,
+    chairFacing: to,
+  } as E;
 }
 
 /** A piece turned a number of clockwise quarter turns (Rotate Right is +1, Rotate Left -1). */

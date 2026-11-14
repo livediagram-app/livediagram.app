@@ -27,7 +27,8 @@ places, so an office is drawn with the same tools as a diagram.
 ## Where they live
 
 Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `corridor`, `stage` and `rug` in **Rooms**
-(with the fence), `meeting-table` in **Seats** (with the chair, desk and sofa), and `plant`, `bookshelf`,
+(with the fence), `meeting-table` in **Seats** (with the chair, desk and sofa; its [Long Table](#long-table) a tile of
+its own beside it), and `plant`, `bookshelf`,
 `water-cooler` and `coffee-machine` in **Perks** (the Stage's tile from Work Tracker #319 part 4), where the
 [Office amenities](office-amenities.md#where-they-live) group them under Office, Kitchen and Restroom. `office-pod`
 joins **Seats**; `bar`, `bar-stool`, `drinks-cabinet` and `drinks-fridge` are **Play**'s **Bar** group (Bar
@@ -36,7 +37,8 @@ was a category of its own until 2026-11-06), and `outdoor-plant`, `tree`, `garde
 ([Groups in a flyout](../010-palette/palette-top-level-categories.md#groups-in-a-flyout)).
 Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
 pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, copy,
-theme, export. None has a settings `…`; a room's one setting, a stage's two and a table's are in the element menu.
+theme, export. None has a settings `…`; a room's one setting, a stage's two, a table's and a rug's are in the element
+menu, and a piece with types changes its type there ([A piece's type](#a-pieces-type)).
 
 ## Room
 
@@ -140,8 +142,12 @@ recoloured, refurnished or emptied like any room, and its pieces like any piece.
   | Lounge        | A fireplace on the back wall, a Bordered rug, two sofas facing in across it, plants either side of the door                                         |
   | Meeting Booth | A Meeting Table for six, a Screen on the back wall above it and a plant in a back corner                                                            |
 
-  A room placed bigger or smaller than its preset (dragged out to a size) spreads its pieces with it; each keeps its
-  own size.
+  A preset always lands at its own size (a Room is [dropped, then sized](#room), never drawn out to a size), so its
+  pieces stand where this table puts them. Resizing the room after it lands moves none of them: they are ordinary
+  pieces, selected with the room as it lands, so the first drag moves them all together, and each is moved or resized
+  on its own after that. (Work Tracker 628 chose this over drawing a preset out to a size: the owner made a Room
+  dropped, then sized, to keep building simple, and a preset drawn smaller than itself would crowd its pieces into its
+  walls.)
 
   A Screen on the back wall (the Boardroom's, the Meeting Booth's) hangs just below the wall's face
   (`PRESET_SCREEN_TOP`, 2 px under `ROOM_BACK_FACE`), centred over its table, so the room's name band on that face is
@@ -205,6 +211,11 @@ A table with six chairs round it, every seat facing the table.
 
 The Meeting Table's `long` type (`variant: 'long'`, the stored type field doors and rugs use): a boardroom table drawn to
 its width, the Boardroom preset's table.
+
+- **Its own tile**, **Long Table**, stands beside the Meeting Table in **Seats** (and in Search), with a long table's
+  glyph (a long top with four chairs a side): it places, drags and previews as the Meeting Table's tile does, at the
+  Long Table's own size, dropped at its own size like every placed piece. It is the same `meeting-table` element with
+  `variant: 'long'`, so its telemetry is the Meeting Table's (`Element · Added · Meeting-table`).
 
 - Its top runs the box's width less 40 px each end, the same 168 px deep drawing as the Meeting Table's. Chairs stand
   along both sides, as many as fit at 60 px apart between 86 px in from each end (seats per side: the room left over
@@ -284,6 +295,35 @@ when moved, resized or recoloured; absent is the Oval, and a value a rug does no
   recoloured rug keeps its pattern, and a rug on dark paper (its deep fill) reads as well as on light.
 - A Round rug is aspect locked (it stays a circle); the others take any box.
 - Export draws each type as the canvas does.
+
+### A piece's type
+
+A placed Door, Rug, Corridor or Meeting Table changes its type in place, from the element menu, without being
+replaced: a Door into a Double Door, an Oval rug into a Persian, a Straight corridor into a Corner, a Meeting Table into
+a Long Table and back (Work Tracker 628).
+
+- **Where**: the element menu's Tools has a **Type** section (its glyph two passing arrows, `TypeMenuGlyph`: one piece swapped for another of its kind) for a `door`, a
+  `rug`, a `corridor` and a `meeting-table`: one tile per type, in the palette's order, each with the glyph and name its
+  palette card has (Door, Double Door, Sliding Door, Revolving Door; Oval, Round, Bordered, Runner, Striped, Persian,
+  Kilim, Doormat; Straight, Corner, T-Junction, Crossroads; Meeting Table, Long Table). The piece's type is the pressed
+  tile. Editors only: a Participant's and a Viewer's short menu has no Type section, and the participant content rule
+  keeps a piece's `variant` as stored.
+- **What changes**: the type (`variant`; the kind's first type clears it, as its plain tile places it), the box, which
+  takes the new type's own size (the size its palette card places, DEFAULTS.md D234) turned to the piece's facing when
+  it turns (a rug, a table), centred where the old box was, and whether it is aspect locked, as placing that type
+  sets it (a Round rug stays a circle, a Long Table takes any width).
+- **What stays**: everything else, the piece's id, name, colours, facing, rotation (a corridor's turn, a door's angle on
+  its wall), lock, layer and group. A Door keeps its centre and angle, so it stays on its wall and keeps cutting it. A
+  table's sitters are presence: seats past the new type's last fall away, as when a Long Table is dragged narrower.
+- **A Door stays inside its wall**: on a wall, a wider type slides along it just far enough to clear the wall's ends
+  (`snapDoorToWall`), and a type wider than the whole wall is offered disabled, its hover card **Too Wide for This
+  Wall** ("A Double Door is wider than the wall this door stands on. Move the door to a longer wall first.").
+- **A selection of several**: right-clicking one piece of a multi-selection opens the selection menu with that
+  piece's **Type** section (the menu remembers the piece right-clicked); opened from the selection toolbar's `…`, with
+  no piece clicked, it shows the Type of the one retyped kind the selection holds, and none when it mixes two. A pick
+  changes every selected piece of that kind; other kinds are left alone (two rugs and a door, Persian: both rugs). Picking
+  the type a piece already has changes nothing. One undoable change, `Element · Changed · <Kind>` (`Door`, `Rug`,
+  `Corridor`, `Meeting-table`).
 
 ## Stage
 

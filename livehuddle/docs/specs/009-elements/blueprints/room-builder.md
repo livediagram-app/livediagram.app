@@ -72,6 +72,30 @@ furniture-art` `longTableArt(width, height, facing)` (re-exported by `office.ts`
   `ROOM_WALL / 2` in, stopping at the open ends; the drawing's walls are the same lines, stroked as a room's.
 - The palette drag hands the preview its `variant` (`PaletteDragPreview.variant`), so a dragged preset previews at
   its own size and shape.
+- A piece's type in place (office.md "A piece's type", Work Tracker 628): `packages/document/src/piece-type.ts`
+  `RETYPED_KINDS` (door, rug, corridor, meeting-table), `changesType`, `withPieceType(el, type)` (D234: the type's
+  fresh box, turned to the piece's facing, about the old centre; the first type clears `variant`; `aspectLocked` as the
+  type places it; everything else kept). `apps/editor/components/palette/piece-type-tiles.ts` `pieceTypeChoices(kind)`
+  reads the kind's palette cards (the Door, Rug and Corridor preset tiles; the Meeting Table and Long Table tiles) for
+  each type's caption and glyph; `PieceTypeMenuSection` draws them as tiles (2 columns, 3 for more than four types)
+  under the `TypeMenuGlyph`, first in the element menu's Tools; `useDataShapeSetters.setPieceTypeSelected(kind, type)`
+  retypes every selected piece of that kind in one commit through `retypePiece(el, type, elements)` (a Door on a
+  wall, `wallUnder` in room-builder.ts, is re-snapped by `snapDoorToWall` to clear the wall's ends, and kept as it was
+  when the type is wider than the wall; `pieceTypeFits` disables that tile under a HoverCard), no commit and no
+  telemetry when nothing changes, then `Element · Changed · <Kind>`. The selection menu (`MultiSelectionContextMenu`)
+  renders the section for `selectionTypeTarget(selection, menu.elementId)`: the `multi` menu state carries the member
+  right-clicked (`elementId`), passed by `@liveworkspace/workbench`'s `useCanvasSelectHandlers` as
+  `onMultiContextMenu(x, y, id)`.
+- A rug turns flat (`turnFlat` in `furniture-facing.ts`): its box's sides swap about its centre when it goes onto its
+  side or comes back, whatever its type, so a Round rug stays a circle (it used to take the Oval's drawing's
+  proportions).
+- The Long Table tile (`tools:long-table`, `room-tiles.tsx`, `LongTableIcon`) is `{ kind: 'meeting-table', variant:
+'long' }`, after the Meeting Table in Seats' catalogue order.
+- A room preset's pieces stand at their layout place from the room's top left (`roomPresetCompanions`), never scaled:
+  a preset always lands at its own size (`dropsAtOwnSize`).
+- On a phone `CategoryFlyoutSide` takes `minHeight: flyoutHeight` (the flyout's height, from `sidePlacement`), so it
+  covers the whole flyout however few presets it holds, as a `flex flex-col` whose body is `grow`, so the footer
+  pins to the bottom.
 
 ## Windows and glass walls
 

@@ -18,6 +18,7 @@ import {
   WindowIcon,
   StageIcon,
   MeetingTableIcon,
+  LongTableIcon,
   SofaIcon,
 } from '@/components/palette/palette-icons';
 import { SignpostIcon } from '../palette-icons-team';
@@ -380,6 +381,22 @@ export const ROOM_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'meeting-table' },
     icon: <MeetingTableIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // The Long Table (docs/specs/009-elements/office.md "Long Table"): the Meeting Table's `long` type, its own tile
+    // beside it rather than only inside the Boardroom preset.
+    id: 'tools:long-table',
+    tileGroup: 'seating',
+    blurb: 'A boardroom table for sixteen',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Long Table',
+    caption: 'Long Table',
+    description:
+      'A long boardroom table with sixteen seats for Avatar mode: drag it wider for more chairs, narrower for fewer. Walk your character in to sit on the nearest seat.',
+    filled: true,
+    action: { type: 'shape', kind: 'meeting-table', variant: 'long' },
+    icon: <LongTableIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Social pieces (docs/specs/009-elements/social-pieces.md).

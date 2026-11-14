@@ -206,14 +206,18 @@ describe('room presets', () => {
     expect([Math.round(back.width), Math.round(back.height)]).toEqual([560, 168]);
   });
 
-  it("spreads a preset's pieces with a room placed bigger, each keeping its size", () => {
-    const board = applyShapeVariant(createShape('room', 0, 0), 'boardroom');
+  // office.md "Room presets": a preset always lands at its own size, so its pieces stand where its layout puts them,
+  // from the room's top left, and never spread (Work Tracker 628).
+  it("stands a preset's pieces where its layout puts them, from the room's corner", () => {
+    const board = applyShapeVariant(createShape('room', 100, 60), 'boardroom');
     const [, , first] = withDoorPiece(board, 'boardroom') as ShapeElement[];
     const [, , wide] = withDoorPiece(
       { ...board, width: 1600, height: 800 },
       'boardroom',
     ) as ShapeElement[];
-    expect(wide!.x).toBe(first!.x * 2);
+    expect(first!.x - board.x).toBe(20);
+    expect(first!.y - board.y).toBe(40);
+    expect(wide!.x).toBe(first!.x);
     expect(wide!.width).toBe(first!.width);
   });
 
