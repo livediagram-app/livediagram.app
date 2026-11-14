@@ -110,16 +110,17 @@ export function CardView({
     loadingMore,
     onLoadMore,
     reveal: (at) => {
-      // Past the cards revealed so far: reveal through its batch, then come back once they are in.
+      // Past the cards revealed so far: reveal through its batch; the next render tries again.
       if (folders.length + at >= limit) {
         setShown({
           key: resetKey,
           count: Math.ceil((folders.length + at + 1) / CARD_BATCH) * CARD_BATCH,
         });
-        return false;
+        return true;
       }
-      // Drawn already (on the last folder row, in the window, or with no layout every card draws).
-      if (win.cols < 1 || at < win.shared || (at >= win.start && at < win.end)) return true;
+      // Until the window has measured the grid there is no row to scroll to: the render after it measures tries
+      // again. A card on the last folder row always draws.
+      if (win.cols < 1 || at < win.shared) return false;
       const run = runStartOf();
       if (!grid.current || !run) return false;
       const row = Math.floor((at - win.shared) / win.cols);

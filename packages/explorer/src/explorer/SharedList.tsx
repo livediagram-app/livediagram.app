@@ -75,7 +75,6 @@ export function SharedList({
     loadingMore,
     onLoadMore,
     reveal: (index) => {
-      if (index >= start && index < end) return true;
       if (!body.current) return false;
       revealAt(body.current, index * ROW_HEIGHT, ROW_HEIGHT);
       return true;

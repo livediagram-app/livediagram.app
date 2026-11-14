@@ -752,8 +752,11 @@ editor, resolves it).
   the view. Lists draw only the rows on screen, so each list view (List, Card, Details, Shared With Me) first brings
   the item into its window: it loads further pages until the item is in the list (at most ten more), reveals the card
   batch that holds it, and scrolls to where its row will be (`useRevealArrived` in
-  `packages/explorer/src/explorer/arrived-item.ts`). The mark waits up to 15 seconds for the row; an item still not
-  found by then leaves the place open as usual.
+  `packages/explorer/src/explorer/arrived-item.ts`). No single look is trusted: a card grid draws every card before it
+  measures and then keeps only the first rows, so until the arrival settles (the person scrolls, presses or types, or
+  15 seconds pass) a view brings the item back whenever a render leaves it out (at most twelve times), and every row
+  or card of it that is drawn is marked and scrolled to. Once settled the ring stays on whatever is drawn and nothing
+  moves the page; an item never found leaves the place open as usual.
 - **The address.** While the item is looked up (one `GET /items/:id`, none for a This Browser item) the page shows the
   Explorer's skeleton, then replaces its address with the place's own (`?item=` dropped), so Back returns to the
   item in its editor, and a reload stays in the place. An item the index can't answer (gone, or not theirs to reach)

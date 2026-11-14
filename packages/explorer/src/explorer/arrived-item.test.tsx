@@ -38,7 +38,7 @@ describe('useArrivedItem', () => {
     expect(r.scrollIntoView).toHaveBeenCalledWith({ block: 'center' });
   });
 
-  it('waits for a card drawn after the page, then stops looking', async () => {
+  it('marks a card drawn after the page, and again when the window draws it anew', async () => {
     const host = root();
     const { unmount } = renderHook(() => useArrivedItem('d2'));
     const card = row('data-item-card', 'd2');
@@ -47,17 +47,19 @@ describe('useArrivedItem', () => {
       await Promise.resolve();
     });
     expect(card.hasAttribute('data-arrived')).toBe(true);
-    // Found once: a second row of the same item drawn later is left alone.
-    const again = row('data-this-browser-row', 'd2');
+    // The window dropped it and drew it again: the new card is marked and centred too.
+    card.remove();
+    const again = row('data-item-card', 'd2');
     await act(async () => {
       host.append(again);
       await Promise.resolve();
     });
-    expect(again.hasAttribute('data-arrived')).toBe(false);
+    expect(again.hasAttribute('data-arrived')).toBe(true);
+    expect(again.scrollIntoView).toHaveBeenCalledWith({ block: 'center' });
     unmount();
   });
 
-  it('gives up after a few seconds when the row never comes', async () => {
+  it('stops moving the page once settled, by time or by the person, but keeps the ring', async () => {
     vi.useFakeTimers();
     const host = root();
     renderHook(() => useArrivedItem('d3'));
@@ -69,7 +71,23 @@ describe('useArrivedItem', () => {
       host.append(late);
       await Promise.resolve();
     });
-    expect(late.hasAttribute('data-arrived')).toBe(false);
+    expect(late.hasAttribute('data-arrived')).toBe(true);
+    expect(late.scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('stops moving the page when the person scrolls', async () => {
+    const host = root();
+    renderHook(() => useArrivedItem('d5'));
+    act(() => {
+      window.dispatchEvent(new Event('wheel'));
+    });
+    const late = row('data-item-row', 'd5');
+    await act(async () => {
+      host.append(late);
+      await Promise.resolve();
+    });
+    expect(late.hasAttribute('data-arrived')).toBe(true);
+    expect(late.scrollIntoView).not.toHaveBeenCalled();
   });
 
   it('marks nothing outside the Explorer, and nothing for no item', () => {

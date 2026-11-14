@@ -1,17 +1,23 @@
 'use client';
 
 // The item an editor's door came from, marked in the place that holds it (liveworkspace/docs/specs/004-index/one-explorer.md
-// "Opening from an open item"): once its row or card is drawn, it is scrolled to the middle of the list and wears the
-// selected ring (`data-arrived`, explorer.css) with `aria-current`. Lists load after the page and draw only the rows on
-// screen, so each list view brings the item into its window first (useRevealArrived: further pages loaded until the
-// item is in the list, then the window moved to it), and the mark waits for the row with one MutationObserver, for a
-// few seconds at most, then stops.
+// "Opening from an open item"): its row or card is scrolled to the middle of the list and wears the selected ring
+// (`data-arrived`, explorer.css) with `aria-current`. Lists load after the page and draw only the rows on screen, and
+// a card grid's window can draw every card before it measures and then drop most of them, so nothing here trusts one
+// look: while the arrival settles (until the person scrolls, presses or types, or ARRIVED_WAIT_MS passes) each list
+// view brings the item back into its window whenever a render leaves it out (useRevealArrived), and the mark is put on
+// every row or card of it that is drawn, each scrolled to the middle (useArrivedItem). Once settled, the ring stays on
+// whatever is drawn and nothing moves the page.
 import { createContext, useContext, useEffect, useRef } from 'react';
 
-/** How long the page waits for the item's row to be drawn before giving up: long enough for a few pages to load. */
+/** How long an arrival settles: long enough for a few pages to load. */
 export const ARRIVED_WAIT_MS = 15_000;
 /** At most this many further pages are loaded looking for the item. */
 export const ARRIVED_MAX_PAGES = 10;
+/** At most this many times a view acts to bring the item into its window. */
+export const ARRIVED_MAX_REVEALS = 12;
+// The person taking over: any of these ends the settling.
+const TAKE_OVER = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
 
 /** The arrived item's id, for the list views to bring into their window. */
 export const ArrivedItemContext = createContext<string | null>(null);
@@ -22,30 +28,50 @@ export function arrivedSelector(id: string): string {
   return `[data-item-row="${v}"],[data-item-card="${v}"],[data-this-browser-row="${v}"]`;
 }
 
-/** Marks item `id`'s row or card under `[data-explorer]` once it is drawn; nothing for no id. */
+/** Calls `settle` once the arrival has settled: the person scrolls, presses or types, or ARRIVED_WAIT_MS passes.
+ *  Returns the cleanup. */
+function watchSettling(settle: () => void): () => void {
+  const done = () => {
+    stop();
+    settle();
+  };
+  const timer = window.setTimeout(done, ARRIVED_WAIT_MS);
+  for (const type of TAKE_OVER)
+    window.addEventListener(type, done, { capture: true, passive: true });
+  function stop() {
+    window.clearTimeout(timer);
+    for (const type of TAKE_OVER) window.removeEventListener(type, done, { capture: true });
+  }
+  return stop;
+}
+
+/** Marks every drawn row or card of item `id` under `[data-explorer]`, for as long as the place shows, scrolling each to
+ *  the middle while the arrival settles; nothing for no id. */
 export function useArrivedItem(id: string | null | undefined) {
   useEffect(() => {
     if (!id) return;
     const selector = arrivedSelector(id);
+    let settling = true;
     const mark = () => {
-      const row = document.querySelector('[data-explorer]')?.querySelector<HTMLElement>(selector);
-      if (!row) return false;
+      const row = document
+        .querySelector('[data-explorer]')
+        ?.querySelector<HTMLElement>(`:is(${selector}):not([data-arrived])`);
+      if (!row) return;
       row.setAttribute('data-arrived', '');
       row.setAttribute('aria-current', 'true');
-      row.scrollIntoView?.({ block: 'center' });
-      return true;
+      if (settling) row.scrollIntoView?.({ block: 'center' });
     };
-    if (mark()) return;
-    const observer = new MutationObserver(() => {
-      if (mark()) stop();
-    });
-    const timer = window.setTimeout(() => stop(), ARRIVED_WAIT_MS);
-    function stop() {
-      observer.disconnect();
-      window.clearTimeout(timer);
-    }
+    mark();
+    // One attribute query per batch of changes, only while the place shows (the host drops the id as the view changes).
+    const observer = new MutationObserver(mark);
     observer.observe(document.body, { childList: true, subtree: true });
-    return stop;
+    const stopSettling = watchSettling(() => {
+      settling = false;
+    });
+    return () => {
+      observer.disconnect();
+      stopSettling();
+    };
   }, [id]);
 }
 
@@ -61,9 +87,11 @@ export function revealAt(container: HTMLElement, top: number, height: number) {
 }
 
 /**
- * A list view's part in marking the arrived item (ArrivedItemContext): while the item is not among `items` and the
- * list has more pages, the next is loaded (at most ARRIVED_MAX_PAGES); once it is, `reveal` is asked to bring the row
- * at `offset` + its index into the window, until it says it has. Nothing for no arrived item, or one already shown.
+ * A list view's part in marking the arrived item (ArrivedItemContext). While the arrival settles, after every render:
+ * when the item's row or card is in the page, nothing; when the item is not among `items` and the list has more pages,
+ * the next is loaded (at most ARRIVED_MAX_PAGES); when it is among them but not drawn, `reveal` is asked to bring the
+ * row at `offset` + its index into the window (acting at most ARRIVED_MAX_REVEALS times). The page itself is the
+ * judge, never the view's window: one not yet measured can draw a card it then leaves out. Nothing for no item.
  */
 export function useRevealArrived({
   items,
@@ -79,19 +107,24 @@ export function useRevealArrived({
   hasMore: boolean;
   loadingMore: boolean;
   onLoadMore: () => void;
-  // Brings row `index` into the window; true once it is drawn or on its way.
+  // Brings row `index` into the window if it can yet: true when it acted (revealed a batch, or scrolled).
   reveal: (index: number) => boolean;
 }) {
   const id = useContext(ArrivedItemContext);
-  const seeking = useRef({ id: null as string | null, pages: 0, done: false });
+  const seeking = useRef({ pages: 0, reveals: 0, settled: true });
   useEffect(() => {
+    seeking.current = { pages: 0, reveals: 0, settled: !id };
     if (!id) return;
-    if (seeking.current.id !== id) seeking.current = { id, pages: 0, done: false };
+    return watchSettling(() => {
+      seeking.current.settled = true;
+    });
+  }, [id]);
+  useEffect(() => {
     const s = seeking.current;
-    if (s.done) return;
+    if (!id || s.settled || document.querySelector(arrivedSelector(id))) return;
     const at = items.findIndex((item) => item.id === id);
     if (at >= 0) {
-      s.done = reveal(offset + at);
+      if (s.reveals < ARRIVED_MAX_REVEALS && reveal(offset + at)) s.reveals += 1;
       return;
     }
     if (hasMore && !loadingMore && s.pages < ARRIVED_MAX_PAGES) {

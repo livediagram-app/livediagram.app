@@ -7,7 +7,7 @@ import { useState, type ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { ToastProvider } from '../ui/Toasts';
-import { ArrivedItemContext, ARRIVED_MAX_PAGES } from './arrived-item';
+import { ArrivedItemContext, ARRIVED_MAX_PAGES, ARRIVED_MAX_REVEALS } from './arrived-item';
 import { CardView, CARD_BATCH } from './CardView';
 import { ExplorerProvider } from './context';
 import { DetailsView } from './DetailsView';
@@ -96,7 +96,11 @@ describe('the arrived item in a long list', () => {
       await act(async () => {});
       // Not drawn at first: the window holds the first screenful.
       expect(itemRow(last.id)).toBeNull();
-      expect(asked).toEqual([`${29 * ROW_HEIGHT}px`]);
+      // Asked to scroll to its row, again after each render that still leaves it out (jsdom never draws it),
+      // a bounded number of times.
+      expect(asked.length).toBeGreaterThan(0);
+      expect(asked.length).toBeLessThanOrEqual(ARRIVED_MAX_REVEALS);
+      expect(new Set(asked)).toEqual(new Set([`${29 * ROW_HEIGHT}px`]));
     },
   );
 
