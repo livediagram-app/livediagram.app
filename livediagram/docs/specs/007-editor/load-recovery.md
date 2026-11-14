@@ -129,6 +129,9 @@ cache, cached share passwords, and the stale-build reload guards.
   likes are matched against;
 - the offline store (IndexedDB `livediagram-offline`): Offline Mode documents
   exist nowhere else;
+- the drafts of unsaved changes (IndexedDB `livediagram-drafts`,
+  [Drafts of unsaved changes](../006-document/delta-saves.md#drafts-of-unsaved-changes)): an edit the close-time save
+  could not land exists nowhere else;
 - cookies and the sign-in provider's own storage: repair never signs anyone
   out.
 
@@ -194,8 +197,11 @@ the server, which the rest of this spec covers.
 - **In the editor.** While offline a banner sits at the top of the canvas
   stack: "You're offline. Changes stay in this tab and save when you
   reconnect." for someone who can edit, "You're offline. You'll see changes
-  when you reconnect." for a viewer. Changes are held in memory only, so the
-  banner says "in this tab": closing it while offline loses them. The words
+  when you reconnect." for a viewer. Changes are held in memory, so the
+  banner says "in this tab": closing it while offline may lose them. The close-time flush
+  keeps a draft of each tab it sends in this browser, which the next load saves when nobody
+  saved the tab since ([Delta saves](../006-document/delta-saves.md#drafts-of-unsaved-changes));
+  the banner does not promise it, since a browser may drop a write made as the page closes. The words
   say it all: no coloured dot beside them (never a dot standing for a status), and not the This
   Browser pill's teal, since a dropped connection is not where a document lives. The save
   failure toast reads "You're offline. Keep this tab open to save when you
