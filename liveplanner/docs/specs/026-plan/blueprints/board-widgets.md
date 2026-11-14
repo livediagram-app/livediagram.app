@@ -212,6 +212,13 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
   projections and every widget recounted per change; after, 1 projection and 0 recounts, and a change that shows the
   same cards draws 0 card faces. What remains of a change that swaps hundreds of cards (667 here, 540 to 760 ms in
   jsdom dev) is drawing the newly shown cards themselves, not the projection or the counts.
+- **Measured in a browser** (production build, Chromium at 4x CPU throttle, 2,000 cards over five columns, a
+  Participant's board watching the owner change the shared filter; main-thread time over the change, two runs): a
+  change that shows the same cards (the projection alone) 27 to 47 ms in all, against 56 ms for the same window with
+  no change, and no long task; hiding every card 35 to 52 ms; swapping 667 cards for another 667 160 to 174 ms, showing
+  all 2,000 from none 205 to 206 ms, both split into tasks under 50 ms. The columns draw only the cards in view (84 to
+  96 card faces of the 667 or 2,000 shown), so drawing never scales with the cards a change shows. One change crossed
+  50 ms: narrowing all 2,000 to 667 ran one 51 to 53 ms task, a follow-up rather than a fix here.
 - The gallery computes For You only on open, and draws a tile's preview only once `useSeen` reports it near view
   (`SEEN_MARGIN`); `fields` is memoised on `addTypes` and the types, so adding a widget never rebuilds sections.
 
