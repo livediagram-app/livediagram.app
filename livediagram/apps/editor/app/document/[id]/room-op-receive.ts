@@ -53,6 +53,7 @@ export function receiveRoomOp(
     receiveDocumentTrashed,
     receiveChangeset,
     receivePeerModeSwitch,
+    receiveTabSaved,
   } = opts;
   // Any op from a peer counts as "they're still here". Bumps
   // the idle timer used by the avatar's away/offline status
@@ -110,6 +111,13 @@ export function receiveRoomOp(
     }
     // In the same batch as the tabs update, so the render that shows the op also counts it.
     countAppliedOp();
+  } else if (op.kind === 'tab-saved') {
+    // A peer's save landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"): its element
+    // ops came first and are in the baseline, so the baseline's tab is what it stored unless something else differs.
+    // A tab not loaded here has no baseline to prove.
+    if (!loadedTabIdsRef.current.has(op.tabId)) return;
+    const tab = saveBaseline.tabs.current.find((t) => t.id === op.tabId);
+    if (tab) receiveTabSaved?.(tab, op.rev, op.digest);
   } else if (op.kind === 'select') {
     setRemoteSelections((prev) => {
       const next = new Map(prev);

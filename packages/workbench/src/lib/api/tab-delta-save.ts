@@ -2,10 +2,12 @@
 // the base copy of each tab, the elements exactly as the api stores them at a revision, and the one delta save that
 // turns the editor's tab into ops over it. `send` answers null whenever the save should go whole instead: no base
 // copy, a delta not worth sending, or the api's `409 delta_refused`. `planUnload` is the unload flush's delta
-// ("Unload"), planned at once since the page is going.
+// ("Unload"), planned at once since the page is going. `stampOf` and `adopt` are "A peer's save moves the base copy":
+// the digest a save announces to the room, and a peer's proof that it holds what that save stored.
 import {
   TAB_DELTA_REFUSED,
   TAB_DELTA_SEGMENT,
+  elementsDigest,
   planTabDelta,
   planTabDeltaSync,
   type TabDeltaOp,
@@ -23,7 +25,8 @@ export type TabDeltaConfig<E extends El> = {
   diff: (before: E[], after: E[]) => TabDeltaOp<E>[];
 };
 
-type Base<E> = { rev: number; elements: E[] };
+// `digest` is the elements' digest once known: a delta's answer names it, and `stampOf` takes it once otherwise.
+type Base<E> = { tabId: string; rev: number; elements: E[]; digest?: string };
 
 // Whether the answer is the api's refusal of the delta (as opposed to the whole save's own refusals, which surface).
 async function refusalOf(res: Response): Promise<string | null> {
@@ -62,12 +65,15 @@ export function createTabDeltaSaves<E extends El>(deps: {
   const keyOf = (itemId: string, tabId: string) => `${itemId}␟${tabId}`;
 
   /** Hold `elements` as the tab's stored copy at `rev`, unless the copy held is for a newer revision. */
-  function hold(itemId: string, tabId: string, rev: number, elements: E[]): void {
+  function hold(itemId: string, tabId: string, rev: number, elements: E[], digest?: string): void {
     const key = keyOf(itemId, tabId);
     const held = bases.get(key);
     if (held && held.rev > rev) return;
     bases.delete(key);
-    bases.set(key, { rev, elements });
+    bases.set(
+      key,
+      digest === undefined ? { tabId, rev, elements } : { tabId, rev, elements, digest },
+    );
     if (bases.size > max) bases.delete(bases.keys().next().value as string);
   }
 
@@ -120,7 +126,7 @@ export function createTabDeltaSaves<E extends El>(deps: {
     const answer = await answerOf(res);
     // The store holds exactly the elements sent only when its digest is theirs; otherwise the next save is whole.
     if (answer.rev !== null && answer.digest === plan.digest) {
-      hold(itemId, tabId, answer.rev, elements);
+      hold(itemId, tabId, answer.rev, elements, plan.digest);
     } else if (base(itemId, tabId) === sentOver) {
       drop(itemId, tabId);
     }
@@ -165,6 +171,9 @@ export function createTabDeltaSaves<E extends El>(deps: {
   }): {
     url: string;
     body: string;
+    // What a draft of the tab keeps to tell, on the next load, whether this delta landed.
+    changed: string[];
+    removed: string[];
     settle: (res: Response) => Promise<'saved' | 'refused' | 'failed'>;
   } | null {
     const { itemId, tabId } = args;
@@ -174,6 +183,8 @@ export function createTabDeltaSaves<E extends El>(deps: {
     return {
       url: `${args.url}/${TAB_DELTA_SEGMENT}`,
       body: plan.body,
+      changed: plan.changed,
+      removed: plan.removed,
       settle: async (res) => {
         const settled = await settle(itemId, tabId, sentOver, plan, args.tab.elements, res, true);
         return typeof settled === 'string' ? settled : 'saved';
@@ -181,5 +192,40 @@ export function createTabDeltaSaves<E extends El>(deps: {
     };
   }
 
-  return { hold, holdEcho, drop, base, send, planUnload };
+  /** What a save of `tabId` that wrote `rev` announces to the room: the digest of the elements stored at `rev`, from
+   *  the base copy held at exactly that revision (in any item: the revision is the tab's own), or null when none is
+   *  held. The digest is taken once and kept on the copy. */
+  async function stampOf(tabId: string, rev: number): Promise<string | null> {
+    for (const held of bases.values()) {
+      if (held.tabId !== tabId || held.rev !== rev) continue;
+      held.digest ??= await elementsDigest(held.elements);
+      return held.digest;
+    }
+    return null;
+  }
+
+  /** A peer's save of the tab, announced as `rev` and `digest`: `elements` (the tab as this editor's baseline holds
+   *  it, as a save would send it) become the base copy at `rev` when their digest is the announced one and no copy
+   *  for that revision or a newer one is held. Answers whether they did. */
+  async function adopt(
+    itemId: string,
+    tabId: string,
+    rev: number,
+    digest: string,
+    elements: E[],
+  ): Promise<boolean> {
+    const heldNewer = () => (base(itemId, tabId)?.rev ?? -1) >= rev;
+    if (heldNewer()) return false;
+    if ((await elementsDigest(elements)) !== digest) {
+      debugLog('[tab-delta] peer save not adopted', { tabId, rev });
+      return false;
+    }
+    // A save of our own may have landed while the digest was taken.
+    if (heldNewer()) return false;
+    hold(itemId, tabId, rev, elements, digest);
+    debugLog('[tab-delta] peer save adopted', { tabId, rev });
+    return true;
+  }
+
+  return { hold, holdEcho, drop, base, send, planUnload, stampOf, adopt };
 }

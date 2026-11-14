@@ -100,6 +100,22 @@ describe('planTabDelta', () => {
     expect(parseTabDelta(JSON.parse(plan!.body))).not.toBeTypeOf('string');
   });
 
+  it('names the elements the delta adds or updates and the ones it removes, not a reorder', async () => {
+    const elements = big(20);
+    const plan = await planTabDelta({
+      base: { rev: 2, elements },
+      tab: { elements },
+      diff: () => [
+        { kind: 'add', element: { id: 'n1', label: 'a' }, at: 0 },
+        { kind: 'update', element: { id: 'e2', label: 'b' } },
+        { kind: 'remove', id: 'e5' },
+        { kind: 'reorder', ids: ['e1', 'e0'] },
+      ],
+    });
+    expect(plan!.changed).toEqual(['n1', 'e2']);
+    expect(plan!.removed).toEqual(['e5']);
+  });
+
   it('saves whole past the op cap', async () => {
     const elements = Array.from({ length: TAB_DELTA_MAX_OPS + 1 }, (_, i) => ({ id: `e${i}` }));
     const changed = elements.map((e) => ({ ...e, label: 'x'.repeat(5_000) }));

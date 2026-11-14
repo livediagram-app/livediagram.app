@@ -35,12 +35,17 @@ export function prepareTabSave(
   return { ops, release: holdOwnWrites(writes, tab.id, elementOps) };
 }
 
+//
+// With `digestOf`, a save that wrote a revision then announces it (`tab-saved`, docs/specs/006-document/delta-saves.md
+// "A peer's save moves the base copy"): after its element ops on the same socket, so every peer has applied them, and
+// before the save settles, so the tab's next save (queued behind this one) cannot relay its ops in between.
 export async function saveTabAndRelay<R>(
   before: Tab | undefined,
   tab: Tab,
   room: () => SaveRoom | null,
   put: () => Promise<R>,
   prepared: PreparedTabSave = prepareTabSave(before, tab),
+  digestOf?: (tabId: string, rev: number) => Promise<string | null>,
 ): Promise<R> {
   const { ops, release } = prepared;
   let saved: R;
@@ -52,7 +57,25 @@ export async function saveTabAndRelay<R>(
     throw err;
   }
   relay(ops, room(), release);
+  if (digestOf && typeof saved === 'number') await announceSave(tab.id, saved, room, digestOf);
   return saved;
+}
+
+// The revision a save wrote and the digest of what is stored at it, when this editor holds that copy. Never throws:
+// an announcement is an optimisation, and a peer without one saves whole as before.
+async function announceSave(
+  tabId: string,
+  rev: number,
+  room: () => SaveRoom | null,
+  digestOf: (tabId: string, rev: number) => Promise<string | null>,
+): Promise<void> {
+  if (!room()) return;
+  try {
+    const digest = await digestOf(tabId, rev);
+    if (digest) room()?.send({ kind: 'op', op: { kind: 'tab-saved', tabId, rev, digest } });
+  } catch {
+    // Nothing announced.
+  }
 }
 
 // Sends the ops in order. Held element ops go through `sequence`, and the hold is released once the room has

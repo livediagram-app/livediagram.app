@@ -92,12 +92,39 @@ type DeltaPlanArgs<E extends { id: string }> = {
   diff: (before: E[], after: E[]) => TabDeltaOp<E>[];
 };
 
-export type TabDeltaPlan = { body: string; digest: string; ops: number };
+/** A delta to send: its body, the digest of the current elements, its op count, and the ids of the elements it
+ *  adds or updates (`changed`) and removes (`removed`), which a draft keeps to tell whether it landed. */
+export type TabDeltaPlan = {
+  body: string;
+  digest: string;
+  ops: number;
+  changed: string[];
+  removed: string[];
+};
+
+// The ids a diff adds or updates, and the ids it removes; a reorder names no element of its own.
+function idsOf<E extends { id: string }>(
+  ops: readonly TabDeltaOp<E>[],
+): { changed: string[]; removed: string[] } {
+  const changed: string[] = [];
+  const removed: string[] = [];
+  for (const op of ops) {
+    if (op.kind === 'remove') removed.push(op.id);
+    else if (op.kind !== 'reorder') changed.push(op.element.id);
+  }
+  return { changed, removed };
+}
 
 // Everything but the digest: null to save whole, or the elements' JSON and the body for a digest.
 function draftTabDelta<E extends { id: string }>(
   args: DeltaPlanArgs<E>,
-): { elementsJson: string; ops: number; body: (digest: string) => string } | null {
+): {
+  elementsJson: string;
+  ops: number;
+  changed: string[];
+  removed: string[];
+  body: (digest: string) => string;
+} | null {
   const { base, tab } = args;
   if (!base) return null;
   const ops = args.diff(base.elements, tab.elements);
@@ -108,7 +135,7 @@ function draftTabDelta<E extends { id: string }>(
   // Sized with a stand-in digest of the same length, so the hash is taken only once a delta is worth sending.
   const body = (digest: string) => JSON.stringify({ baseRev: base.rev, digest, ops, tab: fields });
   if (body('0'.repeat(64)).length > elementsJson.length * TAB_DELTA_MAX_SHARE) return null;
-  return { elementsJson, ops: ops.length, body };
+  return { elementsJson, ops: ops.length, ...idsOf(ops), body };
 }
 
 /** The delta to send for `tab`, or null to save it whole: no base copy, more than TAB_DELTA_MAX_OPS ops, or a body
@@ -119,7 +146,7 @@ export async function planTabDelta<E extends { id: string }>(
   const draft = draftTabDelta(args);
   if (!draft) return null;
   const digest = await digestOfJson(draft.elementsJson);
-  return { body: draft.body(digest), digest, ops: draft.ops };
+  return planOf(draft, digest);
 }
 
 /** planTabDelta at once, for the unload flush, which cannot wait for Web Crypto: the same plan, its digest taken in
@@ -130,5 +157,18 @@ export function planTabDeltaSync<E extends { id: string }>(
   const draft = draftTabDelta(args);
   if (!draft) return null;
   const digest = sha256HexSync(new TextEncoder().encode(draft.elementsJson));
-  return { body: draft.body(digest), digest, ops: draft.ops };
+  return planOf(draft, digest);
+}
+
+function planOf(
+  draft: NonNullable<ReturnType<typeof draftTabDelta>>,
+  digest: string,
+): TabDeltaPlan {
+  return {
+    body: draft.body(digest),
+    digest,
+    ops: draft.ops,
+    changed: draft.changed,
+    removed: draft.removed,
+  };
 }

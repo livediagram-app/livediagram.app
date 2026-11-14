@@ -37,7 +37,7 @@ describe('base copies', () => {
     const { saves } = setup();
     expect(saves.base('d', 't')).toBeNull();
     saves.hold('d', 't', 3, many(1));
-    expect(saves.base('d', 't')).toEqual({ rev: 3, elements: many(1) });
+    expect(saves.base('d', 't')).toMatchObject({ rev: 3, elements: many(1) });
     expect(saves.base('d', 'other')).toBeNull();
     saves.drop('d', 't');
     expect(saves.base('d', 't')).toBeNull();
@@ -47,7 +47,7 @@ describe('base copies', () => {
     const { saves } = setup();
     saves.hold('d', 't', 5, many(1, 'new'));
     saves.hold('d', 't', 4, many(1, 'old'));
-    expect(saves.base('d', 't')).toEqual({ rev: 5, elements: many(1, 'new') });
+    expect(saves.base('d', 't')).toMatchObject({ rev: 5, elements: many(1, 'new') });
     saves.hold('d', 't', 5, many(1, 'same rev'));
     expect(saves.base('d', 't')?.elements).toEqual(many(1, 'same rev'));
   });
@@ -140,7 +140,7 @@ describe('send', () => {
       ops: [{ kind: 'update', element: { id: 'e7', label: 'edited' } }],
       tab: {},
     });
-    expect(saves.base('d', 't')).toEqual({ rev: 2, elements: next });
+    expect(saves.base('d', 't')).toMatchObject({ rev: 2, elements: next });
   });
 
   it('drops the base copy when the stored digest is not the one sent', async () => {
@@ -263,6 +263,9 @@ describe('planUnload', () => {
     expect(body.ops).toEqual([{ kind: 'update', element: { id: 'e2', label: 'new' } }]);
     expect(body.digest).toBe(await elementsDigest(edited()));
     expect(fetch).not.toHaveBeenCalled();
+    // What a draft keeps to tell whether it landed.
+    expect(plan.changed).toEqual(['e2']);
+    expect(plan.removed).toEqual([]);
   });
 
   it('a landed delta with a matching digest is the next base copy', async () => {
@@ -272,7 +275,7 @@ describe('planUnload', () => {
     const plan = saves.planUnload(args(elements))!;
     const digest = await elementsDigest(elements);
     expect(await plan.settle(Response.json({ rev: 4, digest }))).toBe('saved');
-    expect(saves.base('d', 't')).toEqual({ rev: 4, elements });
+    expect(saves.base('d', 't')).toMatchObject({ rev: 4, elements });
   });
 
   it('a refusal drops the base copy and says to send the tab whole', async () => {
@@ -295,5 +298,74 @@ describe('planUnload', () => {
     expect(await plan.settle(busy)).toBe('failed');
     expect(expectOkVoid).not.toHaveBeenCalled();
     expect(saves.base('d', 't')?.rev).toBe(3);
+  });
+});
+
+describe("a peer's save moves the base copy", () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it('stampOf answers the digest of the copy held at exactly that revision, in any item, taken once', async () => {
+    const { saves } = setup();
+    const elements = many(3);
+    saves.hold('d', 't', 4, elements);
+    expect(await saves.stampOf('t', 3)).toBeNull();
+    expect(await saves.stampOf('other', 4)).toBeNull();
+    const digest = await saves.stampOf('t', 4);
+    expect(digest).toBe(await elementsDigest(elements));
+    // Kept on the copy: a later change to the array is not hashed again.
+    elements.push({ id: 'late', label: 'x' });
+    expect(await saves.stampOf('t', 4)).toBe(digest);
+    // A tab linked into another item is the same tab row: its revision is its own.
+    saves.hold('other-doc', 'u', 7, many(1));
+    expect(await saves.stampOf('u', 7)).toBe(await elementsDigest(many(1)));
+  });
+
+  it("stampOf answers a landed delta's digest without hashing", async () => {
+    const { saves, fetch } = setup();
+    saves.hold('d', 't', 1, many(20));
+    const next = many(20).map((e, i) => (i === 0 ? { ...e, label: 'new' } : e));
+    const digest = await elementsDigest(next);
+    fetch.mockResolvedValueOnce(Response.json({ rev: 2, digest }));
+    await saves.send({
+      itemId: 'd',
+      tabId: 't',
+      url: '/api/documents/d/tabs/t',
+      tab: { elements: next },
+      headers: new Headers(),
+    });
+    expect(saves.base('d', 't')).toMatchObject({ rev: 2, digest });
+    expect(await saves.stampOf('t', 2)).toBe(digest);
+  });
+
+  it('adopt holds the baseline at the announced revision only when its digest is the announced one', async () => {
+    const { saves } = setup();
+    saves.hold('d', 't', 1, many(2));
+    const theirs = many(2, 'peer');
+    const wrong = await elementsDigest(many(2, 'other'));
+    expect(await saves.adopt('d', 't', 2, wrong, theirs)).toBe(false);
+    expect(saves.base('d', 't')?.rev).toBe(1);
+    const digest = await elementsDigest(theirs);
+    expect(await saves.adopt('d', 't', 2, digest, theirs)).toBe(true);
+    expect(saves.base('d', 't')).toMatchObject({ rev: 2, elements: theirs, digest });
+    // A tab with no copy held takes one too.
+    expect(await saves.adopt('d', 'fresh', 5, digest, theirs)).toBe(true);
+  });
+
+  it('adopt never replaces a copy for the same or a newer revision, even one held while hashing', async () => {
+    const { saves } = setup();
+    const theirs = many(2, 'peer');
+    const digest = await elementsDigest(theirs);
+    saves.hold('d', 't', 3, many(2));
+    expect(await saves.adopt('d', 't', 3, digest, theirs)).toBe(false);
+    expect(await saves.adopt('d', 't', 2, digest, theirs)).toBe(false);
+    expect(saves.base('d', 't')?.elements).toEqual(many(2));
+    // Our own save lands at 5 while the peer's announcement for 4 is being hashed.
+    const adopting = saves.adopt('d', 't', 4, digest, theirs);
+    saves.hold('d', 't', 5, many(2, 'mine'));
+    expect(await adopting).toBe(false);
+    expect(saves.base('d', 't')?.rev).toBe(5);
   });
 });

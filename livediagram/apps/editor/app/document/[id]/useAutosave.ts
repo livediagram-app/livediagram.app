@@ -3,6 +3,7 @@ import type { Tab } from '@livediagram/document';
 import {
   apiClaimPlacedImages,
   apiDeleteTab,
+  apiSavedTabDigest,
   apiSaveDocumentMeta,
   apiSaveTab,
   connectRoom,
@@ -75,8 +76,11 @@ const DEPS: AutosaveDeps<
   computeTabSaveDiff: (...args) => computeTabSaveDiff(...args),
   prepareTabSave: (before, tab, writes) => prepareTabSave(before, tab, writes),
   relayParticipantChanges: (...args) => relayParticipantChanges(...args),
+  // Each landed save is announced with its digest, so a peer's next save can be a delta (delta-saves.md).
   saveTabAndRelay: (before, tab, room, put, prepared) =>
-    saveTabAndRelay(before, tab, room, put, prepared),
+    saveTabAndRelay(before, tab, room, put, prepared, (tabId, rev) =>
+      apiSavedTabDigest(tabId, rev),
+    ),
   baseline: {
     open: (journal) => openSaveWindow(journal),
     close: (journal) => closeSaveWindow(journal),

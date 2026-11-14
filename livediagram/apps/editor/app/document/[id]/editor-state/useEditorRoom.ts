@@ -14,6 +14,8 @@ import { useRoomResync } from '../useRoomResync';
 import { usePresenceBroadcast } from '../usePresenceBroadcast';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useChangesetFeed } from '../useChangesetFeed';
+import { useTabDrafts } from '../useTabDrafts';
+import { apiAdoptPeerSave } from '@/lib/api-client';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -43,6 +45,7 @@ export function useEditorRoom({
     hydrated,
     lastSavedNameRef,
     lastSavedTabsRef,
+    loadedTabIds,
     loadedTabIdsRef,
     markTabLoaded,
     ownWrites,
@@ -263,9 +266,29 @@ export function useEditorRoom({
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    // A peer's landed save moves this Editor's delta base copy, when its baseline proves to hold what was stored
+    // (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"). Nobody else saves deltas.
+    receiveTabSaved: (tab, rev, digest) => {
+      if (!documentId || !canEdit || participant.participating) return;
+      void apiAdoptPeerSave(documentId, tab, rev, digest);
+    },
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
     },
+  });
+
+  // This browser's drafts of unsaved changes: one a load put back goes on screen and saves, one overtaken is said
+  // (docs/specs/006-document/delta-saves.md "Drafts of unsaved changes").
+  useTabDrafts({
+    hydrated,
+    documentId,
+    selfId: selfParticipant.id,
+    mayEdit: canEdit && !participant.participating,
+    tabsRef,
+    lastSavedTabsRef,
+    loadedTabIds,
+    applyLoaded: applyRemoteOp,
+    toast,
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
