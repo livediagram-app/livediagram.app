@@ -100,7 +100,7 @@ export function UserInterfaceArt() {
         {/* Canvas content. */}
         <Shape x={66} y={94} w={70} h={34} label="Plan" />
         <Shape x={168} y={94} w={78} h={34} accent label="Launch" />
-        <Arrow from={[136, 111]} to={[165, 111]} />
+        <Arrow connector from={[136, 111]} to={[165, 111]} />
 
         {/* Tab bar and zoom. */}
         <rect

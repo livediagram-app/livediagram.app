@@ -97,7 +97,7 @@ export function SideBySideDrag({ firstTab = 'Plan' }: FirstTab = {}) {
       <Header title="Launch plan" />
       <Shape x={40} y={50} w={70} h={34} label="Goals" />
       <Shape x={40} y={112} w={70} h={34} label="Risks" />
-      <Arrow from={[75, 84]} to={[75, 112]} tone="muted" width={1.5} />
+      <Arrow connector from={[75, 84]} to={[75, 112]} tone="muted" width={1.5} />
       {/* The ghost of the pane, at the width it will open. */}
       <rect
         x={ghostX}
@@ -183,7 +183,13 @@ export function SideBySideOpen({ firstTab = 'Plan' }: FirstTab = {}) {
       </Label>
       <Shape x={seam + 40} y={top + 70} w={60} h={28} label="Q1" />
       <Shape x={seam + 120} y={top + 70} w={60} h={28} label="Q2" />
-      <Arrow from={[seam + 100, top + 84]} to={[seam + 120, top + 84]} tone="muted" width={1.5} />
+      <Arrow
+        connector
+        from={[seam + 100, top + 84]}
+        to={[seam + 120, top + 84]}
+        tone="muted"
+        width={1.5}
+      />
       {/* The seam: the line, its two buttons, and the resize grip below them. */}
       <line
         x1={seam}

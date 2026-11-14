@@ -47,6 +47,11 @@ export function overlapsChrome(r: DOMRect, self: Element): boolean {
 // units — the caller divides by zoom) above or below it, counter-scaled by
 // 1/zoom so it stays a constant on-screen size. Callers still read `placeAbove`
 // for any above/below-dependent chrome (e.g. a title badge's side).
+//
+// `avoid` (canvas-space, optional) is a box the floating box should keep off: livehuddle passes the piece a fresh
+// duplicate was copied from (its docs/specs/008-canvas/canvas-and-palette.md "Selection popover", Work Tracker 849). When
+// the box on its side would sit on it and the other side would not, and the other side fits the canvas area, it flips
+// there, under the same once-per-geometry flip guard. Without it, nothing changes.
 export function useEdgeAwarePlacement(
   bounds: Rect,
   canvasOffset: XY,
@@ -55,12 +60,39 @@ export function useEdgeAwarePlacement(
   // While the selection moves the box is hidden and measures nothing: a gesture frame never reads
   // layout (docs/specs/008-canvas/canvas-performance.md). It places once on resuming.
   suspended = false,
+  avoid: Rect | null = null,
 ): { ref: RefObject<HTMLDivElement | null>; placeAbove: boolean; style: CSSProperties } {
   const ref = useRef<HTMLDivElement>(null);
   const [adjust, setAdjust] = useState<XY>({ x: 0, y: 0 });
   const flipSigRef = useRef('');
   const flippedRef = useRef(false);
   const [placeAbove, setPlaceAbove] = useState(true);
+
+  // Whether the box sits on `keepOff` where it is and would not on the selection's other side, which has room inside
+  // the canvas area: worked out in canvas units from the box's measured size (it renders at 1/zoom inside the zoomed
+  // wrapper), centred on the selection with the current sideways nudge.
+  const coversOnlyThisSide = (
+    keepOff: Rect,
+    rect: DOMRect,
+    area: { top: number; bottom: number },
+  ): boolean => {
+    const w = rect.width / zoom;
+    const h = rect.height / zoom;
+    const left = bounds.x + bounds.width / 2 + adjust.x - w / 2;
+    const aboveTop = bounds.y - gap - h;
+    const belowTop = bounds.y + bounds.height + gap;
+    const sitsOn = (top: number) =>
+      left < keepOff.x + keepOff.width &&
+      left + w > keepOff.x &&
+      top < keepOff.y + keepOff.height &&
+      top + h > keepOff.y;
+    const here = placeAbove ? aboveTop : belowTop;
+    const there = placeAbove ? belowTop : aboveTop;
+    if (!sitsOn(here) || sitsOn(there)) return false;
+    // The other side on screen: the measured box moved by the distance between the two sides.
+    const top = rect.top - adjust.y * zoom + (there - here) * zoom;
+    return top >= area.top + EDGE && top + rect.height <= area.bottom - EDGE;
+  };
 
   const place = useEffectEvent(() => {
     const node = ref.current;
@@ -91,6 +123,11 @@ export function useEdgeAwarePlacement(
       if (!placeAbove && (rect.bottom > area.bottom - EDGE || overlapsChrome(rect, node))) {
         flippedRef.current = true;
         setPlaceAbove(true);
+        return;
+      }
+      if (avoid && coversOnlyThisSide(avoid, rect, area)) {
+        flippedRef.current = true;
+        setPlaceAbove(!placeAbove);
         return;
       }
     }

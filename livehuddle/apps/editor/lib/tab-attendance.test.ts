@@ -1,6 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AttendanceVisit } from '@livehuddle/api-schema';
-import { clockTime, dayLabel, groupVisitsByDay, visitLength, visitTimes } from './tab-attendance';
+import {
+  clockTime,
+  dayLabel,
+  groupVisitsByDay,
+  liveNamesFrom,
+  liveNamesSignature,
+  liveVisit,
+  visitLength,
+  visitTimes,
+} from './tab-attendance';
 
 // What a tab's Attendance dialog shows (docs/specs/012-collaboration/tab-attendance.md "Where it shows"): the visits
 // by the reader's local day, and each one's times and length. The clock is pinned: the days are "Today" and
@@ -82,5 +91,55 @@ describe('a visit', () => {
     expect(visitTimes(visit(1, at(10, 23, 30), at(11, 0, 15)))).toBe(
       'Joined 23:30 · Left Wed 11 Nov, 00:15',
     );
+  });
+});
+
+// An open dialog follows the room's roster (Work Tracker 825): an open visit takes its person's name and colour now.
+describe('liveVisit', () => {
+  const open = { ...visit(1, at(11, 14), null), key: 'k1' };
+  const live = liveNamesFrom(
+    liveNamesSignature([
+      { key: 'k1', name: 'Ada Renamed', color: '#f97316' },
+      { name: 'No key', color: '#000' },
+    ]),
+  );
+
+  it('lays the roster name and colour over an open visit with a key', () => {
+    expect(liveVisit(open, live)).toEqual({ ...open, name: 'Ada Renamed', color: '#f97316' });
+  });
+
+  it('hands back the same visit when nothing changes, so a memoised row stays put', () => {
+    const same = { ...open, name: 'Ada Renamed', color: '#f97316' };
+    expect(liveVisit(same, live)).toBe(same);
+    expect(liveVisit(open, undefined)).toBe(open);
+    const away = { ...open, key: 'k-away' };
+    expect(liveVisit(away, live)).toBe(away);
+    const noKey = visit(2, at(11, 14), null);
+    expect(liveVisit(noKey, live)).toBe(noKey);
+  });
+
+  it('never rewrites a closed visit, which keeps the name it ended with', () => {
+    const closed = { ...visit(3, at(11, 13), at(11, 14)), key: 'k1' };
+    expect(liveVisit(closed, live)).toBe(closed);
+  });
+});
+
+describe('liveNamesSignature and liveNamesFrom', () => {
+  it('keys the roster by collab key, the first entry winning, and skips anyone without one', () => {
+    const live = liveNamesFrom(
+      liveNamesSignature([
+        { key: 'me', name: 'Me', color: '#111' },
+        { key: 'me', name: 'Me elsewhere', color: '#222' },
+        { name: 'Older client', color: '#333' },
+      ]),
+    );
+    expect([...live]).toEqual([['me', { name: 'Me', color: '#111' }]]);
+  });
+
+  it('changes only when a key, name or colour does', () => {
+    const a = liveNamesSignature([{ key: 'k', name: 'A', color: '#111' }]);
+    expect(liveNamesSignature([{ key: 'k', name: 'A', color: '#111' }])).toBe(a);
+    expect(liveNamesSignature([{ key: 'k', name: 'B', color: '#111' }])).not.toBe(a);
+    expect(liveNamesSignature([{ key: 'k', name: 'A', color: '#222' }])).not.toBe(a);
   });
 });

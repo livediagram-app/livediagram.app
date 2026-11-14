@@ -80,8 +80,8 @@ export function ArrowsConnecting() {
       <Shape x={186} y={40} w={88} h={48} kind="diamond" />
       <Shape x={300} y={140} w={88} h={48} kind="rect" accent label="Done" />
       {/* Straight, into the diamond's left corner */}
-      <Arrow from={[128, 104]} to={[186, 64]} kind="straight" />
-      <Arrow from={[274, 64]} to={[344, 140]} kind="curved" />
+      <Arrow connector from={[128, 104]} to={[186, 64]} kind="straight" />
+      <Arrow connector from={[274, 64]} to={[344, 140]} kind="curved" />
       {/* Angled: down out of Start's bottom edge, then across into Done, never along a border */}
       <Arrow from={[84, 136]} to={[84, 168]} dashed head={false} />
       <Arrow from={[84, 168]} to={[300, 168]} dashed />
@@ -107,7 +107,7 @@ export function ArrowStyles() {
           <g key={i}>
             <Shape x={ax} y={48} w={36} h={28} kind="rect" />
             <Shape x={bx - 36} y={104} w={36} h={28} kind="rect" />
-            <Arrow from={[ax + 36, 62]} to={[bx - 36, 118]} kind={c.kind} />
+            <Arrow connector from={[ax + 36, 62]} to={[bx - 36, 118]} kind={c.kind} />
             <Label x={x0 + cw / 2} y={168} anchor="middle" size={10} weight={600} tone="muted">
               {c.label}
             </Label>
@@ -125,7 +125,7 @@ export function CurveElbowHandles() {
       <Shape x={36} y={120} w={80} h={46} kind="rect" label="A" />
       <Shape x={304} y={120} w={80} h={46} kind="rect" accent label="B" />
       {/* The curved path being shaped */}
-      <Arrow from={[116, 143]} to={[304, 143]} kind="curved" />
+      <Arrow connector from={[116, 143]} to={[304, 143]} kind="curved" />
       {/* The curve handle, as the app draws it (arrow-handles.tsx): a small white rounded square
           at the curve's control point, just off the bow, under the pointer dragging it. */}
       <rect

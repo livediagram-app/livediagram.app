@@ -58,6 +58,9 @@ type SelectionPopoverProps = {
   // A separate small toolbar to the left of this one (the element tour offer, away from Delete at the right end,
   // docs/specs/007-editor/element-tours.md), placed and nudged with it as one group.
   aside?: ReactNode;
+  // The piece a fresh duplicate came from, in canvas units: the popover keeps off it (canvas-and-palette.md "Selection
+  // popover", Work Tracker 849).
+  avoid?: Rect | null;
 };
 
 // Default gap: leave room for the plus duplicate button between
@@ -85,6 +88,7 @@ export function SelectionPopover({
   suspended = false,
   title,
   aside,
+  avoid = null,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
   // More opens the element menu on every device: right-click is not something a desktop user finds,
@@ -99,6 +103,7 @@ export function SelectionPopover({
     zoom,
     (compact ? GAP_COMPACT : GAP_DEFAULT) / zoom,
     suspended,
+    avoid,
   );
 
   // The toolbar, and any aside before it, ride one positioned group: placed, flipped and nudged inside the canvas

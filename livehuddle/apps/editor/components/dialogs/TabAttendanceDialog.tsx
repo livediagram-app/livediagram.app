@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import {
   ATTENDANCE_RETENTION_DAYS,
   type AttendanceVisit,
@@ -18,11 +18,18 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { initialsOf } from '@/lib/identity';
 import { useRelativeNow } from '@/lib/relative-time';
-import { groupVisitsByDay, visitLength, visitTimes } from '@/lib/tab-attendance';
+import {
+  groupVisitsByDay,
+  liveVisit,
+  visitLength,
+  visitTimes,
+  type LiveNames,
+} from '@/lib/tab-attendance';
 
 // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"; blueprint "Presentation and
 // UX"): who was in the tab and when, by day, newest first. Opened from the tab menu by an Editor or a Participant;
-// read fresh each time it opens.
+// read fresh each time it opens, then kept in step with the room's roster: a rename or a recolour reaches the open
+// visits of that person at once, and only their rows re-render (Work Tracker 825).
 
 const TITLE_ID = 'tab-attendance-title';
 
@@ -33,9 +40,11 @@ type TabAttendanceDialogProps = {
   tabName: string;
   load: () => Promise<TabAttendanceResponse>;
   onClose: () => void;
+  // The room's roster by collab key (TabAttendanceHost): the name and colour each person present goes by now.
+  live?: LiveNames;
 };
 
-export function TabAttendanceDialog({ tabName, load, onClose }: TabAttendanceDialogProps) {
+export function TabAttendanceDialog({ tabName, load, onClose, live }: TabAttendanceDialogProps) {
   const [loaded, setLoaded] = useState<Load>({ state: 'loading' });
   // A visit still open counts its time up while the dialog stays open.
   const now = useRelativeNow();
@@ -108,7 +117,7 @@ export function TabAttendanceDialog({ tabName, load, onClose }: TabAttendanceDia
                 </h3>
                 <ul className="flex flex-col">
                   {day.visits.map((visit) => (
-                    <VisitRow key={visit.id} visit={visit} now={now} />
+                    <VisitRow key={visit.id} visit={liveVisit(visit, live)} now={now} />
                   ))}
                 </ul>
               </section>
@@ -119,7 +128,9 @@ export function TabAttendanceDialog({ tabName, load, onClose }: TabAttendanceDia
   );
 }
 
-function VisitRow({ visit, now }: { visit: AttendanceVisit; now: number }) {
+// Memoised: a rename hands only that person's visits a new object (liveVisit), so a long list re-renders one row. An
+// open visit's length ticks with `now`, so every row still follows the clock as before.
+const VisitRow = memo(function VisitRow({ visit, now }: { visit: AttendanceVisit; now: number }) {
   const length = visitLength(visit, now);
   const badges = [...(visit.self ? ['You'] : []), ...(visit.guest ? ['Guest'] : [])];
   return (
@@ -162,7 +173,7 @@ function VisitRow({ visit, now }: { visit: AttendanceVisit; now: number }) {
       </span>
     </li>
   );
-}
+});
 
 // Three placeholder rows while the visits load.
 function LoadingRows() {

@@ -229,7 +229,7 @@ export function MultiSelectToolbar() {
       </Panel>
       <Shape x={94} y={112} w={90} h={46} label="Cart" />
       <Shape x={250} y={112} w={90} h={46} accent label="Pay" />
-      <Arrow from={[184, 135]} to={[250, 135]} />
+      <Arrow connector from={[184, 135]} to={[250, 135]} />
       <SelectionBox x={86} y={102} w={262} h={66} />
     </Scene>
   );
