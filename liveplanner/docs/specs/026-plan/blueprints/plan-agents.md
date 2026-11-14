@@ -33,8 +33,14 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   before posting; `apiRefusalOf` reads `blocks_cycle` as the same sentence. `change_card_types`' `blocks` (Zod
   `blocksArg`) reaches `CustomFieldInput.blocks` / `CustomFieldEdit.blocks`.
 - Names resolve in this order: exact id, then `statusKey` match on the name (case, spacing, punctuation aside).
-- `resolveFields` keys: built-in id, `statusKey` of an id, alias (`duedate`, `startdate`, `colour`, `label`,
-  `assignedto`, `owner`), custom field id or name on the item's type. Values: `status` by column name, `assignee`
+- `resolveFields` keys: built-in id, `statusKey` of an id, the Flag's id `flagged` (`FLAGGED_FIELD`, every card's
+  whatever `type.fields` lists, so `isBuiltInFieldId` does not hold it), custom field id or name on the item's type,
+  alias (`duedate`, `startdate`, `colour`, `label`, `assignedto`, `owner`, `flag` → `flagged`). `fieldKeyOf`'s
+  `field_unknown` message lists `flagged` after the type's built-in fields. A `flagged` value goes through
+  `flagValueOf`: `true`, `1`, `"true"`, `"yes"`, `"on"`, `"1"` set `flagged: true`; `false`, `0`, `null`, `""`,
+  `"false"`, `"no"`, `"off"`, `"0"` go in `clear` (an `add` drops them); anything else is `value_invalid`.
+  `planListing` lists it among `fields` as stored (`flagged: true`); the CLI's `item ls` text appends `  flagged` to
+  a flagged card's line. Values: `status` by column name, `assignee`
   string by `personNamed`, Card fields (Parent among them) by item ref, `priority` lowercased when it is one of
   `PRIORITIES`, `labels` string split on commas, Choice by option name; others as given (the api validates).
   It answers `{ fields, clear }`: a custom field that holds several (`holdsSeveral`, or `multichoice`) given a blank
