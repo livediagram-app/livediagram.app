@@ -139,11 +139,11 @@ describe('a widget zone too full for its widgets', () => {
 
   it('fades an edge with more past it as the row scrolls', () => {
     show();
-    expect(row().style.maskImage).toMatch(/^linear-gradient\(to right, rgb\(0, 0, 0\) 0,/);
+    expect(row().style.maskImage).toMatch(/^linear-gradient\(to right, rgb\(0, 0, 0\) 0px,/);
     expect(row().style.maskImage).toContain('transparent 100%');
     row().scrollLeft = 40;
     act(() => void row().dispatchEvent(new Event('scroll')));
-    expect(row().style.maskImage).toContain('transparent 0,');
+    expect(row().style.maskImage).toContain('transparent 0px,');
   });
 
   it('takes the pinned Filter off with Delete, and never moves it with Alt+arrows', () => {
