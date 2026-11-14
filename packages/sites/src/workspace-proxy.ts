@@ -330,6 +330,25 @@ function loop(reason: string): Response {
   });
 }
 
+/**
+ * A forward to a downstream origin (an app, the index, Drive, liveworkspace, the previews service): its answer, or,
+ * when the origin can't be reached at all (locally, a stack started without that server), `502` naming `what` and the
+ * origin, `no-store`, never a throw out of the router as a bare 500 ("Network connection lost").
+ */
+export function forwardOr502(
+  request: Request,
+  what = 'the downstream',
+  doFetch: typeof fetch = fetch,
+): Promise<Response> {
+  return doFetch(request).catch(
+    () =>
+      new Response(`router: ${what} at ${new URL(request.url).origin} could not be reached`, {
+        status: 502,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+      }),
+  );
+}
+
 /** A redirect from liveworkspace that points inside a forwarded route comes back to the app's own address, so the
  *  person stays on it (the static site's `/explorer/recent/` → `/explorer/recent`, say). Others pass as they are. */
 export function locationOnApp(
@@ -396,7 +415,7 @@ async function forwardToWorkspace(
     headers,
     redirect: 'manual',
   });
-  const response = await (options.fetch ?? fetch)(forwarded);
+  const response = await forwardOr502(forwarded, 'liveworkspace', options.fetch);
 
   const location = response.headers.get('Location');
   const rewriteCookies = route.cookies !== 'pass' && response.headers.has('Set-Cookie');
@@ -442,7 +461,7 @@ export function forwardToIndex(
   const forwarded = new Request(target.toString(), request);
   forwarded.headers.delete('Cookie');
   carryVisitorAddress(request, forwarded.headers, options.proxySecret);
-  return (options.fetch ?? fetch)(forwarded);
+  return forwardOr502(forwarded, 'the index', options.fetch);
 }
 
 // ---------- Google Drive, on the app's address -----------------------------------------------------------------------
@@ -471,7 +490,7 @@ export function forwardToDrive(
   const forwarded = new Request(target.toString(), request);
   forwarded.headers.delete('Cookie');
   carryVisitorAddress(request, forwarded.headers);
-  return doFetch(forwarded);
+  return forwardOr502(forwarded, 'the Drive mirror', doFetch);
 }
 
 // The visitor's address, as the platform's services count it (@liveworkspace/sites/network trustedClientAddress): the
@@ -523,13 +542,5 @@ export function routeToPreviews(
   const forwarded = new Request(target.toString(), request);
   forwarded.headers.delete('Cookie');
   carryVisitorAddress(request, forwarded.headers);
-  // A service that can't be reached (locally, nothing on PREVIEWS_ORIGIN) answers 502, never a throw out of the
-  // router as a bare 500.
-  return doFetch(forwarded).catch(
-    () =>
-      new Response(`router: the previews service at ${target.origin} could not be reached`, {
-        status: 502,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
-      }),
-  );
+  return forwardOr502(forwarded, 'the previews service', doFetch);
 }

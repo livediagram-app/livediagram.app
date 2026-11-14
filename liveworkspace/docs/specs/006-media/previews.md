@@ -53,7 +53,7 @@ staging `https://staging.liveworkspace.app`, production by default). `/api/share
 stays the app's. When the previews service can't be reached at all (locally, a stack started without
 `dev:workspace`, so nothing listens on 8792), the router answers `502` (`no-store`) naming `PREVIEWS_ORIGIN`, where a
 failed forward used to throw out of the router as a bare `500` ("Network connection lost"); a picture then falls back
-as for any failed preview.
+as for any failed preview. Every other forward a router makes answers the same way (`forwardOr502`).
 
 ### `GET /api/previews/items/:id?v=<updatedAt>[&appearance=light|dark]`
 
