@@ -3,7 +3,7 @@
 import type { ApiClient } from '@liveworkspace/api-client';
 import type { ItemsResponse, PlanResponse } from '@liveplanner/api-schema';
 import { ApiError } from '@liveworkspace/api-client';
-import type { Item } from '@liveplanner/items';
+import type { Item, PullRequestStatus } from '@liveplanner/items';
 import { itemsPath } from '../verbs/shared';
 
 export const planPath = (projectId: string) => `/projects/${encodeURIComponent(projectId)}/plan`;
@@ -21,12 +21,15 @@ export function isCardTypesStale(err: unknown): boolean {
 export interface PlanState {
   items: Item[];
   plan: PlanResponse;
+  // The linked pull requests' states `GET /items` answered this caller (docs/specs/026-plan/github-pull-requests.md
+  // "Agents"): the api already kept to what the caller may see. Absent for none.
+  pullRequests?: PullRequestStatus[];
 }
 
 export async function readPlanState(api: ApiClient, projectId: string): Promise<PlanState> {
-  const [{ items }, plan] = await Promise.all([
+  const [{ items, pullRequests }, plan] = await Promise.all([
     api.json<ItemsResponse>(itemsPath(projectId)),
     api.json<PlanResponse>(planPath(projectId)),
   ]);
-  return { items, plan };
+  return { items, plan, ...(pullRequests?.length ? { pullRequests } : {}) };
 }
