@@ -66,7 +66,8 @@ describe('an agent pointing a form at a sheet', () => {
       namedOnly: true,
     });
     const letters = (col: string) => String.fromCharCode(65 + sheet.layout.cols.indexOf(col));
-    const builderAt = (builder.write?.cells ?? []).map((c) => `${letters(c.c)}4`);
+    const cells = (builder.write && 'cells' in builder.write ? builder.write.cells : null) ?? [];
+    const builderAt = cells.map((c) => `${letters(c.c)}4`);
     expect(setsAt(headerChanges(f, sheet).changes)).toEqual(builderAt);
     // A remembered column wins over a header of the same name.
     const remembered = form(['Name'], { 'q-0': sheet.layout.cols[3]! });

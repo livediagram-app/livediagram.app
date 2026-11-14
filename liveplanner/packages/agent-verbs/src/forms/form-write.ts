@@ -106,7 +106,7 @@ async function sheetById(
 // and a response, which finds its column by a text header, would then add a second column; a leading ' keeps it
 // text), the new ones bold and fitted, and the freeze a sheet given its first headers gets. `added`: the new headers.
 export function headerChanges(
-  form: FormDraft['form'],
+  form: Pick<FormDefinition, 'sections' | 'sheet'>,
   sheet: Pick<Sheet, 'layout' | 'cells'> | null,
 ): { changes: SheetChange[]; added: string[] } {
   const layout = sheet?.layout ?? { rows: [], cols: [] };
