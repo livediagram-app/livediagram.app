@@ -1,4 +1,11 @@
-import { memo, useMemo, type CSSProperties } from 'react';
+import {
+  memo,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useSyncExternalStore,
+  type CSSProperties,
+} from 'react';
 import {
   defaultFillColor,
   defaultStrokeColor,
@@ -16,6 +23,7 @@ import {
   isoShapeSilhouette,
   isoWallSteps,
 } from '@/lib/isometric';
+import type { LayerPreviewStore } from '@/hooks/canvas/useLayerDragPreview';
 
 // Isometric extrusion (docs/specs/008-canvas/isometric-view.md). For each boxed element this renders a column of
 // copies of the element's outline, one every 2px of depth from just under the element to the floor, so it reads as
@@ -51,10 +59,33 @@ const shiftBy = (depthPx: number) =>
 const shade = (color: string, brightness: number) =>
   `color-mix(in srgb, ${color} ${Math.round(brightness * 10_000) / 100}%, black)`;
 
+// The element as its side faces draw it: as a gesture in flight has it while the preview store says they follow it
+// (a collaborator's live resize, small enough: LIVE_SIDE_FACES_MAX), else as stored. Each column reads its own, so a
+// preview frame renders the columns it changes and never the layer.
+function useSideFace(preview: LayerPreviewStore | undefined, el: BoxedElement): BoxedElement {
+  const id = el.id;
+  const subscribe = useCallback(
+    (cb: () => void) => (preview ? preview.subscribe(id, cb) : () => {}),
+    [preview, id],
+  );
+  const read = useCallback(() => preview?.sideFaceOf(id), [preview, id]);
+  const live = useSyncExternalStore(subscribe, read, read);
+  return live && isBoxed(live) ? live : el;
+}
+
 // One element's column. Columns paint back to front along the depth shift: one whose centre lies further along it
 // is nearer the camera, so it covers the one behind it, as depth sorting did (a `z-index` from --iso-sx / --iso-sy,
 // so an orbit reorders no node).
-function IsoColumn({ el, surface }: { el: BoxedElement; surface: CanvasSurface }) {
+function IsoColumn({
+  el: stored,
+  surface,
+  preview,
+}: {
+  el: BoxedElement;
+  surface: CanvasSurface;
+  preview: LayerPreviewStore | undefined;
+}) {
+  const el = useSideFace(preview, stored);
   const color = wallColor(el, surface);
   // Clip each copy to the shape's own silhouette (circle, diamond, cylinder, ...) so the column follows the outline
   // instead of the bounding rectangle. Non-shape boxed elements (sticky / image / table / ...) and shapes without a
@@ -114,9 +145,11 @@ function IsoColumn({ el, surface }: { el: BoxedElement; surface: CanvasSurface }
 const IsoColumns = memo(function IsoColumns({
   elements,
   surface,
+  preview,
 }: {
   elements: Element[];
   surface: CanvasSurface;
+  preview: LayerPreviewStore | undefined;
 }) {
   return (
     <>
@@ -127,7 +160,7 @@ const IsoColumns = memo(function IsoColumns({
         // shared with both exporters so screen + export can't drift.
         .filter(isoExtrudes)
         .map((el) => (
-          <IsoColumn key={el.id} el={el} surface={surface} />
+          <IsoColumn key={el.id} el={el} surface={surface} preview={preview} />
         ))}
     </>
   );
@@ -137,8 +170,12 @@ export function IsometricDepthLayer({
   elements,
   azimuth = ISO_TILT_DEG.z,
   elevation = ISO_TILT_DEG.x,
+  preview,
 }: {
   elements: Element[];
+  // The element layer's drag preview (useLayerDragPreview): the side faces follow a live resize from it, and the
+  // riding offsets are written again to this layer's columns once it mounts.
+  preview?: LayerPreviewStore;
   // The camera (useIsometricCamera), for where depth lands on screen.
   azimuth?: number;
   elevation?: number;
@@ -146,6 +183,11 @@ export function IsometricDepthLayer({
   // The walls take the element's own colours, and those fall back to the
   // canvas's ink when the element carries none (docs/specs/007-editor/editor-app.md).
   const surface = useCanvasSurface();
+  // Mounted mid-gesture (the view switched to Isometric while a collaborator drags): the columns ride the offsets
+  // before this paints, not from the collaborator's next message (up to a second while they hold still).
+  useLayoutEffect(() => {
+    preview?.refreshRides();
+  }, [preview]);
   const vars = useMemo(() => {
     const shift = isoDepthShift(azimuth, elevation);
     // The direction columns sort along: the depth shift's, at unit length.
@@ -171,7 +213,7 @@ export function IsometricDepthLayer({
       data-iso-depth=""
       data-ride-plane=""
     >
-      <IsoColumns elements={elements} surface={surface} />
+      <IsoColumns elements={elements} surface={surface} preview={preview} />
     </div>
   );
 }
