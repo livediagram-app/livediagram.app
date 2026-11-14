@@ -12,9 +12,9 @@ type CapabilitiesOptions<T> = {
 };
 
 export type CapabilitiesClient<T> = {
-  get(): Promise<T>;
+  get: () => Promise<T>;
   // Tests only: a fresh page.
-  reset(): void;
+  reset: () => void;
 };
 
 export function createCapabilitiesClient<T>(
@@ -33,14 +33,14 @@ export function createCapabilitiesClient<T>(
   }
 
   return {
-    get() {
+    get: () => {
       held ??= ask().then(({ caps, ok }) => {
         if (!ok) held = null;
         return caps;
       });
       return held;
     },
-    reset() {
+    reset: () => {
       held = null;
     },
   };
