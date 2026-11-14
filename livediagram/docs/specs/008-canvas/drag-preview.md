@@ -118,8 +118,16 @@ elements' layer instead.
   move's offset shifts it with the element's top: a collaborator viewing in Isometric sees tops and
   side faces move together mid-drag, never apart until the release. The columns sit in a layer of
   their own that carries a very large move's offset as one transform, as the element layer does, so
-  a whole-board drag restyles that layer, not every column. A column is drawn as stored, so a
-  peer's live resize grows its side faces on release, not frame by frame.
+  a whole-board drag restyles that layer, not every column.
+- **Side faces follow a live resize of a few elements.** A gesture that changes a box other than by
+  moving it (a resize) changes its column too, frame by frame, while it changes no more than 50
+  boxes (D131): each column draws from the gesture's preview, as the element's top does, and
+  renders again only when its own box changes. Past 50 the columns are drawn as stored and grow on
+  release, so a resize of a large selection costs each frame only its tops.
+- **A depth layer that mounts mid-gesture catches up as it mounts.** Switching to Isometric while a
+  collaborator drags mounts the depth layer between their messages; the riding offsets are written
+  to its columns before it first paints, so the side faces show at the live place straight away,
+  not when the collaborator's next message lands (up to a second while they hold still).
 
 ## Live movement for collaborators
 

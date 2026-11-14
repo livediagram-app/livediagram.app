@@ -66,4 +66,44 @@ test.describe('Toolbar strip drag', () => {
       expectNoPageErrors(pageErrors);
     });
   }
+
+  // docs/specs/008-canvas/canvas-and-palette.md "Labels" (Work Tracker 864): a drop opens the new shape for typing; an
+  // Escape before anything is typed leaves the selection too, so V picks the Select tool instead of typing a "v".
+  const editor = (page: Page) => page.locator(`${CANVAS} [contenteditable="true"]`);
+  const grips = (page: Page) => page.locator('[data-selection-grips] [data-grips-for]');
+
+  test('Escape after a drop deselects, so V picks the Select tool and the label stays empty', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openStartBlank(page);
+    await openMore(page, 'Shapes');
+    await dragTileOntoCanvas(page, 'Add Square', { x: 300, y: 500 });
+    await expect(editor(page)).toHaveCount(1);
+    await expect(more(page)).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(editor(page)).toHaveCount(0);
+    await expect(grips(page)).toHaveCount(0);
+    await page.keyboard.press('v');
+    await expect(editor(page)).toHaveCount(0);
+    await expect(placed(page, /square/i)).toHaveCount(1);
+    expect((await placed(page, /square/i).getAttribute('aria-label')) ?? '').not.toMatch(/"v"/i);
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('typing straight after a drop still writes the label, and Escape keeps it selected', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openStartBlank(page);
+    await openMore(page, 'Shapes');
+    await dragTileOntoCanvas(page, 'Add Square', { x: 300, y: 500 });
+    await expect(editor(page)).toHaveCount(1);
+    await page.keyboard.type('Hi');
+    await page.keyboard.press('Escape');
+    await expect(editor(page)).toHaveCount(0);
+    await expect(placed(page, /square "Hi"/i)).toHaveCount(1);
+    await expect(grips(page)).toHaveCount(1);
+    expectNoPageErrors(pageErrors);
+  });
 });

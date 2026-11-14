@@ -71,7 +71,19 @@ export type LayerPreviewStore = {
   update: (inputs: LayerPreviewInputs) => void;
   // The element plane (a ref callback): the riding offsets are written to nodes under its parent.
   attachPlane: (plane: HTMLElement | null) => void;
+  // What an element's isometric side faces draw from while a preview lasts: the element as the gesture has it, when
+  // the gesture changes it other than by riding (a resize) and changes no more than LIVE_SIDE_FACES_MAX boxed
+  // elements; else undefined, and the side faces draw as stored. Notified through `subscribe`, as `entryOf` is.
+  sideFaceOf: (id: string) => Element | undefined;
+  // Writes the riding offsets again to every node under the plane's parent, found afresh: for a layer that mounts
+  // mid-gesture (the isometric depth layer when the view switches while a collaborator drags).
+  refreshRides: () => void;
 };
+
+// docs/specs/008-canvas/blueprints/DEFAULTS.md D131: the most boxed elements a gesture may change (other than by
+// riding) for their isometric side faces to follow it frame by frame. Each one's column renders again on every
+// frame of the gesture, beside the element's own view; past it, they grow on release.
+export const LIVE_SIDE_FACES_MAX = 50;
 
 // `ordered` with the preview laid over it: changed elements swapped in, removed ones dropped, added ones in the order
 // lib/drag-preview's applyOverlay gives them (which selection and hit-testing read): those after nothing first, each
@@ -164,23 +176,34 @@ const structureKey = (s: PreviewStructure | null) =>
 
 const NO_RIDES: ReadonlyMap<string, RideOffset> = new Map();
 
+// The boxed elements a preview changes other than by riding: what side faces would follow.
+function liveSideFaceCount(entries: ReadonlyMap<string, PreviewEntry>): number {
+  let n = 0;
+  for (const entry of entries.values()) if (!entry.geometry && isBoxed(entry.element)) n++;
+  return n;
+}
+
 export function createLayerPreviewStore(): LayerPreviewStore {
   let entries = new Map<string, PreviewEntry>();
   const rideWriter = createRideWriter();
   // The board the offsets were written over: they stay until the layer draws another (the release's write, in the
   // same paint as the elements at their new place), or the next frame when nothing is written (a cancel).
   let rodeOver: readonly Element[] | null = null;
+  // The offsets written last, for refreshRides.
+  let lastRides: ReadonlyMap<string, RideOffset> = NO_RIDES;
   let rideCount = 0;
   let dropFrame: number | null = null;
   const dropRides = () => {
     if (dropFrame !== null) cancelAnimationFrame(dropFrame);
     dropFrame = null;
     rodeOver = null;
+    lastRides = NO_RIDES;
     rideWriter.apply(NO_RIDES);
   };
   const writeRides = (rides: ReadonlyMap<string, RideOffset>, over: readonly Element[]) => {
     if (dropFrame !== null) cancelAnimationFrame(dropFrame);
     dropFrame = null;
+    lastRides = rides;
     if (rides.size === 0 && !rideWriter.active()) {
       rideCount = 0;
       return;
@@ -197,6 +220,8 @@ export function createLayerPreviewStore(): LayerPreviewStore {
   let structure: PreviewStructure | null = null;
   let lastOverlay: DragOverlay | null = null;
   let lastInputs: LayerPreviewInputs | null = null;
+  // Whether side faces follow the preview now (no more than LIVE_SIDE_FACES_MAX of them).
+  let liveSides = false;
   const byId = new Map<string, Set<() => void>>();
   const structureListeners = new Set<() => void>();
 
@@ -269,6 +294,15 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       };
     },
     entryOf: (id) => entries.get(id),
+    sideFaceOf(id) {
+      if (!liveSides) return undefined;
+      const entry = entries.get(id);
+      return entry && !entry.geometry && isBoxed(entry.element) ? entry.element : undefined;
+    },
+    refreshRides() {
+      rideWriter.invalidate();
+      if (lastRides.size > 0 || rideWriter.active()) rideWriter.apply(lastRides);
+    },
     subscribeStructure(cb) {
       structureListeners.add(cb);
       return () => {
@@ -298,6 +332,8 @@ export function createLayerPreviewStore(): LayerPreviewStore {
         dropFrame = requestAnimationFrame(dropRides);
       }
       for (const [id, entry] of entries) entries.set(id, steadyEntry(prev.get(id), entry));
+      const sidesWere = liveSides;
+      liveSides = liveSideFaceCount(entries) <= LIVE_SIDE_FACES_MAX;
       const nextStructure: PreviewStructure | null =
         overlay && (overlay.removed.size > 0 || overlay.added.length > 0)
           ? { removed: overlay.removed, added: overlay.added }
@@ -308,7 +344,8 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       // longer holds redraws from the document).
       const touched = new Set([...prev.keys(), ...entries.keys()]);
       for (const id of touched) {
-        if (prev.get(id) === entries.get(id)) continue;
+        // Crossing the side-face cap changes what every previewed element's side faces draw, not only the changed.
+        if (prev.get(id) === entries.get(id) && liveSides === sidesWere) continue;
         for (const cb of byId.get(id) ?? []) cb();
       }
       if (structureChanged) for (const cb of structureListeners) cb();

@@ -3,7 +3,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { plural } from '@liveworkspace/model-core/plural';
 import { GlyphDisc, SOLID_BRAND_DARK } from '@liveworkspace/ui';
-import { useCanvasZoomSelector, ZoomFollowing } from './CanvasZoomContext';
+import { useSettledZoomSelector, ZoomFollowing } from './CanvasZoomContext';
 import { useVoteBadge, voteBadgeShrinks, voteStepperCollapses } from './vote-badge';
 import { VoteDot } from './VoteDot';
 
@@ -38,9 +38,10 @@ export function VoteStepper({
   onRetractVote?: (elementId: string) => void;
   onCastVote?: (elementId: string) => void;
 }) {
-  // Read by what they decide, so a zoom step renders this only where the fold or the dot flips.
-  const shrunk = useCanvasZoomSelector((zoom) => voteBadgeShrinks(box, zoom));
-  const collapsed = useCanvasZoomSelector((zoom) => voteStepperCollapses(box, zoom));
+  // Read by what they decide, once the zoom stands still: a zoom step asks neither, and a settle renders this only
+  // where the fold or the dot flips.
+  const shrunk = useSettledZoomSelector((zoom) => voteBadgeShrinks(box, zoom));
+  const collapsed = useSettledZoomSelector((zoom) => voteStepperCollapses(box, zoom));
   // Shrinking to a dot lifts the fold too, so an open stepper closes and a later zoom in starts on the badge.
   const { ref: stepperRef, open, setOpen } = useVoteBadge(collapsed && !shrunk);
   // The badge opened from the keyboard hands focus to the stepper it opened: plus, or minus once plus is spent.

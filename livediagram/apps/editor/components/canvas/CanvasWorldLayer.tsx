@@ -10,7 +10,6 @@ import { ElementIndicatorStyleProvider } from '@liveworkspace/workbench/componen
 import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
-import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import {
   CanvasElementsLayer,
   type CanvasElementsLayerProps,
@@ -167,16 +166,6 @@ export function CanvasWorldLayer({
         ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
       }}
     >
-      {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
-      behind the real element layer, which caps each column at z=0.
-      Only mounted while the tool is active. */}
-      {canvasTool === 'isometric' ? (
-        <IsometricDepthLayer
-          elements={elements}
-          azimuth={isoAngles.azimuth}
-          elevation={isoAngles.elevation}
-        />
-      ) : null}
       <CanvasStillProvider still={props.editorMode === 'draw'}>
         <CanvasArrivalProvider
           tabId={props.activeTabId ?? ''}
@@ -210,6 +199,7 @@ export function CanvasWorldLayer({
                     quickRingOpen={quickRingOpen}
                     setQuickRingOpen={setQuickRingOpen}
                     drawDrag={drawDrag}
+                    isoAngles={isoAngles}
                   />
                 </ElementIndicatorStyleProvider>
               </MindOutlineProvider>
