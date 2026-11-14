@@ -16,6 +16,7 @@ describe('cardWindowOf', () => {
       rowsBefore: 0,
       rowsAfter: 0,
       pitch: 0,
+      cols: 0,
       gap: 0,
     });
   });

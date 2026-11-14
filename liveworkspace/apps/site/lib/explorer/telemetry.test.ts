@@ -90,12 +90,28 @@ describe("the Explorer's telemetry on liveworkspace.app", () => {
 
   it('sends nothing but the Explorer’s own tokens', () => {
     t.setExplorerConsent(true);
-    t.trackHome('Loaded', 'Someone typed this');
+    t.trackHome('Loaded', 'Someone typed this' as never);
+    // Home's picks are Selected, never Loaded.
+    t.trackHome('Loaded', 'MostUsed');
     // The retired Timeline's events are no longer the Explorer's to send.
     t.trackWelcome('SeeTimeline' as never);
     t.trackLens('NotAFacet' as never);
     vi.advanceTimersByTime(TELEMETRY_FLUSH_DELAY_MS);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("sends Home's picks as Home·Selected: Most Used, Recent and See More", () => {
+    t.setExplorerConsent(true);
+    t.setExplorerSender('livediagram', 'app');
+    t.trackHome('Selected', 'MostUsed');
+    t.trackHome('Selected', 'Recent');
+    t.trackHome('Selected', 'SeeMore');
+    vi.advanceTimersByTime(TELEMETRY_FLUSH_DELAY_MS);
+    expect(batches().flatMap((b) => b.events)).toEqual([
+      { category: 'Home', action: 'Selected', type: 'MostUsed' },
+      { category: 'Home', action: 'Selected', type: 'Recent' },
+      { category: 'Home', action: 'Selected', type: 'SeeMore' },
+    ]);
   });
 
   it('holds events until the setting is read, then sends them, or drops them when it is off', () => {
