@@ -1,6 +1,6 @@
 ---
 name: ideation-loop
-description: One pass over the liveworkspace products that looks for genuinely good product ideas (gaps in the code on main, what competitors ship, telemetry and feedback) and logs the few that make the cut as Idea cards in the Work Tracker plan's Ideas board. The owner accepts or rejects each one through its Reviewed field. Run with `/loop 4h /ideation-loop`.
+description: One pass over the liveworkspace products that looks for genuinely good product ideas (gaps in the code on main, what competitors ship, telemetry and feedback) and logs the few that make the cut as Idea cards in the Work Tracker plan's Ideas board. The owner accepts or rejects each one through its Reviewed field. Paces itself by how many Ideas wait for review (hourly when few, never at 60 or more). Run with `/loop /ideation-loop`.
 ---
 
 # Ideation loop: one pass
@@ -49,8 +49,28 @@ Look for all three, every pass. Each card's **Kind** field says which it is:
 - **New Feature** (`New Feature`): something missing that would make a product clearly more valuable, the kind of
   thing a user moving from a competitor expects, or that opens a new use for the product.
 
-A typical pass logs 0 to 5. If you have more than 5 candidates, keep the strongest 5 and save the rest in the
-state file's "Candidates" list for a later pass to re-check.
+A research pass logs at most the pacing table's cap (below), and often fewer. If you have more candidates than
+that, keep the strongest and save the rest in the state file's "Candidates" list for a later pass to re-check.
+
+## Pacing
+
+The loop runs fast while the owner's queue is short and slows down as it fills. Run it self-paced, with
+`/loop /ideation-loop`. Every wake starts with a cheap check: one `list_items` call with `type: "Idea"` and
+`status: "Under Review"`, counting the Ideas waiting for a verdict. Then look up the row:
+
+| Ideas waiting | Research when the last research pass was at least | Cards per pass, at most |
+| ------------- | ------------------------------------------------- | ----------------------- |
+| 0 to 9        | 1 hour ago (every wake)                           | 5                       |
+| 10 to 29      | 3 hours ago                                       | 3                       |
+| 30 to 59      | 8 hours ago                                       | 2                       |
+| 60 or more    | never: the owner has plenty to review             | 0                       |
+
+- **Not due** (too soon for the row, or 60 or more waiting): stop here. Do no research and read nothing else.
+  Report one line ("41 Ideas waiting, next research due after 18:20") and schedule the next wake (step 4).
+- **Due**: run steps 1 to 4. A pass that finds nothing still counts as a research pass.
+- The loop's wake is capped at 1 hour, so it always wakes hourly. The table decides whether that wake does
+  anything, and a skipped wake costs one small read. If it's run with a fixed interval instead (`/loop 4h
+/ideation-loop`), the table still applies on each run.
 
 ## 0. State
 
@@ -58,7 +78,7 @@ The run history is per-user, in your Claude memory folder for this project: `pro
 first, create it if missing. It holds:
 
 - **Last sources** and **Last products**: what the last passes covered, so each pass rotates (see step 2).
-- **Last run**: absolute date and time.
+- **Last research**: absolute date and time of the last pass that ran steps 1 to 4 (see "Pacing").
 - **Candidates**: promising ideas held back, each with its evidence and why it waited.
 - **Lessons**: one line per pattern the owner rejected ("no AI chat panels", "no per-product themes") and per
   pattern they accepted. Rebuild it from the board each pass (step 1); it steers what you pitch.
@@ -86,9 +106,8 @@ From it:
   Work Items (they still carry `f-reviewed: Accepted`). Turn these into the state file's Lessons. The
   **Reason** field, when the owner filled it, is the strongest signal: learn the pattern it names, not just the
   title. A rejection with no Reason teaches only "not this idea".
-- Ideas still in **Under Review** that the owner hasn't judged yet. While **8 or more** are waiting, log nothing
-  new this pass: research anyway, save the best to Candidates, and say so in the report. The owner's queue is the
-  limit, not your output.
+- Ideas still in **Under Review** that the owner hasn't judged yet: their count set this pass's cap (see
+  "Pacing"). The owner's queue is the limit, not your output.
 
 ## 2. Research
 
@@ -230,7 +249,11 @@ loop reads it as the Work Item's Problem.
 ## 4. Wrap up
 
 - Remove any scratchpad worktree you made (`git worktree remove`).
-- Update the state file: Last sources, Last products, Last run, Candidates (drop what you logged or ruled out)
-  and Lessons.
-- Report in a few lines: the cards logged (number, title, product, priority), the strongest candidates held back
-  and why, and any lesson that changed what you pitched. A pass that logged nothing says what it checked.
+- Update the state file: Last sources, Last products, Last research, Candidates (drop what you logged or ruled
+  out) and Lessons.
+- Report in a few lines: the Ideas waiting, the cards logged (number, title, product, kind, priority), the
+  strongest candidates held back and why, and any lesson that changed what you pitched. A pass that logged
+  nothing says what it checked.
+- **Schedule the next wake** when self-paced, on research and skipped wakes alike: `ScheduleWakeup` with
+  `delaySeconds: 3600`, `prompt: "/ideation-loop"`, `noop: true` for a skipped wake or a pass that logged
+  nothing, and `noop: false` when it logged cards.
