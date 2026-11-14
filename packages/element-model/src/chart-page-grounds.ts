@@ -24,11 +24,14 @@ export type ChartPageGroundDeps<E extends Element, F, P extends GroundPage<F>, L
     opts: { includeHidden: boolean },
   ) => { elements: E[] }[];
   pageGroundUnder: (background: P['background'], rect: Rect, box: Rect) => PageGround;
+  // Which elements are given a ground: palette charts by default; a product adds its own faces that follow the page
+  // (livedocuments' maps draw their borders and plates in it).
+  takesGround?: (el: E) => boolean;
 };
 
 /** Whether an element is a chart whose series come from a palette: a pie, doughnut, bar, column,
  *  line, area, scatter or Sankey. */
-function isPaletteChart(el: Element): boolean {
+export function isPaletteChart(el: Element): boolean {
   return el.type === 'shape' && (isChartShape(el.shape) || isSankeyShape(el.shape));
 }
 
@@ -45,9 +48,10 @@ export function chartPageGroundsFor<E extends Element, F, P extends GroundPage<F
   deps: ChartPageGroundDeps<E, F, P, L>,
 ): (elements: readonly E[], pages: readonly P[], layers?: L[]) => Map<string, readonly string[]> {
   const { isBoxed, pageAt, elementAnchorPoint, pageFillTone, layerBands, pageGroundUnder } = deps;
+  const takes = deps.takesGround ?? isPaletteChart;
   return (elements, pages, layers) => {
     const out = new Map<string, readonly string[]>();
-    if (!pages.some((p) => p.background?.fill) || !elements.some(isPaletteChart)) return out;
+    if (!pages.some((p) => p.background?.fill) || !elements.some(takes)) return out;
     const index = elementIndexFor(elements);
     // Each element's page, once; only pages with a fill and a chart on them are walked.
     const pageOf = new Map<string, P>();
@@ -56,7 +60,7 @@ export function chartPageGroundsFor<E extends Element, F, P extends GroundPage<F
       const page = pageAt(pages, elementAnchorPoint(el, index));
       if (!page?.background?.fill) continue;
       pageOf.set(el.id, page);
-      if (isPaletteChart(el)) walked.add(page);
+      if (takes(el)) walked.add(page);
     }
     const painted = layerBands(elements as E[], layers, { includeHidden: true }).flatMap(
       (b) => b.elements,
@@ -68,7 +72,7 @@ export function chartPageGroundsFor<E extends Element, F, P extends GroundPage<F
         if (pageOf.get(el.id) !== page || !isBoxed(el)) continue;
         const boxed = el as unknown as BoxedElement;
         const box = { x: boxed.x, y: boxed.y, width: boxed.width, height: boxed.height };
-        if (isPaletteChart(el)) {
+        if (takes(el)) {
           const at = elementAnchorPoint(el, index);
           let ground: readonly string[] | null | undefined;
           for (let i = covers.length - 1; i >= 0 && ground === undefined; i -= 1) {

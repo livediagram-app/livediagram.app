@@ -95,6 +95,16 @@ describe('renderElementsToSvg under Sketch', () => {
     expect(svg.indexOf(FILTERED)).toBeLessThan(svg.indexOf('data-finish="sketch"'));
   });
 
+  // finish.md "Tables": under Marker the export draws the grid as the canvas's whole rules, in the grid's own ink, and
+  // the header band stays flat (it was coloured in and edged in a greyer shade, so the header row's lines read grey).
+  it("draws a Marker table's grid as rules and its header band flat", () => {
+    const table = { ...createTable(0, 0), id: 'tb', headerRow: true } as Element;
+    const svg = renderElementsToSvg({ ...tabOf([table]), finish: 'marker' });
+    expect(svg).not.toContain('data-marker-part="shape"');
+    expect(svg.match(/data-marker-part="line"/g)).toHaveLength(4);
+    expect(svg).not.toContain('<line');
+  });
+
   it("draws only a tab window's frame by hand", () => {
     const tw = { ...createShape('tab-window', 0, 0), id: 'tw' } as Element;
     const svg = renderElementsToSvg(tabOf([tw], 'sketch'));

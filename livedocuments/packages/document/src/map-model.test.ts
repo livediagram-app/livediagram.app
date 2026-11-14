@@ -131,6 +131,15 @@ describe('map colours and the provided geometry', () => {
     expect(mapPaperColour('dark')).toBe('#0f172a');
   });
 
+  it('takes the paper from the page it sits on: one tone, or the middle of a gradient', () => {
+    expect(mapPaperColour('dark', ['#7c2d12'])).toBe('#7c2d12');
+    expect(mapPaperColour('light', ['#000000', '#404040', '#808080', '#c0c0c0', '#ffffff'])).toBe(
+      '#808080',
+    );
+    expect(mapPaperColour('light', ['#111111', '#222222'])).toBe('#111111');
+    expect(mapPaperColour('dark', [])).toBe('#0f172a');
+  });
+
   it('hands back what was provided', () => {
     provideMapGeometry(MAP_GEOMETRY);
     expect(providedMapGeometry()).toBe(MAP_GEOMETRY);

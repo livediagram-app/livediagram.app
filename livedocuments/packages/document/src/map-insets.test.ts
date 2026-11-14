@@ -2,10 +2,49 @@ import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { MAP_GEOMETRY } from './map-geometry.generated';
 import { MAP_INSETS, mapInsets, pathRings } from './map-insets';
-import { mapLayout, mapWindow } from './map-layout';
+import { mapLayout } from './map-layout';
 
 const COLOURS = { land: '#dbe3ec', accent: '#3b82f6', paper: '#ffffff', text: '#0f172a' };
 const US = MAP_GEOMETRY.countries.find((c) => c[0] === 'US')!;
+
+// An inset's box in plane units: x0, y0, x1, y1.
+const boxOf = (d: string) =>
+  pathRings(d).reduce<[number, number, number, number]>(
+    (b, r) => [
+      Math.min(b[0], r.box[0]),
+      Math.min(b[1], r.box[1]),
+      Math.max(b[2], r.box[2]),
+      Math.max(b[3], r.box[3]),
+    ],
+    [Infinity, Infinity, -Infinity, -Infinity],
+  );
+
+// The plate's corners, from its outline (`M x y` then `V` and `H` steps, closed).
+function platePoints(d: string): [number, number][] {
+  const pts: [number, number][] = [];
+  let at: [number, number] = [0, 0];
+  for (const step of d.match(/[MVHZ][^MVHZ]*/g)!) {
+    const n = step.slice(1).trim().split(' ').map(Number);
+    if (step[0] === 'M') at = [n[0]!, n[1]!];
+    else if (step[0] === 'V') at = [at[0], n[0]!];
+    else if (step[0] === 'H') at = [n[0]!, at[1]];
+    else continue;
+    pts.push(at);
+  }
+  return pts;
+}
+
+// Whether the plate holds a point: an even-odd crossing count over its corners.
+function plateCovers(d: string, x: number, y: number): boolean {
+  const pts = platePoints(d);
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, yi] = pts[i]!;
+    const [xj, yj] = pts[j]!;
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
 
 // docs/specs/009-elements/map.md "What it shows": the United States frames on its lower 48, Alaska and Hawaii in
 // insets.
@@ -61,30 +100,53 @@ describe('the United States view', () => {
     const us = l.countries.filter((c) => c.code === 'US');
     expect(us.map((c) => c.part)).toEqual([undefined, 'AK', 'HI']);
     expect(us.every((c) => c.fill === COLOURS.accent && c.opacity === 1)).toBe(true);
-    // Each on a paper plate drawn just before it, which is never a country.
-    const plates = l.countries.filter((c) => c.part?.endsWith('-plate'));
-    expect(plates.map((c) => [c.code, c.part, c.fill])).toEqual([
-      ['', 'AK-plate', COLOURS.paper],
-      ['', 'HI-plate', COLOURS.paper],
-    ]);
+    // Both on one paper plate drawn just before them, which is never a country.
+    const plates = l.countries.filter((c) => c.part === 'plate');
+    expect(plates.map((c) => [c.code, c.fill])).toEqual([['', COLOURS.paper]]);
     const order = l.countries.map((c) => c.part).filter(Boolean);
-    expect(order).toEqual(['AK-plate', 'AK', 'HI-plate', 'HI']);
-    const win = mapWindow(el, MAP_GEOMETRY);
+    expect(order).toEqual(['plate', 'AK', 'HI']);
+    // Inside the box as drawn, in px.
     for (const inset of us.slice(1)) {
-      const box = pathRings(inset.d).reduce(
-        (b, r) => [
-          Math.min(b[0]!, r.box[0]),
-          Math.min(b[1]!, r.box[1]),
-          Math.max(b[2]!, r.box[2]),
-          Math.max(b[3]!, r.box[3]),
-        ],
-        [Infinity, Infinity, -Infinity, -Infinity],
-      );
-      expect(box[0]).toBeGreaterThanOrEqual(win.x);
-      expect(box[1]).toBeGreaterThanOrEqual(win.y);
-      expect(box[2]).toBeLessThanOrEqual(win.x + win.w);
-      expect(box[3]).toBeLessThanOrEqual(win.y + win.h);
+      const b = boxOf(inset.d);
+      expect(b[0] * l.scale + l.tx).toBeGreaterThanOrEqual(0);
+      expect(b[1] * l.scale + l.ty).toBeGreaterThanOrEqual(0);
+      expect(b[2] * l.scale + l.tx).toBeLessThanOrEqual(1600);
+      expect(b[3] * l.scale + l.ty).toBeLessThanOrEqual(900);
     }
+  });
+
+  // docs/specs/009-elements/map.md "What it shows": no faint land under, beside or between the insets.
+  it.each([
+    ['a slide', 1600, 900],
+    ['a tall box', 600, 900],
+    ['a wide box', 1600, 400],
+  ])('keeps the land behind out of the corner in %s', (_name, width, height) => {
+    const l = mapLayout({ mapCountry: 'US' }, width, height, MAP_GEOMETRY, COLOURS)!;
+    const plate = l.countries.find((c) => c.part === 'plate')!;
+    const px = (x: number) => x * l.scale + l.tx;
+    const py = (y: number) => y * l.scale + l.ty;
+    const corners = platePoints(plate.d);
+    // It runs past the box's left and bottom edges.
+    expect(px(Math.min(...corners.map((c) => c[0])))).toBeLessThan(0);
+    expect(py(Math.max(...corners.map((c) => c[1])))).toBeGreaterThan(height);
+    // It covers each inset and the gap between them: every inset's box lies under the plate's outline.
+    const insets = l.countries
+      .filter((c) => c.part === 'AK' || c.part === 'HI')
+      .map((c) => boxOf(c.d));
+    expect(insets).toHaveLength(2);
+    const covered = (x: number, y: number) => plateCovers(plate.d, x, y);
+    for (const b of insets) {
+      expect(covered(b[0], b[1])).toBe(true);
+      expect(covered(b[2], b[3])).toBe(true);
+    }
+    // The gap between Alaska and Hawaii, at Hawaii's height.
+    const ak = insets[0]!;
+    const hi = insets[1]!;
+    expect(covered((ak[2] + hi[0]) / 2, hi[1])).toBe(true);
+    // And the strip under them down to the box's foot.
+    expect(covered((ak[0] + ak[2]) / 2, (height - l.ty) / l.scale)).toBe(true);
+    // But not the lower 48 above them.
+    expect(covered(1000, 400)).toBe(false);
   });
 
   it('takes every ring of Alaska and Hawaii into an inset', () => {
@@ -119,8 +181,10 @@ describe('the United States view', () => {
   it('reuses its insets across renders, and skips an inset with no land', () => {
     const win = { x: 0, y: 0, w: 100, h: 100 };
     expect(mapInsets('US', US[2], win)).toBe(mapInsets('US', US[2], win));
-    expect(mapInsets('US', 'M0 0l1 0 0 1z', win)).toEqual([]);
-    expect(mapInsets('FR', US[2], win)).toEqual([]);
+    expect(mapInsets('US', 'M0 0l1 0 0 1z', win)).toEqual({ plate: '', insets: [] });
+    expect(mapInsets('FR', US[2], win)).toEqual({ plate: '', insets: [] });
+    // A frame other than the window keys an entry of its own.
+    expect(mapInsets('US', US[2], win, { ...win, h: 200 })).not.toBe(mapInsets('US', US[2], win));
     // A long run of frames never grows the cache past its bound.
     for (let i = 0; i < 40; i++) mapInsets('US', US[2], { ...win, x: i });
     expect(cpuMsOf(() => mapInsets('US', US[2], { ...win, x: 99 }))).toBeLessThan(50);

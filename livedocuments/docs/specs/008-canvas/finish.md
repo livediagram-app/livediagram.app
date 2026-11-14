@@ -167,8 +167,10 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
   toward white on a dark one; a body with no line of its own (a sticky) is coloured in a deeper shade of its fill.
 - **Images** stay photos: under Sketch and Marker a hand-drawn line goes round one (a circle round an avatar), in
   its own line colour or the default ink; its picture is never shaded or wobbled.
-- **Tables:** under Marker a table's grid is drawn as whole rules, one marker stroke per row and column line. A
-  spreadsheet's working grid scrolls, so it keeps its plain lines inside its marker frame.
+- **Tables:** under Marker a table's grid is drawn as whole rules, one marker stroke per row and column line, and
+  its cells' colours (the header band, zebra stripes, a highlighted column, a cell's own colour) stay flat, never
+  coloured in or edged. PNG and SVG exports draw the same rules in the same ink, so a header row's lines read as
+  they do on screen. A spreadsheet's working grid scrolls, so it keeps its plain lines inside its marker frame.
 
 ### Stickers
 

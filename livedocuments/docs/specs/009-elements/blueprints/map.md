@@ -10,16 +10,17 @@ Scope, by file:
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/document/scripts/build-world-map.mjs`          | Builds the geometry module from the two Natural Earth files                                                                                                                                                  |
 | `packages/document/src/map-geometry.generated.ts`        | `MAP_GEOMETRY`: countries and places (subpath `@livedocuments/document/map-geometry` only)                                                                                                                   |
-| `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `MAP_REGIONS`, `provideMapGeometry` / `providedMapGeometry`                                                                                                  |
+| `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `MAP_REGIONS`, `provideMapGeometry` / `providedMapGeometry`, `mapPaperColour(surface, ground)`                                                               |
 | `packages/document/src/map-layout.ts`                    | `mapLayout`: view window, transform, country fills, pins and labels, shared by every surface                                                                                                                 |
-| `packages/document/src/map-insets.ts`                    | `MAP_INSETS`, `mapInsets(code, d, window)`, `pathRings(d)`: a focused country's far land in insets                                                                                                           |
+| `packages/document/src/map-insets.ts`                    | `MAP_INSETS`, `mapInsets(code, d, window, frame)`, `pathRings(d)`: a focused country's far land in insets, on one plate                                                                                      |
 | `packages/document/src/svg-render-map.ts`                | `svgMap`: the export body from `mapLayout`                                                                                                                                                                   |
-| `packages/document/src/svg-render-body.ts`               | Routes `'map'` to `svgMap` with the resolved colours                                                                                                                                                         |
+| `packages/document/src/svg-render-body.ts`               | Routes `'map'` to `svgMap` with the resolved colours, its paper from `chartGround`                                                                                                                           |
+| `packages/document/src/chart-ink.ts`                     | `chartPageGrounds` takes maps too (`takesGround`), so a map knows the page it sits on                                                                                                                        |
 | `packages/document/src/shape-factory.ts`                 | Size 480 × 260, no data                                                                                                                                                                                      |
 | `packages/document/src/colors.ts`                        | `SELF_PAINTING_SHAPES` membership                                                                                                                                                                            |
 | `packages/document/src/validate.ts`, `validate-shape.ts` | Kind accepted; field checks                                                                                                                                                                                  |
 | `apps/editor/lib/map-geometry-loader.ts`                 | `loadMapGeometry()` (one dynamic import, cached, provided to the document package), `useMapGeometry()`, `useMapGeometryFor(elements)` for page thumbnails, `ensureMapGeometryFor(elements)` before an export |
-| `apps/editor/components/canvas/MapView.tsx`              | Canvas drawing (lazy chunk via `ShapeContentRouter`)                                                                                                                                                         |
+| `apps/editor/components/canvas/MapView.tsx`              | Canvas drawing (lazy chunk via `ShapeContentRouter`), its paper from `useChartGround`                                                                                                                        |
 | `apps/editor/components/canvas/MapDrawing.tsx`           | The pure SVG drawing shared by the view and the dialog preview                                                                                                                                               |
 | `apps/editor/components/dialogs/MapDialog.tsx`           | The Edit Map dialog                                                                                                                                                                                          |
 | `apps/editor/components/dialogs/MapSearchField.tsx`      | Add Country and Find a Place: a combobox over the loaded geometry, `matchCountries`, `matchPlaces`                                                                                                           |
@@ -66,8 +67,9 @@ Banned synonyms: "location" for a pin, "zoom" for the view, "tile".
 | Border width         | `max(0.5, min(1.2, scale * 6))` px, paper, `stroke-linejoin: round`             | D195                                             |
 | Faint context        | land at 45% opacity when a country is focused                                   | D196                                             |
 | Insets               | `US`: Alaska (box 540, 60, 940, 235) at 0.4, Hawaii (280, 640, 330, 700) at 1.5 | Spec "What it shows"                             |
-| Inset margin, gap    | 1.5% each, plate pad 1.2%, of window width                                      | Spec "What it shows"                             |
+| Inset margin, gap    | 1.5% each, plate pad 1.2%, of window width, from the box's lower left corner    | Spec "What it shows"                             |
 | Default land         | `#dbe3ec` light paper, `#334155` dark paper                                     | D195                                             |
+| Paper                | the ground's middle tone (`chartPageGrounds`), else `#ffffff` / `#0f172a`       | Spec "What it shows"                             |
 
 Regions, as longitude and latitude windows (west, south, east, north), D197:
 
@@ -107,13 +109,16 @@ Newton's method on θ (at most 12 steps, tolerance 1e-9), clamped to `MAP_LAT_MA
    focused country's insets (`MAP_INSETS[code]`, in order): each is the country's rings whose box
    lies inside the inset's box, re-projected about the box's middle meridian (`unprojectPoint`, then
    `projectLonLat(lon - mid, lat)`, so Alaska stands upright), scaled by its `scale` and set along
-   the window's foot from its left (margin 1.5%, then each inset after the last and a 1.5% gap),
-   written as one absolute path (`M x yL ... Z`) in plane units. Each inset is two rows: first its
-   plate, a rounded box 1.2% of the window's width larger than its land each side, in the paper
-   colour, with no code and `part` `AK-plate` (never pressed, hovered or named), then its land with
-   the focused country's code, fill and opacity and `part` `AK` or `HI`, so every renderer draws it
-   as a country and keys it `code-part`. An inset with no rings is left out. Insets are cached per
-   country, window and path (at most 16 entries).
+   the foot of the frame (the element's box in plane units, `-tx / scale`, `-ty / scale`,
+   `width / scale`, `height / scale`) from its left (margin 1.5% of the window's width, then each
+   inset after the last and a 1.5% gap), written as one absolute path (`M x yL ... Z`) in plane
+   units. First comes one plate row: a stepped outline in the paper colour that runs from past the
+   frame's left and bottom edges up round each inset (1.2% of the window's width larger than its land
+   each side) and across each gap at the next inset's height, so nothing behind shows under, beside
+   or between them, with no code and `part` `plate` (never pressed, hovered or named). Then each
+   inset's land with the focused country's code, fill and opacity and `part` `AK` or `HI`, so every
+   renderer draws it as a country and keys it `code-part`. An inset with no rings is left out.
+   Insets are cached per country, window, frame and path (at most 16 entries).
 4. Pins: in list order, projected then transformed; a pin outside the box is kept and clipped.
    A label's side is right unless `x + r + gap + estimatedWidth > boxW`, then left
    (`estimatedWidth = label.length * size * 0.56`).
@@ -192,8 +197,14 @@ way in. The mode switch is a radio group.
   validators accept and refuse each field; regions project to sane windows.
 - `map-layout.test.ts`: fit, centring, faint context, highlight fill, pin placement and label side.
 - `map-insets.test.ts`: ring parsing; the United States frames on its lower 48, which fill a 16:9 box
-  (over 75% of its width); Alaska and Hawaii insets inside the window in the country's fill, every
-  far ring taken; no insets for other countries or regions; the cache is bounded.
+  (over 75% of its width); Alaska and Hawaii insets inside the box in the country's fill, on one
+  plate that reaches the box's left and bottom edges and covers both insets and the gap between
+  them, in a tall and a wide box; every far ring taken; no insets for other countries or regions;
+  the cache is bounded.
+- `map-model.test.ts`: `mapPaperColour` follows a ground (one tone, a gradient's middle) else the
+  surface.
+- `svg-render-map.test.ts`, `svg-render-body` and `chart-ink.test.ts`: a map on a filled page draws
+  its borders and plate in the page's colour; a map on the plain paper keeps the default.
 - `svg-render-map.test.ts`: export body with and without geometry.
 - `MapDialog.test.tsx`: toggle a country, place a pin, find a place, Done commits once, Cancel none.
 - `map-edit.test.ts`: Editor yes; Participant, Viewer and a locked map no.
