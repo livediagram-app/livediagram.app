@@ -53,6 +53,10 @@ const PARTICIPANT_IMAGE_FIELDS = [
   'credit',
 ] as const;
 
+// What a Participant may change on a Plan board's set-up: the board's filter (docs/specs/026-plan/board-widgets.md
+// "The board's filter"), shared with everyone on the board. Every other set-up field stays an Editor's.
+export const PARTICIPANT_BOARD_FIELDS = ['filter'] as const;
+
 export type ParticipantRefusal =
   | 'tab-locked'
   | 'not-addable'
@@ -167,6 +171,8 @@ export function addedByAdder(el: Element, adderKey: string | null): boolean {
   return adderKey !== null && adderKey !== '' && (el as Bag).addedBy === adderKey;
 }
 
+const isBag = (v: unknown): v is Bag => typeof v === 'object' && v !== null && !Array.isArray(v);
+
 const isPositive = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v) && v > 0;
 
@@ -265,6 +271,12 @@ function mergeOthers(tab: Tab, stored: Element, incoming: Element): Element {
   }
   if (stored.type === 'image') {
     for (const field of PARTICIPANT_IMAGE_FIELDS) copyField(next, inc, field);
+  }
+  if (stored.type === 'shape' && stored.shape === 'plan-board' && isBag(s.planBoard)) {
+    const board: Bag = { ...s.planBoard };
+    const incBoard = isBag(inc.planBoard) ? inc.planBoard : {};
+    for (const field of PARTICIPANT_BOARD_FIELDS) copyField(board, incBoard, field);
+    next.planBoard = board;
   }
   // A laid-out chart routes its straight and angled connectors: their bends, never their ends or look.
   if (isFlowchartConnectorOn(tab, stored) && s.arrowStyle !== 'curved') {

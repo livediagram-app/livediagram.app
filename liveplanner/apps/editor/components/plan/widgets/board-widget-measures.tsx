@@ -38,6 +38,7 @@ import {
   PRESSABLE,
   SOON_AMBER,
   WIDGET_PILL,
+  filterLocked,
   toggle,
   type WidgetContext,
   type WidgetPill,
@@ -122,6 +123,7 @@ export function dueWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Eleme
       <button
         type="button"
         aria-pressed={on}
+        disabled={filterLocked(ctx)}
         className={PRESSABLE}
         style={{ backgroundColor: on ? `${color}1f` : undefined }}
         onClick={() => ctx.onQuick(toggle(ctx.quick, 'due', value))}
@@ -240,6 +242,7 @@ export function prioritiesWidget(ctx: WidgetContext, pill: WidgetPill): React.JS
             type="button"
             aria-pressed={on}
             aria-label={`Only ${PRIORITY_LABELS[priority]} priority, ${count}`}
+            disabled={filterLocked(ctx)}
             className={PRESSABLE}
             style={{
               backgroundColor: on ? `${PRIORITY_COLOURS[priority]}26` : undefined,
@@ -269,7 +272,7 @@ export function unassignedWidget(ctx: WidgetContext): React.JSX.Element {
     <button
       type="button"
       aria-pressed={on}
-      disabled={n === 0 && !on}
+      disabled={(n === 0 && !on) || filterLocked(ctx)}
       className={`${WIDGET_PILL} transition enabled:cursor-pointer enabled:hover:bg-black/5 dark:enabled:hover:bg-white/10`}
       style={{
         borderColor: on ? palette.focus : n > 0 ? SOON_AMBER : palette.border,

@@ -49,7 +49,9 @@ export interface PlanBoardViewValues {
   setUpHere: boolean;
   configuredFromCluster: boolean;
   quick: QuickFilter;
-  setQuick: Dispatch<SetStateAction<QuickFilter>>;
+  setQuick: (q: QuickFilter) => void;
+  // Whether this person changes the board's filter (an Editor or a Participant; a Viewer only sees it).
+  canFilter: boolean;
   columnName: (s: string) => string;
   gridRef: RefObject<HTMLDivElement | null>;
   slotBoard: boolean;
