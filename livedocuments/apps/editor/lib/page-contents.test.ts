@@ -65,6 +65,7 @@ describe('the Contents list', () => {
       'Slide · In the deck · 3 builds',
       'Slide · In the deck · 1 build',
     ]);
+    expect(built.map((r) => r.builds)).toEqual([undefined, '3 builds', undefined, '1 build']);
   });
 
   it("names an unnamed slide or infographic by its own title, and a page's own name wins", () => {

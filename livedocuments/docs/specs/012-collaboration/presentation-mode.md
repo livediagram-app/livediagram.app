@@ -241,14 +241,17 @@ they see builds only by presenting.
 - **Picking an effect for an element with no build** gives it the **next step**: one after the slide's highest
   (step 1 on a slide with none), so clicking through a slide's elements in the order they should come in builds
   them in that order. A multi-selection takes one step together.
-- **Order**, once a build is set: a tile per step the slide already has ("1", "2", "3") and **New** for a step of its
-  own after them (not shown when the selection is already alone at the last step). Picking a step moves the selection to it; the element then comes in with whatever else is at that
+- **Order**, once a build is set: a tile per step the slide already has ("Step 1", "Step 2", "Step 3") and **New Step**
+  for a step of its own after them (not shown when the selection is already alone at the last step). Picking a step moves the selection to it; the element then comes in with whatever else is at that
   step.
 - **On the canvas** each built element carries a small numbered badge on its top-left corner: its place among the
   slide's steps ("2" for the second step, whatever order number is stored). Like the lock badge it is editor chrome,
   scaling with the canvas, hidden below the adornment zoom, and never drawn while presenting, in an embed, in a
-  thumbnail or in an export.
-- **Contents** says how many builds a slide page has, after its place in the deck: "Slide · In the deck · 3 builds".
+  thumbnail or in an export. Only an Editor sees badges: a Participant or a Viewer, who can't set builds, sees none.
+  Elements that overlap and come in at the same step (an icon in its circle) share one badge, on the one drawn first,
+  so the pair reads as one numbered thing.
+- **Contents** shows how many builds a slide page has beside its name ("3 builds"), the way a card's speaking time
+  shows.
 - **The format painter** does not copy a build: a build is the element's place in a talk, not its look.
 
 ### The HUD

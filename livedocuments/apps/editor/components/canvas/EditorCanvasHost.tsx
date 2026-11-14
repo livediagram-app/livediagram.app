@@ -265,7 +265,7 @@ export function EditorCanvasHost() {
       {/* The tab's tag colours (docs/specs/009-elements/tag-colours.md), for the cards that render them. */}
       <TagColoursProvider tab={activeTab}>
         {/* Each built element's step number for its badge (presentation-mode.md "Setting builds up"). */}
-        <BuildStepsProvider slides={slideDeck?.deck.slides} tab={activeTab}>
+        <BuildStepsProvider slides={slideDeck?.deck.slides} tab={activeTab} editable={!isReadOnly}>
           {/* Presenting shows the slide as the audience sees it: no indicators or lock badges on its elements
           (docs/specs/008-canvas/element-indicators.md "Unchanged"). */}
           <SuppressElementIndicators when={presentingElements != null}>

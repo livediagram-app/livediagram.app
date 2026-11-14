@@ -10,6 +10,7 @@ import {
   withBuild,
   slideElementsOf,
   buildStepsOfTab,
+  badgedBuildSteps,
   type ElementBuild,
 } from './slide-builds';
 import type { ArrowElement, Element, Page, ShapeElement, Tab } from './index';
@@ -234,6 +235,65 @@ describe('buildStepsOfTab', () => {
   it('resolves no slide when nothing builds', () => {
     const tab = { id: 't', name: 't', elements: [shape('a')] };
     expect(buildStepsOfTab([{ id: 's', tabId: 't', elementIds: ['a'] }], tab).size).toBe(0);
+  });
+
+  it('shows one badge for elements overlapping at the same step, keeping the one drawn first', () => {
+    const box = (id: string, x: number, y: number, w: number, h = w) => ({
+      ...shape(id),
+      x,
+      y,
+      width: w,
+      height: h,
+    });
+    const els = [
+      box('circle', 0, 0, 200),
+      box('icon', 70, 70, 60),
+      box('apart', 600, 0, 50),
+      box('other-step', 10, 10, 20),
+      box('wide', 0, 300, 5000, 40),
+      box('under-wide', 4000, 310, 20),
+      box('after-wide', 4500, 290, 20, 20),
+      box('later-wide', 0, 330, 4000, 4000),
+      box('far', 9000, 9000, 10),
+      box('vast', 0, 9000, 4000, 4000),
+      box('in-vast', 100, 9100, 20),
+      box('unbuilt', 0, 0, 10),
+    ];
+    const steps = new Map([
+      ['circle', 1],
+      ['icon', 1],
+      ['apart', 1],
+      ['other-step', 2],
+      ['wide', 3],
+      ['under-wide', 3],
+      ['after-wide', 3],
+      ['later-wide', 3],
+      ['far', 4],
+      ['vast', 4],
+      ['in-vast', 4],
+    ]);
+    expect([...badgedBuildSteps(steps, els)]).toEqual([
+      ['circle', 1],
+      ['apart', 1],
+      ['other-step', 2],
+      ['wide', 3],
+      ['far', 4],
+      ['vast', 4],
+    ]);
+    expect(badgedBuildSteps(new Map(), els).size).toBe(0);
+  });
+
+  it('files 2,000 badges within an edit budget', () => {
+    const els: Element[] = [];
+    for (let i = 0; i < 2000; i++)
+      els.push({ ...shape(`e${i}`), x: (i % 50) * 120, y: Math.floor(i / 50) * 120 });
+    const steps = new Map(els.map((e, i) => [e.id, (i % 3) + 1]));
+    let shown = new Map<string, number>();
+    const ms = cpuMsOf(() => {
+      shown = badgedBuildSteps(steps, els);
+    });
+    expect(shown.size).toBe(2000);
+    expect(ms).toBeLessThan(cpuBudgetMs(40));
   });
 
   it('numbers 2,000 elements across 40 slides within an edit budget', () => {

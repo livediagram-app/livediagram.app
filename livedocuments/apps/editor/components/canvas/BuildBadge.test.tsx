@@ -65,20 +65,29 @@ describe('BuildStepsProvider', () => {
 
   it('numbers an element by its step, and none without a deck', () => {
     const { getByTestId, rerender } = render(
-      <BuildStepsProvider slides={slides} tab={tabWith(7)}>
+      <BuildStepsProvider slides={slides} tab={tabWith(7)} editable>
         <Probe />
       </BuildStepsProvider>,
     );
     expect(getByTestId('step').textContent).toBe('1');
     // A new tab with the same numbers keeps the step.
     rerender(
-      <BuildStepsProvider slides={slides} tab={tabWith(3)}>
+      <BuildStepsProvider slides={slides} tab={tabWith(3)} editable>
         <Probe />
       </BuildStepsProvider>,
     );
     expect(getByTestId('step').textContent).toBe('1');
     rerender(
-      <BuildStepsProvider slides={undefined} tab={tabWith(3)}>
+      <BuildStepsProvider slides={undefined} tab={tabWith(3)} editable>
+        <Probe />
+      </BuildStepsProvider>,
+    );
+    expect(getByTestId('step').textContent).toBe('none');
+  });
+
+  it('shows a Participant or a Viewer no badge', () => {
+    const { getByTestId } = render(
+      <BuildStepsProvider slides={slides} tab={tabWith(1)} editable={false}>
         <Probe />
       </BuildStepsProvider>,
     );

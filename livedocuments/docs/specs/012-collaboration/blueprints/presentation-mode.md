@@ -96,6 +96,11 @@ export function stepBuild(
   count: number,
   step: 1 | -1,
 ): PresentingBuild | null; // null: the step leaves the slide
+export function buildStepsOfTab(slides: readonly Slide[], tab: Tab): Map<string, number>; // id -> place among steps
+export function badgedBuildSteps(
+  steps: ReadonlyMap<string, number>,
+  elements: readonly Element[],
+): Map<string, number>; // drops an element overlapping one drawn before it at the same step
 ```
 
 ```ts
@@ -195,7 +200,7 @@ Reduced motion (either source) cuts. The slide announcer, focus and the HUD's co
 | Builds step forward and back           | `PresentationHost.builds.test.tsx`: three builds present in four steps each way; back arrives finished; quick presses land                                                           |
 | The overlay's back, timer, announce    | `PresentationOverlay.builds.test.tsx`                                                                                                                                                |
 | The entrance plays, cuts when reduced  | `useBuildEntrance.test.tsx`                                                                                                                                                          |
-| Build section, order, badge            | `BuildTiles.test.tsx`, `BuildBadge.test.tsx`                                                                                                                                         |
+| Build section, order, badge, roles     | `BuildTiles.test.tsx`, `BuildBadge.test.tsx`, `ReadOnlyElementMenuHost.test.tsx`, `contents-badges.test.tsx`                                                                         |
 | A slide with three builds, end to end  | `e2e/slide-builds.spec.ts`                                                                                                                                                           |
 
 ## Constants and configuration

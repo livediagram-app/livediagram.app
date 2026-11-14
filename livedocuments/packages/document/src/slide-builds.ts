@@ -176,3 +176,57 @@ export function buildStepsOfTab(slides: readonly Slide[], tab: Tab): Map<string,
   }
   return steps;
 }
+
+type Box = { x: number; y: number; width: number; height: number };
+const BADGE_CELL = 256;
+// A box covering more cells than this is checked against every box rather than filed cell by cell.
+const BADGE_MAX_CELLS = 64;
+
+/** The steps whose badge shows: an element overlapping one drawn before it at the same step (an icon in its circle)
+ *  comes in with it, so it shows no badge of its own and the pair reads as one numbered thing. Linear in the built
+ *  elements for boxes of ordinary size: each kept box is filed in a 256-unit grid, and only its neighbours are
+ *  compared. */
+export function badgedBuildSteps(
+  steps: ReadonlyMap<string, number>,
+  elements: readonly Element[],
+): Map<string, number> {
+  const shown = new Map<string, number>();
+  if (steps.size === 0) return shown;
+  const grids = new Map<number, { cells: Map<string, Box[]>; big: Box[] }>();
+  const cellsOf = (b: Box): [number, number, number, number] => [
+    Math.floor(b.x / BADGE_CELL),
+    Math.floor(b.y / BADGE_CELL),
+    Math.floor((b.x + b.width) / BADGE_CELL),
+    Math.floor((b.y + b.height) / BADGE_CELL),
+  ];
+  const meets = (a: Box, b: Box) =>
+    a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+  for (const el of elements) {
+    const step = steps.get(el.id);
+    if (step === undefined) continue;
+    const box = el as unknown as Box;
+    let grid = grids.get(step);
+    if (!grid) grids.set(step, (grid = { cells: new Map(), big: [] }));
+    const [x0, y0, x1, y1] = cellsOf(box);
+    const huge = (x1 - x0 + 1) * (y1 - y0 + 1) > BADGE_MAX_CELLS;
+    let covered = grid.big.some((b) => meets(b, box));
+    if (!covered && huge) {
+      for (const list of grid.cells.values()) if (list.some((b) => meets(b, box))) covered = true;
+    }
+    for (let cx = x0; !covered && !huge && cx <= x1; cx++)
+      for (let cy = y0; !covered && cy <= y1; cy++)
+        covered = grid.cells.get(`${cx},${cy}`)?.some((b) => meets(b, box)) ?? false;
+    if (covered) continue;
+    shown.set(el.id, step);
+    if (huge) grid.big.push(box);
+    else
+      for (let cx = x0; cx <= x1; cx++)
+        for (let cy = y0; cy <= y1; cy++) {
+          const key = `${cx},${cy}`;
+          const list = grid.cells.get(key);
+          if (list) list.push(box);
+          else grid.cells.set(key, [box]);
+        }
+  }
+  return shown;
+}
