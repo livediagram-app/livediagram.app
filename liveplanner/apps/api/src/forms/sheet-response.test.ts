@@ -147,6 +147,97 @@ describe('writeResponseRow', () => {
     expect(cells.some((c) => c.r === 'ra01' || c.r === 'ra02')).toBe(false);
   });
 
+  describe("a template's table with a total", () => {
+    const total = {
+      f: { t: 'COUNTA(@0)', r: [{ r1: 'ra05', c1: 'ca01', r2: 'ra07', c2: 'ca01' }] },
+    };
+    const table = (rows: [string, string, object][]) => {
+      sql.sql
+        .prepare(
+          `UPDATE sheets SET layout = '{"rows":["ra01","ra02","ra03","ra04","ra05","ra06","ra07","ra08","ra09"],"cols":["ca01","ca02"]}' WHERE id = ?`,
+        )
+        .run(SHEET);
+      for (const [row, col, input] of [
+        ['ra01', 'ca01', { s: 'Contacts' }],
+        ['ra04', 'ca01', { s: 'A' }],
+        ['ra04', 'ca02', { s: 'Company' }],
+        ['ra08', 'ca01', total],
+        ...rows,
+      ] as const)
+        sql.sql
+          .prepare(
+            `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input) VALUES ('d1', ?, ?, ?, ?)`,
+          )
+          .run(SHEET, row, col, JSON.stringify(input));
+    };
+    const planned = async () => {
+      let w: SheetWrite | null = null;
+      store.answers.push((x) => {
+        w = x;
+        return stored(x);
+      });
+      expect(await write()).toBe('written');
+      return w as unknown as SheetWrite;
+    };
+    const answerRows = (w: SheetWrite) =>
+      new Set(
+        (w.kind === 'title' ? [] : (w.cells ?? []))
+          .filter((c) => c.c === 'ca01' && 's' in c.i!)
+          .map((c) => c.r),
+      );
+
+    it('fills the first empty row between the header and the total', async () => {
+      table([
+        ['ra05', 'ca01', { s: 'Jordan' }],
+        ['ra07', 'ca01', { s: 'Sam' }],
+      ]);
+      const w = await planned();
+      expect(answerRows(w)).toEqual(new Set(['ra06']));
+      expect(w.kind === 'layout' && w.changes.some((c) => c.k === 'insertRows')).toBe(false);
+    });
+
+    it("inserts a row above a full table's total, and the total grows to take it", async () => {
+      table([
+        ['ra05', 'ca01', { s: 'Jordan' }],
+        ['ra06', 'ca01', { s: 'Kim' }],
+        ['ra07', 'ca01', { s: 'Sam' }],
+      ]);
+      const w = await planned();
+      if (w.kind !== 'layout') throw new Error('a layout write');
+      const insert = w.changes.find((c) => c.k === 'insertRows') as {
+        after: string;
+        ids: string[];
+      };
+      expect(insert.after).toBe('ra07');
+      const added = insert.ids[0]!;
+      expect(answerRows(w)).toEqual(new Set([added]));
+      const grown = w.cells!.find((c) => c.r === 'ra08');
+      expect(grown?.i).toEqual({ f: { t: 'COUNTA(@0)', r: [{ ...total.f.r[0], r2: added }] } });
+    });
+
+    it('appends under a value written below the total', async () => {
+      table([
+        ['ra05', 'ca01', { s: 'Jordan' }],
+        ['ra09', 'ca01', { s: 'Below' }],
+      ]);
+      const w = await planned();
+      expect(answerRows(w).size).toBe(1);
+      expect([...answerRows(w)][0]).not.toMatch(/^ra0[1-9]$/);
+    });
+
+    it('appends under a last row that is not a total', async () => {
+      table([['ra05', 'ca01', { s: 'Jordan' }]]);
+      sql.sql.prepare(`DELETE FROM sheet_cells WHERE row_id = 'ra08'`).run();
+      sql.sql
+        .prepare(
+          `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input) VALUES ('d1', ?, 'ra08', 'ca02', ?)`,
+        )
+        .run(SHEET, JSON.stringify({ s: 'Notes' }));
+      const w = await planned();
+      expect(answerRows(w)).toEqual(new Set(['ra09']));
+    });
+  });
+
   it('is missing once the sheet left its tab', async () => {
     sql.sql.prepare(`UPDATE sheets SET tab_id = 'other' WHERE id = ?`).run(SHEET);
     expect(await write()).toBe('missing');
