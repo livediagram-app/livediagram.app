@@ -24,6 +24,7 @@ import { r2, xmlEscape } from './svg-render-primitives';
 
 export {
   estimatedLabelMeasure,
+  fitWholeWordLines,
   fontSizeFor,
   LABEL_ESTIMATE_CHAR_EM,
   LABEL_LINE_HEIGHT,
@@ -37,6 +38,7 @@ export {
 export {
   EXPORT_DEFAULT_FONT,
   BLANK_LINE,
+  clampExportRunLines,
   svgFontFamilyAttr,
   svgRichWrappedLabel,
   svgWrappedLabel,

@@ -50,9 +50,14 @@ An existing `.dev.vars` (the owner's main checkout) is left as it is, with whate
 clients sit beside it. Ask before editing a `.dev.vars` you didn't make.
 
 - Codes aren't emailed locally: each sign-in code is printed in the accounts Worker's output.
+- Pictures (Explorer previews, a share link's `image.svg`/`image.png`/`card`, Community card images) come from the media
+  service (8792, part of `dev:workspace`), through the router's `PREVIEWS_ORIGIN`. Without it running the router answers
+  `502` "the previews service ... could not be reached" and cards show a broken image: start `dev:workspace`, or a
+  private media Worker with the router's `PREVIEWS_ORIGIN` pointed at it. Any `502` "router: ... could not be
+  reached" is the same thing for the downstream it names: that server of the stack isn't running.
 - Running a second stack in another port block: give the site `ACCOUNTS_DEV_ORIGIN` (and `INDEX_DEV_ORIGIN`,
   `MEDIA_DEV_ORIGIN`), accounts `BASE_URL` and `--local-upstream` at that site, the router `--var` overrides for
-  `WORKSPACE_ORIGIN`, `EDITOR_ORIGIN` and `API_ORIGIN`, and every `wrangler` its own `WRANGLER_REGISTRY_PATH`
+  `WORKSPACE_ORIGIN`, `EDITOR_ORIGIN`, `API_ORIGIN` and `PREVIEWS_ORIGIN`, and every `wrangler` its own `WRANGLER_REGISTRY_PATH`
   and `--persist-to`, so nothing reaches the workers already running. Seed the accounts database with
   `LOCAL_CLIENT_ORIGINS=<product>.app=http://localhost:<your router port> corepack pnpm db:seed:local` (add
   `-- --persist-to <dir>` when its state is elsewhere), so the local client takes your router as a redirect. The accounts Worker accepts a sign-in on an

@@ -52,7 +52,6 @@ type ElementFaceRouterProps = Pick<
   | 'readOnly'
   | 'fontFamily'
   | 'collab'
-  | 'commentActions'
   | 'commentSelfId'
   | 'actionActions'
   | 'actionSelfId'
@@ -84,7 +83,6 @@ export function ElementFaceRouter({
   readOnly,
   fontFamily,
   collab,
-  commentActions,
   commentSelfId,
   actionActions,
   actionSelfId,
@@ -221,19 +219,14 @@ export function ElementFaceRouter({
           />
         </CollabSettingsSlot.Provider>
       ) : element.type === 'shape' && element.shape === 'comment-pin' && !isEditing ? (
-        /* Comment pin (docs/specs/012-collaboration/comment-pin.md): opens the SAME thread popover an ordinary
-           element's comment badge opens — the pin is just an element whose
-           only job is to carry a commentThread. */
+        /* A stored Comment panel (docs/specs/012-collaboration/comment-pin.md, retired): its thread, read-only for
+           every role (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element"). */
         <CommentPanelFace
           element={element}
           label={label}
           textColor={textColor}
           surface={cardFill}
           selfId={commentSelfId ?? ''}
-          onAddComment={commentActions?.add}
-          onDeleteComment={commentActions?.remove}
-          onResolve={commentActions?.resolve}
-          onUnresolve={commentActions?.unresolve}
         />
       ) : element.type === 'shape' && element.shape === 'action-card' && !isEditing ? (
         /* Action panel (docs/specs/012-collaboration/action-panel.md): the Comment panel's sibling. It drives the

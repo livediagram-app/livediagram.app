@@ -161,6 +161,11 @@ tools share-roles owns (dots, answers). The choke point lets a token that
 passes `gateParticipate` but not `gateEdit` reach those routes and no other write; a token that fails
 `gateParticipate` reaches none of them. Every other write keeps `gateEdit`.
 
+Add without a `cell`, and reply to a comment whose host is an element's own thread (`findCommentHost` gives no
+`cell`), answer `400 { error: 'element_comments_retired' }` before reading the tab for an add, or inside the write for
+a reply, and write nothing (plan-mode.md "No comment thread on any canvas element"). The refusal is logged once by
+`logRefusal` like every other. Resolve, reopen and delete-own are unchanged for both kinds of thread.
+
 `deniedOnTab(ctx, liveDoc)` answers a refused participation-class request: 404 when the caller holds a grant (to
 another tab, or a tab the project does not have), 403 when it holds none.
 `DELETE .../presence` skips the tab-existence check, so an entry on a deleted tab can still be cleared (PR34).

@@ -190,14 +190,21 @@ export function usePlanSlice(opts: {
     [commitTabsRef, planTabs],
   );
 
-  const { updateBoard, removeStatusColumns, updateView, placeCardOut, removeCard, updateCard } =
-    usePlanElementWrites({
-      commit,
-      commitOn,
-      commitRef,
-      commitTabsRef,
-      select,
-    });
+  const {
+    updateBoard,
+    setBoardFilter,
+    removeStatusColumns,
+    updateView,
+    placeCardOut,
+    removeCard,
+    updateCard,
+  } = usePlanElementWrites({
+    commit,
+    commitOn,
+    commitRef,
+    commitTabsRef,
+    select,
+  });
 
   const openItem = useCallback((itemId: string, via?: ItemOpenVia) => {
     setOpenItemId(itemId);
@@ -306,6 +313,7 @@ export function usePlanSlice(opts: {
       ownerId: planItems.ownerId,
       itemsScope: planItems.scope ?? null,
       updateBoard,
+      setBoardFilter,
       removeStatusColumns,
       updateView,
       placeCardOut,
@@ -358,6 +366,7 @@ export function usePlanSlice(opts: {
       planItems.ownerId,
       planItems.scope,
       updateBoard,
+      setBoardFilter,
       removeStatusColumns,
       updateView,
       placeCardOut,

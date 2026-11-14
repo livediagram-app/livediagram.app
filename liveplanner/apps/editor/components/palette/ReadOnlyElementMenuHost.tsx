@@ -25,9 +25,7 @@ export function ReadOnlyElementMenuHost() {
     closeContextMenu,
     activeTab,
     can,
-    embedMode,
     lockedByOther,
-    openComments,
     openNote,
     followLink,
     beginEdit,
@@ -37,8 +35,9 @@ export function ReadOnlyElementMenuHost() {
   if (!target) return null;
   const facts = readOnlyElementMenuFacts(target, {
     takePart: can.takePart,
-    // Comment badges are off for a reader of an embed, and so are its comments rows.
-    commentsShown: !embedMode,
+    // No comment row for any role: comment threads on canvas elements are retired (docs/specs/026-plan/
+    // plan-mode.md "No comment thread on any canvas element").
+    commentsShown: false,
     // Arrows take no comment, link or note.
     attachments: isBoxed(target),
     writeText: can.writeText(target) && elementSupportsText(target) && !lockedByOther(target.id),
@@ -55,8 +54,6 @@ export function ReadOnlyElementMenuHost() {
       onClose={closeContextMenu}
       onRun={(key) => {
         switch (key) {
-          case 'comment':
-            return openComments(target.id);
           case 'edit-text':
             return beginEdit(target.id);
           case 'open-link':

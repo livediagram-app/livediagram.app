@@ -56,7 +56,9 @@ describe('cell thread keys', () => {
 });
 
 describe('collabIndexRowsFromElements: cell threads', () => {
-  it('lists each cell thread after the Sheet own, keyed by cell so two cells never collide', () => {
+  // The Sheet's own stored thread sends no row (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas
+  // element").
+  it('lists each cell thread, not the Sheet own, keyed by cell so two cells never collide', () => {
     const { threads } = collabIndexRowsFromElements([
       sheet('s1', {
         commentThread: { comments: [comment('own', 50, 'user_a')], resolved: false },
@@ -73,11 +75,10 @@ describe('collabIndexRowsFromElements: cell threads', () => {
       }),
     ]);
     expect(threads.map((t) => [t.elementId, t.elementLabel, t.resolved, t.commentCount])).toEqual([
-      ['s1', 'Budget', false, 1],
       [`s1:${B4}`, 'Budget', false, 2],
       [`s1:${C9}`, 'Budget', true, 1],
     ]);
-    const b4 = threads[1]!;
+    const b4 = threads[0]!;
     expect(b4.participantIds).toEqual(['user_a', 'user_b']);
     expect(b4.mentionedIds).toEqual(['user_m']);
     expect(b4.latestText).toBe('c-b2');
@@ -111,7 +112,7 @@ describe('collabIndexRowsFromElements: cell threads', () => {
           planSheet: undefined,
           cellComments: { [B4]: { comments: [comment('y', 4)], resolved: false } },
         }),
-        // Not a Sheet: its own label, whatever the store holds.
+        // Not a Sheet: its own stored thread sends nothing.
         {
           id: 'n1',
           type: 'sticky',
@@ -126,12 +127,10 @@ describe('collabIndexRowsFromElements: cell threads', () => {
       sheets,
     );
     expect(threads.map((t) => t.elementLabel)).toEqual([
-      'Budget 2026',
       'Budget 2026!B4',
       'Budget 2026 (Deleted Cell)',
       'Budget',
       'Budget',
-      'Note',
     ]);
   });
 
@@ -158,7 +157,7 @@ describe('collabIndexRowsFromElements: cell threads', () => {
     expect(threads[0]!.elementId.length).toBe(INDEX_ID_MAX);
   });
 
-  it('keeps element and card-free rows as they were beside a Sheet', () => {
+  it('sends a Sheet’s cell rows beside a shape whose own stored thread sends none', () => {
     const plain = {
       id: 'p1',
       type: 'shape',
@@ -170,13 +169,12 @@ describe('collabIndexRowsFromElements: cell threads', () => {
       label: 'Plain',
       commentThread: { comments: [comment('p', 5, 'user_a')], resolved: false },
     } as never as Element;
-    const alone = collabIndexRowsFromElements([plain]).threads;
+    expect(collabIndexRowsFromElements([plain]).threads).toEqual([]);
     const beside = collabIndexRowsFromElements([
       plain,
       sheet('s1', { cellComments: { [B4]: { comments: [comment('b', 1)], resolved: false } } }),
     ]).threads;
-    expect(beside[0]).toEqual(alone[0]);
-    expect(beside).toHaveLength(2);
+    expect(beside.map((t) => t.elementId)).toEqual([`s1:${B4}`]);
   });
 
   it(`caps a Sheet at ${CELL_INBOX_ROWS_MAX} cell rows, those with the newest comments`, () => {

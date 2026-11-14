@@ -36,6 +36,28 @@ describe('FilterSearchBox', () => {
     expect(onClear).toHaveBeenCalledOnce();
   });
 
+  it('shows the words and chips read-only, with no Clear, for someone who may only look', () => {
+    render(
+      <FilterSearchBox
+        query="login"
+        onQuery={vi.fn()}
+        chips={chips}
+        onClear={vi.fn()}
+        placeholder="Search"
+        ariaLabel="Search cards"
+        readOnly
+      />,
+    );
+    const box = screen.getByRole('textbox', { name: 'Search cards' }) as HTMLInputElement;
+    expect(box.readOnly).toBe(true);
+    expect(box.value).toBe('login');
+    expect(screen.getByText('Bug')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Clear Search' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Remove Card Type: Bug' })).toBeNull();
+    // A lock says the box is read-only on purpose.
+    expect(screen.getByRole('img', { name: 'Read Only' })).toBeTruthy();
+  });
+
   it('names its search landmark, so two on one page are told apart', () => {
     render(
       <FilterSearchBox

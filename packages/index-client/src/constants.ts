@@ -106,6 +106,13 @@ export const SUMMARY_MAX_BYTES = 2048;
 // What one tab may push to the Inbox at once.
 export const COLLAB_MAX_THREADS = 500;
 export const COLLAB_MAX_ACTIONS = 500;
+// The largest body the index takes on any route (its MAX_BODY_BYTES); a collab push is the biggest, so an item caps
+// one to fit (`@liveworkspace/index-app` capCollabPush).
+export const INDEX_BODY_MAX_BYTES = 512 * 1024;
+// A thread's latest text and an action's note, as the index keeps them (longer ones are cut, not refused).
+export const COLLAB_TEXT_MAX = 500;
+// The ids one thread's people lists (participants, mentioned, agents) may name: more and the index refuses the push.
+export const COLLAB_PEOPLE_MAX = 100;
 // The tab an item pushes its cards and their threads under (a card isn't on one tab): `PUT /app/items/:id/collab/~cards`.
 export const COLLAB_CARDS_TAB = '~cards';
 

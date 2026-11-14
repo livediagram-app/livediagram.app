@@ -1,6 +1,8 @@
 // The comment verbs (docs/specs/015-api/cli.md "Commands"; agent-presence "Comments"): the threads of a project, and
 // adding, replying to, resolving and reopening one, through the same endpoints the editor uses. A thread is named by
-// its element's ref, resolved over the plain tab (CLI78).
+// its element's ref, resolved over the plain tab (CLI78), and a Sheet cell's by `--cell` beside it. Adding and
+// replying take a cell: an element's own thread is retired (docs/specs/026-plan/plan-mode.md "No comment thread on
+// any canvas element"), so they refuse without one before calling; resolve and reopen still reach a stored one.
 
 import { z } from 'zod';
 import { ApiError } from '@liveworkspace/api-client';
@@ -37,6 +39,24 @@ const cellArg = z
   .describe(
     'On a Sheet, the cell whose thread this is, by A1 (B4); the Sheet\u2019s own thread when omitted',
   );
+// Adding and replying need the cell (an element's own thread takes no new comment).
+const writeCellArg = z
+  .string()
+  .optional()
+  .describe(
+    'The Sheet cell whose thread this is, by A1 (B4); required, as elements take no comments',
+  );
+
+// An add or a reply with no cell names an element's own thread, which takes no new comment.
+function requireCell(cell: string | undefined, ref: string): asserts cell is string {
+  if (cell !== undefined) return;
+  throw new VerbRefusal({
+    status: 400,
+    code: 'element_comments_retired',
+    message: `${ref} takes no comments: canvas elements take no comments`,
+    hint: 'name a Sheet cell with --cell B4, or comment on a card with: liveplanner thread start',
+  });
+}
 
 const threadOutput = z.object({
   tabId: z.string(),
@@ -187,7 +207,7 @@ function lastCommentOf(target: Target, ref: string): string {
       status: 404,
       code: 'no_thread',
       message: `no thread on ${where}`,
-      hint: `start one: liveplanner comment add <project> ${ref} "<text>"`,
+      hint: `start one: liveplanner comment add <project> ${ref} --cell <A1> "<text>"`,
     });
   return last.id;
 }
@@ -229,31 +249,34 @@ const quietId = ({ id }: { id: string }) => [id];
 
 export const commentAdd = defineVerb({
   id: 'comment.add',
-  summary: 'Comment on an element',
+  summary: 'Comment on a Sheet cell',
   description:
-    'Adds a comment to an element\u2019s thread, starting one if it has none (a resolved thread reopens). The comment is the token owner\u2019s.',
+    'Adds a comment to a Sheet cell\u2019s thread, starting one if it has none (a resolved thread reopens). The comment is the token owner\u2019s. Canvas elements take no comments; a card\u2019s threads are `thread start`.',
   behaviour: 'write',
-  input: z.object({ project: projectArg, tab: tabFlag, ref: refArg, text: textArg, cell: cellArg }),
+  input: z.object({
+    project: projectArg,
+    tab: tabFlag,
+    ref: refArg,
+    text: textArg,
+    cell: writeCellArg,
+  }),
   output: lineOutput,
   run: async (ctx, { project: projectRef, tab, ref, text, cell }) => {
+    requireCell(cell, ref);
     const target = await withCell(ctx, await targetOf(ctx, projectRef, tab, ref), ref, cell);
     const { comment } = await ctx.api.json<{ comment: { id: string } }>(commentsPath(target), {
       method: 'POST',
-      body: JSON.stringify({
-        elementId: target.elementId,
-        text,
-        ...(target.cell ? { cell: target.cell } : {}),
-      }),
+      body: JSON.stringify({ elementId: target.elementId, text, cell: target.cell }),
     });
-    return { id: comment.id, text: `+ comment ${comment.id} on ${ref}${cell ? ` ${cell}` : ''}` };
+    return { id: comment.id, text: `+ comment ${comment.id} on ${ref} ${cell}` };
   },
   text: lineText,
   quiet: quietId,
   cli: {
     positionals: ['project', 'ref', 'text'],
     examples: [
-      'liveplanner comment add "Shop" api "Should this be idempotent?"',
-      'liveplanner comment add "Shop" --tab Flow 146b "Missing a retry"',
+      'liveplanner comment add "Budget" 1e17 --cell B4 "Is hosting monthly or yearly?"',
+      'liveplanner comment add "Budget" --tab Costs 1e17 --cell C9 "Missing a line"',
     ],
     prints: 'the new comment\u2019s id',
   },
@@ -261,12 +284,20 @@ export const commentAdd = defineVerb({
 
 export const commentReply = defineVerb({
   id: 'comment.reply',
-  summary: 'Reply to the thread on an element',
-  description: 'Adds a reply to the thread on an element; an element with no thread is refused.',
+  summary: 'Reply to the thread on a Sheet cell',
+  description:
+    'Adds a reply to the thread on a Sheet cell; a cell with no thread is refused, and so is an element\u2019s own thread.',
   behaviour: 'write',
-  input: z.object({ project: projectArg, tab: tabFlag, ref: refArg, text: textArg, cell: cellArg }),
+  input: z.object({
+    project: projectArg,
+    tab: tabFlag,
+    ref: refArg,
+    text: textArg,
+    cell: writeCellArg,
+  }),
   output: lineOutput,
   run: async (ctx, { project: projectRef, tab, ref, text, cell }) => {
+    requireCell(cell, ref);
     const target = await withCell(ctx, await targetOf(ctx, projectRef, tab, ref), ref, cell);
     const last = lastCommentOf(target, ref);
     const { comment } = await ctx.api.json<{ comment: { id: string } }>(
@@ -280,8 +311,8 @@ export const commentReply = defineVerb({
   cli: {
     positionals: ['project', 'ref', 'text'],
     examples: [
-      'liveplanner comment reply "Shop" api "Yes, keyed by order id"',
-      'liveplanner comment reply 3f9c --tab Flow 146b "Done"',
+      'liveplanner comment reply "Budget" 1e17 --cell B4 "Yearly, so divide by twelve"',
+      'liveplanner comment reply 3f9c --tab Costs 1e17 --cell C9 "Done"',
     ],
     prints: 'the reply\u2019s id',
   },

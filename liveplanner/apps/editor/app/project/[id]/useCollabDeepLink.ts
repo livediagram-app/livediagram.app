@@ -104,12 +104,12 @@ export function useCollabDeepLink({
         if (open === 'comments') openComments(el.id, cell);
         return;
       }
-      // A Comment or Action panel shows its thread / actions on its own face
-      // (docs/specs/012-collaboration/comment-pin.md, action-panel.md): arriving at it is the whole answer,
-      // and a popover beside it would repeat the card.
-      if (el.shape === 'comment-pin' || el.shape === 'action-card') return;
+      // An Action panel shows its actions on its own face (docs/specs/012-collaboration/action-panel.md): arriving at
+      // it is the whole answer, and a popover beside it would repeat the card. An element's own comment thread is
+      // retired (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element"): an old
+      // `?open=comments` link with no cell lands on the element and opens nothing.
+      if (el.shape === 'action-card') return;
       if (open === 'action') openActionPopover(el.id);
-      else if (open === 'comments') openComments(el.id);
     },
   );
 

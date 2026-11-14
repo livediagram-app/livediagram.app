@@ -251,8 +251,9 @@ const SIGN_OUT_HINT = 'Every app in this browser';
 export const SIGN_OUT_REFUSED = 'Couldn’t sign out. Check your connection and try again.';
 
 // An item's row. Its colours are the control's palette (palette.ts), so no later stylesheet can repaint a hovered row.
+// Hovered or focused, the row darkens the hints inside it (--account-hint-hover), which keep AA on the hover fill.
 const ITEM =
-  'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm text-(--account-text) outline-none transition-colors hover:bg-(--account-hover) focus-visible:bg-(--account-hover) disabled:cursor-not-allowed disabled:opacity-50';
+  'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm text-(--account-text) outline-none transition-colors hover:bg-(--account-hover) hover:[--account-hint:var(--account-hint-hover)] focus-visible:bg-(--account-hover) focus-visible:[--account-hint:var(--account-hint-hover)] disabled:cursor-not-allowed disabled:opacity-50';
 
 // An item's name over its hint, its icon in a soft square.
 function ItemBody({

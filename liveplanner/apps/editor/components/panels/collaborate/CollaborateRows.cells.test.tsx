@@ -35,12 +35,13 @@ const sheet = {
 } as unknown as BoxedElement;
 
 describe('cell threads in the Comments panel', () => {
-  it('lists each cell thread as its own row beside the Sheet’s', () => {
+  // The Sheet's own stored thread is not listed: comment threads on canvas elements are retired
+  // (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element").
+  it('lists each cell thread as its own row, and not the Sheet’s own', () => {
     const rows = commentRowsFromElements([sheet]);
     expect(rows.map((r) => [r.cell ?? null, r.resolved])).toEqual([
       ['row1:colb', false],
       ['row2:colb', true],
-      [null, false],
     ]);
   });
 

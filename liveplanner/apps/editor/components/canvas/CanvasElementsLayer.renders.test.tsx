@@ -140,7 +140,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number; tabLayers?: Lay
     quickRingOpen: null,
     setQuickRingOpen: fresh(),
     commentSelfId: 'me',
-    commentPanelActions: { add: fresh(), remove: fresh(), resolve: fresh(), unresolve: fresh() },
     actionSelfId: 'me',
     actionPanelActions: { configure: fresh(), complete: fresh(), reopen: fresh() },
     onPauseTimer: fresh(),

@@ -98,7 +98,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Activity|Selected|FormResponses':
     "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
   'Activity|Selected|Thread':
-    "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
+    "Someone clicked a Sheet cell's comment-thread row in the Explorer's Inbox, jumping to the cell.",
   'Canvas|Used|WaterCooler':
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
@@ -130,9 +130,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Zoomed|Out': 'Someone tapped the zoom-out button.',
   'Canvas|Zoomed|Preset':
     'Someone jumped straight to a preset zoom level from the zoom-percentage popover.',
-  'Comment|Added|': 'A comment was added to an element thread.',
+  'Comment|Added|': 'A comment was added to a Sheet cell thread.',
   'Comment|Deleted|': 'A comment was removed from a thread.',
-  'Comment|Opened|': 'Someone opened the comment popover on an element.',
+  'Comment|Opened|': 'Someone opened the comment popover on a Sheet cell.',
   'Comment|Mentioned|': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved|': 'A comment thread was marked resolved.',
   'Comment|Unresolved|': 'A resolved comment thread was reopened.',

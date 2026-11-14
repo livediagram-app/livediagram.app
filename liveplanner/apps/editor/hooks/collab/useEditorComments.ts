@@ -10,12 +10,12 @@
 //   the room at once. The thread used to ride the whole-element update,
 //   so two replies inside one save window lost one of them.
 // - `openComments`, `closeComments`, `addComment`, `deleteComment`,
-//   `resolveThread`, `unresolveThread`: the six actions the
-//   comment thread popover + the Comment panel bind to.
+//   `resolveThread`, `unresolveThread`: the six actions the comment thread popover binds to, for a Sheet cell's
+//   thread. An element's own thread is retired (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas
+//   element"): opening one and adding to one do nothing.
 //
-// Telemetry (docs/specs/017-telemetry/telemetry.md) lives HERE, not at the call sites: the anchored
-// popover and the Comment panel (docs/specs/012-collaboration/comment-pin.md) both drive these actions, and an
-// emit beside one surface silently missed the other. Each action counts once,
+// Telemetry (docs/specs/017-telemetry/telemetry.md) lives HERE, not at the call sites, so an emit beside one
+// surface never misses another. Each action counts once,
 // whichever surface ran it. Added / Deleted with a `persist` callback (the
 // view-role path, which writes through the dedicated comment endpoints rather
 // than the tab autosave) count only once the server accepted the write.
@@ -62,11 +62,10 @@ type PersistDelete = () => Promise<unknown>;
 
 type EditorCommentsApi = {
   commentThreadOpenId: string | null;
-  // The Sheet cell whose thread is open (docs/specs/029-sheets/sheet.md "Cell comments"), its key; null for the
-  // element's own thread.
+  // The Sheet cell whose thread is open (docs/specs/029-sheets/sheet.md "Cell comments"), its key; null when none.
   commentThreadOpenCell: string | null;
-  // Toggle open / closed: clicking the same id (and cell) again closes the
-  // popover (matches the existing behaviour). `cell` opens a Sheet cell's thread.
+  // Toggle open / closed: clicking the same id and cell again closes the
+  // popover (matches the existing behaviour). Without a `cell` it does nothing.
   openComments: (elementId: string, cell?: string) => void;
   // Open, never close: a deep link lands on a thread however many times it is asked (useCollabDeepLink).
   showComments: (elementId: string, cell?: string) => void;
@@ -100,8 +99,10 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
   const commentThreadOpenCell = open?.cell ?? null;
 
   const openComments = (elementId: string, cell?: string) => {
-    if (deps.commentsOff) return;
-    const at = cell ?? null;
+    // Only a Sheet cell's thread opens: comment threads on canvas elements are retired (docs/specs/026-plan/
+    // plan-mode.md "No comment thread on any canvas element"), so a door left open anywhere opens nothing.
+    if (deps.commentsOff || cell === undefined) return;
+    const at = cell;
     // Closure read before the toggle so we emit only on the open
     // transition, never on close, and never double-fire under React
     // strict mode (which would re-run an updater-internal side
@@ -113,8 +114,8 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     if (!wasOpen) track('Comment', 'Opened');
   };
   const showComments = (elementId: string, cell?: string) => {
-    if (deps.commentsOff) return;
-    const at = cell ?? null;
+    if (deps.commentsOff || cell === undefined) return;
+    const at = cell;
     if (open?.id === elementId && open.cell === at) return;
     setOpen({ id: elementId, cell: at });
     track('Comment', 'Opened');
@@ -128,7 +129,8 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
     mentions?: CommentMention[],
     cell?: string,
   ): string => {
-    if (deps.commentsOff) return '';
+    // An element's own thread takes no new comment (as openComments); the api refuses one too.
+    if (deps.commentsOff || cell === undefined) return '';
     // Mint OUTSIDE the updater: state updaters must stay pure (strict
     // mode re-invokes them), and the caller needs the id.
     const comment = createComment(

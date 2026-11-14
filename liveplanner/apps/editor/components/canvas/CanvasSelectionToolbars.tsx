@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
@@ -7,9 +6,6 @@ import {
   elementKindLabel,
   elementSupportsText,
   isBoxed,
-  takesAttachments,
-  threadAt,
-  type Element,
 } from '@liveplanner/project';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import {
@@ -62,7 +58,6 @@ export function CanvasSelectionToolbars({
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(
     useCallback((v: View) => (showing ? v : RESTING_VIEW), [showing]),
   );
-  const commentsShown = useCommentBadges();
   // While a selection is moved, resized or reshaped the toolbars stand down and stop measuring
   // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
   const moving = selectionMoving(useCanvasGesture());
@@ -74,7 +69,6 @@ export function CanvasSelectionToolbars({
     onDuplicateSelected,
     onToggleLockSelected,
     onDeleteSelected,
-    onOpenComments,
     onOpenElementContextMenu,
     onOpenMultiContextMenu,
   } = props;
@@ -116,11 +110,8 @@ export function CanvasSelectionToolbars({
             zoom={viewportZoom}
             suspended={moving}
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
-            // In a read-only session we mount the popover with just
-            // `onOpenComments` (below): a Participant reads and posts
-            // comments, a Viewer only reads them. No other edit affordance
-            // applies: every other handler becomes undefined and the
-            // matching button drops out.
+            // In a read-only session every edit handler is undefined and its button drops out: no comment
+            // button either (comment threads on canvas elements are retired, docs/specs/026-plan/plan-mode.md).
             locked={readOnly ? undefined : selectedLocked}
             // Edit text: on every text-CAPABLE element, even before it has
             // a label — an empty shape's "Add Text" button teaches that
@@ -140,24 +131,6 @@ export function CanvasSelectionToolbars({
             onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
             onToggleLock={readOnly ? undefined : onToggleLockSelected}
             onDelete={readOnly ? undefined : onDeleteSelected}
-            // The comment button is a read-only session's only (Participant and Viewer). Editors
-            // reach comments via the right-click / ellipsis context menu (gated !isReadOnly), so the
-            // toolbar button was a duplicate for them; a read-only session has no context menu, so
-            // the toolbar is its way into a thread.
-            // Not where the reader has no comments to open (an embed's viewer).
-            // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
-            // element has, behind Show Comments, and gets no button on one with none.
-            onOpenComments={
-              // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
-              readOnly &&
-              selected &&
-              commentsShown &&
-              takesAttachments(selected) &&
-              (props.takePart || hasComments(selected))
-                ? () => onOpenComments(selected.id)
-                : undefined
-            }
-            commentsReadOnly={!props.takePart}
             onOpenContextMenu={
               readOnly
                 ? undefined
@@ -227,9 +200,4 @@ export function CanvasSelectionToolbars({
       ) : null}
     </>
   );
-}
-
-// Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
-function hasComments(el: Element): boolean {
-  return (threadAt(el)?.comments.length ?? 0) > 0;
 }
