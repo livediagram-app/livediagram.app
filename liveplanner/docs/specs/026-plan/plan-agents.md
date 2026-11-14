@@ -51,6 +51,15 @@ never told a change worked when it shows on no board.
   `""` (or only commas and spaces, `", "`) and a list of nothing but those. An `add` leaves such a field unset. A
   field that holds one value keeps what it did: `null` is written as given where the field takes it, and refused
   where it does not (Rating, Percent, Duration), so `clear` is the one way that empties every field.
+- **Flagging a card** ([Flags](items.md#flags)): every card has the Flag, whatever its type lists. `list_items` reads
+  it as `"flagged": true` among a flagged card's fields (an unflagged card has no `flagged` key). `change_items`
+  takes it back by its id `flagged` or its name ("Flag", "Flagged"): `"flagged": true` (or `"true"`, `"yes"`) on an
+  `add` or a `set` flags the card, and on a `set` `"flagged": false` (or `null`, `""`, `"false"`, `"no"`) or
+  `"clear": ["flagged"]` unflags it; an `add` given false leaves the card unflagged. Any other value is
+  `value_invalid` ("give true to flag the card, or false to unflag it"). The CLI's `item add` and `item set` take
+  `--fields flagged=true` and `item set --clear flagged`, and `item ls` ends a flagged card's line with `flagged`.
+  Flagging is a card edit like any field: an Editor or a Participant flags and unflags, a Viewer can't (the item
+  store's routes refuse a Viewer's write, 403). A `field_unknown` refusal lists `flagged` among a type's fields.
 - A **Blocked By** field (a Card field with Blocks on, [Blocked By](item-types.md#blocked-by)) is listed with
   `blocks: true` on its card type, and its value reads as any Card field's (`"#3 Website, #5 Launch"`). A card that
   is blocked carries `blocked`, its count of open blockers (outside the plan-wide done columns; trashed and archived

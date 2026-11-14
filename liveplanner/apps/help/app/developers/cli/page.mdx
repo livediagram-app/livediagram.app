@@ -162,7 +162,7 @@ liveplanner sheet set "Budget 2027" Costs B2 1200 =B2*12
 
 Cards, boards and sheets are named the way the editor shows them: a column by its name, a card by its number, a sheet by its title. These writes are not changesets: each lands at once, for everyone with the plan open.
 
-To empty a field, name it in `--clear` (`--clear due`). A field that holds several values, such as Blocked By, also clears with `key=` and nothing after it (`--fields "Blocked By="`). `board set --add-widgets` and `--remove-widgets` take widget names or ids, separated by commas.
+To empty a field, name it in `--clear` (`--clear due`). A field that holds several values, such as Blocked By, also clears with `key=` and nothing after it (`--fields "Blocked By="`). To flag a card for attention, set `--fields flagged=true` on `item add` or `item set`; `--clear flagged` (or `flagged=false`) takes the flag off, and `item ls` ends a flagged card's line with `flagged`. `board set --add-widgets` and `--remove-widgets` take widget names or ids, separated by commas.
 
 ## Comments and Waiting
 

@@ -746,6 +746,62 @@ describe('applyItemChanges', () => {
   });
 });
 
+// docs/specs/026-plan/plan-agents.md "Flagging a card": every card's Flag, by flagged or "Flag".
+describe('flagging a card', () => {
+  it('flags on add and set, unflags with false or clear, and reads each back', async () => {
+    const { api: a, seen } = api();
+    const result = await applyItemChanges(
+      a,
+      D,
+      [
+        { op: 'add', title: 'New', type: 'Bug', fields: { flagged: true } },
+        // An add given false has nothing to clear: the card starts unflagged.
+        { op: 'add', title: 'New', fields: { Flag: false } },
+        { op: 'set', item: '#1', fields: { Flag: 'yes' } },
+        { op: 'set', item: '#1', fields: { flagged: false } },
+        { op: 'set', item: '#3', clear: ['flagged'] },
+      ],
+      await readPlanState(a, D),
+    );
+    expect(result.refusal).toBeUndefined();
+    expect(seen.map((s) => s.body)).toEqual([
+      { type: 'bug', fields: { flagged: true, title: 'New' } },
+      { type: 'task', fields: { title: 'New' } },
+      { set: { flagged: true } },
+      { clear: ['flagged'] },
+      { clear: ['flagged'] },
+    ]);
+    expect(result.applied[2]).toContain('set flagged = true');
+    expect(result.applied[3]).toContain('cleared flagged');
+  });
+
+  it('refuses a value that is not a flag before writing', async () => {
+    const { api: a, seen } = api();
+    const result = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { flagged: 'soon' } }],
+      await readPlanState(a, D),
+    );
+    expect(result.refusal).toMatchObject({ code: 'value_invalid' });
+    expect(result.refusal!.message).toContain('give true to flag the card');
+    expect(seen).toHaveLength(0);
+  });
+
+  it('lists a flagged card with flagged: true among its fields, and an unflagged one without', async () => {
+    const flagged = [
+      item(1, 'aaa111', { title: 'B', status: 'todo~x', flagged: true }),
+      item(2, 'bbb222', { title: 'A', status: 'todo~x' }),
+    ];
+    const { api: a } = api({
+      [`/projects/${D}/items`]: () => Response.json({ items: flagged, rev: 1 }),
+    });
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.items.find((i) => i.ref === '#1')!.fields).toMatchObject({ flagged: true });
+    expect(listing.items.find((i) => i.ref === '#2')!.fields).not.toHaveProperty('flagged');
+  });
+});
+
 describe('changeCardTypes', () => {
   it('saves the catalogue once and trashes the cards of a deleted type', async () => {
     const { api: a, seen } = api();
