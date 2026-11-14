@@ -13,7 +13,7 @@ import {
 } from '@livedesign/agent-verbs';
 import type { ChangesetResponse, DesignResponse } from '@livedesign/api-schema';
 import type { Tab } from '@livedesign/design';
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
