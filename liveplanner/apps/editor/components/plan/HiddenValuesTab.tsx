@@ -212,6 +212,7 @@ function CopyToField({
             return (
               <MenuActionRow
                 key={t.id}
+                plain
                 label={holds ? `${t.label} (replaces its value)` : t.label}
                 icon={<DuplicateIcon size={14} aria-hidden />}
                 onClick={() => copy(t)}

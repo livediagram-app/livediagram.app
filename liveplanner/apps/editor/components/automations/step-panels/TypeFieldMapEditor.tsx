@@ -90,7 +90,7 @@ export function TypeFieldMapEditor({
             return (
               <li
                 key={i}
-                className="flex flex-col gap-1.5 rounded-lg border border-slate-200 p-2 dark:border-slate-700 sm:flex-row sm:items-center"
+                className="flex flex-col gap-1.5 rounded-lg border border-slate-200 p-2 dark:border-slate-700"
               >
                 <div className="min-w-0 flex-1">
                   <PanelSelect
