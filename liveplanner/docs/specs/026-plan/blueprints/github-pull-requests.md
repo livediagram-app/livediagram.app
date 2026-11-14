@@ -417,7 +417,7 @@ Part 3's two column rules (`GithubRules`, `PUT /github/rules`, `github-moves.ts`
 - `item-history.ts`: the tag `automation_github` (a GitHub-triggered rule's write: by Automation with the rule's name,
   drawn as GitHub's).
 - `item.ts`: `ItemPerson.via?: 'github'` (a GitHub-triggered rule's stamp on `createdBy` and `updatedBy`), read back by
-  the api's `parsePerson` (`db/items.ts`) only when it reads `github`; `automation/types.ts`
+  the api's `parsePerson` (`db/items.ts`) only when it reads `github`; `packages/items/src/automation/types.ts`
   `automationPerson(name, via?)`, `isGithubStamp(person)` (Automation's id and `via: 'github'`).
 
 ### apps/api
