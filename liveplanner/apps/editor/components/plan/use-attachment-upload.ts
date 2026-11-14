@@ -4,8 +4,9 @@
 // a drop on it or on a board's card, and a paste. Each file uploads through the plan's images route, one after
 // another, then every one that landed joins the end of the card's list in one write (one undo step), read from the
 // card as it is then, so a change made meanwhile is kept. A file past the card's cap, or one refused, is skipped and
-// said; the rest still land.
-import { useCallback, useState } from 'react';
+// said; the rest still land. Cancel (Work Tracker 794) stops the file going now and drops the rest, saying nothing;
+// those already sent still land.
+import { useCallback, useRef, useState } from 'react';
 import {
   ITEM_ATTACHMENTS_MAX,
   attachmentName,
@@ -38,6 +39,8 @@ export type AttachmentUpload = {
   error: string | null;
   // Answers what went wrong, in words to show (null: every file landed).
   add: (files: readonly File[]) => Promise<string | null>;
+  // Stops every upload going now and drops the files still to go.
+  cancel: () => void;
 };
 
 /** The image files among `list` (a drop, a paste, a picker), in order. */
@@ -62,6 +65,8 @@ export function useAttachmentUpload(
   const [unavailable, setUnavailable] = useState(false);
   // The plan as it is now, read when the uploads end (the closure's would be stale by then).
   const planRef = usePlanLatest();
+  // Each add's stop, while it uploads.
+  const stops = useRef(new Set<AbortController>());
   const blocked = offline ? ATTACHMENTS_OFFLINE : unavailable ? IMAGE_UNAVAILABLE : null;
   const canAdd = canEdit && !!scope && !blocked;
 
@@ -80,12 +85,17 @@ export function useAttachmentUpload(
       const taken = files.slice(0, Math.max(0, room));
       let failure: string | null = taken.length < files.length ? ATTACHMENTS_FULL : null;
       const added: ItemAttachment[] = [];
-      setUploading(taken.length);
+      const stop = new AbortController();
+      stops.current.add(stop);
+      let left = taken.length;
+      setUploading((n) => n + left);
+      // A cancel lands in an upload's await, so each break below is where it is heard.
       for (const file of taken) {
         try {
           setProgress(undefined);
           let shown = -1;
           const { image } = await apiUploadImage(scope, file, {
+            signal: stop.signal,
             // Whole percents only, so a fast line draws the zone at most 100 times.
             onProgress: (sent) => {
               const percent = uploadPercent(sent);
@@ -94,6 +104,8 @@ export function useAttachmentUpload(
               setProgress(percent / 100);
             },
           });
+          // Cancelled as it finished: not added (it stays in the uploader's gallery).
+          if (stop.signal.aborted) break;
           added.push({
             id: image.id,
             name: attachmentName(file.name || image.originalName || ''),
@@ -101,14 +113,19 @@ export function useAttachmentUpload(
             type: isAcceptedAttachmentType(image.contentType) ? image.contentType : 'image/png',
           });
         } catch (err) {
+          if (stop.signal.aborted) break;
           const refused =
             err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
           if (refused.code === 'images_unavailable') setUnavailable(true);
           failure ??= refused.message;
         } finally {
+          left -= 1;
           setUploading((n) => Math.max(0, n - 1));
         }
       }
+      // The files a cancel dropped before their turn.
+      if (left > 0) setUploading((n) => Math.max(0, n - left));
+      stops.current.delete(stop);
       if (added.length > 0) {
         const latest = planRef.current;
         const card = latest?.items.get(itemId);
@@ -134,6 +151,10 @@ export function useAttachmentUpload(
     [canAdd, scope, itemId, planRef],
   );
 
+  const cancel = useCallback(() => {
+    for (const stop of stops.current) stop.abort();
+  }, []);
+
   return {
     canAdd,
     blocked,
@@ -141,5 +162,6 @@ export function useAttachmentUpload(
     progress,
     error,
     add,
+    cancel,
   };
 }

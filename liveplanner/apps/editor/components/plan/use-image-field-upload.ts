@@ -4,7 +4,9 @@
 // picker or a drop. Every file is checked before anything is sent (PNG, JPEG, WebP or GIF, up to 10 MB, not empty)
 // and gets its own place in the queue, shown as its own tile; files upload one after another, and each joins the end
 // of the field's list as it lands, in one write of the list read from the card as it is then, so a picture someone
-// else added meanwhile is kept. A file refused, or past the field's 20, is skipped and said; the rest still land.
+// else added meanwhile is kept. A file refused, or past the field's 20, is skipped and said; the rest still land. A
+// file's tile can be cancelled (Work Tracker 794): a waiting one leaves the queue, an uploading one stops, and one that
+// had already finished is not added; nothing is said either way.
 import { useCallback, useRef, useState } from 'react';
 import {
   IMAGE_FIELD_PICTURES_MAX,
@@ -47,6 +49,8 @@ export type ImageFieldUpload = {
   // What was skipped or failed, a line each, from the last files added.
   problems: readonly string[];
   add: (files: readonly File[]) => Promise<void>;
+  // Stops pending file `key` and takes its tile away, saying nothing.
+  cancel: (key: number) => void;
 };
 
 /** Uploads into card `itemId`'s Several Images field `field`. `canEdit`: whether this person may change its fields. */
@@ -68,6 +72,26 @@ export function useImageFieldUpload(
   const canAdd = canEdit && !!scope && !blocked;
   const { id: fieldId, label } = field;
   const pendingCount = useRef(0);
+  // The keys still pending (each settled once, by its end or its cancel), those cancelled, and each upload's stop.
+  const live = useRef(new Set<number>());
+  const cancelled = useRef(new Set<number>());
+  const stops = useRef(new Map<number, AbortController>());
+
+  const settle = useCallback((key: number) => {
+    if (!live.current.delete(key)) return;
+    pendingCount.current -= 1;
+    setPending((p) => p.filter((j) => j.key !== key));
+  }, []);
+
+  const cancel = useCallback(
+    (key: number) => {
+      if (!live.current.has(key)) return;
+      cancelled.current.add(key);
+      stops.current.get(key)?.abort();
+      settle(key);
+    },
+    [settle],
+  );
 
   const add = useCallback(
     async (files: readonly File[]) => {
@@ -107,15 +131,20 @@ export function useImageFieldUpload(
       setProblems(said);
       if (taken.length === 0) return;
       pendingCount.current += taken.length;
+      for (const job of taken) live.current.add(job.key);
       setPending((p) => [...p, ...taken]);
 
       const run = async () => {
         let landed = 0;
         for (const job of taken) {
+          if (cancelled.current.delete(job.key)) continue;
           setPending((p) => p.map((j) => (j.key === job.key ? { ...j, state: 'uploading' } : j)));
+          const stop = new AbortController();
+          stops.current.set(job.key, stop);
           try {
             let shown = -1;
             const { image } = await apiUploadImage(scope, fileOf.get(job.key)!, {
+              signal: stop.signal,
               // Whole percents only, so a fast line draws the tile at most 100 times.
               onProgress: (sent) => {
                 const percent = uploadPercent(sent);
@@ -126,6 +155,8 @@ export function useImageFieldUpload(
                 );
               },
             });
+            // Cancelled as it finished: the field never takes it (it stays in the uploader's gallery).
+            if (stop.signal.aborted) continue;
             const latest = planRef.current;
             const card = latest?.items.get(itemId);
             const def = latest?.types
@@ -145,13 +176,15 @@ export function useImageFieldUpload(
               }
             }
           } catch (err) {
+            if (stop.signal.aborted) continue;
             const refused =
               err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
             if (refused.code === 'images_unavailable') setUnavailable(true);
             said.push(`${job.name}: ${refused.message}`);
           } finally {
-            pendingCount.current -= 1;
-            setPending((p) => p.filter((j) => j.key !== job.key));
+            stops.current.delete(job.key);
+            cancelled.current.delete(job.key);
+            settle(job.key);
           }
         }
         setProblems([...said]);
@@ -164,8 +197,8 @@ export function useImageFieldUpload(
       queue.current = turn.catch(() => {});
       await turn;
     },
-    [canAdd, scope, itemId, fieldId, label, field, planRef],
+    [canAdd, scope, itemId, fieldId, label, field, planRef, settle],
   );
 
-  return { canAdd, blocked, pending, problems, add };
+  return { canAdd, blocked, pending, problems, add, cancel };
 }

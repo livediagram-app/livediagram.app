@@ -17,10 +17,13 @@ export const uploadingWords = (progress: number | undefined) =>
 export function UploadRing({
   progress,
   className = 'h-6 w-6',
+  onBrand = false,
 }: {
   // 0 to 1, or undefined while the share sent is not known yet.
   progress?: number | undefined;
   className?: string;
+  // Drawn on a brand-coloured chip (a card's "Uploading" pill): a white arc on a faint white track.
+  onBrand?: boolean;
 }) {
   const turning = progress === undefined;
   const shown = turning ? 16 : (uploadPercent(progress) / 100) * LENGTH;
@@ -37,7 +40,7 @@ export function UploadRing({
         r={R}
         fill="none"
         strokeWidth="3"
-        className="stroke-slate-200 dark:stroke-slate-700"
+        className={onBrand ? 'stroke-white/30' : 'stroke-slate-200 dark:stroke-slate-700'}
       />
       {shown > 0 ? (
         <circle
@@ -48,7 +51,9 @@ export function UploadRing({
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray={`${shown} ${LENGTH}`}
-          className="stroke-brand-600 transition-[stroke-dasharray] duration-200 ease-out motion-reduce:transition-none dark:stroke-brand-400"
+          className={`transition-[stroke-dasharray] duration-200 ease-out motion-reduce:transition-none ${
+            onBrand ? 'stroke-white' : 'stroke-brand-600 dark:stroke-brand-400'
+          }`}
         />
       ) : null}
     </svg>

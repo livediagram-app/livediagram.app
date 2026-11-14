@@ -138,7 +138,9 @@ export async function apiUploadImage(
         ? { uploadProgress: (sent, total) => onProgress(total > 0 ? Math.min(1, sent / total) : 0) }
         : {},
     );
-    return await expectOk<{ image: ImageSummary; deduped: boolean }>(res, 'upload image');
+    const landed = await expectOk<{ image: ImageSummary; deduped: boolean }>(res, 'upload image');
+    keepLocalOriginal(imageKey(scope, landed.image.id), file);
+    return landed;
   } catch (err) {
     if (signal?.aborted) throw signal.reason;
     const code = err instanceof ApiError ? err.code : null;
@@ -146,6 +148,31 @@ export async function apiUploadImage(
       code && SERVER_FAILURES.has(code) ? (code as ImageUploadFailure) : 'upload_failed',
     );
   }
+}
+
+// A picture's place in the display cache: who reads it, which picture, for which plan and link.
+const imageKey = (scope: ImagesScope, imageId: string) =>
+  [scope.ownerId, imageId, scope.projectId, scope.shareCode ?? ''].join('\0');
+
+/** How many just-uploaded files are kept to show their pictures from (each a File the browser already holds, so a
+ *  picked file costs no memory and a pasted one is no copy). */
+export const LOCAL_ORIGINALS_MAX = 8;
+
+// The files uploaded from this browser, by their picture's key, newest last (Work Tracker 795): a landed picture's
+// tile is drawn from them at once, where fetching the whole original back held it on its placeholder for seconds on
+// a slow line.
+const localOriginals = new Map<string, Blob>();
+
+function keepLocalOriginal(key: string, file: Blob): void {
+  localOriginals.delete(key);
+  localOriginals.set(key, file);
+  while (localOriginals.size > LOCAL_ORIGINALS_MAX)
+    localOriginals.delete(localOriginals.keys().next().value!);
+}
+
+/** Forgets every just-uploaded file (tests). */
+export function resetLocalOriginalsForTests(): void {
+  localOriginals.clear();
 }
 
 /**
@@ -160,8 +187,11 @@ export async function apiImageUrl(
   imageId: string,
   opts: { maxEdge?: number } = {},
 ): Promise<string | null> {
-  const key = [scope.ownerId, imageId, scope.projectId, scope.shareCode ?? ''].join('\0');
+  const key = imageKey(scope, imageId);
   const blob = await cachedDisplayCopy(key, opts.maxEdge ?? displayEdge(), async () => {
+    // Just uploaded from this browser: its own bytes, not a fetch back of the whole original.
+    const mine = localOriginals.get(key);
+    if (mine) return mine;
     const local = await isOfflineId(scope.projectId);
     try {
       const res = await apiFetch(

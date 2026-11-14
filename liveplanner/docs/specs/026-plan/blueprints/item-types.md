@@ -151,7 +151,8 @@ true`. `storedImageIds(value)`: a non-empty string as `[id]`, a list's non-empty
   click after a drag swallowed). Uploads through `use-image-field-upload.ts` (`useImageFieldUpload`): each file
   `checkImageFile`d first (refused ones said "{name}: {why}"), the room (`IMAGE_FIELD_PICTURES_MAX` less held and
   pending) said once as "{Field} holds up to 20."; one queue, one upload at a time, each `PendingImage` a tile
-  (`waiting`, then `uploading`), and one `patchItem` of `imageFieldValue(def, withImagesAdded(storedImageIds(card
+  (`waiting`, then `uploading`, its `PendingTile`'s ring a Cancel Upload button calling `cancel(key)`: a waiting key
+  is skipped by the queue, an uploading one aborted), and one `patchItem` of `imageFieldValue(def, withImagesAdded(storedImageIds(card
 now), [id]).ids)` per landed file; "N images added" announced at the end. The card face: `customKindPill` hands
   `ImageThumb` `more` (held less one), drawing "+N" after the first picture and naming it "{Field}: N images". Every
   remove and move tracks `Plan · Removed · CardImage` and `Plan · Moved · CardImage`. Still to come: the agents'
@@ -661,7 +662,13 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   XMLHttpRequest (`@liveworkspace/workbench/lib/api/xhr-fetch`, the shared core's funnel, so the grant, the
   confinement, the network-failure report and the release signal are the fetch path's), and the controls draw
   `UploadRing` filling by the share sent, kept to whole percents so a fast line renders at most 100 times. An
-  upload stopped by its `signal` rejects with the signal's reason, unworded. An upload tracks
+  upload stopped by its `signal` rejects with the signal's reason, unworded: every control's Cancel aborts an
+  `AbortController` it holds per upload (`ImageField`'s `cancelUpload`, `useImageFieldUpload`'s `cancel(key)`,
+  `useAttachmentUpload`'s `cancel()`) and checks it again before its `patchItem`/`onSave`, so a cancel racing a
+  finished upload writes nothing. A landed upload primes `images.ts`' `localOriginals` (the `File` itself, the last
+  `LOCAL_ORIGINALS_MAX` (8), keyed as `apiImageUrl`'s cache is), which `apiImageUrl` reads before any fetch, so a
+  new tile's copy is made from the browser's own bytes (Work Tracker 795: on a 400 KB/s line each fetch-back held
+  the tile on its placeholder 5 to 7 s). An upload tracks
   `Plan · Added · CardImage`. A copy's grants (item-types.md "Image fields", Copies): `exportPlanCopy` fills
   `PlanCopy.imageGrants` from `copiedImageGrants(env, planId, itemIds)` (`image-grants.ts`, over
   `placedImagesSql(scoped)` from `image-refs.ts`: the copied cards' placed pictures, kept to the source's grants;
@@ -673,8 +680,9 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `withoutAttachment`, `attachmentSizeText`; caps in `limits.ts`), checked by `validateFields`' `attachments` kind. The
   panel's `AttachmentsField.tsx` (rows, ⋯ menu from `PortalMenu`, the Add Images zone, the page's paste listener);
   uploads through `use-attachment-upload.ts` (`useAttachmentUpload`: one upload at a time, one `patchItem` of the
-  whole list read from the card as it is then); a board card's drop through `card-file-drop.ts` (`useCardFileDrop`,
-  in `PlanBoardCard`); the cover and the count chip in `CardCover.tsx`, drawn by `PlanCardFace` when the type's
+  whole list read from the card as it is then; `cancel()` aborts the batch going now); a board card's drop through
+  `card-file-drop.ts` (`useCardFileDrop`, in `PlanBoardCard`, handing the card's pill `progress` for its
+  `UploadRing onBrand`: the state lives in that card's own hook, so only the uploading card re-renders); the cover and the count chip in `CardCover.tsx`, drawn by `PlanCardFace` when the type's
   Detailed Header holds `cover`. Both pictures' URLs come from `use-image-url.ts` (`useImageUrl`, `useSeen`, shared
   with `ImageField.tsx`), at `IMAGE_COVER_EDGE` (640) and `IMAGE_ROW_EDGE` (160). The card fields `attachments` and
   `cover` are in `CARD_FIELDS`; `cardSlotFits` keeps `cover` to Detailed's `head`, and `typeOffersCardField` offers it
