@@ -1,5 +1,6 @@
 import { diffToElementOps, type ElementOp, type Tab } from '@livehuddle/document';
 import type { RoomOp, RoomOutgoing } from '@livehuddle/api-schema';
+import { announceTabSave } from '@liveworkspace/workbench/lib/api/tab-saved';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
 
@@ -40,6 +41,7 @@ export async function saveTabAndRelay<R>(
   room: () => SaveRoom | null,
   put: () => Promise<R>,
   prepared: PreparedTabSave = prepareTabSave(before, tab),
+  digestOf?: (tabId: string, rev: number) => Promise<string | null>,
 ): Promise<R> {
   const { ops, release } = prepared;
   let saved: R;
@@ -51,6 +53,9 @@ export async function saveTabAndRelay<R>(
     throw err;
   }
   relay(ops, room(), release);
+  // A save that wrote a revision announces it (`tab-saved`, docs/specs/006-document/delta-saves.md "A peer's save moves
+  // the base copy"): after its element ops on the same socket, and before the save settles.
+  if (digestOf && typeof saved === 'number') await announceTabSave(tab.id, saved, room, digestOf);
   return saved;
 }
 
