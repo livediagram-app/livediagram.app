@@ -435,7 +435,9 @@ Part 3's two column rules (`GithubRules`, `PUT /github/rules`, `github-moves.ts`
 
 ### apps/editor
 
-- `hooks/persistence/useCapabilities.ts` answers `githubEnabled` too, from the one cached capabilities read.
+- `hooks/persistence/useCapabilities.ts` answers `githubEnabled` too, from the one cached capabilities read: the
+  shared `createCapabilities` (`@liveworkspace/workbench`) bound with `['githubEnabled']`, each named flag true only
+  on an exact `true`.
 - `components/automations/github/`: `github-client.ts` (the four routes), `use-github-connection.ts` (the plan's
   connection, read when the screen asks, shared by the view and the trigger panel through a module cache keyed by
   plan; the view's `fresh` reads it again each time it opens, and the chooser reads it again on
