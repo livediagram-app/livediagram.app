@@ -33,11 +33,14 @@ export async function purgedAt(room: PurgedRoom): Promise<number | null> {
   return room.purgedAt;
 }
 
-// Whether a grant signed at `iat` (epoch seconds, the index's claim) predates a purge at `at` (epoch ms). A grant
-// from the purge's own second counts as after it, so Sync Project's delete-then-create is never refused; a grant
-// with no `iat` (the index always signs one) is treated as before.
-export function signedBeforePurge(iat: number | undefined, at: number): boolean {
-  return typeof iat !== 'number' || iat < Math.floor(at / 1000);
+// Whether a grant signed at `iat` (epoch seconds, the index's claim) may predate a purge at `at` (epoch ms). The
+// claim has whole seconds, so a grant from the purge's own second could be from either side: it counts as before,
+// except on a create (`POST /api/projects`), so Sync Project's delete then same-id upload is never refused. A grant
+// with no `iat` (the index always signs one) counts as before.
+export function signedBeforePurge(iat: number | undefined, at: number, create = false): boolean {
+  if (typeof iat !== 'number') return true;
+  const second = Math.floor(at / 1000);
+  return create ? iat < second : iat <= second;
 }
 
 // Whether a request holding `grant` (null: none on this plan) may reach a room. A purged room admits only a grant
@@ -45,10 +48,11 @@ export function signedBeforePurge(iat: number | undefined, at: number): boolean 
 export async function admitAfterPurge(
   room: PurgedRoom,
   grant: { iat?: number } | null,
+  create = false,
 ): Promise<boolean> {
   const at = await purgedAt(room);
   if (at === null) return true;
-  if (!grant || signedBeforePurge(grant.iat, at)) {
+  if (!grant || signedBeforePurge(grant.iat, at, create)) {
     console.info('[room] refused on a purged plan');
     return false;
   }

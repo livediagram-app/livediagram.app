@@ -512,11 +512,12 @@ The api worker reaches the DO through its stub (`env.PLAN_ROOM.get(...).fetch(..
   grant lives ten minutes), and a plan with nothing stored would otherwise start afresh on its first open with a
   grant, empty and `Untitled`, under the deleted id. So a request on a room holding no plan schema reads the key
   first (a plan with content never does: the open path costs nothing more), and on a purged room:
-  - every request whose grant was signed before the purge (`iat` earlier than the purge's second, or none) answers
-    `404 { error: "not_found" }`, as an id that never existed does, whatever its level (Editor, Participant or
-    Viewer), and writes nothing: no schema, no plan row, no head;
+  - every request whose grant may have been signed before the purge answers `404 { error: "not_found" }`, as an id
+    that never existed does, whatever its level (Editor, Participant or Viewer), and writes nothing: no schema, no
+    plan row, no head. A grant's `iat` has whole seconds, so one from the purge's own second counts as before it,
+    except on a create; one with no `iat` counts as before;
   - a socket is refused with the same 404 before its upgrade;
-  - a grant the index signed from the purge's second on (it grants an id again only once it holds the item again,
+  - a grant the index signed after the purge's second, or a create's from that second on (it grants an id again only once it holds the item again,
     as when Sync Project puts a plan taken offline back under its own id, [Offline Mode](../006-project/offline-mode.md#save-to-server-offline--cloud))
     lifts the mark: the request runs as on any plan never started, and the key goes.
 

@@ -52,8 +52,8 @@ export async function route(
   room.bindPlan(planId);
   const env = room.requireEnv();
   // A purged plan answers a grant from before its purge as an id that never existed, and stores nothing again.
-  if (!(await admitAfterPurge(room, identity.grant?.item === planId ? identity.grant : null)))
-    return notFound();
+  const held = identity.grant?.item === planId ? identity.grant : null;
+  if (!(await admitAfterPurge(room, held, isPlanCreate(request)))) return notFound();
   if (identity.grant?.item === planId) {
     await room.takeHead(identity.grant);
     await room.takeGrantStanding(identity.grant);
