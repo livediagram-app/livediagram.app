@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { SaveFailedToast } from '@liveworkspace/help-site/art/illustrations/troubleshooting';
+import { PlanNewerFieldScene } from '@/components/illustrations/plan';
 
 export const metadata = helpMetadata({
   title: 'My Changes Are Missing',
@@ -37,6 +38,16 @@ There is no "saved" indicator to watch, because saving is the normal state. What
 ### "A new version of liveplanner is ready"
 
 When liveplanner is updated while you have a plan open, and the update changes how plans are stored, a small notice at the bottom of the screen asks you to reload. Nothing happens until you choose: **Reload** first waits until your latest changes are saved, then reloads, and if they cannot be saved yet it tells you so and stays put. If the update is still on its way to you, it says so too: try again in a minute. **Not now** hides the notice; reload whenever suits you.
+
+### "Made in a newer version of liveplanner"
+
+A card field can look stuck: you can see its value, but nothing in it can be changed, and under it a line says **Made in a newer version of liveplanner. Reload to edit it.** In the type editor the same field wears a lock that says **Made in a newer version of liveplanner. Reload to change it.**: it can still move between tabs, but has no pencil and no way to remove it. This is the newer field lock. Someone (or an AI tool) added a kind of field that arrived in an update your open tab hasn't loaded yet, say after liveplanner was updated while you had the plan open, or when you open an offline plan or a Drive file in an older tab. Rather than lose the field or its values, this tab keeps it exactly as it is and leaves it alone, and saving the card type from here still writes it back untouched. Settings a newer version added to a card type, its tabs or its fields are kept the same way.
+
+To clear the lock, **reload the page** (or press **Reload** on the "A new version of liveplanner is ready" notice, which waits for your changes to save first). The newer version loads, and the field works like any other. Nothing is lost while you wait: the rest of the card, and the plan, work as usual.
+
+<Figure caption="A field from a newer version shows its value read-only until you reload; the notice offers the reload.">
+  <PlanNewerFieldScene />
+</Figure>
 
 ## Recover a recent step
 
