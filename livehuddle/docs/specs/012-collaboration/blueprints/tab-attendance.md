@@ -41,7 +41,7 @@ CREATE INDEX IF NOT EXISTS tab_attendance_open ON tab_attendance (left_at) WHERE
 
 - `name` is the session's presence name, the room's pick (`presenceNameFor`, at most 120; never the hello's), and a
   rename (`visitor-name`, `/presence-name`) rewrites the person's open visits (`renameOpenVisits`); `color` the hello's
-  colour (64), `picture` kept only when the session is a
+  colour (64), rewritten on open visits by a `presence-colour` frame (`recolourOpenVisits`), `picture` kept only when the session is a
   verified account's (`helloPresence` already refuses others), `guest` = not `session.account`.
 - `seen_at`: the last time the room saw the visit open (each attendance write refreshes every open visit's).
 - `closed_at`: when the room closed it (the rejoin grace is measured from it); `left_at` is what is shown.

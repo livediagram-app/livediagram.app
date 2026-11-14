@@ -196,6 +196,23 @@ it.
 may rename themselves (a Viewer's name is seen as much as anyone's). A signed-in visitor's join dialog shows their
 account name locked, and the room would ignore any other.
 
+### Presence colours
+
+A session's colour is its own pick, unlike its name: the hello's colour, checked (a colour that could load something
+from outside is no colour, and it is cut to 64 characters). A colour changed later (in Settings › Profile, or the
+colour an editor yields when a peer who joined first already wears it) reaches peers at once, without a reconnect: the
+editor sends `{ kind: 'presence-colour', color }` over its socket, the room checks it like the hello's, shows it on the
+session's roster entry and its open Attendance visits, and sends the roster. The same colour again sends nothing. Any
+share level may change its own colour.
+
+### Account sessions
+
+The room knows a session is a signed-in account's from the upgrade (`X-Verified-Account`), and only then keeps the
+Google picture its hello sends and records its Attendance visits as an account's rather than a guest's
+([Profile pictures](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)). Before Work Tracker 797 the room
+read that fact and dropped it before the session was pinned, so no session was an account's: no picture reached a
+peer, and every visit read as a guest's.
+
 ## Guest → account merge
 
 When a guest signs in or signs up, the things they made as a guest **become the account's** rather than being lost. They've already invested effort, and losing it on sign-up would be the opposite of friction-free.

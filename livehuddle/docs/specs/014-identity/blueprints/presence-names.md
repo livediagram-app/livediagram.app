@@ -37,6 +37,14 @@ guestNameForKey(collabKey ?? presenceId)`. `helloPresence(claimed, session, visi
   Profile save): no room → nothing; no identity (no account, no guest token) → `visitor-name` frame; a person whose
   write failed → nothing; else `chose` then `apiAnnounceRoomName`.
 
+- `presence-colour` frame → `recolourSession` (`document-room/room-colour.ts`): `presenceColour(raw)` (the hello's own
+  check, `document-room-rules.ts`); refused when empty, before the hello, or the same colour; else the attachment's
+  presence colour, the key's open visits (`recolourOpenVisits`) and one roster broadcast. Any level. The editor sends
+  it (`announceRoomColour`, `room-name-sync.ts`) from `useEditorPersistence` when our colour changes, and on a
+  Settings › Profile save.
+- `acceptSession`'s 13th argument `account` (from `verifiedSessionOf`'s `X-Verified-Account`, passed by
+  `room-grants.ts`) pins `SessionAttachment.account`: the Google picture rule and Attendance's `guest` read it.
+
 ## Interfaces and contracts
 
 - Upgrade header `X-Verified-Name`: `presenceNameHeader(name)` = `encodeURIComponent(cutParticipantName(name))`, or
@@ -46,7 +54,8 @@ guestNameForKey(collabKey ?? presenceId)`. `helloPresence(claimed, session, visi
   404 none, 410 trashed, 403 `community_link`. Answers `RoomNameResponse` `{ name: string | null }`.
 - Room internal `POST /presence-name` `{ personTag: string, name: unknown }` → `{ renamed: number }`; 400
   `missing person`. Worker side `relayPresenceName` (`room-client.ts`), `ROOM_RELAY_TIMEOUT_MS`, null on failure.
-- Client frame `VisitorNameMessage` `{ kind: 'visitor-name', name: string }` (`packages/api-schema/src/room-messages.ts`).
+- Client frames `VisitorNameMessage` `{ kind: 'visitor-name', name: string }` and `PresenceColourMessage`
+  `{ kind: 'presence-colour', color: string }` (`packages/api-schema/src/room-messages.ts`).
 
 ## Data and persistence
 
@@ -82,7 +91,8 @@ guestNameForKey(collabKey ?? presenceId)`. `helloPresence(claimed, session, visi
 ## Observability
 
 - `[presence-name] no_profile` (door, `person` true/false), `[presence-name] room_unavailable`,
-  `[presence-name] visitor name not read` / `not kept`, `[presence-name] visits not renamed`.
+  `[presence-name] visitor name not read` / `not kept`, `[presence-name] visits not renamed`,
+  `[presence-colour] visits not recoloured`.
 
 ## Testing
 
@@ -91,7 +101,9 @@ guestNameForKey(collabKey ?? presenceId)`. `helloPresence(claimed, session, visi
 - `apps/api/src/room-session.test.ts`: the header read, encoding, cut and blanks.
 - `apps/api/src/document-room/room-names.test.ts`: two and more clients through a real room: a forged name never
   reaches a peer at any level; a visitor's typed name reaches peers and Attendance and survives a reload; a typed-
-  nothing visitor keeps one name; refusals; a person's rename across devices; the store cap and failures.
+  nothing visitor keeps one name; refusals; a person's rename across devices; the store cap and failures; a colour
+  change reaching peers and Attendance at every level, and its refusals; an account session through the real upgrade
+  keeping its Google picture and an account's visit.
 - `apps/api/src/routes/document-room-routes.test.ts`: the header on the upgrade; the door at each level, for a link
   visitor, with the room down, and its refusals.
 - `apps/editor/app/document/[id]/room-name-sync.test.ts`, `useRoomConnection.room-name.test.tsx`,
