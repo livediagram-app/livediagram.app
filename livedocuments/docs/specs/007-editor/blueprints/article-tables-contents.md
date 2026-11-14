@@ -25,7 +25,7 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 | Table commands             | `insertTable`, `tableCommand(name)`, `tableCommandBlock(state, name)` (why one cannot run), `tableTab(dir, reshape)`, `cellArrow(dir)`, `cellEnter`, `cellEdge('start' \| 'end')`, `inlineForCell(fragment)`, `TableCommandName` (`lib/article/article-table-commands.ts`)                                                               |
 | Table keys, normaliser     | `tableKeymap(reshape)`, `tableColsPlugin`, `fittedCols` (`lib/article/article-table-plugins.ts`)                                                                                                                                                                                                                                         |
 | Table node view            | `ArticleTableView` (`lib/article/article-table-view.ts`): the grid template from `cols` (`columnTemplate`), the resize grip (`gripAt`, `sharesDragged`)                                                                                                                                                                                  |
-| Repeated header            | `repeatHeaderPlugin`, `repeatHeaderKey` (its meta), `measureRepeats(view, rootTop, z)`, `repeatBreaks(input)` (pure), `RepeatInput` (`lib/article/article-table-repeat.ts`)                                                                                                                                                              |
+| Repeated header            | `repeatHeaderPlugin`, `repeatHeaderKey` (its meta), `measureRepeats(view, rootTop, z)`, `repeatBreaks(input)` (pure), `keepsHeader(input)` (pure), `RepeatInput` (`lib/article/article-table-repeat.ts`)                                                                                                                                 |
 | Table paste                | `normalisePastedTables(html)`, `tsvGrid(text)`, `tsvSlice(text)`, `pasteIntoCell`, `trackTablePaste` (`lib/article/article-table-paste.ts`); composed over the writing's paste by `articleTablePasteProps(base)` (`lib/article/article-table-editor.ts`, beside `tablePlugins`, `tableKeyPlugins`, `tableNodeViews` and `jumpToHeading`) |
 | Table look                 | `app/article-tables.css` (tables, the repeated header row, the grip, contents)                                                                                                                                                                                                                                                           |
 | Contents view              | `TocView`, `tocPlugin`, `tocKey` (its meta: the pages), `hasToc`, `measureTocPages(view, pageOf)`, `headingPages` (`lib/article/article-toc-view.ts`)                                                                                                                                                                                    |
@@ -138,6 +138,18 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
   (`DOMSerializer`), keyed by the table id, the row id and the header's text, so an unchanged repeat is reused.
 - The widgets only follow the first row, and the first row's top depends only on what is above the table, so a
   second measure gives the same breaks and the loop settles in one extra frame per table.
+- **A header row never alone at a page's foot** (spec "Flowing onto pages"). The stylesheet gives a header row
+  (`tr:has(> th)`, not the table's last row) `break-after: avoid`, which Chromium honours. WebKit does not between the
+  rows, so `repeatBreaks` also takes `aboveFoot`: where the table would start below the writing above it, read by
+  `measureRepeats` from the previous block's last client rect (its part on the page it ends on) plus the table's top
+  margin, divided by the screen scale; absent for a table that is the first block. `keepsHeader` (pure) is true when
+  `aboveFoot + hh + h1 > H - REPEAT_SLACK` and `hh + h1 <= H` (a first row taller than a page breaks inside under its
+  header instead) and page 0 has no notes (`heightAt(0)` undefined: the footnote layout keeps the two together there,
+  article-pages blueprint "Footnotes"). Then index 0 (the header row's id) leads the breaks and `y` restarts at `hh`
+  for the rows after; the plugin draws it as a node decoration `article-table-keep` on the table (`break-before:
+column`), never a repeated copy. `aboveFoot` is read from the writing above, never the table, so it is the same
+  whether or not the table has moved and the loop settles. Tables that fit, and tables without a header row, get no
+  break: their pagination is unchanged.
 
 ### Contents
 

@@ -1,11 +1,13 @@
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorState } from 'prosemirror-state';
 import type { DecorationSet } from 'prosemirror-view';
 import type { ArticleBlock } from '@livedocuments/document';
 import { blocksToDoc } from './article-convert';
 import {
   REPEAT_SLACK,
+  keepsHeader,
+  measureRepeats,
   repeatBreaks,
   repeatHeaderKey,
   repeatHeaderPlugin,
@@ -94,6 +96,158 @@ describe('the header row repeated on later pages', () => {
     expect(repeatHeaderKey.getState(next.apply(next.tr))!.get('t')).toEqual(['r3']);
   });
 });
+
+// "Flowing onto pages": a header row is never left alone at a page's foot (Work Tracker 776).
+describe('a header row kept with the row under it', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it('starts the whole table on the next page when the header and first row do not fit below the writing', () => {
+    // Pages 100 high; the writing above ends at 70: a 10 high header and a 30 high first row reach 110.
+    expect(keepsHeader({ columnHeight: 100, rowHeights: [10, 30, 30], aboveFoot: 70 })).toBe(true);
+    expect(
+      repeatBreaks({ columnHeight: 100, firstTop: 70, rowHeights: [10, 30, 30], aboveFoot: 70 }),
+    ).toEqual([0]);
+    // Rows after it count from the top of the next page: 10 + 30 + 30 + 30 ends at 100, inside the slack.
+    expect(
+      repeatBreaks({
+        columnHeight: 100,
+        firstTop: 70,
+        rowHeights: [10, 30, 30, 30],
+        aboveFoot: 70,
+      }),
+    ).toEqual([0, 3]);
+    // Measured again once the table has moved (its first row now at the page's top): the same answer.
+    expect(
+      repeatBreaks({ columnHeight: 100, firstTop: 0, rowHeights: [10, 30, 30], aboveFoot: 70 }),
+    ).toEqual([0]);
+  });
+
+  it('leaves a table that fits, starts its page, has one row or is too tall as it was', () => {
+    // Fits below the writing.
+    expect(keepsHeader({ columnHeight: 100, rowHeights: [10, 30], aboveFoot: 50 })).toBe(false);
+    expect(
+      repeatBreaks({ columnHeight: 100, firstTop: 50, rowHeights: [10, 30], aboveFoot: 50 }),
+    ).toEqual([]);
+    // Nothing above it: the table is the first block.
+    expect(keepsHeader({ columnHeight: 100, rowHeights: [10, 30] })).toBe(false);
+    // A header row alone.
+    expect(keepsHeader({ columnHeight: 100, rowHeights: [10], aboveFoot: 95 })).toBe(false);
+    // A first row taller than a page breaks inside, under its header, where it is.
+    expect(keepsHeader({ columnHeight: 100, rowHeights: [10, 95], aboveFoot: 40 })).toBe(false);
+  });
+
+  it('leaves a page with notes to the footnote layout', () => {
+    expect(
+      keepsHeader({ columnHeight: 100, rowHeights: [10, 30], aboveFoot: 70, heightAt: () => 80 }),
+    ).toBe(false);
+    // Notes on a later page only: this page's foot is the column's.
+    expect(
+      keepsHeader({
+        columnHeight: 100,
+        rowHeights: [10, 30],
+        aboveFoot: 70,
+        heightAt: (p) => (p === 0 ? undefined : 80),
+      }),
+    ).toBe(true);
+  });
+
+  it('draws a column break before the table, and no copy before its own header row', () => {
+    const doc = blocksToDoc([
+      { id: 'p', type: 'paragraph', runs: [{ text: 'Above' }] },
+      {
+        id: 't',
+        type: 'table',
+        header: true,
+        cols: [{ id: 'c1', w: 1 }],
+        rows: [
+          { id: 'r1', cells: [[{ text: 'H' }]] },
+          { id: 'r2', cells: [[{ text: 'a' }]] },
+          { id: 'r3', cells: [[{ text: 'b' }]] },
+        ],
+      },
+    ]);
+    const s = EditorState.create({ doc, plugins: [repeatHeaderPlugin] });
+    const next = s.apply(s.tr.setMeta(repeatHeaderKey, new Map([['t', ['r1', 'r3']]])));
+    const found = (
+      repeatHeaderPlugin.props.decorations!.call(repeatHeaderPlugin, next) as DecorationSet
+    ).find();
+    expect(found).toHaveLength(2);
+    const keep = found.find((d) => d.from === doc.child(0).nodeSize)!;
+    expect(keep.to).toBe(doc.child(0).nodeSize + doc.child(1).nodeSize);
+    expect((keep as unknown as { type: { attrs: { class: string } } }).type.attrs.class).toBe(
+      'article-table-keep',
+    );
+  });
+
+  it('reads where the table would start from the writing above it', () => {
+    vi.stubGlobal('getComputedStyle', (el: { style: object }) => el.style);
+    const view = fakeView([
+      { tag: 'P', rects: [{ bottom: 170 }] },
+      { tag: 'TABLE', rows: [10, 30, 30], firstTop: 170 },
+    ]);
+    const dispatched: unknown[] = [];
+    view.dispatch = (tr: { getMeta: (k: unknown) => unknown }) =>
+      dispatched.push(tr.getMeta(repeatHeaderKey));
+    // Box top 100, scale 1, page 100 high: the paragraph ends at 70, the table's margin is 4.
+    expect(measureRepeats(view as never, 100, 1)).toBe(true);
+    expect(dispatched[0]).toEqual(new Map([['t', ['r1']]]));
+    // With notes on the page the footnote layout keeps them: no break of its own here.
+    const noted = fakeView([
+      { tag: 'P', rects: [{ bottom: 170 }] },
+      { tag: 'TABLE', rows: [10, 30, 30], firstTop: 170 },
+    ]);
+    const foot = { colOf: () => 0, limit: () => 80 };
+    noted.dispatch = (tr: { getMeta: (k: unknown) => unknown }) =>
+      dispatched.push(tr.getMeta(repeatHeaderKey));
+    measureRepeats(noted as never, 100, 1, foot);
+    expect(dispatched[1]).toEqual(new Map([['t', ['r3']]]));
+  });
+
+  it('keeps a table that is the first block where it is', () => {
+    vi.stubGlobal('getComputedStyle', (el: { style: object }) => el.style);
+    const view = fakeView([{ tag: 'TABLE', rows: [10, 30, 30], firstTop: 100 }]);
+    expect(measureRepeats(view as never, 100, 1)).toBe(false);
+    // A block above with no line boxes (nothing drawn) counts as nothing above.
+    const empty = fakeView([
+      { tag: 'P', rects: [] },
+      { tag: 'TABLE', rows: [10, 30, 30], firstTop: 100 },
+    ]);
+    expect(measureRepeats(empty as never, 100, 1)).toBe(false);
+  });
+});
+
+// Just enough of a laid-out article for measureRepeats: blocks with client rects, a table's rows with heights.
+function fakeView(
+  blocks: (
+    { tag: 'P'; rects: { bottom: number }[] } | { tag: 'TABLE'; rows: number[]; firstTop: number }
+  )[],
+) {
+  const els = blocks.map((b, i) => {
+    if (b.tag === 'P')
+      return {
+        previousElementSibling: null as unknown,
+        getClientRects: () => b.rects,
+      };
+    const rows = b.rows.map((h, r) => ({
+      offsetHeight: h,
+      dataset: { rowId: `r${r + 1}` },
+      getBoundingClientRect: () => ({ top: b.firstTop, left: 0 }),
+    }));
+    return {
+      previousElementSibling: null as unknown,
+      dataset: { blockId: 't' },
+      querySelectorAll: () => rows,
+      style: { marginTop: '4px' },
+      index: i,
+    };
+  });
+  els.forEach((e, i) => (e.previousElementSibling = i > 0 ? els[i - 1] : null));
+  const tables = els.filter((e) => 'querySelectorAll' in e);
+  return {
+    dom: { clientHeight: 100, querySelectorAll: () => tables },
+    state: EditorState.create({ doc: blocksToDoc([]), plugins: [repeatHeaderPlugin] }),
+    dispatch: (_tr: { getMeta: (k: unknown) => unknown }): unknown => undefined,
+  };
+}
 
 describe('column widths', () => {
   it('lays the columns out as fractions', () => {
