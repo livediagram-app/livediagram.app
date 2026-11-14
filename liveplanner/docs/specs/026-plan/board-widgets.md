@@ -169,8 +169,17 @@ board, so each one can be a widget.
   - **Breakdown**: one bar split by value, each value in its colour (a Choice option's, a label's, a person's own),
     then the two commonest values with their counts and "+n" for the rest. A Multiple Choice or Labels card counts
     once under each of its values.
-  - **Donut**: a ring split the same way, then the commonest value and its share ("High 40%").
-  - **Pressing a value** (Breakdown's two named values, Donut's commonest): a button that narrows the board to the
+  - **Donut**: a ring split the same way, then the commonest value and its share ("High 40%"), then "+n" for the
+    rest when it has more than one value.
+  - **Every value**: "+n" is a button ("More Severity values", Tab-reachable, the focus ring) opening a small
+    popover under it, a legend of every value the widget reads, in order: its colour dot, its name, its count and,
+    on a Donut, its share. Each row presses as a named value does (below), and reads pressed while its chip is on;
+    the popover stays open, so a Labels or Multiple Choice viewer can press several, and Escape or a press outside
+    closes it. While a value the pill leaves out is pressed, "+n" reads pressed too, so the filter it set never
+    hides. On a phone each row is a 44px touch target, and the popover sits on screen however near the edge the
+    pill is. So every value a Breakdown or Donut reads can be pressed: its named ones in the pill, all of them in
+    the popover.
+  - **Pressing a value** (Breakdown's two named values, Donut's commonest, any row of the "+n" popover): a button that narrows the board to the
     cards holding that value, as picking it in the Filter widget's **Add Filter** does: it adds the same **field
     chip** ("Severity: High") to this viewer's quick filter, so the chip shows in the Filter widget (with its cross to
     remove it) and Item Count reads `3 of 14 · Show all`. It reads **pressed** (`aria-pressed`, the brand colour

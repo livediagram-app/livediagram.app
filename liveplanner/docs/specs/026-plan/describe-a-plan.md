@@ -69,6 +69,7 @@ AI** and "Change anything you like. Nothing is made until you press Make Plan."
   read-only (its name, and the plan's own fields as chips), Remove Type aside; Make Plan uses the plan's type.
 - Whatever is changed is held to the same checks as the draft (below), each problem said beside its place in rose,
   the place ringed: "Give the board a name.", "Give this column a name.", "Two columns are called “Screen”." (said at both, so neither hides behind the other's focus ring, and each
+  ringed chip keeps its rose ring while it is typed in, the focus ring rose too, light and dark; and each
   different problem in a row said under it), "A board
   needs at least one column.", "Keep at least one card type.", and the same for a card type's, a field's and an
   option's names; once the names read, whatever the whole check still finds (a cap, the catalogue's rules) is said at

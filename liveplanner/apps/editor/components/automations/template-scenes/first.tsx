@@ -37,7 +37,7 @@ export function StampFinish({ tone }: { tone: ToneClasses }) {
               <FlagGlyph aria-hidden />
             </span>
             <Pill
-              className={`ats-t ats-in ats-pop -right-1.5 -top-2 ${tone.solid}`}
+              className={`ats-t ats-in ats-pop -top-2 right-1 ${tone.solid}`}
               style={at('none', 'scale(0.3) rotate(-12deg)', 640)}
             >
               <CheckGlyph aria-hidden />

@@ -139,7 +139,9 @@ body: true })`; a `plan_draft_*` body with a `message` throws `PlanDraftRefusal(
   `rulesMade`, renames columns through `withColumnName`, and a type's change through `withType` (`withTypeName`, then
   `withFieldName` for each field renamed). `DescribePlanDialog` takes `rulesMade`: without it the draft is checked
   and handed to Make Plan with `rules: []`. `NameChips` says each different problem in its row once (two chips of one
-  name both ringed). `starter-rules-client.ts`: `makeStarterRules(scope, rules, onMade)`: `listAutomations`, then
+  name both ringed). A chip with a problem takes a rose focus ring (`focus-within:border-rose-500`,
+  `ring-rose-400/30`; dark `border-rose-400`, `ring-rose-400/35`) in place of the brand one, so the one being typed in stays
+  ringed rose. `starter-rules-client.ts`: `makeStarterRules(scope, rules, onMade)`: `listAutomations`, then
   each rule `createRule` named `freeRuleName` among the plan's and the ones made, `toggleRule(false)` when its switch
   was off, `onMade` after each; it throws on the first refusal. `STARTER_RULES_FAILED` is the toast.
 - `DescribePlanHost.tsx`: the dialog bound to the editor (`useEditorContext`): signed in is `accountUserId`; the plan

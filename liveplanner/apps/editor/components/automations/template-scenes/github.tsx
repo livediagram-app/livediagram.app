@@ -15,6 +15,7 @@ import {
   FlagGlyph,
   MessageGlyph,
   NEXT_COLUMN,
+  PREV_COLUMN,
   Pill,
   PrClosedGlyph,
   PrDraftGlyph,
@@ -37,9 +38,6 @@ const RUNNING: PrFace = {
 };
 const FAILING: PrFace = { pill: 'closed', Mark: PrOpenGlyph, tail: <FailGlyph aria-hidden /> };
 const PASSING: PrFace = { ...OPEN, tail: <CheckGlyph aria-hidden /> };
-
-// One card slot back to the column before: the card's width, the column's padding and border, and the gap.
-const PREVIOUS_COLUMN = 'translateX(calc(-100% - 22px))';
 
 // The pill turns first; then the rule moves the card.
 const TURN = 120;
@@ -105,7 +103,7 @@ export function DoneOnMerge({ tone }: { tone: ToneClasses }) {
           <Card>
             <PrTurn from={OPEN} to={MERGED} d={TURN} />
             <Pill
-              className={`ats-t ats-in ats-pop -right-1.5 -top-2 ${tone.solid}`}
+              className={`ats-t ats-in ats-pop -top-2 right-1 ${tone.solid}`}
               style={at('none', 'scale(0.3) rotate(-12deg)', MOVE + 380)}
             >
               <CheckGlyph aria-hidden />
@@ -169,7 +167,7 @@ export function BackOnClose({ tone }: { tone: ToneClasses }) {
         <Card ghost wide="w-2/3" />
       </Column>
       <Column tone={tone} label="Review" count={<Count from={2} to={1} d={MOVE + 200} />}>
-        <div className="ats-t ats-drag relative z-10" style={at(PREVIOUS_COLUMN, 'none', MOVE)}>
+        <div className="ats-t ats-drag relative z-10" style={at(PREV_COLUMN, 'none', MOVE)}>
           <Card>
             <PrTurn from={OPEN} to={CLOSED} d={TURN} />
             <Said tone={tone} text="Closed" d={MOVE + 420} />

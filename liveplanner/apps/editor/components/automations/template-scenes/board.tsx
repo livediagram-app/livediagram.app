@@ -23,14 +23,12 @@ import {
   MailGlyph,
   MessageGlyph,
   NEXT_COLUMN,
+  PREV_COLUMN,
   Pill,
   SparklesGlyph,
   ZapGlyph,
   type ToneClasses,
 } from '../scene-parts';
-
-// The back of a column, the way a card moving left travels.
-const PREV_COLUMN = 'translateX(calc(-100% - 22px))';
 
 /** A small chip set inline in a row (Pill is placed absolutely). */
 function Chip({
@@ -231,7 +229,7 @@ export function RouteReviews({ tone }: { tone: ToneClasses }) {
             />
             <Bubble
               tone={tone}
-              className="ats-t ats-in ats-pop -right-1.5 -top-2.5 size-4 rounded-[5px]"
+              className="ats-t ats-in ats-pop -right-1 -top-2.5 size-4 rounded-[5px]"
               style={at('none', 'translateY(6px) scale(0.3)', 920)}
             >
               <MessageGlyph aria-hidden />
@@ -329,7 +327,7 @@ export function VerifyFix({ tone }: { tone: ToneClasses }) {
       <Column tone={tone} label="To Do" count={<Count from={2} to={3} d={360} />}>
         <div
           className="ats-t ats-in ats-pop relative z-10"
-          style={at('none', 'translateX(calc(100% + 22px)) scale(0.55)', 260)}
+          style={at('none', `${NEXT_COLUMN} scale(0.55)`, 260)}
         >
           <Card wide="w-1/2">
             <Pill className={`bottom-[3px] left-1.5 shadow-none ${tone.soft}`}>Verify fix</Pill>
