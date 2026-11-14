@@ -943,7 +943,8 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     accessible name is "{Field}: image". A picture that cannot be read (deleted at the service, or not shown to this
     person) draws a quiet broken-image tile saying "This image can't be shown", with Replace and Remove still there.
   - **The control** of a **Several Images** field: a grid of square thumbnails (cropped to fill, 4 to a row in the
-    panel's main column, 3 in a narrow one, each at least 72 px), in the field's order, then a dashed **Add Images**
+    panel's main column, 3 in a narrow one and 3 on a touch screen, whose grip and cross are always shown and would
+    otherwise cover most of a small tile; each at least 72 px), in the field's order, then a dashed **Add Images**
     tile (a plus; while the field is empty the tile is the width of its row, "PNG, JPEG, WebP or GIF, up to 10 MB"
     under its name). Pressing Add Images opens the file picker for several files at once; files dropped on the grid
     or the tile upload too. Each file is checked before anything is sent (below) and gets its own tile at the end: a
@@ -958,7 +959,8 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     fetch held each new tile on its grey placeholder for seconds). Each lands in one
     write of the list read from the card as it is then (someone else may have added meanwhile). A file refused, or
     past the field's 20, is skipped and said under the grid ("photo.heic: Use a PNG, JPEG, WebP or GIF image.",
-    "{Field} holds up to 20."), the rest still land, and what landed is announced ("3 images added").
+    "{Field} holds up to 20."), and so is a picture the field already holds (the same bytes are the same picture:
+    "photo.png is already in {Field}."), the rest still land, and what landed is announced ("3 images added").
     Pressing a thumbnail **opens** the picture full size in a new browser tab (its accessible name "{Field}: image 2
     of 5"). Each thumbnail has, on hover or focus (always on a touch screen), a **Remove** button (accessible name
     "Remove image 2 from {Field}"), and is **reordered** by dragging it to another place in the grid, or by Alt+←
@@ -1018,7 +1020,8 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
   case. A field sits in at most one tab. Title is never in a tab: it heads the panel. With one tab the panel shows
   its fields without a tab bar.
 - **On the card**: a custom field goes on the card face where the type's **Display** places it, like any field:
-  every custom field is in Display's **Available Fields** (its kind's icon and its name), fits any part of any
+  every custom field is in Display's **Available Fields** (its Add Field tile's icon, a variant's own such as Several
+  Images' stacked pictures, and its name), fits any part of any
   size, and draws as a chip of its kind's icon and its value (a linked card's glyph and title), named "{Field}:
   {value}" for assistive technology; with no value it is not drawn. A field ticked **Show on card** before Display
   placed custom fields starts Under the Title on Detailed cards, until the type's Detailed layout is changed; the
@@ -1507,7 +1510,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
     - **Before Save**, over the button, one line says what happens: "12 cards have a value; every one is kept as a
       Number." when nothing is lost, else "12 cards have a value; 3 can’t be kept as a Number and will be cleared,
-      and 2 will keep only part of theirs." (amber). Then Save asks once: the line adds "Change them? Undo puts them
+      and 2 will keep only part of their values." (amber; for one card, "1 will keep only part of its value"). Then Save asks once: the line adds "Change them? Undo puts them
       back.", **Keep Editing** beside it, and Save becomes **Change Values**, which saves. The count is worked out
       once for each type picked (one pass over the plan's cards), and again only when the cards change.
     - **Filters on the field**: a filter naming the field would keep a value written for its old type, and could
