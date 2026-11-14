@@ -7,7 +7,10 @@
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { act, cleanup, render } from '@testing-library/react';
-import { beginCanvasGesture, resetCanvasGesturesForTests } from '@liveworkspace/workbench/lib/canvas-gesture';
+import {
+  beginCanvasGesture,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createSticky, createText } from '@livehuddle/document';
 import { storedPinnedArrow } from '@/test/retired-elements';

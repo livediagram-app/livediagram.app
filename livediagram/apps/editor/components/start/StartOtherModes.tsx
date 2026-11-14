@@ -9,7 +9,11 @@ import { CountBadge, EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { communityStartBadgeStyle } from '@liveworkspace/community-ui/start';
 import { editorModeLabel, type EditorMode } from '@livediagram/document';
 import type { StartPalette } from './start-palette';
-import { StartCardGrid, startTint, type StartPanelCard } from '@liveworkspace/workbench/components/start/StartCard';
+import {
+  StartCardGrid,
+  startTint,
+  type StartPanelCard,
+} from '@liveworkspace/workbench/components/start/StartCard';
 import { OTHER_MODE_CARDS_MAX } from './other-mode-matches';
 
 export type StartPanelElsewhere = { mode: EditorMode; cards: readonly StartPanelCard[] };

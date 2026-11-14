@@ -2,7 +2,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livehuddle/document';
-import { beginCanvasGesture, resetCanvasGesturesForTests } from '@liveworkspace/workbench/lib/canvas-gesture';
+import {
+  beginCanvasGesture,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
 import { MAP_REDRAW_MIN_MS, useSettledElements } from './useSettledElements';
 
 // docs/specs/008-canvas/canvas-performance.md: the Map redraws when a gesture ends, not on every
