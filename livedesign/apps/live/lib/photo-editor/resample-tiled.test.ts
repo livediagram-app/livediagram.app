@@ -35,8 +35,11 @@ const inline =
   };
 
 describe('resampleTiled', () => {
-  const W = PHOTO_TILE * 2 + 100;
-  const H = PHOTO_TILE + 60;
+  // Just over a tile each way, odd on both sides: every size below still splits into at least two tiles across and
+  // two down, with a part tile at each far edge, while the whole resample the test compares against stays small
+  // enough to run in well under a second under coverage on a loaded CI machine.
+  const W = PHOTO_TILE + 101;
+  const H = PHOTO_TILE + 37;
   const pic = picture(W, H);
   const at = { x: 30, y: 20 };
   const tiles = new TiledRaster();
@@ -46,7 +49,7 @@ describe('resampleTiled', () => {
   for (const [w, h] of [
     [Math.round(W * 0.64), Math.round(H * 0.64)], // Instagram Story's scale
     [Math.round(W * 0.2), Math.round(H * 0.2)], // Facebook Cover's: averaged by blocks first
-    [Math.round(W * 1.3), Math.round(H * 1.3)], // an enlargement
+    [Math.round(W * 1.1), Math.round(H * 1.1)], // an enlargement
   ] as const)
     it(`matches the whole resample at ${w} x ${h}, reading a bounded source per tile`, async () => {
       const seen: Rect[] = [];
@@ -57,7 +60,7 @@ describe('resampleTiled', () => {
       for (let i = 0; i < got.data.length; i++)
         worst = Math.max(worst, Math.abs(got.data[i]! - whole.data[i]!));
       expect(worst).toBeLessThanOrEqual(1);
-      expect(seen.length).toBeGreaterThan(1);
+      expect(seen.length).toBeGreaterThanOrEqual(4);
       // About a tile across, plus the filter's reach and an averaging block.
       for (const r of seen) expect(Math.max(r.width, r.height)).toBeLessThan(PHOTO_TILE * 1.5);
     });

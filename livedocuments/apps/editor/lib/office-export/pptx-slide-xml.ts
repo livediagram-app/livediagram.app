@@ -4,6 +4,7 @@
 
 import { xmlText, XML_DECL } from './ooxml';
 import { solidFillXml, type OoxmlColour } from './ooxml-colour';
+import { pitchFamilyOf } from './ooxml-fonts';
 import type {
   EmuRect,
   PptxBackground,
@@ -56,7 +57,7 @@ function runXml(run: PptxRun): string {
     ? `<a:highlight><a:srgbClr val="${run.highlight.hex}"/></a:highlight>`
     : '';
   const font = run.font
-    ? `<a:latin typeface="${xmlText(run.font)}"/><a:cs typeface="${xmlText(run.font)}"/>`
+    ? `<a:latin typeface="${xmlText(run.font)}" pitchFamily="${pitchFamilyOf(run.font)}" charset="0"/><a:cs typeface="${xmlText(run.font)}"/>`
     : '';
   // The schema's order inside rPr: fill, effectLst, highlight, then the faces.
   return `<a:r><a:rPr${attrs}>${fill}${effects}${highlight}${font}</a:rPr><a:t>${xmlText(run.text)}</a:t></a:r>`;
