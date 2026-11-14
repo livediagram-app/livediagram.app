@@ -267,7 +267,9 @@ tiles are loaded (`whenLoaded`):
 4. The session is disposed before the next format starts, so at most one format's resampled pixels are held at a
    time beside the source's. Measured on a 12 MP (4000 x 3000) photo (Work Tracker 198), the most a format holds
    above the source's tiles went from 84.5 MB (Instagram Story: the source read whole twice, the result whole and
-   its tiles) to the result's tiles and one tile's source region. The kept overflow stays (DEFAULTS D30).
+   its tiles) to 22 to 35 MB (the result's own tiles, 18.8 MB raw, and one tile's source), and the smaller formats
+   from 52 to 67 MB to 6 to 14 MB. A result tile is a `PHOTO_TILE`, or less when shrinking so its source stays
+   about a `PHOTO_TILE` across (`resampleStep`, at least 64 px). The kept overflow stays (DEFAULTS D30).
 5. When every format is done (and the dialog was not closed meanwhile, `deps.cancelled()`), one `commitTabs`
    writes `photoPagesAdded(tab, sourceId, made)`: one undo step. A cancel commits nothing; the tiles already
    queued are uploaded but named by no tab, so the daily sweep releases them.
