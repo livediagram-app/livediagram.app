@@ -30,7 +30,7 @@
     "@cloudflare/workers-types": "^5.20261110.1",
     "@liveworkspace/fake-google": "workspace:*",
     "@types/node": "^26.6.6",
-    "jose": "^6.2.14",
+    "jose": "^6.2.17",
     "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0",
