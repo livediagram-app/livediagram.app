@@ -36,6 +36,28 @@ export function LockBadge() {
   );
 }
 
+// --- Build badge -------------------------------------------------------------
+
+// An element's step among its slide's builds (docs/specs/012-collaboration/presentation-mode.md "Setting builds up"):
+// a small numbered disc on its top-left corner, moved along beside the lock badge when both show. Editor chrome like
+// the lock: an embed or a presented slide shows none, and it scales with the canvas and hides at overview zooms.
+export function BuildBadge({ step, besideLock }: { step: number; besideLock: boolean }) {
+  const zoom = useCanvasZoom();
+  const suppressed = useElementIndicatorsSuppressed();
+  if (suppressed || zoom < ADORNMENT_MIN_ZOOM) return null;
+  return (
+    <div
+      aria-hidden
+      data-build-badge={step}
+      className={`pointer-events-none absolute -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-semibold tabular-nums leading-none text-brand-700 shadow-sm ring-1 ring-brand-500/70 dark:bg-slate-900 dark:text-brand-200 dark:ring-brand-400/70 ${
+        besideLock ? 'left-4' : '-left-2'
+      }`}
+    >
+      {step}
+    </div>
+  );
+}
+
 // --- Resize handles --------------------------------------------------------
 
 type HandlePosition = 'nw' | 'ne' | 'sw' | 'se';

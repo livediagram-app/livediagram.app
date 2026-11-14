@@ -188,6 +188,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched a pyramid between pointing up, pointing down and a funnel.',
   'Element|Changed|ConceptAnim':
     "Someone set or cleared a layer stack's, pyramid's or cycle's animation (Build, Pulse or Flow), or its speed or repeat.",
+  'Element|Changed|Build':
+    "Someone set, moved or cleared an element's build: the step it comes in at on a presented slide, and how.",
   'Element|Changed|RenumberSteps':
     'Someone renumbered every step number on a tab in reading order.',
   'Element|Changed|StepSequence':

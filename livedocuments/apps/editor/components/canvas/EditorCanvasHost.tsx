@@ -5,6 +5,8 @@ import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { PresentingProvider } from '@/components/canvas/PresentingContext';
+import { useBuildEntrance } from '@/components/canvas/useBuildEntrance';
+import { BuildStepsProvider } from '@/components/canvas/BuildStepsContext';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { canvasSurface } from '@livedocuments/document';
 import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-projector';
@@ -52,6 +54,9 @@ export function EditorCanvasHost() {
     activeTabLocked,
     commitElements,
     presentingElements,
+    presentedElements,
+    buildEntrance,
+    slideDeck,
     presentingPageId,
     layers,
     layerInertIds,
@@ -198,7 +203,9 @@ export function EditorCanvasHost() {
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
-  const shownElements = presentingElements ?? activeTab.elements;
+  // A presented slide less the builds still to come (presentation-mode.md "Builds"); the step's own elements play in.
+  const shownElements = presentedElements ?? activeTab.elements;
+  useBuildEntrance(buildEntrance, canvasMainRef);
   // A presented slide shows nobody else's selection, as it shows nobody else's cursor.
   const remoteSelectionsShown = shownRemoteSelections(
     remoteSelectionsByElement,
@@ -257,6 +264,8 @@ export function EditorCanvasHost() {
     <CanvasThemeProvider theme={activeTheme}>
       {/* The tab's tag colours (docs/specs/009-elements/tag-colours.md), for the cards that render them. */}
       <TagColoursProvider tab={activeTab}>
+        {/* Each built element's step number for its badge (presentation-mode.md "Setting builds up"). */}
+        <BuildStepsProvider slides={slideDeck?.deck.slides} tab={activeTab}>
         {/* Presenting shows the slide as the audience sees it: no indicators or lock badges on its elements
           (docs/specs/008-canvas/element-indicators.md "Unchanged"). */}
         <SuppressElementIndicators when={presentingElements != null}>
@@ -437,6 +446,7 @@ export function EditorCanvasHost() {
             )}
           </PresentingProvider>
         </SuppressElementIndicators>
+        </BuildStepsProvider>
       </TagColoursProvider>
     </CanvasThemeProvider>
   );

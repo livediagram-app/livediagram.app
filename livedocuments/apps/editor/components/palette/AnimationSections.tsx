@@ -24,7 +24,9 @@ import {
   type ShapeElement,
   inAnimationSet,
   shapeAnimationsFor,
+  takesBuild,
 } from '@livedocuments/document';
+import { BuildTiles } from '@/components/palette/BuildTiles';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
@@ -66,12 +68,22 @@ type Handlers = Pick<
   | 'onSetRatingAnimRepeat'
   | 'elementStyle'
   | 'sankey'
+  | 'build'
 >;
 
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
-type OwnCategory = 'icon' | 'chart' | 'sankey' | 'progress' | 'rating' | 'concept' | 'arrow';
+// Build (presentation-mode.md "Builds") comes last: it is when the selection arrives on a slide, not how it moves.
+type OwnCategory =
+  | 'icon'
+  | 'chart'
+  | 'sankey'
+  | 'progress'
+  | 'rating'
+  | 'concept'
+  | 'arrow'
+  | 'build';
 type Category = AnimationSetId | OwnCategory;
 const ORDER: readonly Category[] = [
   'shape',
@@ -87,6 +99,7 @@ const ORDER: readonly Category[] = [
   'concept',
   'text',
   'arrow',
+  'build',
 ];
 const OWN_NAME: Record<OwnCategory, string> = {
   icon: 'Icon',
@@ -96,6 +109,7 @@ const OWN_NAME: Record<OwnCategory, string> = {
   rating: 'Rating',
   concept: 'Concept',
   arrow: 'Arrow',
+  build: 'Build',
 };
 
 // The element-owned category a shape takes, if any (each read and written by its own tiles below).
@@ -114,13 +128,14 @@ function ownCategoryOf(el: Element): OwnCategory | undefined {
 const nameOf = (c: Category) =>
   c in OWN_NAME ? OWN_NAME[c as keyof typeof OWN_NAME] : ANIMATION_SET_NAME[c as AnimationSetId];
 
-/** The categories a selection shows, in order. */
-export function animationCategoriesOf(elements: readonly Element[]): Category[] {
+/** The categories a selection shows, in order; Build only when it is on a slide (`onSlide`). */
+export function animationCategoriesOf(elements: readonly Element[], onSlide = false): Category[] {
   const present = new Set<Category>(animationSetsOf(elements));
   for (const el of elements) {
     const own = ownCategoryOf(el);
     if (own) present.add(own);
   }
+  if (onSlide && elements.some(takesBuild)) present.add('build');
   return ORDER.filter((c) => present.has(c));
 }
 
@@ -154,7 +169,9 @@ export function AnimationSections({
   handlers: Handlers;
 }) {
   // A Sankey's animation is offered only where its edits are (h.sankey: an Editor, one diagram selected).
-  const categories = animationCategoriesOf(elements).filter((c) => c !== 'sankey' || !!h.sankey);
+  const categories = animationCategoriesOf(elements, !!h.build).filter(
+    (c) => c !== 'sankey' || !!h.sankey,
+  );
   if (categories.length === 0) return null;
   const sections = categories.map((c) => (
     <MenuAccordionSection
@@ -264,6 +281,16 @@ function CategoryBody({
       (e): e is ShapeElement & { shape: ConceptShape } => ownCategoryOf(e) === 'concept',
     )!;
     return <ConceptAnimTiles target={el} ops={h.elementStyle} />;
+  }
+  if (category === 'build') {
+    if (!h.build) return null;
+    return (
+      <BuildTiles
+        selection={elements}
+        slideElements={h.build.slideElements}
+        ops={h.elementStyle}
+      />
+    );
   }
   if (category === 'arrow') {
     const arrow = elements.find((el) => el.type === 'arrow');

@@ -46,6 +46,8 @@ export function contentsRows(
     inDeck?: (pageId: string) => boolean;
     // Whether the deck's slide of the page is hidden; absent where there is no deck to ask.
     hiddenInSlides?: (pageId: string) => boolean;
+    // How many builds a slide page has (presentation-mode.md "Setting builds up"); absent where none are counted.
+    buildsOf?: (pageId: string) => number;
     articles?: Readonly<Record<string, ArticleFlow>>;
     // A slide's or an infographic's own title (lib/page-title.ts), the name it goes by until someone
     // names it; absent where its words are not read.
@@ -65,6 +67,8 @@ export function contentsRows(
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
     } else if (kind === 'slide' && opts.inDeck) {
       line += opts.inDeck(p.id) ? ' · In the deck' : ' · Not in the deck';
+      const builds = opts.buildsOf?.(p.id) ?? 0;
+      if (builds > 0) line += ` · ${builds} ${builds === 1 ? 'build' : 'builds'}`;
     } else if ((kind === 'article' || kind === 'flashcard') && p.flow) {
       const flow = opts.articles?.[p.flow];
       const title = flow ? articleTitleOf(flow).trim() : '';
