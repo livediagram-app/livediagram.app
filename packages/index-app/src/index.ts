@@ -4,6 +4,7 @@ export * from './service';
 export * from './request';
 export * from './lists';
 export * from './folders-route';
+export * from './content-summary';
 export * from './archive-doors';
 export * from './timing-safe';
 export * from './purge';

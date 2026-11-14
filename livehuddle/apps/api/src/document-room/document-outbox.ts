@@ -23,7 +23,7 @@ import { MEDIA_REFS_PER_DOCUMENT_MAX } from '@liveworkspace/media';
 import { grantPlacedImages } from '../db/image-grants';
 import { documentImageIds } from '../db/image-refs';
 import { documentStatsSql, readDocumentStats } from '../db/tab-stats';
-import { isEmptyCount, type ContentSummary } from '../db/content-summary';
+import { isEmptyCount, type ContentSummary } from '@liveworkspace/index-app';
 import { indexAppClient } from '../index-service';
 import { mediaClient } from '../media';
 import { reportOwnerActivity } from '@liveworkspace/index-app';
@@ -32,7 +32,7 @@ import type { DocumentEnv } from '../types';
 
 // ---------- Summary ------------------------------------------------------------------------------------------
 
-// The document's listing summary (db/content-summary.ts), its last save and its owner, read from its own tables. A
+// The document's listing summary (@liveworkspace/index-app content-summary.ts), its last save and its owner, read from its own tables. A
 // body is parsed only for a tab whose stored count is 0, to find an article or a body that is not JSON.
 export async function readContentSummary(
   env: DocumentEnv,
