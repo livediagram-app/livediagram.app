@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/document/src/arrow-label-layout.ts`                    | Lanes are not label obstacles                                           |
 | `apps/editor/lib/canvas.ts`                                      | `framesFirst`, container size donation                                  |
 | `packages/document/src/containment.ts`                           | `isContainer`, `containerContents`: what a moved frame or lane carries  |
-| `apps/editor/components/canvas/LaneGutter.tsx`                   | The canvas strip, the seam and its drag                                 |
+| `apps/editor/components/canvas/LaneGutter.tsx`                   | The seam and its drag, over the shared strip (`LaneGutterStrip`)        |
 | `apps/editor/components/canvas/boxed-element-face-parts.tsx`     | Mounts `LaneGutter` behind the label                                    |
 | `apps/editor/components/canvas/useElementLayerHandlers.ts`       | Wires `onCommitHeaderSize` and `onSnapSeam`                             |
 | `apps/editor/app/document/[id]/useSelectionEditing.ts`           | `commitHeaderSize`                                                      |
@@ -86,7 +86,7 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
 12. **Across title in a side strip.** `acrossTitleStrip(el, width, height)` is the strip (`uprightTitleStrip`'s
     geometry, unturned) when the title is not upright and the gutter edge is `left`, `right` or `centre-x`, else
     null. The padding inside it is `acrossTitlePadding(padding)` = `min(padding, PADDING_PX.sm)`. At rest the canvas
-    lays the label out in it (`laneTitleFrame`, `apps/editor/components/canvas/lane-title-frame.ts`: an absolute,
+    lays the label out in it (`laneTitleFrame`, `lane-title-frame.ts` in `@liveworkspace/workbench`: an absolute,
     `overflow: hidden` box of the strip). A plain title is laid out ahead of render by `laneTitleText`: room =
     `strip.width - 2 × padding - 1`, the px from `wholeWordFontPx` (the label's px when every word fits, else the
     largest whole px down to 14 at which they do, found by halving), then `fitWholeWordLines` (wrap between words
@@ -257,7 +257,7 @@ None in code today [GA1]. The upright toggle tracks `Element·Changed·LaneUprig
 | Drag clamp, centred 2x, one commit (I2)                 | none [GA14]                                                                  |                                                                                                               |
 | Render clamp of a stored size                           | none [QA10]                                                                  |                                                                                                               |
 | Upright: default size, side only, band ignores          | isUprightTitle, laneSizeOfElement                                            | `../packages/element-model/src/lane-gutter.test.ts`                                                           |
-| Upright Title renders turned on canvas and export       | the strip and the turned frame                                               | `packages/document/src/svg-render.test.ts`, `apps/editor/components/canvas/upright-title.test.ts`             |
+| Upright Title renders turned on canvas and export       | the strip and the turned frame                                               | `packages/document/src/svg-render.test.ts`, `upright-title.test.ts` (`@liveworkspace/workbench`)              |
 | Upright toggle: offered on side strips only, one commit | the Text section switch                                                      | `apps/editor/components/palette/*.test.tsx`                                                                   |
 
 ## Constants and configuration

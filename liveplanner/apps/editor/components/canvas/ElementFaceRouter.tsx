@@ -26,6 +26,7 @@ import {
 } from '@liveworkspace/workbench/components/canvas/InsetContent';
 import { loadCollabFaceRouter } from '@/lib/editor-deferred-code';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
+import type { LabelFrame } from '@liveworkspace/workbench/components/canvas/lane-title-frame';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Collaboration panels are on few boards, so their faces load on demand; their code is fetched
@@ -70,6 +71,8 @@ type ElementFaceRouterProps = Pick<
   // recomputed per branch: several of them render the same label node.
   label: string;
   labelNode: ReactNode;
+  // A lane title's frame in its side strip, turned for an upright title (lane-title.ts), or null.
+  labelFrame?: LabelFrame | null;
   // Where the label (and an inline icon) moves to clear the element's indicators
   // (docs/specs/008-canvas/element-indicators.md); absent or zero leaves it in place.
   contentInset?: ContentInset;
@@ -98,6 +101,7 @@ export function ElementFaceRouter({
   tabSummaries,
   label,
   labelNode,
+  labelFrame = null,
   contentInset,
   textColor,
   isLocked,
@@ -267,6 +271,12 @@ export function ElementFaceRouter({
           >
             {labelNode}
           </div>
+        </div>
+      ) : labelFrame ? (
+        // A lane title in its side strip (docs/specs/009-elements/lane.md "A title wraps in its gutter", "Upright
+        // titles"): the label and its editor lay out (and, upright, turn) together in the strip.
+        <div style={labelFrame.style} className={labelFrame.className}>
+          {labelNode}
         </div>
       ) : (
         <InsetContent inset={contentInset}>{labelNode}</InsetContent>

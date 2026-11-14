@@ -11,6 +11,7 @@ import {
   type TextAlignY,
 } from '@livediagram/document';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import { LaneGutterStrip } from '@liveworkspace/workbench/components/canvas/LaneGutterStrip';
 import { laneSeamTravel } from '@/lib/lane-seam-travel';
 
 // A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind its title, with a
@@ -126,36 +127,6 @@ export function LaneGutter({
     );
   const maxSize = Math.max(MIN_GUTTER_PX, (band ? height : width) - MIN_GUTTER_PX);
 
-  // Only an edge-hugging gutter inherits the lane's corner radius; a centred
-  // one has square sides by definition.
-  const radius =
-    edge === 'right'
-      ? 'rounded-r-[inherit]'
-      : edge === 'left'
-        ? 'rounded-l-[inherit]'
-        : edge === 'top'
-          ? 'rounded-t-[inherit]'
-          : edge === 'bottom'
-            ? 'rounded-b-[inherit]'
-            : '';
-
-  const placement =
-    edge === 'right'
-      ? { right: 0, borderLeft: `1px solid ${stroke}` }
-      : edge === 'left'
-        ? { left: 0, borderRight: `1px solid ${stroke}` }
-        : edge === 'top'
-          ? { top: 0, borderBottom: `1px solid ${stroke}` }
-          : edge === 'bottom'
-            ? { bottom: 0, borderTop: `1px solid ${stroke}` }
-            : // A centred strip gets a rule on BOTH sides: it has two seams
-              // with the body, not one.
-              {
-                left: `calc(50% - ${size / 2}px)`,
-                borderLeft: `1px solid ${stroke}`,
-                borderRight: `1px solid ${stroke}`,
-              };
-
   // Pointer handling lives on window so a fast drag that leaves the seam (or
   // the element) keeps tracking, and so release always commits.
   useEffect(() => {
@@ -229,21 +200,8 @@ export function LaneGutter({
 
   return (
     <>
-      <div
-        // Inert: the label sits on top of this and the canvas owns the rest. Named for the Lane tour to ring.
-        data-lane-gutter=""
-        className={`pointer-events-none absolute ${band ? 'inset-x-0' : 'inset-y-0'} ${radius}`}
-        style={{
-          ...(band ? { height: size } : { width: size }),
-          // An explicit heading colour paints at full strength (you picked it,
-          // you get it); with none set it stays the 10% wash of the lane's own
-          // stroke, so a recoloured lane keeps its gutter in the family.
-          backgroundColor: headerFill ?? stroke,
-          ...(headerFill ? null : { opacity: 0.1 }),
-          ...placement,
-        }}
-        aria-hidden
-      />
+      {/* The strip and its divider (shared with liveplanner's read-only canvas lane). */}
+      <LaneGutterStrip stroke={stroke} headerFill={headerFill} edge={edge} size={size} />
       {/* The seam. Dragging it sets how much of the lane the title gets: 132
           across and 64 down were only ever the sizes that suited the titles
           they were measured against, and a lane holding "Q3 Marketing
