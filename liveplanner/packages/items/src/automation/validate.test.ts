@@ -289,6 +289,28 @@ describe('readRuleBody', () => {
       'steps.0.then.0',
     ],
     [
+      'a Change Card Type mapping two sources into one field',
+      withStep({
+        kind: 'set_type',
+        type: 't',
+        map: [
+          { from: 'f-a', to: 'description' },
+          { from: 'f-b', to: 'description' },
+        ],
+      }),
+      'steps.0.map.1.to',
+    ],
+    [
+      'Change Card Type mappings that are not a list',
+      withStep({ kind: 'set_type', type: 't', map: 'f-a' }),
+      'steps.0.map',
+    ],
+    [
+      'a Change Card Type mapping with no source',
+      withStep({ kind: 'set_type', type: 't', map: [{ to: 'description' }] }),
+      'steps.0.map.0.from',
+    ],
+    [
       'two cards in one run',
       withRule({
         steps: [

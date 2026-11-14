@@ -38,6 +38,8 @@ export const AUTOMATION_AI_LABELS_MAX = 3;
 // The actions after Phase 3 (spec "Actions", "Wait"): a checklist's items, the Waits a rule holds and how long one
 // holds, and the runs a plan holds waiting.
 export const AUTOMATION_CHECKLIST_ITEMS_MAX = 20;
+// Change Card Type's explicit mappings (Map Fields): a type's 12 custom fields and its Description, each named once.
+export const AUTOMATION_TYPE_MAPS_MAX = 13;
 export const AUTOMATION_WAITS_MAX = 3;
 export const AUTOMATION_WAIT_HOURS_MIN = 1;
 export const AUTOMATION_WAIT_HOURS_MAX = 30 * 24;
@@ -236,7 +238,8 @@ export type AutomationAction =
       linkField?: string;
     }
   | { kind: 'email'; to: AutomationEmailRecipient; subject: string; body: string }
-  | { kind: 'set_type'; type: string }
+  // `map`: explicit source field to new-type field mappings (item-types.md "Explicit mappings"); absent on older rules.
+  | { kind: 'set_type'; type: string; map?: { from: string; to: string }[] }
   // `colour`: a #rrggbb, or null for none.
   | { kind: 'set_colour'; colour: string | null }
   | { kind: 'restore' }

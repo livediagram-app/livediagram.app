@@ -347,8 +347,14 @@ export function actionChip(action: AutomationAction, outline: RuleSentenceOutlin
         : 'trigger' in action.to
           ? 'Email Who Did It'
           : 'Email Assignee';
-    case 'set_type':
-      return `Change to ${outlineTypeName(action.type, outline)}`;
+    case 'set_type': {
+      const head = `Change to ${outlineTypeName(action.type, outline)}`;
+      if (!action.map?.length) return head;
+      const maps = action.map.map(
+        (m) => `${outlineFieldName(m.from, outline)} to ${outlineFieldName(m.to, outline)}`,
+      );
+      return `${head} (${maps.join(', ')})`;
+    }
     case 'set_colour':
       return action.colour ? 'Set Colour' : 'Clear Colour';
     case 'copy_card':

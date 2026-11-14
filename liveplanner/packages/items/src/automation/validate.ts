@@ -22,6 +22,7 @@ import {
   isTimeTrigger,
   AUTOMATION_AI_STEPS_MAX,
   AUTOMATION_CHECKLIST_ITEMS_MAX,
+  AUTOMATION_TYPE_MAPS_MAX,
   AUTOMATION_WAITS_MAX,
   AUTOMATION_WAIT_HOURS_MAX,
   AUTOMATION_WAIT_HOURS_MIN,
@@ -175,8 +176,14 @@ function readAction(v: unknown, path: string, place: ValuePlace = {}): Automatio
         body: text_(a['body'], `${path}.body`, AUTOMATION_TEXT_MAX),
       };
     }
-    case 'set_type':
-      return { kind: 'set_type', type: id(a['type'], `${path}.type`) };
+    case 'set_type': {
+      const map = a['map'] === undefined ? undefined : readTypeMap(a['map'], `${path}.map`);
+      return {
+        kind: 'set_type',
+        type: id(a['type'], `${path}.type`),
+        ...(map?.length ? { map } : {}),
+      };
+    }
     case 'set_colour': {
       if (a['colour'] === null) return { kind: 'set_colour', colour: null };
       const colour = itemColourValue(a['colour']);
@@ -241,6 +248,21 @@ function readAction(v: unknown, path: string, place: ValuePlace = {}): Automatio
     default:
       return refuse(`${path}.kind`, `${path}.kind is not an action`);
   }
+}
+
+// Change Card Type's mappings: 0 to AUTOMATION_TYPE_MAPS_MAX `{ from, to }`, each target once.
+function readTypeMap(raw: unknown, path: string): { from: string; to: string }[] {
+  if (!Array.isArray(raw) || raw.length > AUTOMATION_TYPE_MAPS_MAX)
+    refuse(path, `${path} must hold up to ${AUTOMATION_TYPE_MAPS_MAX} mappings`);
+  const seen = new Set<string>();
+  return (raw as unknown[]).map((m, i) => {
+    const o = obj(m, `${path}.${i}`);
+    const to = id(o['to'], `${path}.${i}.to`);
+    if (seen.has(to))
+      refuse(`${path}.${i}.to`, `${path}.${i}.to names a field another mapping fills`);
+    seen.add(to);
+    return { from: id(o['from'], `${path}.${i}.from`), to };
+  });
 }
 
 function readWait(s: Record<string, unknown>, path: string): AutomationWait {

@@ -199,3 +199,81 @@ describe('withTypeChangeFields', () => {
     ).toEqual({ type: 'work', set: { 'f-apps': ['Editor'], 'f-app': 'editor' } });
   });
 });
+
+// docs/specs/026-plan/item-types.md "Explicit mappings" (Work Tracker 843).
+describe('explicit mappings', () => {
+  const NOTE = typeOf('note', [{ id: 'f-steps', label: 'Steps', kind: 'text' }]);
+  const solution = { 'f-solution': 'Do the thing', 'f-solutionRich': [{ text: 'Do the thing' }] };
+
+  it('fills a field of another name, formatting and all, over the value it holds', () => {
+    const fields = { ...solution, 'f-criteria': 'Old' };
+    expect(
+      typeChangeFields(fields, IDEA, WORK, [{ from: 'f-solution', to: 'f-criteria' }]),
+    ).toEqual({ 'f-criteria': 'Do the thing', 'f-criteriaRich': [{ text: 'Do the thing' }] });
+  });
+
+  it('may fill the Description as a Long Text, but no other built-in field', () => {
+    const into = (to: string) =>
+      typeChangeFields(solution, IDEA, WORK, [{ from: 'f-solution', to }]);
+    expect(into('description')).toEqual({
+      description: 'Do the thing',
+      descriptionRich: [{ text: 'Do the thing' }],
+    });
+    expect(into('priority')).toEqual({});
+  });
+
+  it('wins over name matching, with the same kinds and options', () => {
+    const from = typeOf('both', [
+      ...IDEA.custom!,
+      { id: 'f-tags', label: 'Tags', kind: 'multichoice', options: ['Editor', 'Help'] },
+    ]);
+    const fields = { 'f-apps': ['API'], 'f-tags': ['Help', 'Editor'] };
+    const map = [{ from: 'f-tags', to: 'f-app' }];
+    // By name App takes API; the mapping puts Tags' first option pick there instead, spelt as the option is.
+    expect(typeChangeFields(fields, from, WORK, map)).toEqual({ 'f-app': 'editor' });
+    // A value the target can't take writes nothing, leaving name matching's.
+    expect(typeChangeFields({ ...fields, 'f-tags': ['Help'] }, from, WORK, map)).toEqual({
+      'f-app': 'API',
+    });
+    // An incompatible kind maps nothing.
+    const num = typeOf('num', [{ id: 'f-n', label: 'N', kind: 'number' }]);
+    const into = [{ from: 'f-n', to: 'f-criteria' }];
+    expect(typeChangeFields({ 'f-n': 3 }, num, WORK, into)).toEqual({});
+  });
+
+  it('drops a name match’s formatting when a mapping fills its target', () => {
+    const from = typeOf('long', [
+      { id: 'f-c', label: 'Acceptance Criteria', kind: 'longtext' },
+      { id: 'f-steps', label: 'Steps', kind: 'text' },
+    ]);
+    const fields = { 'f-c': 'By name', 'f-cRich': [{ text: 'By name' }], 'f-steps': 'Mapped' };
+    expect(typeChangeFields(fields, from, WORK, [{ from: 'f-steps', to: 'f-criteria' }])).toEqual({
+      'f-criteria': 'Mapped',
+    });
+  });
+
+  it('reads a source the old type lacks from the catalogue, and skips fields nobody has', () => {
+    const fields = { 'f-steps': 'Click it' };
+    const map = [
+      { from: 'f-steps', to: 'f-criteria' },
+      { from: 'f-gone', to: 'f-criteria' },
+      { from: 'f-steps', to: 'f-gone' },
+    ];
+    expect(typeChangeFields(fields, IDEA, WORK, map, [IDEA, WORK, NOTE])).toEqual({
+      'f-criteria': 'Click it',
+    });
+    expect(typeChangeFields(fields, IDEA, WORK, map)).toEqual({});
+  });
+
+  it('maps through withTypeChangeFields, never over the write’s own value or its formatting', () => {
+    const card = { type: 'idea', fields: solution };
+    const map = [{ from: 'f-solution', to: 'f-criteria' }];
+    expect(withTypeChangeFields(card, { type: 'work' }, [IDEA, WORK], map).set).toMatchObject({
+      'f-criteria': 'Do the thing',
+    });
+    const own = { type: 'work', set: { 'f-criteria': 'Mine' } };
+    expect(withTypeChangeFields(card, own, [IDEA, WORK], map).set).toEqual({
+      'f-criteria': 'Mine',
+    });
+  });
+});

@@ -219,7 +219,9 @@ function apply(a: AutomationAction, w: Walk) {
       // Its custom fields map by name into the new type's, one write with the type (item-types.md "Changing a
       // card's type").
       if (changed)
-        for (const [field, value] of Object.entries(typeChangeFields(plan.card.fields, type, to)))
+        for (const [field, value] of Object.entries(
+          typeChangeFields(plan.card.fields, type, to, a.map, o.types),
+        ))
           plan.write(field, value);
       w.type = to;
       return plan.line(`Change to ${typeName(o, to.id)}`, changed);

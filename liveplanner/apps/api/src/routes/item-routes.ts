@@ -38,6 +38,7 @@ import {
   timeTracked,
   clearedRequired,
   excludedStatus,
+  mappedWrite,
   forCaller,
   itemBusy,
   itemRetryPause,
@@ -275,7 +276,11 @@ async function patch(ctx: PlanRouteContext, projectId: string, itemId: string): 
     ctx,
     caller,
     itemId,
-    (item, by) => applyPatch(item, input, { now: Date.now(), by }),
+    (item, by) =>
+      applyPatch(item, mappedWrite(caller, item, input, body.undo === true), {
+        now: Date.now(),
+        by,
+      }),
     { undo: body.undo === true },
   );
 }
@@ -293,7 +298,12 @@ async function move(ctx: PlanRouteContext, projectId: string, itemId: string): P
     caller,
     itemId,
     async (item, by) =>
-      applyMove(item, input, await listItems(ctx.env, projectId), { now: Date.now(), by }),
+      applyMove(
+        item,
+        mappedWrite(caller, item, input, body.undo === true),
+        await listItems(ctx.env, projectId),
+        { now: Date.now(), by },
+      ),
     { undo: body.undo === true },
   );
 }
