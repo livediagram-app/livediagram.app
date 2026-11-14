@@ -65,23 +65,23 @@ Derived from [Canvas and palette](../canvas-and-palette.md) "Duplicate" and [Roo
 
 ## Testing
 
-| Rule                                                                                | Test                                                    |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| A large piece's copy lands beside it, clear of it                                   | `lib/duplicate-placement.test.ts`                       |
-| Right, below, left, above, then a step further out; the right anyway with none free | `lib/duplicate-placement.test.ts`                       |
-| Containers never block; a Room's floor is preferred                                 | `lib/duplicate-placement.test.ts`                       |
-| A Room shares the original's wall                                                   | `lib/duplicate-placement.test.ts`                       |
-| A Door or a Window slides along its wall, clear of other wall pieces; a free one    | `lib/duplicate-placement.test.ts`                       |
-| A multi-selection moves as one group; a Door left without its Room snaps            | `hooks/canvas/useElementDuplication.test.tsx`           |
-| The copy is selected                                                                | `hooks/canvas/useElementDuplication.test.tsx`           |
+| Rule                                                                                | Test                                                       |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| A large piece's copy lands beside it, clear of it                                   | `lib/duplicate-placement.test.ts`                          |
+| Right, below, left, above, then a step further out; the right anyway with none free | `lib/duplicate-placement.test.ts`                          |
+| Containers never block; a Room's floor is preferred                                 | `lib/duplicate-placement.test.ts`                          |
+| A Room shares the original's wall                                                   | `lib/duplicate-placement.test.ts`                          |
+| A Door or a Window slides along its wall, clear of other wall pieces; a free one    | `lib/duplicate-placement.test.ts`                          |
+| A multi-selection moves as one group; a Door left without its Room snaps            | `hooks/canvas/useElementDuplication.test.tsx`              |
+| The copy is selected                                                                | `hooks/canvas/useElementDuplication.test.tsx`              |
 | Budget on 5,000 pieces                                                              | `lib/duplicate-placement.test.ts` "duplicateOffset budget" |
 
 ## Constants and configuration
 
-| Constant               | Value                | Provenance / safe range                                                |
-| ---------------------- | -------------------- | ---------------------------------------------------------------------- |
-| `DUPLICATE_GAP`        | `PASTE_OFFSET` (24)  | The gap livediagram's library inserts leave (D129); 8 to 48            |
-| `DUPLICATE_SPOT_STEPS` | 4                    | Four rings of four spots (D130); 2 to 8, each ring adds four scans     |
+| Constant               | Value               | Provenance / safe range                                            |
+| ---------------------- | ------------------- | ------------------------------------------------------------------ |
+| `DUPLICATE_GAP`        | `PASTE_OFFSET` (24) | The gap livediagram's library inserts leave (D129); 8 to 48        |
+| `DUPLICATE_SPOT_STEPS` | 4                   | Four rings of four spots (D130); 2 to 8, each ring adds four scans |
 
 ## Defaults ledger
 

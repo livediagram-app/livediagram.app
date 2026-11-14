@@ -118,7 +118,7 @@ export function duplicateOffset(
     return !obstacles.some((o) => rectsIntersect(probe, o));
   };
   const freeSpots = candidates.filter(free);
-  const onFloor = floor ? freeSpots.find((d) => contains(floor!, at(d))) : undefined;
+  const onFloor = floor && freeSpots.find((d) => contains(floor, at(d)));
   return onFloor ?? freeSpots[0] ?? candidates[0]!;
 }
 
@@ -168,7 +168,11 @@ function placeWallPiece(
  * Where one piece's copy goes: `copy` (the original's fields under a fresh id, still at the original's spot) moved to
  * the nearest free spot beside `source`, a Room sharing a wall, a Door or a Window along its wall.
  */
-export function placeDuplicate<T extends Element>(source: T, copy: T, elements: readonly Element[]): T {
+export function placeDuplicate<T extends Element>(
+  source: T,
+  copy: T,
+  elements: readonly Element[],
+): T {
   if (!isBoxed(source) || !isBoxed(copy)) return copy;
   if (isWallPiece(source) && isWallPiece(copy)) return placeWallPiece(source, copy, elements) as T;
   const box = { x: source.x, y: source.y, width: source.width, height: source.height };
@@ -182,7 +186,9 @@ export function groupDuplicateOffset(
   ids: ReadonlySet<ElementId>,
 ): Delta {
   const all = elements as Element[];
-  const box = unionRects(elements.filter((el) => ids.has(el.id)).map((el) => elementBounds(el, all)));
+  const box = unionRects(
+    elements.filter((el) => ids.has(el.id)).map((el) => elementBounds(el, all)),
+  );
   if (!box) return { dx: DUPLICATE_GAP, dy: DUPLICATE_GAP };
   return duplicateOffset(box, elements, ids);
 }

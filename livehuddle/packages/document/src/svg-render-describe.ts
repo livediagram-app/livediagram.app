@@ -111,6 +111,9 @@ export type BoxedExportOptions = {
   surface?: CanvasSurface;
   // The paper colour under the element, for what cuts through to it (a page's fold).
   paper?: string;
+  // A retired element draws its placeholder's dashed outline alone, without its words: a Shape Library preview's
+  // tiles (docs/specs/013-workspace/shape-libraries.md "API", Work Tracker 695).
+  retiredOutlines?: boolean;
 };
 
 // The face a label paints in: the author's own choice, else the tab default. The

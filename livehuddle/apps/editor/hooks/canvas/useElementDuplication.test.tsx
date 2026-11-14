@@ -83,7 +83,14 @@ describe('duplicateMultiSelected placement', () => {
   });
 
   it('snaps a copied Door whose Room stayed behind onto the nearest wall', () => {
-    const room = shape('r', { shape: 'room', x: 0, y: 0, width: 480, height: 360, roomDoor: 'none' });
+    const room = shape('r', {
+      shape: 'room',
+      x: 0,
+      y: 0,
+      width: 480,
+      height: 360,
+      roomDoor: 'none',
+    });
     // A Door and a plant standing free just outside the room's front wall: the group's copy lands right of them, the
     // Door's copy still within reach of that wall.
     const door = shape('d', { shape: 'door', x: 200, y: 380, width: 96, height: 24 });
@@ -92,5 +99,33 @@ describe('duplicateMultiSelected placement', () => {
     const doorCopy = copies.find((c) => (c as ShapeElement).shape === 'door') as ShapeElement;
     // Snapped onto the front wall: centred on its line (y = 360 - 5).
     expect(doorCopy.y + doorCopy.height / 2).toBeCloseTo(355);
+  });
+});
+
+describe('duplicate with nothing to copy', () => {
+  it('commits nothing for an empty selection, a missing element or a stored arrow', () => {
+    const arrow = {
+      id: 'l',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 10, y: 0 },
+    } as Element;
+    const commit = vi.fn();
+    const run = (selectedId: string | null, ids: string[]) =>
+      renderHook(() =>
+        useElementDuplication({
+          readSelection: () => ({ selectedId, multiSelectedIds: new Set(ids) }),
+          activeTab: { id: 't', name: 'T', elements: [arrow] },
+          commit,
+          setSelectedId: vi.fn(),
+          setMultiSelectedIds: vi.fn(),
+        }),
+      ).result.current;
+    run(null, []).duplicateSelected();
+    run('gone', []).duplicateSelected();
+    run('l', []).duplicateSelected();
+    run(null, []).duplicateMultiSelected();
+    run(null, ['gone']).duplicateMultiSelected();
+    expect(commit).not.toHaveBeenCalled();
   });
 });

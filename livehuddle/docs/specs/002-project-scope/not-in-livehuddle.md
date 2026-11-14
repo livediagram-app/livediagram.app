@@ -528,6 +528,8 @@ deleted, any other shape kind livehuddle does not know, and an element of a reti
   ("Q&A Board", "Poll", "Bar Chart", "Embed", "Table"; "Unknown Element" for a kind livehuddle never had) and, beneath it,
   "No longer supported in livehuddle", so the two lines read as one sentence about this element. Its stored label
   shows below that when it has one. The export and the thumbnail draw the same card, without the Delete button.
+  A Shape Library preview draws its dashed outline alone, without the words, which a tile is too small to read
+  (Work Tracker 695, [Shape libraries](../013-workspace/shape-libraries.md#api)).
 - **Deleting it.** An Editor sees a small **Delete** button (a bin icon, a 24px target that keeps its size on screen
   at every zoom, as the selection grips do) in the card's top-right corner while the pointer is over the card, it has
   keyboard focus or the card is selected (a touch screen has no hover, so selecting it shows the button). While hidden

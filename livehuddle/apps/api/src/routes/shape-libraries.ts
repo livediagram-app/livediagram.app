@@ -54,11 +54,20 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
   return notFound();
 }
 
+// The most one previews answer carries, in bytes of its JSON before compression (Work Tracker 695). The largest library
+// a person may keep, of the square, circle and diamond an import stored (retired kinds, drawn as outlines), measures
+// 1.06 MB, so it is drawn whole; a library of kept kinds with rich faces reached 5.8 to 7.5 MB, and now stops here.
+export const SHAPE_PREVIEWS_MAX_BYTES = 1_200_000;
+
 // Each shape drawn by the same DOM-free renderer as a canvas's snapshot, on a transparent ground, so a tile shows it
 // as the palette does. Its images are not fetched (a library shape keeps none of its own); its icons and stickers
-// draw their real art. A shape the renderer cannot draw is left out, and its tile stays plain.
+// draw their real art. A retired element (a kind livehuddle no longer has, as most stored library shapes are) draws its
+// placeholder's dashed outline alone: its words cannot be read on a tile and doubled the answer. A shape the renderer
+// cannot draw is left out, and its tile stays plain; so are the shapes past SHAPE_PREVIEWS_MAX_BYTES, in library order.
 export function shapePreviews(items: readonly ShapeLibraryItem[]): Record<string, string> {
   const out: Record<string, string> = {};
+  // The answer's `{"previews":{}}` and, per drawing, its quoted id, its quoted escaped SVG, a colon and a comma.
+  let bytes = 16;
   for (const item of items) {
     try {
       const tab = {
@@ -66,12 +75,22 @@ export function shapePreviews(items: readonly ShapeLibraryItem[]): Record<string
         name: item.title,
         elements: item.elements,
       } as Tab;
-      out[item.id] = renderElementsToSvg(tab, {
+      const svg = renderElementsToSvg(tab, {
         padding: 4,
         background: 'transparent',
         resolveIconArt: resolveIconExportArt,
         resolveStickerArt,
+        retiredOutlines: true,
       });
+      bytes += JSON.stringify(item.id).length + JSON.stringify(svg).length + 2;
+      if (bytes > SHAPE_PREVIEWS_MAX_BYTES) {
+        console.warn('[shape-libraries] previews budget reached', {
+          drawn: Object.keys(out).length,
+          items: items.length,
+        });
+        break;
+      }
+      out[item.id] = svg;
     } catch (error) {
       console.warn('[shape-libraries] preview failed', { item: item.id, error: String(error) });
     }

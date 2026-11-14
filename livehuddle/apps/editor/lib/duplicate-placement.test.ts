@@ -28,8 +28,10 @@ const piece = (
   shape = 'arcade-machine',
 ): ShapeElement => ({ id, type: 'shape', shape, x, y, width, height }) as ShapeElement;
 // A Room as every new one is: no built-in doorway, its Doors are pieces (office.md "The doorway is a Door").
-const room = (id: string, x: number, y: number, width = 480, height = 360): ShapeElement =>
-  ({ ...piece(id, x, y, width, height, 'room'), roomDoor: 'none' }) as ShapeElement;
+const room = (id: string, x: number, y: number, width = 480, height = 360): ShapeElement => ({
+  ...piece(id, x, y, width, height, 'room'),
+  roomDoor: 'none',
+});
 const door = (id: string, x: number, y: number, width = 96): ShapeElement =>
   piece(id, x, y, width, 24, 'door');
 const copyOf = <T extends Element>(el: T): T => ({ ...el, id: `${el.id}-copy` });
@@ -64,12 +66,7 @@ describe('placeDuplicate: a piece', () => {
 
   it('steps further out when the four nearest spots are all taken', () => {
     const arcade = piece('a', 0, 0);
-    const ring = [
-      piece('r', 120, 0),
-      piece('b', 0, 168),
-      piece('l', -120, 0),
-      piece('t', 0, -168),
-    ];
+    const ring = [piece('r', 120, 0), piece('b', 0, 168), piece('l', -120, 0), piece('t', 0, -168)];
     expect(placeDuplicate(arcade, copyOf(arcade), [arcade, ...ring])).toMatchObject({
       x: 240,
       y: 0,
@@ -99,6 +96,14 @@ describe('placeDuplicate: a piece', () => {
     // Near the room's right wall: right of it would stand on the wall, so the copy goes left, on the floor.
     const arcade = piece('a', 480 - ROOM_WALL - 96 - 4, ROOM_BACK_FACE + 10);
     const copy = placeDuplicate(arcade, copyOf(arcade), [office, arcade]);
+    expect(copy).toMatchObject({ x: arcade.x - 96 - DUPLICATE_GAP, y: arcade.y });
+  });
+
+  it('prefers the innermost container, whatever order the tab holds them in', () => {
+    const office = room('room', 0, 0, 480, 360);
+    const grass = piece('g', -1000, -1000, 3000, 3000, 'grass');
+    const arcade = piece('a', 480 - ROOM_WALL - 96 - 4, ROOM_BACK_FACE + 10);
+    const copy = placeDuplicate(arcade, copyOf(arcade), [office, grass, arcade]);
     expect(copy).toMatchObject({ x: arcade.x - 96 - DUPLICATE_GAP, y: arcade.y });
   });
 
@@ -211,7 +216,8 @@ describe('duplicateOffset budget', () => {
   // The worst case: a crowded floor where every spot the search tries is taken, so all of its tries scan the tab.
   it(`answers within budget on a tab of 5,000 pieces with all ${DUPLICATE_SPOT_STEPS * 4} spots taken`, () => {
     const els: Element[] = [];
-    for (let i = 0; i < 5000; i++) els.push(piece(`p${i}`, (i % 70) * 100, Math.floor(i / 70) * 150, 90, 140));
+    for (let i = 0; i < 5000; i++)
+      els.push(piece(`p${i}`, (i % 70) * 100, Math.floor(i / 70) * 150, 90, 140));
     const source = els[2500] as ShapeElement;
     let d = { dx: 0, dy: 0 };
     const ms = cpuMsOf(() => {
