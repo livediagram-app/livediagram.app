@@ -49,8 +49,6 @@ livedesign/apps/live/lib/live-stroke-test-utils.ts	livediagram/apps/editor/lib/l
 livedesign/apps/marketing/components/feature-art/features.tsx	livedocuments/apps/marketing/components/feature-art/features.tsx
 livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench/tasks/index.d.mts	livedocuments/apps/mcp/eval/bench/tasks/index.d.mts	liveplanner/apps/mcp/eval/bench/tasks/index.d.mts
 livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
-livedesign/packages/design/src/chart-ink.ts	livedocuments/packages/document/src/chart-ink.ts
-livedesign/packages/design/src/page-ink-ground.ts	livedocuments/packages/document/src/page-ink-ground.ts
 livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/document/src/retired-patterns.ts	liveplanner/packages/project/src/retired-patterns.ts
 livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts	livehuddle/packages/help-registry/src/telemetry.ts
 livedesign/packages/licences/src/overrides.ts	livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
@@ -133,12 +131,9 @@ livediagram/packages/api-schema/src/document-paths.ts	livehuddle/packages/api-sc
 livediagram/packages/api-schema/src/responses.ts	livedocuments/packages/api-schema/src/responses.ts
 livediagram/packages/api-schema/src/trash.ts	livehuddle/packages/api-schema/src/trash.ts
 livediagram/packages/document-views/src/__fixtures__/golden-path.ts	livedocuments/packages/document-views/src/__fixtures__/golden-path.ts	livehuddle/packages/document-views/src/__fixtures__/golden-path.ts
-livediagram/packages/document/src/collab-index-rows.ts	livehuddle/packages/document/src/collab-index-rows.ts
 livediagram/packages/document/src/svg-render-temperature.ts	liveplanner/packages/project/src/svg-render-temperature.ts
-livediagram/packages/document/src/tab-as-seen.ts	livehuddle/packages/document/src/tab-as-seen.ts
 livediagram/packages/licences/src/apps.ts	livedocuments/packages/licences/src/apps.ts	liveplanner/packages/licences/src/apps.ts
 livediagram/packages/template-previews/src/index.ts	livehuddle/packages/template-previews/src/index.ts
-livediagram/packages/templates/src/template-inks.ts	livehuddle/packages/templates/src/template-inks.ts
 livediagram/scripts/stroke-points-bench.ts	livehuddle/scripts/stroke-points-bench.ts
 livedocuments/apps/editor/app/new/layout.tsx	livehuddle/apps/editor/app/new/layout.tsx
 livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
