@@ -993,6 +993,18 @@ describe('chrome the canvas draws on a box', () => {
     expect(svg).toMatch(/…<\/tspan><\/tspan><\/text>/);
   });
 
+  it('breaks an across title only between words, so "Customer Engineering" reads whole', () => {
+    const svg = renderElementsToSvg(
+      tab([laneAt({ label: 'Customer Engineering', textSize: 'md', x: 0, y: 0 })]),
+    );
+    const lines = [...svg.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]!);
+    // Each line is a whole word, never "Custom" / "er".
+    for (const line of lines)
+      expect(['Customer', 'Engineering', 'Customer Engineering']).toContain(line);
+    // The small padding across the strip: the title starts 6 px in, not the lane's 24.
+    expect(svg).toMatch(/<text x="6"/);
+  });
+
   it('keeps a short across title on one line in its gutter', () => {
     const svg = renderElementsToSvg(tab([laneAt({ label: 'Sales', x: 0, y: 0 })]));
     expect(svg).toContain('>Sales<');

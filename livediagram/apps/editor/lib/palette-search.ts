@@ -133,13 +133,15 @@ export function buildPaletteSearchItems({
   // One row per name between icons and emoji (docs/specs/008-canvas/canvas-and-palette.md "Add to canvas"): a row
   // shows only its name, so an emoji sticker sharing an icon's name (Gift, Rocket) made two identical rows. The icon's
   // row is kept and takes the sticker's words too; the sticker stays in the palette's Stickers.
-  const iconByName = new Map(icons.map((item) => [item.name.toLowerCase(), item]));
+  // Spaces and hyphens aside, so "Lightbulb" and "Light bulb" would still be one name.
+  const nameKey = (name: string) => name.toLowerCase().replace(/[\s-]+/g, '');
+  const iconByName = new Map(icons.map((item) => [nameKey(item.name), item]));
   const stickers: PaletteSearchItem[] = [];
   // Stickers (docs/specs/010-palette/stickers.md), added through their own path. A badge also
   // matches on the word on its pill, so "blocked" finds BLOCKED.
   for (const s of getLoadedStickerCatalog()) {
     const keywords = `sticker ${s.kind === 'badge' ? `${s.text.toLowerCase()} badge ` : 'emoji '}${s.keywords}`;
-    const twin = s.kind === 'badge' ? undefined : iconByName.get(s.label.toLowerCase());
+    const twin = s.kind === 'badge' ? undefined : iconByName.get(nameKey(s.label));
     if (twin) twin.keywords = `${twin.keywords} ${keywords}`;
     else
       stickers.push({

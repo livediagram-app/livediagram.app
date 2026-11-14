@@ -3,6 +3,7 @@ import {
   LANE_BAND_PX,
   LANE_GUTTER_PX,
   LANE_TITLE_MAX_LINES,
+  acrossTitlePadding,
   acrossTitleStrip,
   isUprightTitle,
   laneDrawnSize,
@@ -117,5 +118,13 @@ describe('acrossTitleStrip', () => {
 
   it('wraps onto at most three lines', () => {
     expect(LANE_TITLE_MAX_LINES).toBe(3);
+  });
+});
+
+describe('acrossTitlePadding', () => {
+  it('keeps at most the small padding across the strip, so the gutter goes to the words', () => {
+    expect(acrossTitlePadding(24)).toBe(6);
+    expect(acrossTitlePadding(14)).toBe(6);
+    expect(acrossTitlePadding(0)).toBe(0);
   });
 });

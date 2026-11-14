@@ -168,7 +168,8 @@ describe('one Add to canvas row per name', () => {
   it('lists every icon and sticker under a name of its own, so no two rows read alike', () => {
     const names = buildPaletteSearchItems()
       .filter((i) => i.add.type === 'icon' || i.add.type === 'sticker')
-      .map((i) => i.name.toLowerCase());
+      // Spaces and hyphens aside: "Lightbulb" and "Light bulb" read as one name.
+      .map((i) => i.name.toLowerCase().replace(/[\s-]+/g, ''));
     const repeated = names.filter((n, i) => names.indexOf(n) !== i);
     expect(repeated).toEqual([]);
   });

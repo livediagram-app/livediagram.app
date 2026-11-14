@@ -22,6 +22,8 @@ import { r2, xmlEscape } from './svg-render-primitives';
 export {
   clampLabelLines,
   estimatedLabelMeasure,
+  fitWholeWordLines,
+  wholeWordFontPx,
   fontSizeFor,
   LABEL_ESTIMATE_CHAR_EM,
   LABEL_LINE_HEIGHT,

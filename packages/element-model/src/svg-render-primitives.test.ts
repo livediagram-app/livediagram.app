@@ -2,6 +2,8 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   clampLabelLines,
+  fitWholeWordLines,
+  wholeWordFontPx,
   estimatedLabelMeasure,
   fontSizeFor,
   graphemes,
@@ -79,6 +81,53 @@ describe('clampLabelLines', () => {
 
   it('keeps at least the ellipsis on a line too narrow for anything', () => {
     expect(clampLabelLines(['abc', 'def'], 1, 0, chars)).toEqual(['\u2026']);
+  });
+});
+
+// A lane title in its gutter reads in whole words (docs/specs/009-elements/lane.md "A title wraps in its gutter").
+describe('fitWholeWordLines', () => {
+  it('breaks only between words, so a two-word name reads whole', () => {
+    expect(fitWholeWordLines('Customer Engineering', 12, 3, chars)).toEqual([
+      'Customer',
+      'Engineering',
+    ]);
+    expect(fitWholeWordLines('Sales', 12, 3, chars)).toEqual(['Sales']);
+  });
+
+  it('ends a word too wide for the line in an ellipsis rather than splitting it', () => {
+    expect(fitWholeWordLines('Internationalisation team', 10, 3, chars)).toEqual([
+      'Internati\u2026',
+      'team',
+    ]);
+  });
+
+  it('past the lines, drops whole words from the last kept line before cutting one', () => {
+    expect(fitWholeWordLines('one two three four five six seven', 9, 2, chars)).toEqual([
+      'one two',
+      'three\u2026',
+    ]);
+  });
+
+  it('fits a pasted 20,000-character word within a CPU budget', () => {
+    const word = 'a'.repeat(20_000);
+    let out: string[] = [];
+    const spent = cpuMsOf(() => {
+      out = fitWholeWordLines(`${word} ${word}`, 100, 3, chars);
+    });
+    expect(out).toEqual([`${'a'.repeat(99)}\u2026`, `${'a'.repeat(99)}\u2026`]);
+    expect(spent).toBeLessThan(cpuBudgetMs(200));
+  });
+});
+
+describe('wholeWordFontPx', () => {
+  const measureAt = (px: number) => (s: string) => s.length * (px / 2);
+  it('keeps the size when every word fits, and steps down to the largest that fits', () => {
+    expect(wholeWordFontPx('Customer Engineering', 119, 16, measureAt)).toBe(16);
+    expect(wholeWordFontPx('Infrastructure', 119, 22, measureAt)).toBe(17);
+  });
+  it('stops at the small size, leaving the ellipsis to a word that still does not fit', () => {
+    expect(wholeWordFontPx('Internationalisation', 119, 22, measureAt)).toBe(14);
+    expect(wholeWordFontPx('', 119, 22, measureAt)).toBe(22);
   });
 });
 

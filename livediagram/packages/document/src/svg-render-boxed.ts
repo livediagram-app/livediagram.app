@@ -31,7 +31,7 @@ import { svgTableShape } from './svg-render-table';
 import { svgElementBody } from './svg-render-body';
 import { svgPageFold } from './svg-render-page';
 import { svgHeroCaption } from './svg-render-web';
-import { clampLabelLines, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import { fitWholeWordLines, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
 import type { ExportLabel } from './svg-render-labels';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
 import { svgWordmarkLabel } from './svg-render-wordmark';
@@ -365,9 +365,11 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${turned}</g>`;
 }
 
-// A label's lines as the canvas wraps them, held to its `maxLines` (a lane title in its gutter) when it has one.
+// A label's lines as the canvas wraps them. One held to `maxLines` (a lane title in its gutter) reads in whole
+// words, as the canvas lays it out (fitWholeWordLines).
 function wrappedLines(label: ExportLabel, breakWords: boolean): string[] {
   const measure = labelMeasure(label.size, label.bold, label.italic, label.fontFamily);
-  const lines = wrapLabel(label.text, label.maxWidth, measure, breakWords);
-  return label.maxLines ? clampLabelLines(lines, label.maxLines, label.maxWidth, measure) : lines;
+  return label.maxLines
+    ? fitWholeWordLines(label.text, label.maxWidth, label.maxLines, measure)
+    : wrapLabel(label.text, label.maxWidth, measure, breakWords);
 }

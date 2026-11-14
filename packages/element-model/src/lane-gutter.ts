@@ -6,7 +6,7 @@
 // box with its title floating in the middle of the work. The editor's
 // LaneGutter component owns the drag / snapping; only the geometry is here.
 
-import type { TextAlignX, TextAlignY } from '@liveworkspace/model-core/basics';
+import { PADDING_PX, type TextAlignX, type TextAlignY } from '@liveworkspace/model-core/basics';
 
 /** Thickness of the title gutter along a lane's side, in element space. */
 export const LANE_GUTTER_PX = 132;
@@ -129,4 +129,14 @@ export function acrossTitleStrip(
   if (isUprightTitle(el) || isLaneBand(laneEdgeOfElement(el))) return null;
   const strip = uprightTitleStrip(el, width, height);
   return { x: strip.x, y: strip.y, width: strip.width, height: strip.height };
+}
+
+/**
+ * The padding a title across a side gutter keeps from the strip's edges: at most the small padding
+ * (`PADDING_PX.sm`, 6), as an upright title keeps. The lane's own padding (large by default, 24) took 48 of the
+ * gutter's 132 px and split "Customer Engineering" mid-word; the small one leaves 120 px, room for common one- and
+ * two-word names to read whole (docs/specs/009-elements/lane.md "A title wraps in its gutter").
+ */
+export function acrossTitlePadding(padding: number): number {
+  return Math.min(padding, PADDING_PX.sm);
 }

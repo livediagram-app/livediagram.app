@@ -25,7 +25,7 @@ import {
   EXPORT_IMAGE_STROKE,
   LABEL_LINE_HEIGHT,
   clampExportRunLines,
-  clampLabelLines,
+  fitWholeWordLines,
   wrapExportRuns,
   MUTED_RUN_OPACITY,
   wrapLabel,
@@ -255,16 +255,16 @@ export function drawBoxed(
       // Wrap to the element width so long labels stay inside the box, then
       // stack the lines from the label's vertical anchor.
       // A word wider than the box breaks as the SVG export and the canvas break it; an icon caption stays whole.
+      // A lane title in its gutter reads in whole words, as the SVG and the canvas lay it out.
       const measure = (s: string) => ctx.measureText(s).width;
-      const wrapped = wrapLabel(
-        label.text,
-        label.maxWidth,
-        measure,
-        !(el.type === 'shape' && el.shape === 'icon'),
-      );
       const lines = label.maxLines
-        ? clampLabelLines(wrapped, label.maxLines, label.maxWidth, measure)
-        : wrapped;
+        ? fitWholeWordLines(label.text, label.maxWidth, label.maxLines, measure)
+        : wrapLabel(
+            label.text,
+            label.maxWidth,
+            measure,
+            !(el.type === 'shape' && el.shape === 'icon'),
+          );
       const lineH = label.size * LABEL_LINE_HEIGHT;
       let ly = firstY(lines.length, lineH);
       for (const line of lines) {
