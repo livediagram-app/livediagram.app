@@ -85,6 +85,11 @@ A doorway with a door in it, placed on any wall.
   wall stays in the middle), clamped clear of the wall's ends when the wall shrinks, turning with the wall. Which
   doors ride is derived at the time, not stored: a door rides the room whose wall it stands on, so doors from before
   this rule follow too. The resize and the doors it carries are one change, one undo (`doorsFollowRooms`).
+- **A duplicate slides along the wall.** Duplicating a Door on a wall puts the copy on the same wall, beside the
+  original with a 24 px gap (the side with room first, then a step further out), snapped as every Door is; it
+  never lands on the original or another Door or Window on that wall. A wall with no clear stretch keeps the copy
+  beside the original's spot, snapped onto the nearest wall ([Canvas and palette](../008-canvas/canvas-and-palette.md)
+  "Duplicate"). A Window duplicates the same way.
 - Any number of doors per room, on any wall. A new Room comes with one, in the middle of its front wall
   ([Office](office.md) "Room"); it is an ordinary Door, so it is selected, slid along the walls and deleted like
   any other. An older Room's own doorway (`roomDoor`) keeps working, and a Door on its wall is a second way in.

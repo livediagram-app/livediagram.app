@@ -208,6 +208,7 @@ describe('GET /api/shape-libraries/:id/previews', () => {
       previews = shapePreviews(items);
     });
     const bytes = JSON.stringify({ previews }).length;
+    console.log("MEASURE", bytes, ms, previews.i0);
     expect(Object.keys(previews)).toHaveLength(MAX_SHAPE_LIBRARY_ITEMS);
     // CPU time, so a busy runner's waiting doesn't count (wall-clock 500 ms failed CI at 534). Measured 68 ms and
     // 2.29 MB (before compression) on a laptop: the square, circle and diamond a stored library holds are retired

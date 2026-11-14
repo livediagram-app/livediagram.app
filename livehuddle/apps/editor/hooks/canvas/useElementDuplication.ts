@@ -8,12 +8,13 @@ import {
   duplicateElements,
   freshCopyFields,
   isBoxed,
+  snapMovedDoors,
   type BoxedElement,
   type Element,
   type Tab,
 } from '@livehuddle/document';
+import { groupDuplicateOffset, placeDuplicate } from '@/lib/duplicate-placement';
 import { trackDuplicated } from '@/lib/element-telemetry';
-import { PASTE_OFFSET } from '@/lib/paste-placement';
 
 export function useElementDuplication(deps: {
   // Read when a duplicate runs (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -25,17 +26,17 @@ export function useElementDuplication(deps: {
 }) {
   const { readSelection, activeTab, commit, setSelectedId, setMultiSelectedIds } = deps;
 
-  // Multi-select duplicate (Cmd+D on a marquee, the command palette): the same
-  // duplicateElements paste and quick-add use, offset diagonally. It used to be
-  // a hand-rolled copy of it, so a copied portal stepped through to the original.
+  // Multi-select duplicate (Cmd+D on a marquee, the command palette): the same duplicateElements paste and quick-add
+  // use, moved as one group to the nearest free spot beside the selection (lib/duplicate-placement.ts). A Door or a
+  // Window whose Room was not copied snaps onto the nearest wall there; one riding a copied Room is already on its wall.
   const duplicateMultiSelected = () => {
     const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
-    const { newElements: copies } = duplicateElements(
-      activeTab.elements,
-      multiSelectedIds,
-      PASTE_OFFSET,
-      PASTE_OFFSET,
+    const { dx, dy } = groupDuplicateOffset(activeTab.elements, multiSelectedIds);
+    const { newElements } = duplicateElements(activeTab.elements, multiSelectedIds, dx, dy);
+    const merged = [...activeTab.elements, ...newElements];
+    const copies = snapMovedDoors(merged, new Set(newElements.map((c) => c.id))).slice(
+      activeTab.elements.length,
     );
     if (copies.length === 0) return;
     commit((els) => [...els, ...copies]);
@@ -48,18 +49,20 @@ export function useElementDuplication(deps: {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source) return;
-    // Element-only duplicate: clones just this element, offset diagonally so it's visible next to
-    // the original. A retired arrow is never copied (docs/specs/002-project-scope/blueprints/element-engine.md D21).
+    // Element-only duplicate: clones just this element into the nearest free spot beside the original, so the copy is
+    // plainly there (lib/duplicate-placement.ts). A retired arrow is never copied (docs/specs/002-project-scope/
+    // blueprints/element-engine.md D21).
     if (!isBoxed(source)) return;
-    const offset = PASTE_OFFSET;
-    const copy: BoxedElement = {
-      ...source,
-      id: crypto.randomUUID(),
-      x: source.x + offset,
-      y: source.y + offset,
-      // Whatever a copy regenerates rather than inherits.
-      ...freshCopyFields(source),
-    };
+    const copy: BoxedElement = placeDuplicate(
+      source,
+      {
+        ...source,
+        id: crypto.randomUUID(),
+        // Whatever a copy regenerates rather than inherits.
+        ...freshCopyFields(source),
+      },
+      activeTab.elements,
+    );
     commit((els) => [...els, copy]);
     trackDuplicated([copy]);
     setSelectedId(copy.id);
