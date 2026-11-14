@@ -11,7 +11,7 @@ import {
   type SessionButtonConfig,
   type ShapeElement,
 } from '@livediagram/document';
-import { PAPER_INK } from './template-inks';
+import { PAPER_INK } from '@liveworkspace/template-previews/template-inks';
 
 export const GAP = 40;
 export const TITLE_H = 52;

@@ -26,7 +26,7 @@ import {
 import { objectiveCard, objectiveCardHeight, type Objective } from './template-objective-card';
 import { GUIDE_H, objectiveGuide } from './template-objective-guide';
 import { RHYTHM_H, checkinRhythm } from './template-checkin-rhythm';
-import { CANVAS_TONES } from './template-inks';
+import { CANVAS_TONES } from '@liveworkspace/template-previews/template-inks';
 
 // Alex's plan for the second half of 2026, read left to right the way the
 // thinking goes. START WITH WHY: one focus statement for the half, then

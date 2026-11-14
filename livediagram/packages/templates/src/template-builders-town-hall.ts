@@ -19,7 +19,7 @@ import {
   note,
   section,
 } from './template-session-parts';
-import { PAPER_INK } from './template-inks';
+import { PAPER_INK } from '@liveworkspace/template-previews/template-inks';
 
 // Town Hall Q&A: an all-hands where the audience asks and upvotes questions,
 // often from a view-only link, which the Q&A board allows

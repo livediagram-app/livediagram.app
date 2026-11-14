@@ -50,7 +50,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
-│  ├─ template-previews        the template previews' hover motion, fan and story parts, the template search and catalogue, and the analysis templates' data, for every editor
+│  ├─ template-previews        the template previews' hover motion, fan and story parts, the template search and catalogue, the templates' inks, and the analysis templates' data, for every editor
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script, header and HTML sanitiser every app's pages share
