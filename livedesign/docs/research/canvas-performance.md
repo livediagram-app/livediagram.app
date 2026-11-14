@@ -444,6 +444,14 @@ each traced drag's raster tasks and the main thread's rendering steps.
   alignment-guide overlay; the dragged box itself rides an offset and paints nothing. The raster the
   hosted runner waits on follows those, so the next lever is the re-routing arrows' and the guides'
   paint, not the moved box's layer.
+- **Which of the two costs what** (each hidden by an injected style, two runs each): hiding the
+  alignment-guide overlay took Layerize from 376-397 ms to 235-271 ms and raster from 162-175 ms to
+  124-142 ms at fit; hiding every arrow took Layout from about 125 ms to 45-50 ms, Paint from about
+  110 ms to 41-55 ms and raster at fit to 87-105 ms. Hiding is only a bound: both have to be drawn.
+- **Tried: keeping the guide overlay's `<svg>` mounted through the gesture** instead of mounting it
+  each time a guide shows. Layerize fell about 8% (369-370 to 338-350 ms at fit), but raster at fit
+  rose from 158-164 ms to 218-225 ms; not kept. The cost is the lines being drawn, not the overlay
+  coming and going.
 
 ## Not tried
 
