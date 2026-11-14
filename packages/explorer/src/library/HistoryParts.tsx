@@ -203,7 +203,7 @@ function PersonGlyph() {
 export function HistorySkeleton() {
   const bar = 'rounded bg-slate-200/80 motion-safe:animate-pulse dark:bg-slate-700/70';
   return (
-    <div aria-busy="true" aria-label="Loading history" className="px-5 py-4 sm:px-6">
+    <div role="status" aria-busy="true" aria-label="Loading history" className="px-5 py-4 sm:px-6">
       <span className={`mb-4 block h-3 w-20 ${bar}`} />
       {[0.7, 0.5, 0.6, 0.4].map((w, i) => (
         <div key={i} className="flex gap-3 pb-5">
