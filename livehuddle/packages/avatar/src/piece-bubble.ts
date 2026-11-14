@@ -120,3 +120,19 @@ export function bubbleSide(piece: Rect, grid: SignGrid): PieceBubbleSide {
   if (sides.length === 0) return 'below';
   return sides.reduce((best, s) => (s.room > best.room ? s : best)).side;
 }
+
+/**
+ * The side a bubble shows on once drawn: a bubble beside its piece that would leave the visible view (a wide
+ * Reception Desk on a phone, where the screen holds the desk and little more) shows below instead, where it stays in
+ * view under the piece. `bubble` and `view` are in the same space (screen px from the drawn bubble's box); above and
+ * below are kept as they are.
+ */
+export function sideInView(side: PieceBubbleSide, bubble: Rect, view: Rect): PieceBubbleSide {
+  if (side !== 'left' && side !== 'right') return side;
+  const inside =
+    bubble.x >= view.x &&
+    bubble.x + bubble.width <= view.x + view.width &&
+    bubble.y >= view.y &&
+    bubble.y + bubble.height <= view.y + view.height;
+  return inside ? side : 'below';
+}

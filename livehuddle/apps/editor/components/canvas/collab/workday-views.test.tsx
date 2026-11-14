@@ -17,6 +17,20 @@ import { drawnRect } from '@livehuddle/avatar/seats';
 
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useOptionalEditorContext: () => null }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// A drawn box on screen, for a bubble's measured place.
+const screenRect = (x: number, y: number, width: number, height: number) =>
+  ({
+    x,
+    y,
+    width,
+    height,
+    left: x,
+    top: y,
+    right: x + width,
+    bottom: y + height,
+    toJSON: () => ({}),
+  }) as DOMRect;
+
 const reduced = vi.hoisted(() => ({ on: false }));
 vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
   prefersReducedMotion: () => reduced.on,
@@ -266,6 +280,19 @@ describe('the Reception Desk', () => {
     // A sign well clear of the bubble's room leaves it above.
     rerender(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 700, y: 40 }} />);
     expect(bubble().getAttribute('data-bubble-side')).toBe('above');
+  });
+
+  // A phone's view holds the desk and little more: a Welcome beside it would leave the screen, so it shows below.
+  it('shows the Welcome below the desk when beside it would leave the view', () => {
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(screenRect(window.innerWidth - 60, 100, 150, 28));
+    render(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 170, y: 40 }} />);
+    const bubble = screen.getByRole('status');
+    expect(bubble.getAttribute('data-bubble-side')).toBe('below');
+    expect(bubble.className).toContain('top-[calc(100%+6px)]');
+    expect(screen.getByRole('button', { name: 'Ring the bell' })).toBeTruthy();
+    rect.mockRestore();
   });
 });
 

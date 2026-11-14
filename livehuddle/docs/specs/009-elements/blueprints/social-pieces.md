@@ -341,7 +341,8 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
   each machine's `bubbleSide`, `above` unless a Room Sign overlaps `bubbleAbove`, then the clear one of
   `bubbleBeside` right and left with the most room, else `below`, reading `signsNear` a 256 px cell grid of the
   signs, `piece-bubble.ts`; `lib/piece-bubble-style.ts` sets the side's classes, `--lh-bubble-x` and
-  `--lh-bubble-rise`; the bubble is portalled by `PieceBubblePortal` into `PieceBubbleHost`, the characters'
+  `--lh-bubble-rise`, and its `useSideInView` measures the drawn bubble once as it shows on a side and takes `below`
+  when `sideInView` finds it leaving the canvas's box; the bubble is portalled by `PieceBubblePortal` into `PieceBubbleHost`, the characters'
   layer's `z-[2]` box over every figure and chip, and keeps `pieceControlProps`, its click reaching the button
   through the portal, Work Tracker 793)
   (`pieceControlProps`, `data-piece-main`, `cursor-pointer`, `aria-label="Play Moon Mail"`), so a press there opens

@@ -7,6 +7,7 @@ import {
   bubbleSide,
   PIECE_BUBBLE,
   signGrid,
+  sideInView,
   signsNear,
 } from './piece-bubble';
 
@@ -77,6 +78,23 @@ describe('bubbleSide', () => {
     // In the same cells as the right's strip, but below it: the right keeps all its room.
     expect(bubbleSide(machine, signGrid([signAbove(machine), sign(300, 360)]))).toBe('right');
     expect(signsNear(signGrid([]), bubbleAbove(machine))).toEqual([]);
+  });
+});
+
+describe('sideInView', () => {
+  // A Reception Desk (200 px wide) at the front of a phone's 390 px view, your character centred under it.
+  const phone = { x: 0, y: 0, width: 390, height: 844 };
+  const wideDesk = { x: 95, y: 300, width: 200, height: 112 };
+  it('shows a beside bubble below when it would leave a narrow view, either side', () => {
+    expect(sideInView('right', bubbleBeside(wideDesk, 'right'), phone)).toBe('below');
+    expect(sideInView('left', bubbleBeside(wideDesk, 'left'), phone)).toBe('below');
+  });
+  it('keeps a beside bubble that fits, and never moves one above or below', () => {
+    const wide = { x: 0, y: 0, width: 1440, height: 900 };
+    expect(sideInView('right', bubbleBeside(wideDesk, 'right'), wide)).toBe('right');
+    expect(sideInView('left', bubbleBeside({ ...wideDesk, x: 400 }, 'left'), wide)).toBe('left');
+    expect(sideInView('above', { x: -500, y: 0, width: 10, height: 10 }, phone)).toBe('above');
+    expect(sideInView('below', { x: -500, y: 0, width: 10, height: 10 }, phone)).toBe('below');
   });
 });
 

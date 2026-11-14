@@ -305,7 +305,9 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
   same room. `packages/templates/src/template-bubbles.test.ts` checks every tab of every template. **A sign placed by
   hand** there (Work Tracker 793) moves the bubble beside the piece, 6 px off its side and level with its top, on the
   side with the most free room (the right on a tie), clear of the people standing at its front; only when a sign
-  takes both sides does it show below the piece, dropping in from above. It never covers the card. The bubble draws
+  takes both sides does it show below the piece, dropping in from above. A bubble beside the piece that would leave
+  the visible view (a wide Reception Desk on a phone, whose screen holds the desk and little more) shows below it
+  too, so its button is never cut off. It never covers the card. The bubble draws
   **over the characters** (and their chips), never under them, so nobody standing at the piece covers its text. The
   signs are put in a coarse grid once per change of the board, and each bubble reads only the
   signs in the few cells its room touches (`packages/avatar/src/piece-bubble.ts`), never every element.

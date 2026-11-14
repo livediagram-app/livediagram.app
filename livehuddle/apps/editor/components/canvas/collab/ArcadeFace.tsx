@@ -7,7 +7,7 @@
 //
 // Away from the machine this draws nothing, and a click on the cabinet walks you to its front (avatar-click-intent).
 
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { ShapeElement } from '@livehuddle/document';
 import { claimAvatarKeys, type ClaimedKey } from '@livehuddle/avatar/key-claims';
 import { walkInputBlocked } from '@livehuddle/avatar/walk-guard';
@@ -16,7 +16,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { formatArcadeScore } from '@/lib/arcade/arcade-format';
 import { pieceControlProps } from '@/lib/piece-control';
 import { ReaderShell } from './ReaderShell';
-import { pieceBubbleSide, pieceBubbleStyle } from '@/lib/piece-bubble-style';
+import { pieceBubbleSide, pieceBubbleStyle, useSideInView } from '@/lib/piece-bubble-style';
 import { PieceBubblePortal } from '../PieceBubbleLayer';
 import { useArcadeBubbleSide, useNearArcade } from './useSocialPieces';
 
@@ -53,7 +53,9 @@ function useOpenKeys(on: boolean, open: () => void) {
 export function ArcadeFace({ element }: { element: ShapeElement }) {
   const near = useNearArcade(element.id);
   // Beside the cabinet (or below it) when a Room Sign stands where the bubble rises (Work Tracker 793).
-  const side = useArcadeBubbleSide(element.id);
+  const bubbleRef = useRef<HTMLSpanElement>(null);
+  // Kept in view: beside the cabinet only while the bubble fits on screen there, else below it.
+  const side = useSideInView(useArcadeBubbleSide(element.id), bubbleRef);
   const [open, setOpen] = useState(false);
   useOpenKeys(near && !open, () => setOpen(true));
   const close = () => setOpen(false);
@@ -84,6 +86,7 @@ export function ArcadeFace({ element }: { element: ShapeElement }) {
                 cabinet's press, its click reaching the button through the portal. */}
             <PieceBubblePortal box={element}>
               <span
+                ref={bubbleRef}
                 aria-hidden
                 data-bubble-side={side}
                 {...pieceControlProps}

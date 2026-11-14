@@ -63,7 +63,8 @@ Derived from [Workday pieces](../workday-pieces.md).
 - **Welcome**: `receptionAt(feet, desks)`: the desk whose front strip (`x - 0 .. x + width`, `y + 0.62 h .. y + h +
 RECEPTION_REACH`) holds your feet. A module store like the arcade's; a step re-renders nothing unless the answer
   changes. The store also holds the side that desk's Welcome shows on (`useReceptionBubbleSide`), worked
-  out per board change by `bubbleSide` (`piece-bubble.ts`), and the bubble draws in `PieceBubbleHost` over the
+  out per board change by `bubbleSide` (`piece-bubble.ts`), kept in view by `useSideInView` (`below` when beside
+  would leave the canvas's box), and the bubble draws in `PieceBubbleHost` over the
   characters (Work Tracker 793). A walking click on an unturned desk (or Arcade Machine) walks to `walkPointFor(el, point)`: `FRONT_STAND`
   below its box under the click, clamped 12% in from its ends (`lib/avatar-click-intent.ts`).
   With another standing character's feet within `FRONT_SPOT_GAP` (24 px) of that spot, the walk goes to
