@@ -18,6 +18,7 @@ import {
   type ItemMoveOf,
   type TimeOp,
 } from '@liveplanner/items';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
 import type { ItemTypesSlice } from './useItemTypes';
@@ -82,15 +83,16 @@ export function usePlanItemWrites(
   );
 
   // A write that changes a card's type carries its custom fields mapped into the new type's, in the same write and
-  // undo step (docs/specs/026-plan/item-types.md "Changing a card's type"). Any other write goes as it was.
-  const items = planItems.items;
-  const types = itemTypes.types;
+  // undo step (docs/specs/026-plan/item-types.md "Changing a card's type"). Any other write goes as it was. The cards
+  // and types are read at their newest, so the write callbacks keep their identity as cards change.
+  const latest = useLatest({ items: planItems.items, types: itemTypes.types });
   const typed = useCallback(
     <W extends ItemPatch | ItemMove>(itemId: string, w: W): W => {
+      const { items, types } = latest.current;
       const item = w.type === undefined ? undefined : items.get(itemId);
       return item ? withTypeChangeFields(item, w, types) : w;
     },
-    [items, types],
+    [latest],
   );
 
   const moveItem = useCallback(
