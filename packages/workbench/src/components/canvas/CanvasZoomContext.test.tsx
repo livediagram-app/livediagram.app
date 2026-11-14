@@ -7,6 +7,7 @@ import {
   CounterScaled,
   useCanvasZoom,
   useCanvasZoomSelector,
+  useSettledZoomSelector,
   ZOOM_SETTLE_MS,
   ZoomFollowing,
 } from './CanvasZoomContext';
@@ -69,6 +70,35 @@ describe('following the zoom', () => {
     expect(renders).toBe(before);
     rerender(at(0.9));
     expect(container.querySelector('i')!.dataset.small).toBe('false');
+  });
+
+  // Work Tracker 885: the parts a board carries by the thousand change shape when the zoom stops, so a zoom step asks
+  // none of them.
+  it('asks a settled selector only once the zoom stands still, and reads 1 outside a provider', () => {
+    vi.useFakeTimers();
+    const asked: number[] = [];
+    const Dot = () => {
+      const small = useSettledZoomSelector((zoom) => {
+        asked.push(zoom);
+        return zoom < 0.5;
+      });
+      return <i data-small={small} />;
+    };
+    const dot = <Dot />;
+    const at = (zoom: number) => <CanvasZoomProvider zoom={zoom}>{dot}</CanvasZoomProvider>;
+    const { container, rerender } = render(at(0.9));
+    expect(container.querySelector('i')!.dataset.small).toBe('false');
+    asked.length = 0;
+    for (const zoom of [0.7, 0.5, 0.3]) rerender(at(zoom));
+    expect(asked).toEqual([]);
+    expect(container.querySelector('i')!.dataset.small).toBe('false');
+    act(() => {
+      vi.advanceTimersByTime(ZOOM_SETTLE_MS);
+    });
+    expect(container.querySelector('i')!.dataset.small).toBe('true');
+    const outside = render(<Dot />);
+    expect(outside.container.querySelector('i')!.dataset.small).toBe('false');
+    outside.unmount();
   });
 
   it('settles a following part to its size on screen once the zoom stands still', () => {

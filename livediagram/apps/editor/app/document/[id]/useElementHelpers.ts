@@ -23,6 +23,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
 import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';
+import { markPlacedEdit } from '@/lib/placed-edit';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -172,7 +173,11 @@ export function useElementHelpers(opts: {
     if (select) setSelectedId(el.id);
     // Only kinds that take typed text: a sticker or a session button renders
     // its own face from its setting, so a caret there edits nothing.
-    if (edit && takesTypedLabel(el)) setEditingId(el.id);
+    // Escape out of this editor before anything is typed leaves the selection too (lib/placed-edit).
+    if (edit && takesTypedLabel(el)) {
+      setEditingId(el.id);
+      markPlacedEdit(el.id);
+    }
   };
 
   // --- Selection helpers ---------------------------------------------------
