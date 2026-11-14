@@ -154,6 +154,25 @@ describe('useItemTypes', () => {
     expect(steps).toHaveLength(2);
   });
 
+  // Work Tracker 858: a tab's icon is part of the type's save, so one Undo takes it back.
+  it('undoes a tab icon and Details icon chosen in one save', async () => {
+    answering();
+    const { hook, steps } = render({ itemTypes: cat('task'), itemTypesRev: 0 });
+    const iconed: ItemTypeDef = {
+      ...def('task'),
+      detailsGlyph: 'info',
+      tabs: [{ id: 't-overview', label: 'Overview', fields: ['description'], glyph: 'book' }],
+    };
+    act(() => hook.result.current.slice.saveType(iconed));
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(1));
+    expect(steps).toHaveLength(1);
+    act(() => steps[0]!.undo());
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(2));
+    const back = hook.result.current.slice.catalogue!.types[0]!;
+    expect(back).not.toHaveProperty('detailsGlyph');
+    expect(back.tabs ?? []).toEqual([]);
+  });
+
   it('takes another editor’s save from the room, but never an older one', async () => {
     const { hook } = render({ itemTypes: cat('task'), itemTypesRev: 5 });
     act(() =>
