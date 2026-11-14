@@ -1,20 +1,17 @@
 // @vitest-environment jsdom
 
-// The editor header's badge for a project saved only in this browser reads "This Browser", matching
-// the Explorer's pill (docs/specs/006-project/offline-mode.md#this-browser-badge--explorer).
+// The editor header's badge for an item saved only in this browser reads "This Browser", matching
+// the Explorer's pill (docs/specs/006-<kind>/offline-mode.md#this-browser-badge--explorer).
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  THIS_BROWSER_DESCRIPTION,
-  THIS_BROWSER_LABEL,
-} from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
+import { THIS_BROWSER_DESCRIPTION, THIS_BROWSER_LABEL } from '../primitives/ThisBrowserPill';
 import { SharedBadge } from './SharedBadge';
 
 afterEach(cleanup);
 
 describe('SharedBadge', () => {
-  it('reads This Browser for a project in this browser, never Offline', () => {
+  it('reads This Browser for an item in this browser, never Offline', () => {
     render(<SharedBadge shareable={false} offline />);
     const badge = screen.getByText(THIS_BROWSER_LABEL).closest('[tabindex]') as HTMLElement;
     expect(badge.textContent).toContain('This Browser');
@@ -51,7 +48,20 @@ describe('SharedBadge', () => {
   });
 });
 
-// docs/specs/006-project/offline-mode.md "The visibility legend": the reach scale, the hover preview and
+// docs/specs/025-community/community.md: listed in the Community, the item is public.
+describe('SharedBadge in the Community', () => {
+  it('reads Public while listed, over Shared, and This Browser still wins', () => {
+    render(<SharedBadge shareable community />);
+    expect(screen.getByText('Public')).toBeTruthy();
+    expect(screen.queryByText('Shared')).toBeNull();
+    cleanup();
+    render(<SharedBadge shareable={false} offline community />);
+    expect(screen.getByText(THIS_BROWSER_LABEL)).toBeTruthy();
+    expect(screen.queryByText('Public')).toBeNull();
+  });
+});
+
+// docs/specs/006-<kind>/offline-mode.md "The visibility legend": the reach scale, the hover preview and
 // Change Who Can See This.
 describe('SharedBadge legend', () => {
   it('marks the current audience on the scale', () => {
@@ -69,11 +79,10 @@ describe('SharedBadge legend', () => {
     fireEvent.focus(screen.getByText('Private').closest('[tabindex]')!);
     const legend = document.querySelector('[data-visibility-legend]')!;
     const hero = () => legend.querySelector('[data-legend-hero]')!;
-    const team = legend.querySelectorAll('li')[2]!;
-    fireEvent.mouseEnter(team);
-    expect(hero().getAttribute('data-legend-hero')).toBe('team');
+    fireEvent.mouseEnter(screen.getByText('Everyone').closest('li')!);
+    expect(hero().getAttribute('data-legend-hero')).toBe('community');
     expect(hero().textContent).toContain('If It Were');
-    fireEvent.mouseLeave(team.closest('ol')!);
+    fireEvent.mouseLeave(screen.getByText('Everyone').closest('ol')!);
     expect(hero().getAttribute('data-legend-hero')).toBe('private');
     expect(hero().textContent).toContain('Who Can See This');
   });
@@ -83,12 +92,11 @@ describe('SharedBadge legend', () => {
     fireEvent.focus(screen.getByText('Private').closest('[tabindex]')!);
     const hero = document.querySelector('[data-legend-hero]')!;
     const blocks = [...hero.querySelectorAll('[class*="grid-area"]')];
-    // One cell per audience on the scale, Public included.
     expect(blocks).toHaveLength(5);
     const shown = blocks.filter((b) => !b.hasAttribute('aria-hidden'));
     expect(shown).toHaveLength(1);
     expect(shown[0]!.className).not.toContain('invisible');
-    fireEvent.mouseEnter(document.querySelectorAll('[data-visibility-legend] li')[2]!);
+    fireEvent.mouseEnter(screen.getByText('Everyone').closest('li')!);
     expect(blocks.filter((b) => !b.hasAttribute('aria-hidden'))[0]!.textContent).toContain(
       'If It Were',
     );
@@ -119,5 +127,90 @@ describe('SharedBadge legend', () => {
     const button = screen.getByRole('button', { name: 'Private' });
     // An inline button's line box stood it 24 px tall around the 19 px chip, which then sat low.
     expect(button.className.split(' ')).toContain('flex');
+  });
+});
+
+// The pill's legend opens on hover and focus and closes a moment after the pointer leaves; where a panel's scroll
+// would clip it (the Explorer's card), it opens over everything, right-aligned under the pill.
+describe('SharedBadge legend opening', () => {
+  const legend = () => document.querySelector('[data-visibility-legend]');
+
+  it('opens on hover, stays while the pointer crosses over, and closes after a grace', () => {
+    vi.useFakeTimers();
+    try {
+      render(<SharedBadge shareable={false} />);
+      const anchor = screen.getByText('Private').closest('[tabindex]')!.parentElement!;
+      fireEvent.mouseEnter(anchor);
+      expect(legend()).not.toBeNull();
+      fireEvent.mouseLeave(anchor);
+      fireEvent.mouseEnter(anchor);
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(legend()).not.toBeNull();
+      fireEvent.mouseLeave(anchor);
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(legend()).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('closes when focus leaves the pill', () => {
+    render(<SharedBadge shareable={false} />);
+    const pill = screen.getByText('Private').closest('[tabindex]')!;
+    fireEvent.focus(pill);
+    expect(legend()).not.toBeNull();
+    fireEvent.blur(pill);
+    expect(legend()).toBeNull();
+  });
+
+  it('previews This Browser from its row and puts the current state back', () => {
+    render(<SharedBadge shareable />);
+    fireEvent.focus(screen.getByText('Shared').closest('[tabindex]')!);
+    const hero = () => legend()!.querySelector('[data-legend-hero]')!;
+    const row = screen.getByText(/^Or This Browser/).closest('[class*="mx-3"]')!;
+    fireEvent.mouseEnter(row);
+    expect(hero().getAttribute('data-legend-hero')).toBe('offline');
+    fireEvent.mouseLeave(row);
+    expect(hero().getAttribute('data-legend-hero')).toBe('shared');
+  });
+
+  it('marks This Browser as current for an item in this browser', () => {
+    render(<SharedBadge shareable={false} offline />);
+    fireEvent.focus(screen.getByText(THIS_BROWSER_LABEL).closest('[tabindex]')!);
+    expect(screen.getByText(/saved only here/)).toBeTruthy();
+  });
+
+  it('portals the legend over everything, under the pill’s right edge', () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<SharedBadge shareable={false} portal />);
+      const anchor = container.firstElementChild as HTMLElement;
+      vi.spyOn(anchor, 'getBoundingClientRect').mockReturnValue({
+        bottom: 40,
+        right: window.innerWidth - 24,
+      } as DOMRect);
+      fireEvent.mouseEnter(anchor);
+      const floating = legend()!.parentElement as HTMLElement;
+      expect(container.contains(floating)).toBe(false);
+      expect(floating.style.top).toBe('40px');
+      expect(floating.style.right).toBe('24px');
+      fireEvent.mouseLeave(anchor);
+      fireEvent.mouseEnter(floating);
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(legend()).not.toBeNull();
+      fireEvent.mouseLeave(floating);
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(legend()).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

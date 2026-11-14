@@ -8,10 +8,10 @@ vi.mock('./api-client', () => ({
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
+import { preferencesKeptLocally } from '@liveworkspace/workbench/lib/preferences-local-only';
 import {
   __resetPreferencesSync,
   fitPreferences,
-  preferencesLocalOnly,
   preferencesPatch,
   PREFERENCES_BODY_MAX,
   PREFERENCES_UNSYNCED_KEY,
@@ -259,7 +259,7 @@ describe('a deployment that keeps no preferences (guest-only deployment)', () =>
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
     mockedGet.mockResolvedValue('local-only');
     expect(await fetchUserPreferences('owner-1')).toBeNull();
-    expect(preferencesLocalOnly('owner-1')).toBe(true);
+    expect(preferencesKeptLocally('owner-1')).toBe(true);
     expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
     writeUserPreferences({ uiScale: 1.3 }, 'owner-1');
     expect(mockedPut).not.toHaveBeenCalled();
@@ -270,7 +270,7 @@ describe('a deployment that keeps no preferences (guest-only deployment)', () =>
   it('stops sending once a save answers that nothing is kept', async () => {
     mockedPut.mockResolvedValue('local-only');
     savePreferences('owner-1', { uiScale: 1 });
-    await vi.waitFor(() => expect(preferencesLocalOnly('owner-1')).toBe(true));
+    await vi.waitFor(() => expect(preferencesKeptLocally('owner-1')).toBe(true));
     savePreferences('owner-1', { uiScale: 2 });
     expect(mockedPut).toHaveBeenCalledTimes(1);
     expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
