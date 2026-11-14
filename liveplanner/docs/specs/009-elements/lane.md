@@ -110,6 +110,24 @@ Their borders never double up when flush, because a lane's outline is a
 single hairline drawn on the CSS box path rather than two frames' borders
 meeting.
 
+## A title wraps in its gutter
+
+No Plan surface places a lane, but a tab can still carry one (an older project, an import, a paste), and every export
+draws it (Work Tracker 824). A title reading across a side strip (pinned left, right, or centred both ways) lays out
+in **the strip**, not the whole lane (`acrossTitleStrip`, `packages/element-model/src/lane-gutter.ts`, shared with
+livediagram). A title longer than the gutter is wide wraps onto more lines inside it rather than running on past the
+seam, and past `LANE_TITLE_MAX_LINES` (3) lines the last one ends in an ellipsis.
+
+- **Whole words.** A title breaks only between words (`fitWholeWordLines`). The strip keeps at most the small padding
+  (6 px) from its edges (`acrossTitlePadding`), so the default 132 px gutter gives the words 120 px.
+- **A long word steps down first.** A plain title too wide for the line draws a size or two smaller, down to 14 px
+  (`wholeWordFontPx`), before a word is cut with an ellipsis.
+- **A formatted title** clamps the same way (`clampExportRunLines`).
+- The stored label is never shortened, and a band across the top or bottom keeps the lane's width for its title.
+
+The export (`svg-render-describe.ts` and `svg-render-boxed.ts` in `@liveplanner/project`) lays the title out exactly
+as livediagram's does, from the same shared helpers.
+
 ## Upright titles
 
 A swimlane drawn as a stack of wide rows often reads its titles **upright**, turned a quarter to

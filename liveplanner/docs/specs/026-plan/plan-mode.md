@@ -310,6 +310,30 @@ and fields. So, for everyone whatever their share role:
 A comment thread, action, link or note left on a Plan item from before stays in the project untouched (nothing is
 deleted or migrated), but its indicators are not drawn, so nothing invites adding to it.
 
+### No comment thread on any canvas element
+
+The same holds for a comment thread on **every** canvas element, not only a Plan item: a shape, sticky or Comment
+panel that came in by import or paste takes no new comment either (Work Tracker 751). The conversation lives on cards
+([Items](items.md#comments), `card_threads`) and on Sheet cells ([Cell comments](../029-sheets/sheet.md#cell-comments)),
+which are untouched by this. For everyone whatever their share role:
+
+- the element menu's quick bar, a Participant's or Viewer's element menu and a read-only session's selection toolbar
+  offer no **Add Comment**, **View Comments** or **Show Comments** on an element;
+- no keyboard shortcut or command opens an element's thread, and a `?open=comments` link that names no cell lands on
+  the element (selected and in view) without opening a thread;
+- an element shows no comment indicator, and the Collaborate panel lists cell threads only;
+- a stored Comment panel ([The Comment Panel](../012-collaboration/comment-pin.md), retired) draws its thread read-only:
+  no composer, no resolve, reopen or delete;
+- the api's tab comment endpoint refuses a new comment, or a reply, on an element's own thread
+  (`400 element_comments_retired`); a cell's add, reply, resolve and delete, and resolve, reopen and delete-own on a
+  stored element thread, still work, and the CLI's `comment add` and `comment reply` ask for `--cell`;
+- the platform index gets no row for an element's own thread (`collabIndexRowsFromElements`), so it leaves the Inbox
+  on the tab's next push; card rows (`~cards`) and cell rows are unchanged.
+
+A stored `commentThread` stays in the project untouched: nothing strips or migrates it, a tab round-trips it
+unchanged, the project comments listing (`GET /projects/{id}/comments`, the CLI's `comment ls`) still reads it, and an
+export still draws a stored Comment panel's thread. So the retirement can be reversed.
+
 ## Agents
 
 - Agents read and write items through the api, the CLI and MCP ([Agents](../024-agents/README.md)): the CLI's

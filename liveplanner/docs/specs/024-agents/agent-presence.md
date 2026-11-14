@@ -56,6 +56,10 @@ presence as that person's agent, and comments are how people and agents talk on 
   sheet is stored, its A1 (`cellRef`); add takes a `cell` beside the element, and the thread verbs find a cell's
   thread by its comment as they find an element's. It is not capped: it reads one tab at a
   time.
+- An element's own thread is retired ([Plan mode](../026-plan/plan-mode.md#no-comment-thread-on-any-canvas-element)):
+  add with no `cell`, and a reply on an element's thread, answer `400 element_comments_retired`; resolve, reopen and
+  delete-own still work on a stored one, and the listing still reads it. The CLI's `comment add` and `comment reply`
+  refuse without `--cell` before calling, pointing at `thread start` for a card.
 - Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
   `wait --for comment`) or on its next read.
 
