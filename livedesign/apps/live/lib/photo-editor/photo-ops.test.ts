@@ -252,6 +252,18 @@ describe('changing the size', () => {
     expect(await coverSize(h.s, 0, 4)).toMatch(/at least one pixel/);
   });
 
+  it('resamples a layer’s mask with it when filling another size', async () => {
+    const h = halves();
+    expect(addMask(h.s, 'a', 'hide')).toBeNull();
+    await h.s.settled();
+    expect(await coverSize(h.s, 8, 4)).toBeNull();
+    await h.s.settled();
+    expect(h.s.layer('a')?.mask).toBeDefined();
+    // Hidden before, hidden after: the mask scaled with its layer.
+    expect(pixel(h, 1, 1)[3]).toBe(0);
+    expect(pixel(h, 6, 2)[3]).toBe(0);
+  });
+
   it('crops to a rect and trims transparent edges', async () => {
     const h = halves();
     expect(cropTo(h.s, { x: 2, y: 0, width: 2, height: 2 })).toBeNull();
