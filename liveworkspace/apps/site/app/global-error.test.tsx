@@ -26,7 +26,13 @@ describe('GlobalError', () => {
     expect(document.title).toBe(PAGE_ERROR_TITLE);
     const main = document.querySelector('main')!;
     expect(main.querySelector('h1')?.textContent).toBe('Something went wrong');
-    expect(main.querySelector('a[href="/"]')?.textContent).toBe('Go to the Home Page');
+    const links = [...main.querySelectorAll('a')].map((a) => [
+      a.getAttribute('href'),
+      a.textContent,
+    ]);
+    expect(links).toContainEqual(['/', 'Go to the Home Page']);
+    // And the status page, for a failure that is not this page's alone (Work Tracker 446).
+    expect(links).toContainEqual(['/status', 'Check the Status Page']);
     const retry = [...main.querySelectorAll('button')].find((b) => b.textContent === 'Try Again')!;
     act(() => retry.click());
     expect(reload).toHaveBeenCalledTimes(1);

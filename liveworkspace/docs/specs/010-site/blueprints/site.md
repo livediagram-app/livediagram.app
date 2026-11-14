@@ -366,9 +366,10 @@ Every access is wrapped so a blocked storage reads as empty.
 | The name not saved                         | "We could not save your name. Please try again."                                        |
 | An expired OAuth request                   | "That sign-in has expired. Go back to the app and try again."                           |
 | A `return` that leaves the site            | ignored; the page goes home                                                             |
-| A page that throws while rendering         | `app/error.tsx`: the `PageError` card, Try Again calls `reset`                          |
+| A page that throws while rendering         | `app/error.tsx`: the `PageError` card (`ErrorCard`), Try Again calls `reset`            |
 | The root layout throws                     | `app/global-error.tsx`: its own `<html lang="en-GB">`, the same card, Try Again reloads |
-| The card's chunk can't load (offline)      | `LazyPageError` draws `PlainPageError`: the same title, words and two actions           |
+| The card's chunk can't load (offline)      | `LazyPageError` draws `PlainPageError`: the same title, words and actions               |
+| An address with no page (404)              | `app/not-found.tsx`: `ErrorCard` drawn on the server, Go to the Home Page and Status    |
 | No hand-off possible on an app's address   | straight to `next`; the app still signs in                                              |
 
 ## Constants and configuration: the Worker

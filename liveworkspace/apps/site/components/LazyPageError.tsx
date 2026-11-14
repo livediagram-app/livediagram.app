@@ -16,7 +16,8 @@ export const LazyPageError = lazyPanel<Props>('page-error', () =>
   ),
 );
 
-/** What shows when the card's own code can't load (offline): the same title, words and actions, unstyled by the card. */
+/** What shows when the card's own code can't load (offline): the same title, words and actions, the status link
+ *  among them, unstyled by the card. */
 export function PlainPageError({ onRetry }: Props) {
   usePageErrorTitle();
   return (
@@ -40,6 +41,16 @@ export function PlainPageError({ onRetry }: Props) {
           Go to the Home Page
         </a>
       </div>
+      {/* The card's words, kept here: importing them from the card would bring its code into every first load. */}
+      <p className="text-sm text-slate-600 dark:text-slate-300">
+        Still not working?{' '}
+        <a
+          href="/status"
+          className="inline-flex min-h-11 items-center font-semibold text-slate-900 underline underline-offset-4 dark:text-white"
+        >
+          Check the Status Page
+        </a>
+      </p>
     </main>
   );
 }

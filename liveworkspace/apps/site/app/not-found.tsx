@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import { Wordmark } from '@/components/Wordmark';
+import { lucideCompass } from '@liveworkspace/icons/lucide';
+import { buttonClassName, ButtonContent, lucideGlyph } from '@liveworkspace/ui';
+import { ErrorCard } from '@/components/ErrorCard';
 
 // Its own title, and no home-page Open Graph address: without this, the root layout's title, description and
 // `og:url` of `/` made every unknown address announce itself as the home page. Never indexed.
@@ -13,21 +15,21 @@ export const metadata: Metadata = {
   twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
 };
 
-// An address liveworkspace.app has no page for. Kept light: Next carries this tree in every page.
+const CompassIcon = lucideGlyph(lucideCompass, 16);
+
+// An address liveworkspace.app has no page for (liveworkspace/docs/specs/010-site/site.md "Behaviour"): the site's
+// error card, drawn here on the server, so it ships no script. Kept light: Next carries this tree in every page.
 export default function NotFound() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-start justify-center gap-6 px-4">
-      <a href="/">
-        <Wordmark />
+    <ErrorCard
+      icon={<CompassIcon />}
+      title="Nothing here"
+      description="That page doesn’t exist. Your work is in its app, and every app is a click away from the home page."
+      statusLead="Followed a link that should work?"
+    >
+      <a href="/" className={buttonClassName({ size: 'md' })}>
+        <ButtonContent>Go to the Home Page</ButtonContent>
       </a>
-      <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Nothing here</h1>
-      <p className="text-slate-600 dark:text-slate-300">
-        That page doesn’t exist. The apps are on the{' '}
-        <a href="/" className="font-medium underline underline-offset-4">
-          home page
-        </a>
-        .
-      </p>
-    </main>
+    </ErrorCard>
   );
 }
