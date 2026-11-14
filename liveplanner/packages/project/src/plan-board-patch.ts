@@ -47,6 +47,8 @@ const SETUP_KEYS = new Set([
   'collects',
   // Saved filters (docs/specs/026-plan/board-widgets.md "Saved filters"): the list travels whole, as widgets do.
   'savedFilters',
+  // The board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): it travels whole.
+  'filter',
 ]);
 // `done`: Counts as Done (docs/specs/026-plan/plan-board.md "Done columns").
 const COLUMN_KEYS = new Set(['status', 'name', 'wipLimit', 'color', 'width', 'done']);

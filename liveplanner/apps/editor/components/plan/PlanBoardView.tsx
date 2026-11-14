@@ -19,10 +19,11 @@ import { cornerRadiusPx, planOwnColoursOf, type ShapeElement } from '@liveplanne
 import {
   ITEM_TYPES,
   cardIsFaceDown,
+  finishedStatuses,
   normaliseBoardSetup,
+  todayNumber,
   type Item,
   type LaneHead,
-  type QuickFilter,
   boardAddTypes,
   newItemId,
 } from '@liveplanner/items';
@@ -57,7 +58,13 @@ import { PlanBoardFrame } from './PlanBoardFrame';
 import type { PlanBoardViewValues } from './plan-board-view-values';
 import { usePlanBoardProjection } from './usePlanBoardProjection';
 import { usePlanBoardMotion } from './usePlanBoardMotion';
+import { useBoardFilter } from './useBoardFilter';
+import { useToday } from '@/hooks/ui/useToday';
+import { DUE_SOON_DAYS } from '@liveplanner/plan-art';
 import { usePlanCellBase } from './usePlanCellBase';
+
+// A board with no set-up has no done statuses.
+const NO_FINISHED: readonly string[] = [];
 
 export function PlanBoardView({
   element,
@@ -119,7 +126,24 @@ export function PlanBoardView({
     () => (setup && plan?.practiceIds?.size ? practiceShipColumn(setup)?.id : undefined),
     [setup, plan?.practiceIds],
   );
-  const [quick, setQuick] = useState<QuickFilter>({});
+  // The board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): kept on the board and shared with
+  // everyone on it, resolved for this viewer today; an Editor or a Participant changes it, a Viewer only sees it.
+  const today = todayNumber(useToday());
+  const finished = useMemo(
+    () => (fullSetup ? finishedStatuses(fullSetup) : NO_FINISHED),
+    [fullSetup],
+  );
+  const canFilter = !!plan?.canEditCards && !!plan.setBoardFilter;
+  const setBoardFilter = plan?.setBoardFilter;
+  const { quick, setQuick } = useBoardFilter({
+    stored: fullSetup?.filter,
+    mine: plan?.self?.id ?? null,
+    today,
+    soonDays: DUE_SOON_DAYS,
+    finished,
+    canChange: canFilter,
+    write: (filter) => setBoardFilter?.(element.id, filter),
+  });
   // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either; nor does a slot board.
   const phone = useIsMobileViewport();
   const applied = shownQuick(quick, phone || simplified);
@@ -430,6 +454,7 @@ export function PlanBoardView({
     configuredFromCluster,
     quick,
     setQuick,
+    canFilter,
     columnName,
     gridRef,
     slotBoard,

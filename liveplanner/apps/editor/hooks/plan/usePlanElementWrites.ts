@@ -11,7 +11,12 @@ import {
   type PlanCardRef,
   type PlanViewRef,
 } from '@liveplanner/project';
-import { normaliseBoardSetup, settleDoneColumns, type PlanBoardSetup } from '@liveplanner/items';
+import {
+  normaliseBoardSetup,
+  settleDoneColumns,
+  type BoardFilter,
+  type PlanBoardSetup,
+} from '@liveplanner/items';
 import { track } from '@/lib/telemetry';
 import { tabNamedForBoard, tabNamedForView } from '@/lib/tab-named-plan';
 
@@ -48,6 +53,30 @@ export function usePlanElementWrites(w: {
         // A Board tab and its board share one name (docs/specs/026-plan/plan-tabs.md "Names"): renamed, the tab follows.
         (tab) => (before === setup.title ? tab : tabNamedForBoard(tab, setup.title)),
       );
+    },
+    [commitOn],
+  );
+
+  // The board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): only `planBoard.filter` changes, on
+  // the set-up as stored (never the normalised copy), so a Participant's commit is one the participant rule takes whole.
+  const setBoardFilter = useCallback(
+    (boardId: string, filter: BoardFilter | undefined) => {
+      commitOn(boardId, (els) => {
+        let changed = false;
+        const next = els.map((el) => {
+          if (
+            el.id !== boardId ||
+            el.type !== 'shape' ||
+            el.shape !== 'plan-board' ||
+            !el.planBoard
+          )
+            return el;
+          const { filter: _was, ...rest } = el.planBoard;
+          changed = true;
+          return { ...el, planBoard: filter ? { ...rest, filter } : rest };
+        });
+        return changed ? next : els;
+      });
     },
     [commitOn],
   );
@@ -139,5 +168,13 @@ export function usePlanElementWrites(w: {
     [commit],
   );
 
-  return { updateBoard, removeStatusColumns, updateView, placeCardOut, removeCard, updateCard };
+  return {
+    updateBoard,
+    setBoardFilter,
+    removeStatusColumns,
+    updateView,
+    placeCardOut,
+    removeCard,
+    updateCard,
+  };
 }

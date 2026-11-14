@@ -3,6 +3,7 @@
 
 import { readBoardWidgets } from './board-widgets';
 import { readSavedFilters } from './saved-filters';
+import { readBoardFilter } from './board-filter';
 import type { Item } from './item';
 import { LANE_FIELD_BUILT_INS } from './item';
 import { CUSTOM_FIELD_ID_PATTERN } from './type-catalogue';
@@ -205,6 +206,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(readSavedFilters(input['savedFilters'])
       ? { savedFilters: readSavedFilters(input['savedFilters']) }
       : {}),
+    ...(readBoardFilter(input['filter']) ? { filter: readBoardFilter(input['filter']) } : {}),
     ...((LINKED_RECORD_KINDS as readonly unknown[]).includes(input['collects'])
       ? { collects: input['collects'] as LinkedRecordKind }
       : {}),

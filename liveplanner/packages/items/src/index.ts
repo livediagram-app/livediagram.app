@@ -72,6 +72,7 @@ export * from './indefinite-article';
 export * from './store';
 export * from './group-moves';
 export * from './saved-filters';
+export * from './board-filter';
 export * from './refs';
 export * from './rich-text-field';
 export * from './rich-text-markdown';

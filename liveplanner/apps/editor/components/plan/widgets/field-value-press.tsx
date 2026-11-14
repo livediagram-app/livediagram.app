@@ -15,7 +15,12 @@ import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/
 import type { PlanPalette } from '../plan-palette';
 import { PRESSABLE } from './board-widget-parts';
 
-export type FilterPress = { quick: QuickFilter; onQuick: (q: QuickFilter) => void };
+export type FilterPress = {
+  quick: QuickFilter;
+  onQuick: (q: QuickFilter) => void;
+  // False for a Viewer, who sees the board's filter but cannot press (board-widgets.md "The board's filter").
+  canFilter?: boolean;
+};
 type Value = { key: string; label: string };
 /** A value as the "+n" legend lists it: its colour, its count and, on a Donut, its share (0 to 100). */
 export type LegendValue = Value & { count: number; color: string; share?: number };
@@ -32,7 +37,10 @@ function valuePress(field: BoardField, value: Value, filter: FilterPress) {
   const on = filters.some((f) => f.field === chip.field && f.key === chip.key);
   const next = toggleFieldFilter(filters, chip, STACKING.has(field.def.kind));
   // At the chip cap with nothing of this field to replace: nothing more fits.
-  const full = !on && !next.some((f) => f.field === chip.field && f.key === chip.key);
+  // A Viewer presses nothing.
+  const full =
+    filter.canFilter === false ||
+    (!on && !next.some((f) => f.field === chip.field && f.key === chip.key));
   const press = () => {
     const q: QuickFilter = { ...filter.quick };
     if (next.length) q.filters = next;

@@ -47,6 +47,7 @@ export function PlanBoardHeader({
   quick,
   onQuick,
   canFilterMine,
+  canFilter = true,
   canEdit,
   loadFailed,
   selected = false,
@@ -73,6 +74,8 @@ export function PlanBoardHeader({
   quick: QuickFilter;
   onQuick: (q: QuickFilter) => void;
   canFilterMine: string | null;
+  // Whether this viewer changes the board's filter (an Editor or a Participant); a Viewer sees it read-only.
+  canFilter?: boolean;
   canEdit: boolean;
   loadFailed: boolean;
   // The board is selected: the header shows its move handle.
@@ -84,7 +87,8 @@ export function PlanBoardHeader({
   canRename?: boolean;
   // The widgets are shown: not on a phone, whose header has no room for them (phone-board.ts).
   showWidgets?: boolean;
-  onWidgets: (next: BoardWidgetId[]) => void;
+  // The widgets in order, and the board's filter without what a widget taken off narrowed (one set-up write).
+  onWidgets: (next: BoardWidgetId[], quick?: QuickFilter) => void;
   // A set-up change a widget makes (Set Done Column), with its telemetry part.
   onSetup: (next: PlanBoardSetup, part: string) => void;
   onOpenItem: (itemId: string) => void;
@@ -113,6 +117,7 @@ export function PlanBoardHeader({
     quick,
     onQuick,
     canFilterMine,
+    canFilter,
     trayOpen,
     onToggleTray: () => setTrayOpen((o) => !o),
     now: today,
@@ -153,8 +158,11 @@ export function PlanBoardHeader({
           if (!next.includes('due')) delete kept.due;
           if (!next.includes('priorities')) delete kept.priority;
           if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
-          if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
-          onWidgets(next);
+          // One set-up write: the widgets with the filter they leave, so neither write undoes the other.
+          onWidgets(
+            next,
+            Object.keys(kept).length !== Object.keys(quick).length ? kept : undefined,
+          );
         }}
         labelOf={fieldWidgets.labelOf}
         fields={fieldWidgets.fields}
@@ -173,6 +181,7 @@ export function PlanBoardHeader({
                 canEdit,
                 quick,
                 onQuick,
+                canFilter,
                 onRemove: (gone) => onWidgets(removeWidget(widgets, gone)),
               }}
             />

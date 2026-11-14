@@ -74,8 +74,33 @@ header; they are not in the palette.
 - Lone counts in widgets and column heads are badges: the figure in a small pill.
 - **Only Mine** keeps the cards that are the viewer's: a notifying Person field holds them, the Assignee unless its
   type switched it off ([Notifies](item-types.md#notifies)).
-- The Filter and Only Mine widgets are each viewer's own and unsaved (the quick filter, see plan-board.md); taking
-  either widget off the board clears that narrowing (the Filter's field chips with its words).
+- The Filter and Only Mine widgets, and every other narrowing a widget sets, are **the board's filter**: kept on the
+  board and shared with everyone on it (see [The board's filter](#the-boards-filter)); taking either widget off the
+  board clears that narrowing for everyone (the Filter's field chips with its words).
+
+## The board's filter
+
+What one person narrows the board to, everyone with the board open sees, and it is still there after a tab switch
+or a reload: a team in a standup looks at the same slice.
+
+- **What it holds**: the Filter widget's words and field chips, Only Mine, a pressed field value (a chip, see
+  "Pressing a value"), and the People, Unassigned, Card Types, Priorities and Due Soon narrowings. It is kept on the
+  board set-up the way a saved filter is (words up to 200 characters, at most 8 field chips), and resolved for each
+  viewer on the day: **Only Mine** is shared as on or off, and each viewer sees their own cards (someone with no
+  person id sees every card); a Due Soon narrowing is a window counted from today.
+- **Live**: a change shows for everyone with the board open within a second, without a reload. Typing in the Filter
+  widget is sent once the typing pauses (`BOARD_FILTER_TYPING_MS`, 400 ms), never per keystroke, and when the board
+  goes from the screen mid-word; a chip, a press or Only Mine is sent at once.
+- **Kept**: switching to another tab and back, or reloading, shows the board with the same filter.
+- **Written as a set-up change**: the filter alone (`filter` on the set-up), so the api checks it and undo takes it
+  back like any set-up change; nothing else on the board changes with it, and Show all clears it for everyone.
+- **Share roles**: an Editor and a Participant change it (the api's participant rule takes the filter, and nothing else,
+  from a Participant's board change). A **Viewer** sees it applied, read-only: the Filter's words cannot be typed, its
+  chips have no cross, and Clear Filter, Add Filter, Only Mine, the widget presses, Show all and the saved filter chips
+  are not offered or are disabled. The room never relays a Viewer's change.
+- **Where it stands down**: on a phone and in a Dashboard slot, where widgets are not shown, the board shows every
+  card (as before): nothing on screen would say why cards are missing.
+- **Saved filters** stay as they are: applying one sets the board's filter for everyone.
 
 ## The Filter widget
 
@@ -91,7 +116,7 @@ header; they are not in the palette.
   count, so a chip never leaves nothing; picking a value adds the chip. A card must match every chip. At most 8
   chips. Backspace in the empty words takes the last chip off.
 - Item Count's **Show all** clears the chips with every other narrowing.
-- Like the words, the chips are this viewer's own and unsaved, until saved as a saved filter.
+- Like the words, the chips are the board's filter, shared and kept ([The board's filter](#the-boards-filter)).
 
 ## Saved filters
 
@@ -100,10 +125,11 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
 - **Where**: after the Filter field, in the Filter widget, each **saved filter** is a chip of its own, its name and a
   small bookmark glyph, in the order saved. They show to everyone who sees the board's widgets (not on a phone, nor in
   a Dashboard slot, where widgets stand down).
-- **Applying**: pressing a chip replaces this viewer's quick filter with the saved one (its words, field chips, Only
-  Mine and widget narrowings) and shows it pressed; pressing it again clears the quick filter. Changing any narrowing
-  afterwards leaves the chip unpressed (the quick filter is no longer the saved one). Applying is each person's own
-  and never changes what anyone else sees. Telemetry: `Plan` · `Used` · `SavedFilter`.
+- **Applying**: pressing a chip replaces the board's filter with the saved one (its words, field chips, Only
+  Mine and widget narrowings) for everyone on the board and shows it pressed; pressing it again clears the board's
+  filter. Changing any narrowing afterwards leaves the chip unpressed (the filter is no longer the saved one). An
+  Editor or a Participant applies; a Viewer sees which chip is pressed but cannot press one. Telemetry: `Plan` ·
+  `Used` · `SavedFilter`.
 - **Resolved for whoever applies it, on the day**: **Only Mine** keeps the cards that are the viewer's (not the
   saver's); a saved **Overdue** or **Due Soon** narrowing (from the Due Soon widget) is a window counted from today,
   not the day it was saved, with the board's done columns left out as they are now.
@@ -118,8 +144,8 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
   **Rename** (the same popover, titled Rename Filter, filled with its name), **Update to Current Filters** (keeps
   today's quick filter under the chip; shown while something narrows the board and the chip is not the one pressed) and **Delete** (at once; undo brings
   it back). Telemetry: `Plan` · `Renamed` / `Changed` / `Removed` · `SavedFilter`.
-- **Share roles**: an Editor saves, renames, updates and deletes; a Participant and a Viewer see and apply the chips,
-  without chevrons or Save Filter.
+- **Share roles**: an Editor saves, renames, updates and deletes; a Participant sees and applies the chips, without
+  chevrons or Save Filter; a Viewer sees them, disabled.
 - **Kept and checked**: at most **8** a board (`SAVED_FILTERS_MAX`, as plan views keep 8 filters); each keeps an id,
   its name (1 to 40 characters), words (up to 200), at most 8 field chips, Only Mine, and the People, Card Types,
   Priorities and Due Soon narrowings. The api refuses a board set-up whose saved filters break any of these.
@@ -190,14 +216,15 @@ board, so each one can be a widget.
     the popover.
   - **Pressing a value** (Breakdown's two named values, Donut's commonest, any row of the "+n" popover): a button that narrows the board to the
     cards holding that value, as picking it in the Filter widget's **Add Filter** does: it adds the same **field
-    chip** ("Severity: High") to this viewer's quick filter, so the chip shows in the Filter widget (with its cross to
+    chip** ("Severity: High") to the board's filter, so the chip shows in the Filter widget (with its cross to
     remove it) and Item Count reads `3 of 14 · Show all`. It reads **pressed** (`aria-pressed`, the brand colour
     outline) while its chip is on; pressing it again takes the chip off. The pill is then a group of buttons rather
     than a picture; each button is named "Only Severity: High", is reached by Tab, and shows the focus ring. A Choice
     or Person field holds one value a card, so pressing another value of it replaces the chip; Labels and Multiple
     Choice stack, and a chip on them matches a card holding the value among several, not only its first. At 8 chips an unpressed value is disabled. Like the Filter widget,
-    it is **each viewer's own and unsaved**: a Viewer, Participant or Editor may all press, and nothing is written to
-    the board. The counts keep reading the cards before the quick filter, so a pressed value's count does not change.
+    it is **the board's filter**, shared and kept: an Editor or a Participant presses, a Viewer sees the pressed value
+    but cannot press. The counts keep reading the cards before the board's filter, so a pressed value's count does not
+    change.
   - **Ticked**: a ring filled to the share ticked, and "7/12" (a Checklist: its rows ticked of all its rows).
   - **Upcoming**: among cards not done, how many are overdue (red) and due in the next 7 days (amber), as Due Soon
     counts them; "Nothing due" when neither.

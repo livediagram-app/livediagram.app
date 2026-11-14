@@ -74,6 +74,19 @@ describe('plan shapes', () => {
         planBoard: { ...presetSetup('kanban'), savedFilters: [{ id: 'sf-1', name: '' }] },
       }),
     ).toMatchObject({ field: 'planBoard' });
+    // The board's filter likewise (board-widgets.md "The board's filter"): words up to 200, at most 8 chips.
+    expect(
+      elementValidationIssue({
+        ...board,
+        planBoard: { ...presetSetup('kanban'), filter: { text: 'login', mine: true } },
+      }),
+    ).toBeNull();
+    expect(
+      elementValidationIssue({
+        ...board,
+        planBoard: { ...presetSetup('kanban'), filter: { text: 'x'.repeat(201) } },
+      }),
+    ).toMatchObject({ field: 'planBoard' });
     expect(elementValidationIssue({ ...board, planBoard: { columns: 'none' } })).toMatchObject({
       field: 'planBoard',
     });
