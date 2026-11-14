@@ -863,6 +863,16 @@ export const articles: Article[] = [
     parentSlug: 'slide-deck',
   },
   {
+    slug: 'slide-builds',
+    title: 'Builds',
+    description: "Reveal a slide's points one click at a time while you present.",
+    keywords:
+      'build builds animate animation reveal one at a time click to reveal step steps bullet points appear fade rise order sequence entrance progressive disclosure keynote powerpoint animations present presenting next back badge number',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes/slide-deck',
+    parentSlug: 'slide-deck',
+  },
+  {
     slug: 'presenter-controls',
     title: "The Presenter's Controls",
     description:

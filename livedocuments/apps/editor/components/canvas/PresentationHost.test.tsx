@@ -18,6 +18,8 @@ const deck = {
   ],
   config: DEFAULT_PRESENTATION_CONFIG,
   setPresentingAt: vi.fn(),
+  presentingBuild: null,
+  setPresentingBuild: vi.fn(),
   exitPresentation: vi.fn(),
   updateConfig: vi.fn(),
 };

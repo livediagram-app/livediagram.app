@@ -76,14 +76,7 @@ type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
 // Build (presentation-mode.md "Builds") comes last: it is when the selection arrives on a slide, not how it moves.
 type OwnCategory =
-  | 'icon'
-  | 'chart'
-  | 'sankey'
-  | 'progress'
-  | 'rating'
-  | 'concept'
-  | 'arrow'
-  | 'build';
+  'icon' | 'chart' | 'sankey' | 'progress' | 'rating' | 'concept' | 'arrow' | 'build';
 type Category = AnimationSetId | OwnCategory;
 const ORDER: readonly Category[] = [
   'shape',
@@ -285,11 +278,7 @@ function CategoryBody({
   if (category === 'build') {
     if (!h.build) return null;
     return (
-      <BuildTiles
-        selection={elements}
-        slideElements={h.build.slideElements}
-        ops={h.elementStyle}
-      />
+      <BuildTiles selection={elements} slideElements={h.build.slideElements} ops={h.elementStyle} />
     );
   }
   if (category === 'arrow') {

@@ -129,7 +129,8 @@ describe('presentedBuild', () => {
 
   it('stays linear on a large slide', () => {
     const big: Element[] = [];
-    for (let i = 0; i < 2000; i++) big.push(shape(`s${i}`, { order: (i % 50) + 1, effect: 'fade' }));
+    for (let i = 0; i < 2000; i++)
+      big.push(shape(`s${i}`, { order: (i % 50) + 1, effect: 'fade' }));
     for (let i = 1; i < 2000; i++) big.push(arrow(`a${i}`, `s${i - 1}`, `s${i}`));
     expect(cpuMsOf(() => presentedBuild(big, 25))).toBeLessThan(cpuBudgetMs(60));
   });

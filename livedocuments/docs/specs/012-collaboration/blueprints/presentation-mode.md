@@ -116,6 +116,14 @@ export function slideTransitionType(
 export function whenScreenSettles(ready: () => void): () => void;
 ```
 
+## Data and persistence
+
+| Field   | Where                                                                           | Class    | Notes                                                                                                 |
+| ------- | ------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `build` | Every boxed element but a margin note (`element-types.ts`, `element-fields.ts`) | Cosmetic | Rides the tab body like every element field; read leniently by `buildOf`; no migration, no api change |
+
+The running position (`presentingBuild`) is session state in `useSlideDeck`, never stored or broadcast.
+
 ## Errors and edge cases
 
 | Case                                               | Handling                                                             |
@@ -181,7 +189,7 @@ Reduced motion (either source) cuts. The slide announcer, focus and the HUD's co
 | Refusals are logged                    | `PresentationOverlay.test.tsx`                                                                                                                                                       |
 | It moves, lands and stays fast         | `e2e/presentation-mode.spec.ts`; `e2e/perf/slide-transition.perf.ts` (Chromium, Firefox)                                                                                             |
 | Steps, orders, arrows, leniency        | `packages/document/src/slide-builds.test.ts`                                                                                                                                         |
-| Builds step forward and back           | `PresentationHost.builds.test.tsx`: three builds present in four steps each way; back arrives finished; quick presses land                                                          |
+| Builds step forward and back           | `PresentationHost.builds.test.tsx`: three builds present in four steps each way; back arrives finished; quick presses land                                                           |
 | The overlay's back, timer, announce    | `PresentationOverlay.builds.test.tsx`                                                                                                                                                |
 | The entrance plays, cuts when reduced  | `useBuildEntrance.test.tsx`                                                                                                                                                          |
 | Build section, order, badge            | `BuildTiles.test.tsx`, `BuildBadge.test.tsx`                                                                                                                                         |

@@ -56,6 +56,17 @@ describe('the Contents list', () => {
     expect(rows[1]!.aspect).toBeGreaterThan(1.7);
   });
 
+  it('says how many builds a slide page has (presentation-mode.md "Setting builds up")', () => {
+    const built = contentsRows(pages, {
+      inDeck: () => true,
+      buildsOf: (id) => ({ b: 3, d: 1 })[id] ?? 0,
+    });
+    expect(built.map((r) => r.line).filter((l) => l.startsWith('Slide'))).toEqual([
+      'Slide · In the deck · 3 builds',
+      'Slide · In the deck · 1 build',
+    ]);
+  });
+
   it("names an unnamed slide or infographic by its own title, and a page's own name wins", () => {
     const titled = contentsRows(pages, {
       titleOf: (id) => ({ a: 'Big Words', b: 'Quarterly Review' })[id],

@@ -266,186 +266,186 @@ export function EditorCanvasHost() {
       <TagColoursProvider tab={activeTab}>
         {/* Each built element's step number for its badge (presentation-mode.md "Setting builds up"). */}
         <BuildStepsProvider slides={slideDeck?.deck.slides} tab={activeTab}>
-        {/* Presenting shows the slide as the audience sees it: no indicators or lock badges on its elements
+          {/* Presenting shows the slide as the audience sees it: no indicators or lock badges on its elements
           (docs/specs/008-canvas/element-indicators.md "Unchanged"). */}
-        <SuppressElementIndicators when={presentingElements != null}>
-          {/* A presented slide's stat rows count up (docs/specs/009-elements/stat-row.md). */}
-          <PresentingProvider when={presentingElements != null}>
-            <Canvas
-              {...insertProps}
-              {...panelProps}
-              {...editProps}
-              tabName={activeTab.name}
-              tabSummaries={tabSummaries}
-              activeTabId={activeTab.id}
-              activeTabLoaded={loadedTabIds.has(activeTab.id)}
-              tabLocked={activeTabLocked}
-              readOnly={isReadOnly}
-              takePart={can.takePart}
-              canWriteText={can.writeText}
-              documentName={documentName}
-              tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
-              tabBackgroundColor={backdrop.backgroundColor}
-              tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
-              tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
-              tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
-              tabPatternColor={backdrop.patternColor}
-              tabFont={activeTab.font}
-              tabFinish={activeTab.finish}
-              mainRef={canvasMainRef}
-              isPinchingRef={isPinchingRef}
-              setViewportZoom={setViewportZoom}
-              onFitToScreen={() => {
-                // In Pages, Fit frames the page you are nearest, not the whole tab.
-                if (pagesMode) pagesMode.fitPageInView();
-                else fitToScreen();
-                track('Canvas', 'Zoomed', 'Fit');
-              }}
-              setViewportOffset={setViewportOffset}
-              // Presenting (docs/specs/012-collaboration/presentation-mode.md) narrows the canvas to one slide's elements. The
-              // real canvas still draws them — a slide has to respond to clicks and
-              // carry live element state, and there is then exactly one thing that
-              // knows how an element looks.
-              elements={canvasElements}
-              projectElement={projectStockColours.one}
-              tabLayers={activeTab.layers}
-              editorMode={editorMode.mode}
-              // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
-              // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
-              pagesMode={startPanelOpen ? null : presentedPages(pagesMode, presentingPageId)}
-              previewDrawnArrow={(intent, startX, startY, endX, endY) =>
-                drawnArrowAsShown(intent, startX, startY, endX, endY, {
-                  elements: activeTab.elements,
-                  theme: activeTheme,
-                  styleNewElement,
-                  surface,
-                })
-              }
-              layerInertIds={layerInertIds}
-              shiftDupGhostIds={shiftDupGhostIds}
-              snapGuideStore={snapGuideStore}
-              remoteSelectionsByElement={remoteSelectionsShown}
-              remoteCursors={remoteCursorRows}
-              laserTrails={laserTrailRows}
-              onCanvasPointerMove={(x, y, target) => {
-                canvasPointerRef.current = pastePointer(x, y, target ?? null);
-                if (canvasTool === 'laser' && x !== null && y !== null) {
-                  // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
-                  broadcastLaser(x, y, laserConfig);
-                  // Laser mode hides the cursor indicator on peer screens —
-                  // the laser dot is the cursor. Clear any prior position.
-                  broadcastCursor(null);
-                  return;
+          <SuppressElementIndicators when={presentingElements != null}>
+            {/* A presented slide's stat rows count up (docs/specs/009-elements/stat-row.md). */}
+            <PresentingProvider when={presentingElements != null}>
+              <Canvas
+                {...insertProps}
+                {...panelProps}
+                {...editProps}
+                tabName={activeTab.name}
+                tabSummaries={tabSummaries}
+                activeTabId={activeTab.id}
+                activeTabLoaded={loadedTabIds.has(activeTab.id)}
+                tabLocked={activeTabLocked}
+                readOnly={isReadOnly}
+                takePart={can.takePart}
+                canWriteText={can.writeText}
+                documentName={documentName}
+                tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
+                tabBackgroundColor={backdrop.backgroundColor}
+                tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
+                tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
+                tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
+                tabPatternColor={backdrop.patternColor}
+                tabFont={activeTab.font}
+                tabFinish={activeTab.finish}
+                mainRef={canvasMainRef}
+                isPinchingRef={isPinchingRef}
+                setViewportZoom={setViewportZoom}
+                onFitToScreen={() => {
+                  // In Pages, Fit frames the page you are nearest, not the whole tab.
+                  if (pagesMode) pagesMode.fitPageInView();
+                  else fitToScreen();
+                  track('Canvas', 'Zoomed', 'Fit');
+                }}
+                setViewportOffset={setViewportOffset}
+                // Presenting (docs/specs/012-collaboration/presentation-mode.md) narrows the canvas to one slide's elements. The
+                // real canvas still draws them — a slide has to respond to clicks and
+                // carry live element state, and there is then exactly one thing that
+                // knows how an element looks.
+                elements={canvasElements}
+                projectElement={projectStockColours.one}
+                tabLayers={activeTab.layers}
+                editorMode={editorMode.mode}
+                // No page while Start Making Pages is open (docs/specs/007-editor/start-diagramming.md "Start Making Pages"):
+                // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
+                pagesMode={startPanelOpen ? null : presentedPages(pagesMode, presentingPageId)}
+                previewDrawnArrow={(intent, startX, startY, endX, endY) =>
+                  drawnArrowAsShown(intent, startX, startY, endX, endY, {
+                    elements: activeTab.elements,
+                    theme: activeTheme,
+                    styleNewElement,
+                    surface,
+                  })
                 }
-                broadcastCursor(x !== null && y !== null ? { x, y } : null);
-              }}
-              onSelectMarquee={selectMarquee}
-              canvasTool={canvasTool}
-              onSetCanvasTool={setCanvasTool}
-              // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
-              // so the pill doesn't have to look one up.
-              followingName={
-                followMe.followingId
-                  ? (livePresence.find((p) => p.id === followMe.followingId)?.name ?? 'someone')
-                  : null
-              }
-              onStopFollowing={followMe.stopFollowing}
-              onDuplicateMultiSelected={duplicateMultiSelected}
-              onDeleteMultiSelected={deleteMultiSelected}
-              onToggleLockMultiSelected={toggleLockMultiSelected}
-              onFilterMultiSelected={narrowMultiSelection}
-              onExportMultiSelected={() => {
-                setExportScope('selection');
-                setExportOpen(true);
-              }}
-              editingId={editingId}
-              editCursorAtEnd={editCursorAtEnd}
-              formatSourceId={formatSourceId}
-              onFormatPagePress={onFormatPagePress}
-              canUndo={canUndo && !activeTabLocked}
-              canRedo={canRedo && !activeTabLocked}
-              reshapingArrowId={reshapingArrowId}
-              settings={userPreferences}
-              onUndo={undo}
-              onRedo={redo}
-              layers={layers}
-              userPreferences={userPreferences}
-              formatBrushSource={formatBrushSource}
-              currentDocumentId={documentId}
-              currentShareCode={sessionShareCode}
-              onRenameCurrentDocument={nameDocument}
-              onNewDocument={newDocument}
-              explorerMenuActions={explorerMenuActions}
-              onDeselect={onDeselect}
-              onSelect={selectElement}
-              onElementContextMenu={onElementContextMenu}
-              onMultiContextMenu={onMultiContextMenu}
-              onOpenMultiContextMenu={onOpenMultiContextMenu}
-              onCanvasContextMenu={onCanvasContextMenu}
-              chartPalette={themeChartPalette(activeTheme)}
-              onShiftSelect={toggleInMultiSelect}
-              onExitFormatTool={exitFormatTool}
-              onSetTextAlign={setTextAlignSelected}
-              onFollowLink={followLink}
-              onOpenComments={openComments}
-              // An action note's marker opens its action, or for an Editor the Assign Action dialog while none is
-              // assigned (docs/specs/007-editor/article-pages.md "Comments and actions"), as a click on its text does.
-              onOpenAction={isReadOnly ? openActionPopover : openAssignAction}
-              onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
-              onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
-              imageContext={imageContext}
-              // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
-              // participant row, so there's no 403, and they should set a name before others see them in presence.
-              showIdentityPrompt={identityOnlyScreenOpen}
-              hydrated={hydrated}
-              // Visitor on someone else's document + signed in → lock the
-              // identity input to their account name. Owner branch never
-              // shows the identity prompt so `lockedName` is moot there;
-              // pure guests pass null and keep the editable name field.
-              identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
-              welcomeOpen={anyWelcomeOpen}
-              selfParticipant={selfParticipant}
-              onConfirmIdentity={confirmIdentity}
-              onCancelIdentity={cancelIdentity}
-              tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
-              onToggleAspectLock={toggleAspectLockSelected}
-              // One gesture, one answer: while the element menu is open the
-              // quick-connect pluses stand down (see deriveCanvasSelection).
-              elementMenuOpen={contextMenu?.mode === 'element'}
-              onCanvasDoubleClick={handleCanvasDoubleClick}
-              tabLoadState={tabLoadState}
-              onRetryTabLoad={retryActiveTabLoad}
-              // Embeds (docs/specs/013-workspace/embeds.md) ride the zen chrome-hide gates: every panel
-              // and badge zen hides, embeds hide too. The zen TOGGLE is
-              // withheld so the ZoomControls dock doesn't offer an exit
-              // from a mode the embed can't actually leave.
-              zenMode={zenMode || embedMode}
-              // A phone held sideways has no Explorer at all (docs/specs/007-editor/editor-app.md "A phone
-              // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
-              explorerHidden={workbenchMode || landscapePhone}
-              workbenchBack={workbenchFrame}
-              onToggleZen={embedMode ? undefined : toggleZenMode}
-            />
-            {lockedMenu ? (
-              <LockedElementMenu
-                at={lockedMenu.at}
-                holders={lockedMenu.holders}
-                onRelease={(presenceId) => releaseSelectionLock(presenceId, lockedMenu.elementId)}
-                onClose={() => setLockedMenu(null)}
+                layerInertIds={layerInertIds}
+                shiftDupGhostIds={shiftDupGhostIds}
+                snapGuideStore={snapGuideStore}
+                remoteSelectionsByElement={remoteSelectionsShown}
+                remoteCursors={remoteCursorRows}
+                laserTrails={laserTrailRows}
+                onCanvasPointerMove={(x, y, target) => {
+                  canvasPointerRef.current = pastePointer(x, y, target ?? null);
+                  if (canvasTool === 'laser' && x !== null && y !== null) {
+                    // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
+                    broadcastLaser(x, y, laserConfig);
+                    // Laser mode hides the cursor indicator on peer screens —
+                    // the laser dot is the cursor. Clear any prior position.
+                    broadcastCursor(null);
+                    return;
+                  }
+                  broadcastCursor(x !== null && y !== null ? { x, y } : null);
+                }}
+                onSelectMarquee={selectMarquee}
+                canvasTool={canvasTool}
+                onSetCanvasTool={setCanvasTool}
+                // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
+                // so the pill doesn't have to look one up.
+                followingName={
+                  followMe.followingId
+                    ? (livePresence.find((p) => p.id === followMe.followingId)?.name ?? 'someone')
+                    : null
+                }
+                onStopFollowing={followMe.stopFollowing}
+                onDuplicateMultiSelected={duplicateMultiSelected}
+                onDeleteMultiSelected={deleteMultiSelected}
+                onToggleLockMultiSelected={toggleLockMultiSelected}
+                onFilterMultiSelected={narrowMultiSelection}
+                onExportMultiSelected={() => {
+                  setExportScope('selection');
+                  setExportOpen(true);
+                }}
+                editingId={editingId}
+                editCursorAtEnd={editCursorAtEnd}
+                formatSourceId={formatSourceId}
+                onFormatPagePress={onFormatPagePress}
+                canUndo={canUndo && !activeTabLocked}
+                canRedo={canRedo && !activeTabLocked}
+                reshapingArrowId={reshapingArrowId}
+                settings={userPreferences}
+                onUndo={undo}
+                onRedo={redo}
+                layers={layers}
+                userPreferences={userPreferences}
+                formatBrushSource={formatBrushSource}
+                currentDocumentId={documentId}
+                currentShareCode={sessionShareCode}
+                onRenameCurrentDocument={nameDocument}
+                onNewDocument={newDocument}
+                explorerMenuActions={explorerMenuActions}
+                onDeselect={onDeselect}
+                onSelect={selectElement}
+                onElementContextMenu={onElementContextMenu}
+                onMultiContextMenu={onMultiContextMenu}
+                onOpenMultiContextMenu={onOpenMultiContextMenu}
+                onCanvasContextMenu={onCanvasContextMenu}
+                chartPalette={themeChartPalette(activeTheme)}
+                onShiftSelect={toggleInMultiSelect}
+                onExitFormatTool={exitFormatTool}
+                onSetTextAlign={setTextAlignSelected}
+                onFollowLink={followLink}
+                onOpenComments={openComments}
+                // An action note's marker opens its action, or for an Editor the Assign Action dialog while none is
+                // assigned (docs/specs/007-editor/article-pages.md "Comments and actions"), as a click on its text does.
+                onOpenAction={isReadOnly ? openActionPopover : openAssignAction}
+                onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
+                onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
+                imageContext={imageContext}
+                // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
+                // participant row, so there's no 403, and they should set a name before others see them in presence.
+                showIdentityPrompt={identityOnlyScreenOpen}
+                hydrated={hydrated}
+                // Visitor on someone else's document + signed in → lock the
+                // identity input to their account name. Owner branch never
+                // shows the identity prompt so `lockedName` is moot there;
+                // pure guests pass null and keep the editable name field.
+                identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
+                welcomeOpen={anyWelcomeOpen}
+                selfParticipant={selfParticipant}
+                onConfirmIdentity={confirmIdentity}
+                onCancelIdentity={cancelIdentity}
+                tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
+                onToggleAspectLock={toggleAspectLockSelected}
+                // One gesture, one answer: while the element menu is open the
+                // quick-connect pluses stand down (see deriveCanvasSelection).
+                elementMenuOpen={contextMenu?.mode === 'element'}
+                onCanvasDoubleClick={handleCanvasDoubleClick}
+                tabLoadState={tabLoadState}
+                onRetryTabLoad={retryActiveTabLoad}
+                // Embeds (docs/specs/013-workspace/embeds.md) ride the zen chrome-hide gates: every panel
+                // and badge zen hides, embeds hide too. The zen TOGGLE is
+                // withheld so the ZoomControls dock doesn't offer an exit
+                // from a mode the embed can't actually leave.
+                zenMode={zenMode || embedMode}
+                // A phone held sideways has no Explorer at all (docs/specs/007-editor/editor-app.md "A phone
+                // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
+                explorerHidden={workbenchMode || landscapePhone}
+                workbenchBack={workbenchFrame}
+                onToggleZen={embedMode ? undefined : toggleZenMode}
               />
-            ) : null}
-            {documentId !== null && (
-              <ItemWebhooksDialog
-                open={webhooksOpen}
-                onClose={() => setWebhooksOpen(false)}
-                itemId={documentId}
-                app="livedocuments"
-                title={documentName}
-                shareCode={sessionShareCode}
-              />
-            )}
-          </PresentingProvider>
-        </SuppressElementIndicators>
+              {lockedMenu ? (
+                <LockedElementMenu
+                  at={lockedMenu.at}
+                  holders={lockedMenu.holders}
+                  onRelease={(presenceId) => releaseSelectionLock(presenceId, lockedMenu.elementId)}
+                  onClose={() => setLockedMenu(null)}
+                />
+              ) : null}
+              {documentId !== null && (
+                <ItemWebhooksDialog
+                  open={webhooksOpen}
+                  onClose={() => setWebhooksOpen(false)}
+                  itemId={documentId}
+                  app="livedocuments"
+                  title={documentName}
+                  shareCode={sessionShareCode}
+                />
+              )}
+            </PresentingProvider>
+          </SuppressElementIndicators>
         </BuildStepsProvider>
       </TagColoursProvider>
     </CanvasThemeProvider>

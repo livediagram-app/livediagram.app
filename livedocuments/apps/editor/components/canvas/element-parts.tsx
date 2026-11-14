@@ -53,7 +53,7 @@ export function BuildBadge({ step, besideLock }: { step: number; besideLock: boo
         besideLock ? 'left-4' : '-left-2'
       }`}
     >
-      {step}
+      <span className="text-optical-centre">{step}</span>
     </div>
   );
 }

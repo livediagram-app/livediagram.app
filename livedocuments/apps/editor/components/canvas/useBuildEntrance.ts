@@ -32,7 +32,8 @@ export function buildKeyframes(effect: BuildEffect): Keyframe[] | null {
 
 // The node an element is drawn as: a boxed element's wrapper, or the group an arrow's hit band sits in.
 function nodeOf(root: ParentNode, id: string): Element | null {
-  const hit = root.querySelector(`[data-element-id="${CSS.escape(id)}"]`);
+  const quoted = id.replace(/["\\]/g, '\\$&');
+  const hit = root.querySelector(`[data-element-id="${quoted}"]`);
   if (!hit) return null;
   return hit instanceof SVGElement && hit.parentElement ? hit.parentElement : hit;
 }
@@ -48,7 +49,7 @@ export function useBuildEntrance(
       const frames = buildKeyframes(effect);
       const node = frames ? nodeOf(root, id) : null;
       if (!node || typeof node.animate !== 'function') continue;
-      node.animate(frames!, { duration: BUILD_ENTER_MS, easing: BUILD_EASING });
+      node.animate(frames, { duration: BUILD_ENTER_MS, easing: BUILD_EASING });
     }
   });
   const key = entrance?.key;

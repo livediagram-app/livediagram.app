@@ -3,6 +3,7 @@
 // editor's deck, its menu and its tests share one answer.
 
 import { BUILD_EFFECTS, type BuildEffect, type ElementBuild } from './build-types';
+import type { ArrowElement } from './arrow-types';
 import type { Element } from './element-union';
 import type { Tab } from './index';
 import { resolveSlide, type Slide } from './slide-deck';
@@ -53,7 +54,11 @@ export function withBuild<E extends Element>(el: E, build: ElementBuild | null):
 
 // The ids hidden when `shown` steps of `orders` are showing: every element whose order is past them, then every
 // arrow with an end on something hidden (repeated, so an arrow pinned to a hidden arrow hides too).
-function hiddenIds(elements: readonly Element[], orders: readonly number[], shown: number): Set<string> {
+function hiddenIds(
+  elements: readonly Element[],
+  orders: readonly number[],
+  shown: number,
+): Set<string> {
   const showing = new Set(orders.slice(0, Math.max(0, shown)));
   const hidden = new Set<string>();
   for (const el of elements) {
@@ -61,15 +66,15 @@ function hiddenIds(elements: readonly Element[], orders: readonly number[], show
     if (b && !showing.has(b.order)) hidden.add(el.id);
   }
   if (hidden.size === 0) return hidden;
-  const arrows = elements.filter((el) => el.type === 'arrow');
+  const arrows = elements.filter((el): el is ArrowElement => el.type === 'arrow');
   const endHidden = (end: { kind: string; elementId?: string; arrowId?: string }) =>
     (end.kind === 'pinned' && end.elementId !== undefined && hidden.has(end.elementId)) ||
     (end.kind === 'on-arrow' && end.arrowId !== undefined && hidden.has(end.arrowId));
   // Each pass hides at least one more arrow or stops, so it ends within one pass per arrow.
-  for (let changed = true; changed; ) {
+  for (let changed = true; changed;) {
     changed = false;
     for (const a of arrows) {
-      if (a.type !== 'arrow' || hidden.has(a.id)) continue;
+      if (hidden.has(a.id)) continue;
       if (endHidden(a.from) || endHidden(a.to)) {
         hidden.add(a.id);
         changed = true;
@@ -112,8 +117,7 @@ export function stepBuild(
   step: 1 | -1,
 ): PresentingBuild | null {
   const shown = Math.min(Math.max(0, at.shown), count);
-  if (step === 1 && shown < count)
-    return { slideId: at.slideId, shown: shown + 1, entering: true };
+  if (step === 1 && shown < count) return { slideId: at.slideId, shown: shown + 1, entering: true };
   if (step === -1 && shown > 0) return { slideId: at.slideId, shown: shown - 1, entering: false };
   return null;
 }
