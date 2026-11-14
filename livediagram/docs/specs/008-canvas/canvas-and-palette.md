@@ -341,8 +341,8 @@ The single-element **Avatar** (a circular image) lives in the **Tools** tab besi
 **Almost everything in the palette draws.** Picking a tile arms the combined tap-or-drag gesture; see [Adding elements](#adding-elements--tap-to-drop-or-drag-to-draw), where a tap drops the element at the tap point and a drag sizes it. That covers shapes, text, sticky, **table**, **image**, **link card**, **every embed** (YouTube / Vimeo / Loom / Figma / Google Docs / website), arrow, icons, Technology marks, stickers, **every Component**, and **Avatar**.
 
 **Pressed again, a tile puts its tool down.** A tile whose tool is armed (pressed, highlighted) disarms it when
-pressed again, as Escape does, back to the canvas's own tool; a Draw-mode marker is the exception, since pressing
-an armed marker opens its settings.
+pressed again, as Escape does, back to the canvas's own tool. A Draw-mode marker held from the Toolbar strip's Search
+is no exception: its colour and width are Draw mode's to set, in the dock ([Draw mode](../023-draw-mode/draw-mode.md#pens)).
 
 **Annotation is the one exception**, and places at the **centre of the visible canvas viewport** (accounting for pan), auto-selected. A note marker is a fixed 44×44 glyph ([Annotations](../009-elements/annotations.md)): there is no box to size, so a draw gesture would only ask the user for a dimension it then ignores.
 

@@ -7,7 +7,6 @@ import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import { MarkerPaletteTile } from './MarkerPaletteTile';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
@@ -50,14 +49,15 @@ export type PaletteTileActions = {
 };
 
 // A tile pressed: places or arms its tool; pressed again while armed (`pendingDraw`), puts it down
-// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add"). A marker keeps its press, which opens its settings.
+// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add"). A held marker too: its colour and width are
+// Draw mode's to set, in the dock (docs/specs/023-draw-mode/draw-mode.md "Pens").
 export function tileHandler(
   def: PaletteTileDef,
   actions: PaletteTileActions,
   pendingDraw?: PendingDraw | null,
 ): () => void {
   const a = def.action;
-  if (a.type !== 'marker' && actions.cancelDraw && tileActive(def, pendingDraw)) {
+  if (actions.cancelDraw && tileActive(def, pendingDraw)) {
     return actions.cancelDraw;
   }
   switch (a.type) {
@@ -198,46 +198,14 @@ export function PaletteTile({
   actions,
   pendingDraw,
   compact,
-  onPress,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
   compact?: boolean;
-  // A press of the tile's own (a held marker opening its flyout), else the tile's action.
-  onPress?: () => void;
-}) {
-  // A marker held, pressed again, opens its colour and width (MarkerPaletteTile).
-  if (def.action.type === 'marker' && !onPress)
-    return (
-      <MarkerPaletteTile def={def} actions={actions} pendingDraw={pendingDraw} compact={compact} />
-    );
-  return (
-    <TileButton
-      def={def}
-      actions={actions}
-      pendingDraw={pendingDraw}
-      compact={compact}
-      onPress={onPress}
-    />
-  );
-}
-
-function TileButton({
-  def,
-  actions,
-  pendingDraw,
-  compact,
-  onPress,
-}: {
-  def: PaletteTileDef;
-  actions: PaletteTileActions;
-  pendingDraw: PendingDraw | null | undefined;
-  compact?: boolean;
-  onPress?: () => void;
 }) {
   const a = def.action;
-  const onClick = onPress ?? tileHandler(def, actions, pendingDraw);
+  const onClick = tileHandler(def, actions, pendingDraw);
   // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
   // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);
