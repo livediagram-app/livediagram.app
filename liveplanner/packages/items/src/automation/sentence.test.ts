@@ -497,6 +497,16 @@ describe('the actions after Phase 3 and Wait', () => {
   it('names each as its chip reads', () => {
     const chip = (s: AutomationRuleBody['steps'][number]) => stepChip(s, OUTLINE);
     expect(chip({ kind: 'set_type', type: 'bug' })).toBe('Change to Bug');
+    expect(
+      chip({
+        kind: 'set_type',
+        type: 'bug',
+        map: [
+          { from: 'f-done', to: 'description' },
+          { from: 'f-who', to: 'f-ok' },
+        ],
+      }),
+    ).toBe('Change to Bug (Completed On to Description, Reviewer to Signed Off)');
     expect(chip({ kind: 'set_colour', colour: '#ff0000' })).toBe('Set Colour');
     expect(chip({ kind: 'set_colour', colour: null })).toBe('Clear Colour');
     expect(chip({ kind: 'copy_card' })).toBe('Copy Card');

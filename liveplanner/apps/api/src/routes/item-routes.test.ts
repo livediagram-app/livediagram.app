@@ -1602,3 +1602,75 @@ describe('moving many items at once', () => {
     expect(ra.rank < rb.rank).toBe(true);
   });
 });
+
+// docs/specs/026-plan/item-types.md "The REST API maps too".
+describe('a type change through the api', () => {
+  const catalogue = {
+    version: 1,
+    types: [
+      {
+        id: 'task',
+        label: 'Idea',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['title', 'status', 'f-app', 'f-why'],
+        custom: [
+          { id: 'f-app', label: 'App', kind: 'text' },
+          { id: 'f-why', label: 'Why', kind: 'longtext' },
+        ],
+      },
+      {
+        id: 'note',
+        label: 'Work Item',
+        color: '#16a34a',
+        glyph: 'task',
+        fields: ['title', 'status', 'f-apps'],
+        custom: [{ id: 'f-apps', label: 'app', kind: 'longtext' }],
+      },
+    ],
+  };
+  const setUp = async () => {
+    expect(
+      (await call({ method: 'PUT', path: '/item-types', body: { itemTypes: catalogue } })).status,
+    ).toBe(200);
+    return (await add({ title: 'T', 'f-app': 'Editor', 'f-why': 'Because' })).body.item;
+  };
+
+  it('carries same-name compatible fields on a patch, keeping the old values', async () => {
+    const t = await setUp();
+    const res = await call<ItemResponse>({ path: `/items/${t.id}`, body: { type: 'note' } });
+    expect(res.status).toBe(200);
+    expect(res.body.item.type).toBe('note');
+    expect(res.body.item.fields).toMatchObject({ 'f-apps': 'Editor', 'f-app': 'Editor' });
+  });
+
+  it('never maps over a value the write sets itself, so a mapped write is not mapped twice', async () => {
+    const t = await setUp();
+    const res = await call<ItemResponse>({
+      path: `/items/${t.id}`,
+      body: { type: 'note', set: { 'f-apps': 'Mine' } },
+    });
+    expect(res.body.item.fields['f-apps']).toBe('Mine');
+  });
+
+  it('maps a move and a patch among many, but never an undo', async () => {
+    const a = await setUp();
+    const moved = await call<ItemResponse>({
+      path: `/items/${a.id}/move`,
+      body: { status: 'done', type: 'note' },
+    });
+    expect(moved.body.item.fields['f-apps']).toBe('Editor');
+    const b = (await add({ title: 'B', 'f-app': 'API' })).body.item;
+    const many = await call<ItemsResponse>({
+      path: '/items/patches',
+      body: { items: [{ id: b.id, type: 'note' }] },
+    });
+    expect(many.body.items[0]!.fields['f-apps']).toBe('API');
+    const c = (await add({ title: 'C', 'f-app': 'Help' })).body.item;
+    const undone = await call<ItemResponse>({
+      path: `/items/${c.id}`,
+      body: { type: 'note', undo: true },
+    });
+    expect(undone.body.item.fields['f-apps']).toBeUndefined();
+  });
+});

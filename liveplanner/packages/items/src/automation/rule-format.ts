@@ -77,7 +77,10 @@ export const RULE_STEPS_FORMAT =
   '{"kind":"email","to":{"assignee":true}|{"trigger":true}|{"person":person}|{"addresses":["ana@example.com",' +
   '1 to 10]},"subject":"... up to 200","body":"..."} (a person of the plan with an account; or addresses the ' +
   'person asked for, never made up: each can unsubscribe, and a plan sends at most 50 such emails a day); ' +
-  '{"kind":"set_type","type":card type} (its column must suit the new type); ' +
+  '{"kind":"set_type","type":card type,"map"?:[{"from":a field of any card type,"to":a field of the new type or ' +
+  '"description"}, up to 13, each "to" once]} (its column must suit the new type; fields map by name and kind on ' +
+  'their own, and "map" names fields whose names differ, winning over name matching and replacing the target\'s ' +
+  'value); ' +
   '{"kind":"set_colour","colour":"#rrggbb"|null}; {"kind":"restore"} (out of the archive); ' +
   '{"kind":"copy_card","status"?:column} (a copy of the card, in its column or that one; counts as the run’s one ' +
   'new card); {"kind":"add_checklist","items":["... up to 200",1 to 20]} (unticked; an item already there is ' +

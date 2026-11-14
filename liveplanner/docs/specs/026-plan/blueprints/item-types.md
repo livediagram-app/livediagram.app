@@ -43,8 +43,20 @@ src/image-values.ts    holdsSeveralImages(field), storedImageIds(value), fieldIm
 src/card-retype-fields.ts typeChangeFields(fields, from, to): ItemFields (the new type's custom fields mapped
                        by name from the old type's: same kind, Text/Long Text, Choice/Multiple Choice; Choice
                        values only as options; a Long Text's Rich runs with it; never a clear),
-                       withTypeChangeFields(item, write, types) (a patch or move with them added to `set`, never
-                       over its own keys; spec "Changing a card's type")
+                       withTypeChangeFields(item, write, types, map?) (a patch or move with them added to `set`,
+                       never over its own keys; spec "Changing a card's type"); explicit `map` entries
+                       (`TypeFieldMap { from, to }`, a source custom field of any type, a target custom field of
+                       the new type or `description`, read as Long Text through DESCRIPTION_AS_LONG_TEXT) are
+                       applied after name matching, over it and over the target's value; canTakeValue(from, to)
+                       and valueInto(from, to, value) (the one compatibility and conversion rule, shared with the
+                       Hidden tab's Copy To Field)
+src/hidden-values.ts   hiddenValuesOf(item, type, types): HiddenGroup[] ({ type: ItemTypeDef | null, values:
+                       { field, def, value }[] }, groups in catalogue order, Removed Fields last, `type: null`),
+                       hiddenValueCount(groups), hiddenValueText(value) (plain text of a removed field's value),
+                       hiddenCopyTargets(type, def, value) (the card type's fields that take it: custom then
+                       Description), hiddenCopyPatch(item, def, value, target), hiddenRemovePatch(item, field)
+                       (spec "The Hidden tab"); only keys matching CUSTOM_FIELD_ID_PATTERN are read, never a
+                       Calculated, Comments, Votes or Time Spent field's
 src/newer-fields.ts    isNewerField(field), readNewerField(input, id, label), NEWER_FIELD_MAX_BYTES (spec "Fields
                        from a newer version")
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
@@ -998,6 +1010,23 @@ retyped, types, items, ctx)` (`built-in-field-retype.ts`): `retypedValuePatches`
   `newTabId('tab', ...)`), `withoutEmptyTabs`. The type editor starts from `tabsOf(type)` and saves `tabs`
   explicitly. Problems: "Give every tab a name.", "Two tabs have the same name."
 
+## The Hidden tab
+
+- `ItemPanelTabs.tsx`: `HIDDEN_TAB = 'card-hidden'`, label "Hidden"; `panelTabs(tabs, details, linked, hidden)` puts it
+  after Activity (before the phone's Details) when `hidden > 0`, its `count` the values and `unit: 'value'`, so its
+  accessible name reads "Hidden, 2 values".
+- `ItemPanel.tsx` works the groups out once per item and catalogue (`useMemo` on `item.fields`, `type`, `types`), so
+  typing in another field of the card (a new `fields` object) is the only redo, one pass over the card's keys.
+  Picking the tab tracks `Plan · Opened · HiddenValues`. Its panel is `HiddenValuesTab.tsx`.
+- `HiddenValuesTab.tsx` (tested in `ItemPanel.hidden.test.tsx`): the line, then a `section` per group (`aria-labelledby` its heading "From {Type}" with
+  `PlanTypeGlyph`, or "Removed Fields"), each value a row: its label (the source type's `fieldLabel`, or "Removed
+  Field"), its control (`ItemFieldEditor` with `ctx.type` the source type and `canEdit: false`; a removed field's
+  `hiddenValueText`), and for an Editor (`canRetire`) **Copy To Field** (the shared `PortalMenu`: one `menuitem` a target, "(replaces its value)" after one that holds a value; disabled with
+  the tooltip "No field on {Type} can take this value." when none can) and **Remove** (an icon button "Remove {Field}"). Each is one
+  `onPatch`, so one undo step through the panel's writes; `Plan · Copied · HiddenValue`, `Plan · Removed ·
+HiddenValue`.
+- When the groups empty, `panelTabs` drops the tab and `current` falls back to the first tab (the panel's own rule).
+
 ## The statuses a type uses
 
 - `ItemTypeDef.statuses?: string[]`, the ordered inclusion list, read by `readStatusList` in `readType` (strings,
@@ -1172,6 +1201,9 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Deleting the last type                 | Not offered (`canDelete`); `deleteType` refuses                                                  |
 | Save fails                             | That change dropped (later ones kept), toast                                                     |
 | Another change landed first (409)      | Change made again to the stored catalogue, sent again (3×)                                       |
+| 409 naming a lower revision (synced)   | Taken as stored anyway (`keepStored(next, true)`): the server's count restarted after Sync Plan  |
+| Hidden value of a deleted field/type   | Listed under Removed Fields as plain text; Remove only                                           |
+| Hidden value no field can take         | Copy To Field's menu says so; nothing written                                                    |
 | Blocks turned on over links that loop  | Cards never rewritten; both show blocked; a write adding to the loop is refused, removing is not |
 | A blocker trashed, archived or missing | Ignored by the badge, the Blocked By list and the arrows; kept on the card                       |
 | Two writes race to close a loop        | Each passes its own read; the loop shows (both blocked) until a link is removed                  |
@@ -1298,6 +1330,9 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Copies keep pictures: grants, serving, refs both ways, purge, Drive files                                        | `apps/api/src/plan-room/image-copy.test.ts`                                                                                                                                                                                                                                                                                                        |
 | Add Field: option rows, Enter, Backspace, paste                                                                  | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                                                                                                                                                                                                                                         |
 | Edit Field: value conversions, refusals, counts, options, 2,000-card budget                                      | `packages/items/src/field-kind-change.test.ts`                                                                                                                                                                                                                                                                                                     |
+| Hidden tab: hidden values, removed fields, allow-list, copy rules, roles, undo, live                             | `packages/items/src/hidden-values.test.ts`, `apps/editor/components/plan/ItemPanel.hidden.test.tsx` , `apps/editor/e2e/hidden-values.spec.ts`                                                                                                                                                                                                      |
+| Card types save after Sync Plan (409 with a lower revision)                                                      | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                                                                                                                                                                                                                                      |
+| REST type patch maps fields (patch, move, patches; undo not mapped)                                              | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                                                                                                          |
 | Changing a card's type: mapped by name, kinds, options, hidden values kept, every path                           | `packages/items/src/card-retype-fields.test.ts`, `packages/items/src/automation/plan-card-actions.test.ts`, `packages/items/src/automation/ai-steps.test.ts`, `packages/agent-verbs/src/plan/plan-engine.test.ts`, `apps/editor/hooks/plan/usePlanItemWrites.retype.test.ts`, `apps/api/src/plan-room/automations/automations-type-change.test.ts` |
 | Edit Field: pencil, rename, reshape, type change, loss count and confirm, disabled tiles, Editor only            | `apps/editor/components/plan/EditFieldDialog.test.tsx`                                                                                                                                                                                                                                                                                             |
 | Built-in names: stored, read, inherited, one type and several, CSV both names, budget                            | `packages/items/src/built-in-field-labels.test.ts`                                                                                                                                                                                                                                                                                                 |

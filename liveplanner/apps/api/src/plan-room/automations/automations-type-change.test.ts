@@ -31,8 +31,11 @@ const WORK: ItemTypeDef = {
   newTitle: 'New work item',
   glyph: 'task',
   color: '#16a34a',
-  fields: ['title', 'status', 'description', 'priority', 'f-app'],
-  custom: [{ id: 'f-app', label: 'App', kind: 'multichoice', options: ['Editor', 'API'] }],
+  fields: ['title', 'status', 'description', 'priority', 'f-app', 'f-criteria'],
+  custom: [
+    { id: 'f-app', label: 'App', kind: 'multichoice', options: ['Editor', 'API'] },
+    { id: 'f-criteria', label: 'Acceptance Criteria', kind: 'longtext' },
+  ],
 };
 
 let w: AutomationWorld;
@@ -93,6 +96,42 @@ describe('Change Card Type maps custom fields', () => {
     });
     const [run] = await runs();
     expect(run).toMatchObject({ result: 'done', ruleName: 'Progress Idea' });
+  });
+
+  // item-types.md "Explicit mappings" (Work Tracker 843): Map Fields names the Work Item field the Solution fills,
+  // and another rule its Description, over the value it held.
+  it('converts an Idea’s Solution into the named Work Item field, and into the Description', async () => {
+    await w.rule({
+      name: 'Accept Idea',
+      trigger: { kind: 'card_moved', to: ['review'] },
+      steps: [
+        {
+          kind: 'set_type',
+          type: 'work',
+          map: [
+            { from: 'f-solution', to: 'f-criteria' },
+            { from: 'f-solution', to: 'description' },
+          ],
+        },
+      ],
+    });
+    const c = await idea();
+    expect(
+      (await w.send('POST', `/api/projects/A/items/${c.id}`, { set: { description: 'Old' } }))
+        .status,
+    ).toBe(200);
+    expect(
+      (await w.send('POST', `/api/projects/A/items/${c.id}/move`, { status: 'review' })).status,
+    ).toBe(200);
+    await room().alarm();
+    const after = await card(c.id);
+    expect(after.type).toBe('work');
+    expect(after.fields).toMatchObject({
+      'f-app': ['API'],
+      'f-criteria': 'Map by name',
+      description: 'Map by name',
+      'f-solution': 'Map by name',
+    });
   });
 
   // Share roles (docs/instructions/gate-a-feature-by-share-role.md): a Viewer's move is refused, so no rule runs.
