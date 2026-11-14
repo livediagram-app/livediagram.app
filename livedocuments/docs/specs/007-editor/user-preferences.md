@@ -825,7 +825,7 @@ and the dialog stays as the one complete, browsable index of them.
   not in a workbench, and preferences not kept only in this browser (`preferencesKeptLocally`,
   `../packages/workbench/src/lib/preferences-local-only.ts`, set when the api keeps none for the account). A guest's
   settings stay in this browser, a workbench's Settings reach only its one document, and with preferences kept locally there is no account copy
-  for All to show (before 14 November 2026 livediagram, livedesign and livehuddle still offered All then); the dialog always opens on livedocuments, whatever was chosen last time (nothing is remembered; All is
+  for All to show (before 14 November 2026 livediagram, livedesign and livehuddle still offered All then); the footer then says they are kept in this browser, never that they sync to the account; the dialog always opens on livedocuments, whatever was chosen last time (nothing is remembered; All is
   one press away). The host part is `settings-panel-host.tsx` (the app's id, its logos
   and the bearer request); the switch, the Account section and All's merged categories are the package's.
 
