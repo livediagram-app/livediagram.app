@@ -25,6 +25,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Unresolved',
   'Agent·Opened',
   'Canvas·Changed',
+  // Canvas·Used and Element·Searched come from shared workbench code other editors mount (follow-me, image
+  // search), which the coverage scan reads whole: this editor reaches neither, so neither arrives from it.
+  'Canvas·Used',
   'Canvas·Zoomed',
   'Comment·Added',
   // A card's comment threads (docs/specs/026-plan/items.md "Telemetry"): an edit ('Changed'), a thread started
@@ -72,6 +75,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Changed',
   'Element·Copied',
   'Element·Deleted',
+  'Element·Searched',
   'Element·Duplicated',
   'Element·Linked',
   'Element·Locked',
