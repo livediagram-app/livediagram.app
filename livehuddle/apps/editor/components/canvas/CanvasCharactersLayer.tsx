@@ -20,6 +20,7 @@ import { avatarScale, peerAvatarConfig } from '@livehuddle/avatar/config';
 import { reactionPose } from '@livehuddle/avatar/reactions';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ReceptionistLayer } from './receptionist/ReceptionistLayer';
+import { PieceBubbleHost } from './PieceBubbleLayer';
 import { RECEPTIONIST_LOOK } from '@/lib/receptionist/receptionist-look';
 import { CallBubbles, useCallBubbleRects } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
@@ -292,34 +293,39 @@ export function CanvasCharactersLayer({
       <CallBubbles {...call.bubbles} rectsRef={callBubbleRects} />
       {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
       <AvatarPadArrivals arrivals={padArrivals} />
+      {/* The proximity bubbles of the piece you stand at (Insert Coin, Welcome), over every character and its chip
+        (PieceBubbleLayer, Work Tracker 793). */}
+      <PieceBubbleHost />
       {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
-          own head while you type. */}
+          own head while you type. Raised over the chips of a spread row (z-[1]) and the piece bubbles (z-[2]). */}
       {speechBubbles.length > 0 || speech.composerOpen ? (
-        <AvatarSpeechLayer
-          bubbles={speechBubbles}
-          activeTabId={props.activeTabId ?? ''}
-          zoom={viewportZoom}
-          view={{
-            offsetX: viewportOffset.x,
-            width: mainSize.width,
-            offsetY: viewportOffset.y,
-            height: mainSize.height,
-          }}
-          peers={remoteAvatars}
-          self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
-          // Speech rises clear of camera and screen bubbles (video-and-screen-bubbles.md "Close together").
-          obstacles={callBubbleRects}
-          composer={
-            speech.composerOpen && feet
-              ? {
-                  head: headPoint(feet, selfScale),
-                  coolingDown: speech.coolingDown,
-                  onSend: (text) => speech.send(text, 'composer'),
-                  onCancel: speech.closeComposer,
-                }
-              : null
-          }
-        />
+        <div className="pointer-events-none absolute left-0 top-0 z-[3]">
+          <AvatarSpeechLayer
+            bubbles={speechBubbles}
+            activeTabId={props.activeTabId ?? ''}
+            zoom={viewportZoom}
+            view={{
+              offsetX: viewportOffset.x,
+              width: mainSize.width,
+              offsetY: viewportOffset.y,
+              height: mainSize.height,
+            }}
+            peers={remoteAvatars}
+            self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
+            // Speech rises clear of camera and screen bubbles (video-and-screen-bubbles.md "Close together").
+            obstacles={callBubbleRects}
+            composer={
+              speech.composerOpen && feet
+                ? {
+                    head: headPoint(feet, selfScale),
+                    coolingDown: speech.coolingDown,
+                    onSend: (text) => speech.send(text, 'composer'),
+                    onCancel: speech.closeComposer,
+                  }
+                : null
+            }
+          />
+        </div>
       ) : null}
     </>
   );

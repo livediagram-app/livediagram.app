@@ -253,18 +253,19 @@ describe('the Reception Desk', () => {
   });
 
   // Work Tracker 793: a Room Sign placed by hand just above the desk would sit under the Welcome bubble.
-  it('shows the Welcome below the desk when a hand-placed Room Sign stands where it rises', () => {
+  it('shows the Welcome beside the desk when a hand-placed Room Sign stands where it rises', () => {
     const bubble = () => screen.getByRole('status');
     const { rerender } = render(<AtDesk feet={{ x: 200, y: 230 }} />);
-    expect(bubble().hasAttribute('data-bubble-below')).toBe(false);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('above');
     expect(bubble().className).toContain('bottom-[calc(100%+6px)]');
     rerender(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 170, y: 40 }} />);
-    expect(bubble().hasAttribute('data-bubble-below')).toBe(true);
-    expect(bubble().className).toContain('top-[calc(100%+6px)]');
-    expect(bubble().style.getPropertyValue('--lh-bubble-rise')).toBe('-6px');
+    // The sign hangs past the desk's right end, so the left has the most room.
+    expect(bubble().getAttribute('data-bubble-side')).toBe('left');
+    expect(bubble().className).toContain('right-[calc(100%+6px)]');
+    expect(bubble().style.getPropertyValue('--lh-bubble-x')).toBe('0px');
     // A sign well clear of the bubble's room leaves it above.
     rerender(<AtDesk feet={{ x: 200, y: 230 }} sign={{ x: 700, y: 40 }} />);
-    expect(bubble().hasAttribute('data-bubble-below')).toBe(false);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('above');
   });
 });
 

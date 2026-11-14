@@ -39,6 +39,15 @@ export function spawnBody(scale: number): number {
 }
 /** A Regular character's margin below water, kept when no size is given. */
 export const SPAWN_BODY = spawnBody(AVATAR_SIZE_SCALE.regular);
+/**
+ * Half a character's width at this size scale: how far beside water its feet keep (Work Tracker 800), so no half of
+ * the body stands over the water or its coping.
+ */
+export function spawnHalfWidth(scale: number): number {
+  return (AVATAR_WIDTH * scale) / 2;
+}
+/** A Regular character's half-width, kept beside water when no size is given. */
+export const SPAWN_HALF_WIDTH = spawnHalfWidth(AVATAR_SIZE_SCALE.regular);
 // How far past the reach the spot keeps from every wall, so the first step from it is never refused.
 const SPAWN_MARGIN = 0.5;
 
@@ -59,20 +68,20 @@ function waterOf(fences: readonly FenceSegment[]): Rect[] {
   return [...boxes];
 }
 
-/** Whether feet at `p` stand under water, closer below it than a body's height, the body's half-width either side. */
-function underWater(p: FencePoint, water: readonly Rect[], body: number): boolean {
+/**
+ * Whether feet at `p` stand at water: in it, beside it closer than the body's half-width (level with it), or under
+ * it closer than a body's height, the body's half-width either side.
+ */
+function atWater(p: FencePoint, water: readonly Rect[], body: number, half: number): boolean {
   return water.some(
     (w) =>
-      p.y >= w.y + w.height &&
-      p.y < w.y + w.height + body &&
-      p.x > w.x - AVATAR_WIDTH / 2 &&
-      p.x < w.x + w.width + AVATAR_WIDTH / 2,
+      p.y > w.y && p.y < w.y + w.height + body && p.x > w.x - half && p.x < w.x + w.width + half,
   );
 }
 
 /**
- * Whether a character may appear at `p`: outside every footprint, further than its reach from every wall and not
- * within a body's height under water.
+ * Whether a character may appear at `p`: outside every footprint, further than its reach from every wall, not within
+ * its half-width beside water and not within a body's height under it.
  */
 function freeAt(
   p: FencePoint,
@@ -80,9 +89,10 @@ function freeAt(
   clear: number,
   water: readonly Rect[],
   body: number,
+  half: number,
 ): boolean {
   return (
-    !underWater(p, water, body) &&
+    !atWater(p, water, body, half) &&
     !fencesNear(p, clear, fences).some(
       (f) => (f.solid !== undefined && inside(p, f.solid)) || pointSegmentDistance(p, f) < clear,
     )
@@ -90,7 +100,7 @@ function freeAt(
 }
 
 /**
- * Where a new character put down at `p` appears. Free of every footprint and of water's margin, it is
+ * Where a new character put down at `p` appears. Free of every footprint and of water's margins (`half` beside it, `body` under it), it is
  * `clearOfFences`'s spot (nudged off a wall it lands beside, left in a wall it lands in). Inside one (or within `body`
  * under water), it is the nearest point outside every footprint, clear of every wall's reach and at least `body`
  * (spawnBody at the character's size, SPAWN_BODY at Regular) below any water, searched ring by ring out to
@@ -102,9 +112,11 @@ export function freeSpawnPoint(
   fences: readonly FenceSegment[],
   reach = FENCE_REACH,
   body = SPAWN_BODY,
+  half = SPAWN_HALF_WIDTH,
 ): FencePoint {
   const allWater = waterOf(fences);
-  if (!solidAt(p, fences) && !underWater(p, allWater, body)) return clearOfFences(p, fences, reach);
+  if (!solidAt(p, fences) && !atWater(p, allWater, body, half))
+    return clearOfFences(p, fences, reach);
   const clear = reach + SPAWN_MARGIN;
   // Only the walls within the search's reach can refuse a spot; each spot then reads the few beside it (fencesNear
   // indexes a long list once).
@@ -115,16 +127,18 @@ export function freeSpawnPoint(
   let below: FencePoint | null = null;
   let edge = SPAWN_SEARCH_MAX;
   for (const w of water) {
-    if (p.x <= w.x - AVATAR_WIDTH / 2 || p.x >= w.x + w.width + AVATAR_WIDTH / 2) continue;
+    if (p.x <= w.x - half || p.x >= w.x + w.width + half) continue;
     if (p.y < w.y || p.y >= w.y + w.height + body) continue;
     const at = { x: p.x, y: w.y + w.height + body };
     const d = Math.max(0, w.y + w.height - p.y) + clear;
-    if (d < edge && at.y - p.y <= SPAWN_SEARCH_MAX && freeAt(at, near, clear, water, body)) {
+    if (d < edge && at.y - p.y <= SPAWN_SEARCH_MAX && freeAt(at, near, clear, water, body, half)) {
       below = at;
       edge = d;
     }
   }
-  return ringSearch(p, near, clear, water, body, below ? edge : SPAWN_SEARCH_MAX) ?? below ?? p;
+  return (
+    ringSearch(p, near, clear, water, body, half, below ? edge : SPAWN_SEARCH_MAX) ?? below ?? p
+  );
 }
 
 /** The rings' nearest free spot round `p`, or null with none nearer than `max` (rings below it only). */
@@ -134,17 +148,18 @@ function ringSearch(
   clear: number,
   water: readonly Rect[],
   body: number,
+  half: number,
   max: number,
 ): FencePoint | null {
   for (let r = SPAWN_SEARCH_STEP; r <= max; r += SPAWN_SEARCH_STEP) {
     // Points about SPAWN_SEARCH_STEP apart round the ring, an even number so the two ways round meet at the top.
-    const half = Math.max(4, Math.ceil((Math.PI * r) / SPAWN_SEARCH_STEP));
-    for (let k = 0; k <= half; k++) {
-      const turn = (k / half) * Math.PI;
-      for (const sign of k === 0 || k === half ? [1] : [1, -1]) {
+    const steps = Math.max(4, Math.ceil((Math.PI * r) / SPAWN_SEARCH_STEP));
+    for (let k = 0; k <= steps; k++) {
+      const turn = (k / steps) * Math.PI;
+      for (const sign of k === 0 || k === steps ? [1] : [1, -1]) {
         // Angle 0 is straight down the canvas.
         const at = { x: p.x + Math.sin(turn * sign) * r, y: p.y + Math.cos(turn) * r };
-        if (freeAt(at, near, clear, water, body)) return at;
+        if (freeAt(at, near, clear, water, body, half)) return at;
       }
     }
   }

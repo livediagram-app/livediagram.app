@@ -74,7 +74,8 @@ describe('spreadNameChips', () => {
       { key: 'c', x: 120, top: 0, width: 80 },
     ];
     expectNoOverlap(chips);
-    expect(spreadNameChips(chips).get('b')).toBeUndefined();
+    // It stays put, but has its entry: the run's chips draw raised over every figure.
+    expect(spreadNameChips(chips).get('b')).toBe(0);
   });
 
   it('merges a run into the one it pushes into', () => {

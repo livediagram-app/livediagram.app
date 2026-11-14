@@ -7,9 +7,11 @@ import { avatarFigureHeight } from './walk';
 import {
   freeSpawnPoint,
   SPAWN_BODY,
+  SPAWN_HALF_WIDTH,
   SPAWN_HEADROOM,
   SPAWN_SEARCH_MAX,
   spawnBody,
+  spawnHalfWidth,
 } from './spawn-point';
 
 // docs/specs/009-elements/fence.md "What does not walk" (Work Tracker #610): a new character never appears inside a
@@ -103,6 +105,36 @@ describe('freeSpawnPoint', () => {
     },
   );
 
+  // Work Tracker 800: a spot just beside water (the Receptionist's, a pool 10 px past his pad) stood half a body over
+  // its coping; feet keep half their width clear of water's sides, at every size, either side.
+  it.each([
+    ['swimming-pool', 320, 200],
+    ['pond', 160, 100],
+  ])('keeps half a body clear beside a %s, on each side', (shape, w, h) => {
+    const el = piece(shape, 0, 0, w, h);
+    const fences = fenceSegments([el]);
+    const water = officeFootprints(el)[0]!;
+    const mid = water.y + water.height / 2;
+    for (const scale of Object.values(AVATAR_SIZE_SCALE)) {
+      const half = spawnHalfWidth(scale);
+      for (const [x, side] of [
+        [water.x - 0.5, -1],
+        [water.x + 0.5, -1],
+        [water.x + water.width + 2, 1],
+      ] as const) {
+        const at = freeSpawnPoint({ x, y: mid }, fences, FENCE_REACH, spawnBody(scale), half);
+        expectFree(at, fences);
+        if (at.y > water.y && at.y < water.y + water.height + spawnBody(scale))
+          expect(side < 0 ? water.x - at.x : at.x - (water.x + water.width)).toBeGreaterThanOrEqual(
+            half - 1e-9,
+          );
+      }
+    }
+    // Further out than half a body, a spot beside the water stays where it is.
+    const clearSpot = { x: water.x + water.width + SPAWN_HALF_WIDTH + 20, y: mid };
+    expect(freeSpawnPoint(clearSpot, fences)).toBe(clearSpot);
+  });
+
   it('keeps the body’s margin below the water the spot is in, not a pool beside it or one further down', () => {
     const pool = piece('swimming-pool', 0, 0, 320, 200);
     const beside = piece('swimming-pool', 500, 0, 320, 200);
@@ -160,8 +192,11 @@ describe('freeSpawnPoint', () => {
     const fences = fenceSegments([pool]);
     const far = { x: 500, y: 500 };
     expect(freeSpawnPoint(far, fences)).toBe(far);
-    // Beside the water, outside it, within the reach: nudged straight off (below it, the body's margin moves it on).
-    expect(freeSpawnPoint({ x: 4, y: 100 }, fences).x).toBeCloseTo(14 - FENCE_REACH - 0.5, 5);
+    // Beside the water, outside it but within half a body (Work Tracker 800): it steps out to half a body clear.
+    const beside = freeSpawnPoint({ x: 4, y: 100 }, fences);
+    expect(beside.x).toBeLessThanOrEqual(14 - SPAWN_HALF_WIDTH + 1e-9);
+    // The nearest such spot: within a couple of the search's 8 px rings of where it was asked.
+    expect(Math.hypot(beside.x - 4, beside.y - 100)).toBeLessThan(SPAWN_HALF_WIDTH + 16);
   });
 
   it('gives up where it was asked when no free floor lies within the search, quickly', () => {

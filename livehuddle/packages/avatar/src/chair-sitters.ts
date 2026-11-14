@@ -217,10 +217,11 @@ export function nameChipWidth(
 export type NameChip = { key: string; x: number; top: number; width: number };
 
 /**
- * How far each chip moves sideways so no two in a row cover each other, by key (only the chips that move). Chips
- * whose tops are within NAME_CHIP_HEIGHT share a row; in a row, chips that would overlap (or come closer than
- * NAME_CHIP_GAP) pack side by side in the order their middles run, the packed run centred where its chips' middles
- * want it (the least total move), merging with a neighbouring run it then reaches.
+ * How far each chip moves sideways so no two in a row cover each other, by key: every chip of a packed run (0 for one
+ * that stays put), none for a chip that needs no room. Chips whose tops are within NAME_CHIP_HEIGHT share a row; in
+ * a row, chips that would overlap (or come closer than NAME_CHIP_GAP) pack side by side in the order their middles
+ * run, the packed run centred where its chips' middles want it (the least total move), merging with a neighbouring
+ * run it then reaches.
  */
 export function spreadNameChips(chips: readonly NameChip[]): Map<string, number> {
   const shifts = new Map<string, number>();
@@ -267,7 +268,9 @@ function spreadRow(row: readonly NameChip[], shifts: Map<string, number>) {
     let at = run.left;
     for (const chip of run.chips) {
       const shift = at + chip.width / 2 - chip.x;
-      if (Math.abs(shift) > 1e-6) shifts.set(chip.key, shift);
+      // Every chip of a packed run has an entry, 0 for one that stays over its head: the run's chips draw raised
+      // over every figure (AvatarWalker), so a neighbour's hair never covers the one in the middle.
+      shifts.set(chip.key, Math.abs(shift) > 1e-6 ? shift : 0);
       at += chip.width + NAME_CHIP_GAP;
     }
   }

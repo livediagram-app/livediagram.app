@@ -5,7 +5,7 @@ import { fenceReachFor, fenceSegments, shutDoorLines } from '@livehuddle/avatar/
 import { officeFootprints, roomInterior } from '@livehuddle/avatar/office-geometry';
 import { avatarFigureHeight } from '@livehuddle/avatar/walk';
 import { avatarScale } from '@livehuddle/avatar/config';
-import { SPAWN_HEADROOM } from '@livehuddle/avatar/spawn-point';
+import { SPAWN_HEADROOM, spawnBody, spawnHalfWidth } from '@livehuddle/avatar/spawn-point';
 import { RECEPTIONIST_LOOK } from './receptionist-look';
 import { greetDetour } from './receptionist-timeline';
 import {
@@ -57,36 +57,37 @@ describe('receptionistPad and receptionistWorld', () => {
     expect(world.stops).toEqual([]);
   });
 
-  // Work Tracker 800: a pool or a pond beside his pad never has him standing in its water, or under its edge with his
-  // hair in it, at home or greeting from either side.
+  // Work Tracker 800: a pool or a pond beside his pad never has him standing in its water, beside it with half his body
+  // over its coping, or under its edge with his hair in it, at home or greeting from either side. The verifier's case:
+  // a pool 10 px past the pad's edge.
   it.each([
-    ['swimming-pool', 320, 200],
-    ['pond', 160, 100],
-  ])('never stands him on a %s’s water beside his pad', (kind, w, h) => {
+    ['swimming-pool', 320, 200, 10],
+    ['swimming-pool', 320, 200, 20],
+    ['pond', 160, 100, 10],
+    ['pond', 160, 100, 20],
+  ])('never stands him on a %s’s water beside his pad (%i px gap)', (kind, w, h, gap) => {
     const scale = avatarScale(RECEPTIONIST_LOOK.size);
+    const half = spawnHalfWidth(scale);
     // Water on both sides of the pad, level with its middle, where he would stand.
-    const right = shape('right', kind, 100, 40 - h / 2, w, h);
-    const left = shape('left', kind, -20 - w, 40 - h / 2, w, h);
+    const right = shape('right', kind, 80 + gap, 40 - h / 2, w, h);
+    const left = shape('left', kind, -gap - w, 40 - h / 2, w, h);
     const elements = [pad, right, left];
     const world = receptionistWorld(elements, gridFor(elements))!;
     const waters = [right, left].map((el) => officeFootprints({ ...el, shape: kind })[0]!);
     const spots = [world.home.at, world.beside.left, world.beside.right];
     for (const at of spots)
       for (const water of waters) {
-        const inWater =
-          at.x > water.x &&
-          at.x < water.x + water.width &&
-          at.y > water.y &&
-          at.y < water.y + water.height;
-        expect(inWater).toBe(false);
+        const bottom = water.y + water.height;
+        const level = at.y > water.y && at.y < bottom + spawnBody(scale);
+        // Level with the water, or below it within a body: his feet keep half his width clear of its sides.
+        if (level)
+          expect(at.x <= water.x - half + 1e-9 || at.x >= water.x + water.width + half - 1e-9).toBe(
+            true,
+          );
         // Below the water, his whole figure and the coping's room clear of it.
-        if (
-          at.x > water.x - 20 &&
-          at.x < water.x + water.width + 20 &&
-          at.y >= water.y + water.height
-        )
+        if (at.x > water.x - half && at.x < water.x + water.width + half && at.y >= bottom)
           expect(at.y - avatarFigureHeight(scale)).toBeGreaterThanOrEqual(
-            water.y + water.height + SPAWN_HEADROOM,
+            bottom + SPAWN_HEADROOM - 1e-9,
           );
       }
     expect(world.home.at).toEqual(world.beside.right);

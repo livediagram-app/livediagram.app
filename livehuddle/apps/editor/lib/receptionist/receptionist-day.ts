@@ -9,7 +9,7 @@ import { drinkFrom, roomInterior, type DrinkKind } from '@livehuddle/avatar/offi
 import { findWalkPath, type NavGrid } from '@livehuddle/avatar/pathing';
 import { fenceSegments, type FenceSegment } from '@livehuddle/avatar/collision';
 import { avatarScale } from '@livehuddle/avatar/config';
-import { freeSpawnPoint, spawnBody } from '@livehuddle/avatar/spawn-point';
+import { freeSpawnPoint, spawnBody, spawnHalfWidth } from '@livehuddle/avatar/spawn-point';
 import type { AvatarFacing } from '@livehuddle/avatar/walk';
 import type { AvatarReactionKind } from '@livehuddle/avatar/reactions';
 import { RECEPTIONIST_LOOK } from './receptionist-look';
@@ -173,9 +173,12 @@ export function receptionistWorld(
   // never in a pool's or a pond's water or under it, where a person entering would not appear either (Work Tracker 800,
   // freeSpawnPoint at his size).
   const walls = fences ?? fenceSegments(elements);
-  const body = spawnBody(avatarScale(RECEPTIONIST_LOOK.size));
+  const scale = avatarScale(RECEPTIONIST_LOOK.size);
+  const body = spawnBody(scale);
+  // Half his width clear beside water too: a pool just past the pad's edge has him step back from its coping.
+  const half = spawnHalfWidth(scale);
   const free = (p: Point): Point =>
-    walls.length === 0 ? p : freeSpawnPoint(p, walls, undefined, body);
+    walls.length === 0 ? p : freeSpawnPoint(p, walls, undefined, body, half);
   const beside = {
     left: free({ x: pad.x - BESIDE_PAD, y: at.y }),
     right: free({ x: pad.x + pad.width + BESIDE_PAD, y: at.y }),

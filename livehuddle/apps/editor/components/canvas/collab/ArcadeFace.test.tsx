@@ -10,10 +10,13 @@ import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-gua
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useOptionalEditorContext: () => null }));
-const near = vi.hoisted(() => ({ on: false, below: false }));
+const near = vi.hoisted(() => ({
+  on: false,
+  side: 'above' as 'above' | 'left' | 'right' | 'below',
+}));
 vi.mock('./useSocialPieces', () => ({
   useNearArcade: () => near.on,
-  useArcadeBubbleBelow: () => near.on && near.below,
+  useArcadeBubbleSide: () => (near.on ? near.side : 'above'),
 }));
 
 import { isPieceControlPress } from '@/lib/piece-control';
@@ -25,7 +28,7 @@ const press = () => screen.queryByRole('button', { name: 'Play Moon Mail' });
 
 beforeEach(() => {
   near.on = true;
-  near.below = false;
+  near.side = 'above';
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 });
 afterEach(() => {
@@ -51,16 +54,26 @@ describe('ArcadeFace', () => {
   });
 
   // Work Tracker 793: a Room Sign placed by hand just above the machine would sit under the bubble.
-  it('shows Insert Coin below the cabinet when a Room Sign stands where it rises', () => {
+  it('shows Insert Coin beside the cabinet, or below it, when a Room Sign stands where it rises', () => {
     const bubble = () => press()!.querySelector('.lh-coin-bubble') as HTMLElement;
     const { rerender } = render(<ArcadeFace element={machine()} />);
-    expect(bubble().hasAttribute('data-bubble-below')).toBe(false);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('above');
     expect(bubble().style.getPropertyValue('--lh-bubble-rise')).toBe('6px');
-    near.below = true;
+    expect(bubble().style.getPropertyValue('--lh-bubble-x')).toBe('-50%');
+    near.side = 'right';
     rerender(<ArcadeFace element={{ ...machine() }} />);
-    expect(bubble().hasAttribute('data-bubble-below')).toBe(true);
+    expect(bubble().getAttribute('data-bubble-side')).toBe('right');
+    expect(bubble().className).toContain('left-[calc(100%+6px)]');
+    expect(bubble().style.getPropertyValue('--lh-bubble-x')).toBe('0px');
+    near.side = 'left';
+    rerender(<ArcadeFace element={{ ...machine() }} />);
+    expect(bubble().className).toContain('right-[calc(100%+6px)]');
+    near.side = 'below';
+    rerender(<ArcadeFace element={{ ...machine() }} />);
     expect(bubble().className).toContain('top-[calc(100%+6px)]');
     expect(bubble().style.getPropertyValue('--lh-bubble-rise')).toBe('-6px');
+    // The bubble is the cabinet's press too.
+    expect(isPieceControlPress(bubble())).toBe(true);
   });
 
   it("adds the table's best under Insert Coin, and follows the table as it changes", () => {

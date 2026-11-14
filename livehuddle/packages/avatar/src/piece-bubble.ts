@@ -1,7 +1,8 @@
 // The proximity bubbles over a piece you stand at (docs/specs/009-elements/social-pieces.md "Arcade Machine",
 // workday-pieces.md "Reception Desk"): Insert Coin with the machine's best, Welcome with Ring Bell. Each rises
 // PIECE_BUBBLE.lift px above its piece, centred on it; where a Room Sign stands in that room (one placed by hand just
-// above the piece), the bubble shows below the piece instead, so it never covers the sign (Work Tracker 615, 793).
+// above the piece), the bubble shows beside the piece instead (or below it, with neither side clear), so it never
+// covers the sign (Work Tracker 615, 793).
 // The signs are put in a coarse grid once per board change, so each bubble reads only the signs in the few cells its
 // room touches, never every element on the board. Pure: no React, no DOM.
 
@@ -67,8 +68,55 @@ export function signsNear(grid: SignGrid, box: Rect): Rect[] {
   return [...near];
 }
 
-/** Whether a piece's bubble shows below it: a Room Sign stands where it would rise. */
-export function bubbleBelow(piece: Rect, grid: SignGrid): boolean {
-  const room = bubbleAbove(piece);
-  return signsNear(grid, room).some((sign) => boxesOverlap(room, sign));
+/** Where a piece's bubble shows against it. */
+export type PieceBubbleSide = 'above' | 'left' | 'right' | 'below';
+
+/** The bubble's room beside the piece, level with its top, PIECE_BUBBLE.lift off its side. */
+export function bubbleBeside(piece: Rect, side: 'left' | 'right'): Rect {
+  return {
+    x:
+      side === 'left'
+        ? piece.x - PIECE_BUBBLE.lift - PIECE_BUBBLE.width
+        : piece.x + piece.width + PIECE_BUBBLE.lift,
+    y: piece.y,
+    width: PIECE_BUBBLE.width,
+    height: PIECE_BUBBLE.height,
+  };
+}
+
+const clearOf = (grid: SignGrid, room: Rect) =>
+  !signsNear(grid, room).some((sign) => boxesOverlap(room, sign));
+
+// How far the floor beside the piece runs free of signs on one side, level with the bubble's room, out to two bubble
+// widths (enough to rank the sides); only the signs in the cells that strip touches are read.
+function roomBeside(piece: Rect, side: 'left' | 'right', grid: SignGrid): number {
+  const reach = 2 * PIECE_BUBBLE.width;
+  const strip: Rect = {
+    x: side === 'left' ? piece.x - reach : piece.x + piece.width,
+    y: piece.y,
+    width: reach,
+    height: PIECE_BUBBLE.height,
+  };
+  let room = reach;
+  for (const sign of signsNear(grid, strip)) {
+    if (!boxesOverlap(strip, sign)) continue;
+    const gap =
+      side === 'left' ? piece.x - (sign.x + sign.width) : sign.x - (piece.x + piece.width);
+    room = Math.min(room, Math.max(0, gap));
+  }
+  return room;
+}
+
+/**
+ * Where a piece's bubble shows (Work Tracker 793): above it while no Room Sign stands in that room; else beside it,
+ * level with its top, on the side with the most free room (the right on a tie), clear of the people standing at its
+ * front; below it only when neither side is clear.
+ */
+export function bubbleSide(piece: Rect, grid: SignGrid): PieceBubbleSide {
+  if (grid.size === 0 || clearOf(grid, bubbleAbove(piece))) return 'above';
+  const sides = (['right', 'left'] as const)
+    .filter((side) => clearOf(grid, bubbleBeside(piece, side)))
+    .map((side) => ({ side, room: roomBeside(piece, side, grid) }));
+  if (sides.length === 0) return 'below';
+  return sides.reduce((best, s) => (s.room > best.room ? s : best)).side;
 }

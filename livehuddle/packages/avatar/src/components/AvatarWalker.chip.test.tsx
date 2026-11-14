@@ -76,3 +76,59 @@ describe('AvatarWalker chip measure', () => {
     expect(widthReads).toBe(0);
   });
 });
+
+// Work Tracker 799: a chip in a spread row draws in a raised box of its own, over every figure (a neighbour's hair
+// drawn later never covers it); any other chip rides in its figure's box.
+describe('AvatarWalker chip in a spread row', () => {
+  const at = (chipShift: number | undefined, glideMs = 0) => (
+    <AvatarWalker
+      pos={{ x: 100, y: 200 }}
+      facing="down"
+      config={DEFAULT_AVATAR_CONFIG}
+      walking={false}
+      stepFrame={0}
+      standingOn={null}
+      name="Calm Tiger"
+      chipShift={chipShift}
+      glideMs={glideMs}
+    />
+  );
+
+  it('rides in the figure’s box outside a row', () => {
+    const { container } = render(at(undefined));
+    expect(container.querySelector('[data-avatar-chip]')).toBeNull();
+    expect(container.querySelector('[data-avatar="peer"]')!.textContent).toContain('Calm Tiger');
+  });
+
+  it('draws raised in its own box at the same place in a row, even with no move', () => {
+    for (const shift of [0, 30]) {
+      cleanup();
+      const { container } = render(at(shift));
+      const raised = container.querySelector<HTMLElement>('[data-avatar-chip]')!;
+      const figure = container.querySelector<HTMLElement>('[data-avatar="peer"]')!;
+      expect(raised.className).toContain('z-[1]');
+      expect(raised.style.transform).toBe(figure.style.transform);
+      expect(raised.textContent).toContain('Calm Tiger');
+      expect(figure.textContent).not.toContain('Calm Tiger');
+      const chip = raised.firstElementChild as HTMLElement;
+      expect(chip.style.transform).toBe(shift ? `translateX(${shift}px)` : '');
+    }
+  });
+
+  it('draws your own status chip raised in a row too', () => {
+    const { container } = render(
+      <AvatarWalker
+        pos={{ x: 0, y: 0 }}
+        facing="down"
+        config={DEFAULT_AVATAR_CONFIG}
+        walking={false}
+        stepFrame={0}
+        standingOn={null}
+        self
+        status="focus"
+        chipShift={0}
+      />,
+    );
+    expect(container.querySelector('[data-avatar-chip] [data-own-status]')).not.toBeNull();
+  });
+});

@@ -39,7 +39,8 @@ someone in it: a host people meet as they arrive, who answers what they ask, in 
   He never blocks a walk and is never a destination: people walk through him, as through the dog.
 - **Never on water** (Work Tracker 800): his place beside the pad, on either side, is taken as a person entering
   would be put down there (`freeSpawnPoint` at his size, [Fence](../009-elements/fence.md) "What does not walk"), so a
-  pool or a pond beside his pad never has him standing in its water or under its edge with his hair in it.
+  pool or a pond beside his pad never has him standing in its water, half over its coping beside it, or under its
+  edge with his hair in it.
 - **Not a person on the page either**: his character is marked a host (`data-avatar="host"`), never a peer, so
   nothing that counts the people walking (the e2e among them) counts him.
 - **His look is fixed**: a man in a waistcoat with curly dark brown hair and an amber shirt, with a name chip reading

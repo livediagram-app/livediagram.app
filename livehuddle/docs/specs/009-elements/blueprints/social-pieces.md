@@ -337,9 +337,13 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
 
 - **Opening** (`ArcadeFace`, the machine's `SocialFace`): with `useNearArcade(id)` false it draws nothing (a click walks
   to the front, `walkPointFor`). True, it draws the Insert Coin bubble inside one `<button>` laid over the whole box
-  (above the box, or below it with `data-bubble-below` when `useArcadeBubbleBelow(id)`: `useSocialPieces` marks, per
-  board change, each machine whose `bubbleAbove` room a Room Sign overlaps, reading `signsNear` a 256 px cell grid
-  of the signs, `piece-bubble.ts`; `lib/piece-bubble-style.ts` sets the side and `--lh-bubble-rise`, Work Tracker 793)
+  (on the side `useArcadeBubbleSide(id)` gives, `data-bubble-side`: `useSocialPieces` works out per board change
+  each machine's `bubbleSide`, `above` unless a Room Sign overlaps `bubbleAbove`, then the clear one of
+  `bubbleBeside` right and left with the most room, else `below`, reading `signsNear` a 256 px cell grid of the
+  signs, `piece-bubble.ts`; `lib/piece-bubble-style.ts` sets the side's classes, `--lh-bubble-x` and
+  `--lh-bubble-rise`; the bubble is portalled by `PieceBubblePortal` into `PieceBubbleHost`, the characters'
+  layer's `z-[2]` box over every figure and chip, and keeps `pieceControlProps`, its click reaching the button
+  through the portal, Work Tracker 793)
   (`pieceControlProps`, `data-piece-main`, `cursor-pointer`, `aria-label="Play Moon Mail"`), so a press there opens
   and never walks; and, while the panel is shut, `claimAvatarKeys` holds plain Enter and Space, so `useAvatarKeys`
   (Space jumps) and `useAvatarSpeech` (Enter opens the message box, which now asks `avatarKeyClaimed` too) stand

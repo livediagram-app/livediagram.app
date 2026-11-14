@@ -84,8 +84,9 @@ Invariants:
   deeper); it walks out under I3a. `freeSpawnPoint(p, fences, reach, body)` (spawn-point.ts) runs first: a water
   footprint's edges carry `water: true` (`WATER_KINDS`: `swimming-pool`, `pond`), and a spot within `body`
   (`spawnBody(avatarScale(size))`: `avatarFigureHeight(scale)`, the figure with its tallest hair, plus
-  `SPAWN_HEADROOM`, `POOL_DECK + 2` = 16 px; default `SPAWN_BODY`, Work Tracker 800) under one, the body's half-width either side, is not
-  free. A spot in or under water takes `(p.x, water bottom + body)` unless the rings, searched only out to the water's
+  `SPAWN_HEADROOM`, `POOL_DECK + 2` = 16 px; default `SPAWN_BODY`, Work Tracker 800) under one, the body's
+  half-width either side, is not free, and nor is one beside it closer than that half-width (`half`, the fifth
+  argument: `spawnHalfWidth(scale)` = `AVATAR_WIDTH x scale / 2`, default `SPAWN_HALF_WIDTH`, Work Tracker 800). A spot in or under water takes `(p.x, water bottom + body)` unless the rings, searched only out to the water's
   bottom edge plus the reach, find free floor nearer (Work Tracker 706).
 - **I5:** no walk ends within `FENCE_ON_LINE` of a line: it is under every size's reach, so only a spawn or an
   edit (a fence or room moved onto a character) puts one there.

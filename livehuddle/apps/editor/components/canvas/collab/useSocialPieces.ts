@@ -10,7 +10,7 @@ import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import { pieceFacing, roomInterior, type Element } from '@livehuddle/document';
 import type { SeatFacing } from '@livehuddle/avatar/facing';
-import { bubbleBelow, signGrid } from '@livehuddle/avatar/piece-bubble';
+import { bubbleSide, signGrid, type PieceBubbleSide } from '@livehuddle/avatar/piece-bubble';
 import { setJukeboxArea } from '@/lib/jukebox-listening';
 
 /** How far round a jukebox standing in no room it is heard, from its base. */
@@ -24,14 +24,15 @@ type Arcade = Box & { chairFacing?: SeatFacing };
 type Point = { x: number; y: number };
 
 let nearArcade: string | null = null;
-// Whether that machine's Insert Coin shows below it, a Room Sign standing where it would rise (piece-bubble.ts).
-let nearArcadeBelow = false;
+// Where that machine's Insert Coin shows: above it, or beside (or below) it when a Room Sign stands where it would
+// rise (piece-bubble.ts).
+let nearArcadeSide: PieceBubbleSide = 'above';
 const arcadeListeners = createListeners();
 
-function setNearArcade(id: string | null, below = false): void {
-  if (nearArcade === id && nearArcadeBelow === below) return;
+function setNearArcade(id: string | null, side: PieceBubbleSide = 'above'): void {
+  if (nearArcade === id && nearArcadeSide === side) return;
   nearArcade = id;
-  nearArcadeBelow = below;
+  nearArcadeSide = side;
   arcadeListeners.notify();
 }
 
@@ -44,12 +45,12 @@ export function useNearArcade(id: string): boolean {
   );
 }
 
-/** Whether the Insert Coin bubble of the machine you stand at shows below it (Work Tracker 793). */
-export function useArcadeBubbleBelow(id: string): boolean {
+/** Where the Insert Coin bubble of this machine shows while you stand at it (Work Tracker 793). */
+export function useArcadeBubbleSide(id: string): PieceBubbleSide {
   return useSyncExternalStore(
     arcadeListeners.subscribe,
-    () => nearArcade === id && nearArcadeBelow,
-    () => false,
+    () => (nearArcade === id ? nearArcadeSide : 'above'),
+    () => 'above',
   );
 }
 
@@ -168,10 +169,10 @@ export function useSocialPieces({
       else if (el.shape === 'room') rooms.push(el);
       else if (el.shape === 'room-sign') signs.push(el);
     }
-    // The machines whose bubble a Room Sign would cover, each reading only the signs near it (piece-bubble.ts).
+    // Where each machine's bubble shows, each reading only the signs near it (piece-bubble.ts).
     const grid = signs.length > 0 && arcades.length > 0 ? signGrid(signs) : null;
-    const below = new Set(grid ? arcades.filter((a) => bubbleBelow(a, grid)).map((a) => a.id) : []);
-    return { jukeboxes, arcades, rooms: jukeboxes.length > 0 ? rooms : [], below };
+    const sides = new Map(grid ? arcades.map((a) => [a.id, bubbleSide(a, grid)] as const) : []);
+    return { jukeboxes, arcades, rooms: jukeboxes.length > 0 ? rooms : [], sides };
   }, [elements]);
   const fx = feet?.x;
   const fy = feet?.y;
@@ -185,7 +186,7 @@ export function useSocialPieces({
     const jukebox = jukeboxAt(at, pieces.jukeboxes, pieces.rooms);
     setJukeboxArea(jukebox?.id ?? null, jukebox?.source ?? null);
     const arcade = arcadeAt(at, pieces.arcades);
-    setNearArcade(arcade, arcade !== null && pieces.below.has(arcade));
+    setNearArcade(arcade, (arcade !== null && pieces.sides.get(arcade)) || 'above');
   }, [active, fx, fy, pieces]);
   // Leaving the board (a tab switch, the editor closing) stops the music.
   useEffect(

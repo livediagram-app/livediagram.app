@@ -78,7 +78,9 @@ fence**, from either side.
   closer than its own height (at its size), moves straight down to that height below the water, since a body
   standing just under the water's lower edge is drawn over it and reads as standing in it. The height is the whole
   standing figure, its tallest hair included, and 16 px more (a pool's 14 px coping and 2 px of air), so the head
-  stands on the deck below the coping and no hair tuft pokes into the water on a phone. It is taken whenever the
+  stands on the deck below the coping and no hair tuft pokes into the water on a phone. **Beside water** its feet keep
+  half its width clear of the water's sides (at its size), so no half of the body stands over the water or its
+  coping (Work Tracker 800). It is taken whenever the
   water's bottom edge is as near as any other free floor, so a character entering centred on a pool appears on the
   deck below it, never round on the far bank. When no free floor lies within
   `SPAWN_SEARCH_MAX` (1200 canvas px), it appears where it would have, and walks out. A character that starts inside

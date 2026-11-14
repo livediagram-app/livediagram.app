@@ -172,8 +172,8 @@ plant behind the counter, and a brass service bell on the counter.
 
 - **Walking up to it** (your feet within 32 px in front of its counter, across its width) shows a **Welcome** bubble
   above it for you, for as long as you stand there, as the [Arcade Machine](social-pieces.md#arcade-machine)'s
-  Insert Coin does. Nobody else sees your bubble. Like Insert Coin, it shows below the desk instead when a Room Sign
-  stands where it would rise ([Clear of a room's status card](social-pieces.md#arcade-machine), Work Tracker 793).
+  Insert Coin does. Nobody else sees your bubble. Like Insert Coin, it shows beside the desk instead (below it only with
+  neither side clear) when a Room Sign stands where it would rise, and draws over the characters ([Clear of a room's status card](social-pieces.md#arcade-machine), Work Tracker 793).
 - **A click anywhere on the desk walks you to its front**, 16 px below it under the click (kept off its ends), never to
   the floor behind the counter, where there is no Welcome. A turned desk walks you to its turned front, beside it or behind it.
 - **A busy desk stays reachable**: with somebody already standing at that spot, the walk ends at the nearest free spot

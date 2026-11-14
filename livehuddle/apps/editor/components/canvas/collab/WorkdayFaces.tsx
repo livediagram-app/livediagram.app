@@ -17,7 +17,8 @@ import { seatPillBottom } from '@livehuddle/avatar/chair-sitters';
 import { drawnRect, type SeatGrid } from '@livehuddle/avatar/seats';
 import { pieceControlProps } from '@/lib/piece-control';
 import { ringBell, useBellRings, useBellRung } from '@/lib/office/reception-bell';
-import { useAtReception, useReceptionBubbleBelow } from '@/lib/office/useWorkdayPieces';
+import { useAtReception, useReceptionBubbleSide } from '@/lib/office/useWorkdayPieces';
+import { PieceBubblePortal } from '../PieceBubbleLayer';
 import { pieceBubbleSide, pieceBubbleStyle } from '@/lib/piece-bubble-style';
 import { Overlay } from './SocialFaces';
 import type { ChairSitter } from './FurnitureView';
@@ -341,34 +342,37 @@ function BellGlyph() {
 // The Welcome bubble above a reception desk, for you while you stand at it, with the Ring Bell button.
 function Welcome({ element }: { element: ShapeElement }) {
   const here = useAtReception(element.id);
-  // Below the desk when a Room Sign stands where the bubble rises (Work Tracker 793).
-  const below = useReceptionBubbleBelow(element.id);
+  // Beside the desk (or below it) when a Room Sign stands where the bubble rises (Work Tracker 793).
+  const side = useReceptionBubbleSide(element.id);
   const rung = useBellRung();
   if (!here) return null;
   return (
-    <Overlay element={element}>
-      <span
-        data-bubble-below={below ? '' : undefined}
-        className={`lh-welcome-bubble pointer-events-none absolute ${pieceBubbleSide(below)} left-1/2 flex items-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-slate-800 bg-white py-1 pl-2.5 pr-1 text-[10px] font-bold text-slate-800 shadow-md dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100`}
-        style={pieceBubbleStyle(below)}
-        role="status"
-      >
-        Welcome
-        <button
-          type="button"
-          className="pointer-events-auto flex cursor-pointer items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-[2px] text-[9px] font-semibold text-amber-900 transition-colors hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-sky-500 disabled:cursor-default disabled:opacity-70 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100 dark:hover:bg-amber-900"
-          aria-label={rung ? 'Bell rung' : 'Ring the bell'}
-          disabled={rung}
-          {...pieceControlProps}
-          onClick={(e) => {
-            e.stopPropagation();
-            ringBell(element.id);
-          }}
+    // Drawn over the characters (PieceBubbleLayer), so the legs of whoever stands at the desk never cross it.
+    <PieceBubblePortal box={element}>
+      <Overlay element={element}>
+        <span
+          data-bubble-side={side}
+          className={`lh-welcome-bubble pointer-events-none absolute ${pieceBubbleSide(side)} flex items-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-slate-800 bg-white py-1 pl-2.5 pr-1 text-[10px] font-bold text-slate-800 shadow-md dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100`}
+          style={pieceBubbleStyle(side)}
+          role="status"
         >
-          <BellGlyph />
-          {rung ? 'Rang' : 'Ring Bell'}
-        </button>
-      </span>
-    </Overlay>
+          Welcome
+          <button
+            type="button"
+            className="pointer-events-auto flex cursor-pointer items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-[2px] text-[9px] font-semibold text-amber-900 transition-colors hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-sky-500 disabled:cursor-default disabled:opacity-70 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100 dark:hover:bg-amber-900"
+            aria-label={rung ? 'Bell rung' : 'Ring the bell'}
+            disabled={rung}
+            {...pieceControlProps}
+            onClick={(e) => {
+              e.stopPropagation();
+              ringBell(element.id);
+            }}
+          >
+            <BellGlyph />
+            {rung ? 'Rang' : 'Ring Bell'}
+          </button>
+        </span>
+      </Overlay>
+    </PieceBubblePortal>
   );
 }
