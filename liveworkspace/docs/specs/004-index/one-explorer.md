@@ -749,7 +749,11 @@ editor, resolves it).
   - anything else they reach (shared with them, or a team item reached through a link): **Shared With Me**.
 - **Then the item itself.** The place opens with the item marked: its row or card is scrolled to the middle of the
   list and wears the selected ring (the host's brand, `data-arrived`, with `aria-current`), until the person leaves
-  the view. Only the first page of a long list is looked through, for a few seconds; past it the place opens as usual.
+  the view. Lists draw only the rows on screen, so each list view (List, Card, Details, Shared With Me) first brings
+  the item into its window: it loads further pages until the item is in the list (at most ten more), reveals the card
+  batch that holds it, and scrolls to where its row will be (`useRevealArrived` in
+  `packages/explorer/src/explorer/arrived-item.ts`). The mark waits up to 15 seconds for the row; an item still not
+  found by then leaves the place open as usual.
 - **The address.** While the item is looked up (one `GET /items/:id`, none for a This Browser item) the page shows the
   Explorer's skeleton, then replaces its address with the place's own (`?item=` dropped), so Back returns to the
   item in its editor, and a reload stays in the place. An item the index can't answer (gone, or not theirs to reach)
