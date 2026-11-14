@@ -516,8 +516,9 @@ unknown name with the ones there are.
 
 - **`list_items`** (read): the project's boards with their columns and the cards in each and their header widgets
   by name (as `change_board` takes them), the items with their
-  column names, and the card types with their fields; narrowed by card type or column, by name. A project with no
-  board answers a hint saying how to get one.
+  column names (and each card's linked pull requests' states, as the board shows the caller), and the card types
+  with their fields; narrowed by card type or column, by name. A project with no board answers a hint saying how to
+  get one.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
 status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
   `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once. Its
@@ -830,7 +831,7 @@ says why by its status (no such tab, view only, the last tab).
 | `restore_project`   | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                                                                                                                |
 | `archive_project`   | `archived`, `id`, `name`                                                                                                                                                                                                                                    |
 | `unarchive_project` | `unarchived`, `id`, `name`, `library`, `url`                                                                                                                                                                                                                |
-| `list_items`        | `boards[]` of `{ title, tab, tabId, kind, takes, sortBy?, widgets?, columns[] { name, status, wipLimit?, done?, cards[] } }`, `notOnBoard[]`, `count`, `items[]` of `{ ref, id, type, status, column, title, fields }`, `types[]`, `hint?`, `url`           |
+| `list_items`        | `boards[]` of `{ title, tab, tabId, kind, takes, sortBy?, widgets?, columns[] { name, status, wipLimit?, done?, cards[] } }`, `notOnBoard[]`, `count`, `items[]` of `{ ref, id, type, status, column, title, fields, pullRequests? }`, `types[]`, `hint?`, `url`           |
 | `change_items`      | `applied[]` (one line per change, naming the column), `url`                                                                                                                                                                                                 |
 | `list_threads`      | `threads[]` of `{ id, title, state, resolvedBy?, cards[], field?, comments[] { id, author, at, text, ai?, edited?, reactions?[] { emoji, name, count, by[] } } }`, `count`, `url`                                                                           |
 | `change_threads`    | `applied[]` (one line per change), `url`                                                                                                                                                                                                                    |

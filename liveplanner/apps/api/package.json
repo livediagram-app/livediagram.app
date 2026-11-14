@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage && vitest-budgets",
     "gen:openapi": "node scripts/gen-openapi-schemas.mjs",
+    "github:hooks": "node scripts/refresh-github-hooks.mjs",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
   },

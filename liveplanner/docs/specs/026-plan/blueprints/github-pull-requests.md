@@ -140,7 +140,8 @@ Answered in `index.ts` before identity, as `/api/hooks` is: `segments[1] === 'gi
     and message (cut to 500 characters), so a failure says why.
   - Refused signatures (`github/refused-signatures.ts`): the caller's network is `clientNetwork(clientIp(request))`
     (IPv4 /24, IPv6 /56), or none for GitHub's own webhook ranges (`GITHUB_HOOK_RANGES`, from GitHub's `/meta`
-    `hooks`: 192.30.252.0/22, 185.199.108.0/22, 140.82.112.0/20, 143.55.64.0/20, 2a0a:a440::/29, 2606:50c0::/32),
+    `hooks`: 9.234.98.160/28, 9.234.98.176/28, 9.234.106.48/28, 192.30.252.0/22, 185.199.108.0/22,
+    140.82.112.0/20, 143.55.64.0/20, 2a0a:a440::/29, 2606:50c0::/32, as of 2026-11-14; Part 6 keeps them current),
     which are never limited. Each 401 calls `WRITE_RATE_LIMITER.limit({ key: 'github-refused:{network}' })` (absent
     binding: never limited); a refusal over it answers 429 and puts the network on the worker's turned-away list for
     `REFUSED_NETWORK_TURNED_AWAY_MS`, a Map bounded at `REFUSED_NETWORKS_KEPT` (the oldest goes). A turned-away
@@ -520,3 +521,60 @@ action from the existing vocabulary, every type a fixed token.
 | A private repository's title never lands in a comment; another plan on the installation gets no run; a named repository filters runs | `apps/api/src/github/github-triggers.test.ts`                      |
 | The Repositories chips; the Pull Request group only in a GitHub rule                                                                 | `apps/editor/components/automations/github/GithubTrigger.test.tsx` |
 | The footer names GitHub and the rule with GitHub's mark                                                                              | `apps/editor/components/plan/ItemPanel.navigation.test.tsx`        |
+
+## Part 6: checks on compact cards, agents' states, a long repository list, GitHub's ranges (Work Tracker 758, 766, 769, 770)
+
+### apps/editor
+
+- `PullRequestPill.tsx` `PullRequestMarks`: each mark beside the title's flags is the state's `PullRequestMark` and,
+  when `showsChecks(status)`, the same `ChecksMark` the pill draws (in `chipInkOn(CHECKS_TONES[checks], palette)`),
+  straight after it in one `role="img"` span whose label stays `pullRequestWords` ("acme/web#42: Checks Failing"), so
+  touch reads the checks without a tooltip. The tooltip is unchanged.
+- `components/automations/github/GithubRepositories.tsx`: with more than `GITHUB_REPOSITORIES_MAX` listed it draws the
+  **Filter Repositories** field (`TextInput` `type="search"`, compact, `SearchIcon`) and the windowed list
+  (`RepositoryWindow.tsx`); with 20 or fewer, the list as before. The filter matches `fullName` by case-folded
+  substring (`repositoriesMatching`, one pass); its count reads "{shown} of {listed} shown" while a filter is set, else
+  "{picked} of {listed} heard". No match draws `NoMatches` ("repositories") with Clear Filter. Picks are kept across
+  filtering: a row filtered out keeps its switch's state.
+- `RepositoryWindow.tsx`: a scroll box `REPOSITORY_ROW_PX` (48) a row, `REPOSITORY_WINDOW_ROWS` (9.5, desktop) or
+  `REPOSITORY_WINDOW_ROWS_PHONE` (7.5) tall, so a cut row says it scrolls. It draws the rows in view plus
+  `REPOSITORY_OVERSCAN` (8) each side between two spacers, from its `scrollTop` (read in `onScroll`, one state set per
+  row crossed); each row `RepositoryRow` is memoised on its repository, its pick and `saving`, so a flip redraws one
+  row. The list keeps `aria-setsize` / `aria-posinset` on each row; focus moving down scrolls the box and draws the
+  rows after it, so a keyboard reaches every row.
+
+### packages/agent-verbs
+
+- `plan/plan-state.ts` `readPlanState` keeps `GET /items`' `pullRequests` (absent: none).
+- `plan/card-pull-requests.ts` `pullRequestLister(statuses, types)`: none when there are no statuses (no card is
+  parsed); else, per card, `cardLinkedPullRequests(item, typeIn(types, item.type), pullRequestStatuses(statuses))`, the
+  board's own pick (`@liveplanner/items`), the ones with a state as `{ name, state, checks?, title, url, field? }`
+  (`checks` only when `showsChecks`; `field` the field's label). The api's `pullRequestsFor` already decided what the
+  caller may see, so the listing adds no rule of its own.
+- `plan/plan-listing.ts` puts the list on a card as `pullRequests` when it has any; `verbs/item.ts` `item ls` carries
+  it, and its text line ends with each one as "acme/web#42 open, checks failing".
+
+### apps/api
+
+- `github/refused-signatures.ts` `GITHUB_HOOK_RANGES`: GitHub's nine `hooks` ranges (above).
+- `github/github-meta-hooks.json`: the saved copy of `api.github.com/meta`'s `hooks` and the day it was read.
+  `scripts/refresh-github-hooks.mjs` (`pnpm --filter @liveplanner/api github:hooks`, run by a person) reads `/meta`
+  again and rewrites the copy; it is never part of a PR's checks.
+
+### Performance and limits (part 6)
+
+- The repository list draws at most about 26 rows (9.5 in view and 8 each side) whatever the list's length; the
+  filter is one pass over at most 1,000 names (`REPOSITORY_PAGES_MAX` x 100). Measured in
+  `GithubRepositories.perf.test.tsx` (`cpuMsOf`, jsdom).
+- `list_items` parses each card's Pull Request and Link fields once, only when the api answered any state.
+
+### Testing (part 6)
+
+| Rule                                                                                       | Test                                                                        |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| A face's mark carries the checks' mark for an open pull request or a draft, never a merged | `apps/editor/components/plan/PullRequestPill.test.tsx`                      |
+| The long list: the filter, its count, no match, picks kept, a window of rows               | `apps/editor/components/automations/github/GithubRepositories.test.tsx`     |
+| 1,000 repositories open, scroll, filter and flip within a CPU budget                       | `apps/editor/components/automations/github/GithubRepositories.perf.test.tsx` |
+| `list_items` lists a card's linked states as the board picks them, none without states     | `packages/agent-verbs/src/plan/card-pull-requests.test.ts`                  |
+| `item ls` carries them and prints them                                                      | `packages/agent-verbs/src/verbs/item.test.ts`                               |
+| `GITHUB_HOOK_RANGES` is the saved copy of GitHub's `/meta` `hooks`                         | `apps/api/src/github/github-hook-ranges.test.ts`                            |

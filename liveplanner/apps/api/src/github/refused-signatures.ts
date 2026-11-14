@@ -11,8 +11,13 @@ import { REFUSED_NETWORK_TURNED_AWAY_MS, REFUSED_NETWORKS_KEPT } from './github-
 type Range = { v6: boolean; base: number; bits: number };
 
 // GitHub's `/meta` `hooks` ranges. Every prefix is 32 bits or shorter, so an address is compared on its first 32.
+// `github-hook-ranges.test.ts` checks them against the saved copy in `github-meta-hooks.json`, which
+// `scripts/refresh-github-hooks.mjs` reads again from GitHub (run by a person, never in PR checks).
 const range = (v6: boolean, base: number, bits: number): Range => ({ v6, base, bits });
 export const GITHUB_HOOK_RANGES: readonly Range[] = [
+  range(false, 0x09ea62a0, 28), // 9.234.98.160/28
+  range(false, 0x09ea62b0, 28), // 9.234.98.176/28
+  range(false, 0x09ea6a30, 28), // 9.234.106.48/28
   range(false, 0xc01efc00, 22), // 192.30.252.0/22
   range(false, 0xb9c76c00, 22), // 185.199.108.0/22
   range(false, 0x8c527000, 20), // 140.82.112.0/20

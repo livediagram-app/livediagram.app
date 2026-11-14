@@ -157,7 +157,10 @@ before it acts: a stale or forged index entry moves nothing, and an entry a plan
   share of the api's write limit, and a network over it is turned away (429 `github_rate_limited`) for a minute
   (`REFUSED_NETWORK_TURNED_AWAY_MS`) before its body is read or hashed. Only refusals count, never a delivery that
   signs right, and GitHub's own webhook addresses are never turned away, so someone else's misconfigured hook
-  pointed at the api cannot stop the App's deliveries.
+  pointed at the api cannot stop the App's deliveries. Those addresses are GitHub's `/meta` `hooks` list, kept in the
+  api; a test checks them against a saved copy of that list, and a script (run by a person, never in PR checks, as a
+  call to GitHub can fail for reasons of its own) refreshes the copy, so a range GitHub adds fails the test until the
+  api's list takes it too.
 - A delivery acts only on plans whose connection names both its installation and its repository. A pull request
   moves only cards of the plans it is linked to, by field or by mention.
 - Each delivery id (`X-GitHub-Delivery`) is acted on once by each plan, which keeps the ids it has seen for 3 days
@@ -203,7 +206,10 @@ the editor:
   type's Display places as a pull request pill: the state's GitHub mark in the state's colour, the short name, and,
   for an open pull request whose checks reported, the checks' mark (a tick, a cross, or a dot while running). A
   linked pull request no pill shows (one that names the card, or a field the Display leaves off) shows as its state's
-  mark beside the title's flags, up to 3, so a card linked by its mention alone still says where its code stands.
+  mark beside the title's flags, up to 3, so a card linked by its mention alone still says where its code stands. An
+  open pull request (or a draft) whose checks reported adds the checks' mark straight after its state's mark, in the
+  checks' colour (a tick, a cross, or a dot while running), so a compact or phone card, where no tooltip shows, still
+  tells passing from failing from running.
   Each says its short name and state in words to a screen reader and in its tooltip ("acme/web#42: Merged").
 - **The card panel** shows the state beside each Pull Request field (a chip in the state's colour, the pull
   request's title after it), and lists under **Pull Requests**, after the fields, every linked pull request a field
@@ -277,6 +283,15 @@ the kind `pullrequest`; a value that is not a pull request is refused as `value_
 rule tools take the GitHub triggers as any other (`pull_request_opened`, `pull_request_merged`, `pull_request_closed`,
 `pull_request_checks` with `result`). Connecting stays a person's, in the browser. The api's `GET /items` answers the
 states with the cards.
+
+`list_items` (and the CLI's `item ls`) lists each card's linked pull requests that have a state, as the board links
+them (its Pull Request fields', then its Link fields', then the ones naming it, each once): the short name, the
+state (`draft`, `open`, `merged`, `closed`), the checks while an open pull request or a draft has them (`passing`,
+`failing`, `running`), the title, the address, and the field holding it by name when one does. The states are the
+ones `GET /items` answers the caller, so an agent sees exactly what its person sees on the board ([What a share link
+sees](#who-may-do-what)): a link to one tab its tab's cards' states alone, a Community visitor none, a plan with no
+connection none. An agent's token reads what its person may read and no more, so a private repository's titles reach
+an agent only where they already reach that person's screen.
 
 ## Telemetry
 
