@@ -1669,9 +1669,10 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 ## Changing a card's type
 
 A card changes type through the item panel's type picker, a board row By Card Type it is dropped into, a card
-table's Card Type cell, an agent's `change_items` (`set` with a `type`), and the Automations steps Change Card Type
-and the AI step's Set Card Type. Every one of them writes the card's custom fields by the same rule, so a value
-never goes missing behind an id the new type lacks:
+table's Card Type cell, an agent's `change_items` (`set` with a `type`), the REST API (a card's patch or move, one at
+a time or many, carrying a `type`), and the Automations steps Change Card Type and the AI step's Set Card Type. Every
+one of them writes the card's custom fields by the same rule, so a value never goes missing behind an id the new type
+lacks:
 
 - **Built-in fields carry over as they are.** Title, Description, Priority, Assignee and the rest are the same field
   on every type.
@@ -1688,19 +1689,73 @@ never goes missing behind an id the new type lacks:
 - **Choice values must be options.** A Choice or Multiple Choice value maps only as the new field's options hold it
   (matched ignoring case, written as the new field spells the option); a value none of them holds is not written,
   and a Multiple Choice keeps the picks that are options.
-- **Unmapped values are kept, hidden.** The old type's values stay on the card under their own ids: no type shows
-  them, filters and widgets of the new type never read them, and they show again if the card changes back to that
-  type. Nothing is cleared by a type change.
+- **Unmapped values are kept, hidden.** The old type's values stay on the card under their own ids: the new type's
+  fields don't show them, filters and widgets of the new type never read them, the card's
+  [Hidden tab](#the-hidden-tab) lists them, and they show again if the card changes back to that type. Nothing is
+  cleared by a type change.
 - **The visible value wins.** A new type's field that already holds a hidden value (from an earlier visit to that
   type) takes the mapped value over it, as the one the card was just showing; a field the old type also has keeps
   its value. A value the same write sets on its own (an agent's `set`, a card table row's cell) is never replaced by
   a mapped one.
+- **Explicit mappings** (a rule's Change Card Type only): the step may name source fields and the new type's field
+  each fills (`map`, up to 13: an Idea's **Solution** into a Work Item's **Acceptance Criteria**, or into its
+  **Description**), for fields whose names differ. A source is any card type's custom field; a target is one of the
+  new type's custom fields, or **Description**, which takes a value as a Long Text does (its formatting with it); no
+  other built-in field is a target, and each target is named once. A mapping uses the same compatible kinds and
+  Choice options as name matching, and wins over it: a target an explicit mapping fills takes that value, whatever
+  name matching would have put there. A mapping **overwrites** the value the target already holds (the Description
+  too): the value it carries is the one the card was showing. A source with no value, or one the target can't take,
+  writes nothing and clears nothing. A mapping naming a field the plan no longer has is skipped as it runs, and the
+  rule needs attention as for any field it names.
+- **The REST API maps too.** A card's patch or move, or a patch among many, that changes its type has the mapped
+  values added by the api, read from the card as stored (`withTypeChangeFields`). The editor and agents map before
+  they send, so the editor's card shows the values at once; the api maps again over its stored card, never over a
+  value the write sets or clears itself, so a write already mapped is not mapped twice. An undo or redo (sent with
+  `undo: true`) is never mapped: it puts back exactly what it carries.
 - **One write, one undo step.** The mapped values go in the same write as the type, so Undo puts the type and every
   value back at once, and an Automations run log line counts it as the one Change to {Type} action.
 - **Share roles.** The mapping adds no right of its own: whoever may change a card's type (an Editor or a
   Participant, who edit cards, as [share roles](../013-workspace/share-roles.md) say) gets its fields mapped, and a
   Viewer, who changes no card, can trigger none of it, neither by hand nor through a rule a change of theirs would
   start.
+
+## The Hidden tab
+
+A card keeps the values of fields its type doesn't show (a type change, a field taken off its type, a field or type
+deleted). The item panel shows them on a tab of their own, **Hidden**, so nobody thinks them lost and they can be
+copied across or tidied up.
+
+- **When it shows.** Only on a card holding at least one **hidden value**: a value (not empty, as Required fields
+  count it) under a custom field id (`f-…`, or `parent`) that its type neither lists in `fields` nor defines in
+  `custom`. Built-in and system keys (`status`, `statusSince`, `repeat`, `votes`, `flagged`, `archived`, a Long
+  Text's `…Rich` formatting, the built-in fields, which Details already shows) are never hidden values: only custom
+  field ids are read, an explicit allow-list. Nor are a Calculated, Comments or Votes field's, or a Time Spent
+  field's: they are worked out, or kept with their threads, votes and time, never values a person typed. A card with
+  none shows no Hidden tab. The tab is generated, never saved into the type, like Linked Cards.
+- **Where.** Last of the card's tabs: after the type's own, Linked Cards and Activity (a phone's Details tab keeps its
+  place at the far right after it). Its label carries the number of hidden values, a quiet pill as Linked Cards'
+  count ("Hidden, 2 values" to assistive technology).
+- **What it lists.** A line under the tab's top: "Values this card keeps from fields its {Type} type doesn't show."
+  Then the values grouped by the type they came from, in catalogue order: a heading **From {Type}** with that type's
+  glyph in its colour, then each field under that type's name for it, drawn read-only by its kind (the same
+  control as on a card of that type, read-only). A field id several types define is listed under the first of
+  them. A value whose field (or whose type) was deleted, so no type defines it, is listed last under **Removed
+  Fields**, each labelled **Removed Field**, as plain text (a list joined with commas, a person by name, Yes or No).
+- **Copy To Field** (an Editor): a menu of the card's own type's fields that can take the value, by the type-change
+  rules (the same compatible kinds, Choice options and Rating scale; Description takes Text and Long Text); a removed
+  field's value offers none. Picking one writes the value into it, replacing what it holds ("Replaces its value" says
+  so in the menu), as one write and one undo step. With no field that can take it, the menu says "No field on {Type}
+  can take this value."
+- **Remove** (an Editor): deletes that one value (and its formatting) from the card, as one write and one undo step;
+  never a bulk clear.
+- **Share roles.** An Editor copies and removes. A Participant and a Viewer see the tab, read-only, with neither
+  button. A tab-scoped link shows it only for cards its tab shows (it opens no other card's panel).
+- **Live.** It is worked out from the card and the catalogue as they are, so it updates as values and types change,
+  and it goes away when the last hidden value goes, or when the card changes back to a type that shows them (its
+  panel then opens on, or stays on, the type's first tab).
+- **Keys**: the tab is one of the tablist's tabs (arrow keys reach it); every Copy To Field and Remove is a button
+  named for its field ("Copy Solution to a field", "Remove Solution"); the menu is the shared menu, Escape closing
+  it.
 
 ## Collaboration
 
@@ -1727,7 +1782,10 @@ never goes missing behind an id the new type lacks:
 - A change is kept as the catalogue before and after it, so it can be made again to whatever is stored: only the
   types it added, changed or deleted move, every other type stays as stored. Refused as stale, the editor and agents
   make it again to the stored catalogue and send it again (up to three tries); a save that still fails drops only
-  that change, never one saved after it. An undo makes the change's inverse to the catalogue as it then is, so it
+  that change, never one saved after it. A refusal is the api's word on what is stored, taken even when it names a
+  lower revision than the editor holds: a plan in This Browser counts its own revisions, and once Sync Plan moves it
+  to the server (in place, with no reload) the server's count starts again, so the first card types save after a sync
+  is made again to the server's catalogue and lands. An undo makes the change's inverse to the catalogue as it then is, so it
   never takes back anyone's later change; a redo makes the change again the same way.
 - Each write reaches the project's room as an ordered system op, `item-types`, carrying the catalogue, so open
   editors redraw at once; a tab-scoped session receives it too (types hold no content).
@@ -1751,5 +1809,7 @@ never goes missing behind an id the new type lacks:
 - `Plan` · `Changed` · `FieldType` when a saved type changes the values of a field whose type changed (Edit Field).
 - `Plan` · `Linked` · `CardTypeBase` when a saved type starts inheriting from a base type, `Plan` · `Unlinked` ·
   `CardTypeBase` when a saved type is detached ([Inherited types](#inherited-types)).
+- `Plan` · `Opened` · `HiddenValues` when someone opens a card's Hidden tab, `Plan` · `Copied` · `HiddenValue` when
+  Copy To Field writes one, `Plan` · `Removed` · `HiddenValue` when Remove deletes one.
 - `Plan` · `Added` · `LinkedCard` when New {Type} makes a card already linked, and `Plan` · `Linked` · `LinkedCard`
   when Link Existing links one (`LinkedCardMoved` when it moved from another card).
