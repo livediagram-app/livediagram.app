@@ -730,6 +730,40 @@ follows from then on.
   same-origin navigation and always shows the homepage, so no link needs changing. Any query does too, `/?home` the
   one to bookmark. Reaching the homepage from another site, a bookmark or the address bar opens the Explorer.
 
+#### Opening from an open item
+
+Work Tracker 686. Every editor's door to the Explorer from an open item (the header's logo, and **Open Explorer** in the
+editor's Explorer panel's ⋯ menu) opens the place that holds that item, so its neighbours are one look away rather
+than a click down from Home. The editor knows only the item: its door is `/explorer?item=<id>`
+(`explorerItemHref` in `packages/workbench/src/lib/explorer-href.ts`), and the Explorer works out the place, from
+This Browser's list or the index, the same way for every app (decided on the card, 2026-11-14: the Explorer, not each
+editor, resolves it).
+
+- **Where it lands** (`viewOfItem` in `packages/explorer/src/item-view.ts`), first match wins:
+  - kept only in this browser (in This Browser's list, read on the app's address): **This Browser** at its local
+    folder (`{ kind: 'offline', folder }`), or its root;
+  - in the Trash: the **Trash**; in the person's Archived: **Archived**;
+  - in a team the person is in: that **team's library** at its folder (`{ kind: 'team', id, folderId }`), or the
+    team's root;
+  - the person's own: its **My Work folder** (`{ kind: 'folder', id }`), or **My Work** when it is in none;
+  - anything else they reach (shared with them, or a team item reached through a link): **Shared With Me**.
+- **Then the item itself.** The place opens with the item marked: its row or card is scrolled to the middle of the
+  list and wears the selected ring (the host's brand, `data-arrived`, with `aria-current`), until the person leaves
+  the view. Lists draw only the rows on screen, so each list view (List, Card, Details, Shared With Me) first brings
+  the item into its window: it loads further pages until the item is in the list (at most ten more), reveals the card
+  batch that holds it, and scrolls to where its row will be (`useRevealArrived` in
+  `packages/explorer/src/explorer/arrived-item.ts`). No single look is trusted: a card grid draws every card before it
+  measures and then keeps only the first rows, so until the arrival settles (the person scrolls, presses or types, or
+  15 seconds pass) a view brings the item back whenever a render leaves it out (at most twelve times), and every row
+  or card of it that is drawn is marked and scrolled to. Once settled the ring stays on whatever is drawn and nothing
+  moves the page; an item never found leaves the place open as usual.
+- **The address.** While the item is looked up (one `GET /items/:id`, none for a This Browser item) the page shows the
+  Explorer's skeleton, then replaces its address with the place's own (`?item=` dropped), so Back returns to the
+  item in its editor, and a reload stays in the place. An item the index can't answer (gone, or not theirs to reach)
+  opens Home as before.
+- **Everywhere else** (Home, the Explorer itself, a page with no item, an item's trashed card) the doors stay plain
+  `/explorer` and open as they always did.
+
 #### Teams are run in the Explorer
 
 A team is the account's, the same in every app ([accounts.md](../003-accounts/accounts.md#teams)), and the Explorer is the one

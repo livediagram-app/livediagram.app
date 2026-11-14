@@ -2,34 +2,18 @@
 // "Linked by column, not by heading"): the sheet's header row read from the sheet store's copy, and the write that
 // gives it the headers it lacks, planned by @liveplanner/forms. Pure: useFormSheetColumns runs it.
 import {
-  HEADER_SCAN_ROWS,
   sheetHeaders,
   sheetHeadersWrite,
+  topRowTexts,
   type FormDefinition,
   type FormSheetDestination,
   type SheetForm,
 } from '@liveplanner/forms';
-import { cellKey, type Sheet, type SheetWrite } from '@liveplanner/sheets';
+import type { Sheet, SheetWrite } from '@liveplanner/sheets';
 
 // How long after the form last changed its sheet is brought up to date, so typing a question's wording writes one
 // header, not one per letter. Safe range 400..2000 ms.
 export const FORM_COLUMNS_SYNC_MS = 800;
-
-// The text of the sheet's top rows (where its header row is found) by row id, then column id.
-export function topRowTexts(
-  sheet: Pick<Sheet, 'layout' | 'cells'>,
-): Map<string, Map<string, string>> {
-  const out = new Map<string, Map<string, string>>();
-  for (const row of sheet.layout.rows.slice(0, HEADER_SCAN_ROWS)) {
-    const texts = new Map<string, string>();
-    for (const c of sheet.layout.cols) {
-      const input = sheet.cells.get(cellKey(row, c))?.input;
-      if (input && 's' in input) texts.set(c, input.s);
-    }
-    out.set(row, texts);
-  }
-  return out;
-}
 
 // Each key's header as the form words it now (what `renamed` is the next time).
 export function headersByKey(form: SheetForm): Map<string, string> {

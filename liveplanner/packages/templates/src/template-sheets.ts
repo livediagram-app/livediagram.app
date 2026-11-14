@@ -12,8 +12,13 @@ import {
   type ShapeElement,
   type Tab,
 } from '@liveplanner/project';
+import { sheetHeadersWrite, topRowTexts, type FormDefinition } from '@liveplanner/forms';
 import {
+  applySheetWrite,
   isTemplateStart,
+  NOBODY,
+  sheetFromJson,
+  sheetToJson,
   templateSheetWithCharts,
   type TemplateStartId,
 } from '@liveplanner/sheets';
@@ -76,6 +81,36 @@ function formSheetTitles(tabs: readonly Partial<Pick<Tab, 'id' | 'name' | 'form'
   return out;
 }
 
+// A form's sheet given the headers its form wants (forms.md "Columns before any response"), so a new plan's responses
+// sheet is not blank until the Form tab is opened. The editor's sync then finds each header already there: it plans
+// by the remembered columns, so nothing is written twice. `form` is the tab's form pointing at the sheet.
+function withFormHeaders(
+  sheet: SheetCreateRequest,
+  form: FormDefinition,
+  now: number,
+): { sheet: SheetCreateRequest; columns: Record<string, string> } {
+  const full = sheetFromJson({
+    id: sheet.id ?? '',
+    tabId: sheet.tabId,
+    title: sheet.title,
+    layout: sheet.layout!,
+    cells: sheet.cells ?? [],
+    rev: 0,
+    createdAt: now,
+    updatedAt: now,
+    updatedBy: NOBODY,
+  });
+  const { write, columns } = sheetHeadersWrite({
+    form,
+    layout: full.layout,
+    rowTexts: topRowTexts(full),
+    columns: form.sheet?.columns,
+  });
+  if (!write) return { sheet, columns };
+  const json = sheetToJson(applySheetWrite(full, write, { now, by: NOBODY }).sheet);
+  return { sheet: { ...sheet, layout: json.layout, cells: json.cells }, columns };
+}
+
 export function materialiseTemplateSheets<
   T extends Pick<Tab, 'id' | 'elements'> &
     Partial<Pick<Tab, 'name' | 'form'>> & { backgroundColor?: string },
@@ -86,7 +121,12 @@ export function materialiseTemplateSheets<
 ): { tabs: T[]; sheets: SheetCreateRequest[] } {
   const sheets: SheetCreateRequest[] = [];
   const titles = formSheetTitles(tabs);
-  const out = tabs.map((tab) => {
+  // The Form tab whose responses go to each sheet, and the columns its headers were given.
+  const formOf = new Map(
+    tabs.flatMap((t) => (t.form?.sheet ? [[t.form.sheet.sheetId, t.form] as const] : [])),
+  );
+  const columnsOf = new Map<string, Record<string, string>>();
+  const made = tabs.map((tab) => {
     if (!tab.elements.some((el) => startOf(el) !== null)) return tab;
     const dark = !!tab.backgroundColor && !isLightColor(tab.backgroundColor);
     const charts: Element[] = [];
@@ -94,15 +134,28 @@ export function materialiseTemplateSheets<
       const start = startOf(el);
       if (!start || el.type !== 'shape' || !el.planSheet) return el;
       const sheetId = el.planSheet.sheetId;
-      const made = templateSheetWithCharts({ id: sheetId, tabId: tab.id, start, now, dark, rand });
-      if (!made) return el;
+      const built = templateSheetWithCharts({ id: sheetId, tabId: tab.id, start, now, dark, rand });
+      if (!built) return el;
       const title = titles.get(sheetId);
-      sheets.push(title ? { ...made.sheet, title } : made.sheet);
-      charts.push(...templateChartElements(el, sheetId, made.charts));
+      let sheet: SheetCreateRequest = title ? { ...built.sheet, title } : built.sheet;
+      const form = formOf.get(sheetId);
+      if (form) {
+        const headed = withFormHeaders(sheet, form, now);
+        sheet = headed.sheet;
+        columnsOf.set(sheetId, headed.columns);
+      }
+      sheets.push(sheet);
+      charts.push(...templateChartElements(el, sheetId, built.charts));
       const { start: _made, ...ref } = el.planSheet;
       return { ...el, planSheet: ref };
     });
     return { ...tab, elements: charts.length ? [...elements, ...charts] : elements };
+  });
+  // Each Form tab remembers the column of every header it gave its sheet, as the editor's sync does.
+  const out = made.map((tab) => {
+    const at = tab.form?.sheet;
+    const columns = at && columnsOf.get(at.sheetId);
+    return columns && tab.form ? { ...tab, form: { ...tab.form, sheet: { ...at, columns } } } : tab;
   });
   return { tabs: out, sheets };
 }

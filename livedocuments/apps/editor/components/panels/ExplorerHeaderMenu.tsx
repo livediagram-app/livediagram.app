@@ -18,6 +18,7 @@ import { REPO_URL, Glyph } from '@livedocuments/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
+import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the document-level verbs that
 // used to be split between a "+ New" chip here and the editor's bottom bar.
@@ -29,9 +30,12 @@ import { WebhooksGlyph } from '@liveworkspace/workbench/components/dialogs/ItemW
 export function ExplorerHeaderMenu({
   onNewDocument,
   actions = {},
+  itemId = null,
 }: {
   onNewDocument?: () => void;
   actions?: ExplorerMenuActions;
+  // The open item's id: Open Explorer opens the place that holds it.
+  itemId?: string | null;
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const close = () => setAnchor(null);
@@ -59,7 +63,7 @@ export function ExplorerHeaderMenu({
           icon={<OpenIcon />}
           label="Open Explorer"
           onClick={run(() => {
-            assignAppLocation('/explorer');
+            assignAppLocation(explorerItemHref(itemId));
           })}
         />,
       ],

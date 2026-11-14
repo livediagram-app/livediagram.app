@@ -42,7 +42,10 @@ import {
 } from '@/lib/explorer-host';
 
 // A failed read of Home retried: a literal call, so the telemetry manifest scan sees the pair.
-const trackHome: HomeTelemetry = (_action, type) => track('Home', 'Loaded', type);
+// The frame counts Home's retries; Home's picks are counted on the Explorer page (liveworkspace.app).
+const trackHome: HomeTelemetry = (action, type) => {
+  if (action === 'Loaded') track('Home', 'Loaded', type);
+};
 
 // The filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value, never the
 // value. Literal calls, so the telemetry manifest scan sees the pair.

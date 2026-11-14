@@ -20,7 +20,7 @@
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261104.1",
+    "@cloudflare/workers-types": "^5.20261110.1",
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
@@ -29,6 +29,6 @@
     "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0",
-    "wrangler": "^4.157.0"
+    "wrangler": "^4.160.0"
   }
 }
