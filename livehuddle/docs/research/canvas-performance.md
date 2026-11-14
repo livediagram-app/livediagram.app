@@ -394,6 +394,17 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
   root on each insertion and restyle the floating panels (ten times in one release); rewriting it
   without `:has` saved only 3-4 ms, so it stays.
 
+## Round 8: the board locally
+
+Measured 2026-11-14 on the reference board, local, calibrated 2.97x, against main at `ea335e2834`.
+
+- **37 of 38 rows in budget.** The nightly that morning read every drag at 115-134 ms; locally they
+  read under 50 ms at fit and on the diagram, so the nightly's drag misses are the hosted runner's
+  software raster ("The hosted runner" above).
+- **The one miss did not hold.** The whiteboard drag at 100% read 58 ms as a median while the
+  machine's load was about 21; its traced run's longest task was 34.7 ms (32 ms of script at the
+  release, 4 ms of layout). Nothing was changed for it.
+
 ## Not tried
 
 - A raster snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.

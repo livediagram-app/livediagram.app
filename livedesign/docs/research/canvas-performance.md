@@ -420,6 +420,10 @@ with a CPU profile mapped through the build's source maps.
 - **The probe cannot see that.** Interleaved over two pairs with the machine's load at about 25, the
   stroke row read 51-73 ms on main and 51-66 ms with the change: the swing between runs of one build
   is ten times what the change saves.
+- **On a quiet machine the stroke is in budget, on either build.** Interleaved over three more pairs
+  at a load of 3-15, both stroke rows read under 50 ms in 10 of 12 runs (main once 50 ms at 100%, the
+  change once 53 ms). The 52-64 ms of the first probe was the load, so the stroke needs nothing more
+  locally; what the nightly still reads over is the hosted runner.
 
 ## Not tried
 
