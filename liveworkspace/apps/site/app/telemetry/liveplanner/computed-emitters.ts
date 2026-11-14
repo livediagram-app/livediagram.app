@@ -390,7 +390,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'Workspace',
     ],
   },
-  'apps/editor/components/primitives/AreaErrorBoundary.tsx Error·Client': {
+  'packages/workbench/src/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
     open: 'Render.<Area>.<ErrorName>',
   },
