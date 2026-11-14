@@ -90,6 +90,7 @@ import {
   turnAwayIfFull,
 } from './room-sockets';
 import { alarm, armAlarm, purge } from './room-lifecycle';
+import { renamePerson } from './room-names';
 import { sweepStaleAttendance } from './room-attendance';
 import { roomMessage } from './room-message';
 import { callSessions, storedTabRev } from './room-call-sessions';
@@ -370,6 +371,7 @@ export class DocumentRoom extends DurableObject<Env> {
       readSelections: (tabId, person) => this.selections.read(tabId, liveSessions(this), person),
       readLedger: (tabId, since) => this.ledger.read(tabId, since),
       epoch: () => this.epoch,
+      renamePerson: (personTag, name) => renamePerson(this, personTag, name),
     };
     this.baton = new RoomFacilitator({
       storage: state.storage,
@@ -628,6 +630,12 @@ export class DocumentRoom extends DurableObject<Env> {
     // The person stamped on its reactions (X-Verified-Reaction-Person,
     // docs/specs/012-collaboration/comment-reactions.md).
     reactionPerson: string | null = null,
+    // The person's presence name, their profile's (X-Verified-Name, docs/specs/014-identity/
+    // auth-and-guest-access.md "Presence names"): none for a session with no identity.
+    name: string | null = null,
+    // A verified account holds this session (X-Verified-Account): only such a session keeps a Google picture, and
+    // its Attendance visits are not a guest's (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
+    account = false,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -635,6 +643,8 @@ export class DocumentRoom extends DurableObject<Env> {
           verifiedRole,
           collabKey,
           reactionPerson,
+          name,
+          account,
           isOwner,
           tabScope,
           shareCode,

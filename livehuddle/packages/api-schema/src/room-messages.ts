@@ -159,6 +159,15 @@ export type FormatMessage = {
   leanAvatars?: boolean;
 };
 
+// A link visitor naming themselves (ClientMessage below).
+export type VisitorNameMessage = { kind: 'visitor-name'; name: string };
+
+// Any session changing its colour (ClientMessage below).
+export type PresenceColourMessage = { kind: 'presence-colour'; color: string };
+
+/** POST /api/documents/:id/room-name: the name the room now shows for the caller, or null when it has none. */
+export type RoomNameResponse = { name: string | null };
+
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
 // mutation the client wants rebroadcast to peers.
@@ -182,6 +191,13 @@ export type ClientMessage =
     }
   // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
   | { kind: 'op'; op: unknown; ref?: number }
+  // The name a session with no identity typed in the join dialog (docs/specs/014-identity/auth-and-guest-access.md
+  // "Presence names"): the room keeps it under the browser's collab key and names the session by it. Refused from a
+  // session with an identity, whose name is their profile's. The hello's own `participant.name` is never read.
+  | VisitorNameMessage
+  // A session's new colour (docs/specs/014-identity/auth-and-guest-access.md "Presence colours"): the room checks it
+  // like the hello's and shows it at once, without a reconnect.
+  | PresenceColourMessage
   // Ask the room to move the baton (docs/specs/012-collaboration/facilitator.md). The room decides; the client
   // learns the answer from the `facilitator` frame like everybody else.
   | ({ kind: 'facilitator' } & FacilitatorAction)
@@ -205,6 +221,8 @@ export type RoomOutgoing =
       visitor?: string;
     }
   | { kind: 'op'; op: RoomOp; ref?: number }
+  | VisitorNameMessage
+  | PresenceColourMessage
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
   | ({ kind: 'facilitator' } & FacilitatorAction)
   | GrantMessage;

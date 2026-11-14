@@ -11,6 +11,8 @@ import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types
 import { storedTabName } from './room-content-state';
 import { noteCallSession, relayNudge } from './room-call-sessions';
 import { noteAttendance } from './room-attendance';
+import { nameVisitor, storedVisitorName } from './room-names';
+import { recolourSession } from './room-colour';
 import { isVisitorSecret, visitorCollabKey } from '../visitor-key';
 import { relaySessionOf, scopeOf } from './room-sockets';
 import type { DocumentRoom } from './document-room';
@@ -80,7 +82,9 @@ export function roomMessage(
     // share-roles.md "The collab key"), so a reconnect is the same visitor; never one with an identity, and never
     // a second time.
     const keyed = withVisitorKey(session, (msg as { visitor?: unknown }).visitor);
-    const presence = helloPresence(msg.participant, keyed);
+    // The name is the room's pick, never the hello's (room-names.ts): a person's profile name from the upgrade, the
+    // name this browser typed when it has no identity, or its key's guest name.
+    const presence = helloPresence(msg.participant, keyed, storedVisitorName(room, keyed));
     const batches = (msg as { batches?: unknown }).batches === true;
     const leanAvatars = (msg as { leanAvatars?: unknown }).leanAvatars === true;
     const hello = { ...keyed, presence, batches, leanAvatars } satisfies SessionAttachment;
@@ -111,6 +115,14 @@ export function roomMessage(
       room.noteMultiplayer();
     }
     room.baton.welcome(ws, session, presence.id, msg.facilitatorToken);
+    return;
+  }
+  if (msg.kind === 'visitor-name') {
+    nameVisitor(room, ws, session, (msg as { name?: unknown }).name);
+    return;
+  }
+  if (msg.kind === 'presence-colour') {
+    recolourSession(room, ws, session, (msg as { color?: unknown }).color);
     return;
   }
   if (msg.kind === 'facilitator') {

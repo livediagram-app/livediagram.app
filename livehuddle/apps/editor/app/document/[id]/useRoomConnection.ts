@@ -73,10 +73,13 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     resyncFromServer,
     onRoomJoined,
     onAdderKey,
+    roomNameSync,
+    adoptRoomName,
   } = opts;
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
-  // change goes out over the open socket rather than warranting a reconnect.
+  // change goes out over the open socket rather than warranting a reconnect (`visitor-name` or the room-name door,
+  // and `presence-colour`, from useEditorPersistence; docs/specs/014-identity/auth-and-guest-access.md).
   //
   // A signed-in session says hello with its Google picture unless Show My Google Picture is off; the room keeps it
   // only from an account session and sends it only to account sessions (liveworkspace/docs/specs/003-accounts/accounts.md "Profile
@@ -108,8 +111,23 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
   // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"): our
   // answers and reactions are recorded under it from now on, the same on every device we sign in on. Unchanged, it
   // changes nothing, so the hello a new key sets off ends there.
-  const roomCollabKey = useEffectEvent((key: string) =>
-    setSelfParticipant((prev) => (prev.key === key ? prev : { ...prev, key })),
+  const roomKeyRef = useRef<string | null>(null);
+  const roomCollabKey = useEffectEvent((key: string) => {
+    // Read by the roster handler that follows at once, before the key below has rendered.
+    roomKeyRef.current = key;
+    setSelfParticipant((prev) => (prev.key === key ? prev : { ...prev, key }));
+  });
+  // The room's name for us (docs/specs/014-identity/auth-and-guest-access.md "Presence names"): our roster entry, by
+  // the collab key the room pinned on this session, is taken as our own unless we just chose another (room-name-sync.ts).
+  const takeRoomName = useEffectEvent(
+    (participants: Parameters<NonNullable<RoomHandlers['onPresence']>>[0]) => {
+      const key = roomKeyRef.current;
+      if (!key || !roomNameSync || !adoptRoomName) return;
+      const own = participants.find((p) => p.key === key);
+      if (!own) return;
+      const name = roomNameSync.fromRoster(own.name, selfParticipantRef.current.name);
+      if (name) adoptRoomName(name);
+    },
   );
   const roomJoined = useEffectEvent(() => onRoomJoined());
   // The room's handlers, as effect events: the socket opens once per document (the effect below), and each
@@ -131,6 +149,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       // And who may speak from a stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles").
       setCallLevels(participants);
       nameByPresenceRef.current = new Map(participants.map((p) => [p.id, p.name] as const));
+      takeRoomName(participants);
       setLivePresence(presenceRows(participants, lastSeenRef.current, now));
       // Each arrival seeded, the colour a later joiner yields, and what goes with whoever left
       // (@liveworkspace/workbench/lib/room-presence).

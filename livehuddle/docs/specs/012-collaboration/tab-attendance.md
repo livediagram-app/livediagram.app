@@ -16,7 +16,10 @@ on the canvas.
 
 One **visit** per person per stretch of time in a tab:
 
-- **Who**: the name and colour their hello carried, their Google picture when a verified account holds the session
+- **Who**: the name the room gives them ([Presence names](../014-identity/auth-and-guest-access.md#presence-names): their
+  profile's, a link visitor's typed one, or their key's guest name; never the one their hello claims, and a rename
+  shows on their open visits) and their colour (their hello's, or a later
+  `presence-colour`, which shows on their open visits), their Google picture when a verified account holds the session
   ([Profile pictures](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)), and whether they were a guest
   (no account). Never an account id, a guest id or an email: the visit is keyed by the session's **collab key**
   ([Share roles, "The collab key"](../013-workspace/share-roles.md)), the one-way public id the roster already

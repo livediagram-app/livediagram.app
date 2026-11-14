@@ -1,10 +1,12 @@
 'use client';
 
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { writeUserPreferences } from '@/lib/user-preferences';
-import { apiSaveSelf } from '@/lib/api-client';
+import { apiAnnounceRoomName, apiSaveSelf } from '@/lib/api-client';
+import { getGuestSelfId } from '@/lib/local-identity';
+import { announceRoomColour, announceRoomName } from '../room-name-sync';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
 import { useDocumentShareState } from '@liveworkspace/workbench/hooks/persistence/useDocumentShareState';
 import { autosaveReadOnly } from '../editor-page-helpers';
@@ -242,6 +244,23 @@ export function useEditorPersistence({
       setIdentityPromptOpen,
     },
   });
+  // Tell the room we chose `name` (docs/specs/014-identity/auth-and-guest-access.md "Presence names"): a person through
+  // the api, which reads their profile fresh; a link visitor (no account, no guest token) over the socket.
+  const tellRoomName = useEffectEvent((name: string, saved: boolean) =>
+    announceRoomName({
+      sync: realtime.roomNameSync,
+      name,
+      hasIdentity: !!accountUserId || getGuestSelfId() !== null,
+      saved,
+      room: documentId ? roomRef.current : null,
+      announce: async () =>
+        documentId ? apiAnnounceRoomName(selfParticipant.id, documentId, sessionShareCode) : null,
+    }),
+  );
+  // A new colour reaches peers over the socket, at once (room-name-sync.ts announceRoomColour).
+  const tellRoomColour = useEffectEvent((color: string) =>
+    announceRoomColour(documentId ? roomRef.current : null, color),
+  );
   useEffect(() => {
     // The placeholder never writes the participant record: a document in This Browser opens before the reader
     // is known (docs/specs/006-document/offline-mode.md "Instant open"), and 'self' is nobody's row.
@@ -251,7 +270,16 @@ export function useEditorPersistence({
       return;
     }
     lastPersistedSelfRef.current = { name: selfParticipant.name, color: selfParticipant.color };
-    apiSaveSelf(selfParticipant).catch(() => {});
+    const saved = apiSaveSelf(selfParticipant).then(
+      () => true,
+      () => false,
+    );
+    if (prev && prev.color !== selfParticipant.color) tellRoomColour(selfParticipant.color);
+    // A new name reaches peers only by telling the room, which picks every name (room-name-sync.ts).
+    if (prev && prev.name !== selfParticipant.name) {
+      const name = selfParticipant.name;
+      void saved.then((ok) => tellRoomName(name, ok));
+    }
   }, [hydrated, selfParticipant, lastPersistedSelfRef]);
 
   const selfParticipantRef = useRef(selfParticipant);
@@ -270,6 +298,9 @@ export function useEditorPersistence({
         if (!next) return;
         lastPersistedSelfRef.current = { name: next.name, color: next.color };
         setSelfParticipant(next);
+        // Already stored, so the room can read it at once.
+        if (next.name !== current.name) void tellRoomName(next.name, true);
+        if (next.color !== current.color) tellRoomColour(next.color);
       }),
     [lastPersistedSelfRef, setSelfParticipant],
   );

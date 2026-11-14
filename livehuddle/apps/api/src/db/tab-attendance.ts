@@ -101,6 +101,24 @@ export function leaveVisit(sql: AttendanceSql, tabId: string, key: string, now: 
   );
 }
 
+/** The person was renamed (docs/specs/014-identity/auth-and-guest-access.md "Presence names"): their open visits show it. */
+export function renameOpenVisits(sql: AttendanceSql, key: string, name: string): void {
+  sql.exec(
+    'UPDATE tab_attendance SET name = ? WHERE person_key = ? AND left_at IS NULL',
+    name,
+    key,
+  );
+}
+
+/** The person changed colour (docs/specs/014-identity/auth-and-guest-access.md "Presence colours"): their open visits show it. */
+export function recolourOpenVisits(sql: AttendanceSql, key: string, color: string): void {
+  sql.exec(
+    'UPDATE tab_attendance SET color = ? WHERE person_key = ? AND left_at IS NULL',
+    color,
+    key,
+  );
+}
+
 /** Every open visit was seen now (the room wrote attendance, so each open one is someone still connected). */
 export function touchOpenVisits(sql: AttendanceSql, now: number): void {
   sql.exec('UPDATE tab_attendance SET seen_at = ? WHERE left_at IS NULL', now);

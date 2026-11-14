@@ -17,6 +17,7 @@ import { isProfilePictureUrl } from '@liveworkspace/sites/picture';
 import {
   MAX_COLOR_LEN,
   cutParticipantName,
+  guestNameForKey,
   type AccessLevel,
   type ParticipantPresence,
 } from '@livehuddle/api-schema';
@@ -40,6 +41,36 @@ type ClaimedPresence = Partial<ParticipantPresence> | null | undefined;
 // Fields are built explicitly rather than spread, and every string is
 // length-clamped, so a hostile hello can neither smuggle arbitrary keys into
 // the attachment nor blow its size budget.
+// The name the room shows for a session (docs/specs/014-identity/auth-and-guest-access.md "Presence names"): the
+// server's pick, never the hello's. A person (an account or a guest) goes by their profile's name, read by the api at
+// the upgrade; a session with no identity by the name its browser typed in the join dialog, kept by the room under its
+// collab key; and anyone with neither by the guest name of their collab key, the same on every reload.
+export function presenceNameFor(session: {
+  presenceId: string;
+  verifiedName?: string;
+  collabKey?: string;
+  visitorName?: string | null;
+}): string {
+  return (
+    session.verifiedName ||
+    session.visitorName ||
+    guestNameForKey(session.collabKey ?? session.presenceId)
+  );
+}
+
+// A name a person typed, as the room keeps it: trimmed and cut to the participant name's length; null when nothing is
+// left.
+export function typedPresenceName(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  return cutParticipantName(value.trim()) || null;
+}
+
+// A colour a client sent, as the room keeps it: a colour that could load something from outside is no colour
+// (@livehuddle/document unsafe-colours.ts), and a long one is cut. '' when it is none.
+export function presenceColour(value: unknown): string {
+  return typeof value === 'string' && isSafeColourValue(value) ? value.slice(0, MAX_COLOR_LEN) : '';
+}
+
 export function helloPresence(
   claimed: ClaimedPresence,
   // verifiedRole is optional on the attachment (it is absent for a session
@@ -50,17 +81,17 @@ export function helloPresence(
     verifiedRole?: AccessLevel;
     account?: boolean;
     collabKey?: string;
+    verifiedName?: string;
   },
+  // The name the room keeps for this browser, for a session with no identity (db/visitor-names.ts).
+  visitorName: string | null = null,
 ): ParticipantPresence {
   const c = claimed ?? {};
   const presence: ParticipantPresence = {
     id: session.presenceId,
-    name: typeof c.name === 'string' ? cutParticipantName(c.name) : '',
-    // A colour that could load something from outside is no colour (@livehuddle/document unsafe-colours.ts).
-    color:
-      typeof c.color === 'string' && isSafeColourValue(c.color)
-        ? c.color.slice(0, MAX_COLOR_LEN)
-        : '',
+    // Never the hello's `name`: a client could otherwise appear under any name it liked (Work Tracker 797).
+    name: presenceNameFor({ ...session, visitorName }),
+    color: presenceColour(c.color),
     role: session.verifiedRole,
   };
   if (typeof c.tabId === 'string') presence.tabId = c.tabId.slice(0, MAX_TAB_ID_LEN);

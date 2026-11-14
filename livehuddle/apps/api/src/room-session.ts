@@ -1,6 +1,6 @@
 // One session's state in the room (docs/specs/015-api/api.md, Realtime model): what the room pins on each
 // socket's serialized attachment at the upgrade, read from the headers only the api worker can set.
-import { isAccessLevel, type AccessLevel } from '@livehuddle/api-schema';
+import { cutParticipantName, isAccessLevel, type AccessLevel } from '@livehuddle/api-schema';
 import { ADDER_KEY_LENGTH } from '@livehuddle/document';
 import {
   COLLAB_KEY_HEADER,
@@ -45,6 +45,10 @@ export type SessionAttachment = {
   //   - `keyMinted`: the collab key was minted here, the upgrade naming none (a session with no identity). Its first
   //     hello's `visitor` secret then gives it its browser's key instead (visitor-key.ts), and this is cleared.
   keyMinted?: boolean;
+  //   - `verifiedName`: the person's presence name (docs/specs/014-identity/auth-and-guest-access.md "Presence
+  //     names"), their profile's name as the api read it at the upgrade (X-Verified-Name), moved on by a rename the
+  //     api relays (`/presence-name`). The hello's name is never read. Absent with no identity, or no profile.
+  verifiedName?: string;
   //   - `reactionPerson`: the person's public id the room stamps on each reaction this session leaves
   //     (docs/specs/012-collaboration/comment-reactions.md), from X-Verified-Reaction-Person. Absent with no identity.
   reactionPerson?: string;
@@ -112,6 +116,7 @@ type VerifiedSession = {
   personTag: string | null;
   collabKey?: string | null;
   reactionPerson?: string | null;
+  name?: string | null;
   account?: boolean;
   adderKey: string | null;
   documentId: string | null;
@@ -120,6 +125,23 @@ type VerifiedSession = {
   // session: the room takes them as its own copy (document-room.ts takeHead).
   head?: { owner: string | null; team: string | null };
 };
+
+/** The upgrade header carrying the person's presence name, URI-encoded (a header holds no character past Latin-1). */
+export const PRESENCE_NAME_HEADER = 'X-Verified-Name';
+
+/** A presence name as the header carries it, cut to the participant name's length; null for none or a bad encoding. */
+export function presenceNameHeader(name: string | null | undefined): string {
+  return name ? encodeURIComponent(cutParticipantName(name)) : '';
+}
+
+function presenceNameOf(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return cutParticipantName(decodeURIComponent(value).trim()) || null;
+  } catch {
+    return null;
+  }
+}
 
 // The grant's `exp` (epoch seconds) as epoch ms, or null.
 function grantExpOf(value: string | null): number | null {
@@ -144,6 +166,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     personTag: header('X-Verified-Person'),
     collabKey: header(COLLAB_KEY_HEADER),
     reactionPerson: header(REACTION_PERSON_HEADER),
+    name: presenceNameOf(request.headers.get(PRESENCE_NAME_HEADER)),
     account: request.headers.get('X-Verified-Account') === '1',
     adderKey: header('X-Verified-Adder'),
     documentId: header('X-Verified-Document'),
@@ -170,6 +193,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     collabKey: sessionCollabKey(v.collabKey),
     ...(isCollabKey(v.collabKey) ? {} : { keyMinted: true }),
     ...(reactionPerson ? { reactionPerson } : {}),
+    ...(v.name ? { verifiedName: cutParticipantName(v.name) } : {}),
     isOwner: v.isOwner,
     tabScope: v.tabScope,
     shareCode: v.shareCode,

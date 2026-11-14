@@ -6,7 +6,7 @@
 // safe is that this route OVERWRITES every name on every path, so a client's own copy can never survive, and
 // that it reaches the room only with a grant the index signed for this document. These tests read the headers the
 // stub actually received rather than trusting the route's intent.
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
 import type { Env } from '../types';
 import { setGrantVerifierForTests } from '../index-service';
@@ -15,6 +15,16 @@ import { adderKeyFor } from '../adder-key';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { personTagFor } from '../person-tag';
+import { getParticipant } from '../liveworkspace/profiles';
+
+// The profiles liveworkspace keeps (docs/specs/014-identity/auth-and-guest-access.md "Presence names"), by owner id.
+const profiles = vi.hoisted(() => new Map<string, string>());
+vi.mock('../liveworkspace/profiles', () => ({
+  getParticipant: vi.fn(async (_env: unknown, id: string) => {
+    const name = profiles.get(id);
+    return name ? { id, name, color: '#123456', createdAt: 0 } : null;
+  }),
+}));
 
 const NOW = Math.floor(Date.now() / 1000);
 
@@ -41,7 +51,11 @@ beforeEach(() => {
     return claims.exp > Date.now() / 1000 ? claims : null;
   });
 });
-afterEach(() => setGrantVerifierForTests(null));
+afterEach(() => {
+  setGrantVerifierForTests(null);
+  profiles.clear();
+  vi.mocked(getParticipant).mockClear();
+});
 
 // Answers 204, not the 101 the real room sends: node refuses a 1xx Response. REACHING the room is the signal.
 const REACHED_ROOM = 204;
@@ -78,6 +92,7 @@ const SPOOFED = {
   'X-Verified-Item-Owner': 'evil',
   'X-Verified-Item-Team': 'evil',
   'X-Verified-Account': '1',
+  'X-Verified-Name': 'The%20Host',
 };
 
 async function upgrade(env: Env, path: string) {
@@ -305,5 +320,117 @@ describe('a Community post link', () => {
       ticket: t,
       adderKey: await adderKeyFor('p1', 'guest_g'),
     });
+  });
+});
+
+// docs/specs/014-identity/auth-and-guest-access.md "Presence names" (Work Tracker 797): the room's name for a person is
+// their profile's, stamped here; a name the client sends, as a header or in its hello, is never believed.
+describe('the presence name', () => {
+  it("stamps a person's profile name on the upgrade, over a spoofed one, URI-encoded", async () => {
+    const { env, seen } = roomEnv();
+    profiles.set('user_a', 'Zoë Ng');
+    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'participate' });
+    await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(t)}`);
+    expect(seen[0]!.headers.get('X-Verified-Name')).toBe(encodeURIComponent('Zoë Ng'));
+    // A person with no profile, and a link visitor, carry none: the room gives them a guest name.
+    for (const sub of ['guest_new', 'link:abc']) {
+      const g = grantFor({ item: 'p1', sub, level: 'view' });
+      await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(g)}`);
+      expect(seen.at(-1)!.headers.get('X-Verified-Name'), sub).toBe('');
+    }
+  });
+
+  // The room's side of the door: it answers how many sessions it renamed.
+  function nameEnv() {
+    const relayed: { url: string; body: unknown }[] = [];
+    const env = {
+      INDEX_KEY: 'test-index-key',
+      DOCUMENT_ROOM: {
+        idFromName: (name: string) => `id:${name}`,
+        get: () => ({
+          fetch: async (input: Request | string, init?: RequestInit) => {
+            const url = typeof input === 'string' ? input : input.url;
+            relayed.push({ url, body: init?.body ? JSON.parse(init.body as string) : null });
+            return Response.json({ renamed: 1 });
+          },
+          community: async () => null,
+        }),
+      },
+    } as unknown as Env;
+    return { env, relayed };
+  }
+  const rename = (env: Env, grant: string) =>
+    handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/p1/room-name', {
+        env,
+        headers: { [ITEM_GRANT_HEADER]: grant },
+        grant: null,
+      }),
+    );
+
+  it('shows a renamed person their fresh profile name in the room, at every share level', async () => {
+    for (const level of ['edit', 'participate', 'view'] as const) {
+      const { env, relayed } = nameEnv();
+      profiles.set('guest_g', 'Grace');
+      const res = await rename(env, grantFor({ item: 'p1', sub: 'guest_g', level }));
+      expect(res?.status, level).toBe(200);
+      expect(await res!.json()).toEqual({ name: 'Grace' });
+      expect(getParticipant).toHaveBeenLastCalledWith(env, 'guest_g', { fresh: true });
+      expect(relayed).toEqual([
+        {
+          url: 'https://room/presence-name',
+          body: { personTag: await personTagFor('p1', 'guest_g'), name: 'Grace' },
+        },
+      ]);
+    }
+  });
+
+  it('relays nothing for a link visitor or a person with no profile name', async () => {
+    const { env, relayed } = nameEnv();
+    for (const sub of ['link:abc', 'guest_nobody']) {
+      const res = await rename(env, grantFor({ item: 'p1', sub, level: 'edit' }));
+      expect(await res!.json(), sub).toEqual({ name: null });
+    }
+    expect(relayed).toEqual([]);
+  });
+
+  it('still answers the name when the room cannot be reached', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const env = {
+      INDEX_KEY: 'test-index-key',
+      DOCUMENT_ROOM: {
+        idFromName: (name: string) => `id:${name}`,
+        get: () => ({ fetch: async () => new Response('down', { status: 500 }) }),
+      },
+    } as unknown as Env;
+    profiles.set('user_a', 'Ada');
+    const res = await rename(env, grantFor({ item: 'p1', sub: 'user_a' }));
+    expect(await res!.json()).toEqual({ name: 'Ada' });
+    expect(warn).toHaveBeenCalledWith('[presence-name] room_unavailable');
+    warn.mockRestore();
+  });
+
+  it('answers 404 with no grant, 410 for a canvas in the Trash, 403 for a Community link', async () => {
+    const { env, relayed } = nameEnv();
+    profiles.set('user_a', 'Ada');
+    const none = await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/p1/room-name', { env, grant: null }),
+    );
+    expect(none?.status).toBe(404);
+    const trashed = await rename(env, grantFor({ item: 'p1', sub: 'user_a', trashed: true }));
+    expect(trashed?.status).toBe(410);
+    const community = roomEnv({ code: 'POSTLINK', open: true });
+    const post = await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/p1/room-name', {
+        env: community.env,
+        headers: {
+          [ITEM_GRANT_HEADER]: grantFor({ item: 'p1', sub: 'link:POSTLINK', level: 'view' }),
+          'X-Share-Code': 'POSTLINK',
+        },
+        grant: null,
+      }),
+    );
+    expect(post?.status).toBe(403);
+    expect(relayed).toEqual([]);
   });
 });

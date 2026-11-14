@@ -284,6 +284,7 @@ export type { UnfurlResult } from '@liveworkspace/api-kit/unfurl';
 
 export * from '@liveworkspace/api-schema/access-levels';
 export * from './participant-colours';
+export * from './guest-names';
 export * from '@liveworkspace/api-schema/image-limits';
 export * from './cta-sources';
 export * from './page-views';
