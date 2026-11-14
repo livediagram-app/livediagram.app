@@ -63,10 +63,11 @@ export function NameChips({
             <span
               // Index keys: a chip is its place in the row, and its name changes as it is typed.
               key={i}
-              className={`flex items-center rounded-full border bg-white pl-2.5 pr-0.5 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-400/25 motion-reduce:transition-none dark:bg-slate-900 ${
+              // A chip with a problem keeps it rose while it is typed in: its focus ring is rose, not the brand's.
+              className={`flex items-center rounded-full border bg-white pl-2.5 pr-0.5 transition focus-within:ring-2 motion-reduce:transition-none dark:bg-slate-900 ${
                 problem
-                  ? 'border-rose-400 dark:border-rose-400/70'
-                  : 'border-slate-200 dark:border-slate-700'
+                  ? 'border-rose-400 focus-within:border-rose-500 focus-within:ring-rose-400/30 dark:border-rose-400/70 dark:focus-within:border-rose-400 dark:focus-within:ring-rose-400/35'
+                  : 'border-slate-200 focus-within:border-brand-400 focus-within:ring-brand-400/25 dark:border-slate-700'
               }`}
             >
               <input
