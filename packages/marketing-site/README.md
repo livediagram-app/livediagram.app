@@ -11,6 +11,9 @@ packages/marketing-site/src
 │  │                            the page hero, a feature section and its grid, the CTA link, the
 │  │                            noindex redirect behind /terms, /privacy and /security
 │  ├─ StartDrawingArt.tsx       the Try It card's line illustration
+│  ├─ TemplateGallery.tsx, CategoryTiles.tsx, TemplateIndex.tsx
+│  │                            the landing page's "Browse every template" band: the open shelf's
+│  │                            cards, the folded categories' cards and their templates as plain links
 │  ├─ privacy/                  the landing page's Privacy band (PrivacySection, handed the product's
 │  │                            promises) and its art (PrivacyArt; DataIsYoursArt takes the work's noun)
 │  ├─ feature-art/              what every product's card art draws from: shared (Frame, colours, the

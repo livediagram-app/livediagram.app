@@ -7454,6 +7454,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
+      '@liveworkspace/template-previews':
+        specifier: workspace:*
+        version: link:../template-previews
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
