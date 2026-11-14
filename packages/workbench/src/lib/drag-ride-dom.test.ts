@@ -87,7 +87,7 @@ describe('the ride writer', () => {
     fresh.setAttribute('data-ride-id', 'b');
     root.querySelector('[data-ride-id="b"]')!.replaceWith(fresh);
     writer.apply(new Map([['b', { dx: 3, dy: 0 }]]));
-    expect(fresh.style.translate).toBe('3px 0px');
+    expect(fresh.style.translate).toBe('3px');
   });
 
   it('does nothing without a root, and nothing when nothing rides', () => {
@@ -172,7 +172,7 @@ describe('a plane carrying a very large move', () => {
     writer.setRoot(few.root);
     writer.apply(allBut(RIDE_PLANE_MIN_NODES - 1, 0, { dx: 1, dy: 0 }));
     expect(few.plane.style.transform).toBe('');
-    expect(few.node(0).style.translate).toBe('1px 0px');
+    expect(few.node(0).style.translate).toBe('1px');
 
     const half = board(RIDE_PLANE_MIN_NODES * 5);
     const w2 = createRideWriter();
@@ -185,7 +185,7 @@ describe('a plane carrying a very large move', () => {
     w3.setRoot(mixed.root);
     w3.apply(allBut(N, 0, { dx: 1, dy: 0 }));
     expect(mixed.plane.style.transform).toBe('');
-    expect(mixed.node(0).style.translate).toBe('1px 0px');
+    expect(mixed.node(0).style.translate).toBe('1px');
   });
 
   it('puts the offset down when the move shrinks, the root changes, or the plane goes', () => {

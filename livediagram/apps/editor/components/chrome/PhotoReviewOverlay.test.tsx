@@ -471,12 +471,15 @@ describe('zooming into the photo', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
     fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
     const tick = screen.getByRole('checkbox');
-    expect(tick.style.transform).toBe(`scale(${1 / 2.25})`);
-    expect(screen.getByTestId('note-words-0').style.transform).toBe(`scale(${1 / 2.25})`);
+    // The style serialises the factor to six significant digits, as a browser does.
+    const scaleOf = (el: HTMLElement) => Number(/^scale\(([\d.]+)\)$/.exec(el.style.transform)![1]);
+    expect(scaleOf(tick)).toBeCloseTo(1 / 2.25, 4);
+    expect(scaleOf(screen.getByTestId('note-words-0'))).toBeCloseTo(1 / 2.25, 4);
     // …and so does the outline: two pixels on screen, drawn as a shadow so the
     // browser cannot round it up to a whole pixel of PHOTO first.
     const outline = screen.getByTestId('note-box-0').firstElementChild as HTMLElement;
-    expect(outline.style.boxShadow).toContain(`${2 / 2.25}px`);
+    const spread = / 0px 0px 0px ([\d.]+)px/.exec(outline.style.boxShadow);
+    expect(Number(spread![1])).toBeCloseTo(2 / 2.25, 4);
     expect(outline.style.borderWidth).toBe('');
   });
 });

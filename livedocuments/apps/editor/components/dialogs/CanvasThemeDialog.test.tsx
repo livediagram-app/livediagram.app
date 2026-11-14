@@ -78,7 +78,7 @@ describe('CanvasThemeDialog placement', () => {
     expect(panel.style.right).toBe('473px');
     expect(panel.style.top).toBe('156px');
     expect(panel.style.bottom).toBe('');
-    expect(panel.style.transformOrigin).toBe('top right');
+    expect(panel.style.transformOrigin).toBe('right top');
     undo();
     style.remove();
     brush.remove();

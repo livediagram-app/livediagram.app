@@ -114,10 +114,10 @@ describe('the frame loop', () => {
     expect(root.getAttribute('aria-hidden')).toBeNull();
     expect(root.tabIndex).toBe(0);
     expect(root.style.pointerEvents).toBe('auto');
-    expect(root.style.transform).toContain(
-      `translate3d(${(W - RAIL - ARROW_SIZE / 2).toFixed(2)}px`,
-    );
-    expect(tip.style.transform).toBe('rotate(0.0000rad)');
+    // The style serialises each number short (1152.00px reads back 1152px), as a browser does.
+    const x = Number(/^translate3d\((-?[\d.]+)px/.exec(root.style.transform)![1]);
+    expect(x).toBeCloseTo(W - RAIL - ARROW_SIZE / 2, 2);
+    expect(Number(/^rotate\((-?[\d.]+)rad\)$/.exec(tip.style.transform)![1])).toBeCloseTo(0, 4);
   });
 
   it('hides the arrow, out of reach, for someone in view', () => {
