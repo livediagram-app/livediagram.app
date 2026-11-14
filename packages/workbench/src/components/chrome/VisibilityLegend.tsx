@@ -1,15 +1,15 @@
 'use client';
 
-// The visibility pill's legend (docs/specs/006-document/offline-mode.md "The visibility legend"): who can see
-// this document. A hero in the current state's tone draws its reach as rings around you, lit out to how far
-// the document goes; under it the audiences sit on one scale from Just You to Everyone, the current stop
+// The visibility pill's legend (each editor's docs/specs/006-<kind>/offline-mode.md "The visibility legend"): who can see
+// this item. A hero in the current state's tone draws its reach as rings around you, lit out to how far
+// the item goes; under it the audiences sit on one scale from Just You to Everyone, the current stop
 // filled to, and hovering a stop shows that audience in the hero. This Browser stands apart below, the
 // deliberate opt-out; then, for someone who may share, Change Who Can See This opens Share. For the eye only:
 // the pill carries the current state's words for assistive technology and opens Share itself.
 import { useState, type ReactNode } from 'react';
-import { ChevronRightIcon, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { ChevronRightIcon, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@liveworkspace/ui';
 import { lucideGlobe, lucideLink, lucideLock, lucideUsers } from '@liveworkspace/icons/lucide';
-import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
+import { ThisBrowserIcon } from '../primitives/ThisBrowserPill';
 import { SHARE_STATE_META, type ShareState } from './share-states';
 
 const LockGlyph = lucideGlyph(lucideLock, 14);
@@ -236,7 +236,7 @@ function ReachScale({
   );
 }
 
-// This Browser, apart from the scale: the document never leaves this browser.
+// This Browser, apart from the scale: the item never leaves this browser.
 function ThisBrowserRow({
   current,
   onPeek,
@@ -285,7 +285,7 @@ export function VisibilityLegend({
   // Centred under the pill (the header), or laid out by a host that places it (`floating`: the Explorer's card portals
   // it over the panel, whose scroll would clip it).
   align?: 'center' | 'floating';
-  // Opens Share; absent where the reader may not change who can see the document.
+  // Opens Share; absent where the reader may not change who can see the item.
   onManage?: () => void;
 }) {
   // A hovered stop shows its audience in the hero; leaving puts the current state back.

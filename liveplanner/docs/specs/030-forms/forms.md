@@ -832,6 +832,15 @@ board settings, for switching back.
   (columns added in one insert when the sheet has too few). Headers the form writes are bold, and a sheet given its
   first headers has row 1 frozen (a sheet that already had headers keeps its freeze). The response takes the first row after the last row holding a value (a styled but
   empty row, such as a banded look's, does not count; rows added when there are none).
+- **A template's table with a total**: when the last row holding a value is a **total row** under the header (every
+  value in it a formula, at least one over a range of rows, such as the Contacts template's row 11), the response
+  goes inside the table instead of under the total: the first empty row between the header and the total, else a
+  new row inserted just above the total. The total's ranges that ended on the row above it grow to take the new row
+  in, so "6 contacts" reads "7 contacts", and the new row takes the row above's own formulas (Contacts' Days Since
+  and Follow Up), each moved down to read its new row, as filling down would; a column the response writes keeps the
+  answer, and a formula that reads another sheet's rows, or a row below, is not copied. A sheet with values under its total, or no total, is one a person has
+  made their own: it keeps taking the first row after its last value, as above. Only the table's first 256 rows
+  under the header are looked at for an empty one; a longer table takes the new row above its total.
   Its cells: the response number, the time ("2026-10-15 14:03 UTC"; the api knows no one's zone), and each answer: a
   Number or Rating as a number, a Checkbox as true or false, the rest as text (several picks "Vegan, Halal"); an
   unanswered question leaves its cell empty.

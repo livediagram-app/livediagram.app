@@ -4,7 +4,15 @@
 
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { USED_ROW_WINDOW, cellsNamedBy, lastUsedSheetRow, readCells, readRowTexts } from './sheets';
+import {
+  USED_ROW_WINDOW,
+  cellsNamedBy,
+  lastUsedSheetRow,
+  readCells,
+  readRowInputs,
+  readRowTexts,
+  usedSheetRows,
+} from './sheets';
 
 describe('cells named by key', () => {
   it('are sought by (plan, sheet, row, column)', () => {
@@ -155,6 +163,21 @@ describe('lastUsedSheetRow', () => {
     const sorted = ['r5', 'r2', 'r0', 'r9', 'r7'];
     expect(await lastUsedSheetRow(db.env, 'd', 's', sorted)).toEqual(new Set(['r0']));
     expect(await lastUsedSheetRow(db.env, 'd', 's', sorted)).toEqual(naive(db.sql, sorted));
+  });
+
+  // forms.md "A template's table with a total": a total's inputs, and which of a table's rows hold a value.
+  it("reads one row's inputs and which rows hold a value, in one probe each", async () => {
+    const total = { f: { t: 'SUM(@0)', r: [{ r1: 'r1', c1: 'c1', r2: 'r3', c2: 'c1' }] } };
+    const db = sheet([
+      ['r1', 'c1', { s: 'Ana' }],
+      ['r2', 'c1', undefined, { b: true }],
+      ['r4', 'c1', total],
+      ['r4', 'c2', undefined, { b: true }],
+    ]);
+    expect(await readRowInputs(db.env, 'd', 's', 'r4')).toEqual(new Map([['c1', total]]));
+    expect(await usedSheetRows(db.env, 'd', 's', ['r1', 'r2', 'r3'])).toEqual(new Set(['r1']));
+    expect(await usedSheetRows(db.env, 'd', 's', [])).toEqual(new Set());
+    expect(db.probes()).toBe(2);
   });
 
   it('answers none for an empty sheet, a sheet of formats only, and no rows', async () => {

@@ -49,6 +49,13 @@ const HELD_AT_100 = [
   'src/lib/live-editor-build.ts',
   // Round 12: editor copies the products held byte for byte, one home each.
   'src/hooks/collab/useFollowMe.ts',
+  // The header, its visibility pill and the Settings host every editor carried a copy of.
+  'src/components/chrome/EditorHeader.tsx',
+  'src/components/chrome/SharedBadge.tsx',
+  'src/components/chrome/share-states.tsx',
+  'src/components/chrome/VisibilityLegend.tsx',
+  'src/components/dialogs/EditorSettingsDialog.tsx',
+  'src/lib/preferences-local-only.ts',
 ];
 
 export default defineProject({

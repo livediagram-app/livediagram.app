@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
-import { tagColoursOf } from '@livedocuments/document';
+import { slideElementsOf, tagColoursOf } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
@@ -189,6 +189,7 @@ function OpenEditorContextMenu() {
     openComments,
     openAssignAction,
     deleteSelected,
+    slideDeck,
   } = useEditorContext();
   // The selection the menu acts on, read from the store while a menu is open: a closed menu never
   // renders for a selection change (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -225,6 +226,12 @@ function OpenEditorContextMenu() {
           onSetOption: sankey.setSankeyOptionSelected,
         }
       : undefined;
+  // The Build section (docs/specs/012-collaboration/presentation-mode.md "Setting builds up"): offered when the
+  // element is on one of the tab's slides, counting among that slide's steps. Worked out only while the menu is open.
+  const buildSlide =
+    slideDeck && ctxMemberIds[0]
+      ? slideElementsOf(slideDeck.deck.slides, activeTab, ctxMemberIds[0])
+      : null;
   // A map's menu section (docs/specs/009-elements/map.md "The menu"), for someone who may edit it.
   const mapMenu =
     ctxSelectedEl && canEditMap(can, ctxSelectedEl)
@@ -316,6 +323,7 @@ function OpenEditorContextMenu() {
       onSetCodeWrap={setCodeWrapSelected}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
+      build={buildSlide ? { slideElements: buildSlide } : undefined}
       map={mapMenu}
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
       onSetChecklistItems={setChecklistItemsSelected}

@@ -472,6 +472,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'StackPadding',
       'StackAlign',
       'ConceptAnim',
+      'Build',
     ],
   },
   // The element menu's whole-tab writes (apps/editor/lib/element-style-ops.ts `commitTab`).

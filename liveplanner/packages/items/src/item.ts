@@ -16,6 +16,9 @@ export type ItemPerson = {
   id: string;
   name: string;
   color: string;
+  // Where a rule's run came from, on its Automation stamp (createdBy, updatedBy): 'github' for a GitHub-triggered
+  // run, so the card's footer draws GitHub's mark with no history read (automations.md "On cards"). Absent otherwise.
+  via?: 'github';
 };
 
 export interface Item {

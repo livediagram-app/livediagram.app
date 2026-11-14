@@ -1206,6 +1206,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "BuildEffect": {
+    "enum": [
+      "appear",
+      "fade",
+      "rise"
+    ],
+    "type": "string"
+  },
   "CapabilitiesResponse": {
     "additionalProperties": false,
     "properties": {
@@ -2724,6 +2732,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "ElementBuild": {
+    "additionalProperties": false,
+    "description": "The step an element comes in at (a whole number from 1; equal orders come in together) and how.",
+    "properties": {
+      "effect": {
+        "$ref": "#/components/schemas/BuildEffect"
+      },
+      "order": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "order",
+      "effect"
+    ],
+    "type": "object"
+  },
   "ElementId": {
     "type": "string"
   },
@@ -3154,6 +3179,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "borderRadius": {
         "$ref": "#/components/schemas/BorderRadius"
       },
+      "build": {
+        "$ref": "#/components/schemas/ElementBuild"
+      },
       "closed": {
         "type": "boolean"
       },
@@ -3545,6 +3573,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "borderRadius": {
         "$ref": "#/components/schemas/BorderRadius"
+      },
+      "build": {
+        "$ref": "#/components/schemas/ElementBuild"
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
@@ -3986,6 +4017,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "aspectLocked": {
         "type": "boolean"
+      },
+      "build": {
+        "$ref": "#/components/schemas/ElementBuild"
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
@@ -6200,6 +6234,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "borderRadius": {
         "$ref": "#/components/schemas/BorderRadius"
       },
+      "build": {
+        "$ref": "#/components/schemas/ElementBuild"
+      },
       "cardHeader": {
         "type": "boolean"
       },
@@ -7019,6 +7056,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aspectLocked": {
         "type": "boolean"
       },
+      "build": {
+        "$ref": "#/components/schemas/ElementBuild"
+      },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
@@ -7491,6 +7531,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "aspectLocked": {
         "type": "boolean"
+      },
+      "build": {
+        "$ref": "#/components/schemas/ElementBuild"
       },
       "cellStyles": {
         "items": {
@@ -8010,6 +8053,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aspectLocked": {
         "type": "boolean"
       },
+      "build": {
+        "$ref": "#/components/schemas/ElementBuild"
+      },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
@@ -8327,6 +8373,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "aspectLocked": {
         "type": "boolean"
+      },
+      "build": {
+        "$ref": "#/components/schemas/ElementBuild"
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"

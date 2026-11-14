@@ -153,6 +153,33 @@ describe('changing the rules', () => {
     expect(r.bodies.slice(2)).toEqual([{ enabled: false }, { enabled: true }]);
   });
 
+  // Spec "A rule read back writes back": list_rules' rule (or rule get) pasted into add, set or test is taken, its id,
+  // enabled and stamps left out of what the api is sent.
+  it('takes a rule read back whole, sending the api only its body', async () => {
+    const read = {
+      id: 'r1',
+      enabled: true,
+      made: { by: { id: 'p1', name: 'Ana Costa' }, at: 1 },
+      edited: { by: { id: 'p1', name: 'Ana Costa' }, at: 2 },
+      name: 'Pasted',
+      trigger: { kind: 'card_moved', to: ['done'] },
+      conditions: [],
+      steps: [{ kind: 'add_label', label: 'shipped' }],
+      chain: false,
+      timeZone: 'Europe/London',
+    };
+    const r = await apply([
+      { op: 'add', rule: read },
+      { op: 'set', ...read, rule: 'Done stamp' },
+      { op: 'test', rule: read, card: '#12' },
+    ]);
+    expect(r.refusal).toBeUndefined();
+    const sentKeys = ['chain', 'conditions', 'name', 'steps', 'timeZone', 'trigger'];
+    expect(Object.keys(r.bodies[0] as object).sort()).toEqual(sentKeys);
+    expect(Object.keys(r.bodies[1] as object).sort()).toEqual(sentKeys);
+    expect(Object.keys((r.bodies[2] as { rule: object }).rule).sort()).toEqual(sentKeys);
+  });
+
   // Card Moved's Card Types round trip: written by name, saved by id, listed back by name in the sentence.
   it('writes Card Moved’s card types by name and lists them back', async () => {
     const r = await apply([

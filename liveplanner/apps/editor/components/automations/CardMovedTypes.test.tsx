@@ -79,6 +79,26 @@ describe('Card Moved’s Card Types', () => {
     expect(latest.trigger).toEqual({ kind: 'card_moved', from: [], to: ['done'] });
   });
 
+  // Work Tracker 855: a type whose statuses changed since stops using a picked column the plan still has. It shows by
+  // its name, picked, with a note; only a column the plan deleted reads as gone.
+  it('shows a picked column the picked types stopped using by its name, with a note, and a deleted one as gone', () => {
+    render(
+      <Panel
+        trigger={{ kind: 'card_moved', types: ['bug'], from: ['doing'], to: ['done', 'qa'] }}
+      />,
+    );
+    expect(chips('From')).toEqual(['Triage', 'Done', 'In Progress']);
+    const kept = group('From').getByRole('button', { name: 'In Progress' });
+    expect(kept.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText("The picked card types don't use In Progress.")).toBeTruthy();
+    expect(chips('To')).toEqual(['Triage', 'Done', 'A column no longer here']);
+    expect(screen.getAllByText(/The picked card types don't use/)).toHaveLength(1);
+    // Unpicked, it leaves the list and the note goes.
+    fireEvent.click(kept);
+    expect(chips('From')).toEqual(['Triage', 'Done']);
+    expect(screen.queryByText(/The picked card types don't use/)).toBeNull();
+  });
+
   it('shows a deleted card type as gone, picked, so it can be unpicked', () => {
     render(<Panel trigger={{ kind: 'card_moved', types: ['epic'] }} />);
     const gone = group('Card Types').getByRole('button', { name: 'A card type no longer here' });

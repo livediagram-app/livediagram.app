@@ -8,7 +8,7 @@ import type {
   AutomationsListResponse,
   PlanResponse,
 } from '@liveplanner/api-schema';
-import type { RuleSentenceOutline } from '@liveplanner/items';
+import { savedFilterKey, type RuleSentenceOutline } from '@liveplanner/items';
 import { planPath } from '../plan/plan-state';
 
 export const rulesPath = (projectId: string) =>
@@ -47,12 +47,13 @@ export async function readRuleRuns(
   return runs;
 }
 
-/** The plan as a rule's sentence names it: card types, columns, people and tabs. */
+/** The plan as a rule's sentence names it: card types, columns, people, tabs and saved filters. */
 export function sentenceOutlineOf(state: RulesState): RuleSentenceOutline {
   return {
     types: state.plan.types,
     statuses: new Map(state.plan.statuses.map((s) => [s.status, s.name])),
     people: state.list.people ?? [],
     tabs: new Map((state.plan.tabs ?? []).map((t) => [t.id, t.name])),
+    filters: new Map((state.list.filters ?? []).map((f) => [savedFilterKey(f.tab, f.id), f.name])),
   };
 }

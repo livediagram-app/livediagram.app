@@ -154,7 +154,7 @@ while that load runs the button reads **Starting** and is disabled. Its hover ca
 ## Presenting
 
 - **Full screen.** Browser fullscreen where available, all chrome hidden (the zen treatment, [Zen mode](../007-editor/zen-mode.md)). A refused request (no user gesture, a browser that declines) leaves the deck running in the window and logs `[presentation] fullscreen-refused` with the reason; leaving it logs `[presentation] fullscreen-exit-failed` if that is refused.
-- **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a canvas: advancing does not accumulate.
+- **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a canvas: advancing does not accumulate from slide to slide. Within one slide, elements an Editor gave a **build** come in one step at a time (Builds below).
 - **The backdrop is the slide's tab's**: its background colour, pattern and theme. Well-defined precisely because a slide belongs to one tab.
 - **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. A **page slide** frames to exactly its page with **no padding**, its surround blacked out, so the page fills the screen ([Pages](../007-editor/pages-mode.md) "Slides").
 - **Nothing on a slide can be CHANGED.** No editing, moving, resizing or deleting, and no ticking a checklist. You are on a projector in front of a room, and a stray click that alters the document is not a feature.
@@ -169,7 +169,7 @@ while that load runs the button reads **Starting** and is disabled. Its hover ca
   - The laser still **broadcasts**, as it does everywhere else ([Laser Panel](../008-canvas/laser-panel.md), "Everyone sees your pen"). Presenting is local, but the laser is the document's tool and your camera is on a real tab: a collaborator reading that tab should see the dot you are pointing with, which is the whole point of a shared pointer. Suppressing it would mean a second laser path existing only here, to hide something somebody may be watching on purpose. Spotlight raises no such question: it is a local view treatment and always was ([Spotlight Panel](../008-canvas/spotlight-panel.md), "Still local, still not broadcast").
   - The presenter still does not see anyone ELSE's cursor, laser or selection, as above: no outline, badge or borrowed border colour on a box someone has selected (the selection lock has nothing to guard on a slide). It is your screen on a projector.
 - **The screen is kept awake** for the duration (`navigator.wakeLock`, released on exit). A slide you talk over for five minutes is a slide the laptop dims, and a presenter waking their own screen mid-sentence is a small indignity a deck should not cause. Where the API is absent or the request is refused, the deck runs exactly as before.
-- **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends. A chord (`Cmd`, `Ctrl` or `Alt` held) is the browser's, never the deck's: `Cmd+G` finds the next match and `Alt+←` goes back, rather than opening the jump list or stepping a slide.
+- **Advance** with `→`, `Space`, `Page Down`, or click; on a slide with builds each advance plays its next build first (Builds below). **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends. A chord (`Cmd`, `Ctrl` or `Alt` held) is the browser's, never the deck's: `Cmd+G` finds the next match and `Alt+←` goes back, rather than opening the jump list or stepping a slide.
 - **The editor's own shortcuts are off** for as long as a deck is running. The overlay consumes the keys it uses, but everything else propagated straight through, so pressing `G` in front of a room armed a parallelogram on a canvas you cannot draw on and the next click dropped it. One derived flag (`keyboardEnabled = shortcutsEnabled && !presenting`) feeds every keyboard surface (the shortcut hook and the canvas a11y traversal) rather than the overlay swallowing keys it does not understand, so a surface added later is covered by the flag it already takes.
 - Advancing past the last slide shows an end state; one more advance exits.
 - **Numbers count up.** A stat row on a slide counts each of its numbers up from zero as the slide comes on, once, and holds them; reduced motion shows them at once ([Stat row](../009-elements/stat-row.md) "Count-up when presented"). The editor's canvas tells its elements it is presenting through one context (`PresentingContext`), which nothing else reads.
@@ -189,6 +189,70 @@ A deck should feel like a deck, and the transitions are what sell it.
 - The travel is **the full width of the screen**, and what travels is the picture of the whole canvas SURFACE, so the backdrop goes with it: the whole screen moves rather than what's on the canvas sliding around inside a stationary frame. A gentle nudge was tried first and read as a wobble.
 - The curve is a plain **decelerate** with no overshoot. Easing with a long slow tail reads as rubber-banding: the slide appears to arrive, then keeps creeping.
 - One moving picture at any slide size: a hundred-element slide moves as smoothly as a one-element slide, and the canvas's content wrapper, which carries the pan/zoom transform, is never animated. The fit measures `offsetWidth/offsetHeight` (layout size) rather than `getBoundingClientRect` (the transformed box).
+
+### Builds
+
+A slide's points can come in one click at a time: the moment that makes a talk feel finished. An element on a slide
+can carry a **build**: the step it comes in at and how it comes in.
+
+- **The build is the element's** (`build?: { order, effect }`, [Element animations](../028-animation/element-animations.md)
+  "Builds"), so it plays on every slide the element is on and nothing about it is stored on the deck. `order` is a
+  whole number from 1; elements sharing an order come in together, as one step.
+- **Effects**: **Appear** (cuts in), **Fade** (fades in) and **Rise** (fades in while rising a short way into place).
+- **The steps of a slide** are its built elements' distinct orders, lowest first (`slideBuildOrders`). A slide with
+  three builds presents in **four steps**: first everything without a build, then each build in turn. Gaps in the
+  numbers mean nothing (1, 4, 9 is three steps); an element without a build is on the slide from the start.
+- **An arrow follows its ends.** An arrow has no build of its own: it shows once both the elements it joins are
+  showing, and comes in with the later of the two (`buildHiddenIds`). Anything it is not attached to does not hold
+  it back.
+- **Next** (`→`, `Space`, `Enter`, `Page Down`, a click on empty space, the HUD's next button and auto-advance) plays the
+  slide's next build; once every build has played, it moves to the next slide. **Back** (`←`, `Page Up`, the HUD's
+  previous button) takes the last build back off; with none left to take back it goes to the previous slide, which
+  arrives **finished**, every build showing, so stepping back retraces the talk exactly. The HUD's previous button
+  is there whenever there is something to go back to: an earlier slide or a build showing.
+- **A slide arrives unbuilt** from Next, the jump list, `Home`, `End`, Present and Present From Here, and finished only
+  from Back. Leaving the deck forgets every slide's step.
+- **Quick presses all land**: a step counts from the slide and build last asked for, as slide moves do (Motion
+  above), so three quick presses on a slide with two builds play both and then move on.
+- **How a build plays**: only the step's own elements move; the rest of the slide stays still. They come in over
+  `BUILD_ENTER_MS` on the deck's decelerate curve, Rise from `BUILD_RISE_PX` below its place. Taking a build back
+  removes its elements at once, and a slide arriving finished arrives as a whole, with no build replaying. Each
+  element still plays its own play-once animation as it comes in, as it would arriving any other way.
+- **Reduced motion** (the OS setting or the in-app preference) shows each step at once: every effect cuts in,
+  without movement or fade.
+- **What the room sees** is only the slide: the editor, the thumbnails, Contents' pictures and every export always
+  show the **finished** slide, every element in place. A build changes only what a running deck shows.
+- **Auto-advance** counts each build as a step: the timer restarts as a build plays, so a deck left running in a
+  room builds each slide before moving on.
+- **The screen reader** hears each build as it plays ("Build 2 of 3"), and nothing when a build is taken back but the
+  slide stays.
+- **Presenting stays local** (Realtime below): each person running or viewing the deck steps its builds on their own
+  screen. Nothing about a step is broadcast.
+
+#### Setting builds up
+
+**An Editor sets builds** in the element's context menu: the **Animation** row's **Build** section, after the element's
+own animation sections. It is offered only for an element on one of the open tab's slides (a slide page, or a page or
+selection the deck shows), and never for an arrow. A Participant and a Viewer have no element menu to set one in, so
+they see builds only by presenting.
+
+- **Effect tiles**: None, Appear, Fade and Rise, each a small live picture of a slide whose third line builds in that
+  way, still at rest and playing while hovered, like every animation tile. None removes the build.
+- **Picking an effect for an element with no build** gives it the **next step**: one after the slide's highest
+  (step 1 on a slide with none), so clicking through a slide's elements in the order they should come in builds
+  them in that order. A multi-selection takes one step together.
+- **Order**, once a build is set: a tile per step the slide already has ("Step 1", "Step 2", "Step 3") and **New Step**
+  for a step of its own after them (not shown when the selection is already alone at the last step). Picking a step moves the selection to it; the element then comes in with whatever else is at that
+  step.
+- **On the canvas** each built element carries a small numbered badge on its top-left corner: its place among the
+  slide's steps ("2" for the second step, whatever order number is stored). Like the lock badge it is editor chrome,
+  scaling with the canvas, hidden below the adornment zoom, and never drawn while presenting, in an embed, in a
+  thumbnail or in an export. Only an Editor sees badges: a Participant or a Viewer, who can't set builds, sees none.
+  Elements that overlap and come in at the same step (an icon in its circle) share one badge, on the one drawn first,
+  so the pair reads as one numbered thing.
+- **Contents** shows how many builds a slide page has beside its name ("3 builds"), the way a card's speaking time
+  shows.
+- **The format painter** does not copy a build: a build is the element's place in a talk, not its look.
 
 ### The HUD
 
@@ -320,7 +384,9 @@ change nothing" was written to answer.
 what is worth learning is which settings people reach for at all, and values
 would multiply the vocabulary for no extra signal.
 
-**Still no per-slide-advance event.** A fifty-slide deck would emit fifty
+**Setting a build**: `Element·Changed·Build` when an effect or a step is picked (the build's type, never the element's words).
+
+**Still no per-slide-advance event**, and none per build. A fifty-slide deck would emit fifty
 events per run to tell us something the start / close pair already implies.
 
 ## Out of scope (v1)
@@ -328,7 +394,7 @@ events per run to tell us something the start / close pair already implies.
 - Follow-the-presenter sync. **Not planned**, see Realtime above: it inverts what presenting is for.
 - Dual-screen presenter console (notes on your laptop, slide on the projector). Per-slide notes ship; a second-window console does not.
 - Export the deck to PDF or PPT. (The framing rule above makes it tractable later: every slide already has bounds, and the export renderer already draws a bounded element set.)
-- Per-element build animation WITHIN a slide (clicking to reveal one box at a time). Slide-to-slide transitions ship, see Motion; building up a single slide does not.
+- Build effects beyond Appear, Fade and Rise, builds that take an element OFF a slide, and builds that play on a timer rather than a step. Builds ship (see Builds); they bring elements in, one step per Next.
 - Auto-generating a deck from a document (see the empty-deck rule above: deliberate, not deferred).
 - A slide that mixes tabs. Ruled out by the model, not postponed.
 - CHANGING anything from a presentation. Ruled out, not postponed. Reading is in (see Presenting): clicking an element shows its note, comments and actions.

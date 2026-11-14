@@ -123,6 +123,8 @@ export function MoreValues({
           name={name}
           width={MORE_VALUES_PX}
           pointer
+          // Opening and closing it never scrolls the widget row it sits in (board-widgets.md "The header").
+          preventScroll
           onClose={() => setAnchor(null)}
         >
           <div className="flex flex-col p-1.5" onPointerDown={(e) => e.stopPropagation()}>

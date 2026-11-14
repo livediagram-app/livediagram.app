@@ -7,6 +7,7 @@ vi.mock('./api-client', () => ({
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
+import { preferencesKeptLocally } from '@liveworkspace/workbench/lib/preferences-local-only';
 import {
   __resetPreferencesSync,
   fitPreferences,
@@ -17,7 +18,6 @@ import {
   PREFERENCES_UNSYNCED_KEY,
   preferencesBodyLength,
   preferencesPatch,
-  preferencesStoredOnServer,
   savePreferences,
 } from './preferences-sync';
 import {
@@ -207,7 +207,7 @@ describe('savePreferences', () => {
     mockedPut.mockResolvedValue('not_stored');
     savePreferences('owner-1', { uiScale: 1.2 });
     await vi.advanceTimersByTimeAsync(PREFERENCES_SAVE_DEBOUNCE_MS);
-    expect(preferencesStoredOnServer()).toBe(false);
+    expect(preferencesKeptLocally()).toBe(true);
     expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
     savePreferences('owner-1', { uiScale: 1.3 });
     await vi.advanceTimersByTimeAsync(PREFERENCES_SAVE_DEBOUNCE_MS);
@@ -242,7 +242,7 @@ describe('fetchUserPreferences', () => {
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
     mockedGet.mockResolvedValue('not_stored');
     expect(await fetchUserPreferences('owner-1')).toBeNull();
-    expect(preferencesStoredOnServer()).toBe(false);
+    expect(preferencesKeptLocally()).toBe(true);
     expect(window.localStorage.getItem(STORAGE_KEY)).toBe('{"showMinimap":false}');
     expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
   });

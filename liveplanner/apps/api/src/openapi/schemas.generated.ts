@@ -3387,6 +3387,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationsListResponse": {
     "additionalProperties": false,
     "properties": {
+      "filters": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "tab": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tab",
+            "id",
+            "name"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
       "people": {
         "items": {
           "additionalProperties": false,
@@ -8601,6 +8624,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "name": {
+        "type": "string"
+      },
+      "via": {
+        "const": "github",
         "type": "string"
       }
     },

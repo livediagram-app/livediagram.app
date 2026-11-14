@@ -52,6 +52,7 @@ interface ItemPerson {
   id: string;
   name: string;
   color: string;
+  via?: 'github'; // a GitHub-triggered rule's stamp (automations.md "On cards")
 }
 interface Item {
   id: string;

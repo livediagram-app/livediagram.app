@@ -497,7 +497,7 @@ page's api errors read `[community] api <status> <code>`. Telemetry per the spec
 | Post row mapping (Anonymous, state)        | liveworkspace/apps/community/src/posts.test.ts                                                                                                 |
 | Community links, sync state                | `apps/api/src/routes/community-routes.test.ts`                                                                                                 |
 | Service routes, keys, CORS                 | liveworkspace/apps/community/src/index.test.ts                                                                                                 |
-| Public badge                               | `apps/editor/components/chrome/SharedBadge.test.tsx`                                                                                           |
+| Public badge                               | `../packages/workbench/src/components/chrome/SharedBadge.test.tsx`                                                                             |
 | Community bar                              | `apps/editor/components/chrome/CommunityBar.test.tsx`                                                                                          |
 | Share dialog with Community, switched off  | packages/community-ui/src/share/useCommunityShareTab.test.tsx, `apps/editor/components/dialogs/community/ShareDialogWithCommunity.test.tsx`    |
 | Community section, focus follows           | packages/community-ui/src/share/CommunitySection.test.tsx                                                                                      |

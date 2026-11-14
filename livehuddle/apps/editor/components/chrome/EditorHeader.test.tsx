@@ -231,3 +231,13 @@ describe('EditorHeader logo', () => {
     expect(logo(container)).toBe('/explorer');
   });
 });
+
+// livehuddle's items are spaces (docs/specs/007-editor/editor-app.md "Tab bar"): the name field says so.
+describe('EditorHeader name field', () => {
+  it('names the rename field Space name', () => {
+    renderHeader();
+    fireEvent.click(screen.getByRole('button', { name: /Untitled canvas/ }));
+    expect(screen.getByRole('textbox', { name: 'Space name' })).toBeTruthy();
+    expect(screen.queryByRole('textbox', { name: 'Diagram name' })).toBeNull();
+  });
+});
