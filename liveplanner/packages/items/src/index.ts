@@ -6,6 +6,8 @@ export * from './card-text';
 export * from './item-types';
 export * from './blocked-by';
 export * from './glyphs';
+export * from './tab-glyphs';
+export * from './stored-keys';
 export * from './type-catalogue';
 export * from './type-inheritance';
 export * from './type-duplicate';

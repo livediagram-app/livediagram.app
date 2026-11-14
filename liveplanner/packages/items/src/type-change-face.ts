@@ -1,6 +1,6 @@
 // A card type's face and panel as an agent names them (docs/specs/026-plan/plan-agents.md "Changing card types"):
 // `display` per card size in the slot names the type editor's Display tab shows, `tabs` as the Configuration tab's
-// panel tabs, and `detailsLabel`. Every field is named as people say it ("Number", "Due Date", a custom field's
+// panel tabs (with their icons), and `detailsLabel` and `detailsGlyph`. Every field is named as people say it ("Number", "Due Date", a custom field's
 // name). Each reader answers the stored shape, or a refusal that names what the size or the type has.
 import {
   CARD_SIZE_FIELDS,
@@ -22,6 +22,8 @@ import {
 } from './card-display';
 import type { ItemTypeDef, ItemTypeTab } from './item-types';
 import { fieldKeyOf } from './plan-names';
+import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
+import { withTabGlyph } from './tab-glyphs';
 import { statusKey } from './status-names';
 import {
   DETAILS_LABEL_DEFAULT,
@@ -46,6 +48,8 @@ export type DisplayInput = Partial<Record<string, Readonly<Record<string, readon
 export interface TabInput {
   name: string;
   fields: readonly string[];
+  // Its icon, a Plan glyph id ("Tab icons"); left out, a same-named tab's icon (else the default); null, the default.
+  glyph?: string | null | undefined;
 }
 
 export type FaceRead<T> = { ok: true; value: T } | { ok: false; message: string };
@@ -146,9 +150,24 @@ export function tabsFrom(input: readonly TabInput[], type: ItemTypeDef): FaceRea
     const id =
       same?.id ??
       newTabId(label, [...tabs.map((x) => x.id), ...(type.tabs ?? []).map((x) => x.id)]);
-    tabs.push({ id, label, fields });
+    const glyph = glyphFrom(t.glyph, same?.glyph);
+    if (!glyph.ok) return glyph;
+    // Any keys a newer liveplanner stored on the same-named tab stay with it.
+    tabs.push(withTabGlyph({ ...same, id, label, fields }, glyph.value));
   }
   return { ok: true, value: tabs };
+}
+
+// An icon as an agent gives it: a Plan glyph id, null for the default, or left out for `kept` (undefined: the default).
+export function glyphFrom(
+  input: string | null | undefined,
+  kept: PlanGlyphId | undefined,
+): FaceRead<PlanGlyphId | undefined> {
+  if (input === undefined) return { ok: true, value: kept };
+  if (input === null) return { ok: true, value: undefined };
+  const id = input.trim().toLowerCase();
+  if (isPlanGlyphId(id)) return { ok: true, value: id };
+  return no(`"${input}" is not a Plan glyph. Glyphs: ${PLAN_GLYPH_IDS.join(', ')}.`);
 }
 
 // What the panel calls Details: "Details" is the default, so it stores nothing.

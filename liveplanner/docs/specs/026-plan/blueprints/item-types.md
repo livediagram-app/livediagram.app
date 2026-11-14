@@ -74,6 +74,14 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `PARENT_FIELD`),
   `title` and `status` put first, at most 24; `newTitle` defaults to "New <name>"; JSON at most
   `ITEM_TYPES_BYTES`. Answers `{ ok, catalogue }` (normalised) or `{ ok: false, reason }` naming the part.
+- Newer keys (spec "Settings from a newer version"; `stored-keys.ts`): `ITEM_TYPE_KEYS`, `ITEM_TYPE_TAB_KEYS` and
+  `CUSTOM_FIELD_KEYS`, each from a record typed `{ [K in keyof Required<Shape>]: true }` (so a key added to the shape
+  fails the typecheck until listed, and listing it fails `project-format.test.ts` until `PROJECT_FORMAT` is bumped).
+  `newerKeysOf(input, known)` copies the keys outside `known` (JSON round trip; none past `NEWER_KEYS_MAX_BYTES`, 4 KB,
+  or when not copyable). With `newerFields: 'keep'` `readType`, `readTabs` and `readCustom` append them after the keys
+  they read; with `'refuse'` (the api's writes) they are dropped. `resolveChild` keeps the child's own. The type
+  editor starts its draft type with `newerKeysOf(start, ITEM_TYPE_KEYS)` (its tabs and custom fields are carried as
+  objects), so an older editor's save writes them back.
 - Newer fields (spec "Fields from a newer version"; `newer-fields.ts`): `readCustom` checks `id` and `label` first,
   then a `kind` outside `CUSTOM_FIELD_KINDS`, or a `calculated` field whose `calculation` is outside `CALCULATIONS`,
   goes to `readNewerField`, which keeps a JSON copy of the stored object (its `id` and trimmed `label` written back,
@@ -1022,6 +1030,37 @@ retyped, types, items, ctx)` (`built-in-field-retype.ts`): `retypedValuePatches`
   `newTabId('tab', ...)`), `withoutEmptyTabs`. The type editor starts from `tabsOf(type)` and saves `tabs`
   explicitly. Problems: "Give every tab a name.", "Two tabs have the same name."
 
+### Tab icons
+
+- **Shape**: `ItemTypeTab.glyph?: PlanGlyphId`, `ItemTypeDef.detailsGlyph?: PlanGlyphId`. `readTabs` and `readType`
+  keep each through `storedGlyph(value, fallback)` (`tab-glyphs.ts`): a known glyph id that differs from its default,
+  else nothing (never refused). Format 6 (`PROJECT_FORMAT`).
+- **Defaults** (`tab-glyphs.ts`, pure, a leaf over `glyphs.ts`): `OVERVIEW_TAB_GLYPH` `page`, `TAB_GLYPH_DEFAULT`
+  `kanban`, `DETAILS_GLYPH_DEFAULT` `checklist`; the panel's own `LINKED_TAB_GLYPH` `link`, `ACTIVITY_TAB_GLYPH`
+  `clock`, `HIDDEN_TAB_GLYPH` `eye-off` (a new house-style glyph in Status and Signals, after `eye`).
+  `defaultTabGlyph(tab)`, `tabGlyphOf(tab)`, `detailsGlyphOf(type)`, `withTabGlyph(tab, glyph?)`,
+  `withDetailsGlyph(type, glyph?)` (undefined or the default stores nothing).
+- **Inheritance**: tabs are copied whole (icons with them); `INHERITED_PARTS` gains `detailsGlyph`, after
+  `detailsLabel`.
+- **Agents**: `TabInput.glyph?: string | null` and `FaceInput.detailsGlyph?: string | null`, read by
+  `glyphFrom(input, kept)` (`type-change-face.ts`: undefined keeps `kept`, null the default, a glyph id lower-cased,
+  anything else "\"x\" is not a Plan glyph. Glyphs: …"). `tabsFrom` keeps a same-named tab's glyph (and its other
+  stored keys) when none is given; `withFace` applies `detailsGlyph`. `InheritedPartsInput.detailsGlyph` ("Details
+  icon") is refused on an inherited type. MCP `plan-schema.ts`: `tabsArg` items take `glyph`, `add`/`set` take
+  `detailsGlyph`; `listedType` answers each tab's `glyph` and `detailsGlyph` with defaults filled in.
+- **Card panel** (`ItemPanelTabs.tsx`): `PanelTab.glyph: PlanGlyphId`; `ItemPanel` fills it with `tabGlyphOf` for
+  the type's tabs, `detailsGlyphOf` for the phone's Details tab, and the fixed glyphs for Linked Cards, Activity and
+  Hidden. Each tab button is `inline-flex items-center gap-1.5`: a `PlanTypeGlyph` of 14 px, `aria-hidden`, then the
+  label in a `max-w-[10rem] truncate` span; the button is wrapped in the shared `Tooltip` labelled with the tab's
+  name (its accessible name stays its label, or "Linked Cards, 3 cards" with a count). The Details column's heading
+  draws `detailsGlyphOf(type)` the same way.
+- **Type editor**: `LayoutDraft` tabs carry `glyph`; `ItemTypeEditor` holds `detailsGlyph` beside `detailsLabel`
+  (reset from the base on `chooseBase`) and saves it with `withDetailsGlyph`. `TabGlyphButton`
+  (`TabGlyphButton.tsx`) leads each group header in `ItemTypeLayoutEditor`: the glyph on a tint of the type's colour
+  with a chevron, named "Icon: {Glyph}" (its tooltip the same), opening `GlyphPicker`'s popover (`GlyphGrid`
+  exported for it) named "{Tab} Icon", with **Reset To Default** (`ResetIcon`) in its foot while the glyph is not
+  the default. Read-only on an inherited type (a plain glyph, no button).
+
 ## The Hidden tab
 
 - `ItemPanelTabs.tsx`: `HIDDEN_TAB = 'card-hidden'`, label "Hidden"; `panelTabs(tabs, details, linked, hidden)` puts it
@@ -1138,7 +1177,7 @@ Derived from [Item types](../item-types.md#inherited-types).
   resolved. Read by `readType` (an `inherits` that is not a type id: `types[i].inherits`; an `ownFields` that is not
   an array of strings: `types[i].ownFields`; at most `ITEM_TYPE_FIELDS_MAX`).
 - **`type-inheritance.ts`** (pure):
-  - `INHERITED_PARTS`: `tabs`, `detailsLabel`, `statuses`, `excludedStatuses`, `defaultStatus`,
+  - `INHERITED_PARTS`: `tabs`, `detailsLabel`, `detailsGlyph`, `statuses`, `excludedStatuses`, `defaultStatus`,
     `assigneeNotifies`, `colourField`: copied whole from the base (absent when the base lacks one). `display` is
     inherited as the base shows it (`inheritedDisplay`): each size the base leaves to its default written out from
     `defaultCardLayout(base.id)`, and a size equal to the inherited type's own default left out, as `readCardDisplay`
@@ -1362,6 +1401,11 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Blocked By: switch, badge sizes, panel lists, picker refusal, roles                                              | `apps/editor/components/plan/BlockedBy.test.tsx`                                                                                                                                                                                                                                                                                                   |
 | Blocked By: SVG badge                                                                                            | `packages/project/src/svg-render-plan-card.test.ts`                                                                                                                                                                                                                                                                                                |
 | Blocked By: agents list, set, loop stop, switch                                                                  | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                                                                                                                                                                                                                                |
+| Tab icons: defaults, stored only when chosen, unknown read as default, inherited, agents list                    | `packages/items/src/tab-glyphs.test.ts`, `packages/items/src/type-change-face.test.ts`, `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                                                                                                                                       |
+| Tab icons: panel tabs, Details heading, picker, Reset To Default, read-only inherited                            | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                  |
+| Newer keys: kept through read, inheritance and the editor's save, dropped on the api's writes, capped            | `packages/items/src/tab-glyphs.test.ts`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                                |
+| Stored-shape guard: a new type, tab or field key bumps `PROJECT_FORMAT`                                          | `packages/api-schema/src/project-format.test.ts` (and the typecheck on `packages/items/src/stored-keys.ts`)                                                                                                                                                                                                                                        |
+| Sync Plan in place: the server's revision adopted, first save lands                                              | `apps/editor/hooks/plan/useItemTypes.test.ts`, `apps/editor/app/project/[id]/useSyncInPlace.test.ts`                                                                                                                                                                                                                                               |
 | Panel, editor, card face, palette in a browser                                                                   | checked by hand against the dev stack (screenshots)                                                                                                                                                                                                                                                                                                |
 
 ## Constants and configuration

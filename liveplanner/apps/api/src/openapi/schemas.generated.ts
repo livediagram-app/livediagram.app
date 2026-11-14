@@ -8924,6 +8924,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "defaultStatus": {
         "type": "string"
       },
+      "detailsGlyph": {
+        "$ref": "#/components/schemas/PlanGlyphId"
+      },
       "detailsLabel": {
         "type": "string"
       },
@@ -9158,6 +9161,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "glyph": {
+        "$ref": "#/components/schemas/PlanGlyphId"
       },
       "id": {
         "type": "string"
@@ -11156,6 +11162,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shield",
       "lock",
       "eye",
+      "eye-off",
       "fire",
       "sparkle",
       "info",

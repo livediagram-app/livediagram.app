@@ -107,15 +107,19 @@ export function GlyphPicker({
   );
 }
 
-// The panel's body: the search and category menu, and the grid. Exported for its tests.
-function GlyphGrid({
+// The panel's body: the search and category menu, and the grid. Exported for the tab icons' picker
+// (TabGlyphButton) and its tests.
+export function GlyphGrid({
   value,
   colour,
   onPick,
+  label = 'Glyph',
 }: {
   value: ItemTypeDef['glyph'];
   colour: string;
   onPick: (glyph: PlanGlyphId) => void;
+  // The radio group's name ("Glyph", or a tab's "{Tab} Icon").
+  label?: string;
 }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState(() => categoryOf(value));
@@ -168,7 +172,7 @@ function GlyphGrid({
       </div>
       <div
         role="radiogroup"
-        aria-label="Glyph"
+        aria-label={label}
         className="grid max-h-[8.5rem] grid-cols-[repeat(auto-fill,2rem)] content-start justify-between gap-0.5 overflow-y-auto overscroll-contain"
       >
         {glyphs.length === 0 ? (

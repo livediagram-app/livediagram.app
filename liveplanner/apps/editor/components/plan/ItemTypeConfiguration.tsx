@@ -25,6 +25,8 @@ export function ItemTypeConfiguration({
   onLayout,
   detailsLabel,
   onDetailsLabel,
+  detailsGlyph,
+  onDetailsGlyph,
   removedSome,
   inheritance,
   inheritanceNote,
@@ -45,6 +47,9 @@ export function ItemTypeConfiguration({
   onLayout: (next: LayoutDraft) => void;
   detailsLabel: string;
   onDetailsLabel: (next: string) => void;
+  // Details' icon (item-types.md "Tab icons"); undefined, the default.
+  detailsGlyph?: PlanGlyphId | undefined;
+  onDetailsGlyph?: ((next: PlanGlyphId | undefined) => void) | undefined;
   // A field the type had is gone from the draft (the layout editor says what that means).
   removedSome: boolean;
   // The Inherits From menu (ItemTypeInheritance.tsx), beside Name; absent with nothing to pick.
@@ -95,6 +100,9 @@ export function ItemTypeConfiguration({
           onChange={onLayout}
           detailsLabel={detailsLabel}
           onDetailsLabel={onDetailsLabel}
+          detailsGlyph={detailsGlyph}
+          onDetailsGlyph={onDetailsGlyph}
+          colour={color}
           removedSome={removedSome}
           inherited={inherited}
         />

@@ -15,6 +15,8 @@ import {
   commentsFieldsOf,
   detailFieldsOf,
   detailsLabelOf,
+  detailsGlyphOf,
+  tabGlyphOf,
   isArchived,
   isFlagged,
   itemTitle,
@@ -265,8 +267,15 @@ function ItemPanelContent({
   // React Compiler memoises on its fields, type and catalogue.
   const hidden = hiddenValuesOf(item, type, types);
   const shownTabs = panelTabs(
-    tabs,
-    mobile ? { id: DETAILS_TAB, label: detailsLabelOf(type), fields: details } : null,
+    tabs.map((t) => ({ ...t, glyph: tabGlyphOf(t) })),
+    mobile
+      ? {
+          id: DETAILS_TAB,
+          label: detailsLabelOf(type),
+          fields: details,
+          glyph: detailsGlyphOf(type),
+        }
+      : null,
     linked ? linkedCardCount(linkedGroups) : null,
     hiddenValueCount(hidden),
   );
@@ -519,8 +528,9 @@ function ItemPanelContent({
             aria-label={detailsLabelOf(type)}
             className={`m-3 ml-0 flex shrink-0 flex-col ${maximised ? 'w-96 px-5 2xl:w-[28rem]' : 'w-80 px-4'} overflow-y-auto rounded-xl bg-slate-50 py-4 ring-1 ring-slate-200/70 dark:bg-slate-800/40 dark:ring-slate-700/60`}
           >
-            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              {detailsLabelOf(type)}
+            <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <PlanTypeGlyph glyph={detailsGlyphOf(type)} size={13} />
+              <span className="min-w-0 truncate">{detailsLabelOf(type)}</span>
             </h3>
             {details.map(detailRow)}
             <CardPullRequests item={item} type={type} />
