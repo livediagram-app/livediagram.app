@@ -328,7 +328,8 @@ The Automations screen's way to the plan's GitHub connection, inside the dialog 
   hears, **Undo Changes** and **Save Repositories** while the picks differ from what is saved (up to 20; "Pick up to
   20" past it); **Change on GitHub** beside the account, and **Disconnect** at the foot. With more than 20 listed and
   none picked, a line says so: "Pick up to 20 repositories for this plan to hear." With more than 20 listed (an
-  installation lists up to 1,000), a **Search Repositories** field above the list narrows it by name, any case, the
+  installation lists up to 1,000), the ones the plan hears are pinned at the top and the rest follow by name (both as
+  saved, so a row never moves while it is flipped), a **Search Repositories** field above the list narrows it by name, any case, the
   count beside the heading reading "3 of 1,000 shown" while it does ("No repositories match “x”" with Clear Search
   when none does; picks made while searching are kept), and the list scrolls in its own box, drawing only the rows in
   view, so a long list opens, scrolls and filters without a pause on a phone. While a private repository is

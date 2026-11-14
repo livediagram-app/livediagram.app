@@ -54,6 +54,19 @@ export function repositoriesMatching(
   return q ? repositories.filter((r) => r.fullName.toLowerCase().includes(q)) : repositories;
 }
 
+const byName = (a: GithubRepositoryView, b: GithubRepositoryView) =>
+  a.fullName.localeCompare(b.fullName, 'en', { sensitivity: 'base', numeric: true });
+
+/**
+ * A long list's order: the ones the plan hears (as saved, so a row never jumps while it is flipped) pinned first, then
+ * the rest, each part by name. One sort.
+ */
+export function pinnedFirst(
+  repositories: readonly GithubRepositoryView[],
+): readonly GithubRepositoryView[] {
+  return [...repositories].sort((a, b) => Number(b.chosen) - Number(a.chosen) || byName(a, b));
+}
+
 const count = (n: number) => n.toLocaleString('en-GB');
 
 export function GithubRepositories({
@@ -113,9 +126,11 @@ export function GithubRepositories({
   };
   const listed = connection.repositories;
   const long = listed.length > GITHUB_REPOSITORIES_MAX;
+  // Pinned first, sorted once per listing; a search keeps that order, so a heard one shows first only if it matches.
+  const ordered = useMemo(() => (long ? pinnedFirst(listed) : listed), [listed, long]);
   const matching = useMemo(
-    () => (long ? repositoriesMatching(listed, query) : listed),
-    [listed, long, query],
+    () => (long ? repositoriesMatching(ordered, query) : ordered),
+    [ordered, long, query],
   );
   const searching = long && query.trim().length > 0;
   return (

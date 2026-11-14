@@ -135,6 +135,37 @@ describe('GithubRepositories: a long list', () => {
     expect(rows()).toHaveLength(Math.ceil(REPOSITORY_WINDOW_ROWS) + REPOSITORY_OVERSCAN);
   });
 
+  it('pins the heard ones first, then the rest by name; a search keeps a pinned one only if it matches', () => {
+    const c = connectionOf(30);
+    // Listed out of order, two heard ones in the middle.
+    c.repositories = [...c.repositories].reverse().map((r) => ({
+      ...r,
+      chosen: r.fullName === 'acme/repo-17' || r.fullName === 'acme/repo-4',
+    }));
+    chooser(c);
+    const names = () => rows().map((r) => r.textContent?.replace('Private', ''));
+    expect(names().slice(0, 4)).toEqual([
+      'acme/repo-4',
+      'acme/repo-17',
+      'acme/repo-0',
+      'acme/repo-1',
+    ]);
+    // A flip never moves a row: the order is what is saved.
+    fireEvent.click(screen.getByRole('switch', { name: 'acme/repo-1' }));
+    expect(names().slice(0, 4)).toEqual([
+      'acme/repo-4',
+      'acme/repo-17',
+      'acme/repo-0',
+      'acme/repo-1',
+    ]);
+    fireEvent.change(search(), { target: { value: 'repo-1' } });
+    expect(names()).toEqual([
+      'acme/repo-17',
+      'acme/repo-1',
+      ...['10', '11', '12', '13', '14', '15', '16', '18', '19'].map((n) => `acme/repo-${n}`),
+    ]);
+  });
+
   it('saves the picks made in the window', async () => {
     client.chooseGithubRepositories.mockResolvedValue(connectionOf(40, 0));
     chooser(connectionOf(40));

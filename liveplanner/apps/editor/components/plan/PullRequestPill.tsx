@@ -24,6 +24,7 @@ import {
   type PullRequestState,
   type PullRequestStatus,
 } from '@liveplanner/items';
+import { isLightColor } from '@liveplanner/project';
 import { MetaPill } from './plan-card-parts';
 import { chipInkOn, type PlanPalette } from './plan-palette';
 
@@ -39,6 +40,15 @@ export const CHECKS_TONES: Record<PullRequestChecks, string> = {
   running: '#9a6700',
   failing: '#cf222e',
 };
+// On a dark card GitHub's own dark amber: the light one, leaned toward the ink, read brown on navy.
+export const CHECKS_TONES_DARK: Record<PullRequestChecks, string> = {
+  ...CHECKS_TONES,
+  running: '#d29922',
+};
+
+/** The checks' ink on this card: its tone for the card's scheme, leaned until it reads (chipInkOn). */
+export const checksInk = (checks: PullRequestChecks, palette: PlanPalette): string =>
+  chipInkOn((isLightColor(palette.card) ? CHECKS_TONES : CHECKS_TONES_DARK)[checks], palette);
 
 const MARKS: Record<PullRequestState, ReturnType<typeof lucideGlyph>> = {
   open: lucideGlyph(lucideGitPullRequest, 12),
@@ -137,10 +147,7 @@ export function PullRequestPill({
           )}
           <span className="max-w-[10rem] truncate">{pullRequestText(ref)}</span>
           {status && showsChecks(status) ? (
-            <ChecksMark
-              checks={status.checks!}
-              color={chipInkOn(CHECKS_TONES[status.checks!], palette)}
-            />
+            <ChecksMark checks={status.checks!} color={checksInk(status.checks!, palette)} />
           ) : null}
         </MetaPill>
       </span>
@@ -180,9 +187,7 @@ export function PullRequestMarks({
                 size={13}
                 color={chipInkOn(PULL_REQUEST_TONES[status!.state], palette)}
               />
-              {checks ? (
-                <ChecksMark checks={checks} color={chipInkOn(CHECKS_TONES[checks], palette)} />
-              ) : null}
+              {checks ? <ChecksMark checks={checks} color={checksInk(checks, palette)} /> : null}
             </span>
           </Tooltip>
         );

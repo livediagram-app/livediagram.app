@@ -529,11 +529,14 @@ action from the existing vocabulary, every type a fixed token.
 - `PullRequestPill.tsx` `PullRequestMarks`: each mark beside the title's flags is the state's `PullRequestMark` and,
   when `showsChecks(status)`, the same `ChecksMark` the pill draws (in `chipInkOn(CHECKS_TONES[checks], palette)`),
   straight after it in one `role="img"` span whose label stays `pullRequestWords` ("acme/web#42: Checks Failing"), so
-  touch reads the checks without a tooltip. The tooltip is unchanged.
+  touch reads the checks without a tooltip. The tooltip is unchanged. `checksInk(checks, palette)` takes
+  `CHECKS_TONES` on a light card and `CHECKS_TONES_DARK` (running `#d29922`, GitHub's dark amber) on a dark one,
+  through `chipInkOn`, for the pill and the marks alike.
 - `components/automations/github/GithubRepositories.tsx`: with more than `GITHUB_REPOSITORIES_MAX` listed it draws the
   **Search Repositories** field (`TextInput` `type="search"`, compact, `SearchIcon`) and the windowed list
   (`RepositoryWindow.tsx`); with 20 or fewer, the list as before. The filter matches `fullName` by case-folded
-  substring (`repositoriesMatching`, one pass); its count reads "{shown} of {listed} shown" while a filter is set, else
+  substring (`repositoriesMatching`, one pass) over `pinnedFirst` (the saved `chosen` ones first, then the rest, each
+  by name, `localeCompare` numeric and case-blind; sorted once per listing, so a flip never moves a row); its count reads "{shown} of {listed} shown" while a filter is set, else
   "{picked} of {listed} heard". No match draws `NoMatches` ("repositories") with Clear Search. Picks are kept across
   filtering: a row filtered out keeps its switch's state.
 - `RepositoryWindow.tsx`: `RepositoryRow` (memoised; the short list's rows too) and `RepositoryWindow`, a scroll box `REPOSITORY_ROW_PX` (48) a row, `REPOSITORY_WINDOW_ROWS` (9.5, desktop) or
