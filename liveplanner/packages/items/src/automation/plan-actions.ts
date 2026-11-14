@@ -28,6 +28,7 @@ import { linkedCardIds } from '../several-values';
 import { validateFields } from '../fields';
 import { isEmptyFieldValue, requiredCustomFieldsOf } from '../required-fields';
 import { typeAllowsStatus } from '../type-catalogue';
+import { typeChangeFields } from '../card-retype-fields';
 import { AUTOMATION_SUBJECT_MAX } from './validate';
 import {
   AUTOMATION_ACTIONS_MAX,
@@ -212,6 +213,11 @@ function apply(a: AutomationAction, w: Walk) {
       if (status && !typeAllowsStatus(to, status))
         fail(`A ${to.label} card can't be in ${statusName(o, status)}`);
       const changed = plan.retype(to.id);
+      // Its custom fields map by name into the new type's, one write with the type (item-types.md "Changing a
+      // card's type").
+      if (changed)
+        for (const [field, value] of Object.entries(typeChangeFields(plan.card.fields, type, to)))
+          plan.write(field, value);
       w.type = to;
       return plan.line(`Change to ${typeName(o, to.id)}`, changed);
     }
