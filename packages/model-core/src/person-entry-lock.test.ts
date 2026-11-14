@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { CommentReaction } from './comment-reactions';
 import {
   collapseLegacyReactions,
+  createOwns,
   foreignDotsDiffer,
   foreignEntriesDiffer,
+  keepOwnDots,
+  keepOwnEntries,
   lockDots,
   lockEntries,
   lockedEntry,
@@ -198,5 +201,43 @@ describe('dots', () => {
     // The writer took back their own last dot on e2: it stays gone.
     expect(lockDots({ e1: [ANA] }, { e2: [ME] }, undefined, ME)).toEqual({ e1: [] });
     expect(lockDots({ e1: [ME] }, undefined, undefined, null)).toEqual({ e1: [] });
+  });
+});
+
+// A create keeps only its creator's entries: their collab key's, or a browser key's (what a This Browser canvas
+// records them under, naming nobody), never another collab key's.
+describe('creates', () => {
+  const OLD = '6f2c1d3e-9a7b-4c5d-8e1f-0a2b3c4d5e6f';
+  const derived = (k: string) => /^[0-9a-f]{32}$/.test(k);
+  const mine = createOwns(ME, derived);
+  const nobodys = createOwns(null, derived);
+
+  it("owns the creator's collab key and a browser key, never another collab key", () => {
+    expect([ME, OLD, ANA].map(mine)).toEqual([true, true, false]);
+    expect([ME, OLD].map(nobodys)).toEqual([false, true]);
+  });
+
+  it("keeps the creator's reactions and drops another person's, the same list when nothing goes", () => {
+    const list = [r(ME), r(OLD), r(ANA)];
+    expect(keepOwnEntries(list, REACTION_KEYS, mine)).toEqual([r(ME), r(OLD)]);
+    const own = [r(ME), r(OLD)];
+    expect(keepOwnEntries(own, REACTION_KEYS, mine)).toBe(own);
+    expect(keepOwnEntries([r(ANA)], REACTION_KEYS, mine)).toBeUndefined();
+    expect(keepOwnEntries(undefined, REACTION_KEYS, mine)).toBeUndefined();
+  });
+
+  it("keeps the creator's responses only", () => {
+    const res = (participantId: string): PersonResponse => ({ participantId, value: '3', at: 1 });
+    expect(keepOwnEntries([res(ANA), res(ME)], RESPONSE_KEYS, mine)).toEqual([res(ME)]);
+    expect(keepOwnEntries([res(ME)], RESPONSE_KEYS, nobodys)).toBeUndefined();
+  });
+
+  it("keeps the creator's dots, an element left with none going, the same map when nothing goes", () => {
+    expect(keepOwnDots({ e1: [ME, ANA], e2: [ANA], e3: [OLD] }, mine)).toEqual({
+      e1: [ME],
+      e3: [OLD],
+    });
+    const own = { e1: [ME, ME] };
+    expect(keepOwnDots(own, mine)).toBe(own);
   });
 });

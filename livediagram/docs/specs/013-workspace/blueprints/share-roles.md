@@ -222,7 +222,7 @@ write that stores a tab whole calls `lockTabWrite(env, documentId, tabId, writte
 it stores: `writeTabSave` (the PUT and the delta save) on its merged, author-rewritten body against the tab it read;
 `writeChangeset` (submit and revert) on `next` against `stored`, with `person` null for a token; the document POST
 on a clash (a re-commit) through `lockRecommittedTabs`, each tab against `getTab` (null for a tab new to the
-document). A create (no clash) is not locked. The steps:
+document). A create (no clash) goes through `lockCreatedTabs` instead (below). The steps:
 
 1. `key = collabKeyFor(person)`, or null.
 2. `needs = wholeTabLockNeeds(written, stored, key)`: the elements whose per-person entries differ from the stored
@@ -241,6 +241,14 @@ document). A create (no clash) is not locked. The steps:
    On every comment, named or not, `collapseLegacyReactions` drops a reaction whose `by` is not `isCollabKey` when the
    comment holds the same emoji and name from a collab key.
 5. A tab nothing changed is returned as the same object.
+
+A create (Work Tracker 817): `lockCreatedTabs(tabs, person)` runs `lockCreatedTab(tab, { key, isDerivedKey:
+isCollabKey })` on each seeded tab, with `key = collabKeyFor(person)` (null for a token), and reads no ledger (no room
+holds anything for a document that does not exist yet). `createOwns(key, isDerivedKey)` is the keep rule: a key is the
+creator's when it is `key`, or when it is not `isDerivedKey` (a browser's own key, which a This Browser canvas records
+its creator's entries under). `keepOwnEntries` keeps a card's `responses` and each comment's `reactions` the rule owns,
+`keepOwnDots` the vote's dots; `collapseLegacyReactions` then runs on every comment as on any write. A tab nothing
+dropped is the same object; one that dropped something logs `[whole-tab-lock] locked` with `write: 'create'`.
 
 ## Interfaces and contracts
 
@@ -378,6 +386,19 @@ export function collapseLegacyReactions(
   reactions,
   isDerivedKey: (key: string) => boolean,
 ): CommentReaction[] | undefined;
+export function createOwns(
+  key: string | null,
+  isDerivedKey: (key: string) => boolean,
+): (person: string) => boolean;
+export function keepOwnEntries<V>(
+  entries: readonly V[] | undefined,
+  keys: EntryKeys<V>,
+  owns: (person: string) => boolean,
+): V[] | undefined; // the SAME list when nothing goes; undefined when everything does
+export function keepOwnDots(
+  dots: Dots,
+  owns: (person: string) => boolean,
+): Record<string, string[]>; // SAME map when nothing goes
 ```
 
 `packages/document/src/whole-tab-lock.ts`:
@@ -397,11 +418,12 @@ export function lockWholeTab(
   writer: WholeTabWriter,
   needs: WholeTabLockNeeds,
 ): Tab;
+export function lockCreatedTab(tab: Tab, writer: WholeTabWriter): Tab;
 ```
 
 `apps/api/src/whole-tab-lock.ts`: `lockTabWrite<T extends Tab>(env, documentId, tabId, written: T, stored: Tab | null,
-person: string | null, write: 'save' | 'changeset' | 'recommit'): Promise<T>` and `lockRecommittedTabs(env,
-documentId, tabs, person): Promise<Tab[]>`. Room: `POST /ledger-entries` takes `{ tab: string, elements: string[] (at
+person: string | null, write: 'save' | 'changeset' | 'recommit'): Promise<T>`, `lockRecommittedTabs(env,
+documentId, tabs, person): Promise<Tab[]>` and `lockCreatedTabs(documentId, tabs, person): Promise<Tab[]>`. Room: `POST /ledger-entries` takes `{ tab: string, elements: string[] (at
 most LEDGER_LOCK_ELEMENTS_MAX), vote?: boolean }` and answers the `TabLedger` of those entries; anything else is 400.
 
 MCP: `share_document.role` is `z.enum(['view', 'participate', 'edit']).optional()`, default `participate`; the
@@ -460,8 +482,11 @@ lands in a new document, where no adder key matches it.
   as stored.
 - **E25** A stored comment holds the same emoji under one name from a browser key and a collab key: the next
   whole-tab write keeps the collab key's.
-- **E26** A re-commit (offline sync) over stored tabs: each is locked against its stored tab; a create keeps what it
-  carries.
+- **E26** A re-commit (offline sync) over stored tabs: each is locked against its stored tab.
+- **E27** A create carrying another person's collab-keyed reaction, response or dot: dropped. One under the creator's
+  collab key or a browser key (an offline canvas's own): kept. A token's create keeps only browser-keyed entries.
+- **E28** A card holds one person's response under a browser key and under their collab key: both stay (a response
+  has no name to match them by) until the card's next round.
 
 ## Security and trust
 
@@ -474,9 +499,10 @@ lands in a new document, where no adder key matches it.
   (the rule keeps the stored value).
 - The collab key is the server's (`X-Verified-Collab-Key`, set on every path): no session can publish, answer or react
   under another's key, at any level, and no whole-tab write can add, change or take away another person's reaction,
-  response or dot (the whole-tab lock). The lock fails closed: without the ledger, the stored entries stand. What
-  stays open: a create keeps the entries it carries, so a person can make a new document showing a reaction under
-  someone's public key; a browser-keyed reaction can be taken back by nobody.
+  response or dot (the whole-tab lock). The lock fails closed: without the ledger, the stored entries stand. A create
+  keeps only its creator's entries (their collab key's, or a browser key's, which names nobody). What stays open: a
+  browser-keyed reaction can be taken back by nobody on its own (reacting again folds it in; matching it by name would
+  let anyone with the same name take it away).
 - Rate: room frames ride `OP_RATE_CAP`; each drain of a tab's waiting ops is one read and one compare-and-swap in the document's SQLite.
 
 ## Performance and limits
@@ -546,31 +572,32 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 
 ## Testing
 
-| Rule                                                                             | Test                                                                        |
-| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Collab key: derivation, shape, mint, `namesAnotherPerson`, CPU budget            | `../packages/api-kit/src/collab-key.test.ts`                                |
-| Collab key: pinned at upgrade, stamped at hello, sent alone, gate at every level | `apps/api/src/room-session.test.ts`, the room rules, op gate and room tests |
-| Collab key adopted from the room                                                 | `apps/editor/lib/api/room.test.ts`                                          |
-| Ladder, `parseStoredLevel`, telemetry types                                      | `packages/api-schema/src/access-levels.test.ts`                             |
-| Op classes                                                                       | `packages/api-schema/src/room-messages.test.ts`                             |
-| Every row of the participant rule, every refusal and correction                  | `packages/document/src/participant-content.test.ts`                         |
-| `addedBy` validation                                                             | `packages/document/src/validate.test.ts`                                    |
-| `mergeLedgerAnswersIntoTab`                                                      | `packages/document/src/collab-ledger.test.ts`                               |
-| Gates compare levels                                                             | `apps/api/src/routes/context.test.ts`                                       |
-| Share create validates three levels                                              | `../liveworkspace/apps/index/src/sharing.test.ts`                           |
-| Write: applied, unchanged, refused, CAS retry, 404, 409, 413                     | `apps/api/src/participant-write.test.ts`                                    |
-| Room: op gate per level; participant path; adder header                          | `apps/api/src/document-room.test.ts`, `document-room-routes.test.ts`        |
-| Capabilities per level                                                           | `apps/editor/lib/editor-capabilities.test.ts`                               |
-| Participant save branch                                                          | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                       |
-| Three cards and keys                                                             | `../packages/explorer/src/dialogs/ShareDialog.test.tsx`                     |
-| Pill per level                                                                   | `apps/editor/components/chrome/RoleIndicator.test.tsx`                      |
-| MCP default and enum                                                             | `packages/agent-verbs` MCP schema tests                                     |
-| The shared lock: entries, dots, words, diff, collapse                            | `../packages/model-core/src/person-entry-lock.test.ts`                      |
-| The tab lock: reactions, responses, rounds, dots, agent, collapse, CPU budget    | `packages/document/src/whole-tab-lock.test.ts`                              |
-| Ledger keeps the reaction's person; `ledgerEntryKeys`                            | `packages/document/src/collab-ledger.test.ts`                               |
-| `readKeys`; `fetchLedgerEntries` chunks and failures                             | `../packages/api-kit/src/room-ledger-store.test.ts`, `room-client.test.ts`  |
-| Save, live entry via the ledger, collapse, re-commit, `/ledger-entries`          | `apps/api/src/document-room/document-room-store.test.ts`                    |
-| Changeset by a token and by a person; room down                                  | `apps/api/src/changesets/write-lock.test.ts`                                |
+| Rule                                                                              | Test                                                                                    |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Collab key: derivation, shape, mint, `namesAnotherPerson`, CPU budget             | `../packages/api-kit/src/collab-key.test.ts`                                            |
+| Collab key: pinned at upgrade, stamped at hello, sent alone, gate at every level  | `apps/api/src/room-session.test.ts`, the room rules, op gate and room tests             |
+| Collab key adopted from the room                                                  | `apps/editor/lib/api/room.test.ts`                                                      |
+| Ladder, `parseStoredLevel`, telemetry types                                       | `packages/api-schema/src/access-levels.test.ts`                                         |
+| Op classes                                                                        | `packages/api-schema/src/room-messages.test.ts`                                         |
+| Every row of the participant rule, every refusal and correction                   | `packages/document/src/participant-content.test.ts`                                     |
+| `addedBy` validation                                                              | `packages/document/src/validate.test.ts`                                                |
+| `mergeLedgerAnswersIntoTab`                                                       | `packages/document/src/collab-ledger.test.ts`                                           |
+| Gates compare levels                                                              | `apps/api/src/routes/context.test.ts`                                                   |
+| Share create validates three levels                                               | `../liveworkspace/apps/index/src/sharing.test.ts`                                       |
+| Write: applied, unchanged, refused, CAS retry, 404, 409, 413                      | `apps/api/src/participant-write.test.ts`                                                |
+| Room: op gate per level; participant path; adder header                           | `apps/api/src/document-room.test.ts`, `document-room-routes.test.ts`                    |
+| Capabilities per level                                                            | `apps/editor/lib/editor-capabilities.test.ts`                                           |
+| Participant save branch                                                           | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                                   |
+| Three cards and keys                                                              | `../packages/explorer/src/dialogs/ShareDialog.test.tsx`                                 |
+| Pill per level                                                                    | `apps/editor/components/chrome/RoleIndicator.test.tsx`                                  |
+| MCP default and enum                                                              | `packages/agent-verbs` MCP schema tests                                                 |
+| The shared lock: entries, dots, words, diff, collapse, a create's keep rule       | `../packages/model-core/src/person-entry-lock.test.ts`                                  |
+| The tab lock: reactions, responses, rounds, dots, agent, collapse, CPU budget     | `packages/document/src/whole-tab-lock.test.ts`                                          |
+| Ledger keeps the reaction's person; `ledgerEntryKeys`                             | `packages/document/src/collab-ledger.test.ts`                                           |
+| `readKeys`; `fetchLedgerEntries` chunks and failures                              | `../packages/api-kit/src/room-ledger-store.test.ts`, `room-client.test.ts`              |
+| Save, live entry via the ledger, collapse, re-commit, `/ledger-entries`           | `apps/api/src/document-room/document-room-store.test.ts`                                |
+| Changeset by a token and by a person; room down                                   | `apps/api/src/changesets/write-lock.test.ts`                                            |
+| A create keeps only its creator's entries (E27), a token's none; duplicates (E28) | `packages/document/src/whole-tab-lock.test.ts`, `apps/api/src/routes/documents.test.ts` |
 
 ## Constants and configuration
 

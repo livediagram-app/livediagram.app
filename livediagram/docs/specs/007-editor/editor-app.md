@@ -110,6 +110,15 @@ To cut down on two people fighting over the same element, an element another par
   `elementIds` (at most `MAX_SELECTION_IDS`). A frame from an older client without it holds its single `elementId`.
 - **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
 - **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room; there's no sticky server state to clean up.
+- **Held until the holder's change lands** (Work Tracker 659). Letting go of an element the holder has just changed
+  (moved, resized, retyped) does not free it at once: their change is still on its way (the autosave waits, writes
+  the tab, then the room orders its element ops), and a peer who opened it in that window had their edit replaced
+  by the holder's whole-element write, on every screen and in storage. So an element the holder let go of stays in
+  their `select` op's `elementIds` while it differs from their save baseline or their save of it waits for the room
+  (`own-element-writes.ts`), and drops out once the room confirms it. It looks exactly like the selection did (the
+  holder's border, disc and "Locked to <name>"), for about the autosave's delay plus a round trip. Bounded by
+  `WRITE_HOLD_MAX_MS` (10 s) so an element whose save keeps failing is never held for good; a tab switch ends it
+  with the rest of the selection.
 - **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, marquee and Select All (which filter locked ids out of what they take; a Select All that leaves one element selects it alone, as a marquee does), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover card reads "Locked to <name>" (each disc takes the pointer so the card opens; presses still reach the element).
 - **A Viewer's selection holds nothing.** A Viewer only looks, so their selection shows its disc and border but locks nothing: the element stays selectable and editable, and the disc's hover card reads "Selected by <name>" with "They're only viewing, so you can still edit it." Every lock check reads the selector's `holds` flag (false for a Viewer).
 - **The facilitator can free one.** "Auto-releases" covers the holder deselecting or leaving, but not the person still connected who wandered off with something selected, and a session can stop dead on an element nobody may touch. Right-clicking a locked element opens a one-item menu for whoever is running the session ([Facilitator](../012-collaboration/facilitator.md) "Freeing somebody's lock"); it still opens nothing for everybody else. The room tells the holder alone, the holder drops the selection, and the lock then clears everywhere through the ordinary `select` op, so this adds no server-side enforcement and leaves the lock exactly as advisory as it was.
