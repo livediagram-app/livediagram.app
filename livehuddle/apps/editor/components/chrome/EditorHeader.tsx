@@ -9,7 +9,7 @@ import { AuthControls } from '@/components/chrome/AuthControls';
 export type { SaveStatus } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 
 const WORDS: EditorHeaderWords = {
-  nameLabel: 'Diagram name',
+  nameLabel: 'Space name',
   renameTitle: 'Rename space',
   copyDescription: 'Duplicate this space into your own files.',
 };
