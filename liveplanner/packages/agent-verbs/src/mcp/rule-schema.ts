@@ -40,6 +40,15 @@ const timeZone = z
     'The IANA time zone its times and Today are in ("Europe/London"); UTC when an added rule names none.',
   );
 
+// What list_rules' `rule` answers beside its body: taken, so a rule read back writes back, and ignored.
+const READ_BACK = 'list_rules’ own, accepted and ignored (on and off are their own changes).';
+const readBack = {
+  id: z.unknown().optional().describe(READ_BACK),
+  enabled: z.unknown().optional().describe(READ_BACK),
+  made: z.unknown().optional().describe(READ_BACK),
+  edited: z.unknown().optional().describe(READ_BACK),
+};
+
 const ruleBody = z
   .strictObject({
     name: named.describe(`Its name, 1 to ${AUTOMATION_NAME_MAX} characters, unique in the plan.`),
@@ -48,6 +57,7 @@ const ruleBody = z
     steps: steps.optional(),
     chain: chain.optional(),
     timeZone: timeZone.optional(),
+    ...readBack,
   })
   .describe(
     'A whole rule. It starts off until it has a trigger and an action, then on. A plan holds up to 50 rules.',
@@ -64,6 +74,7 @@ const ruleChange = z.discriminatedUnion('op', [
     steps: steps.optional(),
     chain: chain.optional(),
     timeZone: timeZone.optional(),
+    ...readBack,
   }),
   z.strictObject({
     op: z.literal('on'),

@@ -26,6 +26,7 @@ import {
   isTrashed,
   itemTitle,
   planActions,
+  replanAfter,
   runsWithoutCard,
   sha256,
   statusName,
@@ -42,6 +43,7 @@ import {
   type AutomationRule,
   type AutomationRun,
   type AutomationStepLine,
+  type LivePlan,
   type PlannedAi,
   type PlannedSegment,
 } from '@liveplanner/items';
@@ -100,8 +102,6 @@ export type RunState = {
   // raised it, so a wake of 25 triggers past 50 such rules reads the plan's cards once, not 1,250 times.
   // `at`: each card's place in `items`, made at the first of the run's own writes put in (noteWrite).
   planCards?: { rev: number; items: Item[]; at?: Map<string, number> };
-  // The columns this wake's Column Over Limit rules ran on, each as its rule and the column's cards.
-  tipped?: Set<string>;
   // A wake's counts (automation-telemetry.ts); absent for Test on a Card and Run Rule, which the browser counts.
   tally?: AutomationTally;
 };
@@ -243,7 +243,11 @@ export async function runRule(
   const resume = event.kind === 'resume';
   let waitsUntil: number | undefined;
   // `gone`: what the reason names that the plan lacks (the editor words it without the id).
+  // Lines the writes add, appended to the plan's as the run settles (set once the plan is laid out).
+  let tail: AutomationStepLine[] = [];
   const end = (result: AutomationResult, reason?: string, gone?: AutomationGone): AutomationRun => {
+    lines.push(...tail);
+    tail = [];
     const run: AutomationRun = {
       id,
       ruleId: rule.id,
@@ -339,13 +343,29 @@ export async function runRule(
     lines.push(...planned.lines);
     // A failed step stops the run; the steps before it stay done (spec "Actions").
     const writes = 'failed' in planned ? planned.done : planned;
-    if (!opts.dry) {
-      taken = writes.turns;
-      deps.store.take(rule.id, taken);
-    }
-    // The planning's own failure, the last step it reached; and the first failure of the writes, in step order.
-    const planFailed = 'failed' in planned ? planned.failed : null;
-    const planGone = 'failed' in planned ? planned.gone : undefined;
+    // The plan as the run goes: after each AI step the rest is planned again from the card it left (replanAfter), so
+    // its lines, later AI steps, messages, Wait, failure and turns are read from here, never from `writes`.
+    const live: LivePlan = {
+      lines,
+      offset,
+      ai: [...(writes.ai ?? [])],
+      sends: writes.sends,
+      wait: 'wait' in writes ? writes.wait : undefined,
+      failed: 'failed' in planned ? planned.failed : null,
+      gone: 'failed' in planned ? planned.gone : undefined,
+      turns: writes.turns,
+    };
+    // The turns this run holds as the plan changes.
+    const holdTurns = (turns: number) => {
+      if (opts.dry) return;
+      if (turns > taken) deps.store.take(rule.id, turns - taken);
+      else deps.store.giveBack(rule.id, taken - turns);
+      taken = turns;
+    };
+    holdTurns(live.turns);
+    // Lines the writes add (typed-in addresses' notes, a refused write), kept apart from the plan's so a re-plan's
+    // splice never moves them; they follow the plan's as the run settles.
+    const notes: AutomationStepLine[] = [];
     let failed: string | null = null;
     let gone: AutomationGone | undefined;
     const messages = {
@@ -380,22 +400,23 @@ export async function runRule(
           room: deps.store,
           ...(deps.env.AI_GATEWAY ? { gateway: deps.env.AI_GATEWAY } : {}),
         },
-        writes.ai ?? [],
+        live.ai,
         lines,
         offset,
         after,
       );
     if (opts.dry) {
       await ai(true);
-      await sendMessages(messages, writes.sends, lines, offset);
+      await sendMessages(messages, live.sends, lines, offset);
       const related = writes.related.filter((r) => r.failed);
-      const reason = planFailed ?? (related.length ? relatedFailure(related) : null);
+      const reason = live.failed ?? (related.length ? relatedFailure(related) : null);
       return end(
         reason === null ? 'done' : 'failed',
         reason ?? undefined,
-        planFailed !== null ? planGone : related[0]?.gone,
+        live.failed !== null ? live.gone : related[0]?.gone,
       );
     }
+    tail = notes;
     let capped: string | undefined;
     const refused: string[] = [];
     // One segment's writes (the steps before the first AI step, or between two): the card's one patch and threads
@@ -403,12 +424,12 @@ export async function runRule(
     const writeSegment = async (segment: PlannedSegment, from: Item): Promise<string | null> => {
       const out = await applyPlannedRun(writer, plan, rule, from, segment, source, ctx.url);
       if (!out.ok) {
-        lines.push({ kind: 'action', ok: false, text: out.reason });
+        notes.push({ kind: 'action', ok: false, text: out.reason });
         return out.reason;
       }
       // An email to typed-in addresses the day's limit held back (spec "Typed-in addresses"): Skipped once the rest
       // is done, as the AI cap's.
-      if (out.notes) lines.push(...out.notes);
+      if (out.notes) notes.push(...out.notes);
       capped ??= out.skipped;
       const bad = segment.related.filter((r) => r.failed);
       if (failed === null && bad.length) {
@@ -431,11 +452,11 @@ export async function runRule(
         const wrote = await applyPlannedRun(writer, plan, rule, r.card, one, source, url);
         if (wrote.ok) {
           for (const note of wrote.notes ?? [])
-            lines.push({ ...note, text: `#${r.card.key} ${note.text}` });
+            notes.push({ ...note, text: `#${r.card.key} ${note.text}` });
           capped ??= wrote.skipped;
           continue;
         }
-        lines.push({ kind: 'action', ok: false, text: `#${r.card.key} ${wrote.reason}` });
+        notes.push({ kind: 'action', ok: false, text: `#${r.card.key} ${wrote.reason}` });
         refused.push(`#${r.card.key}`);
         failed ??= `Failed on ${refused[0]}: ${wrote.reason}`;
       }
@@ -443,45 +464,50 @@ export async function runRule(
     };
     const first = await writeSegment(writes, item);
     if (first !== null) return end('failed', first);
-    // The AI steps, each in its place: one call, counted against the plan's day, then the writes of the steps after
-    // it. One that fails stops the run there: the card steps and messages after it are not written or sent (spec
-    // "How a step runs").
+    // The AI steps, each in its place: one call, counted against the plan's day, then the steps after it planned
+    // again from the card it left and written. One that fails stops the run there: the card steps and messages after
+    // it are not written or sent (spec "How a step runs").
     let stoppedBy: string | null = null;
     const asked = await ai(false, async (p) => {
-      if (!p.after) return true;
-      stoppedBy = await writeSegment(p.after, p.after.from);
+      const left = cardless ? null : await readItem(deps.env, deps.planId, item.id);
+      const from = left ?? p.after?.from ?? item;
+      const next = planActions(
+        rule.steps,
+        { ...ctx, card: from },
+        { from: p.step + 1, carry: p.carry },
+      );
+      const segment = replanAfter(live, p, next);
+      holdTurns(live.turns);
+      stoppedBy = await writeSegment(segment, from);
       return stoppedBy === null;
     });
     if (stoppedBy !== null) return end('failed', stoppedBy);
     if (asked.failedLine !== undefined) {
-      const skip = new Set([
-        ...(writes.ai ?? []).map((p) => p.line),
-        ...writes.sends.map((s) => s.line),
-      ]);
-      heldCardSteps(lines, offset, asked.failedLine + 1, planned.lines.length, skip);
+      const skip = new Set([...live.ai.map((p) => p.line), ...live.sends.map((s) => s.line)]);
+      heldCardSteps(lines, offset, asked.failedLine + 1, lines.length - offset, skip);
       // The planning's failure lies past the failed AI step, never reached.
       failed ??= asked.failed ?? null;
-    } else if (planFailed !== null) {
-      failed = planFailed;
-      gone = planGone;
+    } else if (live.failed !== null) {
+      failed = live.failed;
+      gone = live.gone;
     }
-    const sends = heldSends(writes.sends, asked.failedStep, lines, offset);
+    const sends = heldSends(live.sends, asked.failedStep, lines, offset);
     const sent = await sendMessages(messages, sends, lines, offset);
     if (failed === null && sent.failed !== undefined) {
       failed = sent.failed;
       webhook = sent.webhook;
     }
     if (failed !== null) return end('failed', failed, gone);
-    turns = writes.turns;
+    turns = live.turns;
     // A step the day's AI cap skipped skips only itself: the run goes on, a Wait holding it as ever, and is Skipped
     // (not Failed: nothing is wrong with the rule) once the rest is done, as the addresses limit's (spec "The daily
     // cap").
     capped = asked.skipped ?? capped;
     // A Wait reached: the rest goes on later, as a run of its own.
-    if ('wait' in writes && writes.wait) {
-      const until = holdRun(sql, id, rule.id, event, rule.edited.at, writes.wait, Date.now());
+    if (live.wait) {
+      const until = holdRun(sql, id, rule.id, event, rule.edited.at, live.wait, Date.now());
       if (until === null) {
-        lines.push({ kind: 'action', ok: false, text: WAIT_FULL });
+        notes.push({ kind: 'action', ok: false, text: WAIT_FULL });
         return end('failed', WAIT_FULL);
       }
       waitsUntil = until;
@@ -507,10 +533,9 @@ export async function runRule(
 export const derivedCapped = (ran: number, found: number): string =>
   `Ran on ${ran} of ${found} cards: at most ${AUTOMATION_DERIVED_CARDS_MAX} a move`;
 
-// A derived trigger's events: one for each card it concerns. Card Unblocked's and Related Cards Done's go under that
-// card's id and the moment it reached (a hash of its related cards at their revs), so two events that reach the same
-// moment run the rule on it once, in this wake or a later one. Column Over Limit's go under the event's id and the
-// card's, once per wake for one set of cards in the column: the events a wake reads all see the column as it is now.
+// A derived trigger's events: one for each card it concerns, under the moment it reached (a hash of its related cards
+// at their revs, with that card's id; or of the column's cards with when each entered it), so two events that reach
+// the same moment run the rule once, in this wake or a later one (a queue read over two wakes).
 async function derivedFor(
   deps: RunnerDeps,
   state: RunState,
@@ -530,21 +555,16 @@ async function derivedFor(
     state.plan.isDone,
   );
   const moments = derivedMoments(trigger, targets, items, state.plan.types);
-  if (trigger.kind === 'column_limit') {
-    const tipped = (state.tipped ??= new Set());
-    return targets.flatMap((card, i) => {
-      const key = `${rule.id}:${moments[i]!}`;
-      if (tipped.has(key)) return [];
-      tipped.add(key);
-      return [{ ...event, id: `${event.id}>${card.id}`, cardId: card.id }];
-    });
-  }
+  // A column's going-over is one moment whichever card tipped it (two dropped in together): its id names no card.
   const events = await Promise.all(
-    targets.map(async (card, i) => ({
-      ...event,
-      id: `d:${card.id}:${hex(await sha256(new TextEncoder().encode(moments[i])))}`,
-      cardId: card.id,
-    })),
+    targets.map(async (card, i) => {
+      const moment = hex(await sha256(new TextEncoder().encode(moments[i])));
+      return {
+        ...event,
+        id: trigger.kind === 'column_limit' ? `d:column:${moment}` : `d:${card.id}:${moment}`,
+        cardId: card.id,
+      };
+    }),
   );
   // Past the cap the rest are left out, said on the Audit Trail (its own line, spending none of the day) under the
   // runs' moments, so events that reach the same ones say it once, as they run the rule once.

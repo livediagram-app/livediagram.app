@@ -223,8 +223,9 @@ export function heldCardSteps(
 }
 
 // The run's AI steps: each line in `lines` (at `offset + p.line`) settled with what it did, the first failure and a
-// capped step said back. Test on a Card (`dry`) asks nothing. `after(p)`: the runner's write of the steps after `p`,
-// once it answered or the day's cap skipped it; false (a card write refused) stops the run there.
+// capped step said back. Test on a Card (`dry`) asks nothing. `after(p)`: the runner's plan and write of the steps
+// after `p`, once it answered or the day's cap skipped it; false (a card write refused) stops the run there. `after`
+// may replace the steps after `p` in `planned` (the rest planned afresh), and the loop asks those.
 export async function runAiSteps(
   deps: WriteDeps,
   input: AiStepsInput,
@@ -267,7 +268,8 @@ export async function runAiSteps(
     }
     if (input.dry) {
       const choices = task === 'triage' ? await planLabelsNow() : [];
-      settle(p, true, aiDryLine(p.ai, plan.outline, choices));
+      // Steps after it read its answer, which a test can't know: its line says so.
+      settle(p, true, aiDryLine(p.ai, plan.outline, choices, p.step < input.rule.steps.length - 1));
       continue;
     }
     if (!input.client) {

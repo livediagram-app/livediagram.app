@@ -62,6 +62,19 @@ describe('a rule as agents read it', () => {
     });
   });
 
+  // Work Tracker 788: the list carries the boards' saved filters, so a sentence names one rather than "a Saved Filter".
+  it('names a saved filter the rule matches, from the list’s filters', () => {
+    const rule = listed({
+      conditions: [{ kind: 'saved_filter', tab: 't1', filter: 'sf-bugs' }],
+    });
+    const named = sentenceOutlineOf({
+      list: { ...listOf(), filters: [{ tab: 't1', id: 'sf-bugs', name: 'Open Bugs' }] },
+      plan: PLAN,
+    });
+    expect(listedRule(rule, named).sentence).toContain('Matches Open Bugs');
+    expect(listedRule(rule, OUTLINE).sentence).toContain('Matches a Saved Filter');
+  });
+
   it('words a rule on a plan read before its tabs were listed', () => {
     const outline = sentenceOutlineOf({ list: listOf(), plan: { ...PLAN, tabs: undefined } });
     const form = listed({ trigger: { kind: 'form_response', formTab: 'f_1' } });
