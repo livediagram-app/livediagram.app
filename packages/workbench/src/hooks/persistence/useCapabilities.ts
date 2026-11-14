@@ -12,7 +12,10 @@ import { useEffect, useState } from 'react';
 // `emailEnabled` every editor reads; `more` names the flags only that editor's api answers (livediagram's
 // `aiEnabled`, liveplanner's `githubEnabled`), each true only when the api says exactly true.
 export function createCapabilities<K extends string = never>(
-  apiGetCapabilities: () => Promise<{ emailEnabled?: boolean } & Partial<Record<K, boolean>>>,
+  // `K` comes from `more` alone, so an answer's other fields (livedesign's `apiBase`) never become flags.
+  apiGetCapabilities: () => Promise<
+    { emailEnabled?: boolean } & Partial<Record<NoInfer<K>, boolean>>
+  >,
   more: readonly K[] = [],
 ) {
   type Capabilities = { emailEnabled: boolean } & Record<K, boolean>;
