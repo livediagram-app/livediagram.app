@@ -32,7 +32,7 @@
   "devDependencies": {
     "@liveworkspace/prettier-config": "workspace:*",
     "esbuild": "^0.28.2",
-    "oxlint": "^1.93.0",
+    "oxlint": "^1.90.0",
     "oxlint-tsgolint": "^7.0.2006",
     "prettier": "^3.9.9",
     "turbo": "^2.11.7",
