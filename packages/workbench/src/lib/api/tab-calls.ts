@@ -4,6 +4,7 @@
 // places its copy had drifted, and keeps only its own extra calls.
 import { dedupeInFlight } from '../dedupe';
 import { createTabDeltaSaves, type TabDeltaConfig } from './tab-delta-save';
+import { createTabDrafts, type TabDraftEvent, type TabDraftStore } from './tab-drafts';
 
 type ApiHeaders = (
   ownerId: string,
@@ -68,6 +69,9 @@ export type TabCallsConfig<Tab extends TabBase, NoGrant> = {
   // Delta saves (livediagram's docs/specs/006-document/delta-saves.md): the product's element diff. Absent, every
   // save sends the whole tab and no base copy is held.
   delta?: TabDeltaConfig<Tab['elements'][number] & { id: string }>;
+  // Drafts of the unload flush's tabs (delta-saves.md "Drafts of unsaved changes"), with `delta` only: the browser
+  // storage they live in. Absent, no draft is kept or read.
+  drafts?: TabDraftStore;
 };
 
 // The keepalive bodies one unload flush sends at most: browsers allow 64 KB in all per page; the rest is headroom
@@ -146,16 +150,19 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
         saveTimeoutSignal: (body) => core.saveTimeoutSignal(body),
       })
     : null;
+  // The unload flush's drafts, only beside delta saves: a draft is stamped with its base copy's revision.
+  const drafts = deltas && config.drafts ? createTabDrafts<Tab>(config.drafts) : null;
 
   // The full tab payload, elements and per-tab metadata, pulled lazily when the user opens a tab. `open` declares
   // this read an open of the item, for the reader's Home: only the editor's first-tab read sets it. The tab's
-  // revision rides beside it, never inside it; an offline tab has none (0).
+  // revision rides beside it, never inside it; an offline tab has none (0). `draft` reads this browser's draft of
+  // the tab beside it and decides on it (delta-saves.md "Drafts of unsaved changes"): the editor's own loads only.
   async function loadTabRevisioned(
     ownerId: string,
     itemId: string,
     tabId: string,
     shareCode: string | null,
-    opts: { open?: boolean } = {},
+    opts: { open?: boolean; draft?: boolean } = {},
   ): Promise<{ tab: Tab; rev: number } | null> {
     if (await offline.isOfflineId(itemId)) {
       if (opts.open) void offline.recordOpen(itemId, Date.now());
@@ -165,6 +172,8 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     if (opts.open) config.onOpen?.(itemId, shareCode);
     const openHeaders =
       opts.open && config.openHeader ? { extra: { [config.openHeader]: '1' } } : {};
+    // Read beside the tab's own GET, so the draft costs the load no wait of its own.
+    const draftRead = drafts && opts.draft ? drafts.read(ownerId, itemId, tabId) : null;
     const res = await core.apiFetch(`${core.API_BASE}/${itemPath}/${itemId}/tabs/${tabId}`, {
       headers: await core.apiHeaders(ownerId, { share: shareCode, ...openHeaders }),
     });
@@ -175,20 +184,36 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     void _oi;
     void _ua;
     const clientTab = rest as unknown as Tab;
+    const stored = clientTab.elements;
     // The base copy is the elements as stored, so it is taken before the load's own fixes below.
-    if (deltas && typeof rev === 'number' && Array.isArray(clientTab.elements)) {
-      deltas.hold(itemId, tabId, rev, clientTab.elements as DeltaElement[]);
+    if (deltas && typeof rev === 'number' && Array.isArray(stored)) {
+      deltas.hold(itemId, tabId, rev, stored as DeltaElement[]);
     }
     // Coerce on load: this is the single boundary where stored elements enter the editor, so a legacy or
     // hand-edited row cannot reach the renderer and break it. A no-op for the common case.
-    const normalize = config.normalizeElement;
-    if (normalize && clientTab.elements.some((el) => el.type === 'table')) {
-      clientTab.elements = clientTab.elements.map((el) =>
-        el.type === 'table' ? normalize(el) : el,
+    const normalizeTab = (tab: Tab): Tab => {
+      const normalize = config.normalizeElement;
+      if (!normalize || !tab.elements.some((el) => el.type === 'table')) return tab;
+      return {
+        ...tab,
+        elements: tab.elements.map((el) => (el.type === 'table' ? normalize(el) : el)),
+      };
+    };
+    const shown = normalizeTab(clientTab);
+    // This browser's draft of the tab, judged against the revision and elements as stored; one put back waits for
+    // the editor (takeDraftReplay), one overtaken is announced (onDraft).
+    if (drafts && draftRead && typeof rev === 'number' && Array.isArray(stored)) {
+      drafts.settle(
+        ownerId,
+        itemId,
+        tabId,
+        await draftRead,
+        { rev, elements: stored },
+        normalizeTab,
       );
     }
     // An api older than tab revisions answers none: nothing held, so every changeset is news.
-    return { tab: clientTab, rev: typeof rev === 'number' ? rev : 0 };
+    return { tab: shown, rev: typeof rev === 'number' ? rev : 0 };
   }
   const loadTabDeduped = dedupeInFlight<
     Parameters<typeof loadTabRevisioned>,
@@ -198,7 +223,7 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     // The open marker is part of the key: an unmarked load already in flight must not swallow the editor's marked
     // one, or the open would never be recorded.
     (ownerId, itemId, tabId, shareCode, opts) =>
-      `${ownerId}␟${itemId}␟${tabId}␟${shareCode ?? ''}␟${opts?.open ? 'open' : ''}`,
+      `${ownerId}␟${itemId}␟${tabId}␟${shareCode ?? ''}␟${opts?.open ? 'open' : ''}␟${opts?.draft ? 'draft' : ''}`,
   );
 
   // The tab alone, for callers that need no revision (a duplicate, Take Offline, the Drive mirror).
@@ -239,6 +264,12 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     }
     const wire = core.tabForWire(tab);
     const url = `${core.API_BASE}/${itemPath}/${itemId}/tabs/${tab.id}`;
+    // A draft kept before this save started is in what it sends, so it goes once the save lands.
+    const startedAt = drafts?.saveStarted() ?? 0;
+    const landed = (rev: number | null) => {
+      drafts?.saveLanded(ownerId, itemId, tab.id, startedAt);
+      return rev;
+    };
     if (deltas) {
       // A delta when one is held and worth sending; null (no base, too large, or refused) saves whole below.
       const sent = await deltas.send({
@@ -248,7 +279,7 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
         tab: wire as { elements: DeltaElement[] },
         headers,
       });
-      if (sent) return sent.rev;
+      if (sent) return landed(sent.rev);
     }
     const body = JSON.stringify(wire);
     const res = await core.apiFetch(url, {
@@ -270,7 +301,7 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
         (wire as { elements: DeltaElement[] }).elements,
       );
     }
-    return echo.rev;
+    return landed(echo.rev);
   }
 
   // The last-ditch unload flush of pending tab/meta writes, so a fast edit then reload doesn't lose changes. A
@@ -334,16 +365,9 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
       };
       const wire = core.tabForWire(t);
       const url = tabUrl(t.id);
-      const whole = () => {
-        const body = JSON.stringify(wire);
-        void core
-          .apiFetch(
-            url,
-            { method: 'PUT', headers, body, keepalive: keepaliveFor(body) },
-            config.noGrantWait,
-          )
-          .catch(() => {});
-      };
+      // The whole body, made once: the draft keeps it too.
+      let wholeBody: string | null = null;
+      const bodyOf = () => (wholeBody ??= JSON.stringify(wire));
       // A delta where one is held and fits the keepalive budget, so a large tab's last edits outlive the page
       // (delta-saves.md "Unload"). Refused, the whole tab follows if the page is still here to send it.
       const delta = deltas?.planUnload({
@@ -352,6 +376,32 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
         url,
         tab: wire as { elements: DeltaElement[] },
       });
+      // A draft of what goes, over the base copy's revision, so an edit the api refuses or never gets comes back on
+      // the next load (delta-saves.md "Drafts of unsaved changes"). Written before anything is sent.
+      const baseRev = drafts ? deltas?.base(args.itemId, t.id)?.rev : undefined;
+      if (drafts && baseRev !== undefined) {
+        drafts.write(args.ownerId, args.itemId, t.id, {
+          baseRev,
+          tab: bodyOf(),
+          changed: delta?.changed ?? null,
+          removed: delta?.removed ?? null,
+        });
+      }
+      const startedAt = drafts?.saveStarted() ?? 0;
+      const landed = () => drafts?.saveLanded(args.ownerId, args.itemId, t.id, startedAt);
+      const whole = () => {
+        const body = bodyOf();
+        void core
+          .apiFetch(
+            url,
+            { method: 'PUT', headers, body, keepalive: keepaliveFor(body) },
+            config.noGrantWait,
+          )
+          .then((res) => {
+            if (res.ok) landed();
+          })
+          .catch(() => {});
+      };
       if (delta && keepaliveFor(delta.body)) {
         void core
           .apiFetch(
@@ -362,6 +412,7 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
           .then((res) => delta.settle(res))
           .then((settled) => {
             if (settled === 'refused') whole();
+            else if (settled === 'saved') landed();
           })
           .catch(() => {});
         continue;
@@ -490,6 +541,30 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     });
   }
 
+  // A peer's save moves the base copy (delta-saves.md): what this editor's save of `tabId` that wrote `rev`
+  // announces to the room (the stored elements' digest, or null when no copy is held at `rev`), and a peer's
+  // announcement taken over `tab` as this editor's baseline holds it.
+  async function savedDigest(tabId: string, rev: number): Promise<string | null> {
+    return deltas ? deltas.stampOf(tabId, rev) : null;
+  }
+  async function adoptPeerSave(
+    itemId: string,
+    tab: Tab,
+    rev: number,
+    digest: string,
+  ): Promise<boolean> {
+    if (!deltas || offline.isOfflineIdSync(itemId)) return false;
+    const wire = core.tabForWire(tab) as { elements: DeltaElement[] };
+    return deltas.adopt(itemId, tab.id, rev, digest, wire.elements);
+  }
+
+  // Drafts a load put back, for the editor to put on screen (takeDraftReplay), and every draft put back or dropped
+  // (onDraft). Without drafts, nothing is ever put back.
+  const takeDraftReplay = (ownerId: string, itemId: string, tabId: string): Tab | null =>
+    drafts ? drafts.takeReplay(ownerId, itemId, tabId) : null;
+  const onDraft = (listener: (event: TabDraftEvent) => void): (() => void) =>
+    drafts ? drafts.subscribe(listener) : () => {};
+
   return {
     loadTabRevisioned: loadTabDeduped,
     loadTab,
@@ -500,5 +575,9 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     setThreadResolved,
     linkTab,
     deleteTab,
+    savedDigest,
+    adoptPeerSave,
+    takeDraftReplay,
+    onDraft,
   };
 }

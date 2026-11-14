@@ -404,6 +404,7 @@
     "./lib/api/oauth": "./src/lib/api/oauth.ts",
     "./lib/api/tab-calls": "./src/lib/api/tab-calls.ts",
     "./lib/api/tab-delta-save": "./src/lib/api/tab-delta-save.ts",
+    "./lib/api/tab-drafts": "./src/lib/api/tab-drafts.ts",
     "./lib/api/tokens": "./src/lib/api/tokens.ts",
     "./lib/api/xhr-fetch": "./src/lib/api/xhr-fetch.ts",
     "./lib/app-location": "./src/lib/app-location.ts",
