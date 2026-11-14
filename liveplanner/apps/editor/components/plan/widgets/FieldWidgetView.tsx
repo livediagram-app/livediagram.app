@@ -6,9 +6,7 @@
 // the field or the day change. A field gone from the board, or whose kind no longer fits the view, leaves a quiet,
 // dashed pill with Remove for someone who may edit.
 import {
-  fieldValueFilter,
   fieldWidgetState,
-  toggleFieldFilter,
   parseFieldWidget,
   type BoardField,
   type CalculatedRead,
@@ -35,7 +33,8 @@ import { choiceColour } from '../choice-options';
 import { LABEL_COLOURS, labelColour } from '../label-colour';
 import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
 import { MiniBars, Ring, SplitBar, Stars, type Segment } from './field-widget-charts';
-import { PRESSABLE, WIDGET_PILL } from './BoardWidgetView';
+import { WIDGET_PILL } from './BoardWidgetView';
+import { MoreValues, ValueButton, type FilterPress, type LegendValue } from './field-value-press';
 
 const DONE_GREEN = PHASE_COLOURS.done;
 const SOON_AMBER = '#d97706';
@@ -294,55 +293,6 @@ function numberPill(view: FieldWidgetView, s: NumberSummary, p: Parts) {
   }
 }
 
-// A value of a category field that narrows the board when pressed (docs/specs/026-plan/board-widgets.md "Pressing a
-// value"): a field chip of the Filter widget, pressed while the quick filter holds it, taken off by pressing it again.
-function ValueButton({
-  field,
-  value,
-  filter,
-  children,
-  p,
-}: {
-  field: BoardField;
-  value: { key: string; label: string };
-  filter: FilterPress;
-  children: React.ReactNode;
-  p: Parts;
-}) {
-  const chip = fieldValueFilter({ id: field.def.id, kind: field.def.kind }, value.key);
-  const filters = filter.quick.filters ?? [];
-  const on = filters.some((f) => f.field === chip.field && f.key === chip.key);
-  const next = toggleFieldFilter(filters, chip, STACKING.has(field.def.kind));
-  // At the chip cap with nothing of this field to replace: nothing more fits.
-  const full = !on && !next.some((f) => f.field === chip.field && f.key === chip.key);
-  return (
-    <button
-      type="button"
-      aria-pressed={on}
-      aria-label={`Only ${field.def.label}: ${value.label}`}
-      disabled={full}
-      className={`${PRESSABLE} -mx-1 ${on ? 'font-semibold' : ''}`}
-      style={{
-        color: p.palette.muted,
-        backgroundColor: on ? `${p.palette.focus}1f` : undefined,
-        boxShadow: on ? `inset 0 0 0 1px ${p.palette.focus}` : undefined,
-      }}
-      onClick={() => {
-        const q: QuickFilter = { ...filter.quick };
-        if (next.length) q.filters = next;
-        else delete q.filters;
-        filter.onQuick(q);
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
-type FilterPress = { quick: QuickFilter; onQuick: (q: QuickFilter) => void };
-// The kinds whose cards hold several values: pressing a second value keeps the first.
-const STACKING = new Set(['labels', 'multichoice']);
-
 function categoryPill(
   view: FieldWidgetView,
   s: CategorySummary,
@@ -353,33 +303,52 @@ function categoryPill(
   const segments = segmentsOf(s, field, p.palette);
   const spoken = s.values.map((v) => `${v.count} ${v.label}`).join(', ');
   const top = s.values[0]!;
-  if (view === 'donut') {
-    const share = Math.round(segments[0]!.share * 100);
+  const donut = view === 'donut';
+  // Every value, for the "+n" legend: each in its pill colour, a Donut's with its share.
+  const legend: LegendValue[] = s.values.map((v, i) => ({
+    key: v.key,
+    label: v.label,
+    count: v.count,
+    color: segments[i]!.color,
+    ...(donut ? { share: Math.round(segments[i]!.share * 100) } : {}),
+  }));
+  const more = (named: number) =>
+    s.values.length > named ? (
+      <MoreValues
+        field={field}
+        values={legend}
+        rest={s.values.length - named}
+        filter={filter}
+        palette={p.palette}
+      />
+    ) : null;
+  if (donut) {
+    const share = legend[0]!.share!;
     return p.shell(
       `${top.label} ${share}%; ${spoken}`,
       <>
         <Ring segments={segments} palette={p.palette} />
         {p.name}
-        <ValueButton field={field} value={top} filter={filter} p={p}>
+        <ValueButton field={field} value={top} filter={filter} palette={p.palette}>
           <span className="max-w-[7rem] truncate" style={{ color: p.palette.text }}>
             {top.label}
           </span>
           {p.strong(`${share}%`)}
         </ValueButton>
+        {more(1)}
       </>,
       'pl-1.5',
       true,
     );
   }
   const named = s.values.slice(0, BREAKDOWN_NAMED);
-  const rest = s.values.length - named.length;
   return p.shell(
     spoken,
     <>
       {p.name}
       <SplitBar segments={segments} palette={p.palette} width={48} />
       {named.map((v, i) => (
-        <ValueButton key={v.key} field={field} value={v} filter={filter} p={p}>
+        <ValueButton key={v.key} field={field} value={v} filter={filter} palette={p.palette}>
           <span
             className="h-1.5 w-1.5 shrink-0 rounded-full"
             style={{ backgroundColor: segments[i]!.color }}
@@ -390,7 +359,7 @@ function categoryPill(
           </CountBadge>
         </ValueButton>
       ))}
-      {rest > 0 ? <span>+{rest}</span> : null}
+      {more(BREAKDOWN_NAMED)}
     </>,
     'gap-2',
     true,

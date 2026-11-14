@@ -86,10 +86,18 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
   `{ from?, to, doneStatus? }`, YYYY-MM-DD, both ends inclusive, the done status excluded, so a Due Soon count
   narrows to exactly the cards it counts) and `priority`; `quickFilterMatches` applies each.
   `toggle(quick, key, value)` sets one or clears it when equal (compared by value).
-- A Breakdown or Donut value is a `ValueButton` (FieldWidgetView.tsx): `fieldValueFilter` makes its chip
+- A Breakdown or Donut value is a `ValueButton` (field-value-press.tsx, its press worked out by `valuePress`):
+  `fieldValueFilter` makes its chip
   (`f:"value"`, `f:p:<id>` for a person), `toggleFieldFilter` adds, replaces or removes it on `quick.filters`
   (packages/items card-search.ts). Labels and Multiple Choice match every value a card holds: `laneGroups`'
   `everyValue`, set only by `cardsMatchingFilters` and `searchValues`, never a board's swimlanes.
+- The "+n" of a Breakdown (past `BREAKDOWN_NAMED` = 2) or a Donut (past its first) is `MoreValues`
+  (field-value-press.tsx): a `PRESSABLE` button, `aria-haspopup="dialog"`, `aria-expanded`, opening an
+  `AnchoredPopover` (`pointer`, `MORE_VALUES_PX` = 240 wide, named "Severity values") of `ValueRow`s, one per
+  `summary.values`, each `aria-pressed` and disabled at the chip cap as `ValueButton` is, `pointer-coarse:min-h-11`.
+  Pressing a row calls `onQuick` and leaves the popover open. While a value past the named ones is pressed, "+n"
+  wears the pressed outline and its name adds ", 1 pressed". The trigger and the panel stop `pointerdown`, so a
+  press never starts a widget reorder or a canvas pan.
 - Item Count while `narrowed(quick)`: a button "`shown` of `total` · Show all" that sets `{}`.
 - Completion with no done column (`doneColumnsOf(setup)` empty) and `canEdit`: "Set Done Column" flags the last
   column (`setColumnDone`, `DoneColumn`).
@@ -188,6 +196,7 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 | 2,000 cards × 10 fields within the CPU budget                 | packages/plan-art/src/field-widget-stats.perf.test.ts          |
 | For You scores, reasons, cap, empty board, plural names       | packages/plan-art/src/widget-suggestions.test.ts               |
 | Pressing a value: chips, roles, toggling, cap, 500-card cost  | FieldWidgetView.test.tsx, packages/items card-search.test.ts   |
+| Every value: the "+n" popover, its rows, staying open, phone  | FieldWidgetView.test.tsx                                       |
 | Each view's pill, gone states, Remove by role                 | apps/editor/components/plan/widgets/FieldWidgetView.test.tsx   |
 | Gallery sections, rail, On Board, cap, search, keys, empty    | apps/editor/components/plan/widgets/BoardWidgetPicker.test.tsx |
 | labelOf, fields kept, Calculated reader, lazy previews        | apps/editor/components/plan/widgets/use-field-widgets.test.tsx |

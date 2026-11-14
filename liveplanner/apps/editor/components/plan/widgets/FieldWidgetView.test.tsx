@@ -198,6 +198,91 @@ describe('FieldWidgetView', () => {
       expect(boardItems(board)).toHaveLength(2);
     });
 
+    describe('every value, through "+n"', () => {
+      const more = (name: string) => screen.getByRole('button', { name: `More ${name} values` });
+      const legend = (name: string) => screen.getByRole('dialog', { name: `${name} values` });
+
+      it('opens a Breakdown legend of every value, each pressing its chip, and stays open', () => {
+        const onQuick = vi.fn();
+        show('field:breakdown:f-team', { canEdit: false, onQuick });
+        const trigger = more('Team');
+        expect(trigger.textContent).toBe('+1');
+        expect(trigger.getAttribute('aria-expanded')).toBe('false');
+        fireEvent.click(trigger);
+        expect(trigger.getAttribute('aria-expanded')).toBe('true');
+        const rows = [...legend('Team').querySelectorAll('button')];
+        expect(rows.map((r) => r.getAttribute('aria-label'))).toEqual([
+          'Only Team: Web',
+          'Only Team: Design',
+          'Only Team: Ops',
+        ]);
+        expect(rows.map((r) => r.textContent)).toEqual(['Web2', 'Design1', 'Ops1']);
+        fireEvent.click(rows[2]!);
+        expect(onQuick).toHaveBeenCalledWith({ filters: [chip('f-team', 'f:"Ops"')] });
+        expect(legend('Team')).toBeTruthy();
+        // Pressing "+n" again closes it, and so does Escape, focus back on "+n".
+        fireEvent.click(trigger);
+        expect(screen.queryByRole('dialog')).toBeNull();
+        fireEvent.click(trigger);
+        fireEvent.keyDown(legend('Team'), { key: 'Escape' });
+        expect(screen.queryByRole('dialog')).toBeNull();
+        expect(document.activeElement).toBe(trigger);
+      });
+
+      it('shows a Donut every value with its share, its commonest still in the pill', () => {
+        const onQuick = vi.fn();
+        show('field:donut:f-sev', { onQuick });
+        expect(screen.getByRole('button', { name: 'Only Severity: High' })).toBeTruthy();
+        fireEvent.click(more('Severity'));
+        const rows = [...legend('Severity').querySelectorAll('button')];
+        expect(rows.map((r) => r.textContent)).toEqual(['High33%1', 'Medium33%1', 'Low33%1']);
+        fireEvent.click(screen.getAllByRole('button', { name: 'Only Severity: Low' }).at(-1)!);
+        expect(onQuick).toHaveBeenCalledWith({ filters: [chip('f-sev', 'f:"Low"')] });
+      });
+
+      it('leaves "+n" off when the pill already names every value', () => {
+        show('field:donut:f-owner');
+        expect(screen.queryByRole('button', { name: /^More / })).toBeNull();
+        cleanup();
+        show('field:breakdown:f-sev', { items: items.slice(0, 2) });
+        expect(screen.queryByRole('button', { name: /^More / })).toBeNull();
+      });
+
+      it('reads pressed in the legend, and on "+n" while a value it holds is on', () => {
+        show('field:breakdown:f-team', {
+          quick: { filters: [chip('f-team', 'f:"Ops"')] as never },
+        });
+        const trigger = screen.getByRole('button', { name: 'More Team values, 1 pressed' });
+        fireEvent.click(trigger);
+        const ops = [...legend('Team').querySelectorAll('button')].at(-1)!;
+        expect(ops.getAttribute('aria-pressed')).toBe('true');
+        cleanup();
+        show('field:breakdown:f-team', {
+          quick: { filters: [chip('f-team', 'f:"Web"')] as never },
+        });
+        expect(more('Team')).toBeTruthy();
+      });
+
+      it('disables a legend row that no longer fits at the chip cap', () => {
+        const full = Array.from({ length: 8 }, (_, i) => chip(`f-x${i}`, 'k')) as never;
+        show('field:breakdown:f-team', { quick: { filters: full } });
+        fireEvent.click(more('Team'));
+        const rows = [...legend('Team').querySelectorAll<HTMLButtonElement>('button')];
+        expect(rows.every((r) => r.disabled)).toBe(true);
+      });
+
+      it('takes a press on "+n" and in the legend before the board does', () => {
+        const onBoard = vi.fn();
+        document.addEventListener('pointerdown', onBoard);
+        show('field:breakdown:f-team');
+        fireEvent.pointerDown(more('Team'));
+        fireEvent.click(more('Team'));
+        fireEvent.pointerDown(legend('Team').firstElementChild!);
+        document.removeEventListener('pointerdown', onBoard);
+        expect(onBoard).not.toHaveBeenCalled();
+      });
+    });
+
     it('disables a value that no longer fits at the chip cap', () => {
       const full = Array.from({ length: 8 }, (_, i) => chip(`f-x${i}`, 'k')) as never;
       show('field:breakdown:f-sev', { quick: { filters: full } });
