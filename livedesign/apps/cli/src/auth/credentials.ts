@@ -1,7 +1,7 @@
 // Credentials (docs/specs/015-api/cli.md "Authentication"): LIVEDESIGN_TOKEN first, else the profile's stored token,
 // in the platform's keychain where there is one. @liveworkspace/cli-kit's, for livedesign.
 
-import type { CliIo } from '../io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import type { DebugLog } from '../debug';
 import * as kit from '@liveworkspace/cli-kit/credentials';
 import { PRODUCT } from '../product';

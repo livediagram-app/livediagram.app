@@ -21,7 +21,7 @@ import {
 } from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // The most the whole blob may be, in characters of `{"prefs":...}`. The api takes a patch of up to
-// twice this (apps/api/src/routes/preferences.ts PREFERENCES_PATCH_MAX, which checks
+// twice this (../packages/api-kit/src/preferences-route.ts PREFERENCES_PATCH_MAX, which checks
 // `text.length`): never more than the blob plus a null for each key dropped. Mirrored, not imported:
 // the worker is not a dependency of the editor.
 export const PREFERENCES_BODY_MAX = 4096;

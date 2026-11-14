@@ -1,5 +1,8 @@
-import { Arrow, Label, Shape } from '@liveworkspace/help-site/art/primitives';
-import { Card, Stage } from '@liveworkspace/help-site/art/parts';
+// A diagram editor's category scene, the same in livediagram and livehuddle (art/diagram in the README); each
+// app's components/category-art/index.tsx maps it to its category.
+
+import { Arrow, Label, Shape } from '../primitives';
+import { Card, Stage } from '../parts';
 
 const PILLS: { label: string; x: number; w: number; active?: boolean }[] = [
   { label: 'Overview', x: 52, w: 72 },

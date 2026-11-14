@@ -188,7 +188,7 @@
 }
 
 /* The two cursors ride their paths, timed to the drops. The path and how far along it each stop
-   lies (--p1 ...) come from the layout (lib/hero-motion.ts cursorRide), so the phone's portrait
+   lies (--p1 ...) come from the layout (@liveworkspace/marketing-site lib/hero-motion.ts cursorRide), so the phone's portrait
    layout rides its own; the keyframes fix only when each stop is reached. */
 .hm-you,
 .hm-teammate {

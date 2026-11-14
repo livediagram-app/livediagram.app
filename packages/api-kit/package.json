@@ -27,10 +27,13 @@
     "./image-ref-index": "./src/image-ref-index.ts",
     "./image-refs": "./src/image-refs.ts",
     "./oauth": "./src/oauth.ts",
+    "./openapi-route": "./src/openapi-route.ts",
     "./openapi-types": "./src/openapi-types.ts",
     "./origin-check": "./src/origin-check.ts",
     "./public-address": "./src/public-address.ts",
+    "./preferences-route": "./src/preferences-route.ts",
     "./public-fetch": "./src/public-fetch.ts",
+    "./redact-item": "./src/redact-item.ts",
     "./refusal-log": "./src/refusal-log.ts",
     "./request-auth": "./src/request-auth.ts",
     "./request-body": "./src/request-body.ts",
@@ -67,6 +70,7 @@
   },
   "dependencies": {
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },

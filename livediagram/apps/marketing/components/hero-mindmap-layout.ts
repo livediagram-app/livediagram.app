@@ -2,7 +2,7 @@
 // plan's four branches and their ideas, laid out wide for the landscape window and tall for a
 // phone's portrait one, and the curves that join them. Pure geometry, so it is tested on its own.
 
-import type { Point } from '@/lib/hero-motion';
+import type { Point } from '@liveworkspace/marketing-site/lib/hero-motion';
 
 export type Side = 'left' | 'right';
 

@@ -1,7 +1,7 @@
-import {
-  SupportedDevicesArt as Scene,
-  type ScreenBox,
-} from '@liveworkspace/help-site/art/scenes/supported-devices';
+// A diagram editor's category scene, the same in livediagram and livehuddle (art/diagram in the README); each
+// app's components/category-art/index.tsx maps it to its category.
+
+import { SupportedDevicesArt as Scene, type ScreenBox } from '../scenes/supported-devices';
 
 // The same little diagram, drawn into any screen: a palette strip on top, then two shapes and the arrow
 // between them, scaled to the box.

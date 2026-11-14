@@ -1,24 +1,11 @@
-// /api/community/mine: My Shares (docs/specs/025-community/community.md "My Shares"). Every other Community read, and
-// likes and reports, go from the page straight to the liveworkspace Community service, which keeps the posts. My
-// Shares needs a signed-in author, and only this api can say who that is, so it asks the service for them
-// (@liveworkspace/community/app mine-route.ts). Personal, so never cached.
+// /api/community/mine: My Shares (docs/specs/025-community/community.md "My Shares"), @liveworkspace/community/app's
+// route (mine-route.ts, where the rules are written) bound to this app's service client and answers.
 
-import { answerCommunityMine } from '@liveworkspace/community/app';
-import { communityOn, communityService } from '../community-service';
+import { createCommunityMineRoute } from '@liveworkspace/community/app';
+import { communityService } from '../community-service';
 import { json, notFound, signInRequired } from '../responses';
-import type { RouteContext } from './context';
 
-export async function handleCommunity(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments } = ctx;
-  // Switched off, there is no Community to answer for.
-  if (!communityOn(env)) return notFound();
-  if (segments.length !== 3 || segments[2] !== 'mine' || request.method !== 'GET')
-    return notFound();
-  return answerCommunityMine({
-    request,
-    env,
-    service: communityService,
-    accountUserId: ctx.accountUserId ?? null,
-    responses: { json, signInRequired },
-  });
-}
+export const handleCommunity = createCommunityMineRoute({
+  service: communityService,
+  responses: { json, notFound, signInRequired },
+});
