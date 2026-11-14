@@ -504,6 +504,17 @@ describe('the actions after Phase 3 and Wait', () => {
     );
   });
 
+  // item-types.md "Explicit mappings": kept when given, an empty list read as none.
+  it('reads Change Card Type with its mappings, an empty list as none', () => {
+    const map = [{ from: 'f-a', to: 'description' }];
+    expect(bodyOf(withStep({ kind: 'set_type', type: 't', map })).steps).toEqual([
+      { kind: 'set_type', type: 't', map },
+    ]);
+    expect(bodyOf(withStep({ kind: 'set_type', type: 't', map: [] })).steps).toEqual([
+      { kind: 'set_type', type: 't' },
+    ]);
+  });
+
   it('refuses more than three Waits', () => {
     const steps = Array.from({ length: 4 }, () => ({ kind: 'wait', hours: 1 }));
     expect(pathOf(withRule({ steps }))).toBe('steps');

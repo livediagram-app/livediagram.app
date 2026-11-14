@@ -174,6 +174,43 @@ describe('namedRuleBody', () => {
         { field: (f) => `${f}2` },
       ),
     ).toEqual({ steps: [{ kind: 'set_type', type: 'a', map: [{ from: 'x2', to: 'y2' }] }] });
+    // An unknown type names its targets across the plan; a malformed target and no field map pass through.
+    expect(
+      namedRuleBody(
+        {
+          steps: [{ kind: 'set_type', type: 'Nope', map: [{ from: 'Severity', to: 'Severity' }] }],
+        },
+        NAMES,
+      ),
+    ).toMatchObject({ steps: [{ map: [{ from: 'f-severity', to: 'f-severity' }] }] });
+    expect(
+      ruleWithRefs(
+        {
+          steps: [
+            {
+              kind: 'set_type',
+              type: 'a',
+              map: [
+                { from: 'x', to: 3 },
+                { from: 'x', to: 'y' },
+              ],
+            },
+          ],
+        },
+        {},
+      ),
+    ).toEqual({
+      steps: [
+        {
+          kind: 'set_type',
+          type: 'a',
+          map: [
+            { from: 'x', to: 3 },
+            { from: 'x', to: 'y' },
+          ],
+        },
+      ],
+    });
   });
 
   it('answers anything but an object as it came', () => {

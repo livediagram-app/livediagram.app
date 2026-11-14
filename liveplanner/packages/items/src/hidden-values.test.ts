@@ -107,6 +107,17 @@ describe('hiddenValuesOf', () => {
     const back = { ...card({ 'f-solution': 'Do it' }), type: 'idea' };
     expect(hiddenValuesOf(back, IDEA, TYPES)).toEqual([]);
   });
+
+  it('reads a type with no custom fields: everything it keeps is hidden, and nothing can take a copy', () => {
+    const { custom: _none, ...bare } = typeOf('plain', 'Plain', [], ['links']);
+    const groups = hiddenValuesOf(card({ 'f-steps': 'Click' }), bare, [bare, BUG]);
+    expect(groups.map((g) => [g.type?.id, g.values.map((v) => v.field)])).toEqual([
+      ['bug', ['f-steps']],
+    ]);
+    const steps = BUG.custom![0]!;
+    expect(hiddenCopyTargets({ ...bare, fields: ['title'] }, steps, 'Click')).toEqual([]);
+    expect(hiddenCopyTargets(bare, steps, 'Click').map((t) => t.id)).toEqual(['description']);
+  });
 });
 
 describe('hiddenValueText', () => {
