@@ -46,6 +46,9 @@ packages/items/src/automation/
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
   matches.ts          AutomationEvent; eventOfWrite(before, after, changes, source) → the event a landed write makes
                       (or null); triggerMatches(trigger, event, ruleId) → boolean; TRIGGER_EVENT_KINDS
+                      A moved event carries the card's `type` (as the write left it); Card Moved's `types`
+                      (absent or empty: any type) hears only a card of one of them, so an event without a type (one
+                      queued before the field) is not heard by a rule that names types
   plan-actions.ts     planActions(steps, ctx) → { patch, comments, created, emails, lines } | { failed, lines }:
                       the pure run: walks steps and If / Else, folds every change to the triggering card into ONE
                       patch (set / clear, in order), marks "Already so", never touches storage; a Set or Clear
@@ -446,6 +449,14 @@ What the editor does, where it differs from or adds to the Editor list above (ea
   as one "holder" (`HolderStep`, `holderOf`, `sideOf`); a branch has no Else. `templates.ts` is in the items package,
   as designed, with `picksLeft(body, picks)`, which the builder runs on each change, so a mark goes as its step is
   filled.
+- **Card Moved's Card Types** (`card-moved-columns.ts`): `cardMovedColumns(types, picked, columns)` lists the
+  columns the picked types use (`typeStatusesOf` per type, legacy types as every column less their exclusions), in the
+  plan's column order, every column when none is picked or every picked type is gone; `withCardMovedTypes(trigger,
+types, outline)` sets the types and drops each From or To pick that the plan still has but no picked type uses (a
+  column the plan deleted stays, shown gone). `TriggerPanel.tsx` puts the Card Types chips above From and To. The
+  stored `types` is optional, so a rule without it reads as any type and an older editor's Card Moved panel, which
+  spreads the trigger, keeps it through a save: no PROJECT_FORMAT bump (rules are not in the format's reads).
+  `attention.ts` names each type, `named.ts` names it by the type's name, `sentence.ts` reads "for <types>".
 - **Holders.** The `RulePart` paths are the api's (`steps.i.conditions.j`, `steps.i.then.j`) for both kinds, so a
   refusal inside a branch marks its step as one inside an If does. Add Action in a branch leaves out Create Card and
   the outgoing actions; at the top level the outgoing ones join the menu while the rule holds fewer than 5.
