@@ -85,6 +85,21 @@ The defaults: a Viewer only looks; a Participant takes part and adds content but
 session or changes settings; the rest is an Editor's. The role tests (the participant rule's leak test, the editor
 capabilities, the Participant palette, the room) keep a new feature from widening a role by accident.
 
+## Tests
+
+Each feature ships role tests: one per level for each gate in the two tables above ("The levels" and "What a
+Participant changes"), including the room's refusal of a Viewer's poll answer, reaction and dot. The tables are held
+whole by two matrices, one block per row and one case per level: the room's (`apps/api/src/share-roles.test.ts`: the
+op gate, the participant content rule and the baton) and the editor's (`apps/editor/lib/share-roles.test.ts`: `can`,
+the session gates read from it, the palette and the selection modes). A row added to either table gets its cases in
+both.
+
+- **The editor's Editor-only gates read `can`.** Running a session tool (a collaboration element's reveal, clear, roll
+  and round verbs, the Q&A board's and the Quiz's, the Session strip), Bring Focus, a session button and an estimate's
+  scale ask `roleGates(can, runBlocked)` (`apps/editor/lib/editor-capabilities.ts`): `run` (an Editor, and the
+  facilitator's while someone holds the baton), `shape` (an Editor) and `takePart` (an Editor or a Participant). They
+  never ask `isReadOnly` alone, which is true for every level below an Editor and so cannot tell what each may do.
+
 ## The Participant palette
 
 - **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: an Event
