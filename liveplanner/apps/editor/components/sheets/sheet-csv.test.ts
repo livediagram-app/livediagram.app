@@ -119,7 +119,7 @@ describe('downloadSheetCsv', () => {
     type(store, 0, 0, 'x');
     downloadSheetCsv(store.workbook('t1'), store.sheet(ID)!);
     const [blob, name] = vi.mocked(downloadBlob).mock.calls[0]!;
-    expect(name).toBe('a b  c.csv');
+    expect(name).toBe('a-b- c.csv');
     expect(blob.type).toBe('text/csv;charset=utf-8');
     expect(await blob.text()).toBe('x\r\n');
     expect(track).toHaveBeenCalledWith('Sheet', 'Exported', 'Csv');

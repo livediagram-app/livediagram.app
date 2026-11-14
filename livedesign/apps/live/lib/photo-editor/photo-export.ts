@@ -23,6 +23,7 @@ import { renderTabToSvg } from '../export-tab';
 import { embeddedFontFaceCss } from '../export-fonts';
 import { loadTabImages, type ExportImageMap } from '../export-tab-images';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import type { PixelsStore } from './pixels-store';
 import { PhotoSession } from './session';
 import { rasterizeText } from './text-raster';
@@ -35,8 +36,7 @@ const offsetOf = (l: PhotoLayer) =>
 
 /** A file name from a name: no path or reserved characters. */
 export function fileNameOf(name: string, ext: string): string {
-  const base = name.replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'Photo';
-  return `${base}.${ext}`;
+  return `${sanitizeFilename(name, 'Photo')}.${ext}`;
 }
 
 export function download(blob: Blob, name: string): void {

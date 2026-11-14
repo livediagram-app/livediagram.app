@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages } from '@livedocuments/document';
-import { DEFAULT_PAGE_SCOPE, sanitizeFilename, zipEntryName } from './export-pages';
+import { DEFAULT_PAGE_SCOPE, zipEntryName } from './export-pages';
 
 // docs/specs/007-editor/pages-mode.md "Export".
 describe('page export', () => {
@@ -17,22 +17,10 @@ describe('page export', () => {
     expect(first).toMatch(/^01 Intro.*\.png$/);
     expect(first).toMatch(/^[A-Za-z0-9._\- ]+$/);
     expect(zipEntryName(pages[1]!, 2, 'svg')).toMatch(/^02 Page 2/);
-    expect(sanitizeFilename('a/b:c')).toBe('a-b-c');
   });
 
-  it('drops brackets and colons from a name and collapses repeated dashes', () => {
-    expect(sanitizeFilename('Poster (9:16)')).toBe('Poster 9-16');
-    expect(sanitizeFilename('(9:16)')).toBe('9-16');
-    expect(sanitizeFilename('Deck - Slide [1]: intro?')).toBe('Deck - Slide 1- intro');
-    expect(sanitizeFilename('a---b')).toBe('a-b');
-    expect(sanitizeFilename('?')).toBe('');
-  });
-
-  it('keeps letters and digits in any script, and leaves no dash or space at either end', () => {
-    expect(sanitizeFilename('会議メモ - Проект 2')).toBe('会議メモ - Проект 2');
-    expect(sanitizeFilename('Café/Crème')).toBe('Café-Crème');
-    expect(sanitizeFilename('? - Board')).toBe('Board');
-    expect(sanitizeFilename('Board - ?')).toBe('Board');
-    expect(sanitizeFilename('<>:"|?*')).toBe('');
+  it('names a zip entry by the shared file-name rule', () => {
+    const pages = layOutPages([{ id: 'a', orientation: 'portrait', name: 'Poster (9:16)' }]);
+    expect(zipEntryName(pages[0]!, 1, 'png')).toMatch(/^01 Poster 9-16 .*\.png$/);
   });
 });
