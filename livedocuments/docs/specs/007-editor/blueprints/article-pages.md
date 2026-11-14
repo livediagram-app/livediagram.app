@@ -804,6 +804,7 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | A margin note's marker carries no badge strip                                                                                                                                                                      | `apps/editor/components/canvas/useElementIndicators.test.ts` "gives a margin note nothing at all"                             |
 | A comment and an action differ in glyph, outline and name; resolved and done show                                                                                                                                  | `apps/editor/components/canvas/article/ArticleNoteFace.test.tsx`, `apps/editor/lib/article/article-note-look.test.ts`         |
 | Present from any mode: an article page with its writing, read only                                                                                                                                                 | `apps/editor/lib/presented-pages.test.ts` "outside Pages, presents an article page with its writing, read only"               |
+| Every zone function of the intake, every branch; the hook's settle of an edit                                                                                                                                      | `packages/document/src/article-intake.zones.test.ts`; `apps/editor/hooks/editor/useArticleIntake.zones.test.ts`               |
 | Agents read and write an article as Markdown                                                                                                                                                                       | `packages/document/src/article-markdown-io.test.ts`; `packages/edit-operations/src/pages/article-write.test.ts`               |
 | `article` is a mutation op (never relayed from a view-role session)                                                                                                                                                | `apps/api/src/document-room.test.ts` "lets no document-mutating op kind into the presence set" (generic, every mutation kind) |
 
@@ -816,9 +817,7 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
   (`UNDO_SETTLE_MS`), merging a remote change under local typing.
 - "Flowing onto pages": the measure (`pagesNeeded`, headings kept with the next line, zones never
   split), the page-limit notice, page numbers drawn.
-- "Zones": `article-intake.ts` and `article-zone-plan.ts` have no unit test (`zonePlanFor`, `withZonesFitted`, `withZoneWrap`,
-  `withZoneSize`, `withZoneLanded`, `objectsDraggedOut`, `withZoneMoved`, `withZoneReleased`,
-  `withZoneRemoved`, `looseOnArticles`, `isDrawingElement`); zone drag, resize grips (pointer and
+- "Zones": `article-zone-plan.ts` has no unit test of its own beyond the plans `zonePlanFor` is asked for in `article-intake.test.ts` (`isDrawingElement`, `withElementsIntoZone`); zone drag, resize grips (pointer and
   keys), the object drop caret, Float and embed, no quick-connect pluses (`plusBlocked`).
 - "The page toolbar": placement, scale, phone bar, hover presence and off-page clearing.
 - "Article style": looks (`withArticleLook`, Notebook's ruling added and removed),
