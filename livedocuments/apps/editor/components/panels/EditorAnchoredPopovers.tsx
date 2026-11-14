@@ -6,7 +6,7 @@ import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { isBoxed } from '@livedocuments/document';
 
 import { commentPersisters } from '@/lib/comment-persistence';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 
 const CommentThreadPopover = dynamic(
   () => import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
@@ -26,7 +26,17 @@ const AssignActionDialog = dynamic(
 // It resolves its target off the active tab and reads everything from
 // EditorContext, so EditorView just renders <EditorAnchoredPopovers />. It bypasses the autosave path for view-role
 // visitors, persisting directly through the dedicated comment endpoints.
+// The element-anchored popovers, open or not.
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// limits"): a typing commit renders nothing here.
 export function EditorAnchoredPopovers() {
+  const open = useEditorChrome(
+    (s) => !!s.commentThreadOpenId || !!s.actionPopoverOpenId || !!s.assignActionFor,
+  );
+  return open ? <OpenEditorAnchoredPopovers /> : null;
+}
+
+function OpenEditorAnchoredPopovers() {
   const {
     commentThreadOpenId,
     activeTab,

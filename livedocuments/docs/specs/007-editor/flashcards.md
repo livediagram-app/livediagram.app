@@ -53,7 +53,8 @@ alignment. Nothing else can be put on it.
   the page toolbar, docked, as on an article page, and nothing else: no category bar, no tiles, no **Search** (whose
   tiles would place elements). Moving onto a card turns the strip to it as any kind does.
 - **The page toolbar** on a card has no **Insert** menu, no **Comment** and no **Assign Action** (a margin note is an
-  element in the card's margin), and **More Formatting**'s last entry reads **Card style** (sentence case, as its neighbours).
+  element in the card's margin), and **More Formatting**'s last entry reads **Card style** (sentence case, as its neighbours), above the card's
+  **Word Count** (article-pages.md "Word Count").
 - **The slash menu** offers the text blocks only: **Text**, **Title**, **Subtitle**, **Heading 1** to **3**,
   **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code** and **Divider**. Never a page break, an
   image, a table, a chart, a drawing, a callout or a sticky note.
@@ -135,7 +136,8 @@ side by side shows its cards in a row, as slides stand, with no fan, footer nav 
   which a card never has, so typing on a card does no work for the rest of the stack: no pause over 50 ms while
   typing on a throttled phone. A typed change renders the editor once, not again as it saves, and reads again only
   the card that changed, so its longest busy stretch stays under about 30 ms on a phone four times slower than a
-  laptop.
+  laptop. The chrome that never reads the document (the header, the tab bar, the dialogs and menus while shut, the
+  template start) does not render for a typed change at all.
 - **The + to add a card** sits beside the card in front ("Add Card"), adding a card right after the card in front
   (pages-mode.md "Where a new page goes"), as Contents' Add Card does, and the view flips to it.
 

@@ -47,9 +47,8 @@ import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
-import { editorViewFooter, editorViewHeader } from './editor-view-bars';
+import { EditorViewFooter, EditorViewHeader } from './editor-view-bars';
 import { useSelectTab } from './useSelectTab';
-import { useRoleIndicator } from './useRoleIndicator';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
@@ -68,6 +67,51 @@ const CommunityBar = dynamic(
   () => import('@/components/chrome/CommunityBar').then((m) => m.CommunityBar),
   { ssr: false },
 );
+
+// The editor's hosts that read no document (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// limits"): made once, so the view's render (each typing commit) passes them over. Each renders only when what it
+// reads changes: whether its dialog is open (the chrome store), or its own context.
+const TAB_DIALOGS = (
+  <AreaErrorBoundary area="TabDialogs">
+    <EditorTabDialogs />
+  </AreaErrorBoundary>
+);
+const COLLABORATORS = (
+  <AreaErrorBoundary area="Collaborators">
+    <CollaboratorsHost />
+  </AreaErrorBoundary>
+);
+// Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
+// Nothing at all when no deck is running.
+const PRESENTATION = (
+  <AreaErrorBoundary area="Presentation">
+    <PresentationHost />
+  </AreaErrorBoundary>
+);
+const MODALS = (
+  <>
+    <AreaErrorBoundary area="Modals">
+      <EditorModals />
+    </AreaErrorBoundary>
+    <AreaErrorBoundary area="Popovers">
+      <EditorAnchoredPopovers />
+    </AreaErrorBoundary>
+    <AreaErrorBoundary area="ContextMenu">
+      <EditorContextMenuHost />
+    </AreaErrorBoundary>
+    <AreaErrorBoundary area="ElementDialogs">
+      <EditorElementDialogs />
+    </AreaErrorBoundary>
+  </>
+);
+// The editor's tours, the Pages tour and the element tours (docs/specs/007-editor/pages-tour.md, element-tours.md):
+// each renders nothing until its offer is due.
+const TOURS = (
+  <AreaErrorBoundary area="Tour">
+    <EditorTours />
+  </AreaErrorBoundary>
+);
+const START_PANELS = <EditorStartPanels />;
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read
@@ -142,7 +186,6 @@ export function EditorView() {
   });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
-  const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
   // Contextual command palette for the SearchPanel "Actions" group (docs/specs/008-canvas/canvas-and-palette.md):
@@ -182,18 +225,25 @@ export function EditorView() {
 
   // The site header and the tab bar (editor-view-bars.tsx). Side by side (docs/specs/007-editor/split-view.md)
   // lays them across both panes.
-  const header = editorViewHeader(ctx, {
-    isOffline,
-    headerCommunity,
-    role,
-    isMobileViewport,
-    landscapeShown: landscapeBars.shown,
-  });
-  const footer = editorViewFooter(ctx, {
-    isOffline,
-    selectTab,
-    landscapeShown: landscapeBars.shown,
-  });
+  // Each is its own memoised component over the chrome store (editor-view-bars.tsx), so a typing commit renders
+  // neither; null where its bar is hidden.
+  const header =
+    zenMode || !appChrome ? null : (
+      <EditorViewHeader
+        isOffline={isOffline}
+        headerCommunity={headerCommunity}
+        isMobileViewport={isMobileViewport}
+        landscapeShown={landscapeBars.shown}
+      />
+    );
+  const footer =
+    anyWelcomeOpen || zenMode || embedMode ? null : (
+      <EditorViewFooter
+        isOffline={isOffline}
+        onSelectTab={selectTab}
+        landscapeShown={landscapeBars.shown}
+      />
+    );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
   // where there are bars to fold (not in zen, an embed, the workbench frame, the welcome flow or a
@@ -255,12 +305,8 @@ export function EditorView() {
                           copying={copying}
                         />
                       ) : null}
-                      <AreaErrorBoundary area="TabDialogs">
-                        <EditorTabDialogs />
-                      </AreaErrorBoundary>
-                      <AreaErrorBoundary area="Collaborators">
-                        <CollaboratorsHost />
-                      </AreaErrorBoundary>
+                      {TAB_DIALOGS}
+                      {COLLABORATORS}
                       {/* At the canvas's top edge, under the header and any Community bar. */}
                       {landscapeBarsHandle}
                       <AreaErrorBoundary area="Canvas" fallback="panel" fallbackClassName="flex-1">
@@ -286,11 +332,7 @@ export function EditorView() {
                           </AgentFocusContext.Provider>
                         </ChangesetRevealContext.Provider>
                       </AreaErrorBoundary>
-                      {/* Presenting (docs/specs/012-collaboration/presentation-mode.md) renders over everything and takes the keyboard.
-          Nothing at all when no deck is running. */}
-                      <AreaErrorBoundary area="Presentation">
-                        <PresentationHost />
-                      </AreaErrorBoundary>
+                      {PRESENTATION}
                       {embedMode ? (
                         // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
                         // switcher replace the full TabBar. Same selection clears as
@@ -342,23 +384,8 @@ export function EditorView() {
                           <EditorSearchPanel />
                         </AreaErrorBoundary>
                       ) : null}
-                      <AreaErrorBoundary area="Modals">
-                        <EditorModals />
-                      </AreaErrorBoundary>
-                      <AreaErrorBoundary area="Popovers">
-                        <EditorAnchoredPopovers />
-                      </AreaErrorBoundary>
-                      <AreaErrorBoundary area="ContextMenu">
-                        <EditorContextMenuHost />
-                      </AreaErrorBoundary>
-                      <AreaErrorBoundary area="ElementDialogs">
-                        <EditorElementDialogs />
-                      </AreaErrorBoundary>
-                      {/* The editor's tours, the Pages tour and the element tours (docs/specs/007-editor/pages-tour.md,
-          element-tours.md): each renders nothing until its offer is due. */}
-                      <AreaErrorBoundary area="Tour">
-                        <EditorTours />
-                      </AreaErrorBoundary>
+                      {MODALS}
+                      {TOURS}
 
                       {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
           the bottom chrome (the tab bar, the Undo / session cluster, the dock) rather than over it, above the canvas
@@ -370,7 +397,7 @@ export function EditorView() {
                           standOnChrome
                         />
                       ) : null}
-                      <EditorStartPanels />
+                      {START_PANELS}
 
                       {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
           right now. Suppressed while a mode banner owns the top slot. */}

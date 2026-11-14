@@ -220,6 +220,33 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   over 16 ms, the machine's noise). Long tasks over 50 ms: none either way. Components rendered per typing commit:
   431 before (three root renders of about 140), 157 after. A key's own work no longer reads the 100 pages (1.3 ms of
   its 9 ms before), and the 15 to 18 ms garbage collection pauses the profiles showed mid-typing were gone after.
+- Chrome skips a typing commit (#828). EditorContext hands its readers a new view-model on every render of the page,
+  so every reader rendered on each commit, the chrome among them; the page also rebuilt the header, the tab bar and
+  every host element inside SplitViewFrame's render function, so each rendered as a child even without reading the
+  context. Now the page publishes each render's view-model to a chrome store after the commit
+  (`usePublishEditorChrome`, `app/document/[id]/EditorContext.tsx`, a layout effect), and the chrome reads it a slice
+  at a time (`useEditorChrome(select, equal)` over `useStoreSlice`), its handlers reading `useEditorChromeStore().get()`
+  when they run:
+  - `EditorViewHeader` (memo) and `EditorViewFooter` (`withStableEventProps`) in `editor-view-bars.tsx`: the header
+    and the role pill from slices; the tab bar's `tabs` compared by `sameTabsForBar` (a tab whose only change is its
+    `elements` or `articles` is the same tab to the bar).
+  - The hosts are made once at module scope in `EditorView.tsx` (`TAB_DIALOGS`, `COLLABORATORS`, `PRESENTATION`,
+    `MODALS`, `TOURS`, `START_PANELS`), so the view's render passes them over. `EditorTabDialogs`, `CollaboratorsHost`,
+    `EditorModals`, `EditorAnchoredPopovers` and `EditorElementDialogs` read only whether one of theirs is open and
+    mount their `Open…` body (which reads EditorContext) only then; `EditorContextMenuHost` reads the menu's mode and
+    `isReadOnly`; `EditorStartPanels` reads the tab's id, name, whether it has content and `templateStartShownOf`.
+  - Still rendering on a typing commit, each reading the document or fed by props that change with it: the canvas
+    (`CanvasView`, its pages, `ArticleFlows`, the element layer), `CanvasChrome` (19 components: it takes the canvas's
+    whole props, the tab among them), the page sheet's title bar, the tours (`PagesTourHost`, `ElementTourHost` read
+    the active tab), `QuickStyleHost` and `FindHost` (their `deps`), `PresentationHost` (the deck's slides),
+    `ModifierHint` (the tab's elements) and `NewVersionPrompt`.
+- Measured (#828, the #728 probe on a production `next build --profile` export, This Browser, a 100-card stack of
+  three blocks a card, 390x844 touch at 3x, CPU 4x, 60 keys 120 ms apart in bursts of ten, five runs each way
+  alternating, 30 typing commits each way, on a shared machine at a load of 6 to 11). Components rendered per typing
+  commit (function, class, memo and forwardRef fibers that did work, skipping subtrees React left untouched): 158 to
+  162 before, 107 to 111 after. React render time per typing commit (the `actualDuration` of each topmost rendered
+  component, summed): median 10.9 ms before (quartiles 8.9 and 11.8), 9.0 ms after (7.9 and 10.6). The rest of the
+  time is the page's own hooks (`useEditorState`), `SplitViewFrame`'s render function and the canvas.
 - The flip clones two nodes once per flip and animates `transform` and `opacity` only (compositor).
 
 ## Presentation and UX
@@ -260,6 +287,7 @@ SVG in the existing preview groups.
 | Templates build                               | `packages/templates` template tests                         |
 | Typing on a stack ticks no settle, linear     | `apps/editor/hooks/editor/useArticleIntake.typing.test.ts`  |
 | A save renders nothing                        | `apps/editor/app/document/[id]/editor-persistence.test.tsx` |
+| Chrome skips a typing commit                  | `apps/editor/app/document/[id]/editor-chrome.test.tsx`      |
 | Pages and writing read once per stored object | `packages/document/src/read-caches.test.ts`                 |
 | When the intake has work                      | `apps/editor/lib/article/intake-has-work.test.ts`           |
 | Zone-less writing fitted at once, one layout  | `packages/document/src/article-intake.test.ts`              |
