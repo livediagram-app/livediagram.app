@@ -26,6 +26,8 @@ const linked = [
   { id: 'ar', type: 'arrow', from: pinned('a', 'e'), to: pinned('b', 'w'), label: 'calls' },
 ];
 
+type Box = { x: number; y: number; width: number; height: number };
+
 const pathD = (page: Page, id: string) =>
   page.locator(`path[data-element-id="${id}"]`).getAttribute('d');
 
@@ -185,6 +187,8 @@ test.describe('arrow labels and bending', () => {
     const label = onCanvas(page).getByText('calls', { exact: true });
     const toolbar = page.getByTestId('selection-popover');
     const zoomIn = page.getByRole('button', { name: 'Zoom in', exact: true });
+    // Webfonts settled first: the label measures again when they land, which moves it and the selection's bounds.
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
     for (let step = 0; step < 8; step += 1) {
       // Each step's click lands within a few pixels of the last one, so on a
       // fast run the two would pair as a double-press and open the label
@@ -194,8 +198,16 @@ test.describe('arrow labels and bending', () => {
       await page.mouse.click(p.x, p.y);
       await expect(toolbar).toBeVisible();
       await expect(toolbar).toHaveCSS('opacity', '1');
-      const l = (await label.boundingBox())!;
-      const t = (await toolbar.boundingBox())!;
+      // Both boxes in ONE page task: read by two round trips, a webfont landing between them re-lays the label out
+      // (useArrowLabelLayouts re-runs on the font epoch) and the pair came from two different layouts, a false overlap.
+      const [l, t] = (await page.evaluate(
+        ([a, b]) =>
+          [a, b].map((el) => {
+            const { x, y, width, height } = el.getBoundingClientRect();
+            return { x, y, width, height };
+          }),
+        [await label.elementHandle(), await toolbar.elementHandle()] as const,
+      )) as [Box, Box];
       const overlaps =
         t.x < l.x + l.width && l.x < t.x + t.width && t.y < l.y + l.height && l.y < t.y + t.height;
       expect(overlaps, `toolbar covers the label at zoom step ${step}`).toBe(false);
