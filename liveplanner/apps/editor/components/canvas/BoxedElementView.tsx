@@ -41,7 +41,8 @@ import { useElementFinish } from '@liveworkspace/workbench/components/canvas/Can
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
+import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
+import { PLAN_BOARD } from '@/components/canvas/plan-face-finish';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
@@ -200,7 +201,7 @@ function BoxedElementViewImpl({
   // live screen rect to anchor the menu at the bottom-right corner.
   const wrapperRef = useRef<HTMLDivElement>(null);
   // The face's own parts in its finish: Marker's frames and shapes, Professional's pills (finish.md "Faces").
-  useFaceFinishPass(wrapperRef, faceFinish, element.id);
+  useFaceFinishPass(wrapperRef, faceFinish, element.id, { board: PLAN_BOARD });
 
   // Gesture routing (press / double-click / context menu / long-press)
   // lives in useBoxedElementGestures; the wrapper JSX mounts its

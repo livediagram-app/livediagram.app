@@ -51,6 +51,7 @@
     "./components/canvas/collab/temperature/mood-grid": "./src/components/canvas/collab/temperature/mood-grid.ts",
     "./components/canvas/concept-row-layer": "./src/components/canvas/concept-row-layer.tsx",
     "./components/canvas/empty-card-dismissed": "./src/components/canvas/empty-card-dismissed.ts",
+    "./components/canvas/face-arrivals": "./src/components/canvas/face-arrivals.ts",
     "./components/canvas/face-finish-ink": "./src/components/canvas/face-finish-ink.ts",
     "./components/canvas/face-take-batch": "./src/components/canvas/face-take-batch.ts",
     "./components/canvas/indicator-items": "./src/components/canvas/indicator-items.ts",

@@ -13,6 +13,7 @@ import {
   type FacePartDrawing,
   type FacePartPaint,
   type FacePartShape,
+  type MarkerFaceBudget,
 } from '@liveworkspace/element-model/marker-face';
 import { isPillRect } from '@liveworkspace/model-core/face-finish';
 import { builtMarkup, setHtml } from '@liveworkspace/trusted-types';
@@ -44,6 +45,9 @@ const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path', 'polygon', 'pol
 export const MEASURE_ATTR = 'data-sketch-measure';
 /** Marks a part a face wants drawn as a shape whatever its size or roundness (a progress bar's track and fill). */
 export const SHAPE_ATTR = 'data-marker-shape';
+/** Marks an outlined box a face wants drawn as a frame whatever its size or roundness (a Plan card: a Minimal one is
+ *  40 px tall, under MARKER_FACE_FRAME_MIN_PX). Only liveplanner's cards carry it. */
+export const FRAME_ATTR = 'data-marker-frame';
 /** Marks a box this pass made its own stacking context, so its colouring can sit under its contents. */
 export const ISOLATED_ATTR = 'data-marker-isolated';
 /** Marks a grid cell's sides whose border the grid's marker rules replace (`r`, `b`: face-finish.css). */
@@ -192,6 +196,8 @@ export function frameInk(
   // The face's own box: a fill alone gives it a marker edge (a banner, a timer), as a border does.
   own = false,
   pen: Pen = 'marker',
+  // A board's budget, frames counted apart (useFaceFinishPass's FaceFinishBoard); without it the caller counts.
+  budget?: MarkerFaceBudget,
 ): PartInk | null {
   const w = el.offsetWidth;
   const h = el.offsetHeight;
@@ -210,8 +216,8 @@ export function frameInk(
   const rx = parseFloat(css.borderTopLeftRadius) || 0;
   const round = isPillRect(w, h, rx);
   // A round part is a pill (left plain), unless it is the face's own (an annotation's disc, a progress bar's track) or
-  // marked a shape: a marker circle, or a pill.
-  if (round && !own) return null;
+  // marked a frame (a round Plan card).
+  if (round && !own && !el.hasAttribute(FRAME_ATTR)) return null;
   const disc = round && Math.abs(w - h) <= 2;
   const inset = 2;
   const part = PEN_PART[pen](
@@ -231,10 +237,12 @@ export function frameInk(
       stroke: bordered ? css.borderTopColor : (ring?.colour ?? null),
       strokePx: bordered ? parseFloat(css.borderTopWidth) : (ring?.px ?? 0),
       ...(el.hasAttribute(SHAPE_ATTR) ? { shape: true } : {}),
+      ...(el.hasAttribute(FRAME_ATTR) ? { frame: true } : {}),
     },
     face,
     seed,
     index,
+    budget,
   );
   // A box is outlined (a frame) or, when it is the face's own, coloured in (a shape); never a bare line.
   if (!part || part.role === 'line' || (part.role === 'shape' && !own)) return null;
@@ -275,6 +283,7 @@ export function shapeInk(
   seed: number,
   index: number,
   pen: Pen = 'marker',
+  budget?: MarkerFaceBudget,
 ): PartInk | null {
   const css = getComputedStyle(el);
   if (css.markerStart !== 'none' || css.markerEnd !== 'none') return null;
@@ -287,7 +296,7 @@ export function shapeInk(
     ...(Number(css.opacity) < 1 ? { opacity: Number(css.opacity) } : {}),
     ...(css.strokeDasharray && css.strokeDasharray !== 'none' ? { dashed: true } : {}),
   };
-  const part = PEN_PART[pen](shape, paint, face, seed, index);
+  const part = PEN_PART[pen](shape, paint, face, seed, index, budget);
   if (!part) return null;
   return {
     part,

@@ -314,10 +314,12 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
   `shape` or `line` from `MARKER_FACE_FRAME_MIN_PX` (40), `MARKER_FACE_SHAPE_MIN_PX` (24), `MARKER_FACE_DISC_MIN_PX`
   (14), `MARKER_FACE_SHAPE_THIN_PX` (6), `MARKER_FACE_BACKDROP_SHARE` (0.6, rectangles only),
   `MARKER_FACE_BODY_SLACK_PX` (6, the face's own box: coloured in when filled), a pill or a dashed line is null.
-  A part painted `frame: true` (the face's `data-marker-frame`, `FRAME_ATTR` in `face-finish-marks.ts`, set on each
-  `PlanCardFace` frame) is a `frame` whenever it is an outlined, undashed rectangle, before the pill and size rules,
-  and `frameInk` keeps a round one: a Minimal card's inset rectangle is 36 px tall, under `MARKER_FACE_FRAME_MIN_PX`,
-  and was coloured in as a shape, which a card never is, so it kept its plain line.
+  A part painted `frame: true` (the face's `data-marker-frame`, `FRAME_ATTR` in
+  `../packages/workbench/src/components/canvas/face-finish-ink.ts`, set on each `PlanCardFace` frame and on each
+  card's frame `<rect>` in the export, `planCardFace` in `svg-render-plan-card.ts`) is a `frame` whenever it is an
+  outlined, undashed rectangle, before the pill and size rules, and `frameInk` keeps a round one: a Minimal card's
+  rectangle is 36 px tall, under `MARKER_FACE_FRAME_MIN_PX`, and was coloured in as a shape, which a card never is,
+  on the canvas and in a Board's image alike.
   Colour: a line its stroke; a part with no line a deeper shade of its fill (`markerFrameInk`,
   `MARKER_FACE_FRAME_INK_SHIFT` 0.45) streaked at `MARKER_FACE_STREAK_OPACITY` (0.2); a frame `markerFrameInk` at
   `MARKER_FACE_FRAME_PX` (2.5). `handDrawnInk(stroke, fill)` draws a line under `HAND_DRAWN_INK_MIN_CONTRAST` (1.8)
@@ -330,19 +332,25 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
   `data-finish-keep`, `stroke-width="2"` to 1) and `svgMarkerFace(markup, id, face)` (clips, definitions,
   foreignObjects and the hand-drawn body (`data-finish="marker"` or `data-finish="sketch"`, `holdFaceBlocks` in
   `@liveworkspace/model-core/svg-markup-blocks`) held, so the pencil pass never shades a sketched body again; each part kept with its line removed, its marker after it, in its own
-  transform), called by `svgBoxed` by `faceFinishOf`.
+  transform; a part's `data-marker-shape` and `data-marker-frame` read as on the canvas), called by `svgBoxed` by
+  `faceFinishOf`.
 - Canvas: the wrapper carries `data-face-finish` and `FaceFinishProvider` (`useFaceFinish`, `useFaceShadow` for
   inline shadows; a Plan card's own shadows are emptied by face-finish.css instead, so a finish change redraws no card); `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),
   flattens (`--tw-shadow`, hover `--tw-translate-y`) and thins (`border-2`, `stroke-width="2"`) under Professional and
   hides each redrawn part's own line under Marker (`[data-marker-drawn]`, `[data-marker-rules]`).
-  `useFaceFinishPass(rootRef, finish, id)` takes through `face-take-batch.ts` (`markerFaceTake`: `prepare` clears
+  The pass is the shared one, `@liveworkspace/workbench/components/canvas/useFaceFinishPass` (with
+  `face-finish-ink.ts` and `face-arrivals.ts` beside it), given the Plan board's hooks: `PLAN_BOARD` in
+  `apps/editor/components/canvas/plan-face-finish.ts` (`ownerOf`, `unseen`, `ignore`, below), handed in by every
+  liveplanner caller (`BoxedElementView`, `MaximisedPlanLayer`, `DashboardPage`) as `{ board: PLAN_BOARD }`. A face
+  given a board counts its frames apart (`MarkerFaceBudget`); one without (the other four editors) keeps one count.
+  `useFaceFinishPass(rootRef, finish, id, { board })` takes through `face-take-batch.ts` (`markerFaceTake`: `prepare` clears
   the last take, `read` reads every part, its write draws them; `drawMarkerFace` runs one alone), `now` on mount and
   `frame` after, watching from its first take, and re-takes on settle (`watchUntilSettled` with `ignore` for its own
   changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
   positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules
-  (`marker-grid-rules.ts`; the marks it sets are named in `face-finish-marks.ts`). A take skips a busy board's card
-  whose contents the browser skips (`offScreenCard`: `checkVisibility` with `contentVisibilityAuto` on its first child;
+  (`gridRules`; the marks it sets are named in `face-finish-ink.ts`). A take skips a busy board's card
+  whose contents the browser skips (the board's `unseen`, `offScreenCard`: `checkVisibility` with `contentVisibilityAuto` on its first child;
   plan-board.md "A busy board"), and hands the cards it skipped to `face-arrivals.ts` `watchFaceArrivals`: one
   `IntersectionObserver` (implicit root, so the board's scroll box clips it) per pass watches only those cards, and a
   card entering the view re-takes the face (`take('frame')`) once the arrivals pause (`SKETCH_INK_SETTLE_MS` after the
@@ -354,7 +362,10 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
     style, the part's drawing) and only then runs each part's write (its ink, `data-marker-drawn`, isolation), then
     reads each marked part's style once so the marks land before transitions return. A re-take therefore never reads
     a line mid-ease from the mark it just cleared, and lays the face out once.
-  - `ignore` also skips the pointer's own feedback (`components/plan/board-hover.ts` `isBoardHoverWrite`): the
+  - A part's strokes are seeded by its owner (the board's `ownerOf`: its `data-plan-card`, `data-plan-column` and
+    lane, or `data-marker-key`) and its order among that owner's drawn parts, so a part coming or going elsewhere
+    leaves every other part's ink as it was.
+  - `ignore` (the board's) also skips the pointer's own feedback (`components/plan/board-hover.ts` `isBoardHoverWrite`): the
     column hover mark `data-column-hover`, and a `style` write that changes nothing but `--card-mx` / `--card-my`
     (`useCardSpotlight`'s `SPOTLIGHT_X` / `SPOTLIGHT_Y`), compared against the record's old value.
 - A Plan body over the canvas (`MaximisableSlot`'s `OverFace`) carries `data-face-finish`, its own pass and a
@@ -538,6 +549,9 @@ per command letter.
 | WebKit is told by `GestureEvent`                                                     | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |
 | Marker face: every card on a busy board, hover never re-takes, held still while read | `apps/editor/components/canvas/useFaceFinishPass.board.test.tsx`                                             |
 | the pointer's feedback on a board is not a change                                    | `apps/editor/components/plan/board-hover.test.ts`                                                            |
+| the shared pass's board hooks: frames apart, owners, unseen parts, ignore            | `../packages/workbench/src/components/canvas/useFaceFinishPass.board.test.ts`                                |
+| a skipped card's arrival in view: settle, longest wait, once per arrival             | `../packages/workbench/src/components/canvas/face-arrivals.test.ts`                                          |
+| a Minimal card is a frame in a Board's image under Marker                            | `packages/project/src/svg-render-plan-card.test.ts`                                                          |
 | face budget: frames apart from shapes; 600 frames' cost                              | `packages/project/src/marker-face.test.ts`, `packages/project/src/marker-face.perf.test.ts`                  |
 
 ## Constants and configuration

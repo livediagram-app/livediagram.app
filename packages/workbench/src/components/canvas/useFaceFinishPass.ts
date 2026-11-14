@@ -1,11 +1,19 @@
 'use client';
 
 import { useLayoutEffect, type RefObject } from 'react';
-import { MARKER_FACE_MAX_PARTS, markerFaceSeed } from '@liveworkspace/element-model/marker-face';
+import {
+  MARKER_FACE_MAX_PARTS,
+  faceBudgetSpent,
+  markerFaceBudget,
+  markerFaceSeed,
+  spendFaceBudget,
+  type MarkerFaceBudget,
+} from '@liveworkspace/element-model/marker-face';
 import type { Finish } from '@liveworkspace/element-model/finish';
 import { isPillRect } from '@liveworkspace/model-core/face-finish';
 import { scheduleFaceTake, type FaceTake, type FaceTakeWhen } from './face-take-batch';
 import { watchUntilSettled, type SettleWatch } from './settle-watch';
+import { watchFaceArrivals } from './face-arrivals';
 import {
   INK_ATTR,
   DRAWN_ATTR,
@@ -39,6 +47,22 @@ const isMarkList = (m: Element | readonly Element[]): m is readonly Element[] =>
 // with the board's other faces (face-take-batch.ts): all clear, then all read, then all write, so a board of
 // thousands of faces is laid out once per batch rather than once per face.
 
+/** What a board of cards hands the pass (liveplanner's Plan board, its docs/specs/008-canvas/blueprints/finish.md).
+ *  A face given one counts its frames apart from its other parts (MARKER_FACE_MAX_FRAMES against
+ *  MARKER_FACE_MAX_PARTS), as a board's cards are frames by the hundred; a face given none keeps one count. Pass a
+ *  module constant: the pass starts again whenever it changes. */
+export type FaceFinishBoard = {
+  /** The owner a part sits in (a card, a column), '' for none: its strokes are seeded by that owner and its order among
+   *  the owner's drawn parts, not its place in the whole face, so a part coming or going elsewhere (a card dragged to
+   *  another column) leaves every other part's ink as it was. */
+  ownerOf?: (root: Element, el: Element) => string;
+  /** A part the browser is not drawing (a busy board's card off screen): the take leaves it unread, and the face is
+   *  taken again once such parts scroll into view and pause (face-arrivals.ts). */
+  unseen?: (el: Element) => boolean;
+  /** A change that touches nothing the pass draws (the pointer's own feedback on a board), on top of its own. */
+  ignore?: (r: MutationRecord) => boolean;
+};
+
 /** The face under `root` in its finish, re-taken whenever it settles after a change: Marker draws its frames and
  *  shapes in marker; Sketch shades its shapes in pencil; Professional keeps its SVG pills round (face-finish.css
  *  squares every other rectangle). */
@@ -46,9 +70,12 @@ export function useFaceFinishPass(
   rootRef: RefObject<HTMLElement | null>,
   finish: Finish | undefined,
   elementId: string,
-  // A body that fills its tab or the screen is the page, not a box on it: its own box
-  // is never coloured in.
-  { page = false }: { page?: boolean } = {},
+  {
+    // A body that fills its tab or the screen is the page, not a box on it: its own box
+    // is never coloured in.
+    page = false,
+    board,
+  }: { page?: boolean; board?: FaceFinishBoard } = {},
 ): void {
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -56,8 +83,11 @@ export function useFaceFinishPass(
     const pen: Pen = finish === 'marker' ? 'marker' : 'pencil';
     let cancel = () => {};
     let watch: SettleWatch | undefined;
-    const settle = () =>
-      watchUntilSettled(root, () => take('frame'), { resize: true, ignore: ownChange });
+    // The parts a take left unseen, watched until they scroll into view, then taken (face-arrivals.ts).
+    const arrivals = board?.unseen ? watchFaceArrivals(() => take('frame')) : undefined;
+    const boardIgnore = board?.ignore;
+    const ignore = boardIgnore ? (r: MutationRecord) => ownChange(r) || boardIgnore(r) : ownChange;
+    const settle = () => watchUntilSettled(root, () => take('frame'), { resize: true, ignore });
     // Marker and Sketch take with the board's other faces: a face that mounts before it is first painted, one that
     // settled or whose lettering loaded at the next frame. Professional only marks pills, which reads no layout.
     const take = (when: FaceTakeWhen) => {
@@ -65,7 +95,15 @@ export function useFaceFinishPass(
         markFacePills(root);
         return;
       }
-      const { prepare, read } = markerFaceTake(root, elementId, pen, page);
+      const { prepare, read } = markerFaceTake(
+        root,
+        elementId,
+        pen,
+        page,
+        undefined,
+        board,
+        arrivals?.watch,
+      );
       cancel = scheduleFaceTake(
         root,
         {
@@ -94,11 +132,12 @@ export function useFaceFinishPass(
       live = false;
       cancel();
       watch?.();
+      arrivals?.stop();
       clearMarkerFace(root);
       root.removeAttribute(TAKING_ATTR);
       for (const pill of root.querySelectorAll(`[${PILL_ATTR}]`)) pill.removeAttribute(PILL_ATTR);
     };
-  }, [rootRef, finish, elementId, page]);
+  }, [rootRef, finish, elementId, page, board]);
 }
 
 /** Marks every SVG rectangle under `root` whose ends are round (a pill, a disc), which Professional keeps. */
@@ -157,9 +196,10 @@ export function drawMarkerFace(
   // Sketch's pencil shades the face's shapes only; its wobble draws the rest by hand.
   pen: Pen = 'marker',
   page = false,
+  board?: FaceFinishBoard,
 ): number {
   let drawn = 0;
-  const take = markerFaceTake(root, elementId, pen, page, (n) => (drawn = n));
+  const take = markerFaceTake(root, elementId, pen, page, (n) => (drawn = n), board);
   take.prepare?.();
   take.read()()?.();
   return drawn;
@@ -167,13 +207,16 @@ export function drawMarkerFace(
 
 /** A take of `root` in steps for a batch (face-take-batch.ts): `prepare` holds the face still and clears the last
  *  take, `read` reads the face and every part to draw without writing anything, the write it returns draws them, and
- *  what the write returns lets the marks take effect and releases the face. `onDrawn` hears how many parts it drew. */
+ *  what the write returns lets the marks take effect and releases the face. `onDrawn` hears how many parts it drew,
+ *  `onUnseen` the parts the board's `unseen` left unread, once the face is read. */
 export function markerFaceTake(
   root: HTMLElement,
   elementId: string,
   pen: Pen = 'marker',
   page = false,
   onDrawn?: (drawn: number) => void,
+  board?: FaceFinishBoard,
+  onUnseen?: (parts: readonly Element[]) => void,
 ): FaceTake {
   // Sketch hides a live face's fills and lines (its ink copy shows them through the wobble, app/sketch-face.css):
   // they are shown again from before the face is read until it is drawn.
@@ -194,7 +237,9 @@ export function markerFaceTake(
       let writes: Write[];
       let drawn: number;
       try {
-        ({ writes, drawn } = readParts(root, elementId, pen, page));
+        let unseen: readonly Element[];
+        ({ writes, drawn, unseen } = readParts(root, elementId, pen, page, board));
+        onUnseen?.(unseen);
       } catch (error) {
         unmeasure();
         root.removeAttribute(TAKING_ATTR);
@@ -228,42 +273,71 @@ export function markerFaceTake(
   };
 }
 
-// Every part under `root` the pen draws, read without writing: the writes that draw them, in order, and how many.
+// Every part under `root` the pen draws, read without writing: the writes that draw them, in order, how many, and the
+// parts the board's `unseen` left unread.
 function readParts(
   root: HTMLElement,
   elementId: string,
   pen: Pen,
   page: boolean,
-): { writes: Write[]; drawn: number } {
+  board: FaceFinishBoard | undefined,
+): { writes: Write[]; drawn: number; unseen: readonly Element[] } {
   const face = { width: root.offsetWidth, height: root.offsetHeight };
   const seed = markerFaceSeed(elementId);
+  const unseen: Element[] = [];
+  const isUnseen = board?.unseen;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-    acceptNode: (n) =>
-      (n as Element).matches(SKIP) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+    acceptNode: (n) => {
+      if ((n as Element).matches(SKIP)) return NodeFilter.FILTER_REJECT;
+      if (!isUnseen?.(n as Element)) return NodeFilter.FILTER_ACCEPT;
+      unseen.push(n as Element);
+      return NodeFilter.FILTER_REJECT;
+    },
   });
   const parts: Element[] = [root];
   for (let n = walker.nextNode(); n; n = walker.nextNode()) parts.push(n as Element);
   const writes: Write[] = [];
   let drawn = pen === 'marker' ? gridRules(root, face, seed, 0, writes) : 0;
+  // A board counts its frames apart from its shapes and lines (the grid's rules among them).
+  const budget: MarkerFaceBudget | undefined = board
+    ? { ...markerFaceBudget(), parts: drawn }
+    : undefined;
+  const spent = () => (budget ? faceBudgetSpent(budget) : drawn >= MARKER_FACE_MAX_PARTS);
   // The face's own box is coloured in once: the outermost element that paints it (a wrapper and a card inside it the
   // same size would streak twice).
   // An element with a hand-drawn body (SketchOverlay) has its box drawn and shaded already.
   let ownBoxDrawn = page || !!root.querySelector(':scope > svg[data-finish]');
+  const ownerOf = board?.ownerOf;
+  // How many parts each owner has drawn so far this take (FaceFinishBoard's ownerOf).
+  const owned = new Map<string, number>();
   for (const el of parts) {
-    if (drawn >= MARKER_FACE_MAX_PARTS) break;
+    if (spent()) break;
     const faceBox =
       !ownBoxDrawn && el instanceof HTMLElement && (el === root || isFaceBox(el, face));
+    const owner = ownerOf?.(root, el);
+    const count = owner === undefined ? 0 : (owned.get(owner) ?? 0);
+    const index = owner === undefined ? drawn : ownerBase(owner) + count;
     const ink =
       el instanceof HTMLElement
-        ? frameInk(el, face, seed, drawn, faceBox || el.hasAttribute(SHAPE_ATTR), pen)
+        ? frameInk(el, face, seed, index, faceBox || el.hasAttribute(SHAPE_ATTR), pen, budget)
         : isSvgShape(el)
-          ? shapeInk(el, face, seed, drawn, pen)
+          ? shapeInk(el, face, seed, index, pen, budget)
           : null;
     if (ink) {
       drawn += 1;
       writes.push(ink.write);
+      if (budget) spendFaceBudget(budget, ink.part.role);
+      if (owner !== undefined) owned.set(owner, count + 1);
     }
     if (ink?.part.role === 'shape' && faceBox) ownBoxDrawn = true;
   }
-  return { writes, drawn };
+  return { writes, drawn, unseen };
+}
+
+// A 32-bit FNV-1a of an owner's key, spread so owners' part indices never meet ('' is no owner: 0).
+function ownerBase(key: string): number {
+  if (!key) return 0;
+  let h = 0x811c9dc5;
+  for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 0x01000193);
+  return (h >>> 0) & 0x7fff0000;
 }

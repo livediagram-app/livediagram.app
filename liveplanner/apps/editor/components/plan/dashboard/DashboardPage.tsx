@@ -28,7 +28,8 @@ import { DashboardSettings } from './DashboardSettings';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { elementFontId, resolveFinish, resolveFontStack } from '@liveplanner/project';
 import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
+import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
+import { PLAN_BOARD } from '@/components/canvas/plan-face-finish';
 import { planBoardFontStyle } from '@/lib/plan-font';
 
 export function DashboardPage({
@@ -73,7 +74,7 @@ export function DashboardPage({
   const finish = resolveFinish(undefined, tab.finish);
   const faceFinish = finish === 'flexible' ? undefined : finish;
   const fontStack = resolveFontStack(elementFontId({}, tab.font, tab.finish));
-  useFaceFinishPass(pageRef, faceFinish, tab.id, { page: true });
+  useFaceFinishPass(pageRef, faceFinish, tab.id, { page: true, board: PLAN_BOARD });
   const dashboard = useMemo(() => dashboardOf(tab), [tab]);
   const elements = useMemo(() => new Map(tab.elements.map((e) => [e.id, e])), [tab.elements]);
   const guard = useFitGuard(pageRef, dashboard, elements);
