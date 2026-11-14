@@ -362,7 +362,10 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   sets `data-sketch-measure` (sketch-face.css stands down) while it reads them.
 - Marks a face may set: `data-marker-shape` (a part drawn as a shape whatever its size or roundness: a progress bar's
   track and fill, a mood bar), `data-marker-fill` (its colour when painted with a gradient), `data-marker-grid` (a
-  table: cell borders joined into whole rules, `data-marker-rules` hiding the pieces). An inset hairline ring
+  table: cell borders joined into whole rules, `data-marker-rules` hiding the pieces). In the export, the shared
+  `svgTableShape` marks its grid lines `data-marker-rule` (`partShape` admits such a `<line>` at any width, inked
+  `handDrawnInk(stroke, null)` as `gridRules` inks the canvas's) and its cell fills (header band, zebra, highlight,
+  a cell's own colour) `data-finish-keep`, so they stay flat as the canvas's cells do. An inset hairline ring
   (`box-shadow: c 0 0 0 Npx inset`) counts as a frame's line (`data-marker-drawn="ring"` drops it).
 - The face's own box (`MARKER_FACE_BODY_SLACK_PX`) is coloured in once, its ink at `z-index: -1` in a box the pass
   isolates (`data-marker-isolated`), and never when the element's body is already drawn by hand (`FaceBox.bodyDrawn`,
