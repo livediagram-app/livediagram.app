@@ -16,15 +16,19 @@ afterEach(cleanup);
 let room = 1000;
 let content = 1100;
 let pinWidth = 0;
+// A zone sized by its widgets up to `room` (a header band's), rather than filling it (the canvas header's).
+let sized = false;
 beforeEach(() => {
   room = 1000;
   content = 1100;
   pinWidth = 0;
+  sized = false;
+  const zoneWidth = () => (sized ? Math.min(content, room) : room);
   const width = (el: HTMLElement) =>
     el.hasAttribute('data-widget-zone')
-      ? room
+      ? zoneWidth()
       : el.hasAttribute('data-widget-row')
-        ? room - (el.parentElement?.querySelector('[data-widget-pin]') ? pinWidth : 0)
+        ? zoneWidth() - (el.parentElement?.querySelector('[data-widget-pin]') ? pinWidth : 0)
         : 0;
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
     this: HTMLElement,
@@ -82,19 +86,55 @@ describe('a widget zone too full for its widgets', () => {
     expect(listed()).toEqual(['count', 'progress', 'mine']);
   });
 
-  it('keeps the Filter pinned until the row is back well within its room', () => {
+  it('keeps the Filter pinned while the widgets still overflow, and returns it once they fit', () => {
     pinWidth = 200;
     const { rerender } = show();
     expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
-    // Just under the room: still pinned, so a count growing a digit never flips it.
-    content = 995;
+    content = 1050;
     rerender();
     act(() => void row().dispatchEvent(new Event('scroll')));
     expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
-    content = 900;
+    content = 995;
     act(() => void row().dispatchEvent(new Event('scroll')));
     expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
     expect(listed()).toEqual(WIDGETS);
+  });
+
+  // The verifier's case on PR #1750: in a header band the zone is sized by its widgets, so its width shrinks with the
+  // pinned row and never showed the room it has again.
+  describe('in a zone sized by its widgets (a header band)', () => {
+    beforeEach(() => {
+      sized = true;
+      pinWidth = 200;
+      content = 900;
+      room = 1440;
+    });
+
+    it('pins when the window narrows and unpins when it widens again', () => {
+      show();
+      expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
+      room = 800;
+      act(() => void window.dispatchEvent(new Event('resize')));
+      expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
+      // Still too narrow: a resize brings nothing back while the row overflows.
+      room = 820;
+      act(() => void window.dispatchEvent(new Event('resize')));
+      expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
+      room = 1440;
+      act(() => void window.dispatchEvent(new Event('resize')));
+      expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
+      expect(listed()).toEqual(WIDGETS);
+    });
+
+    it('unpins once enough widgets are taken off', () => {
+      room = 800;
+      show();
+      expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
+      content = 700;
+      act(() => void row().dispatchEvent(new Event('scroll')));
+      expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
+      expect(listed()).toEqual(WIDGETS);
+    });
   });
 
   it('fades an edge with more past it as the row scrolls', () => {

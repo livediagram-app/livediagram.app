@@ -23,8 +23,9 @@ header; they are not in the palette.
 - The widget zone is one row. Widgets keep their order; when they do not fit, the zone scrolls sideways, and:
   - the **Filter** widget holds the zone's start, outside the scroll, so it is always in reach however the rest are
     scrolled (the others keep their order after it, and drag and Alt+← / Alt+→ move them among themselves; the
-    Filter stays put, its Delete and edit mode's × still taking it off). With room again (a little more than it
-    needs, so a count growing a digit never flips it back and forth) it is back in its own place;
+    Filter stays put, its Delete and edit mode's × still taking it off). With room again (the window widened,
+    or widgets taken off, in a header band too, where the zone is only as wide as its widgets) it is back in its own
+    place, never flipping back and forth on the same widths;
   - a soft fade at an edge with more widgets past it says the row scrolls;
   - nothing a widget opens scrolls the row: a field widget's **+n** legend opens (and closes) with the row where the
     person left it (Work Tracker 823).

@@ -150,7 +150,10 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 - Reorder bar: 2 × 24 px, `palette.focus`.
 - A too-full zone (`useZoneOverflow`): the zone (`data-widget-zone`, no scroll) holds the pinned Filter
   (`data-widget-pin`, `role="group"` "Filter widget", `aria-keyshortcuts="Delete"`, no drag, only while the row's
-  content needs more than the zone and until it needs `UNPIN_SLACK_PX` less) and the row (`data-widget-row`,
+  content needs more than the zone; it unpins once the widgets need `UNPIN_SLACK_PX` less than the zone, or, in a
+  zone sized by its content (a header band's span, which shrinks with the pinned row), once the pinned row fits with
+  nothing to scroll after the widgets came to need less than when they pinned or the window resized: a try that
+  overflows pins again and waits for the next such change) and the row (`data-widget-row`,
   `overflow-x-auto`, the list then the + and Edit Widgets). Need is `row.scrollWidth + zone.clientWidth -
 row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FADE_PX` at an edge with more past it
   (the mask works on any header background, a band's tint too). A drag's slot (`widgetSlotAt` over the list) and a
