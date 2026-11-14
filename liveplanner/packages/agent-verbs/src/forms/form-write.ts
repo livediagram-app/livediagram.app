@@ -9,13 +9,18 @@ import {
   type ChangesetResponse,
   type ItemTypesRequest,
 } from '@liveplanner/api-schema';
-import { sheetHeaders, type FormDefinition } from '@liveplanner/forms';
+import {
+  sheetColumnPlan,
+  sheetHeaders,
+  topRowTexts,
+  type FormDefinition,
+} from '@liveplanner/forms';
 import { ITEM_TYPE_CATALOGUE_VERSION } from '@liveplanner/items';
 import { changeBoard } from '../plan/change-board';
 import { isCardTypesStale, itemTypesPath } from '../plan/plan-state';
-import { columnIndex, columnLetters } from '@liveplanner/sheets';
+import { columnLetters, sheetFromJson, type Sheet } from '@liveplanner/sheets';
 import { changeSheet } from '../sheets/change-sheet';
-import { readSheet } from '../sheets/read-sheet';
+import { readSheets } from '../sheets/sheet-state';
 import type { SheetChange } from '../sheets/sheet-change-build';
 import { tabPath } from '../verbs/shared';
 import { type FormDraft } from './form-draft';
@@ -57,9 +62,12 @@ export async function saveTypes(api: ApiClient, d: FormDraft): Promise<'saved' |
   }
 }
 
-// A sheet form's sheet holds a header for every question, as a response would leave it: the ones it lacks are
-// written after its last header (bold), never over one, so the columns answers already fill keep their meaning. A new
-// sheet also freezes its header row and takes its tab's name, so it reads as the form's before anyone answers.
+// A sheet form's sheet holds a header for every question, as a response would leave it, planned on the builder's
+// `sheetColumnPlan` (docs/specs/030-forms/forms.md "The header row"): the sheet's header row found among its top rows
+// (a template's head under its title, Contacts' on row 4), the form's remembered columns honoured, and the headers it
+// lacks written on that row after its last header (bold), never over one, so the columns answers already fill keep
+// their meaning. A question still reading "Untitled Question" gets no column, as in the builder. A new sheet also
+// freezes its header row and takes its tab's name, so it reads as the form's before anyone answers.
 async function syncSheetHeaders(
   api: ApiClient,
   d: FormDraft,
@@ -67,35 +75,73 @@ async function syncSheetHeaders(
   fresh: { title: string } | null,
   client: Client,
 ): Promise<void> {
-  const read = fresh
-    ? null
-    : await readSheet(api, d.world.projectId, { sheet: sheetId, range: 'A1:ZZ1' });
-  const cells = read && read.ok ? read.cells : [];
-  const have = new Set(cells.map((c) => c.display.trim().toLowerCase()).filter(Boolean));
-  const lastCol = cells.reduce((n, c) => Math.max(n, columnIndex(c.at.replace(/\d+$/, '')) + 1), 0);
-  const missing = sheetHeaders(d.form)
-    .map((h) => h.header)
-    .filter((h) => !have.has(h.toLowerCase()));
-  const changes: SheetChange[] = [];
-  if (missing.length) {
-    const from = columnLetters(lastCol);
-    const to = columnLetters(lastCol + missing.length - 1);
-    // As text: a set reads text as typed, so "2024" would be a number and "=Score" a formula, and a response
-    // (which finds its column by a text header) would then add a second column. A leading ' keeps it text.
-    changes.push({ op: 'set', at: `${from}1`, rows: [missing.map((h) => `'${h}`)] });
-    changes.push({ op: 'format', range: `${from}1:${to}1`, format: { bold: true } });
-    // Widths fitted to the headers, so a long question never runs over the column beside it.
-    changes.push({ op: 'resize', cols: `${from}:${to}`, fit: true });
+  const sheet = fresh ? null : await sheetById(api, d.world.projectId, sheetId);
+  const { changes, added } = headerChanges(d.form, sheet);
+  if (fresh) {
+    if (!changes.some((c) => c.op === 'freeze')) changes.push({ op: 'freeze', rows: 1 });
+    changes.push({ op: 'rename', title: fresh.title });
   }
-  if (fresh) changes.push({ op: 'freeze', rows: 1 }, { op: 'rename', title: fresh.title });
   if (!changes.length) return;
   const done = await changeSheet(api, d.world.projectId, { sheet: sheetId, changes }, client);
   // The sheet engine answers a refusal rather than throwing: a miss all the same.
   if (done.refusal) throw new Error(done.refusal.message);
-  if (missing.length && !fresh)
+  if (added.length && !fresh)
     d.lines.push(
-      `added the sheet's column${missing.length === 1 ? '' : 's'} ${missing.map((m) => `"${m}"`).join(', ')}`,
+      `added the sheet's column${added.length === 1 ? '' : 's'} ${added.map((m) => `"${m}"`).join(', ')}`,
     );
+}
+
+// The sheet by id, as the engine reads it (its layout ids and cells), or null when the plan has no such sheet.
+async function sheetById(
+  api: ApiClient,
+  projectId: string,
+  sheetId: string,
+): Promise<Pick<Sheet, 'layout' | 'cells'> | null> {
+  const found = (await readSheets(api, projectId)).find((s) => s.id === sheetId);
+  return found ? sheetFromJson(found) : null;
+}
+
+// The changes that give `sheet` (null: a new, empty sheet) the form's headers, from the plan the builder makes: each
+// header cell a `set` by A1 (as text: a set reads text as typed, so "2024" would be a number and "=Score" a formula,
+// and a response, which finds its column by a text header, would then add a second column; a leading ' keeps it
+// text), the new ones bold and fitted, and the freeze a sheet given its first headers gets. `added`: the new headers.
+export function headerChanges(
+  form: FormDraft['form'],
+  sheet: Pick<Sheet, 'layout' | 'cells'> | null,
+): { changes: SheetChange[]; added: string[] } {
+  const layout = sheet?.layout ?? { rows: [], cols: [] };
+  const plan = sheetColumnPlan({
+    form,
+    layout,
+    rowTexts: sheet ? topRowTexts(sheet) : new Map(),
+    columns: form.sheet?.columns,
+    namedOnly: true,
+  });
+  // Every column id the plan may name, in sheet order: the sheet's, then any it inserts at the end.
+  const cols = [...layout.cols];
+  for (const ch of plan.changes) if (ch.k === 'insertCols') cols.push(...ch.ids);
+  const row = plan.headerIndex + 1;
+  const changes: SheetChange[] = [];
+  const added: string[] = [];
+  const bold: string[] = [];
+  for (const cell of plan.cells) {
+    const header = cell.i && 's' in cell.i ? cell.i.s : '';
+    const col = columnLetters(cols.indexOf(cell.c));
+    changes.push({ op: 'set', at: `${col}${row}`, rows: [[`'${header}`]] });
+    if (cell.f?.b) {
+      added.push(header);
+      bold.push(col);
+    }
+  }
+  if (bold.length) {
+    const from = bold[0]!;
+    const to = bold[bold.length - 1]!;
+    changes.push({ op: 'format', range: `${from}${row}:${to}${row}`, format: { bold: true } });
+    // Widths fitted to the headers, so a long question never runs over the column beside it.
+    changes.push({ op: 'resize', cols: `${from}:${to}`, fit: true });
+  }
+  if (plan.changes.some((ch) => ch.k === 'freeze')) changes.push({ op: 'freeze', rows: 1 });
+  return { changes, added };
 }
 
 // The responses tabs a draft makes, after what the project holds (made already when a new project carried them),

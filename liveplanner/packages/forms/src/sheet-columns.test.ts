@@ -291,3 +291,16 @@ describe('topRowTexts', () => {
     expect([...topRowTexts(sheet([], many)).keys()]).toEqual(many.slice(0, HEADER_SCAN_ROWS));
   });
 });
+
+// Work Tracker 866: the builder's sync leaves a question still reading "Untitled Question" out; the api's row keeps it.
+describe('namedOnly', () => {
+  it('gives a blank question no column, and a named one its header', () => {
+    const blank = form(['Name', '']);
+    expect(Object.keys(sheetColumnPlan(input({ form: blank, namedOnly: true })).columns)).toEqual([
+      '#',
+      'at',
+      'q-0',
+    ]);
+    expect(sheetColumnPlan(input({ form: blank })).columns).toHaveProperty('q-1');
+  });
+});

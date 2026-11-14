@@ -17,7 +17,7 @@ export const FORM_COLUMNS_SYNC_MS = 800;
 
 // Each key's header as the form words it now (what `renamed` is the next time).
 export function headersByKey(form: SheetForm): Map<string, string> {
-  return new Map(sheetHeaders(form).map((h) => [h.key, h.header]));
+  return new Map(sheetHeaders(form, { namedOnly: true }).map((h) => [h.key, h.header]));
 }
 
 // What the sheet needs: its header write (null when every header is there) and the columns the form should remember.
@@ -32,6 +32,9 @@ export function formColumnsSync(
     rowTexts: topRowTexts(sheet),
     columns: form.sheet.columns,
     renamed,
+    // A question still reading "Untitled Question" gets no column until it is named (forms.md "Columns before any
+    // response"), so its first wording matches a template's header of that name.
+    namedOnly: true,
   });
 }
 
@@ -42,7 +45,7 @@ export function formColumnsKey(form: FormDefinition | null): string | null {
   return JSON.stringify([
     form.sheet.tabId,
     form.sheet.sheetId,
-    sheetHeaders(form).map((h) => [h.key, h.header]),
+    sheetHeaders(form, { namedOnly: true }).map((h) => [h.key, h.header]),
     form.sheet.columns ?? null,
   ]);
 }
