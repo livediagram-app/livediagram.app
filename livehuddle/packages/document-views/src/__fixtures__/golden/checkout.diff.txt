@@ -1,7 +1,0 @@
-tab 0b34 "Checkout platform" · since rev 41 · rev 47 · 6 changes
-- ? arrow 0cee
-~ signpost e4a8 label "Payments service" → "Payments"
-~ signpost cb02 moved +200,+0
-~ sticky 0c84 comments 2 open → 2 resolved
-+ signpost 7180 "Redis cache"
-+ ? arrow 5d21

@@ -43,15 +43,9 @@ export function readComment(c: object): ThreadComment {
   };
 }
 
-// A comment's reactions as a listing carries them (docs/specs/012-collaboration/comment-reactions.md).
-type ListedReactions = { reactions?: readonly { emoji: string; count: number }[] };
-
-// `Sam 2026-09-27: "text"`: a comment as the comments and show views print it, then its reactions when a listing
-// carries them (`👍 2 👀 1`).
-export function commentText(c: ThreadComment & ListedReactions): string {
-  const line = `${attrValue(c.authorName)} ${utcDay(c.createdAt)}: ${jsonString(c.text)}`;
-  if (!c.reactions?.length) return line;
-  return `${line} ${c.reactions.map((r) => `${r.emoji} ${r.count}`).join(' ')}`;
+// `Sam 2026-09-27: "text"`: a comment as the comments and show views print it.
+export function commentText(c: ThreadComment): string {
+  return `${attrValue(c.authorName)} ${utcDay(c.createdAt)}: ${jsonString(c.text)}`;
 }
 
 // An element's thread, as a list (none or one).
@@ -79,23 +73,6 @@ function threadLines(thread: Thread): ViewLine[] {
       text: `  ${commentText(c)}`,
       noun: COMMENT,
     })),
-  ];
-}
-
-// A thread as a listing across tabs prints it (livediagram's CLI `comment ls`; no livehuddle door uses it): the comments view's
-// thread line without the kind, which a listing does not carry, and with the tab it is on (CLI81).
-export function threadListingLines(thread: {
-  ref: string;
-  label: string | null;
-  resolved: boolean;
-  tabName: string;
-  comments: readonly (ThreadComment & ListedReactions)[];
-}): string[] {
-  const label = thread.label === null ? '' : ` ${jsonString(thread.label, LABEL_CUT_CHARS)}`;
-  const state = thread.resolved ? 'resolved' : 'open';
-  return [
-    `${thread.ref}${label} · ${state} · ${thread.comments.length} · tab ${jsonString(thread.tabName)}`,
-    ...thread.comments.map((c) => `  ${commentText(c)}`),
   ];
 }
 

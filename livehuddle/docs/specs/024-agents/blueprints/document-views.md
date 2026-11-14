@@ -31,7 +31,7 @@
 >   as few as the budget asks, counted on the elision line (`… notes hidden; attributes hidden; <n> elements
 hidden: view --budget <full>`). The cut is measured from prefix sums, linear in the outline.
 > - `layout --coarse` prints one `row <n>: <refs>` line per row of the canvas; `rows` is one group, `container: null`.
-> - `find` prints each match on its own outline line, unindented; `show` and `diff` print no `in <container>`.
+> - `find` prints each match on its own outline line, unindented; `show` prints no `in <container>`.
 >
 > Where the sections below still describe containers, nesting, collapsing or summaries, this note wins.
 
@@ -73,7 +73,7 @@ Scope, by file:
 | `packages/document-views/src/header.ts`                                   | `countElements`, `viewHeader`, `headerLine`                                                                                                                                               |
 | `packages/document-views/src/model.ts`                                    | `buildViewModel(tab, context)` (`ViewContext.selected` too), the model every view reads; `headerFactsOf`, `tabRefsFor`                                                                    |
 | `packages/document-views/src/{outline,graph,layout,comments}.ts`          | One view each                                                                                                                                                                             |
-| `packages/document-views/src/{show,find,diff,overview}.ts`                | One view each                                                                                                                                                                             |
+| `packages/document-views/src/{show,find,overview}.ts`                     | One view each                                                                                                                                                                             |
 | `packages/document-views/src/show-selected.ts` (new, + test)              | `showSelectedView(model, elements, options)`: `show` for `ref=selected` (VW65 to VW68)                                                                                                    |
 | `../packages/document-views/src/budget.ts`                                | `estimateTokens`, `fitLines`, `fitOf`, `ViewFit`, `ViewResult` (the outline's ladder, `fitOutline`, is in `outline.ts`) (shared, `@liveworkspace/document-views`)                         |
 | `../packages/document-views/src/elision.ts`                               | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax, and the `ViewDoor` and `Elision` shapes they read (shared, `@liveworkspace/document-views`)            |
@@ -353,21 +353,20 @@ dispatches by `request.view`, answering `{ ok: true, view, text, json, fit, elem
 Each tab view is a function of the model (`outlineView(model, options)`, …) answering `{ text, json, fit }`; `fit`
 is the full view's estimate and the step it took (a ladder state, or `lines-dropped`), for the `[views] budget` log.
 
-| View       | Function                                | Served by                | Lines after the header                                                           |
-| ---------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------------- |
-| `outline`  | `outlineView(model, options)`           | api, CLI offline         | The grammar above, in reading order, own-line arrows at the end                  |
-| `graph`    | `graphView`                             | api, CLI offline         | Nodes, a blank line, arrows (below)                                              |
-| `layout`   | `layoutView`                            | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                     |
-| `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                    |
-| `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                              |
-| `find`     | `findView` (`q` required)               | api, CLI offline         | Matches, each on its outline line                                                |
-| `lint`     | `@livehuddle/diagram-lint` (not built)  | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header |
-| `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                       |
-| `overview` | `overviewView(document, tabs, options)` | api, CLI offline         | One line per tab                                                                 |
+| View       | Function                                | Served by        | Lines after the header                                                           |
+| ---------- | --------------------------------------- | ---------------- | -------------------------------------------------------------------------------- |
+| `outline`  | `outlineView(model, options)`           | api, CLI offline | The grammar above, in reading order, own-line arrows at the end                  |
+| `graph`    | `graphView`                             | api, CLI offline | Nodes, a blank line, arrows (below)                                              |
+| `layout`   | `layoutView`                            | api, CLI offline | Exact geometry, or coarse rows with `coarse`                                     |
+| `comments` | `commentsView`                          | api, CLI offline | Open threads, every comment in full; `all` adds resolved ones                    |
+| `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline | One element in full                                                              |
+| `find`     | `findView` (`q` required)               | api, CLI offline | Matches, each on its outline line                                                |
+| `lint`     | `@livehuddle/diagram-lint` (not built)  | api, CLI offline | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header |
+| `overview` | `overviewView(document, tabs, options)` | api, CLI offline | One line per tab                                                                 |
 
 `renderView` dispatches `lint` to the diagram-lint package's renderer; this package owns only its header and the
-query plumbing (`VW58`). `diff` has no api door: the CLI keeps the last tab it read per document, tab and `rev` and runs
-`diffView` on that copy and the current tab.
+query plumbing (`VW58`). livehuddle has no `diff` view (Work Tracker 652): `parseViewQuery` refuses `view=diff` as an
+unknown view.
 
 **`graph`** (`VW30`):
 
@@ -442,24 +441,6 @@ label like any element, and prints as `? <kind>`. The closing line (kept at any 
 elision line) is
 `<n> matches: <count> <field>[s], …` with fields `label`, `note`, `edge`, `cell`, `item`, `code`,
 `comment`. No match prints `0 matches`.
-
-**`diff`** (`VW36`): `diffView(before, after)` compares by element id.
-
-```text
-tab <ref> <name> · since rev <a> · rev <b> · <n> changes
-- <kindWord> <ref> <label>                                      removed (ref from the before tab)
-+ <kindWord> <ref> <label>                                      added
-+ arrow <from> → <to> [<label>] [<arrow ref>]
-~ <kindWord> <ref> <change> {" · " <change>}                     changed
-```
-
-`<change>` is one of `kind <a> → <b>`, `label <a> → <b>`, `note added|removed|changed`, an attribute `<key> <a> → <b>`, `comments <a> → <b>`, `from <a> → <b>`,
-`to <a> → <b>`, `moved +dx,+dy`, `resized +dw,+dh`, `rotated`, `restyled` (any style attribute), `+<n> other fields`.
-A missing label or attribute prints `none` and a flag attribute `on` (`VW63`). Each change speaks for the stored fields behind it; the others that differ are the other fields.
-Removed lines come first in the before tab's order; added and changed follow in the after tab's order.
-The two reads have two ref tables, and one added id can lengthen another's ref (`0bcd` becomes `0bcd1`), so `from`
-and `to` compare ids (each end's element, arrow or free point); refs are only how a
-change prints (the before tab's for `<a>`, the after tab's for `<b>`).
 
 **`overview`** (`VW37`):
 
@@ -585,26 +566,12 @@ type FindView = {
   matches: { ref: string; kind: string; label: string | null; field: FindField; path: string[] }[];
   elision: Elision;
 };
-type DiffView = {
-  header: ViewHeader;
-  since: number;
-  changes: {
-    op: '+' | '-' | '~';
-    ref: string;
-    kind: string;
-    label: string | null;
-    changes: { field: string; before: unknown; after: unknown }[];
-  }[];
-  elision: Elision;
-};
 type OverviewView = {
   document: { id: string; name: string; savedAt: number; tabs: number };
   tabs: ({ outOfScope: true; ref: string } | (ViewHeader & { outOfScope: false }))[];
   elision: Elision;
 };
 ```
-
-`DiffView` is a wire type although no api door serves it: the CLI's `--json` prints it.
 
 ### Refs on the wire
 
@@ -629,8 +596,8 @@ through `textPlain`, with `Cache-Control: no-cache`, the CORS set and the `ETag`
 allowed values:
 
 - `view` in the door's names: `overview` on the document; `outline`, `graph`, `layout`, `comments`, `show`, `find`,
-  `lint` on the tab once the lint is built. `diff` is `unknown_view` with the message "diff is computed by the CLI:
-  livehuddle tab diff"; until then `lint` is `unknown_view` with "the lint view arrives with the diagram lint".
+  `lint` on the tab once the lint is built. `diff` is `unknown_view` with the message "diff has no api door: compare
+  two reads of the tab"; until then `lint` is `unknown_view` with "the lint view arrives with the diagram lint".
 - `budget`: an integer in `[1, VIEW_BUDGET_MAX]`.
 - `only`, `ref`: resolved by `resolveRef`; `only` (outline and layout only) naming an arrow is `invalid_value`
   (`VW41`). The header still counts the whole tab.
@@ -687,18 +654,17 @@ types join `ROOT_TYPES`.
 
 The CLI blueprint maps `tab view --view <name>`, `--budget`, `--only`, `--coarse`, `--style`, `--json`, `--raw`,
 `show`, `find`, `--all` and `tab lint` to the query above online, and calls `renderView` on a pulled file's tab
-offline. `tab diff --since` runs `diffView` on the CLI's cached tab and the current one. An unknown kind is never
+offline. An unknown kind is never
 dropped online or offline.
 
 ## Data and persistence
 
-| Datum                  | Class          | Notes                                                                                         |
-| ---------------------- | -------------- | --------------------------------------------------------------------------------------------- |
-| View text and JSON     | derived        | Never stored; recomputed per request                                                          |
-| Element ids from slugs | identity       | Stored as any element id, in `tabs.data`; the slug rule only chooses them                     |
-| `tabs.rev`             | state (theirs) | Owned by [Agent changesets](../agent-changesets.md); views read it                            |
-| The diff's before tab  | cache (CLI)    | The last tab the CLI read per document, tab and `rev`, in its cache directory (CLI blueprint) |
-| `Agent·Viewed` events  | telemetry      | Category, action and view type only; no id, label or content                                  |
+| Datum                  | Class          | Notes                                                                     |
+| ---------------------- | -------------- | ------------------------------------------------------------------------- |
+| View text and JSON     | derived        | Never stored; recomputed per request                                      |
+| Element ids from slugs | identity       | Stored as any element id, in `tabs.data`; the slug rule only chooses them |
+| `tabs.rev`             | state (theirs) | Owned by [Agent changesets](../agent-changesets.md); views read it        |
+| `Agent·Viewed` events  | telemetry      | Category, action and view type only; no id, label or content              |
 
 No migration. Snapshot and restore are the tab's own. A document export or `pull` file holds what a local view needs:
 the tab and its `rev`.
@@ -729,7 +695,7 @@ the tab and its `rev`.
 | E21  | Comment thread with zero comments              | Not a thread                                                                             |
 | E22  | Tab-scoped visitor asks `overview`             | Out-of-scope tabs print `(out of scope)`; their bodies are never read                    |
 | E23  | Tab-scoped visitor asks a view of another tab  | The GET's 404, unchanged                                                                 |
-| E24  | `view=diff` asked of the api                   | 400 `unknown_view`, naming the CLI's `tab diff`                                          |
+| E24  | `view=diff` asked of the api                   | 400 `unknown_view`, "diff has no api door"                                               |
 | E25  | Trashed document                               | The GET's 410, unchanged                                                                 |
 | E26  | Table with ragged rows                         | Columns = the longest row's length; missing cells print empty                            |
 | E27  | One bare stroke, or strokes split by a shape   | A lone stroke prints as itself; a run breaks wherever reading order puts another element |
@@ -808,14 +774,14 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R11 Nothing nests; a stored lane, stack or boundary is a flat line     | `tree.test.ts`, `outline.test.ts`, `find.test.ts` (a stored layout container)                                                              |
 | R12 Arrows on the source line; free ends on their own                  | `edges.test.ts`                                                                                                                            |
 | R13 Reading order                                                      | `../packages/document-views/src/reading-order.test.ts`                                                                                     |
-| R14 No content summaries or state attributes (every such kind retired) | `outline.test.ts` (`summary: null`), `diff.test.ts` (a retired kind's change is other fields)                                              |
+| R14 No content summaries or state attributes (every such kind retired) | `outline.test.ts` (`summary: null`)                                                                                                        |
 | R15 Bare strokes fold into one counted line                            | `../packages/document-views/src/freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                    |
 | R16 What the outline leaves out                                        | `outline.test.ts`, `header.test.ts`                                                                                                        |
-| R17 Each view holds what the table says                                | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                                |
+| R17 Each view holds what the table says                                | `{graph,layout,comments,show,find,overview}.test.ts` and their goldens                                                                     |
 | R18 Every view opens with the header and its `rev`                     | `render-view.test.ts` (every served view; `lint` with the lint)                                                                            |
 | R19 `json` carries the same data; the plain GET is the raw tab         | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                             |
 | R20 Budget ladder, chars ÷ 3; no default budget but the MCP's          | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `livediagram/apps/mcp/src/read-document.test.ts` (8,000) |
-| R21 Never silent: one elision line, in the door's syntax               | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                    |
+| R21 Never silent: one elision line, in the door's syntax               | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`                                                                 |
 | R22 One pure package                                                   | `render-view.test.ts` (twice, byte-equal; no clock)                                                                                        |
 | R23 `?view=` answers `text/plain`; overview on the document; no diff   | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                  |
 | R24 `read_document` reads a view; JSON and the PNG only on request     | `livediagram/apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                         |
@@ -827,14 +793,13 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 `packages/document-views/src/__fixtures__/golden/`:
 
-| Fixture                 | Built from                                                                                                                                                                                   | Goldens                                                                                                                                                                                     |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkout-tab.ts`       | The research's 30-element "Checkout platform" tab (below), `rev: 41`                                                                                                                         | `checkout.outline.txt`, `.outline.json`, `.outline-mcp-budget-200.txt`, `.graph.txt`, `.layout.txt`, `.layout-coarse.txt`, `.comments.txt`, `.show-146b.txt`, `.find-pay.txt`, `.style.txt` |
-| `checkout-tab-after.ts` | The checkout tab with six changes: rename e4a8 "Payments", add cylinder "Redis cache" in c991 and an arrow 202b→it, remove arrow 0cee, resolve 0c84's thread, move cb02 by +200,0; `rev: 47` | `checkout.diff.txt`                                                                                                                                                                         |
-| `checkout-document.ts`  | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky retro tab                                                                                                                  | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
-| `agent-built-tab.ts`    | A services map placed by hand with slug node ids (the graph input left with part 3)                                                                                                          | `agent-built.outline.txt`                                                                                                                                                                   |
-| `large-tab.ts`          | Ten copies of the checkout tab offset in x (300 elements)                                                                                                                                    | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
-| `edge-cases-tab.ts`     | E1 to E27 in one tab where they compose, separate tabs where they do not; two stored boundaries                                                                                              | `edge-cases.outline.txt`                                                                                                                                                                    |
+| Fixture                | Built from                                                                                      | Goldens                                                                                                                                                                                     |
+| ---------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkout-tab.ts`      | The research's 30-element "Checkout platform" tab (below), `rev: 41`                            | `checkout.outline.txt`, `.outline.json`, `.outline-mcp-budget-200.txt`, `.graph.txt`, `.layout.txt`, `.layout-coarse.txt`, `.comments.txt`, `.show-146b.txt`, `.find-pay.txt`, `.style.txt` |
+| `checkout-document.ts` | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky retro tab                     | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
+| `agent-built-tab.ts`   | A services map placed by hand with slug node ids (the graph input left with part 3)             | `agent-built.outline.txt`                                                                                                                                                                   |
+| `large-tab.ts`         | Ten copies of the checkout tab offset in x (300 elements)                                       | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
+| `edge-cases-tab.ts`    | E1 to E27 in one tab where they compose, separate tabs where they do not; two stored boundaries | `edge-cases.outline.txt`                                                                                                                                                                    |
 
 The checkout tab uses the factories (`createText`, `createShape`, `createSticky`, `createPinnedArrow`,
 `createComment`), with its table a stored one (`storedTableAt`, printed `? table`), and then pins every id to a fixed UUID whose first four characters are the research's prefixes

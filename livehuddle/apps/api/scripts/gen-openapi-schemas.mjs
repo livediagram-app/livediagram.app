@@ -46,7 +46,6 @@ export const ROOT_TYPES = [
   'ShowView',
   'ShowSelectedView',
   'FindView',
-  'DiffView',
   'OverviewView',
   'RefErrorBody',
   'Folder',
