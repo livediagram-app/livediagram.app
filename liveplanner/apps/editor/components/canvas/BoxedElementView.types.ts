@@ -66,18 +66,11 @@ export type BoxedElementViewProps = {
   // than a button that starts one elsewhere (docs/specs/012-collaboration/session-button.md). Null when none is
   // running; absent on a surface with no session behind it.
   tabTimer?: import('@liveplanner/project').TabTimer | null;
-  // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, and the thread mutators for THIS
-  // element. All keyed by element id already, so the panel drives the same
-  // comment machinery the anchored popover does.
+  // A stored Comment panel (docs/specs/012-collaboration/comment-pin.md, retired): who I am, so my own comments in
+  // its read-only thread sit on the right.
   commentSelfId?: string;
-  commentActions?: {
-    add?: (text: string, mentions: import('@liveplanner/project').CommentMention[]) => void;
-    remove?: (commentId: string) => void;
-    resolve?: () => void;
-    unresolve?: () => void;
-  };
   // Action panel (docs/specs/012-collaboration/action-panel.md): who I am, and the action mutators for THIS
-  // element, bound by id the way commentActions are.
+  // element, bound by id.
   actionSelfId?: string | null;
   // An Action panel holds a list (docs/specs/012-collaboration/action-panel.md): add one, or edit / complete /
   // reopen the named one.
@@ -120,7 +113,6 @@ export type BoxedElementViewProps = {
   // viewer is and the writes they may make. One prop for the faces — see CollabFaceRouter. Absent on a surface
   // with no session behind it, which renders them readable but inert.
   collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
-  onOpenComments: (id: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). The badge only
   // renders while the element carries an OPEN action; everyone (including
   // view-role visitors) may open the popover, so this is not optional the

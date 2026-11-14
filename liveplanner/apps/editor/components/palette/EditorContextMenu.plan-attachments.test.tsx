@@ -50,7 +50,7 @@ describe('a Plan item’s element menu', () => {
 
   it('keeps them on any other element', () => {
     open({ ...createShape('square', 0, 0), id: 'sq' });
-    expect(collaborate()).toEqual(['Assign Action', 'Add Comment', 'Add Link', 'Add Note']);
+    expect(collaborate()).toEqual(['Assign Action', 'Add Link', 'Add Note']);
     // And no categories of their own any more: the quick bar is their one place.
     expect(
       screen

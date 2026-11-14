@@ -9,9 +9,10 @@ vi.mock('@/lib/telemetry', () => ({
 
 const { useEditorComments } = await import('./useEditorComments');
 
-// The hook owns the Comment telemetry (docs/specs/017-telemetry/telemetry.md) so the anchored popover and
-// the Comment panel (docs/specs/012-collaboration/comment-pin.md) both count, once each. The delta sink is a
-// spy: the emits are under test here, plus which delta each action sends.
+// The hook owns the Comment telemetry (docs/specs/017-telemetry/telemetry.md), so every surface counts once. The
+// delta sink is a spy: the emits are under test here, plus which delta each action sends. A thread is a Sheet cell's
+// (CELL); an element's own thread is retired (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas
+// element").
 const applyElementDelta = vi.fn();
 function setup() {
   return renderHook(() =>
@@ -23,6 +24,7 @@ function setup() {
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
+const CELL = 'r1:c1';
 
 describe('useEditorComments telemetry', () => {
   beforeEach(() => {
@@ -36,7 +38,7 @@ describe('useEditorComments telemetry', () => {
     const { result } = setup();
     let id = '';
     act(() => {
-      id = result.current.addComment('el', 'hi');
+      id = result.current.addComment('el', 'hi', undefined, undefined, CELL);
       result.current.deleteComment('el', 'c1');
       result.current.resolveThread('el');
       result.current.replaceCommentId('el', 'a', 'b');
@@ -52,7 +54,7 @@ describe('useEditorComments telemetry', () => {
   it('counts a local add, delete, resolve and unresolve once each', () => {
     const { result } = setup();
     act(() => {
-      result.current.addComment('el', 'hi');
+      result.current.addComment('el', 'hi', undefined, undefined, CELL);
       result.current.deleteComment('el', 'c1');
       result.current.resolveThread('el');
       result.current.unresolveThread('el');
@@ -70,7 +72,7 @@ describe('useEditorComments telemetry', () => {
     let accept: (v: { id: string }) => void = () => {};
     const persist = vi.fn(() => new Promise<{ id: string }>((r) => (accept = r)));
     act(() => {
-      result.current.addComment('el', 'hi', persist);
+      result.current.addComment('el', 'hi', persist, undefined, CELL);
     });
     expect(persist).toHaveBeenCalledOnce();
     expect(trackMock).not.toHaveBeenCalled();
@@ -84,7 +86,13 @@ describe('useEditorComments telemetry', () => {
   it('does not count a persisted add or delete the server refused', async () => {
     const { result } = setup();
     await act(async () => {
-      result.current.addComment('el', 'hi', () => Promise.reject(new Error('403')));
+      result.current.addComment(
+        'el',
+        'hi',
+        () => Promise.reject(new Error('403')),
+        undefined,
+        CELL,
+      );
       result.current.deleteComment('el', 'c1', () => Promise.reject(new Error('403')));
       await flush();
     });
@@ -117,25 +125,42 @@ describe('useEditorComments telemetry', () => {
 });
 
 // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): every change names the cell, and opening
-// one is its own toggle beside the element's.
+// one is its own toggle.
 describe('useEditorComments on a Sheet cell', () => {
   beforeEach(() => {
     trackMock.mockReset();
     applyElementDelta.mockReset();
   });
 
-  it('opens and toggles a cell thread apart from the element thread', () => {
+  it('opens and toggles a cell thread, and opens no element thread', () => {
     const { result } = setup();
     act(() => result.current.openComments('sheet', 'r1:c1'));
     expect([result.current.commentThreadOpenId, result.current.commentThreadOpenCell]).toEqual([
       'sheet',
       'r1:c1',
     ]);
+    // The element's own thread is retired: asking for it leaves the cell's open.
     act(() => result.current.openComments('sheet'));
-    expect(result.current.commentThreadOpenCell).toBeNull();
-    act(() => result.current.openComments('sheet'));
+    expect(result.current.commentThreadOpenCell).toBe('r1:c1');
+    act(() => result.current.openComments('sheet', 'r2:c1'));
+    expect(result.current.commentThreadOpenCell).toBe('r2:c1');
+    act(() => result.current.openComments('sheet', 'r2:c1'));
+    expect(result.current.commentThreadOpenId).toBeNull();
+    act(() => result.current.openComments('shape'));
     expect(result.current.commentThreadOpenId).toBeNull();
     expect(trackMock.mock.calls.filter((c) => c[1] === 'Opened')).toHaveLength(2);
+  });
+
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element": no door adds to one.
+  it('adds nothing to an element\u2019s own thread', () => {
+    const { result } = setup();
+    let id = 'x';
+    act(() => {
+      id = result.current.addComment('shape', 'hi', vi.fn());
+    });
+    expect(id).toBe('');
+    expect(applyElementDelta).not.toHaveBeenCalled();
+    expect(trackMock).not.toHaveBeenCalled();
   });
 
   it('shows a thread without ever closing it, however often a deep link asks', () => {
@@ -147,7 +172,9 @@ describe('useEditorComments on a Sheet cell', () => {
       'r1:c1',
     ]);
     act(() => result.current.showComments('sheet'));
-    expect(result.current.commentThreadOpenCell).toBeNull();
+    expect(result.current.commentThreadOpenCell).toBe('r1:c1');
+    act(() => result.current.showComments('sheet', 'r2:c1'));
+    expect(result.current.commentThreadOpenCell).toBe('r2:c1');
     expect(trackMock.mock.calls.filter((c) => c[1] === 'Opened')).toHaveLength(2);
   });
 

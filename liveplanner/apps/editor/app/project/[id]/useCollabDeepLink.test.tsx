@@ -98,13 +98,17 @@ describe('useCollabDeepLink', () => {
     expect(calls.select).not.toHaveBeenCalled();
   });
 
-  it('opens a thread’s comments', () => {
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751): an old link to an
+  // element's own thread lands on the element and opens nothing.
+  it('lands on an element for an old element-thread link, and opens no thread', () => {
     const { calls } = arrive({
       at: { tabId: 't1', elementId: 'b1' },
       open: 'comments',
       itemId: null,
     });
-    expect(calls.openComments).toHaveBeenCalledWith('b1');
+    expect(calls.select).toHaveBeenCalledWith('b1');
+    expect(calls.scrollIntoView).toHaveBeenCalled();
+    expect(calls.openComments).not.toHaveBeenCalled();
     expect(calls.focusCell).not.toHaveBeenCalled();
   });
 
@@ -151,7 +155,9 @@ describe('useCollabDeepLink', () => {
       { at: { tabId: 't1', elementId: 's1:rowb4b4:colb4b4' }, open: 'comments', itemId: null },
       { elements: [odd, sheet] },
     );
-    expect(own.calls.openComments).toHaveBeenCalledWith('s1:rowb4b4:colb4b4');
+    expect(own.calls.select).toHaveBeenCalled();
+    // Its own thread is retired (docs/specs/026-plan/plan-mode.md, Work Tracker 751): nothing opens.
+    expect(own.calls.openComments).not.toHaveBeenCalled();
     const gone = arrive(
       { at: { tabId: 't1', elementId: 's1:rowb4b4:colb4b4' }, open: 'comments', itemId: null },
       { elements: [board] },

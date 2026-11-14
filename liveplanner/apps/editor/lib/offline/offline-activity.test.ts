@@ -135,7 +135,11 @@ describe('offlineActivityFromRecords', () => {
     ]);
   });
 
+  // Threads live on Sheet cells: an element's own stored thread lists nothing (docs/specs/026-plan/plan-mode.md "No
+  // comment thread on any canvas element", Work Tracker 751).
   it('lists every unresolved thread as on the reader’s project, with whether they wrote or were mentioned', async () => {
+    const CELL = 'r1:c1';
+    const onCell = (thread: unknown) => ({ shape: 'plan-sheet', cellComments: { [CELL]: thread } });
     const c = (id: string, at: number, authorId?: string, mentions?: unknown[]) => ({
       id,
       text: `c-${id}`,
@@ -149,16 +153,16 @@ describe('offlineActivityFromRecords', () => {
       tabs: [
         testTab('t1', {
           elements: [
-            shape('a', 'A', {
-              commentThread: { comments: [c('1', 5, 'guest-1')], resolved: false },
+            shape('a', 'A', onCell({ comments: [c('1', 5, 'guest-1')], resolved: false })),
+            shape(
+              'b',
+              'B',
+              onCell({ comments: [c('2', 9, 'u-x', [{ userId: 'guest-1' }])], resolved: false }),
+            ),
+            shape('r', 'R', onCell({ comments: [c('3', 7)], resolved: true })),
+            shape('own', 'Own', {
+              commentThread: { comments: [c('4', 8, 'guest-1')], resolved: false },
             }),
-            shape('b', 'B', {
-              commentThread: {
-                comments: [c('2', 9, 'u-x', [{ userId: 'guest-1' }])],
-                resolved: false,
-              },
-            }),
-            shape('r', 'R', { commentThread: { comments: [c('3', 7)], resolved: true } }),
           ],
         }),
       ],
@@ -167,8 +171,8 @@ describe('offlineActivityFromRecords', () => {
     expect(
       threads.map((t) => [t.elementId, t.youCommented, t.mentionsYou, t.onYourProject]),
     ).toEqual([
-      ['b', false, true, true],
-      ['a', true, false, true],
+      [`b:${CELL}`, false, true, true],
+      [`a:${CELL}`, true, false, true],
     ]);
   });
 

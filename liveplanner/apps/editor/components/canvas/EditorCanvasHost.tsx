@@ -104,7 +104,6 @@ export function EditorCanvasHost() {
     narrowMultiSelection,
     newProject,
     openActionPopover,
-    openComments,
     openNote,
     redo,
     peerRows,
@@ -410,7 +409,6 @@ export function EditorCanvasHost() {
             onShiftSelect={toggleInMultiSelect}
             onSetTextAlign={setTextAlignSelected}
             onFollowLink={followLink}
-            onOpenComments={openComments}
             onOpenAction={openActionPopover}
             onOpenNote={openNote}
             onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}

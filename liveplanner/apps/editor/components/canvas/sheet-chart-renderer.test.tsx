@@ -34,7 +34,6 @@ const shared = (): BoxedShared => ({
   onCommitLabel: vi.fn(),
   onCancelEdit: vi.fn(),
   onFollowLink: vi.fn(),
-  onOpenComments: vi.fn(),
   onOpenAction: vi.fn(),
   onOpenNote: vi.fn(),
   onSetPageHeading: vi.fn(),
@@ -83,7 +82,8 @@ describe('useSheetChartRenderer', () => {
     expect(view().style.opacity).toBe('0.5');
   });
 
-  it('shows its comment count, and hides it when drawn from another tab', () => {
+  // A stored thread draws no count (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element").
+  it('shows no comment count for a stored thread, here or drawn from another tab', () => {
     const commented = pie({
       commentThread: {
         resolved: false,
@@ -100,7 +100,7 @@ describe('useSheetChartRenderer', () => {
       },
     });
     const { unmount } = render(<Drawn element={commented} />);
-    expect(view().querySelector('[data-indicators]')).not.toBeNull();
+    expect(view().querySelector('[data-indicators]')).toBeNull();
     unmount();
     render(<Drawn element={commented} interactive={false} />);
     expect(view().querySelector('[data-indicators]')).toBeNull();

@@ -29,9 +29,7 @@ function open(level: 'view' | 'participate', target: Element, over: Record<strin
     closeContextMenu: vi.fn(),
     activeTab: { elements: [target] },
     can: resolveEditorCapabilities({ level, adderKey: null }),
-    embedMode: false,
     lockedByOther: () => false,
-    openComments: vi.fn(),
     openNote: vi.fn(),
     followLink: vi.fn(),
     beginEdit: vi.fn(),
@@ -48,7 +46,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('ReadOnlyElementMenuHost', () => {
-  it('gives a Participant comments, its words and what the element carries', () => {
+  it('gives a Participant its words and what the element carries, and no comment', () => {
     open(
       'participate',
       square({
@@ -58,15 +56,21 @@ describe('ReadOnlyElementMenuHost', () => {
       }),
     );
     expect(screen.getByText('Square')).toBeTruthy();
-    expect(rows()).toEqual(['Add Comment', 'Edit Text', 'Open Link', 'View Note', 'Copy Text']);
+    expect(rows()).toEqual(['Edit Text', 'Open Link', 'View Note', 'Copy Text']);
   });
 
-  it('gives a Viewer no comment to start, no writing, and comments only where there are some', () => {
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751).
+  it('gives a Viewer no writing, and neither role a comment row, even on a stored thread', () => {
     open('view', square({ label: 'Login' }));
     expect(rows()).toEqual(['Copy Text']);
     cleanup();
-    open('view', square({ commentThread: { comments: [{ id: 'c' }] } }));
-    expect(rows()).toEqual(['Show Comments']);
+    const threaded = square({ commentThread: { comments: [{ id: 'c' }] } });
+    open('view', threaded);
+    expect(rows()).toEqual([]);
+    cleanup();
+    open('participate', threaded);
+    expect(rows()).not.toContain('View Comments');
+    expect(rows()).not.toContain('Add Comment');
   });
 
   it('opens nothing where the role has nothing to do', () => {
@@ -75,10 +79,9 @@ describe('ReadOnlyElementMenuHost', () => {
     expect(rows()).toEqual([]);
   });
 
-  it('leaves out Edit Text on what someone else holds, and comments in an embed', () => {
+  it('leaves out Edit Text on what someone else holds', () => {
     open('participate', square({ label: 'A' }), {
       lockedByOther: () => true,
-      embedMode: true,
     });
     expect(rows()).toEqual(['Copy Text']);
   });
@@ -87,13 +90,9 @@ describe('ReadOnlyElementMenuHost', () => {
     const link = { kind: 'url', url: 'https://example.com' };
     const el = square({ label: 'Hi', link, note: 'n' });
     open('participate', el);
-    fireEvent.click(screen.getByRole('button', { name: 'Add Comment' }));
-    expect(ctx.openComments).toHaveBeenCalledWith('sq');
-    expect(ctx.closeContextMenu).toHaveBeenCalled();
-    cleanup();
-    open('participate', el);
     fireEvent.click(screen.getByRole('button', { name: 'Edit Text' }));
     expect(ctx.beginEdit).toHaveBeenCalledWith('sq');
+    expect(ctx.closeContextMenu).toHaveBeenCalled();
     cleanup();
     open('participate', el);
     fireEvent.click(screen.getByRole('button', { name: 'Open Link' }));
