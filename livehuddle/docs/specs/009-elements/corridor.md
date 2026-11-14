@@ -44,6 +44,8 @@ A shape kind of its own, `corridor`, whose type is stored in `variant` (the fiel
   as backdrops, the larger first), never rings, no label. Not aspect locked.
 - **Dropped, then sized**, as a Room (`dropsAtOwnSize`): with its tile armed, the corridor follows the pointer at its
   type's size, and a click or a press drops it there; it keeps its resize handles.
+- **Its type changes in place**: the element menu's **Type** turns a placed corridor into any of the four, keeping its
+  rotation and centre ([A piece's type](office.md#a-pieces-type)).
 
 ## Walls block, doors cut them
 

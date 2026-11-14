@@ -189,7 +189,9 @@ second popover beside the flyout, lined up with the tile, so the flyout stays op
 does. It opens on the side of the tile's own column (a right-column tile to the flyout's right, a left-column one
 to its left), against the tile itself over the other column where the window has no room, and rises to stay inside
 the window. Resting on the tile for 150 ms opens it, a press opens it at once, a second press closes it, and
-resting on another tile closes it. On a phone it lies over the flyout. Its header names the tile and says what can
+resting on another tile closes it. On a phone it lies over the flyout, from the flyout's top and at least as tall
+as it, so a short panel (the Room's seven presets over the Rooms flyout) never leaves the flyout's bottom rows showing
+below it (Work Tracker 628). Its header names the tile and says what can
 change after a preset is placed; its presets are one column of cards, placing and dragging as any tile.
 
 ### Icons, Stickers and Session: two panes
