@@ -28,10 +28,15 @@ import {
   type Level,
   type ShareAccess,
 } from '@liveworkspace/index-client';
+import type { KeysFetcher } from '@liveworkspace/auth-client';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
-// The two settings every app on the index has: the index's origin and the app's key there (a secret).
-export type IndexEnv = { INDEX_ORIGIN?: string; INDEX_KEY?: string };
+// The settings every app on the index has: the index's origin and the app's key there (a secret), and the INDEX
+// service binding its grant keys are fetched through (the public route only when it is missing or throws: a
+// Worker's fetch to another Worker's public route can stall). A Durable Object gets its Worker's env, binding and all.
+export type IndexEnv = { INDEX_ORIGIN?: string; INDEX_KEY?: string; INDEX?: KeysFetcher };
+
+type GrantEnv = Pick<IndexEnv, 'INDEX_ORIGIN' | 'INDEX'>;
 
 // A grant as a request carries it: the index's claims, and the share code the caller came in through (the
 // item's room closes a revoked code's sessions by it).
@@ -111,19 +116,20 @@ export type IndexService = ReturnType<typeof createIndexService>;
 
 export function createIndexService<A extends App>(app: A) {
   // One verifier per key set for the life of the isolate: it caches the keys and refetches only on an unknown kid.
-  const verifiers = new Map<string, GrantVerifier>();
+  // Kept with the binding it was built over, so an env with another binding (a test's) builds its own.
+  const verifiers = new Map<string, { via: KeysFetcher | undefined; verify: GrantVerifier }>();
   let verifierOverride: GrantVerifier | null = null;
   const grantCache = new Map<string, { grant: GrantResponse; until: number }>();
 
-  function verifierFor(env: Pick<IndexEnv, 'INDEX_ORIGIN'>): GrantVerifier | null {
+  function verifierFor(env: GrantEnv): GrantVerifier | null {
     if (verifierOverride) return verifierOverride;
     const base = indexApiUrl(env);
     if (!base) return null;
-    let verify = verifiers.get(base);
-    if (!verify) {
-      verify = createGrantVerifier({ jwksUrl: `${base}/jwks`, audience: app });
-      verifiers.set(base, verify);
-    }
+    const via = env.INDEX;
+    const held = verifiers.get(base);
+    if (held && held.via === via) return held.verify;
+    const verify = createGrantVerifier({ jwksUrl: `${base}/jwks`, audience: app, keysFrom: via });
+    verifiers.set(base, { via, verify });
     return verify;
   }
 
@@ -173,7 +179,7 @@ export function createIndexService<A extends App>(app: A) {
 
     // The claims of a grant for this item, or null for a missing, forged, expired or misaddressed one.
     verifyGrant: async (
-      env: Pick<IndexEnv, 'INDEX_ORIGIN'>,
+      env: GrantEnv,
       token: string | null | undefined,
       itemId: string,
     ): Promise<GrantClaims | null> => {

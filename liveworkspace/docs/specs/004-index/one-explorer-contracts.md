@@ -438,7 +438,11 @@ person's access token, and from accounts for a team the claim does not hold yet,
 
 ## Grants
 
-A grant is a JWT, ES256, signed by the index's own key; its public keys are at `GET /jwks`.
+A grant is a JWT, ES256, signed by the index's own key; its public keys are at `GET /jwks`. An app's API Worker
+and its items' Durable Objects fetch them through an `INDEX` service binding (`liveworkspace-index`, `-staging`),
+never waiting on the public route unless the binding is missing or throws (a local run without the index), and
+check access and guest tokens against accounts' keys through an `ACCOUNTS` binding the same way
+([integrating-an-app.md](../002-architecture/integrating-an-app.md#checking-the-token-in-the-api-worker)).
 
 ```json
 {

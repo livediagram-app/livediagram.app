@@ -49,7 +49,7 @@ It never bounces more than once per tab while the person can't have signed in el
 
 ## Hybrid identity
 
-Every person the api knows is a **liveworkspace identity**, carried the same way: `Authorization: Bearer <token>`. Two kinds of token arrive there, and the api verifies both in `apps/api/src/auth/accounts.ts` (`createPersonVerifier` from `@liveworkspace/auth-client`): a local signature check against the accounts Worker's published keys (`${ACCOUNTS_URL}/api/auth/jwks`, cached per isolate), plus its issuer (`${ACCOUNTS_URL}/api/auth`) and this API's own audience (`API_RESOURCE`), so a token minted for another liveworkspace app is refused.
+Every person the api knows is a **liveworkspace identity**, carried the same way: `Authorization: Bearer <token>`. Two kinds of token arrive there, and the api verifies both in `apps/api/src/auth/accounts.ts` (`createPersonVerifier` from `@liveworkspace/auth-client`): a local signature check against the accounts Worker's published keys (fetched through the `ACCOUNTS` service binding, `liveworkspace-accounts` or `-staging`, with the public `${ACCOUNTS_URL}/api/auth/jwks` as the fallback when the binding is missing or throws, as on a local run without accounts; cached per isolate), plus its issuer (`${ACCOUNTS_URL}/api/auth`) and this API's own audience (`API_RESOURCE`), so a token minted for another liveworkspace app is refused.
 
 1. **Account access token.** The token's `sub` is the owner id; its `email` is trusted only when `email_verified` is true.
 2. **Guest token.** A liveworkspace guest's token, verified the same way ([Guests](#guests)).

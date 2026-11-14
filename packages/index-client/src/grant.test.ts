@@ -1,5 +1,5 @@
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT, type JWK } from 'jose';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { GRANT_ISSUER } from './constants';
 import { createGrantVerifier } from './grant';
 
@@ -119,5 +119,60 @@ describe('createGrantVerifier', () => {
     await expect(
       loose(await grant({}, { iss: 'http://localhost:3000/api/index' })),
     ).resolves.not.toBeNull();
+  });
+});
+
+describe('grant keys through the INDEX binding', () => {
+  const JWKS_URL = 'https://www.liveworkspace.app/api/index/jwks';
+  const jwksAnswer = () => Response.json({ keys: [publicJwk] });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('fetches the key set through the binding, never over the public route', async () => {
+    const routed = vi.fn(async () => {
+      throw new Error('the public route must not be asked');
+    });
+    vi.stubGlobal('fetch', routed);
+    const bound = vi.fn(async (_url: string) => jwksAnswer());
+    const check = createGrantVerifier({
+      jwksUrl: JWKS_URL,
+      audience: 'liveplanner',
+      keysFrom: { fetch: bound },
+    });
+    await expect(check(await grant())).resolves.toMatchObject({ item: 'item-1' });
+    expect(bound).toHaveBeenCalledTimes(1);
+    expect(bound.mock.calls[0]![0]).toBe(JWKS_URL);
+    expect(routed).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the public route when the binding throws', async () => {
+    const routed = vi.fn(async () => jwksAnswer());
+    vi.stubGlobal('fetch', routed);
+    const bound = vi.fn(async () => {
+      throw new Error('no local dev session for liveworkspace-index');
+    });
+    const check = createGrantVerifier({
+      jwksUrl: JWKS_URL,
+      audience: 'liveplanner',
+      keysFrom: { fetch: bound },
+    });
+    await expect(check(await grant())).resolves.toMatchObject({ item: 'item-1' });
+    expect(bound).toHaveBeenCalledTimes(1);
+    expect(routed).toHaveBeenCalled();
+  });
+
+  it('refuses the grant when neither the binding nor the route has the keys', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('down', { status: 503 })),
+    );
+    const check = createGrantVerifier({
+      jwksUrl: JWKS_URL,
+      audience: 'liveplanner',
+      keysFrom: { fetch: async () => new Response('down', { status: 503 }) },
+    });
+    await expect(check(await grant())).resolves.toBeNull();
   });
 });
