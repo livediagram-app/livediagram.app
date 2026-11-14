@@ -111,6 +111,7 @@ import {
 } from './explorer-landing';
 import { loadSettings, useExplorerSettingsPanel } from './useExplorerSettingsPanel';
 import { useExplorerThisBrowser } from './useExplorerThisBrowser';
+import { useItemArrival } from './useItemArrival';
 
 // The Search panel and its entries: fetched when Search is pointed at or pressed, never with the page.
 const loadSearch = () => import('./ExplorerSearch');
@@ -144,6 +145,7 @@ const teamsHost = createTeamsHost({
 });
 
 const NO_ARRIVAL: Arrival = { app: null, via: null };
+const NO_LOCAL: readonly [] = [];
 
 // The Explorer's own addresses move inside the page; anything else (an item in its app, which on an app's address is
 // this same origin) is a full page load, never this site's client router, which has no such page.
@@ -325,6 +327,24 @@ export function ExplorerShell() {
   // This Browser: the app's own list on its address, else a link to the app's offline view (useExplorerThisBrowser).
   const { thisBrowser, itemMenu, sidebarLinks } = useExplorerThisBrowser(host, app, signedIn);
 
+  // An editor's door from an open item: the place that holds it, then the item marked there (useItemArrival).
+  const viewer = useMemo(
+    () => (identity ? { id: identity.sub, teamIds: teams.map((team) => team.id) } : null),
+    [identity, teams],
+  );
+  const replaceTo = useCallback(
+    (href: string) => router.replace(href, { scroll: false }),
+    [router],
+  );
+  const itemArrival = useItemArrival({
+    item: stay?.item ?? null,
+    viewer,
+    client,
+    local: thisBrowser?.items ?? NO_LOCAL,
+    view,
+    replace: replaceTo,
+  });
+
   // The Search panel: the bottom bar's Search, or Cmd/Ctrl+K or Cmd/Ctrl+. (not while typing or in a dialog).
   const [searchOpen, setSearchOpen] = useState(false);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
@@ -375,7 +395,7 @@ export function ExplorerShell() {
       className="flex min-h-dvh flex-col bg-slate-50 dark:bg-slate-950"
       style={FLOOR}
     >
-      {identity ? (
+      {identity && !itemArrival.pending ? (
         <Explorer
           key={identity.sub}
           app={app}
@@ -399,6 +419,7 @@ export function ExplorerShell() {
           header={header}
           helpHref={helpHref}
           trashedOnArrival={trashed}
+          arrivedItem={itemArrival.arrivedItem}
           welcome={welcome}
           templateHref={templateHref}
           sidebarLinks={sidebarLinks}

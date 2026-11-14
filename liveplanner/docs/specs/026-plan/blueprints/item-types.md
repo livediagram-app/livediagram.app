@@ -143,11 +143,11 @@ true`. `storedImageIds(value)`: a non-empty string as `[id]`, a list's non-empty
   Image and Several Images). The editor (part 2): Add Field's Several Images tile (`KIND_VARIANTS`
   `images: { kind: 'image', preset: { multiple: true } }`, `pickOf` answering `images` for an Image with `multiple`,
   in Links and Images after Image, its line, words, `PICK_KIND_LABELS` "Several Images", `PICK_KIND_ICONS`
-  `lucideImages`, `AddFieldTileArt` three thumbnails and "+2", `SampleValue` three picture tiles and "+2");
+  `lucideImages` (also the Display's Available Fields chip: `ItemTypeDisplayParts`' `fieldIcon` draws `fieldIconOf`), `AddFieldTileArt` three thumbnails and "+2", `SampleValue` three picture tiles and "+2");
   `addedField` keeps `multiple` on an Image; Edit Field's Image and Several Images change (`kindChangeRefusal` lets
   one kind change to itself; `fieldKindChange`: kept one way, the first the other). The panel's
   `ImageGalleryField.tsx` (routed by `ItemFieldEditor` on `holdsSeveralImages`): a `@container` grid,
-  `grid-cols-3 @xs:grid-cols-4`, each `Thumbnail` a square `<li data-reorder-id>` lazy through `useSeen` and
+  `grid-cols-3 @xs:not-pointer-coarse:grid-cols-4` (3 on a touch screen, where the corners always show), each `Thumbnail` a square `<li data-reorder-id>` lazy through `useSeen` and
   `useImageUrl(scope, id, IMAGE_THUMB_EDGE)` (the card face's size, so the first picture's copy is shared), its
   button named "{Field}: image i of n" opening `openImageWhole` (`image-open.ts`, shared with Attachments' Open),
   Alt+←/→ `movedImage` (focus kept on the moved tile, "Moved to i of n" announced), a Remove cross and a grip
@@ -155,7 +155,8 @@ true`. `storedImageIds(value)`: a non-empty string as `[id]`, a list's non-empty
   (`gridSlot`: the nearest middle; `slotAfterMove`; `GRID_DRAG_THRESHOLD_PX` 4 before a press becomes a drag, the
   click after a drag swallowed). Uploads through `use-image-field-upload.ts` (`useImageFieldUpload`): each file
   `checkImageFile`d first (refused ones said "{name}: {why}"), the room (`IMAGE_FIELD_PICTURES_MAX` less held and
-  pending) said once as "{Field} holds up to 20."; one queue, one upload at a time, each `PendingImage` a tile
+  pending) said once as "{Field} holds up to 20."; a landed id the field already holds (`withImagesAdded` adds nothing and
+  skips nothing: the same bytes, the same media id) said "{name} is already in {Field}." (`imagesDuplicateMessage`); one queue, one upload at a time, each `PendingImage` a tile
   (`waiting`, then `uploading`, its `PendingTile`'s ring a Cancel Upload button calling `cancel(key)`: a waiting key
   is skipped by the queue, an uploading one aborted), and one `patchItem` of `imageFieldValue(def, withImagesAdded(storedImageIds(card
 now), [id]).ids)` per landed file; "N images added" announced at the end. The card face: `customKindPill` hands

@@ -37,7 +37,7 @@
   }
 }
 
-/* The two cursors ride their stops (--p1 ...; lib/hero-motion.ts). The teammate votes (3.9s) and
+/* The two cursors ride their stops (--p1 ...; @liveworkspace/marketing-site lib/hero-motion.ts). The teammate votes (3.9s) and
    claps (6.8s); you start the timer (5.3s), put the top note in the spotlight (6.0s), mark it done
    (8.6s) and spotlight the next (9.4s). */
 .th-mate,

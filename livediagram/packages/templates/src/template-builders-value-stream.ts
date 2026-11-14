@@ -30,7 +30,7 @@ import {
 } from '@liveworkspace/template-previews/analysis-data';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, MUTED, PAPER, SCAFFOLD, chipRow } from './template-report-kit';
-import { CANVAS_TONES } from './template-inks';
+import { CANVAS_TONES } from '@liveworkspace/template-previews/template-inks';
 
 const TITLE = 'Plateful · Value stream: idea to production';
 const CAPTION =

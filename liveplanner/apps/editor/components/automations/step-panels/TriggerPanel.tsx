@@ -1,7 +1,8 @@
 'use client';
 
 // The When panel (docs/specs/026-plan/automations.md "Triggers"): which trigger starts the rule, a card's or a
-// time's (picked in the Pick a Trigger picker, ChangeTriggerField), then what narrows it: Card Created's column, Form Response's Form tab, Card Moved's From and To columns,
+// time's (picked in the Pick a Trigger picker, ChangeTriggerField), then what narrows it: Card Created's column, Form Response's Form tab, Card Moved's Card Types and its From and To
+// columns (only those the picked types use, card-moved-columns.ts),
 // Field Changed's fields (at least one), nothing for Comment Added and Run from a Card, and a time trigger's
 // schedule (TimeTriggerPanel), an Incoming Webhook's address and secret (IncomingWebhookPanel), and a GitHub trigger's
 // result and connection (GithubTriggerFields).
@@ -24,6 +25,7 @@ import { IncomingWebhookPanel } from './IncomingWebhookPanel';
 import { TimeTriggerPanel } from './TimeTriggerPanel';
 import { ChangeTriggerField } from './ChangeTriggerField';
 import { freshTrigger } from '../trigger-groups';
+import { cardMovedColumns, withCardMovedTypes } from '../card-moved-columns';
 
 // Column Over Limit's choices: every limit to 20, then in steps.
 const LIMITS = [
@@ -66,6 +68,14 @@ export function TriggerPanel({
   const fields = fieldChangeFields(outline.types);
   const columns = outline.columns.map((c) => ({ value: c.status, label: c.name }));
   const statuses = columns.map((c) => c.value);
+  // Card Moved's From and To: the columns its picked card types use, every column when none is picked.
+  const movedColumns =
+    trigger.kind === 'card_moved'
+      ? cardMovedColumns(outline.types, trigger.types, outline.columns).map((c) => ({
+          value: c.status,
+          label: c.name,
+        }))
+      : columns;
   // Field Changed's chips: the plan's fields, and one the rule names that is not offered by its name: a field it never
   // hears (Needs Attention names it too) or a built-in one no card type lists. Only one the plan lacks reads as gone.
   const fieldOptions = fields.map((f) => ({ value: f.id, label: f.name }));
@@ -153,8 +163,16 @@ export function TriggerPanel({
       {trigger.kind === 'card_moved' ? (
         <>
           <ChipToggles
+            label="Card Types"
+            options={outline.types.map((t) => ({ value: t.id, label: t.label }))}
+            value={trigger.types ?? []}
+            hint="None picked: any card type."
+            gone="A card type no longer here"
+            onChange={(types) => onChange(withCardMovedTypes(trigger, types, outline))}
+          />
+          <ChipToggles
             label="From"
-            options={columns}
+            options={movedColumns}
             value={trigger.from ?? []}
             hint="None picked: from any column."
             gone={GONE_COLUMN}
@@ -162,7 +180,7 @@ export function TriggerPanel({
           />
           <ChipToggles
             label="To"
-            options={columns}
+            options={movedColumns}
             value={trigger.to ?? []}
             hint="None picked: to any column."
             gone={GONE_COLUMN}

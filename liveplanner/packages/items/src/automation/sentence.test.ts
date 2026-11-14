@@ -148,6 +148,20 @@ describe('triggerParts', () => {
     expect(triggerParts({ kind: 'card_moved' }, OUTLINE)).toHaveLength(2);
   });
 
+  it("names Card Moved's card types before its columns", () => {
+    expect(
+      triggerParts({ kind: 'card_moved', types: ['bug', 'task'], to: ['done'] }, OUTLINE).slice(2),
+    ).toEqual([
+      { word: 'for' },
+      { chip: 'Bug' },
+      { word: 'or' },
+      { chip: 'Task' },
+      { word: 'to' },
+      { chip: 'Done' },
+    ]);
+    expect(triggerParts({ kind: 'card_moved', types: [] }, OUTLINE)).toHaveLength(2);
+  });
+
   it('names the fields a Field Changed listens to', () => {
     expect(
       triggerParts({ kind: 'field_changed', fields: ['priority', 'f-done'] }, OUTLINE).slice(2),

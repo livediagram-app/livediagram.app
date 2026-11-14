@@ -13,6 +13,7 @@ import {
   itemLabels,
   itemStatus,
   itemTitle,
+  type Item,
   type ItemFields,
   type ItemPerson,
 } from '../item';
@@ -63,6 +64,7 @@ import {
   type Plan,
   type PlanActionsContext,
   type PlannedRun,
+  type PlannedSegment,
   type PlannedWrites,
   Run,
   type Walk,
@@ -75,6 +77,7 @@ export type {
   PlannedMention,
   PlannedRelated,
   PlannedRun,
+  PlannedSegment,
   PlannedSend,
   PlannedWrites,
 } from './plan-walk';
@@ -271,7 +274,7 @@ function apply(a: AutomationAction, w: Walk) {
 function createCard(a: Extract<AutomationAction, { kind: 'create_card' }>, w: Walk) {
   const { plan, ctx } = w;
   const o = ctx.outline;
-  if (plan.created.length >= AUTOMATION_CREATED_PER_RUN)
+  if (plan.madeBefore + plan.created.length >= AUTOMATION_CREATED_PER_RUN)
     fail(`A run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
   const type = o.types.find((t) => t.id === a.type);
   if (!type) return failGone({ kind: 'type', id: a.type });
@@ -305,7 +308,7 @@ const noCardField = (field: string, label: string, w: Walk): never =>
 function copyCard(a: Extract<AutomationAction, { kind: 'copy_card' }>, w: Walk) {
   const { plan, ctx } = w;
   const o = ctx.outline;
-  if (plan.created.length >= AUTOMATION_CREATED_PER_RUN)
+  if (plan.madeBefore + plan.created.length >= AUTOMATION_CREATED_PER_RUN)
     fail(`A run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
   if (a.status && !o.statuses.some((s) => s.status === a.status))
     failGone({ kind: 'column', id: a.status });
@@ -454,14 +457,40 @@ function branch(s: AutomationBranch, top: Walk) {
 // The run's steps against the card, worked out: the one patch, the comments, the card to make, the emails, the
 // related cards' writes and the messages, with a line per step; or where it failed and why. A Wait ends the plan
 // there (`wait`: the rest goes on later, from its next step); `from` starts at a step (the rest after a Wait), and
-// `through` plans past every Wait (Test on a Card: "Would wait 2 days, then:").
+// `through` plans past every Wait (Test on a Card: "Would wait 2 days, then:"). An AI step cuts the writes there: the
+// steps after it plan a fresh patch from the card as the steps before left it, its `after` (spec "How a step runs").
 export function planActions(
   steps: readonly AutomationStep[],
   ctx: PlanActionsContext,
   opts: { from?: number; through?: boolean } = {},
 ): PlannedRun {
   const run = new Run();
-  const w = walkOf(ctx.card, run, ctx);
+  let w = walkOf(ctx.card, run, ctx);
+  // The segments cut so far (the first is the run's own fields), the card each later one is planned from, and where
+  // the current one's related cards start.
+  const cuts: PlannedSegment[] = [];
+  const froms: Item[] = [];
+  let relatedFrom = 0;
+  const cut = () => {
+    cuts.push(segmentOf(w.plan, relatedFrom));
+    froms.push(w.plan.card);
+    relatedFrom = run.related.length;
+    const made = w.plan.madeBefore + w.plan.created.length;
+    w = walkOf(w.plan.card, run, ctx);
+    w.plan.madeBefore = made;
+  };
+  const writes = (): PlannedWrites => {
+    const all = [...cuts, segmentOf(w.plan, relatedFrom)];
+    run.ai.forEach((p, i) => {
+      p.after = { ...all[i + 1]!, from: froms[i]! };
+    });
+    return {
+      ...all[0]!,
+      sends: run.sends,
+      turns: run.turns,
+      ...(run.ai.length ? { ai: run.ai } : {}),
+    };
+  };
   let wait: { hours: number; from: number } | undefined;
   try {
     for (let index = opts.from ?? 0; index < steps.length; index += 1) {
@@ -487,6 +516,7 @@ export function planActions(
       if (s.kind === 'ai') {
         count(run);
         planAi(s, index, w);
+        cut();
         continue;
       }
       if (s.kind !== 'if') {
@@ -508,21 +538,19 @@ export function planActions(
       failed: error.message,
       ...(error.gone ? { gone: error.gone } : {}),
       lines: run.lines,
-      done: writesOf(w.plan),
+      done: writes(),
     };
   }
-  return { ...writesOf(w.plan), ...(wait ? { wait } : {}), lines: run.lines };
+  return { ...writes(), ...(wait ? { wait } : {}), lines: run.lines };
 }
 
-const writesOf = (plan: Plan): PlannedWrites => ({
+// One segment's writes: its walk's patch and threads, and the related cards its branches planned (from `relatedFrom`).
+const segmentOf = (plan: Plan, relatedFrom: number): PlannedSegment => ({
   patch: plan.patch(),
   comments: plan.comments,
   created: plan.created,
   emails: plan.emails,
   mentions: plan.mentions,
   resolve: plan.resolve,
-  related: plan.run.related,
-  sends: plan.run.sends,
-  turns: plan.run.turns,
-  ...(plan.run.ai.length ? { ai: plan.run.ai } : {}),
+  related: plan.run.related.slice(relatedFrom),
 });

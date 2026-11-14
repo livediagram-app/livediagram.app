@@ -677,6 +677,16 @@ The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts
 | `F`       | Frame                                                                         |
 | `Z`       | Zen mode (focus)                                                              |
 
+**While a dialog is open** the shortcuts stand down: the dialog owns the keyboard (the modal guard), so no key acts on
+the canvas behind it. One dialog is the exception: **the item panel takes undo and redo** (Work Tracker 746). While it
+is the only dialog open, `⌘Z` undoes and `⌘⇧Z` / `Ctrl Y` redo the plan's changes (a field changed in the panel, a
+picture added, moved or removed), as they would with the panel closed, for whoever may undo (an Editor and a
+Participant; a Viewer has nothing to undo). Focus in a text field, a text area or a contentEditable inside the panel (its
+title, a Text field, the description) keeps the browser's own text undo; so does a menu open in the panel. A dialog
+opened over the panel (a confirmation, Search) takes the keyboard back, and every other dialog keeps standing down for
+every key. Nothing else passes through: Escape closes the panel, and Delete, the arrows and every other chord stay
+with the panel.
+
 **Add elements**: no key adds an element; there is no palette to place from ([Plan mode](../026-plan/plan-mode.md#no-palette)).
 
 **Edit** (with `⌘`):

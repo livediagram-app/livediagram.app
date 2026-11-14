@@ -12,7 +12,7 @@ import type { CursorPos } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import type { SaveBaselineRefs } from './save-baseline';
 import type { OwnElementWrites } from './own-element-writes';
-import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
+import type { RemoteViewport } from '@liveworkspace/workbench/hooks/collab/useFollowMe';
 import type { RoomNameSync } from './room-name-sync';
 
 // What useRoomConnection takes, split out of useRoomConnection.ts: the document and who we are, the page's state

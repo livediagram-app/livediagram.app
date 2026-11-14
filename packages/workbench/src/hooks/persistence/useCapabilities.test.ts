@@ -19,4 +19,23 @@ describe('createCapabilities', () => {
     const { result } = renderHook(() => useCapabilities());
     await waitFor(() => expect(result.current).toEqual({ emailEnabled: false }));
   });
+
+  // Work Tracker 765: an editor's own flags (liveplanner's githubEnabled, livediagram's aiEnabled), each true only on
+  // an exact true.
+  it('answers the flags an editor names, false until the api says true', async () => {
+    const useCapabilities = createCapabilities(
+      async () => ({ emailEnabled: true, githubEnabled: true }),
+      ['githubEnabled', 'aiEnabled'],
+    );
+    const off = renderHook(() => useCapabilities(false));
+    expect(off.result.current).toEqual({
+      emailEnabled: false,
+      githubEnabled: false,
+      aiEnabled: false,
+    });
+    const { result } = renderHook(() => useCapabilities());
+    await waitFor(() =>
+      expect(result.current).toEqual({ emailEnabled: true, githubEnabled: true, aiEnabled: false }),
+    );
+  });
 });

@@ -22,7 +22,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { spinFrameDelays, spinReel, type PickerCandidate } from '@/lib/picker';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
-import { ReelWindow } from '@/components/canvas/paper-kit';
+import { ReelWindow } from '@liveworkspace/workbench/components/canvas/paper-kit';
 
 export function PickerFace({
   label,

@@ -3,8 +3,8 @@
 // or Link Cards' chosen card gone since the rule was written (or never in a copy): the Rules list marks the rule Needs Attention with these
 // lines. Each thing is said once, in the order the rule names it. The plan's webhooks live in the index, not the plan:
 // a caller that has them (the builder) passes their ids, and one an outgoing action names that is gone needs
-// attention too. So does a GitHub-triggered rule on a plan not connected to GitHub, when the caller knows the
-// connection. Pure.
+// attention too. So does a GitHub-triggered rule on a plan not connected to GitHub, or one naming repositories none of
+// which the plan's connection still hears, when the caller knows the connection. Pure.
 
 import type {
   AutomationAction,
@@ -34,7 +34,12 @@ type Need = {
 // One thing a rule needs, as data: something it names that is gone (by kind and stored id), or a field Field Changed
 // can never hear (by the plan's name). The editor words these without ids; ruleNeeds words them for agents.
 // `github`: a GitHub-triggered rule on a plan not connected to GitHub, which hears nothing until it connects.
-export type AutomationNeed = Need | { kind: 'unheard'; name: string } | { kind: 'github' };
+// `repositories`: a GitHub trigger whose named repositories have all left the connection (as the rule names them).
+export type AutomationNeed =
+  | Need
+  | { kind: 'unheard'; name: string }
+  | { kind: 'github' }
+  | { kind: 'repositories'; names: string[] };
 
 // What the kinds a run never fails on read as (the rest read as a failed step's line does, goneLine).
 const WORDS: Readonly<Record<Exclude<Need['kind'], AutomationGone['kind']>, string>> = {
@@ -127,8 +132,10 @@ function namesOf(rule: AutomationRuleBody, o: AutomationOutline): Need[] {
   const out: Need[] = [];
   if (t.kind === 'card_created' && t.status) out.push({ kind: 'column', id: t.status });
   if (t.kind === 'form_response' && t.formTab) out.push({ kind: 'form', id: t.formTab });
-  if (t.kind === 'card_moved')
+  if (t.kind === 'card_moved') {
+    for (const id of t.types ?? []) out.push({ kind: 'type', id });
     for (const id of [...(t.from ?? []), ...(t.to ?? [])]) out.push({ kind: 'column', id });
+  }
   if (t.kind === 'field_changed') for (const id of t.fields) out.push({ kind: 'field', id });
   if (t.kind === 'column_limit') out.push({ kind: 'column', id: t.status });
   if (t.kind === 'stuck') for (const id of t.statuses ?? []) out.push({ kind: 'column', id });
@@ -164,18 +171,32 @@ function present(need: Need, o: AutomationOutline, webhooks?: ReadonlySet<string
   }
 }
 
+// A GitHub trigger's named repositories when none of them is among `heard` (any case), else none.
+function goneRepositories(rule: AutomationRuleBody, heard: readonly string[]): string[] {
+  const t = rule.trigger;
+  const named = isGithubTrigger(t) ? (t.repositories ?? []) : [];
+  if (named.length === 0) return [];
+  const keys = new Set(heard.map((h) => h.toLowerCase()));
+  return named.some((n) => keys.has(n.toLowerCase())) ? [] : [...named];
+}
+
 // What the rule names that the plan lacks, in the order it names them, each once. `webhooks`: the ids of the plan's
-// webhooks, when the caller has them (absent, outgoing actions are not checked). `githubConnected`: whether the plan
-// is connected to GitHub, when the caller knows (absent, a GitHub trigger is not checked).
+// webhooks, when the caller has them (absent, outgoing actions are not checked). `github`: the plan's connection,
+// when the caller knows it: `false` for none, else the names of the repositories it hears (absent, a GitHub trigger
+// is not checked).
 export function ruleNeedItems(
   rule: AutomationRuleBody,
   outline: AutomationOutline,
   webhooks?: ReadonlySet<string>,
-  githubConnected?: boolean,
+  github?: readonly string[] | false,
 ): AutomationNeed[] {
   const seen = new Set<string>();
   const out: AutomationNeed[] = [];
-  if (githubConnected === false && isGithubTrigger(rule.trigger)) out.push({ kind: 'github' });
+  if (github === false && isGithubTrigger(rule.trigger)) out.push({ kind: 'github' });
+  if (github) {
+    const names = goneRepositories(rule, github);
+    if (names.length) out.push({ kind: 'repositories', names });
+  }
   for (const need of namesOf(rule, outline)) {
     const key = `${need.kind}:${need.id}`;
     if (seen.has(key) || present(need, outline, webhooks)) continue;
@@ -193,11 +214,15 @@ export function ruleNeedItems(
 export const needLine = (need: AutomationNeed): string =>
   need.kind === 'github'
     ? 'GitHub is not connected'
-    : need.kind === 'unheard'
-      ? `Field Changed never hears ${need.name}`
-      : need.kind === 'form' || need.kind === 'webhook' || need.kind === 'card'
-        ? `${WORDS[need.kind]} ${need.id} is gone`
-        : goneLine({ kind: need.kind, id: need.id });
+    : need.kind === 'repositories'
+      ? need.names.length === 1
+        ? `Repository ${need.names[0]!} is not heard`
+        : `Repositories ${need.names.join(', ')} are not heard`
+      : need.kind === 'unheard'
+        ? `Field Changed never hears ${need.name}`
+        : need.kind === 'form' || need.kind === 'webhook' || need.kind === 'card'
+          ? `${WORDS[need.kind]} ${need.id} is gone`
+          : goneLine({ kind: need.kind, id: need.id });
 
 // What the rule names that the plan lacks, a line each ("Column done is gone"), for agents.
 export function ruleNeeds(

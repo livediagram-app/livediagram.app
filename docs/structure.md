@@ -30,7 +30,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ drive                    the Drive mirror's contract: cadence, formats, the plan, wire shapes, backoff
 │  ├─ e2e-kit                  the editors' Playwright measuring sticks: the contrast audit, the optical audit and its snap, the canvas probe's runner (`canvas-probe`, its gestures) and calibration, interactive reading, trace tasks, budget and nightly report
 │  ├─ edit-operations          the edit engine's parts that read no element union: element text, equality, result lines
-│  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, element defaults, themes, tables, charts, Sankey, entity and sequence rules, wordmarks, arrows and icons in the export, comment threads, fingerprints, stored-data repairs, the white under a picture, element ops and factories, mind maps, the authoring normaliser, element refs, page locks, tab builders
+│  ├─ element-model            the element code products share over any product's union (structural types, generic where it hands elements back): grid, guides, layer order, anchors, auto-layout, finishes, strokes, web components, element defaults, themes, tables, charts, Sankey, entity and sequence rules, wordmarks, arrows and icons in the export, comment threads, fingerprints, stored-data repairs, the white under a picture, element ops and factories, mind maps, the authoring normaliser, element refs, page locks, tab builders, the collaboration index rows, a page's ground under a chart, a tab as seen in one appearance
 │  ├─ email                    the one caller of Cloudflare Email Service's `send_email` binding, for accounts and every app
 │  ├─ fake-google              an in-memory Google (Drive v3 and OAuth) for the Drive mirror's tests
 │  ├─ model-core               what every product's model shares and needs nothing of its element union (the Reaction Pad's five bursts among it); each re-exports it
@@ -50,7 +50,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
-│  ├─ template-previews        the template previews' hover motion, fan and story parts, the template search and catalogue, and the analysis templates' data, for every editor
+│  ├─ template-previews        the template previews' hover motion, fan and story parts, the template search and catalogue, the templates' inks, and the analysis templates' data, for every editor
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script, header and HTML sanitiser every app's pages share

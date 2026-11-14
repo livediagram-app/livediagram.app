@@ -572,6 +572,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and found no matching article: a direct list of articles worth writing. The search words are never recorded.',
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
+  'Home|Selected|MostUsed':
+    "Someone opened a plan from Home's Most Used, the ones they used on the most days.",
+  'Home|Selected|Recent':
+    "Someone opened a plan from Home's Recent, the ones they used most recently.",
+  'Home|Selected|SeeMore': "Someone followed See More from Home's Recent to the Recent page.",
   'Home|Selected|WhatHappened':
     "Someone opened a plan from an entry in Explorer Home's What Happened: what other people did to their plans.",
   'Home|Selected|SeeTimeline': "Someone followed See Timeline from Explorer Home's What Happened.",

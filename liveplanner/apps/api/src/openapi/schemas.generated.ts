@@ -2236,6 +2236,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kind"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "repositories",
+            "type": "string"
+          },
+          "names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "names"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -2925,6 +2945,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "string"
           },
           "to": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "types": {
             "items": {
               "type": "string"
             },

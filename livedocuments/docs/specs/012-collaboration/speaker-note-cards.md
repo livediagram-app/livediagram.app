@@ -210,3 +210,14 @@ The deck is document metadata saved through the document's PUT, which is `gateEd
 - A card per page of a flashcard stack, or turning a slide's cards into a flashcard tab.
 - A second-window presenter console (still out of scope, [Presentation mode](presentation-mode.md)).
 - Showing another person's cards live while both write: they arrive with the next load ("Two people writing at once").
+  See Decisions.
+
+## Decisions
+
+- **Other people's note cards stay a reload away (Work Tracker 388, 2026-11-14).** Confirmed as a non-goal rather than
+  built. Why: the deck has no room op, so live arrival needs a new op; the cards already survive, because a save merges
+  per card id ("Two people writing at once"), and a presenter who reloads sees everyone's cards. A note card is one
+  person's prompt for their own talk, written ahead of time, so a second writer on the same slide at the same moment is
+  rare and a reload cheap. What would change it: a deck room op for the whole deck (every deck edit travelling live,
+  which would carry the cards for free), or evidence of people co-writing one slide's notes in the same minute. The
+  owner can overturn this. The help articles say nothing of live arrival, so they stay as they are.

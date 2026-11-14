@@ -9,7 +9,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { layered, milestoneCard, MUTED, type Shape } from './template-builders-milestones';
-import { CANVAS_TONES, PAPER_INK } from './template-inks';
+import { CANVAS_TONES, PAPER_INK } from '@liveworkspace/template-previews/template-inks';
 
 // Vertical milestone timeline: "Northwind Coffee · our story so far", a
 // company history in the classic alternating vertical layout. A downward

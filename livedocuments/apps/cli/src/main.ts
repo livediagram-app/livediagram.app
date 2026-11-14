@@ -24,7 +24,7 @@ import { splitGlobals, type Globals } from '@liveworkspace/cli-kit/globals';
 import { parseVerbArgs } from './dispatch/parse-flags';
 import { route } from './dispatch/route';
 import { resourceHelp, topHelp, verbHelp } from './help/help';
-import type { CliIo } from './io';
+import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { CliError, formatError } from './output/cli-error';
 import { EXIT, exitCodeForStatus, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from './output/failure-of';

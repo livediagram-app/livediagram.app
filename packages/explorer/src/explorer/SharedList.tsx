@@ -19,6 +19,7 @@ import { useExtras } from './extras';
 import { ItemMenu } from './menus';
 import { ROW_HEIGHT, useItemBits, useOwnerLabel, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
+import { revealAt, useRevealArrived } from './arrived-item';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { quoted } from '../quoted';
 
@@ -66,6 +67,19 @@ export function SharedList({
     if (hasMore && !loadingMore && end >= count - LOAD_AHEAD) onLoadMore();
   }, [end, count, hasMore, loadingMore, onLoadMore]);
   const rows = useMemo(() => items.slice(start, end), [items, start, end]);
+  // The item an editor's door came from: loaded and brought into the window, so it is drawn and marked.
+  useRevealArrived({
+    items,
+    offset: 0,
+    hasMore,
+    loadingMore,
+    onLoadMore,
+    reveal: (index) => {
+      if (!body.current) return false;
+      revealAt(body.current, index * ROW_HEIGHT, ROW_HEIGHT);
+      return true;
+    },
+  });
   return (
     <div className={LIST_CARD}>
       <div className={`${GRID} ${LIST_HEADER}`}>
@@ -78,7 +92,7 @@ export function SharedList({
       </div>
       <ul
         ref={body}
-        className={`divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
+        className={`relative divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
       >
         {start > 0 ? <li aria-hidden style={{ height: start * ROW_HEIGHT }} /> : null}
         {rows.map((item) => (

@@ -108,9 +108,15 @@ export function readTrigger(v: unknown): AutomationTrigger {
         ? { kind: 'form_response' }
         : { kind: 'form_response', formTab: id(t['formTab'], 'trigger.formTab') };
     case 'card_moved': {
+      const types = optionalIds(t['types'], 'trigger.types');
       const from = optionalIds(t['from'], 'trigger.from');
       const to = optionalIds(t['to'], 'trigger.to');
-      return { kind: 'card_moved', ...(from ? { from } : {}), ...(to ? { to } : {}) };
+      return {
+        kind: 'card_moved',
+        ...(types ? { types } : {}),
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+      };
     }
     case 'field_changed':
       return { kind: 'field_changed', fields: ids(t['fields'], 'trigger.fields', { min: 1 }) };

@@ -33,6 +33,10 @@
     "./workspace-manifests": {
       "types": "./workspace-manifests.d.ts",
       "default": "./workspace-manifests.js"
+    },
+    "./stub-resize-observer": {
+      "types": "./stub-resize-observer.d.ts",
+      "default": "./stub-resize-observer.js"
     }
   },
   "scripts": {

@@ -75,7 +75,7 @@ export function lossMessage(outcome: KindChangeOutcome, label: string): string |
   const parts: string[] = [];
   if (cleared > 0) parts.push(`${cleared} can’t be kept as ${asName(label)} and will be cleared`);
   if (trimmed > 0)
-    parts.push(`${trimmed} will keep only part of ${trimmed === 1 ? 'its' : 'theirs'}`);
+    parts.push(`${trimmed} will keep only part of ${trimmed === 1 ? 'its value' : 'their values'}`);
   if (parts.length === 0) return `${cards(held)} a value; every one is kept as ${asName(label)}.`;
   return `${cards(held)} a value; ${parts.join(', and ')}.`;
 }

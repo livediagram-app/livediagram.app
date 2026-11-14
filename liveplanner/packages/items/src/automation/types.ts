@@ -73,7 +73,9 @@ export type AutomationClock = string;
 export type AutomationTrigger =
   | { kind: 'card_created'; status?: string }
   | { kind: 'form_response'; formTab?: string }
-  | { kind: 'card_moved'; from?: string[]; to?: string[] }
+  // `types`: only a card of one of these card types (by id); absent or empty, any type (docs/specs/026-plan/automations.md
+  // "Triggers").
+  | { kind: 'card_moved'; types?: string[]; from?: string[]; to?: string[] }
   | { kind: 'field_changed'; fields: string[] }
   | { kind: 'comment_added' }
   | { kind: 'manual' }

@@ -9,7 +9,8 @@ export const RULE_TRIGGER_FORMAT =
   'What starts the rule, exactly one: ' +
   '{"kind":"card_created","status"?:column} (a card added, by anyone or anything, optionally landing in that column); ' +
   '{"kind":"form_response","formTab"?:Form tab} (a form response makes a card); ' +
-  '{"kind":"card_moved","from"?:[columns],"to"?:[columns]} (its status changes); ' +
+  '{"kind":"card_moved","types"?:[card types],"from"?:[columns],"to"?:[columns]} (its status changes; types keeps ' +
+  'it to cards of those card types, absent any type); ' +
   '{"kind":"field_changed","fields":[fields, at least one]}; ' +
   '{"kind":"comment_added"} (a thread started or replied to); ' +
   '{"kind":"manual"} (Run from a Card: run it with change_rules run); ' +

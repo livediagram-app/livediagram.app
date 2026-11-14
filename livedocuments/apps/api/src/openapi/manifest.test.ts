@@ -31,6 +31,15 @@ function dispatchedSegments(): Set<string> {
 // Every HTTP verb each dispatched segment actually handles, read from the
 // route modules the same way dispatchedSegments() reads index.ts: from the
 // source, so there is no hand-list to drift.
+
+// The shared route factories a handler may be bound to, and the package module that holds each one's verbs.
+const SHARED_ROUTES: Record<string, string> = {
+  createCommunityMineRoute: 'community/src/app/mine-route.ts',
+  createFoldersRoute: 'index-app/src/folders-route.ts',
+  createOpenApiRoute: 'api-kit/src/openapi-route.ts',
+  createPreferencesRoute: 'api-kit/src/preferences-route.ts',
+};
+
 function handledMethodsBySegment(): Map<string, Set<string>> {
   const index = readFileSync(fileURLToPath(new URL('../index.ts', import.meta.url).href), 'utf8');
   const handlerFile = new Map<string, string>();
@@ -57,6 +66,16 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
     // A handler may delegate to sibling route modules (the document routes are
     // split across several); follow those too or their verbs go unseen.
     const sources = [source];
+    // A handler bound to a shared route factory keeps its verbs in the package's module.
+    for (const [factory, file] of Object.entries(SHARED_ROUTES)) {
+      if (!source.includes(`${factory}(`)) continue;
+      sources.push(
+        readFileSync(
+          fileURLToPath(new URL(`../../../../../packages/${file}`, import.meta.url).href),
+          'utf8',
+        ),
+      );
+    }
     for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) {
       const sibling = read(`${rel[1]}.ts`);
       if (sibling) sources.push(sibling);

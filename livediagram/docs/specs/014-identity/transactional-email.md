@@ -20,7 +20,7 @@ own time zone, Europe/London when it isn't known; accounts.md "The send
 window"). livediagram's own emails below are never held. livediagram tells
 liveworkspace what it needs for them: each signed-in account it sees (a sighting,
 which also counts sign-ups) and each save of a document someone owns (activity,
-once a minute a document, `apps/api/src/liveworkspace/activity.ts`).
+once a minute a document, `reportOwnerActivity` from `@liveworkspace/index-app`).
 
 **Transactional, always send (when the feature is on):**
 
