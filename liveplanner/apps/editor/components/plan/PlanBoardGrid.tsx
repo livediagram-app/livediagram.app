@@ -14,6 +14,7 @@ import { CellAddRow } from './CellAddRow';
 import { AddCardButton } from './AddCardButton';
 import { columnPartStyle } from './column-part';
 import { planBoardColumnHeads } from './PlanBoardColumnHeads';
+import { FilterEmptyHint } from './FilterEmptyHint';
 import type { PlanBoardViewValues } from './plan-board-view-values';
 
 export function planBoardGrid(v: PlanBoardViewValues) {
@@ -115,6 +116,10 @@ function planBoardLaneCell(
     addInHead,
     closeAdding,
     addInto,
+    filterHidesAll,
+    quick,
+    showAll,
+    canFilter,
   } = v;
   const cell = col.lanes.find((l) => l.laneKey === lane.key)?.items ?? [];
   if (shutColumns.has(col.column.id)) {
@@ -142,6 +147,11 @@ function planBoardLaneCell(
       : null;
   const isAdding = adding?.status === col.column.status && adding.laneKey === lane.key;
   const firstEmpty = empty && canEditCards && laneIndex === 0 && col === projection.columns[0];
+  // The filter hides every card: the hint takes the first open column's first card's place, in the first open lane.
+  const hintHere =
+    filterHidesAll &&
+    laneIndex === v.firstOpenLane &&
+    col === projection.columns.find((c) => !shutColumns.has(c.column.id));
   const done = isDoneColumn(setup, col.column);
   // Where the Practice Sprint's cards ship (plan-tour.md "Boards: Practice Sprint").
   const ships = col.column.id === shipColumnId;
@@ -193,6 +203,14 @@ function planBoardLaneCell(
           <DropGap height={held!.height} palette={palette} refused={held?.refused} />
         ) : null}
       </div>
+      {hintHere ? (
+        <FilterEmptyHint
+          quick={quick}
+          total={projection.total}
+          palette={palette}
+          onShowAll={canFilter ? showAll : undefined}
+        />
+      ) : null}
       {mayAdd && !addInHead ? (
         // It folds away while a drop gap shows here (plan-board.md "Add card steps aside").
         <CellAddRow folded={!!slotHere} gap={simplified ? 6 : 8}>

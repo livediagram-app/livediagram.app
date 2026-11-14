@@ -43,7 +43,7 @@ export function useBoardFilter({
   // An Editor's or a Participant's: a Viewer's board only reads.
   canChange: boolean;
   write: (filter: BoardFilter | undefined) => void;
-}): { quick: QuickFilter; setQuick: (q: QuickFilter) => void } {
+}): { quick: QuickFilter; setQuick: (q: QuickFilter) => void; showAll: () => void } {
   // Resolved only when the filter, the viewer, the day or the done statuses change (the caller keeps `stored` and
   // `finished` by reference until they do), so the board's projection is not redone each render.
   const resolved = useMemo(
@@ -82,6 +82,12 @@ export function useBoardFilter({
     },
     [canChange, quickRef, flush],
   );
+  // Show All (FilterEmptyHint): a press, not typing, so the board's filter goes at once even when only words are left.
+  const showAll = useCallback(() => {
+    if (!canChange) return;
+    pending.current = {};
+    flush();
+  }, [canChange, flush]);
 
   // A board that leaves the screen (a tab switch, a reload's unload) writes the words still waiting.
   useEffect(() => {
@@ -99,5 +105,5 @@ export function useBoardFilter({
     };
   }, [writeRef]);
 
-  return { quick, setQuick };
+  return { quick, setQuick, showAll };
 }

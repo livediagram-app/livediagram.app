@@ -50,6 +50,8 @@ export interface PlanBoardViewValues {
   configuredFromCluster: boolean;
   quick: QuickFilter;
   setQuick: (q: QuickFilter) => void;
+  // Clears the board's filter for everyone at once (FilterEmptyHint's Show All).
+  showAll: () => void;
   // Whether this person changes the board's filter (an Editor or a Participant; a Viewer only sees it).
   canFilter: boolean;
   columnName: (s: string) => string;
@@ -78,6 +80,8 @@ export interface PlanBoardViewValues {
   reorder: ReturnType<typeof useColumnReorder>;
   held: ReturnType<typeof usePlanBoardDrop>['incoming'];
   empty: boolean;
+  // The board's filter hides every card it holds, for this viewer, off a phone and a Dashboard slot (FilterEmptyHint).
+  filterHidesAll: boolean;
   loading: boolean;
   shipColumnId: string | undefined;
   cellBase: CellCardsBase;
