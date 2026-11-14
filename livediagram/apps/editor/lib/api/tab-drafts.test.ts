@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import type { TabDraftEvent } from '@liveworkspace/workbench/lib/api/tab-drafts';
 import { box, fakeApi, kinds, tabOf, withLabel } from './tab-api-test-kit';
-import { TAB_DRAFTS_DB } from './tab-draft-store';
+import { TAB_DRAFTS_DB } from './tabs';
 
 // Drafts of unsaved changes (docs/specs/006-document/delta-saves.md "Drafts of unsaved changes"), through the
 // editor's own binding and a real (fake-indexeddb) IndexedDB: the unload flush keeps a draft of a 2,000-element tab,

@@ -2,6 +2,7 @@
 
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
 import { useCallback, useRef } from 'react';
+import type { Tab } from '@livediagram/document';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useQaBoard } from '@/hooks/canvas/useQaBoard';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
@@ -14,8 +15,23 @@ import { useRoomResync } from '../useRoomResync';
 import { usePresenceBroadcast } from '../usePresenceBroadcast';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useChangesetFeed } from '../useChangesetFeed';
-import { useTabDrafts } from '../useTabDrafts';
-import { apiAdoptPeerSave } from '@/lib/api-client';
+import {
+  useTabDrafts,
+  type TabDraftDoors,
+} from '@liveworkspace/workbench/hooks/persistence/useTabDrafts';
+import {
+  apiAdoptPeerSave,
+  apiDiscardDraft,
+  apiTakeDraftReplay,
+  onTabDraft,
+} from '@/lib/api-client';
+
+// This editor's tab calls' draft doors, for the shared drafts hook (read when called).
+const TAB_DRAFT_DOORS: TabDraftDoors<Tab> = {
+  takeReplay: (...args) => apiTakeDraftReplay(...args),
+  discard: (...args) => apiDiscardDraft(...args),
+  onDraft: (listener) => onTabDraft(listener),
+};
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -280,8 +296,9 @@ export function useEditorRoom({
   // This browser's drafts of unsaved changes: one a load put back goes on screen and saves, one overtaken is said
   // (docs/specs/006-document/delta-saves.md "Drafts of unsaved changes").
   useTabDrafts({
+    drafts: TAB_DRAFT_DOORS,
     hydrated,
-    documentId,
+    itemId: documentId,
     selfId: selfParticipant.id,
     mayEdit: canEdit && !participant.participating,
     tabsRef,

@@ -5,6 +5,7 @@ import {
   parseTabDelta,
   planTabDelta,
   planTabDeltaSync,
+  tabSavedIsWellFormed,
   type TabDeltaOp,
 } from './tab-delta';
 
@@ -19,6 +20,22 @@ const updates = (before: El[], after: El[]): TabDeltaOp<El>[] =>
   after
     .filter((e, i) => JSON.stringify(e) !== JSON.stringify(before[i]))
     .map((element) => ({ kind: 'update', element }));
+
+describe('tabSavedIsWellFormed', () => {
+  it('takes a tab id, a whole revision and a digest, and nothing else', () => {
+    const op = { kind: 'tab-saved', tabId: 't1', rev: 4, digest: DIGEST };
+    expect(tabSavedIsWellFormed(op)).toBe(true);
+    for (const bad of [
+      { ...op, tabId: 1 },
+      { ...op, rev: -1 },
+      { ...op, rev: 1.5 },
+      { ...op, digest: 7 },
+      { ...op, digest: 'A'.repeat(64) },
+    ]) {
+      expect(tabSavedIsWellFormed(bad)).toBe(false);
+    }
+  });
+});
 
 describe('parseTabDelta', () => {
   it('reads a body with every op shape, and drops a tab.elements', () => {

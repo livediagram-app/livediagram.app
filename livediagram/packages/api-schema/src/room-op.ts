@@ -1,4 +1,5 @@
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
+import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch, DragPreviewRide } from './drag-preview';
@@ -77,7 +78,7 @@ export type RoomOp =
   // An Editor's save of a tab landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"):
   // the revision it wrote and the digest of the elements now stored, sent after the save's element ops. A peer whose
   // save baseline hashes to `digest` holds it as its delta base copy at `rev`. Changes no content.
-  | { kind: 'tab-saved'; tabId: string; rev: number; digest: string }
+  | TabSavedOp
   | {
       kind: 'vote';
       tabId: string;

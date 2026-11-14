@@ -11,6 +11,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // And the image embedder: a gap draws a picture past the preview's budget or out of document order.
 // And the ledger store: a gap there cuts an entry a save still needs, or hands a save less than it merges.
 // And the tab order: a gap there lands a new tab on a place another holds.
+// And the delta door: a gap there stores a rebuilt tab no digest proved.
 // And the public fetch and its address checks: a gap there lets a typed URL reach a private network.
 // And the room client: a gap there drops a relay, or fails a save the room could not answer. And the access
 // closer: a gap there leaves an ended pairing's sockets open.
@@ -37,6 +38,7 @@ export default defineProject({
         'src/room-access-client.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-client.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-element-ops.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/tab-delta-door.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/tab-order.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/tab-swap.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-presence-relay.ts': {
