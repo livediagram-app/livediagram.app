@@ -1,6 +1,8 @@
 // docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheets are made into sheets beside the tabs,
 // on their tab, tinted for its canvas, and the mark dropped; anything else is left as it is.
 import { describe, expect, it } from 'vitest';
+import { sheetHeadersWrite, topRowTexts } from '@liveplanner/forms';
+import { NOBODY, sheetFromJson } from '@liveplanner/sheets';
 import { createShape, type Element, type ShapeElement } from '@liveplanner/project';
 import { hasTemplateSheets, materialiseTemplateSheets } from './template-sheets';
 import { buildPlanTemplate, planTemplateTabs } from './template-builders-plan';
@@ -85,5 +87,53 @@ describe('materialiseTemplateSheets', () => {
       NOW,
     ).sheets;
     expect(plain.find((x) => x.tabId === ids[at])?.title).toBe('Sheet 1');
+  });
+
+  // docs/specs/030-forms/forms.md "In a plan template": the sheet a form feeds starts with the form's headers.
+  it('writes a template form’s headers into its responses sheet, remembered, so nothing is written twice', () => {
+    const defs = planTemplateTabs('event-planner');
+    const ids = defs.map((_, i) => `t${i}`);
+    const tabs = defs.map((d, i) => ({
+      ...tab(ids[i]!, d.build(0, 0)),
+      name: d.name ?? '',
+      ...d.tab?.(ids),
+    }));
+    const { tabs: out, sheets } = materialiseTemplateSheets(tabs, NOW);
+    const at = defs.findIndex((d) => d.name === 'RSVP Responses');
+    const sheet = sheets.find((x) => x.tabId === ids[at])!;
+    const form = out.find((t) => t.form)!.form!;
+    const text = (r: string, c: string) => {
+      const cell = sheet.cells!.find((x) => x.r === r && x.c === c)?.i;
+      return cell && 's' in cell ? cell.s : undefined;
+    };
+    const headers = sheet.layout!.cols.map((c) => text(sheet.layout!.rows[0]!, c)).filter(Boolean);
+    expect(headers.slice(0, 2)).toEqual(['#', 'Submitted']);
+    expect(headers).toContain('Name');
+    expect(Object.keys(form.sheet!.columns!)).toHaveLength(headers.length);
+    // The editor's own plan, run on the made sheet, finds every header: it has nothing to write.
+    const again = sheetHeadersWrite({
+      form,
+      layout: sheet.layout!,
+      rowTexts: topRowTexts(
+        sheetFromJson({
+          ...sheet,
+          id: sheet.id!,
+          rev: 0,
+          createdAt: NOW,
+          updatedAt: NOW,
+          updatedBy: NOBODY,
+          cells: sheet.cells ?? [],
+          layout: sheet.layout!,
+        }),
+      ),
+      columns: form.sheet!.columns,
+    });
+    expect(again.write).toBeNull();
+    // A sheet no form feeds stays blank.
+    const plain = materialiseTemplateSheets(
+      tabs.map((t) => ({ ...t, form: undefined })),
+      NOW,
+    ).sheets.find((x) => x.tabId === ids[at])!;
+    expect(plain.cells ?? []).toEqual([]);
   });
 });

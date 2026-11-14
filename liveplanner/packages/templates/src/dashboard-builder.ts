@@ -11,6 +11,7 @@ import {
   readSlotName,
   type DashboardContent,
   type DashboardLayout,
+  type FormMetricKind,
   type PlanViewRef,
   type ShapeElement,
   stampTabKind,
@@ -58,6 +59,8 @@ export type DashboardSpec = {
   // The Board and Sheet tabs it shows, by id, each with what it holds.
   tabs?: readonly { tabId: string; of: 'board' | 'sheet' }[];
   metrics?: readonly MetricKind[];
+  // Figures from the plan's Form tabs, by id (docs/specs/026-plan/plan-tabs.md "Form Metrics"), each after the metrics.
+  forms?: readonly { formTabId: string; metric: FormMetricKind }[];
   charts?: readonly DashboardChartSpec[];
   notes?: readonly { title: string; text: string }[];
 };
@@ -99,7 +102,7 @@ export function dashboardViewElements(spec: DashboardSpec): {
 
 type DashRow = { height: number; slots: { span: number; content?: DashboardContent }[] };
 
-// The layout over a spec's views: the tabs two to a row, the metrics four, each Gantt a row of its own, the other
+// The layout over a spec's views: the tabs two to a row, the metrics and form figures four, each Gantt a row of its own, the other
 // charts two, the notes three, up to DASHBOARD_ROWS_MAX rows; `dropped` counts the rows left off. Its rows and slots
 // take ids `<prefix>-d<n>`.
 export function dashboardLayoutOf(
@@ -125,7 +128,16 @@ export function dashboardLayoutOf(
       tabId: w.tabId,
       of: w.of,
     })),
-    ...dashboardRowsOf(views.metrics, METRICS_PER_ROW, DASH_METRIC_ROW_H, element),
+    // The metric tiles, then the forms' figures in the same rows.
+    ...dashboardRowsOf(
+      [...views.metrics, ...(spec.forms ?? [])],
+      METRICS_PER_ROW,
+      DASH_METRIC_ROW_H,
+      (m): DashboardContent =>
+        'formTabId' in m
+          ? { type: 'form-metric', metric: m.metric, formTabId: m.formTabId }
+          : element(m),
+    ),
     ...dashboardRowsOf(gantts, 1, DASH_GANTT_ROW_H, element),
     ...dashboardRowsOf(others, CHARTS_PER_ROW, DASH_CHART_ROW_H, element),
     ...dashboardRowsOf(spec.notes ?? [], NOTES_PER_ROW, DASH_NOTE_ROW_H, (n) => ({
