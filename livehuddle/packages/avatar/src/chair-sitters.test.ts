@@ -24,6 +24,21 @@ const you = (seatedOn: string | null, color = '#f00', extra: Partial<SitterSourc
 });
 
 describe('sittersByChair', () => {
+  // docs/specs/009-elements/chair.md "A table that loses seats": a sitter on a seat the table lost is left off it.
+  it('leaves off a sitter whose seat the table has lost, and moves a remaining one to its seat', () => {
+    const table = { id: 't', x: 0, y: 0, width: 232, height: 168, shape: 'meeting-table' as const };
+    const seats = seatPoints(table);
+    const map = sittersByChair(
+      null,
+      [
+        { name: 'Gone', color: '#0f0', seatedOn: 't', seat: { index: 5, at: 1, tie: 0, of: 16 } },
+        { name: 'End', color: '#00f', seatedOn: 't', seat: { index: 14, at: 1, tie: 0, of: 16 } },
+      ],
+      (id) => (id === 't' ? seats : null),
+    );
+    expect(map.get('t')).toEqual([{ name: 'End', color: '#00f', seat: 4 }]);
+  });
+
   it('lists our own character and every seated peer by chair', () => {
     const map = sittersByChair(you('c1'), [
       { name: 'Ann', color: '#0f0', seatedOn: 'c1' },

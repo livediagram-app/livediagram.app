@@ -223,7 +223,9 @@ its width, the Boardroom preset's table.
   ends: **sixteen seats**.
 - Every seat sits as the Meeting Table's do: the far side faces down, the near side up, the ends inward; nearest free
   seat, one sitter each, rings and the sitters' pill (`@livehuddle/avatar/seats`, `longTableGrid`).
-- Not aspect locked: dragged wider it takes more chairs, narrower fewer (never under two a side). Its drawing keeps its
+- Not aspect locked: dragged wider it takes more chairs, narrower fewer (never under two a side). Dragged shorter
+  with people sitting at it, those on the chairs that remain stay seated and those on the chairs it loses (the far
+  end of each side) stand up beside it ([A table that loses seats](chair.md#a-table-that-loses-seats)). Its drawing keeps its
   proportions; a box of other proportions is drawn as wide as that depth allows. Default 560 × 168.
 - **Turned** ([Turning furniture](furniture-facing.md)), it turns as the Meeting Table does, at its own length: from
   behind it reads the same with every chair a half turn round; on its side it is a tall table, its length down the box,
@@ -314,7 +316,9 @@ a Long Table and back (Work Tracker 628).
   sets it (a Round rug stays a circle, a Long Table takes any width).
 - **What stays**: everything else, the piece's id, name, colours, facing, rotation (a corridor's turn, a door's angle on
   its wall), lock, layer and group. A Door keeps its centre and angle, so it stays on its wall and keeps cutting it. A
-  table's sitters are presence: seats past the new type's last fall away, as when a Long Table is dragged narrower.
+  table's sitters are presence: someone on a seat the new type still has stays in it, carried to its new spot, and
+  someone on a seat it no longer has stands up beside the table, as when a Long Table is dragged shorter
+  ([A table that loses seats](chair.md#a-table-that-loses-seats), Work Tracker 831).
 - **A Door stays inside its wall**: on a wall, a wider type slides along it just far enough to clear the wall's ends
   (`snapDoorToWall`), and a type wider than the whole wall is offered disabled, its hover card **Too Wide for This
   Wall** ("A Double Door is wider than the wall this door stands on. Move the door to a longer wall first.").
