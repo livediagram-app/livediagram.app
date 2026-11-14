@@ -253,14 +253,21 @@ tiles are loaded (`whenLoaded`):
    its `commit` capturing the photo instead of writing the tab) over the same pixels store, so the source's
    decoded tiles are read from memory, never fetched again.
 2. `coverSize(s, w, h)` reworks it: every pixel layer and mask resampled by `k = max(w / W, h / H)` (Bicubic, in
-   the photo worker: the `resize` task of `worker-tasks.ts`, so a 12 MP photo never holds the page for its
-   resample; the page only reads the pictures and lays the results into tiles) and placed at `round(x * k) + dx`, `round(y * k) + dy`, where `dx = round((w - W * k) / 2)` and
+   the photo worker, **a tile at a time**: for each `PHOTO_TILE` square of the result the page reads only the source
+   pixels that square needs (`resizeSourceRect`: the filter's reach and whole averaging blocks, from
+   `resizePlan`), the worker's `resize-region` task draws it (`resizeRegion`, the same pixels the whole
+   `resizeRaster` gives there, a rounding step at most), and the page writes it into the new layer's tiles. So
+   neither the 12 MP source nor its resampled copy is ever held whole beside the tiles, and the page is never held
+   for a whole resample. `rework` reads a layer's whole picture only when its map asks for it (`picture`'s lazy
+   `raster`), which Make Sizes never does) and placed at `round(x * k) + dx`, `round(y * k) + dy`, where `dx = round((w - W * k) / 2)` and
    `dy = round((h - H * k) / 2)` (`coverPlan`); text layers scaled and moved as Image Size does; the photo's size
    set to the format. Its tiles encode in the photo worker and go to the upload queue (`deps.enqueue`), as any
    commit's do.
 3. Its preview is made (`previewRaster`, `encodePreview`) and set on the photo, its blob enqueued too.
 4. The session is disposed before the next format starts, so at most one format's resampled pixels are held at a
-   time beside the source's.
+   time beside the source's. Measured on a 12 MP (4000 x 3000) photo (Work Tracker 198), the most a format holds
+   above the source's tiles went from 84.5 MB (Instagram Story: the source read whole twice, the result whole and
+   its tiles) to the result's tiles and one tile's source region. The kept overflow stays (DEFAULTS D30).
 5. When every format is done (and the dialog was not closed meanwhile, `deps.cancelled()`), one `commitTabs`
    writes `photoPagesAdded(tab, sourceId, made)`: one undo step. A cancel commits nothing; the tiles already
    queued are uploaded but named by no tab, so the daily sweep releases them.
