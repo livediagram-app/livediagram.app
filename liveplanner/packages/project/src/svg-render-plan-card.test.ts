@@ -3,7 +3,7 @@ import { ITEM_TYPES, presetSetup, type Item, type ItemTypeDef } from '@liveplann
 import { PLAN_PERCENT_BAR, planPalette, planPercentInks } from './plan-palette';
 import { planCardFace } from './svg-render-plan-card';
 import { PLAN_LANE_HEAD_H, planBoardLayout } from './plan-board-layout';
-import { svgBoxed } from './svg-render';
+import { renderElementsToSvg, svgBoxed } from './svg-render';
 import { planBoardFitHeight } from './svg-render-plan';
 import { createShape } from './shape-factory';
 import type { BoxedElement } from './index';
@@ -574,5 +574,45 @@ describe('the blocked badge', () => {
     expect(svgBoxed(board('detailed'), { items })).not.toMatch(badge);
     const shape = board('detailed') as Parameters<typeof planBoardFitHeight>[0];
     expect(planBoardFitHeight(shape, items, 'light', withBlocks, () => false)).toBe(900);
+  });
+});
+
+// A Board's image under Marker (the editor's export and the api's thumbnail both draw through renderElementsToSvg)
+// outlines every card as the canvas does (docs/specs/008-canvas/finish.md "Faces: frames and shapes"), a Minimal one
+// under the frame's least size included.
+describe('a Board under Marker', () => {
+  const items = new Map(
+    [item('a', { title: 'One', status: 'todo' }), item('b', { title: 'Two', status: 'todo' })].map(
+      (i) => [i.id, i],
+    ),
+  );
+  const boardOf = (cardSize: 'minimal' | 'detailed') =>
+    ({
+      ...createShape('plan-board', 0, 0),
+      height: 900,
+      planBoard: { ...presetSetup('kanban'), cardSize },
+    }) as BoxedElement;
+  const image = (cardSize: 'minimal' | 'detailed') =>
+    renderElementsToSvg(
+      { id: 't', name: 'Board', finish: 'marker', elements: [boardOf(cardSize)] },
+      { items },
+    );
+  // The marker part drawn after each card's frame.
+  const cardParts = (svg: string) =>
+    [...svg.matchAll(/<rect [^>]*rx="8"[^>]*data-marker-frame=""\/><g data-marker-part="(\w+)"/g)].map(
+      (m) => m[1],
+    );
+
+  it('outlines a Minimal card as a frame, never colouring it in, as a Detailed one', () => {
+    const minimal = image('minimal');
+    expect(minimal).toMatch(/<rect [^>]*height="36" rx="8"[^>]*data-marker-frame=""/);
+    expect(cardParts(minimal)).toEqual(['frame', 'frame']);
+    expect(cardParts(image('detailed'))).toEqual(['frame', 'frame']);
+  });
+
+  it('leaves every card plain under Flexible, its own line kept', () => {
+    const svg = svgBoxed(boardOf('minimal'), { items });
+    expect(svg).not.toContain('data-marker-part');
+    expect(svg).toMatch(/stroke-width="1" data-marker-frame=""\/>/);
   });
 });

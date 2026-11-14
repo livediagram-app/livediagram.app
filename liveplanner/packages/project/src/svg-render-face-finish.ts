@@ -113,6 +113,7 @@ export function svgMarkerFace(
       ...(a.opacity ? { opacity: Number(a.opacity) } : {}),
       ...(a['stroke-dasharray'] && a['stroke-dasharray'] !== 'none' ? { dashed: true } : {}),
       ...(a['data-marker-shape'] !== undefined ? { shape: true } : {}),
+      ...(a['data-marker-frame'] !== undefined ? { frame: true } : {}),
     };
     const part = drawPart(shape, paint, box, seed, drawn, budget);
     if (!part) return tag;

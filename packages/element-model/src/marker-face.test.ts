@@ -238,6 +238,14 @@ describe('svgMarkerFace', () => {
     );
   });
 
+  it('outlines a box marked a frame under the least size (a Minimal Plan card), never colouring it in', () => {
+    const card = '<rect x="0" y="0" width="200" height="36" rx="8" fill="#fff" stroke="#ccc" stroke-width="1"';
+    expect(svgMarkerFace(`${card}/>`, 'el', face)).toContain('<g data-marker-part="shape"');
+    expect(svgMarkerFace(`${card} data-marker-frame=""/>`, 'el', face)).toMatch(
+      /^<rect [^>]*fill="#fff" data-marker-frame=""\/><g data-marker-part="frame"/,
+    );
+  });
+
   it('keeps clips, definitions, a drawn body, arrowed lines and kept parts as they are', () => {
     const held =
       '<clipPath id="c"><rect width="300" height="300"/></clipPath><g data-finish="marker"><path d="M0 0 L300 0" stroke="#000"/></g>' +

@@ -187,8 +187,10 @@ export function planCardFace(
   }
   if (measureOnly) return { svg: '', height: h };
   if (ctx.height !== undefined) h = ctx.height;
+  // Marker outlines every card, a Minimal one (36 px, under a frame's least size) included, as on the canvas
+  // (PlanCardFace's data-marker-frame; docs/specs/008-canvas/finish.md "Faces: frames and shapes").
   const frame =
-    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="8" fill="${p.card}" stroke="${p.border}" stroke-width="1"/>` +
+    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="8" fill="${p.card}" stroke="${p.border}" stroke-width="1" data-marker-frame=""/>` +
     `<rect x="${r2(x)}" y="${r2(y)}" width="4" height="${r2(h)}" rx="2" fill="${type.color}"/>`;
   return { svg: frame + out.join(''), height: h };
 }
