@@ -1,7 +1,7 @@
 // A lane title's frame (docs/specs/009-elements/lane.md "A title wraps in its gutter", Work Tracker 444).
 import { describe, expect, it } from 'vitest';
 import { acrossTitleStrip, uprightTitleStrip } from '@livediagram/document';
-import { laneTitleFrame, laneTitleText } from './lane-title-frame';
+import { clearLaneTitleCache, laneTitleFrame, laneTitleText } from './lane-title-frame';
 
 const lane = { width: 900, height: 200 };
 
@@ -78,5 +78,30 @@ describe('laneTitleText', () => {
     ).text.split('\n');
     expect(long).toHaveLength(3);
     expect(long[2]).toMatch(/\u2026$/);
+  });
+});
+
+describe('laneTitleText cache', () => {
+  const strip = acrossTitleStrip({ textAlignX: 'left' }, 900, 200)!;
+  const text = { px: 16, bold: false, italic: false, fontFamily: undefined };
+
+  it('reuses a title laid out at the same font and width, and lays out again when either changes', () => {
+    clearLaneTitleCache();
+    const a = laneTitleText('Customer Engineering', strip, 6, text);
+    expect(laneTitleText('Customer Engineering', strip, 6, text)).toBe(a);
+    expect(laneTitleText('Customer Engineering', strip, 6, { ...text, bold: true })).not.toBe(a);
+    expect(laneTitleText('Customer Engineering', { ...strip, width: 200 }, 6, text)).not.toBe(a);
+    expect(laneTitleText('Customer Success', strip, 6, text)).not.toBe(a);
+  });
+
+  it('never caches a measure handed in, and stays bounded', () => {
+    clearLaneTitleCache();
+    const measureAt = (px: number) => (s: string) => [...s].length * (px / 2);
+    const a = laneTitleText('Sales', strip, 6, text, measureAt);
+    expect(laneTitleText('Sales', strip, 6, text, measureAt)).not.toBe(a);
+    const first = laneTitleText('Title 0', strip, 6, text);
+    for (let i = 1; i <= 300; i++) laneTitleText(`Title ${i}`, strip, 6, text);
+    // The oldest entry has gone, so it is laid out afresh.
+    expect(laneTitleText('Title 0', strip, 6, text)).not.toBe(first);
   });
 });

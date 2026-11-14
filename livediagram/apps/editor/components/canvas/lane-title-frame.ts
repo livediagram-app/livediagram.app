@@ -91,18 +91,41 @@ function drawnMeasure(
  * splitting, at most LANE_TITLE_MAX_LINES lines (fitWholeWordLines), as every export lays it out. One pixel is held
  * back so a rounding difference between the measure and the page never wraps a line again.
  */
+// Laid-out titles by (title, font, room): a lane re-renders on every drag, select and remote edit, and measuring a
+// title in canvas text is the costly part, so a title already laid out at this font and width is reused. Bounded,
+// oldest out first, so a long session's edits never grow it.
+const LAID_OUT_CAP = 256;
+const laidOut = new Map<string, { text: string; px: number }>();
+
+/** Test hook: empties the laid-out title cache. */
+export function clearLaneTitleCache(): void {
+  laidOut.clear();
+}
+
 export function laneTitleText(
   label: string,
   strip: LaneTitleStrip,
   padding: number,
   text: { px: number; bold: boolean; italic: boolean; fontFamily: string | undefined },
-  measureAt: (px: number) => (s: string) => number = (px) =>
-    drawnMeasure(px, text.bold, text.italic, text.fontFamily),
+  measureAt?: (px: number) => (s: string) => number,
 ): { text: string; px: number } {
   const room = Math.max(0, strip.width - 2 * padding - 1);
-  const px = wholeWordFontPx(label, room, text.px, measureAt);
-  return {
-    text: fitWholeWordLines(label, room, LANE_TITLE_MAX_LINES, measureAt(px)).join('\n'),
+  // Only the page's own measure is cached; a measure handed in (a test's) always lays out afresh.
+  const key = measureAt
+    ? null
+    : `${room}\u0000${text.px}\u0000${text.bold ? 1 : 0}${text.italic ? 1 : 0}\u0000${text.fontFamily ?? ''}\u0000${label}`;
+  const hit = key === null ? undefined : laidOut.get(key);
+  if (hit) return hit;
+  const measure =
+    measureAt ?? ((px: number) => drawnMeasure(px, text.bold, text.italic, text.fontFamily));
+  const px = wholeWordFontPx(label, room, text.px, measure);
+  const result = {
+    text: fitWholeWordLines(label, room, LANE_TITLE_MAX_LINES, measure(px)).join('\n'),
     px,
   };
+  if (key !== null) {
+    if (laidOut.size >= LAID_OUT_CAP) laidOut.delete(laidOut.keys().next().value as string);
+    laidOut.set(key, result);
+  }
+  return result;
 }
