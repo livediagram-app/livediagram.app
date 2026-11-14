@@ -50,7 +50,7 @@ Next renders the root not-found slot inside the layout, so its code is part of e
   well. It imports only what the root layout already loads (the app's `Button`, the stale-chunk recovery and the
   workbench bindings), so it adds 406 bytes gzipped per route (measured from a production build, 14 November
   2026, against an import-free page), under the 1 KiB that would call for a lazily loaded card as the site's
-  `LazyPageError`. There is no `app/error.tsx`.
+  `LazyPageError`. The app has no page-level error boundary beside it.
 - `apps/editor/app/first-load-lazy.test.ts` fails if any of these become static imports again, or if `global-error.tsx` imports anything more.
 
 ### A surface that is not on screen loads when it is
