@@ -198,6 +198,26 @@ describe('a GitHub rule on a plan not connected', () => {
     expect(await screen.findByRole('heading', { name: 'Connect GitHub' })).toBeTruthy();
   });
 
+  // Work Tracker 847: a rule whose named repositories are all gone offers Manage Repositories, to the GitHub view.
+  it('offers Manage Repositories to the view when every repository a rule names is gone', async () => {
+    client.listAutomations.mockResolvedValue({
+      rules: [
+        rule({
+          trigger: { kind: 'pull_request_merged', repositories: ['acme/old-site'] },
+          attention: [{ kind: 'repositories', names: ['acme/old-site'] }],
+        }),
+      ],
+      runsToday: 0,
+      runsPerDay: 1000,
+    });
+    render(<Harness initial={{ view: 'rules' }} />);
+    const note = await screen.findByText(/acme\/old-site isn’t heard any more/);
+    expect(note.closest('[data-rule-needs]')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Connect GitHub' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Manage Repositories' }));
+    await waitFor(() => expect(document.querySelector('[data-github-view]')).toBeTruthy());
+  });
+
   it('offers no Connect GitHub where the deployment has no GitHub', async () => {
     caps.githubEnabled = false;
     client.listAutomations.mockResolvedValue({
@@ -208,5 +228,22 @@ describe('a GitHub rule on a plan not connected', () => {
     render(<Harness initial={{ view: 'rules' }} />);
     await screen.findByText(/GitHub isn’t connected/);
     expect(screen.queryByRole('button', { name: 'Connect GitHub' })).toBeNull();
+  });
+
+  it('offers no Manage Repositories where the deployment has no GitHub', async () => {
+    caps.githubEnabled = false;
+    client.listAutomations.mockResolvedValue({
+      rules: [
+        rule({
+          trigger: { kind: 'pull_request_merged', repositories: ['acme/old-site'] },
+          attention: [{ kind: 'repositories', names: ['acme/old-site'] }],
+        }),
+      ],
+      runsToday: 0,
+      runsPerDay: 1000,
+    });
+    render(<Harness initial={{ view: 'rules' }} />);
+    await screen.findByText(/acme\/old-site isn’t heard any more/);
+    expect(screen.queryByRole('button', { name: 'Manage Repositories' })).toBeNull();
   });
 });

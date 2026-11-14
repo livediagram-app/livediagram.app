@@ -184,6 +184,17 @@ describe('Add a Checklist', () => {
 describe('Link Cards', () => {
   const target = bug({ title: 'Target' });
 
+  // Spec "Conditions": a chosen card in the Trash is gone, as a deleted one is; restored, it links again.
+  it('fails a chosen card that is in the Trash, and links it once it is back', () => {
+    const card = note();
+    const trashed = { ...target, fields: { ...target.fields, status: 'trash' } };
+    const link: AutomationAction = { kind: 'link_card', field: 'f-links', to: { card: target.id } };
+    expect(failed(run([link], card, { items: [card, trashed] }))).toBe('The card to link is gone');
+    expect(done(run([link], card, { items: [card, target] })).patch).toEqual({
+      set: { 'f-links': [target.id] },
+    });
+  });
+
   it('adds the card to a field of several, once, naming it on the line', () => {
     const card = note();
     const link: AutomationAction = { kind: 'link_card', field: 'f-links', to: { card: target.id } };

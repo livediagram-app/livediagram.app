@@ -1416,3 +1416,56 @@ item stands"); the plan never asks, so a time wake costs no index call.
   `MIN` reads of a restore.
 - **Tests**: `plan-room/plan-standing.test.ts` (archive, trash, restore, an older `at`, a grant that mends, a plan that
   never heard: the unreachable index), `routes/internal-items.test.ts` (the door).
+
+## Small rule gaps, steps after an AI step, Manage Repositories, unused Card Moved columns (Work Tracker 788, 846, 847, 855)
+
+Each gap the overnight bug hunt (PR #1671) left is decided in the spec ([automations.md](../automations.md)):
+
+- **A Wait counts each part (kept).** `runsToday` counts every run row that is not a No Match or one of the Audit
+  Trail's own lines, so the waiting row (settled `done` once it goes on) and the run after it are two runs. Spec
+  "Wait", "Each part counts". No code change; `automations-triggers.test.ts` "counts the run up to a Wait and the
+  run after it as two of the day" pins it.
+- **Assign in Turn keeps a removed teammate a card still names (kept).** `inTurn` passes over an id `personOf` no
+  longer finds in `outline.people` (the owner, the team's joined members, `cardPeople`). Nothing the plan holds tells
+  a removed teammate from a share-link Editor, so the spec defines "left" as the outline does. No code change;
+  `plan-actions.test.ts` "keeps the turn of someone a card still names" pins it.
+- **Link Cards' trashed card is gone (fixed).** `readAutomationPlan`'s `outline.cards` leaves out trashed cards
+  (`isTrashed`), so `ruleNeedItems` marks the step `card`; `linkCard` fails "The card to link is gone" for a chosen
+  card in the Trash. The editor's `LinkCardPanel` leaves trashed cards out of its finder and reads a trashed pick as
+  "A card no longer here".
+- **list_rules names saved filters (fixed).** `AutomationsListResponse` gains `filters?: { tab; id; name }[]` (the
+  outline's `savedFilters`), filled by `automation-routes.ts` `list`; `sentenceOutlineOf` builds
+  `RuleSentenceOutline.filters` from it with `savedFilterKey`.
+- **change_rules takes a rule read back (fixed).** `rule-schema.ts`'s body and `set` accept `id`, `enabled`, `made`
+  and `edited` (any value, described as ignored); `rule-changes.ts` `bodyParts` keeps only `name`, `trigger`,
+  `conditions`, `steps`, `chain` and `timeZone` for `add`, `set` and `test`, so the api never sees the rest. The
+  CLI's `rule add` and `rule set` go through the same engine.
+- **An untouched New Rule leaves without asking (fixed).** `RuleBuilder` takes `blank` (the dialog's `'new'` key);
+  `onDirty` reports `dirty && !(blank && sameBody(body, saved))`, while Save Rule still reads unsaved.
+- **Column Over Limit across wakes (fixed).** `derivedMoments`' column moment holds each column card's id with
+  `itemStatusSince` (`id@since`), and `derivedFor` gives Column Over Limit events the moment-hash id the other derived
+  triggers take (`d:<card>:<sha256(moment)>`), so `claimRun` refuses a second run of one going-over in a later wake.
+  The per-wake `tipped` set goes.
+
+**Steps after an AI step (846).** `planActions` takes `carry?: { actions; turns; made }` (the run's counts so far),
+and `PlannedAi` records `carry` at its step. In `automation-runner.ts` the AI hook, once a step answered or the cap
+skipped it, reads the card again (`readItem`) and re-plans the rest,
+`planActions(rule.steps, { ...ctx, card }, { from: p.step + 1, carry: p.carry })`, then `replanAfter`
+(`packages/items/src/automation/replan.ts`) splices it into the run's live plan: the lines after the AI step's are
+replaced by the new plan's, the later AI steps and outgoing messages by the new plan's (their lines shifted), and the
+Wait, the planning failure and the turns taken by the new plan's; the hook writes the new plan's first segment. Notes
+the writes add (typed-in addresses) are held apart and appended as the run settles, so a splice never moves them.
+Test on a Card plans once: `aiDryLine(step, outline, labels, then)` adds ". The steps after it read the card as the
+AI leaves it" when the step writes the card (`aiWritesCard`) and steps follow. Cost: one `readItem` and one
+`planActions` per AI step (at most 3 a run), beside a model call of up to 15 s; `ai-steps.perf.test.ts` "re-plans
+after each AI step on 2,000 cards" bounds the planning.
+
+**Manage Repositories (847).** `RuleRow.tsx` `NeedsNote` adds **Manage Repositories** (the GitHub context's
+`openView`) when a need is `repositories`, as **Connect GitHub** for `github`; both only while the dialog offers
+GitHub (`github.enabled`). The Rules list is reached only through `automationsScopeFor` (a signed-in Editor of the
+whole plan), so no other role sees either.
+
+**Unused Card Moved columns (855).** `card-moved-columns.ts` `unusedPicks(types, picked, columns, chosen)` answers
+the chosen From or To columns the plan has that no picked type uses. `TriggerPanel` offers them as chips by name
+after the types' columns, and `ChipToggles`' `note` says "The picked card types don't use Review." (several joined
+with "or"). A column the plan lacks still reads `GONE_COLUMN`.
