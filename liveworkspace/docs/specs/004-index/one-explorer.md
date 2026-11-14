@@ -291,7 +291,9 @@ panel keeps its own Home without it, and a first run shows its starting points i
   Work alone.
 - **Loading** draws tile-shaped placeholders in the same grid, one per space known (at most eight). **A failed
   read** keeps every tile, since names and links need nothing from it, without its mosaic or line, and says
-  "Couldn’t load what’s in your spaces." with **Try again**, as Recent does.
+  "Couldn’t load what’s in your spaces." with **Try again**, as Recent does. An answer without a `spaces` list (an
+  empty or non-JSON body, as from a local stack whose router serves a page on that path) is a failed read too, never
+  a page error.
 - **Phones.** Below `md` the tiles are one horizontal strip that snaps tile by tile, as Most Used and Recent's do, each
   15rem wide with the next one peeking; from `md` a grid of two, of four from `lg`.
 - **Screen readers and keys.** The section is labelled by its heading, and its tiles are a list of links, each named

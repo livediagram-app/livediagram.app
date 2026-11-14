@@ -8,6 +8,7 @@ import { LIVE_ROUTE_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@livedocuments/api-s
 import { openExplorerRedirect } from '@liveworkspace/sites/open-explorer';
 import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
 import {
+  forwardOr502,
   routeToWorkspace,
   routeToPreviews,
   forwardToDrive,
@@ -173,7 +174,8 @@ function forward(
     const rewritten = new URL(url.toString());
     rewritten.protocol = target.protocol;
     rewritten.host = target.host;
-    return fetch(new Request(rewritten.toString(), request));
+    // An origin that isn't running (a local stack without that server) answers 502, never a bare 500.
+    return forwardOr502(new Request(rewritten.toString(), request));
   }
   return new Response(
     `router: no service binding and no *_ORIGIN var for ${url.pathname} — ` +

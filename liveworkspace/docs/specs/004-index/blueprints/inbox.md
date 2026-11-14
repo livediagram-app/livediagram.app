@@ -140,7 +140,9 @@ on production with `--remote`.
 ## Constants and configuration
 
 `SUMMARY_MAX_BYTES` 2048, `COLLAB_MAX_THREADS` 500, `COLLAB_MAX_ACTIONS` 500, `COLLAB_CARDS_TAB` `'~cards'`,
-`COLLAB_EVENTS_MAX` 100 (`packages/index-client`); `LABEL_MAX` 200, `TEXT_MAX` 500, `COLOR_MAX` 32, `PEOPLE_MAX` 100,
+`COLLAB_EVENTS_MAX` 100, `INDEX_BODY_MAX_BYTES` 512 KiB (the index's `MAX_BODY_BYTES`, and the most a collab push
+`capCollabPush` sends), `COLLAB_TEXT_MAX` 500, `COLLAB_PEOPLE_MAX` 100 (`packages/index-client`); `LABEL_MAX` 200,
+`TEXT_MAX` 500 (`COLLAB_TEXT_MAX`), `COLOR_MAX` 32, `PEOPLE_MAX` 100 (`COLLAB_PEOPLE_MAX`),
 `RESPONSES_MAX` 10,000,000 (`collab-push.ts`); `INBOX_LIMIT_DEFAULT` 100 (`config.ts`); `FUTURE_SLACK_MS` 5 min
 (`events.ts`); `FLUSH_IDLE_MS` 2 s, `FLUSH_MIN_GAP_MS` 60 s, `FLUSH_RETRY_MS` 60 s (a key's first wait after a
 failure, doubling to `RETRY_MAX_MS` 1 h), `OUTBOX_MAX_ATTEMPTS` 12, `FINAL_STATUSES` 400, 403, 413, 422, `DRAIN_TABS`

@@ -22,6 +22,10 @@ export const ACCOUNT_PALETTE = [
   // Hints under the names, the Sign Out glyph.
   '[--account-hint:var(--color-slate-500)]',
   'dark:[--account-hint:var(--color-slate-400)]',
+  // The hints on a hovered or keyboard-focused item (12 px text on --account-hover): slate-500 there measured 4.35:1,
+  // under AA, so a hovered row darkens them to slate-600 (6.9:1). Dark mode keeps its hint (slate-400).
+  '[--account-hint-hover:var(--color-slate-600)]',
+  'dark:[--account-hint-hover:var(--color-slate-400)]',
   // A refused sign-out, said in the hint's place.
   '[--account-error:var(--color-red-700)]',
   'dark:[--account-error:var(--color-red-300)]',

@@ -540,6 +540,13 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   `agentIds` the people whose agent (an API token: the MCP, the CLI, a script) wrote in it while they never did. Both
   reach the thread, but only a comment of one's own is "you commented": a question an agent asked with my token
   still waits on me.
+- A collab push always fits the index's body limit (512 KiB, `INDEX_BODY_MAX_BYTES`): the push replaces the tab's
+  rows, so it cannot be split, and one over the limit would be refused for good and park the tab's key, stopping its
+  Inbox updates. Before sending, the item (`@liveworkspace/index-app` `capCollabPush`) cuts each row as the index
+  would (texts to 500 characters, `COLLAB_TEXT_MAX`; each id list to its first 100 distinct ids, `COLLAB_PEOPLE_MAX`,
+  where the index refuses more), keeps the newest 500 threads and 500 actions, then keeps threads and actions
+  together, newest first, while the push's JSON fits the limit, and leaves out every older row. The order is fixed
+  (time, then ids), so the same tab always pushes the same rows.
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
   action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
   thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,

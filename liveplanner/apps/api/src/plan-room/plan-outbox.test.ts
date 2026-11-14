@@ -186,10 +186,11 @@ describe('the outbox', () => {
     await upsertTab(db.env, 'P', { id: 't1', name: 'Sheet', elements: [sheet, unstored] }, 0);
     const index = fakeIndex();
     await drainOutbox(db.env, 'P', index.client);
+    // Threads of the same time push in element id order (capCollabPush's total order): 'sh2' sorts before 'sh:'.
     expect(index.collab[0]!.push.threads.map((t) => [t.elementId, t.elementLabel])).toEqual([
+      ['sh2:row001:cola01', 'Ledger'],
       ['sh:row002:colb01', 'Budget!B2'],
       ['sh:row999:colb01', 'Budget (Deleted Cell)'],
-      ['sh2:row001:cola01', 'Ledger'],
     ]);
   });
 
