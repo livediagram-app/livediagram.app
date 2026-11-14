@@ -1786,8 +1786,10 @@ copied across or tidied up.
   make it again to the stored catalogue and send it again (up to three tries); a save that still fails drops only
   that change, never one saved after it. A refusal is the api's word on what is stored, taken even when it names a
   lower revision than the editor holds: a plan in This Browser counts its own revisions, and once Sync Plan moves it
-  to the server (in place, with no reload) the server's count starts again, so the first card types save after a sync
-  is made again to the server's catalogue and lands. An undo makes the change's inverse to the catalogue as it then is, so it
+  to the server (in place, with no reload) the server's count starts again. So a sync in place reads the server's
+  catalogue and revision straight after it and the editor takes them in place of its own count, and the first card
+  types save after a sync names the server's revision and lands at once; should that read fail, the save is refused
+  stale once, made again to the server's catalogue, and lands. An undo makes the change's inverse to the catalogue as it then is, so it
   never takes back anyone's later change; a redo makes the change again the same way.
 - Each write reaches the project's room as an ordered system op, `item-types`, carrying the catalogue, so open
   editors redraw at once; a tab-scoped session receives it too (types hold no content).

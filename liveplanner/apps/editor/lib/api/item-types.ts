@@ -12,7 +12,13 @@ import {
 import { isOfflineId, offlineSaveItemTypes } from '../offline/offline-store';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 
-export type SavedItemTypes = { itemTypes: ItemTypeCatalogue | null; itemTypesRev: number };
+// `adopt`: the server's word after Sync Plan moved the plan in place (docs/specs/026-plan/item-types.md "Storage and
+// sync"), taken even below the revision held, as the server's count starts again.
+export type SavedItemTypes = {
+  itemTypes: ItemTypeCatalogue | null;
+  itemTypesRev: number;
+  adopt?: true;
+};
 
 // Another change landed since the revision a save named: the catalogue and revision now stored.
 export class ItemTypesStaleError extends Error {
