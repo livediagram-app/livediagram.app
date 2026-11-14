@@ -523,5 +523,13 @@ export function routeToPreviews(
   const forwarded = new Request(target.toString(), request);
   forwarded.headers.delete('Cookie');
   carryVisitorAddress(request, forwarded.headers);
-  return doFetch(forwarded);
+  // A service that can't be reached (locally, nothing on PREVIEWS_ORIGIN) answers 502, never a throw out of the
+  // router as a bare 500.
+  return doFetch(forwarded).catch(
+    () =>
+      new Response(`router: the previews service at ${target.origin} could not be reached`, {
+        status: 502,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+      }),
+  );
 }

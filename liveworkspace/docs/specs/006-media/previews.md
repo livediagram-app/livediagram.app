@@ -50,7 +50,10 @@ browser always calls its own origin (no CORS, no preflight), and the old share a
 `@liveworkspace/sites/workspace-proxy` (`previewsTargetFor`, `routeToPreviews`) holds the mapping, so the four
 routers can't drift. Each router names its environment's origin in `PREVIEWS_ORIGIN` (local `http://127.0.0.1:8792`,
 staging `https://staging.liveworkspace.app`, production by default). `/api/share/:code` itself (what a link opens)
-stays the app's.
+stays the app's. When the previews service can't be reached at all (locally, a stack started without
+`dev:workspace`, so nothing listens on 8792), the router answers `502` (`no-store`) naming `PREVIEWS_ORIGIN`, where a
+failed forward used to throw out of the router as a bare `500` ("Network connection lost"); a picture then falls back
+as for any failed preview.
 
 ### `GET /api/previews/items/:id?v=<updatedAt>[&appearance=light|dark]`
 

@@ -60,6 +60,20 @@ describe('routeToPreviews', () => {
     expect(seen[0]!.url).toBe('http://127.0.0.1:8792/api/previews/share/ABC/image.svg?tab=T1');
   });
 
+  it('answers 502 when the previews service cannot be reached, never a throw', async () => {
+    const unreachable = (async () => {
+      throw new Error('Network connection lost.');
+    }) as typeof fetch;
+    const res = await routeToPreviews(
+      new Request('http://localhost:3100/api/share/ABC/image.svg'),
+      'http://127.0.0.1:8792',
+      unreachable,
+    );
+    expect(res!.status).toBe(502);
+    expect(res!.headers.get('Cache-Control')).toBe('no-store');
+    expect(await res!.text()).toContain('http://127.0.0.1:8792');
+  });
+
   it('leaves every other path to the router, and refuses to forward to itself', async () => {
     const { doFetch } = capture();
     expect(
