@@ -3,7 +3,7 @@
 // published keys, as `@liveworkspace/auth-client` checks access tokens: `createRemoteJWKSet` caches the
 // key set and refetches only on an unknown `kid`, so build one verifier per isolate, not per request.
 
-import { remoteKeySetAt } from '@liveworkspace/auth-client';
+import { remoteKeySetAt, type KeysFetcher } from '@liveworkspace/auth-client';
 import { jwtVerify, type JWTVerifyGetKey } from 'jose';
 import { GRANT_ALG, isApp, isLevel, type App } from './constants';
 import type { GrantClaims } from './types';
@@ -17,14 +17,18 @@ export interface GrantVerifierOptions {
   issuer?: string;
   // Tests pass a local key set instead of fetching one.
   keys?: JWTVerifyGetKey;
+  // A service binding to the index (an app's INDEX): the key set is fetched through it, the public route only when
+  // it throws (a local run without the index). A Worker's fetch to another Worker's public route can stall.
+  keysFrom?: KeysFetcher;
 }
 
 const nullableString = (value: unknown): value is string | null =>
   value === null || typeof value === 'string';
 
 export function createGrantVerifier(options: GrantVerifierOptions) {
-  // From its twin host when its own fails, while the move to www. lasts (@liveworkspace/auth-client remoteKeySetAt).
-  const keys = options.keys ?? remoteKeySetAt(options.jwksUrl);
+  // Through the binding first, then the route and its twin host while the move to www. lasts
+  // (@liveworkspace/auth-client remoteKeySetAt).
+  const keys = options.keys ?? remoteKeySetAt(options.jwksUrl, options.keysFrom);
 
   // The grant's claims, or null for a missing, expired, forged, malformed or misaddressed one.
   return async function verifyGrant(token: string): Promise<GrantClaims | null> {
