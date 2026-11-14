@@ -263,6 +263,7 @@
     "./components/tour/tour-step": "./src/components/tour/tour-step.ts",
     "./components/tour/useTourEngine": "./src/components/tour/useTourEngine.ts",
     "./components/tour/useTourGlide": "./src/components/tour/useTourGlide.ts",
+    "./components/tour/SankeyFlowsTour": "./src/components/tour/SankeyFlowsTour.tsx",
     "./hooks/auth/useSignInGate": "./src/hooks/auth/useSignInGate.ts",
     "./hooks/canvas/createToolConfig": "./src/hooks/canvas/createToolConfig.ts",
     "./hooks/canvas/useAutoCopyParam": "./src/hooks/canvas/useAutoCopyParam.ts",
