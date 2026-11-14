@@ -424,6 +424,7 @@
     "./lib/back-out": "./src/lib/back-out.ts",
     "./lib/badge-anchor": "./src/lib/badge-anchor.ts",
     "./lib/blob-data-url": "./src/lib/blob-data-url.ts",
+    "./lib/can-manage-webhooks": "./src/lib/can-manage-webhooks.ts",
     "./lib/canvas-pointer": "./src/lib/canvas-pointer.ts",
     "./lib/canvas-selectors": "./src/lib/canvas-selectors.ts",
     "./lib/chart-data-dialog-handle": "./src/lib/chart-data-dialog-handle.ts",

@@ -195,68 +195,69 @@ memory (5,000 keys) and in SQL (once a minute). Measured numbers are in
 
 Every log line the service writes, by its fingerprint (the first literal of the call; `…` marks an interpolation):
 
-| Level   | Fingerprint                                         | Where                  |
-| ------- | --------------------------------------------------- | ---------------------- |
-| `warn`  | `[account-app] activity_failed`                     | `activity.ts`          |
-| `error` | `[grant] index unreachable`                         | `service.ts`           |
-| `warn`  | `[grant] refused`                                   | `service.ts`           |
-| `log`   | `[index] GRANT_SIGNING_KEY is unset: signing grant` | `grants.ts`            |
-| `warn`  | `[index] copy failed`                               | `items/item-routes.ts` |
-| `error` | `[index] create failed`                             | `request.ts`           |
-| `log`   | `[index] created`                                   | `items/create.ts`      |
-| `error` | `[index] cron step failed: …`                       | `index.ts`             |
-| `log`   | `[index] emptied trash`                             | `items/list-routes.ts` |
-| `warn`  | `[index] malformed stored share password refused`   | `password-hash.ts`     |
-| `log`   | `[index] merged a guest`                            | `merge.ts`             |
-| `log`   | `[index] migration handoff`                         | `migration-handoff.ts` |
-| `warn`  | `[index] migration handoff not taken`               | `migration-handoff.ts` |
-| `warn`  | `[index] notice not delivered`                      | `notices.ts`           |
-| `warn`  | `[index] person merge not taken`                    | `person-merges.ts`     |
-| `log`   | `[index] person merges`                             | `index.ts`             |
-| `warn`  | `[index] person merges failed`                      | `merge.ts`             |
-| `warn`  | `[index] person merges given up`                    | `person-merges.ts`     |
-| `warn`  | `[index] person notice not taken`                   | `person-notices.ts`    |
-| `warn`  | `[index] person notices`                            | `account-purge.ts`     |
-| `warn`  | `[index] person notices given up`                   | `person-notices.ts`    |
-| `warn`  | `[index] purge: apps unreachable, kept for the nex` | `purge.ts`             |
-| `error` | `[index] purge: tombstone drain failed`             | `purge.ts`             |
-| `log`   | `[index] purged`                                    | `items/item-routes.ts` |
-| `log`   | `[index] purged a closed account`                   | `account-purge.ts`     |
-| `log`   | `[index] purges`                                    | `index.ts`             |
-| `warn`  | `[index] revoke not delivered`                      | `sharing.ts`           |
-| `log`   | `[index] sweep: … empty items to the Tras`          | `index.ts`             |
-| `error` | `[index] unreachable`                               | `lists.ts`             |
-| `warn`  | `[index] visitor copy not recorded`                 | `visitors.ts`          |
-| `warn`  | `[index] visitor open not recorded`                 | `visitors.ts`          |
-| `log`   | `[index] … items wi`                                | `index.ts`             |
-| `error` | `[internal] copy-to failed`                         | `internal.ts`          |
-| `error` | `[internal] import failed`                          | `internal.ts`          |
-| `warn`  | `[internal] import refused`                         | `internal.ts`          |
-| `warn`  | `[internal] import undo failed`                     | `import-item.ts`       |
-| `error` | `[internal] import write failed`                    | `import-item.ts`       |
-| `info`  | `[internal] imported`                               | `internal.ts`          |
-| `info`  | `[internal] migrated`                               | `internal.ts`          |
-| `error` | `[internal] migration failed`                       | `internal.ts`          |
-| `warn`  | `[internal] migration refused`                      | `internal.ts`          |
-| `warn`  | `[internal] notice failed`                          | `internal.ts`          |
-| `warn`  | `[internal] person merge failed`                    | `internal.ts`          |
-| `warn`  | `[notify-email] skipped … ${String(emails`          | `notifier.ts`          |
-| `warn`  | `[outbox] parked`                                   | `outbox.ts`            |
-| `warn`  | `[outbox] parked rows dropped`                      | `outbox-parked.ts`     |
-| `info`  | `[outbox] unparked`                                 | `outbox-parked.ts`     |
-| `warn`  | `[outbox] push failed`                              | `outbox.ts`            |
-| `warn`  | `[notify-email] the sender allowance could not be`  | `notify-claims.ts`     |
-| `warn`  | `[room-purge] did not reach the room`               | `purge.ts`             |
-| `info`  | `[room-purge] purged`                               | `purge.ts`             |
-| `warn`  | `[tab-shares] leave failed`                         | `tab-shares.ts`        |
-| `warn`  | `[tab-shares] parked`                               | `tab-shares.ts`        |
-| `warn`  | `[tab-shares] send failed`                          | `tab-shares.ts`        |
-| `warn`  | `[teams] accounts unreachable; the claim stands`    | `teams.ts`             |
-| `error` | `[teams] create_failed`                             | `teams.ts`             |
-| `warn`  | `[teams] create_refused`                            | `teams.ts`             |
-| `info`  | `[teams] created`                                   | `teams.ts`             |
-| `warn`  | `index: drive-signal failed`                        | `drive.ts`             |
-| `error` | `index: drive-signal failed`                        | `drive.ts`             |
+| Level   | Fingerprint                                           | Where                  |
+| ------- | ----------------------------------------------------- | ---------------------- |
+| `warn`  | `[account-app] activity_failed`                       | `activity.ts`          |
+| `error` | `[grant] index unreachable`                           | `service.ts`           |
+| `warn`  | `[grant] refused`                                     | `service.ts`           |
+| `log`   | `[index] GRANT_SIGNING_KEY is unset: signing grant`   | `grants.ts`            |
+| `warn`  | `[index] copy failed`                                 | `items/item-routes.ts` |
+| `error` | `[index] create failed`                               | `request.ts`           |
+| `log`   | `[index] created`                                     | `items/create.ts`      |
+| `error` | `[index] cron step failed: …`                         | `index.ts`             |
+| `log`   | `[index] emptied trash`                               | `items/list-routes.ts` |
+| `warn`  | `[index] malformed stored share password refused`     | `password-hash.ts`     |
+| `warn`  | `[index] the local database is behind the migrations` | `local-db-hint.ts`     |
+| `log`   | `[index] merged a guest`                              | `merge.ts`             |
+| `log`   | `[index] migration handoff`                           | `migration-handoff.ts` |
+| `warn`  | `[index] migration handoff not taken`                 | `migration-handoff.ts` |
+| `warn`  | `[index] notice not delivered`                        | `notices.ts`           |
+| `warn`  | `[index] person merge not taken`                      | `person-merges.ts`     |
+| `log`   | `[index] person merges`                               | `index.ts`             |
+| `warn`  | `[index] person merges failed`                        | `merge.ts`             |
+| `warn`  | `[index] person merges given up`                      | `person-merges.ts`     |
+| `warn`  | `[index] person notice not taken`                     | `person-notices.ts`    |
+| `warn`  | `[index] person notices`                              | `account-purge.ts`     |
+| `warn`  | `[index] person notices given up`                     | `person-notices.ts`    |
+| `warn`  | `[index] purge: apps unreachable, kept for the nex`   | `purge.ts`             |
+| `error` | `[index] purge: tombstone drain failed`               | `purge.ts`             |
+| `log`   | `[index] purged`                                      | `items/item-routes.ts` |
+| `log`   | `[index] purged a closed account`                     | `account-purge.ts`     |
+| `log`   | `[index] purges`                                      | `index.ts`             |
+| `warn`  | `[index] revoke not delivered`                        | `sharing.ts`           |
+| `log`   | `[index] sweep: … empty items to the Tras`            | `index.ts`             |
+| `error` | `[index] unreachable`                                 | `lists.ts`             |
+| `warn`  | `[index] visitor copy not recorded`                   | `visitors.ts`          |
+| `warn`  | `[index] visitor open not recorded`                   | `visitors.ts`          |
+| `log`   | `[index] … items wi`                                  | `index.ts`             |
+| `error` | `[internal] copy-to failed`                           | `internal.ts`          |
+| `error` | `[internal] import failed`                            | `internal.ts`          |
+| `warn`  | `[internal] import refused`                           | `internal.ts`          |
+| `warn`  | `[internal] import undo failed`                       | `import-item.ts`       |
+| `error` | `[internal] import write failed`                      | `import-item.ts`       |
+| `info`  | `[internal] imported`                                 | `internal.ts`          |
+| `info`  | `[internal] migrated`                                 | `internal.ts`          |
+| `error` | `[internal] migration failed`                         | `internal.ts`          |
+| `warn`  | `[internal] migration refused`                        | `internal.ts`          |
+| `warn`  | `[internal] notice failed`                            | `internal.ts`          |
+| `warn`  | `[internal] person merge failed`                      | `internal.ts`          |
+| `warn`  | `[notify-email] skipped … ${String(emails`            | `notifier.ts`          |
+| `warn`  | `[outbox] parked`                                     | `outbox.ts`            |
+| `warn`  | `[outbox] parked rows dropped`                        | `outbox-parked.ts`     |
+| `info`  | `[outbox] unparked`                                   | `outbox-parked.ts`     |
+| `warn`  | `[outbox] push failed`                                | `outbox.ts`            |
+| `warn`  | `[notify-email] the sender allowance could not be`    | `notify-claims.ts`     |
+| `warn`  | `[room-purge] did not reach the room`                 | `purge.ts`             |
+| `info`  | `[room-purge] purged`                                 | `purge.ts`             |
+| `warn`  | `[tab-shares] leave failed`                           | `tab-shares.ts`        |
+| `warn`  | `[tab-shares] parked`                                 | `tab-shares.ts`        |
+| `warn`  | `[tab-shares] send failed`                            | `tab-shares.ts`        |
+| `warn`  | `[teams] accounts unreachable; the claim stands`      | `teams.ts`             |
+| `error` | `[teams] create_failed`                               | `teams.ts`             |
+| `warn`  | `[teams] create_refused`                              | `teams.ts`             |
+| `info`  | `[teams] created`                                     | `teams.ts`             |
+| `warn`  | `index: drive-signal failed`                          | `drive.ts`             |
+| `error` | `index: drive-signal failed`                          | `drive.ts`             |
 
 ## Files
 
@@ -282,6 +283,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/inbox.ts`             | The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards assigned to or by me, unresolved threads (an element's or a car…     |
 | `liveworkspace/apps/index/src/index.ts`             | liveworkspace's index (liveworkspace/docs/specs/004-index/index-service.md): one Worker on liveworkspace.app/api/index holding where every Canvas, Plan, Document and Design is and who ca…     |
 | `liveworkspace/apps/index/src/items.ts`             | Items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): listing, making, reading, renaming and moving, the Trash, copies, opens and grants.                               |
+| `liveworkspace/apps/index/src/local-db-hint.ts`     | A local database behind the migrations says so: in development a failed request on a missing table or column logs the fix                                                                       |
 | `liveworkspace/apps/index/src/items/shared.ts`      | What the item routes share: `clientIpOf`, `DEFAULT_TITLE`, `EMPTY_TRASH_MAX`                                                                                                                    |
 | `liveworkspace/apps/index/src/items/list-routes.ts` | Listing items and the Trash: filters, list specs, `handleList`, `handleTrash`                                                                                                                   |
 | `liveworkspace/apps/index/src/items/create.ts`      | Making an item: `createItem`, `insertItem`                                                                                                                                                      |
