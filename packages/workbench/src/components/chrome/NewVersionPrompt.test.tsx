@@ -6,7 +6,13 @@ import { WORKBENCH_DEFAULTS, configureWorkbench } from '../../bindings';
 import { createListeners } from '../../lib/listeners';
 import { LIVE_BUILD_MAX_CHECKS, LIVE_BUILD_POLL_MS } from '../../hooks/ui/useNewerEditorLive';
 import { RELOAD_SAVE_WAIT_MS } from '../../lib/reload-when-saved';
-import { NewVersionPrompt, STILL_ARRIVING, type NewVersionPromptProps } from './NewVersionPrompt';
+import { setStartPanelOpen } from '../start/start-panel-open';
+import {
+  NewVersionPrompt,
+  OVER_START_SHEET,
+  STILL_ARRIVING,
+  type NewVersionPromptProps,
+} from './NewVersionPrompt';
 
 // docs/specs/016-platform/new-version-prompt.md "When the prompt shows" and "The prompt", in each product.
 const EDITOR_FORMAT = 4;
@@ -84,6 +90,22 @@ describe('NewVersionPrompt', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'NewVersionPrompt');
     expect(track).toHaveBeenCalledTimes(1);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // Work Tracker 784: on a phone, an empty tab's start sheet (the overlay layer) hid it until a board was picked.
+  it('stands over a start panel’s phone sheet while one is open, and back on the chrome layer after', async () => {
+    mount();
+    newer();
+    await flush();
+    const status = screen.getByRole('status');
+    expect(status.className).toContain('z-[var(--z-chrome)]');
+    expect(status.className).not.toContain('--z-overlay');
+    act(() => setStartPanelOpen(true));
+    for (const cls of OVER_START_SHEET.split(' ')) expect(status.classList).toContain(cls);
+    // One above the overlay layer only: never as high as the canvas modal or a dialog.
+    expect(OVER_START_SHEET).not.toMatch(/z-modal|z-canvas-modal|z-popover|z-toast/);
+    act(() => setStartPanelOpen(false));
+    expect(status.className).not.toContain('--z-overlay');
   });
 
   it('renders nothing in the static export, whatever the server says', () => {

@@ -7,6 +7,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetCommunityEnabledForTests } from '@liveworkspace/community-ui';
 import { resetCommunityStartForTests } from '@liveworkspace/community-ui/start';
+import { startPanelIsOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { StartPlanning } from './StartPlanning';
 
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => null }));
@@ -122,4 +123,14 @@ describe('Start Planning: Import on the rail', () => {
       expect(onImport).toHaveBeenCalledOnce();
     },
   );
+});
+
+// Work Tracker 784: the new version prompt stands over the phone sheet while it is up (new-version-prompt.md).
+describe('Start Planning on screen', () => {
+  it('says the start panel is open while it shows, and closed once it goes', () => {
+    const view = render(<StartPlanning onPickBoard={vi.fn()} />);
+    expect(startPanelIsOpen()).toBe(true);
+    view.unmount();
+    expect(startPanelIsOpen()).toBe(false);
+  });
 });

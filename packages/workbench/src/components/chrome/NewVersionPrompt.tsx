@@ -13,10 +13,15 @@ import { useNewerEditorLive } from '../../hooks/ui/useNewerEditorLive';
 import { debugLog } from '../../lib/debug-log';
 import { checkLiveEditor } from '../../lib/live-editor-build';
 import { reloadWhenSaved } from '../../lib/reload-when-saved';
+import { useStartPanelOpen } from '../start/start-panel-open';
 import { TOAST_SURFACE } from '../toast/ToastCard';
 import { announceToastFloorChange } from '../toast/toast-floor';
 
 type Phase = 'offered' | 'saving' | 'unsaved' | 'arriving';
+
+/** The layer the prompt takes while a start panel is open, where that panel is a sheet (StartPanel). */
+export const OVER_START_SHEET =
+  'max-sm:z-[calc(var(--z-overlay)+1)] short-window:z-[calc(var(--z-overlay)+1)]';
 
 const SAVING = 'Saving your changes…';
 const UNSAVED = "Your latest changes aren't saved yet. Reload once they are.";
@@ -62,6 +67,9 @@ export function NewVersionPrompt({
   );
   const editorLive = useNewerEditorLive(ahead, checkLive);
   const visible = ahead && editorLive && (dismissedAt === null || server > dismissedAt);
+  // On a phone and a short window an empty tab's start is a sheet on the overlay layer: the prompt stands one above
+  // it there, still under the canvas modal and every dialog, so Reload is in reach before anything is picked.
+  const overStart = useStartPanelOpen();
 
   useEffect(() => {
     if (!visible || announced.current) return;
@@ -109,7 +117,7 @@ export function NewVersionPrompt({
       // The toast's look, not its stack (docs/specs/004-interface-design/toasts.md "Out of scope"); the toasts
       // stand on it, as on any bottom chrome.
       data-toast-floor=""
-      className={`fixed bottom-20 left-1/2 z-[var(--z-chrome)] flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 animate-toast-in items-center gap-3 border-slate-200 px-4 py-3 text-sm dark:border-slate-700 ${TOAST_SURFACE}`}
+      className={`fixed bottom-20 left-1/2 z-[var(--z-chrome)] ${overStart ? OVER_START_SHEET : ''} flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 animate-toast-in items-center gap-3 border-slate-200 px-4 py-3 text-sm dark:border-slate-700 ${TOAST_SURFACE}`}
     >
       <p className="min-w-0 flex-1">{copy}</p>
       <Button size="sm" busy={phase === 'saving'} onClick={() => void onReload()}>

@@ -27,6 +27,7 @@ import {
   withCommunityStartMatches,
 } from '@liveworkspace/community-ui/start';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
+import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { API_BASE } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { StartSaveSwitch } from '@/components/start/StartSaveSwitch';
@@ -232,6 +233,11 @@ export function StartPlanning({
   useEffect(() => {
     void loadTabs?.();
   }, [loadTabs]);
+  // On screen: the new version prompt stands over its phone sheet (start-panel-open.ts).
+  useEffect(() => {
+    setStartPanelOpen(true);
+    return () => setStartPanelOpen(false);
+  }, []);
   const suggestions = useMemo(
     () =>
       tabs && onDashboard && onSuggestedDashboard ? suggestedDashboards(tabs, plan?.types) : [],
