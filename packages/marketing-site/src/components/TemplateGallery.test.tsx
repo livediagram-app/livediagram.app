@@ -31,8 +31,8 @@ function Carousel(props: {
     </div>
   );
 }
-function Fan(props: { kinds: readonly string[] }) {
-  return <span data-testid="fan" data-kinds={props.kinds.join(',')} />;
+function Preview(props: { kind: string }) {
+  return <span data-testid="preview" data-kind={props.kind} />;
 }
 function Card(props: { template: T; source: 'Home.Gallery' }) {
   return (
@@ -48,7 +48,7 @@ const renderGallery = (shelves = SHELVES) =>
       eyebrow="One canvas, many jobs"
       lead="Every template is here."
       Carousel={Carousel}
-      Fan={Fan}
+      Preview={Preview}
       Card={Card}
       href={(t) => `/new?template=${t.kind}&from=index`}
     />,
@@ -102,11 +102,17 @@ describe('TemplateGallery', () => {
 
   it('draws no cards for a folded shelf, listing its templates as plain links once each, A to Z', () => {
     const { container } = renderGallery();
-    // Only Blank Slate's card; Flow and Team are cards with a fan, their templates links in the index.
+    // Only Blank Slate's card; Flow and Team are category cards, their templates links in the index.
     expect(screen.getAllByText(/Home\.Gallery$/).map((a) => a.textContent)).toEqual([
       'blank Home.Gallery',
     ]);
-    expect(screen.getAllByTestId('fan').map((f) => f.dataset.kinds)).toEqual(['b,a', 'a,c']);
+    // Each folded category's card fans its own previews (only the front one in the first paint).
+    const tiles = screen.getAllByRole('button', { name: /Show/ });
+    expect(
+      tiles.map((b) =>
+        [...b.querySelectorAll<HTMLElement>('[data-testid="preview"]')].map((p) => p.dataset.kind),
+      ),
+    ).toEqual([['a'], ['c']]);
     expect(screen.getByText('2 more categories, 3 more templates')).toBeTruthy();
     const index = container.querySelector('details');
     expect(index?.open).toBe(false);

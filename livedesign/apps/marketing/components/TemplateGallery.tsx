@@ -2,7 +2,7 @@
 
 import { TemplateGallery as Gallery } from '@liveworkspace/marketing-site/components/TemplateGallery';
 import { ctaHref } from '@livedesign/api-schema';
-import { DeferredPreviewFan } from '@livedesign/template-previews';
+import { TemplatePreview } from '@livedesign/template-previews';
 import { templateCreateHref } from '@livedesign/templates';
 import { TemplateCard } from '@/components/TemplateCard';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
@@ -12,7 +12,7 @@ import { galleryShelves, type GalleryTemplate } from '@/lib/template-gallery';
 // editor ships, laid out as the editor's template step lays them out
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). ONE shelf is open as a four-across
 // carousel (TemplateCarousel), Blank Slate on load (every blank and nothing else: the empty page and a
-// blank of each page kind); every other category sits folded underneath as a card (the fan on it DeferredPreviewFan) that opens it
+// blank of each page kind); every other category sits folded underneath as a card (its fan drawn from TemplatePreview) that opens it
 // in the open one's place, the shelf it replaces folding back (Blank Slate leading the folds). It only
 // browses: the search is the hero's (components/HeroSearch.tsx), which finds across every shelf. Every
 // card is a link that creates that design straight away and opens it in the editor (TemplateCard).
@@ -34,7 +34,7 @@ export function TemplateGallery() {
       eyebrow="One canvas, many jobs"
       lead="Pick a starting point and you are on the canvas with it already drawn. Every template the editor ships is here."
       Carousel={TemplateCarousel}
-      Fan={DeferredPreviewFan}
+      Preview={TemplatePreview}
       Card={TemplateCard}
       href={createHref}
     />

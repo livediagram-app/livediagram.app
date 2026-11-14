@@ -17,7 +17,7 @@ import { TemplateIndex, indexedTemplates } from './TemplateIndex';
 // "Browse every template" (each product's docs/specs/019-marketing/marketing-site.md), anchored #templates for the
 // hero's search: every template the editor ships, laid out as the editor's template step lays them out. ONE shelf
 // is open as a four-across carousel (the product's TemplateCarousel), the `initial` one on load; every other
-// category sits folded underneath as a card (CategoryTiles.tsx, its fan the product's) that opens it in the open one's
+// category sits folded underneath as a card (CategoryTiles.tsx, its fan the product's previews) that opens it in the open one's
 // place, the shelf it replaces folding back. Only the open shelf's cards are drawn: a folded shelf's cards are rendered
 // when it opens, so the page's HTML does not grow with the catalogue, and its templates stay in the HTML as plain
 // links under the category cards (TemplateIndex.tsx), so every template is still a link a crawler can follow. It only browses: the search is the hero's, which finds across every shelf.
@@ -46,8 +46,8 @@ export type TemplateGalleryProps<Id extends string, T extends GalleryItem> = {
     reveal?: boolean;
     children: ReactNode;
   }>;
-  /** The product's fan of a category's first previews (its DeferredPreviewFan), on each folded category's card. */
-  Fan: ComponentType<{ kinds: readonly T['kind'][] }>;
+  /** The product's preview of one template (its TemplatePreview), fanned on each folded category's card. */
+  Preview: ComponentType<{ kind: T['kind'] }>;
   Card: ComponentType<{ template: T; source: 'Home.Gallery' }>;
   /** Where a template's plain link goes: the same create link as its card. */
   href: (template: T) => string;
@@ -59,7 +59,7 @@ export function TemplateGallery<Id extends string, T extends GalleryItem>({
   eyebrow,
   lead,
   Carousel,
-  Fan,
+  Preview,
   Card,
   href,
 }: TemplateGalleryProps<Id, T>) {
@@ -115,7 +115,7 @@ export function TemplateGallery<Id extends string, T extends GalleryItem>({
           </div>
           {folded.length > 0 ? (
             <div className="flex flex-col gap-4">
-              <CategoryTiles groups={folded} onOpen={openCategory} Fan={Fan} />
+              <CategoryTiles groups={folded} onOpen={openCategory} Preview={Preview} />
               <TemplateIndex
                 templates={indexedTemplates(folded, openShelf?.templates ?? [])}
                 href={href}

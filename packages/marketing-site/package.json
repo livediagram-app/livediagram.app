@@ -20,6 +20,7 @@
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/licences": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/template-previews": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },
   "peerDependencies": {

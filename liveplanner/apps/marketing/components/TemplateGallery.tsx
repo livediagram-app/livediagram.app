@@ -2,7 +2,7 @@
 
 import { TemplateGallery as Gallery } from '@liveworkspace/marketing-site/components/TemplateGallery';
 import { ctaHref } from '@liveplanner/api-schema';
-import { DeferredPreviewFan } from '@liveplanner/template-previews';
+import { TemplatePreview } from '@liveplanner/template-previews';
 import { templateCreateHref } from '@liveplanner/templates';
 import { TemplateCard } from '@/components/TemplateCard';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
@@ -12,7 +12,7 @@ import { galleryShelves, type GalleryTemplate } from '@/lib/template-gallery';
 // editor ships, laid out as the editor's template step lays them out
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). ONE shelf is open as a four-across
 // carousel (TemplateCarousel), Blank Slate on load (every blank and nothing else: each mode's and Blank
-// Spreadsheet); every other category sits folded underneath as a card (the fan on it DeferredPreviewFan) that opens it
+// Spreadsheet); every other category sits folded underneath as a card (its fan drawn from TemplatePreview) that opens it
 // in the open one's place, the shelf it replaces folding back (Blank Slate leading the folds). It only
 // browses: the search is the hero's (components/HeroSearch.tsx), which finds across every shelf. Every
 // card is a link that creates that project straight away and opens it in the editor (TemplateCard).
@@ -34,7 +34,7 @@ export function TemplateGallery() {
       eyebrow="One plan, many tabs"
       lead="Pick a starting point and your new plan opens with its boards, sheets and forms already set up. Every plan template is here."
       Carousel={TemplateCarousel}
-      Fan={DeferredPreviewFan}
+      Preview={TemplatePreview}
       Card={TemplateCard}
       href={createHref}
     />

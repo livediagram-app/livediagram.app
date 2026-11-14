@@ -1,7 +1,7 @@
 'use client';
 
 import { ctaHref } from '@livehuddle/api-schema';
-import { DeferredPreviewFan } from '@livehuddle/template-previews';
+import { TemplatePreview } from '@livehuddle/template-previews';
 import { templateCreateHref } from '@livehuddle/templates';
 import { TemplateGallery as Gallery } from '@liveworkspace/marketing-site/components/TemplateGallery';
 import { TemplateCard } from '@/components/TemplateCard';
@@ -12,7 +12,7 @@ import { LEAD_CATEGORY, galleryShelves, type GalleryTemplate } from '@/lib/templ
 // editor ships, laid out as the editor's template step lays them out
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). ONE shelf is open as a four-across
 // carousel (TemplateCarousel), Office on load (LEAD_CATEGORY, the gallery's first shelf); every
-// other shelf sits folded underneath as a card (the fan on it DeferredPreviewFan) that opens it in the open one's
+// other shelf sits folded underneath as a card (its fan drawn from TemplatePreview) that opens it in the open one's
 // place, the shelf it replaces folding back in the gallery's order (Blank Slate last). It only
 // browses; the editor's wizard (/new) searches every template. Every
 // card is a link that creates that document straight away and opens it in the editor (TemplateCard).
@@ -34,7 +34,7 @@ export function TemplateGallery() {
       eyebrow="One space, many jobs"
       lead="Pick a starting point and you are on the canvas with it already drawn. Every template the editor ships is here."
       Carousel={TemplateCarousel}
-      Fan={DeferredPreviewFan}
+      Preview={TemplatePreview}
       Card={TemplateCard}
       href={createHref}
     />

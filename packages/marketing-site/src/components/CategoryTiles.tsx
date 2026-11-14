@@ -1,22 +1,23 @@
+import { DeferredPreviewFan } from '@liveworkspace/template-previews/deferred-preview-fan';
 import type { ComponentType } from 'react';
 import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '../lib/band-classes';
 import type { TemplateShelf } from './TemplateGallery';
 
 // The template gallery's folded shelves (each product's docs/specs/019-marketing/marketing-site.md): one card per
 // shelf not open, so they read as part of the gallery rather than a row of tags under it. Each shows a fanned stack
-// of its first three templates' previews (the product's DeferredPreviewFan: only the front card is in the page's
-// HTML, the other two are added when the browser is idle), its name and how many templates it holds. Hovering or
+// of its first three templates' previews (@liveworkspace/template-previews' DeferredPreviewFan over the product's
+// previews: only the front card is in the page's HTML, the other two are added when the browser is idle), its name and how many templates it holds. Hovering or
 // focusing a card fans the stack wider. Clicking opens the category's carousel above, as the chips it replaced did.
 // The folded shelves' templates themselves are plain links underneath (TemplateIndex.tsx), not cards.
 
 export function CategoryTiles<Id extends string, T extends { kind: string }>({
   groups,
   onOpen,
-  Fan,
+  Preview,
 }: {
   groups: readonly TemplateShelf<Id, T>[];
   onOpen: (id: Id) => void;
-  Fan: ComponentType<{ kinds: readonly T['kind'][] }>;
+  Preview: ComponentType<{ kind: T['kind'] }>;
 }) {
   // A template cross-listed on two folded shelves counts once.
   const total = new Set(groups.flatMap((g) => g.templates.map((t) => t.kind))).size;
@@ -37,7 +38,7 @@ export function CategoryTiles<Id extends string, T extends { kind: string }>({
               onClick={() => onOpen(group.id)}
               className={`group flex h-full w-full cursor-pointer flex-col p-3 text-left ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
             >
-              <Fan kinds={group.templates.map((t) => t.kind)} />
+              <DeferredPreviewFan Preview={Preview} kinds={group.templates.map((t) => t.kind)} />
               <span className="mt-3 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {/* The tile's name is its own text, "Show Brainstorm 5 templates", so what it shows is
