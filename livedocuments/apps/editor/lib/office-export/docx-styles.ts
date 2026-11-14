@@ -17,6 +17,7 @@ export const DOCX_TYPES = {
   styles: `${WML}.styles+xml`,
   numbering: `${WML}.numbering+xml`,
   settings: `${WML}.settings+xml`,
+  fontTable: `${WML}.fontTable+xml`,
   footer: `${WML}.footer+xml`,
   header: `${WML}.header+xml`,
   footnotes: `${WML}.footnotes+xml`,
