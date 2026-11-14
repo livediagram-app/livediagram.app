@@ -27,6 +27,7 @@ import {
   typeIn,
   blockingCycleOf,
   blockingLoopMessage,
+  withTypeChangeFields,
   type BlockingChange,
   type Item,
   type ItemFields,
@@ -340,7 +341,7 @@ export async function applyItemChanges(
         const given = fieldsFor(pictures.rest, type);
         given.clear = [...given.clear, ...placed.clear];
         const described = withRichText({ ...given.fields, ...placed.set }, type, target.fields);
-        const set = described.set;
+        let set = described.set;
         // A value a removed field left on the card is cleared by its key, though the type no longer has it.
         const named = [
           ...new Set([
@@ -356,6 +357,14 @@ export async function applyItemChanges(
           ...described.clear,
           ...named.map(richFieldOf).filter((k) => isRichFieldKey(k) && k in target.fields),
         ];
+        // A new type takes the card's custom fields mapped by name, never over a field this change gives
+        // (docs/specs/026-plan/item-types.md "Changing a card's type").
+        if (c.type)
+          set = withTypeChangeFields(
+            target,
+            { set: set as ItemFields, clear, type: type.id },
+            types,
+          ).set!;
         const after: Record<string, (typeof target.fields)[string]> = {
           ...target.fields,
           ...(set as typeof target.fields),

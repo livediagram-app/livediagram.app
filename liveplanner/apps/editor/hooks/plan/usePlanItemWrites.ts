@@ -9,6 +9,7 @@ import {
   TRASH_STATUS,
   isTrashed,
   itemStatus,
+  withTypeChangeFields,
   type Item,
   type ItemCreate,
   type ItemMove,
@@ -80,13 +81,25 @@ export function usePlanItemWrites(
     [write],
   );
 
+  // A write that changes a card's type carries its custom fields mapped into the new type's, in the same write and
+  // undo step (docs/specs/026-plan/item-types.md "Changing a card's type"). Any other write goes as it was.
+  const items = planItems.items;
+  const types = itemTypes.types;
+  const typed = useCallback(
+    <W extends ItemPatch | ItemMove>(itemId: string, w: W): W => {
+      const item = w.type === undefined ? undefined : items.get(itemId);
+      return item ? withTypeChangeFields(item, w, types) : w;
+    },
+    [items, types],
+  );
+
   const moveItem = useCallback(
     (itemId: string, move: ItemMove) => {
-      void write({ kind: 'move', id: itemId, move });
+      void write({ kind: 'move', id: itemId, move: typed(itemId, move) });
       // A practice card's move is the tour's, not the person's work (docs/specs/026-plan/plan-tour.md "Telemetry").
       if (!planItems.practiceIds.has(itemId)) track('Plan', 'Moved', 'Board');
     },
-    [write, planItems.practiceIds],
+    [write, typed, planItems.practiceIds],
   );
 
   // Many cards moved together (a group's drag, a selection's Move To): one write and one undo step, a single move for
@@ -94,18 +107,20 @@ export function usePlanItemWrites(
   const moveItems = useCallback(
     (moves: readonly ItemMoveOf[]) => {
       if (moves.length === 0) return;
+      const all = moves.map((m) => ({ id: m.id, move: typed(m.id, m.move) }));
       void write(
-        moves.length === 1
-          ? { kind: 'move', id: moves[0]!.id, move: moves[0]!.move }
-          : { kind: 'moves', moves: [...moves] },
+        all.length === 1
+          ? { kind: 'move', id: all[0]!.id, move: all[0]!.move }
+          : { kind: 'moves', moves: all },
       );
     },
-    [write],
+    [write, typed],
   );
 
   const patchItem = useCallback(
-    (itemId: string, patch: ItemPatch) => write({ kind: 'patch', id: itemId, patch }),
-    [write],
+    (itemId: string, patch: ItemPatch) =>
+      write({ kind: 'patch', id: itemId, patch: typed(itemId, patch) }),
+    [write, typed],
   );
 
   // A time write to a card's Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"): an undo step only for
@@ -161,13 +176,14 @@ export function usePlanItemWrites(
   const patchItems = useCallback(
     (patches: readonly ItemPatchOf[]) => {
       if (patches.length === 0) return;
+      const all = patches.map((p) => ({ id: p.id, patch: typed(p.id, p.patch) }));
       void write(
-        patches.length === 1
-          ? { kind: 'patch', id: patches[0]!.id, patch: patches[0]!.patch }
-          : { kind: 'patches', patches: [...patches] },
+        all.length === 1
+          ? { kind: 'patch', id: all[0]!.id, patch: all[0]!.patch }
+          : { kind: 'patches', patches: all },
       );
     },
-    [write],
+    [write, typed],
   );
   // A field's values rewritten for its new type: written as an undo is, so a required field's cleared values are never
   // refused; whether it all landed and the undo of what did are handed back for the type's save, which keeps or puts

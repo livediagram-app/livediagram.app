@@ -100,7 +100,11 @@ const itemChange = z.discriminatedUnion('op', [
         'Fields to clear, by name or id (never title), e.g. ["Blocked By", "due"]: empties any field, ' +
           'a field that holds several values among them.',
       ),
-    type: typeArg.optional().describe('Change its card type.'),
+    type: typeArg
+      .optional()
+      .describe(
+        'Change its card type: custom fields carry over to the new type’s fields of the same name.',
+      ),
   }),
   z.strictObject({
     op: z.literal('move'),
