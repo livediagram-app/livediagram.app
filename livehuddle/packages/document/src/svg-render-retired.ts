@@ -25,16 +25,20 @@ export function svgRetiredElement(
   },
   surface: CanvasSurface = 'light',
   fontFamily?: string,
+  // The dashed outline alone, without the words (a small preview, Work Tracker 695: the words doubled a Shape Library
+  // preview's size and are too small to read on its tile).
+  outline = false,
 ): string {
   const colours = RETIRED_PLACEHOLDER_COLOURS[surface];
   const card = retiredPlaceholderLayout(el);
   const w = Math.max(0, el.width - card.inset * 2);
   const h = Math.max(0, el.height - card.inset * 2);
-  const outline =
+  const outlineRect =
     `<rect x="${r2(el.x + card.inset)}" y="${r2(el.y + card.inset)}" width="${r2(w)}" height="${r2(h)}"` +
     ` rx="${r2(Math.max(0, card.radius - card.inset))}" fill="${xmlEscape(colours.fill)}"` +
     ` stroke="${xmlEscape(colours.stroke)}" stroke-width="${card.strokeWidth}"` +
     ` stroke-dasharray="${card.dash.join(' ')}"/>`;
+  if (outline) return outlineRect;
   const words = card.lines
     .map((line) =>
       text(el.x + el.width / 2, el.y + line.baseline, line.text, {
@@ -46,7 +50,7 @@ export function svgRetiredElement(
       }),
     )
     .join('');
-  return outline + svgFace(words, fontFamily);
+  return outlineRect + svgFace(words, fontFamily);
 }
 
 // A stored arrow (./retired-arrow, part 4 of the element engine): a faint dashed straight line between its resolved
@@ -56,6 +60,7 @@ export function svgRetiredArrow(
   elements: readonly Element[] | ReadonlyMap<string, Element>,
   surface: CanvasSurface = 'light',
   fontFamily?: string,
+  outline = false,
 ): string {
   const colours = RETIRED_PLACEHOLDER_COLOURS[surface];
   const ends = retiredArrowEnds(arrow, elements);
@@ -74,6 +79,7 @@ export function svgRetiredArrow(
     } as unknown as Parameters<typeof svgRetiredElement>[0],
     surface,
     fontFamily,
+    outline,
   );
   return `<g data-retired-arrow="">${line}${face}</g>`;
 }
