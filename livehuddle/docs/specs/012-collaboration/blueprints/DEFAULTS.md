@@ -47,6 +47,6 @@ One row per default applied where a spec is silent or qualitative.
 | #   | Blueprint      | Spec silence                                         | Default applied                                                                    |
 | --- | -------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | TA1 | tab-attendance | Whether the other pane of a split counts as in a tab | Yes: the tab bar shows them on it, so the record does too                          |
-| TA2 | tab-attendance | Which name a reopened visit shows                    | The latest hello's: a rename mid-meeting shows the new name                        |
+| TA2 | tab-attendance | Which name a reopened visit shows                    | The room's latest name for them: a rename mid-meeting shows the new name           |
 | TA3 | tab-attendance | How a day is grouped                                 | The reader's local day, by when the visit started                                  |
 | TA4 | tab-attendance | Where the menu row sits                              | Its own group after "Add to Another Space": who was in the tab, then what is on it |

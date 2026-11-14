@@ -154,11 +154,47 @@ A person's participant (display name and presence colour) is their **liveworkspa
 Two welcome-modal rules follow from that:
 
 - **Owner on their own document**: the identity-only welcome screen never opens. The user's identity is already settled by their account; prompting them to pick a display name on a document they own would be noise.
-- **Visitor on someone else's document (signed in)**: the welcome screen still opens (it carries the "you're joining X's document" context), but the "Your name" input is `readOnly` and the shuffle button hides. Visitors who _are_ signed in can't masquerade under a different display name on a host's document.
+- **Visitor on someone else's document (signed in)**: the welcome screen still opens (it carries the "you're joining X's document" context), but the "Your name" input is `readOnly` and the shuffle button hides. Visitors who _are_ signed in can't masquerade under a different display name on a host's document, and the room enforces it ([Presence names](#presence-names)): the name peers see is the account's, whatever the client sends.
 
 Guests see the legacy behaviour in both cases: first-load identity prompt, fully editable name, shuffle button present.
 
 The join prompt is **independent of share role**: both **edit-role and view-role** visitors get it. A viewer's display name is broadcast to everyone else (cursor label, the tab presence stack, comments), so they need a chance to set it before joining rather than appearing under a random default. The identity card only writes the visitor's **own** profile (`PUT /api/participants/:id`, authorised on `owner === id`, not on document-edit rights), so confirming a name never hits a `403` even for a read-only viewer. The card's edit-only affordances (template grid, theme grid) don't render in identity mode, so there's nothing a viewer could trigger that they lack permission for.
+
+## Presence names
+
+The name everyone in a Space sees for a person (their character chip, cursor label, presence avatar, Attendance row,
+and the name the room stamps on a pinned note or an arcade score) is **the room's pick, never the client's** (Work
+Tracker 797 and 801). The `hello` still carries a `participant.name`, for rooms from before, and the room never reads
+it.
+
+- **A person** (an account, or a guest with a guest token) goes by **their profile's name**: the api reads it at the
+  room upgrade (`getParticipant`, remembered a minute per isolate) and stamps it on the upgrade as
+  `X-Verified-Name`, URI-encoded and cut to 120 characters. For a signed-in person that is their account name, or a
+  name they set in Settings › Profile or another app ([Identity display name](#identity-display-name)).
+- **A link visitor** (no account and no guest token: their guest handoff could not run) has no profile. They go by
+  the name they typed in the join dialog, which the room keeps under their browser's collab key
+  ([Share roles](../013-workspace/share-roles.md) "The collab key") in the document's own store, so a reload in the
+  same browser keeps it. One document keeps at most 1,000 such names, the oldest going first.
+- **Anyone with neither** (a link visitor who typed nothing, a person with no profile name) goes by **one stable guest
+  name**, two words picked from their collab key ("Quiet Otter", `guestNameForKey`), so the same browser or person
+  is the same guest on every reload and every device.
+
+**Renaming.** A name chosen in the join dialog or in Settings › Profile reaches peers at once, without a reconnect:
+
+- A person's editor writes their profile (`PUT /api/participants/:id`) and then asks the room to show it
+  (`POST /api/documents/:id/room-name`, which names nothing). The api reads the profile **fresh**, never from the
+  minute-long memory another isolate may hold, and relays the name to the room by the person's per-document person
+  tag, so every session of theirs (a laptop and a phone) is renamed and the roster goes out once.
+- A link visitor's editor sends `{ kind: 'visitor-name', name }` over its socket. The room refuses it from a session
+  with an identity, trims and cuts it, keeps it under the browser's key and shows it.
+- Either way the person's **open** Attendance visits take the new name; a closed visit keeps the name it had.
+- The editor shows the room's name for us as our own (our roster entry, found by the collab key the room gave this
+  session), so our own avatar never says something peers do not see. A name we just chose waits up to 15 seconds for
+  the room to show it before the room's name wins again.
+
+**Share roles.** The same at every level: an Editor, a Participant and a Viewer each go by the room's pick, and each
+may rename themselves (a Viewer's name is seen as much as anyone's). A signed-in visitor's join dialog shows their
+account name locked, and the room would ignore any other.
 
 ## Guest → account merge
 

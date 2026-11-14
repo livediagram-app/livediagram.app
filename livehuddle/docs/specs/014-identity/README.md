@@ -7,3 +7,4 @@ Follow the references below only as needed; never upfront.
 - ./transactional-email.md - when working on Transactional & lifecycle email: Optional Cloudflare Email Service sends, gated on the `send_email` binding `EMAIL`: notification, milestone and account-deleted emails, to addresses liveworkspace answers (the welcome, onboarding and team emails are liveworkspace's). Off (no sends) without the binding
 - ./profile-and-email-notifications.md - when working on Account settings & email notifications: the Settings Account rows (identity card, Delete account) and the seven opt-out email switches, gated like [Transactional & lifecycle email](transactional-email.md)
 - ./phone-notifications.md - when working on Phone notifications: which comments, replies, mentions and assigned actions notify a phone, who hears, and the links a tap opens (the platform sends)
+- ./blueprints/README.md - when implementing an identity spec from its blueprint (presence names)
