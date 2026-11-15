@@ -12,6 +12,7 @@ const HELD_AT_100 = [
   'src/components/canvas/PageContentsSidebar.tsx',
   'src/components/canvas/PageRowMenu.tsx',
   'src/lib/editor-arrival.ts',
+  'src/lib/editor-path.ts',
   'src/lib/guard-run.ts',
   'src/lib/room-presence.ts',
   'src/hooks/ui/usePageContents.ts',
