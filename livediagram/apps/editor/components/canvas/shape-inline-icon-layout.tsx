@@ -19,6 +19,8 @@ import {
   TEXT_ALIGN,
 } from '@/components/canvas/label-style';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
+import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
 import { HoverCard } from '@livediagram/ui';
 
@@ -85,7 +87,15 @@ export function ShapeInlineIconLayout({
       style={{ width: iconSize, height: iconSize }}
       onPointerDown={draggableIcon ? onIconPointerDown : undefined}
     >
-      <IconGlyph iconId={element.iconId} stroke={iconStroke} hasLabel={false} />
+      {/* A Technology icon keeps its brand tile, as the export draws it (resolveIconArtLoaded); line art takes the
+          stroke colour. */}
+      {isTechIconId(element.iconId) ? (
+        <svg aria-hidden className="h-full w-full" viewBox="0 0 24 24">
+          <TechIconArt iconId={element.iconId} sizePx={iconSize} />
+        </svg>
+      ) : (
+        <IconGlyph iconId={element.iconId} stroke={iconStroke} hasLabel={false} />
+      )}
     </div>
   );
   // Only the draggable icon earns a hover card (the affordance hint); a static
