@@ -28,7 +28,7 @@ import { pageThumbFor, tabArrowLabels, type PageThumb } from '@/lib/page-thumb';
 
 export type PageThumbTab = Pick<
   Tab,
-  'id' | 'name' | 'elements' | 'pages' | 'layers' | 'font' | 'finish'
+  'id' | 'name' | 'elements' | 'pages' | 'layers' | 'font' | 'finish' | 'theme'
 >;
 
 // One page's picture and what it was drawn from.
@@ -57,7 +57,7 @@ export function usePageThumbnails(
   const live = useMemo(
     () => ({ tab, pageIds }),
     // oxlint-disable-next-line react/exhaustive-deps -- on the inputs a picture shows, not on the tab object's identity
-    [tab.elements, tab.pages, tab.layers, tab.font, tab.finish, key],
+    [tab.elements, tab.pages, tab.layers, tab.font, tab.finish, tab.theme, key],
   );
   const drawn = useSettled(live, settleMs);
   // The design's library, where the editor provides it: a library change redraws only the pages with instances.
@@ -82,7 +82,15 @@ export function usePageThumbnails(
   return useMemo(() => {
     const { full, byId, buckets } = laidOut;
     const resolveImageHref = thumbImageHref(imageSource);
-    const shared: Shared = [full.id, full.layers, full.font, full.finish, iconsLoaded, surface];
+    const shared: Shared = [
+      full.id,
+      full.layers,
+      full.font,
+      full.finish,
+      full.theme,
+      iconsLoaded,
+      surface,
+    ];
     const kept = sameList(shared, cache.current.shared)
       ? cache.current.pages
       : new Map<string, Drawn>();

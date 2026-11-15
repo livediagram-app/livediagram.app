@@ -19,6 +19,8 @@ import { CANVAS_PAPER } from '@/lib/page-paint';
 import { pageExportFrame } from '@/lib/export-page';
 import { exportChartInk } from '@/lib/export-chart-ink';
 import { thumbImageIds } from '@/lib/thumb-images';
+import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-projector';
+import { themeViewMap } from '@/lib/themes';
 import {
   resolveIconArtLoaded,
   resolveStickerArtLoaded,
@@ -36,6 +38,12 @@ export type PageThumb = {
 // Each box's markup by its element, carried over from the last picture that drew it under the same `key` (everything
 // svgBoxed reads beyond the element): a drop redraws the boxes it changed, not the page's thousand.
 const boxedMarkup = new WeakMap<object, { key: string; svg: string }>();
+
+// A plain page in dark chrome drawn as the canvas draws it (docs/specs/011-theme/light-and-dark.md "Ink marks on the
+// plain paper stay seen"): its elements in the theme's dark half, with what the slate paper sinks lifted off it
+// (inkedOnPaper, through the canvas's own projector). The projector keeps each element's drawn object while its
+// source is unchanged, so `boxedMarkup` still carries the unchanged boxes over.
+const darkPaper = createStockColourProjector();
 
 export type PageThumbOptions = {
   // Whether the icon catalogues have landed: until then icons draw as nothing.
@@ -87,13 +95,17 @@ export function pageThumbFor(pageId: string, tab: Tab, opts: PageThumbOptions): 
   });
   if (page.background?.fill) surface = frame.surface;
   parts.push({ key: 'page', markup: frame.backgroundSvg });
+  const shown =
+    canvasSurface === 'dark' && !page.background?.fill
+      ? darkPaper(elements, 'dark', themeViewMap(tab.theme, 'dark'), plainPaper('dark'))
+      : elements;
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
   const backdrops = sketchBackdropIds(elements, tab.finish);
   // Charts in the tab theme's colours and, on a filled page, adapted to what they sit on, as on the
   // canvas and in the exports (without the palette every chart fell back to the built-in ramp).
   const { chartPalette, chartGrounds } = exportChartInk(tab, page);
   const shared = `${opts.iconsLoaded}|${tab.font}|${tab.finish}|${surface}|${chartPalette.join(',')}`;
-  for (const el of elements) {
+  for (const el of shown) {
     if (el.type !== 'arrow') {
       // A box reads, beyond the shared key, whether it is a backdrop, what a chart sits on and its pictures' URLs.
       const hrefs = opts.resolveImageHref
@@ -124,7 +136,7 @@ export function pageThumbFor(pageId: string, tab: Tab, opts: PageThumbOptions): 
   const labels = elements.some((e) => e.type === 'arrow')
     ? (opts.labels ?? tabArrowLabels(tab))
     : undefined;
-  for (const el of elements) {
+  for (const el of shown) {
     // Arrows resolve their endpoints against the WHOLE tab: an arrow is on the page where it is
     // anchored, and it still needs its ends' real positions to draw itself.
     if (el.type === 'arrow')
@@ -138,7 +150,7 @@ export function pageThumbFor(pageId: string, tab: Tab, opts: PageThumbOptions): 
           tab.font,
           labels,
           `lvd-thumb-${pageId}-ko-`,
-          elements,
+          shown,
           undefined,
           tab.finish,
         ),

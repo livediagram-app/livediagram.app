@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, type Tab } from '@livedesign/design';
-import { getTheme, themeChartPalette } from './themes';
+import {
+  createPinnedArrow,
+  createShape,
+  layOutPages,
+  newWireframePage,
+  type Element,
+  type Tab,
+} from '@livedesign/design';
+import { buildPageLayout } from '@livedesign/templates';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
+import { createStockColourProjector, plainPaper } from './stock-colour-projector';
+import { getTheme, themeChartPalette, themeViewMap } from './themes';
 import { pageThumbFor } from './page-thumb';
 import { CANVAS_PAPER } from './page-paint';
 
@@ -157,6 +167,68 @@ describe('pageThumbFor', () => {
       })!;
       expect(waiting.parts[1]!.markup).not.toContain('blob:g1');
       expect(arrived.parts[1]!.markup).toContain('href="blob:g1"');
+    });
+  });
+
+  // docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen" (Work Tracker 897): a plain page's
+  // picture in dark chrome lifts what the slate paper sinks as the canvas does, so a sign-in screen's primary button is
+  // the canvas's mid slate, not slate on slate, and Contents never shows ink the canvas no longer shows.
+  describe('on the dark paper', () => {
+    const page = newWireframePage('s');
+    const [laid] = layOutPages([page]);
+    const signIn = () => buildPageLayout('wf-sign-in', laid!);
+    const screenTab = (elements: Element[]) =>
+      ({ id: 't', name: 'T', elements, pages: [page] }) as unknown as Tab;
+    const fills = (els: readonly Element[]) =>
+      els.map((el) => (el as { fillColor?: string }).fillColor);
+
+    it('inks a button as the canvas does', () => {
+      const placed = signIn();
+      const canvas = createStockColourProjector()(
+        placed,
+        'dark',
+        themeViewMap(undefined, 'dark'),
+        plainPaper('dark'),
+      );
+      const lifted = fills(canvas).filter(
+        (fill, i) => fill !== fills(placed)[i] && fills(placed)[i] === CANVAS_PAPER.dark,
+      );
+      expect(lifted.length).toBeGreaterThan(0);
+      const dark = pageThumbFor('s', screenTab(placed), { iconsLoaded: true, surface: 'dark' })!;
+      for (const fill of lifted) expect(dark.markup).toContain(`fill="${fill}"`);
+      // Every box is drawn exactly as the canvas's own element would be drawn.
+      const fresh = pageThumbFor('s', screenTab(structuredClone(placed)), {
+        iconsLoaded: true,
+        surface: 'dark',
+      })!;
+      expect(fresh.markup).toBe(dark.markup);
+      // In light chrome the button keeps its stored ink.
+      const light = pageThumbFor('s', screenTab(placed), { iconsLoaded: true })!;
+      expect(light.markup).not.toContain(`fill="${lifted[0]}"`);
+    });
+
+    it('leaves a page with a fill of its own as that page draws it', () => {
+      const filled = { ...page, background: { fill: { kind: 'solid', color: '#ffffff' } } };
+      const placed = signIn();
+      const tabOf = { ...screenTab(placed), pages: [filled] } as unknown as Tab;
+      const dark = pageThumbFor('s', tabOf, { iconsLoaded: true, surface: 'dark' })!;
+      const light = pageThumbFor('s', tabOf, { iconsLoaded: true })!;
+      expect(dark.markup).toBe(light.markup);
+    });
+
+    it('carries over a box the walk left alone, and redraws a page of 40 screens within budget', () => {
+      const placed = signIn();
+      const first = pageThumbFor('s', screenTab(placed), { iconsLoaded: true, surface: 'dark' })!;
+      const again = pageThumbFor('s', screenTab([...placed]), {
+        iconsLoaded: true,
+        surface: 'dark',
+      })!;
+      first.parts.forEach((part, i) => expect(again.parts[i]!.markup).toBe(part.markup));
+      // A many-page design: 40 sign-in screens, each drawn cold on the dark paper.
+      const t = cpuNowMs();
+      for (let n = 0; n < 40; n++)
+        pageThumbFor('s', screenTab(structuredClone(placed)), { iconsLoaded: true, surface: 'dark' });
+      expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(1000));
     });
   });
 });
