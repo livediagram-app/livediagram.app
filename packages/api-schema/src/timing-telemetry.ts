@@ -35,9 +35,12 @@ export const WEB_VITAL_THRESHOLDS = {
 export type WebVital = keyof typeof WEB_VITAL_THRESHOLDS;
 export const WEB_VITALS: readonly WebVital[] = ['Lcp', 'Inp', 'Cls'];
 
-/** The editor's own timings, each on the Duration scale. */
+/** The editor's own timings, each on the Duration scale. `WarmPaint` is a warm open's early paint of the last seen copy
+ *  (offline-mode.md "Warm open of a cloud document"), from the same start as `DocumentLoad`, which then times the
+ *  catch-up. */
 export const EDITOR_TIMING_METRICS = [
   'DocumentLoad',
+  'WarmPaint',
   'TabLoad',
   'Save',
   'RoomConnect',

@@ -385,6 +385,8 @@ export function useIdentityBootstrap(opts: {
     s.setSessionRole('view');
     s.setLoadingDocument(false);
     measureAfterPaint('warm-paint', origin);
+    // The same moment as a timing (timing-telemetry.md "WarmPaint"), so production shows how fast a warm open paints.
+    startEditorTiming('WarmPaint', { from: origin }).endAfterPaint();
   });
   // Instant open (docs/specs/006-document/offline-mode.md): before auth settles, a path naming a document in
   // This Browser opens straight from this browser. Share links, embeds and workbenches always wait. A cloud document
@@ -407,7 +409,8 @@ export function useIdentityBootstrap(opts: {
       bootstrap(true);
       return;
     }
-    const origin = documentLoadOrigin();
+    // From the page's start on a fresh page, else from this read: the warm paint's wait is the read and the paint.
+    const origin = documentLoadOrigin() ?? performance.now();
     const copy = await readWarmCopy(
       lastSeenCopies,
       { itemId: id, shareCode, hash: url.hash },
