@@ -44,7 +44,7 @@ export function useEditorFollowing({
   fromActiveTab: EditorActiveTabSlice;
   fromViewport: EditorViewportSlice;
 }) {
-  const { hydrated, loadedTabIds, selfParticipant, toast } = fromDocument;
+  const { hydrated, loadedTabIds, warmTabId, selfParticipant, toast } = fromDocument;
   const { activeId, setActiveId } = fromSelection;
   const { keepWalkingTo } = fromTools;
   const {
@@ -195,6 +195,7 @@ export function useEditorFollowing({
     activeId,
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
+    warmTabId,
     fitToScreen: () => {
       const padCentre = padOnlyTabCentre(activeTab.elements);
       if (padCentre) centreOn(padCentre);

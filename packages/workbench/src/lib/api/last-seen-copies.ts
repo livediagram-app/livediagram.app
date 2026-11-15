@@ -51,6 +51,8 @@ export type LastSeenInput<Item, Tab> = Omit<LastSeenCopy<Item, Tab>, 'seenAt' | 
 export type LastSeenDoors<Item> = {
   remember: (copy: LastSeenInput<Item, unknown>) => Promise<void>;
   forget: (reader: string, itemId: string) => Promise<void>;
+  // The reader lost what a share link opens: every copy kept by that code goes.
+  forgetVia?: (reader: string, code: string) => Promise<void>;
 };
 
 /** The key a copy is stored under: one per reader and item. */
@@ -119,7 +121,7 @@ export function createLastSeenCopies<Item, Tab>(
     await store.remove(drop);
   }
 
-  return {
+  const copies = {
     /** Keep a copy (replacing the reader's older one of the item), then prune. */
     async remember(copy: LastSeenInput<Item, Tab>): Promise<void> {
       const key = lastSeenKey(copy.reader, copy.itemId);
@@ -139,6 +141,7 @@ export function createLastSeenCopies<Item, Tab>(
           reader: copy.reader,
           itemId: copy.itemId,
           seenAt: now(),
+          via: copy.via,
           body,
         });
       }
@@ -182,13 +185,36 @@ export function createLastSeenCopies<Item, Tab>(
       return newest?.reader ?? null;
     },
 
+    /** The reader's newest copy kept by the share code `code`, or null: a link's own address (`/<route>/shared?s=`)
+     *  names no item, so the code finds it. The copy is read as `read` reads it, so it is checked the same way. */
+    async readVia(reader: string, code: string): Promise<LastSeenCopy<Item, Tab> | null> {
+      let newest: { key: string; seenAt: number } | null = null;
+      for (const entry of await store.entries()) {
+        if (entry.reader !== reader || entry.via !== code) continue;
+        if (newest === null || entry.seenAt > newest.seenAt) newest = entry;
+      }
+      if (newest === null) return null;
+      const copy = await copies.read(reader, newest.key.slice(reader.length + 1));
+      return copy?.via === code ? copy : null;
+    },
+
     /** The reader lost the item (not found, deleted, a password now asked): its copy goes. */
     async forget(reader: string, itemId: string): Promise<void> {
       await store.remove([lastSeenKey(reader, itemId)]);
       await prune(reader);
     },
 
+    /** The reader lost what the share code `code` opens: every copy of theirs kept by it goes. */
+    async forgetVia(reader: string, code: string): Promise<void> {
+      const drop = (await store.entries())
+        .filter((entry) => entry.reader === reader && entry.via === code)
+        .map((entry) => entry.key);
+      await store.remove(drop);
+      await prune(reader);
+    },
+
     /** Sign-out and account deletion: every copy goes. */
     forgetAll: (): Promise<void> => store.clear(),
   };
+  return copies;
 }

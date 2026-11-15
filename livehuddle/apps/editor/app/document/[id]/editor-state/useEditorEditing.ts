@@ -46,7 +46,7 @@ export function useEditorEditing({
   fromViewport: EditorViewportSlice;
   fromFollowing: EditorFollowingSlice;
 }) {
-  const { documentId, hydrated, loadedTabIds, tabLoadErrors } = fromDocument;
+  const { documentId, hydrated, loadedTabIds, tabLoadErrors, warmTabId } = fromDocument;
   const { canHistoryRedo, canHistoryUndo, commitTabs, redoHistory, tickTabs, undoHistory } =
     fromHistory;
   const {
@@ -89,6 +89,7 @@ export function useEditorEditing({
     errored: tabLoadErrors.has(activeId),
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
+    warmWithoutBody: !hydrated && warmTabId !== null && activeId !== warmTabId,
   });
   // A view-only session (a 'view' share role) is read-only: no element or tab mutation may land.
   // Folding the flags into one guard means every mutation helper

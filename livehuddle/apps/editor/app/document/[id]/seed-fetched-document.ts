@@ -45,6 +45,9 @@ export type SeedDeps = {
   // The first tab the warm open painted (offline-mode.md "Warm open of a cloud document"), or null: read at the
   // revision the fresh fetch answers, the painted tab is kept, so an unchanged canvas is not drawn again.
   warmFirstTab?: () => LastSeenFirstTab<unknown> | null;
+  // The tab the person moved to while the warm open showed, or null: the load that catches up keeps it when the
+  // fresh tabs still hold it and the link's tab scope allows it, rather than jumping back to the first tab.
+  keepActiveId?: () => string | null;
 };
 
 // The document as the editor shows it, from a load or from the last seen copy: the tabs (placeholders, the first one
@@ -75,11 +78,13 @@ function showDocument(
   // it points at a real loaded tab — round-trips the user back
   // to whichever tab they last had open before a refresh.
   {
+    const usable = (tabId: string | null | undefined): tabId is string =>
+      !!tabId && tabs.some((t) => t.id === tabId) && !isTabOutOfScope(tabId, tabScope);
+    const kept = deps.keepActiveId?.();
     const hashMatch = window.location.hash.match(/t=([^&]+)/);
     const hashedId = hashMatch ? hashMatch[1] : null;
-    const pickFromHash =
-      hashedId && tabs.some((t) => t.id === hashedId) && !isTabOutOfScope(hashedId, tabScope);
-    setActiveId(pickFromHash ? hashedId : (firstId ?? activeId));
+    if (usable(kept)) setActiveId(kept);
+    else setActiveId(usable(hashedId) ? hashedId : (firstId ?? activeId));
   }
   setLoadedExistingDocument(true);
   setDocumentShareable(fetched.shareable);

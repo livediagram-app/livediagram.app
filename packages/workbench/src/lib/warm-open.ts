@@ -9,6 +9,7 @@ import { firstTabToLoad } from './tab-scope';
 /** The copies the warm open reads (the product's follower or copies). */
 export type WarmOpenCopies<Item> = {
   read: (reader: string, itemId: string) => Promise<LastSeenCopy<Item, unknown> | null>;
+  readVia: (reader: string, code: string) => Promise<LastSeenCopy<Item, unknown> | null>;
   lastReader: () => Promise<string | null>;
 };
 
@@ -39,18 +40,21 @@ export async function expectedReader(
 }
 
 /** The copy the warm open paints, or null: none for this reader, another way in (a different share code, or none
- *  where the copy came by one), no first tab kept, or a first tab that is not the one this open would show first. */
+ *  where the copy came by one), no first tab kept, or a first tab that is not the one this open would show first. A
+ *  share link's own address (`/<route>/shared?s=<code>`) names no item (or names `shared`, where the product reads
+ *  that segment as an id): the copy kept under its code is read instead. */
 export async function readWarmCopy<Item extends { tabs: readonly { id: string }[] }>(
   copies: WarmOpenCopies<Item>,
   address: WarmOpenAddress,
   who: WarmOpenWho,
 ): Promise<LastSeenCopy<Item, unknown> | null> {
   const { itemId, shareCode, hash } = address;
-  if (!itemId) return null;
+  if (!itemId && !shareCode) return null;
   try {
     const reader = await expectedReader(copies, who);
     if (!reader) return null;
-    const copy = await copies.read(reader, itemId);
+    const named = itemId ? await copies.read(reader, itemId) : null;
+    const copy = named ?? (shareCode ? await copies.readVia(reader, shareCode) : null);
     if (!copy || copy.via !== shareCode || !copy.firstTab) return null;
     const firstId = firstTabToLoad(copy.item.tabs, copy.access.tabScope);
     if (copy.firstTab.id !== firstId) return null;

@@ -383,6 +383,15 @@ describe('deriveTabLoadState', () => {
     expect(deriveTabLoadState({ ...base, hasDesign: false })).toBe('ready');
   });
 
+  // The warm open (offline-mode.md "Warm open of a cloud design"): before hydration, a tab the copy kept no body for
+  // shows the tab loader, never a blank canvas.
+  it('loads a tab without a body while the warm open shows, and leaves the painted tab ready', () => {
+    expect(deriveTabLoadState({ ...base, hydrated: false, warmWithoutBody: true })).toBe('loading');
+    expect(deriveTabLoadState({ ...base, hydrated: false, warmWithoutBody: false })).toBe('ready');
+    // Once the load has caught up, the tab's own load state rules.
+    expect(deriveTabLoadState({ ...base, loaded: true, warmWithoutBody: true })).toBe('ready');
+  });
+
   it('loads an unfetched, empty tab so the empty-canvas card never flashes', () => {
     expect(deriveTabLoadState(base)).toBe('loading');
   });

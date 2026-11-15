@@ -171,6 +171,39 @@ describe('the warm open', () => {
     expect(tabsOf(resetTabs)[0]!.elements).toEqual([]);
   });
 
+  // A person who moved to another tab while the warm open showed stays there when the load catches up.
+  it('keeps the tab the person moved to when the catch-up shows the document', async () => {
+    const setActiveId = vi.fn();
+    const twoTabs = { ...fetched, tabs: [...fetched.tabs, second] };
+    await makeSeedFetchedDocument(deps(true, vi.fn(), { setActiveId, keepActiveId: () => 't2' }))(
+      'me',
+      twoTabs,
+      null,
+      null,
+    );
+    expect(setActiveId).toHaveBeenLastCalledWith('t2');
+    // Over the address's pin too: the pin is what the person left, the kept tab is where they went.
+    window.location.hash = '#t=t1';
+    makePaintLastSeen(deps(true, vi.fn(), { setActiveId, keepActiveId: () => 't2' }))(copy);
+    expect(setActiveId).toHaveBeenLastCalledWith('t2');
+    window.location.hash = '';
+  });
+
+  it('falls back to the first tab when the kept tab is gone or outside the link scope', () => {
+    const setActiveId = vi.fn();
+    makePaintLastSeen(deps(true, vi.fn(), { setActiveId, keepActiveId: () => 'gone' }))(copy);
+    expect(setActiveId).toHaveBeenLastCalledWith('t1');
+    makePaintLastSeen(deps(true, vi.fn(), { setActiveId, keepActiveId: () => null }))(copy);
+    expect(setActiveId).toHaveBeenLastCalledWith('t1');
+    const scoped = {
+      ...copy,
+      firstTab: { id: 't2', rev: 1, tab: warmTab },
+      access: { ...copy.access, tabScope: 't2' },
+    };
+    makePaintLastSeen(deps(true, vi.fn(), { setActiveId, keepActiveId: () => 't1' }))(scoped);
+    expect(setActiveId).toHaveBeenLastCalledWith('t2');
+  });
+
   // The warm paint and its catch-up, on a 200-tab document whose first tab holds 2,000 elements.
   it('paints and catches up a large document cheaply (100 of each within budget)', async () => {
     const elements = Array.from({ length: 2000 }, (_, i) => ({ id: `e${i}`, type: 'shape' }));

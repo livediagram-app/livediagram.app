@@ -17,15 +17,19 @@ const { api, copies, hint, identity, paint, seed, seedDeps } = vi.hoisted(() => 
   copies: {
     held: null as LastSeenCopy<unknown, unknown> | null,
     read: vi.fn(),
+    readVia: vi.fn(),
     lastReader: vi.fn(),
     remember: vi.fn(async () => {}),
     forget: vi.fn(async () => {}),
+    forgetVia: vi.fn(async () => {}),
   },
   hint: { signedIn: false },
   identity: { guestId: 'guest-1' } as { guestId: string | null },
   paint: vi.fn(),
   seed: vi.fn(async () => null),
-  seedDeps: { current: null as { warmFirstTab?: () => unknown } | null },
+  seedDeps: {
+    current: null as { warmFirstTab?: () => unknown; keepActiveId?: () => string | null } | null,
+  },
 }));
 vi.mock('@/lib/api-client', () => ({
   ...api,
@@ -53,7 +57,10 @@ vi.mock('@/lib/local-identity', () => ({
 vi.mock('@/lib/daily-return', () => ({ trackDailyReturn: () => {} }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('./seed-fetched-document', () => ({
-  makeSeedFetchedDocument: (deps: { warmFirstTab?: () => unknown }) => {
+  makeSeedFetchedDocument: (deps: {
+    warmFirstTab?: () => unknown;
+    keepActiveId?: () => string | null;
+  }) => {
     seedDeps.current = deps;
     return seed;
   },
@@ -78,12 +85,12 @@ const copyFor = (
   ...over,
 });
 
-type Props = { authLoaded: boolean; accountUserId: string | null };
+type Props = { authLoaded: boolean; accountUserId: string | null; activeId?: string };
 function render(initial: Props) {
   const fns: Record<string, ReturnType<typeof vi.fn>> = {};
   const set = new Proxy(fns, { get: (t, k: string) => (t[k] ??= vi.fn()) });
   const hook = renderHook(
-    ({ authLoaded, accountUserId }: Props) =>
+    ({ authLoaded, accountUserId, activeId = 't1' }: Props) =>
       useIdentityBootstrap({
         authLoaded,
         passwordRetry: 0,
@@ -91,7 +98,7 @@ function render(initial: Props) {
         accountUserId,
         accountDisplayName: null,
         embed: false,
-        activeId: 't1',
+        activeId,
         selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
         resetTabs: () => {},
         refs: {
@@ -123,6 +130,9 @@ beforeEach(() => {
       : null,
   );
   copies.lastReader.mockImplementation(async () => copies.held?.reader ?? null);
+  copies.readVia.mockImplementation(async (reader: string, code: string) =>
+    copies.held && copies.held.reader === reader && copies.held.via === code ? copies.held : null,
+  );
   api.apiLoadDocument.mockResolvedValue(DOC);
   api.apiLoadSelf.mockImplementation(async (id: string) => ({
     id,
@@ -141,6 +151,8 @@ describe('useIdentityBootstrap warm open', () => {
     expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
     expect(lastRole(set)).toBe('view');
     expect(set.setIsOwner).toHaveBeenCalledWith(true);
+    // The painted tab is the one with a body: the others show the tab loader until the load catches up.
+    expect(set.setWarmTabId).toHaveBeenCalledWith('t1');
     expect(set.setLoadingDocument).toHaveBeenCalledWith(false);
     // Nothing waits on the server, and nothing is saved or connected: those need `hydrated`.
     expect(api.apiLoadDocument).not.toHaveBeenCalled();
@@ -202,6 +214,7 @@ describe('useIdentityBootstrap warm open', () => {
     hook.rerender({ authLoaded: true, accountUserId: 'user_b' });
     await flush();
     expect(set.setLoadingDocument).toHaveBeenCalledWith(true);
+    expect(set.setWarmTabId).toHaveBeenLastCalledWith(null);
     expect(api.apiLoadDocument).toHaveBeenCalledWith('user_b', 'doc-1');
   });
 
@@ -244,5 +257,54 @@ describe('useIdentityBootstrap warm open', () => {
     hook.rerender({ authLoaded: true, accountUserId: null });
     await flush();
     expect(api.apiLoadDocument).toHaveBeenCalledOnce();
+  });
+  it('keeps the tab the person moved to during the warm paint when the load catches up', async () => {
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: false, accountUserId: null, activeId: 't2' });
+    hook.rerender({ authLoaded: true, accountUserId: null, activeId: 't2' });
+    await flush();
+    expect(seedDeps.current?.keepActiveId?.()).toBe('t2');
+  });
+
+  it('keeps no tab for a load with nothing warm-painted', async () => {
+    copies.held = null;
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null, activeId: 't2' });
+    await flush();
+    expect(seedDeps.current?.keepActiveId?.()).toBeNull();
+  });
+
+  // The Share dialog's links are /document/shared?s=<code>: a Viewer or Participant reloading theirs warm-opens.
+  it("paints a link's own address from the copy kept under its code", async () => {
+    window.history.replaceState(null, '', '/document/shared?s=CODE');
+    copies.held = copyFor({
+      via: 'CODE',
+      access: { role: 'view', isOwner: false, sessionShareCode: 'CODE', tabScope: null },
+    });
+    const { set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(copies.readVia).toHaveBeenCalledWith('guest-1', 'CODE');
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+    expect(lastRole(set)).toBe('view');
+    // The address is left as it is.
+    expect(window.location.pathname).toBe('/document/shared');
+  });
+
+  it("forgets a revoked link's copies by its code", async () => {
+    window.history.replaceState(null, '', '/document/shared?s=CODE');
+    copies.held = copyFor({
+      via: 'CODE',
+      access: { role: 'view', isOwner: false, sessionShareCode: 'CODE', tabScope: null },
+    });
+    api.apiLoadShared.mockResolvedValue(null);
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).toHaveBeenCalledOnce();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setDocumentNotFound).toHaveBeenCalledWith(true);
+    expect(copies.forgetVia).toHaveBeenCalledWith('guest-1', 'CODE');
   });
 });

@@ -40,6 +40,7 @@ export function useEditorViewport({
     followerIds,
     followingRef,
     loadedTabIds,
+    warmTabId,
     hydrated,
   } = sessionSlice;
   const { tabsRef } = persistenceSlice;
@@ -138,6 +139,7 @@ export function useEditorViewport({
     activeId,
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
+    warmTabId,
     fitToScreen: () => {
       (frameFirstPageRef.current ?? fitToScreen)();
     },

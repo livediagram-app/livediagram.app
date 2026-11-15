@@ -14,6 +14,8 @@ type Props = {
   activeId: string;
   elementCount: number;
   tabLoaded: boolean;
+  hydrated?: boolean;
+  warmTabId?: string | null;
 };
 
 function setup(initial: Props) {
@@ -89,6 +91,48 @@ describe('useTabEntryEffects', () => {
     rerender({ activeId: 't2', elementCount: 6, tabLoaded: true });
     nextFrame();
     expect(fitToScreen).toHaveBeenCalledTimes(1);
+  });
+
+  // The warm open (offline-mode.md "Warm open of a cloud document"): the painted tab is fitted before hydration.
+  it('fits the warm-painted tab before hydration, and not again when the load catches up', () => {
+    const { fitToScreen, rerender } = setup({
+      activeId: 't1',
+      elementCount: 3,
+      tabLoaded: false,
+      hydrated: false,
+      warmTabId: 't1',
+    });
+    nextFrame();
+    expect(fitToScreen).toHaveBeenCalledTimes(1);
+    rerender({ activeId: 't1', elementCount: 4, tabLoaded: true, hydrated: true, warmTabId: 't1' });
+    nextFrame();
+    expect(fitToScreen).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for the load for a tab without a body during the warm open', () => {
+    const { fitToScreen, rerender } = setup({
+      activeId: 't2',
+      elementCount: 0,
+      tabLoaded: false,
+      hydrated: false,
+      warmTabId: 't1',
+    });
+    nextFrame();
+    expect(fitToScreen).not.toHaveBeenCalled();
+    rerender({ activeId: 't2', elementCount: 5, tabLoaded: true, hydrated: true, warmTabId: 't1' });
+    nextFrame();
+    expect(fitToScreen).toHaveBeenCalledTimes(1);
+  });
+
+  it('fits nothing before hydration without a warm open', () => {
+    const { fitToScreen } = setup({
+      activeId: 't1',
+      elementCount: 3,
+      tabLoaded: true,
+      hydrated: false,
+    });
+    nextFrame();
+    expect(fitToScreen).not.toHaveBeenCalled();
   });
 
   it('fits on request, once the requested content has rendered', () => {

@@ -107,25 +107,41 @@ itemId, { name, tabs })` and `followSave(reader, itemId, { name, tabs, revs })` 
   - A path naming a This Browser document takes the early open, as before (`isOfflineId`, only without `?s=`).
   - Otherwise `readWarmCopy(lastSeenCopies, { itemId, shareCode, hash }, { signedIn: readSignedInHint(), guestId:
 getGuestSelfId() })`. `expectedReader`: signed out, the guest token's id; signed in, `lastReader()` (the reader of
-    the newest `seen` row) when it is an account (`user_…`), else nobody. Then `read(reader, itemId)`, and the copy
-    paints only when `via === shareCode` (null for the own address), `firstTab` is kept, `firstTab.id ===
+    the newest `seen` row) when it is an account (`user_…`), else nobody. Then `read(reader, itemId)`; when that finds
+    none and the address carries `?s=<code>` (a link's own address, `/<route>/shared?s=<code>`, names no item, or
+    names `shared` where the product's path parser reads it as an id), `readVia(reader, code)`: the reader's newest
+    `seen` row whose `via` is the code, read with `read` so it is checked the same way. The address is not rewritten.
+    The copy paints only when `via === shareCode` (null for the own address), `firstTab` is kept, `firstTab.id ===
 firstTabToLoad(item.tabs, access.tabScope)`, and the `#t=` fragment names no other tab of the item. Any failure
     reads as null.
   - After the read, `runRef.current !== 0` (the ordinary load already started) drops the copy unpainted.
-  - **`paintWarm(copy)`**: `warmRef.current = copy`; `makePaintLastSeen(seedDeps(set, resetTabs, false))(copy)`
+  - **`paintWarm(copy)`**: `makePaintLastSeen(seedDeps(set, resetTabs, false))(copy)`
     shows it as the seed shows a load (placeholder tabs from `item.tabs`, the first filled from `firstTab.tab`, the
     name, deck, active tab, shareable, team and owner fields; nothing fetched, marked loaded, seeded into the autosave
     baseline or counted); then `setIsOwner(access.isOwner)`, `setSessionTabScope(access.tabScope)`,
-    `setSessionRole('view')` and `setLoadingDocument(false)`. `documentId` stays null and `hydrated` false, so the
+    `setSessionRole('view')` and `setLoadingDocument(false)`; then `warmRef.current = copy` and
+    `setWarmTabId(firstTab.id)`. `documentId` stays null and `hydrated` false, so the
     autosave, the room, presence, follows, comments and lazy tab loads all stay off; `selfParticipant` stays `'self'`.
+  - **Other tabs.** `warmTabId` (editor state, null until a warm paint) is the one tab with a body before hydration.
+    `deriveTabLoadState` takes `warmWithoutBody: !hydrated && warmTabId !== null && activeId !== warmTabId` and
+    answers `'loading'` for it, so a tab switched to during the warm paint shows the tab loader (and blocks edits)
+    rather than a blank canvas; the lazy tab load stays off until the catch-up, which then fetches it.
+  - **The fit.** `useTabEntryEffects` takes `warmTabId`: before hydration it fits only the warm-painted tab (counted
+    as loaded) and claims it in `lastFittedTabRef`, so the catch-up never fits it again and the view does not jump.
+    The `#t=` pin still waits for `hydrated`. livedocuments and livedesign hand Pages mode the same warm-aware
+    `tabLoaded`, so its page framing runs at the paint and not again at catch-up.
   - **Catch-up.** The ordinary bootstrap runs once `authLoaded` flips, unchanged, with `loadingDocument` already
     false, so no opening screen shows between. After the participant resolves, a `self.id` other than
     `warmRef.current.reader` clears `warmRef` and sets `loadingDocument` true (the copy leaves the screen; the load
-    then opens the document for this reader). The seed reads `warmFirstTab()`: when the fresh first tab has the
+    then opens the document for this reader) and clears `warmTabId`. `showDocument` first asks `keepActiveId()`
+    (the active tab, from a ref kept in a layout effect, while `warmRef` is set; else null) and keeps that tab when
+    the fresh tabs hold it and `isTabOutOfScope` allows it, ahead of the `#t=` pick, so the person's tab choice
+    during the warm paint survives. The seed reads `warmFirstTab()`: when the fresh first tab has the
     copy's id and revision (`keptWarmTab`), the painted tab object is kept, so element views memoised on it skip.
     The arrival then sets the role, owner chrome and share code; `hydrated` turns everything on.
   - **Lost access** lands as the arrival's own screen (not found, deleted card, password gate, all ahead of the
-    canvas in the page's render order), and the arrival forgets the copy as in part 1. A load error shows the
+    canvas in the page's render order), and the arrival forgets the copy as in part 1, plus, on a share link,
+    `forgetVia(reader, code)` (the doors' optional `forgetVia`), since the link's own address names no item. A load error shows the
     error card and keeps the copy.
   - **Marks.** `measureAfterPaint('warm-paint', documentLoadOrigin())` after the paint, and
     `measureAfterPaint('warm-catch-up', documentLoadOrigin())` when the catch-up reaches `done` with `warmRef` set:
@@ -136,8 +152,12 @@ firstTabToLoad(item.tabs, access.tabScope)`, and the `#t=` fragment names no oth
 - `LastSeenStore`: `get(key) → Promise<unknown>`, `put(key, record) → Promise<boolean>`, `remove(keys) →
 Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<void>`. None rejects.
 - Stored record (`copies`): `{ v: 1, reader, itemId, seenAt, body }`, `body` the JSON of `{ item, firstTab, via, access
-}`. Index row (`seen`): `{ reader, seenAt }` under the same key.
-- `ArrivalProduct.lastSeen?: LastSeenDoors<Item>` (`remember`, `forget`); left out (liveplanner), nothing is kept.
+}`, plus `via`. Index row (`seen`): `{ reader, seenAt, via }` under the same key; a row written before `via` was
+  kept lists it as null (no warm open by code for that copy until it is kept again).
+- `readVia(reader, code)` and `forgetVia(reader, code)` on the copies and the follower; `forgetVia` stops following
+  the current copy when it came by that code.
+- `ArrivalProduct.lastSeen?: LastSeenDoors<Item>` (`remember`, `forget`, optional `forgetVia`); left out
+  (liveplanner), nothing is kept.
 - `ArrivalRun.seed` may answer `LastSeenFirstTab<unknown> | null`; a seed answering nothing keeps a copy without a
   first tab.
 
@@ -169,6 +189,8 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
 | The read fails, times out or the store is missing        | `readWarmCopy` answers null; the open waits for auth as before                                                          |
 | A stale signed-in hint (signed out in another app)       | The account's copy paints; the participant resolves to someone else, so it leaves the screen for the opening screen     |
 | The `#t=` fragment names another tab                     | No warm open: the copy holds no body for that tab                                                                       |
+| A link's own address (`/<route>/shared?s=<code>`)        | `readVia` finds the reader's newest copy kept by that code; the address is left as it is                                |
+| A tab switched to during the warm paint                  | Tab loader until the catch-up; the catch-up keeps that tab when it still exists and is in scope                         |
 | A second browser tab of the same document                | Warm-opens from the same copy; its room connects after its own catch-up (`hydrated`)                                    |
 | The document moved on since the copy                     | The fresh first tab (another revision) and tab list replace the painted ones in the catch-up's one seed                 |
 
@@ -234,6 +256,8 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
 - The warm paint is the editor as a Viewer sees it: the same canvas, tab bar and header, with the role pill and the
   disabled edit controls a view link shows. No new surface, copy or state: nothing to design beyond the editor's own
   read-only look, which every share role already has.
+- A tab other than the painted one shows the tab loader the editor already has for a tab still loading, never a
+  blank canvas, and stays the active tab through the catch-up. The painted tab is fitted once, as it paints.
 - The catch-up changes nothing on screen when the document did not move on but the role: the tools an Editor or a
   Participant has appear. A document that moved on shows its fresh first tab and tab list in place.
 - Lost access shows the card the load ends on (not found, deleted, password), as a cold open does.
@@ -290,6 +314,9 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
 | Editor, Viewer, Participant warm opens and roles | each `useIdentityBootstrap.warm.test.tsx` "paints an Editor's copy …", "paints a view/participate link's copy …" |
 | Lost access on catch-up forgets | each `useIdentityBootstrap.warm.test.tsx` "swaps the copy for not found …" |
 | Someone else after all, sign-out cleared, too late | each `useIdentityBootstrap.warm.test.tsx` |
+| A link's own address warm-opens by its code, forgets by it | `last-seen-copies.test.ts` "reads the newest copy a share code kept …", "forgets every copy a share code kept …"; `warm-open.test.ts` "reads a share link's own address …"; `editor-arrival.test.ts` "forgets a link's copies by its code …"; each `useIdentityBootstrap.warm.test.tsx` "paints a link's own address …", "forgets a revoked link's copies …" |
+| Other tabs load, the chosen tab is kept | each `editor-page-helpers.test.ts` "loads a tab without a body while the warm open shows …"; each `seed-fetched-*.test.ts` "keeps the tab the person moved to …", "falls back to the first tab …"; each `useIdentityBootstrap.warm.test.tsx` "keeps the tab the person moved to …" |
+| One fit, at the paint | `useTabEntryEffects.test.tsx` "fits the warm-painted tab before hydration …", "waits for the load for a tab without a body …" |
 
 The shared modules (the store, the copies, the follower, the hook and the warm open) are held at 100% in `packages/workbench/vitest.config.ts`.
 

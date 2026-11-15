@@ -20,12 +20,14 @@ export type LastSeenRecord = {
   reader: string;
   itemId: string;
   seenAt: number;
+  // The share code the copy came by (`?s=`), or null: kept in `seen` too, so a link's address finds its copy.
+  via?: string | null;
   // The copy's JSON: kept as text so its size is known before it is written.
   body: string;
 };
 
 /** One row of `seen`, with its key. */
-export type LastSeenEntry = { key: string; reader: string; seenAt: number };
+export type LastSeenEntry = { key: string; reader: string; seenAt: number; via: string | null };
 
 /** The store the copies are kept in. No call rejects. */
 export type LastSeenStore = {
@@ -125,7 +127,10 @@ export function createLastSeenStore(dbName: string): LastSeenStore & { reset: ()
     put: (key, record) =>
       run('readwrite', [COPIES, SEEN], false, (tx) => {
         tx.objectStore(COPIES).put(record, key);
-        tx.objectStore(SEEN).put({ reader: record.reader, seenAt: record.seenAt }, key);
+        tx.objectStore(SEEN).put(
+          { reader: record.reader, seenAt: record.seenAt, via: record.via ?? null },
+          key,
+        );
         return () => true;
       }),
     remove: (keys) =>
@@ -144,11 +149,13 @@ export function createLastSeenStore(dbName: string): LastSeenStore & { reset: ()
         const keys = store.getAllKeys();
         const rows = store.getAll();
         return () =>
-          (rows.result as { reader: string; seenAt: number }[]).map((row, i) => ({
+          (rows.result as { reader: string; seenAt: number; via?: unknown }[]).map((row, i) => ({
             // Every key this store writes is a string (lastSeenKey).
             key: keys.result[i] as string,
             reader: row.reader,
             seenAt: row.seenAt,
+            // A row written before `via` was kept names no share code.
+            via: typeof row.via === 'string' ? row.via : null,
           }));
       }),
     clear: () =>

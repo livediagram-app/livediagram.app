@@ -35,6 +35,9 @@ function copies(
     read: vi.fn(async (reader: string, itemId: string) =>
       held && held.reader === reader && held.itemId === itemId ? held : null,
     ),
+    readVia: vi.fn(async (reader: string, code: string) =>
+      held && held.reader === reader && held.via === code ? held : null,
+    ),
     lastReader: vi.fn(async () => last),
   } satisfies WarmOpenCopies<Item>;
 }
@@ -77,10 +80,32 @@ describe('readWarmCopy', () => {
     expect(c.read).not.toHaveBeenCalledWith('user_a', 'd1');
   });
 
-  it('reads nothing for an address that names no document', async () => {
+  it('reads nothing for an address that names no document and carries no link', async () => {
     const c = copies(copy());
     expect(await readWarmCopy(c, { ...own, itemId: null }, signedIn)).toBeNull();
     expect(c.lastReader).not.toHaveBeenCalled();
+  });
+
+  // The Share dialog's links are `/<route>/shared?s=<code>`: a Viewer or Participant reloading theirs warm-opens.
+  it("reads a share link's own address by the code its copy was kept under", async () => {
+    const held = copy({ via: 'CODE', access: { ...copy().access, role: 'view', isOwner: false } });
+    const c = copies(held);
+    expect(await readWarmCopy(c, { ...own, itemId: null, shareCode: 'CODE' }, signedIn)).toBe(held);
+    // A product that reads `shared` as an id finds no copy under it, then reads by the code.
+    expect(await readWarmCopy(c, { ...own, itemId: 'shared', shareCode: 'CODE' }, signedIn)).toBe(
+      held,
+    );
+    expect(
+      await readWarmCopy(c, { ...own, itemId: null, shareCode: 'OTHER' }, signedIn),
+    ).toBeNull();
+    // The same reader rules: a signed-out browser never reads an account's copy by its code.
+    expect(
+      await readWarmCopy(
+        c,
+        { ...own, itemId: null, shareCode: 'CODE' },
+        { signedIn: false, guestId: 'guest_1' },
+      ),
+    ).toBeNull();
   });
 
   it('paints a share link only by the share code the copy was kept under', async () => {
@@ -123,6 +148,7 @@ describe('readWarmCopy', () => {
       read: vi.fn(async () => {
         throw new Error('gone');
       }),
+      readVia: vi.fn(async () => null),
       lastReader: vi.fn(async () => 'user_a'),
     };
     expect(await readWarmCopy(broken, own, signedIn)).toBeNull();

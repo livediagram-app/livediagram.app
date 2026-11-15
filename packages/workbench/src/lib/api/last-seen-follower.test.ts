@@ -40,8 +40,10 @@ function setup() {
       written.push(c);
     }),
     read: vi.fn(async () => null),
+    readVia: vi.fn(async () => null),
     lastReader: vi.fn(async () => null),
     forget: vi.fn(async () => {}),
+    forgetVia: vi.fn(async () => {}),
     forgetAll: vi.fn(async () => {}),
   };
   let pending: { run: () => void; ms: number } | null = null;
@@ -83,6 +85,22 @@ describe('createLastSeenFollower', () => {
     expect(copies.read).toHaveBeenCalledWith('user_a', 'd1');
     await follower.lastReader();
     expect(copies.lastReader).toHaveBeenCalledOnce();
+    await follower.readVia('user_a', 'CODE');
+    expect(copies.readVia).toHaveBeenCalledWith('user_a', 'CODE');
+  });
+
+  it('stops following a copy a share code kept when its reader lost what the code opens', async () => {
+    const { follower, copies, written, fire } = setup();
+    await follower.remember(copy({ via: 'CODE' }));
+    follower.followMeta('user_a', 'd1', { name: 'A', tabs: [tab('t1', 'One'), tab('t2', 'Two')] });
+    await follower.forgetVia('user_b', 'CODE');
+    await follower.forgetVia('user_a', 'OTHER');
+    expect(follower.follows('user_a', 'd1')).toBe(true);
+    await follower.forgetVia('user_a', 'CODE');
+    fire();
+    expect(written).toHaveLength(1);
+    expect(follower.follows('user_a', 'd1')).toBe(false);
+    expect(copies.forgetVia).toHaveBeenCalledWith('user_a', 'CODE');
   });
 
   it('follows the name and the tab list: a rename, a tab added, moved, deleted and put in a folder', async () => {
@@ -290,8 +308,10 @@ describe('createLastSeenFollower', () => {
       const copies = {
         remember: vi.fn(async () => {}),
         read: vi.fn(async () => null),
+        readVia: vi.fn(async () => null),
         lastReader: vi.fn(async () => null),
         forget: vi.fn(async () => {}),
+        forgetVia: vi.fn(async () => {}),
         forgetAll: vi.fn(async () => {}),
       };
       const listeners: Record<string, () => void> = {};
@@ -335,8 +355,10 @@ describe('createLastSeenFollower', () => {
       const copies = {
         remember: vi.fn(async () => {}),
         read: vi.fn(async () => null),
+        readVia: vi.fn(async () => null),
         lastReader: vi.fn(async () => null),
         forget: vi.fn(async () => {}),
+        forgetVia: vi.fn(async () => {}),
         forgetAll: vi.fn(async () => {}),
       };
       const follower = createLastSeenFollower<Item>(copies);

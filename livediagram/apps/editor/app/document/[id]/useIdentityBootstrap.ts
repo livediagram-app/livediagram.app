@@ -87,6 +87,12 @@ export function useIdentityBootstrap(opts: {
   // The last seen copy the warm open painted (docs/specs/006-document/offline-mode.md "Warm open of a cloud
   // document"), until the load that catches up replaces it.
   const warmRef = useRef<LastSeenCopy<LiveDoc, unknown> | null>(null);
+  // The tab on screen, for the catch-up to keep (seed-fetched's keepActiveId): a person who moved off the
+  // warm-painted tab stays where they went.
+  const activeIdRef = useRef(activeId);
+  useLayoutEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
   // What the seed and the warm paint show the document through (seed-fetched-document.ts), with the run's setters.
   const seedDeps = (
     s: BootstrapSet,
@@ -112,6 +118,7 @@ export function useIdentityBootstrap(opts: {
     setLoadedExistingDocument: s.setLoadedExistingDocument,
     setLoadedTabIds: s.setLoadedTabIds,
     warmFirstTab: () => warmRef.current?.firstTab ?? null,
+    keepActiveId: () => (warmRef.current ? activeIdRef.current : null),
   });
   // `early`: a document in This Browser opening before auth has settled (docs/specs/006-document/offline-mode.md
   // "Instant open"). It has no owner on the server to wait for, so it loads under the placeholder
@@ -305,6 +312,7 @@ export function useIdentityBootstrap(opts: {
       // at once, and the load opens the document for whoever is reading.
       if (warmRef.current && warmRef.current.reader !== self.id) {
         warmRef.current = null;
+        guarded.setWarmTabId(null);
         setLoadingDocument(true);
       }
 
@@ -345,9 +353,10 @@ export function useIdentityBootstrap(opts: {
   // participant. Nothing is saved and the room waits: both need `hydrated`, which only the catch-up sets.
   const paintWarm = useEffectEvent((copy: LastSeenCopy<LiveDoc, unknown>, origin?: number) => {
     debugLog('[load] warm open from the last seen copy');
-    warmRef.current = copy;
     const s = opts.set;
     makePaintLastSeen(seedDeps(s, opts.resetTabs, false))(copy);
+    warmRef.current = copy;
+    s.setWarmTabId(copy.firstTab?.id ?? null);
     s.setIsOwner(copy.access.isOwner);
     s.setSessionTabScope(copy.access.tabScope);
     s.setSessionRole('view');

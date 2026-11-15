@@ -189,8 +189,7 @@ the reader this browser expects paints that copy under the `'self'` placeholder,
 The reader expected is the guest token's id, or, when the signed-in hint says this browser
 is signed in, the account whose copies the store holds (it holds one reader's at most). A
 signed-out browser, or one whose guest is someone else, never reads an account's copy. A
-share link warm-opens only when its share code is the one the copy was kept under, and only
-by an address that names the design. Embeds, workbenches and This Browser designs never
+share link warm-opens only when its share code is the one the copy was kept under: by an address that names the design, or by the link's own address (`/design/shared?s=<code>`, as the Share dialog gives it), which names no design and finds the reader's newest copy kept under that code, for the same reader rules. The warm open leaves the address as it is (the load that catches up names the design in the bar, as it always has). Embeds, workbenches and This Browser designs never
 warm-open, and a copy whose first tab is not the tab this open would show first (no first
 tab kept, or the address's `#t=` names another tab) is not painted: the design opens as it
 always did.
@@ -209,8 +208,15 @@ always did.
   (a hint that outlived its session), the copy goes from the screen at once for the opening
   screen, and the load opens the design for whoever is reading.
 - **Lost access on catch-up** swaps the copy for the screen the load ends on (not found,
-  the deleted card, the password gate) and forgets the copy. A load that cannot reach the
+  the deleted card, the password gate) and forgets the copy; a share link's copies go by its code
+  too, as its own address names no design. A load that cannot reach the
   server ends on its error screen and keeps the copy.
+- **Other tabs wait for the load.** The copy holds the first tab's body only: moving to
+  another tab during the warm paint shows the tab loader, never a blank canvas, and the
+  catch-up keeps the tab the reader moved to (when the design still has it and the link's
+  tab scope allows it) instead of going back to the first.
+- **The view lands once.** The painted tab is fitted as it paints, so the catch-up does not
+  fit it again and the view does not jump.
 - **Another browser tab** of the same design warm-opens from the same copy; its room connects
   once its own load lands, as always.
 - `DesignLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its own, as
