@@ -2,7 +2,9 @@
 // the first time its session starts, its tools take the palette strip and its room under the strip is kept
 // (top-strip-inset), so it is framed again once they are on screen. Once each page, and again when what this person may do there
 // changes or the rail first shows: a visitor's page is in focus behind their Join prompt, the canvas's
-// chrome held back, and was framed beside nothing.
+// chrome held back, and was framed beside nothing. And again when the photo starts (Open a Picture, Blank, a drop): the
+// page takes the picture's size then, and a framing made for the unstarted 1920 x 1080 sheet left the picture small and
+// off centre (a phone frames before the picture is picked; Work Tracker 895).
 import { useEffect, useRef } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -16,6 +18,8 @@ export function usePhotoFraming(
   focusPage: ((id: string) => void) | undefined,
   canEdit: boolean,
   canInspect: boolean,
+  // Whether the photo has its first layer yet: the page takes its size when it starts.
+  started = true,
 ): void {
   const framed = useRef(new Set<string>());
   // Read when the frame is due: a new function each render must not restart the wait.
@@ -24,7 +28,7 @@ export function usePhotoFraming(
   const rail = useRailShown();
   useEffect(() => {
     if (!pageId || !can) return;
-    const key = `${pageId}:${canEdit}:${canInspect}:${rail}`;
+    const key = `${pageId}:${canEdit}:${canInspect}:${rail}:${started}`;
     if (framed.current.has(key)) return;
     debugLog('[photo] frame-wait', { key });
     // The tools and the room under the strip mount with their own chunks: framed once they are on screen (or, for
@@ -54,5 +58,5 @@ export function usePhotoFraming(
     };
     raf = requestAnimationFrame(wait);
     return () => cancelAnimationFrame(raf);
-  }, [pageId, can, canEdit, canInspect, rail, focusRef]);
+  }, [pageId, can, canEdit, canInspect, rail, started, focusRef]);
 }

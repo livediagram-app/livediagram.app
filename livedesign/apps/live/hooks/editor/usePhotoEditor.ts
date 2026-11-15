@@ -206,7 +206,11 @@ export function usePhotoEditor<V extends PagesModeView>({
   }, [focusId, tabId, store, rt]);
 
   const focusPage = pagesModeView?.focusPage;
-  usePhotoFraming(session?.pageId ?? null, focusPage, canEdit, canInspect);
+  // Framed again as the photo starts and the page takes the picture's size (usePhotoFraming).
+  const framedPageId = session?.pageId ?? null;
+  const framedStarted =
+    (framedPageId ? (activeTab.photos?.[framedPageId]?.layers.length ?? 0) : 0) > 0;
+  usePhotoFraming(framedPageId, focusPage, canEdit, canInspect, framedStarted);
 
   // The zoom ceiling raised while a photo page is in focus, so its pixels can be worked one by one
   // (lib/canvas.ts zoomMax); back down after, the view brought within it.

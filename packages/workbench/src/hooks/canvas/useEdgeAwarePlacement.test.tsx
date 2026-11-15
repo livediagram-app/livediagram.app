@@ -142,6 +142,30 @@ describe('useEdgeAwarePlacement', () => {
     expect(h.measures()).toBeGreaterThan(0);
   });
 
+  // Work Tracker 898: a pinch or a zoom shortcut with the selection kept moves the box on screen with no bounds or
+  // offset change, so the zoom alone must re-place it.
+  it('re-places on a zoom change alone while the selection stays up', () => {
+    let r = rect(400, 300, 500, 340);
+    const h = setup(() => r);
+    expect(h.result.current.placeAbove).toBe(true);
+    const before = h.measures();
+    // Zoomed in about the canvas origin: the selection's on-screen top is now near the area's top, so above runs off.
+    r = rect(400, -10, 500, 30);
+    h.rerender({ x: 400, zoom: 2 });
+    expect(h.measures()).toBeGreaterThan(before);
+    expect(h.result.current.placeAbove).toBe(false);
+  });
+
+  it('nudges back on screen on a zoom change alone', () => {
+    let r = rect(400, 300, 500, 340);
+    const h = setup(() => r);
+    expect(h.result.current.style).toMatchObject({ left: 450 });
+    // Zoomed out: the box now pokes past the right edge with the same bounds and offset; the nudge is in canvas units.
+    r = rect(950, 300, 1050, 340);
+    h.rerender({ x: 400, zoom: 0.5 });
+    expect(h.result.current.style).toMatchObject({ left: 450 + (1000 - EDGE - 1050) / 0.5 });
+  });
+
   it('does nothing with no box attached', () => {
     const view = renderHook(() =>
       useEdgeAwarePlacement({ x: 0, y: 0, width: 10, height: 10 }, { x: 0, y: 0 }, 1, 8),

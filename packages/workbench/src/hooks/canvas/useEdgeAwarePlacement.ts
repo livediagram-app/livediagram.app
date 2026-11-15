@@ -35,11 +35,12 @@ export function overlapsChrome(r: DOMRect, self: Element): boolean {
 // a box that fits neither side could otherwise ping-pong above<->below forever,
 // an infinite synchronous re-render that trips React's "Maximum update depth".
 // `adjust` is the one-shot edge nudge and is deliberately NOT an effect
-// trigger, so the effect never re-enters on its own setAdjust. `zoom` is
-// folded into the geometry signature (a zoom change earns a fresh flip
-// decision) but does not trigger either — the effect re-runs on the
-// bounds / offset / placeAbove changes that actually move the box, and the
-// placement itself is an effect event reading the newest nudge and zoom.
+// trigger, so the effect never re-enters on its own setAdjust. The effect
+// re-runs on the bounds / offset / zoom / placeAbove changes that move the box
+// on screen (a pinch or zoom shortcut with the selection kept moves it with no
+// bounds or offset change, Work Tracker 898), and `zoom` is folded into the
+// geometry signature so a zoom change earns a fresh flip decision. The
+// placement itself is an effect event reading the newest nudge.
 //
 // The box ref must be attached to the floating element so its measured rect can
 // be checked against the viewport. `style` is the ready-to-spread placement:
@@ -162,6 +163,7 @@ export function useEdgeAwarePlacement(
     bounds.height,
     canvasOffset.x,
     canvasOffset.y,
+    zoom,
     placeAbove,
     suspended,
   ]);

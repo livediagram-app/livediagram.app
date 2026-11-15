@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livedesign/design';
+import { layOutPages, newWireframePage, type Element } from '@livedesign/design';
+import { buildPageLayout } from '@livedesign/templates';
+import { CANVAS_PAPER } from '@/lib/page-paint';
+import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-projector';
+import { themeViewMap } from '@/lib/themes';
 import { edit, editBoard, pagesOf, prng } from './board-edits-test-support';
 import { minimapBuild, minimapParts } from './Minimap';
 
@@ -45,5 +49,35 @@ describe('minimapBuild', () => {
       minimapBuild(minimapParts(), els, { ...base, surface: 'dark' }).picture?.href,
     );
     expect(dark.picture?.href).not.toBe(light.picture?.href);
+  });
+
+  // docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen" (Work Tracker 897): the Map is drawn
+  // from the canvas's own elements (EditorCanvasHost's projection, through inkedOnPaper), so in dark chrome it shows
+  // the ink the canvas lifts off the slate paper, never the stored ink the canvas no longer shows.
+  it('draws the ink the canvas lifts off the dark paper', () => {
+    const [screen] = layOutPages([newWireframePage('s')]);
+    const placed = buildPageLayout('wf-sign-in', screen!);
+    const canvas = createStockColourProjector()(
+      placed,
+      'dark',
+      themeViewMap(undefined, 'dark'),
+      plainPaper('dark'),
+    );
+    const fills = (els: readonly Element[]) =>
+      els.map((el) => (el as { fillColor?: string }).fillColor);
+    const lifted = fills(canvas).filter(
+      (fill, i) => fill !== fills(placed)[i] && fills(placed)[i] === CANVAS_PAPER.dark,
+    );
+    expect(lifted.length).toBeGreaterThan(0);
+    const map = minimapBuild(minimapParts(), [...canvas], {
+      pages: [screen!],
+      tabFont: undefined,
+      tabFinish: 'flexible',
+      iconsLoaded: false,
+      surface: 'dark',
+      chartPalette: undefined,
+    });
+    const svg = decodeURIComponent(map.picture!.href);
+    for (const fill of lifted) expect(svg).toContain(`fill="${fill}"`);
   });
 });
