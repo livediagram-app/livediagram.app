@@ -271,11 +271,10 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 - `routes/calendar-feed-routes.test.ts`: owner and team member may read, make, change, reset and turn off;
   `editor_link`, `tab_editor_link`, `participant`, `viewer`, every token, `workbench`, `guest` and `link_visitor` are
   refused on every route and nothing changes; a reset link stops the old token; options kept on PATCH; invalid
-  bodies; 404 PATCH without a feed; 405.
-- `calendar/feed-boards.test.ts`: the boards list.
-- Editor: `calendar-feed-gate.test.ts` (who sees the row), `calendar-feed-links.test.ts`, `CalendarFeedDialog.test.tsx`
-  (each state, make, copy, reset, turn off, an option change saving and rolling back, errors),
-  `CalendarFeedMenuRow.test.tsx`.
+  bodies; 404 PATCH without a feed; 405; the plan's boards in `GET` (so `feedBoardsOf`).
+- Editor: `calendar-feed-gate.test.ts` (who sees the row, and the links: `feedUrlOf`, Google's and Apple's),
+  `calendar-feed-client.test.ts` (the four calls), `CalendarFeedDialog.test.tsx` (each state, make, copy, reset, turn
+  off, an option change saving and rolling back, errors, board labels, and the tab menu row through the host).
 
 ### Constants and configuration
 
