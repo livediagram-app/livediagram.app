@@ -46,8 +46,9 @@ export const EXPLORER_TELEMETRY_EVENTS = {
     ...HOME_FRAME_PICKS,
   ],
   'Home·Opened': ['Welcome'],
-  // A failed read of Home retried.
-  'Home·Loaded': ['Retry'],
+  // A failed read of Home retried, and the Explorer giving up waiting to know the person (Try Again shown in place
+  // of its placeholders).
+  'Home·Loaded': ['Retry', 'Stalled'],
   // The filter lens: a facet that gained a value, never the value.
   'Explorer·Selected': ['Text', 'OpensIn', 'Template', 'MadeBy', 'Edited', 'People', 'Space'],
   // The Inbox: opened, a row followed into its app, a failed read retried, the filter bar changed, and a reply or a

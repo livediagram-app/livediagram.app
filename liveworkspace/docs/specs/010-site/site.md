@@ -360,8 +360,13 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Who it reads as.** The index is asked with a short-lived token from `GET /api/auth/workspace-token`: the
   signed-in account's, or this browser's guest's ([accounts.md](../003-accounts/accounts.md)). Signing out here asks again.
   Until the answer comes (seconds on a slow session) the page shows the Explorer's own skeleton under the header
-  (`ExplorerSkeleton`: the sidebar's rows and a pane of cards, pulsing, `aria-busy`), never a blank page; a failed
-  answer says so, with the reload to try again.
+  (`ExplorerSkeleton`: the sidebar's rows and a pane of cards, pulsing, `aria-busy`), never a blank page. The wait
+  is bounded: with no answer in 12 s (`IDENTITY_WAIT_MS`), or a failed one (the app's token answer is a 5xx, or none
+  came in its own 10 s: [accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)), the page
+  says so in place of the skeleton (`ExplorerUnreachable`: "Your Explorer Couldn't Load", **Try Again**, which asks
+  again in place, and the status page) and counts `Home·Loaded·Stalled`. An answer that lands later still opens the
+  Explorer. The index's reads are bounded too (15 s, `INDEX_READ_TIMEOUT_MS`): a stalled one fails, and its section
+  shows Try again rather than its placeholders.
 - **Which app.** The app the person came from: `?from=`, then the referrer. The page wears that app's colours (its
   brand ramp, light and dark) and opens filtered to its items, with **All Apps** one click away. The switch reads the
   app's own name ("livediagram") and **All Apps**, each with its logo: the app's prism in its accent, and
