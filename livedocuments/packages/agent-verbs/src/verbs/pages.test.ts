@@ -390,6 +390,40 @@ describe('article get and article set', () => {
     expect(sent).toEqual([{ article: { markdown: 'x' } }]);
   });
 
+  // docs/specs/024-agents/pages-for-agents.md "Held paragraphs".
+  it('waits out a held paragraph with --wait-held, and refuses once the time is up', async () => {
+    const held = () =>
+      Response.json(
+        { error: 'paragraphs_held', message: 'Sam Lee is writing in "Hello there".' },
+        { status: 409 },
+      );
+    let left = 2;
+    const later = setUp(undefined, () => (left-- > 0 ? held() : Response.json(ANSWER)), 'x');
+    const logs: string[] = [];
+    later.ctx.log = (line) => void logs.push(line);
+    const out = await articleSet.run!(
+      later.ctx,
+      articleSet.input.parse({ doc: DOC_A, file: '-', waitHeld: '30' }),
+    );
+    expect(out).toMatchObject({ flow: 'art-1' });
+    expect(later.sent).toHaveLength(3);
+    expect(later.ctx.slept).toEqual([2000, 2000]);
+    expect(logs.filter((l) => l.startsWith('held'))).toEqual(['held retry 1', 'held retry 2']);
+
+    const never = setUp(undefined, held, 'x');
+    await expect(
+      articleSet.run!(never.ctx, articleSet.input.parse({ doc: DOC_A, file: '-', waitHeld: 5 })),
+    ).rejects.toThrow('Sam Lee is writing in "Hello there".');
+    // Tries at 0, 2 and 4 s; a fourth at 6 s would be past the 5 s given.
+    expect(never.sent).toHaveLength(3);
+
+    const once = setUp(undefined, held, 'x');
+    await expect(
+      articleSet.run!(once.ctx, articleSet.input.parse({ doc: DOC_A, file: '-' })),
+    ).rejects.toBeInstanceOf(VerbRefusal);
+    expect(once.sent).toHaveLength(1);
+  });
+
   it('starts a new article, and refuses what the api refuses', async () => {
     const { ctx, sent } = setUp(undefined, undefined, 'x');
     await articleSet.run!(ctx, articleSet.input.parse({ doc: DOC_A, file: '-', new: true }));

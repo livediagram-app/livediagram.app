@@ -114,6 +114,9 @@ is `break-after: column` (`article-pages.css`).
 | `SLASH_QUERY_MAX`                       | 24 characters                          | `article-slash.ts`; D44                                                                       |
 | Slash menu `WIDTH`, `MAX_HEIGHT`        | 260, 320 px                            | `SlashMenu.tsx`; D44                                                                          |
 | `ARTICLE_PEER_FRESH_MS`                 | 1500 ms                                | `article-carets-store.ts`; D40                                                                |
+| `ARTICLE_HOLD_IDLE_MS`                  | 8000 ms                                | `packages/api-schema/src/article-hold.ts`; spec "Holding a paragraph" (~8 s)                  |
+| `ARTICLE_HOLD_REFRESH_MS`               | 2000 ms                                | `article-hold.ts`; a late joiner sees a hold within it                                        |
+| `ARTICLE_HOLD_EXPIRE_MS`                | 12,000 ms                              | `article-hold.ts`; idle plus a refresh plus 2 s grace (safe 10 to 30 s)                       |
 | `BROADCAST_THROTTLE_MS`                 | 33 ms (the cursor's rate)              | `useEditorBroadcast.ts`; spec "at the cursor's rate"                                          |
 | `ARTICLE_CARET_MAX_ID_LEN`              | 256                                    | `packages/api-schema/src/article-caret.ts`; D43                                               |
 | `ARTICLE_CARET_MAX_OFFSET`              | 1,000,000                              | `article-caret.ts`; D43                                                                       |
@@ -574,6 +577,48 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
   `ARTICLE_PEER_FRESH_MS` after it moves.
 - The room relays `article-caret` as presence (unordered, never logged or replayed, from any
   session); `article` as a mutation (edit role only, sequenced, in the catch-up log).
+- **Holding a paragraph** (spec "Holding a paragraph"):
+  - Wire (`packages/api-schema/src/article-hold.ts`): `{ kind: 'article-hold', tabId, flow, blockId, row?, col? }`
+    (a claim, said again while typing) or `{ kind: 'article-hold', tabId, flow: null }` (a release), a presence op.
+    `parseArticleHold(op)` checks each id (`isArticleId`, 1 to 64 characters) and that `row` and `col` come together;
+    anything else is null and dropped. `sameHoldPlace(a, b)`: same flow, block, row and column.
+  - Room (`apps/api/src/document-room/document-room-holds.ts`, the pure rule in `apps/api/src/room-article-holds.ts`):
+    a session's hold lives on its socket attachment (`articleHold: { tabId, flow, blockId, row?, col?, at }`), so it
+    survives hibernation and goes with the socket. A claim from a session below `participate` is dropped. Else
+    `judgeArticleHold(claim, others, now)` looks for another live session's hold on the same tab and place whose `at`
+    is within `ARTICLE_HOLD_EXPIRE_MS`: none, the claim is stored (`at: now`) and relayed to the others as presence;
+    one, nothing is stored or relayed, and the claimant alone is sent the holder's hold as an `op` frame from the
+    holder. Either way, a claim sent with a `ref` is then answered with a `cursor` frame echoing it (seq unchanged),
+    so `sequence(op)` resolves once the answer is in. A release clears the hold and is relayed. `GET /holds?tab=`
+    (internal) answers every live hold on the tab as `{ flow, blockId, row?, col?, name, color }`.
+  - Local claim (`apps/editor/lib/article/article-holds-store.ts`): `noteArticleTyping(flow, spot)` from the
+    writing's `dispatchTransaction` after each local doc change (`holdSpotOf(state)`: the top-level block at the
+    selection's head, and in a table cell its row's id and its column's id from the table's `cols`). A new place
+    starts a claim (`pending`), the same place refreshes `typedAt`. `noteArticleCaret(flow, spot)`, from the caret's
+    publish on every selection change, releases a hold whose place the caret left; blur and unmount call `releaseArticleHold(flow)`. A timer
+    releases `ARTICLE_HOLD_IDLE_MS` after the last typing.
+  - Broadcast (`apps/editor/hooks/collab/useArticleHoldBroadcast.ts`, `{ roomRef, live, activeId }`): a new claim goes
+    through `roomRef.current.sequence(op)`; on its answer the store takes `granted` unless a peer's hold on the same
+    place arrived first (then `refused`); an unconfirmed answer (`false`: socket down, timeout) is `granted` too. A
+    claim refreshed while granted is sent again (plain `send`) at most every `ARTICLE_HOLD_REFRESH_MS`. A release sends
+    the `flow: null` op once. While the room is not live every claim is `granted` at once and nothing is sent.
+  - Commit gate (`ArticleEditor.flush`): a block (or the table of a cell) whose claim is `pending` commits as it was
+    (`committed`'s copy) and the commit is tried again once the claim is answered; on `refused`, the writing puts the
+    block back as `committed` has it (an `article-remote` transaction, nothing committed) and says
+    `announceArticleHeld(name)`.
+  - Peers' holds (same store): `receiveArticleHold(from, hold)`, `syncArticleHolders(participants)` (names, colours,
+    the holds of anyone who left), `resetArticleHolds()` when the room closes; a hold not said again within
+    `ARTICLE_HOLD_EXPIRE_MS` is dropped by a sweep. `useArticleHolds(flow)` answers this tab's holds in that article
+    from known people, kept by identity until a change.
+  - The writing (`apps/editor/lib/article/article-holds.ts`, `articleHoldsPlugin(onRefused)`): the holds arrive by a
+    meta transaction (`setArticleHolds`), never in the history. Decorations: `Decoration.node` on each held block (or
+    cell) with `data-held`, `--article-held: <colour>` and `title="<Name> is writing here"`, and a widget chip at its start
+    (`.article-held-chip`, aria-hidden). `filterTransaction` refuses a local transaction that changes the doc in a
+    held range: a step's range (its `from`/`to`, or `pos` for an attribute step) meeting a held block's inside, or for
+    a held cell its cell, or its table outside every cell (a change of shape); `article-remote` transactions always
+    pass. A refusal calls `onRefused(holder)`, which says `announceArticleHeld(name)` at most every 2.5 s. A new margin
+    note on held text is refused the same way (its mark is a change to the paragraph), so `markNote` makes no marker
+    and the notice names the writer; replies on existing threads are untouched.
 
 ### Everywhere else
 
@@ -696,6 +741,10 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
   view whose clip changed re-renders.
 - Page toolbar and drop carets follow by rAF while shown, writing styles directly (no React
   render per frame).
+- Holds: with nobody holding anything in an article the plugin does nothing per keystroke. With holds, each local
+  transaction walks the top-level blocks once to find the held ranges and once to redraw the outlines: O(blocks), measured
+  at 0.87 ms a keystroke in a 5,000-paragraph article with three holds (budget 8 ms, `article-holds.test.ts`). A claim
+  is one op per new paragraph, refreshed at most every 2 s; the room's judgement is O(sockets).
 - At most `MAX_PAGES` (100) pages; one editor per article, columns per page.
 - Word Count reads the article only while More Formatting is open (once on open, then once per render of the
   toolbar while open): `docToBlocks` and `articleWordCount`, O(characters), about 25 ms of CPU for a 2,000-paragraph,
@@ -784,6 +833,13 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | Article as a unit: add, remove, move, duplicate, grow and shrink                                                                                                                                                   | `packages/document/src/article-pages.test.ts` "articles in the row"                                                           |
 | A duplicated article's notes point at the copied markers                                                                                                                                                           | `article-pages.test.ts` "a duplicated article keeps its margin notes to itself"                                               |
 | First page's choice                                                                                                                                                                                                | `article-pages.test.ts` "the first page's own choice of kind"                                                                 |
+| Holds: the wire op read defensively, one place                                                                                                                                                                     | `packages/api-schema/src/article-hold.test.ts`                                                                                |
+| The room settles a claim: first wins, the loser hears the holder, a release, a Viewer's claim dropped, expiry, `/holds`                                                                                            | `apps/api/src/document-room/document-room-holds.test.ts`                                                                      |
+| Our hold: claimed while typing, refreshed, let go on leaving, idling or blur; peers' holds named, per tab, swept                                                                                                   | `apps/editor/lib/article/article-holds-store.test.ts`                                                                         |
+| A claim through `sequence`, refreshed by `send`, released once                                                                                                                                                     | `apps/editor/hooks/collab/useArticleHoldBroadcast.test.tsx`                                                                   |
+| Held blocks outlined with a name chip; typing, cell edits and a table's shape refused; two writers in one paragraph never lose words; a keystroke's cost with holds (5,000 paragraphs, budget 8 ms)                | `apps/editor/lib/article/article-holds.test.ts`                                                                               |
+| A pending claim commits its block as it was; a refused one is put back with the notice                                                                                                                             | `article-hold-commit.test.ts`, `apps/editor/components/canvas/article/useWritingHolds.test.tsx`                               |
+| A peer's hold arriving from the room                                                                                                                                                                               | `apps/editor/app/document/[id]/room-op-article-hold.test.ts`                                                                  |
 | Zones settle with their elements, never swap, drawing clip, objects whole                                                                                                                                          | `packages/document/src/article-zones.test.ts`                                                                                 |
 | Margin notes: place, follow, stack, untint, go with their text                                                                                                                                                     | `packages/document/src/article-notes.test.ts`                                                                                 |
 | Article pages read, flow fallback, kept together                                                                                                                                                                   | `packages/document/src/page.test.ts` "page kinds"                                                                             |

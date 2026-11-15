@@ -13,6 +13,7 @@ import { type SessionAttachment } from '../room-session';
 import type { DocumentRoom } from './document-room';
 import { scopeOf, sequenceMutation, sendTo } from './document-room-sockets';
 import { sendFollowers, noteMultiplayer } from './document-room-presence';
+import { answerArticleHold } from './document-room-holds';
 
 // Max ops a single session may broadcast per 1s window. Far above any
 // legit client (cursor / laser broadcasts are throttled to a few dozen
@@ -138,6 +139,12 @@ export function webSocketMessage(
     if (!gate.presence && refusesElementOp(room, ws, msg)) return;
     const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
     const isPresenceOp = gate.presence;
+    // A paragraph hold is the room's to give, never relayed as sent (docs/specs/007-editor/article-pages.md
+    // "Holding a paragraph").
+    if (opKind === 'article-hold') {
+      answerArticleHold(room, ws, session, sender, msg.op, msg.ref);
+      return;
+    }
     // Remember the sender's current tab so a future joiner learns it
     // from the presence list (tab-focus ops only fire on a switch, so
     // they're invisible to anyone who joins afterwards). Persisted to

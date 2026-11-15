@@ -34,6 +34,10 @@ import { setBlockStyle, toggleList } from '@/lib/article/article-commands';
 import { caretOf } from '@/lib/article/article-caret';
 import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-carets-store';
 import { setArticlePeers } from '@/lib/article/article-peers';
+import { holdSpotOf } from '@/lib/article/article-holds';
+import { noteArticleCaret, pendingArticleHoldBlock } from '@/lib/article/article-holds-store';
+import { heldBackBlocks } from '@/lib/article/article-hold-commit';
+import { useWritingHolds } from './useWritingHolds';
 import { SlashMenu } from './SlashMenu';
 import { useArticleLinkHover } from './useArticleLinkHover';
 import { caretCanvasRect, writingScale } from './article-editor-handle';
@@ -169,7 +173,13 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       idle.current = null;
     }
     if (!view) return false;
-    const blocks = docToBlocks(view.state.doc, committed.current.blocks);
+    // A block whose hold the room has not answered commits as it was until it does
+    // (docs/specs/007-editor/article-pages.md "Holding a paragraph"); the answer commits it.
+    const blocks = heldBackBlocks(
+      docToBlocks(view.state.doc, committed.current.blocks),
+      committed.current.blocks,
+      pendingArticleHoldBlock(latest.current.flow),
+    );
     if (blocks === committed.current.blocks) return false;
     // Taken as written only once the host accepts it (a tab locked meanwhile refuses): refused,
     // it stays local and goes with the next commit.
@@ -246,7 +256,11 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     if (!view.hasFocus() || !handleRef.current) return;
     // Where we are writing, for collaborators (docs/specs/007-editor/article-pages.md
     // "Collaboration"); a viewer's writing takes no caret.
-    if (latest.current.editable) setLocalArticleCaret(latest.current.flow, caretOf(view.state));
+    // A hold goes once the caret leaves its block ("Holding a paragraph").
+    if (latest.current.editable) {
+      setLocalArticleCaret(latest.current.flow, caretOf(view.state));
+      noteArticleCaret(latest.current.flow, holdSpotOf(view.state));
+    }
     const selection = selectionStateOf(view.state);
     const pageId = caretPageId.current ?? latest.current.pages[0]?.id ?? null;
     const was = published.current;
@@ -348,6 +362,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const view = viewRef.current;
     if (view) view.dispatch(setArticlePeers(view.state, peers));
   }, [peers]);
+
+  // Collaborators' holds in this article, and the room's answers to ours.
+  useWritingHolds({ flow: props.flow, viewRef, committed, scheduleCommit });
 
   // A link hovered: its address, Open, Edit and Remove (made after the view, which it listens on).
   const linkCard = useArticleLinkHover(viewRef, props.editable);
