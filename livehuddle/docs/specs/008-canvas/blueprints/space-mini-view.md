@@ -6,31 +6,32 @@ stage](../../012-collaboration/meeting-rooms-and-stage.md) "Raise hand".
 
 ## Files
 
-| File                                                     | Role                                                                                                    |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/mini-view/mini-view-window.ts`          | The one window: `miniViewSupported`, `openMiniView`, `closeMiniView`, `toggleMiniView`, `useMiniViewWindow`, `focusSpace` |
-| `apps/editor/lib/mini-view/mini-view-styles.ts`          | `mirrorDocumentLook`: the opener's stylesheets, `<html>` classes and theme copied into the window      |
-| `apps/editor/lib/mini-view/mini-view-knock.ts`           | The knock on show: `showMiniKnock`, `clearMiniKnock`, `useMiniKnock`, `resetMiniKnock`                  |
-| `apps/editor/lib/mini-view/mini-view-people.ts`          | Pure: `miniViewPeople` (the rows and groups), `miniPeopleKey` (their by-value key)                      |
-| `apps/editor/components/calls/mini-view/MiniViewHost.tsx` | Mounted by the characters layer: portals the mini view into the window while it is open; closes it on unmount |
-| `apps/editor/components/calls/mini-view/MiniView.tsx`    | The window's content: header, knock, groups                                                             |
-| `apps/editor/components/calls/mini-view/MiniViewRow.tsx` | One row: `MiniBust`, name, status, hand, bars                                                           |
-| `apps/editor/components/calls/PopOutSegment.tsx`         | The Call dock's Pop Out                                                                                 |
-| `apps/editor/components/calls/CallDock.tsx`              | Draws Pop Out last, a divider before it when `callGroupShows` or a share is on                          |
-| `apps/editor/components/calls/CallStripGroup.tsx`        | `callGroupShows(self, actions)`: the group's own early returns as one predicate                         |
-| `apps/editor/lib/office/useMeetingPieces.ts`             | Shows a knock that reaches you in the mini view too, and clears it on an answer from either place       |
-| `packages/icons` (monorepo)                              | `lucidePictureInPicture2`, vendored                                                                     |
+| File                                                      | Role                                                                                                                      |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `apps/editor/lib/mini-view/mini-view-window.ts`           | The one window: `miniViewSupported`, `openMiniView`, `closeMiniView`, `toggleMiniView`, `useMiniViewWindow`, `focusSpace` |
+| `apps/editor/lib/mini-view/mini-view-styles.ts`           | `mirrorDocumentLook`: the opener's stylesheets, `<html>` classes and theme copied into the window                         |
+| `apps/editor/lib/mini-view/mini-view-knock.ts`            | The knock on show: `showMiniKnock`, `clearMiniKnock`, `useMiniKnock`, `resetMiniKnock`                                    |
+| `apps/editor/lib/mini-view/mini-view-people.ts`           | Pure: `miniViewPeople` (the rows and groups), `miniPeopleKey` (their by-value key)                                        |
+| `apps/editor/components/calls/mini-view/MiniViewHost.tsx` | Mounted by the characters layer: portals the mini view into the window while it is open; closes it on unmount             |
+| `apps/editor/components/calls/mini-view/MiniView.tsx`     | The window's content: header, knock, groups                                                                               |
+| `apps/editor/components/calls/mini-view/MiniViewRow.tsx`  | One row: `MiniBust`, name, status, hand, bars                                                                             |
+| `apps/editor/test/fake-pip-window.ts`                     | The tests' stand-in window and API (`fakePipWindow`, `installPip`, `removePip`)                                           |
+| `apps/editor/components/calls/PopOutSegment.tsx`          | The Call dock's Pop Out                                                                                                   |
+| `apps/editor/components/calls/CallDock.tsx`               | Draws Pop Out last, handing it whether a share is on                                                                      |
+| `apps/editor/components/calls/CallStripGroup.tsx`         | `callGroupShows(self, actions)`: the group's own early returns as one predicate                                           |
+| `apps/editor/lib/office/useMeetingPieces.ts`              | Shows a knock that reaches you in the mini view too, and clears it on an answer from either place                         |
+| `packages/icons` (monorepo)                               | `lucidePictureInPicture2`, vendored                                                                                       |
 
 ## Domain and naming
 
-| Term         | Identifier          | Meaning                                                                                  |
-| ------------ | ------------------- | ---------------------------------------------------------------------------------------- |
-| Mini view    | `miniView`          | The Document Picture-in-Picture window and what it shows; one a tab                       |
-| Pop Out      | `PopOutSegment`     | The Call dock's button that opens or closes it                                           |
-| Mini person  | `MiniPerson`        | `{ id, name, color, config, status, self }`: a row's facts, no position                   |
-| Group        | `MiniGroup`         | `{ id: 'near' \| 'space', people: MiniPerson[] }`                                         |
-| Mini knock   | `MiniKnock`         | `{ from, name, answer(value) }`: the knock on show                                       |
-| Back to Space | `focusSpace`       | `window.focus()` on the opener, from a press in the window                                |
+| Term          | Identifier      | Meaning                                                                 |
+| ------------- | --------------- | ----------------------------------------------------------------------- |
+| Mini view     | `miniView`      | The Document Picture-in-Picture window and what it shows; one a tab     |
+| Pop Out       | `PopOutSegment` | The Call dock's button that opens or closes it                          |
+| Mini person   | `MiniPerson`    | `{ id, name, color, config, status, self }`: a row's facts, no position |
+| Group         | `MiniGroup`     | `{ id: 'near' \| 'space', people: MiniPerson[] }`                       |
+| Mini knock    | `MiniKnock`     | `{ from, name, answer(value) }`: the knock on show                      |
+| Back to Space | `focusSpace`    | `window.focus()` on the opener, from a press in the window              |
 
 Synonyms banned: "PiP" in copy (the code may say `pip` for the window object), "popup", "floating panel".
 
@@ -59,8 +60,10 @@ A module store: `win: Window | null`, with `createListeners`.
 
 `memo`, mounted once in `CanvasCharactersLayer` beside the call's layers, given the coarse rows, your name, colour,
 costume and status, and whether you are on Do Not Disturb. It subscribes to `useMiniViewWindow()`; with no window it
-returns null before any work. With one, it works out the people (`miniViewPeople`) behind a memo keyed by
-`miniPeopleKey` and portals `<MiniView>` into `win.document.body`. Its unmount (leaving the document) calls
+returns null before any work. With one, it reads who you hear on its own (`callSelf().heard` through
+`useSyncExternalStore`, so a level change does not wake it), works out the people through `keyedMiniPeople` (one per
+host, kept in `useState`: `miniViewPeople` behind `miniPeopleKey`) and portals the memoised `<MiniView>` into
+`win.document.body`. Its unmount (leaving the document) calls
 `closeMiniView()`. Leaving Avatar mode does not unmount it.
 
 ### The people (`mini-view-people.ts`)
@@ -73,13 +76,12 @@ returns null before any work. With one, it works out the people (`miniViewPeople
 - `heard` non-empty: `near` holds you and the heard rows, `space` the rest; empty: one `space` group with everyone.
   An empty group is left out.
 - Each group's peers sort by `name.localeCompare(other, undefined, { sensitivity: 'base' })`, then by id.
-- `miniPeopleKey` joins, per person, `id|name|color|gender|hair|hairColour|status`, and the heard ids: the memo's
-  key, so a coarse tick that only moved someone gives the same key and no new array.
+- `miniPeopleKey` joins, per person, `id|name|color|gender|hair|hairColour|status`, and the heard ids:
+  `keyedMiniPeople`'s key, so a coarse tick that only moved someone gives the same key and the same result object.
 
 ### Rows (`MiniView`, `MiniViewRow`)
 
-`MiniView` subscribes to `useCallSelf` (your level, hand, `canSpeak`, `heard` is passed in from the host's input),
-`useCallPeers` (levels), `useCallHands` (hands) and `useMiniKnock`. `useStaleClock` (exported from `TalkingBars`)
+`MiniView` (memoised) subscribes to `useCallSelf` (your level, hand, `canSpeak`), `useCallPeers` (levels), `useCallHands` (hands) and `useMiniKnock`. `useStaleClock` (exported from `TalkingBars`)
 moves a level to 0 when stale, as on the canvas. Per row:
 
 - **Speaking**: a peer's `levelNow(peer) > 0`, unless `doNotDisturb`; your own `self.level > 0` while `micOn(self)`
@@ -100,9 +102,10 @@ knock from someone else stays). In `useMeetingPieces`, the knock handler calls `
 
 - `documentPictureInPicture.requestWindow(options)` is typed locally (`DocumentPictureInPictureLike`), since the DOM
   lib in use does not declare it.
-- `MiniViewHost` props: `{ rows: readonly RemoteAvatarRow[]; self: { name; color; config; status }; tabId: string;
-  doNotDisturb: boolean }`.
-- `PopOutSegment` takes nothing; `CallDock` decides the divider.
+- `MiniViewHost` props: `rows` (the coarse `RemoteAvatarRow[]`), `self` (`MiniSelf`: name, colour, costume, status),
+  `tabId` and `doNotDisturb`.
+- `PopOutSegment` takes `{ sharing?: boolean }` and draws its own divider first when `sharing` or
+  `callGroupShows(self, actions)`.
 
 ## Data and persistence
 
@@ -171,25 +174,25 @@ nothing until opened. No layout shift: Pop Out takes its place in the dock on fi
 
 ## Testing
 
-| Rule                                                             | Test                                             |
-| ---------------------------------------------------------------- | ------------------------------------------------ |
-| Pop Out only where the API exists                                | `PopOutSegment.test.tsx`                         |
-| Pop Out for an Editor, a Participant and a Viewer; its divider    | `CallDock.test.tsx` "Pop Out"                    |
-| Open, close, pagehide, refusal, double press, telemetry          | `mini-view-window.test.ts`                       |
-| Styles and theme mirrored                                        | `mini-view-styles.test.ts`                       |
-| Groups, order, You, key stable over a move                       | `mini-view-people.test.ts` (with the CPU budget) |
-| Rows: speaking, hand, DND, Viewer's own row, knock answer, focus | `MiniView.test.tsx`                              |
-| Host portals while open, closes on unmount                       | `MiniViewHost.test.tsx`                          |
+| Rule                                                             | Test                                                  |
+| ---------------------------------------------------------------- | ----------------------------------------------------- |
+| Pop Out only where the API exists                                | `PopOutSegment.test.tsx`                              |
+| Pop Out for an Editor, a Participant and a Viewer; its divider   | `CallDock.test.tsx` "Pop Out"                         |
+| Open, close, pagehide, refusal, double press, telemetry          | `mini-view-window.test.ts`                            |
+| Styles and theme mirrored                                        | `mini-view-styles.test.ts`                            |
+| Groups, order, You, key stable over a move                       | `mini-view-people.test.ts` (with the CPU budget)      |
+| Rows: speaking, hand, DND, Viewer's own row, knock answer, focus | `MiniView.test.tsx`                                   |
+| Host portals while open, closes on unmount                       | `MiniViewHost.test.tsx`                               |
 | A knock reaches the mini view; an answer clears it               | `mini-view-knock.test.ts`, `useMeetingPieces.test.ts` |
 
 ## Constants and configuration
 
-| Constant            | Value          | Why                                                                   |
-| ------------------- | -------------- | --------------------------------------------------------------------- |
-| `MINI_VIEW_WIDTH`   | 320            | Room for a 28 px bust, a long name and the hand and bars              |
-| `MINI_VIEW_HEIGHT`  | 400            | Seven rows and the header before it scrolls                           |
-| `MINI_VIEW_TITLE`   | `'Mini View'`  | The window's title                                                    |
-| Knock timeout       | `TOAST_ANSWER_TIMEOUT_MS` | The toast's own, so both go together                       |
+| Constant           | Value                     | Why                                                      |
+| ------------------ | ------------------------- | -------------------------------------------------------- |
+| `MINI_VIEW_WIDTH`  | 320                       | Room for a 28 px bust, a long name and the hand and bars |
+| `MINI_VIEW_HEIGHT` | 400                       | Seven rows and the header before it scrolls              |
+| `MINI_VIEW_TITLE`  | `'Mini View'`             | The window's title                                       |
+| Knock timeout      | `TOAST_ANSWER_TIMEOUT_MS` | The toast's own, so both go together                     |
 
 ## Defaults ledger
 

@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import type { CallSignal } from '@/lib/calls/call-config';
 import { SELF_MEDIA_ID } from '@/lib/calls/calls-media-store';
 import { track } from '@/lib/telemetry';
+import { clearMiniKnock, showMiniKnock } from '@/lib/mini-view/mini-view-knock';
 import { onKnock, playKnock } from './knock-inbox';
 import {
   noteKnocked,
@@ -247,6 +248,8 @@ export function useMeetingPieces(deps: MeetingPiecesDeps): void {
       const key = `knock:${event.from}`;
       const answer = (value: KnockAnswer) => {
         toast.dismissAction(key);
+        // Answered here or in the mini view: both clear (avatar-mode.md "The mini view").
+        clearMiniKnock(event.from);
         track('Canvas', 'Used', value === 'in' ? 'KnockLetIn' : 'KnockNotNow');
         // At a closed pod, Let In stands you up: with a seat free its door opens by its own rule. Read when pressed,
         // not when the knock came: you may have sat down or stood up while the toast was up.
@@ -268,6 +271,8 @@ export function useMeetingPieces(deps: MeetingPiecesDeps): void {
           { label: 'Not Now', onSelect: () => answer('later') },
         ],
       });
+      // The mini view shows it too, with the same answer (avatar-mode.md "The mini view").
+      showMiniKnock({ from: event.from, name, answer });
     });
   }, [toast]);
 

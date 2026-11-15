@@ -27,6 +27,7 @@ import { TalkingBars } from '@/components/calls/TalkingBars';
 import { HearingRing } from '@/components/calls/HearingRing';
 import { RaisedHands } from '@/components/calls/RaisedHands';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
+import { MiniViewHost } from '@/components/calls/mini-view/MiniViewHost';
 import { useQuietForDoNotDisturb } from '@/lib/sounds/quiet';
 import { usePieceMoments } from '@/components/canvas/collab/usePieceMoments';
 import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
@@ -207,6 +208,13 @@ export function CanvasCharactersLayer({
   }, [remoteAvatars, selfChipAt, avatarStatus, selfScale, selfSeated, inMode, hostAt, chipWidthOf]);
   // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
   const callBubbleRects = useCallBubbleRects();
+  // You, as the mini view's first row (avatar-mode.md "The mini view"): new only when your look or status changes.
+  const selfName = props.selfParticipant.name;
+  const selfColour = props.selfParticipant.color;
+  const miniSelf = useMemo(
+    () => ({ name: selfName, color: selfColour, config: avatarLook.config, status: avatarStatus }),
+    [selfName, selfColour, avatarLook.config, avatarStatus],
+  );
 
   return (
     <>
@@ -289,6 +297,14 @@ export function CanvasCharactersLayer({
       <TalkingBars {...call.bars} />
       {/* Raised hands beside the heads, each a Let Speak for whoever may (meeting-rooms-and-stage.md). */}
       <RaisedHands {...call.hands} />
+      {/* The mini view (docs/specs/008-canvas/avatar-mode.md "The mini view"): drawn into its own window while it is
+        open, from the coarse copy, so a step renders nothing there. */}
+      <MiniViewHost
+        rows={coarseAvatars}
+        self={miniSelf}
+        tabId={props.activeTabId ?? ''}
+        doNotDisturb={avatarStatus === 'dnd'}
+      />
       {/* Camera and screen bubbles above the characters (docs/specs/012-collaboration/video-and-screen-bubbles.md). */}
       <CallBubbles {...call.bubbles} rectsRef={callBubbleRects} />
       {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}

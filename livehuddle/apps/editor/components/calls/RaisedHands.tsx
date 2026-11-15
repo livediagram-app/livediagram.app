@@ -34,7 +34,8 @@ const FACE =
 const RAISED = 'bg-amber-400 text-amber-950';
 const SPEAKING = 'bg-brand-700 text-white';
 
-function Badge({ speaking }: { speaking: boolean }) {
+/** The badge's face, also drawn at the end of a mini view row (MiniViewRow). */
+export function Badge({ speaking }: { speaking: boolean }) {
   return (
     <span aria-hidden className={`${FACE} ${speaking ? SPEAKING : RAISED}`}>
       {speaking ? <MicIcon /> : <HandIcon />}
