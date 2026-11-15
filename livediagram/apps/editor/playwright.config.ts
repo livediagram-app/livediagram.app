@@ -102,12 +102,7 @@ export default defineConfig({
       ? [
           {
             name: 'workbench',
-            use: {
-              ...devices['Desktop Chrome'],
-              colorScheme: 'dark' as const,
-              // Playwright's trace snapshots the page on every action: work the probe would count.
-              trace: 'off' as const,
-            },
+            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
             testMatch: /workbench-(embed|workspace)\.spec\.ts/,
           },
         ]
