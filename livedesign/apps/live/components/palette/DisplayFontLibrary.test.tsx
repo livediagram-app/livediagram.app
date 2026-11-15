@@ -6,6 +6,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DISPLAY_FONTS } from '@livedesign/design';
+import { sentUrl } from '@liveworkspace/vitest-config/sent-request';
 import { resetDisplayPreviewsForTest } from '@/lib/display-fonts-loader';
 import { DisplayFontLibrary, matchDisplayFonts } from './DisplayFontLibrary';
 import { TypographySections } from './TypographySections';
@@ -43,14 +44,16 @@ describe('DisplayFontLibrary', () => {
     expect(rows).toHaveLength(DISPLAY_FONTS.length);
     const pacifico = within(list()).getByRole('button', { name: /Pacifico/ });
     expect(pacifico.getAttribute('aria-pressed')).toBe('true');
-    expect((pacifico.firstElementChild as HTMLElement).style.fontFamily).toContain('pacifico preview');
+    expect((pacifico.firstElementChild as HTMLElement).style.fontFamily).toContain(
+      'pacifico preview',
+    );
     expect(screen.getByPlaceholderText('Search 90 display faces')).toBeTruthy();
   });
 
   it('fetches the preview subsets once on opening', () => {
     render(<DisplayFontLibrary currentFont={null} onSetFont={vi.fn()} />);
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(String(vi.mocked(fetch).mock.calls[0]![0])).toContain('&text=');
+    expect(sentUrl(vi.mocked(fetch).mock.calls[0]![0])).toContain('&text=');
   });
 
   it('narrows by search and by category, with counts, and says when nothing matches', () => {
