@@ -9,7 +9,7 @@ import { TogetherBoard } from './hero-together-board';
 // put column by column and the carried ones after them. PR #1771 (Work Tracker 856) rewrote the render-time counters
 // that set those delays as lookups; Work Tracker 893 pins every pop-in delay to the values the counters gave before it.
 
-// Every `hm-pop` group's delay (`--d`), in document order, to the hundredth of a second.
+// Every `hm-pop` group's delay (`--d`), in markup order, to the hundredth of a second.
 const popDelays = (el: ReactElement) =>
   [...renderToStaticMarkup(el).matchAll(/class="hm-pop[^"]*" style="--d:([\d.]+)s/g)].map(
     (m) => Math.round(Number(m[1]) * 100) / 100,

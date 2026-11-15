@@ -227,7 +227,10 @@ describe('pageThumbFor', () => {
       // A many-page design: 40 sign-in screens, each drawn cold on the dark paper.
       const t = cpuNowMs();
       for (let n = 0; n < 40; n++)
-        pageThumbFor('s', screenTab(structuredClone(placed)), { iconsLoaded: true, surface: 'dark' });
+        pageThumbFor('s', screenTab(structuredClone(placed)), {
+          iconsLoaded: true,
+          surface: 'dark',
+        });
       expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(1000));
     });
   });

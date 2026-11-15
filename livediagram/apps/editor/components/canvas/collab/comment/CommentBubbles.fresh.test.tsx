@@ -19,7 +19,13 @@ const c = (id: string, authorId: string): Comment => ({
 // Whether each bubble, in thread order, settles in.
 function freshFlags(comments: Comment[], freshFrom: number): boolean[] {
   const markup = renderToStaticMarkup(
-    <CommentBubbles comments={comments} selfId="t" textColor="#111" now={2} freshFrom={freshFrom} />,
+    <CommentBubbles
+      comments={comments}
+      selfId="t"
+      textColor="#111"
+      now={2}
+      freshFrom={freshFrom}
+    />,
   );
   return markup
     .split('class="group/bubble')
