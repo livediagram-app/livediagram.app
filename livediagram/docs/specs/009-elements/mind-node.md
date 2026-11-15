@@ -193,6 +193,11 @@ with straight lines, dashes or arrowheads keeps growing that way. With nothing
 to copy it is a **curved line with no arrowheads**: a mind map shows belonging,
 not direction, and the curve is what keeps a fanned column of children legible.
 
+A new connector **starts at the exact anchor** (`exactStart`, [Arrow anchors](../008-canvas/arrow-anchors.md) "Start
+at Exact Anchor"), however it is made: grown, saved from the outline, from a template, an agent's graph, or drawn from
+a node's anchor. A parent's children then leave one point on its face, a tree's trunk, rather than fanning along the
+edge. The arrow's switch turns it off; connectors already in a map keep what they have.
+
 The faces a connector joins are the **flow's**, not the nearest pair: a tree
 leaves the parent's east face and enters the child's west face however far down
 the column the child is. The nearest-pair chooser would pick the parent's south
