@@ -785,6 +785,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Ended|GithubConnectRequested':
     "Someone came back from GitHub waiting for an organisation's owner to approve the install.",
   'Plan|Unlinked|Github': 'Someone disconnected the plan from GitHub in Automations.',
+  'UI|Opened|CalendarFeed': 'Someone opened Subscribe to Calendar from the tab menu.',
+  'Plan|Created|CalendarFeed':
+    "Someone made a private calendar link for the plan's card dates, to add to their own calendar.",
+  'Plan|Changed|CalendarFeedLink':
+    'Someone pressed Reset Link on their calendar link: a new link, and the old one stopped at once.',
+  'Plan|Changed|CalendarFeedOptions':
+    'Someone changed what their calendar link shows (a board, only their cards, done cards), keeping the link.',
+  'Plan|Copied|CalendarFeed': 'Someone copied their new calendar link.',
+  'Plan|Shared|CalendarFeedGoogle': 'Someone handed their new calendar link to Google Calendar.',
+  'Plan|Shared|CalendarFeedApple': 'Someone handed their new calendar link to Apple Calendar.',
+  'Plan|Ended|CalendarFeed': 'Someone turned off their calendar link.',
   'Plan|Created|AutomationRuleGithub':
     'Someone saved a new automation rule started by a pull request on GitHub.',
   'Plan|Tested|AutomationRule':
@@ -2684,6 +2695,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Used':
     "Someone applied one of a board's saved filters, or started a card from one of its card type's templates.",
   'Plan|Copied': 'Someone copied something from a plan, like a new webhook secret.',
+  'Plan|Shared': 'Someone handed something from a plan to another app, like a calendar link.',
   'Plan|Renamed': "Someone renamed one of a board's saved filters.",
   'Plan|Toggled':
     'Someone flagged a card for attention or took its flag off, or maximised a board, view or sheet or restored it (the value says which).',

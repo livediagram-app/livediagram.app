@@ -142,6 +142,10 @@ export const ROOT_TYPES = [
   'AutomationHookRequest',
   'AutomationHookAccepted',
   'GithubConnectionResponse',
+  'CalendarFeedResponse',
+  'CalendarFeedOptions',
+  'CalendarFeedIssueResponse',
+  'CalendarFeedOptionsResponse',
   'GithubConnectStartResponse',
   'GithubRepositoriesRequest',
 ];

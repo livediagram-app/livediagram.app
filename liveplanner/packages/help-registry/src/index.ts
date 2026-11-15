@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 17,
+    articleCount: 18,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -748,6 +748,17 @@ export const articles: Article[] = [
       'Pull request states on cards, and rules that move a card when its pull request opens, merges, closes or its checks finish.',
     keywords:
       'github git pull request pull requests pr prs merge merged checks ci build failing passing repository repositories repo install app connect disconnect integration code review in review done on merge mention',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
+    slug: 'calendar-feed',
+    title: 'Subscribe to Calendar',
+    description:
+      'A private link that puts a plan’s card dates in Google Calendar, Outlook or Apple Calendar, kept up to date.',
+    keywords:
+      'calendar feed subscribe ics ical icalendar webcal google calendar outlook apple calendar sync export dates due date start date deadlines events link private reset link turn off my cards done cards',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',
