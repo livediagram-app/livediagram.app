@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   createShape,
   layOutPages,
@@ -181,5 +182,33 @@ describe('prototypeHotspots', () => {
     } as Element;
     const spots = prototypeHotspots({ elements: [el], layers: undefined }, page, pages);
     expect(spots).toEqual([]);
+  });
+});
+
+// The worst case: a 5,000-element tab (a plan's cap) over 50 screens, a fifth of them linked, read each time the shown
+// screen changes or a collaborator's edit lands.
+describe('prototypeHotspots cost', () => {
+  const SCREENS = 50;
+  const ELEMENTS = 5000;
+  const BUDGET_MS = 25;
+  it(`reads ${ELEMENTS} elements over ${SCREENS} screens inside ${cpuBudgetMs(BUDGET_MS)} ms`, () => {
+    const many = layOutPages(
+      pagesOf({ pages: Array.from({ length: SCREENS }, (_, i) => wire(`s${i}`)) }),
+    );
+    const elements = Array.from({ length: ELEMENTS }, (_, i) => {
+      const s = pageScreenRect(many[i % SCREENS]!);
+      return {
+        ...createShape('square', s.x + (i % 7) * 20, s.y + (i % 11) * 30),
+        id: `e${i}`,
+        ...(i % 5 === 0 ? { link: to(`s${(i + 1) % SCREENS}`) } : {}),
+      };
+    });
+    const tab = { elements, layers: undefined };
+    for (let pass = 0; pass < 3; pass++) prototypeHotspots(tab, many[0]!, many);
+    const best = Math.min(
+      ...[0, 1, 2].map(() => cpuMsOf(() => void prototypeHotspots(tab, many[0]!, many))),
+    );
+    expect(prototypeHotspots(tab, many[0]!, many)).toHaveLength(ELEMENTS / SCREENS); // the first screen's elements are the linked fifth
+    expect(best).toBeLessThan(cpuBudgetMs(BUDGET_MS));
   });
 });
