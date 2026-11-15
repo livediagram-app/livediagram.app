@@ -12,6 +12,7 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedesign/design';
+import { builtMarkup, htmlProps } from '@livedesign/ui';
 import { useImageSources } from '@/components/canvas/page-image-access';
 import { renderTabToSvg } from '@/lib/export-tab';
 import { thumbImageHref, thumbImageIds } from '@/lib/thumb-images';
@@ -75,7 +76,7 @@ export function PrototypeScreen({
       preserveAspectRatio="xMidYMid meet"
       className="block h-full w-full"
     >
-      <g aria-hidden dangerouslySetInnerHTML={{ __html: markup }} />
+      <g aria-hidden {...htmlProps(builtMarkup(markup))} />
       {hotspots?.map((h) => (
         <rect
           key={h.elementId}
