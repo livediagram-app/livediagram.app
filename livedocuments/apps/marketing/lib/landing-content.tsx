@@ -393,7 +393,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Edits land live',
         description:
-          'The moment someone makes a change, everyone sees it. If two people edit the same thing at once, the most recent change is the one that sticks.',
+          'The moment someone makes a change, everyone sees it. In an article the paragraph you are typing in is held for you, your name in its margin for everyone else, so nobody types over you.',
       },
       {
         art: <SelectionGlowArt />,

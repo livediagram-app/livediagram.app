@@ -62,13 +62,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Does it work on my phone or tablet?',
         a: (
           <>
-            It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
-            gives you the full editor. Small phone screens are best for reading, presenting and
-            light edits. See <a href="/help/supported-devices/">supported devices</a>.
+            It runs in any modern browser, with nothing to install, and you can add it to your home
+            screen to open it like an app. A laptop, desktop or tablet gives you the full editor.
+            Small phone screens are best for reading, presenting and light edits. See{' '}
+            <a href="/help/supported-devices/">supported devices</a>.
           </>
         ),
         aText:
-          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor. Small phone screens are best for reading, presenting and light edits. See supported devices.',
+          'It runs in any modern browser, with nothing to install, and you can add it to your home screen to open it like an app. A laptop, desktop or tablet gives you the full editor. Small phone screens are best for reading, presenting and light edits. See supported devices.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -243,7 +244,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What happens if two people edit the same thing at once?',
-        a: 'Every change shows up for everyone live. Edits to different elements merge cleanly. If two people change the same element at the same moment, the most recent change is the one that sticks.',
+        a: 'Every change shows up for everyone live. In an article, two people writing in different paragraphs, or different cells of a table, never overwrite each other, and the paragraph someone is typing in is held for them, with their name in the margin, until they move on. On the canvas, edits to different elements merge cleanly, and if two people change the same element at the same moment, the most recent change is the one that sticks.',
       },
       {
         q: 'Can I leave comments and assign follow-ups?',
@@ -291,13 +292,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Your Inbox gathers the actions and comment threads waiting on you across every document,
-            and Home shows what other people did while you were away. Once you sign in, emails can
-            tell you too, and you choose which in Settings. See{' '}
+            Home lists what was shared with you recently, and History on a document’s menu says who
+            changed it and when. Once you sign in, emails and notifications on your phone can tell
+            you too, and you choose which in Settings. See{' '}
             <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the actions and comment threads waiting on you across every document, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+          'Your Inbox gathers the actions and comment threads waiting on you across every document, Home lists what was shared with you recently, and History on a document’s menu says who changed it and when. Once you sign in, emails and notifications on your phone can tell you too, and you choose which in Settings. See the Inbox.',
       },
     ],
   },

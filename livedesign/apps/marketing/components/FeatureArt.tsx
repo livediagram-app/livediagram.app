@@ -22,5 +22,6 @@ export * from './feature-art/pages-more';
 // Logo and wireframe pages.
 export * from './feature-art/logo';
 export * from './feature-art/logo-more';
+export * from './feature-art/prototype';
 // Photo pages (docs/specs/031-photo/photo-pages.md).
 export * from './feature-art/photo';
