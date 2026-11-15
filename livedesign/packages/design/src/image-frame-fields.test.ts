@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createImage } from './factories';
 import { elementValidationIssue } from './validate';
 import { renderElementsToSvg } from './svg-render';
+import { participantTabChange } from './participant-content';
+import type { Element } from './index';
 
 // docs/specs/009-elements/picture-crop-and-mask.md: crop, mask and greyscale on a livedesign picture, refused on the
 // write paths and drawn by the design's SVG export. The shared rules are tested in @liveworkspace/element-model.
@@ -74,5 +76,20 @@ describe('SVG export', () => {
     const plain = draw({});
     expect(plain).toContain('preserveAspectRatio="xMidYMid meet"');
     expect(plain).toContain('<clipPath id="lvd-img-pic"><rect ');
+  });
+});
+
+// "Share roles": crop, mask and greyscale are an Editor's; a Participant's change to any of them is refused whole.
+describe('a Participant', () => {
+  const pic = { ...createImage(0, 0), id: 'pic', imageId: 'abc' } as Element;
+  const tab = (el: Element) => ({ id: 't', name: 'T', elements: [el] });
+  it.each([
+    ['crop', { crop: { x: 0, y: 0, width: 0.5, height: 1 } }],
+    ['mask', { mask: 'circle' }],
+    ['greyscale', { greyscale: true }],
+  ])('may not change %s', (_field, patch) => {
+    expect(
+      participantTabChange(tab(pic), tab({ ...pic, ...patch } as Element), 'a'.repeat(32)),
+    ).toBeNull();
   });
 });

@@ -28,7 +28,7 @@ import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { PageLayoutPreview } from './PageLayoutPreview';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
-import { pageSheetStyle } from '@/lib/page-paint';
+import { PageSheet } from './PageSheet';
 import { usePageImageSources } from './page-image-access';
 import { PagePanel, type PagePanelTab } from './PagePanel';
 import {
@@ -188,8 +188,12 @@ export function CanvasPages({
           : { name: '', rest: label };
         const { locked, choosing, labelled, invite, device, labelRoom } = layout;
         return (
-          <div
+          <PageSheet
             key={page.id}
+            page={page}
+            background={background}
+            resolveImage={pictureOf}
+            device={!!device}
             data-page={page.orientation}
             data-page-id={page.id}
             // The Pages tour picks its track from the page's kind (docs/specs/007-editor/pages-tour.md).
@@ -208,7 +212,6 @@ export function CanvasPages({
               boxShadow: device
                 ? undefined
                 : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-              ...(device ? {} : pageSheetStyle(background, pictureOf)),
             }}
           >
             {device ? (
@@ -315,7 +318,7 @@ export function CanvasPages({
                 onChoose={(kind, device) => edit.choosePageKind(page.id, kind, device)}
               />
             ) : null}
-          </div>
+          </PageSheet>
         );
       })}
       {edit?.addPage && edit.addPageLike && like ? (

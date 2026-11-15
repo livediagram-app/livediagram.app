@@ -28,6 +28,11 @@ type ImageElement = {
   naturalHeight?: number;
   // Optional alt text (accessibility).
   alt?: string;
+  // The part of the picture kept, the box's shape and whether it draws in grey
+  // (picture-crop-and-mask.md).
+  crop?: ImageCrop;
+  mask?: ImageMask;
+  greyscale?: true;
   // Creator + licence credit of a picture picked from Image search
   // (image-search.md); absent for uploads.
   credit?: ImageCredit;

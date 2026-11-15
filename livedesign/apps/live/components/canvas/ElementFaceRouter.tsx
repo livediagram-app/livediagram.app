@@ -156,6 +156,8 @@ export function ElementFaceRouter({
             designId={imageContext.designId}
             shareCode={imageContext.shareCode}
             onOpenPicker={imageContext.onOpenPicker}
+            isSelected={isSelected}
+            onCommitCrop={readOnly || isLocked ? undefined : imageContext.onCommitImageCrop}
             fontFamily={fontFamily}
           />
           {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}
