@@ -25,6 +25,9 @@ import type {
   SpacePreview,
   GrantResponse,
   InboxResponse,
+  CalendarCard,
+  CalendarFeedRead,
+  CalendarFeedRow,
   Item,
   ItemListQuery,
   MineCount,
@@ -340,6 +343,16 @@ export function createIndexClient({
     // Inbox
     inbox: (query: { app?: App; limit?: number } = {}, options: RequestOptions = {}) =>
       call<InboxResponse>('/inbox', { query, signal: options.signal }),
+
+    // The person's calendar feed of their open, dated cards (one-explorer-contracts.md "Calendar feeds"): only an app
+    // acting for an account may ask. `putCalendarFeed` makes it, or resets it over an existing one.
+    calendarFeed: () => call<CalendarFeedRead>('/calendar-feed'),
+    putCalendarFeed: (tokenHash: string) =>
+      call<{ feed: CalendarFeedRow }>('/calendar-feed', { method: 'PUT', body: { tokenHash } }),
+    deleteCalendarFeed: () => call<void>('/calendar-feed', { method: 'DELETE' }),
+    calendarCards: async (options: RequestOptions = {}) =>
+      (await call<{ cards: CalendarCard[] }>('/calendar-feed/cards', { signal: options.signal }))
+        .cards,
   };
 }
 

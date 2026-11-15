@@ -179,6 +179,8 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
         )
         .bind(person, CHUNK),
     byPerson('favourites'),
+    // Their calendar feeds (calendar-feeds.ts): the token hash is theirs alone.
+    byPerson('calendar_feeds'),
     byPerson('opens'),
     byPerson('use_days'),
     // The event log: their favourites' events, which only they saw (their own items' events went with the

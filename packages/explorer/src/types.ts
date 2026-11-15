@@ -168,7 +168,13 @@ export type InboxHost = {
   /** The reading pane's verbs this page can carry out (Reply, Resolve, Mark Done). Without it the pane offers Open
    *  in the app alone. */
   actions?: InboxActions;
+  /** The app's own quiet glyph buttons in the Inbox's header, beside the filter (liveplanner's Subscribe to Calendar):
+   *  in the panel's header row and in the page's pane header, whatever the list holds. Keep it stable between renders. */
+  headerActions?: readonly InboxHeaderAction[];
 };
+
+/** One of the Inbox header's doors: named by its label (and tooltip), drawn as its icon. */
+export type InboxHeaderAction = { id: string; label: string; icon: ReactNode; onClick: () => void };
 
 /** What the Share dialog needs from the host beyond a link's address, per item, since the Explorer may list every
  *  app's items: the item's tabs (a link can open one), its embed and live image, help articles, and telemetry. */

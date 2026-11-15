@@ -127,6 +127,32 @@ describe('cardsCollabPush', () => {
     expect(push.actions.map((a) => [a.assigneeId, a.assignerId])).toEqual([['user_c', 'o']]);
   });
 
+  // The calendar feed (one-explorer-contracts.md "Calendar feeds"): a card's days ride its actions, never its threads.
+  it('keeps a card’s Start and Due on its actions and off its threads', async () => {
+    const dated = await card('c1', {
+      assigneeId: 'user_c',
+      threads: [
+        {
+          id: 'th-1',
+          title: 'Ada: hi',
+          resolved: false,
+          comments: [
+            { authorId: 'user_a', authorName: 'Ada', authorColor: '', text: 'hi', createdAt: 5 },
+          ],
+        },
+      ],
+    });
+    dated.card = { ...dated.card, start: '2026-11-01', due: '2026-11-20' };
+    const { push } = await cardsCollabPush([dated], {
+      people: ['user_c'],
+      hashOf,
+      fallbackAssignerId: 'o',
+    });
+    expect(push.actions[0]!.card).toMatchObject({ start: '2026-11-01', due: '2026-11-20' });
+    expect(push.threads[0]!.card).not.toHaveProperty('start');
+    expect(push.threads[0]!.card).not.toHaveProperty('due');
+  });
+
   // An agent's comment (an API token, `ai`) is not its author's own: they reach the thread through `agentIds`, so a
   // question it asked still waits on them; someone who also wrote by hand is a participant alone.
   it('pushes the authors who wrote only through an agent as agentIds, apart from the participants', async () => {

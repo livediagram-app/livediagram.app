@@ -5,6 +5,7 @@
 import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
 import { handleCommunityStates } from './community-states';
+import { calendarFeedByToken } from './calendar-feeds';
 import { handleAppConnection } from './connection-doors';
 import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
 import { isId, isPartId } from './codec';
@@ -47,6 +48,10 @@ export async function handleApp(
   // /app/forms/:code: the item and tab a live form's code names (collab-push.ts).
   if (segments[1] === 'forms' && segments.length === 3 && request.method === 'GET') {
     return formByCode(env, app, segments[2] ?? '');
+  }
+  // /app/calendar-feeds/:tokenHash: whose calendar feed in this app a token is (calendar-feeds.ts).
+  if (segments[1] === 'calendar-feeds' && segments.length === 3 && request.method === 'GET') {
+    return calendarFeedByToken(env, app, segments[2] ?? '');
   }
   // /app/items/:id/forms/:tabId/seen/:personId: how far a person has read a form (the app's unseen count).
   const seenRead =

@@ -155,6 +155,10 @@ export type CollabCard = {
   // moves or the board changes): its name, its colour (#rrggbb) when it has one, whether it is a done column. Null
   // or absent when no column holds it (an All Cards board, a deleted column), or from an older push.
   column?: CardColumn | null;
+  // The card's Start and Due days (`YYYY-MM-DD`), on an assigned card's action: what the person's calendar feed shows
+  // (one-explorer-contracts.md "Calendar feeds"). Absent when the card has none, or from an older push.
+  start?: string;
+  due?: string;
 };
 
 export type CardColumn = { name: string; color?: string; done: boolean };
@@ -264,6 +268,21 @@ export type InboxResponse = {
   threads: InboxThread[];
   actions: InboxAction[];
   forms: InboxForm[];
+};
+
+// A person's calendar feed in one app (one-explorer-contracts.md "Calendar feeds"): when its link was made. The token
+// is never the index's; only its hash is kept.
+export type CalendarFeedRow = { createdAt: number };
+
+export type CalendarFeedRead = { feed: CalendarFeedRow | null };
+
+// One open card assigned to the person, with a Start or Due day, on a plan they own or reach through a team.
+export type CalendarCard = {
+  itemId: string;
+  itemTitle: string;
+  cardId: string;
+  card: CollabCard;
+  updatedAt: number;
 };
 
 // The grant: an ES256 JWT signed by the index.
