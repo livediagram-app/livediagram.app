@@ -234,6 +234,7 @@ describe('the events', () => {
     expect(days).toEqual([...days].sort((a, b) => a - b));
   });
 
+  // The budget is CPU time, not wall time: a loaded CI runner stretches only the wall clock past vitest's 5 s default.
   it(`reads and writes a plan at its card cap (${ITEMS_MAX}) within a CPU budget`, async () => {
     const { env } = await arrange();
     const cards: Item[] = [];
@@ -254,7 +255,7 @@ describe('the events', () => {
     expect(body.split('BEGIN:VEVENT')).toHaveLength(FEED_EVENTS_MAX + 1);
     expect(new TextEncoder().encode(body).length).toBeLessThan(400_000);
     expect(ms).toBeLessThan(2000);
-  });
+  }, 30_000);
 
   it('answers null for a plan with no row', async () => {
     const { env } = await arrange();
