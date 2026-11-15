@@ -29,7 +29,7 @@ describe('the type editor’s tabs', () => {
   it('opens on Configuration, with States and Display a tab away', () => {
     editor();
     const tabs = screen.getAllByRole('tab').map((t) => t.textContent);
-    expect(tabs).toEqual(['Configuration', 'States', 'Display']);
+    expect(tabs).toEqual(['Configuration', 'States', 'Display', 'Templates']);
     expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
       'true',
     );
@@ -107,13 +107,17 @@ describe('the type editor’s tabs', () => {
     fireEvent.keyDown(configuration, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: 'States' }).getAttribute('aria-selected')).toBe('true');
     fireEvent.keyDown(configuration, { key: 'End' });
-    expect(screen.getByRole('tab', { name: 'Display' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: 'Templates' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
     fireEvent.keyDown(configuration, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
       'true',
     );
     fireEvent.keyDown(configuration, { key: 'ArrowLeft' });
-    expect(screen.getByRole('tab', { name: 'Display' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: 'Templates' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
     fireEvent.keyDown(configuration, { key: 'Home' });
     expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
       'true',

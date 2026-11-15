@@ -25,6 +25,7 @@ import {
   newerKeysOf,
   ITEM_TYPE_KEYS,
   withDetailsGlyph,
+  cardTemplatesBytes,
   type ItemFieldId,
   type ItemTypeDef,
 } from '@liveplanner/items';
@@ -51,6 +52,8 @@ import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
 import { ItemTypeStatuses } from './ItemTypeStatuses';
 import { ItemTypeDisplay, type CardDisplayDraft } from './ItemTypeDisplay';
 import { ItemTypeCardColour } from './ItemTypeCardColour';
+import { ItemTypeTemplates } from './ItemTypeTemplates';
+import { settledTemplates, templatesProblem } from './card-template-draft';
 import {
   InheritedPartNotice,
   InheritsFromNote,
@@ -125,9 +128,10 @@ export function ItemTypeEditor({
   // Keys a newer liveplanner stored on the type, kept so this save writes them back (item-types.md "Settings from a
   // newer version"); its tabs and custom fields carry theirs as objects. Read once, as the rest of the draft is.
   const [newer] = useState(() => newerKeysOf(start, ITEM_TYPE_KEYS));
-  // Its card templates (item-types.md "Card templates"), saved back as they are: a Duplicate's copy too. The catalogue
-  // check drops any value for a field the draft no longer offers.
-  const [templates] = useState(start.templates);
+  // Its card templates (item-types.md "Card templates"), edited in the Templates tab and saved with the type: a
+  // Duplicate's copy too. The catalogue check drops any value for a field the draft no longer offers.
+  const [templates, setTemplates] = useState(() => [...(start.templates ?? [])]);
+  const settled = useMemo(() => settledTemplates(templates), [templates]);
   const plan = usePlan();
   const statusNames = plan?.statusNames;
   // The statuses it uses, in order, edited as the rest is (docs/specs/026-plan/item-types.md "The statuses a type
@@ -205,13 +209,13 @@ export function ItemTypeEditor({
         ? { inherits: base.id, ownFields: layout.fields.filter((f) => !inheritedIds.has(f)) }
         : {}),
       ...(Object.keys(names).length ? { fieldLabels: names } : {}),
-      ...(templates?.length ? { templates } : {}),
+      ...(settled.length ? { templates: settled } : {}),
     };
     // Each built-in made a custom field takes its place (docs/specs/026-plan/item-types.md "Edit Field": Another type).
     return retypesOf(layout).reduce((t, [id, def]) => retypeBuiltInIn(t, id, def), made);
   }, [
     newer,
-    templates,
+    settled,
     base,
     inheritedIds,
     type,
@@ -252,6 +256,17 @@ export function ItemTypeEditor({
   const heirProblem = refusedAt >= 0 && refusedAt !== at ? all[refusedAt] : undefined;
   // Too many statuses on (kept ids a board no longer names count too): its own message.
   const statusesProblem = !check.ok && !heirProblem && check.reason.endsWith('.statuses');
+  // What about its card templates stops Save (a name, 16 KB a template, the plan's 128 KB), else a catalogue refusal
+  // of a template value: the Templates tab's.
+  const otherTemplateBytes = useMemo(
+    () => cardTemplatesBytes(types.filter((t) => t.id !== type?.id)),
+    [types, type?.id],
+  );
+  const templateProblem =
+    templatesProblem(templates, otherTemplateBytes) ??
+    (!check.ok && !heirProblem && /(^|\.)templates(\[|$)/.test(check.reason)
+      ? { message: 'A template’s values break a card’s limits.' }
+      : null);
   const problem = !draft.label
     ? 'Give the type a name.'
     : clash
@@ -262,9 +277,11 @@ export function ItemTypeEditor({
           ? `${heirProblem.label} inherits from this type and can’t hold any more fields.`
           : statusesProblem
             ? `Too many states on: a type can use at most ${ITEM_TYPE_STATUSES_MAX}.`
-            : !check.ok
-              ? 'A custom field needs a name, and a Choice field at least one option.'
-              : null;
+            : templateProblem
+              ? templateProblem.message
+              : !check.ok
+                ? 'A custom field needs a name, and a Choice field at least one option.'
+                : null;
 
   // The tabs holding what stops Save (a status list problem is States'; a clashing name, a tab or a custom field
   // problem is Configuration's). A missing name is not flagged: a new type starts without one, and Save says so.
@@ -273,7 +290,9 @@ export function ItemTypeEditor({
       ? []
       : !clash && !tabProblem && statusesProblem
         ? ['statuses']
-        : ['configuration'],
+        : !clash && !tabProblem && !heirProblem && templateProblem
+          ? ['templates']
+          : ['configuration'],
   );
 
   // A base chosen: the draft laid out from it at once, any fields only this type had kept as its own.
@@ -425,6 +444,15 @@ export function ItemTypeEditor({
                 )}
               </div>
             </>
+          ),
+          templates: (
+            <ItemTypeTemplates
+              type={draft}
+              templates={templates}
+              onChange={setTemplates}
+              problem={templateProblem}
+              canEdit={plan?.canEdit ?? true}
+            />
           ),
         }}
       />
