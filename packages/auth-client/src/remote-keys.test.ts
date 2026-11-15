@@ -98,4 +98,41 @@ describe('remoteKeySetAt through a binding', () => {
     expect(asked).toEqual([url]);
     expect(BOUND_KEYS_TIMEOUT_MS).toBeLessThan(5000);
   });
+  // jose's cooldown only starts once a key set has loaded: a binding that failed has loaded nothing, so it is
+  // asked again on the next check; a binding that answered is not asked again inside the cooldown for an unknown kid.
+  it('asks a stalled binding again on the next check, as a failure starts no cooldown', async () => {
+    vi.useFakeTimers();
+    const { jwk } = await keyPair();
+    const url = 'https://liveworkspace.app/api/index/grant-keys';
+    serveKeysAt(url, jwk);
+    let boundCalls = 0;
+    const via = {
+      fetch: (_url: string, init?: RequestInit) => {
+        boundCalls += 1;
+        return new Promise<Response>((_, reject) =>
+          init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))),
+        );
+      },
+    };
+    const keys = remoteKeySetAt(url, via as never);
+    for (let n = 1; n <= 2; n += 1) {
+      const result = Promise.resolve(keys(header, { payload: '', signature: '' } as never));
+      await vi.advanceTimersByTimeAsync(BOUND_KEYS_TIMEOUT_MS);
+      await expect(result).resolves.toBeDefined();
+      expect(boundCalls).toBe(n);
+    }
+  });
+
+  it('does not ask a binding that answered again for an unknown kid inside the cooldown', async () => {
+    const { jwk } = await keyPair();
+    const url = 'https://liveworkspace.app/api/index/grant-keys';
+    const asked = serveKeysAt(url, { ...jwk, kid: 'other' });
+    const via = { fetch: vi.fn(async () => Response.json({ keys: [jwk] })) };
+    const keys = remoteKeySetAt(url, via as never);
+    await keys(header, { payload: '', signature: '' } as never);
+    expect(via.fetch).toHaveBeenCalledTimes(1);
+    await keys({ alg: 'EdDSA', kid: 'other' }, { payload: '', signature: '' } as never);
+    expect(via.fetch).toHaveBeenCalledTimes(1);
+    expect(asked).toEqual([url]);
+  });
 });
