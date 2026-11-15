@@ -534,9 +534,9 @@ describe('how the chrome compares (editor-chrome-equal)', () => {
   });
 
   it('compares a tab but for its writing, and a slice field by field', () => {
-    expect(sameTabButWriting(t, { ...t, articles: {} } as Tab)).toBe(true);
-    expect(sameTabButWriting(t, { ...t, locked: true } as Tab)).toBe(false);
-    expect(sameTabButWriting(t, { ...t, elements: [] } as Tab)).toBe(false);
+    expect(sameTabButWriting(t, { ...t, articles: {} })).toBe(true);
+    expect(sameTabButWriting(t, { ...t, locked: true })).toBe(false);
+    expect(sameTabButWriting(t, { ...t, elements: [] })).toBe(false);
     const slice = { a: 1, b: t };
     expect(sameSlice(slice, slice)).toBe(true);
     expect(sameSlice(slice, { a: 1, b: t })).toBe(true);
