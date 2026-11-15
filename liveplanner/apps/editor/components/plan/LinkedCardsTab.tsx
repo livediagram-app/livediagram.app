@@ -6,7 +6,7 @@
 // New {Type} and Link Existing buttons, without the sections' own empty notes.
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideLink } from '@liveworkspace/icons/lucide';
-import type { Item, ItemTypeDef, LinkedGroup } from '@liveplanner/items';
+import type { Item, ItemFields, ItemTypeDef, LinkedGroup } from '@liveplanner/items';
 import { LinkedCardGroup } from './LinkedCards';
 
 const LinkIcon = lucideGlyph(lucideLink, 18);
@@ -36,7 +36,8 @@ export function LinkedCardsTab({
   // New {Type} and Link Existing (an Editor's or a Participant's).
   canAdd: boolean;
   onOpen: (itemId: string) => void;
-  onAdd: (group: LinkedGroup, typeId: string) => void;
+  // `start`: a card template's values, when New {Type} started the card from one.
+  onAdd: (group: LinkedGroup, typeId: string, start?: ItemFields) => void;
   onLinkExisting?:
     ((group: LinkedGroup, cardId: string, moved: boolean) => Promise<boolean>) | undefined;
 }) {
@@ -66,7 +67,7 @@ export function LinkedCardsTab({
               statusNames={statusNames}
               canAdd={canAdd}
               onOpen={onOpen}
-              onAdd={(typeId) => onAdd(g, typeId)}
+              onAdd={(...picked) => onAdd(g, ...picked)}
               target={item}
               emptyNote={!empty}
               {...(onLinkExisting

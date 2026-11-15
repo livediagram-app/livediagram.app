@@ -12,6 +12,7 @@ import {
   itemTitle,
   typeIn,
   type Item,
+  type ItemFields,
   type ItemTypeDef,
   namedStatus,
   blocksHeading,
@@ -24,6 +25,8 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import { usePlan } from './PlanContext';
 import { LinkExistingCardDialog } from './LinkExistingCardDialog';
+import { AddCardPopover } from './AddCardPopover';
+import { hasTemplates } from './card-template-start';
 
 const LinkGlyph = lucideGlyph(lucideLink, 12);
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
@@ -191,7 +194,9 @@ function ChildRow({
 }
 
 // A Card field's section on the card it links to: "Linked as Owner", its cards, "+ New Objective" (one button
-// per type whose field links here) making one already linked, and Link Existing linking one already made.
+// per type whose field links here) making one already linked, and Link Existing linking one already made. A type
+// with card templates offers them first, in the Add a Card menu hung from its button (docs/specs/026-plan/
+// item-types.md "Where a card is added, its templates are offered").
 export function LinkedCardGroup({
   group,
   target,
@@ -210,7 +215,8 @@ export function LinkedCardGroup({
   statusNames: ReadonlyMap<string, string>;
   canAdd: boolean;
   onOpen: (itemId: string) => void;
-  onAdd: (typeId: string) => void;
+  // `start`: the template's values the new card starts from, when one was picked.
+  onAdd: (typeId: string, start?: ItemFields) => void;
   // Sets the picked card's field to the target (docs/specs/026-plan/item-types.md "Link Existing"); false: refused.
   onLinkExisting?: (cardId: string, moved: boolean) => Promise<boolean> | boolean;
   // "No cards link here as {Field} yet." under an empty section; false where the Linked Cards tab's own empty state
@@ -220,6 +226,8 @@ export function LinkedCardGroup({
   const headingId = useId();
   const plan = usePlan();
   const [linking, setLinking] = useState(false);
+  // The type whose Add a Card menu is open, and the New {Type} button it hangs from.
+  const [picking, setPicking] = useState<{ type: ItemTypeDef; anchor: HTMLElement } | null>(null);
   // A Blocked By field's mirror (docs/specs/026-plan/item-types.md "Blocked By"): "Blocks", read-only, and not drawn
   // without cards, since a block is set on the card that waits.
   if (group.blocks && group.cards.length === 0) return null;
@@ -259,7 +267,15 @@ export function LinkedCardGroup({
               <button
                 key={typeId}
                 type="button"
-                onClick={() => onAdd(typeId)}
+                {...(hasTemplates(type)
+                  ? {
+                      'aria-haspopup': 'menu' as const,
+                      'aria-expanded': picking?.type.id === typeId,
+                    }
+                  : {})}
+                onClick={(e) =>
+                  hasTemplates(type) ? setPicking({ type, anchor: e.currentTarget }) : onAdd(typeId)
+                }
                 className={ADD_BUTTON}
               >
                 <PlusIcon size={12} />
@@ -280,6 +296,14 @@ export function LinkedCardGroup({
             </button>
           ) : null}
         </div>
+      ) : null}
+      {picking && adds ? (
+        <AddCardPopover
+          anchor={picking.anchor}
+          types={[picking.type]}
+          onClose={() => setPicking(null)}
+          onAdd={(card) => onAdd(card.type, card.fields)}
+        />
       ) : null}
       {linking && adds && target && onLinkExisting ? (
         <LinkExistingCardDialog

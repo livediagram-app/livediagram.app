@@ -4,18 +4,23 @@
 // chip per card type the board takes, each a small card in its type's colour with its glyph, then its name. A click
 // (or Enter or Space) adds a card of the type and opens it to be named, as Add card does; a drag carries one onto the
 // board, into the column and row it is let go over (useCardTypeDrag). PlanBoardView decides whether they show
-// (chipsShown); in a header band they lead the header, straight after the menu box that holds the board's name.
-import { useRef } from 'react';
+// (chipsShown); in a header band they lead the header, straight after the menu box that holds the board's name. A
+// type with card templates opens the Add a Card menu with that type alone instead (docs/specs/026-plan/item-types.md
+// "Where a card is added, its templates are offered"); its drag still carries a blank card.
+import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { HoverCard, withArticle } from '@liveplanner/ui';
 import {
   newItemId,
   type BoardProjection,
+  type ItemFields,
   type ItemTypeDef,
   type PlanBoardSetup,
 } from '@liveplanner/items';
 import { useCardTypeDrag } from '@/hooks/plan/useCardTypeDrag';
 import { CHIP_NAMES_MAX, chipClickCell } from './card-type-chips';
+import { AddCardPopover } from './AddCardPopover';
+import { hasTemplates } from './card-template-start';
 import { usePlan } from './PlanContext';
 import { CardTypeTile } from './CardTypeTile';
 import { HEADER_ARRIVAL_CLASS, headerArrivalIndex, headerArrivalRow } from './header-arrival';
@@ -38,9 +43,12 @@ export function BoardCardTypeChips({
 }) {
   const plan = usePlan();
   const ghostRef = useRef<HTMLDivElement>(null);
-  const add = (typeId: string) => {
+  const rowRef = useRef<HTMLDivElement>(null);
+  // The type whose Add a Card menu is open, hung from its chip (a type with card templates).
+  const [picking, setPicking] = useState<{ type: ItemTypeDef; anchor: HTMLElement } | null>(null);
+  const add = (typeId: string, start?: ItemFields) => {
     if (!plan) return;
-    const card = chipClickCell(setup, projection, plan.types, typeId, plan.statusNames);
+    const card = chipClickCell(setup, projection, plan.types, typeId, plan.statusNames, start);
     if (!card) return;
     const id = newItemId();
     void plan.addItem({
@@ -54,8 +62,17 @@ export function BoardCardTypeChips({
     const label = types.find((t) => t.id === typeId)?.label ?? 'Card';
     plan.announce(`${label} added to ${card.columnName}`);
   };
+  // A press (a click that never travelled, or Enter or Space): a type with templates offers them first.
+  const press = (typeId: string) => {
+    const type = types.find((t) => t.id === typeId);
+    const anchor = rowRef.current?.querySelector<HTMLElement>(
+      `[data-card-type-chip="${CSS.escape(typeId)}"]`,
+    );
+    if (type && anchor && hasTemplates(type)) setPicking({ type, anchor });
+    else add(typeId);
+  };
   const { carrying, onPointerDown } = useCardTypeDrag({
-    onClick: add,
+    onClick: press,
     onRefused: (message) => plan?.announce(message),
     ghostRef,
   });
@@ -63,6 +80,7 @@ export function BoardCardTypeChips({
   const carried = carrying ? types.find((t) => t.id === carrying) : undefined;
   return (
     <div
+      ref={rowRef}
       data-card-type-chips=""
       role="group"
       aria-label="Add Cards"
@@ -76,22 +94,29 @@ export function BoardCardTypeChips({
         <HoverCard
           key={t.id}
           title={`Add ${withArticle(t.label)}`}
-          description="Click to add one, or drag it onto the board."
-          disabled={!!carrying}
+          description={
+            hasTemplates(t)
+              ? 'Click to start one from a template, or drag it onto the board.'
+              : 'Click to add one, or drag it onto the board.'
+          }
+          disabled={!!carrying || picking?.type.id === t.id}
         >
           <button
             type="button"
             data-card-type-chip={t.id}
             aria-label={`Add ${withArticle(t.label)}`}
+            {...(hasTemplates(t)
+              ? { 'aria-haspopup': 'menu' as const, 'aria-expanded': picking?.type.id === t.id }
+              : {})}
             className={`${HEADER_ARRIVAL_CLASS} flex h-8 shrink-0 cursor-pointer touch-none select-none items-center gap-1.5 rounded-lg text-[13px] font-medium transition hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/10 ${
               named ? 'pl-1.5 pr-2.5' : 'px-1.5'
-            } ${carrying === t.id ? 'bg-black/5 dark:bg-white/10' : ''}`}
+            } ${carrying === t.id || picking?.type.id === t.id ? 'bg-black/5 dark:bg-white/10' : ''}`}
             style={{ color: palette.text, outlineColor: palette.focus, ...headerArrivalIndex(i) }}
             onPointerDown={(e) => onPointerDown(t.id, e)}
             onClick={(e) => {
               e.stopPropagation();
               // A pointer's click is the drag hook's (a press that never travelled); this is the keyboard's.
-              if (e.detail === 0) add(t.id);
+              if (e.detail === 0) press(t.id);
             }}
           >
             <CardTypeTile color={t.color} glyph={t.glyph} />
@@ -99,6 +124,15 @@ export function BoardCardTypeChips({
           </button>
         </HoverCard>
       ))}
+      {picking ? (
+        <AddCardPopover
+          anchor={picking.anchor}
+          types={[picking.type]}
+          palette={palette}
+          onClose={() => setPicking(null)}
+          onAdd={(card) => add(card.type, card.fields)}
+        />
+      ) : null}
       {carried
         ? createPortal(
             // The card being carried: a small card in the type's colour, reading its new-card title.
