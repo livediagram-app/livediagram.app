@@ -35,22 +35,22 @@ template look. A node's id is a slug of the resource it names, so two files nami
 The Worker is a box named by `name` (the file's folder when it has none), with the Workers icon. Each binding is a box
 joined to it by an arrow from the Worker:
 
-| Key                                                | Box                                         | Icon              |
-| -------------------------------------------------- | ------------------------------------------- | ----------------- |
-| `kv_namespaces`                                    | the binding name                            | KV                |
-| `r2_buckets`                                       | the bucket name                             | R2                |
-| `d1_databases`                                     | the database name                           | D1                |
-| `queues.producers`                                 | the queue (arrow Worker to queue)           | Queues            |
-| `queues.consumers`                                 | the queue (arrow queue to Worker)           | Queues            |
-| `durable_objects.bindings`                         | the class name, with the Worker hosting it  | Durable Objects   |
-| `services`                                         | the bound Worker, a Worker box of its own   | Workers           |
-| `ai`                                               | Workers AI                                  | Workers AI        |
-| `images`                                           | Images                                      | Images            |
-| `assets`                                           | Static assets                               | Pages             |
-| `vectorize`, `hyperdrive`, `analytics_engine_datasets` | the index, binding or dataset, a cylinder | none (no icon exists) |
-| `workflows`, `browser`                             | the workflow name, Browser Rendering        | none              |
-| `routes` / `route`                                 | the first route, an arrow into the Worker   | DNS               |
-| `triggers.crons`                                   | Cron and its first schedule, a dashed arrow into the Worker | none |
+| Key                                                    | Box                                                         | Icon                  |
+| ------------------------------------------------------ | ----------------------------------------------------------- | --------------------- |
+| `kv_namespaces`                                        | the binding name                                            | KV                    |
+| `r2_buckets`                                           | the bucket name                                             | R2                    |
+| `d1_databases`                                         | the database name                                           | D1                    |
+| `queues.producers`                                     | the queue (arrow Worker to queue)                           | Queues                |
+| `queues.consumers`                                     | the queue (arrow queue to Worker)                           | Queues                |
+| `durable_objects.bindings`                             | the class name, with the Worker hosting it                  | Durable Objects       |
+| `services`                                             | the bound Worker, a Worker box of its own                   | Workers               |
+| `ai`                                                   | Workers AI                                                  | Workers AI            |
+| `images`                                               | Images                                                      | Images                |
+| `assets`                                               | Static assets                                               | Pages                 |
+| `vectorize`, `hyperdrive`, `analytics_engine_datasets` | the index, binding or dataset, a cylinder                   | none (no icon exists) |
+| `workflows`, `browser`                                 | the workflow name, Browser Rendering                        | none                  |
+| `routes` / `route`                                     | the first route, an arrow into the Worker                   | DNS                   |
+| `triggers.crons`                                       | Cron and its first schedule, a dashed arrow into the Worker | none                  |
 
 - A service binding names another Worker, so several `wrangler.toml` files read together draw one system: the bound
   Worker's box is the same box its own file draws.
@@ -78,9 +78,18 @@ A big system must still read. Two rules hold, in order:
   the first `-`, `_` or `.`) are framed together when two or more share it.
 - **Cap.** At most `INFRA_MAX_NODES` boxes are drawn, in file order. The rest fold into one last box, "N more", whose
   note lists them, and their lines are dropped. The report says how many were left out.
+- **Lines.** Past the graph builder's 1,000 lines the rest are dropped and counted the same way.
 
-A 200-service Compose file therefore draws as about a dozen framed families and one "more" box, laid out within the
-graph builder's budget.
+A 200-service Compose file therefore draws as about a dozen framed families and one "more" box: read and drawn in about
+4 ms, laid out in about 40 ms (measured on an Apple-silicon laptop).
+
+## Naming the drawing
+
+- A Worker with no `name` is named after the folder its file sits in (`apps/api/wrangler.toml` is `api`), else
+  "Worker"; a Compose file with no `name` after its folder, else "Compose".
+- The drawing's title is its Workers' and Compose projects' names, up to three, then "and N more"; its subtitle names
+  the files read (`From apps/api/wrangler.toml, compose.yml`). A paste is named for its format.
+- TOML that names no Worker and no binding is not a Worker: it says there is nothing to draw.
 
 ## What is skipped
 
@@ -131,7 +140,7 @@ replaces the tab, as every import does, in one undo step.
 ## Observability and telemetry
 
 - CLI fingerprints on `--debug`: `[from-code] read <file> <format>`, `[from-code] skipped <count>`, `[from-code]
-  capped <count>`.
+capped <count>`.
 - Editor: `[infra-import]` with the format, node, edge and skipped counts.
 - Telemetry: `Cli·Used·LinkFromCode`; `Tab·Imported·Wrangler` or `Tab·Imported·Compose` from the editor.
 
