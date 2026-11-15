@@ -13,13 +13,14 @@ export const isTable = (v: unknown): v is Table =>
 
 const LANGUAGE: Record<InfraFormat, string> = { wrangler: 'TOML', compose: 'YAML' };
 
-// The parser's own message, its first line only (smol-toml appends a code block), and the line it names.
-export function parseError(format: InfraFormat, err: unknown): InfraError {
+// The parser's own message, its first line only (smol-toml appends a code block), and the line it names. js-yaml
+// reads an unclosed flow collection to a line past the last, so the line is held to the text's own `lines`.
+export function parseError(format: InfraFormat, err: unknown, lines = Infinity): InfraError {
   const e = err as { message?: string; line?: number; reason?: string; mark?: { line?: number } };
   const raw = (format === 'compose' ? e.reason : undefined) ?? e.message ?? String(err);
   const first = raw.split('\n')[0]!.trim();
   const message = first.endsWith('.') || first.endsWith(':') ? first.slice(0, -1) : first;
-  const line = format === 'compose' ? (e.mark?.line ?? -1) + 1 : (e.line ?? 0);
+  const line = Math.min(format === 'compose' ? (e.mark?.line ?? -1) + 1 : (e.line ?? 0), lines);
   return {
     code: 'parse',
     message: `Couldn't read the ${LANGUAGE[format]}: ${message}${line > 0 ? ` (line ${line})` : ''}.`,
@@ -47,7 +48,7 @@ export function parseInfraText(
     // `json: true`: a key given twice keeps the later value, as Compose reads it (I3).
     value = format === 'wrangler' ? parse(text) : load(text, { json: true });
   } catch (err) {
-    return { ok: false, error: parseError(format, err) };
+    return { ok: false, error: parseError(format, err, text.trimEnd().split('\n').length) };
   }
   if (!isTable(value))
     return {

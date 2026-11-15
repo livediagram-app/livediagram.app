@@ -34,6 +34,10 @@ describe('parseInfraText', () => {
     const yaml = parseInfraText('compose', 'services:\n  web:\n    image: [a\n');
     expect(yaml.ok).toBe(false);
     if (!yaml.ok) expect(yaml.error.message).toMatch(/^Couldn't read the YAML: .+ \(line \d+\)\.$/);
+    // js-yaml places an unclosed flow collection a line past the end: the message names the last line.
+    const open = parseInfraText('compose', 'services: [');
+    if (!open.ok) expect(open.error.message).toMatch(/\(line 1\)\.$/);
+    expect(open.ok).toBe(false);
   });
 
   it('refuses an empty, an oversized or a keyless file', () => {
