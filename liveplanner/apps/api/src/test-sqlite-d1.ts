@@ -282,6 +282,9 @@ function testPlanRooms(
       await Promise.all(relays);
       return result;
     },
+    // A calendar feed link's fetch (plan-room.ts calendarFeed).
+    calendarFeed: async (planId: string, call: never) =>
+      (await import('./calendar/feed-room')).answerFeedCall(env, planId, call),
     threadsRelayed: async (planId: string, relay: never) =>
       (await import('./plan-room/card-thread-store')).threadsRelayed(env, planId, relay),
   }));

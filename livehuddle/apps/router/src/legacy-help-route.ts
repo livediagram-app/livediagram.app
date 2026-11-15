@@ -1,18 +1,3 @@
-// The editor route was /diagram/<id> before the container became a document
-// (docs/specs/016-platform/router-app.md, "Legacy editor route"). Every old share link,
-// embed and bookmark is sent on for good, query string included.
-const LEGACY_EDITOR_PATH = '/diagram';
-const EDITOR_PATH = '/document';
-
-export function legacyEditorRedirect(url: URL): Response | null {
-  const { pathname } = url;
-  if (pathname !== LEGACY_EDITOR_PATH && !pathname.startsWith(`${LEGACY_EDITOR_PATH}/`))
-    return null;
-  const next = new URL(url.toString());
-  next.pathname = EDITOR_PATH + pathname.slice(LEGACY_EDITOR_PATH.length);
-  return Response.redirect(next.toString(), 308);
-}
-
 // Renamed help articles: the ones about the container moved when it became a document,
 // Whiteboards became Draw mode, the Highlighter went from a selection mode to a Draw tile, and
 // the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
@@ -227,24 +212,5 @@ export function legacyHelpRedirect(url: URL): Response | null {
   if (!match || next === undefined) return null;
   const target = new URL(url.toString());
   target.pathname = next ? `/help/${next}${match[2]}` : '/help/';
-  return Response.redirect(target.toString(), 308);
-}
-
-// Forms are liveplanner's now (docs/specs/016-platform/router-app.md, "Old form links go to liveplanner"). The
-// migration carries every form's public link across with its code, so an old `/form/<code>` link goes on to the same
-// path on liveplanner, query string included, for good.
-const LEGACY_FORM_PATH = '/form';
-
-/** liveplanner's address for this deployment: the router's `DEPLOY_ENV` (unset in production). */
-export function liveplannerOrigin(deployEnv: string | undefined): string {
-  if (deployEnv === 'staging') return 'https://staging.liveplanner.app';
-  if (deployEnv === 'local') return 'http://localhost:3200';
-  return 'https://www.liveplanner.app';
-}
-
-export function legacyFormRedirect(url: URL, deployEnv: string | undefined): Response | null {
-  const { pathname } = url;
-  if (pathname !== LEGACY_FORM_PATH && !pathname.startsWith(`${LEGACY_FORM_PATH}/`)) return null;
-  const target = new URL(`${pathname}${url.search}`, liveplannerOrigin(deployEnv));
   return Response.redirect(target.toString(), 308);
 }

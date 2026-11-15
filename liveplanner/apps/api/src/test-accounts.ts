@@ -169,6 +169,15 @@ export function stubAccounts(): FakeAccounts {
         if (!members) return answer({ error: 'not_found' }, 404);
         return answer({ team: { id: body.teamId, name: 'Team' }, members });
       }
+      // The teams an account has joined now, as an access token would carry them (readAccountTeams).
+      case '/teams/of': {
+        const teams = [...fake.teams].flatMap(([id, members]) =>
+          members.some((m) => m.userId === body.userId && m.status === 'joined')
+            ? [{ id, name: 'Team', role: 'member' }]
+            : [],
+        );
+        return answer({ teams });
+      }
       case '/profiles/read': {
         const ids = body.ids as string[];
         return answer({ profiles: ids.flatMap((id) => fake.profiles.get(id) ?? []) });

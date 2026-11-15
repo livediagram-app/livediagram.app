@@ -189,6 +189,26 @@ describe('PlanTourHost offer', () => {
     expect(tourOffer()).toBeNull();
   });
 
+  // docs/specs/026-plan/item-types.md "The Card Types panel", Share roles: the Card Types track points at the Card
+  // Types button, which only an Editor has. A Participant and a Viewer are both read-only here, so neither is ever
+  // offered the Boards tour (and with it the track), from the footer or a Settings rerun.
+  it.each(['Participant', 'Viewer'])('never offers the Card Types track to a %s', () => {
+    editor({ isReadOnly: true });
+    render(<PlanTourHost />);
+    expect(tourOffer()).toBeNull();
+    act(() => requestPlanTourRelaunch());
+    expect(panel()).toBeNull();
+    expect(document.querySelector('[data-tour-track="card-types"]')).toBeNull();
+    expect(stage.types).toBeNull();
+  });
+
+  it('offers an Editor the Card Types track', () => {
+    editor();
+    render(<PlanTourHost />);
+    act(() => tourOffer()!.start());
+    expect(document.querySelector('[data-tour-track="card-types"]')).toBeTruthy();
+  });
+
   it('starts nothing while the Form tour is on screen', () => {
     setActiveTour('form', true);
     editor();

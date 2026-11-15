@@ -179,8 +179,9 @@ export function useCanvasChromePanels({
     commentsPanelPosition,
     onResetCommentsPanel,
   );
-  // The Card Types popover, and the Plan strip's others, over their buttons.
-  const cardTypesOpen = activeDockPanel === 'card-types';
+  // The Card Types popover, and the Plan strip's others, over their buttons. Card Types is an editor's: one that
+  // loses edit rights with it open sees it close with its button (item-types.md "The Card Types panel").
+  const cardTypesOpen = activeDockPanel === 'card-types' && !readOnly;
   const trashOpen = activeDockPanel === 'plan-trash';
   const cardFinderOpen = activeDockPanel === 'plan-cards';
 
