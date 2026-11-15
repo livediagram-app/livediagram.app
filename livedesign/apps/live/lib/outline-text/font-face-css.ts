@@ -74,8 +74,12 @@ function declarations(body: string): Map<string, string> {
       decls.set(decl.slice(0, colon).trim().toLowerCase(), decl.slice(colon + 1).trim());
     start = end + 1;
   };
-  for (let i = 0; i < body.length; i++) {
-    const c = body[i];
+  // Only the characters that change state matter, so a native search jumps between them: a data: URL's
+  // base64 run is skipped in one step rather than walked a character at a time.
+  const special = /[()"';]/g;
+  for (let m = special.exec(body); m; m = special.exec(body)) {
+    const i = m.index;
+    const c = m[0];
     if (quote) {
       if (c === quote) quote = '';
     } else if (c === '"' || c === "'") quote = c;
