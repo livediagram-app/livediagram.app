@@ -331,6 +331,7 @@ export * from './automations';
 export * from './plan-drafts';
 export * from './form-drafts';
 export * from './github';
+export * from './calendar-feed';
 export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';

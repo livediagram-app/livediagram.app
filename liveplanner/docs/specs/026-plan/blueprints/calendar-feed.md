@@ -1,8 +1,8 @@
 # Calendar feed blueprint
 
 Derived from [calendar-feed.md](../calendar-feed.md). Part 1 of Work Tracker 156: the store, the access check, the
-iCalendar writer and the route. Part 2 adds the signed-in routes and the editor's Subscribe to Calendar; part 3 the
-My Work feed at liveworkspace.
+iCalendar writer and the route. Part 2 ([below](#part-2-subscribe-to-calendar)): the signed-in routes and the editor's
+Subscribe to Calendar. Part 3: the My Work feed at liveworkspace.
 
 ## Domain and naming
 
@@ -161,3 +161,123 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 - `routes/calendar-feed-route.test.ts`: 200 calendar, HEAD, 304 by ETag, a reset token, a revoked feed, a removed
   member, a deleted plan, a trashed plan, malformed paths, 405, 429, 503.
 - `plan-anonymise.test.ts`: a closed account's feed row goes.
+
+## Part 2: Subscribe to Calendar
+
+### Domain and naming
+
+| Spec term             | Identifier                                                                              |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| Subscribe to Calendar | `CalendarFeedDialog`, its door `CalendarFeedDoor` (`useCalendarFeedDoor`)               |
+| the person's own feed | `CalendarFeedSettings` `{ boardId, mine, includeDone, createdAt }` (api-schema)         |
+| a board to pick       | `CalendarFeedBoard` `{ id, title, tabName }` (`id` is the plan-board element id)        |
+| Off / Just made / On  | `FeedState` `{ kind: 'off' }`, `{ kind: 'made', url }`, `{ kind: 'on' }` (dialog-local) |
+| the managing routes   | `handleCalendarFeedRoutes(ctx)`, `/api/projects/:id/calendar-feed`                      |
+| who may manage a feed | `calendarFeedScopeFor(input)` (editor), `feedMember(ctx, projectId)` (api)              |
+
+### Files
+
+- `packages/api-schema/src/calendar-feed.ts`: `CalendarFeedOptions`, `CalendarFeedSettings`, `CalendarFeedBoard`,
+  `CalendarFeedResponse` (`GET`), `CalendarFeedIssueResponse` (`POST`), `CalendarFeedOptionsResponse` (`PATCH`),
+  `CALENDAR_FEED_ERRORS`.
+- `apps/api/src/calendar/feed-store.ts`: adds `calendarFeedFor(env, planId, personId)` (the person's own row, no
+  hash) and `setCalendarFeedOptions(env, planId, personId, options)` (whether a row changed).
+- `apps/api/src/calendar/feed-boards.ts`: `feedBoardsOf(env, planId)`: the plan's boards from its board tabs
+  (`planTabs`, `boardSetupsOfTab`), in tab order.
+- `apps/api/src/routes/calendar-feed-routes.ts`: `handleCalendarFeedRoutes(ctx)`, dispatched from
+  `project-subresource-routes.ts` after GitHub's.
+- `apps/editor/components/calendar-feed/`: `calendar-feed-client.ts` (the four calls), `calendar-feed-gate.ts`
+  (`calendarFeedScopeFor`), `calendar-feed-links.ts` (`feedUrlOf`, `googleCalendarUrl`, `appleCalendarUrl`),
+  `CalendarFeedContext.tsx` (the door), `CalendarFeedHost.tsx` (provides it and loads the dialog on first open),
+  `CalendarFeedDialog.tsx` (the states), `CalendarFeedOptions.tsx` (What It Shows), `CalendarFeedLink.tsx` (the
+  link shown once), `CalendarFeedHeroArt.tsx`, `CalendarFeedMenuRow.tsx` (the tab menu's row).
+- `apps/editor/app/project/[id]/editor-view-hooks.ts`: `useEditorCalendarFeed(ctx, isOffline)`; `EditorView.tsx`
+  wraps the editor in `CalendarFeedHost` inside `AutomationsHost`.
+- `apps/help/app/plan/calendar-feed/page.mdx` and its figures in `apps/help/components/illustrations/calendar-feed.tsx`.
+
+### Interfaces and contracts
+
+- `GET /calendar-feed` 200 `{ feed: CalendarFeedSettings | null, boards: CalendarFeedBoard[] }`.
+- `POST /calendar-feed` body `CalendarFeedOptions` 201 `{ feed, path }`; `path` is `/api/calendar/<id>/<token>.ics`,
+  the one time the token leaves the room. The editor resolves it against its `API_BASE`'s origin (`feedUrlOf`).
+- `PATCH /calendar-feed` body `CalendarFeedOptions` 200 `{ feed }`; 404 `calendar_feed_not_found` without a feed.
+- `DELETE /calendar-feed` 204.
+- Body: `boardId` null or a string naming a board `feedBoardsOf` lists; `mine`, `includeDone` booleans (absent:
+  false). Anything else: 400 `calendar_feed_invalid`. An unparseable body: 400 as `readBody`.
+- Any other method on the path: 405. Every answer `Cache-Control: no-store`.
+- `googleCalendarUrl(url)`: `https://calendar.google.com/calendar/r?cid=<encodeURIComponent(webcal url)>`.
+  `appleCalendarUrl(url)`: the link with `https:` or `http:` swapped for `webcal:`.
+
+### Behaviour and state
+
+- The gate (`feedMember`), in order: `requireOwner` (401 for no identity); the plan (`getProject`, 404); in person
+  (`accountUserId` set, no `token`, no `workbench`); `grantOn(ctx, id)` set, with `shareCode === null`,
+  `tabScope === null` and not `community`. Else 403 `calendar_feed_needs_member`, logged with what was missing.
+- The feed is always the caller's own: `person_id` is `accountUserId`; no route names another person.
+- `POST` over an existing row is Reset Link (`issueCalendarFeed`'s upsert); the old hash is gone in that statement.
+- Editor: `calendarFeedScopeFor` is `{ ownerId, projectId }` when hydrated, not an embed, not offline, signed in, and
+  the items scope has no share code and no tab; else null (no row).
+- Dialog: on open, `GET`; `feed` null is Off, else On. Make Calendar Link and Reset Link `POST` the shown options and
+  go to Just made with the url. An option change in Just made or On `PATCH`es at once (optimistic, rolled back with
+  the error line on failure); in Off it only changes the choice. Turn Off `DELETE`s and goes to Off. Closing forgets
+  the url: it is never stored, so reopening shows On.
+
+### Presentation and UX
+
+- `Dialog` size `md`, `phoneSheet`, `HeroDialogHeader` (`calendarFeedHeroArt`: a calendar page as the title mark, a
+  calendar grid with a card's day filled in as the centre piece, a refresh arc in the corner).
+- Body, top to bottom: the state block; **What It Shows** (`Select` for Board, then two `SettingsToggleRow`s); the
+  privacy note (amber, a lock glyph); footer: Off **Make Calendar Link** (primary); Just made **Done**; On **Reset
+  Link** and **Turn Off** (secondary), each behind `ConfirmPopover`.
+- Just made: the link in a read-only monospace field that selects itself on focus, **Copy Link** (primary, flashing
+  "Copied" with `useCopiedFlash`), then the **Google Calendar** and **Apple Calendar** links (new tab), the Outlook
+  line, and the shown-once line.
+- Loading: a quiet row. Read error: the line and **Try Again**. Write error: the line above the footer, `role="alert"`.
+- Copy, verbatim from the spec; the made date as the person's locale's medium date.
+
+### Accessibility
+
+- The dialog is labelled by its title; the link field `aria-label="Calendar link"`; Copy Link announces "Calendar link
+  copied" in a polite live region. The switches are `SettingsToggleRow`s (one control each). The confirms trap focus
+  and return it to their button. Every control is a real button, link or select, reachable by Tab, with the focus
+  ring.
+- The privacy note's amber text meets 4.5:1 in both appearances.
+
+### Security and trust
+
+- The routes never answer the token except in `POST`'s `path`, never log it, and never take an API token or a
+  workbench session (a leaked API token must not mint a lasting secret, as token management requires
+  `accountUserId`).
+- Share-link holders get nothing at any level; the fetch route's own check (owner or team, every fetch) still stands
+  behind any feed a person made while a member.
+- The editor's Google and Apple links send the link to that calendar only when the person presses them.
+
+### Performance and limits
+
+- The routes run only when the dialog opens or a choice changes: `GET` reads one indexed row and the plan's board
+  tabs (`planTabs`, 20 tabs a batch, as the plan route); the rest are one statement each.
+- The dialog's code loads on first open (`next/dynamic`), so a plan whose person never opens it pays nothing. The menu
+  row reads one context value.
+
+### Observability
+
+- `[calendar-feed] manage { action }` for each made, reset, options changed and turned off; `[calendar-feed] refused
+{ reason }` with `not_in_person`, `no_member_grant` or `invalid` (never the token, never the plan's name).
+
+### Testing
+
+- `routes/calendar-feed-routes.test.ts`: owner and team member may read, make, change, reset and turn off;
+  `editor_link`, `tab_editor_link`, `participant`, `viewer`, every token, `workbench`, `guest` and `link_visitor` are
+  refused on every route and nothing changes; a reset link stops the old token; options kept on PATCH; invalid
+  bodies; 404 PATCH without a feed; 405.
+- `calendar/feed-boards.test.ts`: the boards list.
+- Editor: `calendar-feed-gate.test.ts` (who sees the row), `calendar-feed-links.test.ts`, `CalendarFeedDialog.test.tsx`
+  (each state, make, copy, reset, turn off, an option change saving and rolling back, errors),
+  `CalendarFeedMenuRow.test.tsx`.
+
+### Constants and configuration
+
+| Constant                | Value                                  | Why                                             |
+| ----------------------- | -------------------------------------- | ----------------------------------------------- |
+| `FEED_BOARD_ID_MAX`     | 200                                    | The longest element id the board option accepts |
+| `GOOGLE_SUBSCRIBE_BASE` | `https://calendar.google.com/…/r?cid=` | Google Calendar's add-by-address page           |

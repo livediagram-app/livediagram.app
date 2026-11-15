@@ -3689,6 +3689,136 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "CalendarFeedBoard": {
+    "additionalProperties": false,
+    "description": "A board the Board option may name: its element id, its title and its tab's name.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "tabName"
+    ],
+    "type": "object"
+  },
+  "CalendarFeedIssueResponse": {
+    "additionalProperties": false,
+    "description": "POST /api/projects/:id/calendar-feed: the feed made (or its link reset), and its link's path (`/api/calendar/<plan id>/lpf_….ics`), answered this once.",
+    "properties": {
+      "feed": {
+        "$ref": "#/components/schemas/CalendarFeedSettings"
+      },
+      "path": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "feed",
+      "path"
+    ],
+    "type": "object"
+  },
+  "CalendarFeedOptions": {
+    "additionalProperties": false,
+    "description": "What a feed shows: one board's cards (a plan-board element id) or every board's (null), only the cards that name the person, and done cards or not.",
+    "properties": {
+      "boardId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "includeDone": {
+        "type": "boolean"
+      },
+      "mine": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "boardId",
+      "mine",
+      "includeDone"
+    ],
+    "type": "object"
+  },
+  "CalendarFeedOptionsResponse": {
+    "additionalProperties": false,
+    "description": "PATCH /api/projects/:id/calendar-feed: the feed with its new options, its link kept.",
+    "properties": {
+      "feed": {
+        "$ref": "#/components/schemas/CalendarFeedSettings"
+      }
+    },
+    "required": [
+      "feed"
+    ],
+    "type": "object"
+  },
+  "CalendarFeedResponse": {
+    "additionalProperties": false,
+    "description": "GET /api/projects/:id/calendar-feed: the person's feed, or null for none, and the plan's boards.",
+    "properties": {
+      "boards": {
+        "items": {
+          "$ref": "#/components/schemas/CalendarFeedBoard"
+        },
+        "type": "array"
+      },
+      "feed": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CalendarFeedSettings"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "feed",
+      "boards"
+    ],
+    "type": "object"
+  },
+  "CalendarFeedSettings": {
+    "additionalProperties": false,
+    "description": "The person's own feed: its options, and when its link was made (a reset renews it), epoch ms.",
+    "properties": {
+      "boardId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "includeDone": {
+        "type": "boolean"
+      },
+      "mine": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "boardId",
+      "createdAt",
+      "includeDone",
+      "mine"
+    ],
+    "type": "object"
+  },
   "CapabilitiesResponse": {
     "additionalProperties": false,
     "properties": {
