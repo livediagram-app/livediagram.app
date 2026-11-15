@@ -16,6 +16,7 @@ export const { AreaErrorBoundary, MenuErrorBoundary } = createAreaErrorBoundary(
     TabDialogs: 'a tab dialog',
     Collaborators: 'the collaborators panel',
     Presentation: 'the presentation',
+    VersionHistory: 'Version History',
     Search: 'search',
     QuickStyle: 'the Quick Style bar',
     Modals: 'a dialog',

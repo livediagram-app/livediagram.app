@@ -283,4 +283,6 @@ format is documented inline on each tool's element argument, so the tool definit
 it. Each element has a unique "id"; nodes are "shape" elements (a labelled box) NOT "text" (text is only for titles,
 captions and running copy); pinned arrows (node -> node) track their boxes; and the theme owns colours (a sticky keeps
 its own). Stickies, tables, code blocks and charts carry content fields, documented on each tool's element argument.
-search_icons finds icon ids for "iconId"; list_images lists the user's pictures for an image element's "imageId".`;
+search_icons finds icon ids for "iconId"; list_images lists the user's pictures for an image element's "imageId".
+list_versions lists a tab's earlier versions (kept after a pause in editing and before each of your changes), and
+restore_version makes one the tab's content again; restoring the undoVersionId it answers takes that back.`;

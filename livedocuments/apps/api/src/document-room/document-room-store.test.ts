@@ -666,6 +666,33 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     ).toBe(0);
   });
 
+  // docs/specs/006-document/blueprints/version-history.md VH7: a version keeps the same comments, and may name them.
+  it("takes a closed account's name off the versions the document keeps", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDocument(w, 'A');
+    const document = w.documents.get('A')!;
+    const data = JSON.stringify({
+      elements: [
+        { ...box('a'), comments: [{ id: 'c1', authorId: 'user_ada', authorName: 'Ada' }] },
+      ],
+    });
+    document.db
+      .prepare(
+        `INSERT INTO tab_versions (id, tab_id, rev, kind, author_id, author_name, author_color, tab_name, data, bytes,
+           element_count, saved_at, created_at)
+         VALUES ('v_1', 't1', 1, 'manual', 'user_ada', 'Ada', '#000', 'Board', ?, 1, 1, 1, 1)`,
+      )
+      .run(data);
+    const res = await w.send('POST', '/api/internal/people/user_ada/purge', { items: ['A'] }, auth);
+    expect(res.status).toBe(200);
+    const row = document.db
+      .prepare('SELECT author_id, author_name, data FROM tab_versions')
+      .get() as { author_id: string; author_name: string; data: string };
+    expect([row.author_id, row.author_name]).toEqual(['deleted', 'Deleted account']);
+    expect(row.data).not.toContain('user_ada');
+  });
+
   // liveworkspace/docs/specs/003-accounts/data-export.md "The apps' doors": the document's threads with their real
   // authors, read in its own object, which a document never started is not made by.
   it('answers the data export every comment thread with its author, and starts no document', async () => {

@@ -26,6 +26,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   delete_image: 'image rm',
   change_pages: 'page set',
   write_article: 'article set',
+  list_versions: 'api GET /documents/<id>/tabs/<tabId>/versions',
+  restore_version: 'api POST /documents/<id>/tabs/<tabId>/versions/<versionId>/restore',
 };
 
 const TOOL_WORD = new RegExp(`\\b(${Object.keys(COMMAND_OF_TOOL).join('|')})\\b`, 'g');

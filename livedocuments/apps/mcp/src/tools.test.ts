@@ -83,6 +83,8 @@ function okResponse(request: Request): Response {
   if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
+  if (path.endsWith('/versions')) return json({ versions: [] });
+  if (/\/versions\/[^/]+\/restore$/.test(path)) return json({ restored: null });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share')) {
@@ -187,7 +189,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-two documented tools, each with a description', () => {
+  it('registers the twenty-four documented tools, each with a description', () => {
     const { registered } = harness();
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
@@ -202,9 +204,11 @@ describe('registerTools', () => {
       'list_templates',
       'list_threads',
       'list_trash',
+      'list_versions',
       'read_document',
       'rename_document',
       'restore_document',
+      'restore_version',
       'search_icons',
       'share_document',
       'unarchive_document',
@@ -308,6 +312,9 @@ describe('tool annotations', () => {
     // docs/specs/015-api/mcp-server.md "Comment threads": change_threads deletes the agent's own comments.
     list_threads: 'read',
     change_threads: 'destructive',
+    // docs/specs/015-api/mcp-server.md §4.9e: a restore writes over the tab's content.
+    list_versions: 'read',
+    restore_version: 'destructive',
     find_documents: 'read',
     read_document: 'read',
     list_templates: 'read',
@@ -385,6 +392,7 @@ describe('tool annotations', () => {
       'list_templates',
       'list_threads',
       'list_trash',
+      'list_versions',
       'read_document',
       'search_icons',
       'view_tab',
@@ -410,6 +418,7 @@ describe('tool annotations', () => {
       'change_threads',
       'delete_document',
       'delete_image',
+      'restore_version',
       'update_document',
       'write_article',
     ]);

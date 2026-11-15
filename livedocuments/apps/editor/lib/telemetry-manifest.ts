@@ -154,4 +154,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Toggled',
   'UI·Used',
   'UI·View',
+  // Version history (docs/specs/006-document/version-history.md "Observability and telemetry"): the header's History,
+  // a name given, and the restore toast's Undo. Restored and Copied are counted by the api, by front door.
+  'Version·Named',
+  'Version·Opened',
+  'Version·Undone',
 ];

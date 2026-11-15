@@ -8,6 +8,7 @@ import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
 import { mcpChangeThreads, mcpListThreads } from '../mcp/thread-tools';
 import { mcpViewTab } from '../mcp/view-tool';
 import { mcpArchiveDocument, mcpUnarchiveDocument } from '../mcp/archive-tools';
+import { mcpListVersions, mcpRestoreVersion } from '../mcp/version-tools';
 import {
   changePagesOutput,
   changePagesShape,
@@ -262,5 +263,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpRestoreDocument,
   mcpListThreads,
   mcpChangeThreads,
+  mcpListVersions,
+  mcpRestoreVersion,
   mcpViewTab,
 ];
