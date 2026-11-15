@@ -368,7 +368,9 @@ none (blueprint [tracker-import.md](tracker-import.md) "A whole import"). Its ot
   admitted write that does not land (a lost rev race, a 404) releases its ids (`ticket.release`); the many-item loop
   (`writeItemsWithRetry`) admits each attempt's trashed cards and releases those that did not land. A person's
   `?confirmRemoval=1` skips the guard; a token's is ignored. With no guard in the env (a unit test without a room)
-  nothing is judged.
+  nothing is judged. Runs live in memory (`RemovalGuard.runs`, at most `REMOVAL_RUNS_MAX` (200), ended runs swept on each
+  admit). A run's first removal reads the board tabs and the store once and counts each board: about 20 ms of CPU for
+  ten boards over 10,000 cards (`removal-guard.perf.test.ts`); each removal after is O(boards x run size).
 - A create, bulk create or seed (`createMany`) reads the store once per attempt: a named key is free when that
   read's keys lack it (a key a racing write took fails the insert, which retries), and one `itemPlacer` ranks every
   create, so n creates cost no per-create query and one sort per column.

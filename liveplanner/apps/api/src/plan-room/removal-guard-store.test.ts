@@ -14,7 +14,8 @@ const board: RemovalBoard = {
   name: 'Board',
   cards: new Set(Array.from({ length: 30 }, (_, i) => `c${i}`)),
 };
-const ids = (from: number, to: number) => Array.from({ length: to - from }, (_, i) => `c${from + i}`);
+const ids = (from: number, to: number) =>
+  Array.from({ length: to - from }, (_, i) => `c${from + i}`);
 const ann: RemovalActor = { kind: 'person', id: 'p-ann', name: 'Ann' };
 
 function world() {

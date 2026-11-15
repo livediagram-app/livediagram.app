@@ -50,12 +50,19 @@ export class RemovalGuard {
     this.now = now;
   }
 
-  // The caller's run, if it is still going.
+  // The caller's run, if it is still going (an ended one is swept first).
   private live(key: string, at: number): Run | undefined {
-    const run = this.runs.get(key);
-    if (run && at - run.last < REMOVAL_GUARD_WINDOW_MS) return run;
-    if (run) this.runs.delete(key);
-    return undefined;
+    this.sweep(at);
+    return this.runs.get(key);
+  }
+
+  // Ended runs go, so a run's board counts are never kept past its minute. The map is in last-touched order, so the
+  // sweep stops at the first run still going.
+  private sweep(at: number): void {
+    for (const [key, run] of this.runs) {
+      if (at - run.last < REMOVAL_GUARD_WINDOW_MS) return;
+      this.runs.delete(key);
+    }
   }
 
   /** Admits `ids` into the caller's run, or answers why they are held. `boardsOf` is read only when a run starts. */

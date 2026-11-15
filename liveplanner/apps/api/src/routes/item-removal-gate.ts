@@ -24,7 +24,8 @@ const NO_TICKET: RemovalTicket = { release: () => {} };
 /** The cards a write moves into the Trash from outside it. */
 export function trashedBy(writes: Iterable<{ before: Item; next: Item }>): string[] {
   const out: string[] = [];
-  for (const { before, next } of writes) if (isTrashed(next) && !isTrashed(before)) out.push(next.id);
+  for (const { before, next } of writes)
+    if (isTrashed(next) && !isTrashed(before)) out.push(next.id);
   return out;
 }
 

@@ -31,7 +31,14 @@ type Call = {
   token?: { id: string };
 };
 
-async function call<T = unknown>({ method = 'POST', path, body, owner = 'owner', code, token }: Call) {
+async function call<T = unknown>({
+  method = 'POST',
+  path,
+  body,
+  owner = 'owner',
+  code,
+  token,
+}: Call) {
   const pending: Promise<unknown>[] = [];
   const ctx = makeTestRouteContext(method, `/api/projects/d1${path}`, {
     env: sql.env,
@@ -60,7 +67,8 @@ async function cards(n: number, owner = 'owner', code?: string): Promise<string[
 const del = (id: string, extra: Partial<Call> = {}) =>
   call({ method: 'DELETE', path: `/items/${id}`, ...extra });
 const held = () => guard.held();
-const stored = async () => (await db.listItems(sql.env, 'd1')).filter((i) => i.fields.status !== 'trash');
+const stored = async () =>
+  (await db.listItems(sql.env, 'd1')).filter((i) => i.fields.status !== 'trash');
 
 beforeEach(() => {
   sql = sqliteD1();
@@ -209,7 +217,9 @@ describe('the Trash', () => {
 
   it('lets a person confirm a held removal, never a token', async () => {
     const ids = await cards(30);
-    expect((await trashAll(ids.slice(0, 11), '?confirmRemoval=1', { id: 'tok_1' })).status).toBe(409);
+    expect((await trashAll(ids.slice(0, 11), '?confirmRemoval=1', { id: 'tok_1' })).status).toBe(
+      409,
+    );
     expect((await held())[0]?.actor).toEqual({ kind: 'token', id: 'tok_1' });
     const res = await trashAll(ids.slice(0, 11), '?confirmRemoval=1');
     expect(res.status).toBe(200);

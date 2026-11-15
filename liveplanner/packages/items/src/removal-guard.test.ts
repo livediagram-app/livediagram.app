@@ -32,8 +32,7 @@ const board = (n: number, id = 'b1'): RemovalBoard => ({
   name: id === 'b1' ? 'Sprint Board' : 'Other',
   cards: new Set(Array.from({ length: n }, (_, i) => `${id}-${i}`)),
 });
-const first = (n: number, id = 'b1') =>
-  new Set(Array.from({ length: n }, (_, i) => `${id}-${i}`));
+const first = (n: number, id = 'b1') => new Set(Array.from({ length: n }, (_, i) => `${id}-${i}`));
 
 describe('removalLimit', () => {
   it('is the smaller of 20% and 50, never under the floor', () => {
@@ -129,6 +128,8 @@ describe('removalHeldMessage', () => {
     );
     expect(
       removalHeldMessage({ reason: 'empties-board', board: 'Bugs', count: 4, had: 4, limit: 10 }),
-    ).toBe('This would remove every card on Bugs, so it was held. Confirm it in liveplanner to go ahead.');
+    ).toBe(
+      'This would remove every card on Bugs, so it was held. Confirm it in liveplanner to go ahead.',
+    );
   });
 });
