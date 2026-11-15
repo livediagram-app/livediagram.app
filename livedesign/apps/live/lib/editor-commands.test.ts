@@ -29,6 +29,7 @@ function handlers(): CommandHandlers {
     undo: vi.fn(),
     redo: vi.fn(),
     toggleZen: vi.fn(),
+    toggleFlowView: vi.fn(),
     fitToScreen: vi.fn(),
     autoLayout: vi.fn(),
     autoAlign: vi.fn(),

@@ -30,6 +30,7 @@ import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canv
 import { PhotoClusterSegment } from './PhotoClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { InspectClusterSegment } from './inspect/InspectClusterSegment';
+import { FlowClusterSegment } from './FlowClusterSegment';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
@@ -498,6 +499,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       }
                     />
                   ) : null
+                }
+                flow={
+                  props.pagesMode.pages[0]?.kind === 'wireframe' ? <FlowClusterSegment /> : null
                 }
               />
             ) : null}

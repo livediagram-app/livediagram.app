@@ -359,6 +359,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone turned a wireframe page's status bar and home indicator on.",
   'UI|Toggled|WireframeSystemBarsOff':
     "Someone turned a wireframe page's status bar and home indicator off.",
+  'UI|Toggled|FlowViewOn':
+    "Someone turned on a wireframe tab's Flow view, the arrows from linked elements to their screens.",
+  'UI|Toggled|FlowViewOff': "Someone turned off a wireframe tab's Flow view.",
   'Tab|Changed|PhotoPageAdded': 'Someone added a photo page to a Pages tab.',
   'UI|Changed|PhotoPixelGrid': "Someone turned a photo page's pixel grid on or off.",
   'Tab|Changed|PageKindPhoto': "Someone chose Photo for a new Pages tab's first page.",

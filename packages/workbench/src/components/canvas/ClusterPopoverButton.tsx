@@ -32,6 +32,9 @@ type SegmentProps = {
   // A count for the button (the Trash's): beside its name when named, else tucked into its corner (the
   // strip clips anything outside it), where it would otherwise sit over the name.
   badge?: ReactNode;
+  // A switch rather than a popover (livedesign's Flow view): `popoverOpen` is whether it is on, said as
+  // `aria-pressed`, and its hover card stays while it is on, there being no panel for it to cover.
+  toggle?: boolean;
 };
 
 // The frame a cluster button (or a strip of them) sits in.
@@ -70,6 +73,7 @@ export function ClusterPopoverSegment({
   divided = false,
   name,
   badge,
+  toggle = false,
 }: SegmentProps) {
   const named = useDockNames() && !!name;
   const button = (
@@ -80,7 +84,8 @@ export function ClusterPopoverSegment({
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => onTogglePopover(e.currentTarget)}
       aria-label={label}
-      aria-expanded={popoverOpen}
+      aria-expanded={toggle ? undefined : popoverOpen}
+      aria-pressed={toggle ? popoverOpen : undefined}
       className={`relative flex h-11 items-center justify-center transition ${
         named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
       } ${divided ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${
@@ -105,7 +110,7 @@ export function ClusterPopoverSegment({
   );
   // No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the button keeps its focus as the panel opens.
   return (
-    <HoverCard title={hoverTitle} description={hoverDescription} disabled={popoverOpen}>
+    <HoverCard title={hoverTitle} description={hoverDescription} disabled={popoverOpen && !toggle}>
       {button}
     </HoverCard>
   );

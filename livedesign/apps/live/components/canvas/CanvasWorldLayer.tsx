@@ -8,6 +8,9 @@ import {
   type CanvasElementsLayerProps,
 } from '@/components/canvas/CanvasElementsLayer';
 import { ScreenLinkPagesProvider } from './screen-link-pages';
+import { FlowViewLayer } from './FlowViewLayer';
+import { useFlowView } from '@/lib/flow-view-store';
+import { showsFlowView } from '@/lib/flow-view';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ElementIndicatorStyleProvider } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
@@ -92,6 +95,7 @@ export function CanvasWorldLayer({
   drawDrag,
 }: CanvasWorldLayerProps) {
   const { canvasTool, pendingDraw, elements, readOnly } = props;
+  const flowView = useFlowView();
   return (
     <div
       ref={wrapperRef}
@@ -207,6 +211,16 @@ export function CanvasWorldLayer({
           </ElementIndicatorStyleProvider>
         </CanvasZoomProvider>
       </CanvasArrivalProvider>
+      {/* The Flow view's arrows over the elements (docs/specs/007-editor/wireframe-pages.md "Flow view"): on a
+          wireframe tab while it is on, never in Zen. */}
+      {props.pagesMode && showsFlowView(flowView, props.pagesMode.pages, props.zenMode) ? (
+        <FlowViewLayer
+          elements={elements}
+          layers={props.tabLayers}
+          pages={props.pagesMode.pages}
+          zoom={viewportZoom}
+        />
+      ) : null}
       {/* Drafts and the logo page's guides. */}
       <>
         {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/drawing-tools.md "Markers"):

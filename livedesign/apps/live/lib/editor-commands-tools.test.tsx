@@ -80,3 +80,26 @@ describe('the Inspect Tool command', () => {
     expect(ids(ctx)).not.toContain('tool:inspect');
   });
 });
+
+// docs/specs/007-editor/wireframe-pages.md "Flow view": Show / Hide Flow View is a wireframe tab's, for every role.
+describe('the Flow View command', () => {
+  const find = (c: CommandContext, h = noop()) =>
+    buildEditorCommands(c, h).find((cmd) => cmd.id === 'flow-view');
+
+  it('is offered on a wireframe tab, a Viewer’s too, named for what it will do', () => {
+    expect(find({ ...ctx, wireframeTab: true })?.name).toBe('Show Flow View');
+    expect(find({ ...ctx, wireframeTab: true, flowView: true })?.name).toBe('Hide Flow View');
+    expect(find({ ...ctx, wireframeTab: true, isReadOnly: true })?.name).toBe('Show Flow View');
+  });
+
+  it('flips the Flow view when run', () => {
+    const toggleFlowView = vi.fn();
+    const h = { ...noop(), toggleFlowView } as CommandHandlers;
+    find({ ...ctx, wireframeTab: true }, h)?.run();
+    expect(toggleFlowView).toHaveBeenCalledOnce();
+  });
+
+  it('is not offered on any other tab', () => {
+    expect(find(ctx)).toBeUndefined();
+  });
+});
