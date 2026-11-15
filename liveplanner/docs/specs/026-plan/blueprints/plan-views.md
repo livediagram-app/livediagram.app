@@ -245,7 +245,7 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
     `(finish - start) / DAY_MS` to one decimal, never below 0. A card missing from `cards`, or of a type outside
     `types`, is skipped. Answers `{ cards: CycleTime[] (by at), p50, p85 }`, the percentiles `percentileOf` (nearest
     rank, D111) and null with no card. Linear in moves, plus n log n for the sort; 2,000 cards of 12 moves each
-    measure under 10 ms.
+    measure 6 to 8 ms of CPU warm, 18 ms on the first call (a 100 ms budget).
   - `throughputOf(finished, fromDay, toDay, period)`: a period per day or per Monday-started week
     (`weekStartOf(day)` = `day - (day + 3) mod 7`, day 0 a Thursday) from the one holding `fromDay` to the one holding
     `toDay`; each `{ start, cards, running, whole }`, `running` for the one holding `toDay` (today, not over yet), `whole` when it lies

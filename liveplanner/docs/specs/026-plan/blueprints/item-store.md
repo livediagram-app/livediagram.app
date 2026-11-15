@@ -823,7 +823,8 @@ FROM items i WHERE plan_id = ? AND id IN (SELECT value FROM json_each(?))` (the 
 - Cost (measured on node:sqlite, `flow-route.test.ts` holds the budget): a 2,000-card plan with 180 days of history
   (50,000 entries, 24,000 of them moves) and 12 count pairs a day answers the 180-day range in 135 to 150 ms of CPU,
   1.06 MB (94 KB gzipped). The moves read is linear in the kept entries; the cards read one seek per moved card.
-  `cycleTimesOf` over the same 2,000 cards takes under 10 ms (`flow-metrics.test.ts`).
+  `cycleTimesOf` over the same 2,000 cards takes 6 to 8 ms of CPU warm, 18 ms on the first call
+  (`flow-metrics.test.ts`, a 100 ms budget).
 
 ### Parts still to build (Work Tracker 854)
 
