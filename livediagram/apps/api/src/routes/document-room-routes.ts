@@ -21,7 +21,7 @@ import {
   reactionPersonFor,
 } from '@liveworkspace/api-kit/collab-key';
 import { personTagFor } from '../person-tag';
-import { documentTrashed, forbidden, json, notFound } from '../responses';
+import { badRequest, documentTrashed, forbidden, json, notFound } from '../responses';
 import { networkTagFor } from '../vote-integrity';
 import { noteWorkbenchRoom } from '../auth/workbench-session';
 import { type RouteContext } from './context';
@@ -50,6 +50,15 @@ async function adderKeyOf(
   return role === 'participate' && person ? adderKeyFor(documentId, person) : null;
 }
 
+// `?cap=view` on the mint (docs/specs/015-api/api.md): a view-only ticket, the MCP view's (mcp-server.md "Live
+// updates"). The only cap a caller may ask for; null when it asks for none.
+export const VIEW_ONLY_CAP = 'view';
+function requestedCap(url: URL): typeof VIEW_ONLY_CAP | null | 'invalid' {
+  const cap = url.searchParams.get('cap');
+  if (cap === null) return null;
+  return cap === VIEW_ONLY_CAP ? cap : 'invalid';
+}
+
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, url, segments } = ctx;
@@ -58,16 +67,25 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
   // editor knows which stickies are theirs to delete. It says nothing about anybody else.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
+    const cap = requestedCap(url);
+    if (cap === 'invalid') return badRequest('invalid_cap');
     const grant = await resolveDocumentGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
     if (grant.trashed) return documentTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
+    // A workbench session is sealed to its pairing at its own cap (held to view when it asks for a view-only
+    // ticket); a view-only ticket otherwise is the grant sealed with the cap alone, so its holder never has the
+    // grant bare.
     const ticket = await sealRoomTicket(
       env,
       grant.token,
-      workbench ? { pairing: workbench.pairingId, cap: workbench.level } : null,
+      workbench
+        ? { pairing: workbench.pairingId, cap: cap ?? workbench.level }
+        : cap
+          ? { pairing: null, cap }
+          : null,
     );
     // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
     // its access closes them all (WB55).
@@ -76,10 +94,12 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       if (ctx.waitUntil) ctx.waitUntil(noted);
       else await noted;
     }
-    const level = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
+    const level = cap ?? (workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level);
     const person = linkCodeOf(grant.sub) ? null : grant.sub;
     const adderKey = await adderKeyOf(id, level, person);
     const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
+    // A view-only ticket's holder cannot read the grant inside, so the answer says when it lapses.
+    if (cap) answer.expiresAt = grant.exp * 1000;
     return json(answer);
   }
 
@@ -87,7 +107,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const id = segments[2]!;
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
-    const { claims, workbench } = opened;
+    const { claims, workbench, cap } = opened;
     if (claims.trashed) return documentTrashed();
     const role: AccessLevel = roomTicketLevel(opened);
     const linkCode = linkCodeOf(claims.sub);
@@ -102,9 +122,10 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     forwarded.headers.set('X-Verified-Role', role);
     // Whether this session is the canvas's OWNER (docs/specs/012-collaboration/facilitator.md): the facilitator
     // baton needs it so the owner can always take the session back. A bit, never an id.
+    // A view-only ticket (the MCP view's) seats no owner, whoever its grant's person is: it only watches.
     forwarded.headers.set(
       'X-Verified-Owner',
-      person !== null && !!claims.owner && person === claims.owner ? '1' : '0',
+      !cap && person !== null && !!claims.owner && person === claims.owner ? '1' : '0',
     );
     forwarded.headers.set('X-Verified-Tab-Scope', claims.tab ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
