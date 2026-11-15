@@ -4,12 +4,24 @@ import type { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters
 import { NO_DOUBLE_CLICK, NO_EDIT } from './inspect-gestures';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { pagePaintPress } from '@liveworkspace/workbench/lib/format-page-brush';
+import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
+import type { DragState } from '@/lib/canvas';
 
 // The Canvas props for changing what is on the canvas (EditorCanvasHost): the selection's actions, the
 // page brush, undo and redo, dragging, label and table edits, the element faces' own setters, and the
 // arrow handles.
 // Inspect writes nothing, so it links no screen.
 const NO_SCREEN_LINKS = () => false;
+
+// The arrow whose handle a drag reshapes, or null.
+export const reshapingArrowOf = (drag: DragState | null) =>
+  drag &&
+  (drag.kind === 'arrow-bend' ||
+    drag.kind === 'arrow-curve' ||
+    drag.kind === 'arrow-elbow' ||
+    drag.kind === 'arrow-endpoint')
+    ? drag.arrowId
+    : null;
 
 export function useEditCanvasProps({
   setPointerTip,
@@ -82,19 +94,13 @@ export function useEditCanvasProps({
     toggleLockMultiSelected,
     toggleLockSelected,
     undo,
-    drag,
+    dragStore,
     pagesMode,
     componentActions,
   } = useEditorContext();
-  // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
-  const reshapingArrowId =
-    drag &&
-    (drag.kind === 'arrow-bend' ||
-      drag.kind === 'arrow-curve' ||
-      drag.kind === 'arrow-elbow' ||
-      drag.kind === 'arrow-endpoint')
-      ? drag.arrowId
-      : null;
+  // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md). A slice of the drag
+  // store, so a press that starts any other drag renders nothing here.
+  const reshapingArrowId = useStoreSlice(dragStore, reshapingArrowOf);
   // Double-click on an element with its own edit dialog (docs/specs/009-elements/code-block.md,
   // docs/specs/009-elements/sankey.md): which dialog depends on the kind.
   const openEditDialog = (id: string) => {

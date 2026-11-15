@@ -222,6 +222,11 @@ A gesture's cost scales with what it changes and what is on screen, never with t
   layer and the Map do not re-render for it. Handlers read the selection from the store when they
   run; effects that follow it (presence, scrolling a selection into view, the screen-reader
   announcement, dropping hidden elements from it) subscribe to the store.
+- **A press re-renders what shows the gesture.** Which drag is under way (a move, a resize, an arrow
+  handle's reshape) is held in one store per editor, not in the editor's state. The press that starts
+  one and a release that changes nothing re-render only what shows it (a reshaped arrow's frame, the
+  Shift hint), never the editor root; the drag's own listeners follow the store. A release that changes
+  the board re-renders what that change reaches, as any commit does.
 - **Derived layouts are computed once per change.** Arrow labels, ink projection and theme
   colours are laid out per element change and cached per element identity, as arrow labels are
   today.
