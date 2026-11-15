@@ -6094,6 +6094,9 @@ importers:
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
+      '@vitest/coverage-v8':
+        specifier: ^5.1.0
+        version: 5.1.0(vitest@5.1.0)
       oxlint:
         specifier: ^1.93.0
         version: 1.93.0(oxlint-tsgolint@7.0.2007)

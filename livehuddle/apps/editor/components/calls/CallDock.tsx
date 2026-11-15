@@ -6,7 +6,8 @@
 // camera, Share Screen) and, while you share, the Screen Share group after it. The card
 // draws nothing while neither shows (`empty:hidden`), so a role with no call and no preview sees no empty frame.
 // On a phone it sits in the bottom-right cluster's row (`inRow`, CanvasChrome lays the row out), on the zoom buttons'
-// bottom line rather than a row above them (owner, 2026-11-07, Work Tracker #642).
+// bottom line rather than a row above them (owner, 2026-11-07, Work Tracker #642). Pop Out ends it, where the browser
+// can open the mini view (Work Tracker 908).
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
@@ -15,6 +16,7 @@ import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { Divider } from '@/components/palette/strip-rail-items';
 import { CallNames } from './CallSegment';
 import { CallStripGroup } from './CallStripGroup';
+import { PopOutSegment } from './PopOutSegment';
 import { ScreenShareStripGroup, useScreenSharing } from './ScreenShareStripGroup';
 
 export function CallDock({
@@ -64,6 +66,8 @@ export function CallDock({
             after={sharing ? <Divider /> : null}
           />
           {sharing ? <ScreenShareStripGroup /> : null}
+          {/* The mini view's Pop Out, last (avatar-mode.md "The mini view"). */}
+          <PopOutSegment sharing={sharing} />
         </CallNames.Provider>
       </div>
     </div>

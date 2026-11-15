@@ -280,6 +280,7 @@ export { lucidePenTool } from './lucide/pen-tool';
 export { lucidePencil } from './lucide/pencil';
 export { lucidePencilLine } from './lucide/pencil-line';
 export { lucidePhone } from './lucide/phone';
+export { lucidePictureInPicture2 } from './lucide/picture-in-picture-2';
 export { lucidePiggyBank } from './lucide/piggy-bank';
 export { lucidePilcrow } from './lucide/pilcrow';
 export { lucidePill } from './lucide/pill';

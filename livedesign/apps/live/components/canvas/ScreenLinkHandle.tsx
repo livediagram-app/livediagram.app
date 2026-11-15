@@ -5,7 +5,13 @@
 // the screen under it; letting go on another screen links the element to it. A press without a drag, or Enter,
 // opens Link Element on its Screen mode. Drawn in the canvas grips layer, counter-scaled like the quick-connect
 // pluses, so it holds its size at any zoom.
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { HoverCard } from '@livedesign/ui';
 import { pageAt, screenName, type LaidOutPage, type Rect } from '@livedesign/design';
 import { ScreenLinkGlyph } from '@/components/canvas/screen-link-glyphs';
@@ -15,6 +21,18 @@ export const SCREEN_LINK_HANDLE_PX = 22;
 export const SCREEN_LINK_HANDLE_GAP_PX = 6;
 // How far (screen px) a press travels before it is a drag rather than a press.
 export const SCREEN_LINK_DRAG_SLOP_PX = 4;
+// How far (screen px) the drag's name pill keeps from the window's edges when its screen's corner is off screen.
+export const SCREEN_LINK_PILL_MARGIN_PX = 8;
+
+type Box = { left: number; top: number; right: number; bottom: number };
+
+/** The shift (screen px) that brings a box `margin` inside a `width` x `height` window; a box wider or taller than
+ *  the window keeps its left or top edge in. */
+export function pillShift(box: Box, width: number, height: number, margin: number) {
+  const along = (lo: number, hi: number, size: number) =>
+    lo < margin ? margin - lo : hi > size - margin ? Math.max(size - margin - hi, margin - lo) : 0;
+  return { x: along(box.left, box.right, width), y: along(box.top, box.bottom, height) };
+}
 
 type Press = {
   pointerId: number;
@@ -186,6 +204,35 @@ function ScreenLinkDragLine({
   const pull = Math.max(40 / zoom, Math.abs(x - from.x) / 2);
   const d = `M ${from.x} ${from.y} C ${from.x + pull} ${from.y}, ${x - pull} ${y}, ${x} ${y}`;
   const stroke = target ? 'var(--color-brand-500)' : 'var(--color-slate-400)';
+  // The name pill kept inside the window: measured after each layout and shifted by what keeps it in, written straight
+  // to the wrapper so a drag frame never re-renders for it.
+  const shiftRef = useRef<HTMLDivElement>(null);
+  const pillRef = useRef<HTMLDivElement>(null);
+  const applied = useRef({ x: 0, y: 0 });
+  useLayoutEffect(() => {
+    const wrap = shiftRef.current;
+    const pill = pillRef.current;
+    if (!wrap || !pill) {
+      applied.current = { x: 0, y: 0 };
+      return;
+    }
+    const r = pill.getBoundingClientRect();
+    const was = applied.current;
+    const next = pillShift(
+      {
+        left: r.left - was.x,
+        top: r.top - was.y,
+        right: r.right - was.x,
+        bottom: r.bottom - was.y,
+      },
+      window.innerWidth,
+      window.innerHeight,
+      SCREEN_LINK_PILL_MARGIN_PX,
+    );
+    if (next.x === was.x && next.y === was.y) return;
+    applied.current = next;
+    wrap.style.transform = next.x || next.y ? `translate(${next.x}px, ${next.y}px)` : '';
+  });
   return (
     <>
       <svg
@@ -228,11 +275,14 @@ function ScreenLinkDragLine({
             transformOrigin: '0 0',
           }}
         >
-          <div
-            data-screen-link-target=""
-            className="-translate-y-full whitespace-nowrap rounded-md bg-brand-700 px-2 py-1 text-xs font-semibold text-white shadow-md dark:bg-brand-600"
-          >
-            Link to {screenName(target, target.index)}
+          <div ref={shiftRef} data-screen-link-target-shift="">
+            <div
+              ref={pillRef}
+              data-screen-link-target=""
+              className="-translate-y-full whitespace-nowrap rounded-md bg-brand-700 px-2 py-1 text-xs font-semibold text-white shadow-md dark:bg-brand-600"
+            >
+              Link to {screenName(target, target.index)}
+            </div>
           </div>
         </div>
       ) : null}

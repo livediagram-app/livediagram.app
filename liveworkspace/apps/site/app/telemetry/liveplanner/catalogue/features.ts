@@ -616,6 +616,14 @@ export const AUTOMATION_DESCRIBE_OPENED = opened(
   (t) => t === 'AutomationDescribe',
 );
 
+// Subscribe to Calendar (docs/specs/026-plan/calendar-feed.md "Telemetry", in the liveplanner folder): its dialog
+// opened from the tab menu.
+export const CALENDAR_FEED_OPENED = opened(
+  'Subscribe to Calendar Opened',
+  'Subscribe to Calendar opened from the tab menu, to make, copy, reset or turn off a private calendar link.',
+  (t) => t === 'CalendarFeed',
+);
+
 // Describe a Plan (docs/specs/026-plan/describe-a-plan.md "Telemetry", in the liveplanner folder): its dialog opened from
 // Start Planning's rail or search. Never the words typed.
 export const PLAN_DESCRIBE_OPENED = opened(
@@ -646,6 +654,7 @@ export const PANELS_OPENED: MetricStack = {
     MIND_OUTLINE_OPENED,
     AUTOMATION_TEMPLATES_OPENED,
     AUTOMATION_DESCRIBE_OPENED,
+    CALENDAR_FEED_OPENED,
     PLAN_DESCRIBE_OPENED,
     OTHER_OPENED,
   ],

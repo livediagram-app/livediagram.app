@@ -76,6 +76,8 @@ export type EditorHeaderProps = {
   // The Present button (docs/specs/012-collaboration/presentation-mode.md "The header's Present button"): passed
   // only while there is something to present, so absent means no button.
   present?: { slideCount: number; starting: boolean; onPresent: () => void };
+  // An editor's own action first among the right edge's (livedesign's Prototype on a wireframe tab), for every role.
+  leadAction?: ReactNode;
   // An editor's own action in Share's place, shown whether or not Share would be (liveplanner's Share Form while a
   // form tab is open). The visibility pill still opens Share.
   shareAction?: ReactNode;
@@ -105,6 +107,7 @@ export function EditorHeader({
   renameNonce = 0,
   rolePill,
   present,
+  leadAction,
   shareAction,
   account,
 }: EditorHeaderProps) {
@@ -200,6 +203,7 @@ export function EditorHeader({
       {/* Right-edge actions: full-height, flush to the top / bottom / right of the bar (the -mr-4 cancels the
           header's right padding). */}
       <div className="-mr-4 flex shrink-0 items-stretch self-stretch">
+        {leadAction}
         {onMakeCopy ? (
           <HoverCard title="Make a Copy" description={words.copyDescription}>
             <button

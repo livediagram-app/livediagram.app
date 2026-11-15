@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   type ArrowElement,
+  layOutPages,
+  pagesOf,
   type ShapeElement,
   type Tab,
   TAB_SCHEMA_VERSION,
@@ -89,6 +91,45 @@ describe('renderTabToSvg for Inspect', () => {
     const svg = renderTabToSvg(tab({ elements: [shape('a')], backgroundColor: '#fff7ed' }));
     expect(svg).toContain('fill="#fff7ed"');
     expect(svg).not.toMatch(/viewBox="0 0 100 80"/);
+  });
+});
+
+// docs/specs/007-editor/wireframe-pages.md "Prototype mode": a screen drawn inline from the canvas's own pictures.
+describe('renderTabToSvg for Prototype mode', () => {
+  const page = layOutPages(
+    pagesOf({
+      pages: [{ id: 'page-1', orientation: 'portrait', kind: 'wireframe', device: 'iphone' }],
+    }),
+  )[0]!;
+  const pictured = tab({
+    elements: [
+      {
+        id: 'img',
+        type: 'image',
+        x: page.rect.x + 40,
+        y: page.rect.y + 80,
+        width: 100,
+        height: 100,
+        imageId: 'img-1',
+      },
+    ],
+  });
+
+  it('takes its pictures from the resolver and its ids under the prefix', () => {
+    const svg = renderTabToSvg(pictured, {
+      page,
+      imageHref: (id) => (id === 'img-1' ? 'blob:picture-1' : undefined),
+      idPrefix: 'lvd-proto',
+    });
+    expect(svg).toContain('blob:picture-1');
+    expect(svg).toContain('id="lvd-proto-page-1-screen"');
+    expect(svg).not.toContain('lvd-page-page-1');
+  });
+
+  it('keeps the export’s ids and pictures without them', () => {
+    const svg = renderTabToSvg(pictured, { page });
+    expect(svg).toContain('lvd-page-page-1');
+    expect(svg).not.toContain('blob:picture-1');
   });
 });
 
