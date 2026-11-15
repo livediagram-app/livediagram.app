@@ -9,6 +9,7 @@ import { Button, CompactEmptyState, PlusIcon, Tooltip, lucideGlyph } from '@live
 import { lucideClipboardType } from '@liveworkspace/icons/lucide';
 import { DashedAddButton } from '@liveworkspace/workbench/components/primitives/DashedAddButton';
 import { track } from '@/lib/telemetry';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CardTemplateEditor } from './CardTemplateEditor';
 import { FieldMenu } from './ItemTypeFieldMenu';
 import {
@@ -53,21 +54,39 @@ export function ItemTypeTemplates({
     setFreshId(made.id);
     track('Plan', 'Added', 'CardTemplate');
   };
+  // The Card Templates article, for every role (docs/specs/018-help/contextual-help-links.md): a `?` beside New
+  // Template for an Editor, a text link in its place for anyone without one.
+  const help = canEdit ? (
+    <HelpArticleLink article="planCardTemplates" />
+  ) : (
+    <HelpArticleLink
+      article="planCardTemplates"
+      variant="text"
+      label="Learn about card templates"
+    />
+  );
   const addRow = canEdit ? (
     <div className="mt-2">
-      <DashedAddButton
-        label="New Template"
-        disabled={full}
-        onClick={add}
-        className="disabled:cursor-not-allowed disabled:opacity-60"
-      />
+      <div className="flex items-center gap-1">
+        <div className="min-w-0 flex-1">
+          <DashedAddButton
+            label="New Template"
+            disabled={full}
+            onClick={add}
+            className="disabled:cursor-not-allowed disabled:opacity-60"
+          />
+        </div>
+        {help}
+      </div>
       {full ? (
         <p className="mt-1.5 text-[12px] text-slate-500 dark:text-slate-400">
           A card type holds up to {CARD_TEMPLATES_MAX} templates.
         </p>
       ) : null}
     </div>
-  ) : null;
+  ) : (
+    <div className="mt-2 px-1">{help}</div>
+  );
 
   if (!chosen)
     return (
@@ -78,11 +97,16 @@ export function ItemTypeTemplates({
         className="py-10"
         action={
           canEdit ? (
-            <Button variant="primary" onClick={add}>
-              <PlusIcon size={12} />
-              New Template
-            </Button>
-          ) : undefined
+            <span className="inline-flex items-center gap-1">
+              <Button variant="primary" onClick={add}>
+                <PlusIcon size={12} />
+                New Template
+              </Button>
+              {help}
+            </span>
+          ) : (
+            help
+          )
         }
       />
     );
