@@ -366,6 +366,20 @@ describe('a take', () => {
       /\[data-marker-taking\],\s*\[data-marker-taking\] \*\s*\{\s*transition: none !important;/,
     );
   });
+
+  // finish.md "Tables": the grid's own straight outer border hides under a Marker table's hand-drawn body, as the
+  // export drops svgTableShape's outer rect (data-marker-body-frame).
+  it.each([
+    ['livedocuments', 'livedocuments/apps/editor'],
+    ['livedesign', 'livedesign/apps/live'],
+    ['livediagram', 'livediagram/apps/editor'],
+    ['liveplanner', 'liveplanner/apps/editor'],
+  ])("hides a Marker table's grid border under its hand-drawn body in %s", (_, app) => {
+    const css = readFileSync(join(__dirname, '../../../../..', app, 'app/face-finish.css'), 'utf8');
+    expect(css).toMatch(
+      /\[data-face-finish='marker'\] > svg\[data-finish='marker'\] ~ \[data-marker-grid\] \{\s*border-color: transparent !important;/,
+    );
+  });
 });
 
 // docs/specs/008-canvas/finish.md "Marker": the pointer's own feedback (hover chrome, data-face-hover) changes nothing

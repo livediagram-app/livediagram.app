@@ -170,7 +170,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
 - **Tables:** under Marker a table's grid is drawn as whole rules, one marker stroke per row and column line, and
   its cells' colours (the header band, zebra stripes, a highlighted column, a cell's own colour) stay flat, never
   coloured in or edged. PNG and SVG exports draw the same rules in the same ink, so a header row's lines read as
-  they do on screen. A spreadsheet's working grid scrolls, so it keeps its plain lines inside its marker frame. A table's outer frame is its hand-drawn body, drawn once in its line colour (in a stronger shade only as Pale lines says) and at the same width on the canvas and in PNG and SVG exports; the face never draws a second frame over it.
+  they do on screen. A spreadsheet's working grid scrolls, so it keeps its plain lines inside its marker frame. A table's outer frame is its hand-drawn body, drawn once in its line colour (in a stronger shade only as Pale lines says) and at the same width on the canvas and in PNG and SVG exports; the face never draws a second frame over it, and the grid's own straight outer line is hidden under it (and left out of the export).
 
 ### Stickers
 

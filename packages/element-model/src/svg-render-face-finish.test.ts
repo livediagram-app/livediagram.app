@@ -139,6 +139,16 @@ describe('a table in marker', () => {
     expect(svgMarkerFace(body + frame, 't', face)).toBe(body + frame);
   });
 
+  // The canvas hides the grid's own border under the body (face-finish.css), so the export drops the plain one too.
+  it("drops the table's plain outer frame under its hand-drawn Marker body, and only there", () => {
+    const frame =
+      '<rect x="0" y="0" width="360" height="150" fill="none" stroke="#94a3b8" stroke-width="1" data-marker-body-frame=""/>';
+    const body = '<g data-finish="marker"></g>';
+    expect(svgMarkerFace(body + frame, 't', face)).toBe(body);
+    expect(svgMarkerFace(body + frame, 't', face, 'pencil')).toBe(body + frame);
+    expect(svgMarkerFace(frame, 't', face)).toContain('data-marker-part="frame"');
+  });
+
   it("leaves a cell's colour flat", () => {
     const cell = '<rect x="0" y="0" width="120" height="50" fill="#eceef2" data-finish-keep=""/>';
     expect(svgMarkerFace(cell, 't', face)).toBe(cell);

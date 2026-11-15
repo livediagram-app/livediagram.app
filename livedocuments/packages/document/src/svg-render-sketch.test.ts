@@ -112,6 +112,8 @@ describe('renderElementsToSvg under Sketch', () => {
     const table = { ...createTable(0, 0), id: 'tb', headerRow: true } as Element;
     const svg = renderElementsToSvg({ ...tabOf([table]), finish: 'marker' });
     expect(svg).not.toContain('data-marker-part="frame"');
+    // Nor a plain straight hairline under it: the canvas hides the grid's own border there (face-finish.css).
+    expect(svg).not.toContain('data-marker-body-frame');
     const body = svg.slice(svg.indexOf('data-finish="marker"'));
     const ink = handDrawnInk('#94a3b8', 'transparent');
     expect(ink).toBe('#94a3b8');
