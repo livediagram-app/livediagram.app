@@ -1,5 +1,5 @@
 // A picture drawn without colour on a 2D canvas (docs/specs/009-elements/picture-crop-and-mask.md "Export and
-// preview"): the canvas's own `grayscale` filter where the browser has one, else a grey copy of the picture's
+// preview", in livedocuments and livedesign): the canvas's own `grayscale` filter where the browser has one, else a grey copy of the picture's
 // pixels made once per picture (Rec. 709 luminance, as the SVG export's colour matrix).
 
 /** Whether this context applies CSS filters (a Safari without `ctx.filter` keeps 'none' after a write). */

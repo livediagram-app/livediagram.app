@@ -1,6 +1,7 @@
-// How an image element's picture sits in its box (docs/specs/009-elements/picture-crop-and-mask.md): the part of
-// the picture it keeps (its crop), the shape it is cut to (its mask) and where the picture lands for a fit. Pure,
-// shared by the canvas, the SVG export, the PNG / PDF drawer and the crop overlay, so all of them draw the same.
+// How an image element's picture sits in its box (docs/specs/009-elements/picture-crop-and-mask.md in livedocuments and
+// livedesign): the part of the picture it keeps (its crop), the shape it is cut to (its mask) and where the picture
+// lands for a fit. Pure and structural, shared by both products' canvas, SVG export, PNG / PDF drawer and crop overlay
+// (@liveworkspace/workbench), so all of them draw the same. Each product's model re-exports it.
 
 // The kept part, as fractions of the picture's own width and height from its top-left corner.
 export type ImageCrop = { x: number; y: number; width: number; height: number };
@@ -16,6 +17,18 @@ export const IMAGE_MASKS = [
   'blob',
 ] as const;
 export type ImageMask = (typeof IMAGE_MASKS)[number];
+
+// Each mask's name, as the menu's tiles show it.
+export const MASK_LABEL: Record<ImageMask, string> = {
+  circle: 'Circle',
+  rounded: 'Rounded',
+  arch: 'Arch',
+  hexagon: 'Hexagon',
+  diamond: 'Diamond',
+  triangle: 'Triangle',
+  star: 'Star',
+  blob: 'Blob',
+};
 
 // The smallest side a crop keeps, as a fraction of the picture.
 export const IMAGE_CROP_MIN = 0.02;
@@ -97,6 +110,24 @@ export function imageLayout(
     height: nh * s,
   };
   return { part, picture };
+}
+
+type Typed = { type: string };
+
+/** The mask set on an image (or removed, `null`), every other field and kind left as it is. */
+export function withImageMask<E extends Typed>(el: E, mask: ImageMask | null): E {
+  if (el.type !== 'image') return el;
+  const { mask: _old, ...rest } = el as E & { mask?: unknown };
+  void _old;
+  return (mask ? { ...rest, mask } : rest) as E;
+}
+
+/** Greyscale turned on or off on an image; other kinds left as they are. */
+export function withImageGreyscale<E extends Typed>(el: E, on: boolean): E {
+  if (el.type !== 'image') return el;
+  const { greyscale: _old, ...rest } = el as E & { greyscale?: unknown };
+  void _old;
+  return (on ? { ...rest, greyscale: true } : rest) as E;
 }
 
 /** Whether a picture fills its box: always under a mask, else when it is set to cover. */

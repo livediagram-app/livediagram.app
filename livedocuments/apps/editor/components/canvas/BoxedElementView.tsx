@@ -1,5 +1,5 @@
 import { isImageMask } from '@livedocuments/document';
-import { useIsImageCropping } from '@/lib/image-crop-store';
+import { useIsImageCropping } from '@liveworkspace/workbench/lib/image-crop-store';
 import { memo, useRef } from 'react';
 import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
 import {

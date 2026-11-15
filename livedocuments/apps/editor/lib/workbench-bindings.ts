@@ -42,5 +42,9 @@ export function bindWorkbench(): void {
     emptyCardDismissedKey: EMPTY_CARD_DISMISSED_KEY,
     formatConfigKey: FORMAT_CONFIG_KEY,
     spotlightConfigKey: SPOTLIGHT_CONFIG_KEY,
+    // A page picture's Blur is made off the main thread (docs/specs/007-editor/pages-mode.md "Image backgrounds"):
+    // the worker's entry sits beside this file, so the bundler builds it from here.
+    blurWorker: () =>
+      new Worker(new URL('./page-image-blur.worker.ts', import.meta.url), { type: 'module' }),
   });
 }

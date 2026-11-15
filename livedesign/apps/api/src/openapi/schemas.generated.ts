@@ -3353,6 +3353,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ImageCrop": {
+    "additionalProperties": false,
+    "properties": {
+      "height": {
+        "type": "number"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
   "ImageElement": {
     "additionalProperties": false,
     "properties": {
@@ -3386,11 +3410,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "credit": {
         "$ref": "#/components/schemas/ImageCredit"
       },
+      "crop": {
+        "$ref": "#/components/schemas/ImageCrop"
+      },
       "fillColor": {
         "type": "string"
       },
       "font": {
         "type": "string"
+      },
+      "greyscale": {
+        "const": true,
+        "type": "boolean"
       },
       "height": {
         "type": "number"
@@ -3418,6 +3449,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "locked": {
         "type": "boolean"
+      },
+      "mask": {
+        "$ref": "#/components/schemas/ImageMask"
       },
       "naturalHeight": {
         "type": "number"
@@ -3510,6 +3544,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "imageId"
     ],
     "type": "object"
+  },
+  "ImageMask": {
+    "enum": [
+      "circle",
+      "rounded",
+      "arch",
+      "hexagon",
+      "diamond",
+      "triangle",
+      "star",
+      "blob"
+    ],
+    "type": "string"
   },
   "ImageSummary": {
     "additionalProperties": false,
@@ -4845,6 +4892,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PageImageFill": {
     "additionalProperties": false,
     "properties": {
+      "blur": {
+        "type": "number"
+      },
       "credit": {
         "$ref": "#/components/schemas/ImageCredit"
       },

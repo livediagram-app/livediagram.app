@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appHosts, appOfHost, appOfPageHost, appOrigin, pageApp, workspaceHref } from './page-app';
 import {
   appAccount,
+  appAccountAnswer,
+  APP_TOKEN_TIMEOUT_MS,
   appSignInHref,
   e2eAccount,
   e2eSessionKey,
@@ -141,6 +143,74 @@ describe("the app's session", () => {
   it('is who the Explorer asks the index as', async () => {
     document.cookie = 'lp_signed_in=1; path=/';
     expect(await workspaceIdentity()).toMatchObject({ kind: 'account', sub: 'user_1' });
+  });
+});
+
+// 2026-11-15: the app's token answer hung (its API stalled on the accounts site), and the Explorer waited on it for
+// good. Now it is bounded, and no answer is never "signed out": no guest handoff, no silent sign-in, nothing kept.
+describe("the app's session when the app doesn't answer", () => {
+  const again = vi.fn();
+  beforeEach(() => {
+    again.mockReset();
+    vi.stubGlobal(SILENT_RETRY_GLOBAL, again);
+    document.cookie = 'lp_signed_in=1; path=/';
+  });
+
+  it('gives up on the token ask after its budget, as unreached', async () => {
+    const controller = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(controller.signal);
+    try {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(
+          (_url: string, init?: RequestInit) =>
+            new Promise<Response>((_resolve, reject) => {
+              init?.signal?.addEventListener('abort', () => reject(init.signal!.reason as Error));
+            }),
+        ),
+      );
+      const asked = appAccountAnswer();
+      expect(timeout).toHaveBeenCalledWith(APP_TOKEN_TIMEOUT_MS);
+      controller.abort(new DOMException('timed out', 'TimeoutError'));
+      expect(await asked).toEqual({ account: null, reached: false });
+      expect(again).not.toHaveBeenCalled();
+    } finally {
+      timeout.mockRestore();
+    }
+  });
+
+  it("reads the API's 503 and a network error as unreached, and asks again next time", async () => {
+    const unreachable = vi.fn<typeof fetch>(async () =>
+      Response.json({ error: 'accounts_unreachable' }, { status: 503 }),
+    );
+    vi.stubGlobal('fetch', unreachable);
+    expect(await appAccountAnswer()).toEqual({ account: null, reached: false });
+    expect(await appAccount()).toBeNull();
+    expect(unreachable).toHaveBeenCalledTimes(2);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>(async () => Promise.reject(new TypeError('offline'))),
+    );
+    expect(await appAccountAnswer()).toEqual({ account: null, reached: false });
+    expect(again).not.toHaveBeenCalled();
+  });
+
+  it('leaves the Explorer without an identity rather than starting a guest handoff', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>(async () => Response.json({}, { status: 503 })),
+    );
+    expect(await workspaceIdentity()).toBeNull();
+    // A handoff would have kept its state here before leaving (createGuestTokens startGuestHandoff).
+    expect(sessionStorage.getItem('liveplanner:guest-handoff')).toBeNull();
+  });
+
+  it('is still a signed-out answer (reached) on a 401', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>(async () => Response.json({ signedIn: false }, { status: 401 })),
+    );
+    expect(await appAccountAnswer()).toEqual({ account: null, reached: true });
   });
 });
 

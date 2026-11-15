@@ -6634,6 +6634,120 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "FlowCard": {
+    "additionalProperties": false,
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "moves": {
+        "items": {
+          "$ref": "#/components/schemas/FlowStep"
+        },
+        "type": "array"
+      },
+      "since": {
+        "type": "number"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "createdAt",
+      "since",
+      "moves"
+    ],
+    "type": "object"
+  },
+  "FlowCountRow": {
+    "additionalProperties": false,
+    "properties": {
+      "cards": {
+        "type": "number"
+      },
+      "day": {
+        "type": "number"
+      },
+      "status": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "day",
+      "type",
+      "status",
+      "cards"
+    ],
+    "type": "object"
+  },
+  "FlowResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "cards": {
+        "description": "Each card of the types asked for that moved in the range: its type, when it was made, its oldest kept history entry, and its moves over the history the plan keeps (up to 180 days), oldest first, each `[at, from, to]`: statuses only, never who moved it.",
+        "items": {
+          "$ref": "#/components/schemas/FlowCard"
+        },
+        "type": "array"
+      },
+      "counts": {
+        "description": "The stored daily counts of the range, and of the last stored day before it, which its first days carry. Only the card types asked for.",
+        "items": {
+          "$ref": "#/components/schemas/FlowCountRow"
+        },
+        "type": "array"
+      },
+      "fromDay": {
+        "description": "The range's first day, as a flow day (whole UTC days since 1 January 1970).",
+        "type": "number"
+      },
+      "toDay": {
+        "description": "Its last day: today, as a flow day.",
+        "type": "number"
+      }
+    },
+    "required": [
+      "fromDay",
+      "toDay",
+      "counts",
+      "cards"
+    ],
+    "type": "object"
+  },
+  "FlowStep": {
+    "items": [
+      {
+        "title": "at",
+        "type": "number"
+      },
+      {
+        "title": "from",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      {
+        "title": "to",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    ],
+    "maxItems": 3,
+    "minItems": 3,
+    "type": "array"
+  },
   "FlowchartDirection": {
     "enum": [
       "down",

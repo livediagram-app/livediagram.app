@@ -1,21 +1,20 @@
-// A page picture's Blur on the canvas (docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur): a blurred
-// copy made once per picture and strength, drawn small (a blurred picture has no detail to keep), blurred by three
-// box passes per axis with its edges held, and painted by the sheet as any picture is. Never a CSS blur filter, so
-// a pan or a zoom never blurs again. The exports draw an SVG feGaussianBlur instead (page-frame.ts).
+// A page picture's Blur on the canvas (docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur, in livedocuments
+// and livedesign): a blurred copy made once per picture and strength, drawn small (a blurred picture has no detail to
+// keep), blurred by three box passes per axis with its edges held, and painted by the sheet as any picture is. Never a
+// CSS blur filter, so a pan or a zoom never blurs again. The exports draw an SVG feGaussianBlur instead (each
+// product's page-frame.ts).
 //
-// The copy is made in a worker (page-image-blur.worker.ts, on an OffscreenCanvas), so letting go of a stronger Blur
-// on a large picture never holds the main thread. Where the worker cannot run (no OffscreenCanvas, it fails to load,
-// or it cannot fetch the picture) the copy is made here as before.
-import { BLUR_JPEG_QUALITY, blurCopyPlan, paintBlurredCopy } from './page-image-blur-core';
-import type { BlurCopyRequest, BlurCopyResponse } from './page-image-blur-protocol';
-
-export {
-  BLUR_COPY_MAX,
-  BLUR_COPY_MIN,
+// The copy is made in a worker (each editor's lib/page-image-blur.worker.ts, bound as `blurWorker`, on an
+// OffscreenCanvas), so letting go of a stronger Blur on a large picture never holds the main thread. Where the worker
+// cannot run (no binding, no OffscreenCanvas, it fails to load, or it cannot fetch the picture) the copy is made here.
+import {
+  BLUR_JPEG_QUALITY,
   blurCopyPlan,
-  boxBlurRgba,
-  boxRadiiForSigma,
-} from './page-image-blur-core';
+  type BlurCopyRequest,
+  type BlurCopyResponse,
+} from '@liveworkspace/page-background/image-blur';
+import { paintBlurredCopy } from '@liveworkspace/page-background/image-blur-paint';
+import { workbench } from '../bindings';
 
 // How many copies are kept once no sheet shows them.
 export const BLUR_CACHE_SIZE = 8;
@@ -37,10 +36,8 @@ const canUseWorker = () =>
   typeof OffscreenCanvas !== 'undefined' &&
   typeof createImageBitmap !== 'undefined';
 
-const newWorker = (): BlurWorkerLike =>
-  new Worker(new URL('./page-image-blur.worker.ts', import.meta.url), { type: 'module' });
-
-// What starts the worker: undefined is the real one where the browser can run it; a test's stand-in, or null for none.
+// What starts the worker: undefined is the editor's own (the `blurWorker` binding) where the browser can run it; a
+// test's stand-in, or null for none.
 let createWorker: (() => BlurWorkerLike) | null | undefined;
 // The one worker, started on the first copy; `false` once it has failed (every copy is then made here).
 let worker: BlurWorkerLike | false | null = null;
@@ -49,7 +46,8 @@ const pending = new Map<number, { resolve: (blob: Blob) => void; reject: (err: E
 
 function blurWorker(): BlurWorkerLike | null {
   if (worker !== null) return worker || null;
-  const create = createWorker === undefined ? (canUseWorker() ? newWorker : null) : createWorker;
+  const create =
+    createWorker === undefined ? (canUseWorker() ? workbench.blurWorker : null) : createWorker;
   try {
     worker = create?.() ?? false;
   } catch {

@@ -14,6 +14,8 @@
 // rendering.
 
 import { type CanvasSurface, type BoxedElement } from '@livedesign/design';
+// Crop, mask and greyscale included (docs/specs/009-elements/picture-crop-and-mask.md "Export and preview").
+import { drawPictureOnCanvas } from '@liveworkspace/workbench/lib/image-canvas-draw';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the design package so the
 // MCP worker reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
@@ -62,36 +64,6 @@ function boxedSilhouettePath(
   }
 }
 
-// Draw a loaded bitmap into the element's rounded box, honouring objectFit
-// (cover crops, contain letterboxes) and the corner radius (avatars clip to a
-// circle). A white backing fill matches the on-screen white background behind
-// the image so a 'contain' letterbox doesn't expose the page colour.
-function drawImageElement(
-  ctx: CanvasRenderingContext2D,
-  el: BoxedElement,
-  img: HTMLImageElement,
-  objectFit: 'cover' | 'contain',
-  radius: number,
-): void {
-  ctx.save();
-  roundedRect(ctx, el.x, el.y, el.width, el.height, radius);
-  ctx.clip();
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(el.x, el.y, el.width, el.height);
-  const iw = img.naturalWidth || img.width || 0;
-  const ih = img.naturalHeight || img.height || 0;
-  if (iw > 0 && ih > 0) {
-    const scale =
-      objectFit === 'cover'
-        ? Math.max(el.width / iw, el.height / ih)
-        : Math.min(el.width / iw, el.height / ih);
-    const dw = iw * scale;
-    const dh = ih * scale;
-    ctx.drawImage(img, el.x + (el.width - dw) / 2, el.y + (el.height - dh) / 2, dw, dh);
-  }
-  ctx.restore();
-}
-
 export function drawBoxed(
   ctx: CanvasRenderingContext2D,
   el: BoxedElement,
@@ -116,7 +88,7 @@ export function drawBoxed(
     const imageId = el.type === 'image' ? el.imageId : null;
     const img = imageId ? resolveImage?.(imageId) : undefined;
     if (img) {
-      drawImageElement(ctx, el, img, shape.objectFit, shape.radius);
+      drawPictureOnCanvas(ctx, el, img, shape.objectFit, shape.radius);
       drewImage = true;
     } else {
       // No bytes on hand: dashed empty-state placeholder.

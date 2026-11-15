@@ -4,7 +4,7 @@
 // backgrounds", Blur): asked for once per picture, page size and strength, held while the sheet shows it, null
 // (the tone shows) until it is ready.
 import { useEffect, useRef, useState } from 'react';
-import { acquireBlurredImage } from '@/lib/page-image-blur';
+import { acquireBlurredImage } from '../../lib/page-image-blur';
 
 // How long a changed strength waits before its copy is made.
 export const BLUR_SETTLE_MS = 150;

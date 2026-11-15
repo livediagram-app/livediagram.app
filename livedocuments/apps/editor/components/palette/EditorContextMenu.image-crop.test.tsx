@@ -4,7 +4,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createImage, type Element } from '@livedocuments/document';
 import { EditorContextMenu } from './EditorContextMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
-import { endImageCrop, imageCropId } from '@/lib/image-crop-store';
+import { endImageCrop, imageCropId } from '@liveworkspace/workbench/lib/image-crop-store';
 
 // docs/specs/009-elements/picture-crop-and-mask.md: the Image section's Crop Image, Mask and Greyscale.
 beforeAll(() => {

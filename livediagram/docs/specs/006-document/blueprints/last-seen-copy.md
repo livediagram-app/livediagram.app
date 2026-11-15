@@ -11,7 +11,7 @@ bind the same shared modules; their blueprints name only their bindings and poin
 | 1    | Specs, this blueprint, the shared store and copies, kept by every arrival, forgotten on lost access, cleared on sign-out                | No               |
 | 2    | The copy follows the document: refreshed when the first tab's save lands and when the tab list or name changes, so it is the last seen  | No               |
 | 3    | The warm open in all four editors: the early paint, read-only until the participant resolves, the catch-up replace, lost access, timing | Yes              |
-| 4    | Warm-open `DocumentLoad` measured before and after on production builds, numbers in this blueprint and the spec                         | No (docs, tests) |
+| 4    | Warm and cold opens measured on production builds, numbers here and in the spec; the `WarmPaint` timing; the refit driven check         | No (docs, tests) |
 
 ## Domain and naming
 
@@ -277,6 +277,33 @@ painted tab object, so the element views (memoised on their element) are not dra
 reaches (read-only to editable chrome) renders once more as it does in any role change. `cpuMsOf` budgets in
 `warm-open.test.ts` and each `seed-fetched-*.test.ts` guard these.
 
+**Measured on production builds (part 4).** `e2e/perf/warm-open.perf.ts` (the `perf` project, `E2E_PERF=1`) opens one
+server-stored document, a 200-element first tab of the reference board's mix plus two more tabs, against the
+signed-in export (`.next/out-signed-in`) on the e2e stack. Cold (the last seen copy store deleted first) and warm
+(the copy the previous open kept) alternate, 12 each, every one a fresh navigation in one browser context so the
+app's files come from the HTTP cache in both. The network is emulated over CDP on every request, the api's
+included: 100 ms round trip, 10 Mbps down, 5 Mbps up (`Network.setBlockedURLs` rather than route interception,
+which turns the HTTP cache off). "Content" is the first frame with an element on screen; "editable" is the first
+frame after the load's `done` step. Medians / p90 from navigation start:
+
+| Way in                                | Cold: content and editable | Warm: content | Warm: editable   |
+| ------------------------------------- | -------------------------- | ------------- | ---------------- |
+| Signed in, the document's own address | 827 / 829 ms               | 360 / 369 ms  | 1,191 / 1,209 ms |
+| A guest by an edit link's own address | 835 / 843 ms               | 369 / 376 ms  | 1,190 / 1,196 ms |
+
+The warm paint shows the content about 470 ms (56%) sooner. The catch-up makes it editable about 360 ms later than a
+cold open: in warm opens the ordinary load's first request (the participant) starts about 400 ms later, with the main
+thread idle in between (no task over 40 ms), behind two 290 ms timers and a 47 ms one. That fits React's 300 ms
+throttle on revealing suspended content, which the warm paint's commit of the editor's lazy chunks starts, holding
+back the commit that runs the load's effect. It is a follow-up (start the ordinary load without waiting on that
+commit, or preload the chunks the paint suspends on), not a part 4 change; the measure reports both numbers so the
+fix shows.
+
+**Field timing.** `WarmPaint` joins `EDITOR_TIMING_METRICS` (`@liveworkspace/api-schema` and livedesign's copy): the
+paint calls `startEditorTiming('WarmPaint', { from: documentLoadOrigin() ?? performance.now() }).endAfterPaint()`,
+from the same start as `DocumentLoad`, so the two read side by side in the Telemetry dashboard. The
+`performance.measure` marks stay for local traces.
+
 ## Presentation and UX
 
 - The warm paint is the editor as a Viewer sees it: the same canvas, tab bar and header, with the role pill and the
@@ -312,8 +339,8 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
 - `console.warn('[load] warm-open-fallback not-found: …')` when a warm-painted open ends on not found and reloads cold;
   `console.warn('[auth] token answer unknown (<reason>), asking again')` on each unknown token answer.
 - Timing marks (part 3): `performance.measure` entries `warm-paint` and `warm-catch-up`, from the same start as
-  `DocumentLoad`, each taken after the next frame. No new telemetry metric: `DocumentLoad` keeps timing the fresh
-  copy; part 4 reads the marks on production builds and decides whether a metric is worth adding.
+  `DocumentLoad`, each taken after the next frame. `DocumentLoad` keeps timing the fresh copy; part 4 adds the
+  `WarmPaint` timing (`Timing·Measured·WarmPaint.<bucket>`), the warm paint's first frame from the same start.
 
 ## Testing
 
@@ -353,7 +380,9 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
 | A link's own address warm-opens by its code, forgets by it | `last-seen-copies.test.ts` "reads the newest copy a share code kept …", "forgets every copy a share code kept …"; `warm-open.test.ts` "reads a share link's own address …"; `editor-arrival.test.ts` "forgets a link's copies by its code …"; each `useIdentityBootstrap.warm.test.tsx` "paints a link's own address …", "forgets a revoked link's copies …" |
 | Other tabs load, the chosen tab is kept | each `editor-page-helpers.test.ts` "loads a tab without a body while the warm open shows …"; each `seed-fetched-*.test.ts` "keeps the tab the person moved to …", "falls back to the first tab …"; each `useIdentityBootstrap.warm.test.tsx` "keeps the tab the person moved to …" |
 | One fit, at the paint | `useTabEntryEffects.test.tsx` "fits the warm-painted tab before hydration …", "waits for the load for a tab without a body …" |
-| A stale copy is fitted again on its fresh body | `useTabEntryEffects.test.tsx` "fits the warm-painted tab again when the catch-up replaced its body …" |
+| A stale copy is fitted again on its fresh body | `useTabEntryEffects.test.tsx` "fits the warm-painted tab again when the catch-up replaced its body …"; driven in `e2e/perf/warm-open.perf.ts` "a copy whose content changed since it was kept refits once at catch-up" |
+| The warm paint is timed as `WarmPaint`, a cold open never | each `useIdentityBootstrap.warm.test.tsx` "times the warm paint as WarmPaint …", "times no WarmPaint …" |
+| Warm against cold on production builds | `e2e/perf/warm-open.perf.ts` (reports, never fails on a number) |
 
 The shared modules (the store, the copies, the follower, the hook and the warm open) are held at 100% in `packages/workbench/vitest.config.ts`.
 

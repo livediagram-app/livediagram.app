@@ -23,7 +23,12 @@ import { isPenColourName } from './pen-colours';
 import { PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
-import { IMAGE_CROP_MIN, IMAGE_MASKS, isImageCrop, isImageMask } from './image-frame';
+import {
+  IMAGE_CROP_MIN,
+  IMAGE_MASKS,
+  isImageCrop,
+  isImageMask,
+} from '@liveworkspace/element-model/image-frame';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
 import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
 import { parseStrokePoints } from '@liveworkspace/model-core/stroke-points';

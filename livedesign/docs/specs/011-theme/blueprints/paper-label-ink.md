@@ -39,9 +39,11 @@ an element on a page with a fill of its own as `elementAsSeen` drew it.
 1. The same array when `storedPaper` equals `drawnPaper`.
 2. A mark in `after` is a candidate only when its colour reads worse on the drawn paper than on the stored one
    (`- 0.01`) and, for a fill, under 3:1 on the drawn paper. No candidate: the same array, with no backdrop lookup.
-3. `paperMarkBackdrops(elements, paper, ids)` finds each candidate's backdrop with one `labelBackdrops` pass over the
-   list with a probe after each candidate: a `text` element on the candidate's box whose `textColor` is its colour.
-   The candidate has the probe's area, so it is never its own backdrop (`labelBackdrops` takes only larger panels).
+3. `paperMarkBackdrops(elements, paper, ids)` finds each candidate's backdrop with `backdropBehind(elements, paper,
+candidate, index)` (`@liveworkspace/model-core/label-backdrop`): what a box of the candidate's size is read
+   against as if painted straight after it. The candidate has the box's area, so it is never its own backdrop (only
+   larger panels count). It reads the board's own backdrop grid, the one `labelBackdrops` builds, kept per board and
+   paper surface, so the mark pass and the two label passes bucket each board once (Work Tracker 896).
 4. Run for `after` on the drawn paper and for `before` on the stored one, matched by id. A mark is changed only when
    it is a paper mark in both and `contrast(now) < made - 0.01`.
 5. Target: an icon `max(LABEL_BACKDROP_CONTRAST, made)`, as a word; a fill `LABEL_BACKDROP_CONTRAST` (3:1, WCAG
@@ -76,9 +78,17 @@ drawn #66696e, an Ocean card's #254752 drawn #4b6e7a).
 ## Performance and limits
 
 - Two `labelBackdrops` passes (grid-bucketed, linear in elements) per projection in the dark editor, only when the
-  projector re-inks (an element or the canvas changed). The mark walk adds one colour check per shape, and two more
-  `labelBackdrops` passes (over the list plus one probe per candidate) only when some mark sinks. Walked inks are cached by `ink|paper|target`, up to
-  `PAPER_INK_CACHE_SIZE` (512) entries, cleared whole when full.
+  projector re-inks (an element or the canvas changed). The mark walk adds one colour check per distinct colour, and
+  one grid lookup per candidate on each paper only when some mark sinks; the grid is the label passes' own (built
+  once per board and surface), and a lookup reads its cell up to the candidate's paint index with no copy. Walked inks
+  are cached by `ink|paper|target`, up to `PAPER_INK_CACHE_SIZE` (512) entries, cleared whole when full; contrast
+  ratios are kept per call by colour.
+- Measured (Work Tracker 896), 4,000 parts plus 40 cards with words and icons, in Node on a loaded machine, median of
+  eight: the whole `inkedOnPaper` chain with every part sunk 26 to 31 ms before, 15 to 20 ms after; with nothing
+  sunk 12 to 13 ms before, 9 to 11 ms after. At a 4x CPU throttle the sunk case is about 60 to 80 ms per re-ink. The
+  projector re-inks when an element or the canvas changes (a remote edit included), so a dark-editor board of
+  thousands of sunk parts still spends a few frames per edit: an incremental re-ink of only the changed elements and
+  what lies under or over them is the next step if a real board shows it. The 4,000-part budget test holds the mark walk at 150 ms (was 400).
 
 ## Testing
 

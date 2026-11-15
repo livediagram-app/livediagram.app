@@ -576,7 +576,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     pointing here (glyph, number, title, Archived, status, assignee; pressed, each opens), its count, an empty
     note ("No cards link here as Owner yet."), and **New {Type}** for each type whose field links here: it makes
     a card of that type already linked, in its type's Default State (else the first status its type uses), and
-    opens it, then **Link Existing**, which links a card already made.
+    opens it (a type with [card templates](#the-add-card-picker) first offers them), then **Link Existing**, which links a card already made.
   - <a id="linked-cards-tab"></a>**The Linked Cards tab**: the Linked as sections (a Blocked By field's Blocks
     list among them) sit on a tab of their own in the item panel, **Linked Cards**, after the type's own tabs and
     before Activity, never on the type's first tab. It shows on every card whose type some Card field can link to
@@ -1079,7 +1079,30 @@ card and cleaning it up.
   offers at that moment (`cardTemplateFields`); its status, place and number come from where it is made, exactly as
   without a template, and its required fields still apply. The values are only a start: the card is an ordinary card
   from then on, editing it never changes the template, and editing or removing the template never changes a card made
-  from it. Where a card is added, the type's templates are offered (a later part of this feature builds the picker).
+  from it.
+- <a id="the-add-card-picker"></a>**Where a card is added, its templates are offered.** Every place a person picks a
+  card type to add (a cell's **+ Add card** and the board's **N** key, a slot column's +, a Gantt chart's **Add
+  Card**) opens the **Add a Card** menu ([Plan board](plan-board.md#working-on-a-board)), which lists each type's
+  templates right under the type, so a template is one press away, as the type is. The type's own row still adds a
+  blank card (its new-card title). Each template row is indented under its type: a template glyph on a tint of the
+  type's colour, the template's name, and under it the fields it fills ("Title, Description, Checklist"; "Starts
+  blank" for one holding nothing), spoken as "{Type} from {Template}" ("Bug from Bug Report"). A type without
+  templates shows its row alone, so a plan that has none sees the menu exactly as before.
+  - **One type already chosen.** A board's [card type chip](plan-board.md#card-type-chips) and a Linked as
+    section's **New {Type}** name their type themselves. For a type with templates, pressing one opens the same menu,
+    hung from the button, with only that type: its blank row first (so Enter, Enter adds a blank card), then its
+    templates. A type without templates adds its card at once, as before. Dragging a chip always carries a blank card.
+  - **What the new card takes.** The template's values for the fields its type offers (`cardTemplateFields`), over the
+    type's new-card title, then where it is made sets the rest exactly as for a blank card: its column's status, the
+    row's field (a swimlane's value wins over a template's for that field), a Gantt chart's start and due, a Linked
+    as section's link. It opens at once with its title selected, as any card just made; a required field the template
+    fills is no longer asked for in the New {Type} dialog.
+  - **Keyboard first.** Arrow keys walk the type and template rows in one list, Home and End jump, Enter picks,
+    Escape closes and focus goes back to the button, as in every menu; on a phone the list is the bottom sheet's.
+  - **Who sees it**: whoever may add cards, an Editor or a Participant, sees and uses the templates; a Viewer is
+    offered no Add a Card menu, chip or New {Type}, so no template.
+  - Telemetry: `Plan` · `Used` · `CardTemplate` when a card is started from a template (never its name), beside the
+    new card's own `Plan` · `Added` · the type.
 - **Editing them**: the type editor's **Templates** tab ([Editing a type](#editing-a-type)) lists the type's templates
   and edits one at a time, in place, with the very field controls the card's panel uses. They are part of the type's
   draft: Save stores them with the rest of the type, one undo step, and Cancel drops every template edit.
@@ -1946,3 +1969,6 @@ copied across or tidied up.
   Copy To Field writes one, `Plan` · `Removed` · `HiddenValue` when Remove deletes one.
 - `Plan` · `Added` · `LinkedCard` when New {Type} makes a card already linked, and `Plan` · `Linked` · `LinkedCard`
   when Link Existing links one (`LinkedCardMoved` when it moved from another card).
+- `Plan` · `Added` · `CardTemplate` and `Plan` · `Deleted` · `CardTemplate` when the type editor's Templates tab adds or
+  removes a template, and `Plan` · `Used` · `CardTemplate` when a card is started from one
+  ([Where a card is added](#the-add-card-picker)).

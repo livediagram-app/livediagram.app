@@ -34,6 +34,8 @@ import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import type { PickedImage } from '@/lib/upload-image';
+import type { CropResult } from '@liveworkspace/workbench/lib/image-crop-math';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 type ImageDescriptor = PickedImage;
 
@@ -137,6 +139,32 @@ export function useEditorImages(deps: EditorImagesDeps) {
 
   const closeImagePicker = useCallback(() => setImagePickerOpenFor(null), []);
 
+  // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md): the box moves to the frame and keeps the part
+  // of the picture under it, one undo step. A locked image keeps its place, so it is never cropped.
+  // `commit` is new with each change to the elements, so it is read at its newest: a fresh crop handler in the
+  // imageContext below would re-render every element on the board at each pickup, move and drop.
+  const commitRef = useLatest(commit);
+  const commitImageCrop = useCallback(
+    (elementId: string, result: CropResult) => {
+      commitRef.current((els) =>
+        els.map((el) => {
+          if (el.id !== elementId || el.type !== 'image' || el.locked) return el;
+          const { crop: _old, ...rest } = el;
+          void _old;
+          return {
+            ...rest,
+            x: result.x,
+            y: result.y,
+            width: result.width,
+            height: result.height,
+            ...(result.crop ? { crop: result.crop } : {}),
+          };
+        }),
+      );
+    },
+    [commitRef],
+  );
+
   // Memoised so BoxedElementView's React.memo (commit e8e34f9)
   // doesn't see a fresh object identity every editor-page render.
   // Without this the parent passed a new object literal each time,
@@ -153,6 +181,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
             // place, not its picture, so a locked image keeps its Select Image button.
             onOpenPicker:
               isReadOnly || embedMode || pictureBlocked ? undefined : openImagePickerFor,
+            // A crop moves and resizes the box (picture-crop-and-mask.md "Share roles"): an Editor's, outside a
+            // locked tab.
+            onCommitImageCrop: isReadOnly || editsBlocked ? undefined : commitImageCrop,
           }
         : undefined,
     [
@@ -161,8 +192,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
       sessionShareCode,
       isReadOnly,
       embedMode,
+      editsBlocked,
       pictureBlocked,
       openImagePickerFor,
+      commitImageCrop,
     ],
   );
 

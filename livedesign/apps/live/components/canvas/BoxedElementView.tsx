@@ -1,4 +1,5 @@
 import { memo, useRef, useState } from 'react';
+import { useIsImageCropping } from '@liveworkspace/workbench/lib/image-crop-store';
 import {
   DEFAULT_BOX_RADIUS_PX,
   cornerRadiusPx,
@@ -17,6 +18,7 @@ import {
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
+  isImageMask,
 } from '@livedesign/design';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -128,6 +130,7 @@ function BoxedElementViewImpl(props: BoxedElementViewProps) {
   // The drawing style (docs/specs/008-canvas/finish.md): its own, else the tab's. Under Sketch the body is
   // the SketchOverlay below, in place of the wrapper's border and background.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
+  const cropping = useIsImageCropping(element.id);
   const faceFinish = faceFinishOf(element, finish);
   const sketchBackdrop = useIsSketchBackdrop(element.id);
   const sketch = useSketchPaint(
@@ -344,6 +347,7 @@ function BoxedElementViewImpl(props: BoxedElementViewProps) {
     own,
     surface,
     rotation,
+    cropping,
     isAnnotation,
     hovering,
   });
@@ -443,7 +447,8 @@ function BoxedElementViewImpl(props: BoxedElementViewProps) {
           />
         </SketchFace>
       </FaceFinishProvider>
-      {element.type === 'image' ? sketchOverlay() : null}
+      {/* A masked picture has no rectangle for a hand-drawn edge to follow (picture-crop-and-mask.md). */}
+      {element.type === 'image' && !isImageMask(element.mask) ? sketchOverlay() : null}
 
       {chrome}
     </div>

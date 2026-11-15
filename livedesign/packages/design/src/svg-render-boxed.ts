@@ -1,6 +1,7 @@
 // One boxed element as an export draws it (docs/specs/015-api/mcp-server.md §5), split out of svg-render.ts:
 // its face (svgBoxedFace) and the finish pass over it (svgBoxed). svg-render.ts re-exports svgBoxed.
 
+import { isImageMask } from '@liveworkspace/element-model/image-frame';
 import { svgTabWindow } from './tab-window';
 import { missingComponentFrame } from './component-resolve';
 import {
@@ -172,8 +173,9 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
         : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
       // Its hand-drawn edge (finish.md "Images"), then a hero's caption card
-      // (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
-      (sketch ?? '') +
+      // (docs/specs/009-elements/web-components-and-no-groups.md), over the image. A masked picture has no rectangle for
+      // a hand-drawn edge to follow (picture-crop-and-mask.md).
+      (el.type === 'image' && isImageMask(el.mask) ? '' : (sketch ?? '')) +
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
     shapeStr = sketch;

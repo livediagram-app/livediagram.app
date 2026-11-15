@@ -21,6 +21,7 @@ export type TimingSentence = (timing: {
 export function createTimingSentence(noun: Noun): TimingSentence {
   const editorMoments: Readonly<Record<string, string>> = {
     [`${noun.Title}Load`]: `A ${noun.one} opened`,
+    WarmPaint: `A ${noun.one} opened before showed its last seen copy`,
     TabLoad: 'A tab someone switched to loaded',
     Save: 'An autosave finished',
     RoomConnect: `A ${noun.one}'s live room connected`,

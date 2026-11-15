@@ -5,24 +5,16 @@
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createImage, type ImageElement } from '@livedocuments/document';
-import { SelectionGripsContext } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
-import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import { SelectionGripsContext } from './SelectionGripsLayer';
+import { CanvasZoomProvider } from './CanvasZoomContext';
 import { ImageCropOverlay } from './ImageCropOverlay';
-import { imageCropId, startImageCrop } from '@/lib/image-crop-store';
-
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+import { imageCropId, startImageCrop } from '../../lib/image-crop-store';
 
 afterEach(cleanup);
 beforeEach(() => startImageCrop('pic'));
 
-const el: ImageElement = {
-  ...createImage(0, 0),
-  id: 'pic',
-  imageId: 'img',
-  width: 400,
-  height: 200,
-};
+// An image element as either product stores one, as far as the crop reads it.
+const el = { id: 'pic', x: 0, y: 0, width: 400, height: 200 };
 
 function show(onApply = vi.fn()) {
   const box = document.createElement('div');

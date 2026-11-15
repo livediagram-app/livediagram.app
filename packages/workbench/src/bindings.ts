@@ -5,6 +5,7 @@
 // default, and a development build warns once that one was read early.
 
 import { ZOOM_MAX } from './lib/zoom-range';
+import type { BlurWorkerLike } from './lib/page-image-blur';
 
 /**
  * The telemetry events workbench code sends: a subset of every product's vocabulary, so each
@@ -89,6 +90,10 @@ export type WorkbenchBindings = {
   spotlightConfigKey?: string;
   /** The localStorage key of the Hide Participant Cursors switch (`<product>:v2:hide-cursors`). */
   hideCursorsKey: string;
+  /** Starts the page picture Blur's worker (lib/page-image-blur.ts), from the editor's own entry beside it
+   *  (`new Worker(new URL('./page-image-blur.worker.ts', import.meta.url))`), where the editor paints blurred pictures;
+   *  null makes every copy on the main thread. */
+  blurWorker?: () => BlurWorkerLike | null;
 };
 
 /** What workbench code reads until an editor configures it: safe no-ops and `workbench:` keys. */
@@ -118,6 +123,7 @@ export const WORKBENCH_DEFAULTS: Readonly<Required<WorkbenchBindings>> = Object.
   formatConfigKey: 'workbench:v2:format-config',
   spotlightConfigKey: 'workbench:v2:spotlight-config',
   hideCursorsKey: 'workbench:v2:hide-cursors',
+  blurWorker: () => null,
 });
 
 let bound: Readonly<WorkbenchBindings> = WORKBENCH_DEFAULTS;
@@ -190,6 +196,8 @@ export const workbench = {
   get spotlightConfigKey(): string {
     return current().spotlightConfigKey ?? WORKBENCH_DEFAULTS.spotlightConfigKey;
   },
+  blurWorker: (): BlurWorkerLike | null =>
+    (current().blurWorker ?? WORKBENCH_DEFAULTS.blurWorker)(),
 };
 
 /** Back to the unconfigured defaults, for tests. */

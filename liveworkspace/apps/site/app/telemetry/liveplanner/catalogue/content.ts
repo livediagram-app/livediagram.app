@@ -753,6 +753,17 @@ export const PLAN_SAVED_FILTERS_USED = chart(
   'Used',
   'Saved Filters Applied',
   "One of a board's saved filters applied by pressing its chip.",
+  { types: ['SavedFilter'] },
+);
+
+// Card templates (docs/specs/026-plan/item-types.md "Where a card is added, its templates are offered", in the
+// liveplanner folder): a card started from one of its type's templates in Add a Card. Never the template's name.
+export const PLAN_CARD_TEMPLATES_USED = chart(
+  'Plan',
+  'Used',
+  'Cards From Templates',
+  'A card started from one of its card type’s templates in Add a Card (a column’s Add card, a chip, New {Type} or a Gantt chart’s Add Card).',
+  { types: ['CardTemplate'] },
 );
 
 export const PLAN_SAVED_FILTERS_RENAMED = chart(
@@ -1437,6 +1448,7 @@ export const FORMS: MetricStack = {
 const PLAN_BOARDS_MEMBERS = [
   PLAN_TABS_CREATED,
   PLAN_ITEMS_ADDED,
+  PLAN_CARD_TEMPLATES_USED,
   PLAN_ITEMS_MOVED,
   PLAN_CARDS_LINKED,
   PLAN_ITEMS_OPENED,
@@ -1498,9 +1510,11 @@ export const PLAN_BOARDS: MetricStack = {
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
   // Calendar moves, chart statuses, card styles and webhook secrets regenerated are slices of Boards Set Up (every
-  // Plan·Changed), and time added by hand a slice of Items Added (every Plan·Added), so the head counts them once.
+  // Plan·Changed), and time added by hand a slice of Items Added (every Plan·Added), so the head counts them once. A
+  // card from a template is already one of Items Added.
   headline: PLAN_BOARDS_MEMBERS.filter(
     (m) =>
+      m !== PLAN_CARD_TEMPLATES_USED &&
       m !== PLAN_CALENDAR_MOVES &&
       m !== PLAN_AUTOMATION_SECRETS_REGENERATED &&
       m !== PLAN_VIEW_STATUSES &&

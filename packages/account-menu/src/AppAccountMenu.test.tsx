@@ -4,7 +4,7 @@ import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AccountMenu, SIGN_OUT_REFUSED } from './AccountMenu';
 import { AppAccountMenu } from './AppAccountMenu';
-import { appAccountOf, appSignOut, resetAppAccount } from './app-account';
+import { APP_TOKEN_ASK_TIMEOUT_MS, appAccountOf, appSignOut, resetAppAccount } from './app-account';
 import { ACCOUNT_TRIGGER_BOX } from './face';
 import { avatarColour } from './initials';
 import { SILENT_RETRY_GLOBAL } from '@liveworkspace/auth-client/silent';
@@ -191,6 +191,30 @@ describe('AppAccountMenu', () => {
     await act(async () => answer());
     expect(screen.getAllByRole('button', { name: 'Ada, account menu' })).toHaveLength(2);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops waiting on a token answer that never comes, and keeps the cookies as they are', async () => {
+    // 2026-11-15: the app's API stalled on the accounts site and the answer never came.
+    setCookies('lp_signed_in=1');
+    const timer = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(timer.signal);
+    fetchMock.mockImplementation(
+      (_url: unknown, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(init.signal!.reason));
+        }),
+    );
+    try {
+      const { container } = render(<AppAccountMenu hint={HINT} />);
+      expect(timeout).toHaveBeenCalledWith(APP_TOKEN_ASK_TIMEOUT_MS);
+      expect(container.querySelectorAll(':scope > [aria-hidden="true"]')).toHaveLength(1);
+      await act(async () => timer.abort(new DOMException('timed out', 'TimeoutError')));
+      // Answered (nothing pending), and the hint, untouched by a stall, still says signed in.
+      expect(container.querySelectorAll(':scope > [aria-hidden="true"]')).toHaveLength(0);
+      expect(document.cookie).toContain('lp_signed_in=1');
+    } finally {
+      timeout.mockRestore();
+    }
   });
 
   it('checks a named session once, when the page is idle, and turns to Guest if it ended elsewhere', async () => {

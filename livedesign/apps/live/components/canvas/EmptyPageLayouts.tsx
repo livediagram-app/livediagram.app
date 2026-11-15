@@ -32,6 +32,15 @@ const KIND_NOUN = {
   photo: 'photo',
 } as const;
 
+/** Hides the card and hands the keyboard focus to the canvas it sat on (docs/specs/007-editor/pages-mode.md "An empty
+ *  page offers its layouts"): the card's focused control goes with it, and left to the browser the focus fell to the
+ *  bare page (Work Tracker 593). */
+function hideToCanvas(from: HTMLElement, onHide: () => void) {
+  const canvas = from.closest<HTMLElement>('[data-canvas-a11y-root]');
+  onHide();
+  canvas?.focus({ preventScroll: true });
+}
+
 export function EmptyPageLayouts({
   page,
   zoom,
@@ -67,7 +76,7 @@ export function EmptyPageLayouts({
           if (e.key !== 'Escape') return;
           e.preventDefault();
           e.stopPropagation();
-          onHide();
+          hideToCanvas(e.currentTarget, onHide);
         }}
         className="pointer-events-auto relative flex animate-dialog-in flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40"
         style={{
@@ -109,7 +118,7 @@ export function EmptyPageLayouts({
               <button
                 type="button"
                 aria-label="Hide"
-                onClick={onHide}
+                onClick={(e) => hideToCanvas(e.currentTarget, onHide)}
                 className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
                 <CloseIcon />

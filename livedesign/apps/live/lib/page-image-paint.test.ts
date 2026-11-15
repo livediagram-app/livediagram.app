@@ -81,3 +81,22 @@ describe('a picture on the sheet', () => {
     );
   });
 });
+
+// docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur: a blurred picture paints from its blurred copy, even
+// an offline design's inline one, and from nothing but its tone while the copy is made.
+describe('a blurred picture on the sheet', () => {
+  const soft = fill({ imageId: 'data:image/png;base64,AAAA', overlay: undefined, blur: 0.5 });
+  it('paints the copy given, never the sharp inline picture', () => {
+    expect(pageSheetStyle({ fill: soft }, undefined, 'blob:http://x/1').backgroundImage).toBe(
+      'url("blob:http://x/1")',
+    );
+  });
+  it('shows only the tone while the copy is made', () => {
+    const style = pageSheetStyle({ fill: soft }, undefined, null);
+    expect(style.backgroundImage).toBeUndefined();
+    expect(style.backgroundColor).toBe('#203040');
+  });
+  it('paints the picture itself when no copy is asked for', () => {
+    expect(pageSheetStyle({ fill: soft }).backgroundImage).toContain('data:image/png');
+  });
+});

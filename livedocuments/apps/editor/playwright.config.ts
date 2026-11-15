@@ -89,12 +89,7 @@ export default defineConfig({
       ? [
           {
             name: 'workbench',
-            use: {
-              ...devices['Desktop Chrome'],
-              colorScheme: 'dark' as const,
-              // Playwright's trace snapshots the page on every action: work the probe would count.
-              trace: 'off' as const,
-            },
+            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
             testMatch: /workbench-(embed|workspace)\.spec\.ts/,
           },
         ]
@@ -115,7 +110,12 @@ export default defineConfig({
       ? [
           {
             name: 'perf',
-            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
+            use: {
+              ...devices['Desktop Chrome'],
+              colorScheme: 'dark' as const,
+              // Playwright's trace snapshots the page before and after every call: work the probe would count.
+              trace: 'off' as const,
+            },
             testMatch: /perf\/.*\.perf\.ts/,
             // One long measurement: a retry would only run it all again (and double the time).
             retries: 0,

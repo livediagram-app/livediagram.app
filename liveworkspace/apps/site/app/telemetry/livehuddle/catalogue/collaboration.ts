@@ -348,7 +348,12 @@ export const HOME_PICKS = chart(
   { types: HOME_PICK_TYPES },
 );
 
-export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read of Home retried.');
+export const HOME_LOADS = chart(
+  'Home',
+  'Loaded',
+  'Home Retries',
+  'A failed read of Home retried, or the Explorer giving up waiting for the account (Stalled).',
+);
 
 export const HOME_AND_ACTIVITY: MetricStack = {
   stack: true,

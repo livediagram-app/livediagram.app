@@ -11,7 +11,25 @@ import {
 import { iconWeightPx } from '@liveworkspace/model-core/icon-weight';
 import type { BoxedElement } from './element';
 import type { ExportIconArt } from './export-shape';
+import {
+  imageIsShaped,
+  imageLayout,
+  imageMaskPath,
+  isImageMask,
+  type ImageCrop,
+} from './image-frame';
 import { r2, xmlEscape } from './svg-render-primitives';
+
+// The picture fields a product's image element may carry (livedocuments and livedesign do; docs/specs/009-elements/
+// picture-crop-and-mask.md). Read structurally: a product without them draws as before.
+type PictureFields = {
+  crop?: ImageCrop;
+  mask?: unknown;
+  greyscale?: boolean;
+  naturalWidth?: number;
+  naturalHeight?: number;
+  alt?: unknown;
+};
 
 // Inline a bitmap as a clipped <image>. The data URL is embedded so the SVG
 // stays self-contained when downloaded; preserveAspectRatio maps objectFit
@@ -24,22 +42,76 @@ export function svgImageShape(
   href: string,
   objectFit: 'cover' | 'contain',
   radius: number,
+  // The alt text as the <image>'s <title> (livedocuments' docs/specs/009-elements/images.md "Alt text"); off, the
+  // other products' exports stay as they were.
+  options: { altTitle?: boolean } = {},
 ): string {
   const x = r2(el.x);
   const y = r2(el.y);
   const w = r2(el.width);
   const h = r2(el.height);
   const rr = r2(Math.min(radius, el.width / 2, el.height / 2));
-  const par = objectFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet';
   // Unique, XML-id-safe clip id per element (element ids are unique per tab).
   const clipId = `lvd-img-${String(el.id).replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const image = el.type === 'image' ? (el as BoxedElement & PictureFields) : undefined;
+  // A mask cuts the box to its shape (docs/specs/009-elements/picture-crop-and-mask.md); else the rounded box.
+  const mask = image && isImageMask(image.mask) ? image.mask : undefined;
+  const clipShape = mask
+    ? `<path d="${imageMaskPath(mask, el.width, el.height, el.x, el.y)}"/>`
+    : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rr}" ry="${rr}"/>`;
+  const grey = image?.greyscale === true;
+  const filterId = `${clipId}-grey`;
+  const defs =
+    `<clipPath id="${clipId}">${clipShape}</clipPath>` +
+    (grey
+      ? `<filter id="${filterId}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${GREY_MATRIX}"/></filter>`
+      : '');
+  const filterAttr = grey ? ` filter="url(#${filterId})"` : '';
+  let picture: string;
+  if (image && imageIsShaped(image)) {
+    // The kept part laid into the box, the whole picture around it at the same scale (imageLayout).
+    const natural =
+      image.naturalWidth && image.naturalHeight
+        ? { width: image.naturalWidth, height: image.naturalHeight }
+        : null;
+    const l = imageLayout(el, natural, image.crop, objectFit);
+    const pic = imageTag(
+      `x="${r2(el.x + l.picture.x)}" y="${r2(el.y + l.picture.y)}" width="${r2(l.picture.width)}" height="${r2(l.picture.height)}" preserveAspectRatio="none" href="${xmlEscape(href)}"${filterAttr}`,
+      options.altTitle ? el : null,
+    );
+    // A letterboxed crop keeps its own edges: the picture past the part is cut off.
+    const partClip = `${clipId}-part`;
+    const letterboxed = l.part.x > 0.01 || l.part.y > 0.01;
+    picture = letterboxed
+      ? `<clipPath id="${partClip}"><rect x="${r2(el.x + l.part.x)}" y="${r2(el.y + l.part.y)}" width="${r2(l.part.width)}" height="${r2(l.part.height)}"/></clipPath>` +
+        `<g clip-path="url(#${partClip})">${pic}</g>`
+      : pic;
+  } else {
+    const par = objectFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet';
+    picture = imageTag(
+      `x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par}" href="${xmlEscape(href)}"${filterAttr}`,
+      options.altTitle ? el : null,
+    );
+  }
   return (
-    `<clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rr}" ry="${rr}"/></clipPath>` +
+    defs +
     `<g clip-path="url(#${clipId})">` +
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#ffffff"/>` +
-    `<image x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par}" href="${xmlEscape(href)}"/>` +
+    picture +
     `</g>`
   );
+}
+
+// Greyscale by luminance (Rec. 709 weights), the canvas's `grayscale(1)`.
+const GREY_MATRIX =
+  '0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0';
+
+// The <image>, with the picture's alt text as its <title> (docs/specs/009-elements/images.md "Alt text"): what a
+// screen reader names it by, and the tooltip a viewer shows.
+function imageTag(attrs: string, el: BoxedElement | null): string {
+  const raw = el?.type === 'image' ? (el as PictureFields).alt : undefined;
+  const alt = typeof raw === 'string' ? raw.trim() : '';
+  return alt ? `<image ${attrs}><title>${xmlEscape(alt)}</title></image>` : `<image ${attrs}/>`;
 }
 
 // A shape==='icon' element's glyph as a nested <svg> positioned over the
@@ -48,13 +120,13 @@ export function svgImageShape(
 // Line art: viewBox 0 0 24 24 scaled into the glyph band opposite the
 // caption (iconBandBounds: the same inverse-alignment bands as Technology
 // marks, mirroring IconGlyph). The stroke width is divided by the glyph
-// scale so it lands at ~2 rendered units; the on-canvas glyph strokes are
+// scale so it lands at ~2 rendered units: the on-canvas glyph strokes are
 // non-scaling 2px. Technology marks: self-coloured tile art at its fixed
 // preset size in the band (TechIconGlyph).
 export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: string): string {
   if (art.colored) {
     // A Technology mark renders at its fixed preset size (docs/specs/010-palette/technology-icons.md), centred
-    // in the glyph band and clamped to the box; techIconMarkBounds is the
+    // in the glyph band and clamped to the box: techIconMarkBounds is the
     // single source of that geometry (shared with the connector anchors in
     // geometry.ts), mirroring TechIconGlyph exactly. The band sits OPPOSITE
     // the caption's vertical alignment so moving the text never stacks it

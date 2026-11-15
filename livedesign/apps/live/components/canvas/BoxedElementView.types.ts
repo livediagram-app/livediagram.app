@@ -79,6 +79,11 @@ export type BoxedElementViewProps = {
     designId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
+    // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md); an Editor's only.
+    onCommitImageCrop?: (
+      elementId: string,
+      result: import('@liveworkspace/workbench/lib/image-crop-math').CropResult,
+    ) => void;
   };
   // Open the per-element note popover. Optional so read-only viewers
   // (who shouldn't see a clickable badge) can omit it. When omitted

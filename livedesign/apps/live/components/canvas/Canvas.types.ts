@@ -462,6 +462,11 @@ export type CanvasProps = {
     designId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
+    // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md); an Editor's only.
+    onCommitImageCrop?: (
+      elementId: string,
+      result: import('@liveworkspace/workbench/lib/image-crop-math').CropResult,
+    ) => void;
   };
   // Touch-friendly fallback for right-click: a SelectionPopover
   // ellipsis button opens the same context menu under the cursor.

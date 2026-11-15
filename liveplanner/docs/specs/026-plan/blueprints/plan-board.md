@@ -320,7 +320,8 @@ SlotColumnHeader.tsx     a slot column's sticky head: a colour dot (the column's
                          the N key's adding cell
 plan-board-columns.ts    layout 'slot' (inSlot, not a phone, not covering): `minmax(SLOT_COLUMN_MIN_PX * w px, w fr)`,
                          SLOT_COLUMN_MIN_PX 160, the grid's gap 8 px (SLOT_COLUMN_GAP_PX) and the body `scroll-edge-fade`
-AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
+AddCardPopover.tsx       Add a Card: the board's types, each followed by its card templates (item-types.md blueprint
+                         "The add-card picker"), as OptionRows in the shared PortalMenu (BottomSheet on a phone)
 PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face (custom fields as chips where Display places them; its gathered votes read-only)
 card-face-custom-bit.tsx a custom field's bit on the face (`customFieldBit`, a plain function the face's `pill` calls)

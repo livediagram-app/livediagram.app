@@ -14,7 +14,7 @@ import type {
   BorderRadius,
 } from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
-import type { ImageCrop, ImageMask } from './image-frame';
+import type { ImageCrop, ImageMask } from '@liveworkspace/element-model/image-frame';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { ElementBuild } from './build-types';

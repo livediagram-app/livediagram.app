@@ -20,12 +20,22 @@ import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/prim
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
+import { CropGlyph, ImagePictureControls } from '@/components/palette/ImagePictureControls';
+import { startImageCrop } from '@liveworkspace/workbench/lib/image-crop-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { inkSwatch, shownColour } from '@/components/palette/ink-row';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
+
+// The Image section's tiles for a picture: Change and Remove, Crop unless locked, Edit as Photo where offered.
+function imageTileCount(
+  target: { locked?: boolean; imageId?: string | null },
+  editAsPhoto: boolean,
+): number {
+  return 2 + (target.locked ? 0 : 1) + (editAsPhoto && target.imageId ? 1 : 0);
+}
 
 // The lower, content / metadata sections of the single-element context menu:
 // Text (labelled arrow / table cells), Image, Table structure and Link. Assign Action, Comments, Link and Note are on
@@ -154,7 +164,8 @@ export function ElementContentSections({
       {target.type === 'image' ? (
         <MenuAccordionSection title="Image" icon={<ImageGlyph />} {...sectionProps('image')}>
           {hasImage ? (
-            <MenuTileGrid cols={2}>
+            // Two to four tiles: three in a row, four as two rows of two.
+            <MenuTileGrid cols={imageTileCount(target, !!props.onEditAsPhoto) === 3 ? 3 : 2}>
               <MenuTile
                 icon={<ImageGlyph />}
                 label="Change Image"
@@ -163,6 +174,17 @@ export function ElementContentSections({
                   onClose();
                 }}
               />
+              {/* Cropping moves and resizes the box, which a lock holds (picture-crop-and-mask.md). */}
+              {target.locked ? null : (
+                <MenuTile
+                  icon={<CropGlyph />}
+                  label="Crop Image"
+                  onClick={() => {
+                    startImageCrop(target.id);
+                    onClose();
+                  }}
+                />
+              )}
               <MenuTile
                 icon={<RemoveIconGlyph />}
                 label="Remove Image"
@@ -203,6 +225,9 @@ export function ElementContentSections({
               <ImageCreditRow credit={target.credit} />
             </>
           ) : null}
+          {/* Mask and Greyscale (docs/specs/009-elements/picture-crop-and-mask.md). */}
+          <ContextMenuDivider />
+          <ImagePictureControls target={target} ops={props.elementStyle} />
           {/* The hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): any image can carry one. */}
           <ContextMenuDivider />
           <MenuToggleRow

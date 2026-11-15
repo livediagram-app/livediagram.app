@@ -1,13 +1,25 @@
-// Cropping an image on the canvas (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor"), as
-// pure geometry: the frame (the box being cropped to) and the whole picture, both in canvas units in the element's
+// Cropping an image on the canvas (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor", in
+// livedocuments and livedesign), as pure geometry: the frame (the box being cropped to) and the whole picture, both in canvas units in the element's
 // own frame (its top-left corner at 0, 0, unrotated). The overlay feeds pointer deltas in; Done reads the result.
 import {
   cleanImageCrop,
   imageDrawsCover,
   imageLayout,
   type ImageCrop,
-  type ImageElement,
-} from '@livedocuments/document';
+  type ImageMask,
+} from '@liveworkspace/element-model/image-frame';
+
+/** What the crop reads of an image element: its box, rotation and picture fields (each product's ImageElement). */
+export type CroppableImage = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation?: number;
+  crop?: ImageCrop;
+  mask?: ImageMask;
+  objectFit?: 'cover' | 'contain';
+};
 
 export type CropRect = { x: number; y: number; width: number; height: number };
 export type CropSession = {
@@ -31,7 +43,7 @@ const ratio = (r: { width: number; height: number }) => r.width / r.height;
 /** Where cropping starts: the box as the frame, the picture where it is drawn (a whole contain picture covering the
  *  box, so the first drag already crops; a letterboxed crop's frame is the part it shows). */
 export function cropSessionStart(
-  el: Pick<ImageElement, 'width' | 'height' | 'crop' | 'mask' | 'objectFit'>,
+  el: Pick<CroppableImage, 'width' | 'height' | 'crop' | 'mask' | 'objectFit'>,
   natural: { width: number; height: number } | null,
 ): CropSession {
   const box = { width: el.width, height: el.height };
@@ -180,7 +192,7 @@ export type CropResult = { x: number; y: number; width: number; height: number; 
 /** What Done stores: the box moved to the frame (turned with the element about its old centre) and the part of the
  *  picture under it; null when nothing moved. */
 export function cropSessionResult(
-  el: Pick<ImageElement, 'x' | 'y' | 'width' | 'height' | 'rotation'>,
+  el: Pick<CroppableImage, 'x' | 'y' | 'width' | 'height' | 'rotation'>,
   s: CropSession,
 ): CropResult | null {
   if (near(s.frame, s.start.frame) && near(s.picture, s.start.picture)) return null;

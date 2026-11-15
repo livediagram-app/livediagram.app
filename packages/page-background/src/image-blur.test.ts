@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   BLUR_COPY_MAX,
   BLUR_COPY_MIN,
+  PAGE_IMAGE_BLUR_MAX,
   blurCopyPlan,
   boxBlurRgba,
   boxRadiiForSigma,
-} from './page-image-blur';
+  pageImageBlurSigma,
+  parsePageImageBlur,
+} from './image-blur';
 
 // docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur.
 describe('page picture blur', () => {
@@ -66,9 +70,35 @@ describe('page picture blur', () => {
     const plan = blurCopyPlan({ width: 4000, height: 3000 }, { width: 1920, height: 1080 }, 4.32);
     expect(plan.width).toBe(BLUR_COPY_MAX);
     const data = new Uint8ClampedArray(plan.width * plan.height * 4).fill(128);
-    const start = process.cpuUsage();
-    boxBlurRgba(data, plan.width, plan.height, plan.sigma);
-    const used = process.cpuUsage(start);
-    expect((used.user + used.system) / 1000).toBeLessThan(1000);
+    const ms = cpuMsOf(() => boxBlurRgba(data, plan.width, plan.height, plan.sigma));
+    expect(ms).toBeLessThan(cpuBudgetMs(1000));
+  });
+});
+
+describe('a blur too slight to move a pixel', () => {
+  it('leaves the pixels as they were, as no blur and an empty picture do', () => {
+    const data = new Uint8ClampedArray([10, 20, 30, 255, 200, 100, 50, 255]);
+    boxBlurRgba(data, 2, 1, 0.2);
+    boxBlurRgba(data, 2, 1, 0);
+    boxBlurRgba(data, 0, 0, 4);
+    expect(Array.from(data)).toEqual([10, 20, 30, 255, 200, 100, 50, 255]);
+  });
+});
+
+describe('a stored blur', () => {
+  it('clamps to 0..1 in steps of 0.05, and drops none and a non-number', () => {
+    expect(parsePageImageBlur(0.42)).toBe(0.4);
+    expect(parsePageImageBlur(3)).toBe(1);
+    expect(parsePageImageBlur(0)).toBeUndefined();
+    expect(parsePageImageBlur(Number.NaN)).toBeUndefined();
+    expect(parsePageImageBlur('0.5')).toBeUndefined();
+  });
+
+  it("blurs by a share of the page's shorter side", () => {
+    expect(pageImageBlurSigma({ blur: 1 }, { width: 1920, height: 1080 })).toBeCloseTo(
+      1080 * PAGE_IMAGE_BLUR_MAX,
+    );
+    expect(pageImageBlurSigma({ blur: 0.5 }, { width: 900, height: 1440 })).toBeCloseTo(18);
+    expect(pageImageBlurSigma({}, { width: 1920, height: 1080 })).toBe(0);
   });
 });

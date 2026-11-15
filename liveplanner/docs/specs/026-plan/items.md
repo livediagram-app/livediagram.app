@@ -756,8 +756,9 @@ Each entry is **tagged** by how it was made:
 - History is **read while a card's Activity tab is open** (when it is picked, and again when the open card changes
   while it shows), one request for that card, never sent with the room's item ops and never with the store. A card
   whose Activity tab is never picked reads nothing.
-- The [flow charts](plan-views.md#flow-charts) read history too, across the plan: only the moves within their range,
-  to work out when each card started and finished. They answer days and counts, never an entry's author or values.
+- The [flow charts](plan-views.md#flow-charts) read history too, across the plan: the moves of each card that moved
+  within their range, back as far as its history goes, to work out when it started and finished. They answer days
+  and counts, never an entry's author or values.
 - **Grouped**: entries one person makes with the same tag within a minute of the first of them read as one entry,
   each field once at its latest value ("Sam moved this from To Do to Review and set Priority to High"). A move
   there and back, a flag on and off, or a trash and restore within the minute drops out; a group with nothing left
