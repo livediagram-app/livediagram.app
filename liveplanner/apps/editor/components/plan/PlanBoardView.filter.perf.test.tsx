@@ -3,6 +3,7 @@
 // teammate re-projects every open copy of the board, so on a full board (ITEMS_MAX) it must cost one filtered projection:
 // the unfiltered projection the widgets count is kept, the widgets do not recount, and only the cards the filter
 // shows or hides are drawn. Inside a CPU budget (not wall-clock: docs/specs/003-system-architecture/testing.md).
+import { Profiler } from 'react';
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
@@ -176,4 +177,37 @@ describe('A remote filter change on a busy board', () => {
       expect(run.ms).toBeLessThan(cpuBudgetMs(FILTER_BUDGET_MS));
     }
   }, 120_000);
+});
+
+// Work Tracker 909: on a production build at 4x CPU, narrowing 2,000 cards to 667 was one 51 to 80 ms task. The
+// projection reads a deferred copy of the filter, so the change first commits with the cards as they were (the filter
+// bar's own render), then commits the narrowed cards as a render React may yield in.
+describe('A filter change on a board', () => {
+  it('draws the narrowed cards in a later, deferred commit', () => {
+    const value = plan(40);
+    // The cards on the board at each commit.
+    const drawn: number[] = [];
+    const tree = (el: ShapeElement) => (
+      <Profiler
+        id="board"
+        onRender={() => drawn.push(document.querySelectorAll('[data-plan-card]').length)}
+      >
+        <SelectionStoreProvider store={createSelectionStore()}>
+          <PlanProvider value={value}>
+            <PlanBoardView element={el} />
+          </PlanProvider>
+        </SelectionStoreProvider>
+      </Profiler>
+    );
+    const r = render(tree(element()));
+    const all = document.querySelectorAll('[data-plan-card]').length;
+    drawn.length = 0;
+    counts.project = 0;
+    act(() => r.rerender(tree(element({ priority: 'high' }))));
+    const narrowed = document.querySelectorAll('[data-plan-card]').length;
+    expect(narrowed).toBeLessThan(all);
+    expect(drawn[0]).toBe(all);
+    expect(drawn.at(-1)).toBe(narrowed);
+    expect(counts.project).toBe(1);
+  });
 });

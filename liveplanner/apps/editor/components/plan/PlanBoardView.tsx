@@ -13,7 +13,7 @@ import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/use
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { cornerRadiusPx, planOwnColoursOf, type ShapeElement } from '@liveplanner/project';
 import {
@@ -155,6 +155,10 @@ export function PlanBoardView({
   // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either; nor does a slot board.
   const phone = useIsMobileViewport();
   const applied = shownQuick(quick, phone || simplified);
+  // The cards follow a filter change (this person's or a teammate's arriving) as a deferred render React can yield in,
+  // so narrowing a 2,000-card board is not one long task (board-widgets.md "The board's filter"; blueprint
+  // "Performance and limits"). The filter bar shows the new filter at once; the cards may show the old one a frame.
+  const shownFilter = useDeferredValue(applied);
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
   const closeAdding = useCallback(() => setAdding(null), []);
   // What this person has collapsed here, columns and swimlanes, remembered on this browser (docs/specs/026-plan/
@@ -173,7 +177,7 @@ export function PlanBoardView({
   const { projection, busy, pickable, shownItems, hidesAll } = usePlanBoardProjection(
     drawnSetup,
     items,
-    applied,
+    shownFilter,
     types,
     statusNames,
   );
