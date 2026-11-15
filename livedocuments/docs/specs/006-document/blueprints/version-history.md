@@ -131,14 +131,14 @@ invalid_name`. Names the row for the stored revision or inserts a `manual` row; 
 
 ## Presentation and UX
 
-As the spec's "In the editor". The panel is `fixed` under the header at `--z-modal`; its rail is a `<nav>` with an
+As the spec's "In the editor". The panel is `fixed` over the whole editor (`inset-0`) at `--z-modal`, with its own bar; its rail is a `<nav>` with an
 ordered list per day; each row is a button with `aria-current` when selected. Restore confirms in place (the
 action bar swaps to "Restore this version? … Restore / Cancel").
 
 ## Accessibility
 
-- The panel is a `role="dialog"` with `aria-modal="false"` labelled by its bar's heading; Escape closes and focus
-  returns to History.
+- The panel is a `role="dialog"` with `aria-modal="true"` labelled by its bar's heading; focus is trapped in it,
+  Escape closes and focus returns to History.
 - Outline colours are never the only signal: the summary line says the counts in words, and the legend names them.
 
 ## Observability
@@ -151,10 +151,10 @@ idle and agent captures inside SQL are logged by the restore and copy that read 
 | Rule         | Test                                                                                             |
 | ------------ | ------------------------------------------------------------------------------------------------ |
 | VH1-VH3      | `apps/api/src/db/versions.test.ts`                                                               |
-| VH4          | `apps/api/src/versions/agent-version.test.ts`                                                    |
+| VH4          | `apps/api/src/db/versions.test.ts`, `apps/api/src/routes/versions.test.ts` (agent burst)         |
 | VH5, VH15    | `apps/api/src/routes/versions.test.ts` (restore)                                                 |
 | VH6          | `apps/api/src/db/versions.test.ts` (upkeep)                                                      |
-| VH7          | `apps/api/src/document-room/document-anonymise.test.ts`                                          |
+| VH7          | `apps/api/src/document-room/document-room-store.test.ts`                                         |
 | VH9-VH13     | `apps/api/src/routes/versions.test.ts` (roles: Viewer, Participant, Editor, tab link, Community) |
 | VH14, VH16   | `apps/api/src/versions/restore-tab.test.ts`                                                      |
 | VH17         | `apps/api/src/routes/versions.test.ts` (copy)                                                    |

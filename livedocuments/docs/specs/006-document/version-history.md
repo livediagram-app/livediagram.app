@@ -146,10 +146,10 @@ it has no Make a Copy.
 - **History** is a header action, first among the right edge's (the shared `EditorHeader`'s `leadAction`), for every
   role, on a document stored on the server (not in This Browser, not in an embed or workbench frame), once the
   document is up. Its glyph is a clock with an arrow turning back. It opens **Version History** on the open tab.
-- **Version History** takes the canvas's place, under the header, until closed (Close, or Escape): the version's
-  pages on the left, drawn as the export draws them, and the rail of versions on the right (a sheet under the pages
-  on a phone). Its bar names the tab ("Version History · Pitch") with a tab picker when the document has more than
-  one tab the session may open.
+- **Version History** covers the editor, header included, until closed (Close, or Escape): the version's pages on
+  the left, drawn as the export draws them, and the rail of versions on the right (a sheet under the pages on a
+  phone). Its own bar holds Close, the title "Version History" and, when the document has more than one tab the
+  session may open, a tab picker naming the tab.
 - **The rail.** **Now** first (the tab as it is), then the versions newest first under day headings (Today,
   Yesterday, the weekday within the week, then the date). Each row: its time, its name or its kind in words
   ("Automatic", "Before an AI edit", "Before restoring"), and who it names. The selected row is marked current.
@@ -162,7 +162,7 @@ it has no Make a Copy.
   everyone; you can undo it."), never in a separate dialog.
 - **States.** Loading: a rail-shaped skeleton (`aria-busy`). No versions yet: the shared empty state, "No earlier
   versions yet. A version is kept after 30 minutes without changes, before an AI edit, and whenever you name one."
-  A failed read says so with **Try again**. A Viewer or Participant reads "Only an Editor can restore a version."
+  A failed read says so with **Try Again**. A Viewer or Participant reads "Only an Editor can restore a version."
   where the buttons would be.
 - **Fit.** A desktop shows the pages and the rail side by side; a phone shows the pages with the rail as a sheet
   below. Light and dark. Hover transitions are `duration-micro`. The panel's code loads when it is first opened.
