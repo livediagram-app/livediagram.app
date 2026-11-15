@@ -479,6 +479,10 @@ Editor of the whole plan: the whole contract is in [Automations](automations.md#
   checklist, labels, a title) or the api refused it (its `field` and `limit`, [Items](items.md) "Limits"); a value
   past a limit is never quoted back. Any other refused field value still names the field, then lists the fields.
   The same refusals reach the CLI, which shares the verbs.
+- A plan whose cards would pass the plan fields budget (`plan_full`, [Items](items.md) "Limits") says so in plain
+  words and what to do: "the plan's cards together hold the most a plan can (16 MB of fields). Shorten long
+  descriptions or Long Text fields, empty or delete cards no longer needed, or put new cards in another plan
+  (create_project). Moving cards between columns still works."
 - A call past the per-token rate limit says so and how long to wait (about a minute, the limit's window), so an
   agent makes the same call again rather than giving up or guessing at a back-off.
 

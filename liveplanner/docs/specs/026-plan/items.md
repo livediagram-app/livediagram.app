@@ -1069,7 +1069,9 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   title at 500, a custom Text at 2,000, a custom Long Text at 10,000 as the Description), showing how many are left from 90% of it ("12 characters
   left", then "500 characters, the most it takes"). A change refused anyway (by the store before it is sent, or
   by the api) is not kept: the field goes back to the saved value, and a toast names why ("That title is too
-  long: a card title holds up to 500 characters", "That value is too long or isn't one this field takes").
+  long: a card title holds up to 500 characters"). A value the api refused past a limit is named as the card shows
+  it, with the limit ("Solution is 12,412 characters; the most is 10,000."); one refused for another reason reads
+  "That value is too long or isn't one this field takes".
 
 - Up to 5,000 items per project; a create past it is refused with `items_full`, and the editor's toast names the cap
   ("This plan already holds 5,000 cards, the most it can"). Every card still loads into the editor at once, so the
@@ -1081,6 +1083,15 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   doubles it (owner 2026-11-15, Work Tracker 944; was 16 KB). A write past it is refused with `fields_too_large`. 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
   card's comment threads sit outside that budget: up to 50 threads a card, 20 cards a thread, and 200 comments and
   128 KB a thread; a write past one is refused with `threads_full`, `thread_cards_full` or `comments_full`.
+- **A plan's cards together hold up to 16 MB of fields** (stored JSON, every card's fields summed; Work Tracker
+  944). Every card still loads into the editor in one read, and past about 30 MB that read no longer fits the
+  server's memory, so a plan that grew there could not be opened. A create, an edit, an import, a form response, an
+  automation's card or a repeat's copy that would take the plan past it is refused with `plan_full` (413), and the
+  editor's toast, the CLI and the MCP say so in plain words ("This plan's cards are full: they hold 16 MB together,
+  the most a plan can. Shorten long descriptions, empty or delete cards, or start another plan"). A write that adds
+  nothing, or makes the plan smaller, is never refused, so a plan already past it still opens and can be trimmed;
+  moving a card between columns is never refused either. A typical plan of 5,000 cards holds about 2 MB, and 5,000
+  cards with a 2,000-character Long Text each about 12 MB, so only plans of very long cards meet it.
 - **A refused value says which field and why.** A value past a limit is refused (`field_value_invalid`, or
   `title_too_long` for a title) with the field's id (`field`) and the limit it broke (`limit`: `{ unit, max, given }`,
   and `row` and `entry` when one row of a checklist, one label or one value of a list broke it), so the editor, the CLI
