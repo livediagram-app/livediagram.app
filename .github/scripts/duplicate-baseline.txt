@@ -43,7 +43,6 @@ livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench
 livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
 livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/document/src/retired-patterns.ts	liveplanner/packages/project/src/retired-patterns.ts
 livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts	livehuddle/packages/help-registry/src/telemetry.ts
-livedesign/packages/licences/src/overrides.ts	livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
 livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	livehuddle/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
 livedesign/packages/template-previews/src/index.ts	livedocuments/packages/template-previews/src/index.ts
 livedesign/packages/ui/src/Brand.tsx	livediagram/packages/ui/src/Brand.tsx	livedocuments/packages/ui/src/Brand.tsx	livehuddle/packages/ui/src/Brand.tsx
@@ -109,3 +108,4 @@ livediagram/packages/template-previews/src/index.ts	livehuddle/packages/template
 livediagram/scripts/stroke-points-bench.ts	livehuddle/scripts/stroke-points-bench.ts
 livedocuments/apps/editor/app/new/layout.tsx	livehuddle/apps/editor/app/new/layout.tsx
 livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
+livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
