@@ -87,6 +87,18 @@ const inboxAssigneesOf = (
     actionId: fieldId === 'assignee' ? item.id : `${item.id}~${fieldId}`,
   }));
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+// A card's built-in Start and Due, each only when it is a plain `YYYY-MM-DD` day.
+function cardDaysOf(item: Pick<Item, 'fields'>): { start?: string; due?: string } {
+  const start = item.fields['start'];
+  const due = item.fields['due'];
+  return {
+    ...(typeof start === 'string' && ISO_DAY.test(start) ? { start } : {}),
+    ...(typeof due === 'string' && ISO_DAY.test(due) ? { due } : {}),
+  };
+}
+
 export function parseElements(data: string): Element[] {
   try {
     const body = JSON.parse(data) as { elements?: unknown };
@@ -167,6 +179,9 @@ export async function cardsPushOf(env: PlanEnv, planId: string): Promise<CardsPu
         title: itemTitle(item) || 'Untitled',
         board: places.boardFor(status),
         column: places.columnFor(status),
+        // Its Start and Due days, for the person's My Work calendar feed (docs/specs/026-plan/calendar-feed.md "The
+        // My Work feed"): on a card listed for someone, as plain days only.
+        ...(listed ? cardDaysOf(item) : {}),
       },
       teamId: plan.team_id,
       createdAt: item.createdAt,

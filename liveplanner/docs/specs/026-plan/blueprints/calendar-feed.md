@@ -2,7 +2,8 @@
 
 Derived from [calendar-feed.md](../calendar-feed.md). Part 1 of Work Tracker 156: the store, the access check, the
 iCalendar writer and the route. Part 2 ([below](#part-2-subscribe-to-calendar)): the signed-in routes and the editor's
-Subscribe to Calendar. Part 3: the My Work feed at liveworkspace.
+Subscribe to Calendar. Part 3 ([below](#part-3-the-my-work-feed)): the My Work feed, its token kept at
+liveworkspace's index.
 
 ## Domain and naming
 
@@ -79,7 +80,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS calendar_feeds_token ON calendar_feeds (token_
 ## Events
 
 - Cards: `listItems`, skipping `archived` true, status `trash`, done statuses (`cardPlacesOf(...).isDone`) unless
-  `include_done`, cards whose board (`boardFor(status).elementId`) is not `board_id` when it is set, and, with
+  `include_done`, cards the board `board_id` names does not show when it is set (`cardPlacesOf(...).shows(board_id,
+status, type, types)`: a column of it holds the status, or it is an All Cards board, and `boardShowsType` takes the
+  card's type; Work Tracker 993: boards sharing a status each show the card), and, with
   `mine`, cards where no `notifiedPeople` entry is `await itemPersonId(person_id)`.
 - Days: `dayNumber(fields.start)`, `dayNumber(fields.due)` (only `YYYY-MM-DD` values count; a timed value is skipped
   until timed events exist). Both, start ≤ due: start..due. Due only, or start > due: due..due. Start only:
@@ -89,7 +92,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS calendar_feeds_token ON calendar_feeds (token_
   `today` is `floor(now / DAY_MS)` (UTC).
 - Each `FeedEvent`: `uid` `<card id>.<plan id>@liveplanner.app`, `summary` `#<key> <title or Untitled>` cut to
   `FEED_SUMMARY_MAX` (200) characters, `url` `<APP_BASE_URL>/project/<plan id>#item=<card id>`, `description`
-  `<board title> · <column name>` (whichever exist) then the url, `stamp` card `updatedAt`, `sequence` card `rev`.
+  `<board title> · <column name>` (whichever exist; `places.placeOn(board_id, status)` when the option names a board) then the url,
+  `stamp` card `updatedAt`, `sequence` card `rev`.
+- Spans and the cap live in `calendar/feed-span.ts` (`dayOf`, `spanOf`, `capEvents`, `cutText`), shared with the My
+  Work feed.
 
 ## Interfaces and contracts
 
@@ -283,3 +289,84 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 | ----------------------- | -------------------------------------- | ----------------------------------------------- |
 | `FEED_BOARD_ID_MAX`     | 200                                    | The longest element id the board option accepts |
 | `GOOGLE_SUBSCRIBE_BASE` | `https://calendar.google.com/…/r?cid=` | Google Calendar's add-by-address page           |
+
+## Part 3: the My Work feed
+
+### Domain and naming
+
+| Spec term              | Identifier                                                                                     |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| My Work feed           | `MyWorkCalendarFeed` (api-schema `{ createdAt }`), the dialog's `CalendarFeedTarget` `my-work` |
+| its link               | `myWorkFeedPath(token)`, `/api/calendar/my-work/lpf_….ics`                                     |
+| its managing routes    | `handleMyWorkCalendarFeedRoutes(ctx)`, `/api/my-work/calendar-feed`                            |
+| a card it lists        | `CalendarCard` (`@liveworkspace/index-client`)                                                 |
+| the dialog's two kinds | `CalendarFeedTarget` `{ kind: 'plan', scope } \| { kind: 'my-work', ownerId }`                 |
+
+### Files
+
+- `apps/api/src/plan-room/plan-cards-push.ts`: an assigned card's `card` carries `start` and `due` (`YYYY-MM-DD`
+  only) when listed for someone.
+- `apps/api/src/calendar/feed-span.ts`: `dayOf`, `spanOf(start, due)`, `capEvents(events, now)`, `cutText`.
+- `apps/api/src/calendar/my-work-events.ts`: `myWorkEventsOf(cards, base, now)`, the index's cards as a `FeedRead`.
+- `apps/api/src/calendar/feed-answer.ts`: `refuseFeed(reason)`, `feedGate(request, limiter, hash)` (the method and
+  the rate limit), `answerFeed(request, read, filename)` (headers, ETag, 304), `matchesEtag`, `FEED_MAX_AGE_S`, shared
+  by both links; `calendar-feed-route.ts` re-exports them.
+- `apps/api/src/routes/my-work-feed-route.ts`: `handleMyWorkFeed(request, env, token)`, reached from
+  `handleCalendarFeed` when the path's first part is `my-work`.
+- `apps/api/src/routes/my-work-calendar-feed-routes.ts`: `handleMyWorkCalendarFeedRoutes(ctx)`, the `my-work` case
+  in `index.ts`.
+- `packages/api-schema/src/calendar-feed.ts`: `MyWorkCalendarFeed`, `MyWorkCalendarFeedResponse`,
+  `MyWorkCalendarFeedIssueResponse`.
+- Editor: `calendar-feed-client.ts` adds `readMyWorkCalendarFeed`, `issueMyWorkCalendarFeed`,
+  `turnOffMyWorkCalendarFeed`; `CalendarFeedDialog.tsx` takes a `CalendarFeedTarget`; `CalendarFeedLink.tsx` takes
+  the telemetry types' stem; `my-work-calendar-feed.tsx` (`useMyWorkCalendarFeed(accountUserId)`: the Inbox header
+  action and the dialog, loaded on first open); `components/panels/Explorer.tsx` adds them to its `InboxHost`.
+
+### Behaviour and state
+
+- Fetch, in order: the link's shape `^/api/calendar/my-work/(lpf_[A-Za-z0-9_-]{43})\.ics$` (else 404 `malformed`);
+  `feedGate`: `GET`/`HEAD` (405) and the rate limit `feed:<hash first 32>` (429); the index app client's
+  `calendarFeedByToken(hash)` (null: 404 `unknown_token`; a throw or no client: 503 `unavailable`); the person an
+  account (`isAccountId`, else 404 `no_access`); `readAccountTeams` now (503 on a throw or no credentials);
+  `indexFor(env, { kind: 'delegate', personId, teams }).calendarCards()` (an `IndexError` under 500: 404
+  `no_access`; else 503); `myWorkEventsOf`; `answerFeed(…, 'my-work.ics')`.
+- Events: each card's `start`/`due` through `spanOf` (none: skipped); `summary` `#<key> <title>` (`Starts: ` before
+  a Start alone), `url` `<APP_BASE_URL>/project/<item id>#item=<card id>`, `description` `<plan> · <board> ·
+<column>` (whichever exist) then the url, `uid` `<card id>.<item id>.my-work@liveplanner.app` (apart from the plan
+  feed's, so a person subscribed to both never has one event fighting another), `stamp` the action's `updatedAt`,
+  `sequence` 0; a card listed twice (two of its fields name the person, each one action) is one event; then
+  `capEvents`. Name `My Work`.
+- Managing: `requireOwner`; then in person (`accountUserId` set, no `token`, no `workbench`; else 403
+  `calendar_feed_needs_account`, logged `not_in_person`). `GET`: index `calendarFeed()`; `POST`: `newFeedToken`,
+  index `putCalendarFeed(hash)`, 201 `{ feed, path }`; `DELETE`: index `deleteCalendarFeed()`, 204. The index is asked
+  as `{ kind: 'delegate', personId, teams: [] }`; no client or a failure: 503 `calendar_feed_unavailable`. Another
+  method 405. Every answer `no-store`.
+- Editor: the Inbox header action is offered when `accountUserId` is set and the person is signed in, never in the
+  workbench's Explorer host. The dialog with `my-work`: no What It Shows, the My Work copy, telemetry types
+  `MyWorkCalendarFeed…`.
+
+### Security and trust
+
+- The token never reaches the index: only its hash, sent once by `PUT`, then looked up by `GET /app/…`. The index
+  answers the person only to this app's key.
+- Reach is the index's, asked as the person with teams accounts gave now; the index leaves out link-only plans.
+
+### Performance and limits
+
+- Per fetch: one rate-limit call, one index app read (an indexed hash lookup), one accounts call, one index read (one
+  indexed range of the person's open actions, at most 1,000 rows of about 600 bytes), then events linear in the rows.
+  No plan room is woken.
+- The push grows by two short strings on an assigned card's action only.
+
+### Testing
+
+- `calendar/my-work-events.test.ts`: spans, start only, no dates, duplicates, the cap, the description and url.
+- `routes/my-work-calendar-feed.test.ts`, both doors against a stand-in index: the feed's 200, 304, HEAD, unknown
+  token, a turned-off feed, an index refusal, a guest id, accounts and index unavailable, malformed, 405; the managing
+  routes' make, read, reset, turn off (only the hash reaches the index), token, workbench and guest refused, no
+  identity, index unavailable, 405, and the worker's dispatch. The shared 429 is the plan feed's test.
+- `plan-room/plan-outbox.test.ts`: dates on an assigned card's action, plain days only.
+- `packages/project` `plan-board-rows.test.ts`: `shows` and `placeOn` for shared statuses, All Cards, card types and
+  archive boards (Work Tracker 993).
+- Editor: `CalendarFeedDialog.test.tsx` (the My Work kind's states and copy), `calendar-feed-client.test.ts`,
+  `my-work-calendar-feed.test.tsx` (the action offered only to an account).

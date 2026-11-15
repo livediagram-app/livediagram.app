@@ -867,6 +867,48 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/calendar/my-work/{token}.ics',
+    segment: 'calendar',
+    tag: 'Calendar',
+    summary:
+      "A person's My Work calendar feed, as iCalendar (RFC 5545): the open cards assigned to them across the plans they own or share with a team, each with a Start or Due day as an all-day event linking back to it, at most 500. The feed token (lpf_…) is the whole proof; the person's access is checked with liveworkspace on every fetch, and a plan reached only through a share link is left out. Cached five minutes, with an ETag and 304. Every unknown token or lost access answers the same 404; 503 when access cannot be checked.",
+    auth: 'public',
+    statuses: [200, 304, 404, 405, 429, 503],
+  },
+  {
+    method: 'GET',
+    path: '/my-work/calendar-feed',
+    segment: 'my-work',
+    tag: 'Calendar',
+    summary:
+      'Your own My Work calendar feed (the open cards assigned to you across plans): when its link was made, never the link itself; null for none. Signed in in person: never an API token or a workbench session.',
+    auth: 'clerk',
+    responseSchema: 'MyWorkCalendarFeedResponse',
+    statuses: [200, 401, 403, 405, 503],
+  },
+  {
+    method: 'POST',
+    path: '/my-work/calendar-feed',
+    segment: 'my-work',
+    tag: 'Calendar',
+    summary:
+      "Make your My Work calendar feed, or, when you have one, Reset Link: a new link, and the old one stops at once. Answers the link's path (/api/calendar/my-work/lpf_….ics) this once; liveworkspace keeps only its hash. Anyone with the link can read the feed's card titles and dates. Signed in in person.",
+    auth: 'clerk',
+    responseSchema: 'MyWorkCalendarFeedIssueResponse',
+    statuses: [201, 401, 403, 405, 503],
+  },
+  {
+    method: 'DELETE',
+    path: '/my-work/calendar-feed',
+    segment: 'my-work',
+    tag: 'Calendar',
+    summary:
+      'Turn off your My Work calendar feed: its link stops answering. 204 whether or not there was one. Signed in in person.',
+    auth: 'clerk',
+    statuses: [204, 401, 403, 405, 503],
+  },
+  {
+    method: 'GET',
     path: '/projects/{id}/github',
     segment: 'projects',
     tag: 'GitHub',

@@ -25,10 +25,23 @@ export type CalendarFeedIssueResponse = { feed: CalendarFeedSettings; path: stri
 /** PUT /api/projects/:id/calendar-feed: the feed with its new options, its link kept. */
 export type CalendarFeedOptionsResponse = { feed: CalendarFeedSettings };
 
+/** The person's My Work feed (docs/specs/026-plan/calendar-feed.md "The My Work feed"): when its link was made, epoch
+ *  ms. It has no options. */
+export type MyWorkCalendarFeed = { createdAt: number };
+
+/** GET /api/my-work/calendar-feed: the person's My Work feed, or null for none. */
+export type MyWorkCalendarFeedResponse = { feed: MyWorkCalendarFeed | null };
+
+/** POST /api/my-work/calendar-feed: the feed made (or its link reset), and its link's path
+ *  (`/api/calendar/my-work/lpf_….ics`), answered this once. */
+export type MyWorkCalendarFeedIssueResponse = { feed: MyWorkCalendarFeed; path: string };
+
 /** The refusals the routes name. */
 export const CALENDAR_FEED_ERRORS = [
   'calendar_feed_needs_member',
+  'calendar_feed_needs_account',
   'calendar_feed_invalid',
   'calendar_feed_not_found',
+  'calendar_feed_unavailable',
 ] as const;
 export type CalendarFeedError = (typeof CALENDAR_FEED_ERRORS)[number];

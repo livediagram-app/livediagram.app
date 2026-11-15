@@ -4,14 +4,16 @@ A **calendar feed** brings a plan's card dates to the calendar people already lo
 Outlook, Apple Calendar): a private `.ics` address, subscribed to once, that the calendar app polls and shows beside
 the person's meetings. It is read-only: nothing a calendar app does changes a card.
 
-Built so far: the feed's store, its address (`GET /api/calendar/…`), and Subscribe to Calendar on a plan with its
-options, Reset Link and Turn Off. The cross-plan My Work feed (part 3) is next ([Work Tracker 156](#parts)).
+Two kinds: a **plan's feed** (one plan's card dates, Subscribe to Calendar in the tab menu) and the **My Work feed**
+(the open cards assigned to the person across every plan they own or reach through a team, Subscribe to Calendar in
+the Inbox). Both work the same way: a private link, made, reset and turned off by its person, checked on every fetch.
 
 ## Domain language
 
 | Term              | Meaning                                                                                 | Not                     |
 | ----------------- | --------------------------------------------------------------------------------------- | ----------------------- |
 | **calendar feed** | One person's subscription to one plan's card dates (or, on My Work, to their own cards) | calendar sync, export   |
+| **My Work feed**  | The calendar feed of the open cards assigned to the person, across plans                | personal feed, my feed  |
 | **feed link**     | The feed's private address, the one thing a calendar app is given                       | share link, invite      |
 | **feed token**    | The secret in the feed link (`lpf_…`); the whole proof a fetch carries                  | API token, `lwt_` token |
 | **feed options**  | What the feed shows: which board, only my cards, include done cards                     | filters, settings       |
@@ -44,7 +46,10 @@ options, Reset Link and Turn Off. The cross-plan My Work feed (part 3) is next (
 
 ## What it shows
 
-- **Every live card with a date**: not archived, not in the Trash, on any board (or the board the options name).
+- **Every live card with a date**: not archived, not in the Trash, on any board (or the board the options name: the
+  cards that board shows, a column of it holding the card's status, or every status on an All Cards board, and the
+  card's type one the board shows; two boards sharing a status, as the Kanban and To-do list templates do, each show
+  the card, Work Tracker 993).
 - Done cards (a [done column](plan-board.md#done-columns)'s status) are left out unless the options include them.
 - **Only my cards**: just the cards a notifying Person field of their type names the person in, as the Inbox's
   Assigned to You does ([item-types.md "Notifies"](item-types.md)).
@@ -152,6 +157,68 @@ Counts only, never a plan, a board or a link: the dialog opened (UI·Opened·Cal
   or the index cannot be asked, `503` with `Retry-After`, never a feed nobody checked.
 - Every answer carries `X-Robots-Tag: noindex` and `Referrer-Policy: no-referrer`.
 
+## The My Work feed
+
+One feed per person of the cards waiting on them, whichever plan they sit in: the Inbox's **My Actions** for Plan
+cards ([Inbox](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#inbox)), in their own calendar.
+
+### What it shows
+
+- **Every open card assigned to the person** (a notifying Person field of its type names them, as the Inbox lists
+  it): not done, not archived, not in the Trash, as the plan's Inbox push carries them. Done cards are never in it:
+  the push carries only open cards (an answer on the card, "the Inbox push, open cards only").
+- **Only plans the person owns or reaches through a team**, checked on every fetch: a plan they reach only through a
+  share link is left out, at any role, as no share-link holder has a plan's feed (option A on the card). A plan in the
+  Trash, a team they left, a plan moved out of their team, or a card no longer assigned to them leaves the feed on the
+  next fetch after the plan's next push (the push is seconds behind a change).
+- **Dates and events** as a plan's feed: the built-in Start Date and Due Date as days, each card one all-day event
+  (Start to Due, Due alone, or `Starts: …` for a Start alone); the card's number and title; its URL opening the card in
+  its plan. The description names the plan, the board and the column, then the link.
+- The calendar is named **My Work · liveplanner**.
+- No options: the feed is already only the person's cards, and the push holds no done cards.
+
+### Where it lives
+
+- **Subscribe to Calendar** as a quiet calendar glyph in the **Inbox's header**, beside its filter, in the editor's
+  Explorer panel (the panel's header row, with the tooltip "Subscribe to Calendar"). Shown only to someone **signed in
+  with an account**, outside an embed or a workbench frame; a guest sees none. The api refuses everyone else the same,
+  so the glyph is presentation, never the rule.
+- It opens the same dialog as a plan's feed, subtitled "Your cards in your own calendar.", in the same three states
+  (Off, Just made, On) with the same link field, calendar buttons, Outlook line, shown-once line, Reset Link and Turn
+  Off confirms and privacy note, and no What It Shows section. Off says: "Make a private link and add it to your
+  calendar once. Each open card assigned to you, in any plan you own or share with a team, shows as an all-day event on
+  its Start or Due date, and your calendar keeps it up to date."
+
+### The link and its store
+
+- `https://www.liveplanner.app/api/calendar/my-work/lpf_<43 characters>.ics`, a token made as a plan feed's is.
+- The token's SHA-256 is kept at liveworkspace's index, one per person and app, never the token
+  ([one-explorer-contracts.md "Calendar feeds"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#calendar-feeds)):
+  the cards it lists are the index's, so the index holds the feed beside them. No expiry: it ends by Reset Link, Turn
+  Off, or the account closing (the index's purge drops it).
+- Answered as a plan's feed is ("How it answers"): the same headers, five minute private cache, ETag and 304, the
+  500-event cap nearest today, 300 fetches a minute a feed, the same `404` for every refusal and `503` when accounts or
+  the index cannot say.
+- Every fetch: the token's person from the index (by its hash), their teams from accounts now, then their cards from
+  the index as that person now (owner and team reach only). Nothing cached.
+
+### Managing it (signed-in routes)
+
+`/api/my-work/calendar-feed`, the person's own feed only, signed in, in person (never an API token, a workbench
+session or a guest: 403 `calendar_feed_needs_account`):
+
+- `GET`: whether they have one and when it was made (never the link).
+- `POST`: make it, or Reset Link over an existing one; answers the link once.
+- `DELETE`: Turn Off; 204 whether or not there was one.
+
+Every answer is `no-store`. When the index cannot be reached, `503`.
+
+### Telemetry
+
+As a plan's feed, with its own types: opened (UI·Opened·MyWorkCalendarFeed), made (Plan·Created·MyWorkCalendarFeed),
+reset (Plan·Changed·MyWorkCalendarFeedLink), copied (Plan·Copied·MyWorkCalendarFeed), handed to a calendar
+(Plan·Shared·MyWorkCalendarFeedGoogle or MyWorkCalendarFeedApple) and turned off (Plan·Ended·MyWorkCalendarFeed).
+
 ## Parts
 
 Work Tracker 156 builds it in three parts, each leaving main working:
@@ -160,4 +227,5 @@ Work Tracker 156 builds it in three parts, each leaving main working:
 2. Subscribe to Calendar on a plan: make, copy, reset and turn off a feed, with its options (board, only my cards,
    include done cards), signed in, for the owner and team members only; telemetry and a help article.
 3. Subscribe to Calendar on My Work: one feed of the cards assigned to the person across plans, built by adding Due
-   and Start to the Inbox push (open cards only), with its own hashed token at liveworkspace.
+   and Start to the Inbox push (open cards only), with its own hashed token at liveworkspace ("The My Work feed").
+   The Board option shows every card the named board shows (Work Tracker 993).

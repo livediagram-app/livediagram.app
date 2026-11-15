@@ -146,6 +146,8 @@ export const ROOT_TYPES = [
   'CalendarFeedOptions',
   'CalendarFeedIssueResponse',
   'CalendarFeedOptionsResponse',
+  'MyWorkCalendarFeedResponse',
+  'MyWorkCalendarFeedIssueResponse',
   'GithubConnectStartResponse',
   'GithubRepositoriesRequest',
 ];
