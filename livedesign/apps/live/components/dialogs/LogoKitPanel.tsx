@@ -81,7 +81,7 @@ export function LogoKitPanel({
     <div className="flex flex-col gap-4">
       <BackBar label="All formats" current="Logo Kit" onClick={onBack} disabled={busy} />
       <p className="text-sm text-slate-600 dark:text-slate-300">
-        An SVG, PNGs at {LOGO_KIT_PNG_SIZES[0]} to{' '}
+        An SVG with its text outlined, PNGs at {LOGO_KIT_PNG_SIZES[0]} to{' '}
         {LOGO_KIT_PNG_SIZES[LOGO_KIT_PNG_SIZES.length - 1]} px and a favicon.ico, in one .zip. Plain
         paper stays see-through.
       </p>

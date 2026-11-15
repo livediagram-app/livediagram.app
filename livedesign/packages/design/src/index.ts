@@ -115,6 +115,8 @@ export * from './tab-stats';
 export * from './page';
 export * from './wireframe-device';
 export * from './wireframe-page';
+// Screen links and back links (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes").
+export * from './page-link';
 // Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect"): a wireframe element's measurements and spacing.
 export * from './inspect-element';
 export * from './inspect-spacing';
@@ -409,7 +411,7 @@ export {
 // apps/live because the EXPORTS need it too — the SVG / PNG renderers have
 // to paint a label in the face the canvas painted it in, and they run in the
 // mcp worker as well as the browser.
-export * from '@liveworkspace/model-core/fonts';
+export * from './fonts';
 
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/design-views.md):
 // how views, edit operations and the lint name and place elements alike.

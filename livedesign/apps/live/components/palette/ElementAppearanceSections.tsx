@@ -354,6 +354,8 @@ export function ElementAppearanceSections({
               onPreviewPadding={props.onPreviewPadding}
               onPreviewEnd={props.onPreviewStyleEnd}
               sectionProps={sectionProps}
+              // A text on a logo page also takes a display face (docs/specs/007-editor/logo-pages.md).
+              displayFontsOffered={target.type === 'text' && !!props.wordmarkOffered}
             />
           ) : null}
           {/* Wordmark type on a logo page (docs/specs/007-editor/logo-pages.md). */}

@@ -2,21 +2,47 @@
 // PNGs at the common icon sizes and a favicon.ico. The plain paper is see-through. One raster at
 // the artboard's full size is drawn and every smaller PNG is stepped down from it (halving, then
 // one last high-quality scale), rather than drawing the page ten times. A template's notes about the
-// page are left out of every file.
-import type { LaidOutPage, Tab } from '@livedesign/design';
+// page are left out of every file. The SVG's text is outlined ("Outlined text"), so it draws the same
+// with no font anywhere.
+import {
+  exportFontIds,
+  visibleLayerElements,
+  type LaidOutPage,
+  type Tab,
+} from '@livedesign/design';
 import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
+import { expandForExport } from './component-registry';
+import { embeddedFontFaces } from './export-fonts';
 import { encodeIco } from './ico-writer';
-import { exportTabAsSvg, renderTabToCanvas, type ImageExportOpts } from './export-tab';
+import { OutlineError } from './outline-text/outline-error';
+import { renderTabToCanvas, renderTabToSvg, type ImageExportOpts } from './export-tab';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 
 export const LOGO_KIT_PNG_SIZES = [16, 32, 48, 64, 128, 180, 192, 256, 512, 1024] as const;
 export const LOGO_ICO_SIZES = [16, 32, 48] as const;
 
+// The face text with none of its own letters in, in every file of the kit ("Outlined text"): the kit's SVG holds
+// outlines, so its text needs a face whose file can be fetched, never the reader's system font.
+export const LOGO_KIT_FALLBACK_FONT = 'inter';
+
 /** The tab as the kit draws it: less the text a template wrote about its pages (`templateNote`), so
- *  every file holds the logo alone. One pass over the elements; the tab itself when it has none. */
+ *  every file holds the logo alone, and lettered in `LOGO_KIT_FALLBACK_FONT` when the tab sets no face.
+ *  One pass over the elements; the tab itself when there is nothing to change. */
 export function logoKitTab(tab: Tab): Tab {
   const elements = tab.elements.filter((el) => !(el.type === 'text' && el.templateNote));
-  return elements.length === tab.elements.length ? tab : { ...tab, elements };
+  if (elements.length === tab.elements.length && tab.font) return tab;
+  return { ...tab, elements, font: tab.font ?? LOGO_KIT_FALLBACK_FONT };
+}
+
+// The faces the kit tab letters in, as the SVG export works them out (component instances expanded, hidden layers
+// out).
+function kitFontIds(logo: Tab): string[] {
+  const expanded = expandForExport(logo);
+  return exportFontIds(
+    visibleLayerElements(expanded.elements, expanded.layers),
+    expanded.font,
+    expanded.finish,
+  );
 }
 
 /** The kit's file names, in the zip's order. */
@@ -66,10 +92,20 @@ export async function exportLogoKit(
   page: LaidOutPage,
   opts: ImageExportOpts = {},
 ): Promise<Blob> {
-  const own = { ...opts, page, transparentPaper: true };
   const logo = logoKitTab(tab);
-  // Through the SVG download, so the faces it uses travel inside the file.
-  const svg = new Uint8Array(await (await exportTabAsSvg(logo, own)).arrayBuffer());
+  // The faces are fetched once, for the outlines and the rasters alike.
+  const faces = await embeddedFontFaces(kitFontIds(logo));
+  const own = { ...opts, page, transparentPaper: true, fontCss: faces.css };
+  const drawn = renderTabToSvg(logo, own);
+  if (drawn.includes('<text') && faces.missing.length > 0) {
+    console.warn('[outline] face not fetched', { face: faces.missing[0] });
+    throw new OutlineError('font', faces.missing[0]!);
+  }
+  // The outliner loads here, at the press, never with the editor (fontkit only when there is text). A logo of
+  // shapes alone goes through it too, to lose the faces it embeds and doesn't draw with.
+  const { outlineSvgText } = await import('./outline-text/outline-svg');
+  const outlined = await outlineSvgText(drawn, faces.css);
+  const svg = new TextEncoder().encode(outlined);
   const full = await renderTabToCanvas(logo, {
     ...own,
     scale: page.rect.width > 0 ? 1024 / page.rect.width : 1,

@@ -1241,6 +1241,8 @@ Tabs are **draggable** via the native HTML5 drag API. Dragging a tab over anothe
 
 Any element can carry a **link**: to another **tab**, another **design**, or an **external URL** (`ElementLink` kinds `tab` / `design` / `element` / `url`). Clicking the link jumps to the tab, opens the design, or opens the URL in a new tab (`noopener`).
 
+On a wireframe tab an element can also link to another **screen** of the tab (kind `page`) or **back** to the screen shown before (kind `back`), each with an optional transition; those links are followed in Prototype mode and are specified in [Wireframe pages](../007-editor/wireframe-pages.md) "Clickable prototypes".
+
 ### Setting a link
 
 - Right-click an element → **Link Element** (or **Edit link** when one exists) opens the shared **LinkPickerDialog**, a centred modal styled like the import / export dialogs.
@@ -1265,7 +1267,12 @@ Arrows can also carry a link but don't show a visible badge yet (no obvious plac
 
 ```ts
 type ElementLink =
-  { kind: 'tab'; tabId: TabId } | { kind: 'element'; tabId: TabId; elementId: ElementId };
+  | { kind: 'tab'; tabId: TabId }
+  | { kind: 'element'; tabId: TabId; elementId: ElementId }
+  | { kind: 'design'; designId: string; name: string }
+  | { kind: 'url'; url: string }
+  | { kind: 'page'; pageId: string; transition?: PageLinkTransition } // a screen of this tab
+  | { kind: 'back'; transition?: PageLinkTransition }; // the screen shown before
 ```
 
 The UI exposes the `'tab'`, `'design'`, and `'url'` kinds (via the LinkPickerDialog's Tab / Design / External URL modes). The `'element'` kind is in the model so future iterations can "jump and focus a specific element" without a schema change.

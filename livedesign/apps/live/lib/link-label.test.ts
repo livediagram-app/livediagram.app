@@ -43,8 +43,30 @@ describe('describeLink', () => {
     expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe('Goes to a tab in this design');
   });
 
+  // docs/specs/007-editor/wireframe-pages.md "A link to a deleted page".
+  it('names a screen link by its screen, reads a deleted one as broken, and names a back link', () => {
+    const pages = [
+      { id: 'page-1', orientation: 'portrait' as const, kind: 'wireframe' as const },
+      {
+        id: 'page-2',
+        orientation: 'portrait' as const,
+        kind: 'wireframe' as const,
+        name: 'Checkout',
+      },
+    ];
+    expect(describeLink({ kind: 'page', pageId: 'page-2' }, tabs, pages)).toBe('Goes to Checkout');
+    expect(describeLink({ kind: 'page', pageId: 'page-1' }, tabs, pages)).toBe('Goes to Screen 1');
+    expect(describeLink({ kind: 'page', pageId: 'gone' }, tabs, pages)).toBe(
+      'Broken link: its screen was deleted',
+    );
+    expect(describeLink({ kind: 'back', transition: 'slide' }, tabs, pages)).toBe(
+      'Goes back to the screen before',
+    );
+    expect(describeLink({ kind: 'page', pageId: 'page-2' })).toBe('Goes to a screen on this tab');
+  });
+
   it('covers every ElementLink kind', () => {
-    const kinds: ElementLink['kind'][] = ['url', 'design', 'tab', 'element'];
-    expect(kinds).toHaveLength(4);
+    const kinds: ElementLink['kind'][] = ['url', 'design', 'tab', 'element', 'page', 'back'];
+    expect(kinds).toHaveLength(6);
   });
 });

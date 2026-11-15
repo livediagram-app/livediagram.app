@@ -540,9 +540,15 @@ wrongly:
 
 **Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
 every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
-heads, border style and radius, font) with its values, bold and italic, `colorPreset` with the theme's preset looks,
+heads, border style and radius, font: the eleven faces, then the logo pages' display library, [Fonts](../004-interface-design/fonts.md) "The display library") with its values, bold and italic, `colorPreset` with the theme's preset looks,
 `iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing a wireframe guessed `textAlign` and `textSize: "xl"`.
+
+**Screen links.** The format names an element's `link` to another screen of its wireframe tab,
+`{ "kind": "page", "pageId", "transition"? }` (a page id from the `pages` view), or back to the screen before,
+`{ "kind": "back", "transition"? }`, with the transitions `instant`, `slide` and `dissolve`
+([Wireframe pages](../007-editor/wireframe-pages.md) "Clickable prototypes"). A malformed one is refused naming
+`link`; one to a page not on the tab is kept and reads as broken.
 
 **Block kinds.** The format also names what the ready-made blocks hold:
 a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
@@ -984,7 +990,7 @@ Worker (no DOM, no React).
   **Fonts.** The faces a tab uses beyond Inter (its elements', its own) are read from the Google Fonts stylesheet the editor loads (`fonts.ts`' `google` specs), whose answer
   to a client that is not a browser names TrueType files, and handed to resvg for that render (`preview-fonts.ts`, over `../packages/mcp-kit/src/preview-fonts.ts`):
   at most `PREVIEW_FONTS_MAX` (4) families, whatever arrives within `PREVIEW_FONTS_TIMEOUT_MS` (2.5 s), each kept in
-  the isolate and the Cache API. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
+  the isolate and the Cache API. A display face (a logo page's) is fetched the same way. A face that cannot be fetched draws in Inter, as before; nothing is sent but the
   family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
   cell's) fetches Inter's italics the same way (`INTER_ITALIC`); resvg drew italic it had no face for upright.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so

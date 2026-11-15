@@ -17,6 +17,7 @@ import {
 } from '@livedesign/templates';
 import { lucideGlyph, NoMatches, Tooltip } from '@livedesign/ui';
 import { FilterSearchBox } from '@liveworkspace/workbench/components/primitives/FilterSearchBox';
+import { CategoryChips } from '@liveworkspace/workbench/components/primitives/CategoryChips';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
@@ -164,35 +165,12 @@ export function LayoutGallery({
           </button>
         </Tooltip>
       </div>
-      <div
-        role="group"
-        aria-label="Layout categories"
-        className="-mx-1 flex shrink-0 gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {chips.map((c) => {
-          const on = c.id === category;
-          return (
-            <button
-              key={c.id}
-              type="button"
-              aria-pressed={on}
-              onClick={() => choose(c.id)}
-              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
-                on
-                  ? 'bg-brand-700 text-white shadow-sm dark:bg-brand-600'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              {c.label}
-              <span
-                className={`tabular-nums text-[10px] ${on ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}
-              >
-                {c.count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <CategoryChips
+        chips={chips}
+        value={category}
+        onChoose={choose}
+        ariaLabel="Layout categories"
+      />
       <div
         ref={scroller}
         className="-mx-1 min-h-0 overflow-y-auto px-1"

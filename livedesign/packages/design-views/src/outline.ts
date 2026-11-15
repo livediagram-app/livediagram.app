@@ -74,7 +74,10 @@ function nodeAttributes(
   el: Element,
   style: StyleBaselines | null,
 ): ViewAttribute[] {
-  return [...stateAttributeOf(el), ...attributesOf(el, { tabRefOf: model.tabRefOf, style })];
+  return [
+    ...stateAttributeOf(el),
+    ...attributesOf(el, { tabRefOf: model.tabRefOf, style, pageIds: model.pageIds }),
+  ];
 }
 
 // A content kind's summary, dropped with the attributes; an instance's main, which names what it is, never dropped.
