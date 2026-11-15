@@ -554,6 +554,10 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   `bold` and a stadium it ends on `soft`; a diamond is `soft`. A node's `tone` overrides: `strong` (bold), `soft`,
   `muted` (outlined and dashed, the exception idiom) or `plain`. `icon` puts an icon (an id from `search_icons`) on
   the box; an id that names none is refused.
+- **Starts are exact.** A `flow` line whose start is the one line fanning at its anchor starts exactly on it
+  (`exactStart`, as a flowchart's connectors do in the editor), and a `mindmap` connector always does; a start that
+  shares its anchor with another fanning line keeps fanning. Nothing moves on the page; the switch is what an
+  editor sees, and what the next arrow drawn there follows.
 - **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
   twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus, as long as
   they are drawn alike (an unset line is solid): where solid and dashed lines meet at one end of a node, the lines of

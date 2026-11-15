@@ -11,6 +11,7 @@ import {
   recolourElementForTheme,
   endpointPosition,
   orthogonalBends,
+  startsAtExactAnchor,
   type ArrowElement,
   type BoxedElement,
   type Element,
@@ -125,7 +126,12 @@ export function applyConnect(
   );
   if (typeof id !== 'string') return id;
   const anchors = facing(a.el, b.el);
-  const base = { ...createPinnedArrow(a.el.id, anchors.from, b.el.id, anchors.to), id };
+  const base = {
+    ...createPinnedArrow(a.el.id, anchors.from, b.el.id, anchors.to),
+    id,
+    // From a mind node or a flowchart step it starts at the exact anchor (startsAtExactAnchor); fields can say otherwise.
+    ...(startsAtExactAnchor(a.el) ? { exactStart: true } : {}),
+  };
   const written = writeFieldsOnto(base, operation.fields ?? {}, state.theme, id, index);
   if ('code' in written) return written;
   // No line asked for: the line most of the tab's arrows are drawn with, so an arrow added to a flow of elbows is an

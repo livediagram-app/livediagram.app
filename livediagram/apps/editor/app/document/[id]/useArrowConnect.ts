@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
   bestAnchorTowards,
   isBoxed,
+  startsAtExactAnchor,
   type ArrowElement,
   type ArrowEnds,
   type Element,
@@ -107,6 +108,8 @@ export function useArrowConnect({
       },
       ...(stroke ? { strokeColor: stroke } : {}),
       ...(connectEnds === 'to' ? {} : { arrowEnds: connectEnds }),
+      // From a mind node or a flowchart step it starts at the exact anchor (docs/specs/008-canvas/arrow-anchors.md).
+      ...(startsAtExactAnchor(from) ? { exactStart: true } : {}),
     });
     commitTabs((ts) =>
       ts.map((t) =>

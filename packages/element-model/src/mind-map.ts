@@ -331,7 +331,8 @@ export function mindMapFor<E extends ModelElement>(deps: MindMapDeps<E>) {
     const [from, to] = mindConnectorAnchors(mindFlowOf(elements, parent), parent, node);
     return {
       node,
-      arrow: deps.createPinnedArrow(parent.id, from, node.id, to),
+      // A mind connector starts at the exact anchor (exact-start.ts), so a parent's children share one start.
+      arrow: { ...deps.createPinnedArrow(parent.id, from, node.id, to), exactStart: true },
       shifts: makeRoom(elements, treeIds(elements, parent), { ...size, ...at }),
     };
   }

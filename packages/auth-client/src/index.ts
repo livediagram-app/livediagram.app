@@ -11,6 +11,8 @@ export {
   remoteKeySetAt,
 } from './verify';
 export {
+  accountsFetch,
+  accountsRefused,
   authorizeUrl,
   createPkcePair,
   exchangeCode,
@@ -20,6 +22,8 @@ export {
   randomState,
   refreshTokens,
   signOutEverywhere,
+  TOKEN_REQUEST_TIMEOUT_MS,
+  TokenRequestError,
   type AuthorizeUrlOptions,
   type ClientCredentials,
   type GuestHandoffOptions,

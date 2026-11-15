@@ -84,7 +84,11 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
 
 - `authorizeUrl`: `response_type=code`, `scope` the four, `code_challenge` S256, `state`, optional `prompt` `create`,
   `login` or `none`; `exchangeCode` and `refreshTokens` send the client secret, so they run in the app's Worker;
-  the refresh token returned replaces the one sent.
+  the refresh token returned replaces the one sent. Both, and the sign-out's end-session call, go through the
+  app API's `ACCOUNTS` binding when it has one (`accountsFetch`, the public route on a throw); a token request gives
+  up after `TOKEN_REQUEST_TIMEOUT_MS` (8 s) and fails with `TokenRequestError` (`status` null for no answer).
+  `createAppAuth`'s `POST /api/auth/token` signs out only on a 4xx (`accountsRefused`); no answer or a 5xx is 503
+  `accounts_unreachable` with the cookies kept ([accounts.md](../accounts.md#when-the-accounts-site-doesnt-answer)).
 - Silent sign-in: once per tab until the tab comes back into view or is opened from another site, never in a frame, for a crawler or a Lighthouse audit, on sign-in pages,
   embeds or share links, or after a sign-out of the app alone (the global sign-out failed; mark `2`, remembered 400 days;
   a successful one sets the 120 s guard instead, and the old mark `1` is ignored); the editors bounce before paint, the

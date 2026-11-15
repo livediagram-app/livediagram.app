@@ -34,7 +34,12 @@ export function liveFlowchart(
   const chartId = steps[0]!.id;
   const lanes = (opts.lanes ?? []).map((l) => ({ ...l, flowchartId: chartId }));
   const members = steps.map((s) => ({ ...s, flowchartId: chartId, flowDirection: opts.direction }));
-  const laid = relayoutFlowchart<Element>([...lanes, ...connectors, ...members], chartId);
+  // Each connector starts at its exact anchor, as every new flowchart connector does (exact-start.ts), unless the
+  // template says otherwise.
+  const joined = connectors.map((c) =>
+    c.from.kind === 'pinned' && c.exactStart === undefined ? { ...c, exactStart: true } : c,
+  );
+  const laid = relayoutFlowchart<Element>([...lanes, ...joined, ...members], chartId);
   const boxes = laid.filter(
     (el): el is ShapeElement => el.type === 'shape' && el.flowchartId === chartId,
   );

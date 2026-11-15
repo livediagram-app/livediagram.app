@@ -480,6 +480,23 @@ and the menu turns to Guest, and the page then asks the accounts site once
 ([A hint that outlived its session](#signing-in-without-a-click)), so someone signed in elsewhere since is signed in here. A session from before the name cookie existed (the hint without the name) asks at
 once instead, since the answer sets the name.
 
+### When the accounts site doesn't answer
+
+An app's `POST /api/auth/token` (and its callback's code swap, and its sign-out) asks the accounts Worker
+over the app API's `ACCOUNTS` service binding (`accountsFetch` in `@liveworkspace/auth-client`), the public
+route only when the binding is missing or throws. A Worker's fetch to another Worker's public route can stall:
+on 2026-11-15 every app's token answer hung with it, and every Explorer stayed on its placeholders. So:
+
+- **Bounded.** Each token request gives up after 8 s (`TOKEN_REQUEST_TIMEOUT_MS`).
+- **A stall never signs anyone out.** With no answer in time, a network error or a 5xx from the accounts site,
+  `POST /api/auth/token` answers **503** `{ "error": "accounts_unreachable" }` and leaves every cookie as it
+  is (the refresh token, the hint, the name). Only a 4xx from the accounts site (revoked, expired, a closed
+  account) is signed out: 401 and the cookies cleared, as before.
+- **The pages.** The Explorer's token ask gives up after 10 s, and treats a 5xx, a network error and no answer
+  alike: not signed out (no guest handoff), but its error state with **Try Again**
+  ([site.md](../010-site/site.md#the-explorer)). The account menu's own ask gives up after 10 s too and reads
+  the cookies as they are.
+
 ## Signing out
 
 Signing out anywhere signs the person out everywhere in that browser. Sign out in livediagram, liveplanner,

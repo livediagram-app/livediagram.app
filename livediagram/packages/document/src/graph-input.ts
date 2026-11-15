@@ -42,7 +42,7 @@ import { unionRects } from '@liveworkspace/model-core/geometry-primitives';
 import { isBoxed } from './index';
 import { withHeaderAndKey, type GraphKey } from './graph-header';
 import { layoutLanes } from './graph-lanes';
-import { branchExits, withExactEnds } from './graph-branches';
+import { branchExits, withExactEnds, withExactStarts } from './graph-branches';
 import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
 import { layoutStormGraph } from './graph-storm';
@@ -356,7 +356,9 @@ export function layoutGraph(
     // Straightened first, so each label is placed on the line as it is drawn.
     laid = placeElbowLabels(withoutNotches(applyRoutes(laid, routes)));
   }
-  return withHeaderAndKey(turnBack(laid, g.edges), {
+  // A flow's starts sit exactly on their anchors where nothing else fans there (graph-branches.ts).
+  const turned = turnBack(laid, g.edges);
+  return withHeaderAndKey(style === 'flow' ? withExactStarts(turned) : turned, {
     ...(g.title ? { title: g.title } : {}),
     ...(g.subtitle ? { subtitle: g.subtitle } : {}),
     ...(g.key ? { key: g.key, flowchart: isFlowchart(g.nodes) } : {}),
