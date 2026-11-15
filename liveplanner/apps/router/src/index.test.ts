@@ -843,3 +843,45 @@ describe('an unreachable origin', () => {
     }
   });
 });
+
+describe('a pasted share link\'s oEmbed (liveworkspace/docs/specs/006-media/previews.md "Pasting a share link")', () => {
+  const urlOf = (input: RequestInfo | URL) =>
+    typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  const oembedFor = (code: string) =>
+    new Request(
+      `https://www.liveplanner.app/oembed?url=${encodeURIComponent(`https://www.liveplanner.app/project/shared?s=${code}`)}&format=json`,
+    );
+
+  it('answers /oembed here from the share card, a read-only iframe, never forwarding it to an app', async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) =>
+      Promise.resolve(
+        urlOf(input).endsWith('/share/OPENCODE/card')
+          ? Response.json({ name: 'Launch plan' })
+          : Response.json({ error: 'not_found' }, { status: 404 }),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, marketing, live, api, help } = makeEnv();
+      const local = { ...env, PREVIEWS_ORIGIN: 'http://127.0.0.1:8792' };
+      const res = await router.fetch(oembedFor('OPENCODE'), local);
+      expect(res.status).toBe(200);
+      expect(res.headers.get('Cache-Control')).toBe('public, max-age=300');
+      const body = await res.json<{ provider_name: string; title: string; html: string }>();
+      expect(body.provider_name).toBe('liveplanner');
+      expect(body.title).toBe('Launch plan');
+      // Read-only whatever the link's role: an edit link pasted into a public page gives no edit rights.
+      expect(body.html).toContain(
+        'src="https://www.liveplanner.app/embed?s=OPENCODE&amp;readonly=1"',
+      );
+      expect(fetchMock.mock.calls.map(([input]) => urlOf(input))).toEqual([
+        'http://127.0.0.1:8792/api/previews/share/OPENCODE/card',
+      ]);
+      // A link the share card refuses (password-protected, revoked, expired or trashed) is a 404.
+      expect((await router.fetch(oembedFor('GATEDCODE'), local)).status).toBe(404);
+      expect([...marketing.urls, ...live.urls, ...api.urls, ...help.urls]).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

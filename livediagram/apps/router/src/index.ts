@@ -25,6 +25,7 @@ import {
 } from '@liveworkspace/sites/workspace-proxy';
 import { siteOfApp } from '@liveworkspace/sites';
 import { routeCommunity, type CommunityRouteSite } from '@liveworkspace/community-site/router';
+import { createOEmbed } from '@liveworkspace/media/oembed';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -82,6 +83,10 @@ export function telemetryDashboardUrl(env: Pick<Env, 'DEPLOY_ENV'>): string {
   return `${base}?app=livediagram.app`;
 }
 const HELP_PATH = '/help';
+
+// A pasted share link's embed (liveworkspace/docs/specs/006-media/previews.md "Pasting a share link: GET /oembed"): the
+// router answers `/oembed` itself, asking liveworkspace's previews whether the link may unfold.
+const { isOEmbedPath, oembed } = createOEmbed({ app: 'livediagram', untitled: 'Untitled canvas' });
 
 // Whose Community the page at /community is here: livediagram's posts, at its canonical address, in its words.
 const COMMUNITY_SITE: CommunityRouteSite = {
@@ -287,6 +292,7 @@ async function route(request: Request, env: Env): Promise<Response> {
     proxySecret: env.WORKSPACE_PROXY_SECRET,
   });
   if (workspace) return workspace;
+  if (isOEmbedPath(url.pathname)) return oembed(request, { previewsOrigin: env.PREVIEWS_ORIGIN });
   // Every item's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md).
   const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);
   if (preview) return preview;
