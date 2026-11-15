@@ -51,6 +51,7 @@
     "@liveworkspace/trusted-types": "workspace:*",
     "@liveworkspace/ui": "workspace:*",
     "@liveworkspace/workbench": "workspace:*",
+    "fontkit": "2.0.4",
     "next": "^16.4.6",
     "polygon-clipping": "0.15.7",
     "react": "^19.3.1",

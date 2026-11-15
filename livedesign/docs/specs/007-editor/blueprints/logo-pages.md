@@ -563,7 +563,8 @@ page, count)`. Both the kit and `LogoKitPanel`'s preview draw `logoKitTab(tab)`:
   that css, then `outlineSvgText(svg, css)`, loaded by `import('./outline-text/outline-svg')` at the press. The
   rasters use the same css.
 - `font-face-css.ts`: `parseFontFaces(css)` reads each `@font-face` block (by a scan, no backtracking regex) into
-  `{ family, weight: [min, max], style, ranges, dataUrl }`.
+  `{ family, weight: [min, max], style, ranges, url }` (declarations split outside `url(...)`, since a data URL
+  holds a semicolon).
 - `face-match.ts`: `matchFace(faces, family, weight, style, codePoint)`: the family's faces whose `unicode-range`
   holds the code point, then CSS font matching (style first, then weight: a desired 400 to 500 tries up to 500,
   then down, then up; under 400 down then up; over 500 up then down); `syntheticBold` when the desired weight is
@@ -574,7 +575,8 @@ page, count)`. Both the kit and `LogoKitPanel`'s preview draw `logoKitTab(tab)`:
   transform into absolute path data (`OUTLINE_PRECISION`); a variable face takes `wght` (the asked weight within
   the face's range) and `opsz` (the font size) when it has those axes. A synthetic bold adds a stroke of the fill's
   colour, `SYNTHETIC_BOLD_RATIO × size` wide. Underline and strikethrough are a quad per character along its
-  advance, at the face's `post` and `OS/2` metrics.
+  advance (spaces included), where Chromium draws an `auto` line: a tenth of the size thick, an underline's top
+  `max(1, ceil(thickness / 2))` under the baseline, a strikethrough's centre a third of the face's ascent above it.
 - `outline-svg.ts`: `outlineSvgText(svg, fontCss)` parses the SVG inertly, mounts it off screen (`position: fixed`,
   `visibility: hidden`), registers each parsed face as a `FontFace` and awaits it, then for each `<text>`: maps its
   characters to addressable indices (xml:space default: newlines dropped, tabs as spaces, runs of spaces as one,
