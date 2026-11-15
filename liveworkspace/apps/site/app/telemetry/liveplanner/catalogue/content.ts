@@ -1075,6 +1075,57 @@ export const PLAN_GITHUB_RULES = chart(
   { types: ['AutomationRuleGithub'] },
 );
 
+// Subscribe to Calendar (docs/specs/026-plan/calendar-feed.md "Telemetry", in the liveplanner folder): links made,
+// reset, copied and handed to a calendar, options changed and links turned off (its dialog opening is a Dialogs &
+// Panels chart, features.ts). Never a plan, a board or a link.
+export const PLAN_CALENDAR_FEEDS_MADE = chart(
+  'Plan',
+  'Created',
+  'Calendar Links Made',
+  "Make Calendar Link pressed: a private link to the plan's card dates for the person's own calendar.",
+  { types: ['CalendarFeed'] },
+);
+
+export const PLAN_CALENDAR_FEEDS_RESET = chart(
+  'Plan',
+  'Changed',
+  'Calendar Links Reset',
+  'Reset Link confirmed: a new calendar link, and the old one stopped at once.',
+  { types: ['CalendarFeedLink'], rising: 'neutral' },
+);
+
+export const PLAN_CALENDAR_FEED_OPTIONS = chart(
+  'Plan',
+  'Changed',
+  'Calendar Link Options Changed',
+  'What a calendar link shows changed (a board, only my cards, done cards), the link kept.',
+  { types: ['CalendarFeedOptions'], rising: 'neutral' },
+);
+
+export const PLAN_CALENDAR_FEEDS_COPIED = chart(
+  'Plan',
+  'Copied',
+  'Calendar Links Copied',
+  'A new calendar link copied from the field that shows it once.',
+  { types: ['CalendarFeed'] },
+);
+
+export const PLAN_CALENDAR_FEEDS_HANDED_ON = chart(
+  'Plan',
+  'Shared',
+  'Calendar Links Added to a Calendar',
+  'A new calendar link handed to Google Calendar or Apple Calendar from its button.',
+  { types: ['CalendarFeedGoogle', 'CalendarFeedApple'] },
+);
+
+export const PLAN_CALENDAR_FEEDS_TURNED_OFF = chart(
+  'Plan',
+  'Ended',
+  'Calendar Links Turned Off',
+  'Turn Off confirmed: the calendar link stopped answering.',
+  { types: ['CalendarFeed'], rising: 'neutral' },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1496,6 +1547,12 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_GITHUB_NOT_CONNECTED,
   PLAN_GITHUB_DISCONNECTED,
   PLAN_GITHUB_RULES,
+  PLAN_CALENDAR_FEEDS_MADE,
+  PLAN_CALENDAR_FEEDS_RESET,
+  PLAN_CALENDAR_FEED_OPTIONS,
+  PLAN_CALENDAR_FEEDS_COPIED,
+  PLAN_CALENDAR_FEEDS_HANDED_ON,
+  PLAN_CALENDAR_FEEDS_TURNED_OFF,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
@@ -1518,7 +1575,8 @@ export const PLAN_BOARDS: MetricStack = {
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
-  // Calendar moves, chart statuses, flow chart ranges, card styles and webhook secrets regenerated are slices of Boards Set Up (every
+  // Calendar moves, chart statuses, flow chart ranges, card styles, webhook secrets regenerated and calendar links reset or
+  // changed are slices of Boards Set Up (every
   // Plan·Changed), and time added by hand a slice of Items Added (every Plan·Added), so the head counts them once. A
   // card from a template is already one of Items Added.
   headline: PLAN_BOARDS_MEMBERS.filter(
@@ -1526,6 +1584,8 @@ export const PLAN_BOARDS: MetricStack = {
       m !== PLAN_CARD_TEMPLATES_USED &&
       m !== PLAN_CALENDAR_MOVES &&
       m !== PLAN_AUTOMATION_SECRETS_REGENERATED &&
+      m !== PLAN_CALENDAR_FEEDS_RESET &&
+      m !== PLAN_CALENDAR_FEED_OPTIONS &&
       m !== PLAN_VIEW_STATUSES &&
       m !== PLAN_VIEW_RANGE &&
       m !== PLAN_CARD_STYLES &&

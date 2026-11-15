@@ -99,7 +99,8 @@ When a write fails, the dialog stays as it was and says "Couldn't save. Try agai
 The same three in every state, under the heading **What It Shows**:
 
 - **Board**: **All Boards**, or one of the plan's boards by its title (with its tab's name after it when two boards
-  share a title). A board that went since reads as All Boards in the picker, and its feed is empty until changed.
+  share a title, and its tab's name alone for a board with no title). A board that went since shows as **Removed
+  Board** until another is picked, and its feed is empty meanwhile.
 - **Only My Cards**: just the cards whose notifying Person fields name me.
 - **Include Done Cards**: cards in a done column too.
 
@@ -131,7 +132,7 @@ A board option must name one of the plan's boards (400 `calendar_feed_invalid`).
 Counts only, never a plan, a board or a link: the dialog opened (UI·Opened·CalendarFeed), a link made
 (Plan·Created·CalendarFeed), reset (Plan·Changed·CalendarFeedLink), its options changed
 (Plan·Changed·CalendarFeedOptions), copied (Plan·Copied·CalendarFeed), handed to a calendar
-(Plan·Shared·CalendarFeedGoogle or CalendarFeedApple) and turned off (Plan·Deleted·CalendarFeed).
+(Plan·Shared·CalendarFeedGoogle or CalendarFeedApple) and turned off (Plan·Ended·CalendarFeed).
 
 ## How it answers
 

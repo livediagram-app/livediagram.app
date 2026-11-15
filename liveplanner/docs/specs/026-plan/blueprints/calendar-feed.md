@@ -189,8 +189,9 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 - `apps/editor/components/calendar-feed/`: `calendar-feed-client.ts` (the four calls), `calendar-feed-gate.ts`
   (`calendarFeedScopeFor`), `calendar-feed-links.ts` (`feedUrlOf`, `googleCalendarUrl`, `appleCalendarUrl`),
   `CalendarFeedContext.tsx` (the door), `CalendarFeedHost.tsx` (provides it and loads the dialog on first open),
-  `CalendarFeedDialog.tsx` (the states), `CalendarFeedOptions.tsx` (What It Shows), `CalendarFeedLink.tsx` (the
-  link shown once), `CalendarFeedHeroArt.tsx`, `CalendarFeedMenuRow.tsx` (the tab menu's row).
+  `CalendarFeedDialog.tsx` (the states), `CalendarFeedOptions.tsx` (What It Shows, `boardLabels`: the title, the
+  tab's name after it when titles repeat, the tab's name for an untitled board; a board that went as Removed Board),
+  `CalendarFeedLink.tsx` (the link shown once), `CalendarFeedHeroArt.tsx`, `CalendarFeedMenuRow.tsx` (the tab menu's row).
 - `apps/editor/app/project/[id]/editor-view-hooks.ts`: `useEditorCalendarFeed(ctx, isOffline)`; `EditorView.tsx`
   wraps the editor in `CalendarFeedHost` inside `AutomationsHost`.
 - `apps/help/app/plan/calendar-feed/page.mdx` and its figures in `apps/help/components/illustrations/calendar-feed.tsx`.
@@ -224,8 +225,9 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 
 ### Presentation and UX
 
-- `Dialog` size `md`, `phoneSheet`, `HeroDialogHeader` (`calendarFeedHeroArt`: a calendar page as the title mark, a
-  calendar grid with a card's day filled in as the centre piece, a refresh arc in the corner).
+- `Dialog` size `md`, `phoneSheet`, `HeroDialogHeader` (`calendarFeedHeroArt`: a calendar page as the title mark; in
+  the bottom-right corner a month page rising off the band's foot, one day filled in, its ring spreading twice; no
+  centre piece, which a `md` dialog is never wide enough to show).
 - Body, top to bottom: the state block; **What It Shows** (`Select` for Board, then two `SettingsToggleRow`s); the
   privacy note (amber, a lock glyph); footer: Off **Make Calendar Link** (primary); Just made **Done**; On **Reset
   Link** and **Turn Off** (secondary), each behind `ConfirmPopover`.
