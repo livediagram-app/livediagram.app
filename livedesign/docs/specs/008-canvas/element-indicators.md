@@ -104,6 +104,10 @@ moves: content that moved out of their way stays put, so selecting never shifts 
 
 - Each glyph is a button: a click follows the link, opens the note, the action or the comments.
   The link keeps its hover card naming the destination, the action its "Assigned to …" card.
+- A **screen link** or back link on a wireframe page is the link indicator's own kind: a screen glyph with an arrow
+  and the word "Screen", whose click brings the screen into view rather than following it, and a **broken** one a
+  broken arrow in warning red at full strength ([Wireframe pages](../007-editor/wireframe-pages.md) "Setting a
+  link"). Its button is named "Go to screen", or "Broken screen link".
 - Indicators scale with the canvas zoom and hide below 40% zoom (`ADORNMENT_MIN_ZOOM`), with the
   lock badge and the remote selectors.
 - A margin note shows its count on its own face, so it shows no note indicator.
