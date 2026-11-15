@@ -199,3 +199,8 @@ gate), `400 invalid_name` (a name of nothing), `409 too_many_names`, `409 tab_bu
 - Telemetry: `Version·Opened·Header` (the panel opened), `Version·Named` (`Editor`), `Version·Restored` and
   `Version·Copied` typed by the front door (`Editor`, `Mcp`, `Cli`, `Api`), `Version·Undone·Editor` (the toast's
   Undo) ([Telemetry](../017-telemetry/telemetry.md)).
+
+## Help
+
+The help article **Version History** (`apps/help/app/tabs/version-history/page.mdx`, in the Tabs category) explains
+when versions are kept, looking, restoring with Undo, Make a Copy, who may do what, and the two MCP tools.

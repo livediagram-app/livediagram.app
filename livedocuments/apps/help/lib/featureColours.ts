@@ -38,6 +38,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'presenter-controls': '#8b5cf6',
   'slide-builds': '#d946ef',
   'locking-tabs': '#64748b',
+  'version-history': '#7c3aed',
   'side-by-side': '#0ea5e9',
   'connected-files': '#4f46e5',
   'auto-align': '#22c55e',

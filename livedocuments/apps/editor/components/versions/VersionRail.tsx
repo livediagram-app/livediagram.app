@@ -41,7 +41,7 @@ export function VersionRail(props: RailProps) {
         <div className="border-b border-slate-200 p-3 dark:border-slate-800">
           {naming ? (
             <NameField
-              label="Name this version"
+              label="Version name"
               initial=""
               onCancel={() => setNaming(false)}
               onSave={async (name) => {
@@ -157,7 +157,7 @@ function VersionRow({
     return (
       <div className={`${ROW} ${ROW_ON} cursor-default`}>
         <NameField
-          label={named ? 'Rename this version' : 'Name this version'}
+          label="Version name"
           initial={version.name ?? ''}
           onCancel={() => setEditing(false)}
           onSave={async (name) => {

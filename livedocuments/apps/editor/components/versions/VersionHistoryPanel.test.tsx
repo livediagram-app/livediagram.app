@@ -222,7 +222,7 @@ describe('naming', () => {
     panel();
     await screen.findByRole('button', { name: /Draft/ });
     fireEvent.click(screen.getByRole('button', { name: 'Name This Version' }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Name this version' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Version name' }), {
       target: { value: '  Final ' },
     });
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Save' })));
@@ -238,7 +238,7 @@ describe('naming', () => {
     panel();
     await screen.findByRole('button', { name: /Draft/ });
     fireEvent.click(screen.getByRole('button', { name: 'Name This Version' }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Name this version' }), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Version name' }), {
       target: { value: 'More' },
     });
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Save' })));

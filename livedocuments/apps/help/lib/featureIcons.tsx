@@ -671,6 +671,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14.5 17.5l2-2" />
     </Glyph>
   ),
+  // A clock face with an arrow turning back round it: going back in time, as the editor's History glyph.
+  'version-history': (
+    <Glyph>
+      <path d="M3.9 12a8.1 8.1 0 1 0 2.4-5.7" />
+      <path d="M3.6 3.5v3.9H7.5" />
+      <path d="M12 7.8V12l2.9 1.9" />
+    </Glyph>
+  ),
   // A tab with the padlock on it. `locking` is the bare padlock, for an element.
   'locking-tabs': (
     <Glyph>

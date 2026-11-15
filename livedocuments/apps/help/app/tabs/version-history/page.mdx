@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Version History',
+  description:
+    'See the earlier versions livedocuments keeps of each tab and what changed since, name the ones that matter, and restore one or copy it into a new tab.',
+  path: '/help/tabs/version-history/',
+});
+
+<ArticleLayout title="Version History" description="Go back to how a tab looked earlier, see what changed since, and bring it back in one step." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("version-history")}>
+
+livedocuments keeps earlier versions of each tab as you work, so a deleted slide, an overwritten article or an AI edit you don't like is never more than a few clicks from coming back. Versions belong to a tab: each tab in a document has its own history.
+
+## Opening Version History
+
+Press **History** (the clock with an arrow turning back) at the right of the header. Version History opens on the tab you are looking at and covers the editor until you press **Close** or Escape. When the document has more than one tab, the picker in its bar switches to another tab's history.
+
+The rail lists **Now** first, the tab as it is, then the earlier versions newest first under day headings: Today, Yesterday, the weekday within the week, then the date. Each row gives its time, its name or what kind of version it is, and who was working. On a phone the rail sits under the pages.
+
+History is there on documents stored on the server. A document kept in **This Browser** has no version history.
+
+## When a version is kept
+
+You don't need to save one yourself. livedocuments keeps a version of a tab:
+
+- **Automatically**, after 30 minutes without changes, so each working session ends with one ("Automatic").
+- **Before an AI edit**: before an AI assistant or a script changes the tab through the MCP server, the CLI or the API ("Before an AI edit"). A burst of changes from one assistant run keeps one version, not one per change.
+- **Before a restore**: restoring keeps the tab as it was first, so a restore can always be taken back ("Before restoring").
+- **When you name one**: **Name This Version**, at the top of the rail, keeps the tab as it is now under a name you choose, such as "Sent to client".
+
+Automatic versions are kept for 30 days, and a tab keeps up to its newest 50. Named versions are kept until you remove the name; a tab can carry 25 names. **Rename** and **Remove Name** sit on the selected row, and removing a name makes it an automatic version again. Turn on **Only Named Versions** to list just the named ones.
+
+## Looking at a version
+
+Pick a row to open that version. Its pages show on the left exactly as they were, read-only: nothing you do here changes the tab. Above them, a line says what changed since, for example "Compared with now: 3 changed, 2 removed, 1 added · 1 page added · the writing changed". With **Show Changes** on, elements that have since changed are outlined in amber and ones that have since been removed in red, dashed.
+
+## Restoring a version
+
+Press **Restore This Version**. It asks first, in place: the tab changes for everyone who has it open, as one change, and they see it straight away. Press **Restore** to go ahead.
+
+The toast that follows has **Undo**, which puts the tab back as it was. If you miss the toast, the "Before restoring" version in the rail does the same. Restoring brings back the tab's elements, pages and article writing. The tab's name, lock and folder stay as they are, and so do its comments: an element that is in both keeps its current comment thread.
+
+## Making a copy
+
+**Make a Copy** puts the version in a new tab beside the current one, named after the tab and the day ("Pitch (14 Nov)"), and leaves the current tab alone. Use it to pull back one slide or one paragraph: copy the version, take what you need, then delete the copy. The toast's **Open** switches to the new tab.
+
+## Who can do what
+
+Everyone who can open the document can look through its history. Only an **Editor** can name a version, restore one or make a copy; a Viewer or Participant sees "Only an Editor can restore a version." where the buttons would be. A link to a single tab shows only that tab's history, and can't make a copy (a copy is a new tab, outside the link). A Community visitor sees no history, since an earlier version can carry conversation the Community view leaves out.
+
+<Tip>
+  An AI assistant connected through [MCP](/help/account-and-data/connect-ai-mcp/) can use the same
+  history: `list_versions` lists a tab's versions and `restore_version` restores one, kept first
+  like any restore so you can take it back from Version History.
+</Tip>
+
+</ArticleLayout>
