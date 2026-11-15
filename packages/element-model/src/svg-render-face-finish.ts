@@ -106,6 +106,9 @@ export function svgMarkerFace(
     const a = faceAttrs(attrs);
     // A line carrying arrowheads, or a part marked to keep its look, is drawn as it is.
     if (a['marker-start'] || a['marker-end'] || a['data-finish-keep'] !== undefined) return tag;
+    // A table's outer frame under its hand-drawn Marker body: the body is the frame, so the plain one goes (the canvas
+    // hides the grid's border the same way, face-finish.css).
+    if (pen === 'marker' && box.bodyDrawn && a['data-marker-body-frame'] !== undefined) return '';
     const shape = partShape(name, a);
     if (!shape) return tag;
     // A table's rule in the ink the canvas's gridRules gives it: a line too pale to read as drawn in a stronger shade.

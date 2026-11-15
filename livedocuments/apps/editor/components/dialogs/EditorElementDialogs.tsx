@@ -14,7 +14,13 @@ import {
 import { track } from '@/lib/telemetry';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditMap } from '@/lib/map-edit';
-import { MAP_DEFAULT_ACCENT, resolveStockColours } from '@livedocuments/document';
+import {
+  MAP_DEFAULT_ACCENT,
+  chartPageGrounds,
+  isLightColor,
+  mapPaperColour,
+  resolveStockColours,
+} from '@livedocuments/document';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
@@ -100,6 +106,7 @@ function OpenEditorElementDialogs() {
     refreshRecentImages,
     workbenchMode,
     can,
+    pagesMode,
   } = useEditorContext();
 
   // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a lock
@@ -288,13 +295,19 @@ function OpenEditorElementDialogs() {
         ? (() => {
             const el = activeTab.elements.find((e) => e.id === mapDialogOpenForId);
             if (!el || el.type !== 'shape' || !canEditMap(can, el)) return null;
-            // The preview is light paper, so the accent is the light version of a stock colour.
-            const accent = resolveStockColours(el, 'light').strokeColor ?? MAP_DEFAULT_ACCENT;
+            // What the map sits on, as the canvas finds it (PageClip's chartPageGrounds): the preview follows its page.
+            const ground = pagesMode
+              ? chartPageGrounds(activeTab.elements, pagesMode.pages, activeTab.layers).get(el.id)
+              : undefined;
+            // The accent is the stock colour's version for the paper the preview is drawn on.
+            const surface = isLightColor(mapPaperColour('light', ground)) ? 'light' : 'dark';
+            const accent = resolveStockColours(el, surface).strokeColor ?? MAP_DEFAULT_ACCENT;
             return (
               <MapDialog
                 key={el.id}
                 element={el}
                 accent={accent}
+                ground={ground}
                 onCommit={(patch) => mapEdits.setMap(el.id, patch)}
                 onClose={() => setMapDialogOpenForId(null)}
               />
