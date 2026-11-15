@@ -48,6 +48,8 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'CommentReply', command: 'comment reply', what: 'replying to a thread' },
   { type: 'CommentResolve', command: 'comment resolve', what: 'resolving a thread' },
   { type: 'CommentReopen', command: 'comment reopen', what: 'reopening a thread' },
+  { type: 'CommentEdit', command: 'comment edit', what: 'editing its own comment' },
+  { type: 'CommentDelete', command: 'comment delete', what: 'deleting its own comment' },
   { type: 'PresenceSet', command: 'presence set', what: 'showing what an agent is doing' },
   { type: 'PresenceClear', command: 'presence clear', what: 'taking an agent off a tab' },
   { type: 'Wait', command: 'wait', what: 'waiting for a comment or a change' },
