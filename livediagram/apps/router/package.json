@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@liveworkspace/community-site": "workspace:*",
+    "@liveworkspace/media": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   }
 }

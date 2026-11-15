@@ -45,6 +45,7 @@ import { imageIdIssue, registerImageTools } from './image-tools';
 import { changesetErrorText, isChangesetRefusal } from './changeset-client';
 import { registerTool } from './tool-annotations';
 import { registerArchiveTools } from './archive-tools';
+import { registerThreadTools } from './thread-tools';
 import { registerPagesTools } from './pages-tools';
 import {
   createDocumentTab,
@@ -344,4 +345,7 @@ export function registerTools(server: McpServer, env: Env): void {
       throw err;
     }
   });
+
+  // Comment threads (docs/specs/015-api/mcp-server.md "Comment threads"): list_threads and change_threads.
+  registerThreadTools(server, env);
 }

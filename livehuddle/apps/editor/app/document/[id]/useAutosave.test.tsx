@@ -72,6 +72,7 @@ function setup() {
     opsApplied: number,
     onDocumentTrashed: () => void = () => {},
     changesetSeen: ReadonlyMap<string, number> = noneSeen,
+    onSaveLanded?: Parameters<typeof useAutosave>[0]['onSaveLanded'],
   ) =>
     useAutosave({
       hydrated: true,
@@ -86,6 +87,7 @@ function setup() {
       ...setters,
       onDocumentTrashed,
       changesetSeen,
+      onSaveLanded,
     });
   return { journal, refs, useSubject };
 }
@@ -471,5 +473,38 @@ describe('useAutosave and a peer change during a save', () => {
     await act(async () => vi.advanceTimersByTime(SAVE_RESAVE_GRACE_MS));
     await act(async () => vi.advanceTimersByTime(600));
     expect(apiSaveTab).toHaveBeenCalledTimes(1);
+  });
+});
+
+// The last seen copy follows each landed save (offline-mode.md "Warm open of a cloud document").
+describe('useAutosave and the last seen copy', () => {
+  it('tells the last seen copy each landed save, with its baseline and revisions', async () => {
+    const { refs, useSubject } = setup();
+    const landed = vi.fn<NonNullable<Parameters<typeof useAutosave>[0]['onSaveLanded']>>();
+    apiSaveTab.mockResolvedValueOnce(7);
+    renderHook(({ tabs }) => useSubject(tabs, 0, () => {}, undefined, landed), {
+      initialProps: { tabs: [tab('mine')] },
+    });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(landed).toHaveBeenCalledTimes(1);
+    const [{ tabs, name, revs }] = landed.mock.calls[0]!;
+    expect(tabs).toBe(refs.lastSavedTabsRef.current);
+    expect(name).toBe('D');
+    expect([...revs]).toEqual([['t1', 7]]);
+  });
+
+  it('tells a landed save with no revision, and nothing for a failed one', async () => {
+    const { useSubject } = setup();
+    const landed = vi.fn<NonNullable<Parameters<typeof useAutosave>[0]['onSaveLanded']>>();
+    const { rerender } = renderHook(
+      ({ tabs }) => useSubject(tabs, 0, () => {}, undefined, landed),
+      { initialProps: { tabs: [tab('mine')] } },
+    );
+    await act(async () => vi.advanceTimersByTime(600));
+    expect([...landed.mock.calls[0]![0].revs]).toEqual([]);
+    apiSaveTab.mockRejectedValueOnce(new Error('offline'));
+    rerender({ tabs: [tab('again')] });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(landed).toHaveBeenCalledTimes(1);
   });
 });

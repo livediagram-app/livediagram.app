@@ -12,7 +12,7 @@ The issue sketched a path segment (`/embed/<code>`), but the static export ([Ded
 
 The embed route mounts the same editor page component with an `embed` flag. The flag:
 
-- **Honours the share code's role.** A view-role or Participant code renders a read-only viewer (an embed has no identity screen to put a name on what someone adds, [Share roles](share-roles.md)); an **edit-role code renders an editable embed**: direct manipulation, text editing, and context menus work inside the iframe, with the same zen-style chrome (the palette and panels stay hidden; the full editor is one badge-click away for heavier work). The api already enforces the role on every write, so the embed adds no new authorisation surface. (Originally embeds forced read-only regardless of role; that rule was reversed so an edit link pasted into a wiki lets teammates fix a diagram where they read it.)
+- **Honours the share code's role.** A view-role or Participant code renders a read-only viewer (an embed has no identity screen to put a name on what someone adds, [Share roles](share-roles.md)); an **edit-role code renders an editable embed**: direct manipulation, text editing, and context menus work inside the iframe, with the same zen-style chrome (the palette and panels stay hidden; the full editor is one badge-click away for heavier work). The api already enforces the role on every write, so the embed adds no new authorisation surface. (Originally embeds forced read-only regardless of role; that rule was reversed so an edit link pasted into a wiki lets teammates fix a diagram where they read it.) **`&readonly=1` overrides it**: the embed opens as a viewer whatever the code's role (its session role is `view`), which is what a pasted share link unfolds into ("Pasting a share link" below).
 - **Hides all chrome**: header, TabBar, every floating panel (the same gates zen mode uses, [Zen mode](../007-editor/zen-mode.md)). What remains: the canvas (pan / zoom / pinch), the ZoomControls dock (without the zen toggle), and the two embed affordances below. An embed shows **no Session strip** (Timer, Vote, Poll): a reader there cannot run or join a session, so the buttons would open nothing ([Session tools](../012-collaboration/session-tools.md#the-session-strip)). An embed draws no element indicators ([Element indicators](../008-canvas/element-indicators.md)): they are editor chrome. A view-role embed's selection toolbar also has no Add Comment button (a reader there has no comments panel to open); comment pins and comment panels are content and stay.
 - **Defaults to the Hand (pan) tool** on every viewport (`useCanvasTool({ defaultPan })`): an embed is read-first even when editable, so a drag on empty canvas pans rather than starting a marquee. Editable embeds still select / edit by clicking elements, and tool shortcuts work as usual.
 - **Suppresses the visitor identity screen.** A "what's your name" card inside a README iframe is wrong; embed sessions keep their default guest identity silently, and a visitor with none yet never leaves for one: the guest handoff would take the frame to `/auth/guest`, which refuses to be framed, so the frame would show the browser's "refused to connect" page. It opens as a link visitor instead, whose share code is enough ([Guests](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#guests)). They still join the realtime room like any view-role visitor, so embedded documents **live-update** as the document is edited (the room's whole-tab ops; [API app](../015-api/api.md)). If the WebSocket can't connect, the embed simply shows the fetch-time content, which is the existing degradation path.
@@ -39,9 +39,23 @@ Each pass in the ShareDialog ([Editor app → Share dialog](../007-editor/editor
 
 Works with zero external services: the embed page is part of the editor app's static export, and the snippet builds its URL from the live origin at copy time, so any origin emits embed URLs on that origin.
 
+## Pasting a share link (oEmbed)
+
+Most people paste the share link itself into Notion, Slack, Medium or Ghost, not an iframe, and those tools find
+embeds through oEmbed. The share page (`/document/shared?s=<code>`) carries the discovery tag
+(`<link rel="alternate" type="application/json+oembed">`) whenever its head names the canvas, and the router answers
+`GET /oembed?url=<share link>` with a `rich` iframe of this embed, the canvas's name and its share card as the
+thumbnail, the same code in every app ([Previews: Pasting a share link](../../../../liveworkspace/docs/specs/006-media/previews.md#pasting-a-share-link-get-oembed)).
+
+- **Read-only.** The iframe is `/embed?s=<code>&readonly=1`, so an edit link unfolds as a viewer, never an editable
+  embed: a public page must not hand every reader edit rights. View and Participant links open as viewers anyway.
+- **Only what the share card shows.** A password-protected, revoked, expired or trashed link answers `404`, as its
+  share card does, and its share page carries no discovery tag.
+- **Sizes and caching.** 800 x 500, scaled down to fit the host's `maxwidth` and `maxheight`; `cache_age` 300
+  seconds, so a revoked link's unfurl lingers five minutes at most and its frame shows the not found card at once.
+
 ## Out of scope
 
-- oEmbed / OpenGraph provider endpoints (candidate follow-up).
 - Embedding a single element or region rather than a tab.
 - Hiding the "Open in livediagram" badge (it is deliberately not configurable).
 - A signed-in editor inside a developer tool: that is a [workbench embed](workbench-embeds.md), served under `/embed`

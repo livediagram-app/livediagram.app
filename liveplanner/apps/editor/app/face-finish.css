@@ -93,6 +93,11 @@
 [data-face-finish='marker'] [data-marker-rules~='b'] {
   border-bottom-color: transparent !important;
 }
+/* A table's outer border under its hand-drawn Marker body (SketchOverlay's svg[data-finish]): the body is the frame,
+   so the grid's own straight hairline goes, as the export drops it (svgMarkerFace, data-marker-body-frame). */
+[data-face-finish='marker'] > svg[data-finish='marker'] ~ [data-marker-grid] {
+  border-color: transparent !important;
+}
 [data-face-finish='marker'] [data-marker-drawn='ring'],
 [data-face-finish='marker'][data-marker-drawn='ring'] {
   box-shadow: none !important;

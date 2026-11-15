@@ -48,6 +48,10 @@ its drawing (the export door, [Document previews](../006-document/document-snaps
   the shell, for at most 1.5 s; slower, failing or a 404, the shell goes out as built with the brand card. The
   editor still sets its own title once the document loads.
 
+A head that gains the name also gains the link's oEmbed discovery tag
+(`<link rel="alternate" type="application/json+oembed" href="<origin>/oembed?url=...">`), so Notion, Slack and
+other oEmbed readers unfold a pasted link into its read-only embed ([Embeds](embeds.md) "Pasting a share link").
+
 ## Share roles
 
 A preview is not a session feature: no Editor, Participant or Viewer action reaches it, and it shows the same to

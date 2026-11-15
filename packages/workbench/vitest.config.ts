@@ -24,6 +24,8 @@ const HELD_AT_100 = [
   // The last seen copy a cloud item warm-opens from (Work Tracker 890).
   'src/lib/api/last-seen-copies.ts',
   'src/lib/api/last-seen-store.ts',
+  'src/lib/api/last-seen-follower.ts',
+  'src/hooks/persistence/useLastSeenFollow.ts',
   'src/lib/api/tab-saved.ts',
   'src/hooks/persistence/useTabDrafts.ts',
   'src/lib/api/xhr-fetch.ts',
@@ -72,6 +74,7 @@ const HELD_AT_100 = [
   'src/lib/own-writes.ts',
   'src/lib/selection-write-hold.ts',
   'src/lib/remote-selection.ts',
+  'src/components/comments/CommentMarks.tsx',
 ];
 
 export default defineProject({

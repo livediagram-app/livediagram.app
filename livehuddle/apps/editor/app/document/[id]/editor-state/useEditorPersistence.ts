@@ -1,6 +1,8 @@
 'use client';
 
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
+import { useLastSeenFollow } from '@liveworkspace/workbench/hooks/persistence/useLastSeenFollow';
+import { lastSeenCopies } from '@/lib/last-seen';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { writeUserPreferences } from '@/lib/user-preferences';
@@ -148,8 +150,22 @@ export function useEditorPersistence({
 
   // Per-tab autosave (debounced + beforeunload flush). See useAutosave;
   // the last-saved mirror refs above are seeded by the hydration effect.
+  // The last seen copy follows the open document (docs/specs/006-document/offline-mode.md "Warm open of a cloud document"):
+  // its name and tab list as they change, its first tab as each save of it lands. Only a cloud document the open kept
+  // a copy of is followed; never an embed or a This Browser document.
+  const lastSeen = useLastSeenFollow({
+    follower: lastSeenCopies,
+    reader: selfParticipant.id,
+    itemId: documentId,
+    following: hydrated && realtime.documentServerStored && !embedMode,
+    serverStored: realtime.documentServerStored,
+    hydrated,
+    name: documentName,
+    tabs,
+  });
   const { hasUnsavedChanges } = useAutosave({
     hydrated,
+    onSaveLanded: lastSeen.onSaveLanded,
     documentId,
     // A Participant saves too, its own way (participant below).
     isReadOnly: autosaveReadOnly({

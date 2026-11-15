@@ -10,7 +10,7 @@ Scope, by file:
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/document/scripts/build-world-map.mjs`          | Builds the geometry module from the two Natural Earth files                                                                                                                                                  |
 | `packages/document/src/map-geometry.generated.ts`        | `MAP_GEOMETRY`: countries and places (subpath `@livedocuments/document/map-geometry` only)                                                                                                                   |
-| `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `MAP_REGIONS`, `provideMapGeometry` / `providedMapGeometry`, `mapPaperColour(surface, ground)`                                                               |
+| `packages/document/src/map-model.ts`                     | Types, limits, regions, projection, validators, `MAP_REGIONS`, `provideMapGeometry` / `providedMapGeometry`, `mapPaperColour(surface, ground)`, `mapLandColour(fill, surface, ground)`                       |
 | `packages/document/src/map-layout.ts`                    | `mapLayout`: view window, transform, country fills, pins and labels, shared by every surface                                                                                                                 |
 | `packages/document/src/map-insets.ts`                    | `MAP_INSETS`, `mapInsets(code, d, window, frame)`, `pathRings(d)`: a focused country's far land in insets, on one plate                                                                                      |
 | `packages/document/src/svg-render-map.ts`                | `svgMap`: the export body from `mapLayout`                                                                                                                                                                   |
@@ -202,11 +202,13 @@ way in. The mode switch is a radio group.
   them, in a tall and a wide box; every far ring taken; no insets for other countries or regions;
   the cache is bounded.
 - `map-model.test.ts`: `mapPaperColour` follows a ground (one tone, a gradient's middle) else the
-  surface.
+  surface; `mapLandColour` keeps a picked fill, tints a dark, light or coloured ground toward its contrast side
+  (`MAP_LAND_GROUND_MIX`), and keeps the surface defaults with no ground.
 - `svg-render-map.test.ts`, `svg-render-body` and `chart-ink.test.ts`: a map on a filled page draws
   its borders and plate in the page's colour; a map on the plain paper keeps the default.
 - `svg-render-map.test.ts`: export body with and without geometry.
 - `MapDialog.test.tsx`: toggle a country, place a pin, find a place, Done commits once, Cancel none.
+  Its preview follows a page ground (paper, tinted land, pin ink) and keeps light paper with none.
 - `map-edit.test.ts`: Editor yes; Participant, Viewer and a locked map no.
 
 ## Assets and external resources

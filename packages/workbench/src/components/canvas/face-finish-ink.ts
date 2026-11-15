@@ -12,6 +12,7 @@ import {
   sketchFacePart,
   type FacePartDrawing,
   type FacePartPaint,
+  type FaceBox,
   type FacePartShape,
   type MarkerFaceBudget,
 } from '@liveworkspace/element-model/marker-face';
@@ -190,7 +191,8 @@ type PartInk = { part: FacePartDrawing; write: Write };
 // with it. A static box is not a containing block for the ink, so it keeps its plain border.
 export function frameInk(
   el: HTMLElement,
-  face: { width: number; height: number },
+  // The face's size, and whether its body is drawn by hand (then its own box is the body's, never framed again).
+  face: FaceBox,
   seed: number,
   index: number,
   // The face's own box: a fill alone gives it a marker edge (a banner, a timer), as a border does.
@@ -279,7 +281,7 @@ export function frameInk(
 // An SVG shape: its marker drawing in a <g> straight after it, in its own coordinates (and its own transform).
 export function shapeInk(
   el: SVGGeometryElement,
-  face: { width: number; height: number },
+  face: FaceBox,
   seed: number,
   index: number,
   pen: Pen = 'marker',

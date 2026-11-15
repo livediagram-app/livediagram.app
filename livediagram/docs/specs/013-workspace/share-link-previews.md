@@ -61,6 +61,10 @@ and 404 for every other row of the table above.
   works as before.
 - **The editor still sets its own title** once the document loads; the worker only decides what a crawler reads.
 
+A head that gains the name also gains the link's oEmbed discovery tag
+(`<link rel="alternate" type="application/json+oembed" href="<origin>/oembed?url=...">`), so Notion, Slack and
+other oEmbed readers unfold a pasted link into its read-only embed ([Embeds](embeds.md) "Pasting a share link").
+
 ## Share roles
 
 A preview is not a session feature: no Editor, Participant or Viewer action reaches it, and it shows the same to

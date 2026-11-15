@@ -13,6 +13,7 @@
     "./did-you-mean": "./src/did-you-mean.ts",
     "./exit-codes": "./src/exit-codes.ts",
     "./fields": "./src/fields.ts",
+    "./git-env": "./src/git-env.ts",
     "./globals": "./src/globals.ts",
     "./hosts": "./src/hosts.ts",
     "./input": "./src/input.ts",

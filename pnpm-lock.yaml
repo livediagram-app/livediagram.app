@@ -679,6 +679,9 @@ importers:
       '@liveworkspace/community-site':
         specifier: workspace:*
         version: link:../../../packages/community-site
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -1865,6 +1868,9 @@ importers:
       '@liveworkspace/community-site':
         specifier: workspace:*
         version: link:../../../packages/community-site
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -3056,6 +3062,9 @@ importers:
       '@liveworkspace/community-site':
         specifier: workspace:*
         version: link:../../../packages/community-site
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -4051,6 +4060,9 @@ importers:
       '@liveworkspace/community-site':
         specifier: workspace:*
         version: link:../../../packages/community-site
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -5179,6 +5191,9 @@ importers:
       '@liveworkspace/community-site':
         specifier: workspace:*
         version: link:../../../packages/community-site
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -6573,6 +6588,12 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@liveworkspace/element-model':
+        specifier: workspace:*
+        version: link:../element-model
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../media
@@ -7589,6 +7610,9 @@ importers:
         specifier: workspace:*
         version: link:../sites
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6

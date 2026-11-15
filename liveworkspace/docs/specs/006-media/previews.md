@@ -9,6 +9,9 @@ renderer). It is one platform capability now, built once, in liveworkspace's med
 liveworkspace/apps/media/src/previews/   the routes, the store, the access check, the share card
 packages/media/src/previews.ts           the addresses and cache rules, for the Explorer, routers and apps
 packages/media/src/share-page.ts         the share page's head, the same in every app (createSharePage)
+packages/media/src/share-card.ts         the card door's answer, read by the share page and oEmbed
+packages/media/src/oembed.ts             a pasted share link's embed, every app's router's GET /oembed (createOEmbed)
+packages/media/src/embed-read-only.ts    the embed's readonly flag, read by every editor (embedOpensReadOnly)
 packages/index-app/src/internal.ts       the export door each app answers (handlers.export), and the Drive mirror's import door
 ```
 
@@ -114,6 +117,50 @@ same code in every app. The app gives it only its share page's addresses, its un
 passed on) and, given `{ name }`, writes the title, description, `og:*` and `twitter:*` tags, the image being
 `<the page's origin>/api/previews/share/:code/image.png`. Anything else, and the shell goes out as built with the
 brand card. No app's web Worker needs its API bound for this any more.
+
+Given a name, the head also gains the link's oEmbed discovery tag, so a tool that reads oEmbed (Notion through
+Iframely, Slack, Medium, Ghost) finds the embed below:
+`<link rel="alternate" type="application/json+oembed" href="<origin>/oembed?url=<the share link>&format=json" title="<name>">`.
+The share link in it is `<origin><path>?s=<code>`, nothing else of the visited address. A link the card refuses gets
+no tag, as it gets no name.
+
+## Pasting a share link: `GET /oembed`
+
+Most people never paste an iframe: they paste the share link and expect it to unfold. Every app's router answers
+`GET /oembed?url=<share link>[&maxwidth=<px>][&maxheight=<px>][&format=json]` on its own address with
+`createOEmbed` from `@liveworkspace/media`, the same code in every app. The app gives it only its name (`AppName`);
+its share page and embed addresses come from `APP_ITEMS` in `@liveworkspace/sites`. The router passes its
+`PREVIEWS_ORIGIN`, as it does for the previews forward, so it needs no new binding.
+
+- **Which links.** `url` must be the app's share page (`<item path>shared?s=<code>`, or the old `/diagram/shared`) on
+  the host asked, or its `www.` twin. A code that is not 4 to 64 letters and digits (the index's own rule) is `404`
+  without a fetch. Any other address is `404`.
+- **Who may unfold it.** The router asks the card door above, exactly as the share page does (1.5 s at most, the
+  visitor's address passed on). Its `404` is ours: an unknown, revoked, expired, trashed or password-protected link
+  answers `404 { error: 'not_found' }`, `no-store`, so nothing private leaks. The service failing or unreachable is
+  `503`, `no-store`. The answer says no more than the public card door already says to anyone holding the code, so
+  the endpoint adds no new way to probe codes; the zone's rate limits cover it as they cover the card door.
+- **What it answers.** `200`, `type: "rich"`, `version: "1.0"`, `title` (the item's name, one tidy line, the app's
+  untitled name when blank), `provider_name` (the app), `provider_url` (the origin), and `html`: an `<iframe>` of
+  `<origin>/embed?s=<code>&readonly=1`, the link's embed, with the item's name as its `title`, no border and
+  `allowfullscreen`. `width` and `height` are the Share dialog's 800 x 500, scaled down whole to fit `maxwidth` and
+  `maxheight` when given (a blank, zero or unreadable one is ignored). `thumbnail_url` is the share card
+  (`<origin>/api/previews/share/:code/image.png`, 1200 x 630), sent only when it fits inside `maxwidth` and
+  `maxheight`, since oEmbed lets no thumbnail exceed them. No `author_name`: the card door answers only the name, and
+  naming the owner would tell anyone holding a link more than it does today.
+- **Read-only, whatever the link's role.** `readonly=1` makes the embed open as a viewer, so an edit link pasted into
+  a public page never gives its readers edit rights there. The embed's session role is `view` when the flag is set
+  (`embedOpensReadOnly`, `embedSessionRole`); the api still enforces the link's own role on every write. The code is in the iframe's
+  address, as it is in the link the person pasted.
+- **Caching.** `cache_age: 300` and `Cache-Control: public, max-age=300`, no stale window, so a host keeps a revoked
+  link's unfurl five minutes at most; the frame itself checks the code on every load and shows the embed's own not
+  found card once it is revoked.
+- **Formats and methods.** `format` other than `json` is `501` (oEmbed's answer for an unsupported format); a method
+  other than `GET` or `HEAD` is `405`. Every answer carries `Access-Control-Allow-Origin: *` and
+  `X-Content-Type-Options: nosniff`.
+
+Notion fetches embeds through Iframely, which lists each provider's domains; the owner asks Iframely to list the
+apps' domains once this ships.
 
 ## Storage
 

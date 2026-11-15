@@ -73,6 +73,8 @@ import {
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
 import { registerArchiveTools } from './archive-tools';
+import { registerThreadTools } from './thread-tools';
+import { registerViewTool, VIEW_TOOL_META } from './view-tab';
 import {
   createDocumentTab,
   mcpAddTab,
@@ -109,8 +111,13 @@ export function registerTools(server: McpServer, env: Env): void {
     return textResult({ count: matched.length, documents: matched });
   });
 
-  registerTool(server, env, mcpReadDocument, async (args, extra) =>
-    readDocument(env, requireToken(extra as Extra), args),
+  // The drawing tools link the interactive view (docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)").
+  registerTool(
+    server,
+    env,
+    mcpReadDocument,
+    async (args, extra) => readDocument(env, requireToken(extra as Extra), args),
+    VIEW_TOOL_META,
   );
 
   registerTool(server, env, mcpListTemplates, async (_args, extra) => {
@@ -124,343 +131,366 @@ export function registerTools(server: McpServer, env: Env): void {
     return textResult(searchIcons(args.query, args.limit ?? 20));
   });
 
-  registerTool(server, env, mcpCreateDocument, async (args, extra) => {
-    const token = requireToken(extra);
-    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
-    const imageIssue = await imageIdIssue(env, token, args);
-    if (imageIssue) return errorResult(imageIssue);
-    // Accept either `tabs` (preferred) or a single `tab` alias, checked here against the tab shape.
-    const single =
-      args.tabs || args.tab === undefined ? null : createDocumentTab.safeParse(args.tab);
-    if (single && !single.success)
-      return errorResult(
-        `"tab": ${single.error.issues.map((i) => `${i.path.join('.') || 'tab'}: ${i.message}`).join('; ')}. ` +
-          'Pass "tabs": [{ name, graph | mermaid | elements | template }].',
-      );
-    const inputTabs = args.tabs ?? (single ? [single.data] : undefined);
-    if (!inputTabs || inputTabs.length === 0) {
-      return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
-    }
-    const tabs: Tab[] = [];
-    // What a graph tab could not keep of what it asked (a Mermaid subgraph nested in another), said back.
-    const graphNotes: string[] = [];
-    // The template the first tab is made from, for the creation intent.
-    let firstTemplate: TemplateKind | null = null;
-    // The tabs a template made, whose colours are its own.
-    const templateTabIds = new Set<string>();
-    // Elements given beside a template, added to its tab once the document exists.
-    const withTemplate: { tab: Tab; operations: unknown[] }[] = [];
-    for (const [index, given] of inputTabs.entries()) {
-      const tabId = crypto.randomUUID();
-      // An unnamed tab is named after its template, as the editor names one (templateTabName), else "Tab n".
-      const templateKind = given.template ? resolveTemplate(given.template) : null;
-      const t = {
-        ...given,
-        name: given.name ?? (templateKind && templateTabName(templateKind)) ?? `Tab ${index + 1}`,
-      };
-      // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
-      // instead of expecting elements.
-      if (t.template) {
-        const kind = resolveTemplate(t.template);
-        if (!kind) {
-          return errorResult(
-            `Unknown template "${t.template}" in tab "${t.name}". ${closestTemplatesHint(t.template)}` +
-              `Valid kinds: ${validTemplateKinds()}.`,
-          );
-        }
-        // A template builds its own boxes and arrows: a graph beside it was dropped without a word.
-        if (t.graph || t.mermaid) return errorResult(`Tab "${t.name}": ${TEMPLATE_OR_GRAPH}`);
-        if (tabs.length === 0) firstTemplate = kind;
-        const built = buildTemplateTab(tabId, t.name, kind, t.theme ?? args.theme);
-        if (t.elements?.length) {
-          const added = addOperationsFor(t.elements, built);
-          if ('error' in added) return errorResult(`Tab "${t.name}": ${added.error}`);
-          withTemplate.push({ tab: built, operations: added.operations });
-        }
-        tabs.push(built);
-        templateTabIds.add(tabId);
-        continue;
-      }
-      // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
-      // and arrows from a node/edge graph, or the same graph as Mermaid.
-      const input = resolveGraphInput(t);
-      if (input.error) return errorResult(`Tab "${t.name}": ${input.error}`);
-      for (const note of input.notes ?? []) graphNotes.push(`Tab "${t.name}": ${note}`);
-      const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
-      if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
-      if (input.graph) {
-        tabs.push(buildGraphTab(tabId, t.name, input.graph, t.theme ?? args.theme));
-        continue;
-      }
-      const drawn = packFreehandPoints(t.elements ?? []);
-      if ('error' in drawn) return errorResult(`Tab "${t.name}": ${drawn.error}`);
-      const valueIssue = elementsIssue(drawn.elements);
-      if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
-      const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
-      if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
-      const finished = withNewButtonModes(normaliseElements(ended.elements) as Element[]);
-      const candidate: unknown = { id: tabId, name: t.name, elements: finished };
-      // What is wrong, named, before the general shape of an element.
-      const shapeIssue = t.elements ? tabElementsIssue(finished) : null;
-      if (shapeIssue) return errorResult(`Tab "${t.name}": ${shapeIssue}`);
-      if (!t.elements || !isValidTab(candidate)) {
+  registerTool(
+    server,
+    env,
+    mcpCreateDocument,
+    async (args, extra) => {
+      const token = requireToken(extra);
+      // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+      const imageIssue = await imageIdIssue(env, token, args);
+      if (imageIssue) return errorResult(imageIssue);
+      // Accept either `tabs` (preferred) or a single `tab` alias, checked here against the tab shape.
+      const single =
+        args.tabs || args.tab === undefined ? null : createDocumentTab.safeParse(args.tab);
+      if (single && !single.success)
         return errorResult(
-          `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
-            'from list_templates). Check the livediagram://schema/elements resource: every ' +
-            'element needs id/type/x/y/width/height (arrows need from/to), and arrays must ' +
-            'be well-formed.',
+          `"tab": ${single.error.issues.map((i) => `${i.path.join('.') || 'tab'}: ${i.message}`).join('; ')}. ` +
+            'Pass "tabs": [{ name, graph | mermaid | elements | template }].',
         );
+      const inputTabs = args.tabs ?? (single ? [single.data] : undefined);
+      if (!inputTabs || inputTabs.length === 0) {
+        return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
       }
-      tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? args.theme));
-    }
-    // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
-    if (args.finish) for (const t of tabs) t.finish = args.finish;
-    const id = crypto.randomUUID();
-    // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
-    // filter and badge read source != null, wherever the document is filed.
-    // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
-    // server files the document in the user's default folder for it, when they have one.
-    const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
-    const { document: created } = await apiJson<{ document?: LiveDoc }>(env, token, '/documents', {
-      method: 'POST',
-      // markUsed only when the model gave one: absent, the making counts (the api's default).
-      body: JSON.stringify({
-        id,
-        name: args.name,
-        tabs,
-        source: 'mcp',
-        intent,
-        ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
-      }),
-    });
-    // The elements given beside a template go onto its tab as update_document's add ops would
-    // (docs/specs/015-api/mcp-server.md §4.3), so they land beside the scaffold rather than being dropped.
-    let shown: Tab = tabs[0]!;
-    for (const { tab, operations } of withTemplate) {
-      const stored = await getTab(env, token, id, tab.id);
-      try {
-        await addToTemplateTab(env, token, id, tab.id, stored, operations);
-      } catch (err) {
-        if (isChangesetRefusal(err))
+      const tabs: Tab[] = [];
+      // What a graph tab could not keep of what it asked (a Mermaid subgraph nested in another), said back.
+      const graphNotes: string[] = [];
+      // The template the first tab is made from, for the creation intent.
+      let firstTemplate: TemplateKind | null = null;
+      // The tabs a template made, whose colours are its own.
+      const templateTabIds = new Set<string>();
+      // Elements given beside a template, added to its tab once the document exists.
+      const withTemplate: { tab: Tab; operations: unknown[] }[] = [];
+      for (const [index, given] of inputTabs.entries()) {
+        const tabId = crypto.randomUUID();
+        // An unnamed tab is named after its template, as the editor names one (templateTabName), else "Tab n".
+        const templateKind = given.template ? resolveTemplate(given.template) : null;
+        const t = {
+          ...given,
+          name: given.name ?? (templateKind && templateTabName(templateKind)) ?? `Tab ${index + 1}`,
+        };
+        // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
+        // instead of expecting elements.
+        if (t.template) {
+          const kind = resolveTemplate(t.template);
+          if (!kind) {
+            return errorResult(
+              `Unknown template "${t.template}" in tab "${t.name}". ${closestTemplatesHint(t.template)}` +
+                `Valid kinds: ${validTemplateKinds()}.`,
+            );
+          }
+          // A template builds its own boxes and arrows: a graph beside it was dropped without a word.
+          if (t.graph || t.mermaid) return errorResult(`Tab "${t.name}": ${TEMPLATE_OR_GRAPH}`);
+          if (tabs.length === 0) firstTemplate = kind;
+          const built = buildTemplateTab(tabId, t.name, kind, t.theme ?? args.theme);
+          if (t.elements?.length) {
+            const added = addOperationsFor(t.elements, built);
+            if ('error' in added) return errorResult(`Tab "${t.name}": ${added.error}`);
+            withTemplate.push({ tab: built, operations: added.operations });
+          }
+          tabs.push(built);
+          templateTabIds.add(tabId);
+          continue;
+        }
+        // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
+        // and arrows from a node/edge graph, or the same graph as Mermaid.
+        const input = resolveGraphInput(t);
+        if (input.error) return errorResult(`Tab "${t.name}": ${input.error}`);
+        for (const note of input.notes ?? []) graphNotes.push(`Tab "${t.name}": ${note}`);
+        const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
+        if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
+        if (input.graph) {
+          tabs.push(buildGraphTab(tabId, t.name, input.graph, t.theme ?? args.theme));
+          continue;
+        }
+        const drawn = packFreehandPoints(t.elements ?? []);
+        if ('error' in drawn) return errorResult(`Tab "${t.name}": ${drawn.error}`);
+        const valueIssue = elementsIssue(drawn.elements);
+        if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
+        const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
+        if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
+        const finished = withNewButtonModes(normaliseElements(ended.elements) as Element[]);
+        const candidate: unknown = { id: tabId, name: t.name, elements: finished };
+        // What is wrong, named, before the general shape of an element.
+        const shapeIssue = t.elements ? tabElementsIssue(finished) : null;
+        if (shapeIssue) return errorResult(`Tab "${t.name}": ${shapeIssue}`);
+        if (!t.elements || !isValidTab(candidate)) {
           return errorResult(
-            `The document was made (${id}), but its elements for tab "${tab.name}" were refused: ${changesetErrorText(err)}`,
+            `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
+              'from list_templates). Check the livediagram://schema/elements resource: every ' +
+              'element needs id/type/x/y/width/height (arrows need from/to), and arrays must ' +
+              'be well-formed.',
           );
-        throw err;
+        }
+        tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? args.theme));
       }
-      if (tab.id === shown.id) shown = await getTab(env, token, id, tab.id);
-    }
-    const tabIds = tabs.map((t) => t.id);
-    // A template's colours are its design, not the agent's doing (diagram-lint.md "Where it runs"): its tabs' lint
-    // names none.
-    const reports = (await lintReportsOf(env, token, id, tabIds)).map((r, i) =>
-      r && templateTabIds.has(tabIds[i]!) ? withoutFindings(r, 'colour-on-themed') : r,
-    );
-    const lint = reports.map(lintLineOf);
-    return imageResult(
-      {
-        id,
-        documentId: id,
-        name: args.name,
-        tabCount: tabs.length,
-        tabIds,
-        folder: await createdFolderLabel(clientFor(env, token), created, 'create_document'),
-        url: deepLink(env, id),
-        lint,
-        ...(graphNotes.length ? { notes: graphNotes } : {}),
-      },
-      shown,
-      { env, token },
-      reports.map(lintTextOf),
-    );
-  });
-
-  registerTool(server, env, mcpAddTab, async (args, extra) => {
-    const token = requireToken(extra);
-    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
-    const imageIssue = await imageIdIssue(env, token, args);
-    if (imageIssue) return errorResult(imageIssue);
-    const tabId = crypto.randomUUID();
-    // Template tab (docs/specs/015-api/mcp-server.md §4.5): resolved up front so an unknown kind
-    // fails before any network round trip.
-    if (args.template && !resolveTemplate(args.template)) {
-      return errorResult(
-        `Unknown template "${args.template}". ${closestTemplatesHint(args.template)}Valid kinds: ${validTemplateKinds()}.`,
+      // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
+      if (args.finish) for (const t of tabs) t.finish = args.finish;
+      const id = crypto.randomUUID();
+      // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
+      // filter and badge read source != null, wherever the document is filed.
+      // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
+      // server files the document in the user's default folder for it, when they have one.
+      const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
+      const { document: created } = await apiJson<{ document?: LiveDoc }>(
+        env,
+        token,
+        '/documents',
+        {
+          method: 'POST',
+          // markUsed only when the model gave one: absent, the making counts (the api's default).
+          body: JSON.stringify({
+            id,
+            name: args.name,
+            tabs,
+            source: 'mcp',
+            intent,
+            ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
+          }),
+        },
       );
-    }
-    const input = resolveGraphInput(args);
-    if (input.error) return errorResult(input.error);
-    if (args.template && input.graph) return errorResult(TEMPLATE_OR_GRAPH);
-    if (!args.template && !input.graph && !args.elements) {
-      return errorResult(
-        'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
-          'from list_templates. Check the livediagram://schema/elements resource.',
-      );
-    }
-    const drawn = args.elements ? packFreehandPoints(args.elements) : null;
-    if (drawn && 'error' in drawn) return errorResult(drawn.error);
-    const given = drawn?.elements;
-    const valueIssue = given ? elementsIssue(given) : null;
-    if (valueIssue) return errorResult(valueIssue);
-    // Beside a template, an arrow may pin to one of its elements: the ends are checked against the tab it built.
-    const ended = given && !args.template ? resolveArrowEnds(given, idsOf(given)) : null;
-    if (ended && 'error' in ended) return errorResult(ended.error);
-    // Default the new tab's theme to the document's existing one so it matches the other tabs
-    // rather than landing as a clashing brand-white tab; the model can still pass a theme.
-    let themeId = args.theme;
-    if (!themeId) {
-      try {
-        themeId = (await loadTab(env, token, args.documentId))?.tab.theme;
-      } catch {
-        /* the api keeps its default */
+      // The elements given beside a template go onto its tab as update_document's add ops would
+      // (docs/specs/015-api/mcp-server.md §4.3), so they land beside the scaffold rather than being dropped.
+      let shown: Tab = tabs[0]!;
+      for (const { tab, operations } of withTemplate) {
+        const stored = await getTab(env, token, id, tab.id);
+        try {
+          await addToTemplateTab(env, token, id, tab.id, stored, operations);
+        } catch (err) {
+          if (isChangesetRefusal(err))
+            return errorResult(
+              `The document was made (${id}), but its elements for tab "${tab.name}" were refused: ${changesetErrorText(err)}`,
+            );
+          throw err;
+        }
+        if (tab.id === shown.id) shown = await getTab(env, token, id, tab.id);
       }
-    }
-    // One changeset that creates the tab, so anyone with the document open sees it arrive
-    // (docs/specs/015-api/mcp-server.md §4.3a).
-    let answer;
-    try {
-      answer = await submitChangeset(env, token, args.documentId, tabId, {
-        replace: replaceBodyFrom({
-          ...(input.graph ? { graph: input.graph } : {}),
-          ...(args.template ? { template: args.template } : {}),
-          ...(ended ? { elements: ended.elements } : {}),
-          ...(args.layout ? { layout: args.layout } : {}),
-          ...(themeId ? { theme: themeId } : {}),
-          ...(args.finish ? { finish: args.finish } : {}),
+      const tabIds = tabs.map((t) => t.id);
+      // A template's colours are its design, not the agent's doing (diagram-lint.md "Where it runs"): its tabs' lint
+      // names none.
+      const reports = (await lintReportsOf(env, token, id, tabIds)).map((r, i) =>
+        r && templateTabIds.has(tabIds[i]!) ? withoutFindings(r, 'colour-on-themed') : r,
+      );
+      const lint = reports.map(lintLineOf);
+      return imageResult(
+        {
+          id,
+          documentId: id,
           name: args.name,
-        }),
-      });
-    } catch (err) {
-      if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
-      throw err;
-    }
-    // Elements given beside a template are added to the tab it built, as update_document's add ops would.
-    if (args.template && args.elements?.length) {
-      const built = await getTab(env, token, args.documentId, tabId);
-      const added = addOperationsFor(args.elements, built);
-      if ('error' in added)
-        return errorResult(`The tab was made, but its elements: ${added.error}`);
-      try {
-        answer = await addToTemplateTab(
-          env,
-          token,
-          args.documentId,
-          tabId,
-          built,
-          added.operations,
-        );
-      } catch (err) {
-        if (isChangesetRefusal(err))
-          return errorResult(
-            `The tab was made, but its elements were refused: ${changesetErrorText(err)}`,
-          );
-        throw err;
-      }
-    }
-    // The result PNG: the tab as stored, read once more (CS36).
-    const { tab } = await apiJson<TabResponse>(
-      env,
-      token,
-      `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
-    );
-    return imageResult(
-      {
-        documentId: args.documentId,
-        tabId,
-        name: tab.name,
-        url: deepLink(env, args.documentId),
-        changesetId: answer.changeset?.id ?? null,
-        rev: tab.rev,
-        text: mcpResultText(answer.text),
-        lint: lintLineOf(answer.lint),
-        ...(input.notes ? { notes: input.notes } : {}),
-      },
-      tab,
-      { env, token },
-      [lintTextOf(answer.lint)],
-    );
-  });
+          tabCount: tabs.length,
+          tabIds,
+          folder: await createdFolderLabel(clientFor(env, token), created, 'create_document'),
+          url: deepLink(env, id),
+          lint,
+          ...(graphNotes.length ? { notes: graphNotes } : {}),
+        },
+        shown,
+        { env, token },
+        reports.map(lintTextOf),
+      );
+    },
+    VIEW_TOOL_META,
+  );
 
-  registerTool(server, env, mcpUpdateDocument, async (args, extra) => {
-    const token = requireToken(extra);
-    // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
-    const imageIssue = await imageIdIssue(env, token, args);
-    if (imageIssue) return errorResult(imageIssue);
-    const loaded = await loadTab(env, token, args.documentId, args.tabId);
-    if (!loaded) return errorResult('That document has no tabs.');
-    const { tab } = loaded;
-    const tabId = tab.id;
-    // Both modes are one changeset (docs/specs/015-api/mcp-server.md §4.4): applied, laid out and
-    // relayed by the api, kept through anyone's next save. ops mode is based on what the model
-    // read, so nothing a person saved in between is overwritten.
-    let body: ChangesetRequest;
-    let graphNotes: string[] | undefined;
-    if (args.mode === 'replace') {
+  registerTool(
+    server,
+    env,
+    mcpAddTab,
+    async (args, extra) => {
+      const token = requireToken(extra);
+      // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+      const imageIssue = await imageIdIssue(env, token, args);
+      if (imageIssue) return errorResult(imageIssue);
+      const tabId = crypto.randomUUID();
+      // Template tab (docs/specs/015-api/mcp-server.md §4.5): resolved up front so an unknown kind
+      // fails before any network round trip.
+      if (args.template && !resolveTemplate(args.template)) {
+        return errorResult(
+          `Unknown template "${args.template}". ${closestTemplatesHint(args.template)}Valid kinds: ${validTemplateKinds()}.`,
+        );
+      }
       const input = resolveGraphInput(args);
       if (input.error) return errorResult(input.error);
-      graphNotes = input.notes;
-      if (!input.graph && !args.elements) {
-        return errorResult('replace mode requires "graph", "mermaid" or "elements".');
-      } else {
-        const drawn = args.elements ? packFreehandPoints(args.elements) : null;
-        if (drawn && 'error' in drawn) return errorResult(drawn.error);
-        const given = drawn?.elements;
-        const valueIssue = given ? elementsIssue(given) : null;
-        if (valueIssue) return errorResult(valueIssue);
-        // The new elements are the whole tab, so an arrow end may name only them.
-        const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
-        if (ended && 'error' in ended) return errorResult(ended.error);
-        body = {
+      if (args.template && input.graph) return errorResult(TEMPLATE_OR_GRAPH);
+      if (!args.template && !input.graph && !args.elements) {
+        return errorResult(
+          'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
+            'from list_templates. Check the livediagram://schema/elements resource.',
+        );
+      }
+      const drawn = args.elements ? packFreehandPoints(args.elements) : null;
+      if (drawn && 'error' in drawn) return errorResult(drawn.error);
+      const given = drawn?.elements;
+      const valueIssue = given ? elementsIssue(given) : null;
+      if (valueIssue) return errorResult(valueIssue);
+      // Beside a template, an arrow may pin to one of its elements: the ends are checked against the tab it built.
+      const ended = given && !args.template ? resolveArrowEnds(given, idsOf(given)) : null;
+      if (ended && 'error' in ended) return errorResult(ended.error);
+      // Default the new tab's theme to the document's existing one so it matches the other tabs
+      // rather than landing as a clashing brand-white tab; the model can still pass a theme.
+      let themeId = args.theme;
+      if (!themeId) {
+        try {
+          themeId = (await loadTab(env, token, args.documentId))?.tab.theme;
+        } catch {
+          /* the api keeps its default */
+        }
+      }
+      // One changeset that creates the tab, so anyone with the document open sees it arrive
+      // (docs/specs/015-api/mcp-server.md §4.3a).
+      let answer;
+      try {
+        answer = await submitChangeset(env, token, args.documentId, tabId, {
           replace: replaceBodyFrom({
             ...(input.graph ? { graph: input.graph } : {}),
-            ...(!input.graph && ended ? { elements: ended.elements } : {}),
-            ...(!input.graph && args.layout ? { layout: args.layout } : {}),
+            ...(args.template ? { template: args.template } : {}),
+            ...(ended ? { elements: ended.elements } : {}),
+            ...(args.layout ? { layout: args.layout } : {}),
+            ...(themeId ? { theme: themeId } : {}),
+            ...(args.finish ? { finish: args.finish } : {}),
+            name: args.name,
           }),
-        };
+        });
+      } catch (err) {
+        if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
+        throw err;
       }
-    } else if (args.edits !== undefined) {
-      if (args.ops) return errorResult('ops mode takes "ops" or "edits", not both.');
-      // Edit operations as text, parsed and applied by the api (docs/specs/015-api/mcp-server.md §4.4 "Edits").
-      body = { operations: args.edits, base: editsBase(tab, args.rev) };
-    } else {
-      if (!args.ops) return errorResult('ops mode requires "ops" or "edits".');
-      const operations = mcpOpsToEditOperations(args.ops, tab);
-      if (typeof operations === 'string') return errorResult(operations);
-      body = { operations, base: baseFor(args.ops, tab, args.rev) };
-    }
-    let answer;
-    try {
-      answer = await submitChangeset(env, token, args.documentId, tabId, body);
-    } catch (err) {
-      if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
-      throw err;
-    }
-    const { tab: next } = await apiJson<TabResponse>(
-      env,
-      token,
-      `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
-    );
-    // An edit that changed nothing records no changeset and so carries no lint: the tab's own lint is read instead, so
-    // the answer still says what is wrong with it rather than "lint unavailable".
-    const lint =
-      answer.lint ??
-      (answer.changeset ? null : (await lintReportsOf(env, token, args.documentId, [tabId]))[0]!);
-    return imageResult(
-      {
-        id: args.documentId,
-        documentId: args.documentId,
-        tabId,
-        url: deepLink(env, args.documentId),
-        changesetId: answer.changeset?.id ?? null,
-        rev: next.rev,
-        text: mcpResultText(answer.text, contentOrigin(tab.elements)),
-        lint: lintLineOf(lint),
-        ...(graphNotes ? { notes: graphNotes } : {}),
-      },
-      next,
-      { env, token },
-      [lintTextOf(lint)],
-    );
-  });
+      // Elements given beside a template are added to the tab it built, as update_document's add ops would.
+      if (args.template && args.elements?.length) {
+        const built = await getTab(env, token, args.documentId, tabId);
+        const added = addOperationsFor(args.elements, built);
+        if ('error' in added)
+          return errorResult(`The tab was made, but its elements: ${added.error}`);
+        try {
+          answer = await addToTemplateTab(
+            env,
+            token,
+            args.documentId,
+            tabId,
+            built,
+            added.operations,
+          );
+        } catch (err) {
+          if (isChangesetRefusal(err))
+            return errorResult(
+              `The tab was made, but its elements were refused: ${changesetErrorText(err)}`,
+            );
+          throw err;
+        }
+      }
+      // The result PNG: the tab as stored, read once more (CS36).
+      const { tab } = await apiJson<TabResponse>(
+        env,
+        token,
+        `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
+      );
+      return imageResult(
+        {
+          documentId: args.documentId,
+          tabId,
+          name: tab.name,
+          url: deepLink(env, args.documentId),
+          changesetId: answer.changeset?.id ?? null,
+          rev: tab.rev,
+          text: mcpResultText(answer.text),
+          lint: lintLineOf(answer.lint),
+          ...(input.notes ? { notes: input.notes } : {}),
+        },
+        tab,
+        { env, token },
+        [lintTextOf(answer.lint)],
+      );
+    },
+    VIEW_TOOL_META,
+  );
+
+  registerTool(
+    server,
+    env,
+    mcpUpdateDocument,
+    async (args, extra) => {
+      const token = requireToken(extra);
+      // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
+      const imageIssue = await imageIdIssue(env, token, args);
+      if (imageIssue) return errorResult(imageIssue);
+      const loaded = await loadTab(env, token, args.documentId, args.tabId);
+      if (!loaded) return errorResult('That document has no tabs.');
+      const { tab } = loaded;
+      const tabId = tab.id;
+      // Both modes are one changeset (docs/specs/015-api/mcp-server.md §4.4): applied, laid out and
+      // relayed by the api, kept through anyone's next save. ops mode is based on what the model
+      // read, so nothing a person saved in between is overwritten.
+      let body: ChangesetRequest;
+      let graphNotes: string[] | undefined;
+      if (args.mode === 'replace') {
+        const input = resolveGraphInput(args);
+        if (input.error) return errorResult(input.error);
+        graphNotes = input.notes;
+        if (!input.graph && !args.elements) {
+          return errorResult('replace mode requires "graph", "mermaid" or "elements".');
+        } else {
+          const drawn = args.elements ? packFreehandPoints(args.elements) : null;
+          if (drawn && 'error' in drawn) return errorResult(drawn.error);
+          const given = drawn?.elements;
+          const valueIssue = given ? elementsIssue(given) : null;
+          if (valueIssue) return errorResult(valueIssue);
+          // The new elements are the whole tab, so an arrow end may name only them.
+          const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
+          if (ended && 'error' in ended) return errorResult(ended.error);
+          body = {
+            replace: replaceBodyFrom({
+              ...(input.graph ? { graph: input.graph } : {}),
+              ...(!input.graph && ended ? { elements: ended.elements } : {}),
+              ...(!input.graph && args.layout ? { layout: args.layout } : {}),
+            }),
+          };
+        }
+      } else if (args.edits !== undefined) {
+        if (args.ops) return errorResult('ops mode takes "ops" or "edits", not both.');
+        // Edit operations as text, parsed and applied by the api (docs/specs/015-api/mcp-server.md §4.4 "Edits").
+        body = { operations: args.edits, base: editsBase(tab, args.rev) };
+      } else {
+        if (!args.ops) return errorResult('ops mode requires "ops" or "edits".');
+        const operations = mcpOpsToEditOperations(args.ops, tab);
+        if (typeof operations === 'string') return errorResult(operations);
+        body = { operations, base: baseFor(args.ops, tab, args.rev) };
+      }
+      let answer;
+      try {
+        answer = await submitChangeset(env, token, args.documentId, tabId, body);
+      } catch (err) {
+        if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
+        throw err;
+      }
+      const { tab: next } = await apiJson<TabResponse>(
+        env,
+        token,
+        `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
+      );
+      // An edit that changed nothing records no changeset and so carries no lint: the tab's own lint is read instead, so
+      // the answer still says what is wrong with it rather than "lint unavailable".
+      const lint =
+        answer.lint ??
+        (answer.changeset ? null : (await lintReportsOf(env, token, args.documentId, [tabId]))[0]!);
+      return imageResult(
+        {
+          id: args.documentId,
+          documentId: args.documentId,
+          tabId,
+          url: deepLink(env, args.documentId),
+          changesetId: answer.changeset?.id ?? null,
+          rev: next.rev,
+          text: mcpResultText(answer.text, contentOrigin(tab.elements)),
+          lint: lintLineOf(lint),
+          ...(graphNotes ? { notes: graphNotes } : {}),
+        },
+        next,
+        { env, token },
+        [lintTextOf(lint)],
+      );
+    },
+    VIEW_TOOL_META,
+  );
 
   registerTool(server, env, mcpShareDocument, async (args, extra) => {
     const token = requireToken(extra);
@@ -583,4 +613,10 @@ export function registerTools(server: McpServer, env: Env): void {
       throw err;
     }
   });
+
+  // Comment threads (docs/specs/015-api/mcp-server.md "Comment threads"): list_threads and change_threads.
+  registerThreadTools(server, env);
+
+  // The interactive view's own call.
+  registerViewTool(server, env);
 }

@@ -19,6 +19,7 @@ class RecordingRewriter {
       handler.element({
         setAttribute: (_: string, value: string) => void (edits[selector] = value),
         setInnerContent: (content: string) => void (edits[selector] = content),
+        append: (content: string) => void (edits[selector] = content),
       });
     }
     return new Response(JSON.stringify(edits), {

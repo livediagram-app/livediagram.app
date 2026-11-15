@@ -22,7 +22,12 @@
 
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
-import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
+import {
+  threadResolved,
+  threadWithComment,
+  threadWithEdit,
+  threadWithoutComment,
+} from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import {
@@ -49,6 +54,8 @@ export type ElementDelta =
   | { kind: 'comment-remove'; commentId: string }
   | { kind: 'comment-rekey'; from: string; to: string }
   | { kind: 'comment-resolve'; resolved: boolean }
+  // Its author changed a comment's text (docs/specs/024-agents/agent-presence.md "Edit and delete own").
+  | { kind: 'comment-edit'; commentId: string; text: string; editedAt: number }
   // One person's reaction on one comment, on or off (docs/specs/012-collaboration/comment-reactions.md): `by` is
   // their collab key, `name` the name they react under (the room stamps both from the sender's presence).
   | {
@@ -152,6 +159,13 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
     case 'comment-resolve': {
       const thread = threadOf(el);
       const next = threadResolved(thread, delta.resolved);
+      return next === thread ? el : withThread(el, next);
+    }
+    case 'comment-edit': {
+      if (typeof delta.commentId !== 'string' || typeof delta.text !== 'string') return el;
+      if (delta.text.length > COMMENT_MAX_TEXT || typeof delta.editedAt !== 'number') return el;
+      const thread = threadOf(el);
+      const next = threadWithEdit(thread, delta.commentId, delta.text, delta.editedAt);
       return next === thread ? el : withThread(el, next);
     }
     case 'comment-react': {
