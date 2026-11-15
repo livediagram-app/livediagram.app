@@ -7,16 +7,34 @@ import {
   confirmHeldChanges,
   forgetPlanQueues,
   heldCardCount,
+  heldGroups,
   keepHeldCards,
   planQueue,
   subscribeHeldReview,
   waitingChangeCount,
   type QueuedChange,
 } from './plan-queue';
-import { heldCopy, isRemovalHeld } from './removal-held';
+import {
+  HELD_TITLE_MAX,
+  heldGroupHeading,
+  heldMoreLabel,
+  heldReason,
+  heldRows,
+  heldTitle,
+  heldTitles,
+  heldToggleLabel,
+  heldWhyOf,
+  heldWhyOfStored,
+  isRemovalHeld,
+  keepLabel,
+  keptToast,
+  removeLabel,
+  removedToast,
+  type HeldGroup,
+} from './removal-held';
 
 // docs/specs/007-editor/offline-changes.md "Held for review": a removal the server held is kept, skipped by the
-// replay, sent again confirmed on Remove Anyway and dropped on Keep Cards.
+// replay, sent again confirmed on Remove N Cards and dropped on Keep Cards.
 
 afterEach(() => {
   localStorage.clear();
@@ -43,17 +61,113 @@ function deps(send: (w: ItemWrite, o?: { confirmRemoval?: boolean }) => Promise<
   };
 }
 
-describe('isRemovalHeld and heldCopy', () => {
-  it('reads the code and counts the removals', () => {
+describe('isRemovalHeld and the banner copy', () => {
+  it('reads the code', () => {
     expect(isRemovalHeld(HELD)).toBe(true);
     expect(isRemovalHeld(new Error('x'))).toBe(false);
     expect(isRemovalHeld(null)).toBe(false);
-    expect(heldCopy(1)).toBe(
-      '1 card removal is held: it would take too many cards off a board, or empty it.',
+  });
+
+  it('counts cards in the title, labels and toasts', () => {
+    expect(heldTitle(1)).toBe('1 card was about to be removed');
+    expect(heldTitle(11)).toBe('11 cards were about to be removed');
+    expect([keepLabel(1), keepLabel(2)]).toEqual(['Keep Card', 'Keep Cards']);
+    expect([removeLabel(1), removeLabel(11)]).toEqual(['Remove 1 Card', 'Remove 11 Cards']);
+    expect([keptToast(1), removedToast(11)]).toEqual(['Kept 1 card', 'Removed 11 cards']);
+    expect(heldToggleLabel(11, false)).toBe('Show the 11 cards');
+    expect(heldToggleLabel(1, false)).toBe('Show the card');
+    expect(heldToggleLabel(11, true)).toBe('Hide the cards');
+    expect(heldToggleLabel(1, true)).toBe('Hide the card');
+  });
+
+  it('says why by the board and reason every held card shares, else plainly', () => {
+    const g = (over: Partial<HeldGroup>): HeldGroup => ({
+      board: 'Sprint',
+      reason: 'over-threshold',
+      cards: 3,
+      titles: [],
+      ...over,
+    });
+    expect(heldReason([g({})])).toBe(
+      'That’s more of Sprint than usual in one go, so we paused it. Nothing is gone yet.',
     );
-    expect(heldCopy(3)).toBe(
-      '3 card removals are held: they would take too many cards off a board, or empty it.',
+    expect(heldReason([g({ reason: 'empties-board' })])).toBe(
+      'That would empty Sprint, so we paused it. Nothing is gone yet.',
     );
+    const plain = 'That’s more cards than usual in one go, so we paused it. Nothing is gone yet.';
+    expect(heldReason([])).toBe(plain);
+    expect(heldReason([g({ board: null })])).toBe(plain);
+    expect(heldReason([g({ reason: null })])).toBe(plain);
+    expect(heldReason([g({}), g({ board: 'Roadmap' })])).toBe(plain);
+    expect(heldGroupHeading(g({}))).toBe('From Sprint');
+    expect(heldGroupHeading(g({ reason: 'empties-board', board: null }))).toBe(
+      'Would empty A board',
+    );
+  });
+
+  it('lists up to eight titles, then how many more', () => {
+    const titles = Array.from({ length: 10 }, (_, i) => (i === 0 ? '  ' : `Card ${i}`));
+    const rows = heldRows({ board: null, reason: null, cards: 11, titles });
+    expect(rows.titles).toHaveLength(8);
+    expect(rows.titles[0]).toBe('Untitled card');
+    expect(rows.more).toBe(3);
+    expect(heldMoreLabel(8, 3)).toBe('and 3 more');
+    expect(heldMoreLabel(0, 1)).toBe('1 card');
+    expect(heldMoreLabel(0, 2)).toBe('2 cards');
+    expect(heldMoreLabel(2, 0)).toBeNull();
+  });
+
+  it('reads the reason and board off a refusal, and a stored why only of its shape', () => {
+    expect(heldWhyOf({ reason: 'empties-board', board: 'Sprint' })).toEqual({
+      reason: 'empties-board',
+      board: 'Sprint',
+    });
+    expect(heldWhyOf({ reason: 'nope', board: '' })).toEqual({});
+    expect(heldWhyOf(null)).toEqual({});
+    expect(heldWhyOfStored({ reason: 'over-threshold', titles: ['a', 3] })).toEqual({
+      reason: 'over-threshold',
+      titles: ['a'],
+    });
+    expect(heldWhyOfStored('x')).toEqual({});
+    expect(heldWhyOfStored(undefined)).toEqual({});
+    const long = 'x'.repeat(200);
+    expect(heldTitles(['a', long])[1]).toHaveLength(HELD_TITLE_MAX);
+    expect(heldTitles([long])[0]!.endsWith('…')).toBe(true);
+  });
+});
+
+describe('why a removal was held', () => {
+  it('keeps the reason, board and titles a replay is held for, and groups them', async () => {
+    const reasoned = Object.assign(new Error('held'), {
+      code: 'removal_held',
+      reason: 'empties-board',
+      board: 'Sprint',
+    });
+    const d = {
+      ...deps(async () => {
+        throw reasoned;
+      }),
+      titlesOf: (ids: readonly string[]) => ids.map((id) => `Title ${id}`),
+    };
+    d.queue.add(trash('a', 1));
+    await replayItemQueue(d);
+    expect(d.queue.changes('items')[0]).toEqual({
+      ...trash('a', 1),
+      held: true,
+      why: { reason: 'empties-board', board: 'Sprint', titles: ['Title a'] },
+    });
+    // A second queue's held change with no why groups apart, as plain.
+    const q2 = planQueue('p2', 'o');
+    q2.add(del('z', 5));
+    q2.hold(['i5']);
+    expect(heldGroups()).toEqual([
+      { board: 'Sprint', reason: 'empties-board', cards: 1, titles: ['Title a'] },
+      { board: null, reason: null, cards: 1, titles: [] },
+    ]);
+    // Confirmed, it no longer carries its why.
+    confirmHeldChanges();
+    expect(d.queue.changes('items')[0]).toEqual({ ...trash('a', 1), confirmed: true });
+    expect(heldGroups()).toEqual([]);
   });
 });
 
@@ -90,7 +204,7 @@ describe('a held removal in the replay', () => {
     expect(d.queue.heldCount()).toBe(2);
   });
 
-  it('sends confirmed changes alone, confirmed, on Remove Anyway', async () => {
+  it('sends confirmed changes alone, confirmed, on Remove N Cards', async () => {
     const reviews: string[] = [];
     subscribeHeldReview((r) => reviews.push(r));
     const d = deps(async () => ok);

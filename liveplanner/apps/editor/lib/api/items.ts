@@ -17,6 +17,7 @@ import {
 } from '@liveplanner/items';
 import { isOfflineId } from '../offline/offline-store';
 import { refusedFieldOf, type RefusedField } from './refused-field';
+import { heldWhyOf, type HeldWhy } from '../offline-queue/removal-held';
 import { offlineFetchItems, offlineWriteItem } from '../offline/offline-items';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -52,11 +53,15 @@ export class ItemWritePartlyLanded extends Error {
 // expectOk, with a refusal's field and limit from its body on the error it throws.
 async function expectItemsOk<T>(res: Response, action: string): Promise<T> {
   if (res.ok) return expectOk<T>(res, action);
-  let named: RefusedField = {};
+  let named: RefusedField & HeldWhy = {};
   try {
     const body = (await res.clone().json()) as { field?: unknown; limit?: unknown };
     const limit = readFieldLimit(body.limit);
-    named = refusedFieldOf({ field: body.field, ...(limit ? { limit } : {}) });
+    // A held mass removal names its reason and board (offline-changes.md "Held for review").
+    named = {
+      ...refusedFieldOf({ field: body.field, ...(limit ? { limit } : {}) }),
+      ...heldWhyOf(body),
+    };
   } catch {
     // Not JSON: the code alone, as before.
   }

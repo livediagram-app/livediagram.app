@@ -44,4 +44,28 @@ describe('writeItem confirmRemoval', () => {
     await writeItem(scope, { kind: 'delete', id: 'i1' }, by);
     expect(url(6)).not.toContain('?');
   });
+
+  it("names a held removal's reason and board on the error it throws", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json(
+          {
+            error: 'removal_held',
+            reason: 'over-threshold',
+            board: 'Sprint',
+            count: 11,
+            limit: 10,
+          },
+          { status: 409 },
+        ),
+      ),
+    );
+    const err = await writeItem(
+      scope,
+      { kind: 'patches', patches: [{ id: 'i1', patch: { set: { status: 'trash' } } }] },
+      by,
+    ).catch((e: unknown) => e);
+    expect(err).toMatchObject({ code: 'removal_held', reason: 'over-threshold', board: 'Sprint' });
+  });
 });

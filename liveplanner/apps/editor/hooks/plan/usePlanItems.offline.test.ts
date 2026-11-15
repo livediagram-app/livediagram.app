@@ -12,6 +12,7 @@ import {
   planQueueKey,
   waitingChangeCount,
   heldCardCount,
+  heldGroups,
   confirmHeldChanges,
   keepHeldCards,
 } from '@/lib/offline-queue/plan-queue';
@@ -273,12 +274,17 @@ describe('usePlanItems offline, by role', () => {
   });
 
   // offline-changes.md "Held for review".
-  it('keeps a removal the server held, still shown, and sends it confirmed on Remove Anyway', async () => {
+  it('keeps a removal the server held, still shown, and sends it confirmed on Remove N Cards', async () => {
     const two = { items: [card(), card('B', 'item-two', 2)], rev: 1, nextKey: 3 };
     api.fetchItems.mockResolvedValue(two);
     const { result, onError } = mount();
     await waitFor(() => expect(result.current.status).toBe('ready'));
-    api.writeItem.mockRejectedValueOnce(new ApiError('item delete', 409, 'removal_held'));
+    api.writeItem.mockRejectedValueOnce(
+      Object.assign(new ApiError('item delete', 409, 'removal_held'), {
+        reason: 'empties-board',
+        board: 'Sprint',
+      }),
+    );
     let ok = false;
     await act(async () => {
       ok = await result.current.write({ kind: 'delete', id: 'item-one' });
@@ -288,6 +294,10 @@ describe('usePlanItems offline, by role', () => {
     expect(result.current.items.has('item-one')).toBe(false);
     expect(heldCardCount()).toBe(1);
     expect(waitingChangeCount()).toBe(0);
+    // It keeps why, and the title the card had before it was hidden, for the Needs Review banner.
+    expect(heldGroups()).toEqual([
+      { board: 'Sprint', reason: 'empties-board', cards: 1, titles: ['A'] },
+    ]);
     // A later change is sent at once: a held one waits for the person, not the connection.
     await act(async () => {
       await result.current.write(retitle('Later', 'item-two'));

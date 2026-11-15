@@ -39,8 +39,8 @@ Paths are under `apps/editor/` unless they say otherwise.
 - One `localStorage` key per plan and person: `{ v: 1, changes: QueuedChange[] }`, sorted by `seq`. Written whole on
   every `add` and `remove` (an empty queue removes the key). An unreadable key, another version, or a malformed change
   reads as nothing (the change is dropped from the in-memory list only; D67).
-- A card change: `{ id: 'i<seq36>', seq, store: 'items', write: ItemWrite, held?: true, confirmed?: true }`. `held`:
-  the server held it as a mass removal; `confirmed`: Remove Anyway was chosen, so it is sent with `?confirmRemoval=1`. A sheet write: `{ id: <wid>, seq, store:
+- A card change: `{ id: 'i<seq36>', seq, store: 'items', write: ItemWrite, held?: true, why?: HeldWhy, confirmed?: true }`. `held`:
+  the server held it as a mass removal (`why`: the reason, board and titles, for the banner); `confirmed`: Remove N Cards was chosen, so it is sent with `?confirmRemoval=1`. A sheet write: `{ id: <wid>, seq, store:
 'sheets', op: 'write', sheetId, write, flags }`; a new sheet: `op: 'create'` with the `SheetCreateRequest`
   (`id: 'c<seq36>'`); a sheet's delete: `op: 'delete'` (`id: 'd<seq36>'`). The sheet write's id is its `wid`, so the
   room's echo and the answer find it.
@@ -67,13 +67,23 @@ made: []`; the undo step is pushed as for a landed write.
    queue `held: true` (still applied), no toast, no load; answer `ok: true, made: []`.
 
 **Held removals** (`HeldRemovalsBanner`, `components/chrome/`): shown while `heldCardCount() > 0` and not
-read-only. A `TopCenterBanner` with `shape="card"` (`rounded-2xl`, as the `OfflineBanner` above it), `flex-wrap` and
-`justify-end`, at most `48rem` wide: the line (`flex-[1_1_16rem]`, `min-w-0`) wraps inside it and the buttons
-(`shrink-0`) wrap under it at the right when both do not fit. Keep Cards calls `keepHeldCards()` (every page queue drops its held changes, `dropHeld()` answering the card
+read-only. A `TopCenterBanner` with `shape="card"`, `w-[34rem] max-w-full` (so on a phone it fills the stack, which is
+the canvas less its gutters), holding the pause mark (`lucidePause` in a `bg-brand-50` circle), the title
+(`heldTitle(n)`), the line (`heldReason(groups)`), the disclosure (`aria-expanded`, `aria-controls` the list) and the
+two `Button`s (`primary` Keep Cards, `secondary` Remove N Cards; `flex-1` halves under `sm`, `min-h-10`). The groups
+come from `heldGroups()` (`plan-queue.ts`, O(queue), read only when the held count changes), each
+`{ board, reason, cards, titles }` from the held changes' `why`. Keep Cards calls `keepHeldCards()` (every page queue drops its held changes, `dropHeld()` answering the card
 ids they named; listeners of `subscribeHeldReview` get `('kept', cards)`, and `useItemQueue` hands the cards to
 `usePlanItems`' `kept`, which marks them unconfirmed, then calls `load()`, so the server's copy of each replaces the one
-laid over as removed, even at the same rev). Remove Anyway calls `confirmHeldChanges()`
-(held become `confirmed`; listeners get `'confirmed'`, and `useItemQueue` flushes).
+laid over as removed, even at the same rev), then toasts `success` "Kept N cards". Remove N Cards calls `confirmHeldChanges()`
+(held become `confirmed`; listeners get `'confirmed'`, and `useItemQueue` flushes), then toasts "Removed N cards".
+
+**Why it was held** (`HeldWhy` in `removal-held.ts`): `{ reason?, board?, titles? }` on a held change. `reason` and
+`board` come from the `removal_held` answer's body (`heldWhyOf(err)`, read by `expectItemsOk`; a single `DELETE` goes
+through `apiDelete`, which reads no body, so it has none). `titles` are the named cards' titles as the store had them
+before the write (`usePlanItems` `send`), or as the store shows them when a replay is held (`titlesOf`, a trashed card
+still being in the store), each cut to 80 characters. Read back from storage, a `why` that is not of this shape is
+ignored (`heldWhyOfStored`).
 
 **Card replay** (`useItemQueue`): one replay at a time (`flushingRef`).
 
@@ -165,13 +175,17 @@ bridge.canShape }`):
   N changes wait in this browser and save when you reconnect."
 - Online, waiting: "Saving 1 change made without a connection." / "Saving N changes made without a connection."
 - Full: the error toast `PLAN_QUEUE_FULL_MESSAGE`.
-- Held, counting cards: "1 card removal is held: it would take too many cards off a board, or empty it." / "N card
-  removals are held: they would take too many cards off a board, or empty it.", buttons Keep Cards (secondary) and Remove Anyway (primary).
+- Held, counting cards: title "1 card was about to be removed" / "N cards were about to be removed"; the line by
+  reason (offline-changes.md "Held for review"); "Show the N cards" / "Hide the cards"; buttons Keep Cards (primary) and
+  Remove N Cards (secondary); toasts "Kept N cards" / "Removed N cards".
 - The waiting count leaves held changes out (`waitingChangeCount()` = all changes less held ones).
 
 ## Accessibility
 
-- The banner keeps its `role="status"`, so the count is announced as it changes.
+- The offline banner keeps its `role="status"`, so the count is announced as it changes.
+- The Needs Review banner is a `role="region"` labelled by its title, whose title and line sit in a `role="status"`
+  so the count is announced as it changes. The disclosure is a button with `aria-expanded` and `aria-controls`. Both
+  actions are real buttons with visible focus rings, reached by Tab in reading order (the disclosure, Remove, Keep).
 
 ## Testing
 

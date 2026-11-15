@@ -6,6 +6,7 @@ import { itemIdsOfWrite, type ItemWrite } from '@liveplanner/items';
 import type { SheetCreateRequest } from '@liveplanner/api-schema';
 import type { SheetWrite } from '@liveplanner/sheets';
 import { OFFLINE_QUEUE_KEY_PREFIX } from '@liveplanner/ui';
+import { heldWhyOfStored, type HeldGroup, type HeldWhy } from './removal-held';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Spec "Bounds": at most this many changes, and this many characters of their stored JSON, per plan. Safe ranges
@@ -28,7 +29,9 @@ export type QueuedChange =
       write: ItemWrite;
       // Held by the server as a mass removal (offline-changes.md "Held for review"): kept, skipped by the replay.
       held?: true;
-      // Remove Anyway was chosen: sent again with `confirmRemoval`.
+      // Why it was held (the server's reason and board, the cards' titles), for the Needs Review banner.
+      why?: HeldWhy;
+      // Remove N Cards was chosen: sent again with `confirmRemoval`.
       confirmed?: true;
     }
   | {
@@ -170,26 +173,34 @@ export class PlanQueue {
     return n;
   }
 
-  /** Marks these card changes held: the server held them as a mass removal. */
-  hold(ids: readonly string[]): void {
+  /** Marks these card changes held: the server held them as a mass removal, for `why` (given only when it says more). */
+  hold(ids: readonly string[], why?: (c: ItemChange) => HeldWhy): void {
     const set = new Set(ids);
     this.rewrite(
       (c) => set.has(c.id) && !c.held,
-      ({ confirmed: _confirmed, ...c }) => ({ ...c, held: true }),
+      ({ confirmed: _confirmed, ...c }) => {
+        const w = why?.(c);
+        return { ...c, held: true, ...(w && Object.keys(w).length > 0 ? { why: w } : {}) };
+      },
     );
   }
 
-  /** Remove Anyway: every held change is to be sent again, confirmed. The number confirmed. */
+  /** The held card changes, oldest first. */
+  heldChanges(): ItemChange[] {
+    return this.list.filter((c): c is ItemChange => c.store === 'items' && c.held === true);
+  }
+
+  /** Remove N Cards: every held change is to be sent again, confirmed. The number confirmed. */
   confirmHeld(): number {
     return this.rewrite(
       (c) => c.held === true,
-      ({ held: _held, ...c }) => ({ ...c, confirmed: true }),
+      ({ held: _held, why: _why, ...c }) => ({ ...c, confirmed: true }),
     );
   }
 
   /** Keep Cards: every held change is dropped. The cards they named, so the board's reload takes the server's copy. */
   dropHeld(): string[] {
-    const held = this.list.filter((c): c is ItemChange => c.store === 'items' && c.held === true);
+    const held = this.heldChanges();
     this.remove(held.map((c) => c.id));
     return held.flatMap((c) => itemIdsOfWrite(c.write));
   }
@@ -295,6 +306,24 @@ export function heldCardCount(): number {
   return heldTotal;
 }
 
+/** The held cards of this page's queues by board and reason, for the Needs Review banner's line and list. O(queue):
+ *  read when the held count changes, never on the write path. */
+export function heldGroups(): HeldGroup[] {
+  const groups = new Map<string, HeldGroup>();
+  for (const q of queues.values())
+    for (const c of q.heldChanges()) {
+      const why = heldWhyOfStored(c.why);
+      const board = why.board ?? null;
+      const reason = why.reason ?? null;
+      const key = `${reason ?? ''}\u0000${board ?? ''}`;
+      const g = groups.get(key) ?? { board, reason, cards: 0, titles: [] };
+      g.cards += itemIdsOfWrite(c.write).length;
+      g.titles.push(...(why.titles ?? []));
+      groups.set(key, g);
+    }
+  return [...groups.values()];
+}
+
 // What the person chose for the held changes: told to the card replay, which sends or reads the board again.
 export type HeldReview = 'confirmed' | 'kept';
 // `cards`: on 'kept', the cards the dropped changes named.
@@ -314,7 +343,7 @@ function review(what: HeldReview, n: number, cards: readonly string[] = []): voi
   for (const l of reviewListeners) l(what, cards);
 }
 
-/** Remove Anyway: every held change in the page's queues is sent again, confirmed. */
+/** Remove N Cards: every held change in the page's queues is sent again, confirmed. */
 export function confirmHeldChanges(): void {
   let n = 0;
   for (const q of queues.values()) n += q.confirmHeld();

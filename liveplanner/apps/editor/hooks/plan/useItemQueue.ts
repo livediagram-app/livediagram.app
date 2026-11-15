@@ -64,6 +64,8 @@ export function useItemQueue(opts: {
   load: () => Promise<void>;
   // Keep Cards dropped held removals of these cards: the next load takes the server's copy of them.
   kept?: (cards: readonly string[]) => void;
+  // The titles of these cards as the store shows them, kept with a removal the replay finds held.
+  titlesOf?: (ids: readonly string[]) => string[];
   // Read again from the server (debounced), when nothing waits.
   refetch: () => void;
   // The board has loaded: what a reload kept is sent now.
@@ -87,7 +89,13 @@ export function useItemQueue(opts: {
     if (flushingRef.current || !queue || queue.waiting('items') === 0) return;
     flushingRef.current = true;
     clearTimer();
-    void replayItemQueue({ queue, send: o.send, landed: o.landed, refused: o.refused })
+    void replayItemQueue({
+      queue,
+      send: o.send,
+      landed: o.landed,
+      refused: o.refused,
+      ...(o.titlesOf ? { titlesOf: o.titlesOf } : {}),
+    })
       .then(({ outcome, sent }) => {
         debugLog('[offline-queue] items.replay', { outcome, sent });
         flushingRef.current = false;
@@ -127,7 +135,7 @@ export function useItemQueue(opts: {
     [flush, latest],
   );
 
-  // The person chose for the held removals (offline-changes.md "Held for review"): Remove Anyway sends them now;
+  // The person chose for the held removals (offline-changes.md "Held for review"): Remove N Cards sends them now;
   // Keep Cards reads the board again, so the cards come back.
   useEffect(
     () =>

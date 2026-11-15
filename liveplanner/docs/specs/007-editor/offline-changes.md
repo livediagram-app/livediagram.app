@@ -86,18 +86,39 @@ take too many cards off a board at once (`removal_held`, [Realtime conflict reso
 - The change stays in the plan's queue, marked **held**, and stays shown as made. This is so whether it was refused
   as it was made online or on replay. Held changes are skipped by the replay, so the changes behind them are still
   sent, and they are not counted by the offline banner.
-- A **Needs Review** banner, in the top-centre stack under the offline banner, says "1 card removal is held: it would
-  take too many cards off a board, or empty it." ("11 card removals are held: they would ..."), with two buttons. It
-  counts cards, not changes: a selection of 11 cards sent to the Trash together is 11. One line covers both reasons,
-  since the refusal names no reason the editor reads.
-  - **Keep Cards** drops the held changes and reads the board again, taking the server's copy of every card they
-    named, so the cards come back at once, with no reload.
-  - **Remove Anyway** sends them again, confirmed (`?confirmRemoval=1`), which the server does not judge.
-  - It is a rounded card like the offline banner above it (the same radius, border, shadow and 11 px text), not a
-    pill: its line wraps inside the card and the buttons sit after it on a wide screen, or under it, at the card's
-    right, when the line and the buttons do not fit on one row (a phone, a ~450 px window). It is at most 48 rem wide,
-    so a long count ("27 card removals are held") wraps rather than running off the canvas, and nothing ever reaches
-    outside its rounded corners.
+- A **Needs Review** banner, in the top-centre stack under the offline banner, says what happened in plain words,
+  not system terms. It counts cards, not changes: a selection of 11 cards sent to the Trash together is 11.
+  - **A paused mark**: a round pause icon in the brand's soft tint. It reads as "paused, safe", never as an error, so it
+    is never red or yellow ([Destructive actions](../004-interface-design/destructive-actions.md)).
+  - **A title with the count**: "11 cards were about to be removed" ("1 card was about to be removed").
+  - **One line of why**, from the reason the server gave (`reason` and `board` on the `removal_held` answer, kept with
+    the held change):
+    - too many at once: "That's more of Sprint Board than usual in one go, so we paused it. Nothing is gone yet.";
+    - a board emptied: "That would empty Sprint Board, so we paused it. Nothing is gone yet.";
+    - several boards or reasons, or a reason the editor did not get (a single card delete): "That's more cards than
+      usual in one go, so we paused it. Nothing is gone yet."
+  - **Show the 11 cards** opens a short list of the held cards' titles under the line, grouped by board when there are
+    several ("Would empty Sprint Board", "From Roadmap"), at most 8 a group then "and 3 more", in a list that scrolls
+    past about 10 rows. The titles are those the cards had when the removal was held, so a card deleted outright still
+    shows; one without a title shows as "Untitled card". It is closed at first, so the banner stays short. Opening it lays
+    the list over the board without moving the board (the board's inset follows banners coming and going, not a list
+    opened for a moment), and closing it gives the space back.
+  - Two buttons, the safe one first in weight:
+    - **Keep Cards** ("Keep Card" for one), the primary button, drops the held changes and reads the board again,
+      taking the server's copy of every card they named, so the cards come back at once, with no reload. A toast says
+      "Kept 11 cards".
+    - **Remove 11 Cards** ("Remove 1 Card"), a secondary button, says exactly what it does. It sends the held changes
+      again, confirmed (`?confirmRemoval=1`), which the server does not judge. A toast says "Removed 11 cards". There
+      is no second confirmation: the banner itself is the check, and Undo and the Trash still apply as for any removal.
+    - Both act at once on the queue, so the banner leaves as soon as either is pressed; there is no sending state to
+      wait on. A refused confirmed removal is taken back with its toast like any refused change.
+  - **Desktop and tablet**: a card centred in the stack, 34 rem wide (never wider than the canvas less its gutters),
+    the buttons at its bottom right with Keep Cards last, and "Show the 11 cards" at the left of the same row. Under the offline banner when both show, the two share the
+    stack's centre line and gap.
+  - **Phone**: the card fills the width between the 12 px gutters, "Show the 11 cards" under its line and its buttons side by side as two equal halves at
+    least 40 px tall, Keep Cards on the right under the thumb. It sits at the top under the menu row, so it never covers
+    the bottom toolbar, and the board starts below it (next point).
+  - It comes in with the dialogs' gentle rise and fade (`animate-dialog-in`); with reduced motion it only fades.
   - A board, view or Sheet filling its tab (or maximised) starts below the top-centre banners while one shows
     ([Maximised board](../026-plan/plan-board.md#maximised-board)), so they never cover its column headers.
 - Held changes are kept across a reload like any waiting change, and count toward the queue's bounds.

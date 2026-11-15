@@ -2,11 +2,16 @@
 // no"): oldest first, one request at a time, a run of field changes as one many-patch request. A request with no
 // answer stops the replay (the rest keeps waiting); a refused batch goes again one change at a time, so only the
 // change the server refuses is taken back.
-import { ITEM_BULK_MAX, type ItemPatchOf, type ItemWrite } from '@liveplanner/items';
+import {
+  ITEM_BULK_MAX,
+  itemIdsOfWrite,
+  type ItemPatchOf,
+  type ItemWrite,
+} from '@liveplanner/items';
 import type { ItemWriteAnswer } from '@/lib/api/items';
 import type { PlanQueue, QueuedChange } from './plan-queue';
 import { isConnectionFailure } from './reconnect';
-import { isRemovalHeld } from './removal-held';
+import { heldWhyOf, isRemovalHeld } from './removal-held';
 
 type ItemChange = Extract<QueuedChange, { store: 'items' }>;
 
@@ -58,6 +63,8 @@ export type ItemReplayDeps = {
   send: (write: ItemWrite, opts?: { confirmRemoval?: boolean }) => Promise<ItemWriteAnswer>;
   // An answer to fold in (a whole one, or the part of a refused many-item write that landed).
   landed: (answer: ItemWriteAnswer) => void;
+  // The titles of these cards as the store shows them, kept with a held removal for the Needs Review banner.
+  titlesOf?: (ids: readonly string[]) => string[];
   // A change the server refused: tell the person and take it back.
   refused: (write: ItemWrite, e: unknown) => void;
 };
@@ -88,7 +95,11 @@ export async function replayItemQueue(
       }
       // Held as a mass removal: kept, never taken back.
       if (isRemovalHeld(e)) {
-        deps.queue.hold(batch.ids);
+        const why = heldWhyOf(e);
+        deps.queue.hold(batch.ids, (c) => {
+          const titles = deps.titlesOf?.(itemIdsOfWrite(c.write));
+          return titles ? { ...why, titles } : why;
+        });
         continue;
       }
       if (!alreadyLanded(batch.write, e)) deps.refused(batch.write, e);
