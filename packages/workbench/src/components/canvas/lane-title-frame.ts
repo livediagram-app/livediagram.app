@@ -69,8 +69,7 @@ function drawnMeasure(
 ): (s: string) => number {
   const family =
     fontFamily ??
-    ((typeof document !== 'undefined' && getComputedStyle(document.body).fontFamily) ||
-      undefined);
+    ((typeof document !== 'undefined' && getComputedStyle(document.body).fontFamily) || undefined);
   return laneTitleMeasure(px, bold, italic, family);
 }
 

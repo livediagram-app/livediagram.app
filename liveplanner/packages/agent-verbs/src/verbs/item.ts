@@ -242,11 +242,8 @@ export const itemLs = defineVerb({
   cli: {
     positionals: ['project'],
     examples: [
-      'liveplanner item ls "Sprint 14"',
-      'liveplanner item ls 3f9c --type task --status new',
       'liveplanner item ls 3f9c --status "To Do" --status Doing --type bug --type task',
-      'liveplanner item ls "Sprint 14" --query checkout --updated-since 2026-11-01',
-      'liveplanner item ls "Sprint 14" --query checkout --include-closed',
+      'liveplanner item ls "Sprint 14" --query checkout --updated-since 2026-11-01 --include-closed',
     ],
     prints:
       'one item a line: #number, type, status, title, flagged on a flagged card, then its pull requests with their states',

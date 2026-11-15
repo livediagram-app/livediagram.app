@@ -123,7 +123,10 @@ describe('a word too long for the gutter, measured with a real font', () => {
     vi.stubGlobal('getComputedStyle', stand.getComputedStyle);
     resetLabelMeasureContext();
     clearLaneTitleCache();
-    for (const label of ['Supercalifragilisticexpialidocious', 'Internationalisation Wonderworks']) {
+    for (const label of [
+      'Supercalifragilisticexpialidocious',
+      'Internationalisation Wonderworks',
+    ]) {
       const el = lane({ label, textSize: 'lg' });
       const canvas = of(el).label.split('\n');
       const svg = renderElementsToSvg(tab([el]));

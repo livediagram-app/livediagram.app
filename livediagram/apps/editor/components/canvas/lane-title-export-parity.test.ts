@@ -11,7 +11,6 @@ import {
   PADDING_PX,
   renderElementsToSvg,
   type ShapeElement,
-  type Tab,
 } from '@livediagram/document';
 import { resetLabelMeasureContext } from '@liveworkspace/element-model/svg-render-primitives';
 import { standInDocument } from '@liveworkspace/element-model/testing/font-stand-in';
@@ -43,7 +42,7 @@ function canvasLines(el: ShapeElement): string[] {
 }
 
 function exportedLines(el: ShapeElement): string[] {
-  const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as unknown as Tab);
+  const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] });
   return [...svg.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]!);
 }
 
@@ -60,7 +59,10 @@ describe('a word too long for the gutter, measured with a real font', () => {
     vi.stubGlobal('getComputedStyle', stand.getComputedStyle);
     resetLabelMeasureContext();
     clearLaneTitleCache();
-    for (const label of ['Supercalifragilisticexpialidocious', 'Internationalisation Wonderworks']) {
+    for (const label of [
+      'Supercalifragilisticexpialidocious',
+      'Internationalisation Wonderworks',
+    ]) {
       const el = lane(label);
       const canvas = canvasLines(el);
       expect(canvas).toEqual(exportedLines(el));
