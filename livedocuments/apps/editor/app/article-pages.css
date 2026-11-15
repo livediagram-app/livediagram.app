@@ -347,10 +347,48 @@
   opacity: 1;
 }
 
+/* A paragraph (or table cell) another person holds while writing (docs/specs/007-editor/article-pages.md "Holding
+   a paragraph", article-holds.ts): outlined in their colour, drawn as an outline so it moves nothing, with a chip
+   above its top left corner naming them. The chip is a zero-width span at the block's start, like a caret. */
+.article-flow [data-held] {
+  outline: 2px solid var(--article-held);
+  outline-offset: 3px;
+  border-radius: 2px;
+  transition: outline-color 150ms ease;
+}
+.article-flow td[data-held],
+.article-flow th[data-held] {
+  outline-offset: -2px;
+}
+.article-flow .article-held-chip {
+  position: relative;
+  display: inline;
+  margin-right: -1px;
+  user-select: none;
+  pointer-events: none;
+}
+.article-flow .article-held-chip::after {
+  content: attr(data-name);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: -5px;
+  padding: 1px 6px;
+  border-radius: 4px 4px 4px 0;
+  background: var(--article-held);
+  color: white;
+  font: 600 10px/1.4 var(--article-body-font);
+  font-style: normal;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .article-flow .article-zone,
   .article-flow .article-list-todo::before,
-  .article-flow .article-peer-caret::after {
+  .article-flow .article-peer-caret::after,
+  .article-flow [data-held] {
     transition: none;
   }
 }

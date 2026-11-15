@@ -1,5 +1,5 @@
 import { setRemoteBesideTab } from '@liveworkspace/workbench/lib/split-presence';
-import { parseArticleCaret } from '@livedocuments/api-schema';
+import { parseArticleCaret, parseArticleHold } from '@livedocuments/api-schema';
 import type { RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
 import type { PresenceCoalescer } from '@liveworkspace/workbench/lib/presence-coalescer';
@@ -11,6 +11,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from '@liveworkspace/workbench/lib/share-link-ops';
 import { endPeerDragPreview, receivePeerDragPreview } from '@/hooks/collab/peer-drag-previews';
 import { receiveArticleCaret } from '@/lib/article/article-carets-store';
+import { receiveArticleHold } from '@/lib/article/article-holds-store';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 import { remoteSelectionOf } from '@/lib/presence-rows';
 
@@ -121,6 +122,11 @@ export function receiveRoomOp(
     // "Collaboration"), checked field by field; drawn by that article's writing, never written.
     const caret = parseArticleCaret(op);
     if (caret) receiveArticleCaret(from, caret);
+  } else if (op.kind === 'article-hold') {
+    // A collaborator's paragraph hold (docs/specs/007-editor/article-pages.md "Holding a paragraph"), checked field
+    // by field; the writing outlines it and refuses typing in it.
+    const hold = parseArticleHold(op);
+    if (hold) receiveArticleHold(from, hold);
   } else if (op.kind === 'laser') {
     // Same coalescing as cursors; points accumulate in the buffer
     // and land in one Map commit per frame.
