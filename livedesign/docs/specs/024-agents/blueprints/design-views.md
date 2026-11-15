@@ -345,17 +345,17 @@ Every other kind has no state attribute; `show` has its content.
 
 **Attributes** (`attributesOf`), in this order after the summary and the state attribute (`VW14`):
 
-| Attribute        | When                                                 | Form                                                                                      |
-| ---------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `icon=`          | a non-`icon`-shape with `iconId`, or an `icon` shape | `icon=<iconId>`                                                                           |
-| `link=`          | `link` set (`VW28`)                                  | `link=<url>`, `link=tab:<tabRef>`, `link=tab:<tabRef>#<elementId>`, `link=doc:<designId>` |
-| `alt=`           | an `image` with `alt`                                | `alt=` cut at `ALT_CUT_CHARS`                                                             |
-| `locked`         | `locked: true`                                       | flag                                                                                      |
-| `action=`        | one `action` (`VW29`)                                | `action="<name cut at ACTION_CUT_CHARS>" @<assignee name>`, then `done` when done         |
-| `actions=`       | an `actions` list                                    | `actions=<open> open/<total>`                                                             |
-| `note=`          | `note` non-blank                                     | `note=` JSON string cut at `NOTE_CUT_CHARS`                                               |
-| `comments=`      | a thread                                             | `comments=<count> open` or `comments=<count> resolved`                                    |
-| style attributes | only with `style` (`VW50`)                           | see below                                                                                 |
+| Attribute        | When                                                 | Form                                                                                                                                                                                                                            |
+| ---------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `icon=`          | a non-`icon`-shape with `iconId`, or an `icon` shape | `icon=<iconId>`                                                                                                                                                                                                                 |
+| `link=`          | `link` set (`VW28`)                                  | `link=<url>`, `link=tab:<tabRef>`, `link=tab:<tabRef>#<elementId>`, `link=doc:<designId>`, `link=page:<pageId>`, `link=back`; then `transition=<slide\|dissolve>` when not instant and `broken` when the page is not on the tab |
+| `alt=`           | an `image` with `alt`                                | `alt=` cut at `ALT_CUT_CHARS`                                                                                                                                                                                                   |
+| `locked`         | `locked: true`                                       | flag                                                                                                                                                                                                                            |
+| `action=`        | one `action` (`VW29`)                                | `action="<name cut at ACTION_CUT_CHARS>" @<assignee name>`, then `done` when done                                                                                                                                               |
+| `actions=`       | an `actions` list                                    | `actions=<open> open/<total>`                                                                                                                                                                                                   |
+| `note=`          | `note` non-blank                                     | `note=` JSON string cut at `NOTE_CUT_CHARS`                                                                                                                                                                                     |
+| `comments=`      | a thread                                             | `comments=<count> open` or `comments=<count> resolved`                                                                                                                                                                          |
+| style attributes | only with `style` (`VW50`)                           | see below                                                                                                                                                                                                                       |
 
 **Style attributes** (`styleAttributesOf`): `fill=` (`fillColor`), `stroke=` (`strokeColor`), `text-color=`
 (`textColor`), `border=` (`strokeStyle` on a box), `line=` (`arrowStyle` on an arrow), `text=` (`textSize`),

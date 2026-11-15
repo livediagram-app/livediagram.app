@@ -2,7 +2,7 @@
 // drawn, in the device's points, for the people who build it. Read through the export's own resolvers
 // (describeBoxedExport, borderOf), so a value here is the value the canvas and every export draw, never a second
 // reading of the model that could drift from them.
-import { FONTS } from '@liveworkspace/model-core/fonts';
+import { displayFontById, FONTS } from './fonts';
 import { DEFAULT_BORDER_STYLE } from '@liveworkspace/model-core/border-style';
 import { SELF_PAINTING_SHAPES, supportsFillColor, type CanvasSurface } from './colors';
 import { isChipShape } from './chip';
@@ -88,7 +88,7 @@ export function inspectOpacity(n: number): number {
 
 function fontOf(el: BoxedElement, ctx: InspectContext): { label: string; stack: string } {
   const id = el.font ?? elementFontId({ finish: finishOf(el) }, ctx.tabFont, ctx.tabFinish);
-  const font = id ? FONTS.find((f) => f.id === id) : undefined;
+  const font = id ? (FONTS.find((f) => f.id === id) ?? displayFontById(id)) : undefined;
   return font ? { label: font.label, stack: font.stack } : UI_SANS;
 }
 

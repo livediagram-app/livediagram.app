@@ -23,6 +23,9 @@ changes.
 | combinable           | `isCombinable(el)`; `combinableSelection(...)`                                                           |
 | contour              | `PathElement.nodes` (the first) and each of `PathElement.subpaths`; `pathContours(el)`                   |
 | logo kit             | `exportLogoKit`; `LOGO_KIT_PNG_SIZES`; `encodeIco`; Export dialog format `'logo-kit'` (`LogoKitPanel`)   |
+| display face         | `DisplayFont` in `DISPLAY_FONTS` (`packages/design/src/display-fonts.ts`); `isDisplayFont(id)`           |
+| display library      | `DisplayFontLibrary` (`apps/live/components/palette/`), offered while `displayFontsOffered`              |
+| outlined text        | `outlineSvgText(svg, fontCss)` (`apps/live/lib/outline-text/outline-svg.ts`); `OutlineError`             |
 | guide preferences    | `UserPreferences.logoGuides` (absent is on), `.logoGuidesHidden`, `.logoGuideStrength`                   |
 | Show Me (logo)       | `usePageTour`, `PageShowMeButton`, `PageTourStage`; `logoTourSteps`; `PageTourApi`                       |
 
@@ -66,6 +69,12 @@ Exclude), **Wordmark**, **Logo Kit**.
 | `RADIAL_COPIES`                            | 3, 4, 5, 6, 8                                 | `packages/design/src/element-symmetry.ts`         | A radial mirror's choices of copies                              |
 | `DEFAULT_MIRROR`                           | Vertical, 6 copies, merge on                  | `packages/design/src/element-symmetry.ts`         | Mirror settings before any are chosen                            |
 | `THUMB_W`                                  | 120 px                                        | `apps/live/components/canvas/layout-thumb.tsx`    | Two layout tiles to a row (user request, every kind)             |
+| `DISPLAY_FONTS.length`                     | 90                                            | `packages/design/src/display-fonts.ts`            | Spec ("about 50 to 100"); a closed list, OFL only                |
+| `SYNTHETIC_ITALIC_SKEW`                    | 0.25 (tan of the slant)                       | `apps/live/lib/outline-text/glyph-paths.ts`       | Chromium and Skia's fake italic                                  |
+| `SYNTHETIC_BOLD_RATIO`                     | 1/24 at 9 px to 1/32 at 36 px and up          | `apps/live/lib/outline-text/glyph-paths.ts`       | Skia's fake-bold stroke, interpolated by size                    |
+| `OUTLINE_PRECISION`                        | 2 (decimals)                                  | `apps/live/lib/outline-text/glyph-paths.ts`       | 0.01 px, well inside the 0.5 px fidelity                         |
+| `LOGO_KIT_FALLBACK_FONT`                   | `inter`                                       | `apps/live/lib/export-logo-kit.ts`                | Spec ("set in Inter")                                            |
+| `DISPLAY_LIBRARY_LIST_MAX_PX`              | 240 px                                        | `apps/live/components/palette/DisplayFontLibrary` | About six rows in view inside a menu flyout                      |
 
 ## Data and persistence
 
@@ -510,6 +519,78 @@ page, count)`. Both the kit and `LogoKitPanel`'s preview draw `logoKitTab(tab)`:
 - `ExportTabDialog`: the `'logo-kit'` card while the tab has a logo page; `LogoKitPanel` owns the rest (a page picker when several, a checkerboard preview, Download .zip,
   busy and error) from the images the dialog loaded; `Design · Exported · LogoKit`.
 
+### Display faces (`packages/design/src/display-fonts.ts`, `fonts.ts`; `apps/live/lib/display-fonts-loader.ts`)
+
+- `DISPLAY_FONTS: readonly DisplayFont[]`, `DisplayFont = { id, label, kind, category, stack, google }`,
+  `category` one of `DISPLAY_FONT_CATEGORIES` (`sans`, `serif`, `script`, `decorative`), sorted by category then
+  label. Ids are kebab-case family names and never one of the eleven's.
+- `packages/design/src/fonts.ts` re-exports the shared eleven (`FONTS`) and shadows three helpers for livedesign:
+  `resolveFontStack(id)` (the eleven, then the library), `fontIdsUsed(elements, tabFont, extra)` (ids in either
+  list, the eleven first, then the library, each in catalogue order) and `googleFontsHref(ids?)` (no ids: the
+  eleven; ids: their specs from either list). `svg-render-describe.ts`, `svg-render.ts` and `inspect-element.ts`
+  import from it, and the package index exports it in place of `@liveworkspace/model-core/fonts`.
+- `packages/design/src/element-field-values.ts`: `ELEMENT_FIELD_VALUES` is the shared table with `font` the eleven
+  then the library's ids; `fieldValueIssue` checks `font` against it and defers every other key to the shared
+  check. The agents' element docs (`agent-verbs`) list `font` as the eleven, then the display faces for a logo
+  page's text.
+- `apps/mcp/src/preview-fonts.ts` hands `[...FONTS, ...DISPLAY_FONTS]` to the shared preview fetch.
+- `display-fonts-loader.ts`: `displayFontIdsIn(elements)` (the display ids used, one pass);
+  `loadDisplayFonts(ids)` appends one `<link rel="stylesheet" data-display-font="<id>">` per family not yet linked
+  (`googleFontsHref([id])`); `loadDisplayPreviews()` fetches, once, the library's `text=` subset stylesheet
+  (`displayPreviewHref()`: every family, the letters of every label) and adds it as a `<style>` with each family
+  renamed `displayPreviewFamily(id)` (`'<id> preview'`); a failed fetch leaves the rows in their fallback face.
+- `useDisplayFonts(elements)` (`apps/live/hooks/canvas/useDisplayFonts.ts`), called by `CanvasElementsLayer`: on
+  each elements change, `loadDisplayFonts(displayFontIdsIn(elements))`. `useFontEpoch` re-measures as they land.
+- `DisplayFontLibrary` (`currentFont`, `onSetFont`, `onPreviewFont`, `onPreviewEnd`): a `SearchInput` ("Search 90
+  display faces"), `CategoryChips` (All, Sans, Serif, Script, Decorative, each with its count) and a list of rows,
+  pressed state on the face in use, at most `DISPLAY_LIBRARY_LIST_MAX_PX` tall and scrolling. A row shows the label
+  in `displayPreviewFamily(id)` then its stack, with its kind; `content-visibility: auto` keeps off-screen rows from
+  fetching. Search matches label, kind and category, case-insensitive, every typed word. On mount it calls
+  `loadDisplayPreviews()`; a row's hover and press call `loadDisplayFonts([id])` before the preview or the set.
+  `NoMatches` with Clear Search when nothing matches.
+- `TypographySections` takes `displayFontsOffered`; true, it renders `DisplayFontLibrary` under the eleven tiles of
+  the Font section. `ElementAppearanceSections` passes it for a text whose centre is on a logo page (the host's
+  `wordmarkOffered`).
+- `CategoryChips` (`packages/workbench/src/components/primitives/CategoryChips.tsx`): the chip row the layout gallery
+  drew inline, now shared by it and the library.
+
+### Outlined text (`apps/live/lib/outline-text/`, `export-logo-kit.ts`)
+
+- `logoKitTab(tab)` also gives a tab with no `font` the face `LOGO_KIT_FALLBACK_FONT`, so text with no face of its
+  own letters in Inter in every file of the kit and its preview.
+- `exportLogoKit`: `embeddedFontFaces(ids)` (`export-fonts.ts`, for the ids `exportFontIds` gives the kit tab)
+  returns `{ css, missing }`; a `missing` id throws `OutlineError('font', label)`. The SVG is `renderTabToSvg` with
+  that css, then `outlineSvgText(svg, css)`, loaded by `import('./outline-text/outline-svg')` at the press. The
+  rasters use the same css.
+- `font-face-css.ts`: `parseFontFaces(css)` reads each `@font-face` block (by a scan, no backtracking regex) into
+  `{ family, weight: [min, max], style, ranges, url }` (declarations split outside `url(...)`, since a data URL
+  holds a semicolon).
+- `face-match.ts`: `matchFace(faces, family, weight, style, codePoint)`: the family's faces whose `unicode-range`
+  holds the code point, then CSS font matching (style first, then weight: a desired 400 to 500 tries up to 500,
+  then down, then up; under 400 down then up; over 500 up then down); `syntheticBold` when the desired weight is
+  600 or more and the face's under 600; `syntheticItalic` when italic is asked of an upright face.
+- `glyph-paths.ts`: `glyphRunPath(font, run)` lays the run out with fontkit (ligatures off when the text is
+  tracked, as browsers do), puts each glyph at the browser's start position of its first character, turned by that
+  character's rotation, scaled `size / unitsPerEm` with y flipped, skewed for a synthetic italic, and bakes the
+  transform into absolute path data (`OUTLINE_PRECISION`); a variable face takes `wght` (the asked weight within
+  the face's range) and `opsz` (the font size) when it has those axes. A synthetic bold adds a stroke of the fill's
+  colour, `SYNTHETIC_BOLD_RATIO × size` wide. Underline and strikethrough are a quad per character along its
+  advance (spaces included), where Chromium draws an `auto` line: a tenth of the size thick, an underline's top
+  `max(1, ceil(thickness / 2))` under the baseline, a strikethrough's centre a third of the face's ascent above it.
+- `outline-svg.ts`: `outlineSvgText(svg, fontCss)` parses the SVG inertly, mounts it off screen (`position: fixed`,
+  `visibility: hidden`), registers each parsed face as a `FontFace` and awaits it, then for each `<text>`: maps its
+  characters to addressable indices (xml:space default: newlines dropped, tabs as spaces, runs of spaces as one,
+  the ends trimmed), reads `getStartPositionOfChar`, `getEndPositionOfChar` and `getRotationOfChar` on the root
+  `<text>` (moved by each character's baseline shift: Chromium's start positions ignore `dominant-baseline`, which
+  every export sets to `central`, so `getExtentOfChar` is read as set and again with the baselines `auto`), groups characters by the element holding them (one computed style: family, weight, style, size, fill,
+  stroke, letter-spacing), outlines each run, and replaces the `<text>` with a `<g>` keeping its `transform`,
+  `opacity`, `filter`, `clip-path` and `mask`, holding the runs' `<path>`s. The `<style>` of `@font-face` rules goes, from a logo of shapes alone too (the kit always passes its SVG
+  through).
+  The faces are removed and the mount unmounted on success or failure. A character no face covers throws
+  `OutlineError('letters', label, letters)`; whitespace and invisible format characters draw nothing.
+- `LogoKitPanel` shows an `OutlineError`'s sentence in its alert; the copy reads "An SVG with its text outlined,
+  PNGs at 16 to 1024 px and a favicon.ico, in one .zip."
+
 ### Layouts (`packages/templates/src/logo-layouts*.ts`, `logo-layout-kit.ts`)
 
 - Twenty-five builders over the safe area: lockups (7), wordmarks (6), emblems (6), marks (6), on
@@ -529,7 +610,11 @@ page, count)`. Both the kit and `LogoKitPanel`'s preview draw `logoKitTab(tab)`:
 - `shapeAreaContours(el: ShapeElement, tolerance?): Point[][] | null`.
 - `combineElements(els, op, newId): Promise<CombineResult>`.
 - `encodeIco(images: readonly { size: number; png: Uint8Array }[]): Uint8Array`.
-- `exportLogoKit(tab, page, opts?): Promise<Blob>`.
+- `exportLogoKit(tab, page, opts?): Promise<Blob>`; rejects with `OutlineError` (`kind: 'font' | 'letters'`,
+  `message` the panel's sentence).
+- `outlineSvgText(svg: string, fontCss: string): Promise<string>`; `embeddedFontFaces(ids): Promise<{ css: string;
+missing: string[] }>`.
+- `resolveFontStack`, `fontIdsUsed`, `googleFontsHref`, `isDisplayFont`, `DISPLAY_FONTS` from `@livedesign/design`.
 - Validation as in Data and persistence; OpenAPI regenerated (`pnpm --filter @livedesign/api
 gen:openapi`).
 
@@ -553,6 +638,13 @@ gen:openapi`).
 | Simplify finds nothing to drop                        | Toast "Already as simple as it gets."                                             |
 | Edit Points on a stroke Tidy cannot change            | Nothing opens (no toast; the button is offered only for tidyable strokes)         |
 | Logo kit export fails                                 | `[logo-kit]` warn; the dialog shows the error                                     |
+| A kit face cannot be fetched                          | `OutlineError('font')`, the panel says which face; no kit                         |
+| A letter in none of a face's fetched sets             | `OutlineError('letters')`, the panel names the letters and the face; no kit       |
+| Text with no face of its own in the kit               | Lettered in Inter (`LOGO_KIT_FALLBACK_FONT`) in every kit file                    |
+| A bold or italic a face lacks                         | Outlined as synthesised (a stroke, or a quarter slant)                            |
+| A stored font id in neither list                      | Falls through to the tab's face (`resolveFontStack` undefined)                    |
+| The library's preview subset cannot be fetched        | Rows in their stack's fallback face; choosing still works                         |
+| A display face that cannot load on the canvas         | Its stack's system fallback paints                                                |
 
 ## Security and trust
 
@@ -573,6 +665,10 @@ Measured (vitest on this branch):
   Guard: `logo-guide-snap.test.ts` runs 1000 prepared snaps under 500 ms (unprepared: about 1.75 s).
 - Guides: geometry under 0.01 ms; one SVG per logo page. Snapping: two extra boxes per logo page.
 - Kit: one 1024 px raster, smaller sizes by canvas downscale.
+- Outlining: fontkit loads only at a kit's press, in its own chunk referenced by no page's HTML (first-load JS and
+  the chunk's size measured in the PR).
+- Display faces: the library is 90 names in the design package (no font bytes); a family's stylesheet is fetched
+  only once an element uses it; the previews fetch a few letters a face, only for rows in view.
 - Guard: `combine.test.ts` unites two maximally detailed discs under 500 ms.
 - Point editing of combined paths, at the 5,000-node cap (two 2,500-node contours): a draft frame's
   `reshapeContour` 0.81 ms (linear: every contour re-normalised once); a press's `contourAt` 1.4 ms
@@ -620,7 +716,9 @@ Measured (vitest on this branch):
 ## Observability
 
 - `[combine]` warnings: `load failed`, `op failed` (op, element and point counts), `too detailed`.
-- `[logo-kit]` warnings on a failed raster or export; `[page]` debug logs on refusals.
+- `[logo-kit]` warnings on a failed raster or export; `[outline]` warnings naming the face (never the text) when a
+  face is missing or a letter uncovered; `[display-fonts]` a warning when the preview subset fails; `[page]` debug
+  logs on refusals.
 - Telemetry as the spec lists; dashboard charts Logo Tools Used, Mirrored Drawings, Logo Mirror
   Switched, Logo Mirror Set Up, Logo Tours Started (with Show Me Tours Started), the Settings rows,
   and the existing Other Panels Opened and Exports.
@@ -663,12 +761,22 @@ Measured (vitest on this branch):
 | Layout tiles rendered                             | `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                                                                                                                                         |
 | No quick-connect pluses                           | `apps/live/components/canvas/LayerSelectionChrome.test.ts`                                                                                                                                                                                         |
 | Show Me                                           | `apps/live/components/tour/PageTour.test.tsx`                                                                                                                                                                                                      |
+| Display library list, resolver, validation        | `packages/design/src/display-fonts.test.ts`                                                                                                                                                                                                        |
+| Display faces load on use, previews               | `apps/live/lib/display-fonts-loader.test.ts`                                                                                                                                                                                                       |
+| Display library picker                            | `apps/live/components/palette/DisplayFontLibrary.test.tsx`                                                                                                                                                                                         |
+| Outlined text: faces, matching, glyphs, mount     | `apps/live/lib/outline-text/*.test.ts`                                                                                                                                                                                                             |
+| Kit outlines, refuses a missing face              | `apps/live/lib/export-logo-kit.test.ts`                                                                                                                                                                                                            |
 
 ## Assets and external resources
 
 - `polygon-clipping@0.15.7` (MIT), from npm, a dependency of `apps/live`, listed on /licences by the
   build-time collector.
 - Icons in layouts come from the existing line-art catalogue; no new images or fonts.
+- `fontkit` (MIT), from npm, a dependency of `apps/live` loaded only by `outline-text/`; listed on /licences by the
+  build-time collector.
+- The display library's faces: Google Fonts, each under the SIL Open Font License 1.1 (checked against the
+  google/fonts repository's `ofl/` folder on 15 November 2026), fetched from fonts.googleapis.com as the eleven
+  are, never bundled.
 
 ## Defaults ledger
 

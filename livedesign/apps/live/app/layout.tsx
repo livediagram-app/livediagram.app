@@ -109,7 +109,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // React hydrates, so the client's <html> className intentionally
     // differs from the static-export HTML. Scoped to this one element (it
     // doesn't cascade to children), so real mismatches elsewhere still warn.
-    <html lang="en-GB" suppressHydrationWarning>
+    // overscroll-none on the root: the editor never pulls to refresh, so a drag beside a toolbar or off the canvas
+    // never reloads it (docs/specs/004-interface-design/touch-targets.md "The editor never pulls to refresh").
+    // This app's layout only: the marketing site and the help centre keep the browser's own.
+    <html lang="en-GB" className="overscroll-none" suppressHydrationWarning>
       <head>
         {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
         <script {...htmlProps(TRUSTED_TYPES_BOOT)} />
@@ -147,7 +150,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         <script {...htmlProps(WEBFONTS_SWAP_SCRIPT)} />
       </head>
-      <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
+      <body className="overscroll-none bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
         {/* Apply the persisted appearance before first paint, so EVERY route
             honours it — including /live/new and the welcome / template-picker
             flow, which never mount the TabBar that's the only caller of

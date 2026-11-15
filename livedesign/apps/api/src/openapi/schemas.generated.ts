@@ -543,6 +543,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "BackLink": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "const": "back",
+        "type": "string"
+      },
+      "transition": {
+        "$ref": "#/components/schemas/PageLinkTransition"
+      }
+    },
+    "required": [
+      "kind"
+    ],
+    "type": "object"
+  },
   "BackgroundPattern": {
     "enum": [
       "grid",
@@ -2455,6 +2471,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "url"
         ],
         "type": "object"
+      },
+      {
+        "$ref": "#/components/schemas/ScreenLink"
       }
     ]
   },
@@ -4967,6 +4986,34 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PageLink": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "const": "page",
+        "type": "string"
+      },
+      "pageId": {
+        "type": "string"
+      },
+      "transition": {
+        "$ref": "#/components/schemas/PageLinkTransition"
+      }
+    },
+    "required": [
+      "kind",
+      "pageId"
+    ],
+    "type": "object"
+  },
+  "PageLinkTransition": {
+    "enum": [
+      "instant",
+      "slide",
+      "dissolve"
+    ],
+    "type": "string"
+  },
   "PageMotion": {
     "enum": [
       "flow",
@@ -6328,6 +6375,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "none"
     ],
     "type": "string"
+  },
+  "ScreenLink": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/PageLink"
+      },
+      {
+        "$ref": "#/components/schemas/BackLink"
+      }
+    ]
   },
   "ShadowEffect": {
     "additionalProperties": false,

@@ -363,6 +363,14 @@ export function WhiteboardDock({ model: ownModel, ink, onDrawn }: WhiteboardDock
         data-dock-centred={placed.centred ? '' : undefined}
         className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${placement}`}
       >
+        {/* On a touch screen the bar reaches DOCK_REACH_PX (6) past its card: a near miss lands here, does nothing
+            (the wrapper stops its pointerdown reaching the board) and never pans the page (spec "On a touch
+            screen"). Behind the card, and inside the 8px gap to the menu card and the bottom-right cluster. */}
+        <div
+          aria-hidden
+          data-dock-reach=""
+          className="pointer-events-auto absolute -inset-1.5 -z-10 hidden touch-none pointer-coarse:block"
+        />
         <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} scale={scale} />
       </div>
     </>
@@ -448,7 +456,8 @@ function DockBody({
       <div
         data-dock-scroller=""
         onScroll={fly.reanchor}
-        className={`${TOOLBAR_CARD} pointer-events-auto animate-pop-in overflow-x-auto [scrollbar-width:none]`}
+        // Sideways only: a phone's dock scrolls, but a drag down on it never moves the page.
+        className={`${TOOLBAR_CARD} pointer-events-auto animate-pop-in touch-pan-x overflow-x-auto [scrollbar-width:none]`}
       >
         {groups}
       </div>

@@ -37,6 +37,14 @@ describe('elementSchemaDoc', () => {
     ];
     for (const style of styles) expect(doc).toContain(style);
   });
+
+  // docs/specs/015-api/mcp-server.md "Screen links".
+  it('names screen links, back links and their transitions', () => {
+    const doc = elementSchemaDoc();
+    expect(doc).toContain('{ "kind": "page", "pageId", "transition"? }');
+    expect(doc).toContain('{ "kind": "back", "transition"? }');
+    expect(doc).toContain('instant, slide, dissolve');
+  });
 });
 
 describe('tool input shapes', () => {

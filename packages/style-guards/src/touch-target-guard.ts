@@ -1,6 +1,6 @@
 // The static touch-target guard (docs/specs/004-interface-design/touch-targets.md, "How").
 //
-// `touch-target` and `touch-target-y` draw an absolutely positioned `::before` pad, so the control that carries one
+// `touch-target`, `touch-target-y` and `touch-target-packed` draw an absolutely positioned `::before` pad, so the control that carries one
 // must be positioned itself. A static host lets the pad fill its nearest positioned ancestor instead: the help
 // centre's last popular-topic chip took every tap on the hero, its search box included, and a Plan column's Remove
 // Column took every tap in its popover on a phone. So a class list that names either utility names a position too
@@ -33,7 +33,7 @@ const SKIP_DIRS = new Set([
   '.turbo',
   'dist',
 ]);
-const PAD = /(^|\s)touch-target(-y)?(\s|$)/;
+const PAD = /(^|\s)touch-target(-y|-packed)?(\s|$)/;
 const POSITIONED = /(^|\s)(relative|absolute|fixed|sticky)(\s|$)/;
 
 function sources(dir: string): string[] {

@@ -19,6 +19,12 @@ where this spec says otherwise.
 | **system bars**    | The status bar across the top of a phone, tablet or watch screen (the time, signal, Wi-Fi and battery) and the home indicator across its foot. Drawn over the content, as a real screen draws them. |
 | **safe area**      | The screen less its system bars (while shown) and the device class's **gutter**: what layouts fill and what snapping offers as the page's margin.                                                   |
 | **frame look**     | How the device frame is drawn (`Page.frameLook`): **Theme** (absent: in the tab theme's colours), **Dark**, **Light** or **Outline** (a line drawing, no fill, for a low-fidelity look).            |
+| **screen link**    | An element's link to another page of its tab (`ElementLink` kind `page`): pressing the element in Prototype mode goes to that screen.                                                               |
+| **back link**      | An element's link back to the screen shown before (`ElementLink` kind `back`), as a phone's back button does.                                                                                       |
+| **transition**     | How a screen link or back link changes screens (`transition`): **Instant** (absent), **Slide** or **Dissolve**.                                                                                     |
+| **hotspot**        | A linked element as Prototype mode sees it: the part of the screen a press follows.                                                                                                                 |
+| **Prototype mode** | Playing a wireframe tab's screens one at a time in their device frame, following screen links.                                                                                                      |
+| **Flow view**      | The canvas drawing an arrow from each linked element to the screen it goes to.                                                                                                                      |
 
 ## The devices
 
@@ -333,6 +339,73 @@ inspect it." With one, under the element's name (its kind, and its words when it
   Viewer link yet the Share dialog opens so one can be made, with the note "Make a Viewer link, then
   copy the Inspect link." A design kept in This Browser has no link to copy, so no button.
 
+## Clickable prototypes
+
+Status: building (Work Tracker 136). The stored links, their checks and how agents read and write them ship first;
+the link menu and handle, Prototype mode, its share link and the Flow view follow.
+
+A wireframe tab's screens can be clicked through: any element on a wireframe page can link to another screen of
+the same tab, and **Prototype mode** plays the screens one at a time, a press on a linked element going to its
+screen. A team sketches the screens and walks through them, on a desktop or a phone, and shares the walk-through
+as a link.
+
+### Screen links
+
+- A **screen link** is an element link of kind `page`: `{ kind: "page", pageId, transition? }`. `pageId` names a
+  page of the element's own tab; a link never reaches another tab's page (a tab or element link does that).
+- A **back link** is `{ kind: "back", transition? }`: it goes to the screen shown before, and on the first screen
+  shown it does nothing.
+- **Transition**: `instant` (the same as absent), `slide` (the new screen slides in from the right; a back link's
+  slides in from the left) or `dissolve` (the new screen fades in over the old). Under reduced motion every
+  transition is instant.
+- They are element links like the others: one per element, any element kind that takes a link (an arrow
+  included), set and cleared the same way, and stored on the element as an additive field. An older build
+  reads an element with one as an element with a link it does not know, and draws it unchanged.
+- A screen link on an element that is not on a wireframe page is kept and does nothing.
+
+### Setting a link
+
+- **Pick from a menu**: **Link Element** on a wireframe tab offers a **Screen** mode listing the tab's screens
+  (each by its name, or "Screen <n>"), a **Back** choice, and the transition (Instant, Slide, Dissolve).
+- **Drag the link handle**: a selected element on a wireframe page shows a small link handle; dragging it onto
+  another screen links the element to that screen, and dropping it anywhere else changes nothing.
+- A linked element shows a small **link marker** while editing (its [element indicator](../008-canvas/element-indicators.md)),
+  which names the screen it goes to on hover.
+
+### A link to a deleted page
+
+Deleting a page leaves the links to it in place, so undoing the delete brings them back whole. A screen link
+whose page is not on the tab is **broken**: it reads as broken everywhere it shows (the marker, the menu, the
+Flow view and what agents read), does nothing when pressed, and never stops the tab loading, drawing, saving or
+exporting. Linking the element again, or clearing its link, mends it.
+
+### Prototype mode
+
+- **Prototype** in the toolbar, on a wireframe tab, plays the tab: one screen at a time, inside its device frame,
+  centred and scaled to fit the window, over a plain backdrop. It starts on the screen in view (the first screen
+  when none is).
+- Pressing a linked element follows its link with its transition. A press anywhere else **flashes the hotspots**
+  on the screen, so a person can see what is clickable.
+- **Back** and **Next** controls and the arrow keys step through the screens in order; Escape (or **Close**)
+  returns to the editor on the screen last shown.
+- Nothing in Prototype mode edits: it is a player.
+
+### Sharing a prototype
+
+- A share link with `prototype` (`/design/shared?s=<code>&prototype=1`) opens straight into Prototype mode when its
+  tab is a wireframe tab; on any other tab it is ignored. The editor reads the flag, as it reads `inspect`; the
+  link is an ordinary share link and nothing about it is stored.
+- **Copy Prototype Link** in Prototype mode copies the design's live **Viewer** link with `prototype`, as Copy
+  Inspect Link does (no Viewer link yet opens the Share dialog; a design kept in This Browser has no link).
+- On a phone the prototype fills the screen: the device frame steps aside and the screen alone fills the
+  viewport, and a tap follows a link.
+
+### Flow view
+
+**Flow view**, a toggle on a wireframe tab, draws an arrow from each linked element to the screen it goes to
+(a back link draws none; a broken link draws a short dashed stub marked broken). The arrows are canvas chrome,
+never elements, and are never exported or sent to anyone.
+
 ## Share roles
 
 A wireframe page is a page: an **Editor** chooses its device, orientation, frame look and system
@@ -348,6 +421,12 @@ while it is on an Editor's or Participant's presses and keys change nothing eith
 copies a link the session already holds, or, for whoever may share, the design's Viewer link; it never
 makes a link.
 
+**Screen links** are content on an element: an **Editor** sets, changes and clears them on any element; a
+**Participant** on what it added itself, as it changes anything else about what it added (the participant
+content rule, never on someone else's element); a **Viewer** never. **Prototype mode**, **Flow view** and a
+prototype share link are every role's: they write nothing. Editors hold `can.linkScreens` for every element,
+a Participant for its own unlocked elements, a Viewer for none; `can.playPrototype` is true for all three.
+
 ## Collaboration and agents
 
 - The device, orientation, frame look and system bars sync like any page field; everyone sees the
@@ -360,6 +439,11 @@ makes a link.
   As in the editor, the device is chosen as the page is added and never changed: a `set` naming a
   device is refused, and so are a device, frame look or system bars on any other kind of page
   (`not_a_wireframe`). A result line names a wireframe page's size by its device (`iPad landscape`).
+- Screen links are an element's `link` field: agents set one with `update_design` or an edit operation's `set`
+  (`{"link": {"kind": "page", "pageId": "page-1a2b3c4d", "transition": "slide"}}`, `{"link": {"kind": "back"}}`) and
+  read it in a view's attributes as `link=page:<pageId>` or `link=back`, with `transition=<slide|dissolve>` when not
+  instant and `broken` when the page is not on the tab. The page ids are the ones the `pages` view prints. A
+  malformed screen link (no `pageId`, an unknown transition) is refused naming the field.
 
 ## Telemetry
 
@@ -369,10 +453,13 @@ makes a link.
 `UI · Toggled · WireframeSystemBarsOn` / `WireframeSystemBarsOff`. Inspect: `Canvas · Used · Inspect`
 (turned on); `UI · Copied · InspectCss` / `InspectValues` / `InspectValue` / `InspectLink`;
 `Document · Exported · InspectPng` / `InspectSvg`. Never a name or text.
+Prototypes: `Element · Linked · Screen` / `ScreenBack`; `Canvas · Used · Prototype` (played);
+`UI · Copied · PrototypeLink`; `UI · Toggled · FlowViewOn` / `FlowViewOff`.
 
 ## Non-goals
 
-- Clickable prototypes (linking a button to another screen).
+- Links to another tab's screens, hover or timed triggers, and animated parts within a screen (a prototype
+  goes from screen to screen on a press).
 - Inspect generating platform code (SwiftUI, Compose, Tailwind) or measuring on other kinds of page.
 - A device catalogue per model year, or custom screen sizes (a blank page in Fit to Content
   is the free-size page).

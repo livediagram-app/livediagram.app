@@ -59,6 +59,27 @@ describe('attributesOf (VW14)', () => {
     expect(link({ kind: 'wormhole' })).toBe('');
   });
 
+  // docs/specs/007-editor/wireframe-pages.md "Collaboration and agents".
+  it('prints screen links and back links, their transition and a broken one (VW28)', () => {
+    const withPages: AttributeContext = { ...plain, pageIds: new Set(['page-1']) };
+    const link = (l: object, context = withPages) =>
+      printed({ ...shapeAt('square', 'x', 0, 0), link: l } as Element, context);
+    expect(link({ kind: 'page', pageId: 'page-1' })).toBe('link=page:page-1');
+    expect(link({ kind: 'page', pageId: 'page-1', transition: 'instant' })).toBe(
+      'link=page:page-1',
+    );
+    expect(link({ kind: 'page', pageId: 'page-1', transition: 'slide' })).toBe(
+      'link=page:page-1 transition=slide',
+    );
+    expect(link({ kind: 'page', pageId: 'page-9', transition: 'dissolve' })).toBe(
+      'link=page:page-9 transition=dissolve broken',
+    );
+    expect(link({ kind: 'page', pageId: 'page-9' }, plain)).toBe('link=page:page-9');
+    expect(link({ kind: 'back' })).toBe('link=back');
+    expect(link({ kind: 'back', transition: 'slide' })).toBe('link=back transition=slide');
+    expect(link({ kind: 'page' })).toBe('');
+  });
+
   it("prints an image's alt text, cut", () => {
     const image = {
       id: 'i',

@@ -7,6 +7,12 @@ no speaker notes and no Present button. Slide decks are livedocuments'. **Laser*
 livedesign's tools for pointing at a design and clearing the screen while sharing it, and every page exports to PNG,
 SVG and PDF.
 
+**Prototype mode** is not presenting. It plays a wireframe tab's screens one at a time, following the screen links
+on their elements, so a team can click through what it sketched ([Wireframe pages](../007-editor/wireframe-pages.md)
+"Clickable prototypes"). It has no slides, notes, presenter view or Present button, and it never plays a logo or
+photo tab. The boundary it moved is recorded in [Purpose](../001-project-vision/purpose.md) "Boundaries that have
+moved".
+
 ## Saved data
 
 A design made elsewhere, or stored by an older build, may carry a slide deck. It opens like any other design, and

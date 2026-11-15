@@ -31,6 +31,11 @@ export type EditorCapabilities = {
   // Inspect a wireframe (docs/specs/007-editor/wireframe-pages.md "Inspect"): select any element to read, copy
   // and export it. Every role's: it writes nothing.
   inspect: boolean;
+  // Clickable prototypes (docs/specs/007-editor/wireframe-pages.md "Share roles"): set, change or clear an element's
+  // screen link. An Editor's on any element, a Participant's on its own unlocked work (the participant content rule).
+  linkScreens: (el: Element) => boolean;
+  // Play a wireframe tab in Prototype mode, and turn the Flow view on. Every role's: it writes nothing.
+  playPrototype: boolean;
 };
 
 const never = () => false;
@@ -60,6 +65,8 @@ export function resolveEditorCapabilities(input: {
       photoEdit: true,
       photoInspect: true,
       inspect: true,
+      linkScreens: always,
+      playPrototype: true,
     };
   }
   if (level === 'view') {
@@ -77,6 +84,8 @@ export function resolveEditorCapabilities(input: {
       photoEdit: false,
       photoInspect: false,
       inspect: true,
+      linkScreens: never,
+      playPrototype: true,
     };
   }
   const own = (el: Element) => addedByAdder(el, adderKey);
@@ -96,6 +105,8 @@ export function resolveEditorCapabilities(input: {
     photoEdit: false,
     photoInspect: true,
     inspect: true,
+    linkScreens: (el) => !isLocked(el) && own(el),
+    playPrototype: true,
   };
 }
 

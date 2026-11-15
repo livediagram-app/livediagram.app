@@ -18,12 +18,12 @@ describe('resolveEditorCapabilities', () => {
   });
 
   // Locks the role in as capabilities are added: every flag and every per-element check is false for a Viewer,
-  // but reading a wireframe with Inspect, which changes nothing.
+  // but reading a wireframe with Inspect and playing a prototype, which change nothing.
   it('gives a Viewer nothing at all, whatever the element', () => {
     const can = resolveEditorCapabilities({ level: 'view', adderKey: ME });
     const els = [sticky(), sticky({ addedBy: ME }), shape(), shape({ shape: 'circle' })];
     for (const [key, value] of Object.entries(can)) {
-      if (key === 'level' || key === 'inspect') continue;
+      if (key === 'level' || key === 'inspect' || key === 'playPrototype') continue;
       if (typeof value === 'function') {
         for (const el of els) expect(value(el), key).toBe(false);
       } else expect(value, key).toBe(false);
@@ -35,6 +35,24 @@ describe('resolveEditorCapabilities', () => {
     for (const level of ['edit', 'participate', 'view'] as const) {
       expect(resolveEditorCapabilities({ level, adderKey: ME }).inspect, level).toBe(true);
     }
+  });
+
+  // docs/specs/007-editor/wireframe-pages.md "Share roles": screen links are content on an element; playing is
+  // every role's.
+  it('lets an Editor link any screen, a Participant its own unlocked work, a Viewer none; all play', () => {
+    const editor = resolveEditorCapabilities({ level: 'edit', adderKey: null });
+    const participant = resolveEditorCapabilities({ level: 'participate', adderKey: ME });
+    const viewer = resolveEditorCapabilities({ level: 'view', adderKey: ME });
+    expect([editor.linkScreens(shape()), editor.linkScreens(shape({ locked: true }))]).toEqual([
+      true,
+      true,
+    ]);
+    expect(participant.linkScreens(shape({ addedBy: ME }))).toBe(true);
+    expect(participant.linkScreens(sticky({ addedBy: ME, locked: true }))).toBe(false);
+    expect(participant.linkScreens(shape())).toBe(false);
+    expect(participant.linkScreens(sticky({ addedBy: 'b'.repeat(32) }))).toBe(false);
+    expect(viewer.linkScreens(shape({ addedBy: ME }))).toBe(false);
+    for (const can of [editor, participant, viewer]) expect(can.playPrototype).toBe(true);
   });
 
   it('gives photo pages to an Editor, a closer look to a Participant, nothing to a Viewer', () => {

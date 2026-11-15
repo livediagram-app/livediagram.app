@@ -104,6 +104,30 @@ describe('WhiteboardDock groups', () => {
   });
 });
 
+// docs/specs/023-draw-mode/draw-mode.md "On a touch screen": the bar reaches a little past its card, and no drag on
+// it moves the page.
+describe('WhiteboardDock on a touch screen', () => {
+  it('reaches 6px past the card on a coarse pointer, behind it, taking the tap and never panning', () => {
+    const { container } = render(<WhiteboardDock model={model('pen')} ink="#1c1917" />);
+    const reach = container.querySelector<HTMLElement>('[data-dock-reach]')!;
+    expect(reach.getAttribute('aria-hidden')).toBe('true');
+    for (const cls of ['absolute', '-inset-1.5', '-z-10', 'touch-none', 'pointer-events-auto']) {
+      expect(reach.classList).toContain(cls);
+    }
+    // Only a finger gets it: under a mouse a near miss still reaches the board.
+    expect(reach.classList).toContain('hidden');
+    expect(reach.classList).toContain('pointer-coarse:block');
+    // Inside the dock's wrapper, whose pointerdown never reaches the board.
+    expect(reach.parentElement?.hasAttribute('data-whiteboard-dock')).toBe(true);
+  });
+
+  it('scrolls its card sideways only, so a drag down on the bar never pulls the page', () => {
+    const { container } = render(<WhiteboardDock model={model('pen')} ink="#1c1917" />);
+    const scroller = container.querySelector<HTMLElement>('[data-dock-scroller]')!;
+    expect(scroller.classList).toContain('touch-pan-x');
+  });
+});
+
 describe('WhiteboardDock scrolling', () => {
   it('keeps an open flyout over its button as the groups scroll', () => {
     let cogLeft = 400;
