@@ -48,8 +48,11 @@ screen. It never stays on the opening screen indefinitely.
   copy, and one that ends on not found, the deleted card or the password gate forgets it
   ([Offline Mode → Warm open of a cloud document](../006-document/offline-mode.md#warm-open-of-a-cloud-document)),
   without waiting: the store's calls never throw and are never awaited by the load. A warm
-  open (a later part) paints the copy first and the load above still runs to its end, with
-  the same watchdog, and replaces it.
+  open paints the copy before auth settles, read-only, and the load above still runs to its
+  end with the same watchdog and the same steps: it replaces the copy in place, or puts the
+  screen it ends on (the load-error screen, not found, the deleted card, the password gate)
+  in its place. The opening screen shows only when the reader turns out to be someone other
+  than the copy's.
 
 ## Self-healing on the opening screen
 
