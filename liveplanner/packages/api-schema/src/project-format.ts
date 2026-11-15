@@ -14,7 +14,9 @@
 //   5: the Risk field (12 Nov 2026; docs/specs/026-plan/item-types.md "Risk"), which editors on 4 keep read-only.
 //   6: tab icons, a tab's `glyph` and a type's `detailsGlyph` (14 Nov 2026; docs/specs/026-plan/item-types.md "Tab
 //      icons"), and unknown card type keys kept through a save ("Settings from a newer version"); editors on 5 drop them.
-export const PROJECT_FORMAT = 6;
+//   7: a card type's card templates, `templates` (15 Nov 2026; docs/specs/026-plan/item-types.md "Card templates"),
+//      which editors on 6 keep through a save only while they fit the 4 KB cap on unknown keys.
+export const PROJECT_FORMAT = 7;
 
 // Every api response carries the server's number in this header.
 export const PROJECT_FORMAT_HEADER = 'X-Liveplanner-Format';

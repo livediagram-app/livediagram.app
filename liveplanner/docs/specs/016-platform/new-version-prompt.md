@@ -36,6 +36,8 @@ the open editor asks, calmly, to be reloaded.
     on `4` keep read-only.
   - `6`: card type tab icons, a tab's `glyph` and a type's `detailsGlyph` ([Tab icons](../026-plan/item-types.md#tab-icons),
     14 November 2026), and keys from a newer version kept through a save, which editors built on `5` would drop.
+  - `7`: a card type's [card templates](../026-plan/item-types.md#card-templates) (`templates`, 15 November 2026),
+    which editors built on `6` keep through a save only while a type's templates fit their 4 KB cap for newer keys.
 
 ## How a running editor learns the server's number
 

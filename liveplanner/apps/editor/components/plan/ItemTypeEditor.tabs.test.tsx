@@ -405,4 +405,24 @@ describe('tab icons in the type editor', () => {
     expect(saved.later).toEqual({ on: true });
     expect(saved.tabs![0]).toMatchObject({ later: 1 });
   });
+
+  // Work Tracker 891: a type's card templates (item-types.md "Card templates") are saved back with any other change.
+  it('keeps the type’s card templates through a save, less a value for a field it no longer offers', () => {
+    const report = {
+      id: 'tp-report',
+      name: 'Report',
+      fields: { title: 'Report', description: 'What happened?', 'f-gone': 'x' },
+    };
+    const onSave = editing({ ...ITEM_TYPES[1], templates: [report] });
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Chore' } });
+    const saved = save(onSave);
+    expect(saved.label).toBe('Chore');
+    expect(saved.templates).toEqual([
+      {
+        id: 'tp-report',
+        name: 'Report',
+        fields: { title: 'Report', description: 'What happened?' },
+      },
+    ]);
+  });
 });

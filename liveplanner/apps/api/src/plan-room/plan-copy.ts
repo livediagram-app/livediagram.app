@@ -6,6 +6,7 @@ import { remapTabLinks, type Element } from '@liveplanner/project';
 import { redactTabDataAuthors } from '../comments';
 import {
   COMMUNITY_PERSON,
+  catalogueColumnForCommunity,
   redactItemRowForCommunity,
   redactPlanTabDataForCommunity,
   redactSheetCellRowsForCommunity,
@@ -222,7 +223,9 @@ export async function exportPlanCopy(
   const responseSheets = community ? responseSheetIds(rows) : new Set<string>();
   const person = JSON.stringify(COMMUNITY_PERSON);
   return {
-    itemTypes: plan?.item_types ?? null,
+    itemTypes: community
+      ? catalogueColumnForCommunity(plan?.item_types ?? null)
+      : (plan?.item_types ?? null),
     itemsRev: plan?.items_rev ?? 0,
     itemsNextKey: plan?.items_next_key ?? 1,
     tabs,

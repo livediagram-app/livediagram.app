@@ -1,6 +1,6 @@
 // Duplicating a card type (docs/specs/026-plan/item-types.md "The Card Types panel"): a new type filled from
 // another, named "<Name> copy" ("copy 2", "copy 3"... while taken, shortened to fit), with the same colour, glyph,
-// fields, custom fields, tabs and Details name, and a fresh id. The type editor opens on it; nothing is stored
+// fields, custom fields, tabs, Details name and card templates, and a fresh id. The type editor opens on it; nothing is stored
 // until it is saved.
 import type { ItemTypeDef } from './item-types';
 import { ITEM_TYPE_LABEL_MAX, defaultNewTitle, newItemTypeId } from './type-catalogue';
@@ -31,5 +31,13 @@ export function duplicateItemType(type: ItemTypeDef, types: readonly ItemTypeDef
     fields: [...type.fields],
     ...(type.custom ? { custom: type.custom.map((f) => ({ ...f })) } : {}),
     ...(type.tabs ? { tabs: type.tabs.map((t) => ({ ...t, fields: [...t.fields] })) } : {}),
+    ...(type.templates
+      ? {
+          templates: type.templates.map((t) => ({
+            ...t,
+            fields: JSON.parse(JSON.stringify(t.fields)) as typeof t.fields,
+          })),
+        }
+      : {}),
   };
 }

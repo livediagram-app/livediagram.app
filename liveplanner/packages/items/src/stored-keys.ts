@@ -1,8 +1,9 @@
-// The keys a card type, a panel tab and a custom field are stored with (docs/specs/026-plan/item-types.md "Settings
+// The keys a card type, a panel tab, a custom field and a card template are stored with (docs/specs/026-plan/item-types.md "Settings
 // from a newer version"), and the keys a reader keeps that it does not know. Each list is typed to name every key of
 // its shape, no more and no less, so adding a key to ItemTypeDef, ItemTypeTab or CustomFieldDef fails the typecheck
 // until it is listed here, and listing it fails the project format guard (api-schema project-format.test.ts) until
 // PROJECT_FORMAT is bumped. Depends on item-types.ts alone.
+import type { CardTemplate } from './card-templates';
 import type { CustomFieldDef, ItemTypeDef, ItemTypeTab } from './item-types';
 import { isObj } from './validate';
 
@@ -28,6 +29,7 @@ const TYPE_KEYS = {
   colourField: true,
   inherits: true,
   ownFields: true,
+  templates: true,
 } as const satisfies KeysOf<ItemTypeDef>;
 
 const TAB_KEYS = {
@@ -36,6 +38,13 @@ const TAB_KEYS = {
   fields: true,
   glyph: true,
 } as const satisfies KeysOf<ItemTypeTab>;
+
+// A card template's keys (docs/specs/026-plan/item-types.md "Card templates").
+const TEMPLATE_KEYS = {
+  id: true,
+  name: true,
+  fields: true,
+} as const satisfies KeysOf<CardTemplate>;
 
 const FIELD_KEYS = {
   id: true,
@@ -65,6 +74,7 @@ const FIELD_KEYS = {
 export const ITEM_TYPE_KEYS: readonly string[] = Object.keys(TYPE_KEYS);
 export const ITEM_TYPE_TAB_KEYS: readonly string[] = Object.keys(TAB_KEYS);
 export const CUSTOM_FIELD_KEYS: readonly string[] = Object.keys(FIELD_KEYS);
+export const CARD_TEMPLATE_KEYS: readonly string[] = Object.keys(TEMPLATE_KEYS);
 
 // The most one type's, tab's or field's unknown keys may hold as JSON: far above any setting liveplanner stores, well
 // inside the catalogue's own 32 KB. Past it they are dropped, never refused.

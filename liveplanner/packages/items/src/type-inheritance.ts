@@ -121,6 +121,8 @@ export function resolveChild(child: ItemTypeDef, base: ItemTypeDef): ItemTypeDef
   // Always written beside the link, empty too, so a stored type's own fields are exact (absent means "not yet
   // worked out": a type just given its base).
   next.ownFields = own;
+  // Its card templates are its own ("Card templates"), never its base's.
+  if (child.templates) next.templates = child.templates;
   // Keys a newer liveplanner stored on it (item-types.md "Settings from a newer version") stay with it.
   return { ...next, ...newerKeysOf(child, ITEM_TYPE_KEYS) };
 }

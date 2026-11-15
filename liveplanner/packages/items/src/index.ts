@@ -11,6 +11,7 @@ export * from './stored-keys';
 export * from './type-catalogue';
 export * from './type-inheritance';
 export * from './type-duplicate';
+export * from './card-templates';
 export * from './fields';
 export * from './item-colour';
 export * from './limits';
