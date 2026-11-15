@@ -72,7 +72,10 @@ export type EditorContextMenuProps = {
   editingId: string | null;
   // Open the link picker for the element, optionally pre-selecting a mode
   // (webpage / tab / design) so the modal lands on the right tab.
-  onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'design') => void;
+  onLinkElement: (
+    elementId: string,
+    mode?: import('@/hooks/canvas/useElementLinks').LinkPickerMode,
+  ) => void;
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;

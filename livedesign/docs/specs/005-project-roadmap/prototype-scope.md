@@ -76,8 +76,9 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 
 - **The CLI's update check** ([CLI](../015-api/cli.md)): the CLI tells a person when a newer version is published.
 - **Clickable prototypes** ([Wireframe pages](../007-editor/wireframe-pages.md) "Clickable prototypes", Work
-  Tracker 136): building. Screen links and back links are stored, checked and read and written by agents; the link
-  menu and handle, Prototype mode, its share link and the Flow view follow.
+  Tracker 136): building. Screen links and back links are stored, checked, read and written by agents, and set in
+  the editor (Link Element's Screen mode, the link handle, the link marker); Prototype mode, its share link and the
+  Flow view follow.
 
 ## Later
 

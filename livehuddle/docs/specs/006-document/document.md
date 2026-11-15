@@ -61,19 +61,13 @@ that named it moved in one change:
   class declared new in its first migration (livehuddle ships fresh on new infrastructure, so it carries no rename
   history); it holds each document's content ([API app, Storage](../015-api/api.md#storage)); the room ops are
   `document-meta` and `document-trashed`.
-- **Copies from elsewhere** are upgraded where they arrive: element links in exported files and
-  offline documents (`upgradeLegacyLinks`, run by `migrateStoredTab`), the browser's cached
-  preferences (`upgradeLegacyPreferences`), the offline store (moved to the `documents` object
-  store on the next visit), and stored names: a document still called "Untitled diagram" counts as
+- **Copies from elsewhere** are upgraded where they arrive, since a tab written in livediagram can still reach
+  livehuddle: element links in files and copies (`upgradeLegacyLinks`, run by `migrateStoredTab`), synced
+  preferences (`upgradeLegacyPreferences`), and stored names: a document still called "Untitled diagram" counts as
   untitled, exactly as "Untitled document" does.
-- **Addresses people already have** keep working: `/diagram/<id>` and six help articles redirect
-  for good ([Router app](../016-platform/router-app.md#legacy-editor-route)); the public API's
-  `/api/diagrams…` routes stay as a deprecated alias until 30 April 2027
-  ([Public API and API tokens §3.8](../015-api/public-api-and-tokens.md#38-deprecated-diagram-routes)); the MCP server
-  has no `*_diagram` tools.
-- **An editor left open across the deploy** runs the old code, which has no hook to reload it: it
-  keeps saving and connecting through the aliases, but stops seeing live name and tab-list
-  changes from others until it reloads.
+- **No old addresses.** livehuddle was forked after the rename, so it never served `/diagram/<id>`, the
+  `/api/diagrams…` routes or `*_diagram` MCP tools, and keeps no alias for them. The help articles renamed since the
+  fork redirect ([Router app](../016-platform/router-app.md#renamed-help-articles)).
 
 Files that hold the old names on purpose are named `legacy-*`.
 <!-- /legacy-names -->

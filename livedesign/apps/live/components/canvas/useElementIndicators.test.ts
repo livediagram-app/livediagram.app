@@ -2,7 +2,11 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement, type ElementAction } from '@livedesign/design';
-import { elementIndicatorItems, useElementIndicators } from './useElementIndicators';
+import {
+  elementIndicatorItems,
+  screenMarkerItem,
+  useElementIndicators,
+} from './useElementIndicators';
 
 // docs/specs/008-canvas/element-indicators.md: which indicators an element carries, and which
 // elements show theirs on their own face instead.
@@ -131,6 +135,56 @@ describe('elementIndicatorItems', () => {
   it('shows no note without a way to open it', () => {
     const el = { ...createShape('square', 0, 0), note: 'n' } as BoxedElement;
     expect(elementIndicatorItems(el, { ...handlers(), onOpenNote: undefined })).toEqual([]);
+  });
+});
+
+// docs/specs/007-editor/wireframe-pages.md "Setting a link": a screen link's marker is the link indicator, in its state.
+describe('screen link markers', () => {
+  const marker = (state: 'page' | 'back' | 'broken') => ({
+    description: state === 'broken' ? 'Broken link: its screen was deleted' : 'Goes to Checkout',
+    state,
+    press: vi.fn(),
+  });
+
+  it('puts the marker first, as a link indicator stands', () => {
+    const el = {
+      ...createShape('square', 0, 0),
+      note: 'n',
+      link: { kind: 'page', pageId: 'p' },
+    } as BoxedElement;
+    const m = marker('page');
+    const items = elementIndicatorItems(el, handlers(), true, m);
+    expect(items.map((i) => [i.kind, i.screen])).toEqual([
+      ['link', 'linked'],
+      ['note', undefined],
+    ]);
+    items[0]!.onClick();
+    expect(m.press).toHaveBeenCalled();
+  });
+
+  it('names a linked, back and broken marker', () => {
+    expect(screenMarkerItem(marker('page'))).toMatchObject({
+      screen: 'linked',
+      label: 'Go to screen',
+      word: 'Screen',
+      hoverCard: { title: 'Screen link', description: 'Goes to Checkout' },
+    });
+    expect(screenMarkerItem(marker('back')).screen).toBe('back');
+    expect(screenMarkerItem(marker('broken'))).toMatchObject({
+      screen: 'broken',
+      label: 'Broken screen link',
+      hoverCard: { title: 'Broken link', description: 'Broken link: its screen was deleted' },
+    });
+  });
+
+  it('gives a link card none: its link is its face', () => {
+    const card = { ...createShape('square', 0, 0), type: 'link-card' } as unknown as BoxedElement;
+    expect(elementIndicatorItems(card, handlers(), true, marker('page'))).toEqual([]);
+  });
+
+  it('draws no chain link for a screen link without a marker', () => {
+    const el = { ...createShape('square', 0, 0), link: { kind: 'back' } } as BoxedElement;
+    expect(kinds(el)).toEqual([]);
   });
 });
 

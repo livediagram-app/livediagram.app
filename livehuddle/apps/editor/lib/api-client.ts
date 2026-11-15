@@ -54,4 +54,3 @@ export * from './api/unfurl';
 export * from './api/community';
 export * from './api/team-people';
 // The move from the old livehuddle.app (docs/specs/014-identity/auth-and-guest-access.md "Returning guests").
-export * from './api/migration';

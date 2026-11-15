@@ -8,6 +8,9 @@ import { pagePaintPress } from '@liveworkspace/workbench/lib/format-page-brush';
 // The Canvas props for changing what is on the canvas (EditorCanvasHost): the selection's actions, the
 // page brush, undo and redo, dragging, label and table edits, the element faces' own setters, and the
 // arrow handles.
+// Inspect writes nothing, so it links no screen.
+const NO_SCREEN_LINKS = () => false;
+
 export function useEditCanvasProps({
   setPointerTip,
   inspecting,
@@ -51,6 +54,8 @@ export function useEditCanvasProps({
     editingId,
     exitFormatTool,
     followLink,
+    linkElementToScreen,
+    openLinkPicker,
     formatSourceId,
     handleCanvasDoubleClick,
     isReadOnly,
@@ -165,6 +170,11 @@ export function useEditCanvasProps({
     onOpenAction: openActionPopover,
     onOpenNote: openNote,
     onEditLink: isReadOnly ? undefined : setLinkPickerOpenForId,
+    // Screen links (docs/specs/007-editor/wireframe-pages.md "Setting a link"): gated on `can`, never `isReadOnly`, as
+    // a Participant links its own elements.
+    canLinkScreens: inspecting ? NO_SCREEN_LINKS : can.linkScreens,
+    onLinkScreen: linkElementToScreen,
+    onPickScreenLink: (elementId: string) => openLinkPicker(elementId, 'screen'),
     onOpenEditDialog: isReadOnly ? undefined : openEditDialog,
     onToggleAspectLock: toggleAspectLockSelected,
     onToggleLockSelected: toggleLockSelected,

@@ -9,13 +9,17 @@ import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
   embedTargetFor,
+  pagesOf,
 } from '@livedesign/design';
+import { screenLinkChoices, wireframeTabPages } from '@/lib/screen-link-choices';
 
 import { track } from '@/lib/telemetry';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
+
+const NO_PAGES: readonly never[] = [];
 
 const LinkPickerDialog = dynamic(
   () => import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
@@ -77,13 +81,22 @@ export function EditorElementDialogs() {
     can,
   } = useEditorContext();
 
+  // A wireframe tab's screens, for Link Element's Screen mode (docs/specs/007-editor/wireframe-pages.md "Setting a
+  // link"), offered only to whoever may link the element.
+  // Read only while a link picker is open, so an editor render with none pays nothing for it.
+  const tabPages = linkPickerOpenForId !== null ? pagesOf(activeTab) : NO_PAGES;
+  const screenLinkable = (el: (typeof activeTab.elements)[number]) =>
+    wireframeTabPages(tabPages) && can.linkScreens(el);
+  // An Editor's picker, or a Participant's on its own element (the Screen mode alone).
+  const linkPickable = (el: (typeof activeTab.elements)[number]) =>
+    !isReadOnly || screenLinkable(el);
+
   // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a lock
   // or a role change, it would otherwise reopen by itself when that is undone.
-  const editable = () => !isReadOnly;
   useCloseVanishedDialogs(
     activeTab.elements,
     [
-      [linkPickerOpenForId, () => setLinkPickerOpenForId(null), editable],
+      [linkPickerOpenForId, () => setLinkPickerOpenForId(null), linkPickable],
       [
         cellLinkPickerOpenFor?.tableId ?? null,
         () => setCellLinkPickerOpenFor(null),
@@ -153,13 +166,19 @@ export function EditorElementDialogs() {
               : "That isn't a link we can embed. Check it starts with https://, or, for a named service, that it is a link to a real file.",
         }
       : undefined;
+  const screens =
+    linkTarget && screenLinkable(linkTarget)
+      ? screenLinkChoices(tabPages, linkTarget, activeTab.elements)
+      : undefined;
 
   return (
     <>
-      {linkPickerOpenForId !== null && !isReadOnly ? (
+      {linkPickerOpenForId !== null && linkTarget && linkPickable(linkTarget) ? (
         <LinkPickerDialog
           title={linkTarget?.type === 'video' ? 'Link embed' : 'Link element'}
           urlOnly={urlOnly}
+          screens={screens}
+          screenOnly={isReadOnly}
           currentLink={linkTarget?.link ?? null}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
@@ -175,7 +194,15 @@ export function EditorElementDialogs() {
               track(
                 'Element',
                 'Linked',
-                link.kind === 'url' ? 'Url' : link.kind === 'design' ? 'Design' : 'Tab',
+                link.kind === 'url'
+                  ? 'Url'
+                  : link.kind === 'design'
+                    ? 'Design'
+                    : link.kind === 'page'
+                      ? 'Screen'
+                      : link.kind === 'back'
+                        ? 'ScreenBack'
+                        : 'Tab',
               );
           }}
           onClose={() => setLinkPickerOpenForId(null)}

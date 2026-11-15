@@ -270,7 +270,7 @@ describe('bare help-article paths', () => {
   it("lists exactly the editor's route segments in the spec's live page routes row", async () => {
     // The spec's table is prose, so it kept `/drive/*` for weeks after the old Drive mirror's pages left the
     // editor. Pin its row to the set the router actually routes by. `explorer` has its own row (liveworkspace's), and
-    // so does `form` (old form links, sent on to liveplanner before the editor sees them).
+    // `form` is kept only so a form code never reaches telemetry (page-views.ts).
     const { LIVE_ROUTE_SEGMENTS } = await import('@livehuddle/api-schema');
     const spec = readFileSync(
       fileURLToPath(
@@ -629,12 +629,10 @@ describe('the bare domain', () => {
       '/getting-started/first-steps?x=1',
       '/tools',
       '/troubleshooting/',
-      '/diagram/abc?tab=2',
       '/help/tabs/add-to-diagram',
       '/getting-started/',
       '/status',
       '/telemetry',
-      '/form/AbC123?embed=1',
     ]) {
       const first = await on('livehuddle.app', path, env);
       expect(REDIRECTS.has(first.status), path).toBe(true);
@@ -643,12 +641,6 @@ describe('the bare domain', () => {
       const second = await router.fetch(new Request(next), env);
       expect(REDIRECTS.has(second.status), `${path} -> ${next.href}`).toBe(false);
     }
-  });
-
-  it('sends an old form link straight to liveplanner, not through www. first', async () => {
-    const { env } = makeEnv();
-    const res = await on('livehuddle.app', '/form/AbC123?embed=1', env);
-    expect(res.headers.get('Location')).toBe('https://www.liveplanner.app/form/AbC123?embed=1');
   });
 
   it('leaves the api, the sign-in callback, WebSockets and other methods on the bare domain', async () => {

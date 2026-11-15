@@ -10,13 +10,18 @@ import {
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
-import type { ElementLink } from '@livedesign/design';
+import { isScreenLink, type ElementLink } from '@livedesign/design';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
+import type { ScreenChoice } from '@/lib/screen-link-choices';
+import type { LinkPickerMode } from '@/hooks/canvas/useElementLinks';
+import { RowButton } from './link-picker-rows';
+import { ScreenLinkMode } from './ScreenLinkMode';
 
 // Shared link picker, styled like the import / export dialogs (centred
 // modal, brand chrome). Used for BOTH element links and per-cell table
-// links (docs/specs/008-canvas/canvas-and-palette.md). Three modes — link to a Tab, another Design, or an
-// external URL — plus a Remove action when a link already exists.
+// links (docs/specs/008-canvas/canvas-and-palette.md). Three modes (link to a Tab, another Design, or an
+// external URL), plus a Remove action when a link already exists. On a wireframe tab a fourth, Screen, comes first
+// (docs/specs/007-editor/wireframe-pages.md "Setting a link").
 //
 // Generic by design: the dialog builds the chosen `ElementLink` and
 // hands it back via `onCommit` (null = remove). The caller decides where
@@ -39,7 +44,13 @@ type LinkPickerDialogProps = {
   // Pre-select a mode (the context menu's split Link entries open the modal
   // straight onto webpage / tab / design). Falls back to the current link's
   // kind, then 'url', when unset.
-  initialMode?: 'tab' | 'design' | 'url';
+  initialMode?: LinkPickerMode;
+  // A wireframe tab's screens (docs/specs/007-editor/wireframe-pages.md "Setting a link"): present, the dialog
+  // offers a Screen mode first and opens on it unless the element holds a link of another kind. Absent (another
+  // kind of tab, or someone who may not link the element), the Screen mode is not offered.
+  screens?: readonly ScreenChoice[];
+  // The Screen mode alone, no switcher: a Participant's, on its own element.
+  screenOnly?: boolean;
   // Restricts the dialog to the URL mode, with caller-supplied copy and
   // validation. For an element whose link IS its content — a video's YouTube
   // URL (docs/specs/009-elements/youtube-video.md) — the tab and design modes are not a narrower choice, they
@@ -62,13 +73,33 @@ type UrlOnlyConfig = {
   validate: (url: string) => string | null;
 };
 
-type Mode = 'tab' | 'design' | 'url';
+type Mode = LinkPickerMode;
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'url', label: 'External URL' },
   { id: 'tab', label: 'Tab' },
   { id: 'design', label: 'Design' },
 ];
+const SCREEN_MODE: { id: Mode; label: string } = { id: 'screen', label: 'Screen' };
+
+/** The mode the dialog opens on: the caller's, else the current link's, else Screen on a wireframe tab, else URL. */
+export function initialLinkPickerMode(input: {
+  currentLink: ElementLink | null;
+  initialMode?: Mode;
+  urlOnly: boolean;
+  hasScreens: boolean;
+  screenOnly: boolean;
+}): Mode {
+  const { currentLink, hasScreens } = input;
+  if (input.urlOnly) return 'url';
+  if (input.screenOnly && hasScreens) return 'screen';
+  const asked = input.initialMode === 'screen' && !hasScreens ? undefined : input.initialMode;
+  if (asked) return asked;
+  if (currentLink?.kind === 'design') return 'design';
+  if (currentLink?.kind === 'tab' || currentLink?.kind === 'element') return 'tab';
+  if (hasScreens && (!currentLink || isScreenLink(currentLink))) return 'screen';
+  return 'url';
+}
 
 export function LinkPickerDialog({
   title,
@@ -78,20 +109,25 @@ export function LinkPickerDialog({
   recentDesigns,
   initialMode,
   urlOnly,
+  screens,
+  screenOnly = false,
   onCommit,
   onClose,
 }: LinkPickerDialogProps) {
-  // A caller-requested mode wins; otherwise open on the existing link's mode,
-  // else External URL.
-  const [mode, setMode] = useState<Mode>(
-    (urlOnly ? 'url' : undefined) ??
-      initialMode ??
-      (currentLink?.kind === 'design'
-        ? 'design'
-        : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
-          ? 'tab'
-          : 'url'),
+  const hasScreens = !!screens && !urlOnly;
+  const onlyScreens = hasScreens && screenOnly;
+  // A caller-requested mode wins; otherwise open on the existing link's mode, else Screen on a wireframe tab, else
+  // External URL.
+  const [mode, setMode] = useState<Mode>(() =>
+    initialLinkPickerMode({
+      currentLink,
+      initialMode,
+      urlOnly: !!urlOnly,
+      hasScreens,
+      screenOnly: onlyScreens,
+    }),
   );
+  const modes = hasScreens ? [SCREEN_MODE, ...MODES] : MODES;
   const [urlInput, setUrlInput] = useState(currentLink?.kind === 'url' ? currentLink.url : '');
   // The validation message for what's typed so far, or null. Computed rather
   // than held in state so it can't go stale against the field.
@@ -121,7 +157,13 @@ export function LinkPickerDialog({
       <DialogHeader
         title={title}
         subtitle={
-          urlOnly ? urlOnly.subtitle : 'Jump to a tab, open another design, or go to a web address.'
+          urlOnly
+            ? urlOnly.subtitle
+            : onlyScreens
+              ? 'Pick the screen pressing this element goes to in Prototype mode.'
+              : hasScreens
+                ? 'Go to another screen, jump to a tab, open another design, or go to a web address.'
+                : 'Jump to a tab, open another design, or go to a web address.'
         }
       >
         {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
@@ -136,9 +178,9 @@ export function LinkPickerDialog({
 
       {/* Mode switcher — hidden entirely when the caller restricts to a URL:
           a one-button switcher is a control that can't do anything. */}
-      {urlOnly ? null : (
+      {urlOnly || onlyScreens ? null : (
         <div className="flex gap-1 border-b border-slate-100 px-6 py-3 dark:border-slate-800">
-          {MODES.map((m) => (
+          {modes.map((m) => (
             <button
               key={m.id}
               type="button"
@@ -157,7 +199,9 @@ export function LinkPickerDialog({
       )}
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
-        {mode === 'tab' ? (
+        {mode === 'screen' && screens ? (
+          <ScreenLinkMode screens={screens} currentLink={currentLink} onCommit={commit} />
+        ) : mode === 'tab' ? (
           <ul className="flex flex-col gap-1">
             {tabs.map((t) => (
               <li key={t.id}>
@@ -263,43 +307,6 @@ export function LinkPickerDialog({
   );
 }
 
-function RowButton({
-  active,
-  icon,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  icon?: React.ReactNode;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        active
-          ? 'flex w-full items-center gap-2.5 rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 text-left text-sm font-medium text-brand-800 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
-          : 'flex w-full items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
-      }
-    >
-      <span
-        className={
-          active
-            ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200'
-            : 'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
-        }
-      >
-        {icon}
-      </span>
-      <span className="flex min-w-0 flex-1 items-center">{children}</span>
-      {active ? <CheckGlyph /> : null}
-    </button>
-  );
-}
-
 function TabGlyph() {
   return (
     <Glyph size={14} units={16} strokeLinecap="butt">
@@ -314,14 +321,6 @@ function DesignGlyph() {
       <rect x="2" y="2.5" width="5" height="4" rx="1" />
       <rect x="9" y="9.5" width="5" height="4" rx="1" />
       <path d="M4.5 6.5v3.5a1 1 0 0 0 1 1H9" />
-    </Glyph>
-  );
-}
-
-function CheckGlyph() {
-  return (
-    <Glyph size={14} units={16} className="shrink-0">
-      <path d="M3.5 8.5l3 3 6-6.5" />
     </Glyph>
   );
 }

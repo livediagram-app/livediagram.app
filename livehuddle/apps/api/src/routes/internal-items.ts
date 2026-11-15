@@ -102,9 +102,8 @@ export function handleInternalItems(
       },
       // A closed account, wherever it was closed: what livehuddle keeps for them beside their canvases.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),
-      // A guest who became an account: what livehuddle keeps for the guest becomes the account's. A returning guest
-      // of the old site (`legacy`, docs/migration.md step 6) may merge into another guest: the same moves, since
-      // every one of them is keyed by any owner id (the media owner of a guest is its hash, `mediaOwner`).
+      // A guest who became an account: what livehuddle keeps for the guest becomes the account's, keyed by any owner
+      // id (the media owner of a guest is its hash, `mediaOwner`).
       personMerged: (guestId, intoId) => mergeGuest(env, guestId, intoId),
       // Their name off each canvas of someone else's that names them, and their visits as the guests they signed in
       // from (docs/specs/012-collaboration/tab-attendance.md "Closing an account").

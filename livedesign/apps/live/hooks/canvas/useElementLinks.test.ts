@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLinkCard, createShape, type Element, type Tab } from '@livedesign/design';
 
@@ -65,5 +65,45 @@ describe('useElementLinks follow', () => {
     const setActiveId = vi.fn();
     links('box', setActiveId).followLink({ kind: 'tab', tabId: 't' });
     expect(setActiveId).toHaveBeenCalledWith('t');
+  });
+});
+
+// docs/specs/007-editor/wireframe-pages.md "Setting a link": the link handle's drop links that element alone.
+describe('useElementLinks linkElementToScreen', () => {
+  const deps = (commit: (map: (els: Element[]) => Element[]) => void) => ({
+    currentSelectionIds: () => new Set(['other']),
+    commit,
+    tabs: [],
+    setActiveId: () => {},
+    setSelectedId: () => {},
+    setEditingId: () => {},
+    setFormatSourceId: () => {},
+    openDesign: () => {},
+  });
+
+  it('links the dropped element only, keeping its transition, and counts it', async () => {
+    const { track } = await import('@/lib/telemetry');
+    let els: Element[] = [
+      { ...square, link: { kind: 'back', transition: 'slide' } },
+      { ...createShape('square', 0, 0), id: 'other' },
+    ];
+    const { result } = renderHook(() =>
+      useElementLinks(
+        deps((map) => {
+          els = map(els);
+        }),
+      ),
+    );
+    result.current.linkElementToScreen('box', 'page-2');
+    expect(els[0]!.link).toEqual({ kind: 'page', pageId: 'page-2', transition: 'slide' });
+    expect(els[1]!.link).toBeUndefined();
+    expect(track).toHaveBeenCalledWith('Element', 'Linked', 'Screen');
+  });
+
+  it('opens the picker on the Screen mode', () => {
+    const { result } = renderHook(() => useElementLinks(deps(() => {})));
+    act(() => result.current.openLinkPicker('box', 'screen'));
+    expect(result.current.linkPickerOpenForId).toBe('box');
+    expect(result.current.linkPickerInitialMode).toBe('screen');
   });
 });

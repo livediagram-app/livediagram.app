@@ -7,6 +7,7 @@ import {
   CanvasElementsLayer,
   type CanvasElementsLayerProps,
 } from '@/components/canvas/CanvasElementsLayer';
+import { ScreenLinkPagesProvider } from './screen-link-pages';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ElementIndicatorStyleProvider } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';
@@ -179,21 +180,30 @@ export function CanvasWorldLayer({
       (docs/specs/008-canvas/canvas-performance.md). */}
         <CanvasZoomProvider zoom={viewportZoom}>
           <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
-            <CanvasElementsLayer
-              {...props}
-              readOnly={readOnly || inspecting}
-              elements={pathTool.elements}
-              hasArrows={hasArrows}
-              arrowLabels={arrowLabels}
-              selectionInput={selectionInput}
-              isPaintMode={isPaintMode}
-              handleArrowSelect={handleArrowSelect}
-              handleElementClick={handleElementClick}
-              handleElementContextSelect={handleElementContextSelect}
-              quickRingOpen={quickRingOpen}
-              setQuickRingOpen={setQuickRingOpen}
-              drawDrag={drawDrag}
-            />
+            {/* The tab's pages for the screen link markers (docs/specs/007-editor/wireframe-pages.md "Setting a
+                link"), in a store so a page edit re-renders only the linked elements. */}
+            <ScreenLinkPagesProvider
+              pages={props.pagesMode?.pages}
+              focusPage={props.pagesMode?.focusPage}
+              pick={props.onPickScreenLink}
+              canLink={props.canLinkScreens}
+            >
+              <CanvasElementsLayer
+                {...props}
+                readOnly={readOnly || inspecting}
+                elements={pathTool.elements}
+                hasArrows={hasArrows}
+                arrowLabels={arrowLabels}
+                selectionInput={selectionInput}
+                isPaintMode={isPaintMode}
+                handleArrowSelect={handleArrowSelect}
+                handleElementClick={handleElementClick}
+                handleElementContextSelect={handleElementContextSelect}
+                quickRingOpen={quickRingOpen}
+                setQuickRingOpen={setQuickRingOpen}
+                drawDrag={drawDrag}
+              />
+            </ScreenLinkPagesProvider>
           </ElementIndicatorStyleProvider>
         </CanvasZoomProvider>
       </CanvasArrivalProvider>

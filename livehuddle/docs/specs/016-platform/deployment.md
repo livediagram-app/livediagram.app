@@ -85,7 +85,7 @@ The root `deploy.yml` (reusable) deploys one environment, and two thin callers r
 There is no database migration step: each Durable Object makes its own schema the first time it is used. The apps' workers deploy separately, so old and new versions briefly serve side by side. The deploy keeps that window short and recoverable:
 
 - The api deploys a tier before the editor, so a new editor never calls an api that lacks its routes, and the router deploys last, after the four it binds.
-- The editor serves its old address during the overlap ([Router app](router-app.md#legacy-editor-route)), and a save that fails in the window is retried on its own ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
+- A save that fails in the window is retried on its own ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
 
 ## Hosted profile
 

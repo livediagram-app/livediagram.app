@@ -87,7 +87,7 @@ const inboxAssigneesOf = (
     actionId: fieldId === 'assignee' ? item.id : `${item.id}~${fieldId}`,
   }));
 
-function parseElements(data: string): Element[] {
+export function parseElements(data: string): Element[] {
   try {
     const body = JSON.parse(data) as { elements?: unknown };
     return Array.isArray(body.elements) ? (body.elements as Element[]) : [];
@@ -96,7 +96,7 @@ function parseElements(data: string): Element[] {
   }
 }
 
-function parseTypes(raw: string | null): ItemTypeCatalogue | null {
+export function parseTypes(raw: string | null): ItemTypeCatalogue | null {
   if (!raw) return null;
   try {
     return JSON.parse(raw) as ItemTypeCatalogue;

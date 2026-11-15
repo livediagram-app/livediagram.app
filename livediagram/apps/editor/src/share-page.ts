@@ -11,7 +11,7 @@ export const SHARE_PITCH =
 
 export const { isSharePagePath, sharePage } = createSharePage({
   app: 'livediagram',
-  pagePath: /^\/(?:document|diagram)\/shared\/?$/,
+  pagePath: /^\/document\/shared\/?$/,
   untitled: 'Untitled canvas',
   pitch: SHARE_PITCH,
 });
