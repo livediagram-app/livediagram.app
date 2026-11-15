@@ -21,6 +21,9 @@ const HELD_AT_100 = [
   'src/lib/api/tab-delta-save.ts',
   'src/lib/api/tab-drafts.ts',
   'src/lib/api/tab-draft-store.ts',
+  // The last seen copy a cloud item warm-opens from (Work Tracker 890).
+  'src/lib/api/last-seen-copies.ts',
+  'src/lib/api/last-seen-store.ts',
   'src/lib/api/tab-saved.ts',
   'src/hooks/persistence/useTabDrafts.ts',
   'src/lib/api/xhr-fetch.ts',

@@ -6,6 +6,7 @@
 // (true) or ended on a gate, a not-found or an error screen (false). The specs, in each product's docs/specs:
 // 013-workspace/share-password.md, trash.md, tab-scoped-share-links.md and 025-community/community.md.
 import { indexClient } from './index-client';
+import type { LastSeenDoors, LastSeenFirstTab, LastSeenInput } from './api/last-seen-copies';
 
 /** What a load answers for an item: enough to tell its owner and to address it. */
 export type ArrivalItem = { id: string; ownerId: string };
@@ -66,6 +67,9 @@ export type ArrivalProduct<
   // A link's own address names no item: the address to put in the bar for the one it opened, or null to keep it.
   // Left out, the bar keeps the link's address.
   sharedAddress?: (itemId: string) => string | null;
+  // The last seen copy (the product's offline-mode.md "Warm open of a cloud document"): kept when a load reaches the
+  // item, forgotten when the reader lost it. Left out, no copy is kept.
+  lastSeen?: LastSeenDoors<Item>;
 };
 
 /** The setters an arrival writes through, under neutral names. */
@@ -90,7 +94,8 @@ export type ArrivalSetters<Role, Community> = {
   setIdentityPromptOpen: (open: boolean) => void;
 };
 
-/** One run's side: who is reading, its seed (tab seeding, name and owner fields) and its guarded setters. */
+/** One run's side: who is reading, its seed (tab seeding, name and owner fields) and its guarded setters. The seed
+ *  may answer the first tab it painted, for the last seen copy. */
 export type ArrivalRun<Item, Role, Community> = {
   self: { id: string };
   seed: (
@@ -98,7 +103,7 @@ export type ArrivalRun<Item, Role, Community> = {
     item: Item,
     shareCode: string | null,
     scopeTabId: string | null,
-  ) => Promise<void>;
+  ) => Promise<void | LastSeenFirstTab<unknown> | null>;
   set: ArrivalSetters<Role, Community>;
 };
 
@@ -109,6 +114,22 @@ export async function isTrashedInIndex(id: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// The last seen copy's doors, started and never awaited: the store answers on its own time and never holds the load.
+function keepCopy<Item>(
+  doors: LastSeenDoors<Item> | undefined,
+  copy: LastSeenInput<Item, unknown>,
+) {
+  void doors?.remember(copy).catch(() => {});
+}
+// The reader lost the item the address names: its copy goes. An address that names none has no copy to forget.
+function forgetCopy<Item>(
+  doors: LastSeenDoors<Item> | undefined,
+  reader: string,
+  id: string | null,
+) {
+  if (id) void doors?.forget(reader, id).catch(() => {});
 }
 
 // A load that ended short of the item: the screen is up, the opening screen goes.
@@ -153,8 +174,10 @@ export async function openShareLink<
     // Couldn't reach the server to resolve the share link (network / 5xx). Retryable, so show the error page
     // instead of the "link revoked / item gone" NotFound below. Unless the link's item is in the Trash
     // (docs/specs/013-workspace/trash.md): the visitor sees that it was deleted.
-    if (product.isTrashedError(err)) set.setTrashed(true);
-    else set.setLoadError(true);
+    if (product.isTrashedError(err)) {
+      set.setTrashed(true);
+      forgetCopy(product.lastSeen, self.id, id);
+    } else set.setLoadError(true);
     return endShort(product, set);
   }
   if (!resolution) {
@@ -162,6 +185,7 @@ export async function openShareLink<
     // visitor still had the link. A NotFound page, so the visitor sees an explicit error instead of a silent blank
     // canvas (which used to read as "it loaded but is empty").
     set.setNotFound(true);
+    forgetCopy(product.lastSeen, self.id, id);
     return endShort(product, set);
   }
   if ('passwordRequired' in resolution) {
@@ -175,6 +199,8 @@ export async function openShareLink<
       password.writeCached(shareCodeParam, null);
       password.setSession(null);
     }
+    // A copy never shows behind the gate.
+    forgetCopy(product.lastSeen, self.id, id);
     set.setSharePasswordGate({ invalid: resolution.invalid });
     set.setLoading(false);
     set.setNameConfirmed(product.hasConfirmedName());
@@ -198,7 +224,7 @@ export async function openShareLink<
   // refuses any other (docs/specs/013-workspace/tab-scoped-share-links.md).
   set.setSessionTabScope(scopeTabId);
   product.setLoadStep('first-tab');
-  await seed(self.id, fetched, session.sessionShareCode, scopeTabId);
+  const firstTab = await seed(self.id, fetched, session.sessionShareCode, scopeTabId);
   // A share link always opens a server item: it has a room.
   set.setServerStored(true);
   set.setItemId(fetched.id);
@@ -231,6 +257,22 @@ export async function openShareLink<
   if (!session.isOwner && community === null && !product.hasConfirmedName()) {
     set.setIdentityPromptOpen(true);
   }
+  // A Community post and an embed are read-only views opened from elsewhere: they keep no copy.
+  if (community === null && !embed) {
+    keepCopy(product.lastSeen, {
+      reader: self.id,
+      itemId: fetched.id,
+      item: fetched,
+      firstTab: firstTab ?? null,
+      via: shareCodeParam,
+      access: {
+        role: String(session.sessionRole),
+        isOwner: session.isOwner,
+        sessionShareCode: session.sessionShareCode,
+        tabScope: scopeTabId,
+      },
+    });
+  }
   // Joined is counted by the api worker when it resolves the share code, once per (visitor, item)
   // (docs/specs/017-telemetry/telemetry.md). Emitting here counted every refresh and return visit.
   return true;
@@ -260,8 +302,10 @@ export async function openOwnAddress<
     // would wrongly say the item doesn't exist. An item in the Trash (docs/specs/013-workspace/trash.md) is
     // neither: it gets the deleted card.
     set.setItemId(id);
-    if (product.isTrashedError(err)) set.setTrashed(true);
-    else set.setLoadError(true);
+    if (product.isTrashedError(err)) {
+      set.setTrashed(true);
+      forgetCopy(product.lastSeen, self.id, id);
+    } else set.setLoadError(true);
     return endShort(product, set);
   }
   if (!fetched) {
@@ -271,12 +315,13 @@ export async function openOwnAddress<
     set.setItemId(id);
     if (await isTrashedInIndex(id)) set.setTrashed(true);
     else set.setNotFound(true);
+    forgetCopy(product.lastSeen, self.id, id);
     return endShort(product, set);
   }
   // Tab seeding, name and owner fields (shared with the share link above). The owner's eager first-tab fetch
   // presents no share code.
   product.setLoadStep('first-tab');
-  await seed(self.id, fetched, null, null);
+  const firstTab = await seed(self.id, fetched, null, null);
   // An offline item (the product's offline-mode.md) is yours by construction: its ownerId is the local
   // sentinel, never a participant id, so without this it would wrongly get visitor chrome (Make a copy, the owner
   // badge row).
@@ -286,7 +331,8 @@ export async function openOwnAddress<
   set.setServerStored(!offline);
   // The owner's chrome goes to whoever holds edit on the item without a link: its owner, or a member of the team
   // that owns it. The index decides that, so a guest's items stay theirs once the guest becomes an account.
-  set.setIsOwner(offline || (await product.grant(fetched.id))?.level === 'edit');
+  const isOwner = offline || (await product.grant(fetched.id))?.level === 'edit';
+  set.setIsOwner(isOwner);
   set.setSessionRole('edit');
   // The own address: a signed-in user is the owner here and their identity is settled, so no identity prompt.
   // Guests fall back to the local gate so they still get the one-time naming nudge.
@@ -294,5 +340,16 @@ export async function openOwnAddress<
     set.setIdentityPromptOpen(true);
   }
   set.setItemId(id);
+  // This Browser's items open from this browser already: only a server item keeps a copy.
+  if (!offline) {
+    keepCopy(product.lastSeen, {
+      reader: self.id,
+      itemId: id,
+      item: fetched,
+      firstTab: firstTab ?? null,
+      via: null,
+      access: { role: 'edit', isOwner, sessionShareCode: null, tabScope: null },
+    });
+  }
   return true;
 }

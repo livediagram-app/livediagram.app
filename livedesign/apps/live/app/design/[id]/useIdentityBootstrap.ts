@@ -148,7 +148,7 @@ export function useIdentityBootstrap(opts: {
     });
     // The seed writes refs too (the saved tabs, the loaded ids): a superseded run never starts one.
     const seedFetchedDesign: typeof seedOnce = async (...args) => {
-      if (live()) await seedOnce(...args);
+      return live() ? seedOnce(...args) : null;
     };
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once auth has settled we
     // know whether this open is a guest or a signed-in user. Fire-and-

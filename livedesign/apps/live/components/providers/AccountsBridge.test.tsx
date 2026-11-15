@@ -15,6 +15,9 @@ vi.mock('@liveworkspace/auth-client/silent', () => ({ retrySilentSignIn }));
 import type { DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
 
 vi.mock('@/lib/recent-designs-snapshot', () => ({ forgetRecentDesigns: vi.fn(async () => {}) }));
+// The last seen copies a cloud design warm-opens from are the account's (offline-mode.md "Warm open of a cloud design").
+const forgetAll = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock('@/lib/last-seen', () => ({ lastSeenCopies: { forgetAll } }));
 
 const { AccountsBridge, namesOf, resetAccountsSessionForTests } = await import('./AccountsBridge');
 const { notePictureSettingSaved, ownPicture, resetOwnPicture, tokenPredatesPictureSetting } =
@@ -37,6 +40,7 @@ function signedIn(token: string, expiresInMs = 3_600_000) {
 }
 
 beforeEach(() => {
+  forgetAll.mockClear();
   resetAccountsSessionForTests();
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
@@ -186,6 +190,7 @@ describe('AccountsBridge', () => {
       expect.objectContaining({ method: 'POST' }),
     );
     expect(assign).toHaveBeenCalledWith('/explorer');
+    expect(forgetAll).toHaveBeenCalledTimes(1);
     // The held token went with the session.
     fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false}', { status: 401 }));
     expect(await state.getToken()).toBeNull();
@@ -219,6 +224,7 @@ describe('AccountsBridge', () => {
       expect.objectContaining({ method: 'POST' }),
     );
     expect(assign).not.toHaveBeenCalled();
+    expect(forgetAll).toHaveBeenCalled();
   });
 });
 

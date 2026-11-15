@@ -15,6 +15,7 @@ import {
   type ShareRole,
 } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { lastSeenCopies } from '@/lib/last-seen';
 import type { Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { setLoadStep } from '@/lib/load-progress';
@@ -87,6 +88,8 @@ export const DESIGN_ARRIVAL: ArrivalProduct<
   communitySession: (post, ownDesignId) => ({ ...post, ownDesignId }),
   grant: designGrant,
   offlineOwnerId: OFFLINE_OWNER_ID,
+  // The last seen copy a later open warm-opens from (offline-mode.md "Warm open of a cloud design").
+  lastSeen: lastSeenCopies,
   sharedAddress: (id) => `/design/${encodeURIComponent(id)}`,
 };
 
