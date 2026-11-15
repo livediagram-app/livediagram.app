@@ -5,7 +5,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createImage, createShape, type Element, type ImageElement } from '@livedocuments/document';
-import { ImagePictureControls, withImageGreyscale, withImageMask } from './ImagePictureControls';
+import { withImageGreyscale, withImageMask } from '@livedocuments/document';
+import { ImagePictureControls } from './ImagePictureControls';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 afterEach(cleanup);

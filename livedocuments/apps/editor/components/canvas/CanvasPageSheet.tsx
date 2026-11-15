@@ -1,7 +1,7 @@
 'use client';
 
 import { pageImageBlurSigma } from '@livedocuments/document';
-import { useBlurredPageImage } from '@/hooks/canvas/useBlurredPageImage';
+import { useBlurredPageImage } from '@liveworkspace/workbench/hooks/canvas/useBlurredPageImage';
 import { pageImageSrc } from '@/lib/page-image-paint';
 import { memo } from 'react';
 import { FirstPageChoice } from './FirstPageChoice';

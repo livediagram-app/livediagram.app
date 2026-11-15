@@ -14,7 +14,7 @@
 // rendering.
 
 import { imageIsShaped, imageLayout, imageMaskPath, isImageMask } from '@livedocuments/document';
-import { canvasFilters, greyCopy } from './image-greyscale';
+import { canvasFilters, greyCopy } from '@liveworkspace/workbench/lib/image-greyscale';
 import { type CanvasSurface, type BoxedElement } from '@livedocuments/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
 // MCP worker reuses the same element drawing. The canvas / backdrop

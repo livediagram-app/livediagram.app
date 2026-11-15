@@ -2,6 +2,7 @@
 // the fill's shape, how a stored one is read, the tone the page reads as under its overlay, and the
 // gallery images a tab's pages name. Pure, shared by the editor, the exports, the api's image
 // reference index and the agents' page summaries.
+import { parsePageImageBlur } from '@liveworkspace/page-background/image-blur';
 import { isImageCredit, type ImageCredit } from './image-credit';
 
 // The overlays over the picture, under everything on the page.
@@ -32,25 +33,13 @@ export type PageImageFill = {
   preview?: string;
 };
 
-// A Blur of 100%: a Gaussian blur of this share of the page's shorter side (docs/specs/007-editor/pages-mode.md
-// "Image backgrounds").
-export const PAGE_IMAGE_BLUR_MAX = 0.04;
-
-/** A stored blur, clamped to 0..1 in steps of 0.05; undefined for none or a non-number. */
-export function parsePageImageBlur(v: unknown): number | undefined {
-  if (typeof v !== 'number' || !Number.isFinite(v)) return undefined;
-  const b = Math.round(Math.min(1, Math.max(0, v)) * 20) / 20;
-  return b > 0 ? b : undefined;
-}
-
-/** The blur's standard deviation in page px for a page of `rect`'s size; 0 for a sharp picture. */
-export function pageImageBlurSigma(
-  fill: Pick<PageImageFill, 'blur'>,
-  rect: { width: number; height: number },
-): number {
-  const b = parsePageImageBlur(fill.blur);
-  return b ? b * PAGE_IMAGE_BLUR_MAX * Math.min(rect.width, rect.height) : 0;
-}
+// Blur (docs/specs/007-editor/pages-mode.md "Image backgrounds"): the stored value's rules are livedesign's too, so
+// they live in @liveworkspace/page-background/image-blur and are re-exported here.
+export {
+  PAGE_IMAGE_BLUR_MAX,
+  pageImageBlurSigma,
+  parsePageImageBlur,
+} from '@liveworkspace/page-background/image-blur';
 
 // The most an overlay covers: always some picture shows through.
 export const PAGE_IMAGE_OVERLAY_MAX = 0.9;

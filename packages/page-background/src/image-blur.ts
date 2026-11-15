@@ -1,8 +1,42 @@
-// The pure half of a page picture's Blur (docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur): the copy's
-// size and its own blur, three box passes per axis with the picture's edges held, shared by the worker that makes the
-// copy off the main thread (page-image-blur.worker.ts) and the main-thread fallback (page-image-blur.ts). No DOM.
+// A page picture's Blur (docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur, in livedocuments and
+// livedesign): how strong a stored blur is on a page, and the pure half of the blurred copy the canvas paints, its size
+// and its own blur, three box passes per axis with the picture's edges held. Shared by both products' page models
+// (which re-export the stored value's rules), the worker that makes the copy off the main thread
+// (image-blur-worker.ts) and the main-thread fallback (@liveworkspace/workbench/lib/page-image-blur). No DOM but the
+// canvas types.
 
-// The copy's long side bounds, in px (D255).
+// A Blur of 100%: a Gaussian blur of this share of the page's shorter side.
+export const PAGE_IMAGE_BLUR_MAX = 0.04;
+
+/** A stored blur, clamped to 0..1 in steps of 0.05; undefined for none or a non-number. */
+export function parsePageImageBlur(v: unknown): number | undefined {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return undefined;
+  const b = Math.round(Math.min(1, Math.max(0, v)) * 20) / 20;
+  return b > 0 ? b : undefined;
+}
+
+/** The blur's standard deviation in page px for a page of `rect`'s size; 0 for a sharp picture. */
+export function pageImageBlurSigma(
+  fill: { blur?: number },
+  rect: { width: number; height: number },
+): number {
+  const b = parsePageImageBlur(fill.blur);
+  return b ? b * PAGE_IMAGE_BLUR_MAX * Math.min(rect.width, rect.height) : 0;
+}
+
+/** Make the blurred copy of the picture at `src` for a page of `page` size, blurred by `sigma` page px: what the page
+ *  asks the worker. */
+export type BlurCopyRequest = {
+  id: number;
+  src: string;
+  page: { width: number; height: number };
+  sigma: number;
+};
+
+/** The copy as a JPEG, or why it could not be made (the page then makes it itself). */
+export type BlurCopyResponse = { id: number; blob: Blob } | { id: number; failed: string };
+
+// The copy's long side bounds, in px (livedocuments' D255, livedesign's D198).
 export const BLUR_COPY_MIN = 96;
 export const BLUR_COPY_MAX = 1024;
 // The copy's blur in its own px aimed for: enough to look smooth when the copy is drawn up to the page.

@@ -80,7 +80,7 @@ export type BoxedElementViewProps = {
     // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md); an Editor's only.
     onCommitImageCrop?: (
       elementId: string,
-      result: import('@/lib/image-crop-math').CropResult,
+      result: import('@liveworkspace/workbench/lib/image-crop-math').CropResult,
     ) => void;
   };
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.

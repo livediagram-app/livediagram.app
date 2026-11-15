@@ -1,7 +1,7 @@
 // One boxed element as an export draws it (docs/specs/015-api/mcp-server.md §5), split out of svg-render.ts:
 // its face (svgBoxedFace) and the finish pass over it (svgBoxed). svg-render.ts re-exports svgBoxed.
 
-import { isImageMask } from './image-frame';
+import { isImageMask } from '@liveworkspace/element-model/image-frame';
 import { svgTabWindow } from './tab-window';
 import {
   hasShapeSilhouette,

@@ -14,7 +14,7 @@ import type {
 import type { ResolveTabWindow } from './tab-window';
 import type { TagColour } from './tag-colours';
 import { imageCornerPx } from './drawn-outline-finish';
-import { imageDrawsCover } from './image-frame';
+import { imageDrawsCover } from '@liveworkspace/element-model/image-frame';
 import {
   defaultFillColor,
   defaultPadding,

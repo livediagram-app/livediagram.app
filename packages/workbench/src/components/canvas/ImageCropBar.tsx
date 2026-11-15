@@ -1,11 +1,12 @@
 'use client';
 
-// The crop bar (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor"): fixed at the foot of
+// The crop bar (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor", in livedocuments and
+// livedesign): fixed at the foot of
 // the screen while an image is cropped, the same size at any zoom and on a phone. Aspect, Zoom, then Reset,
 // Cancel and Done.
-import { Button, Portal, Tooltip, safeInset } from '@livedocuments/ui';
-import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
-import { IMAGE_CROP_ZOOM_MAX } from '@/lib/image-crop-math';
+import { Button, Portal, Tooltip, safeInset } from '@liveworkspace/ui';
+import { SegmentedRadio } from '../primitives/SegmentedRadio';
+import { IMAGE_CROP_ZOOM_MAX } from '../../lib/image-crop-math';
 
 export type CropAspect = 'free' | 'original' | 'square' | '4:3' | '16:9';
 export const CROP_ASPECTS: readonly { id: CropAspect; label: string }[] = [

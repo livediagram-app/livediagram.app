@@ -30,7 +30,7 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { cleanImageAlt, createImage, isBoxed, type Element } from '@livedocuments/document';
 import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
-import type { CropResult } from '@/lib/image-crop-math';
+import type { CropResult } from '@liveworkspace/workbench/lib/image-crop-math';
 import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';

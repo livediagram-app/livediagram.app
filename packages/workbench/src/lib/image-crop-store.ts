@@ -1,5 +1,5 @@
 // The one image being cropped on the canvas (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the
-// editor"): an id or none. A small external store so the menu that starts a crop, the image's face that draws the
+// editor", in livedocuments and livedesign): an id or none. A small external store so the menu that starts a crop, the image's face that draws the
 // crop overlay and the element wrapper that hides its handles agree without threading a prop through the canvas.
 import { useSyncExternalStore } from 'react';
 

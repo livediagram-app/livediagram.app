@@ -1,14 +1,15 @@
-import { BLUR_JPEG_QUALITY, blurCopyPlan, paintBlurredCopy } from './page-image-blur-core';
-import type { BlurCopyRequest, BlurCopyResponse } from './page-image-blur-protocol';
-
-// The page picture Blur's worker (docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur): it fetches the
-// picture, decodes it, draws it small on an OffscreenCanvas, blurs it and encodes the JPEG, all off the main thread,
-// so letting go of a stronger Blur on a large picture never holds the editor (it took up to about 130 ms there).
-
-const scope = self as unknown as {
-  postMessage: (message: BlurCopyResponse) => void;
-  addEventListener: (type: 'message', fn: (e: MessageEvent<BlurCopyRequest>) => void) => void;
-};
+// The page picture Blur's worker side (docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur, in livedocuments
+// and livedesign): it fetches the picture, decodes it, draws it small on an OffscreenCanvas, blurs it and encodes the
+// JPEG, all off the main thread, so letting go of a stronger Blur on a large picture never holds the editor (it took up
+// to about 130 ms there). Each editor's own worker entry (lib/page-image-blur.worker.ts) calls serveBlurCopies, so the
+// bundler sees the worker beside the code that starts it.
+import {
+  BLUR_JPEG_QUALITY,
+  blurCopyPlan,
+  paintBlurredCopy,
+  type BlurCopyRequest,
+  type BlurCopyResponse,
+} from './image-blur';
 
 /** One copy: the picture at `src` fetched and blurred for `page` by `sigma`, as a JPEG. */
 export async function makeBlurCopy({
@@ -31,9 +32,18 @@ export async function makeBlurCopy({
   }
 }
 
-scope.addEventListener('message', ({ data }) => {
-  void makeBlurCopy(data).then(
-    (blob) => scope.postMessage({ id: data.id, blob }),
-    (err: unknown) => scope.postMessage({ id: data.id, failed: String(err) }),
-  );
-});
+/** What a worker's global scope offers here. */
+export type BlurWorkerScope = {
+  postMessage: (message: BlurCopyResponse) => void;
+  addEventListener: (type: 'message', fn: (e: MessageEvent<BlurCopyRequest>) => void) => void;
+};
+
+/** Answers every copy asked of this worker: the JPEG, or why it failed. */
+export function serveBlurCopies(scope: BlurWorkerScope): void {
+  scope.addEventListener('message', ({ data }) => {
+    void makeBlurCopy(data).then(
+      (blob) => scope.postMessage({ id: data.id, blob }),
+      (err: unknown) => scope.postMessage({ id: data.id, failed: String(err) }),
+    );
+  });
+}
