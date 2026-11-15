@@ -7,7 +7,8 @@ import type { LastSeenCopy } from '@liveworkspace/workbench/lib/api/last-seen-co
 // paints its last seen copy before auth settles, read-only, for the reader this browser expects; the ordinary load
 // catches up behind it, replaces it in place and applies its role, or swaps it for the screen it ends on.
 
-const { api, copies, hint, identity, paint, seed, seedDeps } = vi.hoisted(() => ({
+const { api, copies, fallback, hint, identity, paint, seed, seedDeps } = vi.hoisted(() => ({
+  fallback: { reload: vi.fn(), warn: vi.fn() },
   api: {
     apiLoadSelf: vi.fn(),
     apiSaveSelf: vi.fn(),
@@ -39,6 +40,16 @@ vi.mock('@/lib/api-client', () => ({
   writeCachedSharePassword: () => {},
 }));
 vi.mock('@/lib/last-seen', () => ({ lastSeenCopies: copies }));
+// The not-found fallback's reload, watched rather than run (offline-mode.md "Never a wrong not found").
+vi.mock('@liveworkspace/workbench/lib/warm-open', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveworkspace/workbench/lib/warm-open')>()),
+  browserWarmOpenFallbackDeps: (forget: () => Promise<unknown>) => ({
+    storage: () => window.sessionStorage,
+    forget,
+    reload: fallback.reload,
+    warn: fallback.warn,
+  }),
+}));
 vi.mock('@/lib/signed-in-hint', () => ({ readSignedInHint: () => hint.signedIn }));
 vi.mock('@/lib/guest-identity', () => ({ ensureGuestIdentity: async () => ({ id: 'guest-1' }) }));
 vi.mock('@/lib/offline/offline-store', () => ({
@@ -121,6 +132,7 @@ const lastRole = (set: Record<string, ReturnType<typeof vi.fn>>): unknown =>
 
 beforeEach(() => {
   resetLoadProgressForTests();
+  window.sessionStorage.clear();
   window.history.replaceState(null, '', '/document/doc-1');
   hint.signedIn = false;
   identity.guestId = 'guest-1';
@@ -195,7 +207,25 @@ describe('useIdentityBootstrap warm open', () => {
     },
   );
 
+  // A warm-painted open that ends on not found reloads once, cold, without the copy: the ordinary load may have read
+  // the wrong reader (the Thomas HQ open, offline-mode.md "Never a wrong not found"). Only the second shows it.
+  it('reloads once without the copy rather than show not found after a warm paint', async () => {
+    api.apiLoadDocument.mockResolvedValue(null);
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).toHaveBeenCalledOnce();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setDocumentNotFound?.mock.calls ?? []).not.toContainEqual([true]);
+    expect(copies.forget).toHaveBeenCalledWith('guest-1', 'doc-1');
+    expect(fallback.reload).toHaveBeenCalledOnce();
+    expect(fallback.warn).toHaveBeenCalledWith(
+      expect.stringContaining('[load] warm-open-fallback not-found'),
+    );
+  });
+
   it('swaps the copy for not found when access was lost, and forgets it', async () => {
+    window.sessionStorage.setItem('warm-open-fallback:doc-1', 'not-found');
     api.apiLoadDocument.mockResolvedValue(null);
     const { hook, set } = render({ authLoaded: false, accountUserId: null });
     await flush();
@@ -339,6 +369,7 @@ describe('useIdentityBootstrap warm open', () => {
   });
 
   it("forgets a revoked link's copies by its code", async () => {
+    window.sessionStorage.setItem('warm-open-fallback:doc-1', 'not-found');
     window.history.replaceState(null, '', '/document/shared?s=CODE');
     copies.held = copyFor({
       via: 'CODE',

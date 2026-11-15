@@ -47,7 +47,9 @@ bind the same shared modules; their blueprints name only their bindings and poin
 | `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `flush`; `LAST_SEEN_REFRESH_MS`                                                                          |
 | `../packages/workbench/src/hooks/persistence/useLastSeenFollow.ts`   | Follows the open document's name and tab list, answers `onSaveLanded`, forgets a copy whose document went to This Browser                                                                                                    |
 | `../packages/workbench/src/hooks/persistence/useAutosaveCore.ts`     | `onSaveLanded` (an option, read as an effect event): told once the newest save landed, with the baseline tabs, name and revisions                                                                                            |
-| `../packages/workbench/src/lib/warm-open.ts`                         | `readWarmCopy`, `expectedReader`, `hashTabId`, `keptWarmTab`, `measureAfterPaint`: which copy may paint, and the timing marks                                                                                                |
+| `../packages/workbench/src/lib/warm-open.ts`                         | `readWarmCopy`, `expectedReader`, `hashTabId`, `keptWarmTab`, `measureAfterPaint`: which copy may paint, and the timing marks; `guardNotFound`, `warmOpenFallback`: a warm-painted not found checked once cold               |
+| `../packages/workbench/src/hooks/editor/useBrowserTabTitle.ts`       | Holds the tab title while the editor route shows it                                                                                                                                                                          |
+| `../packages/auth-client/src/token-answer.ts`                        | `askToken`, `askTokenUntilKnown`: the first token answer, with unknown asked again                                                                                                                                           |
 | `apps/editor/app/document/[id]/useIdentityBootstrap.ts`              | `tryEarlyOpen` reads the copy before auth settles, `paintWarm` paints it, the load's catch-up replaces it or takes it off the screen                                                                                         |
 | `apps/editor/lib/last-seen.ts`                                       | livediagram's binding: `lastSeenCopies`, a follower over `createLastSeenCopies(createLastSeenStore(LAST_SEEN_DB))` (`livediagram-last-seen`)                                                                                 |
 | `apps/editor/app/document/[id]/editor-state/useEditorPersistence.ts` | Calls `useLastSeenFollow` and hands its `onSaveLanded` to `useAutosave`                                                                                                                                                      |
@@ -155,6 +157,15 @@ firstTabToLoad(item.tabs, access.tabScope)`, and the `#t=` fragment names no oth
     canvas in the page's render order), and the arrival forgets the copy as in part 1, plus, on a share link,
     `forgetVia(reader, code)` (the doors' optional `forgetVia`), since the link's own address names no item. A load error shows the
     error card and keeps the copy.
+  - **Never a wrong not found.** The page's not-found setter is wrapped (`guardNotFound` in `warm-open.ts`): a not
+    found that ends an open which warm-painted a copy is checked once by a cold open first. `warmOpenFallback` marks
+    the item in `sessionStorage` (`warm-open-fallback:<id>`), logs `[load] warm-open-fallback not-found`, forgets the
+    copy and reloads; the reload has no copy to paint and shows whatever the ordinary load ends on. A second not found
+    in the same session, or a browser without `sessionStorage`, shows at once, so a gone item never loops.
+  - **The answer the reader rests on.** The page's first token ask
+    (`@liveworkspace/auth-client/token-answer`) reads an answer as signed in, signed out (only the api's own
+    `signedIn: false`) or unknown (a failed, timed-out after `TOKEN_TIMEOUT_MS`, 5xx or malformed answer), and asks
+    again on unknown (`TOKEN_RETRY_DELAYS_MS`) instead of settling as a guest. The warm paint stays up meanwhile.
   - **Marks.** `measureAfterPaint('warm-paint', documentLoadOrigin())` after the paint, and
     `measureAfterPaint('warm-catch-up', documentLoadOrigin())` when the catch-up reaches `done` with `warmRef` set:
     `performance.measure` entries from the same start as `DocumentLoad`, taken after the next frame.
@@ -183,28 +194,31 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
 
 ## Errors and edge cases
 
-| Case                                                     | Handling                                                                                                                |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| No IndexedDB, a private window, open errors or `blocked` | Every call resolves (null, false, nothing); the editor works as before                                                  |
-| A call that never answers                                | Gives up after `LAST_SEEN_TIMEOUT_MS` and resolves as above                                                             |
-| Copy over `LAST_SEEN_MAX_CHARS`                          | Not kept; the older copy under that key is removed so it can't be read stale                                            |
-| Another tab on a newer version upgrades the database     | `onversionchange` closes the kept connection; the next call opens again                                                 |
-| Corrupt or foreign record                                | Removed on read; reads as null                                                                                          |
-| Two loads racing (auth settling twice)                   | The arrival's setters are run-guarded; a superseded keep writes the same reader's copy, which the newer keep overwrites |
-| A refresh waiting when another document is kept          | `remember` writes the waiting refresh first (it is the older document's last copy), then keeps the new one              |
-| A refresh waiting at sign-out or a forget                | `forgetAll` and a matching `forget` drop `current` and cancel the timer before the store call, so nothing comes back    |
-| Document taken offline to This Browser while open        | The hook forgets its copy; This Browser documents keep none                                                             |
-| A save or follow before the arrival kept the copy        | `current` is not that copy yet: nothing happens; the arrival's keep has the same content                                |
-| The first tab deleted or moved off first                 | `firstTab` becomes null until a save of the new first tab lands                                                         |
-| A refresh's write fails or times out                     | `remember` never rejects; the copy stays as last written and the next refresh tries again                               |
-| Auth answers before the warm read does                   | The copy still paints while the load has not landed (`markLanding`) and resolved no other reader; else dropped          |
-| The read fails, times out or the store is missing        | `readWarmCopy` answers null; the open waits for auth as before                                                          |
-| A stale signed-in hint (signed out in another app)       | The account's copy paints; the participant resolves to someone else, so it leaves the screen for the opening screen     |
-| The `#t=` fragment names another tab                     | No warm open: the copy holds no body for that tab                                                                       |
-| A link's own address (`/<route>/shared?s=<code>`)        | `readVia` finds the reader's newest copy kept by that code; the address is left as it is                                |
-| A tab switched to during the warm paint                  | Tab loader until the catch-up; the catch-up keeps that tab when it still exists and is in scope                         |
-| A second browser tab of the same document                | Warm-opens from the same copy; its room connects after its own catch-up (`hydrated`)                                    |
-| The document moved on since the copy                     | The fresh first tab (another revision) and tab list replace the painted ones in the catch-up's one seed                 |
+| Case                                                      | Handling                                                                                                                |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| No IndexedDB, a private window, open errors or `blocked`  | Every call resolves (null, false, nothing); the editor works as before                                                  |
+| A call that never answers                                 | Gives up after `LAST_SEEN_TIMEOUT_MS` and resolves as above                                                             |
+| Copy over `LAST_SEEN_MAX_CHARS`                           | Not kept; the older copy under that key is removed so it can't be read stale                                            |
+| Another tab on a newer version upgrades the database      | `onversionchange` closes the kept connection; the next call opens again                                                 |
+| Corrupt or foreign record                                 | Removed on read; reads as null                                                                                          |
+| Two loads racing (auth settling twice)                    | The arrival's setters are run-guarded; a superseded keep writes the same reader's copy, which the newer keep overwrites |
+| A refresh waiting when another document is kept           | `remember` writes the waiting refresh first (it is the older document's last copy), then keeps the new one              |
+| A refresh waiting at sign-out or a forget                 | `forgetAll` and a matching `forget` drop `current` and cancel the timer before the store call, so nothing comes back    |
+| Document taken offline to This Browser while open         | The hook forgets its copy; This Browser documents keep none                                                             |
+| A save or follow before the arrival kept the copy         | `current` is not that copy yet: nothing happens; the arrival's keep has the same content                                |
+| The first tab deleted or moved off first                  | `firstTab` becomes null until a save of the new first tab lands                                                         |
+| A refresh's write fails or times out                      | `remember` never rejects; the copy stays as last written and the next refresh tries again                               |
+| Auth answers before the warm read does                    | The copy still paints while the load has not landed (`markLanding`) and resolved no other reader; else dropped          |
+| The read fails, times out or the store is missing         | `readWarmCopy` answers null; the open waits for auth as before                                                          |
+| A stale signed-in hint (signed out in another app)        | The account's copy paints; the participant resolves to someone else, so it leaves the screen for the opening screen     |
+| The `#t=` fragment names another tab                      | No warm open: the copy holds no body for that tab                                                                       |
+| A link's own address (`/<route>/shared?s=<code>`)         | `readVia` finds the reader's newest copy kept by that code; the address is left as it is                                |
+| A tab switched to during the warm paint                   | Tab loader until the catch-up; the catch-up keeps that tab when it still exists and is in scope                         |
+| A second browser tab of the same document                 | Warm-opens from the same copy; its room connects after its own catch-up (`hydrated`)                                    |
+| The document moved on since the copy                      | The fresh first tab (another revision) and tab list replace the painted ones in the catch-up's one seed                 |
+| The catch-up ends on not found after a warm paint         | `guardNotFound` + `warmOpenFallback`: forget, log, reload once cold; the second not found in the session shows          |
+| The token request fails, hangs or answers a 5xx           | Unknown, never signed out: asked again with backoff, the warm paint left up, no guest load                              |
+| The framework rewrites the tab title after the warm paint | `useBrowserTabTitle` watches the head and puts the item's title back                                                    |
 
 ## Security and trust
 
@@ -273,7 +287,10 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
   again at the catch-up only when its body was replaced by a newer one.
 - The catch-up changes nothing on screen when the document did not move on but the role: the tools an Editor or a
   Participant has appear. A document that moved on shows its fresh first tab and tab list in place.
-- Lost access shows the card the load ends on (not found, deleted, password), as a cold open does.
+- Lost access shows the card the load ends on (not found, deleted, password), as a cold open does, after one cold
+  reload confirms a not found.
+- The tab is named after the item from the warm paint on, and stays so (`useBrowserTabTitle`): the static export's
+  not-found route commits its metadata title after the paint and no longer leaves the bare brand.
 
 ## Accessibility
 
@@ -292,6 +309,8 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
 - `debugLog('[last-seen] …')` on a failed write, a removed corrupt record and a copy too big to keep.
 - `debugLog('[load] warm open from the last seen copy')` on a warm paint, `'[load] no early open'` when the early or
   warm open could not start.
+- `console.warn('[load] warm-open-fallback not-found: …')` when a warm-painted open ends on not found and reloads cold;
+  `console.warn('[auth] token answer unknown (<reason>), asking again')` on each unknown token answer.
 - Timing marks (part 3): `performance.measure` entries `warm-paint` and `warm-catch-up`, from the same start as
   `DocumentLoad`, each taken after the next frame. No new telemetry metric: `DocumentLoad` keeps timing the fresh
   copy; part 4 reads the marks on production builds and decides whether a metric is worth adding.
@@ -326,6 +345,9 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
 | Catch-up keeps an unchanged first tab, else fresh | each `seed-fetched-*.test.ts` "keeps the painted tab …", "replaces the painted tab …" |
 | Editor, Viewer, Participant warm opens and roles | each `useIdentityBootstrap.warm.test.tsx` "paints an Editor's copy …", "paints a view/participate link's copy …" |
 | Lost access on catch-up forgets | each `useIdentityBootstrap.warm.test.tsx` "swaps the copy for not found …" |
+| A warm-painted not found reloads once, cold | `warm-open.test.ts` "warmOpenFallback", "guardNotFound"; each `useIdentityBootstrap.warm.test.tsx` "reloads once without the copy rather than show not found …" |
+| An unknown token answer is asked again, never a guest | `token-answer.test.ts`; each `AccountsBridge.test.tsx` "keeps asking while the api cannot be reached …" |
+| The tab title survives the route's metadata | `useBrowserTabTitle.test.tsx`; each editor's `tab-title.test.ts` |
 | Someone else after all, sign-out cleared, too late | each `useIdentityBootstrap.warm.test.tsx` |
 | A guest whose auth settles before the read answers | `warm-open.test.ts` "markLanding"; each `useIdentityBootstrap.warm.test.tsx` "paints when auth settles before the copy read answers …", "paints no late copy once the load resolved someone else …", "reads and paints once when the layout effect runs twice …" |
 | A link's own address warm-opens by its code, forgets by it | `last-seen-copies.test.ts` "reads the newest copy a share code kept …", "forgets every copy a share code kept …"; `warm-open.test.ts` "reads a share link's own address …"; `editor-arrival.test.ts` "forgets a link's copies by its code …"; each `useIdentityBootstrap.warm.test.tsx` "paints a link's own address …", "forgets a revoked link's copies …" |
