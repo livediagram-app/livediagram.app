@@ -4,8 +4,10 @@ Status: shipped
 
 ## What
 
-A **Stickers** category in the palette, in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
-between Icons and Media, and a **`sticker` shape kind** behind it.
+The **Stickers** side of the palette's Icons category, in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
+and a **`sticker` shape kind** behind it. Stickers was a category of its own, between Icons and Media, until the owner
+folded the two into one (2026-11-15): an Icons | Stickers switch picks the side, and one search finds both
+([Canvas and palette](../008-canvas/canvas-and-palette.md) "Icons category"). A logo page's Icons has no Stickers side.
 
 A sticker is the thing you slap on a canvas: a die-cut plate with a soft shadow,
 in colours that are its own. Two flavours:

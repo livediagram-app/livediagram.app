@@ -221,7 +221,7 @@ avatars, badges, cards and lists." Its tiles:
 The palette follows the page someone is on, as [Logo pages](logo-pages.md) "The Logo palette" says
 of the Logo category: its kind is Wireframe on a wireframe page, opening on **Elements**; Logo on a
 logo page; Design on any other. A page added (by the + or the chooser) is a page moved onto, so
-the palette turns with it. In Wireframe the palette leaves out **Concepts** and **Devices** (a
+the palette turns with it. In Wireframe the palette leaves out **Concepts** and Components' **Devices** row (a
 screen is built from its own parts, and the page is its device already); they come back in the
 other kinds.
 
