@@ -134,6 +134,28 @@ async function api(request: Request): Promise<Response> {
         },
       ],
     });
+  // Version history (docs/specs/006-document/version-history.md "API").
+  if (path.endsWith('/versions')) {
+    const version = {
+      id: 'v1',
+      tabId: 't1',
+      rev: 2,
+      kind: 'manual',
+      name: 'Draft',
+      author: { name: 'Ada', color: '#123456' },
+      savedAt: 1_700_000_000_000,
+      createdAt: 1_700_000_000_000,
+      bytes: 100,
+      elementCount: 0,
+    };
+    return json({
+      versions: [version, { ...version, id: 'v0', kind: 'idle', name: null, author: null }],
+    });
+  }
+  if (path.endsWith('/versions/v1/restore')) {
+    return json({ restored: { tabId: 't1', rev: 4, changesetId: 'cs_1', undoVersionId: 'v2' } });
+  }
+  if (path.endsWith('/versions/v0/restore')) return json({ restored: null });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
@@ -217,6 +239,17 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     tool: 'write_article',
     output: 'writeArticleOutput',
     args: { documentId: 'd1', markdown: '# Brief', look: 'report' },
+  },
+  { tool: 'list_versions', output: 'listVersionsOutput', args: { documentId: 'd1' } },
+  {
+    tool: 'restore_version',
+    output: 'restoreVersionOutput',
+    args: { documentId: 'd1', tabId: 't1', versionId: 'v1' },
+  },
+  {
+    tool: 'restore_version',
+    output: 'restoreVersionOutput',
+    args: { documentId: 'd1', tabId: 't1', versionId: 'v0' },
   },
   { tool: 'list_threads', output: 'listThreadsOutput', args: { documentId: 'd1', status: 'all' } },
   {
