@@ -43,6 +43,9 @@ export async function handleTabPages(
   // An agent's write counts as one applied change, by its front door, as a changeset does.
   if (result.status === 200 && ctx.token)
     ctx.waitUntil?.(afterChangeset.telemetry(ctx.env, 'Applied', frontDoorOf(ctx.request)));
+  // Held by a person's paragraph (docs/specs/024-agents/pages-for-agents.md "Held paragraphs"), as a held changeset.
+  else if (result.body && 'error' in result.body && result.body.error === 'paragraphs_held')
+    ctx.waitUntil?.(afterChangeset.telemetry(ctx.env, 'Held', frontDoorOf(ctx.request)));
   // The agent shows as present on the tab it wrote, as after a changeset.
   refreshAfterWrite(ctx, id, tabId, author, {
     status: result.status,

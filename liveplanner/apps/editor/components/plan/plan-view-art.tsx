@@ -62,6 +62,35 @@ const VIEW_ART: Record<PlanVisualisation, React.ReactNode> = {
       <path d="M18.6 6.4l1.4 1.4M2.5 11h17M2.5 15h12M2.5 19h15" />
     </>
   ),
+  // Dots scattered over a baseline, a dashed line across them.
+  'cycle-time': (
+    <>
+      <path d="M3 3v16.5h16.5" />
+      <path d="M5.5 8h13" strokeDasharray="2 2" />
+      <circle cx="7" cy="14" r="1.3" fill="currentColor" />
+      <circle cx="10.5" cy="11" r="1.3" fill="currentColor" />
+      <circle cx="13.5" cy="15" r="1.3" fill="currentColor" />
+      <circle cx="17" cy="6" r="1.3" fill="currentColor" />
+    </>
+  ),
+  // Bars of a week each, a dashed average over them.
+  throughput: (
+    <>
+      <path d="M3 3v16.5h16.5" />
+      <rect x="6" y="11" width="2.5" height="8.5" rx="0.6" />
+      <rect x="10.5" y="7" width="2.5" height="12.5" rx="0.6" />
+      <rect x="15" y="9.5" width="2.5" height="10" rx="0.6" />
+      <path d="M5 10h15" strokeDasharray="2 2" />
+    </>
+  ),
+  // Stacked bands rising to the right.
+  'cumulative-flow': (
+    <>
+      <path d="M3 3v16.5h16.5" />
+      <path d="M3 16.5c5-.5 10-1.5 16.5-4" />
+      <path d="M3 12.5c5-1 10-3 16.5-7" />
+    </>
+  ),
 };
 
 export function PlanViewArt({ view, size = 18 }: { view: PlanVisualisation; size?: number }) {

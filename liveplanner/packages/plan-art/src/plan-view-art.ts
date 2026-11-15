@@ -10,8 +10,10 @@ import {
   type ShapeElement,
 } from '@liveplanner/project';
 import {
+  PLAN_VISUALISATION_LABELS,
   PRIORITY_LABELS,
   STATUS_PHASES,
+  flowRangeOf,
   STATUS_PHASE_LABELS,
   breakdownGroupingOf,
   breakdownTitle,
@@ -30,6 +32,7 @@ import {
   viewShownTypes,
   type Item,
   type ItemTypeDef,
+  type FlowView,
   type MetricKind,
   type PlanViewId,
   type StatusPhase,
@@ -109,9 +112,21 @@ export function planViewArt(el: ShapeElement, data: PlanArtData, surface: Canvas
       return inPlanFont(matrixArt(input));
     case 'search':
       return inPlanFont(searchArt(input));
+    case 'cycle-time':
+    case 'throughput':
+    case 'cumulative-flow':
+      return inPlanFont(flowArt(input, view));
     default:
       return inPlanFont(statusMixArt(input));
   }
+}
+
+// A flow chart (docs/specs/026-plan/plan-views.md "Flow charts", "Images"): an export has no flow read, so its frame
+// with its name and range, and a line saying where the chart is.
+function flowArt({ rect, p, settings, title }: ViewArtInput, view: FlowView): string {
+  const name = `${titled(PLAN_VISUALISATION_LABELS[view], title)} · Last ${flowRangeOf(settings)} Days`;
+  const frame = viewFrame(rect, p, name);
+  return frame.markup + emptyBody(frame.body, p, 'Open the plan to see the flow.');
 }
 
 // The phase key, top right of a body (PhaseLegend).

@@ -23,6 +23,9 @@ import { WorkloadView } from './WorkloadView';
 import { StatusMixView } from './StatusMixView';
 import { PriorityMatrixView } from './PriorityMatrixView';
 import { CardSearchView } from './CardSearchView';
+import { CycleTimeView } from './CycleTimeView';
+import { ThroughputView } from './ThroughputView';
+import { CumulativeFlowView } from './CumulativeFlowView';
 import { ViewHeaderEnd, ViewTitle } from './view-frame';
 import { useSlotName } from '../dashboard/slot-name-context';
 import { PlanViewSettingsPanel } from './PlanViewSettingsPanel';
@@ -205,6 +208,12 @@ function viewOf(view: PlanViewId, props: PlanViewProps) {
       return <PriorityMatrixView {...props} />;
     case 'search':
       return <CardSearchView {...props} />;
+    case 'cycle-time':
+      return <CycleTimeView {...props} />;
+    case 'throughput':
+      return <ThroughputView {...props} />;
+    case 'cumulative-flow':
+      return <CumulativeFlowView {...props} />;
     default:
       return <StatusMixView {...props} />;
   }

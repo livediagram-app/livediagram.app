@@ -15,16 +15,24 @@ import { layoutCatalogueFor } from '@livedocuments/templates';
 function roomRecorder(status = 204) {
   type Relayed = { op: { kind: string; [k: string]: unknown } };
   const bodies: Relayed[] = [];
+  // The paragraph holds the room answers (docs/specs/024-agents/pages-for-agents.md "Held paragraphs"), and the
+  // tabs it was asked about.
+  const holds: unknown[] = [];
+  const holdReads: string[] = [];
   const binding = {
     idFromName: (name: string) => name,
     get: () => ({
-      fetch: async (_url: string, init?: RequestInit) => {
+      fetch: async (url: string, init?: RequestInit) => {
+        if (String(url).includes('/holds?')) {
+          holdReads.push(new URL(String(url)).searchParams.get('tab') ?? '');
+          return status === 204 ? Response.json({ holds }) : new Response(null, { status });
+        }
         if (init?.body) bodies.push(sentJson(init) as Relayed);
         return new Response(null, { status });
       },
     }),
   };
-  return { bodies, binding };
+  return { bodies, binding, holds, holdReads };
 }
 
 const call = (
@@ -198,6 +206,77 @@ describe('an article write', () => {
     const res = await call(db, { article: { markdown: 'x' } });
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ error: 'article_ambiguous' });
+  });
+});
+
+describe('held paragraphs', () => {
+  const tab = {
+    pages: [{ id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' }],
+    articles: {
+      f: {
+        blocks: [
+          { id: 'b1', type: 'heading', level: 1, runs: [{ text: 'Brief' }] },
+          { id: 'b2', type: 'paragraph', runs: [{ text: 'Sam is writing this one' }] },
+        ],
+      },
+    },
+  };
+  const samHolds = { flow: 'f', blockId: 'b2', name: 'Sam Lee', color: '#f00' };
+
+  it('refuses an agent write over a held paragraph whole, saying who and where, and writes nothing', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { db, room } = await setUp(204, tab);
+    room.holds.push(samHolds);
+    const before = stored(db);
+    const res = await call(db, { article: { article: 'f', markdown: '# Brief\n\nRewritten' } });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: 'paragraphs_held',
+      message:
+        'Sam Lee is writing in "Sam is writing this one". Try again once they pause, or leave that paragraph as it is.',
+      held: [{ flow: 'f', blockId: 'b2', by: { name: 'Sam Lee', color: '#f00' } }],
+    });
+    expect(room.holdReads).toEqual(['t1']);
+    expect(stored(db).rev).toBe(before.rev);
+    expect(room.bodies).toHaveLength(0);
+    expect(info).toHaveBeenCalledWith('[pages-agent] held', {
+      documentId: 'D',
+      tabId: 't1',
+      held: 1,
+    });
+  });
+
+  it('lets a write that leaves every held paragraph as it is go ahead', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { db, room } = await setUp(204, tab);
+    room.holds.push(samHolds);
+    const res = await call(db, {
+      article: { article: 'f', markdown: 'An added line', mode: 'append' },
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it("never holds a person's own write, or page changes, and asks the room nothing for them", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const { db, room } = await setUp(204, tab);
+    room.holds.push(samHolds);
+    const res = await call(db, { article: { article: 'f', markdown: 'Mine' } }, { token: false });
+    expect(res.status).toBe(200);
+    const pages = await call(db, { pages: [{ op: 'set', page: 1, name: 'Cover' }] });
+    expect(pages.status).toBe(200);
+    expect(room.holdReads).toEqual([]);
+  });
+
+  it('writes when the room cannot say who holds what, logging it', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { db } = await setUp(500, tab);
+    const res = await call(db, { article: { article: 'f', markdown: 'Over' } });
+    expect(res.status).toBe(200);
+    expect(warn).toHaveBeenCalledWith(
+      '[pages-agent] holds-unreachable',
+      expect.objectContaining({ documentId: 'D', tabId: 't1' }),
+    );
   });
 });
 

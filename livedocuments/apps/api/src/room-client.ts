@@ -9,6 +9,7 @@ import {
   AGENT_PRESENCE_ACTIVITY_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
+  type ArticleHoldRow,
   type ChangesetRoomOp,
   type RoomOp,
 } from '@livedocuments/api-schema';
@@ -96,6 +97,31 @@ export function relayPages(
 // Every selection on the tab (docs/specs/024-agents/agent-changesets.md "Held elements"); null when the room cannot
 // answer in time.
 export const readRoomSelections = room.readRoomSelections;
+
+// Every live paragraph hold on the tab (docs/specs/024-agents/pages-for-agents.md "Held paragraphs"); null when the
+// room cannot answer within the selections timeout, which holds nothing and is logged.
+export async function readRoomHolds(
+  env: Env,
+  documentId: string,
+  tabId: string,
+): Promise<ArticleHoldRow[] | null> {
+  try {
+    const res = await room.roomFetch(
+      env,
+      documentId,
+      `/holds?tab=${encodeURIComponent(tabId)}`,
+      undefined,
+      ROOM_SELECTIONS_TIMEOUT_MS,
+    );
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    const body = await res.json<{ holds?: unknown }>();
+    if (!Array.isArray(body.holds)) throw new Error('no holds');
+    return body.holds as ArticleHoldRow[];
+  } catch (err) {
+    console.warn('[pages-agent] holds-unreachable', { documentId, tabId, error: String(err) });
+    return null;
+  }
+}
 
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room").
 type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };

@@ -21,6 +21,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { prunePeerDragPreviews } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 import { resetArticlePeers, syncArticlePeople } from '@/lib/article/article-carets-store';
+import { resetArticleHolds, syncArticleHolders } from '@/lib/article/article-holds-store';
 import { receiveRoomOp } from './room-op-receive';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 
@@ -133,7 +134,11 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
         setRemoteCursors,
         // Collaborators' carets in the writing take their names and colours from here, and go with
         // whoever left (docs/specs/007-editor/article-pages.md "Collaboration").
-        onPresent: (people) => syncArticlePeople(people),
+        // Holds too (docs/specs/007-editor/article-pages.md "Holding a paragraph").
+        onPresent: (people) => {
+          syncArticlePeople(people);
+          syncArticleHolders(people);
+        },
       });
     },
   );
@@ -203,6 +208,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       setRemoteSelections(new Map());
       prunePeerDragPreviews(new Set());
       resetArticlePeers();
+      resetArticleHolds();
       return;
     }
     joinedRef.current = false;
@@ -266,6 +272,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       stopGrant();
       presence.cancel();
       resetArticlePeers();
+      resetArticleHolds();
       openedRoom.close();
       roomRef.current = null;
     };

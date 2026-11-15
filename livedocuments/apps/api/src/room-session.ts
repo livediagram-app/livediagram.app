@@ -8,6 +8,7 @@ import {
   sessionReactionPerson,
 } from '@liveworkspace/api-kit/collab-key';
 import type { ParticipantPresence } from './types';
+import type { StoredArticleHold } from './room-article-holds';
 
 // Everything the room knows about one session, persisted in the socket's
 // serialized attachment so it SURVIVES HIBERNATION (an in-memory Map
@@ -76,6 +77,10 @@ export type SessionAttachment = {
   //     Absent for a session admitted without one (tests).
   grantExp?: number | null;
   renewAsked?: boolean;
+  // The paragraph (or cell) this session holds while writing (docs/specs/007-editor/article-pages.md "Holding a
+  // paragraph"): on the attachment so it survives hibernation and goes with the socket. Its ids are bounded by
+  // parseArticleHold (64 characters each, the tab 128).
+  articleHold?: StoredArticleHold;
 };
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.

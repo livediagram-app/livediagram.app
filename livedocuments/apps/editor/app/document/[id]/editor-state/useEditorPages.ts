@@ -9,6 +9,7 @@ import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { announcePageLocked } from '@/lib/page-lock-guard';
 import { setTextOnlyToast } from '@/lib/flashcard-guard';
 import { setArticleCapsToast } from '@/lib/article/article-caps-notice';
+import { setArticleHeldToast } from '@/lib/article/article-hold-notice';
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { activeElementsCommit } from '../active-elements-commit';
 import type { EditorDocument } from './useEditorDocument';
@@ -113,9 +114,11 @@ export function useEditorPages({
   useEffect(() => {
     setTextOnlyToast(toast.info);
     setArticleCapsToast(toast.info);
+    setArticleHeldToast(toast.info);
     return () => {
       setTextOnlyToast(null);
       setArticleCapsToast(null);
+      setArticleHeldToast(null);
     };
   }, [toast.info]);
 

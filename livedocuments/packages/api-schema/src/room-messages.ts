@@ -64,6 +64,10 @@ export const PRESENCE_OP_KINDS = [
   // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
   // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
   'article-caret',
+  // The paragraph (or table cell) the sender is typing in, held for them (docs/specs/007-editor/article-pages.md
+  // "Holding a paragraph"). Presence, but the room arbitrates it rather than relaying it as sent: first claim wins,
+  // the claimant alone hears the answer, and only a given hold is relayed. Never from a Viewer, who holds nothing.
+  'article-hold',
   // Who the sender is following (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"). The room
   // keeps it on the session and is the only one who reads it: it tells each person, on their own socket, who
   // follows them (`followers`). Never relayed, from any session (a viewer follows too).
@@ -359,6 +363,17 @@ export type RoomOp =
   // Throttled like the cursor; parsed with parseArticleCaret.
   | { kind: 'article-caret'; tabId: string; flow: string; blockId: string; offset: number }
   | { kind: 'article-caret'; tabId: string; flow: null }
+  // The sender's hold on a paragraph or a table cell (docs/specs/007-editor/article-pages.md "Holding a paragraph"),
+  // or (`flow: null`) the sender letting go. Parsed with parseArticleHold.
+  | {
+      kind: 'article-hold';
+      tabId: string;
+      flow: string;
+      blockId: string;
+      row?: string;
+      col?: string;
+    }
+  | { kind: 'article-hold'; tabId: string; flow: null }
   // One sample of the sender's laser-pointer trail (canvas-coords).
   // Sent on every pointer move while the sender is in laser tool
   // mode, throttled like cursor. Receivers append to a per-
