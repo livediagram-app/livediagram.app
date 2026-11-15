@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../person/profiles', () => import('../test-profiles'));
 import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
-import { itemPersonId, presetSetup, type Item } from '@liveplanner/items';
+import { ITEMS_MAX, itemPersonId, presetSetup, type Item } from '@liveplanner/items';
 import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
@@ -220,12 +221,12 @@ describe('creating items', () => {
   });
 
   it('caps the store', async () => {
-    sql.sql.exec('UPDATE plan SET items_next_key = 2001');
+    sql.sql.exec(`UPDATE plan SET items_next_key = ${ITEMS_MAX + 1}`);
     const insert = sql.sql.prepare(
       `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
        VALUES ('d1', ?, 'task', ?, 'i', '{"title":"x"}', 1, 0, 0, '{}', '{}')`,
     );
-    for (let i = 1; i <= 2000; i++) insert.run(`seed${String(i).padStart(4, '0')}`, i);
+    for (let i = 1; i <= ITEMS_MAX; i++) insert.run(`seed${String(i).padStart(4, '0')}`, i);
     expect((await add({ title: 'one too many' })).body).toMatchObject({ error: 'items_full' });
   });
 
@@ -1672,5 +1673,44 @@ describe('a type change through the api', () => {
       body: { type: 'note', undo: true },
     });
     expect(undone.body.item.fields['f-apps']).toBeUndefined();
+  });
+});
+
+// A full plan's first load (blueprint item-store.md "Performance and limits"): GET /items over ITEMS_MAX cards of a
+// description, labels, a person and a date each: the read, the answer and its size as the editor receives it.
+describe('a full plan’s first load', () => {
+  it('answers every card within its CPU and size budgets', async () => {
+    const person = JSON.stringify({ id: 'p-webber', name: 'Webber', color: '#3b82f6' });
+    const insert = sql.sql.prepare(
+      `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+       VALUES ('d1', ?, 'task', ?, ?, ?, 3, 1700000000000, 1700000500000, ?, ?)`,
+    );
+    const note =
+      'Steps to reproduce, what was expected and what happened instead, with a link or two. '.repeat(
+        3,
+      );
+    sql.sql.exec('BEGIN');
+    for (let i = 1; i <= ITEMS_MAX; i++) {
+      const fields = {
+        title: `Card ${i}: tidy the onboarding copy on the sign-up page`,
+        description: note,
+        status: ['new', 'triaged', 'fixing', 'done'][i % 4],
+        priority: ['low', 'medium', 'high'][i % 3],
+        labels: [`label-${i % 30}`, `area-${i % 7}`],
+        due: `2026-${String((i % 12) + 1).padStart(2, '0')}-10`,
+      };
+      const id = `card${String(i).padStart(5, '0')}`;
+      insert.run(id, i, `i${String(i).padStart(5, '0')}`, JSON.stringify(fields), person, person);
+    }
+    sql.sql.exec('COMMIT');
+    let res: { status: number; body: ItemsResponse } | undefined;
+    const ms = await cpuMsOfAsync(async () => {
+      res = await call<ItemsResponse>({ method: 'GET', path: '/items' });
+    });
+    expect(res!.status).toBe(200);
+    expect(res!.body.items).toHaveLength(ITEMS_MAX);
+    // Measured 44 ms of CPU on node:sqlite at 5,000 cards, the answer 3.4 MB (0.68 KB a card).
+    expect(JSON.stringify(res!.body).length).toBeLessThan(ITEMS_MAX * 800);
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
 });

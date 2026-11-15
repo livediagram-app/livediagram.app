@@ -354,7 +354,7 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
     and Problems with this Form lists "{Field} is set automatically to a value its field no longer has: change or
     remove it." (`broken_fixed`, a publish problem). A required field set here needs no required question.
 - **Settings**: **Accepting Responses** (the link's switch; dimmed until published), **Close On** (a date and time,
-  with Clear; a time already past says the form is closed) beside **Response Limit** (1 to 2,000), **Confirmation
+  with Clear; a time already past says the form is closed) beside **Response Limit** (1 to 5,000, a plan's cards), **Confirmation
   Message** (up to 500 characters, default "Thanks, your response has been recorded."), **Closed Message** (up to
   500 characters, default "This form is no longer accepting responses."). A form has no colour setting of its own: it
   wears its tab's [look](#look), changed from **Style** as ever.

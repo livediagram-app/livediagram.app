@@ -8,6 +8,7 @@ import {
   ITEM_TYPES_MAX,
   cycleTimesOf,
   flowCountsOf,
+  ITEMS_MAX,
   presetSetup,
   throughputOf,
   type Item,
@@ -21,7 +22,7 @@ import { flowQueryOf, handleFlowRoute } from './flow-route';
 
 // The flow charts' read (docs/specs/026-plan/plan-views.md "Flow charts", blueprint item-store.md "Flow read"): the
 // range's daily counts and each card that moved in it with its kept moves; the card types asked for; who may read it
-// (Editor, Participant, Viewer, an agent, a tab-scoped link); the query's refusals; and a 2,000-card plan's budget.
+// (Editor, Participant, Viewer, an agent, a tab-scoped link); the query's refusals; and a full plan's budget.
 
 let sql: SqliteD1;
 
@@ -270,7 +271,7 @@ describe('who may read it', () => {
   });
 });
 
-describe('a 2,000-card plan with 180 days of history', () => {
+describe('a full plan (ITEMS_MAX cards) with 180 days of history', () => {
   it('answers the longest range within budget', async () => {
     const statuses = ['todo', 'doing', 'review', 'done'];
     const now = Date.now();
@@ -285,7 +286,7 @@ describe('a 2,000-card plan with 180 days of history', () => {
     );
     const made = now - 179 * DAY_MS;
     const entries: [string, number, string][] = [];
-    for (let c = 0; c < 2000; c++) {
+    for (let c = 0; c < ITEMS_MAX; c++) {
       const id = `card${c}`;
       item.run(
         id,
@@ -296,7 +297,7 @@ describe('a 2,000-card plan with 180 days of history', () => {
         now,
       );
       entries.push([id, made + c, JSON.stringify([{ kind: 'created' }])]);
-      // Twelve moves and twelve field changes over 180 days, so 50,000 entries, half of them moves.
+      // Twelve moves and twelve field changes over 180 days, so 125,000 entries, half of them moves.
       for (let m = 0; m < 12; m++) {
         const when = made + m * 14 * DAY_MS + c * 1000;
         entries.push([
@@ -326,8 +327,8 @@ describe('a 2,000-card plan with 180 days of history', () => {
       res = await flow(`?days=${FLOW_DAYS_MAX}`);
     });
     expect(res!.status).toBe(200);
-    expect(res!.body.cards).toHaveLength(2000);
-    expect(res!.body.cards.reduce((n, c) => n + c.moves.length, 0)).toBe(24_000);
+    expect(res!.body.cards).toHaveLength(ITEMS_MAX);
+    expect(res!.body.cards.reduce((n, c) => n + c.moves.length, 0)).toBe(ITEMS_MAX * 12);
     expect(res!.body.counts.length).toBe(FLOW_DAYS_MAX * 12);
     // Measured 135 to 150 ms of CPU on node:sqlite (2026-11-15), its answer 1.06 MB, 94 KB gzipped.
     expect(ms).toBeLessThan(cpuBudgetMs(500));

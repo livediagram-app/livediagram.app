@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  ITEMS_MAX,
   PULL_REQUESTS_KEPT,
   cardFieldPullRequests,
   cardLinkedPullRequests,
@@ -9,12 +10,12 @@ import {
   type PullRequestStatus,
 } from './index';
 
-// What a delivery costs a 2,000-card board on screen (docs/specs/026-plan/blueprints/github-pull-requests.md "Part 3"
+// What a delivery costs a full board on screen (ITEMS_MAX cards) (docs/specs/026-plan/blueprints/github-pull-requests.md "Part 3"
 // "Performance and limits"): the plan's 500 kept states made into lookups once, then every card picking its linked
 // pull requests again (each card holding one in a Pull Request field and one in a Link field, a third of them named by
 // a state too). The editor keeps an unchanged pick, so only the cards it touches redraw. CPU time, never wall-clock.
 
-const CARDS = 2000;
+const CARDS = ITEMS_MAX;
 const type = {
   custom: [
     { id: 'pr', label: 'Pull Request', kind: 'pullrequest' as const },
@@ -37,7 +38,7 @@ const states: PullRequestStatus[] = Array.from({ length: PULL_REQUESTS_KEPT }, (
   cards: [`c${(i * 3) % CARDS}`, `c${(i * 3 + 1) % CARDS}`],
 }));
 
-describe('pull request states on a 2,000-card board', () => {
+describe('pull request states on a full board (ITEMS_MAX cards)', () => {
   it('picks every card’s on the first draw, and again for a delivery with the fields kept, within budget', () => {
     let picked = 0;
     let fields: CardFieldPullRequest[][] = [];

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ITEMS_MAX } from './limits';
 import { compareRank, isValidRank, rankAfter, rankBefore, rankBetween } from './rank';
 
 describe('rankBetween', () => {
@@ -47,11 +48,11 @@ describe('rankBetween', () => {
   });
 
   // A column appended to (or prepended to) thousands of times keeps short keys: halving the open gap grew a
-  // digit every five or six appends (2000 appends reached 334 digits, past isValidRank's 64).
+  // digit every five or six appends (2000 appends reached 334 digits, past isValidRank's 64). Run to ITEMS_MAX.
   it('keeps keys short over many appends and prepends', () => {
     let hi = rankBetween(null, null);
     let lo = hi;
-    for (let i = 0; i < 2000; i++) {
+    for (let i = 0; i < ITEMS_MAX; i++) {
       const up = rankAfter(hi);
       const down = rankBefore(lo);
       expect(up > hi && isValidRank(up)).toBe(true);

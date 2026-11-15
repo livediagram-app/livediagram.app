@@ -233,10 +233,11 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
   `matchLabels(uses, query, taken)` → `{ matches, creatable }`: the query trimmed, a leading `#` dropped, lower-cased;
   labels the card has (case aside) left out; with no query every label; else those starting with it, then those
   containing it, each in usage order; `creatable` when no plan or card label equals it.
-- Cost: measured 1.5 ms median (5.5 ms worst of 20, a loaded machine) for 2,000 cards of 12 labels from 300 names;
+- Cost: measured 1.5 ms median (5.5 ms worst of 20, a loaded machine) for 2,000 cards of 12 labels from 300 names,
+  12 ms for a full plan (`ITEMS_MAX`, 5,000 cards);
   `matchLabels` over those 300 labels 0.03 ms median per keystroke. The host (`PlanSheetsHost`) memoises
   `labelUsage` on the cards map and the open card, so it runs once per change of the cards while a card is open, never
-  per keystroke; `label-usage.test.ts` holds the 2,000-card case to a 250 ms budget.
+  per keystroke; `label-usage.test.ts` holds the full-plan case to a 250 ms budget.
 
 ### Colour
 
@@ -822,8 +823,9 @@ FROM items i WHERE plan_id = ? AND id IN (SELECT value FROM json_each(?))` (the 
 - Logs `[items] flow.read { projectId, days, counts, cards, moves }`. Nothing is written.
 - Cost (measured on node:sqlite, `flow-route.test.ts` holds the budget): a 2,000-card plan with 180 days of history
   (50,000 entries, 24,000 of them moves) and 12 count pairs a day answers the 180-day range in 135 to 150 ms of CPU,
-  1.06 MB (94 KB gzipped). The moves read is linear in the kept entries; the cards read one seek per moved card.
-  `cycleTimesOf` over the same 2,000 cards takes 6 to 8 ms of CPU warm, 18 ms on the first call
+  1.06 MB (94 KB gzipped); a full plan (`ITEMS_MAX`, 5,000 cards, 125,000 entries) in 296 ms, 2.46 MB, against the
+  500 ms budget. The moves read is linear in the kept entries; the cards read one seek per moved card.
+  `cycleTimesOf` over the same 2,000 cards takes 6 to 8 ms of CPU warm, 18 ms on the first call; over 5,000, 32 ms
   (`flow-metrics.test.ts`, a 100 ms budget).
 
 ### Parts still to build (Work Tracker 854)
@@ -1013,20 +1015,20 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 
 ## Errors and edge cases
 
-| Case                                            | Handling                                                              |
-| ----------------------------------------------- | --------------------------------------------------------------------- |
-| Unknown type                                    | Kept; drawn with the fallback type (grey, generic glyph)              |
-| Card points at a missing item                   | "Item not found" face                                                 |
-| Move relative to a neighbour that was deleted   | Falls back to the column end                                          |
-| Undo patch after someone else changed the field | Writes the old value anyway (last write wins), as canvas undo         |
-| Create at the cap                               | `413 items_full`; toast "This project holds 2,000 items"              |
-| Comment on a full thread                        | `413 comments_full`; toast "This card holds the most comments it can" |
-| Delete a comment already gone                   | `404 comment_not_found`; the store refetches                          |
-| Resolve a resolved thread                       | 204, nothing written or relayed                                       |
-| Room copy lands after our answer                | Our own comments keep their author id (`keepOwnCommentAuthors`)       |
-| A type stops offering comments                  | The thread stays stored, unshown (like votes)                         |
-| Room op arrives before the GET answer           | Kept; GET merges by higher rev                                        |
-| Offline record without `items`                  | Empty store                                                           |
+| Case                                            | Handling                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------ |
+| Unknown type                                    | Kept; drawn with the fallback type (grey, generic glyph)                       |
+| Card points at a missing item                   | "Item not found" face                                                          |
+| Move relative to a neighbour that was deleted   | Falls back to the column end                                                   |
+| Undo patch after someone else changed the field | Writes the old value anyway (last write wins), as canvas undo                  |
+| Create at the cap                               | `413 items_full`; toast "This plan already holds 5,000 cards, the most it can" |
+| Comment on a full thread                        | `413 comments_full`; toast "This card holds the most comments it can"          |
+| Delete a comment already gone                   | `404 comment_not_found`; the store refetches                                   |
+| Resolve a resolved thread                       | 204, nothing written or relayed                                                |
+| Room copy lands after our answer                | Our own comments keep their author id (`keepOwnCommentAuthors`)                |
+| A type stops offering comments                  | The thread stays stored, unshown (like votes)                                  |
+| Room op arrives before the GET answer           | Kept; GET merges by higher rev                                                 |
+| Offline record without `items`                  | Empty store                                                                    |
 
 ## Security and trust
 
@@ -1049,16 +1051,52 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 
 ## Performance and limits
 
-- Worst case 2,000 items × 16 KB = 32 MB is refused by the GET's practical size: `ITEMS_MAX` × typical 0.5 KB
-  = 1 MB; the GET streams one JSON array. The per-item cap bounds the row; SQLite's 2 MB row limit in a Durable Object is never reached.
+- **The cap** (`ITEMS_MAX`, 5,000; raised from 2,000 by the owner 2026-11-15, Work Tracker 672): storage is not the
+  limit (a plan's Durable Object SQLite holds about 10 GB; 5,000 × 16 KB is 80 MB, under 1%), the editor is: it loads
+  every card in one GET and keeps them all in memory, and boards, dashboards, Gantt and the plan views work over the
+  whole set. Windowed loading and server-side projections are the next step past 5,000 and stay out of scope.
+- Worst case 5,000 items × 16 KB = 80 MB is refused by the GET's practical size: the GET streams one JSON array, and
+  a typical card is 0.5 to 0.75 KB. The per-item cap bounds the row; SQLite's 2 MB row limit in a Durable Object is
+  never reached.
+- **Measured at 5,000 cards** (M-series Mac, CPU time; every budget below holds with room, and each test reads
+  `ITEMS_MAX`, so a change to the cap re-measures them):
+  - First load: GET /items answers in 44 ms of CPU on node:sqlite, 3.4 MB (0.68 KB a card of a 260-character
+    description, labels, a person and a date; `item-routes.test.ts` "a full plan's first load", budgets 500 ms and
+    0.8 KB a card). In the editor, reading that answer, folding it into the store and projecting a Kanban board with
+    lanes takes 35 ms, and a re-projection after a change 6 ms (`full-plan-load.perf.test.ts`, budgets 400 ms and
+    100 ms). A board's first draw builds only the runs near the view: 411 ms in jsdom
+    (`PlanBoardView.mount.perf.test.tsx`, budget 1,000 ms).
+  - Label usage 12 ms (`label-usage.test.ts`, 250 ms). Card search 4.9 ms a keystroke (`search-plan.test.ts`,
+    16 ms). Plan views (Gantt, calendar, status mix, breakdown, priority matrix) 48 ms over the whole store
+    (`plan-views-budget.test.ts`, 250 ms).
+  - Bulk changes: one request per `ITEM_BULK_MAX` cards, so a type of 5,000 cards is 25 requests; 200 moves over a
+    full store 76 ms (`group-moves.test.ts`). A built-in's retype over the plan 6 ms (`field-retype.perf.test.ts`);
+    an Edit Field over every card 4.8 ms (`field-kind-change.test.ts`).
+  - Imports: a full plan of cards with ten comments each lands in one batch in about 1.0 to 1.2 s of CPU
+    (`item-import-route.test.ts`, budget 2.5 s, was 1.5 s); an import at `ITEM_IMPORT_JSON_MAX` peaks at 61.5 MB of
+    live heap against the 64 MB budget (57 MB at 2,000). A tracker file at the caps is read and planned in 520 ms
+    (Trello) and 220 ms (Jira CSV) (`tracker-import.perf.test.ts`).
+  - Dashboards: the fullest Dashboard image (48 charts and metrics) 120 ms (`thumbnail-dashboard.perf.test.ts`); 48
+    Gantts in swimlanes 118 ms with one Gantt model per settings (`keptGanttModel`; 310 ms with a model a picture,
+    past its 300 ms budget, so it is kept per cards and settings in this change) (`plan-view-art.perf.test.ts`); ten
+    field widgets 15 ms (`field-widget-stats.perf.test.ts`); the flow chart's read 296 ms, 2.46 MB
+    (`flow-route.test.ts`, 500 ms); the three flow charts drawn 230 to 300 ms in jsdom, a dot a card on Cycle Time
+    (`FlowViews.test.tsx`, budget 600 ms, was 250 ms at 2,000).
+  - Board redraws in jsdom: a Tab Style pick that changes no card 11 to 80 ms, a theme that redraws every face 2.0
+    to 2.5 s (`PlanBoardView.busy.perf.test.tsx`, budgets 250 ms and 6,000 ms, was 3,000; 4.2 s inside the loaded full suite); a remote filter change
+    that swaps 1,667 cards 1.3 to 1.9 s (`PlanBoardView.filter.perf.test.tsx`, budget 3,000 ms, was 1,500). jsdom
+    draws every face a change shows; a browser draws only the runs near the view, so neither grows with the cap
+    there.
+  - Automations on a full plan: a wake of 25 triggers past 50 writing branch rules 2.2 s (budget 3 s), a blocker of
+    the whole plan 2.0 s (4 s), 50 time rules due at once 0.5 s (1.5 s) (`automations.perf.test.ts`).
 - Projection is O(n log n) per board render, memoised on `(setup, items map identity)`.
 - Changing many cards at once (`patches`) is one request per `ITEM_BULK_MAX` cards and one batch, never a
-  request per card; a type with 2,000 cards is 10 requests.
+  request per card; a type with 5,000 cards is 25 requests.
 - A bulk create or a seed of n cards is one store read and one insert batch per `ITEM_BULK_MAX` cards, and ranks
   them in O(n log n): measured 2,000 creates at 5.3 ms CPU against 73 ms with a sort per create
   (`store-growth.test.ts` holds the growth ratio).
-- Ranks stay short at an open end: 2,000 appends or prepends end at 8 digits (halving the gap reached 334 and 401,
-  past `isValidRank`'s 64).
+- Ranks stay short at an open end: 5,000 appends or prepends (`ITEMS_MAX`) end at 8 digits (halving the gap reached
+  334 and 401 digits at 2,000, past `isValidRank`'s 64).
 - Room op carries only the changed items. A card with a long thread (up to `ITEM_COMMENTS_BYTES`, 128 KB) sends
   its whole thread with every write to it: typical threads are a few KB; the cap bounds the worst case.
 
@@ -1074,10 +1112,10 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
   does pays one primary-key seek (the carry's `MAX(day)`) and one or two upserts. Measured on node:sqlite with every
   schema step and the other `items` triggers (`db/flow-counts.test.ts` holds the budgets): 2,000 cards made in one
   transaction 12.4 ms without the triggers and 23 ms with them; all 2,000 moved in one statement 5.1 ms and 14.5 ms;
-  one move 0.066 ms and 0.074 ms. Storage is a row per type and status a day holds, only on a day with a change:
+  one move 0.066 ms and 0.074 ms. At 5,000 cards (`ITEMS_MAX`): made 37 ms and 56 ms, moved 12 ms and 38 ms. Storage is a row per type and status a day holds, only on a day with a change:
   a real plan's dozen or two pairs over 181 days is about 4,000 rows; the bound is `ITEMS_MAX` non-zero pairs a day.
-  `flowCountsOf` over that bound (360,000 rows) measures 51 ms, over a real plan's 4,300 rows 0.4 ms
-  (`flow-counts.test.ts` holds a budget at the bound).
+  `flowCountsOf` over that bound measures 51 ms at 2,000 cards (360,000 rows) and 190 ms at 5,000 (905,000 rows), over
+  a real plan's 4,300 rows 0.4 ms (`flow-counts.test.ts` holds a 500 ms budget at the bound).
 
 ## Observability
 
@@ -1094,7 +1132,7 @@ include `fields` or comment text.
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Validation per kind, every rejection                 | `packages/items/src/fields.test.ts`                                                                                                                                                                                                                       |
 | Long Text formatting: key, limit, stale runs         | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                                                                                      |
-| Label usage, spelling, matching, 2,000 cards         | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                                                                                             |
+| Label usage, spelling, matching, a full plan         | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                                                                                             |
 | Rank always between, stable under repeats            | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                                                                                         |
 | Bulk create grows linearly, keeps column order       | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                                                                               |
 | Write checks shared with offline                     | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                                                |
@@ -1118,7 +1156,7 @@ include `fields` or comment text.
 | History: storage, bounds, cascade, no D1             | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                                                                                      |
 | History: writes tagged, roles, scope, redacted       | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                                                                                          |
 | Flow counts: carry, Trash, types, range, bound       | `packages/items/src/flow-counts.test.ts`                                                                                                                                                                                                                  |
-| Flow counts: triggers, seed, read, trim, 2,000 cards | `apps/api/src/db/flow-counts.test.ts` (step seed and rerun included)                                                                                                                                                                                      |
+| Flow counts: triggers, seed, read, trim, a full plan | `apps/api/src/db/flow-counts.test.ts` (step seed and rerun included)                                                                                                                                                                                      |
 | Flow metrics: finish, start, percentiles, periods    | `packages/items/src/flow-metrics.test.ts`                                                                                                                                                                                                                 |
 | Flow read: query, roles, tab scope, types, 2,000     | `apps/api/src/routes/flow-route.test.ts`                                                                                                                                                                                                                  |
 | History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`                                                                |
@@ -1133,44 +1171,44 @@ include `fields` or comment text.
 
 ## Constants and configuration
 
-| Constant                    | Value                     | Provenance / safe range                                 |
-| --------------------------- | ------------------------- | ------------------------------------------------------- |
-| `ITEMS_MAX`                 | 2000                      | Spec; a board past a few hundred cards stops being read |
-| `ASSISTANT_ID_PREFIX`       | `ai-`                     | Spec (items.md "Handing a card to an AI assistant")     |
-| `ASSISTANT_CLIENT_MAX`      | 40                        | Spec; an MCP client's name fits                         |
-| `ASSISTANT_CLIENT_SLUG_MAX` | 24                        | Spec; keeps the id at 52, inside the person kind's 64   |
-| `ITEM_FIELDS_BYTES`         | 16384                     | Spec; 4 KB–64 KB                                        |
-| `ITEM_FIELDS_MAX`           | 64                        | Spec                                                    |
-| `ITEM_TITLE_MAX`            | 500                       | Spec; raised from 200 for long card titles              |
-| `ITEM_DESCRIPTION_MAX`      | 10000                     | Spec                                                    |
-| `ITEM_LABELS_MAX`           | 12                        | Spec                                                    |
-| `ITEM_CHECKLIST_MAX`        | 50                        | Spec                                                    |
-| `ITEM_BULK_MAX`             | 200                       | A sync of a big offline doc batches                     |
-| `BIG_ITEMS_CHANGE`          | 200                       | `usePlanItems.ts`: a store change drawn as a transition |
-| `ITEM_WRITE_RETRIES`        | 3                         | As changesets' retry                                    |
-| `ITEM_KEY_MAX`              | 1000000                   | A named key's ceiling; keeps the next key far from 2^53 |
-| `ITEM_COMMENTS_MAX`         | 200                       | Spec; a card's conversation, well past a real one       |
-| `ITEM_COMMENTS_BYTES`       | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                |
-| `ITEM_REFETCH_DEBOUNCE_MS`  | 400                       | Coalesces a burst of gaps                               |
-| `ITEM_ID_PATTERN`           | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                     |
-| `ITEM_FIELD_KEY_PATTERN`    | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                    |
-| `ITEM_HISTORY_MAX`          | 200                       | Card #122; a busy card's year of moves; 50 to 1000      |
-| `ITEM_HISTORY_MAX_AGE_MS`   | 180 days                  | What a reader asks about; 30 to 365 days                |
-| `ITEM_HISTORY_GROUP_MS`     | 60000                     | Spec "within a minute"                                  |
-| `ITEM_HISTORY_VALUE_MAX`    | 80                        | One readable line; 40 to 200                            |
-| `ITEM_HISTORY_LIST_MAX`     | 12                        | `ITEM_LABELS_MAX`                                       |
-| `ITEM_HISTORY_CHANGES_MAX`  | 16                        | Bounds one entry; a write changes a few fields          |
-| `ITEM_HISTORY_REFETCH_MS`   | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
-| `FLOW_DAYS_MAX`             | 180                       | Card 854 answer (b); `ITEM_HISTORY_MAX_AGE_MS` in days  |
-| `FLOW_NO_STATUS`            | `''`                      | The key is never null; no status a column can hold      |
-| `FLOW_RANGES`               | `[14, 30, 90, 180]`       | Spec "Range"                                            |
-| `FLOW_RANGE_DEFAULT`        | 30                        | Spec "Range": Last 30 Days                              |
-| `FLOW_DAILY_MAX`            | 14                        | Spec: per day in Last 14 Days                           |
-| `ACTIVITY_ENTRIES_SHOWN`    | 20                        | Spec; a tab's worth before Show More                    |
-| `REPEAT_COPIES_PER_WAKE`    | 25                        | Bounds one alarm's work; 10 to 100                      |
-| `REPEAT_MORE_MS`            | 1000                      | The next wake while rows remain; 0.5 to 10 s            |
-| `REPEAT_SEARCH_DAYS`        | 400                       | A year and a month: every rule meets a day within it    |
-| `REPEAT_ZONE_CACHE_MAX`     | 32                        | Zones a plan's rules name; 8 to 64                      |
+| Constant                    | Value                     | Provenance / safe range                                                                                                                      |
+| --------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ITEMS_MAX`                 | 5000                      | Spec (owner 2026-11-15, Work Tracker 672, was 2000); measured at the cap in "Performance and limits"; safe to 5,000 without windowed loading |
+| `ASSISTANT_ID_PREFIX`       | `ai-`                     | Spec (items.md "Handing a card to an AI assistant")                                                                                          |
+| `ASSISTANT_CLIENT_MAX`      | 40                        | Spec; an MCP client's name fits                                                                                                              |
+| `ASSISTANT_CLIENT_SLUG_MAX` | 24                        | Spec; keeps the id at 52, inside the person kind's 64                                                                                        |
+| `ITEM_FIELDS_BYTES`         | 16384                     | Spec; 4 KB–64 KB                                                                                                                             |
+| `ITEM_FIELDS_MAX`           | 64                        | Spec                                                                                                                                         |
+| `ITEM_TITLE_MAX`            | 500                       | Spec; raised from 200 for long card titles                                                                                                   |
+| `ITEM_DESCRIPTION_MAX`      | 10000                     | Spec                                                                                                                                         |
+| `ITEM_LABELS_MAX`           | 12                        | Spec                                                                                                                                         |
+| `ITEM_CHECKLIST_MAX`        | 50                        | Spec                                                                                                                                         |
+| `ITEM_BULK_MAX`             | 200                       | A sync of a big offline doc batches                                                                                                          |
+| `BIG_ITEMS_CHANGE`          | 200                       | `usePlanItems.ts`: a store change drawn as a transition                                                                                      |
+| `ITEM_WRITE_RETRIES`        | 3                         | As changesets' retry                                                                                                                         |
+| `ITEM_KEY_MAX`              | 1000000                   | A named key's ceiling; keeps the next key far from 2^53                                                                                      |
+| `ITEM_COMMENTS_MAX`         | 200                       | Spec; a card's conversation, well past a real one                                                                                            |
+| `ITEM_COMMENTS_BYTES`       | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                                                                                                     |
+| `ITEM_REFETCH_DEBOUNCE_MS`  | 400                       | Coalesces a burst of gaps                                                                                                                    |
+| `ITEM_ID_PATTERN`           | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                                                                                                          |
+| `ITEM_FIELD_KEY_PATTERN`    | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                                                                                                         |
+| `ITEM_HISTORY_MAX`          | 200                       | Card #122; a busy card's year of moves; 50 to 1000                                                                                           |
+| `ITEM_HISTORY_MAX_AGE_MS`   | 180 days                  | What a reader asks about; 30 to 365 days                                                                                                     |
+| `ITEM_HISTORY_GROUP_MS`     | 60000                     | Spec "within a minute"                                                                                                                       |
+| `ITEM_HISTORY_VALUE_MAX`    | 80                        | One readable line; 40 to 200                                                                                                                 |
+| `ITEM_HISTORY_LIST_MAX`     | 12                        | `ITEM_LABELS_MAX`                                                                                                                            |
+| `ITEM_HISTORY_CHANGES_MAX`  | 16                        | Bounds one entry; a write changes a few fields                                                                                               |
+| `ITEM_HISTORY_REFETCH_MS`   | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                                                                                                                |
+| `FLOW_DAYS_MAX`             | 180                       | Card 854 answer (b); `ITEM_HISTORY_MAX_AGE_MS` in days                                                                                       |
+| `FLOW_NO_STATUS`            | `''`                      | The key is never null; no status a column can hold                                                                                           |
+| `FLOW_RANGES`               | `[14, 30, 90, 180]`       | Spec "Range"                                                                                                                                 |
+| `FLOW_RANGE_DEFAULT`        | 30                        | Spec "Range": Last 30 Days                                                                                                                   |
+| `FLOW_DAILY_MAX`            | 14                        | Spec: per day in Last 14 Days                                                                                                                |
+| `ACTIVITY_ENTRIES_SHOWN`    | 20                        | Spec; a tab's worth before Show More                                                                                                         |
+| `REPEAT_COPIES_PER_WAKE`    | 25                        | Bounds one alarm's work; 10 to 100                                                                                                           |
+| `REPEAT_MORE_MS`            | 1000                      | The next wake while rows remain; 0.5 to 10 s                                                                                                 |
+| `REPEAT_SEARCH_DAYS`        | 400                       | A year and a month: every rule meets a day within it                                                                                         |
+| `REPEAT_ZONE_CACHE_MAX`     | 32                        | Zones a plan's rules name; 8 to 64                                                                                                           |
 
 ## Many moves (`moves`)
 
@@ -1192,8 +1230,8 @@ undo?: true }` (`store.ts`). `applyMoves(items, moves, ctx)` (`group-moves.ts`) 
   (`item-blocks.test.ts`).
 - **Limits**: at most `ITEM_BULK_MAX` (200) moves a request; the editor splits a larger write in order (each
   chunk's first move names the last card of the one before, which has landed). The pool is copied once per attempt;
-  each move sorts one column (`columnItems`), so 200 moves over a 2,000-card store stay well under a Worker's CPU
-  budget (measured in `group-moves.test.ts`, `cpuBudgetMs`).
+  each move sorts one column (`columnItems`), so 200 moves over a full store (`ITEMS_MAX`) stay well under a Worker's
+  CPU budget (76 ms at 5,000 cards, measured in `group-moves.test.ts`, `cpuBudgetMs`).
 - **Tests**: `group-moves.test.ts` (the chain, in-order ranks, lane fields, the inverse putting every card back,
   cards from several columns, a card with no status), `store.test.ts` (`moves` through `applyItemWrite`, undo),
   `item-moves-route.test.ts` (participate gate, scope, every refusal naming its id, an Editor needed to archive,

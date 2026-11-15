@@ -20,6 +20,7 @@ import { cardSourceOf } from './card-source';
 import { currencyText, dayLabel } from './card-text';
 import type { Item } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
+import { ITEMS_MAX } from './limits';
 import { canShowAsPercent, percentShown } from './percent-fields';
 import {
   GONE_PROBLEM,
@@ -674,11 +675,11 @@ describe('every surface', () => {
     expect(source.fieldOf({ key: t1.key }, 'Client Mail')).toBe('a@b.co');
   });
 
-  it('works a 2,000-card plan with several rollups out within budget', () => {
+  it('works a full plan (ITEMS_MAX cards) with several rollups out within budget', () => {
     const projects: Item[] = [];
     const cards: Item[] = [];
     for (let i = 0; i < 100; i += 1) projects.push(item({ title: `P${i}` }, { type: 'project' }));
-    for (let i = 0; i < 1900; i += 1)
+    for (let i = 0; i < ITEMS_MAX - 100; i += 1)
       cards.push(
         item({
           title: `T${i}`,

@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
+import { ITEMS_MAX } from '@liveplanner/items';
 import { describe, expect, it } from 'vitest';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
@@ -147,14 +148,14 @@ describe('planServesImage', () => {
     expect(planServesImage(sql, PLAN, IMAGE, ['card-2'])).toBe(true);
   });
 
-  // The read every shared card thumbnail asks: a full plan (ITEMS_MAX, 2,000 cards with real-sized fields, each with
+  // The read every shared card thumbnail asks: a full plan (ITEMS_MAX, 5,000 cards with real-sized fields, each with
   // a Several Images list too) whose only holder is the last card, and the worst case, a granted picture no card holds (every card scanned), each for
   // the whole plan and for a tab-scoped reader whose tab shows 500 cards. Measured at 1.7 ms per check for the whole
   // plan and 0.3 ms for the scoped one (a loaded laptop); the budget is far above that and fails only on a quadratic turn.
-  it('stays cheap on a plan of 2,000 cards', () => {
+  it('stays cheap on a full plan (ITEMS_MAX cards)', () => {
     const { sql, card } = store();
     const filler = 'x'.repeat(400);
-    for (let i = 0; i < 1999; i++) {
+    for (let i = 0; i < ITEMS_MAX - 1; i++) {
       card({
         title: `Card ${i}`,
         description: filler,
@@ -167,7 +168,10 @@ describe('planServesImage', () => {
     recordImageGrant(sql, PLAN, IMAGE, 1);
     recordImageGrant(sql, PLAN, 'unheld', 1);
     // A tab-scoped reader's tab of 500 Plan cards, the holder last among them.
-    const tabCards = [...Array.from({ length: 499 }, (_, i) => `card-${i + 1}`), 'card-2000'];
+    const tabCards = [
+      ...Array.from({ length: 499 }, (_, i) => `card-${i + 1}`),
+      `card-${ITEMS_MAX}`,
+    ];
     const runs = 20;
     let served = true;
     const ms = cpuMsOf(() => {

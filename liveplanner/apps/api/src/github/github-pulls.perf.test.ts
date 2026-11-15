@@ -1,20 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
-import { ITEM_BULK_MAX, defaultCatalogue, itemStatus, type Item } from '@liveplanner/items';
+import {
+  ITEMS_MAX,
+  ITEM_BULK_MAX,
+  defaultCatalogue,
+  itemStatus,
+  type Item,
+} from '@liveplanner/items';
 import { endRepeatWorld } from '../plan-room/test-repeat-world';
 import { connection, githubWorld, prPayload, type GithubWorld } from './test-github-world';
 
-// What one delivery costs a plan of 2,000 cards (docs/specs/026-plan/github-pull-requests.md "Limits"; blueprint
+// What one delivery costs a full plan (ITEMS_MAX cards; docs/specs/026-plan/github-pull-requests.md "Limits"; blueprint
 // "Part 3" "Performance and limits", "Part 4"): a pull request's state kept and sent, its opened trigger queuing a run
 // on each card it links, and the room's wake running them (moving each card). The worst case for the field lookup: every card holds a pull request of the same repository whose number
-// starts with the delivered one's (#42 and #4200 to #6194), so SQLite's LIKE matches all 2,000 and each is read and
+// starts with the delivered one's (#42 and #4205 up), so SQLite's LIKE matches every card and each is read and
 // confirmed. CPU time, never wall-clock (testing.md).
 vi.mock(
   '../auth/accounts',
   async () => (await import('../plan-room/test-accounts-mock')).accountsMock,
 );
 
-const CARDS = 2000;
+const CARDS = ITEMS_MAX;
 let w: GithubWorld;
 beforeEach(async () => {
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
@@ -56,7 +62,7 @@ afterEach(() => {
   endRepeatWorld();
 });
 
-describe('a delivery on a 2,000-card plan', () => {
+describe('a delivery on a full plan (ITEMS_MAX cards)', () => {
   it('keeps the state and moves the 8 cards it links, by field and by mention, within budget', async () => {
     let status = 0;
     const opened = await cpuMsOfAsync(async () => {
@@ -67,7 +73,7 @@ describe('a delivery on a 2,000-card plan', () => {
       status = res.status;
     });
     expect(status).toBe(202);
-    // The wake runs the 8 queued runs (each a move at the column's end, read against the plan's 2,000 cards).
+    // The wake runs the 8 queued runs (each a move at the column's end, read against every card of the plan).
     const ran = await cpuMsOfAsync(() => w.plans.get('A')!.room.alarm());
     const items = await w.items('A');
     const moved = items.filter((i: Item) => itemStatus(i) === 'review');
@@ -76,9 +82,9 @@ describe('a delivery on a 2,000-card plan', () => {
     const edited = await cpuMsOfAsync(async () => {
       await w.deliver('pull_request', prPayload({ action: 'edited', at: '2026-11-12T11:00:00Z' }));
     });
-    // Measured on an M-series Mac: opened (a 60 KB body read for mentions, LIKE over 2,000 cards, 2,000 read and
-    // confirmed, 8 runs queued) 5 to 9 ms; the wake's 8 runs (each move reads the 2,000 cards for its place, as any
-    // rule's move does) 104 to 145 ms; edited (the state alone) 1.4 to 2.7 ms.
+    // Measured on an M-series Mac at 2,000 cards: opened (a 60 KB body read for mentions, LIKE over every card, each
+    // read and confirmed, 8 runs queued) 5 to 9 ms; the wake's 8 runs (each move reads every card for its place, as any
+    // rule's move does) 104 to 145 ms; edited (the state alone) 1.4 to 2.7 ms. At 5,000: 7 ms, 111 ms and 3 ms.
     expect(opened).toBeLessThan(cpuBudgetMs(400));
     expect(ran).toBeLessThan(cpuBudgetMs(1500));
     expect(edited).toBeLessThan(cpuBudgetMs(50));

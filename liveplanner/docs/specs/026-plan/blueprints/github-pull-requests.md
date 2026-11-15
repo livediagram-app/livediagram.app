@@ -374,11 +374,13 @@ planId, types, ref)`: the cards whose fields hold the pull request (`instr(lower
 
 - Per delivery, per plan: one row upsert, one mention lookup by `item_key` (indexed, at most 20 numbers), and, only
   when a rule fires, one `instr` scan of the plan's `items.fields` in SQLite plus a read of the plan's tabs. The
-  measured cost on a 2,000-card plan is in `github-pulls.perf.test.ts` (`cpuMsOf`).
+  measured cost on a full plan (`ITEMS_MAX`) is in `github-pulls.perf.test.ts` (`cpuMsOf`): at 5,000 cards the
+  delivery 7 ms, the wake's 8 moves 111 ms, an edit 3 ms.
 - `GET /items` adds one read of the plan's kept statuses (at most 500) and `cardPullRequests` over the cards answered.
-- The editor redraws only the cards whose linked statuses change. A delivery on a 2,000-card board makes the lookups
+- The editor redraws only the cards whose linked statuses change. A delivery on a full board (`ITEMS_MAX`) makes the lookups
   again and re-picks each card from its kept fields; the first draw parses each field's address once
-  (`packages/items/src/pull-request-state.perf.test.ts`). The unknown-key check looks only at cards that changed
+  (`packages/items/src/pull-request-state.perf.test.ts`: 85 ms for the first draw and 10 ms for a delivery at 5,000
+  cards). The unknown-key check looks only at cards that changed
   since its last pass.
 
 ### Testing (part 3)
@@ -391,10 +393,10 @@ planId, types, ref)`: the cards whose fields hold the pull request (`instr(lower
 | Rules (part 4 replaced them with GitHub triggers, tested there)                             | `apps/api/src/github/github-triggers.test.ts`               |
 | `GET /items` answers states to the cards' readers, a tab's alone, a Community visitor none  | `apps/api/src/github/github-pulls.test.ts`                  |
 | Only a signed-in whole-plan Editor sets the rules                                           | `apps/api/src/routes/github-routes.test.ts`                 |
-| A delivery's work on a 2,000-card plan                                                      | `apps/api/src/github/github-pulls.perf.test.ts`             |
+| A delivery's work on a full plan                                                            | `apps/api/src/github/github-pulls.perf.test.ts`             |
 | The face's pill and marks, the panel's chip and list                                        | `apps/editor/components/plan/PullRequestPill.test.tsx`      |
 | The screen's states: reads, ops, a reset, a tab's empty op, one more read per unknown key   | `apps/editor/hooks/plan/usePullRequestStatuses.test.ts`     |
-| A 2,000-card board's picks, first draw and a delivery                                       | `packages/items/src/pull-request-state.perf.test.ts`        |
+| A full board's picks, first draw and a delivery                                             | `packages/items/src/pull-request-state.perf.test.ts`        |
 | GitHub's moves in Activity: its disc and name, a run of their own                           | `apps/editor/components/plan/threads/CardActivity.test.tsx` |
 
 ## Part 4: GitHub in Automations

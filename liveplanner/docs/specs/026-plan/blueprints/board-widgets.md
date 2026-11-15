@@ -197,7 +197,7 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
 - Field summaries: one pass per field over the board's cards, kept in a `WeakMap` keyed by the card list and checked
   against the field's definition, its types, the reader, the day and the done columns, so re-renders and a field's
   several views cost nothing more. `fieldFills` reads every field in one pass for For You. Ten fields and For You
-  over 2,000 cards: 12 ms CPU measured (field-widget-stats.perf.test.ts, budget 60 ms).
+  over 2,000 cards: 12 ms CPU measured, 15 ms over 5,000 (field-widget-stats.perf.test.ts, budget 60 ms).
 - **A filter change** (a teammate's arrives as a whole new set-up off the wire): `PlanBoardView` projects, counts and
   draws from `useDrawnSetup(setup)`, the set-up without `filter`, matched by a JSON key so it keeps one identity while
   only the filter changes. `usePlanBoardProjection` keeps the unfiltered projection (and `shownItems`, the widgets'
@@ -211,7 +211,8 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
   projection, 0.59 to 0.60 ms. The whole board in jsdom (dev build, `PlanBoardView.filter.perf.test.tsx`): before, 2
   projections and every widget recounted per change; after, 1 projection and 0 recounts, and a change that shows the
   same cards draws 0 card faces. What remains of a change that swaps hundreds of cards (667 here, 540 to 760 ms in
-  jsdom dev) is drawing the newly shown cards themselves, not the projection or the counts.
+  jsdom dev; 1,667 at 5,000 cards, 1.3 to 1.9 s, against a 3,000 ms budget) is drawing the newly shown cards
+  themselves, not the projection or the counts.
 - **Measured in a browser** (production build, Chromium at 4x CPU throttle, 2,000 cards over five columns, a
   Participant's board watching the owner change the shared filter; main-thread time over the change, two runs): a
   change that shows the same cards (the projection alone) 27 to 47 ms in all, against 56 ms for the same window with
@@ -234,7 +235,7 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
 | +n opens and closes without scrolling its row (preventScroll) | packages/workbench AnchoredPopover.focus.test.tsx              |
 | Field shapes, views, keys, cap, boardFields, state, toggle    | packages/items/src/field-widgets.test.ts                       |
 | Each shape's summary, caching, fills, number text             | packages/plan-art/src/field-widget-stats.test.ts               |
-| 2,000 cards × 10 fields within the CPU budget                 | packages/plan-art/src/field-widget-stats.perf.test.ts          |
+| A full board (ITEMS_MAX) × 10 fields within the CPU budget    | packages/plan-art/src/field-widget-stats.perf.test.ts          |
 | For You scores, reasons, cap, empty board, plural names       | packages/plan-art/src/widget-suggestions.test.ts               |
 | Pressing a value: chips, roles, toggling, cap, 500-card cost  | FieldWidgetView.test.tsx, packages/items card-search.test.ts   |
 | Every value: the "+n" popover, its rows, staying open, phone  | FieldWidgetView.test.tsx                                       |
@@ -310,7 +311,7 @@ canEditCards`, `write = plan.setBoardFilter(element.id, ·)`.
   debounced and flushed on unmount, Show All at once, a Viewer cannot change it), widget role tests (Viewer disabled,
   Participant presses), `PlanBoardView.filter-empty.test.tsx` (the hint for an Editor and a Participant with Show
   All, a Viewer without it, per viewer, one card, never on an empty board, a phone or a slot),
-  `PlanBoardView.filter.perf.test.tsx` (2,000 cards: one projection, no widget recount, within the CPU budget),
+  `PlanBoardView.filter.perf.test.tsx` (`ITEMS_MAX` cards: one projection, no widget recount, within the CPU budget),
   `useDrawnSetup.test.ts`, `kept-stat.test.ts`.
 
 ## Filter field and saved filters (board-widgets.md "The Filter widget", "Saved filters")

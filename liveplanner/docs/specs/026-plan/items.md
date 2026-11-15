@@ -1070,7 +1070,10 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   by the api) is not kept: the field goes back to the saved value, and a toast names why ("That title is too
   long: a card title holds up to 500 characters", "That value is too long or isn't one this field takes").
 
-- Up to 2,000 items per project; a create past it is refused with `items_full`.
+- Up to 5,000 items per project; a create past it is refused with `items_full`, and the editor's toast names the cap
+  ("This plan already holds 5,000 cards, the most it can"). Every card still loads into the editor at once, so the
+  cap is set by what the editor reads and draws in good time, not by storage (blueprint
+  [item-store.md](blueprints/item-store.md) "Performance and limits").
 - Up to 20 pictures in a card's Attachments ([Attachments](#attachments)), each at most 10 MB.
 - Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
   card's comment threads sit outside that budget: up to 50 threads a card, 20 cards a thread, and 200 comments and

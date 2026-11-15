@@ -14,6 +14,7 @@ import {
 import type { AccessLevel, ItemsRoomOp } from '@liveplanner/api-schema';
 import {
   EMPTY_ITEM_STORE,
+  ITEMS_MAX,
   ITEM_TITLE_MAX,
   applyItemWrite,
   asUndoWrite,
@@ -141,7 +142,8 @@ export function refusalMessage(code: string): string {
 // What a failed or refused write says (a full plan, a named refusal, or the generic line).
 export function writeFailureMessage(err: unknown): string {
   const code = (err as { code?: string } | null)?.code;
-  if (code === 'items_full') return 'This plan already holds the most items it can';
+  if (code === 'items_full')
+    return `This plan already holds ${ITEMS_MAX.toLocaleString('en-GB')} cards, the most it can`;
   return code ? refusalMessage(code) : "Couldn't save that change";
 }
 

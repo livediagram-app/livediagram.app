@@ -1,12 +1,18 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/board-widgets.md "The board's filter" (Work Tracker 881, 882): a filter change arriving from a
-// teammate re-projects every open copy of the board, so on a 2,000-card board it must cost one filtered projection:
+// teammate re-projects every open copy of the board, so on a full board (ITEMS_MAX) it must cost one filtered projection:
 // the unfiltered projection the widgets count is kept, the widgets do not recount, and only the cards the filter
 // shows or hides are drawn. Inside a CPU budget (not wall-clock: docs/specs/003-system-architecture/testing.md).
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { ITEM_TYPES, presetSetup, type BoardFilter, type Item } from '@liveplanner/items';
+import {
+  ITEMS_MAX,
+  ITEM_TYPES,
+  presetSetup,
+  type BoardFilter,
+  type Item,
+} from '@liveplanner/items';
 import type { ShapeElement } from '@liveplanner/project';
 import { PlanBoardView } from './PlanBoardView';
 import { PlanProvider, type PlanContextValue } from './PlanContext';
@@ -124,9 +130,11 @@ const element = (filter?: BoardFilter): ShapeElement =>
     }),
   ) as ShapeElement;
 
-const BUSY_CARDS = 2000;
-// Measured locally on this machine: see board-widgets blueprint "Performance and limits" for the numbers.
-const FILTER_BUDGET_MS = 1500;
+const BUSY_CARDS = ITEMS_MAX;
+// Measured locally on this machine: see board-widgets blueprint "Performance and limits" for the numbers. jsdom draws
+// every card a change shows (1,667 faces at 5,000 cards, 1.3 to 1.9 s; 667 at 2,000, 540 to 760 ms), where a browser
+// draws only the runs near the view, so the budget follows the faces drawn; the counts above catch a second projection.
+const FILTER_BUDGET_MS = 3000;
 
 describe('A remote filter change on a busy board', () => {
   it(`projects once, recounts no widget and keeps the unfiltered cards (${BUSY_CARDS} cards)`, () => {

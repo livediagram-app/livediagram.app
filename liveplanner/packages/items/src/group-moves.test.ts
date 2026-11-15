@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { applyMoves, groupMoves, inverseMoves } from './group-moves';
 import { columnItems } from './apply';
+import { ITEMS_MAX } from './limits';
 import { rankBetween } from './rank';
 import { applyItemWrite, inverseItemWrites, type ItemStoreState } from './store';
 import type { Item } from './item';
@@ -77,8 +78,8 @@ describe('applyMoves', () => {
     });
   });
 
-  it('keeps 200 moves over a 2,000-card store within a small CPU budget', () => {
-    const big = [...column('todo', 1000), ...column('done', 1000)];
+  it('keeps 200 moves over a full store (ITEMS_MAX cards) within a small CPU budget', () => {
+    const big = [...column('todo', ITEMS_MAX / 2), ...column('done', ITEMS_MAX / 2)];
     const moving = big.slice(0, 200).map((i) => i.id);
     const spent = cpuMsOf(() => {
       const r = applyMoves(big, groupMoves(moving, { status: 'done', before: null }), ctx);

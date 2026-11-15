@@ -2,7 +2,13 @@
 // "Filters", "Paging"; Work Tracker 900).
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { ITEM_TYPES, TRASH_STATUS, type Item, type ItemTypeDef } from '@liveplanner/items';
+import {
+  ITEMS_MAX,
+  ITEM_TYPES,
+  TRASH_STATUS,
+  type Item,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import {
   LIST_ITEMS_BUDGET,
   LIST_ITEMS_LIMIT_MAX,
@@ -194,16 +200,20 @@ describe('list_items on a plan shaped like the Work Tracker', () => {
     expect(pages.at(-1)!.nextCursor).toBeUndefined();
   });
 
-  it('pages 2,000 cards within a CPU budget', () => {
-    const big = workTracker(2000, 1800);
+  it('pages a full plan (ITEMS_MAX cards) within a CPU budget', () => {
+    const big = workTracker(ITEMS_MAX, ITEMS_MAX - 200);
     const run = () => void allPages(big, { includeClosed: true });
     run();
     let best = Infinity;
     for (let pass = 0; pass < 3; pass++) best = Math.min(best, cpuMsOf(run));
-    // About 45 ms here; building every card's fields before cutting the page, or measuring the whole answer per card
-    // (quadratic), takes many times the budget.
+    // Every page reads the whole plan (a request each), so all of them grow with the square of the cards: about 45 ms
+    // at 2,000, 208 ms at 5,000, one page staying linear. Building every card's fields before cutting the page, or
+    // measuring the whole answer per card (quadratic), takes many times the budget.
     expect(best).toBeLessThan(cpuBudgetMs(400));
-  });
+    // The budget is CPU time, not wall time. The test pages the plan four times (one warm-up, three timed), so it
+    // spends about 0.9 s here and 1.7 s under coverage (2026-11-15), several times that on CI's shared two-core
+    // runners: past vitest's 5 s default, which failed the run without a CPU regression.
+  }, 30_000);
 });
 
 describe('what list_items leaves out', () => {

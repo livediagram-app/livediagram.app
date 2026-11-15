@@ -1,7 +1,7 @@
 // Item store bounds (docs/specs/026-plan/items.md "Limits"; provenance and
 // safe ranges in docs/specs/026-plan/blueprints/item-store.md "Constants").
 
-export const ITEMS_MAX = 2000;
+export const ITEMS_MAX = 5000;
 export const ITEM_FIELDS_BYTES = 16_384;
 export const ITEM_FIELDS_MAX = 64;
 export const ITEM_TITLE_MAX = 500;

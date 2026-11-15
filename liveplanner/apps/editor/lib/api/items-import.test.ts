@@ -52,7 +52,7 @@ describe('writeItem: a whole create', () => {
       .fn()
       .mockResolvedValueOnce(staged(200))
       .mockResolvedValueOnce(
-        Response.json({ error: 'items_full', message: 'a plan holds 2000 items' }, { status: 413 }),
+        Response.json({ error: 'items_full', message: 'a plan holds 5000 items' }, { status: 413 }),
       );
     vi.stubGlobal('fetch', fetch);
     const failure = await writeItem(scope, whole, by).catch((e: unknown) => e);

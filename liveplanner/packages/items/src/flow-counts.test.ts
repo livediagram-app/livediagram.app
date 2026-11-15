@@ -8,6 +8,7 @@ import {
   type FlowCountRow,
 } from './flow-counts';
 import { TRASH_STATUS } from './board-model';
+import { ITEMS_MAX } from './limits';
 
 // The flow counts' reading (docs/specs/026-plan/items.md "Flow counts"): each day of a range reads its own rows, else
 // the last stored day before it; the Trash and other card types are left out.
@@ -100,17 +101,18 @@ describe('flowCountsOf', () => {
     expect(flowCountsOf([row(0, 'todo', 1)], 5, 4)).toMatchObject({ days: 0, countedFrom: null });
   });
 
-  // A worst case the plan can store: every one of 180 days changed, with 2,000 cards each in a status of its own
+  // A worst case the plan can store: every one of 180 days changed, with a full plan's cards each in a status of its own
   // (ITEMS_MAX distinct type and status pairs, far past a real plan's dozen or two).
-  it('reads 180 days of a 2,000-card plan within budget', () => {
+  it('reads 180 days of a full plan (ITEMS_MAX cards) within budget', () => {
     const rows: FlowCountRow[] = [];
     for (let day = 0; day < FLOW_DAYS_MAX; day++)
-      for (let s = 0; s < 2000; s++) rows.push(row(day, `s${s}`, 1));
+      for (let s = 0; s < ITEMS_MAX; s++) rows.push(row(day, `s${s}`, 1));
     let counts = flowCountsOf([], 0, 0);
     const ms = cpuMsOf(() => {
       counts = flowCountsOf(rows, 0, FLOW_DAYS_MAX - 1);
     });
-    expect(counts.byStatus.size).toBe(2000);
-    expect(ms).toBeLessThan(cpuBudgetMs(300));
+    expect(counts.byStatus.size).toBe(ITEMS_MAX);
+    // 905,000 rows: measured about 190 ms at 5,000 cards (51 ms over the 360,000 rows of the old 2,000).
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
 });

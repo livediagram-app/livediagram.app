@@ -24,7 +24,7 @@ Asana, Jira or Linear export, planning what it makes, and writing it from the ed
 
 ### Model and limits (`tracker-model.ts`)
 
-- `TRACKER_FILE_MAX_BYTES = 20 * 1024 * 1024`; `TRACKER_CARDS_MAX = ITEMS_MAX` (2,000);
+- `TRACKER_FILE_MAX_BYTES = 20 * 1024 * 1024`; `TRACKER_CARDS_MAX = ITEMS_MAX` (5,000);
   `TRACKER_COMMENTS_MAX = 20_000`; `TRACKER_CARD_COMMENTS_MAX = 200` (project's `THREAD_COMMENTS_MAX`);
   `TRACKER_COMMENT_TEXT_MAX = 2_000` (`THREAD_COMMENT_TEXT_MAX`); `TRACKER_THREAD_BUDGET = 120_000` (characters of
   comment JSON a thread is planned to, under project's `THREAD_BYTES` 131,072 with room for the authors);
@@ -284,7 +284,7 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
 | File over 20 MB                            | refused before reading (`tracker-file.ts`; agents `file_too_large`), the spec's sentence     |
 | Bad JSON / unknown shape                   | `not_json` / `unknown_source`, inline                                                        |
-| Over 2,000 cards / no cards                | `too_many_cards` (count) / `no_cards`, inline; nothing offered                               |
+| Over 5,000 cards / no cards                | `too_many_cards` (count) / `no_cards`, inline; nothing offered                               |
 | Plan lacks room or the catalogue is full   | preview `fits: false`, tab target dimmed with `reason`, New Plan chosen; agents `items_full` |
 | More than 12 statuses                      | folded into `Other`, counted                                                                 |
 | A card's fields over 16 KB                 | `fitFields`, counted `shortened`                                                             |
@@ -310,19 +310,21 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 ## Performance and limits
 
 - Reading and planning are linear in the file: lists, members, checklists and comments are indexed by id once (maps),
-  never searched per card. Worst case (2,000 cards, 20,000 comments, 50 checklist items each) is held under a
-  budget by `tracker-import.perf.test.ts` (well under a second on CI).
+  never searched per card. Worst case (5,000 cards, the comments capped at 20,000, 50 checklist items each) is held
+  under a budget by `tracker-import.perf.test.ts`: 520 ms for the Trello board and 220 ms for the Jira CSV on an
+  M-series Mac.
 - Writes are batched: one type save, one tab, then import parts of up to `ITEM_BULK_MAX` cards and
   `ITEM_WRITE_BYTES` (6 MB, `packages/items/src/create-batches.ts` `createBatches`) each, under the api's 8 MB body
   cap, threads inside them. The parts are held in the plan's SQLite (one chunked insert each) and landed by one
   transaction: rows through 1 MB JSON chunks (a statement per chunk, three parameters, no compound select), a
-  thread and a link statement per card with comments. At the caps (2,000 cards, 20,000 comments) that is under
-  4,100 statements in one batch, held under a CPU budget by `item-import-route.test.ts`.
+  thread and a link statement per card with comments. At the caps (5,000 cards, 20,000 comments) that is under
+  10,100 statements in one batch, held under a CPU budget by `item-import-route.test.ts` (5,000 cards of ten comments
+  each land in 1.0 to 1.2 s of CPU, against 2.5 s).
 - **The landing's memory** (Work Item 377). The last part reads every held card into the plan's Durable Object (128 MB
   limit) and answers every card, so its peak grows with the import's JSON, at about 2.2 times it (live V8 heap over
   the heap before the last part, a forced collection at each statement, write batch and relay; node 22). Measured: a
   450-card Trello board (0.9 MB) peaks at 3.2 MB; a 2,000-card board of 19.2 MB (the file and card caps at once) at
-  44.9 MB. That is under the 64 MB budget (half the object's limit, the rest for the room and its other requests), so
+  44.9 MB; an import at `ITEM_IMPORT_JSON_MAX` of 5,000 cards and 20,000 comments at 61.5 MB (57 MB at 2,000 cards). That is under the 64 MB budget (half the object's limit, the rest for the room and its other requests), so
   the landing is not rewritten. The batch's statements are let go once written (`stmts.length = 0`), before the
   relay builds its ops, which had been the peak (46.5 MB before).
 - The api enforces the bound itself, since the file cap is the client's: `ITEM_IMPORT_JSON_MAX` caps the JSON one
@@ -365,14 +367,14 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 
 ## Constants and configuration
 
-| Constant                    | Value   | Why                                                  |
-| --------------------------- | ------- | ---------------------------------------------------- |
-| `TRACKER_FILE_MAX_BYTES`    | 20 MB   | a large Trello board with its actions fits           |
-| `TRACKER_CARDS_MAX`         | 2,000   | `ITEMS_MAX`                                          |
-| `TRACKER_COMMENTS_MAX`      | 20,000  | ten per card at the cap; bounds the write            |
-| `TRACKER_CARD_COMMENTS_MAX` | 200     | `THREAD_COMMENTS_MAX`                                |
-| `TRACKER_COMMENT_TEXT_MAX`  | 2,000   | `THREAD_COMMENT_TEXT_MAX`                            |
-| `TRACKER_THREAD_BUDGET`     | 120,000 | under `THREAD_BYTES` with room for the comment shape |
-| `TRACKER_CHOICE_MAX`        | 20      | `CUSTOM_CHOICE_OPTIONS_MAX`                          |
-| `ITEM_IMPORT_HOLD_MS`       | 1 hour  | how long an import's parts wait for its last part    |
-| `ITEM_IMPORT_JSON_MAX`      | 26 MiB  | an import's held JSON; bounds the landing's memory   |
+| Constant                    | Value   | Why                                                                                        |
+| --------------------------- | ------- | ------------------------------------------------------------------------------------------ |
+| `TRACKER_FILE_MAX_BYTES`    | 20 MB   | a large Trello board with its actions fits                                                 |
+| `TRACKER_CARDS_MAX`         | 5,000   | `ITEMS_MAX`                                                                                |
+| `TRACKER_COMMENTS_MAX`      | 20,000  | four per card at the cap (ten at the old 2,000); bounds the write and the landing's memory |
+| `TRACKER_CARD_COMMENTS_MAX` | 200     | `THREAD_COMMENTS_MAX`                                                                      |
+| `TRACKER_COMMENT_TEXT_MAX`  | 2,000   | `THREAD_COMMENT_TEXT_MAX`                                                                  |
+| `TRACKER_THREAD_BUDGET`     | 120,000 | under `THREAD_BYTES` with room for the comment shape                                       |
+| `TRACKER_CHOICE_MAX`        | 20      | `CUSTOM_CHOICE_OPTIONS_MAX`                                                                |
+| `ITEM_IMPORT_HOLD_MS`       | 1 hour  | how long an import's parts wait for its last part                                          |
+| `ITEM_IMPORT_JSON_MAX`      | 26 MiB  | an import's held JSON; bounds the landing's memory                                         |

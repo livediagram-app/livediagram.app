@@ -1,12 +1,19 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/plan-views.md "Flow charts": Cycle Time, Throughput and Cumulative Flow drawn from one read of
 // their range, every state, hover, keys and opening a card, who sees the cog, and the render held to a CPU budget on a
-// 2,000-card plan.
+// full plan (ITEMS_MAX cards).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createShape, type PlanViewRef, type ShapeElement } from '@liveplanner/project';
-import { DAY_MS, ITEM_TYPES, type FlowCard, type Item, type PlanViewId } from '@liveplanner/items';
+import {
+  DAY_MS,
+  ITEMS_MAX,
+  ITEM_TYPES,
+  type FlowCard,
+  type Item,
+  type PlanViewId,
+} from '@liveplanner/items';
 import type { FlowResponse } from '@liveplanner/api-schema';
 import { PlanProvider, type PlanContextValue } from '../PlanContext';
 
@@ -338,8 +345,8 @@ describe('flow charts', () => {
     }
   });
 
-  it('draws a busy 2,000-card plan within its CPU budget', async () => {
-    const cards: FlowCard[] = Array.from({ length: 2000 }, (_, i) =>
+  it('draws a full plan (ITEMS_MAX cards) within its CPU budget', async () => {
+    const cards: FlowCard[] = Array.from({ length: ITEMS_MAX }, (_, i) =>
       moved(i + 10, FROM + (i % 25), (i % 9) + 0.5),
     );
     const counts = Array.from({ length: 30 }, (_, d) =>
@@ -362,7 +369,9 @@ describe('flow charts', () => {
       });
     expect(
       document.querySelector('[aria-roledescription="chart"]')!.querySelectorAll('circle').length,
-    ).toBeGreaterThan(1900);
-    expect(ms).toBeLessThan(cpuBudgetMs(250));
+    ).toBeGreaterThan(ITEMS_MAX * 0.95);
+    // Linear in the cards (a dot a card on Cycle Time): 230 to 300 ms in jsdom at 5,000 cards, most of it jsdom building the
+    // dots, so the budget follows the cap (it was 250 ms at 2,000).
+    expect(ms).toBeLessThan(cpuBudgetMs(600));
   });
 });
