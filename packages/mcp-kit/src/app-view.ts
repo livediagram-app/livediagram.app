@@ -55,13 +55,13 @@ button:focus-visible,#stage:focus-visible{outline:2px solid var(--ring);outline-
 .spacer{flex:1}
 #open{background:var(--chip-on);color:var(--chip-on-fg);font-weight:500}
 #note{position:absolute;inset:auto 0 12px;margin:auto;width:max-content;max-width:90%;padding:6px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
-@media (max-width:520px){header{gap:6px}#title{display:none}.tool{flex:none}}
+@media (max-width:520px){header{gap:6px;flex-wrap:wrap}#title{display:none}.tool{flex:none}#tabs{order:9;flex-basis:100%}}
 @media (prefers-reduced-motion:no-preference){#tabs button,.tool{transition:filter .15s}}
 `;
 
 // The canvas view's styles: the stage it pans and zooms, the hover ring, the pager and the live mark.
 const CANVAS_STYLE = `
-#live{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px;white-space:nowrap;cursor:default}
+#live{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px;white-space:nowrap;cursor:default}#live[hidden]{display:none}
 #live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
 #live[data-state=live]::before{background:var(--live)}#live[data-state=wait]::before{background:var(--wait)}
 #zoom{color:var(--muted);font-variant-numeric:tabular-nums;min-width:40px;text-align:right}
@@ -71,7 +71,7 @@ const CANVAS_STYLE = `
 #stage:active{cursor:grabbing}
 #art{position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none;max-width:none}
 #ring{position:absolute;border:2px solid var(--ring);border-radius:6px;pointer-events:none}
-@media (max-width:520px){#zoom{display:none}#live{font-size:0;gap:0;padding:0 2px}#page{min-width:36px}}
+@media (max-width:520px){#zoom{display:none}#live{font-size:0;gap:0;padding:0 2px}#page{min-width:36px}#pager:not([hidden])~#out,#pager:not([hidden])~#in{display:none}}
 @media (prefers-reduced-motion:no-preference){#live[data-state=wait]::before{animation:pulse 1.2s ease-in-out infinite}}
 @keyframes pulse{50%{opacity:.35}}
 `;

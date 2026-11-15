@@ -120,6 +120,17 @@ describe('the view resource and the tool meta', () => {
   it('quotes the app name into the script, so a name never breaks out of its string', () => {
     expect(viewerScript('a"b')).toContain('var APP = "a\\"b"');
   });
+
+  // A view that does not follow the room (live: false) never shows the live mark: its display rule must not
+  // override the hidden attribute it starts with, or an empty grey dot sits in the header.
+  it('keeps every hidden header control hidden', () => {
+    const html = viewerHtml('livedocuments', { idKey: 'documentId', live: false });
+    expect(html).toContain('<span id="live" role="status" hidden></span>');
+    for (const id of ['live', 'pager']) expect(html).toContain(`#${id}[hidden]{display:none}`);
+    // On a phone the tabs take a row of their own, and the pager stands in for the zoom buttons (pinch zooms).
+    expect(html).toContain('#tabs{order:9;flex-basis:100%}');
+    expect(html).toContain('#pager:not([hidden])~#out');
+  });
 });
 
 describe('the viewer’s pure parts', () => {
