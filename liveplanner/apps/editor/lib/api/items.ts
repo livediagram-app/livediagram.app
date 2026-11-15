@@ -44,8 +44,13 @@ export class ItemWritePartlyLanded extends Error {
   }
 }
 
-function itemsUrl(scope: ItemsScope, rest = ''): string {
-  const q = scope.tabId ? `?tabId=${encodeURIComponent(scope.tabId)}` : '';
+// `confirm`: a card removal the person confirmed after the server held it (docs/specs/007-editor/offline-changes.md
+// "Held for review"), which the server does not judge again.
+function itemsUrl(scope: ItemsScope, rest = '', confirm = false): string {
+  const params = new URLSearchParams();
+  if (scope.tabId) params.set('tabId', scope.tabId);
+  if (confirm) params.set('confirmRemoval', '1');
+  const q = params.size > 0 ? `?${params.toString()}` : '';
   return `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}/items${rest}${q}`;
 }
 
@@ -89,9 +94,15 @@ async function refusalCode(res: Response): Promise<string | null> {
   }
 }
 
-async function post<T>(scope: ItemsScope, rest: string, body: unknown, action: string): Promise<T> {
+async function post<T>(
+  scope: ItemsScope,
+  rest: string,
+  body: unknown,
+  action: string,
+  confirm = false,
+): Promise<T> {
   for (let attempt = 1; ; attempt += 1) {
-    const res = await apiFetch(itemsUrl(scope, rest), {
+    const res = await apiFetch(itemsUrl(scope, rest, confirm), {
       method: 'POST',
       headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
       body: JSON.stringify(body),
@@ -131,11 +142,12 @@ async function postInChunks(
   undo?: true,
   // What every request carries beside its items (a tally's Votes field).
   extra: Record<string, unknown> = {},
+  confirm = false,
 ): Promise<ItemWriteAnswer> {
   const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
   for (let i = 0; i < entries.length; i += ITEM_BULK_MAX) {
     const items = entries.slice(i, i + ITEM_BULK_MAX);
-    const res = await apiFetch(itemsUrl(scope, path), {
+    const res = await apiFetch(itemsUrl(scope, path, confirm), {
       method: 'POST',
       headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
       body: JSON.stringify(undoBody({ items, ...extra }, undo)),
@@ -188,9 +200,11 @@ export async function writeItem(
   scope: ItemsScope,
   write: ItemWrite,
   by: ItemPerson,
+  opts: { confirmRemoval?: boolean } = {},
 ): Promise<ItemWriteAnswer> {
   if (await isOfflineId(scope.projectId)) return offlineWriteItem(scope.projectId, write, by);
   const id = 'id' in write ? `/${encodeURIComponent(write.id)}` : '';
+  const confirm = opts.confirmRemoval === true;
   switch (write.kind) {
     case 'create': {
       if (write.whole) return importWhole(scope, write.creates);
@@ -206,7 +220,7 @@ export async function writeItem(
       return answer;
     }
     case 'patch':
-      return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change'));
+      return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change', confirm));
     case 'tally':
       // A session vote's tally, as its host ends it, in the Votes field it counts in (session-tools.md "Count In").
       return postInChunks(
@@ -225,9 +239,13 @@ export async function writeItem(
         write.patches.map(({ id: itemId, patch }) => ({ id: itemId, ...patch })),
         'items change',
         write.undo,
+        {},
+        confirm,
       );
     case 'move':
-      return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
+      return one(
+        await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move', confirm),
+      );
     case 'moves':
       // A group of cards moved together, in order (docs/specs/026-plan/items.md "Move many"): a chunk's first move names
       // the last card of the chunk before, which has landed.
@@ -237,12 +255,14 @@ export async function writeItem(
         write.moves.map(({ id: itemId, move }) => ({ id: itemId, ...move })),
         'items move',
         write.undo,
+        {},
+        confirm,
       );
     // A time write to a Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"); a no-op answers rev -1.
     case 'time':
       return one(await post(scope, `${id}/time`, { field: write.field, ...write.op }, 'item time'));
     case 'delete': {
-      await apiDelete(itemsUrl(scope, id), scope.ownerId, {
+      await apiDelete(itemsUrl(scope, id, confirm), scope.ownerId, {
         action: 'item delete',
         share: scope.shareCode,
         allow404: false,

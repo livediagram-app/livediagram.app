@@ -268,12 +268,12 @@ already runs.
 
 ### Roles
 
-| Role        | Removals                                                                                     |
-| ----------- | -------------------------------------------------------------------------------------------- |
-| Editor      | Judged by the limit; may confirm a held removal from the editor                              |
+| Role        | Removals                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Editor      | Judged by the limit; may confirm a held removal from the editor                             |
 | Participant | Never removes a card (a delete or the Trash is an Editor's), so nothing of theirs is judged |
-| Viewer      | Writes nothing                                                                               |
-| API token   | Judged by the limit; can never confirm                                                       |
+| Viewer      | Writes nothing                                                                              |
+| API token   | Judged by the limit; can never confirm                                                      |
 
 ### The sync paths, audited
 

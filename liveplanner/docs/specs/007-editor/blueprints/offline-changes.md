@@ -5,20 +5,20 @@ Paths are under `apps/editor/` unless they say otherwise.
 
 ## Domain and naming
 
-| Term                         | Identifier                                                                                          |
-| ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| A waiting change             | `QueuedChange` (`lib/offline-queue/plan-queue.ts`), `store: 'items' \| 'sheets'`                    |
-| The queue                    | `PlanQueue`; the page's one per plan and person: `planQueue(projectId, ownerId)`                    |
-| When a change was made       | `seq`, from `nextSeq()`                                                                             |
-| The banner's count           | `waitingChangeCount()` / `subscribeWaitingChanges` (all of the page's queues)                       |
-| "The connection may be back" | `onReconnect(listener)`, fired by the window's `online` event and `signalReconnect()` (room joined) |
-| No answer                    | `isConnectionFailure(e)` (`lib/offline-queue/reconnect.ts`)                                         |
-| Role gate                    | `itemWriteMayWait(level, write)`, `sheetOpMayWait(rights, op, write)` (`queue-roles.ts`)            |
-| Card replay                  | `replayItemQueue(deps)`, `nextItemBatch(changes, splitThrough)`, `alreadyLanded(write, e)`          |
-| Card side in the editor      | `useItemQueue` + `withWaitingItems` (`hooks/plan/useItemQueue.ts`), wired in `usePlanItems`         |
-| A held removal               | `held: true` on an items `QueuedChange`; `isRemovalHeld(e)` (`lib/offline-queue/removal-held.ts`)  |
+| Term                         | Identifier                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------- |
+| A waiting change             | `QueuedChange` (`lib/offline-queue/plan-queue.ts`), `store: 'items' \| 'sheets'`                        |
+| The queue                    | `PlanQueue`; the page's one per plan and person: `planQueue(projectId, ownerId)`                        |
+| When a change was made       | `seq`, from `nextSeq()`                                                                                 |
+| The banner's count           | `waitingChangeCount()` / `subscribeWaitingChanges` (all of the page's queues)                           |
+| "The connection may be back" | `onReconnect(listener)`, fired by the window's `online` event and `signalReconnect()` (room joined)     |
+| No answer                    | `isConnectionFailure(e)` (`lib/offline-queue/reconnect.ts`)                                             |
+| Role gate                    | `itemWriteMayWait(level, write)`, `sheetOpMayWait(rights, op, write)` (`queue-roles.ts`)                |
+| Card replay                  | `replayItemQueue(deps)`, `nextItemBatch(changes, splitThrough)`, `alreadyLanded(write, e)`              |
+| Card side in the editor      | `useItemQueue` + `withWaitingItems` (`hooks/plan/useItemQueue.ts`), wired in `usePlanItems`             |
+| A held removal               | `held: true` on an items `QueuedChange`; `isRemovalHeld(e)` (`lib/offline-queue/removal-held.ts`)       |
 | Held count, review           | `heldChangeCount()`, `confirmHeldChanges()`, `keepHeldCards()`, `subscribeHeldReview` (`plan-queue.ts`) |
-| Sheet side                   | `SheetQueueKeeper` (`components/sheets/sheet-store-queue.ts`), owned by `SheetStore`                |
+| Sheet side                   | `SheetQueueKeeper` (`components/sheets/sheet-store-queue.ts`), owned by `SheetStore`                    |
 
 ## Constants and configuration
 

@@ -41,6 +41,7 @@ import {
 } from '@/lib/offline-queue/plan-queue';
 import { itemWriteMayWait } from '@/lib/offline-queue/queue-roles';
 import { isConnectionFailure } from '@/lib/offline-queue/reconnect';
+import { isRemovalHeld } from '@/lib/offline-queue/removal-held';
 import type { ItemUndoStep } from './item-undo-journal';
 import { useItemQueue, withWaitingItems, withWritesLaid } from './useItemQueue';
 import {
@@ -133,6 +134,9 @@ export function refusalMessage(code: string): string {
     // it first, naming the chain, so this is a race or an undo.
     case 'blocks_cycle':
       return 'Those cards would block each other in a loop';
+    // A mass removal the server held where no queue can keep it (offline-changes.md "Held for review").
+    case 'removal_held':
+      return 'That would remove too many cards at once, so it was held';
     default:
       return "Couldn't save that change";
   }
@@ -369,7 +373,7 @@ export function usePlanItems(opts: {
   const itemQueue = useItemQueue({
     queueOf,
     // A queue exists only once the scope does (queueOf).
-    send: (w) => writeItem(scopeRef.current!, w, layBy()),
+    send: (w, o) => writeItem(scopeRef.current!, w, layBy(), o),
     landed: settle,
     refused: (w, err) => {
       console.warn('[offline-queue] items.replay-refused', { kind: w.kind, error: String(err) });
@@ -414,7 +418,7 @@ export function usePlanItems(opts: {
         queue && itemWriteMayWait(levelRef.current, write)
           ? { id: `i${seq.toString(36)}`, seq, store: 'items', write }
           : null;
-      if (queue && change && (!getOnline() || queue.count('items') > 0)) {
+      if (queue && change && (!getOnline() || queue.waiting('items') > 0)) {
         if (queue.add(change) === 'full') {
           if (!silent) callbacks.current.onError(PLAN_QUEUE_FULL_MESSAGE);
           return { ok: false, made: [] };
@@ -441,6 +445,11 @@ export function usePlanItems(opts: {
         if (queue && change && !landed && isConnectionFailure(err) && queue.add(change) === 'ok') {
           itemQueue.kick();
           return { ok: true, made: [] };
+        }
+        // Held as a mass removal (offline-changes.md "Held for review"): kept in the queue, still shown, for the
+        // person to confirm or take back from the Needs Review banner.
+        if (queue && change && !landed && isRemovalHeld(err)) {
+          if (queue.add({ ...change, held: true }) === 'ok') return { ok: true, made: [] };
         }
         if (landed) settle(landed);
         const kept = new Set(landed?.upserts.map((u) => u.id));
