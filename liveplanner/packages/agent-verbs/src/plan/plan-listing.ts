@@ -252,6 +252,9 @@ export interface ListedType {
   // types"); every other part is the base's.
   inherits?: string;
   ownFields?: string[];
+  // Its card templates (docs/specs/026-plan/plan-agents.md "Card templates"): id, name and the fields each sets, by
+  // name. Absent when it has none.
+  templates?: { id: string; name: string; fields: string[] }[];
 }
 
 interface PlanListing {
@@ -503,6 +506,22 @@ export function listedType(
       ? {
           inherits: types.find((b) => b.id === t.inherits)?.label ?? t.inherits,
           ownFields: (t.ownFields ?? []).map(fieldName),
+        }
+      : {}),
+    ...(t.templates?.length
+      ? {
+          templates: t.templates.map((tp) => ({
+            id: tp.id,
+            name: tp.name,
+            // A Rich key reads as its field's name, once.
+            fields: [
+              ...new Set(
+                Object.keys(tp.fields).map((k) =>
+                  fieldName(isRichFieldKey(k) ? k.slice(0, -'Rich'.length) : k),
+                ),
+              ),
+            ],
+          })),
         }
       : {}),
   };
