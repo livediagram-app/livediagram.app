@@ -7,7 +7,7 @@ import {
   elementKindsText,
   SCHEMA_KIND_MAX_TOKENS,
 } from './element-format';
-import { PLAN_COMMON_FIELDS, PLAN_KIND_FIELDS } from './plan-elements';
+import { PLAN_COMMON_FIELDS, PLAN_KIND_FIELDS, PLAN_VIEW_FORMAT } from './plan-elements';
 import { parseEditOperations } from './parse';
 
 describe('the element format', () => {
@@ -43,6 +43,17 @@ describe('the element format', () => {
     expect(view).toContain('planView textSize (sm|md|lg');
     expect(view).toContain('x y width height label locked');
     expect(elementFormatText('bar-chart')).toContain('chartSource { "sheetId", "range" }');
+  });
+
+  // docs/specs/026-plan/plan-agents.md "Making a dashboard": the view ids and a flow chart's range, for agents.
+  it("names a plan view's ids and a flow chart's range, on the plan view alone", () => {
+    const view = elementFormatText('plan-view')!;
+    expect(view).toContain(PLAN_VIEW_FORMAT);
+    for (const id of ['metric:count', 'gantt', 'cycle-time', 'throughput', 'cumulative-flow'])
+      expect(view).toContain(id);
+    expect(view).not.toContain('status-mix');
+    expect(view).toContain('"rangeDays", 14, 30 (the default), 90, 180');
+    expect(elementFormatText('bar-chart')).not.toContain('rangeDays');
   });
 
   it('knows nothing of a kind no tab holds', () => {

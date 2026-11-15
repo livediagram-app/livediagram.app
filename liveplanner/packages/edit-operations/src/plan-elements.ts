@@ -2,7 +2,15 @@
 // board, a Sheet tab's Sheet with the charts drawn from it, and a Dashboard tab's views and charts. Edit operations
 // add, set and test these and nothing else, so an agent can make only what liveplanner draws.
 
-import { PLAN_COLUMN_NAME_MAX, PLAN_TITLE_MAX, type Element } from '@liveplanner/project';
+import {
+  FLOW_RANGES,
+  FLOW_RANGE_DEFAULT,
+  FLOW_VIEWS,
+  PLAN_COLUMN_NAME_MAX,
+  PLAN_TITLE_MAX,
+  type Element,
+} from '@liveplanner/project';
+import { DASHBOARD_CHART_VIEWS, DASHBOARD_METRIC_KINDS } from '@liveplanner/templates';
 
 export const PLAN_ELEMENT_KINDS = [
   'plan-board',
@@ -23,6 +31,19 @@ export const PLAN_ELEMENT_ABOUT: Readonly<Record<PlanElementKind, string>> = {
   'line-chart': "a line, area or scatter chart of a Sheet's cells, in the Sheet or on a Dashboard",
   'pie-chart': "a pie or doughnut chart of a Sheet's cells, in the Sheet or on a Dashboard",
 };
+
+// What a plan view's `planView` holds (docs/specs/026-plan/plan-views.md, "Flow charts"), read off the lists the
+// validator and the Dashboard builder take, so the format the schema prints cannot drift from what is accepted.
+export const PLAN_VIEW_FORMAT =
+  'planView is { "view", … }: "view" is a metric (' +
+  DASHBOARD_METRIC_KINDS.map((m) => `metric:${m}`).join(', ') +
+  ') or a chart (' +
+  DASHBOARD_CHART_VIEWS.join(', ') +
+  '); "types" (card type ids) limits a chart to them; a flow chart (' +
+  FLOW_VIEWS.join(', ') +
+  ') takes "rangeDays", ' +
+  FLOW_RANGES.map((r) => (r === FLOW_RANGE_DEFAULT ? `${r} (the default)` : String(r))).join(', ') +
+  '.';
 
 // The fields every Plan element takes: where it sits, its name and its lock.
 export const PLAN_COMMON_FIELDS = ['x', 'y', 'width', 'height', 'label', 'locked'] as const;

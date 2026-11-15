@@ -5,12 +5,12 @@
 // move / pointer-up effect are unchanged from their previous inline
 // shape; only the surrounding closure has changed.
 //
-// Why a hook (not a lib helper): the drag state IS React state
-// (setDrag triggers re-render so the wrapper element renders with the
-// right cursor + the resize handles see the live drag), and the
-// pointer-move effect attaches global listeners that have to be torn
-// down via the effect-cleanup convention. Both are React-shaped, so
-// they belong in a hook rather than a pure module.
+// Why a hook (not a lib helper): the pointer listeners have to be torn
+// down via the effect-cleanup convention, and the begin* handlers read
+// the editor's newest state. The drag itself is held in a store, not
+// React state (docs/specs/008-canvas/canvas-performance.md "A press
+// re-renders what shows the gesture"): a press would otherwise render
+// the whole editor. What shows the drag reads a slice of `dragStore`.
 //
 // Why a deps ref: the pointer-move effect's listeners need to read
 // `activeTab.elements`, `tick`, `zoomRef`, etc. on every move event,
@@ -19,6 +19,7 @@
 // fresh view of the parent state on every fire.
 
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
 import type { Element } from '@livedesign/design';
 import type { DragState } from '@/lib/canvas';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
@@ -32,7 +33,8 @@ import { applyOverlay, clearLocalPreview, localPreview, setLocalPreview } from '
 import { attachDragListeners } from './editor-drag-listeners';
 
 export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
-  const [drag, setDrag] = useState<DragState | null>(null);
+  const [dragStore] = useState(() => createStateStore<DragState | null>(null));
+  const setDrag = dragStore.set;
   // Alignment guides for the active gesture. Set from the move-effect on
   // every boxed move / single-element resize, cleared on pointer-up. The
   // render layer (CanvasChrome) draws them as faint lines.
@@ -141,38 +143,50 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     beginArrowLabelDrag,
   } = useArrowDragHandlers({ depsRef, setDrag, checkpointPendingRef, arrowConnectTrackedRef });
 
-  // Global pointer-move / pointer-up listeners. Attached once per
-  // drag-start, torn down when the drag ends. Every fire reads
-  // through depsRef so an external state change (zoom, selection,
-  // active-tab swap) is reflected without re-attaching. The listeners
-  // themselves live in editor-drag-listeners.ts.
+  // Global pointer-move / pointer-up listeners, following the drag store: attached for each new
+  // drag value, the previous value's torn down, all of it on unmount. Every fire reads through
+  // depsRef so an external state change (zoom, selection, active-tab swap) is reflected without
+  // re-attaching. The listeners themselves live in editor-drag-listeners.ts.
   useEffect(() => {
-    // A gesture that ended by a route that neither committed nor cancelled keeps its result, as when
-    // every tick was a write.
-    if (!drag) {
-      commitPreview();
-      return;
-    }
-    return attachDragListeners({
-      drag,
-      depsRef,
-      setDrag,
-      scheduleGuides,
-      scheduleSnapTargets,
-      dragEngagedRef,
-      checkpointPendingRef,
-      arrowConnectTrackedRef,
-      dupSwapRef,
-      setShiftDupGhostIds,
-      virtualTab,
-      previewTick,
-      commitPreview,
-      cancelPreview,
-    });
-  }, [depsRef, drag, scheduleGuides, scheduleSnapTargets]);
+    let detach: (() => void) | undefined;
+    const follow = () => {
+      detach?.();
+      detach = undefined;
+      const drag = dragStore.get();
+      // A gesture that ended by a route that neither committed nor cancelled keeps its result, as
+      // when every tick was a write.
+      if (!drag) {
+        commitPreview();
+        return;
+      }
+      detach = attachDragListeners({
+        drag,
+        depsRef,
+        setDrag: dragStore.set,
+        scheduleGuides,
+        scheduleSnapTargets,
+        dragEngagedRef,
+        checkpointPendingRef,
+        arrowConnectTrackedRef,
+        dupSwapRef,
+        setShiftDupGhostIds,
+        virtualTab,
+        previewTick,
+        commitPreview,
+        cancelPreview,
+      });
+    };
+    const unsubscribe = dragStore.subscribe(follow);
+    // A drag begun before this subscription (a re-run of the effect) keeps its listeners.
+    if (dragStore.get()) follow();
+    return () => {
+      unsubscribe();
+      detach?.();
+    };
+  }, [depsRef, dragStore, scheduleGuides, scheduleSnapTargets]);
 
   return {
-    drag,
+    dragStore,
     shiftDupGhostIds,
     snapGuideStore,
     beginDrag,

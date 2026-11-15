@@ -18,6 +18,8 @@ import {
   blocksValueChanged,
   blockingCycleOf,
   blockingLoopMessage,
+  fieldRefusalOf,
+  PLAN_FIELDS_BYTES,
   type BlockingChange,
   type Item,
   type ItemPerson,
@@ -71,6 +73,27 @@ export function rejected(error: ItemRejection, field?: string): Response {
   console.info('[items] items.rejected', { error, field });
   return json({ error, ...(field ? { field } : {}) }, { status: 400 });
 }
+
+// A body its read refused (write-checks.ts), naming the field and the limit its value broke when the refusal was a
+// field value's (docs/specs/026-plan/items.md "Limits"): `fields` is the body's own (a create's `fields`, a patch's or
+// move's `set`), `id` the item a many-item write names.
+export function rejectedRead(
+  error: ItemRejection,
+  fields: unknown,
+  mode: 'create' | 'patch',
+  id?: string,
+): Response {
+  const { field, limit } = fieldRefusalOf(error, fields, mode);
+  console.info('[items] items.rejected', { error, field, ...(id ? { id } : {}) });
+  return json(
+    { error, ...(id ? { id } : {}), ...(field ? { field } : {}), ...(limit ? { limit } : {}) },
+    { status: 400 },
+  );
+}
+
+// A body's own value at `key` (a create's `fields`, a patch's `set`), or undefined.
+export const bodyValue = (raw: unknown, key: string): unknown =>
+  raw && typeof raw === 'object' ? (raw as Record<string, unknown>)[key] : undefined;
 
 export const itemNotFound = () => json({ error: 'item_not_found' }, { status: 404 });
 
@@ -183,6 +206,18 @@ export async function isItemEditor(ctx: PlanRouteContext, caller: ItemCaller): P
 export const ITEM_RETRY_PAUSE_MS = 15;
 export const itemRetryPause = (attempt: number): Promise<void> =>
   new Promise((r) => setTimeout(r, ITEM_RETRY_PAUSE_MS * attempt * Math.random()));
+
+// A write that would take the plan's cards past the plan fields budget (docs/specs/026-plan/items.md "Limits").
+export const planFull = () => {
+  console.info('[items] items.rejected plan_full');
+  return json(
+    {
+      error: 'plan_full',
+      message: `a plan's cards hold up to ${PLAN_FIELDS_BYTES / 1024 / 1024} MB of fields together`,
+    },
+    { status: 413 },
+  );
+};
 
 export const itemBusy = () => {
   console.warn('[items] items.write.busy');

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   CARD_TEMPLATES_BYTES,
+  CARD_TEMPLATE_BYTES,
   CARD_TEMPLATES_MAX,
   cardTemplateFields,
   cardTemplatesBytes,
@@ -12,7 +13,6 @@ import {
   type CardTemplate,
 } from './card-templates';
 import type { ItemTypeDef } from './item-types';
-import { ITEM_FIELDS_BYTES } from './limits';
 import { defaultCatalogue, validateItemTypeCatalogue } from './type-catalogue';
 import { duplicateItemType } from './type-duplicate';
 import { detachType } from './type-inheritance';
@@ -361,7 +361,7 @@ describe('the templates’ own budget', () => {
   });
 
   it('holds one template to a card’s field budget', () => {
-    expect(ITEM_FIELDS_BYTES).toBe(16_384);
+    expect(CARD_TEMPLATE_BYTES).toBe(16_384);
     expect(readCardTemplates([], BUG as never, 'types[0]', 'keep')).toEqual([]);
   });
 });

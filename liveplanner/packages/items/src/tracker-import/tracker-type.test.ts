@@ -107,7 +107,7 @@ describe('fitFields', () => {
 
   it('drops checklist rows from the end when the rest of the card is too large without its description', () => {
     const bulk = Object.fromEntries(
-      Array.from({ length: 4 }, (_, i) => [`f-x${i}`, 'x'.repeat(1900)]),
+      Array.from({ length: 6 }, (_, i) => [`f-x${i}`, 'x'.repeat(9200)]),
     );
     const checklist = Array.from({ length: 50 }, (_, i) => ({
       text: `${i} ${'c'.repeat(190)}`,
@@ -123,8 +123,8 @@ describe('fitFields', () => {
 
   it('drops the checklist whole when no row fits, and refuses what still does not fit', () => {
     const bulk = {
-      ...Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`f-x${i}`, 'x'.repeat(2000)])),
-      'f-y': 'y'.repeat(100),
+      ...Object.fromEntries(Array.from({ length: 6 }, (_, i) => [`f-x${i}`, 'x'.repeat(10_000)])),
+      'f-y': 'y'.repeat(5400),
     };
     const one = fitFields({
       title: 'A',
@@ -134,7 +134,7 @@ describe('fitFields', () => {
     expect(one).toMatchObject({ shortened: true });
     expect(one!.fields['checklist']).toBeUndefined();
     const huge = Object.fromEntries(
-      Array.from({ length: 10 }, (_, i) => [`f-x${i}`, 'x'.repeat(1990)]),
+      Array.from({ length: 7 }, (_, i) => [`f-x${i}`, 'x'.repeat(9990)]),
     );
     expect(fitFields({ title: 'A', ...huge })).toBeNull();
   });

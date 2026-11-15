@@ -3,6 +3,7 @@
 // column name, a card type's name, a custom field's name, a person's name, "#12"); the server resolves the ids.
 import { z } from 'zod';
 import { listedPullRequestSchema } from '../plan/card-pull-requests';
+import { FIELD_LIMITS } from '../plan/api-refusal';
 import {
   LIST_ITEMS_LIMIT_MAX,
   LIST_ITEMS_NAMES_MAX,
@@ -64,7 +65,9 @@ const fieldsArg = z
       '), checklist [{text,done}], parent ("#12", a Project), flagged (every card: true flags it for attention, ' +
       'false unflags it), and the card type’s custom fields by name ' +
       '("Severity": "S2"; a Card field takes "#12"; a field marked multiple takes a list or a comma list, "Sam, Ana" or ' +
-      '"#3, #5", and [] or null clears it; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
+      '"#3, #5", and [] or null clears it; a longtext field takes Markdown, as description does). ' +
+      FIELD_LIMITS +
+      ' A field the card type lacks is refused: add it with ' +
       'change_card_types. A new card must give every custom field list_items marks required. An image field ' +
       '(one picture, or several with multiple) and attachments take picture ids from upload_image: ' +
       '{"add": ["<id>"]} (added at the end, up to 20; an image field holding one is set to it), {"remove": ["<id>"]}, ' +

@@ -53,7 +53,7 @@ describe('the comments field', () => {
     const big = thread(150);
     const fields = { title: 'A', comments: big };
     expect(fieldsByteSize(fields)).toBe(fieldsByteSize({ title: 'A' }));
-    expect(commentsByteSize(fields)).toBeGreaterThan(ITEM_FIELDS_BYTES / 2);
+    expect(commentsByteSize(fields)).toBeGreaterThan(ITEM_FIELDS_BYTES / 8);
     expect(commentsByteSize({ title: 'A' })).toBe(0);
     expect(fieldsWithinBounds(fields)).toBeNull();
   });

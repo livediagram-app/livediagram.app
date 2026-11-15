@@ -152,7 +152,8 @@ describe('planServesImage', () => {
   // a Several Images list too) whose only holder is the last card, and the worst case, a granted picture no card holds (every card scanned), each for
   // the whole plan and for a tab-scoped reader whose tab shows 500 cards. Measured at 1.7 ms per check for the whole
   // plan and 0.3 ms for the scoped one (a loaded laptop); the budget is far above that and fails only on a quadratic turn.
-  it('stays cheap on a full plan (ITEMS_MAX cards)', () => {
+  // The budget is CPU time, not wall time: a loaded CI runner stretches only the wall clock past vitest's 5 s default.
+  it('stays cheap on a full plan (ITEMS_MAX cards)', { timeout: 30_000 }, () => {
     const { sql, card } = store();
     const filler = 'x'.repeat(400);
     for (let i = 0; i < ITEMS_MAX - 1; i++) {

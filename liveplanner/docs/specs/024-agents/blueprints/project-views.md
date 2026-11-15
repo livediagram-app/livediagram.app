@@ -326,7 +326,7 @@ are escaped as `\;` and `\}` too.
 | `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set |        |
 | `plan-board`                      | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`                                       |        |
 | `plan-card`                       | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                                                       |        |
-| `plan-view`                       | `view=<planView.view as cellText>`, `view=none` when absent                                                                  |        |
+| `plan-view`                       | `view=<planView.view as cellText>`, `view=none` when absent; a flow view adds ` rangeDays=<flowRangeOf>` (30 when unset)     |        |
 | `plan-sheet`                      | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                                                   |        |
 
 The table line prints its label first when it has one. Every text a summary prints from the project goes through

@@ -216,11 +216,11 @@ export function useEditorInput({
   // Wiring it up here passes the editor-page's "what is going on
   // right now" state as deps so the hook can read fresh values on
   // every pointer move without re-attaching listeners.
-  // `drag` itself isn't consumed in the page (Canvas pulls cursor
-  // styling from `canvasTool`, not the drag state); only the four
-  // begin-handlers below are passed through to Canvas as props.
+  // The drag itself is a store (`dragStore`): what shows it reads a slice, so a press renders
+  // neither this page nor the canvas (docs/specs/008-canvas/canvas-performance.md "A press re-renders
+  // what shows the gesture").
   const {
-    drag,
+    dragStore,
     shiftDupGhostIds,
     snapGuideStore,
     beginDrag,
@@ -417,7 +417,7 @@ export function useEditorInput({
     cancelEdit,
     selectElement,
     toggleInMultiSelect,
-    drag,
+    dragStore,
     shiftDupGhostIds,
     snapGuideStore,
     beginDrag,

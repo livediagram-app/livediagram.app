@@ -10,6 +10,7 @@ import type {
 } from '@livedesign/design';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { SnapGuideStore } from './useSnapGuideState';
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 
 // External state + callbacks the drag machine reads on every move.
 // Bundled into one object so the hook signature doesn't sprout
@@ -109,7 +110,9 @@ export type EditorDragDeps = {
 };
 
 export type EditorDragApi = {
-  drag: DragState | null;
+  // The drag under way, held outside React (docs/specs/008-canvas/canvas-performance.md "A press re-renders
+  // what shows the gesture"): what shows it reads a slice with useStoreSlice.
+  dragStore: ReadableStore<DragState | null>;
   // The dragged element ids to render translucent while a shift-duplicate
   // is in progress (docs/specs/008-canvas/shift-drag-duplicate.md): copies already sit at the drag's start
   // position, so the set following the cursor shows as a ghost. Null

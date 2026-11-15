@@ -1094,7 +1094,7 @@ Spec "Editing a type" (Templates) and "Card templates".
   `settledTemplates(templates, startIds)` (`card-template-draft.ts`: a template not in `start.templates` takes
   `newCardTemplateId(name, taken)` in order, so its id comes from its name at Save) when non-empty. `templatesProblem`
   (`card-template-draft.ts`) of `{ templates, otherBytes: cardTemplatesBytes(types other than this one) }` answers the
-  first of: blank name, clashing name, a template over `ITEM_FIELDS_BYTES` (`fieldsByteSize`), the plan's over
+  first of: blank name, clashing name, a template over `CARD_TEMPLATE_BYTES` (16 KB, `fieldsByteSize`), the plan's over
   `CARD_TEMPLATES_BYTES`; it comes before the catalogue check's own in `problem`, and flags `templates`. A catalogue
   refusal whose reason holds `.templates` or is `templates` also flags `templates` ("A template’s values break a
   card’s limits.").

@@ -1,15 +1,23 @@
 // The bulk item write both /items/patches and /items/tally make (docs/specs/026-plan/items.md): read the wanted
 // items, build each one's next state, write them in one D1 batch guarded by the revs read, relay what landed, and
-// retry the rest a concurrent write moved on. A failure after some items landed (a refusal while building a retry,
+// retry the rest a concurrent write moved on. A batch that would take the plan past its fields budget is refused
+// (`plan_full`) before it is written. A failure after some items landed (a refusal while building a retry,
 // or still busy after the last attempt) carries them (`items`, `rev`, as a success's answer), so the caller keeps
 // them rather than taking the whole request as unwritten, and never sends a landed tally again.
 import type { ItemsResponse } from '@liveplanner/api-schema';
 import { ITEM_WRITE_RETRIES, type Item, type ItemHistoryTag } from '@liveplanner/items';
-import { readItems, updateItemsAtRev } from '../db';
+import { fieldsGrowth, planFullFor, readItems, updateItemsAtRev } from '../db';
 import { appendItemHistory } from '../db/item-history';
 import { json } from '../responses';
 import type { PlanRouteContext } from './context';
-import { forCaller, itemBusy, itemRetryPause, relay, type ItemCaller } from './item-route-kit';
+import {
+  forCaller,
+  itemBusy,
+  itemRetryPause,
+  planFull,
+  relay,
+  type ItemCaller,
+} from './item-route-kit';
 import { writeSource } from './automation-source';
 
 // One attempt's next states by id, or a refusal. `missing`: how many wanted ids were not found on this read.
@@ -53,6 +61,12 @@ export async function writeItemsWithRetry<T extends { id: string }>(
     const nexts = await build(pending, stored, { attempt, missing: ids.length - stored.size });
     if (nexts instanceof Response) return withLanded(nexts, caller, done, rev);
     if (nexts.size === 0) break;
+    // The plan fields budget (items.md "Limits"): refused only when this attempt grows the plan past it.
+    const growth = fieldsGrowth(
+      [...nexts].map(([id, next]) => ({ before: stored.get(id)!, next })),
+    );
+    if (await planFullFor(ctx.env, projectId, growth))
+      return withLanded(planFull(), caller, done, rev);
     const written = await updateItemsAtRev(
       ctx.env,
       projectId,

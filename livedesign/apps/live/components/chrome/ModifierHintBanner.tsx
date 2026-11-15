@@ -11,6 +11,8 @@ import {
   usePaletteStripBox,
 } from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { useShiftHeld } from '@liveworkspace/workbench/hooks/ui/useShiftHeld';
+import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 
 // The modifier hint (docs/specs/008-canvas/canvas-and-palette.md): a passive top-centre pill naming what
 // a modifier does right now.
@@ -51,23 +53,29 @@ export function selectedKindOf(
   return el.type === 'arrow' ? 'arrow' : el.type === 'table' ? 'table' : 'other';
 }
 
-// The banner with its selection read from the store (docs/specs/008-canvas/blueprints/selection-store.md):
-// a selection change renders this, not the editor view that places it.
+const wholeDrag = (drag: DragState | null) => drag;
+
+// The banner with its selection and its drag read from their stores (docs/specs/008-canvas/blueprints/
+// selection-store.md, canvas-performance.md "The drag state lives in a store"): a selection change or a
+// press renders this, not the editor view that places it.
 export function ModifierHint({
   elements,
   readOnly = false,
+  dragStore,
   ...banner
 }: {
   elements: readonly Element[];
   // A read-only session (a Participant, a Viewer) never splits an arrow, so a selected arrow gets the
   // general hint, not the branch one (docs/specs/013-workspace/share-roles.md).
   readOnly?: boolean;
-} & Omit<ComponentProps<typeof ModifierHintBanner>, 'selectedKind'>) {
+  dragStore: ReadableStore<DragState | null>;
+} & Omit<ComponentProps<typeof ModifierHintBanner>, 'selectedKind' | 'drag'>) {
   const kind = useSelectionOf(
     useCallback((s: Selection) => selectedKindOf(elements, s.selectedId), [elements]),
   );
+  const drag = useStoreSlice(dragStore, wholeDrag);
   const selectedKind = readOnly && kind === 'arrow' ? 'other' : kind;
-  return <ModifierHintBanner {...banner} selectedKind={selectedKind} />;
+  return <ModifierHintBanner {...banner} drag={drag} selectedKind={selectedKind} />;
 }
 
 const KEY_CHIP =

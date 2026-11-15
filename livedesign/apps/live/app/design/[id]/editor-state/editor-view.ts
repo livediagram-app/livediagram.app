@@ -173,7 +173,7 @@ export function editorView({
     deleteCurvePoint: inputSlice.deleteCurvePoint,
     beginArrowElbowDrag: inputSlice.beginArrowElbowDrag,
     beginArrowLabelDrag: inputSlice.beginArrowLabelDrag,
-    drag: inputSlice.drag,
+    dragStore: inputSlice.dragStore,
     beginArrowTranslate: inputSlice.beginArrowTranslate,
     beginDrag: inputSlice.beginDrag,
     pressArmedAction: inputSlice.pressArmedAction,

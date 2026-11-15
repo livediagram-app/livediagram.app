@@ -151,6 +151,21 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   layer do not render; at the press and the release, the element list does not render unless an
   element changed.
 
+### The drag state lives in a store
+
+- `useEditorDrag` holds the drag (`DragState | null`) in a `createStateStore` from
+  `@liveworkspace/workbench/lib/state-store`, made once per editor, instead of `useState`. The `begin*`
+  handlers, the listeners and the shift-duplicate swap write it with the same `setDrag(value)` calls.
+- The listeners follow the store: one subscription, made in an effect, attaches them for each new drag
+  value and detaches the previous one's; a `null` value commits any preview the gesture left, as the
+  effect keyed on the drag did.
+- The hook hands on `dragStore` (read side), not the drag. Readers take a slice with `useStoreSlice`:
+  the reshaping arrow's id (`useEditCanvasProps`) and the Shift hint's drag (`EditorView`, for
+  `ModifierHintBanner`). So a press renders those two, not the editor root and not every reader of
+  the editor context.
+- Invariant: a press on an element that starts a drag, and its release where nothing moved, render the
+  editor root no times (a render count in `useEditorDrag`'s tests).
+
 ### The element plane
 
 - `CanvasElementList` renders every element inside one `<div data-element-plane class="contents">`:

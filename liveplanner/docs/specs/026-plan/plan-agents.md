@@ -242,9 +242,11 @@ Every write takes what a person would say, and stores the ids:
     call), or `"every"` for each Board and Sheet tab in order; two to a row.
   - `metrics`: metric tiles, four to a row: `count` (cards), `progress` (percent done), `people`, `types`,
     `priorities`, `due` (overdue and due soon), `unassigned`, `points` (estimates), `top-voted`, `stale`.
-  - `charts`: `{ view, groupBy?, types?, name?, startField?, dueField?, measure? }`, two to a row and a Gantt a row of its own: `gantt`, `calendar` (by
+  - `charts`: `{ view, groupBy?, types?, name?, startField?, dueField?, measure?, rangeDays? }`, two to a row and a Gantt a row of its own: `gantt`, `calendar` (by
     due date), `start-calendar`, `workload` (Cards by a field: `groupBy` assignee, type, priority, status or a field by
-    name), `priority-matrix` (Priority by Status), `search`; `types` narrows a chart to card types by name; `name` is
+    name), `priority-matrix` (Priority by Status), `search`, and the [flow charts](plan-views.md#flow-charts)
+    `cycle-time`, `throughput` and `cumulative-flow`, whose `rangeDays` is 14, 30 (the default, never stored), 90 or
+    180; any other range, or a `rangeDays` on another chart, is refused naming what fits; `types` narrows a chart to card types by name; `name` is
     the slot's own name in place of the generated heading ([A slot's name](plan-tabs.md#dashboard-tab)), trimmed, up
     to 80 characters, an empty one ignored. `startField` and `dueField` (a Gantt chart; a calendar its own date)
     name the Date fields it reads ([Dates](plan-views.md#dates)), and `measure` what Cards by Field adds up
@@ -253,6 +255,17 @@ Every write takes what a person would say, and stores the ids:
   - Rows run in that order (tabs, metrics, Gantts, other charts, notes), up to the Dashboard's 12 rows; anything past
     them is left off and the answer says so.
 - A name or view the project lacks is refused naming those there are.
+- Elsewhere a flow chart is a plan view element like any other: `update_project` adds or changes one with
+  `planView: { "view": "throughput", "rangeDays": 90 }`, the CLI with `liveplanner element set <plan> w1
+planView={…}` or a changeset, and the api refuses a range outside 14, 30, 90 and 180 (`invalid_result`, naming
+  them). A replace's `dashboard` body (the CLI's and the REST door's) takes a chart's `settings.rangeDays` and is
+  refused the same way before anything is built. `liveplanner schema plan-view` and the element schema list the view
+  ids and the range.
+- **Roles**: a Dashboard, and a flow chart's Range and Card Types on it, change only for an Editor (an edit link, an
+  edit link scoped to that tab, or an agent acting for one); a Participant's or Viewer's changeset or save is refused
+  (403) and nothing changes. Every role that may read the plan reads the charts and `GET /projects/:id/flow`; a link
+  scoped to a tab that shows every card reads the flow there, and one scoped to a tab showing only some is refused it
+  ([Flow charts](plan-views.md#flow-charts) "Who sees what").
 - `update_project` in replace mode takes `dashboard` on a Dashboard tab and rebuilds it whole, the tab keeping its
   id, name and theme. On any other tab it is refused (`invalid_value`), pointing at `add_tab`.
 - A tab of another kind that holds a board or a Sheet (a Blank Plan tab given a board by `add_board`) can be shown;
@@ -472,6 +485,17 @@ Editor of the whole plan: the whole contract is in [Automations](automations.md#
 - A refusal says what was wrong, what is there, and the next call to make. It never answers with a raw api
   status.
 - A tool error is a tool result marked as an error, never a thrown protocol error, for anything the caller can fix.
+- A value refused for its length or count names the field as the card shows it (its label, "Solution", never
+  `f-solution`), how long or how many it was and the most it takes: "Solution is 12,412 characters; the most is
+  10,000", "Acceptance Criteria row 3 is 230 characters; the most is 200 a row", "Acceptance Criteria has 51 rows; the
+  most is 50". The words are the same whether the agents' own check stopped it before the write (a custom Text, a
+  checklist, labels, a title) or the api refused it (its `field` and `limit`, [Items](items.md) "Limits"); a value
+  past a limit is never quoted back. Any other refused field value still names the field, then lists the fields.
+  The same refusals reach the CLI, which shares the verbs.
+- A plan whose cards would pass the plan fields budget (`plan_full`, [Items](items.md) "Limits") says so in plain
+  words and what to do: "the plan's cards together hold the most a plan can (16 MB of fields). Shorten long
+  descriptions or Long Text fields, empty or delete cards no longer needed, or put new cards in another plan
+  (create_project). Moving cards between columns still works."
 - A call past the per-token rate limit says so and how long to wait (about a minute, the limit's window), so an
   agent makes the same call again rather than giving up or guessing at a back-off.
 
