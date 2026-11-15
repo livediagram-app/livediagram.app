@@ -181,7 +181,8 @@ held block, put it elsewhere, remove it or change a held cell (a whole-table wri
 its table) is refused, nothing written: `409 paragraphs_held`, its message naming each holder and the paragraph's
 opening words ("Sam Lee is writing in \"The plan for spring…\". Try again once they pause, or leave that paragraph
 as it is."), and `held` listing each `{ flow, blockId, row?, col?, by: { name, color } }`. A write that leaves every
-held block as it is goes ahead. Page changes never touch the writing and are never held.
+held block as it is goes ahead. The CLI and the MCP give the refusal the hint `wait for them to pause with: --wait-held
+<seconds>`. Page changes never touch the writing and are never held.
 
 - Every hold counts, whoever holds it, the agent owner's own included: people outrank agents, and a person mid-word
   would lose it.
