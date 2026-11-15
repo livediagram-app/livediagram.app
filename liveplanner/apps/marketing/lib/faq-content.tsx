@@ -59,7 +59,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Does it work on my phone or tablet?',
-        a: 'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the most room for a board or a sheet. On a phone, a dashboard stacks its slots one under another so each is easy to read and work in.',
+        a: 'It runs in any modern browser, with nothing to install, and you can add it to your home screen to open it like an app. A laptop, desktop or tablet gives you the most room for a board or a sheet. On a phone, a dashboard stacks its slots one under another so each is easy to read and work in.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -194,6 +194,45 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes, with Automations. A rule watches the plan and acts when something happens: a card moves to Done and it stamps the date, a bug comes in and it goes to the next person on triage, a due date nears and the assignee gets an email or a Slack post. Rules can also run on a schedule or from another tool, and start from a ready-made template. They run on our servers, so they work on plans saved to your account. See automations.',
       },
       {
+        q: 'Can cards follow our GitHub pull requests?',
+        a: (
+          <>
+            Yes. Connect a plan to GitHub and each card shows where its pull requests stand: draft,
+            open, checks passing or failing, merged or closed. Automations can then act when a pull
+            request opens, merges or its checks finish, such as moving the card to Done when its
+            code lands. See <a href="/help/plan/connect-github/">Connect GitHub</a>.
+          </>
+        ),
+        aText:
+          'Yes. Connect a plan to GitHub and each card shows where its pull requests stand: draft, open, checks passing or failing, merged or closed. Automations can then act when a pull request opens, merges or its checks finish, such as moving the card to Done when its code lands. See Connect GitHub.',
+      },
+      {
+        q: 'Can I see card dates in my own calendar?',
+        a: (
+          <>
+            Yes. Signed in, Subscribe to Calendar gives you a private link that Google Calendar,
+            Outlook or Apple Calendar shows beside your meetings, kept up to date. Pick one board or
+            all of them, and only your own cards if you like. It is read-only, and Reset Link stops
+            the old link at once. See <a href="/help/plan/calendar-feed/">Subscribe to Calendar</a>.
+          </>
+        ),
+        aText:
+          'Yes. Signed in, Subscribe to Calendar gives you a private link that Google Calendar, Outlook or Apple Calendar shows beside your meetings, kept up to date. Pick one board or all of them, and only your own cards if you like. It is read-only, and Reset Link stops the old link at once. See Subscribe to Calendar.',
+      },
+      {
+        q: 'Can a card start already filled in?',
+        a: (
+          <>
+            Yes. Save a card template on a card type, such as a bug report with its steps to
+            reproduce or a release with its checklist, and a new card starts with its title,
+            description, checklist, labels and fields already in. See{' '}
+            <a href="/help/plan/card-templates/">card templates</a>.
+          </>
+        ),
+        aText:
+          'Yes. Save a card template on a card type, such as a bug report with its steps to reproduce or a release with its checklist, and a new card starts with its title, description, checklist, labels and fields already in. See card templates.',
+      },
+      {
         q: 'What templates are there?',
         a: `${TEMPLATE_COUNT} ready-made templates in ${TEMPLATE_CATEGORY_COUNT} categories, by what the work is for, from Customer Support and Events to Personal and Sales, each set up with its tabs: plans such as Project Planner, Kanban Board, Bug Tracker, Team Retro, Content Calendar, Hiring Pipeline, OKRs, Event Planner, Sales CRM, Help Desk, Meeting Agenda, Personal Goals and Study Planner; spreadsheets such as a Budget Planner, Timesheet, Invoice, Expense Report, Sales Pipeline and Inventory; and forms such as a Bug Report, Feedback, Feature Request, Event RSVP, Job Application and Contact form. Or start from a blank board, sheet or form.`,
       },
@@ -321,14 +360,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'How do I keep up with what changed?',
         a: (
           <>
-            Your Inbox gathers the cards and comment threads waiting on you across every plan, and
-            Home shows what other people did while you were away. Once you sign in, emails can tell
-            you too, and you choose which in Settings. See{' '}
-            <a href="/help/explorer/activity/">the Inbox</a>.
+            Your Inbox gathers the cards and comment threads waiting on you across every plan, Home
+            lists what was shared with you recently, and History on a plan’s menu says who changed
+            it and when. Once you sign in, emails and notifications on your phone can tell you too,
+            and you choose which in Settings. See <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the cards and comment threads waiting on you across every plan, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+          'Your Inbox gathers the cards and comment threads waiting on you across every plan, Home lists what was shared with you recently, and History on a plan’s menu says who changed it and when. Once you sign in, emails and notifications on your phone can tell you too, and you choose which in Settings. See the Inbox.',
       },
     ],
   },
@@ -403,6 +442,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. liveplanner runs an MCP server at mcp.liveplanner.app. Connect a compatible AI tool and, after a one-time authorisation, it can find and read your plans, put boards, sheets and forms on their tabs, and add, edit and move cards, naming columns and fields the way the board shows them. Its changes appear live for anyone on the tab. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+      },
+      {
+        q: 'Can AI set up a plan for me?',
+        a: (
+          <>
+            Yes. Signed in, choose Describe a Plan on Start Planning and say how your work runs. AI
+            drafts the board’s columns, the card types with their fields and a starter rule or two,
+            and shows them to you to change before Make Plan makes anything. See{' '}
+            <a href="/help/plan/describe-a-plan/">Describe a Plan</a>.
+          </>
+        ),
+        aText:
+          'Yes. Signed in, choose Describe a Plan on Start Planning and say how your work runs. AI drafts the board’s columns, the card types with their fields and a starter rule or two, and shows them to you to change before Make Plan makes anything. See Describe a Plan.',
       },
       {
         q: 'Can an AI only read my plans, and not change them?',

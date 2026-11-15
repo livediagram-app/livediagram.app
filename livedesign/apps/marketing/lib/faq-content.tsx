@@ -60,13 +60,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Does it work on my phone or tablet?',
         a: (
           <>
-            It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
-            gives you the full editor. Small phone screens are best for reading, following along and
-            light edits. See <a href="/help/supported-devices/">supported devices</a>.
+            It runs in any modern browser, with nothing to install, and you can add it to your home
+            screen to open it like an app. A laptop, desktop or tablet gives you the full editor.
+            Small phone screens are best for reading, following along and light edits. See{' '}
+            <a href="/help/supported-devices/">supported devices</a>.
           </>
         ),
         aText:
-          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor. Small phone screens are best for reading, following along and light edits. See supported devices.',
+          'It runs in any modern browser, with nothing to install, and you can add it to your home screen to open it like an app. A laptop, desktop or tablet gives you the full editor. Small phone screens are best for reading, following along and light edits. See supported devices.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -182,14 +183,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the
             screen you are planning, and starts from a ready-made screen. Five templates lay out
-            whole flows, from a mobile app to a web dashboard. When it is agreed,{' '}
+            whole flows, from a mobile app to a web dashboard. Link the screens and press Prototype
+            to click through them, or share the walk-through as a link. When it is agreed,{' '}
             <a href="/help/pages/wireframe-pages/inspect/">Inspect</a> shows whoever builds it every
             size, gap, colour and font, ready to copy as CSS. See{' '}
             <a href="/help/pages/wireframe-pages/">wireframe pages</a>.
           </>
         ),
         aText:
-          'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. When it is agreed, Inspect shows whoever builds it every size, gap, colour and font, ready to copy as CSS. See wireframe pages.',
+          'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. Link the screens and press Prototype to click through them, or share the walk-through as a link. When it is agreed, Inspect shows whoever builds it every size, gap, colour and font, ready to copy as CSS. See wireframe pages.',
       },
       {
         q: 'Can I edit photos?',
@@ -293,13 +295,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Your Inbox gathers the actions and comment threads waiting on you across every design,
-            and Home shows what other people did while you were away. Once you sign in, emails can
-            tell you too, and you choose which in Settings. See{' '}
+            Home lists what was shared with you recently, and History on a design’s menu says who
+            changed it and when. Once you sign in, emails and notifications on your phone can tell
+            you too, and you choose which in Settings. See{' '}
             <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the actions and comment threads waiting on you across every design, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+          'Your Inbox gathers the actions and comment threads waiting on you across every design, Home lists what was shared with you recently, and History on a design’s menu says who changed it and when. Once you sign in, emails and notifications on your phone can tell you too, and you choose which in Settings. See the Inbox.',
       },
     ],
   },

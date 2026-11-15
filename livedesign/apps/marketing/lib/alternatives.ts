@@ -36,8 +36,8 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Wireframes',
-        us: 'Phone, tablet, browser, laptop and watch frames with ready-made screens, and Inspect for handoff',
-        them: 'Frames, components, auto layout and clickable prototypes',
+        us: 'Phone, tablet, browser, laptop and watch frames with ready-made screens, clickable prototypes and Inspect for handoff',
+        them: 'Frames, components, auto layout and advanced prototyping',
       },
       {
         label: 'Photo editing',
@@ -52,7 +52,7 @@ const LIST: Alternative[] = [
     ],
     themBest: [
       'A complete product design tool: components, variants, variables and auto layout for a design system that grows with the product.',
-      'Clickable prototypes and a developer handoff mode, for taking a design all the way to code.',
+      'Advanced prototyping, with overlays, variables and smart animation, and Dev Mode for taking a design all the way to code.',
       'A large community of files, plugins and widgets, and most product designers already know it.',
       'A deeper vector editor for detailed illustration and icon work.',
     ],
@@ -91,7 +91,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Can livedesign replace Figma?',
-        a: 'For logos, wireframes and photo edits made together, often yes. If you need a component library, auto layout or clickable prototypes, Figma is the deeper product design tool. Developers can read a livedesign wireframe’s sizes, spacing and colours with Inspect.',
+        a: 'For logos, wireframes and photo edits made together, often yes. If you need a component library, auto layout or advanced prototyping, Figma is the deeper product design tool. A livedesign wireframe’s screens can be linked and clicked through as a prototype, and developers can read their sizes, spacing and colours with Inspect.',
       },
       {
         q: 'Can I import Figma files?',

@@ -52,20 +52,20 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first canvas?',
-        a: `Press Start drawing and choose what you are making: Diagram, Draw or Workshop. Your canvas opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start drawing and choose what you are making: Diagram, Draw or Workshop. Your canvas opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates. Watch It Built shows you round: pick a topic, such as The Basics or Look and Feel, and a cursor builds it on the canvas in front of you, then hands it back.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
         a: (
           <>
-            It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
-            gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone
-            screens are best for viewing and light edits. See{' '}
-            <a href="/help/supported-devices/">supported devices</a>.
+            It runs in any modern browser, with nothing to install, and you can add it to your home
+            screen to open it like an app. A laptop, desktop or tablet gives you the full editor,
+            and a tablet with a pen is lovely in Draw mode. Small phone screens are best for viewing
+            and light edits. See <a href="/help/supported-devices/">supported devices</a>.
           </>
         ),
         aText:
-          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone screens are best for viewing and light edits. See supported devices.',
+          'It runs in any modern browser, with nothing to install, and you can add it to your home screen to open it like an app. A laptop, desktop or tablet gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone screens are best for viewing and light edits. See supported devices.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -337,13 +337,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Your Inbox gathers the actions and comment threads waiting on you across every canvas,
-            and Home shows what other people did while you were away. Once you sign in, emails can
-            tell you too, and you choose which in Settings. See{' '}
+            Home lists what was shared with you recently, and History on a canvas’s menu says who
+            changed it and when. Once you sign in, emails and notifications on your phone can tell
+            you too, and you choose which in Settings. See{' '}
             <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the actions and comment threads waiting on you across every canvas, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+          'Your Inbox gathers the actions and comment threads waiting on you across every canvas, Home lists what was shared with you recently, and History on a canvas’s menu says who changed it and when. Once you sign in, emails and notifications on your phone can tell you too, and you choose which in Settings. See the Inbox.',
       },
       {
         q: 'Is it good for running workshops and retros?',
