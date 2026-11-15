@@ -1,14 +1,15 @@
 'use client';
 
-// The header's History action (docs/specs/006-document/version-history.md "In the editor"): first among the right
-// edge's actions, for every role, on a document stored on the server once it is up. It opens Version History on the
-// open tab. A full-height header action like Share and Copy.
+// The footer's History button (docs/specs/006-document/version-history.md "In the editor"): in the bottom bar's
+// cluster between Search and Settings, as liveplanner's Automations is, for every role, on a document stored on the
+// server once it is up. Labelled from `sm` up like its neighbours, icon-only on a phone. It opens Version History on
+// the open tab.
 import { Glyph, HoverCard } from '@livedocuments/ui';
 import {
-  HEADER_ACTION_BTN,
-  HEADER_ACTION_TONE,
-  HeaderGlyph,
-} from '@liveworkspace/workbench/components/chrome/header-action';
+  CHROME_BTN,
+  CHROME_BTN_LABELLED,
+  ChromeLabel,
+} from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { track } from '@/lib/telemetry';
 import { openVersionHistory } from '@/lib/version-history-store';
 
@@ -22,7 +23,7 @@ export type HistoryGate = {
   community: boolean;
 };
 
-/** Whether the header offers History (blueprint VH19): a document on the server, up, outside an embed or a workbench
+/** Whether the footer offers History (blueprint VH19): a document on the server, up, outside an embed or a workbench
  *  frame, with no welcome open and no Community visitor. */
 export function offersHistory(gate: HistoryGate): boolean {
   return (
@@ -36,7 +37,19 @@ export function offersHistory(gate: HistoryGate): boolean {
   );
 }
 
-export function HistoryHeaderButton({ activeTabId }: { activeTabId: string }) {
+/** Opens Version History on the open tab and counts it: the footer button's press. */
+export function openHistoryFromFooter(activeTabId: string): void {
+  track('Version', 'Opened', 'Footer');
+  openVersionHistory(activeTabId);
+}
+
+export function HistoryButton({
+  onOpen,
+  labelled = false,
+}: {
+  onOpen: () => void;
+  labelled?: boolean;
+}) {
   return (
     <HoverCard
       title="Version History"
@@ -45,16 +58,12 @@ export function HistoryHeaderButton({ activeTabId }: { activeTabId: string }) {
       <button
         type="button"
         data-tour-id="version-history"
-        onClick={() => {
-          track('Version', 'Opened', 'Header');
-          openVersionHistory(activeTabId);
-        }}
-        className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
+        onClick={onOpen}
+        aria-label="History"
+        className={labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN}
       >
-        <HeaderGlyph>
-          <HistoryIcon />
-        </HeaderGlyph>
-        <span>History</span>
+        <HistoryIcon size={14} />
+        <ChromeLabel show={labelled}>History</ChromeLabel>
       </button>
     </HoverCard>
   );

@@ -54,6 +54,9 @@ type TabBarProps = {
   // Optional callback that pops the global search panel. The
   // button sits to the LEFT of the dark-mode toggle.
   onOpenSearch?: () => void;
+  // Opens Version History (docs/specs/006-document/version-history.md "In the editor"): History sits between
+  // Search and Settings while it is set, on a document stored on the server.
+  onOpenHistory?: () => void;
   // When set, the active tab's menu opens at this point as the canvas
   // right-click / footer-button menu — the same tab menu with the canvas
   // sections (`canvasActions`) folded in. The page owns the open/close state
@@ -176,6 +179,7 @@ export function TabBar({
   onOpenCollaborators,
   onOpenSettings,
   onOpenSearch,
+  onOpenHistory,
   canvasMenu,
   onCloseCanvasMenu,
   canvasActions,
@@ -357,12 +361,13 @@ export function TabBar({
           )}
           folderPresence={folderPresence}
         />
-        {/* Shared right-hand cluster (search / settings / dark-mode; GitHub
+        {/* Shared right-hand cluster (search / History / settings / dark-mode; GitHub
             lives in the Explorer panel's ⋯ menu here),
             reused by the Explorer's bottom bar (docs/specs/007-editor/editor-app.md). Labelled here on
             desktop; icon-only on a phone. */}
         <ChromeControls
           onOpenSearch={onOpenSearch}
+          onOpenHistory={onOpenHistory}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
           settingsDescription="Your editor preferences. They follow your account, not this document."
