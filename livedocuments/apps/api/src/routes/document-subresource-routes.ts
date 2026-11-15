@@ -13,6 +13,7 @@ import { TAB_DELTA_SEGMENT } from '@liveworkspace/api-schema/tab-delta';
 import { handleTabRename } from './tab-name-route';
 import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
+import { handleVersionRoutes } from './versions';
 import { handleCommentRoutes } from './comment-routes';
 import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
@@ -37,6 +38,9 @@ export async function handleDocumentSubresources(
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
+  // Version history (docs/specs/006-document/version-history.md).
+  const versions = await handleVersionRoutes(ctx);
+  if (versions) return versions;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so

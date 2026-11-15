@@ -156,6 +156,11 @@ export const TELEMETRY_CATEGORIES = [
   // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
   // against the closed list in timing-telemetry.ts. Never a raw number, never an id.
   'Timing',
+  // Version history (docs/specs/006-document/version-history.md "Observability and telemetry"): 'Opened'·'Header' when
+  // the header's History opens Version History, 'Named'·'Editor' when a person names a version, 'Undone'·'Editor' when
+  // the restorer's toast takes a restore back; 'Restored' and 'Copied' typed by the front door ('Editor' | 'Mcp' |
+  // 'Cli' | 'Api'), from the api. Never a name, never content.
+  'Version',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -255,6 +260,8 @@ export const TELEMETRY_ACTIONS = [
   // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
   // 'Timing' category.
   'Measured',
+  // Version (docs/specs/006-document/version-history.md): a person named a version.
+  'Named',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 

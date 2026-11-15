@@ -5,18 +5,20 @@ Paths are under `apps/editor/` unless they say otherwise.
 
 ## Domain and naming
 
-| Term                         | Identifier                                                                                          |
-| ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| A waiting change             | `QueuedChange` (`lib/offline-queue/plan-queue.ts`), `store: 'items' \| 'sheets'`                    |
-| The queue                    | `PlanQueue`; the page's one per plan and person: `planQueue(projectId, ownerId)`                    |
-| When a change was made       | `seq`, from `nextSeq()`                                                                             |
-| The banner's count           | `waitingChangeCount()` / `subscribeWaitingChanges` (all of the page's queues)                       |
-| "The connection may be back" | `onReconnect(listener)`, fired by the window's `online` event and `signalReconnect()` (room joined) |
-| No answer                    | `isConnectionFailure(e)` (`lib/offline-queue/reconnect.ts`)                                         |
-| Role gate                    | `itemWriteMayWait(level, write)`, `sheetOpMayWait(rights, op, write)` (`queue-roles.ts`)            |
-| Card replay                  | `replayItemQueue(deps)`, `nextItemBatch(changes, splitThrough)`, `alreadyLanded(write, e)`          |
-| Card side in the editor      | `useItemQueue` + `withWaitingItems` (`hooks/plan/useItemQueue.ts`), wired in `usePlanItems`         |
-| Sheet side                   | `SheetQueueKeeper` (`components/sheets/sheet-store-queue.ts`), owned by `SheetStore`                |
+| Term                         | Identifier                                                                                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| A waiting change             | `QueuedChange` (`lib/offline-queue/plan-queue.ts`), `store: 'items' \| 'sheets'`                      |
+| The queue                    | `PlanQueue`; the page's one per plan and person: `planQueue(projectId, ownerId)`                      |
+| When a change was made       | `seq`, from `nextSeq()`                                                                               |
+| The banner's count           | `waitingChangeCount()` / `subscribeWaitingChanges` (all of the page's queues)                         |
+| "The connection may be back" | `onReconnect(listener)`, fired by the window's `online` event and `signalReconnect()` (room joined)   |
+| No answer                    | `isConnectionFailure(e)` (`lib/offline-queue/reconnect.ts`)                                           |
+| Role gate                    | `itemWriteMayWait(level, write)`, `sheetOpMayWait(rights, op, write)` (`queue-roles.ts`)              |
+| Card replay                  | `replayItemQueue(deps)`, `nextItemBatch(changes, splitThrough)`, `alreadyLanded(write, e)`            |
+| Card side in the editor      | `useItemQueue` + `withWaitingItems` (`hooks/plan/useItemQueue.ts`), wired in `usePlanItems`           |
+| A held removal               | `held: true` on an items `QueuedChange`; `isRemovalHeld(e)` (`lib/offline-queue/removal-held.ts`)     |
+| Held count, review           | `heldCardCount()`, `confirmHeldChanges()`, `keepHeldCards()`, `subscribeHeldReview` (`plan-queue.ts`) |
+| Sheet side                   | `SheetQueueKeeper` (`components/sheets/sheet-store-queue.ts`), owned by `SheetStore`                  |
 
 ## Constants and configuration
 
@@ -37,7 +39,8 @@ Paths are under `apps/editor/` unless they say otherwise.
 - One `localStorage` key per plan and person: `{ v: 1, changes: QueuedChange[] }`, sorted by `seq`. Written whole on
   every `add` and `remove` (an empty queue removes the key). An unreadable key, another version, or a malformed change
   reads as nothing (the change is dropped from the in-memory list only; D67).
-- A card change: `{ id: 'i<seq36>', seq, store: 'items', write: ItemWrite }`. A sheet write: `{ id: <wid>, seq, store:
+- A card change: `{ id: 'i<seq36>', seq, store: 'items', write: ItemWrite, held?: true, why?: HeldWhy, confirmed?: true }`. `held`:
+  the server held it as a mass removal (`why`: the reason, board and titles, for the banner); `confirmed`: Remove N Cards was chosen, so it is sent with `?confirmRemoval=1`. A sheet write: `{ id: <wid>, seq, store:
 'sheets', op: 'write', sheetId, write, flags }`; a new sheet: `op: 'create'` with the `SheetCreateRequest`
   (`id: 'c<seq36>'`); a sheet's delete: `op: 'delete'` (`id: 'd<seq36>'`). The sheet write's id is its `wid`, so the
   room's echo and the answer find it.
@@ -60,8 +63,32 @@ made: []`; the undo step is pushed as for a landed write.
 6. `load()` lays the queue over the fetched store: `withWaitingItems(refetchedItemStore(...), queue, by)`, applying
    each waiting write in order and skipping one that no longer applies.
 
+7. A refusal `isRemovalHeld(err)` (code `removal_held`) with a queue and a change that may wait: the change joins the
+   queue `held: true` (still applied), no toast, no load; answer `ok: true, made: []`.
+
+**Held removals** (`HeldRemovalsBanner`, `components/chrome/`): shown while `heldCardCount() > 0` and not
+read-only. A `TopCenterBanner` with `shape="card"`, `w-[34rem] max-w-full` (so on a phone it fills the stack, which is
+the canvas less its gutters), holding the pause mark (`lucidePause` in a `bg-brand-50` circle), the title
+(`heldTitle(n)`), the line (`heldReason(groups)`), the disclosure (`aria-expanded`, `aria-controls` the list) and the
+two `Button`s (`primary` Keep Cards, `secondary` Remove N Cards; `flex-1` halves under `sm`, `min-h-10`). The groups
+come from `heldGroups()` (`plan-queue.ts`, O(queue), read only when the held count changes), each
+`{ board, reason, cards, titles }` from the held changes' `why`. Keep Cards calls `keepHeldCards()` (every page queue drops its held changes, `dropHeld()` answering the card
+ids they named; listeners of `subscribeHeldReview` get `('kept', cards)`, and `useItemQueue` hands the cards to
+`usePlanItems`' `kept`, which marks them unconfirmed, then calls `load()`, so the server's copy of each replaces the one
+laid over as removed, even at the same rev), then toasts `success` "Kept N cards". Remove N Cards calls `confirmHeldChanges()`
+(held become `confirmed`; listeners get `'confirmed'`, and `useItemQueue` flushes), then toasts "Removed N cards".
+
+**Why it was held** (`HeldWhy` in `removal-held.ts`): `{ reason?, board?, titles? }` on a held change. `reason` and
+`board` come from the `removal_held` answer's body (`heldWhyOf(err)`, read by `expectItemsOk`; a single `DELETE` goes
+through `apiDelete`, which reads no body, so it has none). `titles` are the named cards' titles as the store had them
+before the write (`usePlanItems` `send`), or as the store shows them when a replay is held (`titlesOf`, a trashed card
+still being in the store), each cut to 80 characters. Read back from storage, a `why` that is not of this shape is
+ignored (`heldWhyOfStored`).
+
 **Card replay** (`useItemQueue`): one replay at a time (`flushingRef`).
 
+- `replayItemQueue` reads only changes that are not `held`. A `confirmed` change always goes alone, sent with
+  `{ confirmRemoval: true }`. Refused alone with `isRemovalHeld`: `queue.hold([id])` (kept, skipped from then on).
 - `replayItemQueue`: take `nextItemBatch` (a run of `patch` changes with the same `undo` flag, newer than
   `splitThrough`, up to `ITEM_BULK_MAX`, becomes one `patches` write; anything else goes alone) and send it.
   - Answered: `landed(answer)` (the editor's `settle`), remove the batch's ids.
@@ -101,7 +128,9 @@ bridge.canShape }`):
 ## Interfaces and contracts
 
 - `PlanQueue.add(change): 'ok' | 'full'` (no-op `'ok'` for a held id); `remove(ids)`; `changes(store)`; `count(store?)`
-  (O(1)); `size()`; `has(id)`.
+  (O(1)); `heldCount()` and `heldCardCount()` (O(1), the second counting `itemIdsOfWrite` of each held change); `hold(ids)`;
+  `confirmHeld()`; `dropHeld(): string[]`; `size()`; `has(id)`.
+- `writeItem(scope, write, by, { confirmRemoval? })` adds `confirmRemoval=1` to the request's query.
 - `replayItemQueue({ queue, send, landed, refused }) → { outcome: 'done' | 'stalled', sent }`.
 - `usePlanItems({ ..., level?: AccessLevel })`.
 - `SheetStoreDeps` gains `queue?: PlanQueue | null`, `rights?: SheetQueueRights`.
@@ -146,10 +175,17 @@ bridge.canShape }`):
   N changes wait in this browser and save when you reconnect."
 - Online, waiting: "Saving 1 change made without a connection." / "Saving N changes made without a connection."
 - Full: the error toast `PLAN_QUEUE_FULL_MESSAGE`.
+- Held, counting cards: title "1 card was about to be removed" / "N cards were about to be removed"; the line by
+  reason (offline-changes.md "Held for review"); "Show the N cards" / "Hide the cards"; buttons Keep Cards (primary) and
+  Remove N Cards (secondary); toasts "Kept N cards" / "Removed N cards".
+- The waiting count leaves held changes out (`waitingChangeCount()` = all changes less held ones).
 
 ## Accessibility
 
-- The banner keeps its `role="status"`, so the count is announced as it changes.
+- The offline banner keeps its `role="status"`, so the count is announced as it changes.
+- The Needs Review banner is a `role="region"` labelled by its title, whose title and line sit in a `role="status"`
+  so the count is announced as it changes. The disclosure is a button with `aria-expanded` and `aria-controls`. Both
+  actions are real buttons with visible focus rings, reached by Tab in reading order (the disclosure, Remove, Keep).
 
 ## Testing
 
@@ -162,6 +198,8 @@ bridge.canShape }`):
 | Cards wait, replay, refusal, roles in the hook | `hooks/plan/usePlanItems.offline.test.ts`       |
 | Sheets wait, restore, refusal, full, roles     | `components/sheets/sheet-store-queue.test.ts`   |
 | The banner's copy                              | `components/chrome/OfflineBanner.test.tsx`      |
+| Held removals: kept, skipped, confirmed, kept  | `lib/offline-queue/removal-held.test.ts`        |
+| The Needs Review banner                        | `components/chrome/HeldRemovalsBanner.test.tsx` |
 | Repair keeps the queue                         | `packages/ui/src/browser-repair/repair.test.ts` |
 
 ## Defaults ledger

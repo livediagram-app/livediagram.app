@@ -13,6 +13,7 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import {
+  agentVersionStatement,
   insertChangesetPartStatement,
   insertChangesetStatement,
   isTabRevStale,
@@ -53,6 +54,9 @@ type ChangesetWrite = {
   // results part for `GET .../changesets/:id`.
   textFor: (written: ChangesetWritten) => string;
   revertOf: string | null;
+  // Statements that run first in the write's batch, before the tab moves: a restore's copy of the content it replaces
+  // (docs/specs/006-document/version-history.md "Restore"). They land with the write or not at all.
+  preStatements?: D1PreparedStatement[];
 };
 
 type WriteOutcome =
@@ -108,14 +112,29 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
   // One re-mint inside the attempt on an id collision (CS7, E21).
   for (let mint = 0; mint < 2; mint += 1) {
     try {
+      const pre = [
+        ...(w.preStatements ?? []),
+        // An agent's burst starts with the tab as it found it kept as a version (VH4).
+        ...(w.tokenId && w.stored
+          ? [
+              agentVersionStatement(env, {
+                tabId: w.tabId,
+                tokenId: w.tokenId,
+                author: w.author,
+                now,
+              }),
+            ]
+          : []),
+      ];
       const results = await env.DOCUMENT_DB.batch([
+        ...pre,
         ...tabWriteStatements(env, w.documentId, w.next, w.orderIndex, { expected }, now),
         insertChangesetStatement(env, record),
         insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
         insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
         insertChangesetPartStatement(env, record.id, 'results', parts.results),
       ]);
-      record = { ...record, rev: revFromBatch(results) };
+      record = { ...record, rev: revFromBatch(results.slice(pre.length)) };
       break;
     } catch (err) {
       if (err instanceof TabTooLargeError) return { kind: 'too_large' };

@@ -177,6 +177,11 @@ const TAGS = [
     description:
       'How scripts and agents change a tab: atomic, live for everyone with it open, credited and revertable.',
   },
+  {
+    name: 'Versions',
+    description:
+      "A tab's earlier versions: list and open them, name one, restore one as a changeset, or copy one to a new tab.",
+  },
   { name: 'Sharing', description: 'Share links, passwords, and the documents shared with you.' },
   { name: 'Folders', description: 'Organise documents into a personal or team folder tree.' },
   {

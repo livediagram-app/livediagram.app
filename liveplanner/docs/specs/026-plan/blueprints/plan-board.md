@@ -582,7 +582,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   marker's ref, `useCanvasRoot`), `absolute` at `CANVAS_LAYER_Z` (`--z-panel` − 1), its `top/right/bottom/left` from
   `useCanvasLayerInsets(canvas)` (hooks/ui): `apps/editor/lib/canvas-layer-insets.ts` reads `[data-toolbar-menu]` (top row),
   `topStripInset` (the Toolbar strip), `[data-layout-chrome]` (MovablePanel `layoutChrome`: the Explorer only, so a passing panel such as the Trash never moves the board; a side by its nearer edge, a sheet
-  wider than `WIDE_PANEL_SHARE` of the canvas as top or bottom by its middle); the bottom-right controls are not measured (they float over the board at their own z),
+  wider than `WIDE_PANEL_SHARE` of the canvas as top or bottom by its middle), and `[data-top-center-stack]` (workbench `TopCenterStack`: while it holds a banner, `bannerInset` puts the top `BANNER_GAP_PX` below it, with no band or phone row, a Dashboard's page included); the bottom-right controls are not measured (they float over the board at their own z),
   capped at `MAX_INSET_SHARE` per axis. Measured at once in a layout effect as the layer mounts (before its first
   paint, so a tab switch never draws a frame of `NO_LAYOUT` with the header out of its band; `FilledTabLayer` moves its
   host into the box first, so the controls card is there to measure), and in one `requestAnimationFrame` after a
@@ -953,6 +953,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Layout read from and written to the board                      | `apps/editor/components/plan/setup-board.test.ts`                                                                                                              |
 | Accounts marked in the picker's list only                      | `apps/editor/components/plan/PersonPicker.test.tsx`                                                                                                            |
 | Maximised/filled insets from the chrome                        | `apps/editor/lib/canvas-layer-insets.test.ts`, `apps/editor/hooks/ui/useCanvasLayerInsets.test.ts`                                                             |
+| Below the top-centre banners while one shows                   | `apps/editor/lib/canvas-layer-insets.test.ts` (`bannerInset`)                                                                                                  |
 | The header band, and the cover's band variables                | `apps/editor/lib/canvas-layer-insets.test.ts`, `apps/editor/components/plan/MaximisedPlanLayer.test.tsx`                                                       |
 | Zoom off while the canvas is covered                           | `apps/editor/components/chrome/ZoomControls.test.tsx`                                                                                                          |
 | Five slots across a maximised board                            | `apps/editor/components/plan/plan-board-columns.test.ts`                                                                                                       |

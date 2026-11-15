@@ -152,6 +152,10 @@ The room's answer is the source; when the room cannot be reached, nothing counts
 - Anyone with edit access to the tab may revert.
 - Reverting a changeset that created a tab empties the tab and keeps it. Reverting one twice keeps every element
   (each changed since) and writes nothing.
+- **A version before each burst.** Before an agent's first changeset on a tab in `VERSION_AGENT_BURST_MS`, the
+  document keeps the tab as it stood ([Version history](../006-document/version-history.md)), so a whole run of an
+  assistant's edits can be undone at once, after its changesets' toasts have gone. A restore is itself a changeset
+  (summary `Restored a version`), revertable like any other.
 - The history is `GET /api/documents/:id/changesets`, one changeset's `GET`, and the CLI's `changeset ls` and
   `changeset show`; the editor has no history surface.
 
