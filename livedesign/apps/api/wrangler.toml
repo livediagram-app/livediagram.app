@@ -231,6 +231,17 @@ simple = { limit = 120, period = 60 }
 #
 # Unset = the data export cannot read designs (the export door's `comments` format takes only the index's key).
 
+# Accounts and the index, which this Worker fetches its keys through: accounts' for access and guest tokens
+# (src/auth/accounts.ts), the index's for grants (@liveworkspace/index-app service.ts), in the Worker and its
+# rooms' Durable Objects. A Worker's fetch to another Worker's public route can stall (2026-11-13). Without them,
+# or when they throw (a local run without accounts or the index), the public routes are used.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedesign-api-staging` via
@@ -338,3 +349,12 @@ deleted_classes = ["WorkbenchStore"]
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
 crons = ["0 3 * * *"]
+
+# Accounts and the index for the keys, restated because bindings don't inherit (see the top-level [[services]]).
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"

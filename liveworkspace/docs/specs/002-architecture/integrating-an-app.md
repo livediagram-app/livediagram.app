@@ -156,6 +156,26 @@ export async function accountOf(request: Request, env: Env) {
 }
 ```
 
+Fetch the key set through a service binding to accounts, not over its public route: a Worker's fetch to another
+Worker's public route can stall (on 2026-11-13 those fetches stalled 5 s each and signed-in calls failed). Bind
+`ACCOUNTS` to `liveworkspace-accounts` (staging: `liveworkspace-accounts-staging`) in the API Worker's
+`wrangler.toml`, both environments, and pass it as `keysFrom`:
+
+```ts
+verify ??= createVerifier({
+  issuer: env.ACCOUNTS_ISSUER,
+  audience: env.API_RESOURCE,
+  keysFrom: env.ACCOUNTS,
+});
+```
+
+The binding is asked first, with jose's own cache and cooldown and a shorter timeout of 2 s (a binding that
+stalls would otherwise hold a cold check for jose's 5 s before the public route is tried); the public route is
+asked, with jose's default 5 s, only when it is missing, throws or times out, so a local run without accounts still checks tokens over `ACCOUNTS_URL`. The index's grant
+keys come the same way: bind `INDEX` to `liveworkspace-index` (`-staging`), and `@liveworkspace/index-app`'s
+`verifyGrant` passes it to `createGrantVerifier` as `keysFrom`, in the API Worker and in every item's Durable
+Object (which gets the Worker's env, bindings included).
+
 `userId` is the account id (`user_…`; accounts imported from Clerk keep their Clerk id), so everything keyed on
 it (owner ids, team members, API tokens) is one id across apps. `email` + `emailVerified` are what team
 invitations match on.

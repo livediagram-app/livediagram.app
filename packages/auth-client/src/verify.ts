@@ -91,13 +91,18 @@ function eitherKeySet(first: JWTVerifyGetKey, second: JWTVerifyGetKey): JWTVerif
   };
 }
 
+// A binding answers in milliseconds when healthy, so one that has not in this long is stalled: give up on it for the
+// public route rather than hold a cold check for jose's default 5 s (the public route keeps that default).
+export const BOUND_KEYS_TIMEOUT_MS = 2000;
+
 /** As remoteKeySet, for a key set's own URL (the index's grant keys, say). With `via`, through that binding first. */
 export function remoteKeySetAt(jwksUrl: string, via?: KeysFetcher): JWTVerifyGetKey {
   const [first, second] = withWwwTwin(jwksUrl).map((at) => createRemoteJWKSet(new URL(at)));
   const overRoute = second ? eitherKeySet(first!, second) : first!;
   if (!via) return overRoute;
-  // jose's own cache, cooldown and timeout, only the fetch swapped for the binding's.
+  // jose's own cache and cooldown, only the fetch swapped for the binding's, with a shorter timeout.
   const bound = createRemoteJWKSet(new URL(jwksUrl), {
+    timeoutDuration: BOUND_KEYS_TIMEOUT_MS,
     [customFetch]: (url, init) => via.fetch(url, init as RequestInit),
   });
   return eitherKeySet(bound, overRoute);

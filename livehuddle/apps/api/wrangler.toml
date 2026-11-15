@@ -250,6 +250,17 @@ name = "EMAIL"
 #
 # Unset = calls are off: /api/capabilities says so and the editor shows no audio controls.
 
+# Accounts and the index, which this Worker fetches its keys through: accounts' for access and guest tokens
+# (src/auth/accounts.ts), the index's for grants (@liveworkspace/index-app service.ts), in the Worker and its
+# rooms' Durable Objects. A Worker's fetch to another Worker's public route can stall (2026-11-13). Without them,
+# or when they throw (a local run without accounts or the index), the public routes are used.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livehuddle-api-staging` via
@@ -359,3 +370,12 @@ id = "a4a1dde286e1495e91a798641bc2d4b6" # livehuddle-calls-switch-staging
 # `wrangler secret put <NAME> --env staging` (docs/ci.md), not by CI.
 # Worker secrets are per-environment, so staging's never collide with
 # production's.
+
+# Accounts and the index for the keys, restated because bindings don't inherit (see the top-level [[services]]).
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"

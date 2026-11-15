@@ -219,6 +219,17 @@ name = "EMAIL"
 #
 # Unset = the data export cannot read documents (the export door's `comments` format takes only the index's key).
 
+# Accounts and the index, which this Worker fetches its keys through: accounts' for access and guest tokens
+# (src/auth/accounts.ts), the index's for grants (@liveworkspace/index-app service.ts), in the Worker and its
+# rooms' Durable Objects. A Worker's fetch to another Worker's public route can stall (2026-11-13). Without them,
+# or when they throw (a local run without accounts or the index), the public routes are used.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedocuments-api-staging` via
@@ -316,3 +327,12 @@ deleted_classes = ["WorkbenchStore"]
 # TELEMETRY_KEY and MEDIA_KEY are set once on the staging Worker with
 # `wrangler secret put <NAME> --env staging` (docs/ci.md), not by CI. Worker secrets are per-environment, so staging's never collide with
 # production's.
+
+# Accounts and the index for the keys, restated because bindings don't inherit (see the top-level [[services]]).
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"

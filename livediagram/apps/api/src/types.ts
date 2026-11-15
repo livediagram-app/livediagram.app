@@ -40,6 +40,11 @@ export type Env = {
   // The grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their
   // summaries there with INDEX_KEY. From hosted-vars.json per environment; local dev sets it in `.dev.vars`.
   INDEX_ORIGIN?: string;
+  // The index Worker, which the grant keys are fetched through (@liveworkspace/index-app service.ts), and accounts,
+  // which the token keys are (auth/accounts.ts): a Worker's fetch to another Worker's public route can stall.
+  // Unbound, or throwing (a local run without them), the public routes are used.
+  INDEX?: Fetcher;
+  ACCOUNTS?: Fetcher;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.
