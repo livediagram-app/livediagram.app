@@ -2,7 +2,7 @@
 // Kept here to avoid duplication across the three view components.
 
 import { useElementIndicatorsSuppressed } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
+import type { ComponentProps, CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { LockIcon, SOLID_BRAND_DARK } from '@livedocuments/ui';
 import type { DragMode } from '@/lib/canvas';
 import { handlePressStarts } from '@liveworkspace/workbench/lib/double-press';
@@ -259,7 +259,7 @@ export function UnionResizeHandles({
 // re-hide a container's contents). The frame stands on the element's resting box, turned and
 // shifted as the element is. pointer-events-none keeps the body beneath draggable; every handle
 // re-enables pointer events on itself.
-export function SelectionChromeLayer({
+function SelectionChromeFrame({
   elementId,
   box,
   rotation,
@@ -280,7 +280,6 @@ export function SelectionChromeLayer({
   onHandlePress?: (e: ReactPointerEvent) => void;
 }) {
   const zoom = useCanvasZoom();
-  if (!showHandles && !showAnchors) return null;
   const transform = rotation % 360 !== 0 ? `rotate(${rotation}deg)` : '';
   return (
     <BoxGripsPortal>
@@ -327,6 +326,13 @@ export function SelectionChromeLayer({
       </div>
     </BoxGripsPortal>
   );
+}
+
+export function SelectionChromeLayer(props: ComponentProps<typeof SelectionChromeFrame>) {
+  // Nothing to draw, nothing read: every element on the board places this layer, and one that read the zoom first
+  // rendered on every zoom step only to draw nothing (2,000 renders a step on a 2,000-element board, Work Tracker 904).
+  if (!props.showHandles && !props.showAnchors) return null;
+  return <SelectionChromeFrame {...props} />;
 }
 
 // --- Edge-midpoint resize handle -------------------------------------------
