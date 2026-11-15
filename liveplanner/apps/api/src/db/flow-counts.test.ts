@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
-import { FLOW_DAYS_MAX, flowCountsOf, TRASH_STATUS } from '@liveplanner/items';
+import { FLOW_DAYS_MAX, flowCountsOf, ITEMS_MAX, TRASH_STATUS } from '@liveplanner/items';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { migratePlanSchema } from '../plan-room/plan-schema';
@@ -227,23 +227,31 @@ describe('deleteOldFlowCounts', () => {
   });
 });
 
-// The triggers' cost on the write paths a 2,000-card plan (ITEMS_MAX) takes: a copy or import making every card at
+// The triggers' cost on the write paths a full plan (ITEMS_MAX) takes: a copy or import making every card at
 // once, and a bulk move of every card. Each must stay a small share of the write itself.
-describe('flow counts at 2,000 cards', () => {
+describe('flow counts on a full plan (ITEMS_MAX cards)', () => {
   const fill = (db: SqliteD1) => {
+    // One prepared statement, as a copy's or import's batch runs: preparing per row cost the test ten times the
+    // triggers (613 ms of CPU at 5,000 cards, against 56 ms prepared once).
+    const statement = db.sql.prepare(
+      `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+       VALUES ('P', ?, ?, ?, 'i', ?, 1, 0, 0, '{}', '{}')`,
+    );
     db.sql.exec('BEGIN');
-    for (let i = 0; i < 2000; i++)
-      insert(db, `perf-${String(i).padStart(5, '0')}`, `s${i % 8}`, `t${i % 3}`);
+    for (let i = 0; i < ITEMS_MAX; i++) {
+      const id = `perf-${String(i).padStart(5, '0')}`;
+      statement.run(id, `t${i % 3}`, nextKey++, JSON.stringify({ title: id, status: `s${i % 8}` }));
+    }
     db.sql.exec('COMMIT');
   };
 
-  it('makes 2,000 cards and moves every one within budget', () => {
+  it('makes every card of a full plan and moves every one within budget', () => {
     const db = plan();
     const made = cpuMsOf(() => fill(db));
     const moved = cpuMsOf(() => {
       db.sql.prepare(`UPDATE items SET fields = json_set(fields, '$.status', 'done')`).run();
     });
-    expect(countsOn(db, today(db))['t0:done']).toBe(667);
+    expect(countsOn(db, today(db))['t0:done']).toBe(Math.ceil(ITEMS_MAX / 3));
     expect(made).toBeLessThan(cpuBudgetMs(300));
     expect(moved).toBeLessThan(cpuBudgetMs(300));
   });

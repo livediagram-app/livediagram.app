@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { ShapeElement } from '@liveplanner/project';
-import { PLAN_VIEW_IDS } from '@liveplanner/items';
+import { ITEMS_MAX, PLAN_VIEW_IDS } from '@liveplanner/items';
 import { planViewArt } from './plan-view-art';
 import { artData, card, shape } from './test-fixtures';
 
 // docs/specs/026-plan/plan-tabs.md "Export" and "Limits": the worst Dashboard image (12 rows of 4 views, each over a
-// project's 2,000 cards) draws its pictures well inside a second, so the preview never stalls the dialog.
+// project's cards, ITEMS_MAX) draws its pictures well inside a second, so the preview never stalls the dialog.
 describe('plan view pictures at the limits', () => {
-  it('draws 48 views over 2,000 cards within budget', () => {
+  it('draws 48 views over a full plan (ITEMS_MAX cards) within budget', () => {
     const statuses = ['todo', 'doing', 'done'];
-    const cards = Array.from({ length: 2000 }, (_, i) =>
+    const cards = Array.from({ length: ITEMS_MAX }, (_, i) =>
       card(
         {
           title: `Card ${i}`,
@@ -35,14 +35,14 @@ describe('plan view pictures at the limits', () => {
       for (const v of views) size += planViewArt(v, data, 'light').length;
     });
     expect(size).toBeGreaterThan(0);
-    // Measured at 67 ms on an M-series laptop; a loaded CI runner gets four times that.
+    // Measured at 67 ms on an M-series laptop at 2,000 cards, 204 ms at 5,000; a loaded CI runner gets four times that.
     expect(ms).toBeLessThan(1500);
   });
 
   // A Gantt in swimlanes groups every row into its lane before drawing those that fit (plan-views.md "Swimlanes").
-  it('draws 48 Gantts in swimlanes over 2,000 projects within budget', () => {
+  it('draws 48 Gantts in swimlanes over a full plan (ITEMS_MAX projects) within budget', () => {
     const statuses = ['todo', 'doing', 'done'];
-    const cards = Array.from({ length: 2000 }, (_, i) =>
+    const cards = Array.from({ length: ITEMS_MAX }, (_, i) =>
       card(
         {
           title: `Project ${i}`,
@@ -67,7 +67,8 @@ describe('plan view pictures at the limits', () => {
       for (const v of views) size += planViewArt(v, data, 'light').length;
     });
     expect(size).toBeGreaterThan(0);
-    // Measured at 110 ms of CPU on an M-series laptop (105 to 137 ms drawn without lanes); cpuBudgetMs triples it on CI.
+    // Measured at 110 ms of CPU on an M-series laptop at 2,000 cards (105 to 137 ms drawn without lanes), 310 ms at 5,000
+    // with a model a picture, 118 ms with one model per settings (keptGanttModel); cpuBudgetMs triples it on CI.
     expect(ms).toBeLessThan(cpuBudgetMs(300));
   });
 });

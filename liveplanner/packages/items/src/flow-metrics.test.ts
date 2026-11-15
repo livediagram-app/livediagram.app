@@ -12,6 +12,7 @@ import {
   type FlowCard,
 } from './flow-metrics';
 import { FLOW_DAYS_MAX } from './flow-counts';
+import { ITEMS_MAX } from './limits';
 import { DAY_MS } from './plan-view-dates';
 import type { StatusPhase } from './plan-views';
 
@@ -180,10 +181,10 @@ describe('cycleTimesOf', () => {
     expect(out).toMatchObject({ p50: 5, p85: 9 });
   });
 
-  it('reads 2,000 cards with 180 days of moves within budget', () => {
+  it('reads a full plan (ITEMS_MAX cards) with 180 days of moves within budget', () => {
     const cards: FlowCard[] = [];
     const statuses = ['todo', 'doing', 'review', 'done'];
-    for (let c = 0; c < 2000; c++) {
+    for (let c = 0; c < ITEMS_MAX; c++) {
       const made = card(`c${c}`, at(D - 180));
       for (let m = 0; m < 12; m++)
         made.moves.push([at(D - 180 + m * 15, c % 24), statuses[m % 4]!, statuses[(m + 1) % 4]!]);
@@ -193,7 +194,7 @@ describe('cycleTimesOf', () => {
     const ms = cpuMsOf(() => {
       answered = cycleTimesOf(cards, phases, D - FLOW_DAYS_MAX + 1, D).cards.length;
     });
-    expect(answered).toBe(2000);
+    expect(answered).toBe(ITEMS_MAX);
     expect(ms).toBeLessThan(cpuBudgetMs(100));
   });
 });

@@ -16,8 +16,8 @@ import {
 import { expect, startBlankProject, test } from '../fixtures';
 
 // A full plan's board, imported and opened (docs/specs/026-plan/plan-board.md "A busy board", "A big board's first
-// draw"): a Kanban board tab of ITEMS_MAX (2,000) cards, each with a long description, as a liveplanner Tab export of
-// about 5.6 MB, imported onto a blank plan through the Import dialog; then the plan reloaded. Reports the longest task
+// draw"): a Kanban board tab of ITEMS_MAX (5,000) cards, each with a long description, as a liveplanner Tab export of
+// about 14 MB (5.6 MB at the old 2,000), imported onto a blank plan through the Import dialog; then the plan reloaded. Reports the longest task
 // and frame gap of each at the reference speed (@liveworkspace/e2e-kit/perf/main-thread-probe): from the Import press
 // until the board has drawn and held for two seconds, and from the reload until the same. Never fails on a number.
 // Run against a production build: `E2E_PERF=1 pnpm exec playwright test --project=perf big-board`.
@@ -94,7 +94,7 @@ const record = async (page: Page, what: string, rate: number, reading: MainThrea
   writeFileSync(`${OUT}/big-board.json`, JSON.stringify(results, null, 2));
 };
 
-test('a 2,000-card board imported, then opened', async ({ page, browser }) => {
+test(`a ${ITEMS_MAX}-card board imported, then opened`, async ({ page, browser }) => {
   test.setTimeout(300_000);
   const rate = await probeThrottle(browser, process.env.BIG_BOARD_THROTTLE);
   const tracing = !!process.env.BIG_BOARD_TRACE;
@@ -140,7 +140,7 @@ test('a 2,000-card board imported, then opened', async ({ page, browser }) => {
   if (tracing) await browser.stopTracing();
   if (profiling)
     console.log((await stopCpuProfile(cdp, `${OUT}/big-board-import.cpuprofile`)).join('\n'));
-  await record(page, 'import 2000', rate, imported);
+  await record(page, `import ${ITEMS_MAX}`, rate, imported);
   await expect(page.locator(CARD).first()).toContainText('Card');
 
   // Open: the plan reloaded, from navigation until the board has drawn. The probe starts with the page.
@@ -174,6 +174,6 @@ test('a 2,000-card board imported, then opened', async ({ page, browser }) => {
   if (tracing) await browser.stopTracing();
   // The frame gap is read from the first frame, after the page's own boot (its script's first evaluation, which
   // every page pays): the long tasks above include the boot.
-  await record(page, 'open 2000', rate, opened);
+  await record(page, `open ${ITEMS_MAX}`, rate, opened);
   await throttleCpu(page, 1);
 });

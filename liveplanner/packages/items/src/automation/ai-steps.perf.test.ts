@@ -5,6 +5,7 @@ import { planActions } from './plan-actions';
 import { replanAfter, type LivePlan } from './replan';
 import { bug, ctxFor } from './test-fixtures';
 import type { AutomationStep } from './types';
+import { ITEMS_MAX } from '../limits';
 
 // An AI step's answer is model output, so its links are untrusted text: a link full of sentence marks must cost
 // linear time to check against the card's own links (CodeQL js/polynomial-redos on the trailing-marks trim).
@@ -26,11 +27,11 @@ describe('dropping foreign links from an AI answer', () => {
 });
 
 // Work Tracker 846 (spec "How a step runs"): once each AI step answers, the rest of the rule is planned again from the
-// card it left. A rule of three AI steps, each followed by a branch over a full plan's 2,000 cards, re-plans three
+// card it left. A rule of three AI steps, each followed by a branch over a full plan's cards (ITEMS_MAX), re-plans three
 // times: that must stay a small part of a run (whose AI calls take seconds).
 describe('planning the rest again after each AI step', () => {
-  it('re-plans after each AI step on 2,000 cards within a few milliseconds each', () => {
-    const items = Array.from({ length: 2000 }, (_, i) =>
+  it('re-plans after each AI step on a full plan (ITEMS_MAX cards) within a few milliseconds each', () => {
+    const items = Array.from({ length: ITEMS_MAX }, (_, i) =>
       bug({ title: `Card ${i}`, priority: i % 2 ? 'high' : 'low' }, { id: `c${i}`, key: i + 1 }),
     );
     const card = items[0]!;
@@ -62,7 +63,7 @@ describe('planning the rest again after each AI step', () => {
     };
     expect(replanAll().ai).toHaveLength(3);
     // Measured on an M-series Mac under load: 18 ms CPU for the plan alone, 42 ms with its three re-plans (two
-    // branches over 2,000 cards planned again); at most 100 AI steps a plan a day bound the extra to seconds a day.
+    // branches over a full plan's cards planned again); at most 100 AI steps a plan a day bound the extra to seconds a day.
     expect(cpuMsOf(replanAll)).toBeLessThan(cpuBudgetMs(300));
   });
 });

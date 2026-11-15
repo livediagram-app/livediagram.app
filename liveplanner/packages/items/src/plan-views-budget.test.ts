@@ -7,6 +7,7 @@ import {
   breakdownModel,
 } from './plan-view-charts';
 import { ganttModel } from './plan-view-gantt';
+import { ITEMS_MAX } from './limits';
 import { SAM, item } from './test-items';
 
 // docs/specs/026-plan/plan-views.md: every view reads the whole store (ITEMS_MAX cards), once per change.
@@ -18,7 +19,7 @@ describe('plan view budgets', () => {
       ['done', 'done' as const],
     ]);
     const statuses = ['todo', 'doing', 'done'];
-    const many = Array.from({ length: 2000 }, (_, n) => {
+    const many = Array.from({ length: ITEMS_MAX }, (_, n) => {
       const it = item({
         title: `Card ${n}`,
         status: statuses[n % 3]!,

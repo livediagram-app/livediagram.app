@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Item } from './item';
 import { TRASH_STATUS } from './board';
 import { labelUsage, matchLabels, planSpellingOf } from './label-usage';
+import { ITEMS_MAX } from './limits';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/026-plan/plan-board.md "Working on a board": the label menu.
@@ -32,8 +33,8 @@ describe('labelUsage', () => {
     expect(labelUsage([])).toEqual([]);
   });
 
-  it('counts a plan of 2,000 cards of 12 labels well within a frame', () => {
-    const cards = Array.from({ length: 2000 }, (_, i) =>
+  it('counts a full plan (ITEMS_MAX, 5,000 cards) of 12 labels well within a frame', () => {
+    const cards = Array.from({ length: ITEMS_MAX }, (_, i) =>
       card(Array.from({ length: 12 }, (_, j) => `label-${(i * 7 + j) % 300}`)),
     );
     // Generous against a busy machine (suggested-statuses.test.ts's budget): it measures a few milliseconds.

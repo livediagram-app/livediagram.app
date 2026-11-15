@@ -64,13 +64,14 @@ describe('a Gantt chart’s row order', () => {
       'item-c',
       'item-b',
     ]);
-    // 2,000 cards, each in two lanes: 4,000 rows. A move past row 2,000 lands, and the order is a valid one.
+    // 5,000 cards (the cap), each in two lanes: 10,000 rows. A move past row 5,000 lands, and the order is a valid one.
     const cards = Array.from({ length: GANTT_ROW_ORDER_MAX }, (_, i) => `item-${i}`);
     const shown = [...cards, ...cards];
     const lane = cards.slice(1000);
-    const next = ganttReorder(shown, lane, 'item-1999', 0)!;
+    const last = `item-${GANTT_ROW_ORDER_MAX - 1}`;
+    const next = ganttReorder(shown, lane, last, 0)!;
     expect(isGanttRowOrder(next)).toBe(true);
-    expect(next.indexOf('item-1999')).toBe(1000);
+    expect(next.indexOf(last)).toBe(1000);
   });
 
   it('is validated as card ids, none repeated, within its cap', () => {

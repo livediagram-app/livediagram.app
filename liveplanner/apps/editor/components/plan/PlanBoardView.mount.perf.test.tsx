@@ -7,7 +7,7 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
+import { ITEMS_MAX, ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
 import type { ShapeElement } from '@liveplanner/project';
 import { PlanBoardView } from './PlanBoardView';
 import { CARD_RUN_MAX } from './card-runs';
@@ -121,9 +121,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const BUSY_CARDS = 2000;
+const BUSY_CARDS = ITEMS_MAX;
 // Measured locally: the mount built every card, 2,000 faces in 2.5 to 3.0 s of CPU; it now builds the near runs'
-// cards (a few dozen) and a placeholder per far run. The budget still fails a mount that builds every card.
+// cards (a few dozen) and a placeholder per far run, 411 ms at 5,000 cards (ITEMS_MAX). The budget still fails a
+// mount that builds every card.
 const MOUNT_BUDGET_MS = 1000;
 
 describe('Opening a busy board', () => {

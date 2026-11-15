@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
+import { ITEMS_MAX } from '@liveplanner/items';
 import { FLUSH_RETRY_MS } from '@liveworkspace/index-app';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
@@ -209,14 +210,14 @@ describe('the pictures a plan reports', () => {
     expect(synced).toEqual([]);
   });
 
-  // A board's whole set, worked out on a full plan (2,000 cards, a quarter holding three attachments each and another
+  // A board's whole set, worked out on a full plan (ITEMS_MAX cards, a quarter holding three attachments each and another
   // quarter a Several Images list of three and two labels). Measured at 6.0 ms on a loaded laptop with the lists' scan,
   // 3.9 ms on the same plan without it (the plan holding a grant; at most once a minute a plan); the budget fails only
   // on a quadratic turn.
-  it('stays cheap on a plan of 2,000 cards', async () => {
+  it('stays cheap on a full plan (ITEMS_MAX cards)', async () => {
     const p = plan();
     const filler = 'x'.repeat(400);
-    for (let i = 0; i < 2000; i++) {
+    for (let i = 0; i < ITEMS_MAX; i++) {
       p.card(`c${i}`, {
         title: `Card ${i}`,
         description: filler,
@@ -224,10 +225,10 @@ describe('the pictures a plan reports', () => {
         ...(i % 4 === 1 ? { designs: [`d${i}`, `e${i}`, `f${i}`], labels: ['one', 'two'] } : {}),
       });
     }
-    expect(await placedImageIds(p.env, PLAN)).toHaveLength(1500);
+    expect(await placedImageIds(p.env, PLAN)).toHaveLength((ITEMS_MAX / 4) * 3);
     p.grant('g');
     p.grant('d1');
-    expect(await placedImageIds(p.env, PLAN)).toHaveLength(1501);
+    expect(await placedImageIds(p.env, PLAN)).toHaveLength((ITEMS_MAX / 4) * 3 + 1);
     // The query placedImageIds runs, timed synchronously: the attachments' scan and the granted values' scans.
     const query = p.sql.prepare(PLACED_IMAGES_SQL);
     const runs = 5;

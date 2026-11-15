@@ -373,9 +373,9 @@ describe('readTrackerFile', () => {
     expect(refusal('{"lists": [], "cards": []}')).toEqual({ refusal: 'no_cards' });
     const many = [
       'ID,Title,Status,Team',
-      ...Array.from({ length: 2001 }, (_, i) => `X-${i},T${i},Todo,E`),
+      ...Array.from({ length: 5001 }, (_, i) => `X-${i},T${i},Todo,E`),
     ];
-    expect(refusal(many.join('\n'))).toEqual({ refusal: 'too_many_cards', count: 2001 });
+    expect(refusal(many.join('\n'))).toEqual({ refusal: 'too_many_cards', count: 5001 });
   });
 
   it('reads a file that starts with a byte order mark', () => {
@@ -392,11 +392,11 @@ describe('readTrackerFile', () => {
     expect(trackerRefusalMessage({ refusal: 'no_cards' })).toBe(
       'That file has no cards to import.',
     );
-    expect(trackerRefusalMessage({ refusal: 'too_many_cards', count: 2500 })).toBe(
-      'That file has 2,500 cards. A plan holds up to 2,000.',
+    expect(trackerRefusalMessage({ refusal: 'too_many_cards', count: 6500 })).toBe(
+      'That file has 6,500 cards. A plan holds up to 5,000.',
     );
     expect(trackerRefusalMessage({ refusal: 'too_many_cards' })).toBe(
-      'That file has 0 cards. A plan holds up to 2,000.',
+      'That file has 0 cards. A plan holds up to 5,000.',
     );
   });
 

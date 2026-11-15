@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
-// docs/specs/026-plan/plan-board.md "A busy board": a Tab Style pick on a 2,000-card board redraws no card unless
+// docs/specs/026-plan/plan-board.md "A busy board": a Tab Style pick on a full board (ITEMS_MAX) redraws no card unless
 // it changes what a card shows (a theme: each card once), inside a CPU budget (not wall-clock: a busy runner
 // stretches wall time, not CPU; docs/specs/003-system-architecture/testing.md).
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
+import { ITEMS_MAX, ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
 import type { Finish, ShapeElement } from '@liveplanner/project';
 import { PlanBoardView } from './PlanBoardView';
 import { CARD_RUN_MAX } from './card-runs';
@@ -107,12 +107,14 @@ type Style = {
   surface: 'light' | 'dark';
 };
 
-const BUSY_CARDS = 2000;
+const BUSY_CARDS = ITEMS_MAX;
 // Measured locally: a pick that redraws no card 15-60 ms (it was 1,100-2,300 ms, redrawing every card), a theme
 // 730-930 ms (every card once, as it must). CI's coverage run measured a theme at 6,906 ms of CPU, past the old 2,000
-// (scaled to 6,000 there); 3,000 still fails a theme that redraws the board several times over.
+// (scaled to 6,000 there). At 5,000 cards (ITEMS_MAX): a pick that redraws no card 11-80 ms, a theme 2,010-2,470 ms
+// alone and 4,170 ms inside the whole editor suite on a loaded machine. The face counts catch any extra redraw; the
+// budget catches a redraw that costs far more per face.
 const NO_CARD_BUDGET_MS = 250;
-const THEME_BUDGET_MS = 3000;
+const THEME_BUDGET_MS = 6000;
 
 describe('A Tab Style pick on a busy board', () => {
   it(`redraws only the cards it changes, inside its budget (${BUSY_CARDS} cards)`, () => {

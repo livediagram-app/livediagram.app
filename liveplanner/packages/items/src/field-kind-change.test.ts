@@ -15,6 +15,7 @@ import {
 } from './field-kind-change';
 import { ALI, SAM, item } from './test-items';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
+import { ITEMS_MAX } from './limits';
 
 const ON = { field: 'f-x', typeIds: new Set(['task']) };
 const ctx = { people: [SAM, ALI], tz: 'Europe/London' };
@@ -179,13 +180,13 @@ describe('fieldKindChange', () => {
     ]);
   });
 
-  it('walks a plan of 2,000 cards in well under a frame', () => {
-    const items = Array.from({ length: 2000 }, (_, i) =>
+  it('walks a full plan (ITEMS_MAX cards) in well under a frame', () => {
+    const items = Array.from({ length: ITEMS_MAX }, (_, i) =>
       item({ 'f-x': i % 3 ? String(i) : 'none' }),
     );
     const out = fieldKindChange(text, { kind: 'number' }, items, ON);
-    expect(out.held).toBe(2000);
-    expect(out.cleared).toBe(667);
+    expect(out.held).toBe(ITEMS_MAX);
+    expect(out.cleared).toBe(Math.ceil(ITEMS_MAX / 3));
     // CPU time, the best of three (docs/ci.md "Speed budgets").
     let best = Infinity;
     for (let pass = 0; pass < 3; pass++)

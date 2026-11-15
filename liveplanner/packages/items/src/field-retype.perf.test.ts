@@ -8,7 +8,7 @@ import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { item } from './test-items';
 import { ITEMS_MAX } from './limits';
 
-// The retype of a built-in on a full plan (blueprint item-types.md "Performance and limits"): 2,000 cards (ITEMS_MAX)
+// The retype of a built-in on a full plan (blueprint item-types.md "Performance and limits"): 5,000 cards (ITEMS_MAX)
 // and 10 tabs, each with 4 boards (2 saved filters each) and 4 views (a filter each). The scan reads no card; the
 // values pass is one pass over the cards.
 const TASK: ItemTypeDef = {
@@ -48,7 +48,7 @@ for (let t = 0; t < TABS; t += 1)
     views.push({ view: 'search', settings: { filters: [{ by: 'priority', key: 'high' }] } });
   }
 
-describe('retyping a built-in on a 2,000-card, 10-tab plan', () => {
+describe('retyping a built-in on a full (ITEMS_MAX cards), 10-tab plan', () => {
   it('scans the plan, counts the filters and works out every value within budget', () => {
     const def = {
       id: 'f-urgency',

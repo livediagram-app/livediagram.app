@@ -6,9 +6,9 @@ import { TRACKER_CARDS_MAX } from './tracker-model';
 import { planTrackerImport } from './tracker-plan';
 
 // docs/specs/026-plan/blueprints/tracker-import.md "Performance": reading and planning are linear in the file, so a
-// file at the caps (2,000 cards, ten comments each, a checklist and labels on every card) is read and planned well
-// inside the budget. Budgets are CPU time, far above what was measured (about 260 ms for the 7.7 MB board,
-// 120 ms for the CSV, on a laptop).
+// file at the caps (TRACKER_CARDS_MAX, 5,000 cards, ten comments each, a checklist and labels on every card) is read and planned well
+// inside the budget. Budgets are CPU time, far above what was measured (about 520 ms for the board, 220 ms for the
+// CSV, on a laptop at 5,000 cards; 260 ms and 120 ms at the old 2,000).
 
 function bigTrello(): string {
   const lists = Array.from({ length: 8 }, (_, i) => ({ id: `l${i}`, name: `List ${i}`, pos: i }));
@@ -66,7 +66,7 @@ const ctx = {
 };
 
 describe('importing a file at the caps', () => {
-  it('reads and plans a 2,000-card Trello board with 20,000 comments in budget', () => {
+  it('reads and plans a full Trello board (TRACKER_CARDS_MAX cards, ten comments each) in budget', () => {
     const text = bigTrello();
     let creates = 0;
     let comments = 0;
@@ -82,7 +82,7 @@ describe('importing a file at the caps', () => {
     expect(ms).toBeLessThan(cpuBudgetMs(1500));
   });
 
-  it('reads and plans a 2,000-row Jira CSV in budget', () => {
+  it('reads and plans a full Jira CSV (TRACKER_CARDS_MAX rows) in budget', () => {
     const text = bigJira();
     let creates = 0;
     const ms = cpuMsOf(() => {
