@@ -15,5 +15,12 @@ export default defineConfig({
     globals: false,
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    coverage: {
+      include: ['src/**/*.ts'],
+      exclude: ['**/*.test.ts'],
+      // A floor just under what the service measures today (95.2 statements, 92.0 branches, 97.0 functions,
+      // 98.0 lines on 2026-11-15), so a change that leaves new code untested turns CI red; raise it as the gaps close.
+      thresholds: { statements: 94, branches: 91, functions: 96, lines: 97 },
+    },
   },
 });
