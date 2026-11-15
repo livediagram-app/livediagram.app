@@ -110,6 +110,8 @@ import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
 import { purgedAt } from './plan-room-purged';
+import { calendarFeedOf, type CalendarFeed } from '../calendar/feed-store';
+import { feedEventsOf, type FeedRead } from '../calendar/feed-events';
 import { notFound } from '../responses';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -606,6 +608,29 @@ export class PlanRoom extends DurableObject<Env> {
       ensureSchema(this);
     }
     return answerGithubCall({ env: this.requireEnv(), planId, schema }, call, Date.now());
+  }
+
+  // ---------- RPC: a calendar feed link's fetch (../calendar/; docs/specs/026-plan/calendar-feed.md) --------------
+
+  // The feed a token's hash names. An id nothing has written answers null and stays empty; a stored plan's schema is
+  // brought up to date first (V29 holds the feeds).
+  async calendarFeed(planId: string, tokenHash: string): Promise<CalendarFeed | null> {
+    if (!this.storedSchema()) return null;
+    this.bindPlan(planId);
+    ensureSchema(this);
+    return calendarFeedOf(this.requireEnv(), planId, tokenHash);
+  }
+
+  // The feed's calendar, asked only after the worker checked the person's access.
+  async calendarFeedEvents(
+    planId: string,
+    feed: CalendarFeed,
+    now: number,
+  ): Promise<FeedRead | null> {
+    if (!this.storedSchema()) return null;
+    this.bindPlan(planId);
+    ensureSchema(this);
+    return feedEventsOf(this.requireEnv(), planId, feed, now);
   }
 
   // ---------- RPC: Describe a Plan's count (plan-draft-count.ts) -------------------------------------------------

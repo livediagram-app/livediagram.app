@@ -9,13 +9,13 @@ and Reset Link (part 2), and the cross-plan My Work feed (part 3) are next ([Wor
 
 ## Domain language
 
-| Term              | Meaning                                                                                     | Not                       |
-| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------- |
-| **calendar feed** | One person's subscription to one plan's card dates (or, on My Work, to their own cards)     | calendar sync, export     |
-| **feed link**     | The feed's private address, the one thing a calendar app is given                           | share link, invite        |
-| **feed token**    | The secret in the feed link (`lpf_…`); the whole proof a fetch carries                      | API token, `lwt_` token   |
-| **feed options**  | What the feed shows: which board, only my cards, include done cards                         | filters, settings         |
-| **Reset Link**    | A new feed token for the same feed; the old link stops answering at once                    | regenerate, rotate        |
+| Term              | Meaning                                                                                 | Not                     |
+| ----------------- | --------------------------------------------------------------------------------------- | ----------------------- |
+| **calendar feed** | One person's subscription to one plan's card dates (or, on My Work, to their own cards) | calendar sync, export   |
+| **feed link**     | The feed's private address, the one thing a calendar app is given                       | share link, invite      |
+| **feed token**    | The secret in the feed link (`lpf_…`); the whole proof a fetch carries                  | API token, `lwt_` token |
+| **feed options**  | What the feed shows: which board, only my cards, include done cards                     | filters, settings       |
+| **Reset Link**    | A new feed token for the same feed; the old link stops answering at once                | regenerate, rotate      |
 
 ## Who may have one
 

@@ -282,6 +282,11 @@ function testPlanRooms(
       await Promise.all(relays);
       return result;
     },
+    // A calendar feed link's fetch (plan-room.ts calendarFeed and calendarFeedEvents).
+    calendarFeed: async (planId: string, tokenHash: string) =>
+      (await import('./calendar/feed-store')).calendarFeedOf(env, planId, tokenHash),
+    calendarFeedEvents: async (planId: string, feed: never, now: number) =>
+      (await import('./calendar/feed-events')).feedEventsOf(env, planId, feed, now),
     threadsRelayed: async (planId: string, relay: never) =>
       (await import('./plan-room/card-thread-store')).threadsRelayed(env, planId, relay),
   }));

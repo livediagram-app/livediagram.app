@@ -91,7 +91,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS calendar_feeds_token ON calendar_feeds (token_
 ## Interfaces and contracts
 
 - `writeCalendar({ name, events })` lines: `BEGIN:VCALENDAR`, `VERSION:2.0`, `PRODID:-//liveplanner//Calendar
-  Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · liveplanner`,
+Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · liveplanner`,
   `REFRESH-INTERVAL;VALUE=DURATION:PT1H`, `X-PUBLISHED-TTL:PT1H`, then per event `BEGIN:VEVENT`, `UID`,
   `DTSTAMP:<yyyymmddThhmmssZ>`, `DTSTART;VALUE=DATE:<yyyymmdd>`, `DTEND;VALUE=DATE:<end + 1 day>`, `SUMMARY`, `URL`,
   `DESCRIPTION`, `SEQUENCE`, `TRANSP:TRANSPARENT`, `END:VEVENT`, and `END:VCALENDAR`. CRLF after every line.
@@ -137,14 +137,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS calendar_feeds_token ON calendar_feeds (token_
 
 ## Constants and configuration
 
-| Constant               | Value                     | Why                                                       |
-| ---------------------- | ------------------------- | --------------------------------------------------------- |
-| `FEED_TOKEN_PREFIX`    | `lpf_`                    | Says what the secret is; never `lwt_`                     |
-| `FEED_TOKEN_BYTES`     | 32                        | 256 bits, base64url 43 characters                         |
-| `FEED_EVENTS_MAX`      | 500                       | Several months of a busy plan; bounds the body and CPU    |
-| `FEED_SUMMARY_MAX`     | 200                       | Calendar apps cut long titles anyway                      |
-| `FEED_MAX_AGE_S`       | 300                       | The access check is never older than five minutes        |
-| `FEED_RATE_PER_MINUTE` | 300 (WRITE_RATE_LIMITER) | The binding's own window; no new binding                  |
+| Constant              | Value                   | Why                                                     |
+| --------------------- | ----------------------- | ------------------------------------------------------- |
+| `FEED_TOKEN_PREFIX`   | `lpf_`                  | Says what the secret is; never `lwt_`                   |
+| `FEED_TOKEN_BYTES`    | 32                      | 256 bits, base64url 43 characters                       |
+| `FEED_EVENTS_MAX`     | 500                     | Several months of a busy plan; bounds the body and CPU  |
+| `FEED_SUMMARY_MAX`    | 200                     | Calendar apps cut long titles anyway                    |
+| `FEED_MAX_AGE_S`      | 300                     | The access check is never older than five minutes       |
+| `UNAVAILABLE_RETRY_S` | 300                     | Retry-After when accounts or the index cannot say       |
+| WRITE_RATE_LIMITER    | 300 a minute (wrangler) | The binding's own window, keyed `feed:`; no new binding |
 
 ## Testing
 
