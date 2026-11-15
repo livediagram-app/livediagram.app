@@ -41,6 +41,7 @@ describe('the MCP tool verbs', () => {
       'archive_project',
       'unarchive_project',
       'restore_project',
+      'view_tab',
     ]);
     for (const v of MCP_TOOL_VERBS) {
       expect(v.id).toBe(`mcp.${v.mcp.tool}`);
@@ -72,6 +73,7 @@ describe('the MCP tool verbs', () => {
       'read_project',
       'list_templates',
       'list_trash',
+      'view_tab',
     ]);
   });
 });

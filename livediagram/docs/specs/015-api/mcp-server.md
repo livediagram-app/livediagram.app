@@ -1326,7 +1326,8 @@ Worker (no DOM, no React).
 The PNG is flat: nobody can zoom into a busy diagram, flip to another tab or click through to the element they want
 to change. A host that supports **MCP Apps** (the `io.modelcontextprotocol/ui` extension, stable 2026-01-26: Claude,
 ChatGPT, VS Code Copilot, Cursor) renders a tool's linked view in a sandboxed frame beside its result. livediagram is
-the pilot; livedocuments, livedesign and liveplanner follow as cards of their own.
+the pilot; livedocuments and livedesign show the same view a page at a time, and liveplanner a board's columns and
+cards, each from the same shared viewer (their mcp-server.md "Interactive view (MCP Apps)").
 
 - **The view resource.** The server lists `ui://livediagram/view.html` (`text/html;profile=mcp-app`), one
   self-contained page with its script and styles inline: the shared viewer (`@liveworkspace/mcp-kit/app-view`,

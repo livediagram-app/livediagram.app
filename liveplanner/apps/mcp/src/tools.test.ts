@@ -255,7 +255,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the thirty-two documented tools, each with a description', () => {
+  it('registers the thirty-four documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered;
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -292,6 +292,7 @@ describe('registerTools', () => {
       'unarchive_project',
       'update_project',
       'upload_image',
+      'view_tab',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -387,6 +388,8 @@ describe('tool annotations', () => {
   // The tools that reach beyond the caller's library: upload_image fetches a url.
   const OPEN_WORLD = new Set(['upload_image']);
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
+    // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the view's own read.
+    view_tab: 'read',
     find_projects: 'read',
     read_project: 'read',
     list_templates: 'read',
@@ -484,6 +487,7 @@ describe('tool annotations', () => {
       'read_form',
       'read_project',
       'read_sheet',
+      'view_tab',
     ]);
 
     // Destructive is only meaningful on a writer, and MCP defaults it to TRUE

@@ -7,6 +7,7 @@ import { mcpChangePages } from '@livedesign/agent-verbs/mcp';
 import { clientFor } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
+import { VIEW_TOOL_META } from './view-tab';
 import { deepLink, errorResult, requireToken, textResult } from './tool-helpers';
 
 // A refusal names the change it stopped at, 1 first as the agent counts them.
@@ -23,15 +24,21 @@ const answerOf = (env: Env, done: PagesDone) => ({
 });
 
 export function registerPagesTools(server: McpServer, env: Env): void {
-  registerTool(server, env, mcpChangePages, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra));
-    const done = await changePages(
-      api,
-      args.designId,
-      { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes },
-      'mcp',
-    );
-    if (!done.ok) return errorResult(refusalText(done));
-    return textResult(answerOf(env, done));
-  });
+  registerTool(
+    server,
+    env,
+    mcpChangePages,
+    async (args, extra) => {
+      const api = clientFor(env, requireToken(extra));
+      const done = await changePages(
+        api,
+        args.designId,
+        { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes },
+        'mcp',
+      );
+      if (!done.ok) return errorResult(refusalText(done));
+      return textResult(answerOf(env, done));
+    },
+    VIEW_TOOL_META,
+  );
 }

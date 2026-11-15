@@ -420,6 +420,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { projectId: 'd1', teamId: 't1' },
   },
   { tool: 'list_items', output: 'listItemsOutput', args: { projectId: 'd1' } },
+  { tool: 'view_tab', output: 'viewTabOutput', args: { projectId: 'd1' } },
   // Work Tracker 900: several columns, text, a time, both switches and a page of one.
   {
     tool: 'list_items',
@@ -606,6 +607,11 @@ describe('tool output schemas', () => {
         const [viewText, line, ...extra] = first!.text.split('\n');
         expect([viewText, extra]).toEqual([text, []]);
         expect(JSON.parse(line!)).toEqual({ ...rest, tab: tabMeta });
+      } else if (tool === 'view_tab') {
+        // The view's own tool says one line, not its boards (docs/specs/015-api/mcp-server.md "Interactive view").
+        expect(first!.text).toMatch(
+          /^(Drew the boards on tab ".*" for the interactive view|This plan has no board to draw)\.$/,
+        );
       } else {
         expect(JSON.parse(first!.text)).toEqual(structured);
       }
