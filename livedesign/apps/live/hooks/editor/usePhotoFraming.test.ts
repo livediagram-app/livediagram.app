@@ -94,6 +94,28 @@ describe('a photo page’s framing', () => {
   });
 });
 
+// Work Tracker 895: Open a Picture gives the page the picture's size, so the page is framed again once it starts.
+describe('a photo page’s framing as the photo starts', () => {
+  it('frames again when the photo starts, and not again after', async () => {
+    const focusPage = vi.fn();
+    chrome();
+    const { rerender } = renderHook(
+      ({ started }) => usePhotoFraming('pg', focusPage, true, true, started),
+      { initialProps: { started: false } },
+    );
+    await settle();
+    await settle();
+    expect(focusPage).toHaveBeenCalledTimes(1);
+    rerender({ started: true });
+    await settle();
+    await settle();
+    expect(focusPage).toHaveBeenCalledTimes(2);
+    rerender({ started: true });
+    await settle();
+    expect(focusPage).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('a photo page’s framing, re-rendered', () => {
   it('is not put off by a new focusPage each render', async () => {
     const calls: string[] = [];
