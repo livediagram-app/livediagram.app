@@ -26,6 +26,9 @@ export interface ClientCredentials {
   accountsUrl: string;
   clientId: string;
   clientSecret: string;
+  // The app API's ACCOUNTS service binding, when it has one: the account API's calls (account-call.ts) and the
+  // deletion code's (close-account.ts) go through it, the public route only without it or when it throws.
+  accounts?: KeysFetcher;
 }
 
 export interface AuthorizeUrlOptions {
