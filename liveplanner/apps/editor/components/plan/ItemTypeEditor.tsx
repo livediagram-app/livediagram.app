@@ -125,6 +125,9 @@ export function ItemTypeEditor({
   // Keys a newer liveplanner stored on the type, kept so this save writes them back (item-types.md "Settings from a
   // newer version"); its tabs and custom fields carry theirs as objects. Read once, as the rest of the draft is.
   const [newer] = useState(() => newerKeysOf(start, ITEM_TYPE_KEYS));
+  // Its card templates (item-types.md "Card templates"), saved back as they are: a Duplicate's copy too. The catalogue
+  // check drops any value for a field the draft no longer offers.
+  const [templates] = useState(start.templates);
   const plan = usePlan();
   const statusNames = plan?.statusNames;
   // The statuses it uses, in order, edited as the rest is (docs/specs/026-plan/item-types.md "The statuses a type
@@ -202,11 +205,13 @@ export function ItemTypeEditor({
         ? { inherits: base.id, ownFields: layout.fields.filter((f) => !inheritedIds.has(f)) }
         : {}),
       ...(Object.keys(names).length ? { fieldLabels: names } : {}),
+      ...(templates?.length ? { templates } : {}),
     };
     // Each built-in made a custom field takes its place (docs/specs/026-plan/item-types.md "Edit Field": Another type).
     return retypesOf(layout).reduce((t, [id, def]) => retypeBuiltInIn(t, id, def), made);
   }, [
     newer,
+    templates,
     base,
     inheritedIds,
     type,

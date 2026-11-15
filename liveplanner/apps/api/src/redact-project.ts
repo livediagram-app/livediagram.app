@@ -25,6 +25,7 @@
 // visitor always has their own code already (the one they arrived with), and
 // only the owner manages links, so nobody else needs it.
 
+import { catalogueForCommunity } from './community-redact';
 import type { ProjectDTO } from './types';
 
 // `caller` is the resolved owner of the request (account id, API-token owner,
@@ -52,6 +53,8 @@ export function redactProjectForCommunity(liveDoc: ProjectDTO): ProjectDTO {
     ownerColor: null,
     folderId: null,
     source: null,
+    // Card templates lose the people they name, as the cards do.
+    itemTypes: catalogueForCommunity(liveDoc.itemTypes),
     tabs: liveDoc.tabs.map((tab) => {
       if (!('connection' in tab)) return tab;
       const { connection: _connection, ...rest } = tab as typeof tab & { connection?: unknown };

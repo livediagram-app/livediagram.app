@@ -119,6 +119,20 @@ describe('redactProjectForCommunity', () => {
     expect(JSON.stringify(out)).not.toContain('other');
   });
 
+  it('takes the people off its card templates (item-types.md "Card templates")', () => {
+    const person = { id: 'p-ada', name: 'Ada', color: '#f97316' };
+    const template = {
+      id: 'tp-review',
+      name: 'Review',
+      fields: { title: 'Review', 'f-owner': person },
+    };
+    const itemTypes = { version: 1, types: [{ id: 'task', label: 'Task', templates: [template] }] };
+    const out = redactProjectForCommunity({ ...full, itemTypes } as unknown as ProjectDTO);
+    expect(out.itemTypes!.types[0]!.templates).toEqual([
+      { ...template, fields: { title: 'Review' } },
+    ]);
+  });
+
   it('never mutates the project it was handed', () => {
     redactProjectForCommunity(full);
     expect(full.ownerName).toBe('Ada');

@@ -6,6 +6,8 @@ import type { Item, ItemTypeCatalogue, ItemTypeDef } from '@liveplanner/items';
 import type { SheetJson } from '@liveplanner/sheets';
 import {
   COMMUNITY_PERSON,
+  catalogueColumnForCommunity,
+  catalogueForCommunity,
   isResponseCard,
   redactItemForCommunity,
   redactItemRowForCommunity,
@@ -284,5 +286,56 @@ describe("a form's response sheet", () => {
       { sheet_id: 's2', row_id: 'x1', col_id: 'c0' },
     ]);
     expect(redactSheetCellRowsForCommunity(cells, sheets, new Set())).toEqual(cells);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Card templates": a Community copy keeps a type's templates less the people they
+// name, as it takes the people off the cards.
+describe('card templates through a Community post', () => {
+  const plain = { id: 'tp-plain', name: 'Plain', fields: { title: 'Chore', labels: ['home'] } };
+  const named = {
+    id: 'tp-named',
+    name: 'Named',
+    fields: { title: 'Review', 'f-owner': ADA, 'f-crew': [ADA, ADA], 'f-note': 'Ada checks it' },
+  };
+  const type = (templates?: unknown[]) =>
+    ({
+      id: 'task',
+      label: 'Task',
+      newTitle: 'New task',
+      glyph: 'task',
+      color: '#71717a',
+      fields: ['title', 'status', 'labels', 'f-owner', 'f-crew', 'f-note'],
+      custom: [
+        { id: 'f-owner', label: 'Owner', kind: 'person' },
+        { id: 'f-crew', label: 'Crew', kind: 'person', multiple: true },
+        { id: 'f-note', label: 'Note', kind: 'text' },
+      ],
+      ...(templates ? { templates } : {}),
+    }) as unknown as ItemTypeDef;
+  const cat = (...types: ItemTypeDef[]): ItemTypeCatalogue => ({ version: 1, types });
+
+  it('drops every person a template names, its words kept', () => {
+    const before = cat(type([plain, named]), { ...type(), id: 'note', label: 'Note' });
+    const after = catalogueForCommunity(before)!;
+    expect(after.types[0]!.templates).toEqual([
+      plain,
+      { ...named, fields: { title: 'Review', 'f-note': 'Ada checks it' } },
+    ]);
+    expect(after.types[1]).toBe(before.types[1]);
+    // Never the catalogue it was handed.
+    expect(before.types[0]!.templates![1]!.fields).toHaveProperty('f-owner');
+  });
+
+  it('hands back the same catalogue, and the same stored column, when no template names anybody', () => {
+    const quiet = cat(type([plain]), type());
+    expect(catalogueForCommunity(quiet)).toBe(quiet);
+    expect(catalogueForCommunity(null)).toBeNull();
+    const column = JSON.stringify(cat(type([plain])));
+    expect(catalogueColumnForCommunity(column)).toBe(column);
+    expect(catalogueColumnForCommunity(null)).toBeNull();
+    const redacted = catalogueColumnForCommunity(JSON.stringify(cat(type([named]))))!;
+    expect(redacted).not.toContain('p-ada');
+    expect(redacted).toContain('Ada checks it');
   });
 });
