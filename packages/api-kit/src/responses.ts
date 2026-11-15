@@ -15,6 +15,15 @@ export const BASE_ALLOWED_HEADERS: readonly string[] = [
   'X-Share-Password',
   'X-Allow-Empty',
   'X-Room-Cursor',
+  // The item's generation an editor last saw (liveworkspace/docs/specs/013-snapshots, the fence).
+  'X-Snapshot-Generation',
+];
+
+// The response headers every product's api lets a page on another origin read beside its own: the item's generation
+// and the fence's mark (liveworkspace/docs/specs/013-snapshots).
+export const BASE_EXPOSED_HEADERS: readonly string[] = [
+  'X-Snapshot-Generation',
+  'X-Snapshot-Fenced',
 ];
 
 // CORS for the browser. An editor runs on the same hostname as its api (the router stitches them together), so
@@ -31,7 +40,7 @@ export function corsHeaders(options: {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': [...BASE_ALLOWED_HEADERS, ...options.allowHeaders].join(', '),
     'Access-Control-Max-Age': '86400',
-    'Access-Control-Expose-Headers': options.exposeHeaders.join(', '),
+    'Access-Control-Expose-Headers': [...options.exposeHeaders, ...BASE_EXPOSED_HEADERS].join(', '),
   };
 }
 
