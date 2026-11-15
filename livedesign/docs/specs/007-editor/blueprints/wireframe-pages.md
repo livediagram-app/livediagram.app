@@ -30,6 +30,10 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 | Screen mode         | `LinkPickerDialog` mode `'screen'`; `ScreenLinkMode`; `ScreenChoice`, `screenLinkChoices`                        |
 | link handle         | `ScreenLinkHandle`; `showsScreenLinkHandle`; `onLinkScreen`, `onPickScreenLink`, `canLinkScreens`                |
 | link marker         | the `link` indicator with `screen: 'linked' \| 'broken'` (`ScreenIndicatorItem`); `useScreenLinkMarker`          |
+| Prototype mode      | `PrototypePlayer`; `openPrototype`, `closePrototype`, `usePrototypePlayer` (the player store); `usePrototypeHost` |
+| player state        | `PlayerState` (`shownId`, `history`, `change`); `startPlayer`, `followHotspot`, `stepScreen`, `shownScreen`      |
+| hotspot             | `Hotspot` (`elementId`, `rect`, `link`, `label`); `prototypeHotspots(tab, page)`                                  |
+| prototype link      | `PROTOTYPE_PARAM` (`'prototype'`), `wantsPrototype`, `withPrototype`; `copyFlaggedViewLink`                      |
 
 "Device" alone always means the page's `WireframeDeviceId`; never "mockup" or "frame" for the device itself.
 
@@ -72,6 +76,11 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 | `apps/live/components/canvas/ScreenLinkHandle.tsx`, `LayerSelectionChrome.tsx`        | The link handle, its drag line and the outlined screen                                                              |
 | `apps/live/components/canvas/screen-link-pages.tsx`, `useElementIndicators.ts`        | The tab's pages for the markers (a store, so a page edit re-renders only the linked elements) and the marker item   |
 | `apps/live/components/canvas/screen-link-glyphs.tsx`, `ElementIndicators.tsx`         | The screen, broken screen and back glyphs; the marker drawn in its state                                            |
+| `apps/live/lib/prototype-player.ts` (+ test)                                          | The player's pure state: screens, hotspots, following, stepping, the change and its direction                       |
+| `apps/live/lib/prototype-player-store.ts`                                             | Whether the player is open and on which screen it starts (one per browser tab)                                      |
+| `apps/live/lib/link-flag.ts`, `prototype-link.ts`, `copy-flagged-view-link.ts`        | A link's flag (`inspect`, `prototype`); the `prototype` flag; copying a flagged Viewer link (Inspect's too)         |
+| `apps/live/components/prototype/`                                                     | `PrototypePlayer` (stage, bar, keys), `PrototypeScreen` (one screen and its hotspots), `usePrototypeHost`           |
+| `apps/live/components/chrome/PrototypeHeaderButton.tsx`                               | The header's **Prototype** action (the shared `EditorHeader`'s `leadAction` slot)                                   |
 
 ## Behaviour and state
 
@@ -207,6 +216,58 @@ transition? }`, `transition` omitted when Instant. A `here` row is `disabled`. T
   is not among the fields a Participant writes on someone else's element (`PARTICIPANT_TEXT_FIELDS`, ...), and its own
   element takes any field.
 
+### Prototype mode
+
+- **Entry.** `editorViewHeader` passes `leadAction={<PrototypeHeaderButton/>}` when `can.playPrototype` and
+  `wireframeTabPages(pagesOf(activeTab))` (the tab's first page is a wireframe page) and no welcome is open. Its press
+  calls `openPrototype(currentPageIdNow())`. The shared `EditorHeader` draws `leadAction` first among its right-edge
+  actions.
+- **The address.** `usePrototypeHost` reads `wantsPrototype(location.search)` once, when the design is hydrated and the
+  active tab loaded; on a wireframe tab it calls `openPrototype(null)`. `?prototype=0` or `false` is no ask.
+- **Store.** `prototype-player-store.ts` holds `{ open, startId }` behind `useSyncExternalStore`; `openPrototype`
+  tracks `Canvas · Used · Prototype` once per opening. `EditorCanvasHost` mounts `PrototypePlayer` while it is open,
+  and closes it when the active tab is not a wireframe tab or the host unmounts.
+- **Screens.** `layOutPages(pagesOf(tab))`, in order; the shown screen is `shownScreen(state, pages)`: the page with
+  `shownId`, else the first.
+- **State.** `startPlayer(pages, startId)` shows `startId` when it is a page, else the first. `followHotspot(state,
+  link, pages)`: a page link to a page on the tab pushes the shown id on `history` and shows the page; a back link pops
+  `history` (no change when it is empty); a broken link changes nothing. `stepScreen(state, pages, 1 | -1)` moves to
+  the page beside in order, pushing `history`, and changes nothing at the ends. Each change records `change: { fromId,
+  transition, direction: 'forward' | 'back', seq }` (`transition` the link's `pageLinkTransitionOf`, `instant` for a
+  step; `direction` `back` for a back link), `seq` counting changes so the stage keys its animation.
+- **Hotspots.** `prototypeHotspots(tab, page)`: the tab's visible elements (`visibleLayerElements`) whose anchor is on
+  the page (`elementIdsOnPage`), with a screen link that does not resolve broken, in paint order; each `rect` is
+  `contentBounds([el], undefined, tab.elements)` intersected with `pageScreenRect(page)` (none when the intersection is
+  empty), `label` its `describeScreenLink` line.
+- **Drawing.** `PrototypeScreen` renders `renderTabToSvg(tab, { page, imageHref, idPrefix: 'lvd-proto' })` with its
+  root `<svg>` stripped, inside its own `<svg>` whose `viewBox` is the page's rect (desktop) or `pageScreenRect`
+  (phone, `useIsMobileViewport`), `preserveAspectRatio="xMidYMid meet"`; the markup is memoised on the tab and the
+  page and the image sources. Pictures come from `useImageSources(thumbImageIds(...))` through `thumbImageHref` (the
+  canvas's copy). Hotspots are `<rect>`s over it, `role="button"`, `tabIndex=0`, `aria-label` their label,
+  `pointer-events="all"`, `fill` transparent until flashed.
+- **Flash.** A pointer press on the stage that is not on a hotspot or the bar sets `flashing` for
+  `PROTOTYPE_FLASH_MS`; hotspots take the brand fill at 0.22 and a 2 px brand outline, fading out by CSS transition
+  (collapsed by reduced motion, so they simply show and hide).
+- **Transitions.** While a change's `transition` is not instant and motion is allowed (`prefersReducedMotion()`: the
+  `(prefers-reduced-motion: reduce)` query or the `reduce-motion` class on `<html>`), the stage keeps the leaving
+  screen beneath and animates with the Web Animations API over `PROTOTYPE_TRANSITION_MS` (`cubic-bezier(0.2, 0, 0,
+  1)`): slide, the new layer `translateX(100%)` (back: `-100%`) to 0 and the old 0 to `-33%` (back: `33%`) at opacity
+  0.6; dissolve, the new layer's opacity 0 to 1. The leaving layer is dropped on finish, or at once where `animate`
+  is missing.
+- **Keys.** One `keydown` listener on `window` in the capture phase while open stops every key's propagation (the
+  editor's shortcuts never see it) and handles: Escape closes; ArrowLeft / ArrowRight step; Enter or Space on a focused
+  hotspot follows it. Tab keeps its default. The dialog (`role="dialog"`, `aria-modal`, `aria-label="Prototype"`)
+  takes focus on open; closing hands focus back to what had it.
+- **Close.** `closePrototype()`, then `pagesMode.focusPage(shownId)`.
+- **Copy Prototype Link.** `copyFlaggedViewLink({ withFlag: withPrototype, ... })`, Inspect's routine made shared:
+  the visitor's `sessionShareCode`, else `inspectViewLink` over `indexClient.listShareLinks`; none opens Share with
+  "Make a Viewer link, then copy the Prototype link."; tracks `UI · Copied · PrototypeLink`. Offered when
+  `sessionShareCode !== null || (canShareDesign && !offline)`.
+- **Phone.** `useIsMobileViewport`: the stage fills `100dvh` on black with no padding, the bar a floating pill
+  (`top: max(8px, env(safe-area-inset-top))`), the screen's `viewBox` the screen rect.
+- **Drag pill.** `ScreenLinkDragLine` measures its name pill after layout and shifts it by whatever keeps its box
+  `SCREEN_LINK_PILL_MARGIN_PX` inside the window on each side.
+
 ## Interfaces and contracts
 
 - `Page` fields: `kind: 'wireframe'`, `device?: WireframeDeviceId`, `orientation?: PageOrientation`,
@@ -228,6 +289,9 @@ transition? }`, `transition` omitted when Instant. A `here` row is `disabled`. T
   broken, never followed, never a load, save, render or export failure.
 - A back link on the first screen shown does nothing.
 - A screen link on a page that is not a wireframe page is kept and never followed.
+- The shown screen deleted while playing: the player shows the first screen. The tab turned into another kind, or
+  another tab made active: the player closes. A hotspot whose box lies wholly off the screen is left out.
+- A share link's `prototype` on a tab that is not a wireframe tab is ignored, as `inspect` is.
 
 ## Security and trust
 
@@ -243,7 +307,8 @@ Inspect: `Canvas · Used · Inspect` (`useCanvasTool`); `UI · Copied · Inspect
 `InspectLink`; `Document · Exported · InspectPng` / `InspectSvg`. Never a value, a name or a link.
 Screen links: `Element · Linked · Screen` (a screen row, or the handle's drop) and `Element · Linked · ScreenBack`
 (Back), from `EditorElementDialogs` and `useElementLinks`; charted with the site's Links Added. Never a page id or
-name.
+name. Prototype mode: `Canvas · Used · Prototype` (each opening, from the header or a link; the site's Prototypes
+Played) and `UI · Copied · PrototypeLink` (counted in Share Links Copied).
 
 ## Testing
 
@@ -267,6 +332,10 @@ name.
 | Screen mode: the screens, This screen, Back, the transition, the broken note; opening on it; the role gate                                  | `apps/live/components/dialogs/LinkPickerDialog.screen.test.tsx`, `apps/live/lib/screen-link-choices.test.ts`                                                                                                                                                                  |
 | The handle: when it shows (roles, lock, edit, page kind, page count), drop on a screen, own screen, off, Escape, a press opens the menu     | `apps/live/components/canvas/ScreenLinkHandle.test.tsx`, `apps/live/lib/screen-link-choices.test.ts`                                                                                                                                                                          |
 | The marker: linked, back and broken items, their clicks; a page edit re-rendering only the linked elements                                  | `apps/live/components/canvas/useElementIndicators.test.ts`, `screen-link-pages.test.tsx`                                                                                                                                                                                      |
+| Prototype state: start, follow a page link, back, broken, steps at the ends, a deleted shown screen; hotspots | `apps/live/lib/prototype-player.test.ts` |
+| The player: the screen drawn, a hotspot followed, the flash, keys, close framing the screen, transitions, the phone | `apps/live/components/prototype/PrototypePlayer.test.tsx` |
+| Every role plays: the header button for Editor, Participant and Viewer; the address opening Prototype; copying the link | `apps/live/components/prototype/usePrototypeHost.test.tsx`, `components/chrome/PrototypeHeaderButton.test.tsx`, `lib/copy-flagged-view-link.test.ts`, `lib/prototype-link.test.ts` |
+| The drag pill kept inside the window | `apps/live/components/canvas/ScreenLinkHandle.test.tsx` |
 | The panel's sections, copy, export and link; the overlay; the address opening Inspect                                                       | `apps/live/components/panels/inspect/InspectPanel.test.tsx`, `components/canvas/inspect/InspectOverlay.test.tsx`, `useInspectHost.test.tsx`, `InspectClusterSegment.test.tsx`, `CanvasSelectionToolbars.test.tsx`; `lib/export-tab.test.ts`, `export-tab-canvas-draw.test.ts` |
 
 ## Constants and configuration
@@ -293,6 +362,10 @@ name.
 | `SCREEN_LINK_HANDLE_PX`               | 22 (the quick-connect plus's size)         | `ScreenLinkHandle.tsx`       |
 | `SCREEN_LINK_HANDLE_GAP_PX`           | 6 (screen px past the corner)              | `ScreenLinkHandle.tsx`       |
 | `SCREEN_LINK_DRAG_SLOP_PX`            | 4 (screen px before a press is a drag)     | `ScreenLinkHandle.tsx`       |
+| `SCREEN_LINK_PILL_MARGIN_PX`          | 8 (the drag pill's gap from the window)    | `ScreenLinkHandle.tsx`       |
+| `PROTOTYPE_PARAM`                     | `'prototype'` (copied as `prototype=1`)    | `prototype-link.ts`          |
+| `PROTOTYPE_TRANSITION_MS`             | 280                                        | `prototype-player.ts`        |
+| `PROTOTYPE_FLASH_MS`                  | 700                                        | `prototype-player.ts`        |
 
 ## Defaults ledger
 
