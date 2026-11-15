@@ -39,6 +39,40 @@ describe('room tickets', () => {
       claims: claims('d1'),
       grant: 'grant-for-d1',
       workbench: null,
+      cap: null,
+    });
+  });
+
+  // one-explorer-contracts.md "A view-only ticket": the MCP view's, sealed with a cap and no pairing.
+  it('seals a view-only ticket with its cap and no pairing, opened as a cap, never a workbench', async () => {
+    const ticket = await sealRoomTicket(env, 'grant-for-d1', { pairing: null, cap: 'view' });
+    expect(ticket.startsWith('rt2~')).toBe(true);
+    expect(ticket).not.toContain('grant-for-d1');
+    const opened = await openRoomTicket(service, env, ticket, 'd1');
+    expect(opened).toEqual({
+      claims: claims('d1'),
+      grant: 'grant-for-d1',
+      workbench: null,
+      cap: 'view',
+    });
+    // The grant is the owner's edit; the ticket admits at view.
+    expect(roomTicketLevel(opened!)).toBe('view');
+    expect(await openRoomTicket(service, env, ticket, 'd2')).toBeNull();
+    for (const part of ticket.split(/[~.]/)) {
+      expect(await openRoomTicket(service, env, part, 'd1')).toBeNull();
+    }
+  });
+
+  it('renews a view-only session only at its cap, and ends one handed the bare grant', async () => {
+    const held = { level: 'view' as const, tab: null };
+    const fresh = await sealRoomTicket(env, 'grant-for-d1', { pairing: null, cap: 'view' });
+    expect(await renewRoomGrant(service, env, fresh, 'd1', held)).toMatchObject({
+      kind: 'renewed',
+    });
+    expect(await renewRoomGrant(service, env, 'grant-for-d1', 'd1', held)).toEqual({
+      kind: 'changed',
+      level: 'edit',
+      tab: null,
     });
   });
 

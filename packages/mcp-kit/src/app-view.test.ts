@@ -3,10 +3,11 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
   VIEWER_HTML_BUDGET_BYTES,
   VIEW_MIME_TYPE,
-  VIEW_RESOURCE_META,
   appOnlyToolMeta,
   registerViewResource,
+  socketOriginOf,
   toolUiMeta,
+  viewResourceMeta,
   viewerHtml,
 } from './app-view';
 import { VIEWER_SCRIPT } from './app-viewer-script';
@@ -28,6 +29,9 @@ type Ldv = {
   ) => { id: string } | null;
   elementLink: (url: string, tab: string, el: string | null) => string;
   num: (v: unknown) => boolean;
+  changeOf: (frame: unknown, tabId: string | null) => 'redraw' | 'trashed' | null;
+  retryAfter: (tries: number) => number;
+  stopWords: (why: string) => string;
 };
 
 // The script's pure parts, evaluated as the page would, with no window: the wiring never runs.
@@ -43,7 +47,7 @@ describe('the view resource and the tool meta', () => {
     expect(appOnlyToolMeta()).toEqual({ ui: { visibility: ['app'] } });
   });
 
-  it('lists the page as text/html;profile=mcp-app with no network allowed', async () => {
+  it('lists the page as text/html;profile=mcp-app with no network but the sockets it names', async () => {
     let read: ((uri: URL) => Promise<{ contents: { text: string; mimeType: string }[] }>) | null =
       null;
     let meta: Record<string, unknown> = {};
@@ -54,12 +58,25 @@ describe('the view resource and the tool meta', () => {
         read = cb;
       },
     } as unknown as McpServer;
-    registerViewResource(server, { uri: 'ui://acme/view.html', app: 'acme', title: 'acme view' });
-    expect(meta).toMatchObject({ mimeType: VIEW_MIME_TYPE, _meta: VIEW_RESOURCE_META });
-    expect(VIEW_RESOURCE_META.ui.csp).toEqual({ connectDomains: [], resourceDomains: [] });
+    registerViewResource(server, {
+      uri: 'ui://acme/view.html',
+      app: 'acme',
+      title: 'acme view',
+      connectDomains: ['wss://www.acme.app'],
+    });
+    const csp = { connectDomains: ['wss://www.acme.app'], resourceDomains: [] };
+    expect(meta).toMatchObject({ mimeType: VIEW_MIME_TYPE, _meta: { ui: { csp } } });
     const { contents } = await read!(new URL('ui://acme/view.html'));
     expect(contents[0]!.mimeType).toBe(VIEW_MIME_TYPE);
     expect(contents[0]!.text).toContain("name: 'acme-view'");
+    // With none named, nothing at all.
+    expect(viewResourceMeta().ui.csp).toEqual({ connectDomains: [], resourceDomains: [] });
+  });
+
+  it('names the socket origin of an app base', () => {
+    expect(socketOriginOf('https://www.acme.app')).toBe('wss://www.acme.app');
+    expect(socketOriginOf('https://staging.acme.app/some/path')).toBe('wss://staging.acme.app');
+    expect(socketOriginOf('http://localhost:3100')).toBe('ws://localhost:3100');
   });
 
   it('keeps the page self-contained and within its budget', () => {
@@ -125,5 +142,53 @@ describe('the viewer’s pure parts', () => {
       'https://x.app/document/d#t=t',
     );
     expect([LDV.num(1), LDV.num(Number.NaN), LDV.num('1')]).toEqual([true, false, false]);
+  });
+
+  // docs/specs/015-api/mcp-server.md "Live updates".
+  it('draws again for a content change or a save on the shown tab, or the tab list, and for nothing else', () => {
+    const op = (o: Record<string, unknown>) => ({ kind: 'op', from: 'x', op: o });
+    for (const kind of [
+      'tab',
+      'el',
+      'tab-meta',
+      'el-delta',
+      'vote',
+      'qa',
+      'changeset',
+      'tab-saved',
+    ]) {
+      expect(LDV.changeOf(op({ kind, tabId: 't1' }), 't1'), kind).toBe('redraw');
+      expect(LDV.changeOf(op({ kind, tabId: 't2' }), 't1'), kind).toBeNull();
+    }
+    expect(LDV.changeOf(op({ kind: 'document-meta', tabs: [] }), 't1')).toBe('redraw');
+    expect(LDV.changeOf(op({ kind: 'document-trashed' }), 't1')).toBe('trashed');
+    for (const kind of [
+      'cursor',
+      'laser',
+      'select',
+      'viewport',
+      'drag-preview',
+      'reaction',
+      'poll-answer',
+    ]) {
+      expect(LDV.changeOf(op({ kind, tabId: 't1' }), 't1'), kind).toBeNull();
+    }
+    expect(LDV.changeOf(op({ kind: 'constructor' }), 't1')).toBeNull();
+    expect(LDV.changeOf(op({ kind: 'el' }), 't1')).toBe('redraw');
+    expect(LDV.changeOf({ kind: 'presence', participants: [] }, 't1')).toBeNull();
+    expect(LDV.changeOf({ kind: 'op', op: null }, 't1')).toBeNull();
+    expect(LDV.changeOf({ kind: 'op', op: { kind: 3 } }, 't1')).toBeNull();
+    expect(LDV.changeOf(null, 't1')).toBeNull();
+  });
+
+  it('backs off from one second, doubling to thirty, then stops after six tries', () => {
+    expect([0, 1, 2, 3, 4, 5].map(LDV.retryAfter)).toEqual([1000, 2000, 4000, 8000, 16000, 30000]);
+    expect(LDV.retryAfter(6)).toBe(-1);
+  });
+
+  it('says quietly why live updates stopped', () => {
+    expect(LDV.stopWords('trashed')).toBe('This document moved to the Trash.');
+    expect(LDV.stopWords('lost')).toContain('connection kept dropping');
+    expect(LDV.stopWords('refused')).toBe('Live updates are off for this document.');
   });
 });

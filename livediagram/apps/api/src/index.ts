@@ -178,7 +178,15 @@ async function routeApiRequest(
   // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
   const isSelfRevoke =
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
-  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
+  // Nor does a view-only room ticket (docs/specs/015-api/api.md, the MCP view's live updates): it writes nothing
+  // and admits only a watcher, at view.
+  const isViewOnlyTicket =
+    request.method === 'POST' &&
+    segments[1] === 'documents' &&
+    segments.length === 4 &&
+    segments[3] === 'room-ticket' &&
+    url.searchParams.get('cap') === 'view';
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isViewOnlyTicket) {
     return forbidden('read_only_token');
   }
   // One read is a credential, not content: the share-link list carries every

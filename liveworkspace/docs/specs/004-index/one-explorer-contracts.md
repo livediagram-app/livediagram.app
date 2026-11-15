@@ -515,6 +515,16 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   the seal with the same key. When the pairing ends (unpaired, its token
   revoked, its account closed), accounts asks the index to close its sockets and the index tells each item
   (`POST <app>/api/internal/items/:id/workbench-close` `{pairingId}`, [workbench.md](../011-workbench/workbench.md)).
+- **A view-only ticket**: an app may seal a grant with a level cap and no pairing, for a client that may only
+  watch the item and must never hold its person's full-level grant: an MCP server's interactive view in a chat
+  host (each product's docs/specs/015-api/mcp-server.md "Live updates"). The app answers it for
+  `POST …/room-ticket?cap=view`; the ticket is `rt2~<sealed>` like a paired session's, the grant and the cap
+  `view` encrypted together, so the room admits it at `view` whatever the grant says, and the grant cannot be
+  taken out and used bare. It names no pairing, so nothing closes it by one; it lives as long as the grant inside
+  it (10 minutes) and is never renewed in place: the client mints a fresh one, through its own credential, which
+  asks the index again. The room stamps such a session as no owner, whoever the grant's person is. Revoking the
+  person's access closes it (`person`, 4005) and its next mint is refused; revoking the credential stops it at
+  the latest when its ticket lapses.
 - **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
   editor answers `{kind: "grant", grant}` with a fresh one (a paired tool's session answers with a fresh sealed
   ticket). A fresh grant saying the same moves the lapse on; one with another level, tab or pairing (a paired

@@ -8,6 +8,10 @@
 // So the grant, the pairing and the cap are encrypted together (AES-GCM, a key derived from the app's INDEX_KEY):
 // `rt2~<base64url(iv | ciphertext)>`. The session can read none of it and change none of it. Nothing else may claim
 // a pairing.
+//
+// A view-only client (an MCP server's interactive view, one-explorer-contracts.md "A view-only ticket") gets the same
+// seal with a cap and no pairing: the room admits it at the cap whatever the grant says, and it holds no grant it
+// could use bare. It opens as `cap`, never as a workbench, so no pairing close or workbench rule reaches it.
 
 import { isLevel, type GrantClaims, type Level } from '@liveworkspace/index-client';
 import type { IndexEnv, IndexService } from './service';
@@ -19,10 +23,16 @@ const AAD = new TextEncoder().encode('liveworkspace room-ticket v2');
 
 export type RoomTicketWorkbench = { pairing: string; cap: Level };
 
+// What a sealed ticket holds beside the grant: a workbench session's pairing and cap, or a view-only client's cap
+// alone (`pairing: null`).
+export type RoomTicketSeal = { pairing: string | null; cap: Level };
+
 export type RoomTicket = {
   claims: GrantClaims;
   grant: string;
   workbench: RoomTicketWorkbench | null;
+  // A view-only ticket's cap (sealed with no pairing); null for every other ticket.
+  cap: Level | null;
 };
 
 // The sealing key, derived once per isolate (and again only if INDEX_KEY changes) rather than on every ticket.
@@ -69,6 +79,7 @@ function fromBase64Url(text: string): Uint8Array {
 type SealedFacts = { g: string; p: string; c: Level };
 
 // The ticket's sealed facts, or null for anything this key did not seal (forged, tampered, another key, garbage).
+// `p` is the pairing, empty for a view-only ticket.
 async function unseal(secret: string, body: string): Promise<SealedFacts | null> {
   try {
     const bytes = fromBase64Url(body);
@@ -88,16 +99,16 @@ async function unseal(secret: string, body: string): Promise<SealedFacts | null>
 }
 
 // The room's ticket for a grant: the grant as it is, or, for a workbench session, the grant sealed with its pairing
-// and cap so the session never holds the grant itself.
+// and cap so the session never holds the grant itself; for a view-only client, sealed with its cap alone.
 export async function sealRoomTicket(
   env: Pick<IndexEnv, 'INDEX_KEY'>,
   grant: string,
-  workbench: RoomTicketWorkbench | null,
+  seal: RoomTicketSeal | null,
 ): Promise<string> {
-  if (!workbench) return grant;
-  if (!env.INDEX_KEY) throw new Error('no INDEX_KEY to seal a workbench ticket');
+  if (!seal) return grant;
+  if (!env.INDEX_KEY) throw new Error('no INDEX_KEY to seal a room ticket');
   const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
-  const facts: SealedFacts = { g: grant, p: workbench.pairing, c: workbench.cap };
+  const facts: SealedFacts = { g: grant, p: seal.pairing ?? '', c: seal.cap };
   const sealed = new Uint8Array(
     await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv, additionalData: AAD },
@@ -123,17 +134,19 @@ export async function openRoomTicket(
   if (!ticket) return null;
   let grant = ticket;
   let workbench: RoomTicketWorkbench | null = null;
+  let cap: Level | null = null;
   if (ticket.startsWith(SEALED_PREFIX)) {
     if (!env.INDEX_KEY) return null;
     const facts = await unseal(env.INDEX_KEY, ticket.slice(SEALED_PREFIX.length));
     if (!facts) return null;
     grant = facts.g;
-    workbench = { pairing: facts.p, cap: facts.c };
+    if (facts.p) workbench = { pairing: facts.p, cap: facts.c };
+    else cap = facts.c;
   } else if (ticket.includes(SEP)) {
     return null;
   }
   const claims = await service.verifyGrant(env, grant, itemId);
-  return claims ? { claims, grant, workbench } : null;
+  return claims ? { claims, grant, workbench, cap } : null;
 }
 
 // ---------- A session's grant in the room ---------------------------------------------------------------------
@@ -146,10 +159,12 @@ export async function openRoomTicket(
 
 export type RoomGrantHold = { grantExp?: number | null; renewAsked?: boolean };
 
-// The level a ticket admits at: the grant's, held to a workbench session's cap.
-export function roomTicketLevel(opened: Pick<RoomTicket, 'claims' | 'workbench'>): Level {
+// The level a ticket admits at: the grant's, held to a workbench session's cap or a view-only ticket's.
+export function roomTicketLevel(
+  opened: Pick<RoomTicket, 'claims' | 'workbench'> & { cap?: Level | null },
+): Level {
   const { level } = opened.claims;
-  const cap = opened.workbench?.cap;
+  const cap = opened.workbench?.cap ?? opened.cap;
   if (!cap) return level;
   const order: Level[] = ['view', 'participate', 'edit'];
   return order[Math.min(order.indexOf(level), order.indexOf(cap))]!;

@@ -83,6 +83,7 @@ function okResponse(request: Request): Response {
   if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
+  if (path.endsWith('/room-ticket')) return json({ ticket: 'rt2~sealed', expiresAt: 1 });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share')) {
@@ -203,6 +204,7 @@ describe('registerTools', () => {
       'unarchive_document',
       'update_document',
       'upload_image',
+      'view_live',
       'view_tab',
     ]);
     // The description is what the calling model reads to pick a tool, so an
@@ -299,6 +301,7 @@ describe('tool annotations', () => {
     list_threads: 'read',
     // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the view's own read.
     view_tab: 'read',
+    view_live: 'read',
     change_threads: 'destructive',
     find_documents: 'read',
     read_document: 'read',
@@ -377,6 +380,7 @@ describe('tool annotations', () => {
       'list_trash',
       'read_document',
       'search_icons',
+      'view_live',
       'view_tab',
     ]);
 

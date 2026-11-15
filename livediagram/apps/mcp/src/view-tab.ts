@@ -1,14 +1,29 @@
 // The interactive view (docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)"): the `ui://` page the
-// drawing tools link, and view_tab, the call the page makes through the host to draw a tab. The page holds no
-// credential: every view_tab is the user's own token through the api's read gate, and no share link is minted.
+// drawing tools link, view_tab, the call the page makes through the host to draw a tab, and view_live, the view-only
+// room ticket it follows the document with ("Live updates"). The page holds no lasting credential: every view_tab is
+// the user's own token through the api's read gate, a ticket lapses in minutes, and no share link is minted.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { appOnlyToolMeta, registerViewResource, toolUiMeta } from '@liveworkspace/mcp-kit/app-view';
+import {
+  appOnlyToolMeta,
+  registerViewResource,
+  socketOriginOf,
+  toolUiMeta,
+} from '@liveworkspace/mcp-kit/app-view';
+import type { RoomTicketResponse } from '@livediagram/api-schema';
 import { computeRefs, visibleLayerElements, type Element, type Tab } from '@livediagram/document';
-import { mcpViewTab } from '@livediagram/agent-verbs/mcp';
+import { mcpViewLive, mcpViewTab } from '@livediagram/agent-verbs/mcp';
+import { apiJson } from './api';
 import { tabSvg } from './image-result';
 import { registerTool } from './tool-annotations';
-import { deepLink, errorResult, loadTab, requireToken, type ToolResult } from './tool-helpers';
+import {
+  appBase,
+  deepLink,
+  errorResult,
+  loadTab,
+  requireToken,
+  type ToolResult,
+} from './tool-helpers';
 
 export const VIEW_URI = 'ui://livediagram/view.html';
 
@@ -79,18 +94,64 @@ export async function viewTab(
   };
 }
 
-// The page, listed on the server beside the schema resource (server.ts).
-export function registerViewPage(server: McpServer): void {
-  registerViewResource(server, { uri: VIEW_URI, app: 'livediagram', title: 'livediagram view' });
+// The room's socket for a document, on this deployment's editor host, as the view opens it with `?t=`.
+export const roomSocketUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, documentId: string) =>
+  `${socketOriginOf(appBase(env))}/api/documents/${encodeURIComponent(documentId)}/ws`;
+
+// view_live: a view-only ticket minted for the token's owner (`?cap=view`), so the view never holds the owner's
+// grant and a read-only token may follow too. The ticket rides structured content only: the text line, the logs and
+// the telemetry never carry it.
+export async function viewLive(
+  env: Env,
+  token: string,
+  args: { documentId: string },
+): Promise<ToolResult> {
+  const answer = await apiJson<RoomTicketResponse>(
+    env,
+    token,
+    `/documents/${encodeURIComponent(args.documentId)}/room-ticket?cap=view`,
+    { method: 'POST' },
+  );
+  if (typeof answer.expiresAt !== 'number') return errorResult('Live updates are unavailable.');
+  console.info('[mcp] view_live', {
+    lapsesInS: Math.round((answer.expiresAt - Date.now()) / 1000),
+  });
+  return {
+    content: [{ type: 'text', text: 'Opened live updates for the interactive view.' }],
+    structuredContent: {
+      documentId: args.documentId,
+      url: roomSocketUrl(env, args.documentId),
+      ticket: answer.ticket,
+      expiresAt: answer.expiresAt,
+    },
+  };
 }
 
-// view_tab, registered last of the tools (tools.ts), as the catalogue orders it.
+// The page, listed on the server beside the schema resource (server.ts). Its CSP allows the one socket the view
+// opens: the editor host's room.
+export function registerViewPage(server: McpServer, env: Pick<Env, 'CONSENT_BASE_URL'>): void {
+  registerViewResource(server, {
+    uri: VIEW_URI,
+    app: 'livediagram',
+    title: 'livediagram view',
+    connectDomains: [socketOriginOf(appBase(env))],
+  });
+}
+
+// view_tab and view_live, registered last of the tools (tools.ts), as the catalogue orders them.
 export function registerViewTool(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
     mcpViewTab,
     async (args, extra) => viewTab(env, requireToken(extra), args),
+    appOnlyToolMeta(),
+  );
+  registerTool(
+    server,
+    env,
+    mcpViewLive,
+    async (args, extra) => viewLive(env, requireToken(extra), args),
     appOnlyToolMeta(),
   );
 }

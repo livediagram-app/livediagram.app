@@ -106,6 +106,8 @@ async function api(request: Request): Promise<Response> {
         },
       ],
     });
+  if (path.endsWith('/room-ticket') && url.searchParams.get('cap') === 'view')
+    return json({ ticket: 'rt2~sealed', expiresAt: 1_800_000_000_000 });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
@@ -186,6 +188,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { documentId: 'd1', changes: [{ op: 'resolve', ref: 'e1' }] },
   },
   { tool: 'view_tab', output: 'viewTabOutput', args: { documentId: 'd1' } },
+  { tool: 'view_live', output: 'viewLiveOutput', args: { documentId: 'd1' } },
 ];
 
 describe('tool output schemas', () => {
@@ -230,6 +233,10 @@ describe('tool output schemas', () => {
       } else if (tool === 'view_tab') {
         // The view's own tool says one line, not its SVG (docs/specs/015-api/mcp-server.md "Interactive view").
         expect(first!.text).toBe('Drew tab "Tab 1" for the interactive view.');
+      } else if (tool === 'view_live') {
+        // Its one line never carries the ticket (docs/specs/015-api/mcp-server.md "Live updates").
+        expect(first!.text).toBe('Opened live updates for the interactive view.');
+        expect(first!.text).not.toContain((structured as { ticket: string }).ticket);
       } else {
         expect(JSON.parse(first!.text)).toEqual(structured);
       }

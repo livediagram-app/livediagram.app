@@ -363,3 +363,91 @@ describe('a Community post link', () => {
     });
   });
 });
+
+// docs/specs/015-api/mcp-server.md "Live updates": the MCP view's ticket, minted for the token's owner with
+// `?cap=view`. Whatever the owner's own level, it admits at view, seats no owner and adds no key; it is the owner's
+// access at the mint, so a revoked grant mints none; and a lapsed one is refused at the door.
+describe('a view-only ticket (the MCP view)', () => {
+  const mint = (env: Env, grant: string | null, query = '?cap=view') =>
+    handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', `/api/documents/p1/room-ticket${query}`, {
+        env,
+        headers: grant ? { [ITEM_GRANT_HEADER]: grant } : {},
+        grant: null,
+      }),
+    );
+
+  for (const level of ['edit', 'participate', 'view'] as const) {
+    it(`admits a ${level}-level token's owner at view only, never seated as the owner`, async () => {
+      const { env, seen } = roomEnv();
+      const grant = grantFor({ item: 'p1', sub: 'user_a', owner: 'user_a', level });
+      const res = await mint(env, grant);
+      expect(res?.status).toBe(200);
+      const answer = await res!.json<{ ticket: string; expiresAt: number; adderKey?: string }>();
+      expect(answer.ticket.startsWith('rt2~')).toBe(true);
+      expect(answer.ticket).not.toContain(grant);
+      expect(answer.expiresAt).toBe((NOW + 600) * 1000);
+      expect(answer.adderKey).toBeUndefined();
+      await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(answer.ticket)}`);
+      const h = seen[0]!.headers;
+      expect(h.get('X-Verified-Role')).toBe('view');
+      expect(h.get('X-Verified-Owner')).toBe('0');
+      expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
+      expect(h.get('X-Verified-Adder')).toBe('');
+      expect(h.get('X-Verified-Person')).toBe(await personTagFor('p1', 'user_a'));
+    });
+  }
+
+  it('mints none once the grant is revoked: the index answers no grant', async () => {
+    const { env } = roomEnv();
+    const res = await mint(env, null);
+    expect(res?.status).toBe(404);
+  });
+
+  it('refuses a ticket whose grant has lapsed, never reaching the room', async () => {
+    const { env, seen } = roomEnv();
+    const lapsed = grantFor({ item: 'p1', sub: 'user_a', exp: NOW - 1 });
+    const ticket = await sealRoomTicket(env, lapsed, { pairing: null, cap: 'view' });
+    const res = await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
+    expect(res?.status).toBe(403);
+    expect(seen).toHaveLength(0);
+  });
+
+  it('refuses any cap but view, before asking for a grant', async () => {
+    const { env } = roomEnv();
+    const grant = grantFor({ item: 'p1', sub: 'user_a' });
+    for (const query of ['?cap=edit', '?cap=participate', '?cap=']) {
+      const res = await mint(env, grant, query);
+      expect(res?.status, query).toBe(400);
+      expect(await res!.json()).toMatchObject({ message: 'invalid_cap' });
+    }
+  });
+
+  it('holds a workbench session that asks for one to view, on its own pairing', async () => {
+    const { env, seen } = roomEnv();
+    const workbench = {
+      sessionId: 'ws-1',
+      ownerId: 'user_a',
+      tokenId: 'tok',
+      pairingId: 'wp-1',
+      tabId: null,
+      origin: 'https://w.example',
+      level: 'edit',
+      expiresAt: Date.now() + 60_000,
+      scope: 'document',
+      documentId: 'p1',
+    } as unknown as WorkbenchContext;
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/p1/room-ticket?cap=view', {
+        env,
+        workbench,
+        headers: { [ITEM_GRANT_HEADER]: grantFor({ item: 'p1', sub: 'user_a' }) },
+        grant: null,
+      }),
+    );
+    const { ticket } = await res!.json<{ ticket: string }>();
+    await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
+    expect(seen[0]!.headers.get('X-Verified-Role')).toBe('view');
+    expect(seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('wp-1');
+  });
+});
