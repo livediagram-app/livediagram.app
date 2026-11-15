@@ -604,10 +604,16 @@ describe('resolveListingFilter', () => {
     const state = await readPlanState(a, D);
     expect(resolveListingFilter(state, { status: 'to-do', type: 'TASK' })).toEqual({
       ok: true,
-      status: 'todo~x',
-      type: 'task',
+      statuses: ['todo~x'],
+      types: ['task'],
     });
-    const listing = planListing(state, { status: 'todo~x' });
+    // Several of each, any of them (Work Tracker 900); a blank name is no filter.
+    expect(resolveListingFilter(state, { status: ['to-do', 'Done'], type: ['TASK', ''] })).toEqual({
+      ok: true,
+      statuses: ['todo~x', 'done~x'],
+      types: ['task'],
+    });
+    const listing = planListing(state, { statuses: ['todo~x'] });
     expect(listing.items.map((i) => i.ref)).toEqual(['#1', '#2']);
   });
 
@@ -625,7 +631,7 @@ describe('resolveListingFilter', () => {
     const state = await readPlanState(a, D);
     expect(resolveListingFilter(state, { status: 'trash' })).toEqual({
       ok: true,
-      status: TRASH_STATUS,
+      statuses: [TRASH_STATUS],
     });
     expect(resolveListingFilter(state, { status: 'Doing' })).toMatchObject({
       ok: false,
@@ -1374,7 +1380,7 @@ describe('every branch of the engine', () => {
       code: 'status_unknown',
       message: expect.stringContaining('Columns: To Do, Done'),
     });
-    const listing = planListing(state, { status: 'nowhere~x' });
+    const listing = planListing(state, { statuses: ['nowhere~x'] });
     expect(listing.types.find((t) => t.id === 'risk')!.custom[0]).toMatchObject({
       linkType: 'task',
     });

@@ -81,6 +81,33 @@ never told a change worked when it shows on no board.
   **Not on a board**. This is the text `board` view [Plan mode](plan-mode.md#agents) named as a later step. A filter
   by card type or column names them exactly as `change_items` does (`in-progress` reads In Progress; `Trash` the
   Trash), and a name the project does not have is refused with the names it has, never answered with no items.
+- **What `list_items` leaves out unless asked** (Work Tracker 900): a plan that has run for a while holds far more
+  finished cards than open ones, so by default `list_items` lists only the cards still in play.
+  - **Closed cards**: a card in a column that counts as done on the plan's boards ([Done columns](plan-board.md#done-columns):
+    Done, Cancelled, Won't Do...), a trashed card and an archived card are left out, unless `includeClosed` is true
+    or a column filter names their column (a column filter lists every card in the columns it names). A done
+    column's own `cards` list is emptied with them, and the column says how many it left out (`closed`).
+  - **Formatting runs**: a description's and a Long Text field's formatting (`descriptionRich`, `<field>Rich`) are
+    left out of `fields` unless `includeRich` is true; the plain text is always there under the field's name.
+  - The answer's `omitted` says what was left out and how to bring it back, in numbers (`closed`, how many closed
+    cards matched the other filters; `rich`, true when a listed card's formatting was left out) and in words
+    (`note`: "760 closed cards (Done, Cancelled, trashed, archived) left out: pass includeClosed: true to list them.").
+    Nothing is ever cut without the answer saying so. With nothing left out there is no `omitted`.
+- **Filters** (each optional, all of them together): `status` and `type` each take one name or a list of names (a
+  card in any of them), named as `change_items` names them; `query` keeps a card whose title or description holds
+  the text (case aside, at most 200 characters); `updatedSince` keeps a card changed at or after an ISO date or
+  time (`2026-11-01`, `2026-11-01T09:00:00Z`), refused (`updated_since_invalid`) when it reads as neither.
+  Filters narrow the items only: each board still lists the numbers of its open cards.
+- **Paging**: cards come by number. `limit` (1 to 1,000) caps a page, and an answer never passes about 200,000
+  characters as its text is sent (`LIST_ITEMS_BUDGET`): when cards remain, the answer stops before the card that
+  would pass it and gives `nextCursor`; the same call with `cursor` set to it answers the next page, and paging to
+  the end lists every matching card exactly once, none lost or repeated, even while cards are added. `total` is how
+  many cards match on every page together, `count` how many this page lists. Every page lists the boards and card
+  types, so any page names everything a write takes. A page lists at least one card when any remains, so paging
+  always ends (one card is bounded by the item store's limits). A cursor `list_items` did not give is refused
+  (`cursor_invalid`).
+- The CLI's `item ls` keeps listing every card, as before: its output is a line a card, not one answer an assistant
+  must take whole.
 - A card linked to pull requests the plan has a state for lists them as `pullRequests` (each its `name`, `state`,
   `checks` when an open one or a draft has them, `title`, `url`, and the `field` holding it), with exactly the
   visibility the board gives the caller ([GitHub pull requests](github-pull-requests.md#agents)).
@@ -391,7 +418,8 @@ Editor of the whole plan: the whole contract is in [Automations](automations.md#
 ## Cost
 
 - `list_items` and `change_items` each make at most two api reads (items and plan, in parallel) however many
-  changes a call carries, then one write per change. `change_card_types` makes those two reads and one catalogue
+  changes a call carries; `list_items` works out the fields of only the cards a page lists (and one more), so a
+  page of a large plan costs about what a small plan's whole answer did, then one write per change. `change_card_types` makes those two reads and one catalogue
   write, then one write per card of a deleted type. `add_board` makes three reads (project, plan with items, tab)
   and one changeset.
 - The plan route reads only the tabs that hold a board, in batches (as the project overview does), and returns
