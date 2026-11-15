@@ -147,7 +147,7 @@ Explorer lists follow after the paint.
 
 A cloud design waits on three things in a row before it paints: auth settling, the
 participant ([`resolveParticipant`](#instant-open)) and the tab fetch. In livediagram about a
-third of opens took over 4 s (telemetry, `DocumentLoad.*`, October 2026), and every
+third of opens took over 4 s (telemetry, its load timing, October 2026), and every
 editor loads the same way. A cloud design this
 browser has opened before can paint at once from **the last copy seen**, the way Linear,
 Figma and Notion show their last synced copy and catch up in the background
@@ -188,7 +188,7 @@ warm-opens only when its share code is the one the copy was kept under.
   can edit.
 - **Lost access on catch-up** swaps the copy for the screen the load ends on (not found,
   the deleted card, the password gate) and forgets the copy.
-- `DocumentLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its
+- `DesignLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its
   own.
 
 **Built so far.** Part 1 keeps, bounds and clears the copies (`createLastSeenCopies` in
