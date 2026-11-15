@@ -5,6 +5,8 @@ import type { Verb } from './define';
 import { changesetLs, changesetRevert, changesetShow } from './verbs/changeset';
 import {
   commentAdd,
+  commentDelete,
+  commentEdit,
   commentLs,
   commentReopen,
   commentReply,
@@ -79,6 +81,8 @@ export const VERBS: readonly Verb[] = [
   commentReply,
   commentResolve,
   commentReopen,
+  commentEdit,
+  commentDelete,
   presenceSet,
   presenceClear,
   templateLs,

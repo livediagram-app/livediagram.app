@@ -681,12 +681,21 @@ export const PLAN_BOARDS_IMPORTED = chart(
   { types: Object.values(TRACKER_SOURCE_NAMES) },
 );
 
+// A whole plan imported from its .liveplanner file (docs/specs/026-plan/plan-tabs.md "The Import dialog").
+export const PLANS_IMPORTED = chart(
+  'Plan',
+  'Imported',
+  'Plans Imported',
+  'A new plan made from a whole plan’s .liveplanner file in the Import dialog.',
+  { types: ['Liveplanner'] },
+);
+
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
   blurb:
-    'Diagrams leaving liveplanner as files and text, tabs coming back in from JSON exports, and boards from other tools.',
-  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PLAN_BOARDS_IMPORTED],
+    'Diagrams leaving liveplanner as files and text, tabs coming back in from JSON exports, boards from other tools, and whole plans from their own files.',
+  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PLAN_BOARDS_IMPORTED, PLANS_IMPORTED],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };
 

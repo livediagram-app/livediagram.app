@@ -241,6 +241,7 @@ export function buildEditorView(slices: {
     importIntoActiveTab: tabsSlice.importIntoActiveTab,
     importTextIntoActiveTab: tabsSlice.importTextIntoActiveTab,
     trackerImport: tabsSlice.trackerImport,
+    planFileImport: tabsSlice.planFileImport,
     isPinchingRef: viewportSlice.isPinchingRef,
     isReadOnly: collaborationSlice.isReadOnly,
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.

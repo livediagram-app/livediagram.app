@@ -91,6 +91,9 @@ or a reload: a team in a standup looks at the same slice.
 - **Live**: a change shows for everyone with the board open within a second, without a reload. Typing in the Filter
   widget is sent once the typing pauses (`BOARD_FILTER_TYPING_MS`, 400 ms), never per keystroke, and when the board
   goes from the screen mid-word; a chip, a press or Only Mine is sent at once.
+- **Smooth on a big board**: the cards follow a change (this person's or a teammate's) in work the browser can break
+  up, so narrowing a 2,000-card board never holds the page for a long task (none over 50 ms at 4x CPU throttle). The
+  filter bar shows the new filter at once; the cards may show the old one for a frame.
 - **Kept**: switching to another tab and back, or reloading, shows the board with the same filter.
 - **Written as a set-up change**: the filter alone (`filter` on the set-up), so the api checks it and undo takes it
   back like any set-up change; nothing else on the board changes with it, and Show all clears it for everyone.
