@@ -22,6 +22,11 @@ export interface GrantVerifierOptions {
 const nullableString = (value: unknown): value is string | null =>
   value === null || typeof value === 'string';
 
+// The signing moment to the millisecond, kept only when it is a whole number inside `iat`'s second: anything else
+// (absent on a grant signed before the index added it, or malformed) falls back to `iat` alone.
+const isIatMs = (value: unknown, iat: number): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && Math.floor(value / 1000) === iat;
+
 export function createGrantVerifier(options: GrantVerifierOptions) {
   // From its twin host when its own fails, while the move to www. lasts (@liveworkspace/auth-client remoteKeySetAt).
   const keys = options.keys ?? remoteKeySetAt(options.jwksUrl);
@@ -36,7 +41,7 @@ export function createGrantVerifier(options: GrantVerifierOptions) {
         ...(options.issuer ? { issuer: options.issuer } : {}),
         requiredClaims: ['iss', 'sub', 'exp', 'iat', 'jti'],
       });
-      const { iss, aud, sub, item, level, tab, team, owner, trashed, link, iat, exp, jti } =
+      const { iss, aud, sub, item, level, tab, team, owner, trashed, link, iat, iatMs, exp, jti } =
         payload as Record<string, unknown>;
       if (
         typeof iss !== 'string' ||
@@ -68,6 +73,7 @@ export function createGrantVerifier(options: GrantVerifierOptions) {
         ...(trashed === true ? { trashed: true as const } : {}),
         ...(link === undefined ? {} : { link }),
         iat,
+        ...(isIatMs(iatMs, iat) ? { iatMs } : {}),
         exp,
         jti,
       };

@@ -69,6 +69,31 @@ describe('createGrantVerifier', () => {
     await expect(verify(await grant({ owner: '' }))).resolves.toBeNull();
   });
 
+  // Work Tracker 830: the signing moment to the millisecond, kept only when it sits inside iat's second.
+  it('reads iatMs inside its second, and drops one that is missing or does not match iat', async () => {
+    const at = Math.floor(Date.now() / 1000);
+    const signed = (extra: Record<string, unknown>) =>
+      new SignJWT({ ...claims, ...extra })
+        .setProtectedHeader({ alg: 'ES256', kid: 'g1' })
+        .setIssuer(GRANT_ISSUER)
+        .setAudience('liveplanner')
+        .setSubject('user_1')
+        .setIssuedAt(at)
+        .setJti('j1')
+        .setExpirationTime('10m')
+        .sign(privateKey);
+    expect(await verify(await signed({ iatMs: at * 1000 + 999 }))).toMatchObject({
+      iat: at,
+      iatMs: at * 1000 + 999,
+    });
+    // A grant signed before the index added it still verifies, to the second only.
+    const older = await verify(await signed({}));
+    expect(older).toMatchObject({ iat: at });
+    expect(older).not.toHaveProperty('iatMs');
+    for (const bad of [at * 1000 + 1000, at * 1000 - 1, at * 1000 + 0.5, String(at * 1000)])
+      expect(await verify(await signed({ iatMs: bad }))).not.toHaveProperty('iatMs');
+  });
+
   it('reads an item in the Trash, and nothing else as one', async () => {
     expect(await verify(await grant({ trashed: true }))).toMatchObject({ trashed: true });
     expect(await verify(await grant({ trashed: 'yes' }))).not.toHaveProperty('trashed');

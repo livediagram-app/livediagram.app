@@ -628,6 +628,8 @@ describe('grants', () => {
       owner: 'user_a',
     });
     expect(claims!.exp - claims!.iat).toBe(600);
+    // The signing moment to the millisecond, inside iat's second (Work Tracker 830).
+    expect(Math.floor(claims!.iatMs! / 1000)).toBe(claims!.iat);
     expect(await (await verifierFor('livediagram'))(grant.grant)).toBeNull();
   });
 
