@@ -22,6 +22,7 @@ export type {
 
 import type { PlanAutomations } from './plan-room/automations/automation-queue';
 import type { PlanRoom } from './plan-room/plan-room';
+import type { RemovalGuard } from './plan-room/removal-guard-store';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
@@ -179,8 +180,11 @@ export interface AutomationsAi {
 // already looking at it (docs/specs/014-identity/phone-notifications.md).
 // `AUTOMATIONS`: the plan's rules as its writes ask of them (docs/specs/026-plan/automations.md; plan-room/automations/
 // automation-queue.ts): the kinds they hear and the queue's wake. Absent outside the room.
+// `REMOVAL_GUARD`: the room's limit on mass card removals (plan-room/removal-guard-store.ts; docs/specs/
+// 012-collaboration/realtime-conflict-resolution.md "Mass card removals"). Absent outside the room.
 export type PlanEnv = Env & {
   PLAN_DB: D1Database;
   ROOM_PEOPLE?: () => ReadonlySet<string>;
   AUTOMATIONS?: PlanAutomations;
+  REMOVAL_GUARD?: RemovalGuard;
 };

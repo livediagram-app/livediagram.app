@@ -110,6 +110,7 @@ import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
 import { purgedAt } from './plan-room-purged';
+import { RemovalGuard } from './removal-guard-store';
 import { notFound } from '../responses';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -304,6 +305,7 @@ export class PlanRoom extends DurableObject<Env> {
           PLAN_ROOM: localNamespace(this, env.PLAN_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
           AUTOMATIONS: this.automations,
+          REMOVAL_GUARD: new RemovalGuard(state.storage),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);

@@ -51,6 +51,7 @@ export * from './card-search';
 export * from './card-display';
 export * from './status-names';
 export * from './plan-outline';
+export * from './removal-guard';
 export * from './plan-names';
 export * from './type-changes';
 export * from './type-change-face';

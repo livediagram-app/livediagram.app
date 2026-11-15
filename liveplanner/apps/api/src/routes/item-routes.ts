@@ -53,6 +53,7 @@ import {
   type ItemCaller,
 } from './item-route-kit';
 import { writeSource } from './automation-source';
+import { admitRemovals, trashedBy } from './item-removal-gate';
 import { patches } from './item-patches-route';
 import { moves } from './item-moves-route';
 import { historyTagOf, itemHistory } from './item-history-route';
@@ -246,8 +247,12 @@ export async function writeItem(
     if (bound) return rejected(bound);
     const blocked = await blockersRefused(ctx, caller, [{ before: item, next }]);
     if (blocked) return blocked;
+    // A move into the Trash is a removal the room's guard judges (item-removal-gate.ts).
+    const ticket = await admitRemovals(ctx, caller, trashedBy([{ before: item, next }]));
+    if (ticket instanceof Response) return ticket;
     const rev = await updateItemAtRev(ctx.env, caller.projectId, next, item.rev);
-    if (rev !== null) {
+    if (rev === null) ticket.release([itemId]);
+    else {
       relay(ctx, caller.projectId, [next], [], rev);
       await appendItemHistory(
         ctx.env,
@@ -312,10 +317,15 @@ async function remove(ctx: PlanRouteContext, projectId: string, itemId: string):
   const caller = await itemCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
   if (caller.scope && !caller.scope.has(itemId)) return itemNotFound();
+  const ticket = await admitRemovals(ctx, caller, [itemId]);
+  if (ticket instanceof Response) return ticket;
   // Read before the row goes: its delete takes its links (plan-room/card-thread-schema.ts items_threads_gone).
   const links = await threadLinksOf(ctx, projectId, itemId);
   const deleted = await deleteItemRow(ctx.env, projectId, itemId);
-  if (deleted === null) return itemNotFound();
+  if (deleted === null) {
+    ticket.release([itemId]);
+    return itemNotFound();
+  }
   relay(ctx, projectId, [], [itemId], deleted.rev);
   await cardLeftThreads(ctx, projectId, itemId, links);
   console.info('[items] deleted', { projectId, agent: ctx.token !== null });
