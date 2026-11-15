@@ -97,7 +97,7 @@ invalid_name`. Names the row for the stored revision or inserts a `manual` row; 
 - **VH17 copy.** A new tab id (`crypto.randomUUID()`), the version's body under it without `locked` or the live element fields, named the request's name or `<tab name>
 (copy)`, capped; written by `writeChangeset` with no stored tab at `nextOrderIndex(document.tabs)`.
 - **VH18 editor restore.** The panel marks the tab as its own restore (`own-restores.ts`) for the request, so the
-  relayed changeset raises no changeset toast on the restorer's screen; it then shows "Restored the version from
+  relayed changeset raises no changeset toast on the restorer's screen; it then shows "Restored the version kept
   <when>" with Undo, which restores `undoVersionId` the same way and reads "Restore undone".
 - **VH19 editor gate.** Name, Restore and Make a Copy render only when `can.edit` (Make a Copy also needs no tab
   scope); History renders when the document is server-stored, hydrated, not offline, not embedded and not in a

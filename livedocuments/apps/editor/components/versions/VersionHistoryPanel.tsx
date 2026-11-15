@@ -102,7 +102,7 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
     setSelected(NOW);
     toast.action({
       key: `version-restore-${tabId}`,
-      message: `Restored the version from ${whenWords(version.savedAt, now)}`,
+      message: `Restored the version kept ${whenWords(version.savedAt, now)}`,
       actions: [
         {
           label: 'Undo',
@@ -138,7 +138,7 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
 
   const previewTab = version ? versionTab : nowTab;
   const previewLabel = version
-    ? `Version from ${whenWords(version.savedAt, now)}`
+    ? `Version kept ${whenWords(version.savedAt, now)}`
     : 'The tab as it is';
 
   return (
@@ -202,7 +202,7 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
             <div className="border-b border-slate-200 bg-white/80 px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900/80">
               <p className="font-semibold text-slate-900 dark:text-slate-100">Now</p>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                Choose a version on the right to see it and what has changed since.
+                Choose a version from the list to see it and what has changed since.
               </p>
             </div>
           )}

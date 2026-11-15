@@ -38,7 +38,7 @@ export function VersionPreview({
   tab: Tab;
   marks: ChangeMarks | null;
   imageContext: { ownerId: string; documentId: string; shareCode: string | null };
-  // What the pages are, for a screen reader: "Version from today at 9:30".
+  // What the pages are, for a screen reader: "Version kept today at 9:30".
   label: string;
 }) {
   const art = useVersionArt(tab, imageContext);

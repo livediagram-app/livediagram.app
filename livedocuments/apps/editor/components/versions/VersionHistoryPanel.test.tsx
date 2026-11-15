@@ -165,7 +165,7 @@ describe('restoring', () => {
       message: string;
       actions: { label: string; onSelect: () => void }[];
     };
-    expect(spec.message).toMatch(/^Restored the version from today at/);
+    expect(spec.message).toMatch(/^Restored the version kept today at/);
     api.apiRestoreVersion.mockResolvedValueOnce({
       tabId: 't1',
       rev: 6,

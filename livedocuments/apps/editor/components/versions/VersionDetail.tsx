@@ -48,7 +48,7 @@ export function VersionDetail({
     <div className="flex flex-col gap-3 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 md:flex-row md:items-center md:justify-between">
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-          {version.name ?? `Version from ${whenWords(version.savedAt, now)}`}
+          {version.name ?? `Version kept ${whenWords(version.savedAt, now)}`}
         </p>
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
           {[
@@ -69,7 +69,12 @@ export function VersionDetail({
       </div>
       <div className="flex shrink-0 flex-wrap items-center gap-2">
         {changes && (changes.removed.length > 0 || changes.changed.length > 0) ? (
-          <SwitchRow checked={showChanges} onChange={onShowChanges} className="gap-2 text-xs">
+          <SwitchRow
+            checked={showChanges}
+            onChange={onShowChanges}
+            layout="inline-flex items-center gap-2 rounded-md text-left"
+            className="text-xs"
+          >
             Show Changes
           </SwitchRow>
         ) : null}
