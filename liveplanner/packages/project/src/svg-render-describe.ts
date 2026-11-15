@@ -29,7 +29,13 @@ import { fontIdsUsed, resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
 import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
 import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
-import { fontSizeFor, labelMaxWidth, labelMeasure, wholeWordFontPx } from './svg-render-primitives';
+import {
+  fontSizeFor,
+  labelMaxWidth,
+  laneTitleMeasure,
+  laneTitleRoom,
+  wholeWordFontPx,
+} from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
 import { isSelfDrawingShape } from './data-shapes';
@@ -370,12 +376,14 @@ export function describeBoxedExport(
   const boxW = across ? across.width : el.width;
   // Across the strip, at most the small padding, so the gutter's width goes to the words.
   const padX = across ? acrossTitlePadding(pad) : pad;
-  const maxWidth = across ? Math.max(0, across.width - 2 * padX) : labelMaxWidth(el, pad);
-  // A plain across title steps down a size or two before a word too wide for the gutter is cut (wholeWordFontPx).
+  // Less the pixel the canvas holds back (laneTitleRoom), so both lay the title out in the same room (Work Tracker 910).
+  const maxWidth = across ? laneTitleRoom(across.width - 2 * padX) : labelMaxWidth(el, pad);
+  // A plain across title steps down a size or two before a word too wide for the gutter is cut (wholeWordFontPx), with
+  // the one lane-title measure the canvas uses (laneTitleMeasure), so both cut an overlong word at the same letter.
   const size =
     across && !runs && el.label
       ? wholeWordFontPx(el.label, maxWidth, baseSize, (px) =>
-          labelMeasure(px, !!el.textBold, !!el.textItalic, fontFamily),
+          laneTitleMeasure(px, !!el.textBold, !!el.textItalic, fontFamily),
         )
       : baseSize;
   const padY = across ? padX : pad;

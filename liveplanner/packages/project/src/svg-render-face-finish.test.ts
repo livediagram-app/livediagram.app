@@ -109,3 +109,37 @@ describe('a sticker in its finish', () => {
     expect(out).toContain('<path d="M0 0 L36 0 L36 36 Z" fill="#fc0"/>');
   });
 });
+
+// docs/specs/008-canvas/finish.md "Tables" (Work Tracker 923): the canvas hides the grid's own border under the body
+// (face-finish.css), so the export drops the plain one too, as the shared element-model renderer does.
+describe("a Marker table's outer frame", () => {
+  const face = { width: 360, height: 150 };
+  const frame =
+    '<rect x="0" y="0" width="360" height="150" fill="none" stroke="#94a3b8" stroke-width="1" data-marker-body-frame=""/>';
+  const body = '<g data-finish="marker"></g>';
+
+  it('is dropped under its hand-drawn Marker body, and only there', () => {
+    expect(svgMarkerFace(body + frame, 't', face)).toBe(body);
+    expect(svgMarkerFace(body + frame, 't', face, 'pencil')).toBe(body + frame);
+    expect(svgMarkerFace(frame, 't', face)).toContain('data-marker-part="frame"');
+  });
+
+  it('leaves no plain outer rect in a Marker table export', () => {
+    const table = {
+      id: 'tbl',
+      type: 'table',
+      x: 0,
+      y: 0,
+      width: 360,
+      height: 150,
+      cells: [
+        ['A', 'B'],
+        ['1', '2'],
+      ],
+    } as never;
+    const out = svgBoxed(table, { tabFinish: 'marker' });
+    expect(out).toContain('data-finish="marker"');
+    expect(out).not.toContain('data-marker-body-frame');
+    expect(svgBoxed(table)).toContain('data-marker-body-frame');
+  });
+});

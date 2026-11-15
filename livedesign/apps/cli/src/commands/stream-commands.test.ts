@@ -96,7 +96,7 @@ describe('wait --for comment', () => {
     op(io, commented());
     expect(await exit).toBe(0);
     expect(io.out()).toBe(
-      'payments "Payments" · open · 1 · tab "Main"\n  Sam 2026-10-05: "Idempotent?"\n',
+      'payments "Payments" · open · 1 · tab "Main"\n  c1 Sam 2026-10-05: "Idempotent?"\n',
     );
     expect(io.sockets[0]!.closedWith).toBe(1000);
   });

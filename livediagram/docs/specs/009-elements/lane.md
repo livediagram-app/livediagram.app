@@ -131,6 +131,11 @@ wraps onto more lines inside it, rather than running on past the seam into the l
 - **A long word steps down first.** When a word is wider than the line, a plain title draws a size or two smaller,
   down to the small text size (14 px), so "Infrastructure" or "Development" still reads whole (`wholeWordFontPx`).
   Only a word too wide even then ends in an ellipsis rather than splitting (`fitWholeWordLines`).
+- **One measure.** The canvas and every SVG and PNG export measure a plain across title with one lane-title measure
+  (`laneTitleMeasure` in `@liveworkspace/element-model`): the canvas label's weight (500, 600 when bold) and one pixel
+  held back from the room (`laneTitleRoom`), so a word too wide even at 14 px is cut at the same letter in each (Work
+  Tracker 910). A render with no canvas to measure on (the api's and the MCP's images, in a Worker) uses the
+  per-character estimate, so its cut can fall a letter or two either side.
 - **The editor shows it all.** While a title is edited nothing clips and the editor hangs from the strip's top,
   growing down past the lane if it must, so every line is in view and every word reachable, on desktop and phone.
 - The full title is still the label, and dragging the seam wider gives the words their room back. A band across the

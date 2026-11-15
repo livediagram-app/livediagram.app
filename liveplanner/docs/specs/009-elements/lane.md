@@ -124,6 +124,11 @@ seam, and past `LANE_TITLE_MAX_LINES` (3) lines the last one ends in an ellipsis
   (6 px) from its edges (`acrossTitlePadding`), so the default 132 px gutter gives the words 120 px.
 - **A long word steps down first.** A plain title too wide for the line draws a size or two smaller, down to 14 px
   (`wholeWordFontPx`), before a word is cut with an ellipsis.
+- **One measure.** The canvas and every SVG and PNG export measure a plain across title with one lane-title measure
+  (`laneTitleMeasure` in `@liveworkspace/element-model`): the canvas label's weight (500, 600 when bold) and one pixel
+  held back from the room (`laneTitleRoom`), so a word too wide even at 14 px is cut at the same letter in each (Work
+  Tracker 910). A render with no canvas to measure on (the api's and the MCP's images, in a Worker) uses the
+  per-character estimate, so its cut can fall a letter or two either side.
 - **A formatted title** clamps the same way (`clampExportRunLines`).
 - The stored label is never shortened, and a band across the top or bottom keeps the lane's width for its title.
 
