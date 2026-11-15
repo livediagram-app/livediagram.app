@@ -148,7 +148,7 @@ export function CalendarFeedDialog({
         art={calendarFeedHeroArt}
         titleId={titleId}
         title="Subscribe to Calendar"
-        subtitle="Card dates from this plan in Google Calendar, Outlook or Apple Calendar."
+        subtitle="Card dates in your own calendar."
         onClose={onClose}
       />
       <div

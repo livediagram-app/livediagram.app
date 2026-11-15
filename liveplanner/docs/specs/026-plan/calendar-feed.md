@@ -75,7 +75,8 @@ Where a person makes, copies, resets and turns off their feed of one plan.
 ### The dialog
 
 A centred dialog (a bottom sheet on a phone) titled **Subscribe to Calendar**, under the dialog hero header, subtitled
-"Card dates from this plan in Google Calendar, Outlook or Apple Calendar." It opens on the person's own feed, read
+"Card dates in your own calendar." (short enough to fit beside the hero art on a phone; the Just made state names the
+calendars). It opens on the person's own feed, read
 fresh, and has three states:
 
 - **Off** (no feed yet): the options, the privacy note, and **Make Calendar Link**.
