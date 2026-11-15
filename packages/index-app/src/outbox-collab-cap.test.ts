@@ -1,6 +1,6 @@
 // capCollabPush by bytes (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"): a tab's
 // collab push always fits the index's body limit, keeps its newest rows, and is the same whatever order they came in.
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   COLLAB_MAX_ACTIONS,
   COLLAB_MAX_THREADS,
@@ -12,7 +12,7 @@ import {
   type CollabThreadInput,
 } from '@liveworkspace/index-client';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { capCollabPush, jsonBytes } from './outbox';
+import { capCollabPush, drainIndexOutbox, jsonBytes } from './outbox';
 
 const sentBytes = (push: CollabPush) => new TextEncoder().encode(JSON.stringify(push)).byteLength;
 // The longest id the index takes (INDEX_ID_MAX), so every person costs the most it can.
@@ -168,5 +168,90 @@ describe('capCollabPush by bytes', () => {
     expect(capCollabPush({ tabName: 'T', threads: [thread(1)], actions: [action(2)] }, 50)).toEqual(
       { tabName: 'T', threads: [], actions: [] },
     );
+  });
+});
+
+// Work Tracker 870: a paged push is not built (one-explorer-contracts.md "What an item pushes"). These pin the two
+// things that decision stands on: what a realistic tab keeps, and the log that would show a real tab losing rows.
+describe('the decision against a paged push', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  // A real account id (about 36 characters) and every text at its full length: the most a realistic row costs.
+  const realId = (i: number) => `user_${String(i).padStart(31, '0')}`;
+  const card = {
+    id: 'c'.repeat(36),
+    key: 1234,
+    type: 't'.repeat(36),
+    typeLabel: 'Task',
+    title: 'T'.repeat(80),
+    board: {
+      tabId: 'x'.repeat(36),
+      elementId: 'e'.repeat(36),
+      title: 'Sprint board',
+      tabName: 'Board',
+    },
+    column: { name: 'In Progress', color: '#aabbcc', done: false },
+  };
+  const realThread = (i: number): CollabThreadInput =>
+    thread(i, {
+      elementId: `${'e'.repeat(30)}-${String(i).padStart(5, '0')}`,
+      elementLabel: 'L'.repeat(60),
+      participantIds: [0, 1, 2, 3].map(realId),
+      mentionedIds: [4, 5].map(realId),
+      latestText: 'x'.repeat(COLLAB_TEXT_MAX),
+      card,
+    });
+  const realAction = (i: number): CollabActionInput =>
+    action(i, {
+      elementId: `${'e'.repeat(30)}-${String(i).padStart(5, '0')}`,
+      actionId: `${'a'.repeat(30)}-${String(i).padStart(5, '0')}`,
+      elementLabel: 'L'.repeat(60),
+      name: 'N'.repeat(80),
+      description: 'd'.repeat(COLLAB_TEXT_MAX),
+      assigneeId: realId(1),
+      assignerId: realId(2),
+      card,
+    });
+
+  it('keeps at least 340 of the newest rows of a full tab with real ids and every text at its longest', () => {
+    const capped = capCollabPush({
+      tabName: 'Board',
+      threads: Array.from({ length: COLLAB_MAX_THREADS }, (_, i) => realThread(2 * i)),
+      actions: Array.from({ length: COLLAB_MAX_ACTIONS }, (_, i) => realAction(2 * i + 1)),
+    });
+    const kept = capped.threads.length + capped.actions.length;
+    console.info(`[capCollabPush] realistic full tab: ${kept} rows kept of 1000`);
+    expect(kept).toBeGreaterThanOrEqual(340);
+    expect(sentBytes(capped)).toBeLessThanOrEqual(INDEX_BODY_MAX_BYTES);
+  });
+
+  it('logs a drain whose push left rows out, and stays quiet when it kept every row', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const pushed: CollabPush[] = [];
+    const client = {
+      pushCollab: async (_item: string, _tab: string, body: CollabPush) => void pushed.push(body),
+    } as unknown as Parameters<typeof drainIndexOutbox>[2];
+    const big: CollabPush = {
+      threads: Array.from({ length: 50 }, (_, i) => thread(i)),
+      actions: [],
+    };
+    const small: CollabPush = { threads: [realThread(1)], actions: [realAction(2)] };
+    const source = (push: CollabPush) => ({
+      collab: async () => push,
+      summary: async () => ({ summary: {}, updatedAt: 0 }),
+    });
+    await drainIndexOutbox('I', [{ id: 1, kind: 'tab', key: 't1' }], client, source(small));
+    expect(warn).not.toHaveBeenCalled();
+    await drainIndexOutbox('I', [{ id: 2, kind: 'tab', key: 't2' }], client, source(big));
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith('[outbox] collab capped', {
+      itemId: 'I',
+      tabId: 't2',
+      threads: 50,
+      threadsKept: pushed[1]!.threads.length,
+      actions: 0,
+      actionsKept: 0,
+    });
+    expect(pushed[1]!.threads.length).toBeLessThan(50);
   });
 });
