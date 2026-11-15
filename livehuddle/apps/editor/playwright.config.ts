@@ -101,7 +101,7 @@ export default defineConfig({
             use: {
               ...devices['Desktop Chrome'],
               colorScheme: 'dark' as const,
-              // Playwright's trace snapshots the page on every action: work the probe would count.
+              // Playwright's trace snapshots the page before and after every call: work the probe would count.
               trace: 'off' as const,
             },
             testMatch: /perf\/.*\.perf\.ts/,
