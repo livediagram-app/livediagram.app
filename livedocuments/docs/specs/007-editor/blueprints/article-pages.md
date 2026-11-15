@@ -114,6 +114,9 @@ is `break-after: column` (`article-pages.css`).
 | `SLASH_QUERY_MAX`                       | 24 characters                          | `article-slash.ts`; D44                                                                       |
 | Slash menu `WIDTH`, `MAX_HEIGHT`        | 260, 320 px                            | `SlashMenu.tsx`; D44                                                                          |
 | `ARTICLE_PEER_FRESH_MS`                 | 1500 ms                                | `article-carets-store.ts`; D40                                                                |
+| `ARTICLE_HOLD_IDLE_MS`                  | 8000 ms                                | `packages/api-schema/src/article-hold.ts`; spec "Holding a paragraph" (~8 s)                  |
+| `ARTICLE_HOLD_REFRESH_MS`               | 2000 ms                                | `article-hold.ts`; a late joiner sees a hold within it                                        |
+| `ARTICLE_HOLD_EXPIRE_MS`                | 12,000 ms                              | `article-hold.ts`; idle plus a refresh plus 2 s grace (safe 10 to 30 s)                       |
 | `BROADCAST_THROTTLE_MS`                 | 33 ms (the cursor's rate)              | `useEditorBroadcast.ts`; spec "at the cursor's rate"                                          |
 | `ARTICLE_CARET_MAX_ID_LEN`              | 256                                    | `packages/api-schema/src/article-caret.ts`; D43                                               |
 | `ARTICLE_CARET_MAX_OFFSET`              | 1,000,000                              | `article-caret.ts`; D43                                                                       |
@@ -574,6 +577,47 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
   `ARTICLE_PEER_FRESH_MS` after it moves.
 - The room relays `article-caret` as presence (unordered, never logged or replayed, from any
   session); `article` as a mutation (edit role only, sequenced, in the catch-up log).
+- **Holding a paragraph** (spec "Holding a paragraph"):
+  - Wire (`packages/api-schema/src/article-hold.ts`): `{ kind: 'article-hold', tabId, flow, blockId, row?, col? }`
+    (a claim, said again while typing) or `{ kind: 'article-hold', tabId, flow: null }` (a release), a presence op.
+    `parseArticleHold(op)` checks each id (`isArticleId`, 1 to 64 characters) and that `row` and `col` come together;
+    anything else is null and dropped. `sameHoldPlace(a, b)`: same flow, block, row and column.
+  - Room (`apps/api/src/document-room/document-room-holds.ts`, the pure rule in `apps/api/src/room-article-holds.ts`):
+    a session's hold lives on its socket attachment (`articleHold: { tabId, flow, blockId, row?, col?, at }`), so it
+    survives hibernation and goes with the socket. A claim from a session below `participate` is dropped. Else
+    `judgeArticleHold(claim, others, now)` looks for another live session's hold on the same tab and place whose `at`
+    is within `ARTICLE_HOLD_EXPIRE_MS`: none, the claim is stored (`at: now`) and relayed to the others as presence;
+    one, nothing is stored or relayed, and the claimant alone is sent the holder's hold as an `op` frame from the
+    holder. Either way, a claim sent with a `ref` is then answered with a `cursor` frame echoing it (seq unchanged),
+    so `sequence(op)` resolves once the answer is in. A release clears the hold and is relayed. `GET /holds?tab=`
+    (internal) answers every live hold on the tab as `{ flow, blockId, row?, col?, name, color }`.
+  - Local claim (`apps/editor/lib/article/article-holds-store.ts`): `noteArticleTyping(flow, place)` from the
+    writing's `dispatchTransaction` after each local doc change (`holdPlaceOf(state)`: the top-level block at the
+    selection's head, and in a table cell its row's id and its column's id from the table's `cols`). A new place
+    starts a claim (`pending`), the same place refreshes `typedAt`. `noteArticleCaret(flow, place)` on every selection
+    change releases a hold whose place the caret left; blur and unmount call `releaseArticleHold(flow)`. A timer
+    releases `ARTICLE_HOLD_IDLE_MS` after the last typing.
+  - Broadcast (`apps/editor/hooks/collab/useArticleHoldBroadcast.ts`, `{ roomRef, live, activeId }`): a new claim goes
+    through `roomRef.current.sequence(op)`; on its answer the store takes `granted` unless a peer's hold on the same
+    place arrived first (then `refused`); an unconfirmed answer (`false`: socket down, timeout) is `granted` too. A
+    claim refreshed while granted is sent again (plain `send`) at most every `ARTICLE_HOLD_REFRESH_MS`. A release sends
+    the `flow: null` op once. While the room is not live every claim is `granted` at once and nothing is sent.
+  - Commit gate (`ArticleEditor.flush`): a block (or the table of a cell) whose claim is `pending` commits as it was
+    (`committed`'s copy) and the commit is tried again once the claim is answered; on `refused`, the writing puts the
+    block back as `committed` has it (an `article-remote` transaction, nothing committed) and says
+    `announceArticleHeld(name)`.
+  - Peers' holds (same store): `receiveArticleHold(from, hold)`, `syncArticleHolders(participants)` (names, colours,
+    the holds of anyone who left), `resetArticleHolds()` when the room closes; a hold not said again within
+    `ARTICLE_HOLD_EXPIRE_MS` is dropped by a sweep. `useArticleHolds(flow)` answers this tab's holds in that article
+    from known people, kept by identity until a change.
+  - The writing (`apps/editor/lib/article/article-holds.ts`, `articleHoldsPlugin(onRefused)`): the holds arrive by a
+    meta transaction (`setArticleHolds`), never in the history. Decorations: `Decoration.node` on each held block (or
+    cell) with `data-held`, `--article-held: <colour>` and `title="<Name> is writing"`, and a widget chip at its start
+    (`.article-held-chip`, aria-hidden). `filterTransaction` refuses a local transaction that changes the doc in a
+    held range: a step's range (its `from`/`to`, or `pos` for an attribute step) meeting a held block's inside, or for
+    a held cell its cell, or its table outside every cell (a change of shape); `article-remote` transactions always
+    pass. A refusal calls `onRefused(holder)`, which says `announceArticleHeld(name)` at most every 2.5 s. Comment and
+    Assign Action are disabled on held text (`heldAtSelection`).
 
 ### Everywhere else
 

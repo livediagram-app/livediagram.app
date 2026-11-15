@@ -70,6 +70,12 @@ that moves the block is applied, its place being theirs) or text of one of their
 the save baseline. So two people committing one paragraph (or one cell) at once both end on the room's last commit;
 before, each saw the other's text until a reload, and the next edit to the paragraph wrote that over the room's.
 
+In an article that collision no longer happens between people in the room: the paragraph or cell someone types in
+is **held** by them, and the room arbitrates the hold, first claim wins
+([Article pages](../007-editor/article-pages.md#holding-a-paragraph)). A claim's commit waits for the room's answer,
+so the loser of a race never commits over the winner; the room-order rule above is what remains when the room
+cannot answer.
+
 ### Live drags
 
 A drag writes nothing until it ends; while it lasts, the dragger's preview travels as presence (a
@@ -235,7 +241,8 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    live copy of the document. REST reads, exports, and
    offline durability read the store.
 3. **The selection lock stays advisory.** The [Editor app](../007-editor/editor-app.md) lock soft-locks a
-   selected element for peers on the client. It makes same-element concurrent
+   selected element for peers on the client. (An article's paragraph hold is the room's, not advisory: see
+   [Holding a paragraph](../007-editor/article-pages.md#holding-a-paragraph).) It makes same-element concurrent
    editing rare, not impossible: the room does not enforce it between people.
    Such collisions stay last-writer-wins over the whole element, which is the
    cost accepted in dropping the field-level CRDT below. An agent is the
