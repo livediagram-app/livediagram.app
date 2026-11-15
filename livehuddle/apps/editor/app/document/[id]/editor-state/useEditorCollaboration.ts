@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { embedOpensReadOnly, embedSessionRole } from '@liveworkspace/media/embed-read-only';
 import { previewAdderKey, useViewPreview } from '../useViewPreview';
 import { useParticipantSession } from '../useParticipantSession';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
@@ -27,6 +28,9 @@ export function useEditorCollaboration({
   fromTools: EditorToolsSlice;
 }) {
   const { embedMode, toast } = fromDocument;
+  // A pasted share link's embed opens read-only whatever the link's role (embeds.md "Pasting a share link"):
+  // `&readonly=1`, read once, so an edit link unfolded into a public page gives its readers no edit rights.
+  const [readOnlyEmbed] = useState(() => embedOpensReadOnly(embedMode));
   const { tickTabs } = fromHistory;
   const { activeId, sessionTabScope, setEditingId, setMultiSelectedIds, setSelectedId } =
     fromSelection;
@@ -99,7 +103,7 @@ export function useEditorCollaboration({
   // this is presentation-side only.
   // The role pill's local read-only preview (docs/specs/007-editor/editor-app.md#role-pill).
   const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
-    sessionRole,
+    embedSessionRole(sessionRole, readOnlyEmbed),
     () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
