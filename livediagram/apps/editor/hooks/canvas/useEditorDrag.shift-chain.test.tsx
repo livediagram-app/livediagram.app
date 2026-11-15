@@ -14,8 +14,8 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const source = { ...createShape('square', 0, 0), id: 'src', width: 100, height: 100 } as Element;
 
-function harness() {
-  let current: Element[] = [source];
+function harness(from: Element = source) {
+  let current: Element[] = [from];
   let selected: string | null = null;
   const deps = {
     get activeTab() {
@@ -102,5 +102,48 @@ describe('useEditorDrag — Shift-chaining arrows', () => {
       [300, 200],
       [300, 350],
     ]);
+  });
+
+  // docs/specs/008-canvas/arrow-anchors.md "In mind maps and flowcharts it is on by default".
+  const press = (opts?: { placeOutPx?: number }) => (h: ReturnType<typeof harness>) =>
+    act(() => {
+      h.result.current.beginAnchorDrag(
+        'src',
+        'e',
+        {
+          clientX: 100,
+          clientY: 50,
+          button: 0,
+          shiftKey: false,
+          stopPropagation: vi.fn(),
+          preventDefault: vi.fn(),
+          currentTarget: document.createElement('div'),
+        } as unknown as ReactPointerEvent,
+        opts,
+      );
+    });
+  const arrowsOf = (h: ReturnType<typeof harness>) =>
+    h.elements().filter((e): e is ArrowElement => e.type === 'arrow');
+
+  it('starts every arrow drawn and chained off a mind node at the exact anchor', () => {
+    const h = harness({ ...source, shape: 'mind-node' } as Element);
+    press()(h);
+    ptr('pointermove', 300, 50);
+    ptr('pointerup', 300, 50, true); // Shift release: chain
+    ptr('pointermove', 300, 200);
+    ptr('pointerdown', 300, 200); // plain placing click: done
+    ptr('pointerup', 300, 200);
+    const arrows = arrowsOf(h);
+    expect(arrows).toHaveLength(2);
+    for (const a of arrows) expect(a.exactStart).toBe(true);
+  });
+
+  it('starts a placed-out arrow off a flowchart step at the exact anchor, and one off a plain box fanned', () => {
+    const step = harness({ ...source, shape: 'diamond', flowchartId: 'src' } as Element);
+    press({ placeOutPx: 80 })(step);
+    expect(arrowsOf(step)[0]!.exactStart).toBe(true);
+    const plain = harness();
+    press({ placeOutPx: 80 })(plain);
+    expect(arrowsOf(plain)[0]!.exactStart).toBeUndefined();
   });
 });

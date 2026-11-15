@@ -25,6 +25,28 @@ type ColorSetterProps = {
   onCommitStrokeColor: ColourSetter;
 };
 
+/**
+ * The open side flyouts of a menu as a path, outermost first (docs/specs/008-canvas/canvas-and-palette.md "A flyout
+ * can hold a flyout"). `flyoutProps(id)` is spread onto a MenuFlyoutSection, whose onToggle says how many flyouts
+ * it sits inside: opening one keeps the flyouts it sits in and replaces whatever was open at its level and below,
+ * so Tools > Mind Map keeps Tools open while Style and Tools still replace each other; closing one closes every
+ * flyout inside it. It used to keep ONE id, and opening the Mind Map inside Tools closed Tools, which unmounted
+ * both: the click did nothing.
+ */
+export function useFlyoutPath() {
+  const [path, setPath] = useState<readonly string[]>([]);
+  return (id: string) => ({
+    open: path.includes(id),
+    onToggle: (depth = 0) =>
+      setPath((p) => {
+        const at = p.indexOf(id);
+        // Open: close it and everything inside it. Closed: open it at its own level, below its parents.
+        return at >= 0 ? p.slice(0, at) : [...p.slice(0, depth), id];
+      }),
+    flush: true,
+  });
+}
+
 // Shared accordion + colour-row scaffolding for the editor context menu's
 // element and multi-selection branches: an at-most-one-open accordion
 // (sectionProps), an at-most-one-open colour palette (colorProps), and the
@@ -40,19 +62,12 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
     flush: true,
   });
-  // Which side-flyout row (Style / Text / Tools) is open — at most one,
-  // SEPARATE from openSection so a flyout and an inline accordion (or a
-  // sub-accordion inside the flyout, which shares openSection's pool) can
-  // coexist. Lifted here rather than kept in MenuFlyoutSection's local
-  // state so the open flyout survives the menu retargeting to another
-  // element (conditional sibling sections can remount the flyout row,
-  // which wiped local state and collapsed the category mid-workflow).
-  const [openFlyout, setOpenFlyout] = useState<string | null>(null);
-  const flyoutProps = (id: string) => ({
-    open: openFlyout === id,
-    onToggle: () => setOpenFlyout((f) => (f === id ? null : id)),
-    flush: true,
-  });
+  // Which side-flyout rows (Style / Text / Tools) are open: one per level, SEPARATE from openSection so a
+  // flyout and an inline accordion (or a sub-accordion inside the flyout, which shares openSection's pool) can
+  // coexist. Lifted here rather than kept in MenuFlyoutSection's local state so the open flyout survives the
+  // menu retargeting to another element (conditional sibling sections can remount the flyout row, which wiped
+  // local state and collapsed the category mid-workflow).
+  const flyoutProps = useFlyoutPath();
   // Which colour row's inline palette is open — at most one, toggled by
   // re-clicking the row so it never sticks open.
   const [openColor, setOpenColor] = useState<string | null>(null);

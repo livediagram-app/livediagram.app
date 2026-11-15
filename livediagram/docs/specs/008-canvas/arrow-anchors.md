@@ -115,6 +115,16 @@ start sits out of that anchor's fan (`exactStart: true` on the arrow); the other
 among themselves as if it were not there. Its far end still fans. Telemetry:
 `Element·Changed·ArrowExactStart`.
 
+**In mind maps and flowcharts it is on by default.** A new arrow whose start is pinned to a **mind node** or a
+**flowchart step** is made with `exactStart: true`, so a parent's children, or a step's exits, leave one point like a
+tree's trunk instead of fanning along the edge. That covers every way such an arrow is made: drawn from the node's
+anchor (or in connect mode, or Shift-chained from one that is), a mind map's Add Child and Add Sibling and an outline
+save, a flowchart's Add Step, the mind map and flowchart templates, an agent's `connect` from a mind node or a step,
+graph input's `mindmap` style, and its `flow` style and Mermaid flowchart import (there, every start that is alone in
+its anchor's fan; a start that shares its anchor with another line that fans keeps fanning, as the graph look keeps
+those lines apart). It is a default, not a rule: the switch turns it off per arrow, and arrows already stored keep
+the value they have (nothing is migrated).
+
 **End at exact anchor** (`exactEnd: true`) is the same for the arrow's **end**. It has no switch:
 the draw.io import sets it, with `exactStart`, on every end it pins, since draw.io draws ends
 meeting at one point and running along one trunk ([draw.io import](../020-import-export/drawio-import.md)

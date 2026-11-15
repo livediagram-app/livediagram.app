@@ -397,6 +397,8 @@ export * from './legacy-docks';
 export * from './legacy-stroke-points';
 export * from './stored-elements';
 export { isSafeColourValue } from '@liveworkspace/element-model/unsafe-colours';
+// Where a new arrow starts at its exact anchor (docs/specs/008-canvas/arrow-anchors.md "Start at Exact Anchor").
+export * from '@liveworkspace/element-model/exact-start';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';

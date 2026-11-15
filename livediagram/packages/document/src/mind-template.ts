@@ -72,6 +72,8 @@ export function buildMindTemplate(
       {
         ...createPinnedArrow(parent.id, from, child.id, to),
         ...MIND_CONNECTOR_LOOK,
+        // Exact at its start, as every new mind connector (exact-start.ts).
+        exactStart: true,
         ...connectorLook.get(child.id),
       },
     ];

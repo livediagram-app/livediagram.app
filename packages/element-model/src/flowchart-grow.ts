@@ -153,6 +153,8 @@ function planStep(
     from: { kind: 'pinned', elementId: source.id, anchor: dir === 'down' ? 's' : 'e' },
     to: { kind: 'pinned', elementId: step.id, anchor: dir === 'down' ? 'n' : 'w' },
     arrowStyle: 'angled',
+    // A flowchart connector starts at the exact anchor (exact-start.ts), so a step's exits share one start.
+    exactStart: true,
     ...(label ? { label } : {}),
   };
   const existing = flowchartConnectors(elements, chartId);
