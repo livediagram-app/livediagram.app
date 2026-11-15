@@ -93,6 +93,13 @@ take too many cards off a board at once (`removal_held`, [Realtime conflict reso
   - **Keep Cards** drops the held changes and reads the board again, taking the server's copy of every card they
     named, so the cards come back at once, with no reload.
   - **Remove Anyway** sends them again, confirmed (`?confirmRemoval=1`), which the server does not judge.
+  - It is a rounded card like the offline banner above it (the same radius, border, shadow and 11 px text), not a
+    pill: its line wraps inside the card and the buttons sit after it on a wide screen, or under it, at the card's
+    right, when the line and the buttons do not fit on one row (a phone, a ~450 px window). It is at most 48 rem wide,
+    so a long count ("27 card removals are held") wraps rather than running off the canvas, and nothing ever reaches
+    outside its rounded corners.
+  - A board, view or Sheet filling its tab (or maximised) starts below the top-centre banners while one shows
+    ([Maximised board](../026-plan/plan-board.md#maximised-board)), so they never cover its column headers.
 - Held changes are kept across a reload like any waiting change, and count toward the queue's bounds.
 - Only an Editor sees the banner: a Participant or a Viewer never removes a card.
 

@@ -47,4 +47,22 @@ describe('HeldRemovalsBanner', () => {
     expect(reviews).toEqual(['confirmed', 'kept']);
     expect(screen.queryByRole('status')).toBeNull();
   });
+
+  it('is a card whose line wraps and whose buttons wrap under it, inside its corners', () => {
+    render(<HeldRemovalsBanner readOnly={false} />);
+    act(() => hold(27));
+    const status = screen.getByRole('status');
+    expect(status.textContent).toMatch(/^27 card removals are held/);
+    const card = status.parentElement as HTMLElement;
+    const cls = card.className.split(' ');
+    expect(cls).toEqual(
+      expect.arrayContaining(['rounded-2xl', 'flex-wrap', 'justify-end', 'max-w-[48rem]']),
+    );
+    expect(cls).not.toContain('rounded-full');
+    expect(status.className.split(' ')).toEqual(
+      expect.arrayContaining(['min-w-0', 'flex-[1_1_16rem]']),
+    );
+    const buttons = screen.getByRole('button', { name: 'Keep Cards' }).parentElement as HTMLElement;
+    expect(buttons.className.split(' ')).toContain('shrink-0');
+  });
 });

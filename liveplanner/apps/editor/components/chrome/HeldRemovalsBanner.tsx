@@ -25,12 +25,17 @@ export function HeldRemovalsBanner({ readOnly }: { readOnly: boolean }) {
   if (readOnly || held === 0) return null;
   return (
     <TopCenterRow>
+      {/* A card, not a pill (the offline banner's look): the line wraps inside its corners, and the buttons sit after
+          it, or wrap under it at the right when both do not fit (a phone, a ~450 px window). */}
       <TopCenterBanner
         tone="neutral"
-        className="flex-wrap gap-2 py-1 pl-3 pr-1 text-[11px] font-medium"
+        shape="card"
+        className="max-w-[48rem] flex-wrap justify-end gap-x-3 gap-y-1 p-1.5 pl-3.5 text-[11px] font-medium"
       >
-        <span role="status">{heldCopy(held)}</span>
-        <span className="flex items-center gap-1">
+        <span role="status" className="min-w-0 flex-[1_1_16rem] py-1 leading-snug">
+          {heldCopy(held)}
+        </span>
+        <span className="flex shrink-0 items-center gap-1.5">
           <Button
             variant="secondary"
             size="xs"

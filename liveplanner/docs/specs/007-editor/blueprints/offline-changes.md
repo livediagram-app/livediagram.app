@@ -67,7 +67,9 @@ made: []`; the undo step is pushed as for a landed write.
    queue `held: true` (still applied), no toast, no load; answer `ok: true, made: []`.
 
 **Held removals** (`HeldRemovalsBanner`, `components/chrome/`): shown while `heldCardCount() > 0` and not
-read-only. Keep Cards calls `keepHeldCards()` (every page queue drops its held changes, `dropHeld()` answering the card
+read-only. A `TopCenterBanner` with `shape="card"` (`rounded-2xl`, as the `OfflineBanner` above it), `flex-wrap` and
+`justify-end`, at most `48rem` wide: the line (`flex-[1_1_16rem]`, `min-w-0`) wraps inside it and the buttons
+(`shrink-0`) wrap under it at the right when both do not fit. Keep Cards calls `keepHeldCards()` (every page queue drops its held changes, `dropHeld()` answering the card
 ids they named; listeners of `subscribeHeldReview` get `('kept', cards)`, and `useItemQueue` hands the cards to
 `usePlanItems`' `kept`, which marks them unconfirmed, then calls `load()`, so the server's copy of each replaces the one
 laid over as removed, even at the same rev). Remove Anyway calls `confirmHeldChanges()`
