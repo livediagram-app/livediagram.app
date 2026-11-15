@@ -10,6 +10,13 @@ import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { GUEST_ID } from './ids.ts';
+import {
+  fromRedirectOrigin,
+  GUEST_PROOF_COOKIE,
+  GUEST_PROOF_COOKIE_MAX_AGE_SECONDS,
+  guestProofCookie,
+  readGuestProof,
+} from './guest-proof.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
 import { mergeGuestProfile } from './profiles.ts';
 import { mergeGuestSettings } from './settings.ts';
@@ -128,9 +135,11 @@ export async function findClient(db: D1Database, clientId: string): Promise<Clie
 const refuse = (error: string) =>
   Response.json({ error }, { status: 400, headers: { 'cache-control': 'no-store' } });
 
-// GET /api/auth/guest?client_id=&redirect_uri=&state=[&resource=]. Never redirects anywhere but
-// one of the client's registered URIs, matched exactly; anything wrong is a 400 instead.
-export async function guestHandoff(request: Request, env: Env, auth: Auth): Promise<Response> {
+type Handoff = { redirectUri: string; state: string; resource: string };
+
+// The hand-off's query, checked: the client, its exact redirect URI, the state and the resource. A 400 when anything
+// is wrong, so the browser is never sent anywhere but one of the client's registered URIs.
+async function checkHandoff(request: Request, env: Env): Promise<Handoff | Response> {
   const params = new URL(request.url).searchParams;
   const clientId = params.get('client_id') ?? '';
   const redirectUri = params.get('redirect_uri') ?? '';
@@ -145,6 +154,49 @@ export async function guestHandoff(request: Request, env: Env, auth: Auth): Prom
   const resource =
     params.get('resource') ?? (client.resources.length === 1 ? client.resources[0] : null);
   if (!resource || !client.resources.includes(resource)) return refuse('invalid_resource');
+  return { redirectUri, state, resource };
+}
+
+// POST /api/auth/guest?client_id=&redirect_uri=&state=[&resource=], body `guest_token=`: an app renewing a guest token
+// it still holds presents it as proof of the guest (docs/specs/003-accounts/accounts.md "Renewing without the
+// cookie"). Taken only from the form body, only from the app's own origin, and only when readGuestProof passes; then
+// it rides to the GET below in the proof cookie. Either way the answer is a 303 to that GET.
+export async function guestRenewal(request: Request, env: Env, auth: Auth): Promise<Response> {
+  const checked = await checkHandoff(request, env);
+  if (checked instanceof Response) return checked;
+  const form = await request.formData().catch(() => null);
+  const token = form?.get('guest_token');
+  const headers = new Headers({
+    location: request.url,
+    'cache-control': 'no-store',
+    'referrer-policy': 'no-referrer',
+  });
+  if (typeof token === 'string' && token) {
+    let refused: 'origin' | 'token' | null = null;
+    if (!fromRedirectOrigin(request, checked.redirectUri)) refused = 'origin';
+    else if (!(await readGuestProof(token, env, auth, checked.resource))) refused = 'token';
+    if (refused === null) {
+      headers.append(
+        'set-cookie',
+        guestProofCookie(
+          token,
+          GUEST_PROOF_COOKIE_MAX_AGE_SECONDS,
+          env.ENVIRONMENT !== 'development',
+        ),
+      );
+    } else {
+      console.warn('[guests] proof refused', { reason: refused });
+    }
+  }
+  return new Response(null, { status: 303, headers });
+}
+
+// GET /api/auth/guest?client_id=&redirect_uri=&state=[&resource=]. Never redirects anywhere but
+// one of the client's registered URIs, matched exactly; anything wrong is a 400 instead.
+export async function guestHandoff(request: Request, env: Env, auth: Auth): Promise<Response> {
+  const checked = await checkHandoff(request, env);
+  if (checked instanceof Response) return checked;
+  const { redirectUri, state, resource } = checked;
 
   // From here the browser is always sent back to the app: a failure goes back saying so, rather than leaving it on
   // an error page the app never hears from (docs/specs/003-accounts/accounts.md "Guests").
@@ -164,16 +216,36 @@ export async function guestHandoff(request: Request, env: Env, auth: Auth): Prom
   }
 }
 
+// The guest to hand out, and when its chain of renewals by token alone started (`oiat`): the cookie's guest, which
+// always wins, else the proof cookie's (carrying its `oiat` forward), else a new guest. The cookie and a new guest
+// start the chain again.
+async function guestOf(
+  request: Request,
+  env: Env,
+  auth: Auth,
+  resource: string,
+  now: number,
+): Promise<{ guestId: string; oiat: number }> {
+  const cookies = request.headers.get('cookie');
+  const fromCookie = await readGuestCookie(
+    readCookie(cookies, GUEST_COOKIE),
+    env.BETTER_AUTH_SECRET,
+  );
+  if (fromCookie) return { guestId: fromCookie, oiat: now };
+  const proof = readCookie(cookies, GUEST_PROOF_COOKIE);
+  const proven = proof ? await readGuestProof(proof, env, auth, resource) : null;
+  return proven ?? { guestId: `guest_${crypto.randomUUID()}`, oiat: now };
+}
+
 async function handOff(
   request: Request,
   env: Env,
   auth: Auth,
-  { redirectUri, state, resource }: { redirectUri: string; state: string; resource: string },
+  { redirectUri, state, resource }: Handoff,
 ): Promise<Response> {
   const secret = env.BETTER_AUTH_SECRET;
-  const guestId =
-    (await readGuestCookie(readCookie(request.headers.get('cookie'), GUEST_COOKIE), secret)) ??
-    `guest_${crypto.randomUUID()}`;
+  const now = Math.floor(Date.now() / 1000);
+  const { guestId, oiat } = await guestOf(request, env, auth, resource, now);
 
   // When the id was last handed out, so one that can never be used again is swept (guest-sweep.ts).
   // At most a write a day per guest; a failure never stops the hand-off.
@@ -181,7 +253,6 @@ async function handOff(
     console.error('Guest seen stamp failed:', error),
   );
 
-  const now = Math.floor(Date.now() / 1000);
   // The jwt plugin's own signer, so the token is signed with the keys at /api/auth/jwks and
   // apps check it exactly as they check access tokens.
   const { token } = await auth.api.signJWT({
@@ -193,6 +264,7 @@ async function handOff(
         kind: 'guest',
         iat: now,
         exp: now + GUEST_TOKEN_TTL_SECONDS,
+        oiat,
       },
     },
   });
@@ -212,6 +284,10 @@ async function handOff(
       cookieDomain(env.ENVIRONMENT),
     ),
   );
+  // A proof is spent once read, whichever guest won.
+  if (readCookie(request.headers.get('cookie'), GUEST_PROOF_COOKIE) !== null) {
+    headers.append('set-cookie', guestProofCookie('', 0, env.ENVIRONMENT !== 'development'));
+  }
   return new Response(null, { status: 302, headers });
 }
 
