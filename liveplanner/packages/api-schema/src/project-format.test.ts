@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CALCULATIONS,
+  CARD_TEMPLATE_KEYS,
   CUSTOM_FIELD_KEYS,
   CUSTOM_FIELD_KINDS,
   ITEM_TYPE_KEYS,
@@ -10,8 +11,8 @@ import { PROJECT_FORMAT, PROJECT_FORMAT_HEADER } from './project-format';
 
 // docs/specs/016-platform/new-version-prompt.md "The project format number".
 describe('the project format number', () => {
-  it('is 6, tab icons, carried in one header', () => {
-    expect(PROJECT_FORMAT).toBe(6);
+  it('is 7, card templates, carried in one header', () => {
+    expect(PROJECT_FORMAT).toBe(7);
     expect(PROJECT_FORMAT_HEADER).toBe('X-Liveplanner-Format');
   });
 });
@@ -149,6 +150,38 @@ const READS: Readonly<
     ],
     calculations: ['childCount', 'childrenDone', 'formula', 'lookup', 'rollup'],
   },
+  7: {
+    kinds: [
+      'calculated',
+      'card',
+      'checkbox',
+      'checklist',
+      'choice',
+      'colour',
+      'comments',
+      'currency',
+      'date',
+      'daterange',
+      'datetime',
+      'duration',
+      'email',
+      'image',
+      'labels',
+      'link',
+      'longtext',
+      'multichoice',
+      'number',
+      'percent',
+      'person',
+      'phone',
+      'pullrequest',
+      'rating',
+      'risk',
+      'text',
+      'votes',
+    ],
+    calculations: ['childCount', 'childrenDone', 'formula', 'lookup', 'rollup'],
+  },
 };
 
 describe('a new card field kind or calculation bumps the format', () => {
@@ -194,6 +227,7 @@ const TYPE_SHAPE = {
     'tabs',
   ],
   tab: ['fields', 'glyph', 'id', 'label'],
+  template: [] as string[],
   field: [
     'aggregate',
     'blocks',
@@ -219,7 +253,13 @@ const TYPE_SHAPE = {
     'withTime',
   ],
 };
-const KEYS: Readonly<Record<number, typeof TYPE_SHAPE>> = { 6: TYPE_SHAPE };
+// Format 7 adds a type's card templates (docs/specs/026-plan/item-types.md "Card templates") and their own keys.
+const TYPE_SHAPE_7 = {
+  ...TYPE_SHAPE,
+  type: [...TYPE_SHAPE.type, 'templates'].sort(),
+  template: ['fields', 'id', 'name'],
+};
+const KEYS: Readonly<Record<number, typeof TYPE_SHAPE>> = { 6: TYPE_SHAPE, 7: TYPE_SHAPE_7 };
 
 describe("a new key in a card type's stored shape bumps the format", () => {
   it('reads exactly the type, tab and field keys this format names', () => {
@@ -237,5 +277,9 @@ describe("a new key in a card type's stored shape bumps the format", () => {
       [...CUSTOM_FIELD_KEYS].sort(),
       'CUSTOM_FIELD_KEYS changed: bump PROJECT_FORMAT and list the keys the new format reads',
     ).toEqual(keys!.field);
+    expect(
+      [...CARD_TEMPLATE_KEYS].sort(),
+      'CARD_TEMPLATE_KEYS changed: bump PROJECT_FORMAT and list the keys the new format reads',
+    ).toEqual(keys!.template);
   });
 });

@@ -2,6 +2,7 @@
 // names the fields its item panel offers; any item may still carry others.
 // `glyph` is an id from the Plan glyph set (glyphs.ts). A project may replace this
 // catalogue with its own (type-catalogue.ts, docs/specs/026-plan/item-types.md).
+import type { CardTemplate } from './card-templates';
 import type { CardField, CardSize } from './board';
 import type { CardSlot } from './card-display';
 import type { PlanGlyphId } from './glyphs';
@@ -294,6 +295,9 @@ export interface ItemTypeDef {
   // An inherited type's own fields, by id, in order: what it adds after its base type's. Always stored beside
   // `inherits` once resolved (empty when none); absent, every field it has that its base lacks.
   ownFields?: readonly string[];
+  // Its card templates (docs/specs/026-plan/item-types.md "Card templates"; card-templates.ts): named starting values
+  // for a new card, in order, up to CARD_TEMPLATES_MAX. The type's own: an inherited type never takes its base's.
+  templates?: readonly CardTemplate[];
 }
 
 // Parent (docs/specs/026-plan/item-types.md "Card fields"): a Card field linking to Projects, under the one custom
