@@ -435,9 +435,9 @@ time the charts arrive.
 - **Range**: each flow chart reads a range ending today, **Last 14 Days**, **Last 30 Days** (the default),
   **Last 90 Days** or **Last 180 Days**, stored as `rangeDays` (14, 30, 90 or 180) only when not 30. Never longer than
   180 days, the age a card's history and the flow counts are kept. Days are whole UTC days, as the counts are kept.
-- **Finished** is a move into a Done phase status ([What a plan view reads](#what-a-plan-view-reads)). **Started**
-  is the first move into an In Progress phase status before that finish; a card that never passed through one starts
-  when it was made. Both are read from each card's [history](items.md#history), so a card whose start is older than
+- **Finished** is a move into a Done phase status from a status outside it ([What a plan view reads](#what-a-plan-view-reads)):
+  a move between two Done statuses (Done to Released) finishes nothing again. **Started** is the first move into an
+  In Progress phase status before that finish; a card that never passed through one starts when it was made. Both are read from each card's [history](items.md#history), so a card whose start is older than
   the history it keeps starts at its oldest kept entry, or when it was made when that is later.
 - **Card types**: each charts only the card types it shows ([Card types for every view](#card-types-for-every-view)),
   every type by default.
@@ -455,7 +455,14 @@ time the charts arrive.
   counted day the chart draws nothing and says when counting began ("Counting since 15 Nov").
 - **Who sees what**: every role that may read the plan sees the flow charts (a Viewer included); only an Editor
   changes a chart's Range or Card Types (Chart Settings, as every chart setting). A tab-scoped link reads every card,
-  as every plan view on its tab makes it do ([On the canvas](#on-the-canvas)).
+  as every plan view on its tab makes it do ([On the canvas](#on-the-canvas)); a link to a tab that shows only some
+  cards (a tab with no board or plan view) holds no flow chart and is refused the flow. A Community post's link is
+  refused it too: the charts read the plan's history, which a Community copy never shows.
+- **One read per range**: the editor and agents read a range's flow in one request, `GET /projects/:id/flow`, with the
+  range (`days`, 1 to 180, 30 when absent) and the card types (`types`, every type when absent). It answers the range's
+  daily flow counts, and each card that moved in the range with its moves over the whole history the plan keeps (a
+  start can be older than the range), its type, when it was made and its oldest kept entry: what all three charts are
+  worked out from, by status, never an entry's author or values.
 - **States**: before the data arrives, **Loading flow…**; a plan with no finish in the range, **No cards finished in
   this range** (Cycle Time, Throughput); a failed read, **Couldn't Load Flow** with **Try Again**. A This Browser plan
   keeps no history or counts: **Flow Needs a Cloud Plan** and "Flow charts read the plan's history, which plans in

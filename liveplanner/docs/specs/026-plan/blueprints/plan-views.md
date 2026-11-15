@@ -234,13 +234,21 @@ Derived from spec "Flow charts"; built in parts (Work Tracker 854). Part 1 shipp
 | finished/started | moves into a `done` / `doing` phase status (`statusPhasesOf`), read from `item_history`       |
 | flow day         | `flowDayOf(ms)`; `FlowCountRow`, `flowCountsOf` (part 1)                                      |
 
-- Part 2 (data read): a new flow metrics module in `@liveplanner/items`, `cycleTimesOf(moves, phases, fromDay, toDay)` (per card:
-  last finish in range, first `doing` entry before it, else its oldest kept entry or `createdAt`; days to one
-  decimal; the 50th and 85th percentiles by nearest rank) and `throughputOf(finishes, fromDay, toDay, period)`
-  (Monday weeks, days for 14; the average over whole periods). `GET /projects/:id/flow?days=&types=` (gate `read`,
-  `400 flow_range` past `FLOW_DAYS_MAX`), answering `{ counts: FlowCountRow[], moves: { itemId, at, from, to }[] }`
-  read from `flow_counts` and from `item_history` rows whose `changes` hold a `moved` (by `at` in range), never an
-  author or value.
+- Part 2 (data read, shipped): `packages/items/src/flow-metrics.ts` and the read route ([item-store blueprint](item-store.md#flow-read)).
+  - `FLOW_RANGES` = `[14, 30, 90, 180]`, `FLOW_RANGE_DEFAULT` = 30, `FLOW_DAILY_MAX` = 14 (a range this short or
+    shorter reads per day); `FlowMove = { itemId, at, from, to }` (statuses, null for none), `FlowCard = { id, type,
+createdAt, since }` (`since`: its oldest kept history entry), `CycleTime = { itemId, at, day, days }`.
+  - `cycleTimesOf(moves, cards, phases, fromDay, toDay, types?)`: moves grouped by card in time order; a card's
+    finish is its last move into a `done` status from one outside `done`, with `flowDayOf(at)` in the range; its
+    start the first move into a `doing` status before that finish, else `max(createdAt, since)`; `days` =
+    `(finish - start) / DAY_MS` to one decimal, never below 0. A card missing from `cards`, or of a type outside
+    `types`, is skipped. Answers `{ cards: CycleTime[] (by at), p50, p85 }`, the percentiles `percentileOf` (nearest
+    rank, D111) and null with no card. Linear in moves, plus n log n for the sort.
+  - `throughputOf(finished, fromDay, toDay, period)`: a period per day or per Monday-started week
+    (`weekStartOf(day)` = `day - (day + 3) mod 7`, day 0 a Thursday) from the one holding `fromDay` to the one holding
+    `toDay`; each `{ start, cards, running, whole }`, `running` for the one holding `toDay` (today, not over yet), `whole` when it lies
+    inside the range and is not running. `average`: the whole periods' cards over their number, to one decimal, null
+    with none. `flowPeriodOf(days)`: `'day'` up to `FLOW_DAILY_MAX`, else `'week'`.
 - Part 3 (visible): the three views in `apps/editor/components/plan/views/` (`CycleTimeView`, `ThroughputView`,
   `CumulativeFlowView`), one read per tab shared by its flow charts (`usePlanFlow`, re-read when `items_rev` moves,
   debounced), Chart Settings' **Range** section, palette tiles and Dashboard slot choices, `svgPlanView` labels, the
