@@ -391,7 +391,7 @@ describe('the CSV export', () => {
     expect(file.headers.get('X-Next-Cursor')).toBeNull();
     // A byte-order mark first, so a spreadsheet reads the names as UTF-8 (text() drops it).
     const bytes = new Uint8Array(await file.clone().arrayBuffer());
-    expect([...bytes.slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
+    expect(Array.from(bytes.subarray(0, 3))).toEqual([0xef, 0xbb, 0xbf]);
     const text = await file.text();
     expect(text.split('\r\n')).toEqual([
       'Time (UTC),Event,Kind,App,By,By ID,About,About ID,Name,Document ID,Detail',
