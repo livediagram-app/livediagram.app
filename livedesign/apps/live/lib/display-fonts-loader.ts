@@ -53,7 +53,9 @@ export function displayPreviewHref(): string {
 export function renamePreviewFamilies(css: string): string {
   let out = css;
   for (const f of DISPLAY_FONTS) {
-    out = out.split(`font-family: '${f.label}';`).join(`font-family: '${displayPreviewFamily(f.id)}';`);
+    out = out
+      .split(`font-family: '${f.label}';`)
+      .join(`font-family: '${displayPreviewFamily(f.id)}';`);
   }
   return out;
 }

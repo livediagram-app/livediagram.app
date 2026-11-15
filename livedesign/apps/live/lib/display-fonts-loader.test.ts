@@ -30,7 +30,13 @@ afterEach(() => {
 describe('displayFontIdsIn', () => {
   it('finds the display faces a tab uses, once each, and nothing else', () => {
     expect(
-      displayFontIdsIn([{ font: 'lobster' }, { font: 'lora' }, {}, { font: 'lobster' }, { font: 3 }]),
+      displayFontIdsIn([
+        { font: 'lobster' },
+        { font: 'lora' },
+        {},
+        { font: 'lobster' },
+        { font: 3 },
+      ]),
     ).toEqual(['lobster']);
   });
 });
@@ -60,7 +66,8 @@ describe('the previews', () => {
     const letters = displayPreviewLetters();
     expect(letters).not.toContain(' ');
     expect(new Set(letters).size).toBe(letters.length);
-    for (const f of DISPLAY_FONTS) for (const ch of f.label.replace(/ /g, '')) expect(letters).toContain(ch);
+    for (const f of DISPLAY_FONTS)
+      for (const ch of f.label.replace(/ /g, '')) expect(letters).toContain(ch);
     const href = displayPreviewHref();
     expect(href).toContain('family=Montserrat&');
     expect(href).not.toContain('wght@');

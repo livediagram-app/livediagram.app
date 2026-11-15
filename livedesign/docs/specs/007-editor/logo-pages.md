@@ -23,7 +23,7 @@ of a page applies to a logo page except where this spec says otherwise.
 | **contour**             | One outline of a path. A combined path may have several closed ones (`PathElement.subpaths`): islands and holes; a merged mirrored line several open ones. |
 | **logo kit**            | The export of a logo page as one .zip: an SVG, PNGs at the standard icon sizes and a `favicon.ico`.                                                        |
 | **display face**        | One of the display library's typefaces (`DISPLAY_FONTS`), offered for text on a logo page beside the eleven faces of the font menu.                        |
-| **outlined text**       | Text drawn as the outlines of its letters (SVG paths), so it needs no font to show. The Logo Kit's `logo.svg` holds its text this way.                      |
+| **outlined text**       | Text drawn as the outlines of its letters (SVG paths), so it needs no font to show. The Logo Kit's `logo.svg` holds its text this way.                     |
 
 ## A logo page
 

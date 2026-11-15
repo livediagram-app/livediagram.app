@@ -32,7 +32,9 @@ describe('the display library', () => {
 
   it('sorts by category, in the picker’s order, then by label', () => {
     const order = DISPLAY_FONT_CATEGORIES.map((c) => c.id);
-    const keys = DISPLAY_FONTS.map((f) => [order.indexOf(f.category), f.label.toLowerCase()] as const);
+    const keys = DISPLAY_FONTS.map(
+      (f) => [order.indexOf(f.category), f.label.toLowerCase()] as const,
+    );
     for (const [cat] of keys) expect(cat).toBeGreaterThanOrEqual(0);
     const sorted = [...keys].sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1]));
     expect(keys).toEqual(sorted);
@@ -42,7 +44,9 @@ describe('the display library', () => {
 
 describe('livedesign’s font helpers', () => {
   it('resolves a display face, one of the eleven, and nothing for an unset or unknown id', () => {
-    expect(resolveFontStack('bebas-neue')).toBe("'Bebas Neue', ui-sans-serif, system-ui, sans-serif");
+    expect(resolveFontStack('bebas-neue')).toBe(
+      "'Bebas Neue', ui-sans-serif, system-ui, sans-serif",
+    );
     expect(resolveFontStack('lora')).toBe(FONTS.find((f) => f.id === 'lora')!.stack);
     expect(resolveFontStack('retired-face')).toBeUndefined();
     expect(resolveFontStack(undefined)).toBeUndefined();
@@ -70,9 +74,9 @@ describe('livedesign’s font helpers', () => {
   });
 
   it('lists the faces a tab uses: the eleven first, then the display faces', () => {
-    expect(fontIdsUsed([{ font: 'pacifico' }, { font: 'lora' }], 'anton', ['cinzel', null])).toEqual(
-      ['lora', 'anton', 'cinzel', 'pacifico'],
-    );
+    expect(
+      fontIdsUsed([{ font: 'pacifico' }, { font: 'lora' }], 'anton', ['cinzel', null]),
+    ).toEqual(['lora', 'anton', 'cinzel', 'pacifico']);
     expect(fontIdsUsed([{ font: 'lora' }, { font: 'nope' }])).toEqual(['lora']);
     expect(fontIdsUsed([{}])).toEqual([]);
   });
@@ -85,7 +89,9 @@ describe('a font an agent writes', () => {
     expect(fieldValueIssue('font', 'great-vibes')).toBeNull();
     expect(fieldValueIssue('font', undefined)).toBeNull();
     expect(fieldValueIssue('font', null)).toBeNull();
-    expect(fieldValueIssue('font', 'Lobster')).toMatch(/^font "Lobster" is not one of inter, .*, lobster,/);
+    expect(fieldValueIssue('font', 'Lobster')).toMatch(
+      /^font "Lobster" is not one of inter, .*, lobster,/,
+    );
   });
 
   it('leaves every other field to the shared check', () => {
