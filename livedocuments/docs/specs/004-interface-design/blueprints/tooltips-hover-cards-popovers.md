@@ -105,7 +105,7 @@ which, for a tooltip, stamps its warm-up clock.
   (`buttons !== 0` on enter), and its surface is `pointer-events: none`, so it never takes a press; hover cards and
   previews keep the hoverable surface and the grace.
 - **I8:** a Tooltip whose trigger's visible text already contains its label, with nothing in the trigger clipped
-  (`scrollWidth`/`scrollHeight` past the box), never opens (`showsOwnName` in `hint/trigger-text.ts`, asked through
+  (`scrollWidth`/`scrollHeight` past the box), never opens (`showsOwnName` in `../packages/ui/src/hint/trigger-text.ts`, asked through
   `useHint`'s `quiet`).
 
 ## Interfaces and contracts
