@@ -581,9 +581,11 @@ page, count)`. Both the kit and `LogoKitPanel`'s preview draw `logoKitTab(tab)`:
   `visibility: hidden`), registers each parsed face as a `FontFace` and awaits it, then for each `<text>`: maps its
   characters to addressable indices (xml:space default: newlines dropped, tabs as spaces, runs of spaces as one,
   the ends trimmed), reads `getStartPositionOfChar`, `getEndPositionOfChar` and `getRotationOfChar` on the root
-  `<text>`, groups characters by the element holding them (one computed style: family, weight, style, size, fill,
+  `<text>` (moved by each character's baseline shift: Chromium's start positions ignore `dominant-baseline`, which
+  every export sets to `central`, so `getExtentOfChar` is read as set and again with the baselines `auto`), groups characters by the element holding them (one computed style: family, weight, style, size, fill,
   stroke, letter-spacing), outlines each run, and replaces the `<text>` with a `<g>` keeping its `transform`,
-  `opacity`, `filter`, `clip-path` and `mask`, holding the runs' `<path>`s. The `<style>` of `@font-face` rules goes.
+  `opacity`, `filter`, `clip-path` and `mask`, holding the runs' `<path>`s. The `<style>` of `@font-face` rules goes, from a logo of shapes alone too (the kit always passes its SVG
+  through).
   The faces are removed and the mount unmounted on success or failure. A character no face covers throws
   `OutlineError('letters', label, letters)`; whitespace and invisible format characters draw nothing.
 - `LogoKitPanel` shows an `OutlineError`'s sentence in its alert; the copy reads "An SVG with its text outlined,

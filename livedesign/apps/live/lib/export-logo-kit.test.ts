@@ -110,11 +110,11 @@ describe('exportLogoKit', () => {
     expect(vi.mocked(renderTabToCanvas)).not.toHaveBeenCalled();
   });
 
-  it('needs no face, and outlines nothing, for a logo with no text', async () => {
+  it('needs no face for a logo with no text, and still strips the faces through the outliner', async () => {
     vi.mocked(embeddedFontFaces).mockResolvedValueOnce({ css: '', missing: ['Inter'] });
     const shapes = { ...tab, elements: [mark] } as Tab;
     const zip = await exportLogoKit(shapes, page!);
     expect(zip.type).toBe('application/zip');
-    expect(vi.mocked(outlineSvgText)).not.toHaveBeenCalled();
+    expect(vi.mocked(outlineSvgText)).toHaveBeenCalledWith('<svg/>', '');
   });
 });

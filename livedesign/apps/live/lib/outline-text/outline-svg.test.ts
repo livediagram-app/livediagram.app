@@ -62,8 +62,17 @@ function computed(el: Element): CSSStyleDeclaration {
     }
     return fallback;
   };
-  return new Proxy({} as CSSStyleDeclaration, { get: (_t, p) => read(String(p)) });
+  // The baselines, as an element names them itself (an inline style first, as the outliner sets one).
+  const baseline = (name: string) =>
+    (el as SVGElement).style?.getPropertyValue(name) || el.getAttribute(name) || 'auto';
+  return new Proxy({} as CSSStyleDeclaration, {
+    get: (_t, p) => (p === 'getPropertyValue' ? baseline : read(String(p))),
+  });
 }
+
+// A text set `dominant-baseline="central"` draws 7 px lower than its start positions say, as Chromium does, until
+// its baseline is set back to auto.
+const CENTRAL_DROP = 7;
 
 const added: FontFace[] = [];
 const deleted: FontFace[] = [];
@@ -100,6 +109,13 @@ beforeEach(() => {
   proto.getRotationOfChar = function (this: Element) {
     return this.hasAttribute('data-nan') ? NaN : 0;
   };
+  proto.getExtentOfChar = function (this: SVGElement, i: number) {
+    if (this.hasAttribute('data-no-extent')) throw new Error('no extent');
+    const central =
+      this.getAttribute('dominant-baseline') === 'central' &&
+      this.style.getPropertyValue('dominant-baseline') !== 'auto';
+    return { x: i * 10, y: 40 + (central ? CENTRAL_DROP : 0), width: 10, height: 12 };
+  };
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -119,10 +135,49 @@ describe('stackFamilies', () => {
 });
 
 describe('outlineSvgText', () => {
-  it('hands back an SVG with no text untouched, without loading fontkit', async () => {
-    const plain = svg('<rect width="10" height="10"/>');
-    expect(await outlineSvgText(plain, CSS, { loadFontkit })).toBe(plain);
+  it('drops the embedded faces of an SVG with no text, without loading fontkit', async () => {
+    const out = await outlineSvgText(svg('<rect width="10" height="10"/>'), CSS, { loadFontkit });
+    expect(out).not.toContain('@font-face');
+    expect(parse(out).querySelector('defs')).toBeNull();
+    expect(parse(out).querySelector('rect')).not.toBeNull();
     expect(loadFontkit).not.toHaveBeenCalled();
+  });
+
+  it('hands back an SVG with no text and no faces untouched', async () => {
+    const bare = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>';
+    expect(await outlineSvgText(bare, CSS, { loadFontkit })).toBe(bare);
+  });
+
+  it('draws a text set on a central baseline where the browser draws it, not where its start positions say', async () => {
+    const out = await outlineSvgText(
+      svg(
+        `<text font-family="Inter" font-size="10" dominant-baseline="central" style="dominant-baseline: central">a</text><text font-family="Inter" font-size="10">a</text>`,
+      ),
+      CSS,
+      { loadFontkit },
+    );
+    const [central, plain] = [...parse(out).querySelectorAll('path')].map((p) =>
+      p.getAttribute('d'),
+    );
+    expect(central!.startsWith(`M0 ${50 + CENTRAL_DROP}`)).toBe(true);
+    expect(plain!.startsWith('M0 50')).toBe(true);
+  });
+
+  it('puts a baseline it set back for measuring as it was', async () => {
+    document.body.innerHTML = '';
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('dominant-baseline', 'central');
+    t.style.setProperty('dominant-baseline', 'central');
+    t.textContent = 'ab';
+    const { baselineShifts } = await import('./outline-svg');
+    expect(baselineShifts(t as unknown as SVGTextContentElement, 2)).toEqual([
+      [0, CENTRAL_DROP],
+      [0, CENTRAL_DROP],
+    ]);
+    expect(t.style.getPropertyValue('dominant-baseline')).toBe('central');
+    expect(t.style.getPropertyValue('alignment-baseline')).toBe('');
+    t.setAttribute('data-no-extent', '');
+    expect(baselineShifts(t as unknown as SVGTextContentElement, 1)).toEqual([[0, 0]]);
   });
 
   it('draws each text as paths in its face, keeps its transform, drops every font, and cleans up', async () => {

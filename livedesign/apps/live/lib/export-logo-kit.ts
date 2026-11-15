@@ -97,16 +97,14 @@ export async function exportLogoKit(
   const faces = await embeddedFontFaces(kitFontIds(logo));
   const own = { ...opts, page, transparentPaper: true, fontCss: faces.css };
   const drawn = renderTabToSvg(logo, own);
-  let outlined = drawn;
-  if (drawn.includes('<text')) {
-    if (faces.missing.length > 0) {
-      console.warn('[outline] face not fetched', { face: faces.missing[0] });
-      throw new OutlineError('font', faces.missing[0]!);
-    }
-    // fontkit and the outliner load here, at the press, never with the editor.
-    const { outlineSvgText } = await import('./outline-text/outline-svg');
-    outlined = await outlineSvgText(drawn, faces.css);
+  if (drawn.includes('<text') && faces.missing.length > 0) {
+    console.warn('[outline] face not fetched', { face: faces.missing[0] });
+    throw new OutlineError('font', faces.missing[0]!);
   }
+  // The outliner loads here, at the press, never with the editor (fontkit only when there is text). A logo of
+  // shapes alone goes through it too, to lose the faces it embeds and doesn't draw with.
+  const { outlineSvgText } = await import('./outline-text/outline-svg');
+  const outlined = await outlineSvgText(drawn, faces.css);
   const svg = new TextEncoder().encode(outlined);
   const full = await renderTabToCanvas(logo, {
     ...own,

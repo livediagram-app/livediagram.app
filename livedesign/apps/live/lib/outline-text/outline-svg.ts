@@ -93,13 +93,56 @@ function textNodesOf(text: Element): Text[] {
   return nodes;
 }
 
-function placeOf(text: SVGTextContentElement, index: number): CharPlace | null {
+type Shift = readonly [number, number];
+const NO_SHIFT: Shift = [0, 0];
+const BASELINE_PROPS = ['dominant-baseline', 'alignment-baseline'] as const;
+
+function extentOf(text: SVGTextContentElement, index: number): DOMRect | null {
+  try {
+    return text.getExtentOfChar(index);
+  } catch {
+    return null;
+  }
+}
+
+// How far each character is moved off the baseline its start position reports. Chromium's getStartPositionOfChar
+// ignores `dominant-baseline` (`central`, which every export sets, `middle`, `hanging`...), though the glyph is drawn
+// moved by it; its extent does move. So the extents are read as the text is set and again with its baselines `auto`,
+// and the difference is each character's shift. Nothing is measured when no element of the text names a baseline.
+export function baselineShifts(text: SVGTextContentElement, count: number): Shift[] {
+  const els = [text, ...text.querySelectorAll('*')] as SVGElement[];
+  const named = (el: SVGElement) =>
+    BASELINE_PROPS.some((prop) => {
+      const v = getComputedStyle(el).getPropertyValue(prop);
+      return !!v && v !== 'auto' && v !== 'baseline';
+    });
+  if (!els.some(named)) return Array.from({ length: count }, () => NO_SHIFT);
+  const indices = Array.from({ length: count }, (_, i) => i);
+  const set = indices.map((i) => extentOf(text, i));
+  const saved = els.map((el) => BASELINE_PROPS.map((prop) => el.style.getPropertyValue(prop)));
+  for (const el of els) for (const prop of BASELINE_PROPS) el.style.setProperty(prop, 'auto');
+  const auto = indices.map((i) => extentOf(text, i));
+  els.forEach((el, k) =>
+    BASELINE_PROPS.forEach((prop, j) => {
+      const v = saved[k]![j]!;
+      if (v) el.style.setProperty(prop, v);
+      else el.style.removeProperty(prop);
+    }),
+  );
+  return indices.map((i) => {
+    const a = set[i];
+    const b = auto[i];
+    return a && b ? [a.x - b.x, a.y - b.y] : NO_SHIFT;
+  });
+}
+
+function placeOf(text: SVGTextContentElement, index: number, [dx, dy]: Shift): CharPlace | null {
   try {
     const start = text.getStartPositionOfChar(index);
     const end = text.getEndPositionOfChar(index);
     const rotate = text.getRotationOfChar(index);
     if (![start.x, start.y, end.x, end.y, rotate].every(Number.isFinite)) return null;
-    return { x: start.x, y: start.y, endX: end.x, endY: end.y, rotate };
+    return { x: start.x + dx, y: start.y + dy, endX: end.x + dx, endY: end.y + dy, rotate };
   } catch {
     // A character past the end of an arc's path is not laid out.
     return null;
@@ -121,6 +164,7 @@ function runsOf(
   text: SVGTextContentElement,
   chars: TextChar[],
   faces: readonly FaceSource[],
+  shifts: readonly Shift[],
 ): Run[] {
   const runs: Run[] = [];
   const styles = new Map<Element, Style>();
@@ -128,7 +172,7 @@ function runsOf(
   for (const c of chars) {
     let style = styles.get(c.holder);
     if (!style) styles.set(c.holder, (style = styleOf(c.holder, text)));
-    const place = c.index >= 0 ? placeOf(text, c.index) : null;
+    const place = c.index >= 0 ? placeOf(text, c.index, shifts[c.index] ?? NO_SHIFT) : null;
     const last = runs[runs.length - 1];
     if (drawsNothing(c.ch)) {
       // Kept with its place: it draws no glyph, but an underline runs under it.
@@ -207,16 +251,21 @@ export async function outlineSvgText(
   deps: OutlineDeps = {},
 ): Promise<string> {
   const parsed = parseInert(svg, 'image/svg+xml').documentElement;
-  if (!parsed.querySelector('text')) return svg;
-  const faces = parseFontFaces(fontCss);
-  const fontkit = await (deps.loadFontkit ?? defaultFontkit)();
-  const root = document.importNode(parsed, true) as unknown as SVGSVGElement;
-  for (const style of [...root.querySelectorAll('style')]) {
+  // The embedded faces go whether or not there is text: a logo of shapes alone needs none.
+  let stripped = false;
+  for (const style of [...parsed.querySelectorAll('style')]) {
     if (!style.textContent?.includes('@font-face')) continue;
     const defs = style.parentElement;
     style.remove();
+    stripped = true;
     if (defs?.localName === 'defs' && defs.childElementCount === 0) defs.remove();
   }
+  if (!parsed.querySelector('text')) {
+    return stripped ? new XMLSerializer().serializeToString(parsed) : svg;
+  }
+  const faces = parseFontFaces(fontCss);
+  const fontkit = await (deps.loadFontkit ?? defaultFontkit)();
+  const root = document.importNode(parsed, true) as unknown as SVGSVGElement;
   const host = document.createElement('div');
   host.setAttribute('aria-hidden', 'true');
   host.style.cssText =
@@ -269,7 +318,8 @@ export async function outlineSvgText(
         const v = t.getAttribute(name);
         if (v !== null) g.setAttribute(name, v);
       }
-      for (const run of runsOf(t, chars, faces)) {
+      const shifts = baselineShifts(t, t.getNumberOfChars());
+      for (const run of runsOf(t, chars, faces, shifts)) {
         const font = fontFor(run);
         const gr = glyphRun(run);
         const d = glyphRunPath(font, gr);
