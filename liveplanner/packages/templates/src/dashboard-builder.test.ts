@@ -60,6 +60,23 @@ describe('buildDashboardTab', () => {
     expect(tab.elements.every((e) => !(e.type === 'shape' && e.planView?.title))).toBe(true);
   });
 
+  // docs/specs/026-plan/plan-views.md "Flow charts": a flow chart keeps its range, the default never stored.
+  it('makes the flow charts with their range, dropping the default', () => {
+    const { tab } = buildDashboardTab('t9', 'Flow', {
+      charts: [
+        { view: 'cycle-time', settings: { rangeDays: 180, types: ['bug'] } },
+        { view: 'throughput', settings: { rangeDays: 30 } },
+        { view: 'cumulative-flow' },
+      ],
+    });
+    expect(isValidTab(tab)).toBe(true);
+    expect(tab.elements.map((el) => (el as { planView?: unknown }).planView)).toEqual([
+      { view: 'cycle-time', types: ['bug'], rangeDays: 180 },
+      { view: 'throughput' },
+      { view: 'cumulative-flow' },
+    ]);
+  });
+
   it('leaves off rows past the Dashboard’s twelve, and says how many', () => {
     const notes = Array.from({ length: 40 }, (_, i) => ({ title: `N${i}`, text: '' }));
     const { tab, dropped } = buildDashboardTab('t9', 'Notes', { notes });

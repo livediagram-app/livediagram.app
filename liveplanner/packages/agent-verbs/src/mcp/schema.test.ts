@@ -42,6 +42,40 @@ describe('the inline element format', () => {
   });
 });
 
+// docs/specs/026-plan/plan-agents.md "Making a dashboard": the flow charts by view id, with their range.
+describe('flow charts in the dashboard and element formats', () => {
+  const chart = (c: Record<string, unknown>) => ({
+    projectId: 'p',
+    name: 'Flow',
+    dashboard: { charts: [c] },
+  });
+
+  it('takes the three flow views and each range on add_tab and update_project, and refuses any other range', () => {
+    const add = z.object(addTabShape);
+    const update = z.object(updateProjectShape);
+    for (const view of ['cycle-time', 'throughput', 'cumulative-flow'])
+      for (const rangeDays of [14, 30, 90, 180]) {
+        expect(add.safeParse(chart({ view, rangeDays })).success).toBe(true);
+        expect(update.safeParse({ ...chart({ view, rangeDays }), mode: 'replace' }).success).toBe(
+          true,
+        );
+      }
+    for (const rangeDays of [7, 365, '30']) {
+      expect(add.safeParse(chart({ view: 'throughput', rangeDays })).success).toBe(false);
+      expect(
+        update.safeParse({ ...chart({ view: 'throughput', rangeDays }), mode: 'replace' }).success,
+      ).toBe(false);
+    }
+  });
+
+  it('describes the views and the range inline, and in the schema resource', () => {
+    const text = JSON.stringify(z.toJSONSchema(z.object(createProjectShape), { io: 'input' }));
+    for (const word of ['cycle-time', 'throughput', 'cumulative-flow', 'rangeDays'])
+      expect(text).toContain(word);
+    expect(elementSchemaDoc()).toContain('"rangeDays", 14, 30 (the default), 90, 180');
+  });
+});
+
 describe('tool input shapes', () => {
   it('find: optional query, bounded limit', () => {
     const s = z.object(findProjectsShape);

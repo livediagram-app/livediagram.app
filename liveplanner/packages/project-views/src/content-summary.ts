@@ -1,6 +1,6 @@
 // What a content kind holds, briefly (docs/specs/024-agents/blueprints/project-views.md "Content
 // summaries", VW18 to VW21).
-import { ENTITY_KEY_LABELS, type Element } from '@liveplanner/project';
+import { ENTITY_KEY_LABELS, flowRangeOf, isFlowView, type Element } from '@liveplanner/project';
 import { ENTITY_FIELDS_SHOWN } from './constants';
 import { arrayField, flagField, isObject, listOf, stringField } from './fields';
 import { cellText } from './text';
@@ -118,8 +118,11 @@ export function contentSummaryOf(el: Element): string | null {
       return `item=${typeof card?.itemId === 'string' && card.itemId ? cellText(card.itemId) : 'none'}`;
     }
     case 'plan-view': {
-      const view = (el as { planView?: { view?: unknown } }).planView?.view;
-      return `view=${typeof view === 'string' ? cellText(view) : 'none'}`;
+      const settings = (el as { planView?: { view?: unknown; rangeDays?: unknown } }).planView;
+      const view = settings?.view;
+      const shown = `view=${typeof view === 'string' ? cellText(view) : 'none'}`;
+      // A flow chart's range, always named (docs/specs/026-plan/plan-views.md "Flow charts"): 30 when unset.
+      return settings && isFlowView(view) ? `${shown} rangeDays=${flowRangeOf(settings)}` : shown;
     }
     case 'plan-sheet': {
       const sheet = (el as { planSheet?: { sheetId?: unknown } }).planSheet;
