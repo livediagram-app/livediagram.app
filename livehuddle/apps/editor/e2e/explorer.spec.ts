@@ -94,8 +94,8 @@ test('the panel names the open canvas, and the Explorer opens it again', async (
   expectNoPageErrors(pageErrors);
 });
 
-// A canvas kept only in this browser, written to its offline store before the app loads (the app opens and
-// upgrades the store itself).
+// A canvas kept only in this browser, written to its offline store before the app loads, in the store's current
+// shape (version 3, the `documents` store: lib/offline/offline-backend.ts).
 async function keepInThisBrowser(page: Page, name: string): Promise<void> {
   await page.goto('/icon.svg');
   await page.evaluate(
@@ -103,12 +103,12 @@ async function keepInThisBrowser(page: Page, name: string): Promise<void> {
       new Promise<void>((resolve, reject) => {
         const del = indexedDB.deleteDatabase('livehuddle-offline');
         del.onsuccess = () => {
-          const req = indexedDB.open('livehuddle-offline', 1);
-          req.onupgradeneeded = () => req.result.createObjectStore('diagrams', { keyPath: 'id' });
+          const req = indexedDB.open('livehuddle-offline', 3);
+          req.onupgradeneeded = () => req.result.createObjectStore('documents', { keyPath: 'id' });
           req.onsuccess = () => {
             const db = req.result;
-            const tx = db.transaction('diagrams', 'readwrite');
-            tx.objectStore('diagrams').put({
+            const tx = db.transaction('documents', 'readwrite');
+            tx.objectStore('documents').put({
               id: 'offline-this-browser-1',
               name: docName,
               folderId: null,
