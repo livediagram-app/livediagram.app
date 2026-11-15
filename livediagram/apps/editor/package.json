@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@liveworkspace/e2e-kit": "workspace:*",
+    "@liveworkspace/element-model": "workspace:^",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/source-ast": "workspace:*",

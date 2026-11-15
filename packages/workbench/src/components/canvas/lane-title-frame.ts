@@ -10,8 +10,9 @@ import {
   type UprightTitleStrip,
 } from '@liveworkspace/element-model/lane-gutter';
 import {
-  estimatedLabelMeasure,
   fitWholeWordLines,
+  laneTitleMeasure,
+  laneTitleRoom,
   wholeWordFontPx,
 } from '@liveworkspace/element-model/svg-render-primitives';
 import { uprightTitleFrame } from './upright-title';
@@ -57,44 +58,27 @@ export function laneTitleFrame(
   };
 }
 
-let measureCtx: CanvasRenderingContext2D | null | undefined;
-
-// A measure in the face the label draws in (FixedSizeLabel: medium weight, 600 when bold), from a 2D canvas, so the
-// whole-word layout matches the text the strip shows. Without a canvas (a test, a server render) a rough
-// per-character estimate stands in.
+// The face the label draws in: the one given, else the page's own (FixedSizeLabel inherits it). Measured with the one
+// lane-title measure every export uses (laneTitleMeasure: the label's weight, a 2D canvas, the estimate without one),
+// so the canvas and the export cut an overlong word at the same letter (Work Tracker 910).
 function drawnMeasure(
   px: number,
   bold: boolean,
   italic: boolean,
   fontFamily: string | undefined,
 ): (s: string) => number {
-  if (measureCtx === undefined) {
-    measureCtx =
-      typeof document !== 'undefined' && typeof HTMLCanvasElement !== 'undefined'
-        ? (() => {
-            try {
-              return document.createElement('canvas').getContext('2d');
-            } catch {
-              return null;
-            }
-          })()
-        : null;
-  }
-  const ctx = measureCtx;
-  if (!ctx) return estimatedLabelMeasure(px);
-  const family = fontFamily ?? (getComputedStyle(document.body).fontFamily || 'system-ui');
-  const font = `${italic ? 'italic ' : ''}${bold ? 600 : 500} ${px}px ${family}`;
-  return (s) => {
-    ctx.font = font;
-    return ctx.measureText(s).width;
-  };
+  const family =
+    fontFamily ??
+    ((typeof document !== 'undefined' && getComputedStyle(document.body).fontFamily) ||
+      undefined);
+  return laneTitleMeasure(px, bold, italic, family);
 }
 
 /**
  * A plain across title as its strip shows it at rest: in whole words, stepping down a size or two when a word is too
  * wide for the gutter (wholeWordFontPx), a word still too wide at the small size ending in an ellipsis rather than
  * splitting, at most LANE_TITLE_MAX_LINES lines (fitWholeWordLines), as every export lays it out. One pixel is held
- * back so a rounding difference between the measure and the page never wraps a line again.
+ * back (laneTitleRoom) so a rounding difference between the measure and the page never wraps a line again.
  */
 // Laid-out titles by (title, font, room): a lane re-renders on every drag, select and remote edit, and measuring a
 // title in canvas text is the costly part, so a title already laid out at this font and width is reused. Bounded,
@@ -114,7 +98,7 @@ export function laneTitleText(
   text: { px: number; bold: boolean; italic: boolean; fontFamily: string | undefined },
   measureAt?: (px: number) => (s: string) => number,
 ): { text: string; px: number } {
-  const room = Math.max(0, strip.width - 2 * padding - 1);
+  const room = laneTitleRoom(strip.width - 2 * padding);
   // Only the page's own measure is cached; a measure handed in (a test's) always lays out afresh.
   const key = measureAt
     ? null

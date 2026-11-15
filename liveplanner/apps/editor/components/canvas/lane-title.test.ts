@@ -1,6 +1,9 @@
 // A lane's title on the canvas (docs/specs/009-elements/lane.md "A title wraps in its gutter", "Upright titles"; Work
 // Tracker 877): laid out in its gutter as the export lays it out.
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { resetLabelMeasureContext } from '@liveworkspace/element-model/svg-render-primitives';
+import { standInDocument } from '@liveworkspace/element-model/testing/font-stand-in';
+import { clearLaneTitleCache } from '@liveworkspace/workbench/components/canvas/lane-title-frame';
 import {
   createShape,
   renderElementsToSvg,
@@ -101,5 +104,32 @@ describe('laneTitleOf', () => {
     const title = of(lane({ textAlignX: 'center', textAlignY: 'top' }));
     expect(title.frame).toBeNull();
     expect(title.label).toBe(LONG);
+  });
+});
+
+// Work Tracker 910: the canvas and the export measure a lane title with one measure (laneTitleMeasure, weight 500, the
+// 1 px reserve), so a word too long for the gutter even at the small size is cut at the same letter in each. Measured
+// with a real-font stand-in, whose widths follow the weight, since the estimate alone hid the difference.
+describe('a word too long for the gutter, measured with a real font', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetLabelMeasureContext();
+    clearLaneTitleCache();
+  });
+
+  it('is cut at the same letter on the canvas and in the export', () => {
+    const stand = standInDocument();
+    vi.stubGlobal('document', stand.document);
+    vi.stubGlobal('getComputedStyle', stand.getComputedStyle);
+    resetLabelMeasureContext();
+    clearLaneTitleCache();
+    for (const label of ['Supercalifragilisticexpialidocious', 'Internationalisation Wonderworks']) {
+      const el = lane({ label, textSize: 'lg' });
+      const canvas = of(el).label.split('\n');
+      const svg = renderElementsToSvg(tab([el]));
+      const exported = [...svg.matchAll(/<tspan[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]!);
+      expect(canvas).toEqual(exported);
+      expect(canvas.some((line) => line.endsWith('…'))).toBe(true);
+    }
   });
 });

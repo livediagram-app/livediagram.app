@@ -208,6 +208,11 @@ export function labelMeasure(
   italic: boolean,
   fontFamily?: string,
 ): (s: string) => number {
+  return measureAtWeight(size, bold ? 600 : 400, italic, fontFamily);
+}
+
+// The page's measuring context, made once: a 2D canvas where there is a document, else null.
+function measureContext(): MeasureCtx | null {
   if (_labelMeasureCtx === undefined) {
     // Reach `document` via globalThis so this module typechecks under a no-DOM
     // lib (the api / mcp Workers) and still uses the real canvas measure in the
@@ -217,16 +222,70 @@ export function labelMeasure(
         document?: { createElement(tag: string): { getContext(ctx: string): unknown } };
       }
     ).document;
-    _labelMeasureCtx = doc
-      ? (doc.createElement('canvas').getContext('2d') as MeasureCtx | null)
-      : null;
+    try {
+      _labelMeasureCtx = doc
+        ? (doc.createElement('canvas').getContext('2d') as MeasureCtx | null)
+        : null;
+    } catch {
+      _labelMeasureCtx = null;
+    }
   }
-  const ctx = _labelMeasureCtx;
+  return _labelMeasureCtx;
+}
+
+// A measure at a weight. `pinned` sets the font on every call, for a measure held while others use the shared context
+// between its calls (the canvas's lane titles); otherwise it is set once, as labels always measured.
+function measureAtWeight(
+  size: number,
+  weight: number,
+  italic: boolean,
+  fontFamily: string | undefined,
+  pinned = false,
+): (s: string) => number {
+  const ctx = measureContext();
   if (!ctx) return estimatedLabelMeasure(size);
-  ctx.font = `${bold ? '600' : '400'} ${italic ? 'italic ' : ''}${size}px ${
-    fontFamily ?? 'system-ui, sans-serif'
-  }`;
-  return (s) => ctx.measureText(s).width;
+  const font = `${weight} ${italic ? 'italic ' : ''}${size}px ${fontFamily ?? 'system-ui, sans-serif'}`;
+  ctx.font = font;
+  if (!pinned) return (s) => ctx.measureText(s).width;
+  return (s) => {
+    ctx.font = font;
+    return ctx.measureText(s).width;
+  };
+}
+
+/** Test hook: forgets the measuring context, so the next measure makes it afresh (a test's stand-in canvas). */
+export function resetLabelMeasureContext(): void {
+  _labelMeasureCtx = undefined;
+}
+
+// A lane title's weight on the canvas (FixedSizeLabel's medium, 600 when bold), and the pixel the canvas holds back so
+// a rounding difference between a measure and the page never wraps a line again (docs/specs/009-elements/lane.md "A
+// title wraps in its gutter"; Work Tracker 910).
+export const LANE_TITLE_WEIGHT = 500;
+export const LANE_TITLE_BOLD_WEIGHT = 600;
+export const LANE_TITLE_RESERVE_PX = 1;
+
+/** The one lane-title measure (Work Tracker 910): the canvas and every SVG and PNG export lay an across title out with
+ *  it, at the canvas's weight, so an overlong word is cut at the same letter in each. Without a canvas (a Worker's
+ *  render) the estimate stands in, which can't match a browser's exactly. */
+export function laneTitleMeasure(
+  size: number,
+  bold: boolean,
+  italic: boolean,
+  fontFamily?: string,
+): (s: string) => number {
+  return measureAtWeight(
+    size,
+    bold ? LANE_TITLE_BOLD_WEIGHT : LANE_TITLE_WEIGHT,
+    italic,
+    fontFamily,
+    true,
+  );
+}
+
+/** The width an across lane title lays out in: its strip's room inside the padding, less the reserve pixel. */
+export function laneTitleRoom(innerWidth: number): number {
+  return Math.max(0, innerWidth - LANE_TITLE_RESERVE_PX);
 }
 
 /** An icon's art drawn in `r` (relative to the element at `el`), as the card and the boundary draw theirs: a coloured

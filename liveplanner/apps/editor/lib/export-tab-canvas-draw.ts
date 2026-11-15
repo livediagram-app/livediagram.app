@@ -26,6 +26,7 @@ import {
   LABEL_LINE_HEIGHT,
   clampExportRunLines,
   fitWholeWordLines,
+  laneTitleMeasure,
   wrapExportRuns,
   MUTED_RUN_OPACITY,
   wrapLabel,
@@ -212,7 +213,10 @@ export function drawBoxed(
       // Wrap to the element width so long labels stay inside the box, then
       // stack the lines from the label's vertical anchor.
       // A lane title in its gutter reads in whole words, as the SVG lays it out.
-      const measure = (s: string) => ctx.measureText(s).width;
+      // A lane title measures with the one lane-title measure the canvas and the SVG use (Work Tracker 910).
+      const measure = label.maxLines
+        ? laneTitleMeasure(label.size, label.bold, label.italic, labelFont)
+        : (s: string) => ctx.measureText(s).width;
       const lines = label.maxLines
         ? fitWholeWordLines(label.text, label.maxWidth, label.maxLines, measure)
         : wrapLabel(label.text, label.maxWidth, measure);
