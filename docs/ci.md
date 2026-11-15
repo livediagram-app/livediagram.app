@@ -147,7 +147,10 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   **E2E** is its one result check.
 - **Canvas performance** (`canvas-perf.yml`): each product's probe, nightly against `main`. A miss
   opens or updates that product's issue, **Canvas performance budget: <product>**, and never fails the job;
-  the job fails only when the probe cannot run or the issue cannot be written. The issue lists the latest 30
+  the job fails only when the probe cannot run or the issue cannot be written. A gesture is judged on the work in its
+  longest task, read from a trace of each run, not on the time the main thread waits for the runner's CPU-only raster
+  (a drag's 158 ms task held 38 ms of work); the table shows the whole task beside the work when the wait was 10 ms
+  or more. The issue lists the latest 30
   commits since the last successful run, then how many more: from 2026-10-16 to 2026-11-11 every night was
   red because the list ran to 2,219 commits (190 KB, past GitHub's 65,536-character body) and the slide
   transition bench in livediagram and livedocuments opened its deck with no base URL.

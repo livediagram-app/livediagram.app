@@ -326,11 +326,17 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 - **Nothing the probe does lands in the opening window.** It opens the board by URL (so no tour
   is offered), waits for the board and then for 500 quiet ms, reads the number, and only then
   dismisses anything or presses a key; its own queries of the page are work the page would
-  otherwise count. The timings come from the page itself (its long-task entries
-  and an animation-frame recorder), so they count the board's own work and nothing else, never
-  from inside a profiler start: starting the CPU profiler costs a one-off task of about a second on
-  a large page. A still board's work, which must stay under a task's length, is read from a trace.
-  One more run of each gesture is traced for attribution and not counted.
+  otherwise count. Opening's timings come from the page itself (its long-task and long-animation-frame
+  entries), so they count the board's own work and nothing else, never from inside a profiler start:
+  starting the CPU profiler costs a one-off task of about a second on a large page. A still board's
+  work, which must stay under a task's length, is read from a trace, and so is every run of a gesture.
+- **A gesture's task is judged on its work, not on waiting for the compositor.** Each run of a
+  gesture is traced, and its longest task is read as the work in it: the steps the trace shows
+  (script, style, layout, paint, compositing), not the time the main thread sat blocked while the
+  compositor finished rasterising. Without a GPU, as on the hosted runner, that wait is most of a
+  drag's longest task (a 158 ms task held 38 ms of work); with GPU raster it is small. The table
+  shows the work, and the whole task beside it when the wait was 10 ms or more, so a wait is still
+  seen. The traced run's trace is kept for attribution.
 - **It runs nightly on its own**, in a scheduled workflow, against the head of `main`; a night with
   no new commit on `main` since the last run is skipped, so it spends no CI minutes on an unchanged
   build. Each run writes the budget table to the job summary and keeps the raw traces as an

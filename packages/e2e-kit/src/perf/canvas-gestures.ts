@@ -6,13 +6,14 @@ import { writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import type { CDPSession, Page } from '@playwright/test';
 import { medianOfRuns, type Gesture, type Measurement } from './budget';
-import { mainThreadTasks, type TraceEvent } from './trace-tasks';
+import { mainThreadTaskSpans, type TaskSpan, type TraceEvent } from './trace-tasks';
 
 export const PROBE_OUT = 'test-results/perf';
 export const PROBE_VIEW = { width: 1440, height: 900 };
 const CATEGORIES = 'devtools.timeline,disabled-by-default-devtools.timeline';
 
-// Each gesture's runs: this many, untraced, read from the page; one more traced for attribution, not counted.
+// Each gesture's runs: this many, each traced and judged on the work in its longest task; one more traced and kept
+// for attribution, not counted.
 export const REPEATS = 5;
 
 type Point = { x: number; y: number };
@@ -27,13 +28,15 @@ export type GestureSettings<Tab extends string> = {
   strokeKey: ((tab: Tab) => string) | null;
 };
 
+// One traced run of `run`: its main-thread tasks with the work in each, and, when asked, its frame times. The trace
+// is written to the probe's traces when `label` names it.
 async function traced(
   cdp: CDPSession,
   page: Page,
-  label: string,
+  label: string | null,
   run: () => Promise<void>,
   frames = true,
-): Promise<{ tasks: number[]; frameMs: number[] }> {
+): Promise<{ tasks: TaskSpan[]; frameMs: number[] }> {
   const events: TraceEvent[] = [];
   const onData = (d: { value: object[] }) => {
     events.push(...(d.value as TraceEvent[]));
@@ -66,8 +69,9 @@ async function traced(
   await cdp.send('Tracing.end');
   await done;
   cdp.off('Tracing.dataCollected', onData);
-  writeFileSync(`${PROBE_OUT}/traces/${label}.json.gz`, gzipSync(JSON.stringify(events)));
-  return { tasks: mainThreadTasks(events), frameMs };
+  if (label)
+    writeFileSync(`${PROBE_OUT}/traces/${label}.json.gz`, gzipSync(JSON.stringify(events)));
+  return { tasks: mainThreadTaskSpans(events), frameMs };
 }
 
 export const median = (xs: number[]) => {
@@ -121,43 +125,6 @@ async function moves(page: Page, from: Point, n: number, step: (i: number) => Po
     await page.mouse.move(from.x + d.x, from.y + d.y);
     await page.waitForTimeout(16);
   }
-}
-
-// One untraced run of `act`, read from the page itself: its longest task (from the long-task entries
-// recorded since load) and, when asked, its frame times.
-async function timed(
-  page: Page,
-  act: () => Promise<void>,
-  frames: boolean,
-): Promise<{ longest: number; frameMs: number[] }> {
-  const from = await page.evaluate((record) => {
-    const w = window as unknown as { __frames: number[]; __recording: boolean };
-    if (record) {
-      w.__frames = [];
-      w.__recording = true;
-      let last = performance.now();
-      const tick = (t: number) => {
-        w.__frames.push(t - last);
-        last = t;
-        if (w.__recording) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }
-    return performance.now();
-  }, frames);
-  await act();
-  return page.evaluate((t0) => {
-    const w = window as unknown as {
-      __frames: number[];
-      __recording: boolean;
-      __longTasks: { start: number; end: number }[];
-    };
-    w.__recording = false;
-    const longest = w.__longTasks
-      .filter((t) => t.end > t0)
-      .reduce((max, t) => Math.max(max, t.end - Math.max(t.start, t0)), 0);
-    return { longest, frameMs: (w.__frames ?? []).slice(1) };
-  }, from);
 }
 
 type Step = {
@@ -311,8 +278,8 @@ export async function measureZoom<Tab extends string>(
       tab,
       zoom,
       gesture: 'idle',
-      longestTaskMs: Math.max(0, ...tasks),
-      idleWorkMs: tasks.reduce((a, b) => a + b, 0),
+      longestTaskMs: Math.max(0, ...tasks.map((t) => t.ms)),
+      idleWorkMs: tasks.reduce((a, t) => a + t.ms, 0),
     });
   }
   out.push(medianOfRuns(idle));
@@ -320,14 +287,18 @@ export async function measureZoom<Tab extends string>(
     const runs: Measurement<Tab>[] = [];
     for (let r = 0; r < REPEATS; r++) {
       await step.setup?.();
-      const { longest, frameMs } = await timed(page, step.act, step.gesture === 'drag');
+      const drag = step.gesture === 'drag';
+      const { tasks, frameMs } = await traced(cdp, page, null, step.act, drag);
       await step.reset?.();
       runs.push({
         tab,
         zoom,
         gesture: step.gesture,
-        longestTaskMs: longest,
-        ...(step.gesture === 'drag' ? { medianFrameMs: median(frameMs) } : {}),
+        longestTaskMs: Math.max(0, ...tasks.map((t) => t.ms)),
+        // Judged on the work in its longest task, not the time it sat blocked on the compositor (each product's
+        // canvas-performance.md "A gesture's task is judged on its work").
+        longestWorkMs: Math.max(0, ...tasks.map((t) => t.workMs)),
+        ...(drag ? { medianFrameMs: median(frameMs) } : {}),
       });
     }
     out.push(medianOfRuns(runs));
