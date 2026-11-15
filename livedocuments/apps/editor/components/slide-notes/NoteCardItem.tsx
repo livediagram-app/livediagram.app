@@ -57,29 +57,31 @@ export type NoteCardItemProps = {
 function CardButton({
   label,
   onPress,
+  plain = false,
   children,
 }: {
   label: string;
   onPress: () => void;
+  // A universal glyph (a move chevron) that needs no tooltip (tooltips-hover-cards-popovers.md).
+  plain?: boolean;
   children: React.ReactNode;
 }) {
-  return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={(e) => {
-          e.stopPropagation();
-          onPress();
-        }}
-        // A press of a button is never a press of the card under it.
-        onKeyDown={(e) => e.stopPropagation()}
-        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-      >
-        {children}
-      </button>
-    </Tooltip>
+  const button = (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={(e) => {
+        e.stopPropagation();
+        onPress();
+      }}
+      // A press of a button is never a press of the card under it.
+      onKeyDown={(e) => e.stopPropagation()}
+      className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+    >
+      {children}
+    </button>
   );
+  return plain ? button : <Tooltip label={label}>{button}</Tooltip>;
 }
 
 function SpeakingTime({ text }: { text: string }) {
@@ -119,27 +121,25 @@ export function NoteCardItem(props: NoteCardItemProps) {
       {/* The index card's rule across its top, as a cue card's. */}
       <div aria-hidden className="h-0.5 bg-brand-400/70 dark:bg-brand-400/50" />
       <div className="flex items-center gap-1 pl-1 pr-1 pt-1">
-        <Tooltip label="Drag to Reorder">
-          <span
-            role="img"
-            aria-label="Drag to Reorder"
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              props.onGripDown(e);
-            }}
-            onPointerMove={props.onGripMove}
-            onPointerUp={props.onGripUp}
-            onPointerCancel={props.onGripUp}
-            onClick={(e) => e.stopPropagation()}
-            className={`flex h-6 w-4 cursor-grab touch-none items-center justify-center rounded text-slate-400 transition active:cursor-grabbing dark:text-slate-400 ${
-              touch
-                ? ''
-                : 'opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100'
-            }`}
-          >
-            <GripIcon />
-          </span>
-        </Tooltip>
+        <span
+          role="img"
+          aria-label="Drag to Reorder"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            props.onGripDown(e);
+          }}
+          onPointerMove={props.onGripMove}
+          onPointerUp={props.onGripUp}
+          onPointerCancel={props.onGripUp}
+          onClick={(e) => e.stopPropagation()}
+          className={`flex h-6 w-4 cursor-grab touch-none items-center justify-center rounded text-slate-400 transition active:cursor-grabbing dark:text-slate-400 ${
+            touch
+              ? ''
+              : 'opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100'
+          }`}
+        >
+          <GripIcon />
+        </span>
         <span className={NUMBER_CHIP}>{index + 1}</span>
         <span className="flex-1" />
         <div
@@ -150,12 +150,12 @@ export function NoteCardItem(props: NoteCardItemProps) {
           }`}
         >
           {index > 0 ? (
-            <CardButton label="Move Up" onPress={() => props.onMove(-1)}>
+            <CardButton label="Move Up" plain onPress={() => props.onMove(-1)}>
               <UpIcon />
             </CardButton>
           ) : null}
           {index < count - 1 ? (
-            <CardButton label="Move Down" onPress={() => props.onMove(1)}>
+            <CardButton label="Move Down" plain onPress={() => props.onMove(1)}>
               <DownIcon />
             </CardButton>
           ) : null}

@@ -3,7 +3,7 @@
 // Find and Replace (docs/specs/029-sheets/sheet.md "Find"): a small bar on the sheet's top right; matches counted and
 // stepped through with Enter and Shift+Enter, in values (and, asked, in inputs), Match Case and Match Entire Cell;
 // Replace and Replace All in inputs only. Escape closes it.
-import { Button, Tooltip } from '@liveplanner/ui';
+import { Button } from '@liveplanner/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { findMatches, replaceAll, type FindOptions } from '@liveplanner/sheets';
 import { track } from '@/lib/telemetry';
@@ -104,36 +104,30 @@ export function SheetFindBar() {
               : 'No matches'
             : ''}
         </span>
-        <Tooltip label="Previous Match">
-          <button
-            type="button"
-            aria-label="Previous Match"
-            className="h-7 w-6 cursor-pointer rounded hover:bg-black/5"
-            onClick={() => step(-1)}
-          >
-            ↑
-          </button>
-        </Tooltip>
-        <Tooltip label="Next Match">
-          <button
-            type="button"
-            aria-label="Next Match"
-            className="h-7 w-6 cursor-pointer rounded hover:bg-black/5"
-            onClick={() => step(1)}
-          >
-            ↓
-          </button>
-        </Tooltip>
-        <Tooltip label="Close Find">
-          <button
-            type="button"
-            aria-label="Close Find"
-            className="h-7 w-6 cursor-pointer rounded hover:bg-black/5"
-            onClick={close}
-          >
-            ✕
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="Previous Match"
+          className="h-7 w-6 cursor-pointer rounded hover:bg-black/5"
+          onClick={() => step(-1)}
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          aria-label="Next Match"
+          className="h-7 w-6 cursor-pointer rounded hover:bg-black/5"
+          onClick={() => step(1)}
+        >
+          ↓
+        </button>
+        <button
+          type="button"
+          aria-label="Close Find"
+          className="h-7 w-6 cursor-pointer rounded hover:bg-black/5"
+          onClick={close}
+        >
+          ✕
+        </button>
       </div>
       {replace ? (
         <div className="mt-1.5 flex items-center gap-1.5">

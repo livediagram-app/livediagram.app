@@ -156,28 +156,24 @@ export function CommentRow({
       {!resolved && !editing && (onEdit || onDelete) ? (
         <div className="flex shrink-0 gap-0.5 self-start opacity-0 transition focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100">
           {onEdit ? (
-            <Tooltip label="Edit comment">
-              <button
-                type="button"
-                aria-label="Edit comment"
-                onClick={() => setEditing(true)}
-                className={ROW_ACTION}
-              >
-                <EditIcon aria-hidden />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label="Edit comment"
+              onClick={() => setEditing(true)}
+              className={ROW_ACTION}
+            >
+              <EditIcon aria-hidden />
+            </button>
           ) : null}
           {onDelete ? (
-            <Tooltip label="Delete comment">
-              <button
-                type="button"
-                aria-label="Delete comment"
-                onClick={onDelete}
-                className={ROW_ACTION}
-              >
-                <TrashIcon size={12} />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label="Delete comment"
+              onClick={onDelete}
+              className={ROW_ACTION}
+            >
+              <TrashIcon size={12} />
+            </button>
           ) : null}
         </div>
       ) : null}

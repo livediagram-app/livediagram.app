@@ -14,7 +14,7 @@ import {
   type ItemTypeDef,
   type TypeFieldMap,
 } from '@liveplanner/items';
-import { Button, CloseIcon, Tooltip } from '@liveplanner/ui';
+import { Button, CloseIcon } from '@liveplanner/ui';
 import { PanelSelect } from './panel-parts';
 
 // A source: a custom field of some type, with that type's name, for the From list's groups.
@@ -145,17 +145,15 @@ export function TypeFieldMapEditor({
                       ))}
                     </PanelSelect>
                   </div>
-                  <Tooltip label="Remove Mapping">
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      className="size-8 shrink-0 px-0"
-                      aria-label={`Remove Mapping ${i + 1}`}
-                      onClick={() => onChange(map.filter((_, j) => j !== i))}
-                    >
-                      <CloseIcon size={14} aria-hidden />
-                    </Button>
-                  </Tooltip>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="size-8 shrink-0 px-0"
+                    aria-label={`Remove Mapping ${i + 1}`}
+                    onClick={() => onChange(map.filter((_, j) => j !== i))}
+                  >
+                    <CloseIcon size={14} aria-hidden />
+                  </Button>
                 </div>
               </li>
             );

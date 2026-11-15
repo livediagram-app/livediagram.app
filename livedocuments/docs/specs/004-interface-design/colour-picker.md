@@ -122,7 +122,7 @@ exactly as it did:
 - **No colour**: a white swatch with a diagonal slash, whatever it is called on that surface.
 - **Layout**: ten to a row, 4px apart, so the standard colours are exactly one row and the picker is always
   276px wide. A group wraps onto further rows; it never scrolls sideways.
-- Every swatch has a **tooltip and an accessible name**: a standard or theme colour's word ("Blue",
+- Every swatch has an **accessible name**, and no tooltip (its labelled group names it, tooltips-hover-cards-popovers.md): a standard or theme colour's word ("Blue",
   "Theme"), and a custom colour's hex itself ("#1a2b3c"). The same name labels a field or row showing that
   colour.
 

@@ -233,19 +233,17 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
           </Select>
           {/* The card type's own editor (its fields, display and tabs), to shape it before mapping answers. */}
           {b.canEdit && plan && b.type ? (
-            <Tooltip label={`Edit ${b.type.label}`}>
-              <button
-                type="button"
-                aria-label={`Edit card type ${b.type.label}`}
-                onClick={() => {
-                  onLeave?.();
-                  plan.editType({ id: b.type!.id });
-                }}
-                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-              >
-                <PencilIcon />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label={`Edit card type ${b.type.label}`}
+              onClick={() => {
+                onLeave?.();
+                plan.editType({ id: b.type!.id });
+              }}
+              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <PencilIcon />
+            </button>
           ) : null}
         </div>
       </SettingsField>

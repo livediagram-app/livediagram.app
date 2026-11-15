@@ -162,29 +162,25 @@ function GanttRowGrip({
   onGripDown: GanttRowReorderProps['onGripDown'];
 }) {
   return (
-    <Tooltip label="Drag to Reorder">
-      <span
-        role="img"
-        aria-label="Drag to Reorder"
-        data-gantt-row-grip
-        className="absolute left-0.5 top-1/2 z-10 flex h-5 w-2.5 -translate-y-1/2 cursor-grab touch-none items-center justify-center rounded opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 active:cursor-grabbing motion-reduce:transition-none"
-        style={{ color: palette.muted }}
-        onPointerDown={(e) =>
-          onGripDown(e.currentTarget.closest<HTMLElement>('[data-gantt-row]'))(e)
-        }
-        onClick={stop}
-        onDoubleClick={stop}
-      >
-        <svg width="6" height="10" viewBox="0 0 6 10" aria-hidden fill="currentColor">
-          {[1, 5, 9].map((y) => (
-            <g key={y}>
-              <circle cx="1" cy={y} r="1" />
-              <circle cx="5" cy={y} r="1" />
-            </g>
-          ))}
-        </svg>
-      </span>
-    </Tooltip>
+    <span
+      role="img"
+      aria-label="Drag to Reorder"
+      data-gantt-row-grip
+      className="absolute left-0.5 top-1/2 z-10 flex h-5 w-2.5 -translate-y-1/2 cursor-grab touch-none items-center justify-center rounded opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 active:cursor-grabbing motion-reduce:transition-none"
+      style={{ color: palette.muted }}
+      onPointerDown={(e) => onGripDown(e.currentTarget.closest<HTMLElement>('[data-gantt-row]'))(e)}
+      onClick={stop}
+      onDoubleClick={stop}
+    >
+      <svg width="6" height="10" viewBox="0 0 6 10" aria-hidden fill="currentColor">
+        {[1, 5, 9].map((y) => (
+          <g key={y}>
+            <circle cx="1" cy={y} r="1" />
+            <circle cx="5" cy={y} r="1" />
+          </g>
+        ))}
+      </svg>
+    </span>
   );
 }
 

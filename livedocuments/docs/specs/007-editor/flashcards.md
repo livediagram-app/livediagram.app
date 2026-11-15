@@ -171,7 +171,7 @@ The card in front carries its own **Previous** and **Next**, in its footer at th
 button, its place (**Card 3 of 10**), a chevron-right button (`StackNav`, `components/canvas/FlashcardStack.tsx`).
 
 - A press goes to the card before or after by a flip, exactly as Contents or the arrow keys do. **Previous** is
-  disabled on the first card and **Next** on the last. Tooltips "Previous Card" and "Next Card"; spoken names
+  disabled on the first card and **Next** on the last. No tooltips (a step chevron says it); spoken names
   "Previous card" and "Next card", the group named "Card 3 of 10". No First or Last: Contents goes anywhere in one
   press, and two more buttons would crowd the card's corner.
 - For everyone who can see the pages, Viewers and Participants too: it only moves the view. On a phone too, its

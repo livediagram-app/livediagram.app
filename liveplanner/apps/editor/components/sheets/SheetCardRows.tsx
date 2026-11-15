@@ -246,30 +246,28 @@ function ActiveCellChoice({ c, plan }: { c: SheetController; plan: PlanContextVa
         />
       ) : null}
       <SheetCellSlot r={r} c={col}>
-        <Tooltip label={`Choose ${field}`}>
-          <button
-            type="button"
-            aria-label={`Choose ${field}`}
-            aria-haspopup="dialog"
-            aria-expanded={choice.kind === 'date' ? undefined : anchor !== null}
-            className="absolute z-[8] flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:opacity-80"
-            style={{
-              // Inside the cell's right edge, in the room its column keeps for it (SheetCells padEnd).
-              left: box.x + box.w - 21,
-              top: box.y + (box.h - 20) / 2,
-              backgroundColor: c.palette.column,
-              color: c.palette.text,
-            }}
-            onPointerDown={stop}
-            onClick={(e) => {
-              if (choice.kind === 'date') {
-                if (dateRef.current) openDatePicker(dateRef.current);
-              } else setAnchor(anchor ? null : e.currentTarget);
-            }}
-          >
-            <ChevronGlyph />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label={`Choose ${field}`}
+          aria-haspopup="dialog"
+          aria-expanded={choice.kind === 'date' ? undefined : anchor !== null}
+          className="absolute z-[8] flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:opacity-80"
+          style={{
+            // Inside the cell's right edge, in the room its column keeps for it (SheetCells padEnd).
+            left: box.x + box.w - 21,
+            top: box.y + (box.h - 20) / 2,
+            backgroundColor: c.palette.column,
+            color: c.palette.text,
+          }}
+          onPointerDown={stop}
+          onClick={(e) => {
+            if (choice.kind === 'date') {
+              if (dateRef.current) openDatePicker(dateRef.current);
+            } else setAnchor(anchor ? null : e.currentTarget);
+          }}
+        >
+          <ChevronGlyph />
+        </button>
       </SheetCellSlot>
       {anchor && choice.kind !== 'date' ? (
         <AnchoredPopover

@@ -1439,7 +1439,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
     Title text, Status and Priority a list); its tooltip and accessible name name the kind ("Link to Card", "Date", "Person"). Dragging the handle (mouse, pen or touch alike) moves the field
     within its group: the row follows the pointer, the rows it passes slide aside, release places it and Escape
     puts it back. Title, Status and Votes have no handle, and every row keeps its slot so the names line up.
-    The row ends with a field's **Edit** (a pencil, tooltip "Edit Field", named "Edit {Name}"), which opens
+    The row ends with a field's **Edit** (a pencil named "Edit {Name}", no tooltip: its row names it), which opens
     [Edit Field](#edit-field) over the editor (it replaced editing a field's name and settings inside its row,
     2026-11-03), and a **⋯** menu headed by the field's name: **Move
     Up** and **Move Down** (the keyboard's way to reorder), **Move to {group}** for each other group (Details
@@ -1701,8 +1701,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       widget marked Changed, a form question going to Description and its form unpublishable until mapped again,
       a formula giving no value); none is rewritten. Its filters come off (above).
     - <a id="built-in-full-edit"></a>**Built-in fields** (the owner's pick, 2026-11-03, "Full edit"; built
-      2026-11-04). Each built-in field on a type but Title gets the pencil too (tooltip "Edit Field", named "Edit
-      {Name}"); an inherited field and a field from a newer version keep their lock (edited on the base type, or
+      2026-11-04). Each built-in field on a type but Title gets the pencil too (named "Edit
+      {Name}", no tooltip); an inherited field and a field from a newer version keep their lock (edited on the base type, or
       after a reload), and a type inheriting from another reads its base's names, so its own built-ins have no
       pencil either.
       - **Opening**: Edit Field opens on Shape for the built-in's own tile: Description on Long Text, Estimate on

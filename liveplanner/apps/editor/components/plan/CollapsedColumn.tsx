@@ -78,23 +78,21 @@ export function CollapseColumnButton({
   onCollapse: () => void;
 }) {
   return (
-    <Tooltip label="Collapse Column">
-      <button
-        type="button"
-        {...{ [COLUMN_TOGGLE_ATTR]: column.id }}
-        aria-label={`Collapse Column, ${column.name}`}
-        aria-expanded
-        className={`${CHEVRON} -mr-1 opacity-70 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100`}
-        style={{ color: palette.muted }}
-        onPointerDown={stop}
-        onClick={(e) => {
-          e.stopPropagation();
-          onCollapse();
-        }}
-      >
-        <CollapseColumnGlyph />
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      {...{ [COLUMN_TOGGLE_ATTR]: column.id }}
+      aria-label={`Collapse Column, ${column.name}`}
+      aria-expanded
+      className={`${CHEVRON} -mr-1 opacity-70 hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100`}
+      style={{ color: palette.muted }}
+      onPointerDown={stop}
+      onClick={(e) => {
+        e.stopPropagation();
+        onCollapse();
+      }}
+    >
+      <CollapseColumnGlyph />
+    </button>
   );
 }
 
@@ -122,23 +120,21 @@ export function CollapsedColumnHead({
         style={{ backgroundColor: column.color ?? bar ?? palette.border }}
         aria-hidden
       />
-      <Tooltip label="Expand Column">
-        <button
-          type="button"
-          {...{ [COLUMN_TOGGLE_ATTR]: column.id }}
-          aria-label={`Expand Column, ${column.name}`}
-          aria-expanded={false}
-          className={CHEVRON}
-          style={{ color: palette.muted }}
-          onPointerDown={stop}
-          onClick={(e) => {
-            e.stopPropagation();
-            onExpand();
-          }}
-        >
-          <ExpandColumnGlyph />
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        {...{ [COLUMN_TOGGLE_ATTR]: column.id }}
+        aria-label={`Expand Column, ${column.name}`}
+        aria-expanded={false}
+        className={CHEVRON}
+        style={{ color: palette.muted }}
+        onPointerDown={stop}
+        onClick={(e) => {
+          e.stopPropagation();
+          onExpand();
+        }}
+      >
+        <ExpandColumnGlyph />
+      </button>
     </div>
   );
 }

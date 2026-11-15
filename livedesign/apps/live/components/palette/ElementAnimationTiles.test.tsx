@@ -30,11 +30,11 @@ const concept = (kind: ConceptShape) =>
 describe('ConceptAnimTiles', () => {
   it('offers Flow on a cycle only, and shows Speed and Repeat once one is picked', () => {
     render(<ConceptAnimTiles target={concept('layer-stack')} ops={ops()} />);
-    expect(screen.queryByRole('button', { name: 'Flow Animation' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Flow' })).toBeNull();
     cleanup();
     const o = ops();
     render(<ConceptAnimTiles target={concept('cycle')} ops={o} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Flow Animation' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Flow' }));
     expect(o.commit).toHaveBeenCalledWith(expect.any(Function), 'ConceptAnim');
     expect(lastMap(o)(concept('cycle')).conceptAnim).toBe('flow');
     expect(screen.getByText('Repeat')).toBeTruthy();
@@ -43,7 +43,7 @@ describe('ConceptAnimTiles', () => {
   it('leaves another kind in the selection untouched', () => {
     const o = ops();
     render(<ConceptAnimTiles target={concept('chevrons')} ops={o} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Build Animation' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Build' }));
     const square = createShape('square', 0, 0);
     expect(lastMap(o)(square)).toBe(square);
   });

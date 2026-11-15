@@ -3,7 +3,7 @@
 // Sheet Settings' Data Validation and Conditional Formatting sections (docs/specs/029-sheets/data-validation.md,
 // conditional-formatting.md "Making and changing rules"): every rule as a row (its line and range), Edit (Sheet
 // Settings closes, the rule's cells are selected and its editor opens against them), Go To and, for an Editor, Remove.
-import { CloseIcon, Tooltip } from '@liveplanner/ui';
+import { CloseIcon } from '@liveplanner/ui';
 import {
   formatRange,
   formatRuleLine,
@@ -101,16 +101,14 @@ function RuleRows<T extends IdRange & { id: string }>({
               </button>
             ) : null}
             {c.canShape ? (
-              <Tooltip label={`Remove ${line}`}>
-                <button
-                  type="button"
-                  aria-label={`Remove ${line}`}
-                  className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                  onClick={() => onRemove(rule)}
-                >
-                  <CloseIcon size={11} />
-                </button>
-              </Tooltip>
+              <button
+                type="button"
+                aria-label={`Remove ${line}`}
+                className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                onClick={() => onRemove(rule)}
+              >
+                <CloseIcon size={11} />
+              </button>
             ) : null}
           </li>
         );

@@ -7,7 +7,7 @@
 // For someone who may edit.
 import { useState } from 'react';
 import { lucideImagePlus, lucideX } from '@liveworkspace/icons/lucide';
-import { Button, lucideGlyph, Tooltip } from '@livedesign/ui';
+import { Button, lucideGlyph } from '@livedesign/ui';
 import type { LaidOutPage } from '@livedesign/design';
 import { PHOTO_DEFAULT_HEIGHT, PHOTO_DEFAULT_WIDTH } from '@livedesign/photo-engine';
 import { ImagePicker } from '@/components/panels/ImagePicker';
@@ -140,17 +140,15 @@ export function StartPhotoCard({
           >
             Start a Photo
           </p>
-          <Tooltip label="Close">
-            <button
-              type="button"
-              aria-label="Close"
-              disabled={!ready}
-              onClick={() => create(PHOTO_DEFAULT_WIDTH, PHOTO_DEFAULT_HEIGHT)}
-              className="rounded p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              <CloseIcon />
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            aria-label="Close"
+            disabled={!ready}
+            onClick={() => create(PHOTO_DEFAULT_WIDTH, PHOTO_DEFAULT_HEIGHT)}
+            className="rounded p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <CloseIcon />
+          </button>
         </div>
         <Button
           className="mt-3 w-full"

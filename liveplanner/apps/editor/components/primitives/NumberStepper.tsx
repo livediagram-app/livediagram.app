@@ -6,7 +6,7 @@
 // the value on white. Given a `tone` (a Sheet's toolbar), it wears those colours instead, bordered like the controls
 // beside it, so it follows the Sheet's theme in light and dark.
 import { useState } from 'react';
-import { Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideGlyph } from '@liveplanner/ui';
 import { lucideMinus, lucidePlus } from '@liveworkspace/icons/lucide';
 
 const MinusGlyph = lucideGlyph(lucideMinus, 14);
@@ -63,18 +63,16 @@ export function NumberStepper({
     const off = dir < 0 ? value <= min : value >= max;
     const name = `${dir < 0 ? 'Decrease' : 'Increase'} ${label}`;
     return (
-      <Tooltip label={name}>
-        <button
-          type="button"
-          aria-label={name}
-          disabled={disabled || off}
-          onClick={() => set(stepBy ? stepBy(value, dir) : value + dir * step)}
-          className={`${BUTTON} ${tone ? BUTTON_TONED : BUTTON_SLATE}`}
-          style={tone ? { color: tone.muted } : undefined}
-        >
-          {dir < 0 ? <MinusGlyph /> : <PlusGlyph />}
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        aria-label={name}
+        disabled={disabled || off}
+        onClick={() => set(stepBy ? stepBy(value, dir) : value + dir * step)}
+        className={`${BUTTON} ${tone ? BUTTON_TONED : BUTTON_SLATE}`}
+        style={tone ? { color: tone.muted } : undefined}
+      >
+        {dir < 0 ? <MinusGlyph /> : <PlusGlyph />}
+      </button>
     );
   };
   return (

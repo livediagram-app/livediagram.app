@@ -7,7 +7,7 @@
 // `dialogTitleId`, the modal (Add Field's): the modal's panel draws the box, the title is the dialog's heading at the
 // type editor's size, the close is the dialogs' cross, and under 600 px the search drops below the title and close.
 import type { ComponentProps, KeyboardEvent, ReactNode, Ref } from 'react';
-import { CloseIcon, DialogCloseButton, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { CloseIcon, DialogCloseButton, lucideGlyph } from '@liveplanner/ui';
 import { lucideSearch } from '@liveworkspace/icons/lucide';
 
 const SearchGlyph = lucideGlyph(lucideSearch, 14);
@@ -102,16 +102,14 @@ export function GalleryFrame({
             />
           </label>
           {onClose && !inDialog ? (
-            <Tooltip label="Close">
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none pointer-coarse:size-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-              >
-                <CloseIcon size={12} />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={onClose}
+              className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none pointer-coarse:size-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <CloseIcon size={12} />
+            </button>
           ) : null}
         </div>
         {onClose && inDialog ? (

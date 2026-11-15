@@ -122,7 +122,7 @@ export function ImageGalleryField({
           e.target.value = '';
         }}
       />
-      <Tooltip label={full ? imagesFullMessage(label) : `Add Images to ${label}`}>
+      <Tooltip label={full ? imagesFullMessage(label) : ''}>
         <Button
           variant="none"
           id={id}
@@ -256,39 +256,37 @@ function Thumbnail({
           : 'ring-slate-200 dark:ring-slate-700'
       }`}
     >
-      <Tooltip label="Open Full Size">
-        <button
-          type="button"
-          data-thumb
-          disabled={!scope}
-          aria-label={shown.state === 'missing' ? `${name}, can't be shown` : name}
-          aria-roledescription={canEdit ? 'movable image' : undefined}
-          onClick={() => scope && void openImageWhole(scope, imageId)}
-          onKeyDown={onKeyDown}
-          {...dragProps}
-          className="flex h-full w-full cursor-pointer items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500 disabled:cursor-default"
-        >
-          {shown.state === 'shown' ? (
-            <img
-              src={shown.url}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover transition group-hover/tile:scale-[1.03] motion-reduce:transition-none"
-              draggable={false}
-            />
-          ) : shown.state === 'missing' ? (
-            <span aria-hidden className="text-slate-400">
-              <BrokenIcon />
-            </span>
-          ) : (
-            <span
-              aria-hidden
-              className="h-full w-full animate-pulse bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-700/60"
-            />
-          )}
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        data-thumb
+        disabled={!scope}
+        aria-label={shown.state === 'missing' ? `${name}, can't be shown` : name}
+        aria-roledescription={canEdit ? 'movable image' : undefined}
+        onClick={() => scope && void openImageWhole(scope, imageId)}
+        onKeyDown={onKeyDown}
+        {...dragProps}
+        className="flex h-full w-full cursor-pointer items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500 disabled:cursor-default"
+      >
+        {shown.state === 'shown' ? (
+          <img
+            src={shown.url}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover transition group-hover/tile:scale-[1.03] motion-reduce:transition-none"
+            draggable={false}
+          />
+        ) : shown.state === 'missing' ? (
+          <span aria-hidden className="text-slate-400">
+            <BrokenIcon />
+          </span>
+        ) : (
+          <span
+            aria-hidden
+            className="h-full w-full animate-pulse bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-700/60"
+          />
+        )}
+      </button>
       {canEdit ? (
         <>
           {dragProps ? (
@@ -300,16 +298,14 @@ function Thumbnail({
               <GripIcon />
             </span>
           ) : null}
-          <Tooltip label="Remove">
-            <button
-              type="button"
-              aria-label={removeName}
-              onClick={onRemove}
-              className={`${CORNER} right-1 top-1 cursor-pointer hover:bg-rose-600`}
-            >
-              <CloseIcon size={9} />
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            aria-label={removeName}
+            onClick={onRemove}
+            className={`${CORNER} right-1 top-1 cursor-pointer hover:bg-rose-600`}
+          >
+            <CloseIcon size={9} />
+          </button>
         </>
       ) : null}
     </li>

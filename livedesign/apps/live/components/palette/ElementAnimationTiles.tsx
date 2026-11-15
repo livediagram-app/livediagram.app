@@ -65,7 +65,6 @@ export function ConceptAnimTiles({
             <SizeButton
               key={v ?? 'none'}
               active={anim === v}
-              label={`${CONCEPT_LABEL[v ?? 'none']} Animation`}
               onClick={() => handleSet(v)}
               onPointerEnter={onMouseHover(() =>
                 ops.preview((el) => withConceptAnim(el, { anim: v })),

@@ -78,20 +78,18 @@ export function ColumnToolbar({
         ) : null}
       </div>
       {others.length > 0 ? (
-        <Tooltip label="Remove Column">
-          <button
-            type="button"
-            aria-label="Remove Column"
-            className="relative touch-target flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
-            onClick={() => {
-              onChange(removeColumn(setup, column.id), 'ColumnRemoved');
-              onClose(false);
-            }}
-          >
-            <ColumnOffIcon />
-            Remove
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="Remove Column"
+          className="relative touch-target flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
+          onClick={() => {
+            onChange(removeColumn(setup, column.id), 'ColumnRemoved');
+            onClose(false);
+          }}
+        >
+          <ColumnOffIcon />
+          Remove
+        </button>
       ) : null}
     </div>
   );

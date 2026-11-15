@@ -4,7 +4,6 @@
 // holding a 20px rounded square with a hairline border; picked, a brand ring; no colour, a white
 // square with a slash. Every colour picker draws its colours with it.
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
-import { Tooltip } from '@livehuddle/ui';
 import { isLightColor } from '@livehuddle/document';
 
 type Props = {
@@ -19,19 +18,17 @@ export const ColourSwatch = forwardRef<HTMLButtonElement, Props>(function Colour
   ref,
 ) {
   return (
-    <Tooltip label={label}>
-      <button
-        ref={ref}
-        type="button"
-        aria-label={label}
-        aria-pressed={picked}
-        data-colour-key=""
-        className={`group flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
-        {...button}
-      >
-        <SwatchChip colour={colour} none={none} picked={picked} />
-      </button>
-    </Tooltip>
+    <button
+      ref={ref}
+      type="button"
+      aria-label={label}
+      aria-pressed={picked}
+      data-colour-key=""
+      className={`group flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      {...button}
+    >
+      <SwatchChip colour={colour} none={none} picked={picked} />
+    </button>
   );
 });
 

@@ -2,7 +2,7 @@
 
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useState } from 'react';
-import { Tooltip, lucideGlyph } from '@livehuddle/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 import { lucideX } from '@liveworkspace/icons/lucide';
 import { EmptyCanvasArt } from './EmptyCanvasArt';
 import {
@@ -41,19 +41,17 @@ export function EmptyCanvasBanner({
         aria-label={`${tabName} is empty`}
         className="pointer-events-auto relative flex w-full max-w-sm animate-fly-up-in flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-6 py-6 text-center shadow-lg shadow-slate-900/5 backdrop-blur phone:max-w-[18rem] phone:gap-2.5 phone:px-5 phone:py-5 dark:border-slate-700 dark:bg-slate-900/95"
       >
-        <Tooltip label="Close">
-          <button
-            type="button"
-            aria-label="Close"
-            className="touch-target absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            onClick={() => {
-              dismissEmptyCard(tabId);
-              setClosed(true);
-            }}
-          >
-            <CloseGlyph />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="Close"
+          className="touch-target absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          onClick={() => {
+            dismissEmptyCard(tabId);
+            setClosed(true);
+          }}
+        >
+          <CloseGlyph />
+        </button>
         {/* A short screen (a phone on its side, 390px tall) drops the art, so the card clears the
             toolbars above and below it instead of sliding under the Palette strip. */}
         <div className="[@media(max-height:480px)]:hidden">

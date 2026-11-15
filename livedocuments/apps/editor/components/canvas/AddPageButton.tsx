@@ -1,7 +1,7 @@
 'use client';
 
 import { PAGE_GAP, type LaidOutPage } from '@livedocuments/document';
-import { PlusIcon, Tooltip } from '@livedocuments/ui';
+import { PlusIcon } from '@livedocuments/ui';
 import { addAnotherLabel } from '@/lib/add-page-labels';
 
 // The + on screen (h-9) and the least room it keeps from the last page, px.
@@ -45,17 +45,15 @@ export function AddPageButton({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <Tooltip label={another}>
-        <button
-          type="button"
-          aria-label={another}
-          data-add-page-like=""
-          onClick={() => onAddLike(last.id)}
-          className={`${ROUND} h-9 w-9 ${IDLE}`}
-        >
-          <PlusIcon />
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        aria-label={another}
+        data-add-page-like=""
+        onClick={() => onAddLike(last.id)}
+        className={`${ROUND} h-9 w-9 ${IDLE}`}
+      >
+        <PlusIcon />
+      </button>
     </div>
   );
 }

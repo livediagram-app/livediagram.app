@@ -10,7 +10,7 @@
 import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedesign/design';
 import { layoutCatalogueFor, type PageLayoutId } from '@livedesign/templates';
-import { CloseIcon, lucideGlyph, Tooltip } from '@livedesign/ui';
+import { CloseIcon, lucideGlyph } from '@livedesign/ui';
 import { DashedAddButton } from '@liveworkspace/workbench/components/primitives/DashedAddButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { layoutCardSize } from './page-layout-card';
@@ -114,16 +114,14 @@ export function EmptyPageLayouts({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <Tooltip label="Hide">
-              <button
-                type="button"
-                aria-label="Hide"
-                onClick={(e) => hideToCanvas(e.currentTarget, onHide)}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                <CloseIcon />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label="Hide"
+              onClick={(e) => hideToCanvas(e.currentTarget, onHide)}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              <CloseIcon />
+            </button>
           </div>
         </div>
         <div className="relative min-h-0">

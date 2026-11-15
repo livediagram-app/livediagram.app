@@ -128,17 +128,15 @@ function HiddenValueRow({
             {value.def ? (
               <CopyToField value={value} def={value.def} label={label} ctx={ctx} />
             ) : null}
-            <Tooltip label="Remove">
-              <Button
-                variant="ghost"
-                size="xs"
-                className="size-8 px-0 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
-                aria-label={`Remove ${label}`}
-                onClick={remove}
-              >
-                <TrashIcon size={15} aria-hidden />
-              </Button>
-            </Tooltip>
+            <Button
+              variant="ghost"
+              size="xs"
+              className="size-8 px-0 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
+              aria-label={`Remove ${label}`}
+              onClick={remove}
+            >
+              <TrashIcon size={15} aria-hidden />
+            </Button>
           </span>
         ) : null}
       </div>

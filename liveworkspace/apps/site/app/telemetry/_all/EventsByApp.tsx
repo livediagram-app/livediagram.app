@@ -94,23 +94,22 @@ export function EventsByApp({
         <>
           <div role="group" aria-label="Lines" className="mt-3 flex flex-wrap gap-1.5">
             {series.map((s) => (
-              <Tooltip key={s.key} label={hidden.has(s.key) ? 'Show Line' : 'Hide Line'}>
-                <button
-                  type="button"
-                  aria-pressed={!hidden.has(s.key)}
-                  onClick={() => toggle(s.key)}
-                  {...emphasisProps(emphasis, s.key)}
-                  className={
-                    'relative flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ' +
-                    (hidden.has(s.key)
-                      ? 'border-slate-200 text-slate-400 line-through dark:border-slate-700 dark:text-slate-500'
-                      : 'border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600')
-                  }
-                >
-                  <Swatch series={s} />
-                  {s.label}
-                </button>
-              </Tooltip>
+              <button
+                key={s.key}
+                type="button"
+                aria-pressed={!hidden.has(s.key)}
+                onClick={() => toggle(s.key)}
+                {...emphasisProps(emphasis, s.key)}
+                className={
+                  'relative flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ' +
+                  (hidden.has(s.key)
+                    ? 'border-slate-200 text-slate-400 line-through dark:border-slate-700 dark:text-slate-500'
+                    : 'border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600')
+                }
+              >
+                <Swatch series={s} />
+                {s.label}
+              </button>
             ))}
           </div>
           <div className="mt-4">
@@ -158,18 +157,16 @@ export function EventsByApp({
                 row={r}
                 against={against}
                 name={
-                  <Tooltip label="Open Its Dashboard">
-                    <button
-                      type="button"
-                      data-app={r.key}
-                      onClick={() => onPickApp(r.key as TelemetryApp)}
-                      aria-label={`Open ${r.key}'s dashboard`}
-                      className="relative flex cursor-pointer items-center gap-2 rounded font-medium text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300"
-                    >
-                      <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-brand-500" />
-                      {r.key}
-                    </button>
-                  </Tooltip>
+                  <button
+                    type="button"
+                    data-app={r.key}
+                    onClick={() => onPickApp(r.key as TelemetryApp)}
+                    aria-label={`Open ${r.key}'s dashboard`}
+                    className="relative flex cursor-pointer items-center gap-2 rounded font-medium text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300"
+                  >
+                    <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-brand-500" />
+                    {r.key}
+                  </button>
                 }
               />
             ))}

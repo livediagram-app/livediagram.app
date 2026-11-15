@@ -29,7 +29,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Term          | Identifier                                                 | Meaning                                                            |
 | ------------- | ---------------------------------------------------------- | ------------------------------------------------------------------ |
 | Hint          | `HintKind` (`'tooltip' \| 'hover-card' \| 'preview'`)      | Floating, non-interactive content shown for hover or focus         |
-| Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 500 ms or at once on keyboard focus      |
+| Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 800 ms or at once on keyboard focus      |
 | Hover card    | `HoverCard`, `data-hint="hover-card"`                      | Bold title over a description, at once                             |
 | Preview       | `data-hint="preview"`                                      | A picture of what the control opens, after 600 ms                  |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
@@ -102,6 +102,12 @@ which, for a tooltip or a preview, stamps that kind's warm-up clock.
 - **I4:** Escape never calls `stopPropagation` or `preventDefault`.
 - **I5:** a hint never mounts anything into the trigger's layout; its surface is portalled to `document.body`.
 - **I6:** a touch tap (no long press) never opens a hint and never has its click suppressed.
+- **I7:** a tooltip never opens from touch (long press included), never opens while a pointer button is held
+  (`buttons !== 0` on enter), and its surface is `pointer-events: none`, so it never takes a press; hover cards and
+  previews keep the hoverable surface and the grace.
+- **I8:** a Tooltip whose trigger's visible text already contains its label, with nothing in the trigger clipped
+  (`scrollWidth`/`scrollHeight` past the box), never opens (`showsOwnName` in `hint/trigger-text.ts`, asked through
+  `useHint`'s `quiet`).
 
 ## Interfaces and contracts
 
@@ -239,7 +245,7 @@ surface.
 
 | Rule (spec)                                 | Test                                                               |
 | ------------------------------------------- | ------------------------------------------------------------------ |
-| Tooltip opens after 500 ms hover            | `Tooltip.test.tsx` (fake timers); e2e `hints.spec.ts` palette tile |
+| Tooltip opens after 800 ms hover            | `Tooltip.test.tsx` (fake timers); e2e `hints.spec.ts` palette tile |
 | Tooltip opens at once on keyboard focus     | `Tooltip.test.tsx`; e2e palette tile via Tab                       |
 | Mouse focus opens nothing                   | `useHint.test.tsx`                                                 |
 | Warm-up                                     | `hint-registry.test.ts`; `Tooltip.test.tsx` second trigger         |
@@ -260,7 +266,7 @@ surface.
 
 | Constant                  | Value | Provenance                                                                 | Safe range |
 | ------------------------- | ----- | -------------------------------------------------------------------------- | ---------- |
-| `TOOLTIP_OPEN_DELAY_MS`   | 500   | Spec                                                                       | 300–1000   |
+| `TOOLTIP_OPEN_DELAY_MS`   | 800   | Spec                                                                       | 300–1000   |
 | `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                                       | 300–1000   |
 | `PREVIEW_OPEN_DELAY_MS`   | 600   | Spec                                                                       | 400–1000   |
 | `PREVIEW_WARMUP_MS`       | 500   | Spec                                                                       | 300–800    |

@@ -39,3 +39,23 @@ export function accessibleNameOf(el: Element): string {
 export function nameSaysLabel(name: string, label: string): boolean {
   return name.toLowerCase().includes(squeeze(label).toLowerCase());
 }
+
+// Text cut short by CSS (an ellipsis, a clipped box) somewhere in the trigger: its tooltip carries the rest.
+function isClipped(el: Element): boolean {
+  for (const node of [el, ...Array.from(el.querySelectorAll('*'))]) {
+    const box = node as HTMLElement;
+    if (box.scrollWidth > box.clientWidth + 1 || box.scrollHeight > box.clientHeight + 1) {
+      if (box.clientWidth > 0 || box.clientHeight > 0) return true;
+    }
+  }
+  return false;
+}
+
+// A trigger whose visible text already says the label, uncut, needs no tooltip: it would only cover what sits
+// beside it (spec "When a control gets no tooltip").
+export function showsOwnName(el: Element, label: string): boolean {
+  const rendered = (el as HTMLElement).innerText;
+  const text = squeeze(typeof rendered === 'string' ? rendered : visibleTextContent(el));
+  if (text === '' || !nameSaysLabel(text, label)) return false;
+  return !isClipped(el);
+}

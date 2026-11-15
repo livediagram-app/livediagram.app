@@ -578,7 +578,7 @@ A card's history marks an agent's changes with the same sparkle, worded by what 
   time), then a reply composer (**Reply…**), whose bottom row holds **Resolve** (quiet, secondary) to the left of
   **Reply** (primary, on the right), the same height, with no row of its own between the comments and the composer.
   Resolve shows only to those who may resolve, who are those who may reply. With text typed in the box, Resolve
-  reads **Comment and Resolve** (tooltip "Post your reply, then resolve the thread"): it posts the text as a reply and
+  reads **Comment and Resolve**: it posts the text as a reply and
   then resolves the thread, as one action, announced "Reply posted, thread resolved". If the reply fails nothing is
   resolved and the draft stays; with a blank box it is plain Resolve. Your own comment offers **Edit**
   (in place: the text becomes a field, **Save** and **Cancel**, ⌘/Ctrl Enter saves, Escape cancels) and **Delete**; an

@@ -39,16 +39,14 @@ export function WayfindingHeader({
         <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{line}</p>
       </div>
       {onClose ? (
-        <Tooltip label="Close">
-          <button
-            type="button"
-            aria-label={`Close ${title}`}
-            onClick={onClose}
-            className="-mr-1.5 -mt-1 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-sky-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          >
-            <CloseIcon />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label={`Close ${title}`}
+          onClick={onClose}
+          className="-mr-1.5 -mt-1 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-sky-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        >
+          <CloseIcon />
+        </button>
       ) : null}
     </div>
   );

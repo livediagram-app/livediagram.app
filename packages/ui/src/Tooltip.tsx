@@ -2,7 +2,7 @@
 
 import { useEffect, type ReactElement } from 'react';
 import { HintSurface } from './hint/HintSurface';
-import { accessibleNameOf, nameSaysLabel } from './hint/trigger-text';
+import { accessibleNameOf, nameSaysLabel, showsOwnName } from './hint/trigger-text';
 import { useHint } from './hint/useHint';
 
 export type TooltipProps = {
@@ -11,14 +11,16 @@ export type TooltipProps = {
   children: ReactElement;
 };
 
-// A tooltip: the control's name, after a 500 ms hover or at once on keyboard
-// focus (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md). Never the only carrier of
+// A tooltip: the control's name, after an 800 ms hover or at once on keyboard
+// focus, never on touch, and never on a control that already shows its name uncut (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md). Never the only carrier of
 // the name; the control keeps its own accessible name and this repeats it.
 //
 // The wrapper is `display: contents`, so the control keeps its place in any
 // grid or flex layout and callers need no layout props.
 export function Tooltip({ label, children }: TooltipProps) {
-  const { open, attach, anchor, triggerProps, surfaceProps } = useHint('tooltip');
+  const { open, attach, anchor, triggerProps, surfaceProps } = useHint('tooltip', {
+    quiet: (el) => showsOwnName(el, label),
+  });
 
   useEffect(() => {
     if (!open) return;

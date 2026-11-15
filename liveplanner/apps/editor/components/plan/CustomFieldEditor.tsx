@@ -193,7 +193,6 @@ export function CustomFieldEditor({
       return (
         <PhoneField
           id={id}
-          label={field.label}
           value={text}
           disabled={disabled}
           onSave={(v) => void onSave(v)}

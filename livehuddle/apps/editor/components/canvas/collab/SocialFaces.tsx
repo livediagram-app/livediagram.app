@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { CountBadge, Glyph, Tooltip } from '@livehuddle/ui';
+import { CountBadge, Glyph } from '@livehuddle/ui';
 import { drawnRect } from '@livehuddle/avatar/seats';
 import { facingView } from '@livehuddle/avatar/facing';
 import {
@@ -263,28 +263,26 @@ function NoticeBoardFace({ element, walking }: { element: ShapeElement; walking:
         ) : null}
       </svg>
       {walking ? <ReaderHit label="Read the Notice Board" onOpen={() => setReading(true)} /> : null}
-      <Tooltip label="Open Notes">
-        <button
-          type="button"
-          className={`${PILL} -top-[14px]`}
-          aria-label={`Open Notes, ${notes.length} pinned`}
-          aria-expanded={anchor !== null}
-          {...pieceControlProps}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (walking) {
-              setReading(true);
-              return;
-            }
-            const at = e.currentTarget;
-            setAnchor((v) => (v ? null : at));
-          }}
-        >
-          <PinGlyph />
-          Notes
-          {notes.length > 0 ? <CountBadge count={notes.length} className="-my-1" /> : null}
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        className={`${PILL} -top-[14px]`}
+        aria-label={`Open Notes, ${notes.length} pinned`}
+        aria-expanded={anchor !== null}
+        {...pieceControlProps}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (walking) {
+            setReading(true);
+            return;
+          }
+          const at = e.currentTarget;
+          setAnchor((v) => (v ? null : at));
+        }}
+      >
+        <PinGlyph />
+        Notes
+        {notes.length > 0 ? <CountBadge count={notes.length} className="-my-1" /> : null}
+      </button>
       {anchor ? (
         <NoticeBoardPopover element={element} anchor={anchor} onClose={() => setAnchor(null)} />
       ) : null}
@@ -457,23 +455,21 @@ function JukeboxFace({ element }: { element: ShapeElement }) {
         : 'Unmute';
   return (
     <Overlay element={element}>
-      <Tooltip label={label}>
-        <button
-          type="button"
-          className={`${PILL} top-[calc(100%+3px)]`}
-          aria-pressed={listening === 'on'}
-          data-piece-main=""
-          {...pieceControlProps}
-          onClick={(e) => {
-            e.stopPropagation();
-            // Applied inside this press: the gesture a browser needs before it lets a page play sound.
-            toggleJukeboxListening();
-          }}
-        >
-          <span aria-hidden>{listening === 'on' && !failed ? '♪' : '▶'}</span>
-          {label}
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        className={`${PILL} top-[calc(100%+3px)]`}
+        aria-pressed={listening === 'on'}
+        data-piece-main=""
+        {...pieceControlProps}
+        onClick={(e) => {
+          e.stopPropagation();
+          // Applied inside this press: the gesture a browser needs before it lets a page play sound.
+          toggleJukeboxListening();
+        }}
+      >
+        <span aria-hidden>{listening === 'on' && !failed ? '♪' : '▶'}</span>
+        {label}
+      </button>
     </Overlay>
   );
 }

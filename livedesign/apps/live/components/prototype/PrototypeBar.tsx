@@ -9,7 +9,7 @@ import {
   lucidePlay,
   lucideX,
 } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livedesign/ui';
+import { lucideGlyph } from '@livedesign/ui';
 
 const PlayIcon = lucideGlyph(lucidePlay, 14);
 const PrevIcon = lucideGlyph(lucideChevronLeft, 18);
@@ -103,28 +103,24 @@ export function PrototypeBar({
         <span className="shrink-0 tabular-nums text-slate-600 dark:text-slate-300">{place}</span>
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-1">
-        <Tooltip label="Previous screen">
-          <button
-            type="button"
-            aria-label="Previous screen"
-            className={ICON_BTN}
-            disabled={atStart}
-            onClick={() => onStep(-1)}
-          >
-            <PrevIcon />
-          </button>
-        </Tooltip>
-        <Tooltip label="Next screen">
-          <button
-            type="button"
-            aria-label="Next screen"
-            className={ICON_BTN}
-            disabled={atEnd}
-            onClick={() => onStep(1)}
-          >
-            <NextIcon />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="Previous screen"
+          className={ICON_BTN}
+          disabled={atStart}
+          onClick={() => onStep(-1)}
+        >
+          <PrevIcon />
+        </button>
+        <button
+          type="button"
+          aria-label="Next screen"
+          className={ICON_BTN}
+          disabled={atEnd}
+          onClick={() => onStep(1)}
+        >
+          <NextIcon />
+        </button>
         {copyLink ? (
           <button
             type="button"
@@ -142,11 +138,9 @@ export function PrototypeBar({
           </button>
         ) : null}
         <span aria-hidden className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-700" />
-        <Tooltip label="Close prototype">
-          <button type="button" aria-label="Close prototype" className={ICON_BTN} onClick={onClose}>
-            <CloseIcon />
-          </button>
-        </Tooltip>
+        <button type="button" aria-label="Close prototype" className={ICON_BTN} onClick={onClose}>
+          <CloseIcon />
+        </button>
       </span>
     </div>
   );

@@ -123,19 +123,17 @@ export function FilterSearchBox({
             <span className="font-medium">{chip.field}:</span>
             <span className={`truncate ${compact ? 'max-w-[9rem]' : ''}`}>{chip.value}</span>
             {onRemoveChip ? (
-              <Tooltip label={`Remove ${chip.field}: ${chip.value}`}>
-                <button
-                  type="button"
-                  aria-label={`Remove ${chip.field}: ${chip.value}`}
-                  className={`flex h-4 w-4 cursor-pointer items-center justify-center rounded-full transition ${tone ? 'hover:bg-black/10 dark:hover:bg-white/15' : 'hover:bg-brand-100 dark:hover:bg-brand-500/20'}`}
-                  onClick={() => {
-                    onRemoveChip(i);
-                    input.current?.focus();
-                  }}
-                >
-                  <CloseIcon size={9} />
-                </button>
-              </Tooltip>
+              <button
+                type="button"
+                aria-label={`Remove ${chip.field}: ${chip.value}`}
+                className={`flex h-4 w-4 cursor-pointer items-center justify-center rounded-full transition ${tone ? 'hover:bg-black/10 dark:hover:bg-white/15' : 'hover:bg-brand-100 dark:hover:bg-brand-500/20'}`}
+                onClick={() => {
+                  onRemoveChip(i);
+                  input.current?.focus();
+                }}
+              >
+                <CloseIcon size={9} />
+              </button>
             ) : null}
           </span>
         ))}
@@ -161,19 +159,17 @@ export function FilterSearchBox({
       </div>
       <div className={`flex shrink-0 items-center gap-0.5 ${compact ? '' : 'self-start'}`}>
         {filled && !readOnly ? (
-          <Tooltip label={clearLabel}>
-            <button
-              type="button"
-              aria-label={clearLabel}
-              className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-              onClick={() => {
-                onClear();
-                input.current?.focus();
-              }}
-            >
-              <CloseIcon size={12} />
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            aria-label={clearLabel}
+            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+            onClick={() => {
+              onClear();
+              input.current?.focus();
+            }}
+          >
+            <CloseIcon size={12} />
+          </button>
         ) : null}
         {readOnly ? (
           <Tooltip label={readOnlyLabel}>

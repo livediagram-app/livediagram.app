@@ -7,7 +7,7 @@
 // It steps aside while that flyout is open (it holds the same settings), while a crop or transform is under way,
 // and on a phone.
 import { lucideSlidersHorizontal } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livedesign/ui';
+import { lucideGlyph } from '@livedesign/ui';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { setToolOption } from '@/lib/photo-editor/set-tool-option';
 import { fieldsFor, type OptionField } from '@/lib/photo-editor/tool-option-fields';
@@ -80,16 +80,14 @@ export function PhotoQuickPanel({
         <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100">
           {TOOL_NAMES[tool]}
         </span>
-        <Tooltip label="All Options">
-          <button
-            type="button"
-            aria-label="All Options"
-            onClick={() => toolFlyout.open()}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-          >
-            <MoreIcon />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="All Options"
+          onClick={() => toolFlyout.open()}
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+        >
+          <MoreIcon />
+        </button>
       </div>
       {tip ? <TipPreview size={tip.size} hardness={tip.hardness} small /> : null}
       {fields.map((f) => (

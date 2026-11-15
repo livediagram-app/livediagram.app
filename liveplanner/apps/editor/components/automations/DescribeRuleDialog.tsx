@@ -148,7 +148,6 @@ export function DescribeRuleDialog({
                 variant="secondary"
                 size="xs"
                 disabled={busy}
-                title={e.text}
                 onClick={() => {
                   setText(e.text);
                   setSaid(null);

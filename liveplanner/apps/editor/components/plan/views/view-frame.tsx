@@ -8,7 +8,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { PLAN_VIEW_TITLE_MAX, STATUS_PHASES, STATUS_PHASE_LABELS } from '@liveplanner/items';
 import type { PlanPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
-import { CountBadge, Tooltip } from '@liveplanner/ui';
+import { CountBadge } from '@liveplanner/ui';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '../menu-name-slot';
 import { BAND_CONTROLS_CLASS, BAND_HEADER_END, bandControlsProps } from '../band-controls';
 import { PLAN_HEADING_STYLE, planBoardFontStyle } from '@/lib/plan-font';
@@ -220,7 +220,7 @@ export function PhaseLegend({ palette }: { palette: PlanPalette }) {
 }
 
 // A small header control (the calendar's month steps, the Gantt's scale and window): a quiet text or icon button
-// that keeps its press from the canvas, named by a tooltip. `active` presses it (the Gantt's scale). It never shrinks
+// that keeps its press from the canvas; its words or chevron name it, so no tooltip. `active` presses it (the Gantt's scale). It never shrinks
 // under its words: in a narrow header (a phone) the controls scroll sideways instead, where a shrunk Today ran its
 // letters under the title.
 export function ViewStepButton({
@@ -237,26 +237,22 @@ export function ViewStepButton({
   children: React.ReactNode;
 }) {
   return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        aria-label={label}
-        aria-pressed={active || undefined}
-        className="flex h-6 min-w-6 shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md px-1.5 text-[11px] font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
-        style={
-          active
-            ? { color: palette.text, backgroundColor: palette.column }
-            : { color: palette.muted }
-        }
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          onPress();
-        }}
-      >
-        {children}
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={active || undefined}
+      className="flex h-6 min-w-6 shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md px-1.5 text-[11px] font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+      style={
+        active ? { color: palette.text, backgroundColor: palette.column } : { color: palette.muted }
+      }
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        onPress();
+      }}
+    >
+      {children}
+    </button>
   );
 }
 

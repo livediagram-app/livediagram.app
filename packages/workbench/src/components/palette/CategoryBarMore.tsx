@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
-import { EllipsisIcon, Tooltip } from '@liveworkspace/ui';
+import { EllipsisIcon } from '@liveworkspace/ui';
 import { MenuActionRow, MenuHeader, PortalMenu } from '../primitives/PortalMenu';
 
 // The category bar's More (docs/specs/007-editor/toolbar-layout.md "The strip's room"): the categories a strip too
@@ -43,38 +43,36 @@ export function CategoryBarMore({
   const lit = open || active;
   return (
     <>
-      <Tooltip label={MORE_CATEGORIES_LABEL}>
-        <button
-          ref={register}
-          type="button"
-          data-category-bar-button=""
-          data-category-bar-more=""
-          aria-label={MORE_CATEGORIES_LABEL}
-          aria-haspopup="menu"
-          aria-expanded={open}
-          onClick={(e) => (open ? setOpen(false) : show(e.currentTarget))}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') {
-              e.preventDefault();
-              show(e.currentTarget);
-              return;
-            }
-            onKeyDown?.(e);
-          }}
-          className={`relative flex h-9 w-9 shrink-0 cursor-pointer touch-target-y items-center justify-center rounded-lg transition phone:w-11 ${
-            lit
-              ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-          }`}
-        >
-          <EllipsisIcon size={18} />
-          {/* The open category's marker, as under a category's own button. */}
-          <span
-            aria-hidden
-            className={`absolute inset-x-2.5 -bottom-0.5 h-0.5 rounded-full bg-brand-500 transition-opacity duration-micro ${active ? 'opacity-100' : 'opacity-0'}`}
-          />
-        </button>
-      </Tooltip>
+      <button
+        ref={register}
+        type="button"
+        data-category-bar-button=""
+        data-category-bar-more=""
+        aria-label={MORE_CATEGORIES_LABEL}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={(e) => (open ? setOpen(false) : show(e.currentTarget))}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            show(e.currentTarget);
+            return;
+          }
+          onKeyDown?.(e);
+        }}
+        className={`relative flex h-9 w-9 shrink-0 cursor-pointer touch-target-y items-center justify-center rounded-lg transition phone:w-11 ${
+          lit
+            ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+        }`}
+      >
+        <EllipsisIcon size={18} />
+        {/* The open category's marker, as under a category's own button. */}
+        <span
+          aria-hidden
+          className={`absolute inset-x-2.5 -bottom-0.5 h-0.5 rounded-full bg-brand-500 transition-opacity duration-micro ${active ? 'opacity-100' : 'opacity-0'}`}
+        />
+      </button>
       {open ? (
         <PortalMenu
           anchor={anchor}

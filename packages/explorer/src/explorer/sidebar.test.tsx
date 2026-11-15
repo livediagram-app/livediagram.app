@@ -9,22 +9,33 @@ import { createFakeIndex } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { Explorer } from './Explorer';
 import { EXPANDED_KEY, createExpansion, rowsAbove } from './sidebar/expansion';
+import { spaceOfView } from './Sidebar';
 
-const folder = (id: string, name: string, parentId: string | null = null): Folder => ({
+const folder = (
+  id: string,
+  name: string,
+  parentId: string | null = null,
+  teamId: string | null = null,
+): Folder => ({
   id,
   name,
   parentId,
-  teamId: null,
+  teamId,
   ownerId: 'user_me',
   createdAt: 1,
   updatedAt: 1,
 });
 
-function page(index: ReturnType<typeof createFakeIndex>, view: ExplorerView = { kind: 'all' }) {
+function page(
+  index: ReturnType<typeof createFakeIndex>,
+  view: ExplorerView = { kind: 'all' },
+  teams?: { id: string; name: string }[],
+) {
   const onNavigate = vi.fn();
   render(
     <Explorer
       app="liveplanner"
+      teams={teams}
       client={index.client}
       view={view}
       onNavigate={onNavigate}
@@ -143,6 +154,53 @@ describe('expansion', () => {
     expect(seen).not.toHaveBeenCalled();
     store.expand('x', 'y');
     expect([...store.get()]).toEqual(['my-work', 'x', 'y']);
+  });
+
+  it("opens one space at a time, keeping the view's space and every folder fold", () => {
+    const store = createExpansion('test-key-spaces');
+    store.expand('my-work', 'team:A', 'this-browser', 'f1', 'local:l1', 'library');
+    store.openSpace('team:B', 'team:A');
+    expect(new Set(store.get())).toEqual(
+      new Set(['team:A', 'team:B', 'f1', 'local:l1', 'library']),
+    );
+    store.openSpace('my-work', null);
+    expect(new Set(store.get())).toEqual(new Set(['my-work', 'f1', 'local:l1', 'library']));
+  });
+
+  it('names the space holding each view', () => {
+    const byId = new Map([
+      ['a', { id: 'a', parentId: null, teamId: 'T1' }],
+      ['p', { id: 'p', parentId: null, teamId: null }],
+    ]);
+    expect(spaceOfView({ kind: 'all' }, byId)).toBe('my-work');
+    expect(spaceOfView({ kind: 'folder', id: 'p' }, byId)).toBe('my-work');
+    expect(spaceOfView({ kind: 'team', id: 'T1', folderId: 'a' }, byId)).toBe('team:T1');
+    expect(spaceOfView({ kind: 'offline' }, byId)).toBe('this-browser');
+    expect(spaceOfView({ kind: 'home' }, byId)).toBeNull();
+  });
+
+  it('folds the other spaces when one opens, but not the space being viewed', async () => {
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(['my-work']));
+    const index = createFakeIndex({
+      folders: [
+        folder('f1', 'Projects'),
+        folder('t1', 'Team Root', null, 'T1'),
+        folder('t2', 'Other Root', null, 'T2'),
+      ],
+    });
+    page(index, { kind: 'folder', id: 'f1' }, [
+      { id: 'T1', name: 'Alpha' },
+      { id: 'T2', name: 'Beta' },
+    ]);
+    await waitFor(() => expect(row('My Work').getAttribute('aria-expanded')).toBe('true'));
+    fireEvent.click(within(row('Alpha')).getByRole('button', { name: 'Expand Alpha' }));
+    await waitFor(() => expect(row('Alpha').getAttribute('aria-expanded')).toBe('true'));
+    // My Work holds the folder on screen, so it stays open beside Alpha for a drag between them.
+    expect(row('My Work').getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(within(row('Beta')).getByRole('button', { name: 'Expand Beta' }));
+    await waitFor(() => expect(row('Beta').getAttribute('aria-expanded')).toBe('true'));
+    expect(row('Alpha').getAttribute('aria-expanded')).toBe('false');
+    expect(row('My Work').getAttribute('aria-expanded')).toBe('true');
   });
 });
 

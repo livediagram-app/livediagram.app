@@ -7,7 +7,7 @@
 // Browser and no-plan states. Mounted only while the tab is picked, so history is read only then.
 
 import { useMemo, useState, type ReactNode } from 'react';
-import { CompactEmptyState, Tooltip, TrashIcon, lucideGlyph } from '@liveplanner/ui';
+import { CompactEmptyState, TrashIcon, lucideGlyph } from '@liveplanner/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import {
   lucideEraser,
@@ -171,16 +171,14 @@ function ActivityRun({
             </span>
           )}
           {aiWords ? (
-            <Tooltip label={aiWords}>
-              <span
-                data-activity-ai=""
-                role="img"
-                aria-label={aiWords}
-                className="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
-              >
-                <AiIcon aria-hidden />
-              </span>
-            </Tooltip>
+            <span
+              data-activity-ai=""
+              role="img"
+              aria-label={aiWords}
+              className="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+            >
+              <AiIcon aria-hidden />
+            </span>
           ) : null}
           <span className="flex-1" />
           {single ? <TimelineTime at={newest} now={now} clock={clock} /> : null}

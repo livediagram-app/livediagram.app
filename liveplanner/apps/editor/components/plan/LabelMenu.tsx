@@ -6,7 +6,7 @@
 // the field, so typing carries on after a pick.
 import type { CSSProperties } from 'react';
 import { ITEM_LABELS_MAX, type LabelUse } from '@liveplanner/items';
-import { PlusIcon, Tooltip } from '@liveplanner/ui';
+import { PlusIcon } from '@liveplanner/ui';
 import { labelColour } from './label-colour';
 
 // The chip's tint and ink (ChipField's: a 12% tint, inked 70% toward the page's ink), a deeper tint for its badge,
@@ -92,32 +92,31 @@ export function LabelMenu({
           className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto p-0.5"
         >
           {matches.map((u, i) => (
-            <Tooltip key={u.label} label={`On ${cards(u.count)}`}>
-              <div
-                id={`${listId}-${i}`}
-                role="option"
-                aria-selected={i === active}
-                aria-label={`${u.label}, on ${cards(u.count)}`}
-                onPointerMove={() => i !== active && onHover(i)}
-                onClick={() => onChoose(i)}
-                style={{ '--chip': labelColour(u.label) } as CSSProperties}
-                className={`inline-flex max-w-full cursor-pointer items-center gap-1.5 rounded-full py-0.5 pl-2.5 pr-1 text-[12px] font-medium transition max-sm:py-1 max-sm:text-[14px] ${CHIP} ${
-                  i === active
-                    ? CHIP_ACTIVE
-                    : 'hover:bg-[color-mix(in_srgb,var(--chip)_18%,transparent)]'
-                }`}
+            <div
+              key={u.label}
+              id={`${listId}-${i}`}
+              role="option"
+              aria-selected={i === active}
+              aria-label={`${u.label}, on ${cards(u.count)}`}
+              onPointerMove={() => i !== active && onHover(i)}
+              onClick={() => onChoose(i)}
+              style={{ '--chip': labelColour(u.label) } as CSSProperties}
+              className={`inline-flex max-w-full cursor-pointer items-center gap-1.5 rounded-full py-0.5 pl-2.5 pr-1 text-[12px] font-medium transition max-sm:py-1 max-sm:text-[14px] ${CHIP} ${
+                i === active
+                  ? CHIP_ACTIVE
+                  : 'hover:bg-[color-mix(in_srgb,var(--chip)_18%,transparent)]'
+              }`}
+            >
+              <span className="truncate">
+                <Highlighted label={u.label} query={query} />
+              </span>
+              <span
+                aria-hidden
+                className={`min-w-[1.25rem] rounded-full px-1.5 text-center text-[10.5px] font-semibold tabular-nums leading-[1.125rem] ${BADGE}`}
               >
-                <span className="truncate">
-                  <Highlighted label={u.label} query={query} />
-                </span>
-                <span
-                  aria-hidden
-                  className={`min-w-[1.25rem] rounded-full px-1.5 text-center text-[10.5px] font-semibold tabular-nums leading-[1.125rem] ${BADGE}`}
-                >
-                  {u.count}
-                </span>
-              </div>
-            </Tooltip>
+                {u.count}
+              </span>
+            </div>
           ))}
           {creatable ? (
             <div

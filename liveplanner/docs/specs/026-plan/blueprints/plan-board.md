@@ -113,8 +113,8 @@ lib/setup-dialog-store.ts  (app lib) which setup dialog is open (`openSetup(key,
 PlanColumnHeader.tsx     a column's head: colour bar, name, count, Collapse Column (`onCollapse`, absent on a phone and
                          in a slot), and the cog (PlanColumnPopover, whose toolbar has Collapse Column too, a
                          PanelLeftClose glyph after Move Left/Right; pressing it closes the popover, then collapses)
-CollapsedColumn.tsx      Collapse Column (spec "Collapse Column"): `CollapseColumnButton` (ChevronLeft, tooltip
-                         "Collapse Column", aria-label "Collapse Column, {Name}", aria-expanded, always shown at
+CollapsedColumn.tsx      Collapse Column (spec "Collapse Column"): `CollapseColumnButton` (ChevronLeft, no tooltip,
+                         aria-label "Collapse Column, {Name}", aria-expanded, always shown at
                          `opacity-70`, full on group hover or focus-visible); `CollapsedColumnHead` (sticky like a head:
                          colour bar over an "Expand Column" ChevronRight); `CollapsedColumnCell` (min-h-16, carrying
                          `data-plan-column`, `data-plan-strip`, `data-plan-status`, `data-plan-lane`, so
@@ -170,7 +170,7 @@ AddColumnPickerPopover.tsx the picker hung from + Add Column After (304px wide):
 PlanColumnPopover.tsx    a column's settings popover. On top a role=toolbar "Column actions" (bg-slate-50/70, hairline
                          under): Move Left / Move Right as one bordered h-8 segmented control of w-9 icon buttons
                          (`ToolbarButton`, each in the shared Tooltip, disabled at the ends), and at the end (justify-
-                         between) Remove: ColumnOffIcon + "Remove", aria-label and tooltip "Remove Column", rose hover;
+                         between) Remove: ColumnOffIcon + "Remove", aria-label "Remove Column" (no tooltip), rose hover;
                          only while another column remains. Below it: + Add Column After and Delete Status rows. While the picker is open it works out `missingBoardStatuses`
                          (setup, pickableStatuses(names, items, types), { items, types, boards: statusBoards }),
                          memoised on those, nothing while closed. A row or a matched name adds with part

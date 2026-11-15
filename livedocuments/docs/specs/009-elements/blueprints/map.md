@@ -178,7 +178,7 @@ no network call at render.
 ## Presentation and UX
 
 Dialog: `max-w-4xl`, preview `aspect-[2/1]` over the controls on phone widths (`sm:` side by side),
-shared `Dialog` chrome, Title Case labels, every control with a tooltip, pointer cursors on the
+shared `Dialog` chrome, Title Case labels, every control named (no tooltips: each chip and remove × is named by its text or row), pointer cursors on the
 preview's countries in Highlight mode and a crosshair in Place mode.
 
 ## Accessibility

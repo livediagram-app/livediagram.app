@@ -10,7 +10,7 @@ import {
   newFormPartId,
   type QuestionType,
 } from '@liveplanner/forms';
-import { ChevronDownIcon, PlusIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { ChevronDownIcon, PlusIcon, lucideGlyph } from '@liveplanner/ui';
 import { lucideSeparatorHorizontal } from '@liveworkspace/icons/lucide';
 import {
   addQuestion,
@@ -54,19 +54,17 @@ export function FormAddBar() {
           <PlusIcon size={16} />
           Add {QUESTION_TYPE_NAMES[nextType]}
         </button>
-        <Tooltip label="More Question Types">
-          <button
-            type="button"
-            aria-label="More Question Types"
-            aria-haspopup="dialog"
-            aria-expanded={open}
-            disabled={!canAddQuestion(b.form)}
-            onClick={() => setOpen(true)}
-            className={`${button} border-l border-slate-200 px-2.5 dark:border-slate-700`}
-          >
-            <ChevronDownIcon />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="More Question Types"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          disabled={!canAddQuestion(b.form)}
+          onClick={() => setOpen(true)}
+          className={`${button} border-l border-slate-200 px-2.5 dark:border-slate-700`}
+        >
+          <ChevronDownIcon />
+        </button>
         <span aria-hidden className="w-px bg-slate-200 dark:bg-slate-700" />
         <button
           type="button"

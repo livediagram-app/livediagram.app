@@ -5,7 +5,7 @@
 // settings as sliders; a change shows at once and commits once it rests. Opened by the `fx` mark or
 // the Effects menu.
 import { lucideTrash2 } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, Tooltip } from '@livedesign/ui';
+import { lucideGlyph } from '@livedesign/ui';
 import { setLayer, type LayerEffects, type PhotoLayer } from '@livedesign/photo-engine';
 import { standardGroup } from '@/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
@@ -114,25 +114,23 @@ export function PhotoEffectsEditor({
                 }
               />
               <span className="flex-1" />
-              <Tooltip label={`Remove ${NAMES[k]}`}>
-                <button
-                  type="button"
-                  aria-label={`Remove ${NAMES[k]}`}
-                  className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                  onClick={() => {
-                    const { [k]: _gone, ...rest } = fx;
-                    void _gone;
-                    s.commitStack(
-                      setLayer(s.photo, layer.id, {
-                        effects: Object.keys(rest).length ? rest : undefined,
-                      }),
-                      `Remove ${NAMES[k]}`,
-                    );
-                  }}
-                >
-                  <RemoveIcon />
-                </button>
-              </Tooltip>
+              <button
+                type="button"
+                aria-label={`Remove ${NAMES[k]}`}
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                onClick={() => {
+                  const { [k]: _gone, ...rest } = fx;
+                  void _gone;
+                  s.commitStack(
+                    setLayer(s.photo, layer.id, {
+                      effects: Object.keys(rest).length ? rest : undefined,
+                    }),
+                    `Remove ${NAMES[k]}`,
+                  );
+                }}
+              >
+                <RemoveIcon />
+              </button>
             </div>
             {NUMBERS[k].map((n) => (
               <OptionSlider

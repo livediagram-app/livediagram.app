@@ -314,16 +314,14 @@ export function LinkedCardField({
             </button>
           </Tooltip>
           {linked && onOpen ? (
-            <Tooltip label={openLabel}>
-              <button
-                type="button"
-                aria-label={openLabel}
-                onClick={() => onOpen(linked.id)}
-                className="mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                <ChevronRightIcon size={12} />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label={openLabel}
+              onClick={() => onOpen(linked.id)}
+              className="mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
+              <ChevronRightIcon size={12} />
+            </button>
           ) : null}
         </div>
       )}

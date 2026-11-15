@@ -321,7 +321,7 @@ laid out with it, holding ordinary canvas elements that move with it.
   element dragged into a drawing zone joins it; one whose centre stays inside but pokes out grows
   the zone.
 - **The zone bar**: a small bar under a zone's bottom edge while the zone or one of its elements
-  is selected: a **grip** (tooltip **Drag to Move**), then **In Line**, **Wrap Left**, **Wrap
+  is selected: a **grip** (named **Drag to Move**, no tooltip), then **In Line**, **Wrap Left**, **Wrap
   Right**, **Float**, then (In Line) **Align Left**, **Align Centre**, **Align Right**, then
   **Delete** (**Delete Drawing** for a drawing zone: the zone and its elements). The grip is a
   focus stop: with it focused, the arrow keys step the zone a block up (Up / Left) or down

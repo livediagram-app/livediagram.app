@@ -9,7 +9,7 @@ in code, copy and specs.
 
 | Concept        | Carries                                  | Opens                                                     | Interactive |
 | -------------- | ---------------------------------------- | --------------------------------------------------------- | ----------- |
-| **Tooltip**    | The control's name, and nothing else     | After a **500 ms** hover; **instantly** on keyboard focus | No          |
+| **Tooltip**    | The control's name, and nothing else     | After an **800 ms** hover; **instantly** on keyboard focus | No          |
 | **Hover card** | A bold title over a one-line description | **Instantly** on hover and on keyboard focus              | No          |
 | **Preview**    | A picture of what the control opens      | After a **600 ms** hover; **instantly** on keyboard focus | No          |
 | **Popover**    | Controls: menus, pickers, forms          | On click or tap                                           | Yes         |
@@ -31,10 +31,35 @@ A hint never holds a control. Anything someone has to press lives in a popover o
 
 A control has at most one hint. If a hover card is present, it carries the name too, as its title.
 
+### When a control gets no tooltip
+
+A tooltip costs something: it opens over the page, sometimes over the very control someone was reaching for next,
+and it says nothing a person who can see the control did not already know. A control gets one only when its name
+is not on screen **and** its glyph does not already say it. Never on:
+
+- **A control showing its own text**: a labelled button, a tab, a menu item, a chip, a row with its name, a link.
+  The text is the name; a tooltip repeating it only covers what sits next to it.
+- **A universal glyph**: close (an X), back, more (an ellipsis), a chevron that expands, collapses or steps
+  next and previous, a search field's magnifier, a drag handle, a checkbox or switch beside its label.
+- **A control whose context names it**: a colour swatch in a labelled colour row, a field's clear button,
+  the add button at the foot of a list titled above it.
+- **Something not pressable**, unless its text is cut short by an ellipsis (the tooltip then carries the full text).
+
+Keep one on an icon-only control whose glyph needs its name: editor tools, formatting buttons, view switches,
+palette tiles with no caption, an icon whose meaning is the product's own. Each removed tooltip leaves the
+control's `aria-label` in place; screen readers lose nothing.
+
+A guard backs this up: a Tooltip whose control already shows the label's words, not cut short, stays shut on
+hover and focus alike, so a tooltip left on a labelled control by mistake still never opens.
+
 ## Tooltip
 
-- **Opens after a 500 ms hover.** A pointer passing over a toolbar on its way somewhere else does not
-  light it up. A pointer resting on a control is asking what it is.
+- **Opens after an 800 ms hover.** A pointer passing over a toolbar on its way somewhere else, or pausing
+  briefly before a click, does not light it up. A pointer resting on a control is asking what it is.
+- **Never while a button is held.** A drag across a toolbar or a palette opens no tooltip on the way.
+- **Never takes a press.** A tooltip lets the pointer through: a click where it sits lands on the control
+  beneath it, never on the tooltip. Moving onto it is leaving the control, so it closes. Hover cards and
+  previews stay hoverable; a tooltip only repeats a name the control already carries (its `aria-label`).
 - **Warm-up.** Once a tooltip has opened, the next one opens at once while the pointer moves along a
   row of controls, for as long as it arrives within **500 ms** of the last tooltip closing. Scanning a
   toolbar reads each name without paying the wait each time.
@@ -122,8 +147,9 @@ These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.
 
 ## Touch
 
-Touch has no hover. A **long press** (500 ms, the editor's long-press length) on a control shows its
-hint when **no other label is visible**: an icon button with no text, a palette tile whose caption is
+Touch has no hover, so **a tooltip never shows on touch**, by tap or by long press: on a phone or tablet it can
+only get in the way of the next tap. A **long press** (500 ms, the editor's long-press length) on a control shows its
+hover card when **no other label is visible**: an icon button with no text, a palette tile whose caption is
 hidden. A control that shows its own text needs no hint on touch, and its long press is left alone.
 
 - The hint shows while the finger stays down and lingers **1.5 s** after it lifts.
