@@ -3,7 +3,7 @@
 // The type editor's Templates tab (docs/specs/026-plan/item-types.md "Editing a type": Templates): the type's card
 // templates listed beside the chosen one's editor (the list above it on a phone). Every edit is the draft's: Save
 // stores it with the rest of the type, Cancel drops it.
-import { useState } from 'react';
+import { useLayoutEffect, useState, type ReactElement } from 'react';
 import { CARD_TEMPLATES_MAX, type CardTemplate, type ItemTypeDef } from '@liveplanner/items';
 import { Button, CompactEmptyState, PlusIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideClipboardType } from '@liveworkspace/icons/lucide';
@@ -103,29 +103,33 @@ export function ItemTypeTemplates({
                     : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
                 }`}
               >
-                <Tooltip label={label}>
-                  <button
-                    type="button"
-                    aria-current={on ? 'true' : undefined}
-                    onClick={() => {
-                      setChosenId(t.id);
-                      setFreshId(null);
-                    }}
-                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                  >
-                    <span
-                      aria-hidden
-                      className={
-                        on
-                          ? 'text-brand-700 dark:text-brand-300'
-                          : 'text-slate-400 dark:text-slate-400'
-                      }
+                <ClippedTooltip label={label}>
+                  {(nameRef) => (
+                    <button
+                      type="button"
+                      aria-current={on ? 'true' : undefined}
+                      onClick={() => {
+                        setChosenId(t.id);
+                        setFreshId(null);
+                      }}
+                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                     >
-                      <TemplateGlyph />
-                    </span>
-                    <span className="truncate">{label}</span>
-                  </button>
-                </Tooltip>
+                      <span
+                        aria-hidden
+                        className={
+                          on
+                            ? 'text-brand-700 dark:text-brand-300'
+                            : 'text-slate-400 dark:text-slate-400'
+                        }
+                      >
+                        <TemplateGlyph />
+                      </span>
+                      <span ref={nameRef} className="truncate">
+                        {label}
+                      </span>
+                    </button>
+                  )}
+                </ClippedTooltip>
                 {canEdit ? (
                   <FieldMenu
                     label={label}
@@ -169,4 +173,28 @@ export function ItemTypeTemplates({
       </div>
     </div>
   );
+}
+
+// A row's name as a tooltip only while the row cuts it off: a name shown whole needs none. Measured again when the
+// name changes or the row is resized; the name is held by a callback ref, so a row redrawn with or without its
+// tooltip is measured afresh.
+function ClippedTooltip({
+  label,
+  children,
+}: {
+  label: string;
+  children: (nameRef: (el: HTMLSpanElement | null) => void) => ReactElement;
+}) {
+  const [name, setName] = useState<HTMLSpanElement | null>(null);
+  const [cut, setCut] = useState(false);
+  useLayoutEffect(() => {
+    if (!name) return;
+    const measure = () => setCut(name.scrollWidth > name.clientWidth + 1);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const watch = new ResizeObserver(measure);
+    watch.observe(name);
+    return () => watch.disconnect();
+  }, [name, label]);
+  return <Tooltip label={cut ? label : ''}>{children(setName)}</Tooltip>;
 }

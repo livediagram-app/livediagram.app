@@ -224,6 +224,26 @@ describe('the Templates tab', () => {
     ).toBeTruthy();
   });
 
+  it('gives a row its name as a tooltip only when the row cuts the name off', () => {
+    open({ ...BUG, templates: [REPORT] });
+    const row = () =>
+      within(screen.getByRole('list', { name: 'Templates' })).getByRole('button', {
+        name: 'Bug Report',
+      });
+    // jsdom lays nothing out, so the name fits: no tooltip wrapper.
+    expect(row().parentElement!.className).not.toBe('contents');
+    cleanup();
+    const wide = vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
+    const box = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(120);
+    try {
+      open({ ...BUG, templates: [REPORT] });
+      expect(row().parentElement!.className).toBe('contents');
+    } finally {
+      wide.mockRestore();
+      box.mockRestore();
+    }
+  });
+
   it('only reads for someone who may not change card types', () => {
     open({ ...BUG, templates: [REPORT] }, { canEdit: false });
     expect(screen.queryByRole('button', { name: 'New Template' })).toBeNull();

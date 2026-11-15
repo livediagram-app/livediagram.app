@@ -35,6 +35,7 @@ import {
   CloseIcon,
   DialogCloseButton,
   DuplicateIcon,
+  Tooltip,
   TrashIcon,
 } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -463,25 +464,30 @@ export function ItemTypeEditor({
       />
       <DialogFooter>
         <>
+          {/* On a narrow phone Delete and Duplicate show their icons alone (the word kept for screen readers, the
+              tooltip saying it), so the footer fits the sheet. */}
           {type ? (
-            <Button
-              variant="secondary"
-              // Duplicate Type, when there, sits beside it and ends the left group instead.
-              className={onDuplicate ? undefined : 'mr-auto'}
-              aria-haspopup="dialog"
-              aria-expanded={confirmingAt !== null}
-              onClick={(e) => setConfirmingAt(e.currentTarget)}
-            >
-              <TrashIcon size={14} />
-              {/* One word, so a phone's footer keeps each button on one line. */}
-              Delete
-            </Button>
+            <Tooltip label="Delete">
+              <Button
+                variant="secondary"
+                // Duplicate Type, when there, sits beside it and ends the left group instead.
+                className={onDuplicate ? undefined : 'mr-auto'}
+                aria-haspopup="dialog"
+                aria-expanded={confirmingAt !== null}
+                onClick={(e) => setConfirmingAt(e.currentTarget)}
+              >
+                <TrashIcon size={14} />
+                <span className="max-[420px]:sr-only">Delete</span>
+              </Button>
+            </Tooltip>
           ) : null}
           {type && onDuplicate ? (
-            <Button variant="secondary" className="mr-auto" onClick={onDuplicate}>
-              <DuplicateIcon size={14} />
-              Duplicate
-            </Button>
+            <Tooltip label="Duplicate">
+              <Button variant="secondary" className="mr-auto" onClick={onDuplicate}>
+                <DuplicateIcon size={14} />
+                <span className="max-[420px]:sr-only">Duplicate</span>
+              </Button>
+            </Tooltip>
           ) : null}
           {problem && draft.label ? (
             <span className="self-center text-[12px] text-rose-600 dark:text-rose-400">
