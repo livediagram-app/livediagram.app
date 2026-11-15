@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mainThreadTasks, type TraceEvent } from './trace-tasks';
+import { mainThreadTaskSpans, mainThreadTasks, type TraceEvent } from './trace-tasks';
 
 // docs/instructions/trace-a-canvas-gesture.md: a gesture's cost is its tasks on the renderer's main
 // thread, not the compositor's or the raster workers'.
@@ -72,5 +72,35 @@ describe("mainThreadTasks and the probe's own scripts", () => {
       child('FunctionCall', 100.5, 11),
     ];
     expect(mainThreadTasks(events)).toEqual([30, 12]);
+  });
+});
+
+// Without GPU raster the main thread waits inside a task for the compositor: the hosted runner's 158 ms drag task
+// held 38 ms of traced work (each product's canvas-performance.md "A gesture's task is judged on its work").
+describe('mainThreadTaskSpans', () => {
+  const step = (name: string, ts: number, dur: number): TraceEvent => ({
+    name,
+    ph: 'X',
+    pid: 1,
+    tid: 10,
+    ts: ts * 1000,
+    dur: dur * 1000,
+  });
+  const at = (ts: number, dur: number): TraceEvent => ({ ...task(1, 10, dur), ts: ts * 1000 });
+
+  it("reads a task's work as its outermost steps, leaving out the wait and what nests inside a step", () => {
+    const events = [
+      meta(1, 10, 'CrRendererMain'),
+      at(0, 158),
+      step('UpdateLayoutTree', 1, 29),
+      step('Layout', 30, 6),
+      step('FunctionCall', 36, 3),
+      step('V8.Execute', 36.5, 2),
+      at(200, 12),
+      step('FunctionCall', 200.5, 11),
+    ];
+    const spans = mainThreadTaskSpans(events);
+    expect(spans.map((t) => t.ms)).toEqual([158, 12]);
+    expect(spans.map((t) => Math.round(t.workMs * 10) / 10)).toEqual([38, 11]);
   });
 });

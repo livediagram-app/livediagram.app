@@ -385,6 +385,7 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
   interleaved (both builds served at once, runs alternating), a diagram stroke's release went from
   142-151 ms to 111-120 ms over four pairs, its restyle from 2,760 nodes and 41-43 ms to 246 nodes
   and 10-11 ms.
+
 - **Interleave A/B runs on a shared machine.** Measured one build after the other, whiteboard zoom at
   fit read about 5 ms worse with the plane; another session's test suite was running alongside
   (load average 17-26). Interleaved over five pairs the two builds could not be told apart, each
@@ -395,6 +396,62 @@ Measured 2026-10-14 on the reference board, local, calibrated 3.2x, against main
 - **The isometric rule** `:root:has([data-iso]) [data-floating-panel]` makes the browser re-check the
   root on each insertion and restyle the floating panels (ten times in one release); rewriting it
   without `:has` saved only 3-4 ms, so it stays.
+
+## A diagram stroke's release, round 8
+
+Measured 2026-11-14 on the reference board, local, calibrated 2.9-3.2x, against main at `ea335e2834`,
+with a CPU profile mapped through the build's source maps.
+
+- **Where the board stands locally.** The whole probe: 36 of 38 rows in budget; only the diagram
+  stroke is over (52-64 ms at fit, 52-58 ms at 100%). The nightly's other misses (drag, marquee, pan,
+  zoom, open) read in budget here, so they are the hosted runner's software raster (see livehuddle's
+  research notes, "The hosted runner").
+- **The release is script.** Its longest task is the `pointerup`: 42-48 ms of script, then 7 ms of
+  restyle (351 nodes), 6-7 ms of layout and 5 ms of pre-paint. No one function owns it. A release
+  holds about 8 ms in `useEdgeAwarePlacement`'s `getBoundingClientRect` (the frame's own layout,
+  pulled forward: moving it gains nothing, as round 7 found), about 8 ms of garbage collection,
+  about 5 ms of arrow geometry and endpoint spreading (already incremental), about 3 ms of label
+  backdrops, and React's render and commit.
+- **The label backdrops were read twice.** A redraw on a dark paper ran `labelBackdrops` over the
+  whole board up to four times: the 3:1 walk and the paper walk each read the stored board, and the
+  paper walk read the drawn board again when the 3:1 walk changed nothing. It is now kept per board
+  and paper. Unthrottled, on the 1,000-element board, both walks for one commit went from 4.9-6.8 ms
+  to 2.0-4.0 ms over three runs each.
+- **The probe cannot see that.** Interleaved over two pairs with the machine's load at about 25, the
+  stroke row read 51-73 ms on main and 51-66 ms with the change: the swing between runs of one build
+  is ten times what the change saves.
+- **On a quiet machine the stroke is in budget, on either build.** Interleaved over three more pairs
+  at a load of 3-15, both stroke rows read under 50 ms in 10 of 12 runs (main once 50 ms at 100%, the
+  change once 53 ms). The 52-64 ms of the first probe was the load, so the stroke needs nothing more
+  locally; what the nightly still reads over is the hosted runner.
+
+## Lifting the dragged element above the board, round 8
+
+Measured 2026-11-14 on the reference board's diagram tab, local, interleaved over two pairs, reading
+each traced drag's raster tasks and the main thread's rendering steps.
+
+- **Tried: a riding element painted above every other element while it moves** (`z-index` on each
+  node the ride writer shifts, with `will-change: translate`, put back on release; a plane carrying a
+  very large move left alone). Round 6 found promoting the dragged element alone doubled raster,
+  because whatever painted above it had to be composited too; lifting it to the top was meant to
+  remove that overlap.
+- **It saves little.** Raster over the drag went from 205-238 ms to 165-190 ms at fit and from
+  125-139 ms to 76-94 ms at 100%, but Layerize rose from 315-374 ms to 363-398 ms, and Paint stayed
+  at 96-141 ms. The longest task was under 50 ms on both builds. It also changes what a drag looks
+  like (the element passes over what was above it), so it was not shipped.
+- **What a drag frame paints is the arrows.** Of the paints in a diagram drag, 106 were arrows'
+  canvas-sized `<svg>` roots (each re-routing arrow repaints its own root) and 30 the full-screen
+  alignment-guide overlay; the dragged box itself rides an offset and paints nothing. The raster the
+  hosted runner waits on follows those, so the next lever is the re-routing arrows' and the guides'
+  paint, not the moved box's layer.
+- **Which of the two costs what** (each hidden by an injected style, two runs each): hiding the
+  alignment-guide overlay took Layerize from 376-397 ms to 235-271 ms and raster from 162-175 ms to
+  124-142 ms at fit; hiding every arrow took Layout from about 125 ms to 45-50 ms, Paint from about
+  110 ms to 41-55 ms and raster at fit to 87-105 ms. Hiding is only a bound: both have to be drawn.
+- **Tried: keeping the guide overlay's `<svg>` mounted through the gesture** instead of mounting it
+  each time a guide shows. Layerize fell about 8% (369-370 to 338-350 ms at fit), but raster at fit
+  rose from 158-164 ms to 218-225 ms; not kept. The cost is the lines being drawn, not the overlay
+  coming and going.
 
 ## Not tried
 

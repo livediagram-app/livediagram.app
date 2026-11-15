@@ -46,6 +46,27 @@ describe('evaluateBudget', () => {
     expect(evaluateBudget([m({ gesture: 'open', openMs: 3001 })])[0]!.pass).toBe(false);
   });
 
+  it('judges a traced run on the work in its longest task, not on waiting for the compositor', () => {
+    const [drag] = evaluateBudget([
+      m({ gesture: 'drag', longestTaskMs: 158, longestWorkMs: 38, medianFrameMs: 17 }),
+    ]);
+    expect(drag!.pass).toBe(true);
+    expect(drag!.rule).toBe('work in longest task ≤ 50 ms, median frame ≤ 33 ms');
+    expect(drag!.measured).toBe('38 ms (task 158 ms), 17 ms');
+    const [select] = evaluateBudget([
+      m({ gesture: 'select', longestTaskMs: 120, longestWorkMs: 101 }),
+    ]);
+    expect(select!.pass).toBe(false);
+  });
+
+  it('shows the whole task only when the wait was 10 ms or more', () => {
+    const shown = (task: number, work: number) =>
+      evaluateBudget([m({ gesture: 'pan', longestTaskMs: task, longestWorkMs: work })])[0]!
+        .measured;
+    expect(shown(49.5, 40)).toBe('40 ms');
+    expect(shown(50, 40)).toBe('40 ms (task 50 ms)');
+  });
+
   it("refuses a measurement without its row's metric", () => {
     expect(() => evaluateBudget([m({ gesture: 'drag', longestTaskMs: 10 })])).toThrow(
       'MissingMetric: drag',
@@ -90,6 +111,17 @@ describe('medianOfRuns', () => {
     );
     expect(medianOfRuns(runs)).toEqual(
       m({ gesture: 'drag', longestTaskMs: 41, medianFrameMs: 17 }),
+    );
+  });
+
+  it("reads the longest task's work as the median of the runs", () => {
+    const runs = [
+      [160, 38],
+      [120, 45],
+      [200, 30],
+    ].map(([t, w]) => m({ gesture: 'pan', longestTaskMs: t, longestWorkMs: w }));
+    expect(medianOfRuns(runs)).toEqual(
+      m({ gesture: 'pan', longestTaskMs: 160, longestWorkMs: 38 }),
     );
   });
 

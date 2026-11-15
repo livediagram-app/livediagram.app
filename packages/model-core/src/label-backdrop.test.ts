@@ -87,6 +87,18 @@ describe('labelBackdrops', () => {
       labelBackdrops([text('a', { label: '  ' }), text('b', { textColor: 'red' })], '#ffffff').size,
     ).toBe(0);
   });
+
+  it('answers a board once per canvas, and a new board afresh', () => {
+    const board = [panel('p', '#eef2ff'), text('a')];
+    const light = labelBackdrops(board, '#ffffff');
+    expect(labelBackdrops(board, '#ffffff')).toBe(light);
+    const dark = labelBackdrops(board, '#0f172a');
+    expect(dark).not.toBe(light);
+    expect(labelBackdrops(board, '#0f172a')).toBe(dark);
+    const next = [...board];
+    expect(labelBackdrops(next, '#ffffff')).not.toBe(light);
+    expect(labelBackdrops(next, '#ffffff')).toEqual(light);
+  });
 });
 
 describe('withReadableLabelInks', () => {

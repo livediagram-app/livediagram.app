@@ -57,20 +57,13 @@ async function openBoard<Tab extends string>(
   const ctx = await browser.newContext({ viewport: PROBE_VIEW, colorScheme: 'dark' });
   await settings.signIn(ctx, owner);
   await ctx.addInitScript(() => {
-    // The gesture rows read long tasks (`timed`); the open row reads long tasks and long animation
-    // frames together, from the very start, since long tasks alone miss a frame that only renders.
-    const w = window as unknown as {
-      __longTasks: { start: number; end: number }[];
-      __busy: { start: number; end: number }[];
-    };
-    w.__longTasks = [];
+    // The open row reads long tasks and long animation frames together, from the very start, since
+    // long tasks alone miss a frame that only renders. The gesture rows read traces.
+    const w = window as unknown as { __busy: { start: number; end: number }[] };
     w.__busy = [];
     new PerformanceObserver((list) => {
-      for (const e of list.getEntries()) {
-        const span = { start: e.startTime, end: e.startTime + e.duration };
-        w.__longTasks.push(span);
-        w.__busy.push(span);
-      }
+      for (const e of list.getEntries())
+        w.__busy.push({ start: e.startTime, end: e.startTime + e.duration });
     }).observe({ type: 'longtask', buffered: true });
     new PerformanceObserver((list) => {
       for (const e of list.getEntries())

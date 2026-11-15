@@ -10,6 +10,8 @@ const SELECT_TASK_MS = 100;
 const OPEN_INTERACTIVE_MS = 3000;
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D66.
 const IDLE_WORK_MS = 5;
+// canvas-performance.md "A gesture's task is judged on its work": a wait this long is shown beside the work.
+const WAIT_SHOWN_MS = 10;
 
 export type Gesture =
   | 'open'
@@ -28,6 +30,8 @@ export type Measurement<Tab extends string = string> = {
   zoom: 'fit' | '100%';
   gesture: Gesture;
   longestTaskMs: number;
+  /** The work in the run's longest task, without the time it sat blocked on the compositor (a traced run). */
+  longestWorkMs?: number;
   medianFrameMs?: number;
   idleWorkMs?: number;
   openMs?: number;
@@ -64,23 +68,36 @@ export function evaluateBudget<Tab extends string>(
 ): BudgetRow<Tab>[] {
   return measurements.map((m) => {
     const limits = RULES[m.gesture];
+    // A traced run is judged on the work in its longest task, not on waiting for the compositor.
+    const metricOf = (l: Limit): Metric | 'longestWorkMs' =>
+      l.metric === 'longestTaskMs' && m.longestWorkMs !== undefined ? 'longestWorkMs' : l.metric;
     const values = limits.map((l) => {
-      const v = m[l.metric];
+      const v = m[metricOf(l)];
       if (v === undefined) throw new Error(`MissingMetric: ${m.gesture}`);
       return v;
     });
     return {
       ...m,
-      rule: limits.map((l) => `${l.label} ≤ ${l.max} ms`).join(', '),
+      rule: limits
+        .map(
+          (l) =>
+            `${metricOf(l) === 'longestWorkMs' ? 'work in longest task' : l.label} ≤ ${l.max} ms`,
+        )
+        .join(', '),
       // Rounded up, so a value over its ceiling never reads as equal to it.
       // A task length of 0 means the page reported no task of 50 ms or more (the browser reports
       // none shorter), so it reads as under 50 ms.
       measured: values
-        .map((v, i) =>
-          limits[i]!.metric === 'longestTaskMs' && v === 0
+        .map((v, i) => {
+          const metric = metricOf(limits[i]!);
+          if (metric === 'longestWorkMs')
+            return m.longestTaskMs - v >= WAIT_SHOWN_MS
+              ? `${Math.ceil(v)} ms (task ${Math.ceil(m.longestTaskMs)} ms)`
+              : `${Math.ceil(v)} ms`;
+          return metric === 'longestTaskMs' && v === 0
             ? `< ${LONG_TASK_MS} ms`
-            : `${Math.ceil(v)} ms`,
-        )
+            : `${Math.ceil(v)} ms`;
+        })
         .join(', '),
       pass: limits.every((l, i) => values[i]! <= l.max),
     };
@@ -109,7 +126,7 @@ export function medianOfRuns<Tab extends string>(
   if (!first) throw new Error('NoRuns');
   if (runs.some((r) => r.tab !== first.tab || r.zoom !== first.zoom || r.gesture !== first.gesture))
     throw new Error('MixedRuns');
-  const metric = (key: 'medianFrameMs' | 'idleWorkMs' | 'openMs') => {
+  const metric = (key: 'longestWorkMs' | 'medianFrameMs' | 'idleWorkMs' | 'openMs') => {
     const values = runs.map((r) => r[key]).filter((v): v is number => v !== undefined);
     return values.length ? { [key]: median(values) } : {};
   };
@@ -118,6 +135,7 @@ export function medianOfRuns<Tab extends string>(
     zoom: first.zoom,
     gesture: first.gesture,
     longestTaskMs: median(runs.map((r) => r.longestTaskMs)),
+    ...metric('longestWorkMs'),
     ...metric('medianFrameMs'),
     ...metric('idleWorkMs'),
     ...metric('openMs'),

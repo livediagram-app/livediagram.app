@@ -17,8 +17,19 @@ export type TraceEvent = {
 // only does that is the probe's, not the board's: on a slow runner it read 20 ms a time.
 const isProbeScript = (e: TraceEvent) => e.name === 'EvaluateScript' && !e.args?.data?.url;
 
+/** One task of the renderer's main thread: how long it took, and how much of that the trace shows as work (its
+ *  outermost steps: script, style, layout, paint, compositing). The rest is time the thread sat blocked, which on a
+ *  machine without GPU raster is the wait for the compositor to finish (each product's
+ *  docs/specs/008-canvas/canvas-performance.md "A gesture's task is judged on its work"). */
+export type TaskSpan = { ms: number; workMs: number };
+
 /** The duration, in ms, of every task the renderer's main thread ran for the page. */
 export function mainThreadTasks(events: readonly TraceEvent[]): number[] {
+  return mainThreadTaskSpans(events).map((t) => t.ms);
+}
+
+/** Every task the renderer's main thread ran for the page, with the work in it. */
+export function mainThreadTaskSpans(events: readonly TraceEvent[]): TaskSpan[] {
   const main = new Set(
     events
       .filter((e) => e.name === 'thread_name' && e.args?.name === 'CrRendererMain')
@@ -29,14 +40,15 @@ export function mainThreadTasks(events: readonly TraceEvent[]): number[] {
     .sort((a, b) => (a.ts ?? 0) - (b.ts ?? 0) || b.dur! - a.dur!);
   // Tasks on one thread never overlap, so one sweep assigns each piece of work to the task around it,
   // tracking the outermost pieces (those not inside an earlier, longer one).
-  const out: number[] = [];
+  const out: TaskSpan[] = [];
   let task: TraceEvent | null = null;
   let taskEnd = 0;
   let outerEnd = 0;
   let onlyProbe = true;
   let anyWork = false;
+  let work = 0;
   const close = () => {
-    if (task && !(anyWork && onlyProbe)) out.push(task.dur! / 1000);
+    if (task && !(anyWork && onlyProbe)) out.push({ ms: task.dur! / 1000, workMs: work / 1000 });
     task = null;
   };
   for (const e of timed) {
@@ -48,12 +60,14 @@ export function mainThreadTasks(events: readonly TraceEvent[]): number[] {
       outerEnd = start;
       onlyProbe = true;
       anyWork = false;
+      work = 0;
       continue;
     }
     if (!task || start + e.dur! > taskEnd) continue;
     if (start >= outerEnd) {
       anyWork = true;
       if (!isProbeScript(e)) onlyProbe = false;
+      work += e.dur!;
       outerEnd = start + e.dur!;
     }
   }
