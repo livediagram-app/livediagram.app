@@ -169,8 +169,9 @@ verify ??= createVerifier({
 });
 ```
 
-The binding is asked first, with jose's own cache, cooldown and timeout; the public route is asked only when it
-is missing or throws, so a local run without accounts still checks tokens over `ACCOUNTS_URL`. The index's grant
+The binding is asked first, with jose's own cache and cooldown and a shorter timeout of 2 s (a binding that
+stalls would otherwise hold a cold check for jose's 5 s before the public route is tried); the public route is
+asked, with jose's default 5 s, only when it is missing, throws or times out, so a local run without accounts still checks tokens over `ACCOUNTS_URL`. The index's grant
 keys come the same way: bind `INDEX` to `liveworkspace-index` (`-staging`), and `@liveworkspace/index-app`'s
 `verifyGrant` passes it to `createGrantVerifier` as `keysFrom`, in the API Worker and in every item's Durable
 Object (which gets the Worker's env, bindings included).

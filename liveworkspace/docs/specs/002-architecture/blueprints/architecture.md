@@ -188,7 +188,7 @@ Every route is on the `liveworkspace.app` zone and every `wrangler.toml` pins `a
 Each product's API Worker (`<product>-api`, `-staging`) binds `ACCOUNTS` to `liveworkspace-accounts` and `INDEX` to
 `liveworkspace-index` (`-staging` each), and fetches accounts' token keys and the index's grant keys through them
 (`@liveworkspace/auth-client` `keysFrom`), its items' Durable Objects included; the public route is the fallback
-when a binding is missing or throws, as on a local run without that service.
+when a binding is missing, throws or takes over 2 s (`BOUND_KEYS_TIMEOUT_MS`), as on a local run without that service.
 
 ## Root scripts
 
