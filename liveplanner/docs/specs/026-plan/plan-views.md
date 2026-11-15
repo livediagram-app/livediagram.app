@@ -489,9 +489,11 @@ time the charts arrive.
   last answer.
 - **Images**: an image export has no flow read, so it draws a flow chart's frame, its name and range, and "Open the
   plan to see the flow." in place of the plot.
-- **Agents** name the three by their view ids in a Dashboard tab (`create_project`, `add_tab`) and in a plan view
-  element's `planView` (`update_project`), with `rangeDays`; `read_project` describes each by name and range
-  ("Cycle Time, last 30 days").
+- **Agents** name the three by their view ids in a Dashboard tab (`create_project`, `add_tab`, `update_project`'s
+  rebuild) and in a plan view element's `planView` (`update_project`, the CLI's `element set` and changesets), with
+  `rangeDays` ([Making a dashboard](plan-agents.md#making-a-dashboard)); a tab's outline (`read_project`, `liveplanner
+tab view`) names each by its view id and range (`view=cycle-time rangeDays=30`), the range always given, so a change
+  of range shows in a diff too.
 - **Telemetry**: placed as every plan view (`Element` · `Added` · `PlanView`); a Range change sends `Plan` ·
   `Changed` · `ViewRange`.
 

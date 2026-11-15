@@ -147,3 +147,39 @@ describe('resolveDashboardInput', () => {
     ).toBe(false);
   });
 });
+
+// plan-views.md "Flow charts": the three flow charts by view id, each with its range and card types.
+describe('flow charts', () => {
+  const flow = (chart: Record<string, unknown>) =>
+    resolveDashboardInput({ charts: [chart as never] }, TABS, types);
+
+  it('keeps a range other than 30, and drops 30, the default', () => {
+    expect(flow({ view: 'cycle-time', rangeDays: 90, types: ['Bug'] })).toEqual({
+      ok: true,
+      spec: { charts: [{ view: 'cycle-time', settings: { types: ['bug'], rangeDays: 90 } }] },
+    });
+    expect(flow({ view: 'throughput', rangeDays: 30 })).toEqual({
+      ok: true,
+      spec: { charts: [{ view: 'throughput' }] },
+    });
+    expect(flow({ view: 'cumulative-flow', rangeDays: 14 })).toEqual({
+      ok: true,
+      spec: { charts: [{ view: 'cumulative-flow', settings: { rangeDays: 14 } }] },
+    });
+  });
+
+  it('refuses a range outside the four, naming them', () => {
+    expect(flow({ view: 'throughput', rangeDays: 7 })).toEqual({
+      ok: false,
+      message: 'No range of 7 days. A flow chart reads 14, 30, 90, 180 days.',
+    });
+  });
+
+  it('refuses a range on a chart that is not a flow chart', () => {
+    expect(flow({ view: 'gantt', rangeDays: 90 })).toEqual({
+      ok: false,
+      message:
+        "rangeDays is a flow chart's range (cycle-time, throughput, cumulative-flow), not gantt's.",
+    });
+  });
+});

@@ -18,6 +18,7 @@ import {
   type Tab,
 } from '@liveplanner/project';
 import {
+  FLOW_RANGE_DEFAULT,
   METRIC_KINDS,
   PLAN_VISUALISATIONS,
   PLAN_CHART_SIZE,
@@ -65,18 +66,24 @@ export type DashboardSpec = {
   notes?: readonly { title: string; text: string }[];
 };
 
-// A plan view element at the origin: the Dashboard's layout places it.
+// A plan view element at the origin: the Dashboard's layout places it. A flow chart's default range is never stored
+// (docs/specs/026-plan/plan-views.md "Flow charts").
 function planViewElement(
   viewId: PlanViewId,
   width: number,
   height: number,
   settings: Omit<PlanViewRef, 'view'> = {},
 ): ShapeElement {
+  const { rangeDays, ...others } = structuredClone(settings);
   return {
     ...createShape('plan-view', 0, 0),
     width,
     height,
-    planView: { view: viewId, ...structuredClone(settings) },
+    planView: {
+      view: viewId,
+      ...others,
+      ...(rangeDays !== undefined && rangeDays !== FLOW_RANGE_DEFAULT ? { rangeDays } : {}),
+    },
   };
 }
 

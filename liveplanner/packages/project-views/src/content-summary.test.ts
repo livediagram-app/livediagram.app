@@ -84,6 +84,16 @@ describe('contentSummaryOf (R14)', () => {
       'view=gantt',
     );
     expect(contentSummaryOf(shape('plan-view', { planView: undefined }))).toBe('view=none');
+    // A flow chart names its range, 30 when unset (docs/specs/026-plan/plan-views.md "Flow charts").
+    expect(
+      contentSummaryOf(shape('plan-view', { planView: { view: 'throughput', rangeDays: 90 } })),
+    ).toBe('view=throughput rangeDays=90');
+    expect(contentSummaryOf(shape('plan-view', { planView: { view: 'cycle-time' } }))).toBe(
+      'view=cycle-time rangeDays=30',
+    );
+    expect(
+      contentSummaryOf(shape('plan-view', { planView: { view: 'gantt', rangeDays: 90 } })),
+    ).toBe('view=gantt');
     // A Sheet names its sheet, or none.
     expect(contentSummaryOf(shape('plan-sheet', { planSheet: { sheetId: 'sheet0001' } }))).toBe(
       'sheet=sheet0001',
