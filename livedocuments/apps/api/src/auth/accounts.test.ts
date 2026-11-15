@@ -167,6 +167,25 @@ describe('getPersonIdentity (verified token)', () => {
     );
     expect(forThis).toHaveLength(1);
   });
+  it('fetches the key set through the ACCOUNTS binding, and builds anew for another binding', async () => {
+    // A Worker's fetch to another Worker's public route can stall: the binding is asked first, and
+    // @liveworkspace/auth-client falls back to the public route when it throws.
+    const bound = { fetch: vi.fn() } as unknown as Fetcher;
+    const env = {
+      ACCOUNTS_URL: 'https://bound-probe.example',
+      API_RESOURCE: 'r',
+      ACCOUNTS: bound,
+    } as Env;
+    verifyMock.mockResolvedValue(claims());
+    await getPersonIdentity(env, request('Bearer t'));
+    await getPersonIdentity(env, request('Bearer t'));
+    const other = { fetch: vi.fn() } as unknown as Fetcher;
+    await getPersonIdentity({ ...env, ACCOUNTS: other }, request('Bearer t'));
+    const forThis = createVerifierMock.mock.calls.filter(
+      ([o]) => o.issuer === 'https://bound-probe.example/api/auth',
+    );
+    expect(forThis.map(([o]) => o.keysFrom)).toEqual([bound, other]);
+  });
 });
 
 describe('accountsIssuer', () => {

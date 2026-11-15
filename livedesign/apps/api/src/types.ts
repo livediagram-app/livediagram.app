@@ -36,6 +36,11 @@ export type Env = {
   // and this app presents it to push a design's summary and to act for an API token's account. Unset, the design
   // doors answer as missing and the internal endpoints 404.
   INDEX_ORIGIN?: string;
+  // The index Worker, which the grant keys are fetched through (@liveworkspace/index-app service.ts), and accounts,
+  // which the token keys are (auth/accounts.ts): a Worker's fetch to another Worker's public route can stall.
+  // Unbound, or throwing (a local run without them), the public routes are used.
+  INDEX?: Fetcher;
+  ACCOUNTS?: Fetcher;
   INDEX_KEY?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that

@@ -280,6 +280,17 @@ name = "EMAIL"
 #
 # Unset = the data export cannot read canvases (the export door's `comments` format takes only the index's key).
 
+# Accounts and the index, which this Worker fetches its keys through: accounts' for access and guest tokens
+# (src/auth/accounts.ts), the index's for grants (@liveworkspace/index-app service.ts), in the Worker and its
+# rooms' Durable Objects. A Worker's fetch to another Worker's public route can stall (2026-11-13). Without them,
+# or when they throw (a local run without accounts or the index), the public routes are used.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-api-staging` via
@@ -398,3 +409,12 @@ name = "EMAIL"
 #   cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging
 # Worker secrets are per-environment, so staging's never collide with
 # production's.
+
+# Accounts and the index for the keys, restated because bindings don't inherit (see the top-level [[services]]).
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"
