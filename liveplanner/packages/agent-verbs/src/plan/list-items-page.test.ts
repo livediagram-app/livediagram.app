@@ -210,7 +210,10 @@ describe('list_items on a plan shaped like the Work Tracker', () => {
     // at 2,000, 208 ms at 5,000, one page staying linear. Building every card's fields before cutting the page, or
     // measuring the whole answer per card (quadratic), takes many times the budget.
     expect(best).toBeLessThan(cpuBudgetMs(400));
-  });
+    // The budget is CPU time, not wall time. The test pages the plan four times (one warm-up, three timed), so it
+    // spends about 0.9 s here and 1.7 s under coverage (2026-11-15), several times that on CI's shared two-core
+    // runners: past vitest's 5 s default, which failed the run without a CPU regression.
+  }, 30_000);
 });
 
 describe('what list_items leaves out', () => {
