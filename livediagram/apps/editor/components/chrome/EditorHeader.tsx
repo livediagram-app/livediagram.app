@@ -4,7 +4,7 @@ import {
   type EditorHeaderWords,
 } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
-import { AuthControls } from '@/components/chrome/AuthControls';
+import { AuthControls } from '@liveworkspace/workbench/components/chrome/AuthControls';
 
 export type { SaveStatus } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 

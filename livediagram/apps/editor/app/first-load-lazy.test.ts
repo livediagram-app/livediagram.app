@@ -3,7 +3,7 @@
 // Explorer included, so a static import from either lands in all of their first loads. A static
 // import of the editor from not-found.tsx once put about 1,150 KiB gzipped on every page; these
 // keep the heavy pieces behind a dynamic import.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -30,5 +30,21 @@ describe('every route’s first load', () => {
       expect(staticImports(src), path).not.toContain('@/lib/template-builders');
       expect(src, path).toContain("import('@/lib/template-builders')");
     }
+  });
+
+  // The root error boundary is in every route's first load too (Work Tracker 772). Measured from a production build
+  // on 14 November 2026 it adds 406 bytes gzipped per route over an import-free page: everything it imports is
+  // already in the root layout's chunks. A new import would land in every page, so it keeps to these, and the app has
+  // no app/error.tsx (which Next would also ship with every route).
+  it('keeps the root error boundary to what the layout already loads', () => {
+    expect(staticImports(read('app/global-error.tsx')).sort()).toEqual(
+      [
+        '@/lib/workbench-bindings',
+        '@livediagram/ui',
+        '@liveworkspace/workbench/lib/stale-build-navigation',
+        'react',
+      ].sort(),
+    );
+    expect(existsSync(join(root, 'app/error.tsx'))).toBe(false);
   });
 });

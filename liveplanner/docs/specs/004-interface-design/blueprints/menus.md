@@ -28,7 +28,7 @@ Scope, by file:
 | `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
 | `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                     | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                                |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                                            |
-| `apps/editor/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                                        |
+| `../packages/workbench/src/components/chrome/AuthControls.tsx`              | Account command menu                                                                                                        |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                                      |
 | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                    | Canvas shortcuts stand down inside a menu surface                                                                           |
 | `apps/editor/components/canvas/SelectionPopover.tsx`                        | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                                           |

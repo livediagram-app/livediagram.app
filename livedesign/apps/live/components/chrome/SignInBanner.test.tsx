@@ -5,7 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/components/chrome/auth-shared', () => ({
   useAuthHrefs: () => ({ signInHref: '/sign-in/' }),
 }));
-vi.mock('@/components/chrome/AuthControls', () => ({ SignInIcon: () => null }));
+vi.mock('@liveworkspace/workbench/components/chrome/AuthControls', () => ({
+  SignInIcon: () => null,
+}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { SignInBanner } = await import('./SignInBanner');

@@ -4,7 +4,8 @@ import {
   type EditorHeaderWords,
 } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
-import { AuthControls } from '@/components/chrome/AuthControls';
+import { AuthControls } from '@liveworkspace/workbench/components/chrome/AuthControls';
+import { useOwnPicture } from '@/lib/own-picture';
 
 export type { SaveStatus } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 
@@ -46,7 +47,14 @@ export function EditorHeader({
       words={WORDS}
       name={designName}
       team={teamDesign}
-      account={<AuthControls onOpenAccount={onOpenAccount} />}
+      account={<OwnAuthControls onOpenAccount={onOpenAccount} />}
     />
   );
+}
+
+// The shared account control with your own Google picture, whatever Show My Google Picture says
+// (docs/specs/014-identity/profile-and-email-notifications.md "Avatars"): a component of its own, so a picture change re-renders only it.
+function OwnAuthControls({ onOpenAccount }: { onOpenAccount?: () => void }) {
+  const { picture } = useOwnPicture();
+  return <AuthControls onOpenAccount={onOpenAccount} picture={picture} />;
 }

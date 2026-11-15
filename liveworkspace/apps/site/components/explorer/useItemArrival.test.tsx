@@ -6,7 +6,8 @@ import type { ThisBrowserItem } from '@liveworkspace/explorer/this-browser';
 import { useItemArrival } from './useItemArrival';
 
 // An editor's door from an open item (liveworkspace/docs/specs/004-index/one-explorer.md "Opening from an open item"):
-// the skeleton until the place is known, then that place's address in place of `?item=`, and the item marked there.
+// the skeleton until the place is known, then that place at once, its address in place of `?item=`, and the item
+// marked there.
 
 afterEach(() => {
   cleanup();
@@ -37,7 +38,7 @@ const setup = (over: Partial<Props>) => {
 describe('useItemArrival', () => {
   it('asks nothing and holds nothing with no item', () => {
     const { result, getItem } = setup({ item: null });
-    expect(result.current).toEqual({ pending: false, arrivedItem: null });
+    expect(result.current).toEqual({ pending: false, arrivedItem: null, view: { kind: 'home' } });
     expect(getItem).not.toHaveBeenCalled();
   });
 
@@ -55,10 +56,12 @@ describe('useItemArrival', () => {
     expect(result.current.pending).toBe(true);
     await waitFor(() => expect(result.current.pending).toBe(false));
     expect(replace).toHaveBeenCalledWith('/explorer/team?id=marketing&folder=f2');
-    // Still on Home until the router moves: nothing marked.
-    expect(result.current.arrivedItem).toBeNull();
+    // The place shows, and the item is marked, before the router has moved the address there.
+    expect(result.current.view).toEqual({ kind: 'team', id: 'marketing', folderId: 'f2' });
+    expect(result.current.arrivedItem).toBe('d1');
     const there: ExplorerView = { kind: 'team', id: 'marketing', folderId: 'f2', q: 'brief' };
     rerender({ ...props, client: { getItem }, view: there });
+    expect(result.current.view).toBe(there);
     expect(result.current.arrivedItem).toBe('d1');
     // Moved on elsewhere: no longer marked.
     rerender({
@@ -68,6 +71,25 @@ describe('useItemArrival', () => {
     });
     expect(result.current.arrivedItem).toBeNull();
     expect(getItem).toHaveBeenCalledTimes(1);
+    // Back on Home later: Home, not the place again.
+    rerender({ ...props, client: { getItem }, view: { kind: 'home' } });
+    expect(result.current.view).toEqual({ kind: 'home' });
+  });
+
+  it('follows the person who goes elsewhere before the router has moved', async () => {
+    const getItem = vi.fn().mockResolvedValue(indexed({ folderId: 'f1' }));
+    // A person in no team.
+    const { result, rerender, props } = setup({
+      client: { getItem },
+      viewer: { id: 'me', teamIds: [] },
+    });
+    await waitFor(() => expect(result.current.pending).toBe(false));
+    expect(result.current.view).toEqual({ kind: 'folder', id: 'f1' });
+    rerender({ ...props, client: { getItem }, view: { kind: 'trash' } });
+    expect(result.current.view).toEqual({ kind: 'trash' });
+    expect(result.current.arrivedItem).toBeNull();
+    rerender({ ...props, client: { getItem }, view: { kind: 'home' } });
+    expect(result.current.view).toEqual({ kind: 'home' });
   });
 
   it('opens This Browser at its local folder without asking the index', async () => {
@@ -89,6 +111,7 @@ describe('useItemArrival', () => {
     expect(replace).not.toHaveBeenCalled();
     expect(window.location.search).toBe('?from=livediagram');
     expect(result.current.arrivedItem).toBeNull();
+    expect(result.current.view).toEqual({ kind: 'home' });
   });
 
   it('drops an answer that comes after the page has gone', async () => {

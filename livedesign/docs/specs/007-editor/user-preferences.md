@@ -787,8 +787,9 @@ and the dialog stays as the one complete, browsable index of them.
   `../packages/workbench/src/lib/preferences-local-only.ts`, set when the api keeps none for the account). A guest's
   settings stay in this browser, a workbench's Settings reach only its one design, and with preferences kept locally there is no account copy
   for All to show (before 14 November 2026 livediagram, livedesign and livehuddle still offered All then); the footer then says they are kept in this browser, never that they sync to the account; the dialog always opens on livedesign, whatever was chosen last time (nothing is remembered; All is
-  one press away). The host part is `settings-panel-host.tsx` (the app's id, its logos
-  and the bearer request); the switch, the Account section and All's merged categories are the package's.
+  one press away). The host part is one copy for every editor, `createSettingsPanelHost` (the app's id, its logos
+  and the bearer request, `../packages/workbench/src/components/dialogs/settings/settings-panel-host.tsx`), which `apps/live/components/dialogs/settings/settings-panel-host.ts`
+  binds with this app's name; the switch, the Account section and All's merged categories are the package's.
 
   Email rows are **absent, not disabled**, unless BOTH email is configured (the api's `EMAIL` binding)
   ([Transactional email](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those

@@ -28,7 +28,7 @@ Scope, by file:
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                                          |
 | `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                                            |
-| `apps/editor/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                                        |
+| `../packages/workbench/src/components/chrome/AuthControls.tsx`              | Account command menu                                                                                                        |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                                      |
 | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                    | Canvas shortcuts stand down inside a menu surface                                                                           |
 | `apps/editor/lib/element-names.ts`                                          | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                                  |
