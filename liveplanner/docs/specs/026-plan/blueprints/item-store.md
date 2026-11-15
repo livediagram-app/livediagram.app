@@ -38,6 +38,9 @@ src/views.ts         itemSummary, itemAccessibleName: one-line text for agents a
 src/store.ts         ItemStoreState, applyItemWrite, mergeItemChanges, inverseItemWrites, writeLimitedTo, storeAsCreates
 src/presets.ts       PLAN_BOARD_PRESETS, presetSetup, presetSetupOrBlank
 src/person.ts        itemPersonId(ownerId): the hashed person id
+src/assistant.ts     the AI assistant Assignee: ItemAssistant, assistantIdFor, assistantNameFor, itemAssistantFor,
+                     isAssistantId, normaliseAssistant, itemAssistantOf, assistantPersonOf (items.md "Handing a
+                     card to an AI assistant")
 src/refs.ts          resolveItemRef(items, ref): #12, 12 or an id prefix
 src/index.ts
 ```
@@ -108,7 +111,8 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 | text        | string, trimmed, 1..`ITEM_TITLE_MAX` (title); empty title rejected                                                                                                           |
 | long text   | string ≤ `ITEM_DESCRIPTION_MAX`                                                                                                                                              |
 | status      | string ≤ 40, trimmed, not empty                                                                                                                                              |
-| person      | `{ id ≤ 64, name ≤ 80, color #rrggbb }`                                                                                                                                      |
+| person      | `{ id ≤ 64, name ≤ 80, color #rrggbb }`, other keys dropped; an id starting `ai-` refused unless it is the Assignee and reads as an assistant (below)                        |
+| assistant   | the Assignee only: `normaliseAssistant`, `{ id, name, color, assistant: { client, person } }` checked whole (below)                                                          |
 | priority    | one of `PRIORITIES`                                                                                                                                                          |
 | labels      | ≤ `ITEM_LABELS_MAX` strings ≤ 32, de-duplicated                                                                                                                              |
 | number      | finite, 0..999                                                                                                                                                               |
@@ -125,6 +129,33 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 - Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`,
   measured without `comments` (`fieldsByteSize`); the thread is measured on its own (`commentsByteSize`).
 - A type id matches `/^[a-z][a-z0-9-]{0,31}$/`.
+
+### The AI assistant Assignee (`assistant.ts`)
+
+The stored shape of [Handing a card to an AI assistant](../items.md#handing-a-card-to-an-ai-assistant). Pure and
+synchronous, so the api, the offline store and the editor run the same check.
+
+- `type ItemAssistant = ItemPerson & { assistant: { client: string; person: ItemPerson } }`.
+- `ASSISTANT_ID_PREFIX = 'ai-'`; `isAssistantId(id)`: the id starts with it. Read alone, it is what keeps a value from
+  ever being notified (`notify-fields.ts notifiedPeople` skips it beside `n-`), so a malformed one that reached the
+  store unchecked is never told anything.
+- `assistantClientKey(client)`: the trimmed client's slug cut to `ASSISTANT_CLIENT_SLUG_MAX` (`slug.ts`), or, when the slug is empty, `c` and the
+  FNV-1a hash of the trimmed client in base 36 (the `personNamed` hash, D103).
+- `assistantIdFor(personId, client)`: `ai-${personId}-${assistantClientKey(client)}`, at most 3 + 24 + 1 + 24 = 52.
+- `assistantNameFor(client, personName)`: `${client} (${first word of personName})`, a blank name leaving the client
+  alone, cut to 80 (D104).
+- `itemAssistantFor(person, client)`: the value a hand-over writes, the person's colour as its colour (D105); undefined
+  when the person is not an identity or the client is blank or over `ASSISTANT_CLIENT_MAX`.
+- `normaliseAssistant(v)`: `{ id, name, color, assistant: { client, person } }` rebuilt from those keys alone, or
+  undefined when any check fails: `id` equals `assistantIdFor(person.id, client)`; `person` passes the person kind
+  and `isIdentityPersonId`; `client` trimmed is 1..`ASSISTANT_CLIENT_MAX`; `name` trimmed is 1..80; `color` is
+  `#rrggbb`.
+- `itemAssistantOf(item)`: the card's assistant read with that same check, for code that draws or lists one: a
+  value that fails it is a plain person.
+- `assistantPersonOf(assistant)`: the person a hand-back assigns.
+- `validateFields`: the Assignee given an `ai-` id goes through `normaliseAssistant` (undefined is
+  `field_value_invalid`); any other id is the person kind as before, so `assistant` on a person is dropped. A custom
+  field's person (one, or one of several) with an `ai-` id is `field_value_invalid`.
 
 ### Rank
 
@@ -904,6 +935,10 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 - Vote budget is a facilitation aid enforced in the editor only (stated, not a trust boundary).
 - People on items (authors, voters) are keyed by `itemPersonId`, a one-way hash: a guest's owner id is their
   credential and never reaches an item.
+- An AI assistant Assignee names its tool by the token's name and its person by that hash: no token id, secret or
+  expiry is ever stored on a card. Anyone who may edit a card may hand it to any well-formed assistant, as they may
+  assign any person; that gives the assistant nothing it can reach, since a token only reads plans its own account
+  can open. Community copies and reads drop it with every person (`community-redact.ts` `PEOPLE_FIELDS`).
 - Hide writing hides faces only; the api returns full items to anyone who may read.
 - History entries keep their author as an `ItemPerson` (a hashed id); the read answers only name and colour, and
   `mine` to the author ([History](#history)). Nobody writes history through the api: only the plan's own item writes.
@@ -946,74 +981,78 @@ include `fields` or comment text.
 
 ## Testing
 
-| Rule                                                 | Test                                                                                                                                                                                        |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation per kind, every rejection                 | `packages/items/src/fields.test.ts`                                                                                                                                                         |
-| Long Text formatting: key, limit, stale runs         | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                        |
-| Label usage, spelling, matching, 2,000 cards         | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                               |
-| Rank always between, stable under repeats            | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                           |
-| Bulk create grows linearly, keeps column order       | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                 |
-| Write checks shared with offline                     | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                  |
-| Partial many-item write: answer, client, undo        | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                  |
-| Archive drag-off is one move                         | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                        |
-| apply functions                                      | `apply.test.ts`                                                                                                                                                                             |
-| Projection: columns, lanes, unplaced, quick          | `board.test.ts`                                                                                                                                                                             |
-| Tab-scoped set                                       | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                       |
-| Routes: gates, rejections, keys, cascade, copy       | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                   |
-| Room op redacted for a tab-scoped session            | `apps/api/src/room-scope.test.ts`                                                                                                                                                           |
-| Store transitions, inverses, sync order              | `packages/items/src/store.test.ts`                                                                                                                                                          |
-| Undo interleaving                                    | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                          |
-| Agent verbs and tools                                | `agent-verbs/src/verbs/item.test.ts`, `agent-verbs/src/verbs/thread.test.ts`, `agent-verbs/src/plan/card-threads.test.ts`, `apps/mcp/src/output-schema.test.ts`                             |
-| Offline store                                        | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                             |
-| Comments field: read-only, budget, restore           | `packages/items/src/comments-field.test.ts`                                                                                                                                                 |
-| Thread ops, titles, redaction, restore, legacy       | `packages/project/src/card-threads.test.ts`, `apps/api/src/plan-room/card-thread-schema.test.ts`                                                                                            |
-| Thread routes: roles, agents, cross-plan, AI         | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                            |
-| Editor thread writes, room merge, refusals           | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                              |
-| Panel threads, Add to Card, shared chip, words       | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                |
-| History: changes, values, grouping, redaction        | `packages/items/src/item-history.test.ts`                                                                                                                                                   |
-| History: storage, bounds, cascade, no D1             | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                        |
-| History: writes tagged, roles, scope, redacted       | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                            |
-| History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`  |
-| Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`               |
-| Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
-| Repeats: rules, days, zones, DST, month ends         | `packages/items/src/repeat.test.ts`, `packages/items/src/repeat-dates.test.ts`, `packages/items/src/repeat-copy.test.ts`                                                                    |
-| Repeats: alarm, once a day, late, restart, stop      | `apps/api/src/plan-room/card-repeats.test.ts`, `apps/api/src/plan-room/card-repeats.edges.test.ts` (full plan, retries, parked rows)                                                        |
-| Repeats: Editor gate, roles                          | `apps/api/src/routes/item-repeat-gate.test.ts`, `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `apps/editor/components/plan/ItemRepeatLine.test.tsx`                                 |
-| Repeats: dialog, glyph, Activity line                | `apps/editor/components/plan/RepeatDialog.test.tsx`, `apps/editor/components/plan/PlanCardFace.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                      |
-| Tab import: parse, plan, land, report                | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
+| Rule                                                 | Test                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation per kind, every rejection                 | `packages/items/src/fields.test.ts`                                                                                                                                                                                                                       |
+| Long Text formatting: key, limit, stale runs         | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                                                                                      |
+| Label usage, spelling, matching, 2,000 cards         | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                                                                                             |
+| Rank always between, stable under repeats            | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                                                                                         |
+| Bulk create grows linearly, keeps column order       | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                                                                               |
+| Write checks shared with offline                     | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                                                |
+| Partial many-item write: answer, client, undo        | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                                                                                |
+| Archive drag-off is one move                         | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                      |
+| apply functions                                      | `apply.test.ts`                                                                                                                                                                                                                                           |
+| Projection: columns, lanes, unplaced, quick          | `board.test.ts`                                                                                                                                                                                                                                           |
+| Tab-scoped set                                       | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                                                                                     |
+| Routes: gates, rejections, keys, cascade, copy       | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                 |
+| Room op redacted for a tab-scoped session            | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                                         |
+| Store transitions, inverses, sync order              | `packages/items/src/store.test.ts`                                                                                                                                                                                                                        |
+| Undo interleaving                                    | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                                                                                        |
+| Agent verbs and tools                                | `agent-verbs/src/verbs/item.test.ts`, `agent-verbs/src/verbs/thread.test.ts`, `agent-verbs/src/plan/card-threads.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                           |
+| Offline store                                        | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                                                                                           |
+| Comments field: read-only, budget, restore           | `packages/items/src/comments-field.test.ts`                                                                                                                                                                                                               |
+| Thread ops, titles, redaction, restore, legacy       | `packages/project/src/card-threads.test.ts`, `apps/api/src/plan-room/card-thread-schema.test.ts`                                                                                                                                                          |
+| Thread routes: roles, agents, cross-plan, AI         | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                                                                                          |
+| Editor thread writes, room merge, refusals           | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                                                                                            |
+| Panel threads, Add to Card, shared chip, words       | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                                                                              |
+| History: changes, values, grouping, redaction        | `packages/items/src/item-history.test.ts`                                                                                                                                                                                                                 |
+| History: storage, bounds, cascade, no D1             | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                                                                                      |
+| History: writes tagged, roles, scope, redacted       | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                                                                                          |
+| History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`                                                                |
+| Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`                                                                             |
+| Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                                                                                            |
+| Repeats: rules, days, zones, DST, month ends         | `packages/items/src/repeat.test.ts`, `packages/items/src/repeat-dates.test.ts`, `packages/items/src/repeat-copy.test.ts`                                                                                                                                  |
+| Repeats: alarm, once a day, late, restart, stop      | `apps/api/src/plan-room/card-repeats.test.ts`, `apps/api/src/plan-room/card-repeats.edges.test.ts` (full plan, retries, parked rows)                                                                                                                      |
+| Repeats: Editor gate, roles                          | `apps/api/src/routes/item-repeat-gate.test.ts`, `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `apps/editor/components/plan/ItemRepeatLine.test.tsx`                                                                                               |
+| Repeats: dialog, glyph, Activity line                | `apps/editor/components/plan/RepeatDialog.test.tsx`, `apps/editor/components/plan/PlanCardFace.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                                                                                    |
+| AI assistant Assignee: shape, checks, notify, copies | `packages/items/src/assistant.test.ts`, `packages/items/src/fields.test.ts`, `packages/items/src/notify-fields.test.ts`, `apps/api/src/routes/item-assistant-assignee.test.ts` (roles, copy, Community, Drive file), `apps/editor/lib/import-tab.test.ts` |
+| Tab import: parse, plan, land, report                | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts`                                                               |
 
 ## Constants and configuration
 
-| Constant                   | Value                     | Provenance / safe range                                 |
-| -------------------------- | ------------------------- | ------------------------------------------------------- |
-| `ITEMS_MAX`                | 2000                      | Spec; a board past a few hundred cards stops being read |
-| `ITEM_FIELDS_BYTES`        | 16384                     | Spec; 4 KB–64 KB                                        |
-| `ITEM_FIELDS_MAX`          | 64                        | Spec                                                    |
-| `ITEM_TITLE_MAX`           | 500                       | Spec; raised from 200 for long card titles              |
-| `ITEM_DESCRIPTION_MAX`     | 10000                     | Spec                                                    |
-| `ITEM_LABELS_MAX`          | 12                        | Spec                                                    |
-| `ITEM_CHECKLIST_MAX`       | 50                        | Spec                                                    |
-| `ITEM_BULK_MAX`            | 200                       | A sync of a big offline doc batches                     |
-| `BIG_ITEMS_CHANGE`         | 200                       | `usePlanItems.ts`: a store change drawn as a transition |
-| `ITEM_WRITE_RETRIES`       | 3                         | As changesets' retry                                    |
-| `ITEM_KEY_MAX`             | 1000000                   | A named key's ceiling; keeps the next key far from 2^53 |
-| `ITEM_COMMENTS_MAX`        | 200                       | Spec; a card's conversation, well past a real one       |
-| `ITEM_COMMENTS_BYTES`      | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                |
-| `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                               |
-| `ITEM_ID_PATTERN`          | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                     |
-| `ITEM_FIELD_KEY_PATTERN`   | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                    |
-| `ITEM_HISTORY_MAX`         | 200                       | Card #122; a busy card's year of moves; 50 to 1000      |
-| `ITEM_HISTORY_MAX_AGE_MS`  | 180 days                  | What a reader asks about; 30 to 365 days                |
-| `ITEM_HISTORY_GROUP_MS`    | 60000                     | Spec "within a minute"                                  |
-| `ITEM_HISTORY_VALUE_MAX`   | 80                        | One readable line; 40 to 200                            |
-| `ITEM_HISTORY_LIST_MAX`    | 12                        | `ITEM_LABELS_MAX`                                       |
-| `ITEM_HISTORY_CHANGES_MAX` | 16                        | Bounds one entry; a write changes a few fields          |
-| `ITEM_HISTORY_REFETCH_MS`  | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
-| `ACTIVITY_ENTRIES_SHOWN`   | 20                        | Spec; a tab's worth before Show More                    |
-| `REPEAT_COPIES_PER_WAKE`   | 25                        | Bounds one alarm's work; 10 to 100                      |
-| `REPEAT_MORE_MS`           | 1000                      | The next wake while rows remain; 0.5 to 10 s            |
-| `REPEAT_SEARCH_DAYS`       | 400                       | A year and a month: every rule meets a day within it    |
-| `REPEAT_ZONE_CACHE_MAX`    | 32                        | Zones a plan's rules name; 8 to 64                      |
+| Constant                    | Value                     | Provenance / safe range                                 |
+| --------------------------- | ------------------------- | ------------------------------------------------------- |
+| `ITEMS_MAX`                 | 2000                      | Spec; a board past a few hundred cards stops being read |
+| `ASSISTANT_ID_PREFIX`       | `ai-`                     | Spec (items.md "Handing a card to an AI assistant")     |
+| `ASSISTANT_CLIENT_MAX`      | 40                        | Spec; an MCP client's name fits                         |
+| `ASSISTANT_CLIENT_SLUG_MAX` | 24                        | Spec; keeps the id at 52, inside the person kind's 64   |
+| `ITEM_FIELDS_BYTES`         | 16384                     | Spec; 4 KB–64 KB                                        |
+| `ITEM_FIELDS_MAX`           | 64                        | Spec                                                    |
+| `ITEM_TITLE_MAX`            | 500                       | Spec; raised from 200 for long card titles              |
+| `ITEM_DESCRIPTION_MAX`      | 10000                     | Spec                                                    |
+| `ITEM_LABELS_MAX`           | 12                        | Spec                                                    |
+| `ITEM_CHECKLIST_MAX`        | 50                        | Spec                                                    |
+| `ITEM_BULK_MAX`             | 200                       | A sync of a big offline doc batches                     |
+| `BIG_ITEMS_CHANGE`          | 200                       | `usePlanItems.ts`: a store change drawn as a transition |
+| `ITEM_WRITE_RETRIES`        | 3                         | As changesets' retry                                    |
+| `ITEM_KEY_MAX`              | 1000000                   | A named key's ceiling; keeps the next key far from 2^53 |
+| `ITEM_COMMENTS_MAX`         | 200                       | Spec; a card's conversation, well past a real one       |
+| `ITEM_COMMENTS_BYTES`       | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                |
+| `ITEM_REFETCH_DEBOUNCE_MS`  | 400                       | Coalesces a burst of gaps                               |
+| `ITEM_ID_PATTERN`           | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                     |
+| `ITEM_FIELD_KEY_PATTERN`    | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                    |
+| `ITEM_HISTORY_MAX`          | 200                       | Card #122; a busy card's year of moves; 50 to 1000      |
+| `ITEM_HISTORY_MAX_AGE_MS`   | 180 days                  | What a reader asks about; 30 to 365 days                |
+| `ITEM_HISTORY_GROUP_MS`     | 60000                     | Spec "within a minute"                                  |
+| `ITEM_HISTORY_VALUE_MAX`    | 80                        | One readable line; 40 to 200                            |
+| `ITEM_HISTORY_LIST_MAX`     | 12                        | `ITEM_LABELS_MAX`                                       |
+| `ITEM_HISTORY_CHANGES_MAX`  | 16                        | Bounds one entry; a write changes a few fields          |
+| `ITEM_HISTORY_REFETCH_MS`   | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
+| `ACTIVITY_ENTRIES_SHOWN`    | 20                        | Spec; a tab's worth before Show More                    |
+| `REPEAT_COPIES_PER_WAKE`    | 25                        | Bounds one alarm's work; 10 to 100                      |
+| `REPEAT_MORE_MS`            | 1000                      | The next wake while rows remain; 0.5 to 10 s            |
+| `REPEAT_SEARCH_DAYS`        | 400                       | A year and a month: every rule meets a day within it    |
+| `REPEAT_ZONE_CACHE_MAX`     | 32                        | Zones a plan's rules name; 8 to 64                      |
 
 ## Many moves (`moves`)
 

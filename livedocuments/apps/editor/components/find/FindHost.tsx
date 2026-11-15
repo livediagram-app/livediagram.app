@@ -8,8 +8,10 @@
 // editor's door (FindDoor.openBar) reaches its opener through `openerRef`.
 import {
   lazy,
+  memo,
   Suspense,
   useLayoutEffect,
+  useRef,
   useState,
   type CSSProperties,
   type RefObject,
@@ -19,6 +21,8 @@ import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useFindReplace, type FindDeps, type FindDoor } from '@/hooks/editor/useFindReplace';
 import { FindBarLoading } from './FindBarLoading';
+import { useEditorChromeLatest } from '@/app/document/[id]/EditorContext';
+import { sameDepsButWriting } from '@/app/document/[id]/editor-chrome-equal';
 
 const FindBar = lazy(() => import('./FindBar').then((m) => ({ default: m.FindBar })));
 
@@ -29,20 +33,41 @@ const PHONE_INSET = 8;
 
 type Box = { top: number; left: number; right: number };
 
+type FindHostProps = {
+  openerRef: RefObject<FindDoor['openBar']>;
+  canvasMainRef: RefObject<HTMLElement | null>;
+};
+
+// The editor's Find (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits"): its deps from the
+// chrome store. While the bar is shut a typing commit renders nothing here (nothing it shows changed); while it is open
+// every commit does, so the matches follow the writing.
+export const EditorFindHost = memo(function EditorFindHost(props: FindHostProps) {
+  const openRef = useRef(false);
+  const deps = useEditorChromeLatest(
+    (s) => s.findDeps,
+    (a, b) => !openRef.current && sameDepsButWriting(a, b),
+  );
+  return <FindHost {...props} deps={deps} openRef={openRef} />;
+});
+
 export function FindHost({
   deps,
   openerRef,
   canvasMainRef,
-}: {
+  openRef,
+}: FindHostProps & {
   deps: FindDeps;
-  openerRef: RefObject<FindDoor['openBar']>;
-  canvasMainRef: RefObject<HTMLElement | null>;
+  // Told whether the bar is open, after each render.
+  openRef?: RefObject<boolean>;
 }) {
   const find = useFindReplace(deps);
   useAssignRef(openerRef, find.openBar);
   const phone = useIsMobileViewport();
   const [box, setBox] = useState<Box | null>(null);
   const open = find.open;
+  useLayoutEffect(() => {
+    if (openRef) openRef.current = open;
+  });
   useLayoutEffect(() => {
     const main = canvasMainRef.current;
     if (!open || !main) return;

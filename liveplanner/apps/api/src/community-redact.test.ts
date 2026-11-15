@@ -2,7 +2,12 @@
 // every rule in community-redact.ts, on the shapes the reads, the copy and the drawing hand it. Nobody who works on
 // the plan, nobody who voted or commented, and no answer a form collected reaches a stranger.
 import { describe, expect, it } from 'vitest';
-import type { Item, ItemTypeCatalogue, ItemTypeDef } from '@liveplanner/items';
+import {
+  itemAssistantFor,
+  type Item,
+  type ItemTypeCatalogue,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import type { SheetJson } from '@liveplanner/sheets';
 import {
   COMMUNITY_PERSON,
@@ -120,6 +125,20 @@ describe('a card', () => {
   it('redacts a list against the stored catalogue, or none', () => {
     expect(redactItemsForCommunity([card()], CATALOGUE)[0]!.fields).not.toHaveProperty('reviewer');
     expect(redactItemsForCommunity([card()], null)[0]!.fields).not.toHaveProperty('assignee');
+  });
+
+  // docs/specs/026-plan/items.md "Handing a card to an AI assistant": dropped with every person.
+  it('loses an AI assistant Assignee, its tool and its person, in a read and a copy', () => {
+    const thomas = { id: 'a1b2c3d4e5f6a1b2c3d4e5f6', name: 'Thomas', color: '#2563eb' };
+    const claude = itemAssistantFor(thomas, 'Claude')!;
+    const handed = card({ fields: { title: 'Ship it', assignee: claude } });
+    expect(redactItemForCommunity(handed, [TASK]).fields).toEqual({ title: 'Ship it' });
+    const row = redactItemRowForCommunity(
+      { type: 'task', fields: JSON.stringify(handed.fields), created_by: '{}' },
+      [TASK],
+    );
+    expect(row['fields']).toBe(JSON.stringify({ title: 'Ship it' }));
+    for (const name of ['Thomas', 'Claude', thomas.id]) expect(row['fields']).not.toContain(name);
   });
 });
 

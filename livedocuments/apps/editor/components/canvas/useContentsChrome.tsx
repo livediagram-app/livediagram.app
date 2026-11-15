@@ -105,7 +105,6 @@ export function useContentsChrome({
     layers: props.layers,
     font: props.tabFont,
     finish: props.tabFinish,
-    articles: pagesMode.articles?.flows,
   };
   return {
     contentsDocked,
@@ -116,6 +115,7 @@ export function useContentsChrome({
         key={props.activeTabId ?? ''}
         view={pagesMode}
         tab={tab}
+        writing={props.writing}
         top={toolbarTopClearancePx(toolbarScale)}
         onMinimise={onMinimise}
         joined={menuJoined}
@@ -125,6 +125,7 @@ export function useContentsChrome({
       <PageContentsPanel
         view={pagesMode}
         tab={tab}
+        writing={props.writing}
         anchor={activeDockAnchor ?? undefined}
         onClose={closeDockPanel}
         // A phone has no sidebar, nor does a single page.

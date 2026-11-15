@@ -576,6 +576,35 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect((await read.json<{ project: { name: string } }>()).project.name).toBe('Back');
   });
 
+  // Work Tracker 830: grants carry the millisecond they were signed (iatMs), so the purge's own second no longer lets
+  // a stale create through, and Sync Plan's delete then same-id upload, granted a moment after, still lands.
+  it("refuses a create granted inside the purge's second but before it, and takes Sync Plan's upload after it", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createPlan(w, 'A');
+    expect((await w.send('DELETE', '/api/internal/items/A', undefined, auth)).status).toBe(200);
+    const purgedAt = (await w.plans.get('A')!.room.state.storage.get<number>(PURGED_KEY))!;
+    const grantAt = (iatMs: number) => ({
+      'X-Index-Grant': `G.${btoa(JSON.stringify({ item: 'A', sub: OWNER, level: 'edit', tab: null, team: null, owner: OWNER, iat: Math.floor(iatMs / 1000), iatMs, exp: 9e9 }))}`,
+    });
+    const upload = (headers: Record<string, string>) =>
+      w.send(
+        'POST',
+        '/api/projects',
+        { id: 'A', name: 'Back', tabs: [{ id: 't1', name: 'Board', elements: [box('a')] }] },
+        headers,
+      );
+    // Signed a millisecond before the purge: refused, even as a create in the purge's own second.
+    expect((await upload(grantAt(purgedAt - 1))).status).toBe(404);
+    // The upload Sync Plan sends next, granted once the index holds the plan again.
+    const fresh = grantAt(purgedAt + 1);
+    expect((await upload(fresh)).status).toBe(201);
+    w.plans.get('A')!.restart();
+    const read = await w.send('GET', '/api/projects/A', undefined, fresh);
+    expect(read.status).toBe(200);
+    expect((await read.json<{ project: { name: string } }>()).project.name).toBe('Back');
+  });
+
   // liveworkspace/docs/specs/006-media/previews.md "The export door": the plan draws itself for liveworkspace's previews, on the
   // index's key or the media service's, and stores nothing.
   it('draws the plan for the previews, versioned by its save, on either key', async () => {

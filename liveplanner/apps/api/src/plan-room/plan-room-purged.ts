@@ -46,26 +46,33 @@ export function refuseIfPurged(room: Pick<PurgedRoom, 'purgedAt'>): void {
   if (typeof room.purgedAt === 'number') throw new PlanPurgedError();
 }
 
-// Whether a grant signed at `iat` (epoch seconds, the index's claim) may predate a purge at `at` (epoch ms). The
-// claim has whole seconds, so a grant from the purge's own second could be from either side: it counts as before,
-// except on a create (`POST /api/projects`), so Sync Project's delete then same-id upload is never refused. A grant
-// with no `iat` (the index always signs one) counts as before.
-export function signedBeforePurge(iat: number | undefined, at: number, create = false): boolean {
-  if (typeof iat !== 'number') return true;
+// When a grant was signed, as the index's claims say it: `iatMs` (epoch ms) on a grant from the index today, `iat`
+// (epoch seconds) alone on one signed before it added `iatMs` (liveworkspace one-explorer-contracts.md "Grants").
+export type SignedAt = { iat?: number; iatMs?: number };
+
+// Whether a grant may predate a purge at `at` (epoch ms). To the millisecond when the grant says it: anything signed
+// before the purge counts as before, a create's included, so a stale grant from the purge's own second can't start
+// the plan again, while the grant the index signs a moment later (Sync Plan's delete then same-id upload) can. A
+// grant with whole seconds only can't be placed inside the purge's second: it counts as before, except on a create
+// (`POST /api/projects`), so that upload is never refused. A grant with neither (the index always signs one) counts
+// as before.
+export function signedBeforePurge(grant: SignedAt, at: number, create = false): boolean {
+  if (typeof grant.iatMs === 'number') return grant.iatMs < at;
+  if (typeof grant.iat !== 'number') return true;
   const second = Math.floor(at / 1000);
-  return create ? iat < second : iat <= second;
+  return create ? grant.iat < second : grant.iat <= second;
 }
 
 // Whether a request holding `grant` (null: none on this plan) may reach a room. A purged room admits only a grant
 // the index signed from the purge on, which means the index holds the item again; that lifts the mark.
 export async function admitAfterPurge(
   room: PurgedRoom,
-  grant: { iat?: number } | null,
+  grant: SignedAt | null,
   create = false,
 ): Promise<boolean> {
   const at = await purgedAt(room);
   if (at === null) return true;
-  if (!grant || signedBeforePurge(grant.iat, at, create)) {
+  if (!grant || signedBeforePurge(grant, at, create)) {
     console.info('[room] refused on a purged plan');
     return false;
   }

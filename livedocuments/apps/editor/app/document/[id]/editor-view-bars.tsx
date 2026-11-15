@@ -19,6 +19,7 @@ import { RolePill } from '@/components/chrome/RoleIndicator';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { useEditorChrome, useEditorChromeStore } from './EditorContext';
+import { sameTabExcept } from './editor-chrome-equal';
 import type { documentIsPublic } from '@/lib/community-public';
 
 // The document in a full tab, by its link when the frame opened it by one.
@@ -133,18 +134,7 @@ const TAB_CONTENT = new Set(['elements', 'articles']);
 export function sameTabsForBar(a: readonly Tab[], b: readonly Tab[]): boolean {
   if (a === b) return true;
   if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    const x = a[i]!;
-    const y = b[i]!;
-    if (x === y) continue;
-    const keys = Object.keys(x) as (keyof Tab)[];
-    if (keys.length !== Object.keys(y).length) return false;
-    for (const k of keys) {
-      if (TAB_CONTENT.has(k)) continue;
-      if (!Object.is(x[k], y[k])) return false;
-    }
-  }
-  return true;
+  return a.every((x, i) => sameTabExcept(x, b[i]!, TAB_CONTENT));
 }
 
 // The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.

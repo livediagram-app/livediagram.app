@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Element } from '@livedocuments/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import {
+  useEditorChrome,
+  useEditorChromeStore,
+  type EditorContextValue,
+} from '@/app/document/[id]/EditorContext';
+import { sameSlice } from '@/app/document/[id]/editor-chrome-equal';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -45,19 +50,33 @@ import {
 // The one selected element, or null for none or a multi-selection.
 const singleOf = (s: Selection) => (s.multiSelectedIds.size > 0 ? null : s.selectedId);
 
+// What the tours read of the editor, a slice of its chrome store (docs/specs/007-editor/blueprints/flashcards.md
+// "Performance and limits"): no writing, so a typing commit renders nothing here. Its handlers read the store when
+// they run.
+const tourSlice = (s: EditorContextValue) => ({
+  elements: s.activeTab.elements,
+  tabId: s.activeTab.id,
+  can: s.can,
+  hydrated: s.hydrated,
+  anyWelcomeOpen: s.anyWelcomeOpen,
+  embedMode: s.embedMode,
+  userPreferences: s.userPreferences,
+});
+
 // Element tours (docs/specs/007-editor/element-tours.md): decides whether the selected element is offered its tour,
 // offers it on the footer's Start Tour button ("Start Sankey Tour", ahead of the mode's own tour), and runs the tour
 // when the button is pressed. It never starts or prompts on its own. Mounted once in
 // EditorView beside the other tour hosts. Each toured kind's steps, copy and token are its ELEMENT_TOUR_DEFS entry.
 export function ElementTourHost() {
-  const ctx = useEditorContext();
+  const chrome = useEditorChromeStore();
+  const ctx = useEditorChrome(tourSlice, sameSlice);
   const selectedId = useSelectionOf(singleOf);
   const touch = useCoarsePointer();
   // Never offered on a phone (docs/specs/007-editor/element-tours.md "On a phone"): the selection toolbar has no room.
   const phone = useIsMobileViewport();
   const element = useMemo(
-    () => (selectedId ? (ctx.activeTab.elements.find((e) => e.id === selectedId) ?? null) : null),
-    [ctx.activeTab.elements, selectedId],
+    () => (selectedId ? (ctx.elements.find((e) => e.id === selectedId) ?? null) : null),
+    [ctx.elements, selectedId],
   );
   const kind = elementTourKindOf(element);
 
@@ -76,13 +95,15 @@ export function ElementTourHost() {
     clearFocus: () => setSankeyTourFocus(null),
     openFlows: () => {
       const id = touringRef.current?.id;
-      if (id && ctx.sankeyFlowsOpenForId !== id) ctx.setSankeyFlowsOpenForId(id);
+      const now = chrome.get();
+      if (id && now.sankeyFlowsOpenForId !== id) now.setSankeyFlowsOpenForId(id);
     },
     // As the dialog's own Done: what is being typed is stored first.
     closeFlows: () => sankeyFlowsDialog.close(),
     openChartData: () => {
       const id = touringRef.current?.id;
-      if (id && ctx.lineDataOpenForId !== id) ctx.setLineDataOpenForId(id);
+      const now = chrome.get();
+      if (id && now.lineDataOpenForId !== id) now.setLineDataOpenForId(id);
     },
     // As the dialog's own Done: what is being typed is stored first.
     closeChartData: () => chartDataDialog.close(),
@@ -101,7 +122,7 @@ export function ElementTourHost() {
       if (!id) return;
       // Beside the element, where a right-click on it opens it; the menu nudges itself into the viewport.
       const r = document.querySelector(elementSelector(id))?.getBoundingClientRect();
-      ctx.setContextMenu({
+      chrome.get().setContextMenu({
         mode: 'element',
         elementId: id,
         x: r ? r.right + 10 : window.innerWidth / 2,
@@ -109,7 +130,7 @@ export function ElementTourHost() {
       });
       await waitForSelector(CONTEXT_MENU, 2000);
     },
-    closeElementMenu: () => ctx.closeContextMenu(),
+    closeElementMenu: () => chrome.get().closeContextMenu(),
   };
   const apiRef = useLatest(api);
 
@@ -147,15 +168,16 @@ export function ElementTourHost() {
   // Records the kind as taken (Settings › Getting Started): onto the freshest preferences, not this render's, since the whole blob
   // is written.
   const answer = (k: ElementTourKind) => {
+    const now = chrome.get();
     const next = rebaseUserPreferences(
-      ctx.userPreferences,
-      markElementTourSeen(ctx.userPreferences ?? {}, k),
+      now.userPreferences,
+      markElementTourSeen(now.userPreferences ?? {}, k),
     );
-    ctx.setUserPreferences(next);
-    ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+    now.setUserPreferences(next);
+    now.writeUserPreferences(next, now.selfParticipant?.id ?? null);
   };
 
-  const activeTabRef = useLatest(ctx.activeTab);
+  const elementsRef = useLatest(ctx.elements);
   const play = (el: Element, k: ElementTourKind) => {
     const d = ELEMENT_TOUR_DEFS[k];
     answer(k);
@@ -164,7 +186,7 @@ export function ElementTourHost() {
     setSteps(
       d.steps(el, {
         touch,
-        elements: activeTabRef.current.elements,
+        elements: elementsRef.current,
       }),
     );
     setTouring({ id: el.id, kind: k });
@@ -190,7 +212,7 @@ export function ElementTourHost() {
           rank: TOUR_OFFER_RANK.element,
           start: () => {
             if (shown !== null) return;
-            const el = activeTabRef.current.elements.find((e) => e.id === offerId);
+            const el = elementsRef.current.find((e) => e.id === offerId);
             if (el) playRef.current(el, offerKind);
           },
           onShown: () => track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offerKind].token}Offer`),
@@ -200,12 +222,10 @@ export function ElementTourHost() {
   );
 
   // Ends as skipped when the tour can no longer run on its element: deleted, no longer editable, or another tab.
-  const touredElement = touring
-    ? ctx.activeTab.elements.find((e) => e.id === touring.id)
-    : undefined;
+  const touredElement = touring ? ctx.elements.find((e) => e.id === touring.id) : undefined;
   const stillTourable =
     !!touring && !!touredElement && canTourElement(ctx.can, touredElement, touring.kind);
-  const tabId = ctx.activeTab.id;
+  const tabId = ctx.tabId;
   const startedOnRef = useRef<string | null>(null);
   useEffect(() => {
     if (!active) {

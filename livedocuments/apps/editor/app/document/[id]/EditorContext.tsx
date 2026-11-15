@@ -63,3 +63,20 @@ export function useEditorChrome<T>(
 ): T {
   return useStoreSlice(useEditorChromeStore(), select, equal);
 }
+
+/** A bag of handlers and data the view-model rebuilds on every render (a host's `deps`): the reader renders only when
+ *  `same` says it changed, and each render reads the newest bag, so a render for any other reason (its own state, the
+ *  selection) never runs on an old one.
+ *
+ *  Uncompiled: the React Compiler takes `store.get()` for a pure read and keeps its first result while `store` and
+ *  `select` keep their identity, so the reader would see the bag from its first render forever (the Quick Style bar
+ *  styled the empty tab it mounted on and never showed). */
+export function useEditorChromeLatest<T>(
+  select: (value: EditorContextValue) => T,
+  same: (a: T, b: T) => boolean,
+): T {
+  'use no memo';
+  const store = useEditorChromeStore();
+  useStoreSlice(store, select, same);
+  return select(store.get());
+}

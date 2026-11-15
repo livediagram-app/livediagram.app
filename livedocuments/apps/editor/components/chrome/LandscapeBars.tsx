@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { Glyph, Tooltip, atLeastInset } from '@livedocuments/ui';
 import {
   TOOLBAR_CARD,
@@ -37,7 +38,7 @@ export const HIDE_BARS_LABEL = 'Hide Header and Tabs';
 /** The bars handle: a chevron card at the canvas's top-right corner, drawn only on a phone held
  *  sideways. Placed in the editor's column right after the header, in a zero-height row, so it sits
  *  at the canvas's top edge whether the header shows or not. */
-export function LandscapeBarsHandle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
+function LandscapeBarsHandleView({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
   const label = shown ? HIDE_BARS_LABEL : SHOW_BARS_LABEL;
   return (
     // Above the canvas's toolbars (the strip's row spans the canvas's width), under its overlays.
@@ -70,3 +71,8 @@ export function LandscapeBarsHandle({ shown, onToggle }: { shown: boolean; onTog
     </div>
   );
 }
+
+/** Behind a memo boundary that forwards its toggle (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+ *  limits"): the editor view hands it a new function on every render, a typing commit among them, and it renders only
+ *  when `shown` changes. */
+export const LandscapeBarsHandle = withStableEventProps(LandscapeBarsHandleView);

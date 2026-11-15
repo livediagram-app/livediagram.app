@@ -17,6 +17,7 @@ import {
   INDEX_PERSON_HEADER,
   IndexError,
   LIST_LIMIT_MAX,
+  type Folder,
   type Item,
   type Page,
 } from '@liveworkspace/index-client';
@@ -27,11 +28,21 @@ import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 /** The person's own work, as one pass reads it. */
 export type Picture = { items: MirrorItem[]; folders: MirrorFolder[]; trash: MirrorTrashed[] };
 
+/** The three lists a picture is read from, page by page. */
+export type PictureList = keyof Picture;
+export const PICTURE_LISTS: readonly PictureList[] = ['items', 'folders', 'trash'];
+
+/** One page of one list: its rows (in a picture whose other lists are empty), and the cursor of the next, or null. */
+export type PicturePage = { picture: Picture; nextCursor: string | null };
+
 export interface PersonIndex {
   // The whole picture. Through the mirror's runtime (mirror/picture.ts), `full: false` may read only what changed.
   picture(options?: { full?: boolean }): Promise<Picture>;
   // The live items changed at or after `since` (epoch ms), with every folder and the whole Trash.
   changedSince(since: number): Promise<Picture>;
+  // One page of a list, from its first (`cursor` null) or from where the last page left off: a whole read that spans
+  // passes (mirror/picture.ts) goes on from the cursor it kept. Keyset-paged, so a move or a delete shifts nothing.
+  picturePage(list: PictureList, cursor: string | null): Promise<PicturePage>;
   // One item as the picture holds it (live, personal, unshared, of a mirrored app), else null.
   readItem(id: string): Promise<MirrorItem | null>;
   renameItem(id: string, name: string): Promise<void>;
@@ -96,6 +107,22 @@ function mirrorItems(items: readonly Item[]): MirrorItem[] {
   );
 }
 
+// The person's own folders.
+function mirrorFolders(folders: readonly Folder[]): MirrorFolder[] {
+  return folders
+    .filter((f) => f.teamId === null)
+    .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId, updatedAt: f.updatedAt }));
+}
+
+// The person's own items in the Trash, of every registered app.
+function mirrorTrash(items: readonly Item[]): MirrorTrashed[] {
+  return items.flatMap((i) =>
+    i.teamId === null && i.trashedAt !== null && isAppName(i.app)
+      ? [{ id: i.id, app: i.app, name: i.title, trashedAt: i.trashedAt ?? 0 }]
+      : [],
+  );
+}
+
 export function createIndexApi(env: Env): IndexApi {
   const key = setting(env.INDEX_KEY_DRIVE) ?? '';
   const binding = env.INDEX;
@@ -119,58 +146,63 @@ export function createIndexApi(env: Env): IndexApi {
         headers: { [INDEX_APP_HEADER]: DRIVE_DELEGATE, [INDEX_PERSON_HEADER]: personId },
         fetch: meter ? meteredFetch(doFetch, meter) : doFetch,
       });
+      // One page of each list as the index answers it.
+      const pageOf = {
+        items: (cursor: string | undefined, since?: number) =>
+          client.listItems({
+            team: 'personal',
+            limit: LIST_LIMIT_MAX,
+            ...(since !== undefined ? { since } : {}),
+            ...(cursor ? { cursor } : {}),
+          }),
+        folders: (cursor: string | undefined) =>
+          client.listFolders({
+            team: 'personal',
+            limit: LIST_LIMIT_MAX,
+            ...(cursor ? { cursor } : {}),
+          }),
+        trash: (cursor: string | undefined) =>
+          client.listTrash({
+            team: 'personal',
+            limit: LIST_LIMIT_MAX,
+            ...(cursor ? { cursor } : {}),
+          }),
+      };
       // Every folder and the whole Trash, with every live item or those changed at or after `since`.
       async function read(since?: number): Promise<Picture> {
         const [items, folders, trash] = await Promise.all([
-          everyPage(
-            (cursor) =>
-              client.listItems({
-                team: 'personal',
-                limit: LIST_LIMIT_MAX,
-                ...(since !== undefined ? { since } : {}),
-                ...(cursor ? { cursor } : {}),
-              }),
-            'items',
-          ),
-          everyPage(
-            (cursor) =>
-              client.listFolders({
-                team: 'personal',
-                limit: LIST_LIMIT_MAX,
-                ...(cursor ? { cursor } : {}),
-              }),
-            'folders',
-          ),
-          everyPage(
-            (cursor) =>
-              client.listTrash({
-                team: 'personal',
-                limit: LIST_LIMIT_MAX,
-                ...(cursor ? { cursor } : {}),
-              }),
-            'items',
-          ),
+          everyPage((cursor) => pageOf.items(cursor, since), 'items'),
+          everyPage(pageOf.folders, 'folders'),
+          everyPage(pageOf.trash, 'items'),
         ]);
         return {
           items: mirrorItems(items),
-          folders: folders
-            .filter((f) => f.teamId === null)
-            .map((f) => ({
-              id: f.id,
-              name: f.name,
-              parentId: f.parentId,
-              updatedAt: f.updatedAt,
-            })),
-          trash: trash.flatMap((i) =>
-            i.teamId === null && i.trashedAt !== null && isAppName(i.app)
-              ? [{ id: i.id, app: i.app, name: i.title, trashedAt: i.trashedAt ?? 0 }]
-              : [],
-          ),
+          folders: mirrorFolders(folders),
+          trash: mirrorTrash(trash),
         };
       }
       return {
         picture: () => read(),
         changedSince: (since) => read(since),
+        async picturePage(list, cursor) {
+          const at = cursor ?? undefined;
+          const picture: Picture = { items: [], folders: [], trash: [] };
+          let nextCursor: string | null;
+          if (list === 'items') {
+            const page = await pageOf.items(at);
+            picture.items = mirrorItems(page.items);
+            nextCursor = page.nextCursor;
+          } else if (list === 'folders') {
+            const page = await pageOf.folders(at);
+            picture.folders = mirrorFolders(page.folders);
+            nextCursor = page.nextCursor;
+          } else {
+            const page = await pageOf.trash(at);
+            picture.trash = mirrorTrash(page.items);
+            nextCursor = page.nextCursor;
+          }
+          return { picture, nextCursor: nextCursor || null };
+        },
         async readItem(id) {
           try {
             const { item } = await client.getItem(id);

@@ -31,6 +31,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 // allocating a new Set on every pointermove.
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
+import { useCanvasChromeProps } from '@/components/canvas/canvas-chrome-props';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
@@ -125,6 +126,10 @@ function CanvasView(props: CanvasProps) {
   );
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
+  // The chrome's own props, its pages view and the writing it leaves out (docs/specs/007-editor/blueprints/
+  // flashcards.md "Performance and limits"): a typing commit changes only the writing, which Contents reads from its
+  // store.
+  const chromeProps = useCanvasChromeProps(props);
   // No text selection starts on the canvas (docs/specs/008-canvas/canvas-performance.md "A press on the canvas
   // selects no text").
   useNoCanvasTextSelection(mainRef);
@@ -457,7 +462,7 @@ function CanvasView(props: CanvasProps) {
 
             <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
             <CanvasChrome
-              {...props}
+              {...chromeProps}
               mainSize={mainSize}
               laserConfig={props.laserConfig}
               onChangeLaserField={props.onChangeLaserField}

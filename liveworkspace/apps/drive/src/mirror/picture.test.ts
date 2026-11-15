@@ -4,6 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DRIVE_ITEM_MIN_WRITE_INTERVAL_MS } from '@liveworkspace/drive';
 import { harness, nodeSql, PERSON, type Harness } from '../test-support';
+import { BudgetSpent } from './meter';
 import { MirrorStore } from './store';
 import {
   DRIVE_PICTURE_FULL_MS,
@@ -212,6 +213,107 @@ describe('what a pass reads', () => {
     expect(DRIVE_PICTURE_SLACK_MS).toBeGreaterThan(0);
     h.clock.advance(DRIVE_PICTURE_FULL_MS);
     expect((await measure()).requests).toBe(12);
+  });
+
+  // Work Tracker 425: a picture past what one pass may read finishes over several, and none of them sees half of it.
+  it('reads a picture bigger than a pass over several, never handing out a half-read one', async () => {
+    const store = new MirrorStore(nodeSql());
+    h.index.pageSize = 10;
+    const folder = h.index.addFolder('Work').id;
+    for (let i = 0; i < 55; i++)
+      h.index.addItem({ name: `Item ${i}`, folderId: i % 2 ? folder : null, updatedAt: 1000 + i });
+    for (let i = 0; i < 12; i++) h.index.addItem({ name: `Old ${i}`, trashedAt: 50 + i });
+    h.clock.advance(DRIVE_PICTURE_FULL_MS);
+    // 6 pages of items, 1 of folders and 2 of the Trash: 9 pages, 4 a pass.
+    const pass = () => pictureIndex(h.index.forPerson(PERSON), store, h.clock.now, 4);
+    const marks: string[] = [];
+    for (let i = 0; i < 2; i++) {
+      await expect(pass().picture()).rejects.toThrow(BudgetSpent);
+      marks.push(store.pictureReadMark());
+      h.clock.advance(1000);
+    }
+    expect(new Set(marks).size).toBe(2);
+    expect(store.pictureState()).toBeNull();
+    // Meanwhile: one item saved, one made, one trashed and one restored, all after the read began.
+    const [first, second] = [...h.index.items.keys()];
+    h.index.edit(first!, { name: 'Saved meanwhile' });
+    const made = h.index.addItem({ name: 'Made meanwhile' });
+    const restored = [...h.index.items.values()].find((i) => i.trashedAt !== null)!.id;
+    quietly.trash(second!);
+    quietly.restore(restored);
+    const picture = await pass().picture();
+    expect(store.pictureRead()).toBeNull();
+    expect(store.pictureReadMark()).toBe('');
+    const live = new Map(picture.items.map((i) => [i.id, i]));
+    expect(live.size).toBe(55 + 1 - 1 + 1);
+    expect(live.get(first!)!.name).toBe('Saved meanwhile');
+    expect(live.has(made.id)).toBe(true);
+    expect(live.has(second!)).toBe(false);
+    expect(live.has(restored)).toBe(true);
+    expect(picture.trash.map((t) => t.id)).toContain(second);
+    expect(picture.folders.map((f) => f.id)).toEqual([folder]);
+    expect(h.index.wholeReads).toBe(1);
+    // Kept as one whole read: the next read is of what changed.
+    expect(store.keptPicture().items.size).toBe(live.size);
+    await pass().picture();
+    expect(h.index.wholeReads).toBe(1);
+  });
+
+  it('drops a whole read in progress when the mirror writes to the index, and starts it afresh', async () => {
+    const store = new MirrorStore(nodeSql());
+    h.index.pageSize = 10;
+    for (let i = 0; i < 40; i++) h.index.addItem({ name: `Item ${i}`, updatedAt: 1000 + i });
+    const pass = () => pictureIndex(h.index.forPerson(PERSON), store, h.clock.now, 2);
+    await expect(pass().picture()).rejects.toThrow(BudgetSpent);
+    expect(store.pictureRead()).not.toBeNull();
+    const [id] = [...h.index.items.keys()];
+    await pass().renameItem(id!, 'Renamed');
+    expect(store.pictureRead()).toBeNull();
+    expect(store.stagedPicture()).toEqual({ items: [], folders: [], trash: [] });
+    // A page from the dropped read lands on nothing.
+    expect(store.addPicturePage(1, 'items', [], null)).toBe(false);
+    h.clock.advance(1000);
+    await expect(pass().picture()).rejects.toThrow(BudgetSpent);
+    expect(h.index.wholeReads).toBe(2);
+  });
+
+  it('stages nothing from a page that lands after its read was dropped', async () => {
+    const store = new MirrorStore(nodeSql());
+    h.index.addItem({ name: 'Flow' });
+    const raw = h.index.forPerson(PERSON);
+    // A write elsewhere drops the read while its page is on the way.
+    const racing = {
+      ...raw,
+      picturePage: async (...args: Parameters<typeof raw.picturePage>) => {
+        const page = await raw.picturePage(...args);
+        store.stalePicture();
+        return page;
+      },
+    };
+    await expect(pictureIndex(racing, store, h.clock.now).picture()).rejects.toThrow(BudgetSpent);
+    expect(store.pictureRead()).toBeNull();
+    expect(store.stagedPicture()).toEqual({ items: [], folders: [], trash: [] });
+  });
+
+  it('reads whole again when what changed during a long read cannot be trusted', async () => {
+    const store = new MirrorStore(nodeSql());
+    h.index.pageSize = 10;
+    const work = h.index.addFolder('Work').id;
+    for (let i = 0; i < 30; i++)
+      h.index.addItem({ name: `Item ${i}`, folderId: work, updatedAt: 1000 + i });
+    h.clock.advance(DRIVE_PICTURE_FULL_MS);
+    const pass = () => pictureIndex(h.index.forPerson(PERSON), store, h.clock.now, 3);
+    await expect(pass().picture()).rejects.toThrow(BudgetSpent);
+    h.clock.advance(1000);
+    // The folder every item read so far was in goes: they move up untouched, which what changed can't show.
+    h.index.deleteFolderHere(work);
+    await expect(pass().picture()).rejects.toThrow(BudgetSpent);
+    expect(store.pictureRead()).toBeNull();
+    expect(store.pictureState()!.fullAt).toBe(0);
+    h.clock.advance(1000);
+    const picture = await pictureIndex(h.index.forPerson(PERSON), store, h.clock.now).picture();
+    expect(picture.items.every((i) => i.folderId === null)).toBe(true);
+    expect(h.index.wholeReads).toBe(2);
   });
 
   it('reads whole with nothing kept, and keeps only what differs', async () => {

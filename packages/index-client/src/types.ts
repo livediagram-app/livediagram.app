@@ -286,6 +286,9 @@ export type GrantClaims = {
   // included), so an app never has to take the caller's word for it. Absent for the owner and the team.
   link?: string;
   iat: number;
+  // The same moment as `iat` in epoch milliseconds (one-explorer-contracts.md "Grants"). Absent from a grant signed
+  // before the index added it: such a grant orders only to the second.
+  iatMs?: number;
   exp: number;
   jti: string;
 };
