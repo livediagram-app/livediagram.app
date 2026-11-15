@@ -49,7 +49,7 @@ export function WholePlanPreview({
         </div>
         <ul
           aria-label="What it holds"
-          className="grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))]"
+          className="grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(6rem,1fr))]"
         >
           {counts.map((c) => (
             <li
