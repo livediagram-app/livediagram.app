@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 16,
+    articleCount: 17,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -682,6 +682,17 @@ export const articles: Article[] = [
       'Your own kinds of card on Plan boards: name, colour, glyph, custom fields and types built on a base type.',
     keywords:
       'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in tabs details new cards can be limits percent progress bar duration hours minutes estimate time tracking track time timer time spent add time calculated calculation formula formulas rollup roll up lookup look up sum average child count children done currency money email rating stars multiple choice person image attachments cover image inherit inherits inherited inheritance base type parent type subtype extend detach blocked by blocks dependency',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
+    slug: 'card-templates',
+    title: 'Card Templates',
+    description:
+      'Start a card already filled in from a template on its card type: from Add card, a chip or New.',
+    keywords:
+      'card template templates task template issue template preset prefill pre-fill prefilled starting values boilerplate default values bug report checklist release onboarding reuse repeat new card from template add card chip',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',

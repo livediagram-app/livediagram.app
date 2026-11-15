@@ -103,6 +103,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 8v12M9 12h6M9 15.5h4" />
     </Glyph>
   ),
+  // A clipboard holding a card's lines with a plus at its corner: a card started already filled in.
+  'card-templates': (
+    <Glyph>
+      <path d="M9 4H6.5A1.5 1.5 0 0 0 5 5.5v14A1.5 1.5 0 0 0 6.5 21H12" />
+      <path d="M15 4h2.5A1.5 1.5 0 0 1 19 5.5V12" />
+      <rect x="9" y="2.5" width="6" height="3" rx="1" />
+      <path d="M8.5 10h7M8.5 13.5h5M8.5 17h2.5" />
+      <path d="M18 15v6M15 18h6" />
+    </Glyph>
+  ),
   // Three cards in a column, the top two ticked and ringed: several cards picked at once.
   'select-cards': (
     <Glyph>

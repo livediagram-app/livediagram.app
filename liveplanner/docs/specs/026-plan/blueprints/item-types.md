@@ -1120,8 +1120,8 @@ Spec "Card templates" (Where a card is added, its templates are offered) and pla
 - `card-template-start.ts` (`components/plan/`), pure: `addCardChoices(types)` lists `AddCardChoice`s in order, each
   type `{ id: type.id, type }` followed by its templates `{ id, type, template }` (id `<type id>::<template id>`)
   (`::` never occurs in a type or template id); `newCardOf(type, template?)` is the `NewCard` `{ type: type.id, fields:
-  { title: type.newTitle, ...cardTemplateFields(type, template) }, template?: template.id }`; `templateSummary(type,
-  template)` names the fields the template fills, once each (a Rich key reads as its field), in the type's field
+{ title: type.newTitle, ...cardTemplateFields(type, template) }, template?: template.id }`; `templateSummary(type,
+template)` names the fields the template fills, once each (a Rich key reads as its field), in the type's field
   order, built-ins by `typeFieldLabel`, custom fields by their label, joined ", ", or "Starts blank";
   `hasTemplates(type)` is `(type.templates?.length ?? 0) > 0`.
 - `OptionRow` gains `inset?: boolean`: the row's left padding grows to `pl-7`, so the template rows sit under their
@@ -1136,13 +1136,13 @@ Spec "Card templates" (Where a card is added, its templates are offered) and pla
 - `BoardCardTypeChips`: `add(typeId, start?)`; a chip of a type with `hasTemplates` opens `AddCardPopover` with
   `[type]` (`picking: { typeId, anchor }` state, the anchor the chip's button, in the board's palette) instead of
   adding, and the pick calls `add(typeId, card.fields)`. `chipClickCell(setup, projection, types, typeId, statusNames,
-  start?)`: fields `{ title: def.newTitle, ...start, ...laneSet }`. The drag's drop (`usePlanBoardDrop`) still adds a
+start?)`: fields `{ title: def.newTitle, ...start, ...laneSet }`. The drag's drop (`usePlanBoardDrop`) still adds a
   blank card. The chip's `HoverCard` description is "Click to start one from a template, or drag it onto the board."
   for a type with templates.
 - `LinkedCardGroup`: New {Type} for a type with `hasTemplates` opens `AddCardPopover` (`[type]`, menu colours, anchor
   the button) and its pick calls `onAdd(typeId, card.fields)`; else `onAdd(typeId)` at once. `LinkedCardsTab`,
   `ItemPanel` and `PlanSheetsHost.onAddLinked(group, typeId, start?)` pass `start` through: fields `{ title:
-  type.newTitle, ...start, [group.fieldId]: link }`.
+type.newTitle, ...start, [group.fieldId]: link }`.
 - Role gate: unchanged. Each of these is drawn only for `canEditCards` (Editor, Participant); a Viewer is offered
   none. Tests: `card-template-start.test.ts`, `AddCardPopover.test.tsx` (template rows, pick, telemetry, keyboard),
   `BoardCardTypeChips.test.tsx` (a type with templates opens the menu; a Viewer sees no chips), `LinkedCards.test.tsx`
