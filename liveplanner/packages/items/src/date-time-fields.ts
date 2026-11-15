@@ -27,21 +27,33 @@ export interface Instant {
   zone?: string;
 }
 
-const zoneChecks = new Map<string, boolean>();
+// The most entries each zone cache keeps (blueprint item-types.md "date-time-fields.ts"): zone strings come from
+// stored and typed data, so a long-lived Worker isolate would otherwise grow its caches without end. Far above the
+// zones one plan's people use, so a board's render never evicts.
+export const ZONE_CACHE_MAX = 64;
 
-// Whether `zone` is a time zone this runtime knows (checked once a zone).
-export function isTimeZone(zone: string): boolean {
-  let ok = zoneChecks.get(zone);
-  if (ok === undefined) {
-    try {
-      new Intl.DateTimeFormat('en-US', { timeZone: zone });
-      ok = true;
-    } catch {
-      ok = false;
-    }
-    zoneChecks.set(zone, ok);
+// Keep `value` under `key`, evicting the oldest entry (a Map keeps insertion order) once the cache is full.
+function cacheSet<V>(cache: Map<string, V>, key: string, value: V): void {
+  if (cache.size >= ZONE_CACHE_MAX) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
   }
-  return ok;
+  cache.set(key, value);
+}
+
+// The zones this runtime knows, checked once each; a zone it doesn't know is never kept.
+const zoneChecks = new Map<string, true>();
+
+// Whether `zone` is a time zone this runtime knows (checked once a known zone).
+export function isTimeZone(zone: string): boolean {
+  if (zoneChecks.has(zone)) return true;
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: zone });
+  } catch {
+    return false;
+  }
+  cacheSet(zoneChecks, zone, true);
+  return true;
 }
 
 // The viewer's own zone (the runtime's), "UTC" when it can't say.
@@ -91,7 +103,7 @@ export function zonedParts(ms: number, tz?: string): ZonedParts {
       hour: 'numeric',
       minute: 'numeric',
     });
-    partFormatters.set(tz, f);
+    cacheSet(partFormatters, tz, f);
   }
   const out: Record<string, number> = {};
   for (const p of f.formatToParts(ms)) if (p.type !== 'literal') out[p.type] = Number(p.value);
@@ -242,11 +254,24 @@ type DateTimeStyle = 'short' | 'medium';
 
 const textFormatters = new Map<string, Intl.DateTimeFormat>();
 
+// How many entries each zone cache holds now (tests: never past ZONE_CACHE_MAX).
+export function zoneCacheSizes(): {
+  zoneChecks: number;
+  partFormatters: number;
+  textFormatters: number;
+} {
+  return {
+    zoneChecks: zoneChecks.size,
+    partFormatters: partFormatters.size,
+    textFormatters: textFormatters.size,
+  };
+}
+
 function textFormatter(key: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
   let f = textFormatters.get(key);
   if (!f) {
     f = new Intl.DateTimeFormat(undefined, options);
-    textFormatters.set(key, f);
+    cacheSet(textFormatters, key, f);
   }
   return f;
 }

@@ -48,8 +48,15 @@ export function useSpacePreviews({
     // A host's client without the call answers as a failed read, never a crash.
     Promise.resolve()
       .then(() => client.spacePreviews(app ? { app } : {}, { signal: controller.signal }))
+      .then((answered) => {
+        // An answer with no spaces list (a body that is not JSON reads as null: a local stack whose router
+        // answers the path with a page) is a failed read like a refusal, never a throw.
+        const spaces = (answered as { spaces?: unknown } | null | undefined)?.spaces;
+        if (!Array.isArray(spaces)) throw new Error('No space previews in the answer');
+        return spaces as SpacePreview[];
+      })
       .then(
-        ({ spaces }) =>
+        (spaces) =>
           setAnswer({
             key,
             app,

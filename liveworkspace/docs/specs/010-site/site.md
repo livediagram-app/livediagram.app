@@ -95,7 +95,7 @@ away already. The control keeps its own colours, light and dark: custom properti
 plain class, so a page's own stylesheet loaded after the site's (the telemetry dashboard's, the Explorer's, the
 Community's) could otherwise repaint it with a light class it emits again; this way the menu looks the same whatever
 loads after it. In dark mode a hovered or keyboard-focused item is slate-700 at 60% on the slate-800 menu, under a
-white name and a slate-400 hint; in light mode slate-100 on white. On an app's own pages Sign out is the app's, and it signs out of every app in the browser just the same, through the accounts site's hop. A marketing page learns who is signed in from the app's readable cookies,
+white name and a slate-400 hint; in light mode slate-100 on white, its hints darkened from slate-500 to slate-600 (`--account-hint-hover`) so their 12 px text keeps AA on the hover (6.9:1, where slate-500 was 4.35:1). On an app's own pages Sign out is the app's, and it signs out of every app in the browser just the same, through the accounts site's hop. A marketing page learns who is signed in from the app's readable cookies,
 `<prefix>signed_in` and `<prefix>account` (the name), and makes no request for it
 ([accounts.md](../003-accounts/accounts.md#an-apps-signed-in-cookies)). There a guest's Sign in is the app's own
 (`/api/auth/sign-in?return_to=<the page>`) and Create account the same with `&screen=sign-up`, and the Guest button
@@ -947,7 +947,8 @@ pressable again, and so does coming Back to a page the browser kept.
   again) and **Go to the Home Page**, and under them a quieter line, "Still not working? **Check the Status
   Page**", linking [Status](#status-status) (`/status`, which an app's address sends here). A failure in the root
   layout itself gets the same card in a page of its own, with `lang`, the stylesheet and the appearance setting,
-  so it is light or dark as the rest of the site. The card's code loads only when a page fails, so it costs no
+  so it is light or dark as the rest of the site: it keeps the light or dark the failed page was showing, without
+  loading the Appearance setting's code into every page. The card's code loads only when a page fails, so it costs no
   page its first load; when that code can't load (offline), the same title, heading, line and actions show
   without the card's styling.
 - An address the site has no page for shows the same card, drawn on the server so it needs no script: the title
@@ -969,6 +970,11 @@ pressable again, and so does coming Back to a page the browser kept.
   found the way Tailwind scans: what each sheet's `@source` lines reach, colour classes of one family under the same
   variants set on one element. A guard test writes and checks those files, and fails when a page's sheet would emit
   a light class without its dark half. The dark variant itself is unchanged (`:where`, no weight), as in every app.
+  Two colour classes of one element under different states (`hover:text-slate-900`, `aria-[current=page]:text-white`)
+  weigh the same as well, so which wins is whichever sheet emitted its rule last: an element that can be in both states
+  at once names them together (`aria-[current=page]:hover:text-white`), which outweighs both. A second guard test
+  (`hover-tie-guard.test.ts`) finds such ties the same way and fails when a page sheet that doesn't scan the
+  element's file emits exactly one half.
 - The front door, Comparison, the dashboard, Status and the privacy policy and terms are indexable: title, description, canonical,
   Open Graph, `robots.txt` and `sitemap.xml`. Every other page's title names the page and then the site
   (`Status · liveworkspace`), the same in its Open Graph and X cards, so a search result or a tab never reads

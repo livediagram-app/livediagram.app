@@ -44,4 +44,25 @@ describe('svgMap (docs/specs/009-elements/map.md "Exports and other surfaces")',
     expect(svg).toContain('fill="#3b82f6"');
     expect(svg.match(/<path /g)!.length).toBeGreaterThanOrEqual(MAP_GEOMETRY.countries.length);
   });
+
+  // map.md "What it shows": the paper is the page's colour where the page has a fill, in every view.
+  it("draws its borders, plate and halos in the page's colour on a filled page", () => {
+    provideMapGeometry(MAP_GEOMETRY);
+    const us = { ...map, mapCountry: 'US' };
+    const onPage = svgBoxed(us, {
+      surface: 'dark',
+      chartGrounds: new Map([['m<1>', ['#7c2d12']]]),
+    });
+    expect(onPage).toContain('stroke="#7c2d12" stroke-width');
+    expect(onPage).not.toContain('#0f172a');
+    // The plate is a row of its own in the paper.
+    expect(onPage).toMatch(/<path d="M[^"]*Z" fill="#7c2d12"\/>/);
+    // The world view follows it too; with no ground, the surface's plain paper.
+    const world = svgBoxed(map, {
+      surface: 'dark',
+      chartGrounds: new Map([['m<1>', ['#7c2d12']]]),
+    });
+    expect(world).toContain('stroke="#7c2d12" stroke-width');
+    expect(svgBoxed(map, { surface: 'dark' })).toContain('stroke="#0f172a" stroke-width');
+  });
 });

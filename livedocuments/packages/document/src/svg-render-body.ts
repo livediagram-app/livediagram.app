@@ -97,7 +97,8 @@ export function svgElementBody(
       {
         land: mapLandColour(el.fillColor, o.surface),
         accent: stroke,
-        paper: mapPaperColour(o.surface),
+        // What it sits on (chartPageGrounds takes maps too): its borders and inset plate follow the page.
+        paper: mapPaperColour(o.surface, chartGround),
         text: labelColor,
       },
       fontFamily,

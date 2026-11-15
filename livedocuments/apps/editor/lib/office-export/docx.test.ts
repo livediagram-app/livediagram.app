@@ -203,6 +203,20 @@ describe('Word export', () => {
     expect(parts.get('docprops/core.xml')).toContain('<dc:title>Every block</dc:title>');
   });
 
+  // docs/specs/020-import-export/office-export.md "Fonts are named, never embedded" (Work Tracker 230).
+  it('names a safe stand-in for each face in the font table, code falling back to a fixed-width face', async () => {
+    const { bytes } = await everyBlockFile();
+    const parts = await partsOf(bytes);
+    const table = [...parts.entries()].find(([k]) => k.toLowerCase() === 'word/fonttable.xml')?.[1];
+    expect(table).toBeDefined();
+    expect(() => parseXml(table!)).not.toThrow();
+    expect(table).toMatch(
+      /<w:font w:name="Roboto Mono"><w:altName w:val="Courier New"\/>[^]*?<w:pitch w:val="fixed"\/>/,
+    );
+    expect(table).toContain('<w:altName w:val="Arial"/>');
+    expect(parts.get('word/_rels/document.xml.rels')).toContain('fontTable.xml');
+  });
+
   // docs/specs/007-editor/article-pages.md "Footnotes" (Work Tracker #219).
   it('writes footnotes as Word footnotes, read back as footnotes', async () => {
     const { doc } = await everyBlockFile();

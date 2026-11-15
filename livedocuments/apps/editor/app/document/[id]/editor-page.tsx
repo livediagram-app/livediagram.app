@@ -19,7 +19,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
-import { EditorContext } from './EditorContext';
+import { EditorChromeContext, EditorContext, usePublishEditorChrome } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
@@ -50,6 +50,8 @@ const SharePasswordGate = dynamic(
 // identity / edit gates flipped by it.
 export default function LivePage({ surface = 'app' }: { surface?: EditorSurface } = {}) {
   const state = useEditorState({ surface });
+  // The chrome's store (EditorContext.tsx): chrome that never reads the document skips a typing commit.
+  const chrome = usePublishEditorChrome(state);
   const { embedMode, workbenchMode, appChrome } = surfaceFlags(surface);
   // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): one emit per rendered embed iframe
   // document, and one per document-scope workbench frame that mounts the editor (a workspace frame counts its own
@@ -237,18 +239,20 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
 
   return (
     <EditorContext.Provider value={state}>
-      {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
-      <MentionContext.Provider value={state.commentMentions}>
-        {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}
-        <CommentReactionsProvider value={state.commentReactions}>
-          <EditorView />
-        </CommentReactionsProvider>
-      </MentionContext.Provider>
-      {/* Moving this browser's documents in This Browser after signing in
+      <EditorChromeContext.Provider value={chrome}>
+        {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
+        <MentionContext.Provider value={state.commentMentions}>
+          {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}
+          <CommentReactionsProvider value={state.commentReactions}>
+            <EditorView />
+          </CommentReactionsProvider>
+        </MentionContext.Provider>
+        {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
-      {appChrome ? <LocalMovePrompt /> : null}
-      {/* A Take Offline or Sync the Explorer page handed over in the address. */}
-      <ConversionHandoff />
+        {appChrome ? <LocalMovePrompt /> : null}
+        {/* A Take Offline or Sync the Explorer page handed over in the address. */}
+        <ConversionHandoff />
+      </EditorChromeContext.Provider>
     </EditorContext.Provider>
   );
 }

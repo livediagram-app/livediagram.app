@@ -1,7 +1,7 @@
 // Resampling (docs/specs/031-photo/photo-pages.md "Changing the size"): Bicubic (Keys, a = -0.5,
 // DEFAULTS D3), Bilinear and Nearest Neighbour, premultiplied so a transparent edge brings no dark
 // fringe in; shrinking past half averages the area first.
-import { createRaster, type Raster } from '../raster/raster';
+import { createRaster, type Raster, type Rect } from '../raster/raster';
 
 export type Interpolation = 'bicubic' | 'bilinear' | 'nearest';
 
@@ -117,6 +117,89 @@ function boxDown(src: Raster, fx: number, fy: number): Raster {
       }
     }
   return out;
+}
+
+/** How resizeRaster takes a `width` x `height` picture to `w` x `h`: the whole-block average first (`bx`, `by`;
+ *  1 for none), the averaged size, and the step from one output pixel to the next in it. */
+export type ResizePlan = {
+  width: number;
+  height: number;
+  w: number;
+  h: number;
+  how: Interpolation;
+  bx: number;
+  by: number;
+  fromW: number;
+  fromH: number;
+  sx: number;
+  sy: number;
+};
+
+export function resizePlan(
+  width: number,
+  height: number,
+  w: number,
+  h: number,
+  how: Interpolation = 'bicubic',
+): ResizePlan {
+  let bx = 1;
+  let by = 1;
+  if (how !== 'nearest') {
+    const fx = Math.floor(width / w / 2);
+    const fy = Math.floor(height / h / 2);
+    if (fx >= 2 || fy >= 2) {
+      bx = Math.max(1, fx);
+      by = Math.max(1, fy);
+    }
+  }
+  const fromW = bx > 1 || by > 1 ? Math.max(1, Math.floor(width / bx)) : width;
+  const fromH = bx > 1 || by > 1 ? Math.max(1, Math.floor(height / by)) : height;
+  return { width, height, w, h, how, bx, by, fromW, fromH, sx: fromW / w, sy: fromH / h };
+}
+
+// The averaged picture's pixels one output span reads, [lo, hi): the filter's reach (two either side for
+// Bicubic) past the first and last sample, kept inside the averaged picture.
+function span(o0: number, o1: number, step: number, size: number): [number, number] {
+  const lo = Math.max(0, Math.floor((o0 + 0.5) * step - 0.5) - 2);
+  const hi = Math.min(size, Math.floor((o1 - 0.5) * step - 0.5) + 3);
+  return [lo, Math.max(lo, hi)];
+}
+
+/** The source pixels (relative to the picture's top left) that output rect `out` of resizeRaster reads: what
+ *  resizeRegion needs to draw it. Whole averaging blocks, so the region averages as the whole picture does. */
+export function resizeSourceRect(plan: ResizePlan, out: Rect): Rect {
+  const [x0, x1] = span(out.x, out.x + out.width, plan.sx, plan.fromW);
+  const [y0, y1] = span(out.y, out.y + out.height, plan.sy, plan.fromH);
+  return {
+    x: x0 * plan.bx,
+    y: y0 * plan.by,
+    width: Math.min(plan.width - x0 * plan.bx, (x1 - x0) * plan.bx),
+    height: Math.min(plan.height - y0 * plan.by, (y1 - y0) * plan.by),
+  };
+}
+
+/** Output rect `out` of resizeRaster(picture, plan.w, plan.h, plan.how), drawn from `region` alone: the picture's
+ *  pixels in resizeSourceRect(plan, out). The same pixels as the whole resize gives there, so a large picture can be
+ *  resized a tile at a time without ever being held whole (Make Sizes, docs/specs/031-photo/photo-pages.md). */
+export function resizeRegion(region: Raster, plan: ResizePlan, out: Rect): Raster {
+  const src = resizeSourceRect(plan, out);
+  const from = plan.bx > 1 || plan.by > 1 ? boxDown(region, plan.bx, plan.by) : region;
+  const ox = src.x / plan.bx;
+  const oy = src.y / plan.by;
+  const tile = createRaster(out.width, out.height);
+  const px = new Float64Array(4);
+  for (let y = 0; y < out.height; y++)
+    for (let x = 0; x < out.width; x++) {
+      sampleInto(
+        from,
+        (out.x + x + 0.5) * plan.sx - ox,
+        (out.y + y + 0.5) * plan.sy - oy,
+        plan.how,
+        px,
+      );
+      tile.data.set(px, (y * out.width + x) * 4);
+    }
+  return tile;
 }
 
 /** The raster resized to `w` x `h`. */

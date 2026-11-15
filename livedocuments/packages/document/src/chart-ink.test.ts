@@ -18,6 +18,7 @@ import { svgBoxed } from './svg-render';
 import { svgLineChart } from './svg-render-charts';
 import { themeChartPalette } from './theme-presets';
 import { THEMES } from './themes-data';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/007-editor/pages-mode.md "Charts adapt as they are drawn": a chart's series
 // reach 3:1 and its text 4.5:1 against what it sits on, keeping their hue, and a colour that
@@ -225,6 +226,19 @@ describe('chartPageGrounds', () => {
     const page = pageWith({ kind: 'gradient', from: '#000000', to: '#ffffff', angle: 180 });
     expect(chartPageGrounds([chartAt(page)], [page]).get('c')!.length).toBeGreaterThan(1);
   });
+
+  // docs/specs/009-elements/map.md "What it shows": a map's paper follows the page it sits on.
+  it('gives a map its ground too, alone on the page or on a card', () => {
+    const page = pageWith({ kind: 'solid', color: NAVY });
+    const map = { ...chartAt(page, 'm'), shape: 'map' } as Element;
+    expect(chartPageGrounds([map], [page]).get('m')).toEqual([NAVY]);
+    expect(chartPageGrounds([cardUnder(page, '#f8fafc'), map], [page]).get('m')).toEqual([
+      '#f8fafc',
+    ]);
+    // A plain square is still given none.
+    const square = { ...chartAt(page, 's'), shape: 'square' } as Element;
+    expect(chartPageGrounds([square], [page]).has('s')).toBe(false);
+  });
 });
 
 describe('the export draws charts as the canvas does', () => {
@@ -278,10 +292,10 @@ describe('cost', () => {
       });
     }
     chartPageGrounds(els, [page]);
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let k = 0; k < 10; k += 1) chartPageGrounds(els, [page]);
-    const each = (performance.now() - start) / 10;
+    const each = (cpuNowMs() - start) / 10;
     // Measured about 0.5 ms on an M-series Mac; the budget leaves room for loaded CI.
-    expect(each).toBeLessThan(50);
+    expect(each).toBeLessThan(cpuBudgetMs(50));
   });
 });

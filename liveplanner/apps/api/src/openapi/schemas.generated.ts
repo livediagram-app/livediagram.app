@@ -1360,6 +1360,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "const": "set_type",
             "type": "string"
           },
+          "map": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "type": "string"
+                },
+                "to": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
           "type": {
             "type": "string"
           }
@@ -3387,6 +3406,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationsListResponse": {
     "additionalProperties": false,
     "properties": {
+      "filters": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "tab": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tab",
+            "id",
+            "name"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
       "people": {
         "items": {
           "additionalProperties": false,
@@ -3460,6 +3502,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ribbons"
     ],
     "type": "string"
+  },
+  "BoardFilter": {
+    "additionalProperties": false,
+    "properties": {
+      "due": {
+        "$ref": "#/components/schemas/SavedDueWindow"
+      },
+      "filters": {
+        "items": {
+          "$ref": "#/components/schemas/CardSearchFilter"
+        },
+        "type": "array"
+      },
+      "mine": {
+        "const": true,
+        "type": "boolean"
+      },
+      "person": {
+        "type": "string"
+      },
+      "priority": {
+        "$ref": "#/components/schemas/Priority"
+      },
+      "text": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
   },
   "BoardSortDir": {
     "enum": [
@@ -8602,6 +8675,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "via": {
+        "const": "github",
+        "type": "string"
       }
     },
     "required": [
@@ -8847,6 +8924,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "defaultStatus": {
         "type": "string"
       },
+      "detailsGlyph": {
+        "$ref": "#/components/schemas/PlanGlyphId"
+      },
       "detailsLabel": {
         "type": "string"
       },
@@ -9081,6 +9161,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "glyph": {
+        "$ref": "#/components/schemas/PlanGlyphId"
       },
       "id": {
         "type": "string"
@@ -10741,6 +10824,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fillTab": {
         "type": "boolean"
       },
+      "filter": {
+        "$ref": "#/components/schemas/BoardFilter"
+      },
       "hideWriting": {
         "type": "boolean"
       },
@@ -11076,6 +11162,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shield",
       "lock",
       "eye",
+      "eye-off",
       "fire",
       "sparkle",
       "info",

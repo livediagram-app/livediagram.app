@@ -12,18 +12,32 @@ import { debugLog } from './debug-log';
 export const DISPLAY_EDGE_TOUCH = 2048;
 export const DISPLAY_EDGE_DESKTOP = 4096;
 export const DISPLAY_EDGE_TILE = 512;
-// Copies kept for reuse (most recently asked for first). Each is a compressed file, not pixels.
-export const DISPLAY_CACHE_SIZE = 24;
+// Copies kept for reuse are bounded by their total bytes, least recently asked for going first. Each is a
+// compressed file, not pixels, so a gallery's small tiles all fit where a few full-size photos fill it.
+// A phone or tablet (a coarse pointer) holds less than a desktop.
+export const DISPLAY_CACHE_BYTES_TOUCH = 32 * 1024 * 1024;
+export const DISPLAY_CACHE_BYTES_DESKTOP = 96 * 1024 * 1024;
+// A backstop for copies still loading (their size is not known yet).
+export const DISPLAY_CACHE_MAX_ENTRIES = 256;
 // JPEG quality for a photo's copy; pictures that may be transparent stay PNG.
 const JPEG_QUALITY = 0.9;
 
-/** The longest side this device shows a picture at. */
-export function displayEdge(): number {
-  const coarse =
+function isCoarsePointer(): boolean {
+  return (
     typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
-    window.matchMedia('(pointer: coarse)').matches;
-  return coarse ? DISPLAY_EDGE_TOUCH : DISPLAY_EDGE_DESKTOP;
+    window.matchMedia('(pointer: coarse)').matches
+  );
+}
+
+/** The longest side this device shows a picture at. */
+export function displayEdge(): number {
+  return isCoarsePointer() ? DISPLAY_EDGE_TOUCH : DISPLAY_EDGE_DESKTOP;
+}
+
+/** The most bytes of display copies this device keeps for reuse. */
+export function displayCacheBytes(): number {
+  return isCoarsePointer() ? DISPLAY_CACHE_BYTES_TOUCH : DISPLAY_CACHE_BYTES_DESKTOP;
 }
 
 /** The size a picture `width` x `height` is shown at, at most `maxEdge` on its longest side. */
@@ -109,7 +123,25 @@ export function displayCopy(blob: Blob, maxEdge: number): Promise<Blob> {
   });
 }
 
-const cache = new Map<string, Promise<Blob | null>>();
+// Least recently asked for first (a Map keeps insertion order; a hit moves its entry to the end).
+// `bytes` is 0 until the copy has loaded.
+const cache = new Map<string, { copy: Promise<Blob | null>; bytes: number }>();
+let cacheBytes = 0;
+
+function drop(id: string): void {
+  cacheBytes -= cache.get(id)!.bytes;
+  cache.delete(id);
+}
+
+// Let the oldest copies go until what is kept fits the budget. The newest copy always stays, so one
+// picture bigger than the whole budget is still shown without being fetched twice in a row.
+function trimCache(): void {
+  const budget = displayCacheBytes();
+  for (const id of cache.keys()) {
+    if (cache.size <= 1 || (cacheBytes <= budget && cache.size <= DISPLAY_CACHE_MAX_ENTRIES)) break;
+    drop(id);
+  }
+}
 
 /**
  * The shown copy of the picture `key` names, loading it with `load` the first time (or after it fell
@@ -125,20 +157,30 @@ export function cachedDisplayCopy(
   if (held) {
     cache.delete(id);
     cache.set(id, held);
-    return held;
+    return held.copy;
   }
-  const made = load().then((blob) => (blob ? displayCopy(blob, maxEdge) : null));
-  cache.set(id, made);
-  made.then(
+  const entry = {
+    copy: load().then((blob) => (blob ? displayCopy(blob, maxEdge) : null)),
+    bytes: 0,
+  };
+  cache.set(id, entry);
+  entry.copy.then(
     (blob) => {
-      if (!blob && cache.get(id) === made) cache.delete(id);
+      if (cache.get(id) !== entry) return;
+      if (!blob) {
+        drop(id);
+        return;
+      }
+      entry.bytes = blob.size;
+      cacheBytes += blob.size;
+      trimCache();
     },
     () => {
-      if (cache.get(id) === made) cache.delete(id);
+      if (cache.get(id) === entry) drop(id);
     },
   );
-  while (cache.size > DISPLAY_CACHE_SIZE) cache.delete(cache.keys().next().value!);
-  return made;
+  trimCache();
+  return entry.copy;
 }
 
 // One blob URL per shown copy, however many views show it: the browser decodes per URL, so two
@@ -174,6 +216,7 @@ export function releaseShownUrl(url: string): void {
 
 export function resetDisplayCacheForTests(): void {
   cache.clear();
+  cacheBytes = 0;
   users.clear();
   queue = Promise.resolve();
 }

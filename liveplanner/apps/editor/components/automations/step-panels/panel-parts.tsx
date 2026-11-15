@@ -92,6 +92,7 @@ export function ChipToggles({
   hint,
   empty = 'Nothing to pick in this plan yet.',
   gone = 'No longer here',
+  note,
 }: {
   label: string;
   options: readonly { value: string; label: string }[];
@@ -100,6 +101,8 @@ export function ChipToggles({
   hint?: ReactNode;
   empty?: string;
   gone?: string;
+  // A line under the chips about what is picked (Card Moved's columns the picked types don't use).
+  note?: ReactNode;
 }) {
   const id = useId();
   const picked = new Set(value);
@@ -144,6 +147,7 @@ export function ChipToggles({
       {hint && value.length === 0 ? (
         <p className="text-[12px] text-slate-500 dark:text-slate-400">{hint}</p>
       ) : null}
+      {note ? <p className="text-[12px] text-amber-800 dark:text-amber-300">{note}</p> : null}
     </div>
   );
 }

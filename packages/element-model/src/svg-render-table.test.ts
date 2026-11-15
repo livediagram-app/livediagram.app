@@ -29,6 +29,22 @@ describe('svgTableShape', () => {
     expect(tableTrackSizes(300, 3, [100, null, null])).toEqual([100, 100, 100]);
   });
 
+  // docs/specs/008-canvas/finish.md "Tables": under Marker the grid is whole rules and the cells' colours stay flat.
+  it('marks its grid lines as rules and its cell colours to keep, for the finishes', () => {
+    const svg = svgTableShape({
+      ...createTable(0, 0, 3, 2),
+      headerRow: true,
+      zebra: true,
+      cellStyles: [[null, { bg: '#fde68a' }]],
+    });
+    const lines = svg.match(/<line [^>]*>/g)!;
+    expect(lines).toHaveLength(3);
+    expect(lines.every((l) => l.includes('data-marker-rule=""'))).toBe(true);
+    const fills = svg.match(/<rect [^>]*>/g)!.filter((r) => !r.includes('fill="none"'));
+    expect(fills.length).toBeGreaterThanOrEqual(3);
+    expect(fills.every((r) => r.includes('data-finish-keep=""'))).toBe(true);
+  });
+
   // docs/specs/009-elements/comparison-tables.md: marks and the highlighted column are livedocuments' alone.
   describe('comparison tables', () => {
     const table = {

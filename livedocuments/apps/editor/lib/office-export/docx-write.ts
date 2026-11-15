@@ -14,6 +14,7 @@ import {
   type OoxmlPart,
   type OoxmlRel,
 } from './ooxml';
+import { fontTableXml } from './ooxml-fonts';
 import { docxBody, docxFootnotesXml } from './docx-body';
 import {
   bandXml,
@@ -66,11 +67,12 @@ function sectionXml(doc: DocxDocument, refs: BandRefs): string {
 
 /** The document's bytes. */
 export function writeDocx(doc: DocxDocument, when: Date = new Date()): Uint8Array<ArrayBuffer> {
-  // The document's own relationships first: styles, numbering, settings, then its footer; links and images after.
+  // The document's own relationships first: styles, numbering, settings, then its font table and footer; links and images after.
   const fixed: OoxmlRel[] = [
     { id: 'rId1', type: REL.styles, target: 'styles.xml' },
     { id: 'rId2', type: REL.numbering, target: 'numbering.xml' },
     { id: 'rId3', type: REL.settings, target: 'settings.xml' },
+    { id: 'rId4', type: REL.fontTable, target: 'fontTable.xml' },
   ];
   // The header and footer (docs/specs/007-editor/article-pages.md "Headers and footers"): the footer's centre is the
   // page number while the footer has none of its own and the article shows page numbers.
@@ -136,6 +138,11 @@ export function writeDocx(doc: DocxDocument, when: Date = new Date()): Uint8Arra
       type: DOCX_TYPES.numbering,
     },
     { path: 'word/settings.xml', xml: settingsXml(hasFootnotes), type: DOCX_TYPES.settings },
+    {
+      path: 'word/fontTable.xml',
+      xml: fontTableXml([doc.look.headingFont, doc.look.bodyFont, doc.look.codeFont]),
+      type: DOCX_TYPES.fontTable,
+    },
   ];
   if (hasFootnotes)
     parts.push({

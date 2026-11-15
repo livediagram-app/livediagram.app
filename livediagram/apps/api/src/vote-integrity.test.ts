@@ -8,6 +8,7 @@ import {
   networkTagFor,
   refuseGuestVoteOverCap,
 } from './vote-integrity';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/012-collaboration/vote-integrity.md: a guest id costs nothing to make, so guest voters are capped per
 // network per document; an account votes freely.
@@ -51,9 +52,9 @@ describe('admitGuestVoter', () => {
     const { env } = seeded();
     for (let i = 0; i < GUEST_VOTERS_PER_NETWORK; i++)
       await admitGuestVoter(env, 'd1', 'net-a', `p${i}`);
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 50; i++) await admitGuestVoter(env, 'd1', 'net-a', `late${i}`);
-    expect((performance.now() - start) / 50).toBeLessThan(20);
+    expect((cpuNowMs() - start) / 50).toBeLessThan(cpuBudgetMs(20));
   });
 });
 

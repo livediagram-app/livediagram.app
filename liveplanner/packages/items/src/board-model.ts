@@ -5,6 +5,7 @@ import type { BoardWidgetId } from './board-widgets';
 import type { BoardSortLevel } from './board-sort';
 import type { CardSearchFilter } from './card-search';
 import type { SavedBoardFilter } from './saved-filters';
+import type { BoardFilter } from './board-filter';
 import type { Item } from './item';
 import { ARCHIVED_FIELD, itemStatus } from './item';
 import type { PARENT_FIELD_ID } from './item-types';
@@ -129,6 +130,9 @@ export interface PlanBoardSetup {
   // Saved filters (docs/specs/026-plan/board-widgets.md "Saved filters"): named quick filters everyone may apply,
   // at most SAVED_FILTERS_MAX. Absent is none.
   savedFilters?: SavedBoardFilter[];
+  // The board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): what its widgets narrow it to,
+  // shared with everyone on it and kept. Absent is none.
+  filter?: BoardFilter;
 }
 
 // The kinds of canvas record a linked board collects (docs/specs/026-plan/linked-boards.md).

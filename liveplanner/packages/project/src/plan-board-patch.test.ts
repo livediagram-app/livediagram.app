@@ -21,6 +21,15 @@ describe('planBoardPatch', () => {
     expect(planBoardPatch(saved, base)).toEqual({ clear: ['savedFilters'] });
   });
 
+  // docs/specs/026-plan/board-widgets.md "The board's filter": it travels whole, as a set-up field.
+  it("carries the board's filter, and applies it", () => {
+    const filtered = { ...base, filter: { text: 'login', mine: true as const } };
+    const patch = planBoardPatch(base, filtered);
+    expect(patch).toEqual({ set: { filter: filtered.filter } });
+    expect(applyPlanBoardPatch(base, patch).filter).toEqual(filtered.filter);
+    expect(planBoardPatch(filtered, base)).toEqual({ clear: ['filter'] });
+  });
+
   it('is null when nothing changed, and for a missing side', () => {
     expect(planBoardPatch(base, { ...base })).toBeNull();
     expect(planBoardPatch(undefined, base)).toBeNull();

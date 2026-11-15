@@ -77,9 +77,9 @@ describe('a repeating card', () => {
     expect(copy!.fields['repeat']).toBeUndefined();
     expect(rows()).toMatchObject([{ item_id: source.id, last_made: '2026-11-03', dirty: 0 }]);
     // Its history says where it came from.
-    const history = (await (
+    const history = await (
       await w.send('GET', `/api/projects/A/items/${copy!.id}/history`)
-    ).json()) as { entries: { tag?: string }[] };
+    ).json<{ entries: { tag?: string }[] }>();
     expect(history.entries[0]?.tag).toBe('repeat');
   });
 

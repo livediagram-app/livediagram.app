@@ -80,6 +80,8 @@ export interface FaceInput {
   display?: DisplayInput;
   tabs?: readonly TabInput[];
   detailsLabel?: string;
+  // Details' icon, a Plan glyph id; null puts the default back (item-types.md "Tab icons").
+  detailsGlyph?: string | null;
 }
 
 // Whether the Assignee tells its person when a card is theirs (item-types.md "Notifies"), as `add` and `set` take it;

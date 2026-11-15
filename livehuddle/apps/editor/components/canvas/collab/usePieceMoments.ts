@@ -11,6 +11,7 @@ import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-prefer
 import {
   createMomentTrigger,
   hasMoment,
+  MOMENT_MS,
   momentPiece,
   playMoment,
   type MomentPiece,
@@ -32,6 +33,7 @@ export function momentPiecesOf(elements: readonly Element[]): MomentPiece[] {
         y: el.y,
         width: el.width,
         height: el.height,
+        rotation: el.rotation,
       }),
     );
   }
@@ -63,6 +65,6 @@ export function usePieceMoments({
     const hits = t.step({ x: fx, y: fy }, pieces);
     // Reduced motion plays nothing, and nothing stands in for it.
     if (hits.length === 0 || prefersReducedMotion()) return;
-    for (const hit of hits) playMoment(hit.id, hit.side);
+    for (const hit of hits) playMoment(hit.id, hit.side, MOMENT_MS[hit.kind]);
   }, [active, fx, fy, pieces]);
 }

@@ -24,6 +24,7 @@ import { handleProjects } from '../routes/projects';
 import { handleInternalItems } from '../routes/internal-items';
 import { sendEmail } from './client';
 import { notifyMentions, notifyMilestone } from './notifications';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // A fake EMAIL binding: only its presence matters here, since sendEmail itself is mocked.
 const fakeEmail = () => ({ send: vi.fn(async () => ({ messageId: 'm' })) }) as unknown as SendEmail;
@@ -314,11 +315,11 @@ describe('a mention', () => {
 
   it('a card thread’s comment emails each teammate it mentions, once, and opens the card on it', async () => {
     const item = (
-      (await (
+      await (
         await route('POST', '/api/projects/d1/items', {
           body: { type: 'task', fields: { title: 'A' } },
         })
-      ).json()) as ItemResponse
+      ).json<ItemResponse>()
     ).item;
     const res = await route('POST', `/api/projects/d1/items/${item.id}/threads`, {
       body: {
@@ -355,12 +356,13 @@ describe('a mention', () => {
     const el = {
       id: 'e1',
       type: 'shape',
-      shape: 'square',
+      // A Sheet cell's: canvas elements take no comment (docs/specs/026-plan/plan-mode.md).
+      shape: 'plan-sheet',
       x: 0,
       y: 0,
       width: 10,
       height: 10,
-      commentThread: { comments: [comment], resolved: false },
+      cellComments: { 'row001:cola01': { comments: [comment], resolved: false } },
     } as unknown as Element;
     const put = () =>
       route('PUT', '/api/projects/d1/tabs/t1', {
@@ -464,13 +466,13 @@ describe('a mention', () => {
       authorColor: '#000',
       mentions: people.map((p) => mention(p.userId)),
     })) as Comment[];
-    const started = performance.now();
+    const started = cpuNowMs();
     await notifyMentions(db.env, {
       plan: { id: 'd1', name: 'Roadmap', teamId: TEAM },
       authorId: OWNER,
       comments,
     });
-    const took = performance.now() - started;
+    const took = cpuNowMs() - started;
     expect(sent()).toHaveLength(60);
     // The sender's email allowance is liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): one call however many are
     // mentioned.
@@ -480,6 +482,6 @@ describe('a mention', () => {
       '/settings/notify',
       '/teams/members',
     ]);
-    expect(took).toBeLessThan(250);
+    expect(took).toBeLessThan(cpuBudgetMs(250));
   });
 });

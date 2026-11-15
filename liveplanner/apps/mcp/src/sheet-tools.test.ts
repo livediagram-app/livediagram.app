@@ -17,7 +17,7 @@ function api(opts: { refuseWrites?: string } = {}) {
     if (path.endsWith('/events')) return new Response(null, { status: 204 });
     if (path.endsWith('/sheets')) return Response.json({ sheets: [SHEET] });
     if (path.endsWith('/writes')) {
-      const body = (await request.json()) as { write: unknown };
+      const body = await request.json<{ write: unknown }>();
       writes.push(body);
       return opts.refuseWrites
         ? Response.json({ error: opts.refuseWrites }, { status: 413 })

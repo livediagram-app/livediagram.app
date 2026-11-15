@@ -38,6 +38,8 @@ export const AUTOMATION_AI_LABELS_MAX = 3;
 // The actions after Phase 3 (spec "Actions", "Wait"): a checklist's items, the Waits a rule holds and how long one
 // holds, and the runs a plan holds waiting.
 export const AUTOMATION_CHECKLIST_ITEMS_MAX = 20;
+// Change Card Type's explicit mappings (Map Fields): a type's 12 custom fields and its Description, each named once.
+export const AUTOMATION_TYPE_MAPS_MAX = 13;
 export const AUTOMATION_WAITS_MAX = 3;
 export const AUTOMATION_WAIT_HOURS_MIN = 1;
 export const AUTOMATION_WAIT_HOURS_MAX = 30 * 24;
@@ -53,10 +55,20 @@ export const AUTOMATION_EMAIL_ADDRESSES_MAX = 10;
 export const AUTOMATION_ADDRESS_EMAILS_PER_DAY = 50;
 
 // Who a rule's changes are by: `name` is the rule's name at the moment it ran, the history tag says it was a rule.
+// `via`: a GitHub-triggered run's stamp says so (automations.md "On cards").
 export const AUTOMATION_PERSON_ID = 'automation';
 export const AUTOMATION_COLOR = '#7c3aed';
-export function automationPerson(ruleName: string): ItemPerson {
-  return { id: AUTOMATION_PERSON_ID, name: ruleName, color: AUTOMATION_COLOR };
+export function automationPerson(ruleName: string, via?: 'github'): ItemPerson {
+  return {
+    id: AUTOMATION_PERSON_ID,
+    name: ruleName,
+    color: AUTOMATION_COLOR,
+    ...(via ? { via } : {}),
+  };
+}
+// Whether a card's stamp is a GitHub-triggered rule's: Automation's person with its source.
+export function isGithubStamp(person: ItemPerson | undefined): boolean {
+  return person?.id === AUTOMATION_PERSON_ID && person.via === 'github';
 }
 // Who an Incoming Webhook call is by: no person, so `{{person}}` (Who Did It) reads "Incoming webhook".
 export const INCOMING_WEBHOOK_PERSON: ItemPerson = {
@@ -236,7 +248,8 @@ export type AutomationAction =
       linkField?: string;
     }
   | { kind: 'email'; to: AutomationEmailRecipient; subject: string; body: string }
-  | { kind: 'set_type'; type: string }
+  // `map`: explicit source field to new-type field mappings (item-types.md "Explicit mappings"); absent on older rules.
+  | { kind: 'set_type'; type: string; map?: { from: string; to: string }[] }
   // `colour`: a #rrggbb, or null for none.
   | { kind: 'set_colour'; colour: string | null }
   | { kind: 'restore' }

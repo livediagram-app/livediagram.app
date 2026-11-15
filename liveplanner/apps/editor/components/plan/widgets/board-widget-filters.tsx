@@ -15,10 +15,12 @@ import {
   SOON_AMBER,
   TYPES_SHOWN,
   WIDGET_PILL,
+  filterLocked,
   toggle,
   type WidgetContext,
   type WidgetPill,
 } from './board-widget-parts';
+import { keptStat } from './kept-stat';
 
 export function mineWidget(ctx: WidgetContext): React.JSX.Element {
   const { palette } = ctx;
@@ -28,7 +30,7 @@ export function mineWidget(ctx: WidgetContext): React.JSX.Element {
       type="button"
       className={`${WIDGET_PILL} transition enabled:cursor-pointer disabled:opacity-50`}
       aria-pressed={on}
-      disabled={!ctx.canFilterMine}
+      disabled={!ctx.canFilterMine || filterLocked(ctx)}
       style={{
         borderColor: on ? palette.focus : palette.border,
         color: on ? palette.focus : palette.muted,
@@ -53,7 +55,7 @@ export function mineWidget(ctx: WidgetContext): React.JSX.Element {
 
 export function peopleWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { palette } = ctx;
-  const people = boardPeople(ctx.items);
+  const people = keptStat(ctx.items, 'people', () => boardPeople(ctx.items));
   if (people.length === 0)
     return (
       <span className={WIDGET_PILL} style={pill}>
@@ -78,7 +80,8 @@ export function peopleWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.El
               type="button"
               aria-pressed={on}
               aria-label={`Only ${p.name}'s cards`}
-              className="cursor-pointer rounded-full ring-2 transition hover:z-10 hover:scale-110"
+              disabled={filterLocked(ctx)}
+              className="rounded-full ring-2 transition enabled:cursor-pointer enabled:hover:z-10 enabled:hover:scale-110"
               style={{
                 ['--tw-ring-color' as string]: on ? palette.focus : palette.surface,
                 opacity: ctx.quick.person && !on ? 0.45 : 1,
@@ -126,9 +129,9 @@ export function typesWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Ele
   // the type they show as.
   const catalogue = ctx.types;
   const merged = new Map<string, { def: ItemTypeDef; count: number }>();
-  for (const { type, count } of boardTypeCounts(
-    ctx.items,
-    catalogue.map((t) => t.id),
+  const order = catalogue.map((t) => t.id);
+  for (const { type, count } of keptStat(ctx.items, `types|${order.join('\u0000')}`, () =>
+    boardTypeCounts(ctx.items, order),
   )) {
     const def = typeIn(catalogue, type);
     const row = merged.get(def.id);
@@ -176,6 +179,7 @@ export function typesWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Ele
             type="button"
             aria-pressed={on}
             aria-label={`Only ${c.def.label} cards, ${c.count}`}
+            disabled={filterLocked(ctx)}
             className={PRESSABLE}
             style={{
               backgroundColor: on ? `${palette.focus}1f` : undefined,

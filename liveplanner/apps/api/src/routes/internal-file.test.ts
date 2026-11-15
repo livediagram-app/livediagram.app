@@ -157,7 +157,7 @@ describe('POST /api/internal/items/import', () => {
     const { db, send, file } = await exported();
     const res = await send('POST', 'import', { body: body(file) });
     expect(res.status).toBe(201);
-    const { id } = (await res.json()) as { id: string };
+    const { id } = await res.json<{ id: string }>();
     expect(id).not.toBe('A');
     expect(made).toEqual([
       {

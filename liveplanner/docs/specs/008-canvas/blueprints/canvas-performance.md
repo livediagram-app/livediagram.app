@@ -103,7 +103,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   `Canvas` renders that do not change it. Measured breakers and their fix:
   - `timerControls`: one object per layer, `useMemo` over the five timer handlers, which pass
     through the layer's `useStableHandlers` bag.
-  - `commentActions`, `actionActions`: the panel actions' methods join the stable bag, and
+  - `actionActions`: the Action panel's methods join the stable bag, and
     `idBound(make)` hands each element one object built from them, cached per id for as long as
     the bag's presence pattern holds. Absent actions give `undefined`, as before.
   - `onSetSessionConfig`, `onOpenElementSettings`: into the layer's `useStableHandlers` bag.

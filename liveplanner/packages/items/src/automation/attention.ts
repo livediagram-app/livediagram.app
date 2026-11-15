@@ -109,7 +109,13 @@ function actionNames(
     case 'mention':
       return 'person' in a.to ? [{ kind: 'person', id: a.to.person }] : [];
     case 'set_type':
-      return [{ kind: 'type', id: a.type }];
+      return [
+        { kind: 'type', id: a.type },
+        ...(a.map ?? []).flatMap((m): Need[] => [
+          { kind: 'field', id: m.from },
+          { kind: 'field', id: m.to },
+        ]),
+      ];
     case 'copy_card':
       return a.status ? [{ kind: 'column', id: a.status }] : [];
     case 'link_card':

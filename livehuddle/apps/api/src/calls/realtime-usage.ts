@@ -75,7 +75,7 @@ export async function fetchRealtimeEgressBytes(opts: {
     signal: AbortSignal.timeout(ANALYTICS_TIMEOUT_MS),
   });
   if (!response.ok) throw new Error(`Realtime analytics answered ${response.status}`);
-  const body = (await response.json()) as UsageResponse;
+  const body = await response.json<UsageResponse>();
   if (body.errors && body.errors.length > 0) {
     throw new Error(`Realtime analytics: ${body.errors.map((e) => e.message ?? '').join('; ')}`);
   }

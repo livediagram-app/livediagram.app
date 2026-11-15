@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { formLook } from '@liveplanner/project';
 import { QUESTION_TYPES, blankQuestion, type FormDefinition } from '@liveplanner/forms';
 import { FORM_ART_HEIGHT_MAX, FORM_ART_WIDTH, formArt } from './form-art';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // read_form's picture (docs/specs/030-forms/forms.md "Agents", blueprint §15): the form as respondents see it.
 const every: FormDefinition = {
@@ -79,9 +80,9 @@ describe('formArt', () => {
         },
       ],
     };
-    const started = performance.now();
+    const started = cpuNowMs();
     const art = formArt(many, formLook({}));
-    expect(performance.now() - started).toBeLessThan(200);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(200));
     expect(art.width).toBe(FORM_ART_WIDTH * 2);
     expect(art.height).toBeLessThanOrEqual(FORM_ART_HEIGHT_MAX);
     const drawn = (art.svg.match(/>P\d+</g) ?? []).length;

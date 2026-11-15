@@ -19,6 +19,7 @@ import {
   applyPatch,
   automationPerson,
   calculatedWritten,
+  isTrashed,
   createRefusal,
   fieldsWithinBounds,
   itemLabels,
@@ -140,12 +141,14 @@ export async function patchCard(
   source: HistorySource,
   tag: 'automation' | 'automation_ai' = 'automation',
 ): Promise<WriteOutcome> {
-  const by = automationPerson(rule.name);
   const line = tag === 'automation' ? historyTag(source) : tag;
+  // The stamp says GitHub when the history line does (automations.md "On cards").
+  const by = automationPerson(rule.name, line === 'automation_github' ? 'github' : undefined);
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const now = Date.now();
     const before = await readItem(deps.env, deps.planId, card.id);
-    if (!before) return { ok: false, reason: 'The card is gone' };
+    // A card moved to the Trash counts as gone, as one deleted does (readItem answers both).
+    if (!before || isTrashed(before)) return { ok: false, reason: 'The card is gone' };
     const patch = rebaseLabels(planned, card, before);
     const status = patch.set?.['status'];
     const { status: _status, ...set } = patch.set ?? {};
@@ -210,7 +213,7 @@ async function createCard(
       id: newItemId(),
       key,
       now: Date.now(),
-      by: automationPerson(rule.name),
+      by: automationPerson(rule.name, source.via),
       items: itemPlacer(items),
     });
     try {

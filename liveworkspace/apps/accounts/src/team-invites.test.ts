@@ -30,6 +30,7 @@ import { addUser, testD1 } from './test-d1.ts';
 import { sendTeamInviteEmail } from './email.ts';
 import { startLifecycle } from './lifecycle.ts';
 import { flushServerEvents } from './telemetry.ts';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // The parts of teams that came back from livediagram (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): the
 // join link, the organisation line, declining from the email, reminders and expiry, invitations
@@ -755,9 +756,9 @@ describe('the teams list', () => {
       }
     }
     const { db: watched, seen } = counting(db);
-    const started = performance.now();
+    const started = cpuNowMs();
     const teams = await listMyTeams(watched, ADA.id);
-    const took = performance.now() - started;
+    const took = cpuNowMs() - started;
     expect(seen.queries).toBe(1);
     expect(teams).toHaveLength(50);
     expect(teams[0]).toMatchObject({
@@ -771,7 +772,7 @@ describe('the teams list', () => {
     expect(teams[0]!.members[0]).toMatchObject({ email: ADA.email, role: 'admin' });
     expect(teams.every((team) => team.members.length === 4)).toBe(true);
     // A generous budget for an in-memory database: the point is one statement, not N.
-    expect(took).toBeLessThan(250);
+    expect(took).toBeLessThan(cpuBudgetMs(250));
   });
 
   it('lists a team of one with its one member', async () => {

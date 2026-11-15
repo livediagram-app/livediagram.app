@@ -21,7 +21,7 @@ function setUp(createItem: IndexClient['createItem']) {
       get: () => ({
         route: async (_documentId: string, request: Request) => {
           routed.push(request);
-          const body = (await request.json()) as { id: string; name: string };
+          const body = await request.json<{ id: string; name: string }>();
           return Response.json(
             { document: { id: body.id, name: body.name, folderId: null, teamId: null } },
             { status: 201 },

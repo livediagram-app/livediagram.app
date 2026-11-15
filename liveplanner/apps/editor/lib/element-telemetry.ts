@@ -47,10 +47,16 @@ export function trackDuplicated(created: Element[], gestureType?: string): void 
   }
 }
 
-// A kind no surface adds any more, kept only so stored ones load (docs/specs/009-elements/tab-window.md): a copy of
-// one is no element kind on the dashboard, whose census counts what people can place.
+// A kind no surface adds any more, kept only so stored ones load: a copy of one is no element kind on the dashboard,
+// whose census counts what people can place. The shared retired kinds (a tab window, docs/specs/009-elements/tab-window.md)
+// and liveplanner's Comment panel (docs/specs/012-collaboration/comment-pin.md, retired; docs/specs/017-telemetry/
+// telemetry.md "Comment panel"), whose stored ones can still be duplicated or pasted.
+export const TELEMETRY_RETIRED_KINDS: ReadonlySet<string> = new Set([
+  ...RETIRED_SHAPE_KINDS,
+  'comment-pin',
+]);
 const isRetiredKind = (element: Element) =>
-  element.type === 'shape' && RETIRED_SHAPE_KINDS.has(element.shape);
+  element.type === 'shape' && TELEMETRY_RETIRED_KINDS.has(element.shape);
 
 // Hyphenated shape kinds whose token is spelled out rather than left to
 // titleCaseType, which only upper-cases the first character: 'code-block'
@@ -72,7 +78,6 @@ const SHAPE_TOKENS: Record<string, string> = {
   'mind-node': 'MindNode',
   'session-button': 'SessionButton',
   'reaction-pad': 'ReactionPad',
-  'comment-pin': 'CommentPin',
   'action-card': 'ActionPanel',
   'done-check': 'DoneCheck',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) report as their palette component, so a

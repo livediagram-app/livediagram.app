@@ -45,7 +45,7 @@ describe('form-qr', () => {
 
   it('names a download after the form, safe for a file', () => {
     expect(qrFileName('Bug Report', 'png')).toBe('Bug Report QR Code.png');
-    expect(qrFileName('a/b: "c"', 'svg')).toBe('a b c QR Code.svg');
+    expect(qrFileName('a/b: "c"', 'svg')).toBe('a-b- -c QR Code.svg');
     expect(qrFileName(' ?* ', 'png')).toBe('Form QR Code.png');
   });
 });

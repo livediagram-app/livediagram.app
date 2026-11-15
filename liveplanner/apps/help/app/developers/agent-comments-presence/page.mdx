@@ -76,22 +76,21 @@ To read one tab's threads as text, ask for its comments view: `GET /projects/$DO
 In the CLI, a thread is named by its element's ref, from any [view](/help/developers/working-with-projects/#read-a-tab-as-text):
 
 ```bash
-liveplanner comment add "Budget 2027" 1e17 --cell B4 "Is hosting monthly or yearly?"   # a cell's thread
-liveplanner comment add "Budget 2027" 1e17 "Totals look right to me"                  # the sheet's own thread
-liveplanner comment reply "Budget 2027" 1e17 "Yearly, so divide by twelve"
-liveplanner comment resolve "Budget 2027" 1e17
-liveplanner comment reopen "Budget 2027" 1e17
+liveplanner comment add "Budget 2027" 1e17 --cell B4 "Is hosting monthly or yearly?"
+liveplanner comment reply "Budget 2027" 1e17 --cell B4 "Yearly, so divide by twelve"
+liveplanner comment resolve "Budget 2027" 1e17 --cell B4
+liveplanner comment reopen "Budget 2027" 1e17 --cell B4
 ```
 
-Add `--tab Costs` when the element is not on the first tab. `reply`, `resolve` and `reopen` on an element with no thread are refused, with the `comment add` command to start one.
+Add `--tab Costs` when the Sheet is not on the first tab. `reply`, `resolve` and `reopen` on a cell with no thread are refused, with the `comment add` command to start one. `comment add` and `comment reply` need `--cell`: canvas elements no longer take comments, so to talk about a card use `thread start` (below). An older thread on an element still lists, and `resolve` and `reopen` without `--cell` still work on it.
 
 Over the API, a thread is named by **any comment in it**, so take a comment id from the listing:
 
 ```bash
-# Start a thread on an element (or add to its thread)
+# Start a thread on a Sheet cell (or add to its thread)
 curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "elementId": "1e17c0d2-…", "text": "Is hosting monthly or yearly?" }'
+  -d '{ "elementId": "1e17c0d2-…", "cell": "r3:c2", "text": "Is hosting monthly or yearly?" }'
 
 # Reply on the thread that holds comment c1f0…
 curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/reply \
@@ -108,6 +107,7 @@ curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$C
 - Adding and replying answer `201` with the new `comment`. A comment is at most 2,000 characters, and a reply to a resolved thread reopens it, as it does in the editor.
 - Resolving and reopening answer `204`. Resolving a resolved thread, or reopening an open one, changes nothing.
 - `DELETE …/comments/$COMMENT` deletes a comment you wrote. Removing someone else's is left to the editor.
+- Adding needs `"cell"`: a comment with no cell, or a reply on an older element's thread, answers `400` with `element_comments_retired`, since canvas elements no longer take comments. Resolving, reopening and deleting your own comment still work on an older element's thread.
 - A Sheet cell's thread takes `"cell"` beside `elementId`, the cell's key as `<rowId>:<colId>` (the row and column ids a [sheet read](/help/developers/working-with-projects/plan-sheets-images/#sheets) returns). The CLI's `--cell B4` works this out for you.
 
 Everyone with the plan open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.

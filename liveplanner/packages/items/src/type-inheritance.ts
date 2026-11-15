@@ -1,8 +1,9 @@
 // Inherited card types (docs/specs/026-plan/item-types.md "Inherited types"): a type naming a base type in `inherits`
-// takes the base's fields, custom fields (same ids, every setting), tabs, statuses, Default State and display, keeps
-// its own id, name, colour, glyph and new-card title, and adds fields of its own (`ownFields`) after the base's. It is
-// stored resolved, so a reader that knows nothing of inheritance still reads a whole type. One level only: a base
-// inherits from none. Pure; run where a catalogue is validated, rebased or edited, never where a type is read.
+// takes the base's fields, custom fields (same ids, every setting), tabs (with their icons), Details' name and icon,
+// statuses, Default State and display, keeps its own id, name, colour, glyph and new-card title, and adds fields of
+// its own (`ownFields`) after the base's. It is stored resolved, so a reader that knows nothing of inheritance still
+// reads a whole type. One level only: a base inherits from none. Pure; run where a catalogue is validated, rebased or
+// edited, never where a type is read.
 import { CARD_SIZES } from './board';
 import {
   defaultCardLayout,
@@ -12,12 +13,14 @@ import {
 } from './card-display';
 import type { ItemTypeDef } from './item-types';
 import { requiredFieldsOf } from './type-required-fields';
+import { ITEM_TYPE_KEYS, newerKeysOf } from './stored-keys';
 
 // The parts an inherited type copies whole from its base type; one the base lacks, the inherited type lacks too.
 // Display is inherited as the base shows it (inheritedDisplay).
 export const INHERITED_PARTS = [
   'tabs',
   'detailsLabel',
+  'detailsGlyph',
   'statuses',
   'excludedStatuses',
   'defaultStatus',
@@ -118,7 +121,8 @@ export function resolveChild(child: ItemTypeDef, base: ItemTypeDef): ItemTypeDef
   // Always written beside the link, empty too, so a stored type's own fields are exact (absent means "not yet
   // worked out": a type just given its base).
   next.ownFields = own;
-  return next;
+  // Keys a newer liveplanner stored on it (item-types.md "Settings from a newer version") stay with it.
+  return { ...next, ...newerKeysOf(child, ITEM_TYPE_KEYS) };
 }
 
 // `type` made to inherit from `base`: its fields the base lacks become its own, and the rest is the base's.

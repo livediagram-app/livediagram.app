@@ -54,7 +54,7 @@ export function rowSharedByAllApps(rowKey: string): boolean {
 const trackSetting: SettingsTrack = (category, action, type) =>
   track(category as TelemetryCategory, action, type);
 
-// What the model needs beyond the preferences. `accountRequest`: the accounts API's door (settings-panel-host.tsx),
+// What the model needs beyond the preferences. `accountRequest`: the accounts API's door (settings-panel-host.ts),
 // where this editor has a liveworkspace account's settings; Reset All Settings then resets them in every app. Without
 // it (a guest, a self-hosted editor) the reset is this editor's own copy, in this browser.
 export type SettingsModelOptions = { accountRequest?: SettingsRequest | null };

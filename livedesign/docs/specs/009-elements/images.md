@@ -140,7 +140,7 @@ iPhone was closed while moving between its pages.
   transparent picture stays transparent), one picture after another so two large decodes never
   overlap. A picture that already fits, a GIF (whose frames a still copy would lose) and a browser
   without `createImageBitmap` show the original.
-- **Shared by every view.** The last 24 copies are kept by picture and size, and every view of the
+- **Shared by every view.** The most recently shown copies are kept by picture and size, up to a byte budget (32 MB on a phone or tablet, 96 MB elsewhere; the least recently shown goes first), and every view of the
   same copy (an element used twice, a page background and an element) shows it through one URL,
   given back when its last view goes, so the browser decodes it once.
 - **Never seen by others.** The copy lives in this browser's memory only; nothing about it is
@@ -172,6 +172,8 @@ there leaves placeholders and a count, never a failed import.
 ### Resize behaviour
 
 `naturalWidth` / `naturalHeight` are captured on load so a future "Reset to natural size" affordance can snap back to them, but that menu entry is **not yet wired** (the right-click context menu currently exposes Link / Remove Icon / layer order / Note / Comment only). Aspect lock defaults to true on first paint (the user can explicitly unlock via the Shape accordion's existing aspect-lock toggle, which works on ImageElement the same way it works on shapes).
+
+**A `data:` id is its own bytes.** Every read of one picture's bytes (`apps/live/lib/api/images.ts` `fetchImage`, behind `apiFetchImageBlob`, `apiFetchImageDataUrl` and `apiFetchImageBlobUrl`) decodes a `data:` id in place and never sends it to `GET /api/images/<id>`, so Open a Picture, Place a Picture and Edit as Photo work on a This Browser design.
 
 ### Visual export (PNG / SVG / PDF)
 

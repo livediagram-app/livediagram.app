@@ -50,6 +50,10 @@ export type RideWriter = {
   active: () => boolean;
   // How many planes carry an offset now (for the ride log and the tests).
   planesCarrying: () => number;
+  // Nodes were added under the root (a layer mounted mid-gesture, as the isometric depth layer does when the view
+  // switches while a collaborator drags): the next `apply` finds every riding id's nodes again, even with the same
+  // ids, so the new nodes ride from that frame instead of only once the ids change.
+  invalidate: () => void;
 };
 
 type Styled = {
@@ -85,6 +89,8 @@ export function createRideWriter(): RideWriter {
   let iso = false;
   // What each shifted node carries now, so a frame writes only what changed.
   let written = new Map<Styled, string>();
+  // Set by `invalidate`: the next apply finds the nodes again.
+  let dirty = false;
 
   const sameIds = (rides: ReadonlyMap<string, RideOffset>) =>
     rides.size === nodesFor.size && [...rides.keys()].every((id) => nodesFor.has(id));
@@ -197,6 +203,7 @@ export function createRideWriter(): RideWriter {
     apply(rides) {
       if (rides.size === 0 && written.size === 0 && planes.every((p) => !p.carries)) return;
       const stale =
+        dirty ||
         !sameIds(rides) ||
         isoNow() !== iso ||
         [...nodes.values()].some((list) => list.some((n) => !n.isConnected)) ||
@@ -206,6 +213,7 @@ export function createRideWriter(): RideWriter {
         for (const [node, was] of written) if (was !== '') node.style.translate = '';
         written = new Map();
         find(rides);
+        dirty = false;
       }
       for (const p of planes) carry(p, carriedBy(p, rides));
       const want = new Map<Styled, string>();
@@ -238,5 +246,8 @@ export function createRideWriter(): RideWriter {
     },
     active: () => written.size > 0 || planes.some((p) => p.carries !== null),
     planesCarrying: () => planes.filter((p) => p.carries !== null).length,
+    invalidate() {
+      dirty = true;
+    },
   };
 }

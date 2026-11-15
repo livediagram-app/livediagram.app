@@ -7,7 +7,7 @@ import {
   type VoteRulesVote,
 } from '@liveworkspace/model-core/vote-rules';
 import { HoverCard, SOLID_BRAND_DARK } from '@liveworkspace/ui';
-import { CounterScaled, useCanvasZoom } from './CanvasZoomContext';
+import { useSettledZoomSelector, ZoomFollowing } from './CanvasZoomContext';
 import { voteBadgeShrinks } from './vote-badge';
 import { VoteDot } from './VoteDot';
 import { VoteStepper, type VoteKeyShortcuts } from './VoteStepper';
@@ -145,13 +145,13 @@ function ReadOnlyCount({
   voteTotal: number;
   tallyHidden: boolean;
 }) {
-  const shrunk = voteBadgeShrinks(box, useCanvasZoom());
+  const shrunk = useSettledZoomSelector((zoom) => voteBadgeShrinks(box, zoom));
   const countLabel = tallyHidden ? `Your ${plural(voteTotal, 'dot')}` : plural(voteTotal, 'vote');
   if (shrunk) {
     return <VoteDot label={`${countLabel} on ${name}`} myVotes={myVotes} voteTotal={voteTotal} />;
   }
   return (
-    <CounterScaled className="absolute bottom-1.5 right-1.5 origin-bottom-right">
+    <ZoomFollowing className="absolute bottom-1.5 right-1.5 origin-bottom-right">
       <HoverCard
         title={
           tallyHidden
@@ -173,6 +173,6 @@ function ReadOnlyCount({
           <span className="text-optical-centre">{voteTotal}</span>
         </span>
       </HoverCard>
-    </CounterScaled>
+    </ZoomFollowing>
   );
 }

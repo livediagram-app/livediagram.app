@@ -50,6 +50,26 @@ describe('ruleNeeds', () => {
     ).toEqual([{ kind: 'person', id: 'p-left' }]);
   });
 
+  it('needs each field a Change Card Type mapping names', () => {
+    const needs = ruleNeeds(
+      ruleBody({
+        steps: [
+          {
+            kind: 'set_type',
+            type: 'note',
+            map: [
+              { from: 'f-points', to: 'description' },
+              { from: 'f-gone', to: 'f-links' },
+            ],
+          },
+        ],
+      }),
+      OUTLINE,
+    );
+    expect(needs).toHaveLength(1);
+    expect(JSON.stringify(needs)).toContain('f-gone');
+  });
+
   it('names each thing gone once, in the order the rule names it', () => {
     const needs = ruleNeeds(
       ruleBody({

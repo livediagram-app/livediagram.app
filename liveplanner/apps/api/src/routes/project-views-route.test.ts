@@ -147,7 +147,7 @@ describe('tab views over REST (R23)', () => {
     const db = await setUp();
     const res = await tabView(db, 'view=show&ref=orders&json=1');
     expect(res.headers.get('Content-Type')).toBe('application/json');
-    const body = (await res.json()) as Record<string, unknown>;
+    const body = await res.json<Record<string, unknown>>();
     expect(body).toMatchObject({
       ref: 'orders',
       kind: 'square',
@@ -399,10 +399,12 @@ describe('the overview over REST', () => {
   it('answers JSON with json=1 and a budget', async () => {
     quiet();
     const db = await setUp();
-    const body = (await (await docView(db, 'view=overview&json=1&budget=40&door=mcp')).json()) as {
+    const body = await (
+      await docView(db, 'view=overview&json=1&budget=40&door=mcp')
+    ).json<{
       project: Record<string, unknown>;
       elision: { command: string } | null;
-    };
+    }>();
     expect(Object.keys(body.project).sort()).toEqual(['id', 'name', 'savedAt', 'tabs']);
     expect(body.elision?.command).toMatch(/^read_project \{"budget":\d+\}$/);
   });

@@ -3,6 +3,7 @@
 // parsed, as svgSketchFace does: a face is our own renderers' output, its attributes always double-quoted.
 import { faceAttrs, isPillRect } from '@liveworkspace/model-core/face-finish';
 import {
+  handDrawnInk,
   MARKER_FACE_MAX_PARTS,
   MARKER_FACE_RULE_MIN_PX,
   markerFacePart,
@@ -60,8 +61,13 @@ function partShape(tag: string, a: Record<string, string>): FacePartShape | null
     case 'ellipse':
       return { kind: 'ellipse', cx: n('cx'), cy: n('cy'), rx: n('rx'), ry: n('ry') };
     case 'line': {
-      // A straight rule counts only at a marker's weight (a timeline's spine); axes and grid lines stay plain.
-      if (Number(a['stroke-width'] ?? 1) < MARKER_FACE_RULE_MIN_PX) return null;
+      // A straight rule counts only at a marker's weight (a timeline's spine); axes and grid lines stay plain, but a
+      // table's grid (`data-marker-rule`), which the canvas draws as whole marker rules (gridRules).
+      if (
+        a['data-marker-rule'] === undefined &&
+        Number(a['stroke-width'] ?? 1) < MARKER_FACE_RULE_MIN_PX
+      )
+        return null;
       const points = [
         { x: n('x1'), y: n('y1') },
         { x: n('x2'), y: n('y2') },
@@ -102,13 +108,22 @@ export function svgMarkerFace(
     if (a['marker-start'] || a['marker-end'] || a['data-finish-keep'] !== undefined) return tag;
     const shape = partShape(name, a);
     if (!shape) return tag;
-    const stroke = a.stroke ?? null;
+    // A table's rule in the ink the canvas's gridRules gives it: a line too pale to read as drawn in a stronger shade.
+    const stroke =
+      a.stroke && a['data-marker-rule'] !== undefined
+        ? handDrawnInk(a.stroke, null)
+        : (a.stroke ?? null);
     const paint: FacePartPaint = {
       fill: a.fill ?? null,
       stroke,
       strokePx: stroke ? Number(a['stroke-width'] ?? 1) : 0,
       ...(a.opacity ? { opacity: Number(a.opacity) } : {}),
-      ...(a['stroke-dasharray'] && a['stroke-dasharray'] !== 'none' ? { dashed: true } : {}),
+      // A table's rule is one marker stroke whatever its dash, as the canvas's gridRules draws it.
+      ...(a['stroke-dasharray'] &&
+      a['stroke-dasharray'] !== 'none' &&
+      a['data-marker-rule'] === undefined
+        ? { dashed: true }
+        : {}),
       ...(a['data-marker-shape'] !== undefined ? { shape: true } : {}),
       ...(a['data-marker-frame'] !== undefined ? { frame: true } : {}),
     };

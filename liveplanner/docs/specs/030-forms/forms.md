@@ -811,7 +811,9 @@ board settings, for switching back.
 - **Columns before any response**: while an Editor has the Form tab open, the sheet holds a column for **#**,
   **Submitted** and every question as soon as the sheet is chosen and as each question is added, a moment after the
   last edit (so typing a wording writes one header, not one per letter). A question whose wording changes takes its
-  column's header with it while that header still reads the old wording; a header renamed in the sheet is kept. These
+  column's header with it while that header still reads the old wording; a header renamed in the sheet is kept. A
+  question still reading **Untitled Question** (no wording typed yet) gets no column: its first real wording finds or
+  makes one as any header does, so a question named slowly still matches the template's column of that name. These
   writes are no undo step and change nothing but headers. A tab-scoped link's Editor does not write them (the sheet is
   on another tab); the first response does.
 - **Linked by column, not by heading**: the form remembers each column it uses (`form.sheet.columns`, question id →
@@ -825,13 +827,25 @@ board settings, for switching back.
   sheet has none, so row 1 becomes it, as before. Headers the form adds go on that row after its last header, and the
   response goes below it (never on or above it). The builder's header sync and the api's response row both find it
   with `headerRowIndex` in `@liveplanner/forms`, so a form pointed at Contacts fills rows under the template's headers
-  instead of writing a second header row on row 1.
+  instead of writing a second header row on row 1. An agent pointing a form at a sheet (MCP or CLI) plans its headers
+  on the same `sheetColumnPlan` the builder uses, honouring the form's remembered columns, so both pick the same
+  columns. A sheet where an agent already wrote a second set of headers on row 1 (before it read the header row) is
+  left as it is: that row now matches the form's headers first, so its answers keep going under it.
 - **The row** (`responseRowWrite`, `@liveplanner/forms`): the sheet's header row holds the headers, **#**,
   **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its remembered column,
   else its column by its header, ignoring case, and one with neither takes the next free column after the last header
   (columns added in one insert when the sheet has too few). Headers the form writes are bold, and a sheet given its
   first headers has row 1 frozen (a sheet that already had headers keeps its freeze). The response takes the first row after the last row holding a value (a styled but
   empty row, such as a banded look's, does not count; rows added when there are none).
+- **A template's table with a total**: when the last row holding a value is a **total row** under the header (every
+  value in it a formula, at least one over a range of rows, such as the Contacts template's row 11), the response
+  goes inside the table instead of under the total: the first empty row between the header and the total, else a
+  new row inserted just above the total. The total's ranges that ended on the row above it grow to take the new row
+  in, so "6 contacts" reads "7 contacts", and the new row takes the row above's own formulas (Contacts' Days Since
+  and Follow Up), each moved down to read its new row, as filling down would; a column the response writes keeps the
+  answer, and a formula that reads another sheet's rows, or a row below, is not copied. A sheet with values under its total, or no total, is one a person has
+  made their own: it keeps taking the first row after its last value, as above. Only the table's first 256 rows
+  under the header are looked at for an empty one; a longer table takes the new row above its total.
   Its cells: the response number, the time ("2026-10-15 14:03 UTC"; the api knows no one's zone), and each answer: a
   Number or Rating as a number, a Checkbox as true or false, the rest as text (several picks "Vegan, Halal"); an
   unanswered question leaves its cell empty.

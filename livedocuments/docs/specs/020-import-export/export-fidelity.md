@@ -101,7 +101,7 @@ known gap is the Callout body's indent, a few pixels off the canvas's.
 ## File names
 
 A downloaded export is named `<document> - <tab>` (and `- selection`, or the page's label for a page
-export), run through `sanitizeFilename` (`apps/editor/lib/export-pages.ts`) so it is safe on Windows,
+export), run through the shared `sanitizeFilename` (`../packages/model-core/src/file-name.ts`) so it is safe on Windows,
 macOS and Linux: brackets `() [] {}` are dropped, any other character that is not a letter or digit (in
 any script, so a Japanese or Russian name stays itself), dot, dash, underscore or space (a colon, slash,
 question mark) becomes a dash, repeated dashes collapse to one, and dashes and spaces left at either end are

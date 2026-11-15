@@ -16,7 +16,6 @@ import { nonThemePick } from '../_shared/look-feel-types';
 export const PALETTE_TYPE_ALIASES: TypeAliases = {
   'Mind-node': 'MindNode',
   'Session-button': 'SessionButton',
-  'Comment-pin': 'CommentPin',
   'Action-card': 'ActionPanel',
   'Code-block': 'CodeBlock',
 };

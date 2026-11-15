@@ -22,6 +22,9 @@ export type AttendanceVisit = {
   self: boolean;
   joinedAt: number;
   leftAt: number | null;
+  // The person's collab key, only while the visit is open (they are in the room, so the roster shows the same key to
+  // everyone there): an open Attendance dialog follows their roster entry's name and colour by it (Work Tracker 825).
+  key?: string;
 };
 
 /** `GET /api/documents/:id/tabs/:tabId/attendance`: the tab's visits, newest first. */

@@ -4,7 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_AVATAR_CONFIG } from '../config';
 import type { SeatClaim, SeatHolder } from '../seat-claims';
-import { seatPoints } from '../seats';
+import { LONG_TABLE_VARIANT, seatPoints } from '../seats';
 import { useAvatarWalk } from './useAvatarWalk';
 import { useSeatYield } from './useSeatYield';
 
@@ -57,7 +57,7 @@ describe('useAvatarWalk seats', () => {
   it('tells the room at once which seat it sat on, when, and the tiebreak', () => {
     const { result, onPresence } = setup();
     act(() => result.current.sitOn('sofa', right!, 'down', 1));
-    const claim = { index: 1, at: 1_000, tie: 0.25 };
+    const claim = { index: 1, at: 1_000, tie: 0.25, of: 2 };
     expect(result.current.seatedOn).toBe('sofa');
     expect(result.current.seatClaim).toEqual(claim);
     expect(onPresence).toHaveBeenLastCalledWith(
@@ -122,6 +122,80 @@ describe('useAvatarWalk seats', () => {
     expect(result.current.readPos()).toEqual(left);
     rerender({ elements: [rug, { ...sofa, shape: 'plant' }] });
     expect(result.current.readPos()).toEqual(left);
+  });
+
+  // docs/specs/009-elements/chair.md "A table that loses seats" (Work Tracker 831).
+  it('a retype to a Meeting Table keeps the end sitter seated and stands up whoever lost their seat', () => {
+    const long = {
+      id: 'table',
+      type: 'shape',
+      shape: 'meeting-table',
+      x: 0,
+      y: 100,
+      width: 560,
+      height: 168,
+      variant: LONG_TABLE_VARIANT,
+    };
+    // Retyped in place: the Meeting Table's own size about the old centre (piece-type.ts withPieceType).
+    const meeting = { ...long, x: 164, width: 232, variant: undefined };
+    const longSeats = seatPoints({ ...long, shape: 'meeting-table' });
+    const meetingSeats = seatPoints({ ...meeting, shape: 'meeting-table' });
+
+    // On the left end (seat 14 of 16): it remains, as the Meeting Table's 4.
+    const end = setup([rug, long]);
+    act(() => end.result.current.sitOn('table', longSeats[14]!, 'right', 14));
+    expect(end.result.current.seatClaim).toEqual({ index: 14, at: 1_000, tie: 0.25, of: 16 });
+    end.onPresence.mockClear();
+    end.rerender({ elements: [rug, meeting] });
+    expect(end.result.current.seatedOn).toBe('table');
+    expect(end.result.current.seatClaim).toEqual({ index: 4, at: 1_000, tie: 0.25, of: 6 });
+    expect(end.result.current.readPos()).toEqual({ x: meetingSeats[4]!.x, y: meetingSeats[4]!.y });
+    expect(end.onPresence).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        seatedOn: 'table',
+        seat: { index: 4, at: 1_000, tie: 0.25, of: 6 },
+      }),
+    );
+
+    // On the far side's fifth chair (seat 4 of 16): the Meeting Table has no such chair, so they stand up beside it.
+    const far = setup([rug, long]);
+    act(() => far.result.current.sitOn('table', longSeats[4]!, 'down', 4));
+    far.rerender({ elements: [rug, meeting] });
+    expect(far.result.current.seatedOn).toBeNull();
+    const feet = far.result.current.readPos()!;
+    const inside =
+      feet.x > meeting.x &&
+      feet.x < meeting.x + meeting.width &&
+      feet.y > meeting.y &&
+      feet.y < meeting.y + meeting.height;
+    expect(inside).toBe(false);
+    // Beside the table, not floating where the old chair stood.
+    expect(feet).not.toEqual({ x: longSeats[4]!.x, y: longSeats[4]!.y });
+    expect(Math.abs(feet.y - meeting.y)).toBeLessThanOrEqual(13);
+  });
+
+  it('keeps the same seat number on a table resized without losing it, carrying the sitter', () => {
+    const long = {
+      id: 'table',
+      type: 'shape',
+      shape: 'meeting-table',
+      x: 0,
+      y: 100,
+      width: 560,
+      height: 168,
+      variant: LONG_TABLE_VARIANT,
+    };
+    const { result, rerender, onPresence } = setup([rug, long]);
+    const seats = seatPoints({ ...long, shape: 'meeting-table' });
+    act(() => result.current.sitOn('table', seats[1]!, 'down', 1));
+    onPresence.mockClear();
+    // Dragged a little longer: still seven a side, the seat moves with the table.
+    const longer = { ...long, width: 590 };
+    rerender({ elements: [rug, longer] });
+    const moved = seatPoints({ ...longer, shape: 'meeting-table' });
+    expect(moved).toHaveLength(16);
+    expect(result.current.seatClaim).toEqual({ index: 1, at: 1_000, tie: 0.25, of: 16 });
+    expect(result.current.readPos()).toEqual({ x: moved[1]!.x, y: moved[1]!.y });
   });
 
   it('claims the first seat of a one-seat piece', () => {

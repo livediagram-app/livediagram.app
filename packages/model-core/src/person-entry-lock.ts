@@ -252,3 +252,42 @@ export function lockDots(
   }
   return changed ? out : (written as Record<string, string[]>);
 }
+
+// --- Creates (a new document: nothing stored, no ledger) -------------------------------------------------------------
+
+/**
+ * Whose entries a create keeps: the creator's collab key (null for a writer that keeps nobody's, an agent), and any
+ * key that is not a derived one. A canvas made in This Browser records its creator's entries under that browser's own
+ * key, and such a key names nobody, so keeping it shows nothing as anyone else's.
+ */
+export function createOwns(
+  key: string | null,
+  isDerivedKey: (key: string) => boolean,
+): (person: string) => boolean {
+  return (person) => person === key || !isDerivedKey(person);
+}
+
+/** The entries a create keeps (`owns`), in order. The SAME list when nothing goes, undefined when everything does. */
+export function keepOwnEntries<V>(
+  entries: readonly V[] | undefined,
+  keys: EntryKeys<V>,
+  owns: (person: string) => boolean,
+): V[] | undefined {
+  if (!entries || entries.every((e) => owns(keys.personOf(e)))) return entries as V[] | undefined;
+  const kept = entries.filter((e) => owns(keys.personOf(e)));
+  return kept.length ? kept : undefined;
+}
+
+/** A round's dots a create keeps (`owns`); an element left with none goes. The SAME map when nothing goes. */
+export function keepOwnDots(
+  dots: Dots,
+  owns: (person: string) => boolean,
+): Record<string, string[]> {
+  if (Object.values(dots).every((ids) => ids.every(owns))) return dots as Record<string, string[]>;
+  const out: Record<string, string[]> = {};
+  for (const [id, ids] of Object.entries(dots)) {
+    const kept = ids.filter(owns);
+    if (kept.length) out[id] = kept;
+  }
+  return out;
+}

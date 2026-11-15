@@ -3,7 +3,8 @@
 // Deleting one moves its folders and items up a level.
 
 import { inTeamNow } from './fresh-teams';
-import { FOLDER_NAME_MAX, type Folder } from '@liveworkspace/index-client';
+import { FOLDER_NAME_MAX, TITLE_MAX, type Folder } from '@liveworkspace/index-client';
+import { truncateName } from '@liveworkspace/model-core/names';
 import { personalScope, scopeOf, scopesOf, teamScope, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId, parseLimit } from './codec';
 import type { PersonContext } from './context';
@@ -64,6 +65,18 @@ export function readName(value: unknown, max: number): string | null {
   if (typeof value !== 'string') return null;
   const name = value.trim();
   return name.length > 0 && name.length <= max ? name : null;
+}
+
+// An item's title as the apps keep it (model-core's `truncateName`, the one name cap, 60 characters): a longer
+// one is shortened rather than refused, so the editor's header and the Explorer show the same name. Only a
+// new or changed title is cut: the title the item already has comes back as it is, so an echo of a name
+// stored before the cap is never rewritten. The input is bounded by TITLE_MAX first, so a huge body costs
+// no more than a long one.
+export function readTitle(value: unknown, stored: string | null = null): string | null {
+  if (typeof value !== 'string') return null;
+  if (stored !== null && value === stored) return stored;
+  const title = truncateName(value.slice(0, TITLE_MAX));
+  return title.length > 0 ? title : null;
 }
 
 export async function handleFolders(ctx: PersonContext): Promise<Response> {

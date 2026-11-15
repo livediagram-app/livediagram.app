@@ -15,10 +15,11 @@ type Props = {
   y?: number;
   suspended?: boolean;
   zoom?: number;
+  avoid?: { x: number; y: number; width: number; height: number } | null;
 };
 
 // A box whose measured rect the test sets, inside a <main> of 1000 x 800 unless `noHost`.
-function setup(boxRect: () => DOMRect, opts: { noHost?: boolean } = {}) {
+function setup(boxRect: () => DOMRect, opts: { noHost?: boolean; initial?: Partial<Props> } = {}) {
   const host = document.createElement(opts.noHost ? 'div' : 'main');
   host.getBoundingClientRect = () => rect(0, 0, 1000, 800);
   const box = document.createElement('div');
@@ -29,15 +30,16 @@ function setup(boxRect: () => DOMRect, opts: { noHost?: boolean } = {}) {
     measures += 1;
     return boxRect();
   };
-  const initialProps: Props = { x: 400 };
+  const initialProps: Props = { x: 400, ...opts.initial };
   const view = renderHook(
-    ({ x, y = 300, suspended = false, zoom = 1 }: Props) => {
+    ({ x, y = 300, suspended = false, zoom = 1, avoid = null }: Props) => {
       const placement = useEdgeAwarePlacement(
         { x, y, width: 100, height: 40 },
         { x: 0, y: 0 },
         zoom,
         8,
         suspended,
+        avoid,
       );
       // Attach the box before the layout effect reads it.
       placement.ref.current = box;
@@ -185,6 +187,48 @@ describe('useEdgeAwarePlacement and the floating chrome', () => {
     expect(h.result.current.placeAbove).toBe(false);
     r = rect(400, 710, 500, 750);
     h.rerender({ x: 405 });
+    expect(h.result.current.placeAbove).toBe(true);
+  });
+});
+
+// livehuddle's Selection popover keeps off the piece a fresh duplicate came from (Work Tracker 849): `avoid`.
+describe('useEdgeAwarePlacement keeping off a box', () => {
+  // The selection is 400..500 x 300..340 with a gap of 8; a 30 px tall box sits 262..292 above it, 348..378 below.
+  const above = () => rect(400, 262, 500, 292);
+  const original = { x: 400, y: 230, width: 100, height: 60 };
+
+  it('goes below the selection when above would sit on the box', () => {
+    const h = setup(above, { initial: { avoid: original } });
+    expect(h.result.current.placeAbove).toBe(false);
+  });
+
+  it('stays above when it clears the box, or when below would sit on it too', () => {
+    expect(
+      setup(above, { initial: { avoid: { x: 520, y: 230, width: 100, height: 60 } } }).result
+        .current.placeAbove,
+    ).toBe(true);
+    document.body.replaceChildren();
+    const tall = { x: 400, y: 230, width: 100, height: 200 };
+    expect(setup(above, { initial: { avoid: tall } }).result.current.placeAbove).toBe(true);
+  });
+
+  it('stays above when below has no room in the canvas', () => {
+    // At y 740 the box below would end at 818, past the 800 px area.
+    const h = setup(() => rect(400, 702, 500, 732), {
+      initial: { y: 740, avoid: { x: 400, y: 690, width: 100, height: 40 } },
+    });
+    expect(h.result.current.placeAbove).toBe(true);
+  });
+
+  it('goes back above when below would sit on the box, for a new geometry', () => {
+    // Flipped below at the top edge first; then a copy placed above its original keeps the box off the original.
+    let r = rect(400, 0, 500, 40);
+    const h = setup(() => r);
+    expect(h.result.current.placeAbove).toBe(false);
+    r = rect(400, 348, 500, 378);
+    h.rerender({ x: 400, y: 300, avoid: { x: 400, y: 350, width: 100, height: 60 } });
+    // The geometry did not change, so nothing flips yet; a moved selection earns the fresh decision.
+    h.rerender({ x: 401, avoid: { x: 400, y: 350, width: 100, height: 60 } });
     expect(h.result.current.placeAbove).toBe(true);
   });
 });

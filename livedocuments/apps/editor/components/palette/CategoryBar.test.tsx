@@ -180,7 +180,7 @@ describe('hover intent', () => {
     show();
     fireEvent.pointerEnter(button('Icons'), mouse);
     wait(HOVER_OPEN_MS);
-    const field = within(flyout()!).getByRole('textbox') as HTMLInputElement;
+    const field = within(flyout()!).getByRole<HTMLInputElement>('textbox');
     field.focus();
     fireEvent.change(field, { target: { value: 'star' } });
     fireEvent.pointerLeave(flyout()!.firstElementChild!, mouse);

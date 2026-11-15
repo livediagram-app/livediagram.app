@@ -19,10 +19,11 @@ import { cornerRadiusPx, planOwnColoursOf, type ShapeElement } from '@liveplanne
 import {
   ITEM_TYPES,
   cardIsFaceDown,
+  finishedStatuses,
   normaliseBoardSetup,
+  todayNumber,
   type Item,
   type LaneHead,
-  type QuickFilter,
   boardAddTypes,
   newItemId,
 } from '@liveplanner/items';
@@ -56,8 +57,15 @@ import { boardCardKey } from './plan-board-card-key';
 import { PlanBoardFrame } from './PlanBoardFrame';
 import type { PlanBoardViewValues } from './plan-board-view-values';
 import { usePlanBoardProjection } from './usePlanBoardProjection';
+import { useDrawnSetup } from './useDrawnSetup';
 import { usePlanBoardMotion } from './usePlanBoardMotion';
+import { useBoardFilter } from './useBoardFilter';
+import { useToday } from '@/hooks/ui/useToday';
+import { DUE_SOON_DAYS } from '@liveplanner/plan-art';
 import { usePlanCellBase } from './usePlanCellBase';
+
+// A board with no set-up has no done statuses.
+const NO_FINISHED: readonly string[] = [];
 
 export function PlanBoardView({
   element,
@@ -114,12 +122,36 @@ export function PlanBoardView({
     () => (fullSetup && simplified ? slotSetup(fullSetup) : fullSetup),
     [fullSetup, simplified],
   );
+  // The same without its filter, one object while nothing else changes (useDrawnSetup): what the cards are projected,
+  // counted and drawn from, so a filter change (a teammate's too) makes only the filtered projection again.
+  const drawnFull = useDrawnSetup(fullSetup);
+  const drawnSetup = useMemo(
+    () => (drawnFull && simplified ? slotSetup(drawnFull) : drawnFull),
+    [drawnFull, simplified],
+  );
   // The column the Practice Sprint ships to, only while there are practice cards (PracticeMarks).
   const shipColumnId = useMemo(
     () => (setup && plan?.practiceIds?.size ? practiceShipColumn(setup)?.id : undefined),
     [setup, plan?.practiceIds],
   );
-  const [quick, setQuick] = useState<QuickFilter>({});
+  // The board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): kept on the board and shared with
+  // everyone on it, resolved for this viewer today; an Editor or a Participant changes it, a Viewer only sees it.
+  const today = todayNumber(useToday());
+  const finished = useMemo(
+    () => (drawnFull ? finishedStatuses(drawnFull) : NO_FINISHED),
+    [drawnFull],
+  );
+  const canFilter = !!plan?.canEditCards && !!plan.setBoardFilter;
+  const setBoardFilter = plan?.setBoardFilter;
+  const { quick, setQuick, showAll } = useBoardFilter({
+    stored: fullSetup?.filter,
+    mine: plan?.self?.id ?? null,
+    today,
+    soonDays: DUE_SOON_DAYS,
+    finished,
+    canChange: canFilter,
+    write: (filter) => setBoardFilter?.(element.id, filter),
+  });
   // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either; nor does a slot board.
   const phone = useIsMobileViewport();
   const applied = shownQuick(quick, phone || simplified);
@@ -138,8 +170,8 @@ export function PlanBoardView({
   const focusNextRef = useRef<string | null>(null);
   const items = plan?.items ?? NO_ITEMS;
   const statusNames = plan?.statusNames;
-  const { projection, busy, pickable, shownItems } = usePlanBoardProjection(
-    setup,
+  const { projection, busy, pickable, shownItems, hidesAll } = usePlanBoardProjection(
+    drawnSetup,
     items,
     applied,
     types,
@@ -327,7 +359,7 @@ export function PlanBoardView({
     canEditCards,
     cardHandlers,
     cardVote,
-    setup,
+    setup: drawnSetup,
     selfId: plan?.self?.id ?? '',
     presence: plan?.presence,
     selected: selection.ids,
@@ -360,6 +392,9 @@ export function PlanBoardView({
   const self = plan?.self ?? null;
   const loading = plan?.status === 'loading';
   const empty = !loading && projection.total === 0;
+  // The board's filter hides every card it holds, for this viewer (docs/specs/026-plan/board-widgets.md "When the
+  // filter hides every card"): a hint in the columns. Never on a phone or in a Dashboard slot, where no filter applies.
+  const filterHidesAll = !loading && hidesAll && !phone && !simplified;
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
 
@@ -430,6 +465,8 @@ export function PlanBoardView({
     configuredFromCluster,
     quick,
     setQuick,
+    showAll,
+    canFilter,
     columnName,
     gridRef,
     slotBoard,
@@ -452,6 +489,7 @@ export function PlanBoardView({
     reorder,
     held,
     empty,
+    filterHidesAll,
     loading,
     shipColumnId,
     cellBase,

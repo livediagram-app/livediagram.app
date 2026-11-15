@@ -19,6 +19,11 @@ const shape = (id: string, label: string, extra: Record<string, unknown> = {}): 
     ...extra,
   }) as never;
 
+// A Sheet whose one cell carries `thread`: the row a cell thread sends is keyed `<sheet id>:<cell>`.
+const CELL = 'r1:c1';
+const sheet = (id: string, label: string, thread: unknown, extra: Record<string, unknown> = {}) =>
+  shape(id, label, { shape: 'plan-sheet', cellComments: { [CELL]: thread }, ...extra });
+
 const comment = (id: string, at: number, authorId?: string, text = `c-${id}`) => ({
   id,
   text,
@@ -52,11 +57,24 @@ describe('collabIndexRowsFromElements', () => {
 
   it('keys rows on a slug id an agent minted, as on any id', () => {
     const { threads } = collabIndexRowsFromElements([
-      shape('redis-cache', 'Redis cache', {
-        commentThread: { comments: [comment('c1', 100, 'user_a')], resolved: false },
+      sheet('redis-cache', 'Redis cache', {
+        comments: [comment('c1', 100, 'user_a')],
+        resolved: false,
       }),
     ]);
-    expect(threads.map((t) => t.elementId)).toEqual(['redis-cache']);
+    expect(threads.map((t) => t.elementId)).toEqual([`redis-cache:${CELL}`]);
+  });
+
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751): a stored element
+  // thread, on a shape, a Sheet or a Plan item, sends no row; the Sheet's cell threads still do.
+  it('sends no row for an element’s own thread, Plan items included', () => {
+    const own = { comments: [comment('c1', 100, 'user_a')], resolved: false };
+    const { threads } = collabIndexRowsFromElements([
+      shape('s1', 'Shape', { commentThread: own }),
+      shape('b1', 'Board', { shape: 'plan-board', commentThread: own }),
+      sheet('sh', 'Sheet', own, { commentThread: own }),
+    ]);
+    expect(threads.map((t) => t.elementId)).toEqual([`sh:${CELL}`]);
   });
 
   it('projects an action with its element label and identities', () => {
@@ -101,21 +119,19 @@ describe('collabIndexRowsFromElements', () => {
 
   it('projects a thread: latest by timestamp, distinct participants, first/latest times', () => {
     const { threads } = collabIndexRowsFromElements([
-      shape('s1', 'Checkout', {
-        commentThread: {
-          resolved: false,
-          comments: [
-            comment('1', 10, 'guest-1'),
-            comment('2', 30, 'user_b', 'newest'),
-            comment('3', 20, 'guest-1'),
-            comment('4', 5), // pre-authorId comment: counted, not attributed
-          ],
-        },
+      sheet('s1', 'Checkout', {
+        resolved: false,
+        comments: [
+          comment('1', 10, 'guest-1'),
+          comment('2', 30, 'user_b', 'newest'),
+          comment('3', 20, 'guest-1'),
+          comment('4', 5), // pre-authorId comment: counted, not attributed
+        ],
       }),
     ]);
     expect(threads).toEqual([
       {
-        elementId: 's1',
+        elementId: `s1:${CELL}`,
         elementLabel: 'Checkout',
         resolved: false,
         commentCount: 4,
@@ -140,11 +156,9 @@ describe('collabIndexRowsFromElements', () => {
       ai: true as const,
     });
     const { threads } = collabIndexRowsFromElements([
-      shape('s1', 'Checkout', {
-        commentThread: {
-          resolved: false,
-          comments: [ai('1', 10, 'user_a'), ai('2', 20, 'user_b'), comment('3', 30, 'user_b')],
-        },
+      sheet('s1', 'Checkout', {
+        resolved: false,
+        comments: [ai('1', 10, 'user_a'), ai('2', 20, 'user_b'), comment('3', 30, 'user_b')],
       }),
     ]);
     expect(threads[0]).toMatchObject({ participantIds: ['user_b'], agentIds: ['user_a'] });
@@ -158,17 +172,15 @@ describe('collabIndexRowsFromElements', () => {
       handle,
     });
     const { threads } = collabIndexRowsFromElements([
-      shape('s1', 'a', {
-        commentThread: {
-          resolved: false,
-          comments: [
-            { ...comment('1', 1, 'u'), mentions: [mention('user_t', 'm_t', 'tom')] },
-            {
-              ...comment('2', 2, 'u'),
-              mentions: [mention('user_t', 'm_t', 'tom'), mention(null, 'm_inv', 'inv')],
-            },
-          ],
-        },
+      sheet('s1', 'a', {
+        resolved: false,
+        comments: [
+          { ...comment('1', 1, 'u'), mentions: [mention('user_t', 'm_t', 'tom')] },
+          {
+            ...comment('2', 2, 'u'),
+            mentions: [mention('user_t', 'm_t', 'tom'), mention(null, 'm_inv', 'inv')],
+          },
+        ],
       }),
     ]);
     expect(threads[0]!.mentionedIds).toEqual(['user_t', 'm_t', 'm_inv']);
@@ -176,10 +188,10 @@ describe('collabIndexRowsFromElements', () => {
 
   it('skips an empty thread and flags a resolved one', () => {
     const { threads } = collabIndexRowsFromElements([
-      shape('s1', 'a', { commentThread: { resolved: false, comments: [] } }),
-      shape('s2', 'b', { commentThread: { resolved: true, comments: [comment('1', 1, 'u')] } }),
+      sheet('s1', 'a', { resolved: false, comments: [] }),
+      sheet('s2', 'b', { resolved: true, comments: [comment('1', 1, 'u')] }),
     ]);
-    expect(threads.map((t) => [t.elementId, t.resolved])).toEqual([['s2', true]]);
+    expect(threads.map((t) => [t.elementId, t.resolved])).toEqual([[`s2:${CELL}`, true]]);
   });
 
   it('ignores arrows even if a stray field is present', () => {
@@ -193,12 +205,14 @@ describe('collabIndexRowsFromElements', () => {
     expect(collabIndexRowsFromElements([arrow]).actions).toEqual([]);
   });
 
-  it('can carry both an action and a thread on one element', () => {
+  it('can carry both an action and a cell thread on one element', () => {
     const rows = collabIndexRowsFromElements([
-      shape('s1', 'Both', {
-        action: action(),
-        commentThread: { resolved: false, comments: [comment('1', 1, 'u')] },
-      }),
+      sheet(
+        's1',
+        'Both',
+        { resolved: false, comments: [comment('1', 1, 'u')] },
+        { action: action() },
+      ),
     ]);
     expect(rows.actions).toHaveLength(1);
     expect(rows.threads).toHaveLength(1);

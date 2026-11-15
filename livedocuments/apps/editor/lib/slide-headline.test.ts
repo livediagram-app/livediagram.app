@@ -41,6 +41,28 @@ describe('slideHeadline', () => {
     expect(slideHeadline(slide(['a']), undefined)).toBeNull();
   });
 
+  // presentation-mode.md "Jump to a slide": text a build brings in later never names the slide.
+  it('reads only the text showing before any build', () => {
+    const built = tab([
+      text('b', 60, 'Surfaces the note beside the slide', {
+        textSize: 'xl',
+        build: { order: 1, effect: 'fade' },
+      }),
+      text('a', 0, 'What It Does', { textSize: 'md' }),
+    ]);
+    expect(slideHeadline(slide(['b', 'a']), built)).toBe('What It Does');
+    // With every text built, the slide has no headline, and its name falls through to the tab.
+    const allBuilt = tab([text('b', 0, 'Later', { build: { order: 2, effect: 'appear' } })]);
+    expect(slideHeadline(slide(['b']), allBuilt)).toBeNull();
+    expect(presentedSlideName(slide(['b']), allBuilt, 0)).toBe('T');
+    // A slide without builds keeps its name: the weightiest text still wins.
+    const plain = tab([
+      text('b', 60, 'Surfaces the note beside the slide', { textSize: 'xl' }),
+      text('a', 0, 'What It Does', { textSize: 'md' }),
+    ]);
+    expect(slideHeadline(slide(['b', 'a']), plain)).toBe('Surfaces the note beside the slide');
+  });
+
   it('cuts a long headline', () => {
     const long = 'word '.repeat(40);
     const h = slideHeadline(slide(['a']), tab([text('a', 0, long)]))!;

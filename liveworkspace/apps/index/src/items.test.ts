@@ -2,6 +2,7 @@
 // opens, and grants an app can check.
 import { createGrantVerifier, type GrantResponse, type Item } from '@liveworkspace/index-client';
 import { createLocalJWKSet, type JWK } from 'jose';
+import { NAME_MAX_LENGTH } from '@liveworkspace/model-core/names';
 import { describe, expect, it } from 'vitest';
 import worker from './index';
 import { testDb } from './test-sqlite-d1';
@@ -242,15 +243,50 @@ describe('renaming and moving', () => {
     expect((await call(`/items/${item.id}`, { auth: ada.auth })).status).toBe(404);
   });
 
-  it('refuses a bad title', async () => {
+  it('refuses a title that is not text or has nothing in it', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
+    for (const title of ['   ', 7]) {
+      const res = await call(`/items/${item.id}`, {
+        method: 'PATCH',
+        auth: ada.auth,
+        body: { title },
+      });
+      expect(await body(res)).toEqual({ error: 'invalid_title' });
+    }
+  });
+
+  // The one name cap (model-core's NAME_MAX_LENGTH, 60): the index shortens a title past it the way each app
+  // does, so the editor header and the Explorer show the same name. docs/specs/004-index/blueprints/items.md.
+  it('shortens a title past the cap on create and rename, and leaves one at the cap whole', async () => {
+    const ada = await person('user_a');
+    const atCap = 'x'.repeat(NAME_MAX_LENGTH);
+    const made = await makeItem(ada.auth, { title: atCap });
+    expect(made.title).toBe(atCap);
+    const long = 'word '.repeat(200);
+    const created = await makeItem(ada.auth, { title: long });
+    expect([...String(created.title)].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
+    expect(String(created.title).endsWith('…')).toBe(true);
+    const res = await call(`/items/${made.id}`, {
+      method: 'PATCH',
+      auth: ada.auth,
+      body: { title: 'y'.repeat(5000) },
+    });
+    expect(res.status).toBe(200);
+    expect([...(await body<ItemBody>(res)).item.title].length).toBe(NAME_MAX_LENGTH);
+  });
+
+  it('never rewrites a stored title: an echo of it comes back as it is', async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth);
+    const old = 'z'.repeat(300);
+    h.db.sql.prepare('UPDATE items SET title = ? WHERE id = ?').run(old, item.id);
     const res = await call(`/items/${item.id}`, {
       method: 'PATCH',
       auth: ada.auth,
-      body: { title: 'x'.repeat(501) },
+      body: { title: old },
     });
-    expect(await body(res)).toEqual({ error: 'invalid_title' });
+    expect((await body<ItemBody>(res)).item.title).toBe(old);
   });
 });
 
@@ -397,6 +433,23 @@ describe('copies', () => {
       // The row's title too, so the copy opens with the name the Explorer lists (#671).
       body: { tabId: null, by: 'user_a', code: null, ip: null, title: 'Roadmap (copy)' },
     });
+    // A copy of a long name is cut so the whole fits the cap and still says (copy).
+    h.db.sql.prepare('UPDATE items SET title = ? WHERE id = ?').run('q'.repeat(300), item.id);
+    const longCopy = await call(`/items/${item.id}/copy`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: {},
+    });
+    const longTitle = (await body<ItemBody>(longCopy)).item.title;
+    expect([...longTitle].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
+    expect(longTitle.endsWith('… (copy)')).toBe(true);
+    await call(`/items/${item.id}/copy`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: { title: 'c'.repeat(200) },
+    });
+    expect([...(h.appCalls[2]!.body as { title: string }).title].length).toBe(NAME_MAX_LENGTH);
+    h.appCalls.length = 1;
     // A copy named by its maker carries that name.
     await call(`/items/${item.id}/copy`, {
       method: 'POST',

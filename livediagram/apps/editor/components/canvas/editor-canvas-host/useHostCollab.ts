@@ -1,5 +1,6 @@
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
+import { roleGates } from '@/lib/editor-capabilities';
 import { participantKey, selfInRoom } from '@/lib/identity';
 
 // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to
@@ -17,6 +18,7 @@ export function useHostCollab(runBlocked: boolean) {
     qaBoard,
     quiz,
   } = useEditorContext();
+  const gates = roleGates(can, runBlocked);
   return useStableCollab({
     // The document-write key, not the owner id: see CollabApi.selfKey.
     selfKey: participantKey(selfParticipant),
@@ -28,17 +30,16 @@ export function useHostCollab(runBlocked: boolean) {
     canArrange: !isReadOnly,
     // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
     respond: can.takePart ? collabElements.respond : undefined,
-    setResponsesRevealed:
-      isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
-    clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
-    chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
+    setResponsesRevealed: !gates.run ? undefined : collabElements.setResponsesRevealed,
+    clearResponses: !gates.run ? undefined : collabElements.clearResponses,
+    chooseEstimateScale: !gates.shape ? undefined : collabElements.chooseEstimateScale,
     addIdea: can.takePart ? collabElements.addIdea : undefined,
-    revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
-    clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
-    scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
-    pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
-    resetAgenda: isReadOnly || runBlocked ? undefined : collabElements.resetAgenda,
-    takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
+    revealIdeas: !gates.run ? undefined : collabElements.revealIdeas,
+    clearIdeas: !gates.run ? undefined : collabElements.clearIdeas,
+    scatterIdeas: !gates.run ? undefined : collabElements.scatterIdeas,
+    pressAgendaItem: !gates.run ? undefined : collabElements.pressAgendaItem,
+    resetAgenda: !gates.run ? undefined : collabElements.resetAgenda,
+    takeRoll: !gates.run ? undefined : collabElements.takeRoll,
     // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting are a Participant's
     // (docs/specs/013-workspace/share-roles.md: a Viewer only looks); the server owns the board and
     // gates them. Running it is the facilitator's, else any editor's.
@@ -46,18 +47,18 @@ export function useHostCollab(runBlocked: boolean) {
     selfName: selfParticipant.name,
     addQaNote: can.takePart ? qaBoard.addQaNote : undefined,
     voteQaNote: can.takePart ? qaBoard.voteQaNote : undefined,
-    discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
-    closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
-    reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
-    removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
-    clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
+    discussQaNote: !gates.run ? undefined : qaBoard.discussQaNote,
+    closeQaNote: !gates.run ? undefined : qaBoard.closeQaNote,
+    reopenQaNote: !gates.run ? undefined : qaBoard.reopenQaNote,
+    removeQaNote: !gates.run ? undefined : qaBoard.removeQaNote,
+    clearQaBoard: !gates.run ? undefined : qaBoard.clearQaBoard,
     // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
     // editing and running the round are the facilitator's, else any editor's.
     answerQuiz: can.takePart ? quiz.answerQuiz : undefined,
-    startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
-    lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
-    revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
-    resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
-    saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
+    startQuiz: !gates.run ? undefined : quiz.startQuiz,
+    lockQuiz: !gates.run ? undefined : quiz.lockQuiz,
+    revealQuiz: !gates.run ? undefined : quiz.revealQuiz,
+    resetQuiz: !gates.run ? undefined : quiz.resetQuiz,
+    saveQuiz: !gates.run ? undefined : quiz.saveQuiz,
   });
 }

@@ -121,7 +121,9 @@ export function contentShift(
 
 - Items, in order: `link`, `note`, `action`, `comment` (`buildIndicatorItems`,
   `packages/workbench/src/components/canvas/indicator-items.ts`, from `elementIndicatorItems` in
-  `useElementIndicators.ts`); an element that `takesAttachments` false (a Plan item) gets none.
+  `useElementIndicators.ts`); an element that `takesAttachments` false (a Plan item) gets none. liveplanner passes
+  no `comments` to `buildIndicatorItems`, so no element gets a `comment` item (comment threads on canvas elements
+  are retired, plan-mode.md "No comment thread on any canvas element").
 - `placeCluster(element, cornerPx, items, style, content)`, forms in order (Top → `top`; Footer →
   `footer` then `footer-compact`), for each:
   1. With a content box: `placeIndicators(..., contentBox)` → found: inset `{ 0, 0 }`.

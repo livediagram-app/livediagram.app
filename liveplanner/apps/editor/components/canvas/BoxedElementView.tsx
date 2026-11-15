@@ -9,8 +9,6 @@ import {
   finishOwnCorner,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STYLE,
-  PADDING_PX,
-  defaultPadding,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextAlign,
@@ -25,6 +23,8 @@ import {
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
+  laneDrawnSize,
+  laneEdgeOfElement,
 } from '@liveplanner/project';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -34,6 +34,8 @@ import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { PageCornerFold } from '@liveworkspace/workbench/components/canvas/PageCornerFold';
+import { LaneGutterStrip } from '@liveworkspace/workbench/components/canvas/LaneGutterStrip';
+import { laneTitleOf } from '@/components/canvas/lane-title';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -103,12 +105,10 @@ function BoxedElementViewImpl({
   onSetSessionConfig,
   onOpenElementSettings,
   commentSelfId,
-  commentActions,
   actionSelfId,
   actionActions,
   onRollPicker,
   collab,
-  onOpenComments,
   onOpenAction,
   onOpenNote,
   onEditLink,
@@ -282,11 +282,14 @@ function BoxedElementViewImpl({
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
 
-  const labelPadding = PADDING_PX[element.padding ?? defaultPadding(element)];
+  // A lane's title lays out in its gutter as the export does (docs/specs/009-elements/lane.md "A title wraps in its
+  // gutter", lane-title.ts); any other element's label is as it was.
+  const title = laneTitleOf(element, label, textSize, alignX, alignY, isEditing, fontFamily);
+  const labelPadding = title.padding;
   // The element's indicators, placed before the label so the content can move out of their way.
   const indicators = useElementIndicators(
     element,
-    { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries },
+    { onFollowLink, onOpenAction, onOpenNote, tabSummaries },
     { text: label, textSize, padding: labelPadding, alignX, alignY, inlineIcon: !!inlineIcon },
     cornerPx,
   );
@@ -295,10 +298,10 @@ function BoxedElementViewImpl({
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
     element,
-    label,
-    textSize,
-    alignX,
-    alignY,
+    title.label,
+    title.textSize,
+    title.alignX,
+    title.alignY,
     labelPadding,
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),
@@ -431,6 +434,16 @@ function BoxedElementViewImpl({
               radiusPx={cornerPx}
             />
           ) : null}
+          {/* A lane's title gutter behind its title (docs/specs/009-elements/lane.md), read-only: the export's strip and
+              divider on the title's edge, with no seam to drag. */}
+          {element.type === 'shape' && element.shape === 'lane' ? (
+            <LaneGutterStrip
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              headerFill={element.headerFill}
+              edge={laneEdgeOfElement(element)}
+              size={laneDrawnSize(element, element.width, element.height)}
+            />
+          ) : null}
           {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
           {element.type === 'shape' && element.shape === 'page' ? (
             <PageCornerFold
@@ -448,7 +461,6 @@ function BoxedElementViewImpl({
             readOnly={readOnly}
             fontFamily={fontFamily}
             collab={collab}
-            commentActions={commentActions}
             actionSelfId={actionSelfId}
             actionActions={actionActions}
             commentSelfId={commentSelfId}
@@ -464,6 +476,7 @@ function BoxedElementViewImpl({
             tabSummaries={tabSummaries}
             label={label}
             labelNode={labelNode}
+            labelFrame={title.frame}
             // Clear of the indicators and on the label body (a cylinder's, under its lid).
             contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
             textColor={textColor}

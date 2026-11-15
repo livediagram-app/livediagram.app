@@ -416,6 +416,9 @@ Part 3's two column rules (`GithubRules`, `PUT /github/rules`, `github-moves.ts`
   kinds alone. `sentence.ts` names them; `validate-conditions.ts` reads them; `pull_request_checks` needs `result`.
 - `item-history.ts`: the tag `automation_github` (a GitHub-triggered rule's write: by Automation with the rule's name,
   drawn as GitHub's).
+- `item.ts`: `ItemPerson.via?: 'github'` (a GitHub-triggered rule's stamp on `createdBy` and `updatedBy`), read back by
+  the api's `parsePerson` (`db/items.ts`) only when it reads `github`; `packages/items/src/automation/types.ts`
+  `automationPerson(name, via?)`, `isGithubStamp(person)` (Automation's id and `via: 'github'`).
 
 ### apps/api
 
@@ -509,9 +512,11 @@ action from the existing vocabulary, every type a fixed token.
 - `GithubTriggerFields.tsx`: **Repositories** (`ChipToggles`, the plan's heard repositories plus any named one no
   longer heard, "· Not Heard"), kept as Checks Finished's result changes.
 - `value-insert-options.ts`: the **Pull Request** group in a GitHub rule (`IncomingRule.github`, set by `RuleBuilder`).
-- `set-by-automation.ts` `useAutomationHistory` answers the Set by Automation fields and whether the newest entry is
-  GitHub's (`automation_github`), from the one history read; `ItemMeta` draws "Edited by GitHub · {rule}" with
-  `PersonDisc` of `GITHUB_PERSON`. `PersonDisc` and the Activity tab's `GithubDisc` draw `GithubMarkIcon`, not the pull
+- `set-by-automation.ts` `useAutomationHistory` answers the Set by Automation fields from the one history read.
+  `ItemMeta` reads GitHub from the stamps alone (`isGithubStamp`: Automation's person with `via: 'github'`, set by
+  `automationPerson(rule, 'github')` in `automation-writes.ts`'s `patchCard` and `createCard` when `source.via` is
+  `github`), and draws "Edited by GitHub · {rule}" and "Created by GitHub · {rule}" with `PersonDisc` of
+  `GITHUB_PERSON`; no read, so no bolt first. `PersonDisc` and the Activity tab's `GithubDisc` draw `GithubMarkIcon`, not the pull
   request glyph.
 
 ### Testing (part 5)

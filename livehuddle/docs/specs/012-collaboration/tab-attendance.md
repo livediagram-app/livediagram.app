@@ -102,12 +102,20 @@ becomes `anonymised`, its name "Deleted account" and its picture goes. Running i
     right the time spent ("45 min", "1 hr 5 min", "Under a minute").
   - Empty: "Nobody has been in this tab yet." with a line saying visits show here for 90 days.
   - Loading: placeholder rows. Failure: "Couldn't load attendance." with Try Again.
+  - **It follows the room while open** (Work Tracker 825): when the room renames or recolours someone whose visit is
+    open ([Presence names](../014-identity/auth-and-guest-access.md#presence-names), a `presence-colour`), their open
+    rows show the new name and colour at once, as the roster does, without reading the visits again. Only those rows
+    change; the rest of a long list is left as it is. A closed visit keeps the name and colour it ended with, as the
+    room keeps them.
 - The help article [Attendance](../../../apps/help/app/collaboration/live-presence/tab-attendance/page.mdx).
 
 ## The wire
 
 - `GET /api/documents/:id/tabs/:tabId/attendance` answers `{ visits, retentionDays, perTabMax }`, each visit
-  `{ id, name, color, picture?, guest, self, joinedAt, leftAt }` (`leftAt` null while open). Gated by
+  `{ id, name, color, picture?, guest, self, joinedAt, leftAt, key? }` (`leftAt` null while open). `key` is the
+  person's collab key, sent **only on an open visit**: that person is in the room, so the roster already shows the
+  same key to everyone there, and it is what lets an open dialog follow their roster entry. A closed visit never
+  carries it, so the list names nobody by an id who is not present. Gated by
   `gateParticipate` (Editor or Participant); a Viewer is refused 403.
 - The room records visits from the frames it already handles (hello, tab-focus, a socket closing): no new op and
   nothing new on the roster.

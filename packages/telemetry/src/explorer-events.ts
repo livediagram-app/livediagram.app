@@ -28,6 +28,9 @@ const SHARE_TYPES = [
 // An item's noun in its app's team events: liveplanner's Project, livedesign's Design, the others' Document.
 export const TEAM_ITEM_TYPES = ['Project', 'Design', 'Document'] as const;
 
+// The picks from Home's lists, which an editor's workbench frame reports through the Explorer's onHome prop.
+export const HOME_FRAME_PICKS = ['MostUsed', 'Recent', 'SeeMore'] as const;
+
 export const EXPLORER_TELEMETRY_EVENTS = {
   // Home: the first run's welcome, and a card opened from Most Used or Recent or See More followed to the Recent
   // view (named `JumpBackIn.MostUsed` / `.Recent` / `.SeeMore` until November 2026, when Jump Back In became Most
@@ -40,9 +43,7 @@ export const EXPLORER_TELEMETRY_EVENTS = {
     'Welcome.Search',
     'Welcome.StartBlank',
     'Welcome.SignIn',
-    'MostUsed',
-    'Recent',
-    'SeeMore',
+    ...HOME_FRAME_PICKS,
   ],
   'Home·Opened': ['Welcome'],
   // A failed read of Home retried.

@@ -143,6 +143,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "joinedAt": {
         "type": "number"
       },
+      "key": {
+        "type": "string"
+      },
       "leftAt": {
         "type": [
           "number",

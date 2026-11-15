@@ -103,6 +103,7 @@ export function AnchoredPopover({
   beside,
   keepOpenWithin,
   initialFocus = 'first',
+  preventScroll = false,
   pointer = false,
   scrim = false,
   align = 'start',
@@ -124,6 +125,9 @@ export function AnchoredPopover({
   // first control is a text field without raising a keyboard, focus still inside it; or nothing, for a list a
   // field drives as it is typed in (a combobox), focus staying in the field.
   initialFocus?: 'first' | 'panel' | 'none';
+  // Move the focus in on opening, and back to the anchor on closing, without scrolling anything: an anchor inside a
+  // sideways-scrolling row (a board header's widgets) keeps the row where the person left it.
+  preventScroll?: boolean;
   // Draw the popover surface and an arrow pointing at the anchor (placement under or above it only).
   pointer?: boolean;
   // Dim everything behind it (its dialog too), so it stands out; a press on the dim layer is a press outside.
@@ -140,7 +144,7 @@ export function AnchoredPopover({
   const side = useRef<AnchoredSide | undefined>(undefined);
   const close = () => {
     onClose();
-    anchor.focus();
+    anchor.focus({ preventScroll });
   };
   const closeRef = useRef(close);
   const escapeRef = useRef(onEscape);
@@ -184,8 +188,8 @@ export function AnchoredPopover({
 
   useEffect(() => {
     if (initialFocus === 'none') return;
-    if (initialFocus === 'panel') panel.current?.focus();
-    else panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    if (initialFocus === 'panel') panel.current?.focus({ preventScroll });
+    else panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus({ preventScroll });
     // oxlint-disable-next-line react/exhaustive-deps -- opening only
   }, []);
 

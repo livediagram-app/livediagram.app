@@ -16,8 +16,11 @@ import {
 } from '@liveworkspace/model-core/comment-reactions';
 import {
   collapseLegacyReactions,
+  createOwns,
   foreignDotsDiffer,
   foreignEntriesDiffer,
+  keepOwnDots,
+  keepOwnEntries,
   lockDots,
   lockEntries,
   REACTION_KEYS,
@@ -177,4 +180,49 @@ export function lockWholeTab(
     }
   }
   return changed ? { ...written, elements, ...(vote ? { vote } : {}) } : written;
+}
+
+/**
+ * The tab a create stores (share-roles.md "A new document keeps only its creator's entries"): nothing is stored and no
+ * room holds anything yet, so every reaction, response and dot under another person's collab key could only be made
+ * up, and goes. The creator's own stay, under their collab key or a browser's own key (what a This Browser canvas
+ * records them under, naming nobody); old editors' duplicate reactions collapse as on any write. The SAME tab when
+ * nothing goes.
+ */
+export function lockCreatedTab(tab: Tab, writer: WholeTabWriter): Tab {
+  const owns = createOwns(writer.key, writer.isDerivedKey);
+  let changed = false;
+  const elements = tab.elements.map((el) => {
+    let next = el;
+    if (next.type === 'shape') {
+      const responses = keepOwnEntries(next.responses, RESPONSE_KEYS, owns);
+      if (responses !== next.responses) {
+        const { responses: _gone, ...rest } = next;
+        next = responses ? { ...rest, responses } : rest;
+      }
+    }
+    const thread = threadOf(next);
+    if (thread?.comments?.length) {
+      let touched = false;
+      const comments = thread.comments.map((c) => {
+        const kept = keepOwnEntries<CommentReaction>(c.reactions, REACTION_KEYS, owns);
+        const reactions = collapseLegacyReactions(kept, writer.isDerivedKey);
+        if (reactions === c.reactions) return c;
+        touched = true;
+        return commentWithReactions(c, reactions);
+      });
+      if (touched) next = { ...next, commentThread: { ...thread, comments } } as Element;
+    }
+    if (next !== el) changed = true;
+    return next;
+  });
+  let vote = tab.vote;
+  if (vote) {
+    const votes = keepOwnDots(vote.votes, owns);
+    if (votes !== vote.votes) {
+      vote = { ...vote, votes };
+      changed = true;
+    }
+  }
+  return changed ? { ...tab, elements, ...(vote ? { vote } : {}) } : tab;
 }

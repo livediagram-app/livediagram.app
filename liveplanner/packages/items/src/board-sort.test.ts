@@ -16,6 +16,7 @@ import {
 } from './board-sort';
 import { normaliseBoardSetup, projectBoard, type PlanBoardSetup } from './board';
 import { reshapeBoard } from './board-place';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/026-plan/plan-board.md "The board set-up": Sort Cards.
 const deal: ItemTypeDef = {
@@ -402,14 +403,14 @@ describe('a sorted board', () => {
     const sorted = { ...setup, sortBy: by(['priority', 'desc'], ['due', 'asc']) };
     projectBoard(sorted, items, undefined, types);
     const runs = 20;
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < runs; i++) projectBoard(sorted, items, undefined, types);
-    const took = (performance.now() - start) / runs;
+    const took = (cpuNowMs() - start) / runs;
     const first = projectBoard(sorted, items, undefined, types).columns[0]!.lanes[0]!.items;
     expect(first[0]!.fields['priority']).toBe('urgent');
     expect(first[first.length - 1]!.fields['priority']).toBeUndefined();
     // Measured 1.0 ms sorted against 0.35 ms in rank order on an M-series laptop (2026-10-27); the budget allows a
     // loaded CI runner.
-    expect(took).toBeLessThan(100);
+    expect(took).toBeLessThan(cpuBudgetMs(100));
   });
 });

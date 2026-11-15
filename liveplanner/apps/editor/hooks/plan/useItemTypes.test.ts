@@ -30,6 +30,7 @@ function render(initial: SavedItemTypes) {
     const [stored, setStored] = useState(initial);
     return {
       stored,
+      setStored,
       slice: useItemTypes({
         projectId: 'doc',
         ownerId: 'me',
@@ -82,6 +83,46 @@ describe('useItemTypes', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
+  // Work Tracker 827: a plan synced from This Browser in place holds its own revision count (3 saves here); the
+  // server's starts again, so its refusal names a lower one, which the save takes and lands on.
+  it('saves straight after Sync Plan, taking the server’s lower revision from its refusal', async () => {
+    api.saveItemTypes.mockRejectedValueOnce(
+      new ItemTypesStaleError({ itemTypes: cat('task'), itemTypesRev: 0 }),
+    );
+    answering();
+    const { hook, onError } = render({ itemTypes: cat('task'), itemTypesRev: 3 });
+    act(() => hook.result.current.slice.saveType(def('risk')));
+    await waitFor(() => expect(api.saveItemTypes).toHaveBeenCalledTimes(2));
+    expect(sent(1)).toEqual({ ids: ['task', 'risk'], rev: 0 });
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(1));
+    expect(ids(hook.result.current.slice.catalogue)).toEqual(['task', 'risk']);
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  // Work Tracker 873: Sync Plan in place re-seeds the server's catalogue (adopt), lower than this browser's count, so
+  // the first save after it names the server's revision and lands at once, with no stale refusal.
+  it('saves on the server’s revision first time once the sync re-seeds it', async () => {
+    answering();
+    const { hook, onError } = render({ itemTypes: cat('task'), itemTypesRev: 3 });
+    act(() =>
+      hook.result.current.setStored({ itemTypes: cat('task'), itemTypesRev: 0, adopt: true }),
+    );
+    act(() => hook.result.current.slice.saveType(def('risk')));
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(1));
+    expect(api.saveItemTypes).toHaveBeenCalledOnce();
+    expect(sent(0)).toEqual({ ids: ['task', 'risk'], rev: 0 });
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  it('still ignores a plain seed below the revision held', async () => {
+    answering();
+    const { hook } = render({ itemTypes: cat('task'), itemTypesRev: 3 });
+    act(() => hook.result.current.setStored({ itemTypes: cat('task'), itemTypesRev: 1 }));
+    act(() => hook.result.current.slice.saveType(def('risk')));
+    await waitFor(() => expect(api.saveItemTypes).toHaveBeenCalledOnce());
+    expect(sent(0).rev).toBe(3);
+  });
+
   it('drops only a failed change, keeping one saved after it', async () => {
     api.saveItemTypes.mockRejectedValueOnce(new Error('item-types failed: 500'));
     answering();
@@ -111,6 +152,25 @@ describe('useItemTypes', () => {
     await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(4));
     expect(ids(hook.result.current.slice.catalogue)).toEqual(['task', 'risk', 'spike']);
     expect(steps).toHaveLength(2);
+  });
+
+  // Work Tracker 858: a tab's icon is part of the type's save, so one Undo takes it back.
+  it('undoes a tab icon and Details icon chosen in one save', async () => {
+    answering();
+    const { hook, steps } = render({ itemTypes: cat('task'), itemTypesRev: 0 });
+    const iconed: ItemTypeDef = {
+      ...def('task'),
+      detailsGlyph: 'info',
+      tabs: [{ id: 't-overview', label: 'Overview', fields: ['description'], glyph: 'book' }],
+    };
+    act(() => hook.result.current.slice.saveType(iconed));
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(1));
+    expect(steps).toHaveLength(1);
+    act(() => steps[0]!.undo());
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(2));
+    const back = hook.result.current.slice.catalogue!.types[0]!;
+    expect(back).not.toHaveProperty('detailsGlyph');
+    expect(back.tabs ?? []).toEqual([]);
   });
 
   it('takes another editor’s save from the room, but never an older one', async () => {

@@ -40,7 +40,10 @@ describe('fitting writing with and without zones', () => {
 
   it('knows writing that holds a zone', () => {
     expect(hasZoneBlock({ blocks: [para] })).toBe(false);
-    expect(hasZoneBlock({ blocks: [para, zone] })).toBe(true);
+    const withZone = { blocks: [para, zone] };
+    expect(hasZoneBlock(withZone)).toBe(true);
+    // Asked again of the same blocks, it answers from what it saw.
+    expect(hasZoneBlock(withZone)).toBe(true);
   });
 
   it('answers the same tab for writing without a zone', () => {

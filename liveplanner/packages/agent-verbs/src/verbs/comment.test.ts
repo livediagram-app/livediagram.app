@@ -144,26 +144,28 @@ describe('comment add, reply, resolve, reopen', () => {
     return { seen, ctx: contextOf(api) };
   }
 
-  it('adds to an element named by a unique ref prefix', async () => {
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751): an add or a reply
+  // with no cell names an element's own thread, refused before any call.
+  it('refuses an add or a reply with no cell, before calling the api', async () => {
     const { seen, ctx } = setUp();
-    const out = await commentAdd.run!(ctx, { project: DOC_A, ref: 'api-g', text: 'Needs a cache' });
-    expect(out).toEqual({ id: 'c9', text: '+ comment c9 on api-g' });
-    expect(commentAdd.quiet!(out)).toEqual(['c9']);
-    expect(commentAdd.text!(out)).toEqual(['+ comment c9 on api-g']);
-    expect(seen).toEqual([
-      {
-        method: 'POST',
-        path: `${TAB}/comments`,
-        body: { elementId: 'api-gw', text: 'Needs a cache' },
-      },
-    ]);
+    const refusal = (p: Promise<unknown>) =>
+      p.then(
+        () => null,
+        (e: unknown) => (e instanceof VerbRefusal ? [e.status, e.code, e.hint] : e),
+      );
+    const hint =
+      'name a Sheet cell with --cell B4, or comment on a card with: liveplanner thread start';
+    expect(
+      await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'api-g', text: 'Needs a cache' })),
+    ).toEqual([400, 'element_comments_retired', hint]);
+    expect(
+      await refusal(commentReply.run!(ctx, { project: DOC_A, ref: 'api-gw', text: 'Yes' })),
+    ).toEqual([400, 'element_comments_retired', hint]);
+    expect(seen).toEqual([]);
   });
 
-  it('replies to, resolves and reopens a thread through its last comment', async () => {
+  it('resolves and reopens a stored element thread through its last comment', async () => {
     const { seen, ctx } = setUp();
-    expect(
-      (await commentReply.run!(ctx, { project: DOC_A, ref: 'api-gw', text: 'Yes' })).text,
-    ).toBe('+ comment c9 on api-gw');
     expect(
       commentResolve.text!(await commentResolve.run!(ctx, { project: DOC_A, ref: 'api-gw' })),
     ).toEqual(['~ thread api-gw resolved']);
@@ -171,7 +173,6 @@ describe('comment add, reply, resolve, reopen', () => {
       '~ thread api-gw open',
     );
     expect(seen.map((s) => [s.path.split('/').pop(), s.body])).toEqual([
-      ['reply', { text: 'Yes' }],
       ['resolve', undefined],
       ['reopen', undefined],
     ]);
@@ -184,22 +185,24 @@ describe('comment add, reply, resolve, reopen', () => {
         () => null,
         (e: unknown) => (e instanceof VerbRefusal ? [e.status, e.code, e.message] : e),
       );
-    expect(await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'nope', text: 'x' }))).toEqual(
-      [404, 'ref_not_found', 'no element nope on tab "Overview"'],
-    );
-    await expect(
-      commentAdd.run!(ctx, { project: DOC_A, ref: 'webb', text: 'x' }),
-    ).rejects.toMatchObject({
-      lines: ['  web'],
-    });
-    expect(await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'api', text: 'x' }))).toEqual([
+    const add = (ref: string) =>
+      commentAdd.run!(ctx, { project: DOC_A, ref, text: 'x', cell: 'B4' });
+    expect(await refusal(add('nope'))).toEqual([
+      404,
+      'ref_not_found',
+      'no element nope on tab "Overview"',
+    ]);
+    await expect(add('webb')).rejects.toMatchObject({ lines: ['  web'] });
+    expect(await refusal(add('api'))).toEqual([
       404,
       'ref_ambiguous',
       'api names 2 elements on tab "Overview"',
     ]);
-    expect(
-      await refusal(commentReply.run!(ctx, { project: DOC_A, ref: 'web', text: 'x' })),
-    ).toEqual([404, 'no_thread', 'no thread on web']);
+    expect(await refusal(commentResolve.run!(ctx, { project: DOC_A, ref: 'web' }))).toEqual([
+      404,
+      'no_thread',
+      'no thread on web',
+    ]);
   });
 
   it('surfaces the api’s refusal of a thread state change', async () => {

@@ -5,6 +5,7 @@
 // @liveworkspace/element-model/shape-field-checks; this list keeps this product's order and its own checks.
 
 import {
+  isBoardFilter,
   isPlanViewSettings,
   isSavedBoardFilters,
   isValidItemId,
@@ -159,8 +160,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v: unknown) =>
       normaliseBoardSetup(v) !== null &&
       ((v as { savedFilters?: unknown }).savedFilters === undefined ||
-        isSavedBoardFilters((v as { savedFilters?: unknown }).savedFilters)),
-    rule: 'a Plan board set-up: 1 to 12 columns, each an id and a status, and at most 8 saved filters',
+        isSavedBoardFilters((v as { savedFilters?: unknown }).savedFilters)) &&
+      // The board's filter likewise (board-widgets.md "The board's filter"): words up to 200, at most 8 chips.
+      ((v as { filter?: unknown }).filter === undefined ||
+        isBoardFilter((v as { filter?: unknown }).filter)),
+    rule: 'a Plan board set-up: 1 to 12 columns, each an id and a status, at most 8 saved filters, and a well-formed filter',
   },
   {
     field: 'planCard',

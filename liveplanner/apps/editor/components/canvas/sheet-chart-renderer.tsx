@@ -28,7 +28,6 @@ export type BoxedShared = Omit<
   | 'movable'
   | 'resizable'
   | 'isVoteFocus'
-  | 'commentActions'
   | 'actionActions'
   | 'revealedForMe'
   | 'reactionBurst'

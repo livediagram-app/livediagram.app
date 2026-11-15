@@ -8,10 +8,10 @@ vi.mock('./api-client', () => ({
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
+import { preferencesKeptLocally } from '@liveworkspace/workbench/lib/preferences-local-only';
 import {
   __resetPreferencesSync,
   fitPreferences,
-  preferencesLocalOnly,
   preferencesPatch,
   PREFERENCES_BODY_MAX,
   PREFERENCES_UNSYNCED_KEY,
@@ -27,6 +27,7 @@ import {
   type UserPreferences,
 } from './user-preferences';
 import type { ShapePicks } from './whiteboard-shape-slots';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Saving preferences to the server (docs/specs/007-editor/user-preferences.md "Saving to the server").
 
@@ -140,10 +141,10 @@ describe('fitPreferences', () => {
       ...fullAccount(),
       customSwatches: Array.from({ length: 280 }, () => '#abcdef'),
     };
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 20; i++) fitPreferences(prefs);
     // Measured ~0.06 ms; a trim that re-serialised per dropped entry took ~6 ms. Generous for CI.
-    expect((performance.now() - start) / 20).toBeLessThan(3);
+    expect((cpuNowMs() - start) / 20).toBeLessThan(cpuBudgetMs(3));
   });
 });
 
@@ -261,7 +262,7 @@ describe('a deployment that keeps no preferences (guest-only deployment)', () =>
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
     mockedGet.mockResolvedValue('local-only');
     expect(await fetchUserPreferences('owner-1')).toBeNull();
-    expect(preferencesLocalOnly('owner-1')).toBe(true);
+    expect(preferencesKeptLocally('owner-1')).toBe(true);
     expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
     writeUserPreferences({ uiScale: 1.3 }, 'owner-1');
     expect(mockedPut).not.toHaveBeenCalled();
@@ -272,7 +273,7 @@ describe('a deployment that keeps no preferences (guest-only deployment)', () =>
   it('stops sending once a save answers that nothing is kept', async () => {
     mockedPut.mockResolvedValue('local-only');
     savePreferences('owner-1', { uiScale: 1 });
-    await vi.waitFor(() => expect(preferencesLocalOnly('owner-1')).toBe(true));
+    await vi.waitFor(() => expect(preferencesKeptLocally('owner-1')).toBe(true));
     savePreferences('owner-1', { uiScale: 2 });
     expect(mockedPut).toHaveBeenCalledTimes(1);
     expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();

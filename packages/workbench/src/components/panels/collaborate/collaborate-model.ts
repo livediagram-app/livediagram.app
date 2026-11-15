@@ -93,6 +93,19 @@ export function sectionsFor<R extends { mine: boolean }>(
   ];
 }
 
+// The row number each section starts at, counting every row of the sections before it: a row's place in the whole
+// list is its section's start plus its place in the section (its entrance stagger), worked out without a counter
+// that render would have to mutate.
+export function sectionStarts(sections: { rows: unknown[] }[]): number[] {
+  const starts: number[] = [];
+  let total = 0;
+  for (const section of sections) {
+    starts.push(total);
+    total += section.rows.length;
+  }
+  return starts;
+}
+
 export function emptyCopy(
   side: CollaborateSide,
   kind: CollaborateKind,

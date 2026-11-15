@@ -19,10 +19,10 @@ is about.
 | **swimlane**     | One row of the board, grouping its cards by a field (assignee, type, any field, ...) | lane, row                 |
 | **WIP limit**    | The most cards a column should hold                                                  | cap, max                  |
 | **unplaced**     | Items whose status is none of the board's columns                                    | orphans, hidden           |
-| **quick filter** | A person's own, unsaved narrowing of what a board shows ("Only mine", a search)      | filter setting            |
+| **quick filter** | The board's filter: what its widgets narrow it to, kept and shared with everyone     | filter setting            |
 | **face-down**    | A card drawn as its colour and author only, while its board hides writing            | hidden, private           |
 | **selection**    | The cards one person has picked on one board to change together (theirs, unsaved)    | multi-select, batch       |
-| **saved filter** | A named quick filter kept on the board set-up, shared, that anyone may apply         | view, preset, smart list  |
+| **saved filter** | A named quick filter kept on the board set-up, that an Editor or Participant applies | view, preset, smart list  |
 
 ## The board set-up
 
@@ -153,7 +153,11 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Saved filters**: up to 8 named quick filters ([Board widgets](board-widgets.md#saved-filters)), shown as
   chips in the Filter widget. Each keeps the words, Only Mine, the field chips and the widget narrowings it was
   saved with; saving, renaming, updating and deleting one is an Editor's set-up change (undone as any), while
-  applying one is each person's own quick filter.
+  applying one (an Editor or a Participant) sets the board's filter for everyone.
+- **The board's filter** (the quick filter): what the Filter, Only Mine and the other widgets narrow the board to is
+  kept on the set-up and shared live with everyone on the board, and is still there after a tab switch or a reload.
+  An Editor or a Participant changes it; a Viewer sees it applied, read-only ([Board
+  widgets](board-widgets.md#the-boards-filter)).
 - **Hide writing**: off, or on: each person's cards on this board are face-down to everyone else until the board
   is revealed. It hides the face, not the data; it is a facilitation aid, not a privacy boundary.
 
@@ -605,6 +609,10 @@ In Plan mode:
     On a phone, the panel's side column becomes a tab too, **Details** (the type's Details name), and it is the
     **last** tab, at the far right after Activity. A card always opens on the type's **first** tab (Overview), on a
     phone as on a desktop. The tab bar scrolls sideways when its tabs do not fit; arrow keys move between the tabs.
+    Each tab shows its [icon](item-types.md#tab-icons) (14 px, the tab's text colour) before its name, on a desktop
+    and in a phone's strip alike, and the Details column's heading shows Details' icon too. The icons are decorative
+    (hidden from assistive technology): a tab's name stays its accessible name and is its tooltip. A name longer
+    than the strip allows (past 10 rem) is cut with an ellipsis, the tooltip giving it whole.
   - **Maximised**: on a desktop the header holds a **Maximise Card** button (the maximise glyph a board's own
     Maximise uses) just left of the close button, after the ⋯ menu. Pressed, the panel grows to fill the window
     less a 1 rem margin on every side (corners kept rounded, the dimmed editor showing as a thin frame, so it

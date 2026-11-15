@@ -194,6 +194,56 @@ describe('Suggest Card Type', () => {
     expect(run.steps.at(-1)).toMatchObject({ ok: true, text: 'Set the card type to Bug' });
   });
 
+  // Work Tracker 846 (spec "How a step runs"): the steps after it are planned from the card it left, so a step
+  // conditioned on the type sees the type the AI set, never the one the card had before.
+  it('plans the steps after it from the card it left: a condition on the type sees the new type', async () => {
+    answers({ type: 'Bug' });
+    const { c, run } = await ran([
+      { kind: 'ai', task: 'card_type', set: true },
+      {
+        kind: 'if',
+        conditions: [{ kind: 'type', types: ['bug'] }],
+        then: [{ kind: 'add_label', label: 'bug-seen' }],
+        else: [{ kind: 'add_label', label: 'not-bug' }],
+      },
+    ]);
+    expect(run).toMatchObject({ result: 'done' });
+    const after = await card(c.id);
+    expect(after.type).toBe('bug');
+    expect(after.fields['labels']).toEqual(['bug-seen']);
+    expect(run.steps.map((s) => s.text)).toEqual(
+      expect.arrayContaining(['Set the card type to Bug', 'Add Label bug-seen']),
+    );
+    expect(run.steps.map((s) => s.text)).not.toContain('Add Label not-bug');
+  });
+
+  it('reads a person’s edit made while the AI answered, and takes Assign in Turn’s place once', async () => {
+    const c0 = { id: '' };
+    answer = async () => {
+      await w.send('POST', `/api/projects/A/items/${c0.id}`, { set: { priority: 'urgent' } });
+      return { response: { type: 'Bug' } };
+    };
+    await w.rule({
+      name: 'Tidy',
+      steps: [
+        { kind: 'ai', task: 'card_type', set: true },
+        {
+          kind: 'if',
+          conditions: [{ kind: 'field', field: 'priority', op: 'is', value: 'urgent' }],
+          then: [{ kind: 'flag' }],
+          else: [],
+        },
+      ],
+    });
+    const c = await w.make('A', { title: 'Edited meanwhile' });
+    c0.id = c.id;
+    await w.send('POST', `/api/projects/A/items/${c.id}/move`, { status: 'done' });
+    await room().alarm();
+    const [run] = await runs();
+    expect(run).toMatchObject({ result: 'done' });
+    expect((await card(c.id)).fields['flagged']).toBe(true);
+  });
+
   it('comments the suggestion, or fails a type the plan lacks', async () => {
     answers({ type: 'Bug' });
     await ran([{ kind: 'ai', task: 'card_type', set: false }]);
@@ -375,6 +425,76 @@ describe('when the AI can’t answer', () => {
     expect(calls).toHaveLength(1);
     expect(run.steps.map((s) => s.text)).toContain(AI_NOT_ASKED);
   });
+
+  // Spec "How a step runs": the card is read again after an AI step. One deleted, or moved to the Trash, while the
+  // model answered counts as gone: the writes after it are refused, the run Failed, and what it would have done reads
+  // "Not done" in the Audit Trail.
+  // The step's answer was a comment, so the card it left is the card as the run began: the fallback the steps after it
+  // are planned from, and the write that follows is refused all the same.
+  it('plans the steps after from the card as the run began when it is gone and the step wrote none', async () => {
+    answer = async () => {
+      plan().db.prepare('DELETE FROM items').run();
+      return { response: { type: 'Bug' } };
+    };
+    const { run } = await ran([{ kind: 'ai', task: 'card_type', set: false }, { kind: 'flag' }]);
+    expect(run).toMatchObject({ result: 'failed', reason: 'The card is gone' });
+    expect(run.steps.map((l) => [l.kind === 'action' ? l.ok : undefined, l.text])).toEqual([
+      [undefined, expect.stringContaining('moved it')],
+      [true, 'Suggested card type Bug in a comment'],
+      [false, STEP_NOT_DONE],
+      [false, 'The card is gone'],
+    ]);
+  });
+
+  describe.each([
+    ['deleted', (id: string) => plan().db.prepare('DELETE FROM items WHERE id = ?').run(id)],
+    [
+      'moved to the Trash',
+      (id: string) =>
+        plan()
+          .db.prepare(
+            "UPDATE items SET fields = json_set(fields, '$.status', 'trash', '$.trashedFrom', 'todo') WHERE id = ?",
+          )
+          .run(id),
+    ],
+  ])('a card %s while the AI answered', (_how, remove) => {
+    const gone = async () => {
+      const c = await w.make('A', { title: 'Going' });
+      answer = async () => {
+        remove(c.id);
+        return { response: { summary: 'A summary.' } };
+      };
+      await w.rule({
+        name: 'Tidy',
+        steps: [
+          { kind: 'ai', task: 'summarise' },
+          { kind: 'flag' },
+          { kind: 'add_label', label: 'after' },
+          { kind: 'notify', via: 'slack', webhook: 'wh1', name: 'Launch', text: 'Done' },
+          { kind: 'ai', task: 'card_type', set: true },
+        ],
+      });
+      await w.send('POST', `/api/projects/A/items/${c.id}/move`, { status: 'done' });
+      await room().alarm();
+      return (await runs())[0]!;
+    };
+
+    it('refuses the write after it, shows the steps not run, and asks no later AI step', async () => {
+      const run = await gone();
+      expect(run).toMatchObject({ result: 'failed', reason: 'The card is gone' });
+      expect(calls).toHaveLength(1);
+      const lines = run.steps.map((s): [boolean | undefined, string] => [
+        s.kind === 'action' ? s.ok : undefined,
+        s.text,
+      ]);
+      expect(lines).toContainEqual([false, 'The card is gone']);
+      expect(lines).toContainEqual([false, STEP_NOT_DONE]);
+      expect(lines).toContainEqual([false, AI_NOT_ASKED]);
+      expect(lines).toContainEqual([false, SEND_NOT_SENT]);
+      expect(lines.map(([, text]) => text)).not.toContain('Flag');
+      expect(sent).toEqual([]);
+    });
+  });
 });
 
 describe('the daily cap', () => {
@@ -452,7 +572,8 @@ describe('Test on a Card', () => {
     expect(calls).toHaveLength(0);
     expect(run.steps.slice(-3).map((s) => s.text)).toEqual([
       'Would summarise the card into a comment',
-      'Would suggest a card type from Task, Bug or Note and set it',
+      // Steps follow it, which read its answer: the test says so (spec "How a step runs").
+      'Would suggest a card type from Task, Bug or Note and set it. The steps after it read the card as the AI leaves it',
       "Would set priority and add labels from web from the card's text",
     ]);
   });

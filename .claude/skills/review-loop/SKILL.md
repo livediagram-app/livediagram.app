@@ -274,10 +274,9 @@ Under Review, Reviewed or Selected for Development. Each pass checks those three
    pass tracking state.
 3. **Judge each candidate against its Acceptance Criteria** (or its description when it has none). Read the
    code at `origin/main`. Don't trust a commit message alone.
-   - **Fully delivered:** every item is met on main. Move the card to **Done**, set its **Pull Request**
-     field (`f-pull-request`, the PR's full GitHub URL) to the merged PR that delivered it when the field is
-     empty (if no single PR did it, the one that finished it), and tick
-     the Acceptance Criteria items. Start one resolved thread: `Done on main: <PR url> (<one line on what
+   - **Fully delivered:** every item is met on main. Move the card to **Done** and tick
+     the Acceptance Criteria items (Work Items have no Pull Request field since 2026-11-14; the thread below
+     names the PR, and if no single PR did it, the one that finished it). Start one resolved thread: `Done on main: <PR url> (<one line on what
 shows it, with a file:line link>).` Resolve the loop's open question threads on it as moot ("Built in
      <PR url>"), and remove `needs-owner`.
    - **Partly delivered:** tick the items main meets and leave the card where it is. Start one resolved thread:
@@ -359,9 +358,9 @@ threads (open and resolved), so you never ask the same question twice.
   inbox"). A thread this loop leaves open is the owner's to-do, so only a question waiting on them stays open.
   Anything else it posts (a move to Reviewed, a Type fix, "Answers acted on", a note) is resolved in the same
   `change_threads` call that posts it, and an answered question is resolved once acted on (step "Answers acted
-  on"). When a card it asked about is Cancelled, Done or Implemented, or gains a Pull Request link to a PR
-  that builds it, its open question threads are moot: reply in one line why ("Cancelled", "Built in <PR url>")
-  and resolve them. A Pull Request link alone isn't enough: follow-up cards often link the PR where the problem
+  on"). When a card it asked about is Cancelled, Done or Implemented, or an open PR names it
+  ("Work Tracker N") and builds it, its open question threads are moot: reply in one line why ("Cancelled", "Built in <PR url>")
+  and resolve them. A PR naming the card isn't enough on its own: follow-up cards often name the PR where the problem
   was found, so read that PR's title and description first, and leave the question open unless the PR delivers
   the card (2026-11-12: #656 and #658 lost their open security questions because they linked #1429, which only
   found them). Never resolve a thread a person started.

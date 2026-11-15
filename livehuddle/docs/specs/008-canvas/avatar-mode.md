@@ -432,6 +432,11 @@ kind.
   walking in, and a click just past the arc walks (`onDoor`, `avatarDoorPress` in
   `apps/editor/lib/avatar-door-press.ts`). `avatarClickIntent` keeps `door` as Walk and the gesture adds the
   adjacency check. The open and closed state is [Room Builder](../009-elements/room-builder.md)'s.
+- **A moment piece beside you**: a click on a Walk piece that plays a [piece moment](../009-elements/piece-moments.md)
+  (a tree, a kettle, a Window; never a seat such as the Hammock or the Podium) while your feet stand beside it (within
+  `DOOR_REACH` of its box, or in its moment's reach) replays its moment where you stand, with no walk
+  (`avatarMomentPress` in `apps/editor/lib/avatar-moment-press.ts`, checked after the Door). Farther away it walks, as
+  before ([Piece moments](../009-elements/piece-moments.md#a-press-beside-it)).
 
 ### The reader
 

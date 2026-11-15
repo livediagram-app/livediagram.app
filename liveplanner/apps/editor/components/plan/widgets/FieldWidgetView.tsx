@@ -53,9 +53,11 @@ export type FieldWidgetContext = {
   now: Date;
   read?: CalculatedRead | undefined;
   canEdit: boolean;
-  // This viewer's quick filter: a Breakdown's or Donut's value presses into its field chips (any role: a personal view).
+  // The board's filter: a Breakdown's or Donut's value presses into its field chips (board-widgets.md "The board's
+  // filter"), an Editor's or a Participant's press; `canFilter` false (a Viewer) shows the pressed value only.
   quick: QuickFilter;
   onQuick: (q: QuickFilter) => void;
+  canFilter?: boolean;
   onRemove: (id: FieldWidgetKey) => void;
 };
 
@@ -140,6 +142,7 @@ export function FieldWidgetView({ id, ctx }: { id: FieldWidgetKey; ctx: FieldWid
       palette={palette}
       quick={ctx.quick}
       onQuick={ctx.onQuick}
+      canFilter={ctx.canFilter !== false}
     />
   );
 }
@@ -153,6 +156,7 @@ function FieldPill({
   palette,
   quick,
   onQuick,
+  canFilter,
 }: {
   view: FieldWidgetView;
   field: BoardField;
@@ -161,6 +165,7 @@ function FieldPill({
   palette: PlanPalette;
   quick: QuickFilter;
   onQuick: (q: QuickFilter) => void;
+  canFilter: boolean;
 }) {
   const pill = { borderColor: palette.border, color: palette.muted };
   const name = <span className="max-w-[9rem] truncate">{field.def.label}</span>;
@@ -209,7 +214,7 @@ function FieldPill({
         summary,
         field,
         { name, strong, lead, shell, palette },
-        { quick, onQuick },
+        { quick, onQuick, canFilter },
       );
     case 'ticked':
       return tickedPill(summary, { name, strong, shell, palette });

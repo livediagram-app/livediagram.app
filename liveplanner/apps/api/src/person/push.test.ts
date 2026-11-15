@@ -110,17 +110,28 @@ const comment = (id: string, authorId: string, extra: Partial<Comment> = {}): Co
   ...extra,
 });
 
+const CELL = 'row004:colb01';
+// A Sheet whose cell holds the thread: canvas elements take no comment of their own (docs/specs/026-plan/plan-mode.md
+// "No comment thread on any canvas element"), so every push here is a cell's.
 const box = (comments: Comment[]) =>
   ({
     id: 'e1',
     type: 'shape',
-    shape: 'square',
+    shape: 'plan-sheet',
     x: 0,
     y: 0,
     width: 10,
     height: 10,
-    ...(comments.length ? { commentThread: { comments, resolved: false } } : {}),
+    ...(comments.length ? { cellComments: { [CELL]: { comments, resolved: false } } } : {}),
   }) as unknown as Element;
+// A square carrying its own thread, as an older project's might.
+const square = (comments: Comment[]) =>
+  ({
+    ...box([]),
+    shape: 'square',
+    commentThread: { comments, resolved: false },
+  }) as unknown as Element;
+const CELL_AT = 'e1%3Arow004%3Acolb01';
 
 const save = (elements: Element[], as = OWNER, token = false) =>
   route('PUT', '/api/projects/d1/tabs/t1', {
@@ -137,8 +148,8 @@ describe('a comment in a tab save', () => {
         userId: OWNER,
         kind: 'comment',
         title: 'Bob commented on Roadmap',
-        url: `${BASE}/project/d1#t=t1&el=e1&open=comments`,
-        tag: 'd1:e1',
+        url: `${BASE}/project/d1#t=t1&el=${CELL_AT}&open=comments`,
+        tag: 'd1:e1:row004:colb01',
       },
     ]);
     // The next save carries the same comment: nothing new.
@@ -186,6 +197,24 @@ describe('a comment in a tab save', () => {
     expect(fake.pushes).toEqual([]);
   });
 
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 878).
+  it('pushes nothing for a comment on an element’s own thread, which the save strips', async () => {
+    expect((await save([square([comment('c1', BOB)])], BOB)).status).toBe(200);
+    expect(fake.pushes).toEqual([]);
+  });
+
+  it('pushes nothing for a stored element thread handed to it directly', async () => {
+    await pushNewComments(db.env, {
+      plan: { id: 'd1', name: 'Roadmap', ownerId: OWNER, teamId: null },
+      tabId: 't1',
+      authorId: BOB,
+      authorName: 'Bob',
+      previous: [],
+      next: [square([comment('c1', BOB)])],
+    });
+    expect(fake.pushes).toEqual([]);
+  });
+
   it('goes whether or not email is on (no EMAIL binding here)', async () => {
     expect(db.env.EMAIL).toBeUndefined();
     await save([box([comment('c1', BOB)])], BOB);
@@ -195,16 +224,17 @@ describe('a comment in a tab save', () => {
 
 describe('a comment posted over REST', () => {
   it('a tab comment tells the owner; an API token’s tells no one', async () => {
-    await save([box([])]);
+    // On a Sheet's cell: canvas elements take no comment (docs/specs/026-plan/plan-mode.md).
+    await save([{ ...box([]), shape: 'plan-sheet' } as Element]);
     const post = (as: string, token = false) =>
       route('POST', '/api/projects/d1/tabs/t1/comments', {
-        body: { elementId: 'e1', text: 'hello' },
+        body: { elementId: 'e1', cell: CELL, text: 'hello' },
         as,
         token,
       });
     expect((await post(BOB)).status).toBe(201);
     expect(fake.pushes.map((p) => [p.userId, p.kind, p.url])).toEqual([
-      [OWNER, 'comment', `${BASE}/project/d1#t=t1&el=e1&open=comments`],
+      [OWNER, 'comment', `${BASE}/project/d1#t=t1&el=e1%3Arow004%3Acolb01&open=comments`],
     ]);
     fake.pushes.length = 0;
     expect((await post(BOB, true)).status).toBe(201);
@@ -212,7 +242,8 @@ describe('a comment posted over REST', () => {
   });
 
   it('a reply in a tab thread tells who wrote in it', async () => {
-    await save([box([comment('c1', BOB)])], BOB);
+    const cellThread = { [CELL]: { comments: [comment('c1', BOB)], resolved: false } };
+    await save([{ ...box([]), shape: 'plan-sheet', cellComments: cellThread } as Element], BOB);
     fake.pushes.length = 0;
     const res = await route('POST', '/api/projects/d1/tabs/t1/comments/c1/reply', {
       body: { text: 'thanks' },
@@ -223,11 +254,11 @@ describe('a comment posted over REST', () => {
 
   it('a card thread opens the card on that thread; its reply tells the thread’s writers', async () => {
     const item = (
-      (await (
+      await (
         await route('POST', '/api/projects/d1/items', {
           body: { type: 'task', fields: { title: 'A' } },
         })
-      ).json()) as ItemResponse
+      ).json<ItemResponse>()
     ).item;
     const started = await route('POST', `/api/projects/d1/items/${item.id}/threads`, {
       body: { text: 'look' },
@@ -319,7 +350,7 @@ describe('who may hear (share roles)', () => {
       next: places.map((id) => at(id, [earlier(id), comment(`new-${id}`, OWNER)])),
     });
     expect(fake.pushes.map((p) => [p.userId, p.tag])).toEqual(
-      places.map((id) => ['user_viewer', `solo:${id}`]),
+      places.map((id) => ['user_viewer', `solo:${id}:row004:colb01`]),
     );
     const urlOf = (input: unknown) => (input instanceof Request ? input.url : String(input));
     const pushCalls = fetchSpy.mock.calls.filter(([input]) =>

@@ -34,6 +34,9 @@ apps/editor/components/plan/widgets/board-widget-filters.tsx Only Mine, People, 
 apps/editor/components/plan/widgets/board-widget-measures.tsx WIP, Due, Points, Time, Priorities, Unassigned,
                                                               Top Voted, Stale
 apps/editor/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
+apps/editor/components/plan/widgets/zone-overflow.ts    a too-full zone: useZoneOverflow (pinned, start, end, measured
+                                                        by ResizeObserver and the row's scroll), PINNED_WIDGET,
+                                                        scrollingWidgets, slotInList, nudgeInRow, edgeFade (pure)
 apps/editor/components/plan/PlanBoardHeader.tsx         title, zone, Reveal / Retry, the unplaced list
 apps/editor/hooks/plan/widget-slot.ts                   widgetSlotAt (the reorder's landmark)
 apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + gallery: search, rail, sections of tiles, keys, live
@@ -52,6 +55,10 @@ apps/editor/components/plan/widgets/WidgetGalleryTile.tsx    a tile's live previ
 apps/editor/components/plan/gallery/                         the frame, rail, tile and keys shared with Add Field
                                                              (item-types blueprint "Add Field")
 apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObserver per gallery (useSeenRoot, useSeen)
+apps/editor/components/plan/widgets/kept-stat.ts             keptStat: a widget's count kept per card list and key
+apps/editor/components/plan/useDrawnSetup.ts                 the set-up without its filter, one object across filter
+                                                             changes (useDrawnSetup, drawnSetupKey)
+apps/editor/components/plan/FilterEmptyHint.tsx              the hint when the filter hides every card, narrowingCount
 ```
 
 ## Behaviour and state
@@ -137,13 +144,24 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 | Suggested field gone before open   | Dropped from For You (`gallerySections`)                             |
 | Completion with no done column     | "No done column"                                                     |
 | Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)                       |
-| More widgets than fit              | The zone scrolls sideways                                            |
+| More widgets than fit              | The row scrolls sideways; the Filter pinned at the zone's start      |
+| A +n legend opened near the edge   | `AnchoredPopover preventScroll`: the row keeps its scroll            |
 
 ## Presentation and UX
 
 - Pill: `h-7 rounded-md border px-2 text-[12px] font-medium`, border `palette.border`, text `palette.muted`,
   figures `palette.text`; WIP over: `palette.warning` on `palette.warningBg`.
 - Reorder bar: 2 × 24 px, `palette.focus`.
+- A too-full zone (`useZoneOverflow`): the zone (`data-widget-zone`, no scroll) holds the pinned Filter
+  (`data-widget-pin`, `role="group"` "Filter widget", `aria-keyshortcuts="Delete"`, no drag, only while the row's
+  content needs more than the zone; it unpins once the widgets need `UNPIN_SLACK_PX` less than the zone, or, in a
+  zone sized by its content (a header band's span, which shrinks with the pinned row), once the pinned row fits with
+  nothing to scroll after the widgets came to need less than when they pinned or the window resized: a try that
+  overflows pins again and waits for the next such change) and the row (`data-widget-row`,
+  `overflow-x-auto`, the list then the + and Edit Widgets). Need is `row.scrollWidth + zone.clientWidth -
+row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FADE_PX` at an edge with more past it
+  (the mask works on any header background, a band's tint too). A drag's slot (`widgetSlotAt` over the list) and a
+  nudge are in the row's order (`slotInList`, `nudgeInRow`); a removal's refocus finds the next widget by id.
 - Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Add widgets to
   this board" and its **+**; unselected, the empty zone draws nothing.
 - Edit Widgets: after the **+**, while `widgets.length > 0` and `canEdit`, a 28 px button (a pencil, `lucideGlyph(lucidePencil, 14)` drawn at 10, `Tooltip`
@@ -180,6 +198,27 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
   against the field's definition, its types, the reader, the day and the done columns, so re-renders and a field's
   several views cost nothing more. `fieldFills` reads every field in one pass for For You. Ten fields and For You
   over 2,000 cards: 12 ms CPU measured (field-widget-stats.perf.test.ts, budget 60 ms).
+- **A filter change** (a teammate's arrives as a whole new set-up off the wire): `PlanBoardView` projects, counts and
+  draws from `useDrawnSetup(setup)`, the set-up without `filter`, matched by a JSON key so it keeps one identity while
+  only the filter changes. `usePlanBoardProjection` keeps the unfiltered projection (and `shownItems`, the widgets'
+  cards) on that set-up and the items, and makes the filtered one only while a filter narrows: one projection per
+  filter change, none with no filter. The built-in widget counts go through `keptStat` (per card list, keyed by what
+  else they read: done columns, day, type order; at most `KEPT_PER_LIST` 32 per list), and field summaries already
+  key on the list, so a filter change recounts nothing. Writers (column heads, reorder, widgets) still spread the full
+  set-up, so they keep the filter.
+- **Measured** on 2,000 cards (kanban, assignee lanes, filter on priority; Node, the projection path alone): before,
+  two projections plus `boardItems` and four widget counts, 1.93 to 2.28 ms per filter change; after, the key and one
+  projection, 0.59 to 0.60 ms. The whole board in jsdom (dev build, `PlanBoardView.filter.perf.test.tsx`): before, 2
+  projections and every widget recounted per change; after, 1 projection and 0 recounts, and a change that shows the
+  same cards draws 0 card faces. What remains of a change that swaps hundreds of cards (667 here, 540 to 760 ms in
+  jsdom dev) is drawing the newly shown cards themselves, not the projection or the counts.
+- **Measured in a browser** (production build, Chromium at 4x CPU throttle, 2,000 cards over five columns, a
+  Participant's board watching the owner change the shared filter; main-thread time over the change, two runs): a
+  change that shows the same cards (the projection alone) 27 to 47 ms in all, against 56 ms for the same window with
+  no change, and no long task; hiding every card 35 to 52 ms; swapping 667 cards for another 667 160 to 174 ms, showing
+  all 2,000 from none 205 to 206 ms, both split into tasks under 50 ms. The columns draw only the cards in view (84 to
+  96 card faces of the 667 or 2,000 shown), so drawing never scales with the cards a change shows. One change crossed
+  50 ms: narrowing all 2,000 to 667 ran one 51 to 53 ms task, a follow-up rather than a fix here.
 - The gallery computes For You only on open, and draws a tile's preview only once `useSeen` reports it near view
   (`SEEN_MARGIN`); `fields` is memoised on `addTypes` and the types, so adding a widget never rebuilds sections.
 
@@ -191,6 +230,8 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 | Counts behind People, Types, WIP, Due                         | packages/plan-art/src/widget-stats.test.ts                     |
 | Slot math, the + picker offering only the missing             | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx   |
 | Edit Widgets: × on every widget, Done, Escape, outside, roles | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx   |
+| A too-full zone: Filter pinned, slack, fades, keys, slots     | BoardWidgetZone.overflow.test.tsx                              |
+| +n opens and closes without scrolling its row (preventScroll) | packages/workbench AnchoredPopover.focus.test.tsx              |
 | Field shapes, views, keys, cap, boardFields, state, toggle    | packages/items/src/field-widgets.test.ts                       |
 | Each shape's summary, caching, fills, number text             | packages/plan-art/src/field-widget-stats.test.ts               |
 | 2,000 cards × 10 fields within the CPU budget                 | packages/plan-art/src/field-widget-stats.perf.test.ts          |
@@ -206,6 +247,8 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 | Constant               | Value | Where                    | Safe range |
 | ---------------------- | ----- | ------------------------ | ---------- |
 | `REORDER_THRESHOLD_PX` | 4     | BoardWidgetZone.tsx      | 2..10      |
+| `UNPIN_SLACK_PX`       | 12    | zone-overflow.ts         | 4..40      |
+| `EDGE_FADE_PX`         | 20    | zone-overflow.ts         | 12..32     |
 | `PEOPLE_SHOWN`         | 5     | board-widget-parts.tsx   | 3..8       |
 | `TYPES_SHOWN`          | 3     | board-widget-parts.tsx   | 3..8       |
 | `DUE_SOON_DAYS`        | 7     | widget-stats.ts          | 1..30      |
@@ -221,6 +264,54 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 ## Defaults ledger
 
 See DEFAULTS.md D17 to D19, and D74 to D79 for field widgets and the gallery.
+
+## The board's filter (board-widgets.md "The board's filter")
+
+- **Naming**: `BoardFilter` (`board-filter.ts`, packages/items): a `SavedBoardFilter` without its id and name (`text?`,
+  `mine?: true`, `filters?`, `person?`, `type?`, `priority?`, `due?: 'overdue' | 'soon'`), kept as
+  `PlanBoardSetup.filter?: BoardFilter`. The editor's `QuickFilter` is it resolved for this viewer and today.
+- **Pure helpers** (`board-filter.ts`): `isBoardFilter(v)` (the same field checks as a saved filter's,
+  `savedFilterFieldsValid`: words up to `SAVED_FILTER_TEXT_MAX` 200, at most `CARD_SEARCH_FILTERS_MAX` 8 chips);
+  `readBoardFilter(v)` (normaliseBoardSetup keeps a valid one that narrows, else drops it); `boardFilterFrom(quick)`
+  (the words kept as typed, so a trailing space survives the round trip, cut to 200; Only Mine as a flag; a due window
+  as `overdue`/`soon`; undefined when nothing narrows); `resolveBoardFilter(filter, opts)` (as `resolveSavedFilter`);
+  `boardFilterKey(filter)` (a comparable string).
+- **Contracts**: `validate-shape.ts`' `planBoard` rule refuses a `filter` that `isBoardFilter` rejects;
+  `plan-board-patch.ts` SETUP_KEYS gains `filter` (it travels whole); the participant content rule
+  (`participant-content.ts`, `PARTICIPANT_BOARD_FIELDS = ['filter']`) takes `planBoard.filter` from a Participant's
+  update of a `plan-board` and keeps every other set-up field as stored, so a Participant's board change can only move
+  the filter (refused `invalid` when the result fails validation); a Viewer's ops never pass `room-op-gate.ts`.
+  `field-filter-removal.ts` `boardWithoutFieldFilters` strips the field's clauses from `filter` too (an emptied filter
+  goes).
+- **Write**: `usePlanElementWrites.setBoardFilter(boardId, filter | undefined)` (on `PlanContext`) sets or clears only
+  `planBoard.filter` on the stored set-up as it is (never the normalised copy), so a Participant's commit passes
+  `participantTabChange` untouched.
+- **State** (`components/plan/useBoardFilter.ts`): `useBoardFilter({ stored, mine, today, finished, canChange,
+write })` answers `{ quick, setQuick, showAll }`: `quick` is the stored filter resolved (memoised on its key, the viewer, the
+  day and the done statuses) or, while typing waits, the local draft. `setQuick(q)` does nothing without `canChange`;
+  a change of the words alone waits `BOARD_FILTER_TYPING_MS` (400) after the last key, anything else writes at once
+  (flushing waiting words first); unmounting flushes. `showAll()` clears the filter at once (no typing pause). `PlanBoardView` passes `canChange = interactive &&
+canEditCards`, `write = plan.setBoardFilter(element.id, ·)`.
+- **Read-only** (a Viewer): `WidgetContext.canFilter` and `FilterPress.canFilter` false disable every narrowing press
+  (Only Mine, People, Unassigned, Card Types, Due Soon, Priorities, field values, saved filter chips) and hide Show all;
+  `BoardFilterField` passes `readOnly` to `FilterSearchBox` (workbench), which makes the words `readOnly`, drops the
+  chips' crosses and Clear, and the field draws no Add Filter.
+- **Taking a widget off**: `PlanBoardHeader` hands the trimmed filter with the widgets (`onWidgets(next, kept)`), one
+  set-up write, so the second write never puts back the filter the first cleared.
+- **Phone and slot**: `shownQuick` still applies none there.
+- **Hides every card** (board-widgets.md "When the filter hides every card"): `usePlanBoardProjection` answers
+  `hidesAll` (a filter narrows, the projection holds cards, and no column or lane shows one); `PlanBoardView` sets
+  `filterHidesAll` off a phone, a slot and loading; `PlanBoardGrid` draws `FilterEmptyHint` in the first open column's
+  first open lane, before its Add card row, with `onShowAll = showAll` only when `canFilter`. Built on
+  `CompactEmptyState` and `noMatchTitle` with the board palette as its ink.
+- **Testing**: `board-filter.test.ts` (checks, read, from, resolve, key), `participant-content.board-filter.test.ts`
+  (a Participant's filter lands, other set-up fields stay, a bad filter is refused), `validate-shape` and
+  `plan-board-patch` cases, `useBoardFilter.test.tsx` (two clients over one store converge, a remount restores, typing
+  debounced and flushed on unmount, Show All at once, a Viewer cannot change it), widget role tests (Viewer disabled,
+  Participant presses), `PlanBoardView.filter-empty.test.tsx` (the hint for an Editor and a Participant with Show
+  All, a Viewer without it, per viewer, one card, never on an empty board, a phone or a slot),
+  `PlanBoardView.filter.perf.test.tsx` (2,000 cards: one projection, no widget recount, within the CPU budget),
+  `useDrawnSetup.test.ts`, `kept-stat.test.ts`.
 
 ## Filter field and saved filters (board-widgets.md "The Filter widget", "Saved filters")
 
@@ -251,7 +342,8 @@ today, soonDays, finished })` (the viewer's id or none; the window from today); 
 - **Contracts**: `plan-board-patch.ts` SETUP_KEYS gains `savedFilters` (a set-up delta, like `widgets`);
   `validate-shape.ts`' `planBoard` rule also refuses a stored `savedFilters` that `isSavedBoardFilters` rejects
   (more than 8, a bad id or name, words past 200, chips past 8 or malformed, an unknown due window or priority).
-- **Roles**: `canEdit` (an Editor's set-up) shows Save Filter and each chip's chevron; everyone applies.
+- **Roles**: `canEdit` (an Editor's set-up) shows Save Filter and each chip's chevron; `canFilter` (an Editor or a
+  Participant) applies; a Viewer's chips are disabled.
 - **Errors**: a name taken says "A saved filter already has this name."; an empty name keeps Save disabled; at 8,
   Save Filter hides; a filter whose field or value is gone matches nothing.
 - **Telemetry**: `Plan` · `Used` / `Added` / `Renamed` / `Changed` / `Removed` · `SavedFilter`.

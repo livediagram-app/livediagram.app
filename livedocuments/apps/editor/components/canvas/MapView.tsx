@@ -13,7 +13,10 @@ import {
   type ShapeElement,
 } from '@livedocuments/document';
 import { useMapGeometry } from '@/lib/map-geometry-loader';
-import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
+import {
+  useChartGround,
+  useElementSurface,
+} from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { MapDrawing } from '@/components/canvas/MapDrawing';
 
 export function MapView({
@@ -29,14 +32,16 @@ export function MapView({
 }) {
   const geometry = useMapGeometry();
   const surface = useElementSurface(element.id);
+  // What it sits on, where a page's fill makes it matter (chartPageGrounds takes maps): its paper follows the page.
+  const ground = useChartGround(element.id);
   const colours = useMemo(
     () => ({
       land: mapLandColour(element.fillColor, surface),
       accent,
-      paper: mapPaperColour(surface),
+      paper: mapPaperColour(surface, ground),
       text: textColor,
     }),
-    [element.fillColor, surface, accent, textColor],
+    [element.fillColor, surface, ground, accent, textColor],
   );
   const { mapRegion, mapCountry, mapHighlights, mapPins } = element;
   const fields: MapFields = useMemo(

@@ -378,7 +378,7 @@ describe("a document's content lives in its own Durable Object", () => {
       const req = new Request(input, init);
       if (req.method === 'POST' && new URL(req.url).pathname === '/api/index/items') {
         indexCalls.push('POST /api/index/items');
-        const { id } = (await req.json()) as { id: string };
+        const { id } = await req.json<{ id: string }>();
         return Response.json(
           {
             item: { id, folderId: null, teamId: null },

@@ -12,6 +12,7 @@ import {
   getWorkbenchConfinement,
 } from './core';
 import { unloadHeaders } from './tabs';
+import { dataUrlToFile, isDataImageId } from '../offline/offline-images';
 import { blobToDataUrl } from '@liveworkspace/workbench/lib/blob-data-url';
 import {
   cachedDisplayCopy,
@@ -174,6 +175,8 @@ export async function apiFetchImageDataUrl(
   imageId: string,
   opts: { designId?: string; shareCode?: string | null } = {},
 ): Promise<string | null> {
+  // A This Browser picture is already its data URL: no decode and re-encode.
+  if (isDataImageId(imageId)) return imageId;
   const res = await fetchImage(ownerId, imageId, opts);
   if (!res) return null;
   return blobToDataUrl(await res.blob());
@@ -194,11 +197,17 @@ export async function apiFetchImageBlob(
 // null on any non-ok status (the callers map that to a broken / placeholder
 // state). Native `<img src>` can't send auth headers, so every read goes
 // through this fetch.
+// A This Browser design's picture id IS its `data:` URL (upload-image.ts embedImageFile), so it is
+// decoded in place, never sent to the images api (which answers 404 for it): docs/specs/009-elements/images.md.
 async function fetchImage(
   ownerId: string,
   imageId: string,
   opts: { designId?: string; shareCode?: string | null },
 ): Promise<Response | null> {
+  if (isDataImageId(imageId)) {
+    const file = dataUrlToFile(imageId);
+    return file ? new Response(file) : null;
+  }
   const params = new URLSearchParams();
   // A workbench session reads images by its own design's path only (no owner shortcut).
   const designId = getWorkbenchConfinement()?.designId ?? opts.designId;

@@ -3,6 +3,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { SettingsBlob } from '@liveworkspace/settings';
+import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { groupCategories } from './groups';
 import type { SettingsCategory, SettingsRow } from './model';
 import { useSettingsScope, type SettingsScope } from './scope';
@@ -433,5 +434,30 @@ describe('groupCategories', () => {
       ['app:show', undefined],
       ['app:size', 'app:show'],
     ]);
+  });
+});
+
+// Screen reader markup (axe): the panel on an app's own side and on All, with the account's categories merged in.
+// Colour contrast and whole-page rules are the apps' own guards' (@liveworkspace/vitest-config/axe).
+// The panel is rendered without the dialog frame and the page it opens over, so the landmark rule has nothing to judge.
+const NO_PAGE = { disable: ['region'] };
+
+describe('SettingsPanel axe', () => {
+  it('has no violations on an editor’s own side', async () => {
+    const { request } = fakeRequest();
+    renderWithKit(<Host own={fixtureCategories()} request={request} />);
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Account' })).toBeTruthy());
+    expect(await axeViolations(NO_PAGE)).toEqual([]);
+  });
+
+  it('has none on All, with every category open in turn', async () => {
+    const { request } = fakeRequest();
+    renderWithKit(<Host own={fixtureCategories()} request={request} initial="all" />);
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Account' })).toBeTruthy());
+    expect(await axeViolations(NO_PAGE)).toEqual([]);
+    for (const button of within(rail()).getAllByRole('button')) {
+      fireEvent.click(button);
+      expect(await axeViolations(NO_PAGE), button.textContent ?? '').toEqual([]);
+    }
   });
 });

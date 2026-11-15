@@ -27,6 +27,17 @@ const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
     label: id.toUpperCase(),
     ...extra,
   }) as unknown as Element;
+// New comments go on a Sheet cell (docs/specs/029-sheets/sheet.md "Cell comments"): an element's own thread takes
+// none (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element").
+const CELL = 'row004:colb01';
+const sheet = (id: string, extra: Record<string, unknown> = {}): Element =>
+  shape(id, { shape: 'plan-sheet', ...extra });
+const cellThreadOf = async (elementId: string, tabId = 't1') =>
+  (
+    (await stored(tabId)).elements.find((e) => e.id === elementId) as {
+      cellComments?: Record<string, { resolved: boolean; comments: Comment[] }>;
+    }
+  ).cellComments?.[CELL];
 const comment = (id: string, extra: Partial<Comment> = {}): Comment => ({
   id,
   text: `text ${id}`,
@@ -99,15 +110,15 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('add', () => {
   it('stamps the author and, for an agent, the token, and bumps the revision', async () => {
-    seed([shape('a')]);
+    seed([sheet('a')]);
     const before = (await stored()).rev;
     const res = await call({
       path: '/tabs/t1/comments',
-      body: { elementId: 'a', text: '  hello  ' },
+      body: { elementId: 'a', cell: CELL, text: '  hello  ' },
       token: 'tok_1',
     });
     expect(res.status).toBe(201);
-    const { comment: posted } = (await res.json()) as { comment: Comment };
+    const { comment: posted } = await res.json<{ comment: Comment }>();
     expect(posted).toMatchObject({
       text: 'hello',
       authorName: 'Webber',
@@ -116,39 +127,45 @@ describe('add', () => {
       tokenId: 'tok_1',
     });
     expect((await stored()).rev).toBe(before + 1);
-    expect((await threadOf('a'))!.comments[0]).toMatchObject({ id: posted.id, tokenId: 'tok_1' });
+    expect((await cellThreadOf('a'))!.comments[0]).toMatchObject({
+      id: posted.id,
+      tokenId: 'tok_1',
+    });
+  });
+
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751).
+  it('refuses a new comment with no cell, on any element, and writes nothing', async () => {
+    seed([shape('a'), sheet('s'), shape('b', { shape: 'plan-board' })]);
+    const before = (await stored()).rev;
+    for (const elementId of ['a', 's', 'b']) {
+      const res = await call({ path: '/tabs/t1/comments', body: { elementId, text: 'x' } });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ error: 'element_comments_retired' });
+    }
+    expect((await stored()).rev).toBe(before);
+    expect(await threadOf('a')).toBeUndefined();
   });
 
   it('refuses a missing element, an arrow, empty or long text, and a body that is not an object', async () => {
-    seed([shape('a'), { id: 'ar', type: 'arrow' } as unknown as Element]);
-    expect(
-      (await call({ path: '/tabs/t1/comments', body: { elementId: 'zz', text: 'x' } })).status,
-    ).toBe(404);
-    expect(
-      (await call({ path: '/tabs/t1/comments', body: { elementId: 'ar', text: 'x' } })).status,
-    ).toBe(404);
-    expect(
-      (await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: '  ' } })).status,
-    ).toBe(400);
-    expect(
-      (await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'x'.repeat(2001) } }))
-        .status,
-    ).toBe(400);
-    expect((await call({ path: '/tabs/t1/comments', body: { text: 'x' } })).status).toBe(400);
-    expect((await call({ path: '/tabs/t1/comments', body: [1] })).status).toBe(400);
-    expect(
-      (await call({ path: '/tabs/t9/comments', body: { elementId: 'a', text: 'x' } })).status,
-    ).toBe(404);
+    seed([sheet('a'), { id: 'ar', type: 'arrow' } as unknown as Element]);
+    const add = (body: unknown, tab = 't1') => call({ path: `/tabs/${tab}/comments`, body });
+    expect((await add({ elementId: 'zz', cell: CELL, text: 'x' })).status).toBe(404);
+    expect((await add({ elementId: 'ar', cell: CELL, text: 'x' })).status).toBe(404);
+    expect((await add({ elementId: 'a', cell: CELL, text: '  ' })).status).toBe(400);
+    expect((await add({ elementId: 'a', cell: CELL, text: 'x'.repeat(2001) })).status).toBe(400);
+    expect((await add({ text: 'x' })).status).toBe(400);
+    expect((await add([1])).status).toBe(400);
+    expect((await add({ elementId: 'a', cell: CELL, text: 'x' }, 't9')).status).toBe(404);
   });
 
   // docs/specs/013-workspace/share-roles.md: commenting is a Participant's; a Viewer only looks.
   it('lets a Participant link comment, refuses a view link, and keeps a tab-scoped link to its tab', async () => {
-    seed([shape('a')], [shape('b')]);
+    seed([sheet('a')], [sheet('b')]);
     expect(
       (
         await call({
           path: '/tabs/t1/comments',
-          body: { elementId: 'a', text: 'x' },
+          body: { elementId: 'a', cell: CELL, text: 'x' },
           owner: 'looker',
           code: 'LOOK',
         })
@@ -158,7 +175,7 @@ describe('add', () => {
       (
         await call({
           path: '/tabs/t1/comments',
-          body: { elementId: 'a', text: 'x' },
+          body: { elementId: 'a', cell: CELL, text: 'x' },
           owner: 'guest',
           code: 'VIEW',
         })
@@ -168,7 +185,7 @@ describe('add', () => {
       (
         await call({
           path: '/tabs/t1/comments',
-          body: { elementId: 'a', text: 'x' },
+          body: { elementId: 'a', cell: CELL, text: 'x' },
           owner: 'guest',
           code: 'TAB2',
         })
@@ -178,7 +195,7 @@ describe('add', () => {
       (
         await call({
           path: '/tabs/t1/comments',
-          body: { elementId: 'a', text: 'x' },
+          body: { elementId: 'a', cell: CELL, text: 'x' },
           owner: 'stranger',
         })
       ).status,
@@ -188,10 +205,10 @@ describe('add', () => {
 
 describe('reply, resolve and reopen', () => {
   it('replies on the thread holding a comment, and reopens a resolved one by replying', async () => {
-    seed([shape('a', { commentThread: { resolved: true, comments: [comment('c1')] } })]);
+    seed([sheet('a', { cellComments: { [CELL]: { resolved: true, comments: [comment('c1')] } } })]);
     const res = await call({ path: '/tabs/t1/comments/c1/reply', body: { text: 'agreed' } });
     expect(res.status).toBe(201);
-    const thread = await threadOf('a');
+    const thread = await cellThreadOf('a');
     expect(thread!.comments.map((c) => c.text)).toEqual(['text c1', 'agreed']);
     expect(thread!.resolved).toBe(false);
     expect((await call({ path: '/tabs/t1/comments/nope/reply', body: { text: 'x' } })).status).toBe(
@@ -201,6 +218,19 @@ describe('reply, resolve and reopen', () => {
       400,
     );
     expect((await call({ path: '/tabs/t1/comments/c1/reply', body: 'x' })).status).toBe(400);
+  });
+
+  // docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 751): a stored element
+  // thread takes no reply, but still resolves and reopens (below).
+  it('refuses a reply on an element’s stored thread and leaves it as it was', async () => {
+    const thread = { resolved: false, comments: [comment('c1')] };
+    seed([shape('a', { commentThread: thread })]);
+    const rev = (await stored()).rev;
+    const res = await call({ path: '/tabs/t1/comments/c1/reply', body: { text: 'more' } });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: 'element_comments_retired' });
+    expect((await stored()).rev).toBe(rev);
+    expect(await threadOf('a')).toEqual(thread);
   });
 
   it('resolves and reopens, writing nothing when the thread is already so', async () => {
@@ -238,15 +268,14 @@ describe('delete-own', () => {
 // from the project it left only; a project still holding the tab keeps its own events.
 describe('a lost race', () => {
   it('re-reads and repeats once, then answers 409 tab_busy', async () => {
-    seed([shape('a')]);
+    seed([sheet('a')]);
     const write = vi.spyOn(db, 'upsertTabAtRev');
     const stale = Object.assign(new Error('tab_rev_stale'), { code: 'tab_rev_stale' });
     write.mockRejectedValueOnce(stale);
-    expect(
-      (await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'x' } })).status,
-    ).toBe(201);
+    const body = { elementId: 'a', cell: CELL, text: 'x' };
+    expect((await call({ path: '/tabs/t1/comments', body })).status).toBe(201);
     write.mockRejectedValueOnce(stale).mockRejectedValueOnce(stale);
-    const busy = await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'x' } });
+    const busy = await call({ path: '/tabs/t1/comments', body });
     expect(busy.status).toBe(409);
     expect(await busy.json()).toMatchObject({ error: 'tab_busy' });
   });

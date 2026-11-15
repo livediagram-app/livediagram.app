@@ -26,12 +26,19 @@ no tiles, no zoom and no streets, and nothing is fetched from anywhere when it d
   frames that country on its main land and the pieces near it (France frames on Europe with Corsica,
   not on French Guiana) and draws every other country faint behind it for context. The **United
   States** frames on the lower 48, so they fill the box, and draws **Alaska and Hawaii again in
-  insets** along the frame's lower left, as an atlas does: Alaska smaller, Hawaii a little larger,
-  both in the United States' own fill, so a highlighted United States shows every state. Each
-  inset sits on a plate of the paper, so the faint land behind it never runs into it.
+  insets** in the map's lower left corner, as an atlas does: Alaska smaller, Hawaii a little larger,
+  both in the United States' own fill, so a highlighted United States shows every state. The insets
+  sit on one plate of the paper that runs from the corner's two edges round both of them, so no
+  faint land (Mexico) shows under, beside or between them; on a dark or coloured page the plate is
+  the page's own colour and reads as part of the page, never as a box.
 - **Highlighted countries** are filled in the accent (the element's stroke colour). The rest of the
   land is the element's fill colour, else a soft neutral for the paper it sits on. Country borders
   are thin lines in the paper colour.
+- **The paper** is what the map sits on: on a page with a fill of its own, that page's colour (a
+  card's, when the map sits on one; a gradient's tone midway across the map), else the plain paper
+  of the canvas (white, or deep slate on a dark canvas). The borders, the inset plate and the pins'
+  rings and labels' halos are all drawn in it, in every view (the world and every region too), on
+  the canvas and in every export alike.
 - **Pins** are dots in the text colour with a paper-coloured ring (so a pin reads on a highlighted
   country as well as on plain land), each with an optional **label** beside it,
   written in the element's text colour and font with a paper-coloured halo so it reads over land and

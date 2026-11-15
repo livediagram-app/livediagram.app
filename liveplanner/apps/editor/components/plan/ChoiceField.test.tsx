@@ -236,7 +236,7 @@ describe('Choice', () => {
 
   it('is disabled for a Viewer, with no chevron', () => {
     field(MEAL, 'Meat', true);
-    const trigger = screen.getByRole('button', { name: 'Meal: Meat' }) as HTMLButtonElement;
+    const trigger = screen.getByRole<HTMLButtonElement>('button', { name: 'Meal: Meat' });
     expect(trigger.disabled).toBe(true);
     expect(trigger.querySelector('svg')).toBeNull();
   });

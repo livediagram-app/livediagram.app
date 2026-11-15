@@ -60,3 +60,128 @@ export function withPaperLabelInks<T extends Element>(
   }
   return out ?? after;
 }
+
+// Ink marks on the plain paper (docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen"): a
+// filled part or an icon straight on the paper, made on white, that the dark editor's slate paper sinks.
+
+type Mark = {
+  type: string;
+  shape?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  fillColor?: unknown;
+  strokeColor?: unknown;
+  opacity?: unknown;
+};
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+/** The colour a part paints with on the paper: an icon's stroke, else its own opaque fill; null for anything else (a
+ *  word, an arrow, a translucent wash, a cycle, which writes between its discs). */
+function markOf(el: Element): { colour: string; stroke: boolean } | null {
+  const m = el as Mark;
+  if (m.type !== 'shape' || m.shape === 'cycle') return null;
+  if (typeof m.opacity === 'number' && m.opacity < 1) return null;
+  const colour = m.shape === 'icon' ? m.strokeColor : m.fillColor;
+  return typeof colour === 'string' && HEX.test(colour)
+    ? { colour, stroke: m.shape === 'icon' }
+    : null;
+}
+
+/** What is drawn behind each ink mark (an icon, a filled part) on `paper`, by id, with the colour it paints in; only
+ *  `ids`' when given. The label lookup asked through a probe (a word in the part's colour on the part's box, painted
+ *  straight after it), so the part, the same size, is never its own backdrop and everything under it is read as for a
+ *  label. One labelBackdrops pass. */
+export function paperMarkBackdrops(
+  elements: readonly Element[],
+  paper: string,
+  ids?: ReadonlySet<string>,
+): Map<string, { colour: string; behind: string }> {
+  const probed: Element[] = [];
+  const probeOf = new Map<number, string>();
+  for (const el of elements) {
+    probed.push(el);
+    const mark = !ids || ids.has(el.id) ? markOf(el) : null;
+    if (!mark) continue;
+    const m = el as Mark;
+    probeOf.set(probed.length, el.id);
+    probed.push({
+      id: el.id,
+      type: 'text',
+      x: m.x,
+      y: m.y,
+      width: m.width,
+      height: m.height,
+      label: '.',
+      textColor: mark.colour,
+    } as unknown as Element);
+  }
+  const out = new Map<string, { colour: string; behind: string }>();
+  for (const [i, { ink, behind }] of labelBackdrops(probed, paper)) {
+    const id = probeOf.get(i);
+    if (id !== undefined) out.set(id, { colour: ink, behind });
+  }
+  return out;
+}
+
+/**
+ * `after` (drawn on `drawnPaper`) with each part straight on the paper, in `after` and in `before` (as stored, on
+ * `storedPaper`), that reads worse on the drawn paper than it did on the stored one given its colour walked in
+ * lightness: an icon's stroke to the contrast it had there, 3:1 at the least; a filled part's fill to 3:1, a stroke
+ * in the fill's colour following. Parts on a fill (a card, a block, a track) are left alone. The same array when
+ * nothing changes.
+ */
+export function withPaperMarkInks<T extends Element>(
+  before: readonly Element[],
+  storedPaper: string,
+  after: readonly T[],
+  drawnPaper: string,
+): readonly T[] {
+  const drawn = drawnPaper.toLowerCase();
+  const stored = storedPaper.toLowerCase();
+  if (drawn === stored) return after;
+  // Only a part reading worse on the drawn paper than on the stored one, and under 3:1 for a fill, can need a walk:
+  // the rest are skipped before any backdrop is looked up, so a page with no sunk part pays one colour check each.
+  const sinking = new Set<string>();
+  for (const el of after) {
+    const mark = markOf(el);
+    if (!mark) continue;
+    const ratio = contrastRatio(mark.colour, drawnPaper);
+    if (
+      ratio < contrastRatio(mark.colour, storedPaper) - SLACK &&
+      (mark.stroke || ratio < LABEL_BACKDROP_CONTRAST - SLACK)
+    )
+      sinking.add(el.id);
+  }
+  if (sinking.size === 0) return after;
+  const now = paperMarkBackdrops(after, drawnPaper, sinking);
+  const was = paperMarkBackdrops(before, storedPaper, sinking);
+  let out: T[] | null = null;
+  after.forEach((el, i) => {
+    const seen = now.get(el.id);
+    const prior = was.get(el.id);
+    if (!seen || !prior) return;
+    if (seen.behind.toLowerCase() !== drawn || prior.behind.toLowerCase() !== stored) return;
+    const made = contrastRatio(prior.colour, prior.behind);
+    const ratio = contrastRatio(seen.colour, seen.behind);
+    const stroke = (el as Mark).shape === 'icon';
+    const target = stroke ? Math.max(LABEL_BACKDROP_CONTRAST, made) : LABEL_BACKDROP_CONTRAST;
+    if (!(ratio < made - SLACK && ratio < target - SLACK)) return;
+    const next = walkedInk(seen.colour, seen.behind, target);
+    const strokeColor = (el as Mark).strokeColor;
+    out ??= [...after];
+    out[i] = stroke
+      ? { ...el, strokeColor: next }
+      : {
+          ...el,
+          fillColor: next,
+          ...(typeof strokeColor === 'string' &&
+          strokeColor.toLowerCase() === seen.colour.toLowerCase()
+            ? { strokeColor: next }
+            : {}),
+        };
+  });
+  return out ?? after;
+}

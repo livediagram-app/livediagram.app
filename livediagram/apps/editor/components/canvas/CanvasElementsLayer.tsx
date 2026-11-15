@@ -38,6 +38,7 @@ import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
+import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
@@ -61,6 +62,9 @@ type ElementsExtras = {
   // at a time and the toolbar can dodge the top ring). null = all closed.
   quickRingOpen: QuickConnectDirection | null;
   setQuickRingOpen: (placement: QuickConnectDirection | null) => void;
+  // The isometric camera's angles, for where the depth layer draws each copy (IsometricDepthLayer). Absent, no
+  // depth layer (a host that never shows the isometric view).
+  isoAngles?: { azimuth: number; elevation: number };
 };
 
 export type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
@@ -266,6 +270,19 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const [gripHosts, setGripHosts] = useState<SelectionGripHosts | null>(null);
   return (
     <>
+      {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
+      behind the real element layer, which caps each column at z=0. Only mounted while the tool is active. Here
+      rather than beside this layer, so its side faces read the drag preview: a collaborator's live resize grows
+      them mid-gesture, and a layer mounting mid-gesture picks up the riding offsets at once
+      (docs/specs/008-canvas/drag-preview.md "An element's isometric side faces ride with it"). */}
+      {canvasTool === 'isometric' && props.isoAngles ? (
+        <IsometricDepthLayer
+          elements={elements}
+          azimuth={props.isoAngles.azimuth}
+          elevation={props.isoAngles.elevation}
+          preview={previewStore}
+        />
+      ) : null}
       <SelectionGripsContext.Provider value={gripHosts}>
         {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
             all reference url(#arrowhead) — defs are document-scoped

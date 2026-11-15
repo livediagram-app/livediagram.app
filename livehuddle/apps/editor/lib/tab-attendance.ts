@@ -79,3 +79,36 @@ export function visitTimes(visit: AttendanceVisit): string {
     : `${DAY.format(visit.leftAt).replace(',', '')}, ${clockTime(visit.leftAt)}`;
   return `${joined} · Left ${left}`;
 }
+
+/** What the room's roster shows of each person in it now, by collab key: their name and colour. */
+export type LiveNames = ReadonlyMap<string, { name: string; color: string }>;
+
+/**
+ * `visit` as the room shows its person now (Work Tracker 825): an open visit whose key is on the roster takes the
+ * roster's name and colour, so an open dialog follows a rename or a recolour. The same object when nothing differs (a
+ * closed visit, someone not on the roster, no change), so a memoised row re-renders only when its person changed.
+ */
+export function liveVisit(visit: AttendanceVisit, live: LiveNames | undefined): AttendanceVisit {
+  if (visit.leftAt !== null || !visit.key || !live) return visit;
+  const now = live.get(visit.key);
+  if (!now || (now.name === visit.name && now.color === visit.color)) return visit;
+  return { ...visit, name: now.name, color: now.color };
+}
+
+type RosterPerson = { key?: string; name: string; color: string };
+
+/**
+ * The roster's keys, names and colours as one string, equal while none of them changed (a status or a last-seen tick
+ * leaves it alone): what the host memoises `LiveNames` on, and builds it back from.
+ */
+export function liveNamesSignature(people: readonly RosterPerson[]): string {
+  return JSON.stringify(people.flatMap((p) => (p.key ? [[p.key, p.name, p.color]] : [])));
+}
+
+/** `LiveNames` from a `liveNamesSignature`: each person by key, the first wins (the host puts the reader first). */
+export function liveNamesFrom(signature: string): LiveNames {
+  const live = new Map<string, { name: string; color: string }>();
+  for (const [key, name, color] of JSON.parse(signature) as [string, string, string][])
+    if (!live.has(key)) live.set(key, { name, color });
+  return live;
+}

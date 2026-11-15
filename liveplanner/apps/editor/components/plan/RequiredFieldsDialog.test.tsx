@@ -62,7 +62,7 @@ describe('New {Type}', () => {
   it('asks for the title and each missing field, creating only once all are filled', () => {
     const onDone = open();
     expect(screen.getByRole('dialog', { name: 'New Bug' })).toBeTruthy();
-    const create = screen.getByRole('button', { name: 'Create' }) as HTMLButtonElement;
+    const create = screen.getByRole<HTMLButtonElement>('button', { name: 'Create' });
     expect(create.disabled).toBe(true);
     expect(screen.getByText('Fill in Severity, Area, Epic')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Severity/ }));

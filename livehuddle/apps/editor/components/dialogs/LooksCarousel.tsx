@@ -53,7 +53,7 @@ export function LooksCarousel({
   onPickLook: (look: TabLookId | TabLook) => void;
   headingClass: string;
 }) {
-  // Each look's preview is fixed for an appearance, so they are drawn once per open (again if the viewer's mode
+  // Each look's preview is fixed for an appearance, so it is drawn once per open (again if the viewer's mode
   // changes: they draw in its half).
   const { appearance } = useAppearance();
   // The finish the looks are narrowed to, or all of them.
@@ -82,17 +82,20 @@ export function LooksCarousel({
     // oxlint-disable-next-line react/exhaustive-deps -- as the looks' previews: redrawn in the viewer's half when it changes
     [mashup, appearance],
   );
-  const previews = useMemo(
-    () =>
-      new Map(
-        [...TAB_LOOKS, ...seasonalLooks].map((look) => [
-          look.id,
-          { markup: lookPreviewSvg(look), paper: lookPreviewTab(look).backgroundColor },
-        ]),
-      ),
+  // Drawn when a card first mounts (the page on show and its neighbours), not all at once on open: every look's
+  // preview is a full export, and drawing them all up front was what a loaded machine's first render choked on.
+  const previewOf = useMemo(() => {
+    const drawn = new Map<string, { markup: string; paper: string | undefined }>();
+    return (look: TabLook) => {
+      let preview = drawn.get(look.id);
+      if (!preview) {
+        preview = { markup: lookPreviewSvg(look), paper: lookPreviewTab(look).backgroundColor };
+        drawn.set(look.id, preview);
+      }
+      return preview;
+    };
     // oxlint-disable-next-line react/exhaustive-deps -- the previews read the viewer's appearance themselves (getTheme); it is a dependency so they redraw on a change
-    [appearance],
-  );
+  }, [appearance]);
   return (
     <section aria-labelledby="looks-heading" data-tour-id="tab-style-looks">
       <PagedCarousel
@@ -160,7 +163,7 @@ export function LooksCarousel({
                 badge={<DiceIcon />}
               />
             );
-          const preview = previews.get(look.id)!;
+          const preview = previewOf(look);
           return (
             <LookCard
               key={look.id}

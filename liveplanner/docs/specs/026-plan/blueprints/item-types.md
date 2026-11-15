@@ -43,8 +43,20 @@ src/image-values.ts    holdsSeveralImages(field), storedImageIds(value), fieldIm
 src/card-retype-fields.ts typeChangeFields(fields, from, to): ItemFields (the new type's custom fields mapped
                        by name from the old type's: same kind, Text/Long Text, Choice/Multiple Choice; Choice
                        values only as options; a Long Text's Rich runs with it; never a clear),
-                       withTypeChangeFields(item, write, types) (a patch or move with them added to `set`, never
-                       over its own keys; spec "Changing a card's type")
+                       withTypeChangeFields(item, write, types, map?) (a patch or move with them added to `set`,
+                       never over its own keys; spec "Changing a card's type"); explicit `map` entries
+                       (`TypeFieldMap { from, to }`, a source custom field of any type, a target custom field of
+                       the new type or `description`, read as Long Text through DESCRIPTION_AS_LONG_TEXT) are
+                       applied after name matching, over it and over the target's value; canTakeValue(from, to)
+                       and valueInto(from, to, value) (the one compatibility and conversion rule, shared with the
+                       Hidden tab's Copy To Field)
+src/hidden-values.ts   hiddenValuesOf(item, type, types): HiddenGroup[] ({ type: ItemTypeDef | null, values:
+                       { field, def, value }[] }, groups in catalogue order, Removed Fields last, `type: null`),
+                       hiddenValueCount(groups), hiddenValueText(value) (plain text of a removed field's value),
+                       hiddenCopyTargets(type, def, value) (the card type's fields that take it: custom then
+                       Description), hiddenCopyPatch(item, def, value, target), hiddenRemovePatch(item, field)
+                       (spec "The Hidden tab"); only keys matching CUSTOM_FIELD_ID_PATTERN are read, never a
+                       Calculated, Comments, Votes or Time Spent field's
 src/newer-fields.ts    isNewerField(field), readNewerField(input, id, label), NEWER_FIELD_MAX_BYTES (spec "Fields
                        from a newer version")
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
@@ -62,6 +74,14 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `PARENT_FIELD`),
   `title` and `status` put first, at most 24; `newTitle` defaults to "New <name>"; JSON at most
   `ITEM_TYPES_BYTES`. Answers `{ ok, catalogue }` (normalised) or `{ ok: false, reason }` naming the part.
+- Newer keys (spec "Settings from a newer version"; `stored-keys.ts`): `ITEM_TYPE_KEYS`, `ITEM_TYPE_TAB_KEYS` and
+  `CUSTOM_FIELD_KEYS`, each from a record typed `{ [K in keyof Required<Shape>]: true }` (so a key added to the shape
+  fails the typecheck until listed, and listing it fails `project-format.test.ts` until `PROJECT_FORMAT` is bumped).
+  `newerKeysOf(input, known)` copies the keys outside `known` (JSON round trip; none past `NEWER_KEYS_MAX_BYTES`, 4 KB,
+  or when not copyable). With `newerFields: 'keep'` `readType`, `readTabs` and `readCustom` append them after the keys
+  they read; with `'refuse'` (the api's writes) they are dropped. `resolveChild` keeps the child's own. The type
+  editor starts its draft type with `newerKeysOf(start, ITEM_TYPE_KEYS)` (its tabs and custom fields are carried as
+  objects), so an older editor's save writes them back.
 - Newer fields (spec "Fields from a newer version"; `newer-fields.ts`): `readCustom` checks `id` and `label` first,
   then a `kind` outside `CUSTOM_FIELD_KINDS`, or a `calculated` field whose `calculation` is outside `CALCULATIONS`,
   goes to `readNewerField`, which keeps a JSON copy of the stored object (its `id` and trimmed `label` written back,
@@ -280,7 +300,11 @@ change)` (exactly `after` on `before`; otherwise deleted types removed, changed 
   stored revision; the answer becomes the stored catalogue. `ItemTypesStaleError` (the 409) takes the stored catalogue
   it carries and sends again, up to `ITEM_TYPES_SAVE_ATTEMPTS` (3); any other failure, or the last stale one, drops
   only that change with "Couldn’t save the card types". Each change is one undo step: undo makes
-  `inverseCatalogueChange(change)`, redo the change, each as a new pending change without a step.
+  `inverseCatalogueChange(change)`, redo the change, each as a new pending change without a step. A seed below the
+  revision held is ignored, except one marked `adopt` (`SavedItemTypes.adopt`): `useSyncInPlace` reads the project
+  (`apiLoadProject`) straight after Sync Plan and hands its `itemTypes` and `itemTypesRev` to `setProjectItemTypes`
+  with `adopt: true` (`adoptItemTypes`), so the first save names the server's revision; a failed read leaves the 409
+  path above to land it.
 - Agents (`packages/agent-verbs`): `changeCardTypes` reads the plan, applies its changes and saves naming
   `plan.itemTypesRev`; `bringBoardCardTypes` names the project's `itemTypesRev`. A stale refusal reads again and
   applies again, up to `CARD_TYPES_SAVE_ATTEMPTS` (3), then answers the `item_types_stale` refusal.
@@ -468,7 +492,10 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
     runtime's own zone, "2026-10-31 17:00" too, and stamps the runtime's zone; without `local` an offset is
     required); `instantIso(v)` (`YYYY-MM-DDTHH:MM:SSZ`, the zone dropped; agents and CSV); `zonedParts(ms, tz?)`
     (year, month, date, hour, minute in `tz`, else the runtime's zone through the Date getters; one cached
-    `Intl.DateTimeFormat` per zone), `zonedDay(ms, tz?)` (that day as a day number), `zonedInstant(day, hour, minute,
+    `Intl.DateTimeFormat` per zone). Its caches (`zoneChecks`, `partFormatters`, `textFormatters`) are each held to
+    `ZONE_CACHE_MAX` (64) entries, the oldest evicted first (`cacheSet`), and `isTimeZone` caches only a zone the
+    runtime knows, so zone strings from stored or typed data never grow a long-lived Worker isolate without end;
+    `zoneCacheSizes()` reports them for tests, `zonedDay(ms, tz?)` (that day as a day number), `zonedInstant(day, hour, minute,
 tz?)` (the inverse, a clock change resolved as the platform does: a skipped time moves forward, a repeated one
     takes the first); `shiftInstant(v, days, tz?)` (whole days keeping the wall-clock time and the zone);
     `instantOnDay(v | undefined, day, tz?)` (an instant moved to `day` keeping its time, or a new one at
@@ -690,7 +717,12 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `card-file-drop.ts` (`useCardFileDrop`, in `PlanBoardCard`, handing the card's pill `progress` for its
   `UploadRing onBrand`: the state lives in that card's own hook, so only the uploading card re-renders); the cover and the count chip in `CardCover.tsx`, drawn by `PlanCardFace` when the type's
   Detailed Header holds `cover`. Both pictures' URLs come from `use-image-url.ts` (`useImageUrl`, `useSeen`, shared
-  with `ImageField.tsx`), at `IMAGE_COVER_EDGE` (640) and `IMAGE_ROW_EDGE` (160). The card fields `attachments` and
+  with `ImageField.tsx`; `useSeen` adds to its IntersectionObserver rechecks by the element's own rectangle
+  against the viewport (`SEEN_MARGIN_PX`, 200) on any `transitionend` or `animationend` in its first
+  `SEEN_RECHECK_MS` (800 ms) and once at its end, then leaves it to the observer, so only tiles mounted in the last
+  800 ms are ever measured, one pass a frame for all of them (`seen-recheck.ts`), because an
+  observer reports only crossings and a tile mounted inside a panel still moving in can be missed when the motion
+  runs on the compositor), at `IMAGE_COVER_EDGE` (640) and `IMAGE_ROW_EDGE` (160). The card fields `attachments` and
   `cover` are in `CARD_FIELDS`; `cardSlotFits` keeps `cover` to Detailed's `head`, and `typeOffersCardField` offers it
   while the type has `attachments`. Add Field's Ready to use lists Attachments under Image (`BUILT_INS_OF_KIND`). The
   api's reporting is `plan-room/image-refs.ts` (schema step V11: `media_refs` and the `outbox_images_*` triggers;
@@ -998,6 +1030,54 @@ retyped, types, items, ctx)` (`built-in-field-retype.ts`): `retypedValuePatches`
   `newTabId('tab', ...)`), `withoutEmptyTabs`. The type editor starts from `tabsOf(type)` and saves `tabs`
   explicitly. Problems: "Give every tab a name.", "Two tabs have the same name."
 
+### Tab icons
+
+- **Shape**: `ItemTypeTab.glyph?: PlanGlyphId`, `ItemTypeDef.detailsGlyph?: PlanGlyphId`. `readTabs` and `readType`
+  keep each through `storedGlyph(value, fallback)` (`tab-glyphs.ts`): a known glyph id that differs from its default,
+  else nothing (never refused). Format 6 (`PROJECT_FORMAT`).
+- **Defaults** (`tab-glyphs.ts`, pure, a leaf over `glyphs.ts`): `OVERVIEW_TAB_GLYPH` `page`, `TAB_GLYPH_DEFAULT`
+  `kanban`, `DETAILS_GLYPH_DEFAULT` `checklist`; the panel's own `LINKED_TAB_GLYPH` `link`, `ACTIVITY_TAB_GLYPH`
+  `clock`, `HIDDEN_TAB_GLYPH` `eye-off` (a new house-style glyph in Status and Signals, after `eye`).
+  `defaultTabGlyph(tab)`, `tabGlyphOf(tab)`, `detailsGlyphOf(type)`, `withTabGlyph(tab, glyph?)`,
+  `withDetailsGlyph(type, glyph?)` (undefined or the default stores nothing).
+- **Inheritance**: tabs are copied whole (icons with them); `INHERITED_PARTS` gains `detailsGlyph`, after
+  `detailsLabel`.
+- **Agents**: `TabInput.glyph?: string | null` and `FaceInput.detailsGlyph?: string | null`, read by
+  `glyphFrom(input, kept)` (`type-change-face.ts`: undefined keeps `kept`, null the default, a glyph id lower-cased,
+  anything else "\"x\" is not a Plan glyph. Glyphs: …"). `tabsFrom` keeps a same-named tab's glyph (and its other
+  stored keys) when none is given; `withFace` applies `detailsGlyph`. `InheritedPartsInput.detailsGlyph` ("Details
+  icon") is refused on an inherited type. MCP `plan-schema.ts`: `tabsArg` items take `glyph`, `add`/`set` take
+  `detailsGlyph`; `listedType` answers each tab's `glyph` and `detailsGlyph` with defaults filled in.
+- **Card panel** (`ItemPanelTabs.tsx`): `PanelTab.glyph: PlanGlyphId`; `ItemPanel` fills it with `tabGlyphOf` for
+  the type's tabs, `detailsGlyphOf` for the phone's Details tab, and the fixed glyphs for Linked Cards, Activity and
+  Hidden. Each tab button is `inline-flex items-center gap-1.5`: a `PlanTypeGlyph` of 14 px, `aria-hidden`, then the
+  label in a `max-w-[10rem] truncate` span; the button is wrapped in the shared `Tooltip` labelled with the tab's
+  name (its accessible name stays its label, or "Linked Cards, 3 cards" with a count). The Details column's heading
+  draws `detailsGlyphOf(type)` the same way.
+- **Type editor**: `LayoutDraft` tabs carry `glyph`; `ItemTypeEditor` holds `detailsGlyph` beside `detailsLabel`
+  (reset from the base on `chooseBase`) and saves it with `withDetailsGlyph`. `TabGlyphButton`
+  (`TabGlyphButton.tsx`) leads each group header in `ItemTypeLayoutEditor`: the glyph on a tint of the type's colour
+  with a chevron, named "Icon: {Glyph}" (its tooltip the same), opening `GlyphPicker`'s popover (`GlyphGrid`
+  exported for it) named "{Tab} Icon", with **Reset To Default** (`ResetIcon`) in its foot while the glyph is not
+  the default. Read-only on an inherited type (a plain glyph, no button).
+
+## The Hidden tab
+
+- `ItemPanelTabs.tsx`: `HIDDEN_TAB = 'card-hidden'`, label "Hidden"; `panelTabs(tabs, details, linked, hidden)` puts it
+  after Activity (before the phone's Details) when `hidden > 0`, its `count` the values and `unit: 'value'`, so its
+  accessible name reads "Hidden, 2 values".
+- `ItemPanel.tsx` works the groups out once per item and catalogue (`useMemo` on `item.fields`, `type`, `types`), so
+  typing in another field of the card (a new `fields` object) is the only redo, one pass over the card's keys.
+  Picking the tab tracks `Plan · Opened · HiddenValues`. Its panel is `HiddenValuesTab.tsx`.
+- `HiddenValuesTab.tsx` (tested in `ItemPanel.hidden.test.tsx`): the line, then a `section` per group (`aria-labelledby` its heading "From {Type}" with
+  `PlanTypeGlyph`, or "Removed Fields"), each value a row: its label (the source type's `fieldLabel`, or "Removed
+  Field"), its control (`ItemFieldEditor` with `ctx.type` the source type and `canEdit: false`; a removed field's
+  `hiddenValueText`), and for an Editor (`canRetire`) **Copy To Field** (the shared `PortalMenu`: one `menuitem` a target, "(replaces its value)" after one that holds a value; disabled with
+  the tooltip "No field on {Type} can take this value." when none can) and **Remove** (an icon button "Remove {Field}"). Each is one
+  `onPatch`, so one undo step through the panel's writes; `Plan · Copied · HiddenValue`, `Plan · Removed ·
+HiddenValue`.
+- When the groups empty, `panelTabs` drops the tab and `current` falls back to the first tab (the panel's own rule).
+
 ## The statuses a type uses
 
 - `ItemTypeDef.statuses?: string[]`, the ordered inclusion list, read by `readStatusList` in `readType` (strings,
@@ -1097,7 +1177,7 @@ Derived from [Item types](../item-types.md#inherited-types).
   resolved. Read by `readType` (an `inherits` that is not a type id: `types[i].inherits`; an `ownFields` that is not
   an array of strings: `types[i].ownFields`; at most `ITEM_TYPE_FIELDS_MAX`).
 - **`type-inheritance.ts`** (pure):
-  - `INHERITED_PARTS`: `tabs`, `detailsLabel`, `statuses`, `excludedStatuses`, `defaultStatus`,
+  - `INHERITED_PARTS`: `tabs`, `detailsLabel`, `detailsGlyph`, `statuses`, `excludedStatuses`, `defaultStatus`,
     `assigneeNotifies`, `colourField`: copied whole from the base (absent when the base lacks one). `display` is
     inherited as the base shows it (`inheritedDisplay`): each size the base leaves to its default written out from
     `defaultCardLayout(base.id)`, and a size equal to the inherited type's own default left out, as `readCardDisplay`
@@ -1172,6 +1252,9 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Deleting the last type                 | Not offered (`canDelete`); `deleteType` refuses                                                  |
 | Save fails                             | That change dropped (later ones kept), toast                                                     |
 | Another change landed first (409)      | Change made again to the stored catalogue, sent again (3×)                                       |
+| 409 naming a lower revision (synced)   | Taken as stored anyway (`keepStored(next, true)`): the server's count restarted after Sync Plan  |
+| Hidden value of a deleted field/type   | Listed under Removed Fields as plain text; Remove only                                           |
+| Hidden value no field can take         | Copy To Field's menu says so; nothing written                                                    |
 | Blocks turned on over links that loop  | Cards never rewritten; both show blocked; a write adding to the loop is refused, removing is not |
 | A blocker trashed, archived or missing | Ignored by the badge, the Blocked By list and the arrows; kept on the card                       |
 | Two writes race to close a loop        | Each passes its own read; the loop shows (both blocked) until a link is removed                  |
@@ -1298,6 +1381,9 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Copies keep pictures: grants, serving, refs both ways, purge, Drive files                                        | `apps/api/src/plan-room/image-copy.test.ts`                                                                                                                                                                                                                                                                                                        |
 | Add Field: option rows, Enter, Backspace, paste                                                                  | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                                                                                                                                                                                                                                         |
 | Edit Field: value conversions, refusals, counts, options, 2,000-card budget                                      | `packages/items/src/field-kind-change.test.ts`                                                                                                                                                                                                                                                                                                     |
+| Hidden tab: hidden values, removed fields, allow-list, copy rules, roles, undo, live                             | `packages/items/src/hidden-values.test.ts`, `apps/editor/components/plan/ItemPanel.hidden.test.tsx` , `apps/editor/e2e/hidden-values.spec.ts`                                                                                                                                                                                                      |
+| Card types save after Sync Plan (re-seeded first time; 409 with a lower revision as the fallback)                | `apps/editor/hooks/plan/useItemTypes.test.ts`, `apps/editor/app/project/[id]/useSyncInPlace.test.ts`                                                                                                                                                                                                                                               |
+| REST type patch maps fields (patch, move, patches; undo not mapped)                                              | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                                                                                                          |
 | Changing a card's type: mapped by name, kinds, options, hidden values kept, every path                           | `packages/items/src/card-retype-fields.test.ts`, `packages/items/src/automation/plan-card-actions.test.ts`, `packages/items/src/automation/ai-steps.test.ts`, `packages/agent-verbs/src/plan/plan-engine.test.ts`, `apps/editor/hooks/plan/usePlanItemWrites.retype.test.ts`, `apps/api/src/plan-room/automations/automations-type-change.test.ts` |
 | Edit Field: pencil, rename, reshape, type change, loss count and confirm, disabled tiles, Editor only            | `apps/editor/components/plan/EditFieldDialog.test.tsx`                                                                                                                                                                                                                                                                                             |
 | Built-in names: stored, read, inherited, one type and several, CSV both names, budget                            | `packages/items/src/built-in-field-labels.test.ts`                                                                                                                                                                                                                                                                                                 |
@@ -1315,6 +1401,11 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Blocked By: switch, badge sizes, panel lists, picker refusal, roles                                              | `apps/editor/components/plan/BlockedBy.test.tsx`                                                                                                                                                                                                                                                                                                   |
 | Blocked By: SVG badge                                                                                            | `packages/project/src/svg-render-plan-card.test.ts`                                                                                                                                                                                                                                                                                                |
 | Blocked By: agents list, set, loop stop, switch                                                                  | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                                                                                                                                                                                                                                |
+| Tab icons: defaults, stored only when chosen, unknown read as default, inherited, agents list                    | `packages/items/src/tab-glyphs.test.ts`, `packages/items/src/type-change-face.test.ts`, `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                                                                                                                                       |
+| Tab icons: panel tabs, Details heading, picker, Reset To Default, read-only inherited                            | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                  |
+| Newer keys: kept through read, inheritance and the editor's save, dropped on the api's writes, capped            | `packages/items/src/tab-glyphs.test.ts`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                                |
+| Stored-shape guard: a new type, tab or field key bumps `PROJECT_FORMAT`                                          | `packages/api-schema/src/project-format.test.ts` (and the typecheck on `packages/items/src/stored-keys.ts`)                                                                                                                                                                                                                                        |
+| Sync Plan in place: the server's revision adopted, first save lands                                              | `apps/editor/hooks/plan/useItemTypes.test.ts`, `apps/editor/app/project/[id]/useSyncInPlace.test.ts`                                                                                                                                                                                                                                               |
 | Panel, editor, card face, palette in a browser                                                                   | checked by hand against the dev stack (screenshots)                                                                                                                                                                                                                                                                                                |
 
 ## Constants and configuration

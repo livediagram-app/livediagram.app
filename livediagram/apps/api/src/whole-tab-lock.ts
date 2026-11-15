@@ -2,14 +2,21 @@
 // key": "Whole-tab writes keep other people's entries"; blueprint docs/specs/013-workspace/blueprints/share-roles.md
 // "Whole-tab lock"). The tab save and its delta save, every changeset and revert (the REST, MCP and CLI writes) and a
 // document's re-commit (an offline sync) call it with the tab as they would store it and the tab as stored: the
-// writer's own reactions, responses and dots stand, everyone else's follow the room's ledger, else the stored tab.
+// writer's own reactions, responses and dots stand, everyone else's follow the room's ledger, else the stored tab. A
+// create keeps only its creator's (`lockCreatedTabs`), with no room to ask.
 //
 // The ledger is read only when the write differs from the stored tab on someone else's entry, and then only for the
 // elements it differs on (`wholeTabLockNeeds`): most saves change nobody else and cost no room call. A room that
 // cannot answer is an empty ledger, so the stored entries stand (the lock fails closed) and the person whose live
 // entry it was puts it back with their own next save.
 
-import { lockWholeTab, wholeTabLockNeeds, type Tab, type TabLedger } from '@livediagram/document';
+import {
+  lockCreatedTab,
+  lockWholeTab,
+  wholeTabLockNeeds,
+  type Tab,
+  type TabLedger,
+} from '@livediagram/document';
 import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { getTab } from './db';
@@ -17,7 +24,7 @@ import { fetchLedgerEntries } from './room-client';
 import type { DocumentEnv, Env } from './types';
 
 /** Which write is locking, for its log line. */
-export type WholeTabWrite = 'save' | 'changeset' | 'recommit';
+export type WholeTabWrite = 'save' | 'changeset' | 'recommit' | 'create';
 
 /**
  * The tab a whole-tab write stores. `person` is the writer's account or guest id, or null for an agent's token, which
@@ -81,4 +88,27 @@ export function lockRecommittedTabs(
       ),
     ),
   );
+}
+
+/**
+ * A create's tabs (share-roles.md "A new document keeps only its creator's entries"): each keeps only the entries under
+ * the creator's collab key or a browser's own key, and none under anyone else's. No room holds anything for a document
+ * that does not exist yet, so no ledger is read. `person` is null for an agent's token, which keeps nobody's.
+ */
+export async function lockCreatedTabs(
+  documentId: string,
+  tabs: Tab[],
+  person: string | null,
+): Promise<Tab[]> {
+  const writer = {
+    key: person === null ? null : await collabKeyFor(person),
+    isDerivedKey: isCollabKey,
+  };
+  return tabs.map((tab) => {
+    const locked = lockCreatedTab(tab, writer);
+    if (locked !== tab) {
+      console.info('[whole-tab-lock] locked', { documentId, tabId: tab.id, write: 'create' });
+    }
+    return locked;
+  });
 }

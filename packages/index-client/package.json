@@ -18,11 +18,11 @@
   "dependencies": {
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
-    "jose": "^6.2.14"
+    "jose": "^6.2.17"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "oxlint": "^1.90.0",
+    "oxlint": "^1.93.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   }

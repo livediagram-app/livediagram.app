@@ -33,8 +33,8 @@ export function FrameSection() {
       <Shape x={32} y={66} w={66} h={36} label="Plan" />
       <Shape x={116} y={66} w={60} h={36} kind="circle" accent label="Ship" />
       <Shape x={32} y={114} w={66} h={36} label="Review" />
-      <Arrow from={[98, 84]} to={[116, 84]} />
-      <Arrow from={[65, 102]} to={[65, 114]} tone="muted" />
+      <Arrow connector from={[98, 84]} to={[116, 84]} />
+      <Arrow connector from={[65, 102]} to={[65, 114]} tone="muted" />
       {/* The drag, from the frame's edge to where the section lands */}
       <Arrow from={[196, 101]} to={[230, 101]} tone="muted" />
       {/* Where it lands: the frame and its whole cluster, together */}

@@ -17,6 +17,7 @@ import type { ElementShadow } from './shadow';
 import type { ImageCrop, ImageMask } from './image-frame';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
+import type { ElementBuild } from './build-types';
 import type { CardMedia } from './card';
 import type { QuoteLook } from './quote';
 import type { ChipLook } from './chip';
@@ -370,6 +371,8 @@ export type ShapeElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // When it comes onto a presented slide (docs/specs/012-collaboration/presentation-mode.md "Builds").
+  build?: ElementBuild;
   // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
   // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
   // and stay revealed): stored only when true.
@@ -469,6 +472,8 @@ export type TextElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // When it comes onto a presented slide (docs/specs/012-collaboration/presentation-mode.md "Builds").
+  build?: ElementBuild;
   // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
   // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
   // and stay revealed): stored only when true.
@@ -635,6 +640,8 @@ export type TableElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // When it comes onto a presented slide (docs/specs/012-collaboration/presentation-mode.md "Builds").
+  build?: ElementBuild;
   // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
   // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
   // and stay revealed): stored only when true.
@@ -717,6 +724,8 @@ export type StickyElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // When it comes onto a presented slide (docs/specs/012-collaboration/presentation-mode.md "Builds").
+  build?: ElementBuild;
   // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
   // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
   // and stay revealed): stored only when true.
@@ -841,6 +850,8 @@ export type ImageElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // When it comes onto a presented slide (docs/specs/012-collaboration/presentation-mode.md "Builds").
+  build?: ElementBuild;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -947,6 +958,8 @@ export type FreehandElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // When it comes onto a presented slide (docs/specs/012-collaboration/presentation-mode.md "Builds").
+  build?: ElementBuild;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -1094,6 +1107,8 @@ export type LinkCardElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // When it comes onto a presented slide (docs/specs/012-collaboration/presentation-mode.md "Builds").
+  build?: ElementBuild;
   aspectLocked?: boolean;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -1178,6 +1193,8 @@ export type VideoElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // When it comes onto a presented slide (docs/specs/012-collaboration/presentation-mode.md "Builds").
+  build?: ElementBuild;
   aspectLocked?: boolean;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like

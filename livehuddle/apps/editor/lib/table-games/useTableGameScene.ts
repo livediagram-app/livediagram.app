@@ -26,7 +26,9 @@ export function peerSeat(avatar: AvatarPresence, seatsOf: SeatsOf): number | nul
   if (!avatar.seatedOn) return null;
   const seats = seatsOf(avatar.seatedOn);
   if (!seats || seats.length === 0) return avatar.seat?.index ?? null;
-  return claimOf(seats, { x: avatar.x, y: avatar.y, seat: avatar.seat }).index;
+  const { index } = claimOf(seats, { x: avatar.x, y: avatar.y, seat: avatar.seat });
+  // A seat the table has lost is no seat (chair.md "A table that loses seats").
+  return index < 0 ? null : index;
 }
 
 /** The scene's people: you first, then each peer. Pure, for the tests. */

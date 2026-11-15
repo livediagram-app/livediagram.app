@@ -94,14 +94,14 @@ describe('handleImages', () => {
   it('uploads to the service and dedupes the same bytes', async () => {
     const first = await upload(PNG);
     expect(first.status).toBe(200);
-    const body = (await first.json()) as {
+    const body = await first.json<{
       image: Record<string, unknown> & { id: string };
       deduped: boolean;
-    };
+    }>();
     expect(body.deduped).toBe(false);
     expect(body.image).toMatchObject({ contentType: 'image/png', width: 4, height: 3 });
     expect(body.image).not.toHaveProperty('app');
-    const again = (await (await upload(PNG)).json()) as { image: { id: string }; deduped: boolean };
+    const again = await (await upload(PNG)).json<{ image: { id: string }; deduped: boolean }>();
     expect(again).toMatchObject({ image: { id: body.image.id }, deduped: true });
     // Whose it is was remembered: the owner's own read asks the service for nothing more.
     const before = media.calls.length;
@@ -125,7 +125,7 @@ describe('handleImages', () => {
       .run();
     clearMediaOwnersForTests();
     const res = await call('GET', '/api/images');
-    const { images } = (await res.json()) as { images: { id: string }[] };
+    const { images } = await res.json<{ images: { id: string }[] }>();
     expect(images.map((i) => i.id).sort()).toEqual(['from-docs', id].sort());
     expect(images[0]).not.toHaveProperty('app');
     const before = media.calls.length;
@@ -166,9 +166,11 @@ describe('handleImages', () => {
     const editor = await upload(OTHER_PNG, {}, { 'X-Image-Source': 'mcp' });
     const edited: { image: { source?: string } } = await editor.json();
     expect(edited.image.source).toBeUndefined();
-    const listed = (await (await call('GET', '/api/images')).json()) as {
+    const listed = await (
+      await call('GET', '/api/images')
+    ).json<{
       images: { source?: string }[];
-    };
+    }>();
     expect(listed.images.map((i) => i.source ?? null).sort()).toEqual(['mcp', null]);
   });
 

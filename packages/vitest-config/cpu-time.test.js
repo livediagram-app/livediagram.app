@@ -4,6 +4,7 @@ import {
   cpuBudgetMs,
   cpuGrowthLimitMs,
   cpuGrowthRatio,
+  cpuNowMs,
   cpuRatioCeiling,
 } from './cpu-time.js';
 
@@ -137,5 +138,21 @@ describe('cpuGrowthRatio', () => {
       ceiling: Number.POSITIVE_INFINITY,
     });
     expect(log).toHaveLength(2 + 5 * 2);
+  });
+});
+
+describe('cpuNowMs', () => {
+  it('only moves on while the process works, and counts none of the time it waits', async () => {
+    const before = cpuNowMs();
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    const waited = cpuNowMs() - before;
+    // A wall clock would read 60 here; a CPU clock reads the few ms the timer itself took.
+    expect(waited).toBeLessThan(30);
+    const start = cpuNowMs();
+    const end = Date.now() + 20;
+    let n = 0;
+    while (Date.now() < end) n += 1;
+    expect(n).toBeGreaterThan(0);
+    expect(cpuNowMs() - start).toBeGreaterThan(5);
   });
 });

@@ -93,7 +93,7 @@ describe('More Ways to Share', () => {
     const qr = await screen.findByRole('img', { name: 'QR code for the form link' });
     expect(qr.querySelector('path')!.getAttribute('d')).toMatch(/^M\d+ \d+h\d+v1h-\d+z/);
     fireEvent.click(screen.getByRole('button', { name: 'Download SVG' }));
-    expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), 'Team Lunch QR Code.svg');
+    expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), 'Team -Lunch QR Code.svg');
     expect(track).toHaveBeenCalledWith('Form', 'Shared', 'QrSvg');
     const svg = await (downloadBlob.mock.calls[0]![0] as Blob).text();
     expect(svg).toContain('<svg xmlns="http://www.w3.org/2000/svg"');

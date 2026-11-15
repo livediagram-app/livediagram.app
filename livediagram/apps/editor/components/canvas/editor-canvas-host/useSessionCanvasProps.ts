@@ -4,6 +4,7 @@ import type { useSessionTools } from '@/components/chrome/useSessionTools';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { isButtonMode, isBoxed, isVoteHost } from '@livediagram/document';
 import { commentPersisters } from '@/lib/comment-persistence';
+import { roleGates } from '@/lib/editor-capabilities';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
 import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 
@@ -81,6 +82,7 @@ export function useSessionCanvasProps({
     selfId: selfParticipant.id,
     shareCode: sessionShareCode,
   });
+  const gates = roleGates(can, runBlocked);
   const threadOn = (elementId: string) => {
     const el = activeTab.elements.find((e) => e.id === elementId);
     return el && isBoxed(el) ? el.commentThread : undefined;
@@ -95,7 +97,7 @@ export function useSessionCanvasProps({
     // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
     // stop and listen". Undefined renders the face inert, which is what a
     // read-only surface already gets.
-    onPressFocusButton: isReadOnly || runBlocked ? undefined : pressFocusButton,
+    onPressFocusButton: gates.run ? pressFocusButton : undefined,
     reactionBursts: reactionBursts,
     onReactionBurstDone: clearReactionBurst,
     // Mode button (docs/specs/009-elements/mode-button.md): pressing one is exactly picking that mode from
@@ -115,15 +117,15 @@ export function useSessionCanvasProps({
     // see useBehaviourElements: the press resolves what to do from the
     // element and calls the tool that already exists.
     onPressSessionButton: pressSessionButton,
-    sessionStartBlocked: isReadOnly || runBlocked,
-    sessionRunBy: isReadOnly ? null : sessionTools.facilitatedBy,
+    sessionStartBlocked: !gates.run,
+    sessionRunBy: gates.shape ? sessionTools.facilitatedBy : null,
     timerState: activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none',
     revealedIds: revealedIds,
     // A cover is the facilitator's to lift while one is running the session
     // (docs/specs/012-collaboration/facilitator.md); with nobody facilitating it stays the private peek it has
     // always been (docs/specs/009-elements/reveal-zone.md).
     onToggleReveal: runBlocked ? undefined : toggleRevealForMe,
-    onSetSessionConfig: isReadOnly || runBlocked ? undefined : setSessionConfigFor,
+    onSetSessionConfig: gates.run ? setSessionConfigFor : undefined,
     // Comment panels (docs/specs/012-collaboration/comment-pin.md) drive the SAME thread machinery the anchored
     // popover does: it is all keyed by element id already.
     commentSelfId: selfParticipant.id,
@@ -171,7 +173,7 @@ export function useSessionCanvasProps({
             // docs/specs/012-collaboration/poll-result-capture.md: drops the tallies so far onto the canvas without
             // ending the poll. Read-only visitors never see it: they are
             // never the host.
-            onKeepResults: isReadOnly ? undefined : keepPollResults,
+            onKeepResults: gates.shape ? keepPollResults : undefined,
             onDismiss: livePoll.dismissPoll,
           }
         : null,

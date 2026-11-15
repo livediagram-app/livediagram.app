@@ -201,6 +201,11 @@ export function withStableEventProps<P extends object>(Inner: ComponentType<P>):
 
 - The selection is session state; nothing is persisted. Presence still broadcasts it, now from a
   store subscription in `usePresenceBroadcast` instead of a dependency array.
+- That subscription is `broadcastSelection` (`@liveworkspace/workbench/lib/selection-write-hold`), shared by every
+  editor: each `select` op carries the selection plus the elements let go of whose change has not landed
+  (`stillWritingIds` against the tabs on screen, the save baseline and the holds of
+  `@liveworkspace/workbench/lib/own-writes`), sent again when a hold is released and after `WRITE_HOLD_MAX_MS`
+  (10 s); see [Editor app](../../007-editor/editor-app.md) "Held until the holder's change lands".
 
 ## Errors and edge cases
 

@@ -1,18 +1,20 @@
 // Reading an item's collab push (./collab-push): each card, column, thread and action an app sends, checked and
 // clipped to its limits before anything is written. Re-exported from ./collab-push.
-import type {
-  CardColumn,
-  CollabActionInput,
-  CollabCard,
-  CollabThreadInput,
+import {
+  COLLAB_PEOPLE_MAX,
+  COLLAB_TEXT_MAX,
+  type CardColumn,
+  type CollabActionInput,
+  type CollabCard,
+  type CollabThreadInput,
 } from '@liveworkspace/index-client';
 import { isId, isPartId } from './codec';
 
 export const LABEL_MAX = 200;
-const TEXT_MAX = 500;
+const TEXT_MAX = COLLAB_TEXT_MAX;
 const COLOR_MAX = 32;
 // People named on one thread.
-const PEOPLE_MAX = 100;
+const PEOPLE_MAX = COLLAB_PEOPLE_MAX;
 // A form's response count is a count, not a list: anything past this is clearly wrong.
 export const RESPONSES_MAX = 10_000_000;
 

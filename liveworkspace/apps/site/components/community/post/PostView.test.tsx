@@ -166,7 +166,7 @@ describe('reporting', () => {
 
   it('sends a reason and the trimmed note, then says what happens next', async () => {
     const dialog = await openReport();
-    const send = within(dialog).getByRole('button', { name: 'Send Report' }) as HTMLButtonElement;
+    const send = within(dialog).getByRole<HTMLButtonElement>('button', { name: 'Send Report' });
     expect(send.disabled).toBe(true);
     answer = (url) =>
       new URL(url).pathname.endsWith('/report')

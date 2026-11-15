@@ -71,7 +71,7 @@ The loop runs fast while the owner's queue is short and slows down as it fills. 
 
 | Ideas waiting | Research when the last research pass was at least | Cards per pass, at most |
 | ------------- | ------------------------------------------------- | ----------------------- |
-| 0 to 9        | 1 hour ago (every wake)                           | 5                       |
+| 0 to 9        | 1 hour ago (every wake)                           | 6                       |
 | 10 to 29      | 3 hours ago                                       | 3                       |
 | 30 to 59      | 8 hours ago                                       | 2                       |
 | 60 or more    | never: the owner has plenty to review             | 0                       |

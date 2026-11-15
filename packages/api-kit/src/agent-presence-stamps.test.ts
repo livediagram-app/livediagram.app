@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AGENT_PRESENCE_STAMP_MS } from '@liveworkspace/api-schema/agent-presence';
 import { AGENT_PRESENCE_STAMPS_MAX, AgentPresenceStamps } from './agent-presence-stamps';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('AgentPresenceStamps', () => {
   it('stamps a read once per document, token and tab in the window', () => {
@@ -30,9 +31,9 @@ describe('AgentPresenceStamps', () => {
 
   it('stays bounded, letting the oldest go, and answers a worst-case burst quickly', () => {
     const stamps = new AgentPresenceStamps();
-    const started = performance.now();
+    const started = cpuNowMs();
     for (let i = 0; i < 100_000; i += 1) stamps.shouldStamp(`d${i % 5_000}`, `tok${i}`, 't1', i);
-    expect(performance.now() - started).toBeLessThan(500);
+    expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(500));
     expect(stamps.size).toBe(AGENT_PRESENCE_STAMPS_MAX);
     // The first is long gone, so it stamps again; the newest is held.
     expect(stamps.shouldStamp('d0', 'tok0', 't1', 100_001)).toBe(true);

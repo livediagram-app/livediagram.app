@@ -36,15 +36,21 @@ export type SheetForm = Pick<FormDefinition, 'sections'> & {
   sheet?: { fixed?: readonly SheetFixedColumn[] | undefined } | undefined;
 };
 
+// `namedOnly`: leave out a question still reading "Untitled Question" (its prompt blank), as the builder's header sync
+// and an agent's do (forms.md "Columns before any response"): it claims no column until it has a wording. The api's
+// response row plans without it, so answers to a blank question are still placed.
+export type SheetHeaderOptions = { namedOnly?: boolean | undefined };
+
 // The headers a form's rows want, in order, each distinct (a repeated wording gets " (2)", " (3)"): #, Submitted,
 // each question, then each extra column (forms.md "Columns filled in automatically").
-export function sheetHeaders(form: SheetForm): SheetHeader[] {
+export function sheetHeaders(form: SheetForm, options: SheetHeaderOptions = {}): SheetHeader[] {
   const out: SheetHeader[] = [
     { key: '#', header: SHEET_NUMBER_HEADER },
     { key: 'at', header: SHEET_SUBMITTED_HEADER },
   ];
   const seen = new Set(out.map((h) => h.header.toLowerCase()));
   for (const q of questionsOf(form)) {
+    if (options.namedOnly && !q.prompt.trim()) continue;
     const base = promptOf(q);
     let header = base;
     for (let n = 2; seen.has(header.toLowerCase()); n++) header = `${base} (${n})`;
@@ -90,9 +96,10 @@ export function headerRowIndex(
   form: SheetForm,
   rows: readonly string[],
   rowTexts: RowTexts,
+  options: SheetHeaderOptions = {},
 ): number {
   const top = rows.slice(0, HEADER_SCAN_ROWS);
-  const wanted = new Set(sheetHeaders(form).map((h) => norm(h.header)));
+  const wanted = new Set(sheetHeaders(form, options).map((h) => norm(h.header)));
   const textsOf = (r: string) => [...(rowTexts.get(r)?.values() ?? [])].filter((t) => t.trim());
   const matching = top.findIndex((r) => textsOf(r).some((t) => wanted.has(norm(t))));
   if (matching >= 0) return matching;
@@ -112,7 +119,7 @@ export type SheetColumnsInput = {
   // The header each key had when the builder last looked: a remembered column still reading it follows the wording.
   renamed?: ReadonlyMap<string, string> | undefined;
   rand?: () => number;
-};
+} & SheetHeaderOptions;
 
 export type SheetColumnPlan = {
   // Rows and columns to insert, and the freeze a sheet given its first headers gets.
@@ -148,12 +155,15 @@ export function sheetColumnPlan(input: SheetColumnsInput): SheetColumnPlan {
     changes.push({ k: 'insertRows', after: null, ids });
     rows.push(...ids);
   }
-  const headerIndex = input.rowTexts ? headerRowIndex(input.form, rows, input.rowTexts) : 0;
+  const options = { namedOnly: input.namedOnly };
+  const headerIndex = input.rowTexts
+    ? headerRowIndex(input.form, rows, input.rowTexts, options)
+    : 0;
   const headerRow = rows[headerIndex]!;
   const header: ReadonlyMap<string, string> =
     (input.rowTexts ? input.rowTexts.get(headerRow) : input.header) ?? new Map();
 
-  const wanted = sheetHeaders(input.form);
+  const wanted = sheetHeaders(input.form, options);
   const colOf = new Map<string, string>();
   const claimed = new Set<string>();
   // 1. Remembered columns still in the sheet, each claimed once.

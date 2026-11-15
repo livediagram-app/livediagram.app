@@ -147,7 +147,7 @@ iPhone was closed while moving between its pages.
   transparent picture stays transparent), one picture after another so two large decodes never
   overlap. A picture that already fits, a GIF (whose frames a still copy would lose) and a browser
   without `createImageBitmap` show the original.
-- **Shared by every view.** The last 24 copies are kept by picture and size, and every view of the
+- **Shared by every view.** The most recently shown copies are kept by picture and size, up to a byte budget (32 MB on a phone or tablet, 96 MB elsewhere; the least recently shown goes first), and every view of the
   same copy (an element used twice, a page background and an element) shows it through one URL,
   given back when its last view goes, so the browser decodes it once.
 - **Never seen by others.** The copy lives in this browser's memory only; nothing about it is

@@ -118,7 +118,7 @@ describe('FileImportPanel', () => {
         note={<a href="#help">Help</a>}
       />,
     );
-    const input = screen.getByTestId('file-import-input') as HTMLInputElement;
+    const input = screen.getByTestId<HTMLInputElement>('file-import-input');
     const click = vi.spyOn(input, 'click');
     fireEvent.click(screen.getByRole('button', { name: 'Choose a File' }));
     expect(click).toHaveBeenCalledOnce();

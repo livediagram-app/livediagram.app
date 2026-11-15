@@ -122,9 +122,11 @@ there).
 ## Occupancy is presence, never document state
 
 Who is in a chair rides the `avatar` RoomOp, as
-`seatedOn: elementId | null` on `AvatarPresence`, with `seat: { index, at, tie }` beside it: which of
+`seatedOn: elementId | null` on `AvatarPresence`, with `seat: { index, at, tie, of }` beside it: which of
 the piece's seats (`index`, in `seatPoints` order), when the sitter sat (`at`, their clock's epoch
-milliseconds) and a random tiebreak drawn at that moment (`tie`). **Nothing is written to the
+milliseconds), a random tiebreak drawn at that moment (`tie`) and how many seats the piece had when that index was
+taken (`of`, so a seat number read against a table that has since grown or shrunk is read as the seat it was, see
+[A table that loses seats](#a-table-that-loses-seats)). **Nothing is written to the
 document.**
 
 This is the rule that makes the feature safe, and it is [Avatar mode](../008-canvas/avatar-mode.md)'s rule
@@ -160,6 +162,26 @@ reaches the stored document or undo.
   feet** and counts as the earliest, since that client never gives a seat up.
 - Sitting down and standing up are told to the room **at once**, not at the next heartbeat, so the
   seat reads taken or free to everyone within a packet's flight.
+
+### A table that loses seats
+
+A Meeting Table's seat count changes when a Long Table is dragged longer or shorter, or retyped in place to a Meeting
+Table and back ([A piece's type](office.md#a-pieces-type)) (Work Tracker 831). Its seats always run the far row left
+to right, the near row left to right, then the left end and the right end, so a seat keeps its place in that order
+when the count changes:
+
+- **A seat that remains keeps its sitter.** A far-row or near-row seat whose place along its row the new table still
+  has (the first two of each row on a Meeting Table), and both end seats always, keep the person sitting there: they
+  stay seated, carried to that seat's new spot as a moved table carries them
+  ([Turning furniture](furniture-facing.md) "Somebody sitting in it is carried round"), keep their claim's `at` and
+  `tie` (so nobody who stayed seated loses the seat to anyone), and send the seat's new number with the new count.
+- **A seat that is gone stands its sitter up beside the table**, off the edge nearest where they sat, as if they had
+  found it taken. They never float where the old chair was, and never take a seat somebody else still holds. They
+  can sit again on any free seat, as always.
+- **Every machine reads a stale seat the same way.** Until a sitter's own machine sends the new number, the others
+  read their old `index` against their old `of` by the same rule: a seat that remains is drawn and held where it now
+  is, and a seat that is gone holds nothing (no ring, and nobody yields to it). A packet with no `of` (an older
+  client) is read as before.
 - A peer who leaves the mode, changes tab or disconnects vacates every chair
   for free, because their presence went away.
 

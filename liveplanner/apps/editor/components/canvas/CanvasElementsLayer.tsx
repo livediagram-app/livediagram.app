@@ -16,7 +16,6 @@ import {
   buildElementIndex,
   layerBands,
   layerOpacityOf,
-  type CommentMention,
   createElementGridTracker,
   type ArrowElement,
 } from '@liveplanner/project';
@@ -112,7 +111,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetSessionConfig,
     onOpenElementSettings,
     commentSelfId,
-    commentPanelActions,
     actionSelfId,
     actionPanelActions,
     onPauseTimer,
@@ -122,7 +120,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTimerDuration,
     onRollPicker,
     collab,
-    onOpenComments,
     onOpenAction,
     onOpenNote,
     onEditLink,
@@ -181,7 +178,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onFollowLink,
     onPressSessionButton,
     onRollPicker,
-    onOpenComments,
     onOpenAction,
     onOpenNote,
     onEditLink,
@@ -194,16 +190,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onResetTimer,
     onClearTimer,
     onSetTimerDuration,
-    commentAdd: commentPanelActions?.add,
-    commentRemove: commentPanelActions?.remove,
-    commentResolve: commentPanelActions?.resolve,
-    commentUnresolve: commentPanelActions?.unresolve,
     actionConfigure: actionPanelActions?.configure,
     actionComplete: actionPanelActions?.complete,
     actionReopen: actionPanelActions?.reopen,
     actionOpenBoard: actionPanelActions?.openBoard,
   });
-  // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
+  // One timer bag and one action bag per element, built from the stable wrappers above, so
   // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
   // Running the timer is an Editor's (docs/specs/013-workspace/share-roles.md): a Participant and a Viewer see the
   // face without its controls.
@@ -220,16 +212,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           },
     [h, sessionStartBlocked],
   );
-  const commentActionsFor = useMemo(() => {
-    const { commentAdd, commentRemove, commentResolve, commentUnresolve } = h;
-    if (!commentAdd || !commentRemove || !commentResolve || !commentUnresolve) return null;
-    return idBound((id) => ({
-      add: (text: string, mentions: CommentMention[]) => commentAdd(id, text, mentions),
-      remove: (commentId: string) => commentRemove(id, commentId),
-      resolve: () => commentResolve(id),
-      unresolve: () => commentUnresolve(id),
-    }));
-  }, [h]);
   const actionActionsFor = useMemo(() => {
     const { actionConfigure, actionComplete, actionReopen, actionOpenBoard } = h;
     if (!actionConfigure || !actionComplete || !actionReopen) return null;
@@ -332,7 +314,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       timerControls,
       onRollPicker: h.onRollPicker,
       collab,
-      onOpenComments: h.onOpenComments,
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
       onEditLink: h.onEditLink,
@@ -489,7 +470,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             canMove={canMove}
             canResize={canResize}
             voteReview={voteReview}
-            commentActionsFor={commentActionsFor}
             actionActionsFor={actionActionsFor}
             tabFont={tabFont}
             tabFinish={tabFinish}

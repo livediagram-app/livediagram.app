@@ -51,7 +51,7 @@ describe('handleOauthExchange — mint', () => {
       makeCtx('POST', '/api/oauth/exchange', { body: { clientName: 'Claude (MCP)' } }),
     );
     expect(res.status).toBe(201);
-    const out = (await res.json()) as { token: string; id: string; name: string };
+    const out = await res.json<{ token: string; id: string; name: string }>();
     expect(out.token).toBe('lwt_abc');
     expect(out.name).toBe('Claude (MCP)');
     // Minted for the signed-in owner, under the client's name.
@@ -63,7 +63,7 @@ describe('handleOauthExchange — mint', () => {
 
   it('defaults the name when the client sent none', async () => {
     const res = await handleOauthExchange(makeCtx('POST', '/api/oauth/exchange', { body: {} }));
-    const out = (await res.json()) as { name: string };
+    const out = await res.json<{ name: string }>();
     expect(out.name).toBe('MCP client');
   });
 

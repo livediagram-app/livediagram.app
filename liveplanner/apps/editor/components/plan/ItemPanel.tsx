@@ -3,7 +3,8 @@
 // The item panel (docs/specs/026-plan/plan-board.md "Working on a board"): a wide modal in two columns.
 // The main column holds the title and the type's tabs (docs/specs/026-plan/item-types.md); the Details
 // panel beside it holds the fields in no tab, then who made the item and who last changed it. Every type's tabs end
-// with Linked Cards (when a Card field can link to the type) and Activity (the card's history); on a phone it is one column and Details becomes the last tab. It opens on the
+// with Linked Cards (when a Card field can link to the type), Activity (the card’s history) and Hidden (values the type
+// doesn’t show, when the card keeps any); on a phone it is one column and Details becomes the last tab. It opens on the
 // type's first tab. Every field saves as it changes. It follows the item wherever someone moves it, and closes if
 // someone deletes it.
 import { CardPullRequests } from './CardPullRequests';
@@ -14,6 +15,8 @@ import {
   commentsFieldsOf,
   detailFieldsOf,
   detailsLabelOf,
+  detailsGlyphOf,
+  tabGlyphOf,
   isArchived,
   isFlagged,
   itemTitle,
@@ -30,6 +33,8 @@ import {
   type LabelUse,
   type BoardStatusTypes,
   hasBlocksFields,
+  hiddenValueCount,
+  hiddenValuesOf,
 } from '@liveplanner/items';
 import { DialogCloseButton } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -44,6 +49,7 @@ import { useCardThreadsContext } from './threads/CardThreadsContext';
 import { useAutomationHistory } from '@/components/automations/set-by-automation';
 import { SetByAutomationChip } from '@/components/automations/SetByAutomationChip';
 import { LinkedCardsTab, linkedCardCount } from './LinkedCardsTab';
+import { HiddenValuesTab } from './HiddenValuesTab';
 import { BlockedBySections } from './BlockedBy';
 import { LinkedActionBanner } from './LinkedActionBanner';
 import type { PlanContextValue } from './PlanContext';
@@ -65,6 +71,7 @@ import { ItemDetailsRow, ItemMeta, ItemPanelSection, ItemTypeBand } from './Item
 import {
   ACTIVITY_TAB,
   DETAILS_TAB,
+  HIDDEN_TAB,
   LINKED_TAB,
   ItemPanelTabBar,
   namedLinkedTab,
@@ -256,16 +263,28 @@ function ItemPanelContent({
   // The type's tabs, then Linked Cards when a Card field can link to the type, then Activity, then (on a phone)
   // Details at the far right; the panel opens on the first.
   const linked = linkedGroups.length > 0;
+  // The values it keeps that its type doesn't show (item-types.md "The Hidden tab"): one pass over its keys, which the
+  // React Compiler memoises on its fields, type and catalogue.
+  const hidden = hiddenValuesOf(item, type, types);
   const shownTabs = panelTabs(
-    tabs,
-    mobile ? { id: DETAILS_TAB, label: detailsLabelOf(type), fields: details } : null,
+    tabs.map((t) => ({ ...t, glyph: tabGlyphOf(t) })),
+    mobile
+      ? {
+          id: DETAILS_TAB,
+          label: detailsLabelOf(type),
+          fields: details,
+          glyph: detailsGlyphOf(type),
+        }
+      : null,
     linked ? linkedCardCount(linkedGroups) : null,
+    hiddenValueCount(hidden),
   );
   const [picked, setPicked] = useState<string>(shownTabs[0]!.id);
   const current = shownTabs.find((t) => t.id === picked) ?? shownTabs[0]!;
   const pick = (id: string) => {
     // Picking Activity reads the card's history (items.md "History" "Where it shows").
     if (id === ACTIVITY_TAB && current.id !== ACTIVITY_TAB) track('Plan', 'Toggled', 'ActivityOn');
+    if (id === HIDDEN_TAB && current.id !== HIDDEN_TAB) track('Plan', 'Opened', 'HiddenValues');
     setPicked(id);
   };
   const ctx: ItemFieldContext = {
@@ -376,7 +395,7 @@ function ItemPanelContent({
     </div>
   );
 
-  const meta = <ItemMeta item={item} now={now} editedByGithub={automationHistory.github} />;
+  const meta = <ItemMeta item={item} now={now} />;
   // Its required custom fields, marked after their names (docs/specs/026-plan/item-types.md "Required fields").
   const requiredIds = new Set(requiredCustomFieldsOf(type).map((r) => r.id));
 
@@ -450,6 +469,8 @@ function ItemPanelContent({
         </div>
       ) : current.id === LINKED_TAB ? (
         linkedSection
+      ) : current.id === HIDDEN_TAB ? (
+        <HiddenValuesTab groups={hidden} ctx={ctx} canChange={canRetire && !practice} />
       ) : currentInserted.length > 0 ? (
         tabFieldsWithInserted(type, current.fields, mainField, currentInserted)
       ) : current.fields.length > 0 ? (
@@ -507,8 +528,9 @@ function ItemPanelContent({
             aria-label={detailsLabelOf(type)}
             className={`m-3 ml-0 flex shrink-0 flex-col ${maximised ? 'w-96 px-5 2xl:w-[28rem]' : 'w-80 px-4'} overflow-y-auto rounded-xl bg-slate-50 py-4 ring-1 ring-slate-200/70 dark:bg-slate-800/40 dark:ring-slate-700/60`}
           >
-            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              {detailsLabelOf(type)}
+            <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <PlanTypeGlyph glyph={detailsGlyphOf(type)} size={13} />
+              <span className="min-w-0 truncate">{detailsLabelOf(type)}</span>
             </h3>
             {details.map(detailRow)}
             <CardPullRequests item={item} type={type} />

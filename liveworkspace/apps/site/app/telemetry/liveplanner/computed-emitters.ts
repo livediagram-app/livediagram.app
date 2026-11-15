@@ -14,7 +14,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { EXPLORER_TELEMETRY_EVENTS } from '@liveworkspace/telemetry';
+import { EXPLORER_TELEMETRY_EVENTS, HOME_FRAME_PICKS } from '@liveworkspace/telemetry';
 import { platformComputedEmitters } from '../platform-emitters';
 import {
   ALL_CTA_SOURCES,
@@ -345,7 +345,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/hooks/plan/usePlanSlice.ts Plan·Opened': {
     values: ['Item', 'Parent', 'ChildCard', 'Breadcrumb'],
   },
-  // A failed read of Home retried, through the Explorer's onHome prop (@liveworkspace/explorer).
+  // A card picked from Home's Most Used or Recent, or See More followed, through the Explorer's onHome prop
+  // (@liveworkspace/explorer), then a failed read of Home retried.
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
+    values: HOME_FRAME_PICKS,
+  },
   'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Loaded': {
     values: EXPLORER_TELEMETRY_EVENTS['Home·Loaded'],
   },

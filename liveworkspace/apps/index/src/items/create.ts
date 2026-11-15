@@ -1,13 +1,7 @@
 // Making an item (items.ts).
 
 import { inTeamNow } from '../fresh-teams';
-import {
-  isApp,
-  TITLE_MAX,
-  ITEM_SOURCES,
-  APP_KINDS,
-  type ItemSource,
-} from '@liveworkspace/index-client';
+import { isApp, ITEM_SOURCES, APP_KINDS, type ItemSource } from '@liveworkspace/index-client';
 import { type Person, scopeOf } from '../auth';
 import { isId } from '../codec';
 import { defaultPlacement } from '../default-placement';
@@ -15,7 +9,7 @@ import { touchItem } from '../drive';
 import { INTENT_MAX } from '../config';
 import type { PersonContext } from '../context';
 import type { Env } from '../env';
-import { readName, getFolderRow } from '../folders';
+import { readTitle, getFolderRow } from '../folders';
 import { signingKey, mintGrant } from '../grants';
 import { readObject, badRequest, forbidden, notFound, fail, conflict, json } from '../http';
 import { type ItemRow, type Access, decorate } from '../rows';
@@ -39,7 +33,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   if (!isApp(body.app)) return badRequest('invalid_app');
   // An app acting for a person makes its own kind only.
   if (person.app && person.app !== body.app) return forbidden('wrong_app');
-  const title = body.title === undefined ? DEFAULT_TITLE : readName(body.title, TITLE_MAX);
+  const title = body.title === undefined ? DEFAULT_TITLE : readTitle(body.title);
   if (!title) return badRequest('invalid_title');
   if (!optionalId(body.teamId)) return badRequest('invalid_team');
   if (!optionalId(body.folderId)) return badRequest('invalid_folder');

@@ -3,7 +3,11 @@ import { useLocalBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import { MAX_SELECTION_IDS } from '@livehuddle/api-schema';
 
 import type { connectRoom } from '@/lib/api-client';
-import type { Selection, SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import type { SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import {
+  broadcastSelection,
+  type WriteHoldSources,
+} from '@liveworkspace/workbench/lib/selection-write-hold';
 
 interface PresenceBroadcastDeps {
   hydrated: boolean;
@@ -16,13 +20,9 @@ interface PresenceBroadcastDeps {
   selection: SelectionStore;
   activeId: string;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
-}
-
-// The whole selection, as the canvas reads it (the multi-selection plus the primary element), capped.
-function selectionIds({ selectedId, multiSelectedIds }: Selection): string[] {
-  const ids = new Set(multiSelectedIds);
-  if (selectedId) ids.add(selectedId);
-  return [...ids].slice(0, MAX_SELECTION_IDS);
+  // Where an element we let go of is read as still being written (selection-write-hold): absent, the lock ends
+  // with the selection.
+  writing?: WriteHoldSources;
 }
 
 // Outbound realtime presence: our selection and active-tab focus, so peers render "Tom is working on
@@ -37,30 +37,36 @@ export function usePresenceBroadcast({
   selection,
   activeId,
   roomRef,
+  writing,
 }: PresenceBroadcastDeps) {
   // Sends the selection once the room is open, then on every change of it (including to nothing).
   // Peers learn the initial selection state via their own `select` ops when they happen, not from a
   // snapshot. Carries the active tab so peers scope the badge (and the docs/specs/007-editor/editor-app.md
   // selection lock) to the right tab — element ids alone aren't unique across tabs in older
   // documents. The store notifies only on a real change.
+  //
+  // An element we let go of while our change to it has not landed stays in `elementIds` until it has
+  // (docs/specs/007-editor/editor-app.md "Held until the holder's change lands"): a hold's release, or the
+  // WRITE_HOLD_MAX_MS bound, sends the selection again without it. A tab switch starts afresh.
   useEffect(() => {
     if (!hydrated || !documentId || !documentServerStored) return;
-    const send = () => {
-      const current = selection.get();
-      const elementIds = selectionIds(current);
-      roomRef.current?.send({
-        kind: 'op',
-        op: {
-          kind: 'select',
-          elementId: current.selectedId,
-          tabId: activeId,
-          ...(elementIds.length > 0 ? { elementIds } : {}),
-        },
-      });
-    };
-    send();
-    return selection.subscribe(send);
-  }, [hydrated, documentId, documentServerStored, selection, activeId, roomRef]);
+    return broadcastSelection({
+      selection,
+      tabId: activeId,
+      maxIds: MAX_SELECTION_IDS,
+      writing,
+      send: (elementId, elementIds) =>
+        roomRef.current?.send({
+          kind: 'op',
+          op: {
+            kind: 'select',
+            elementId,
+            tabId: activeId,
+            ...(elementIds.length > 0 ? { elementIds } : {}),
+          },
+        }),
+    });
+  }, [hydrated, documentId, documentServerStored, selection, activeId, roomRef, writing]);
 
   // Fires both on initial room connect (when the dependencies first satisfy)
   // and on every local tab switch, carrying the tab in the other pane while

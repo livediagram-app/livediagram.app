@@ -71,6 +71,27 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('participate'))).toEqual(DROP);
   });
 
+  // docs/specs/026-plan/board-widgets.md "The board's filter": an Editor's board change relays, a Participant's goes
+  // through the content rule (which takes only the filter), a Viewer's is dropped.
+  it("relays a board filter change by role: an Editor's, a Participant's through the rule, never a Viewer's", () => {
+    const op = {
+      kind: 'el',
+      tabId: 't',
+      op: {
+        kind: 'update',
+        element: {
+          id: 'b',
+          type: 'shape',
+          shape: 'plan-board',
+          planBoard: { filter: { text: 'x' } },
+        },
+      },
+    };
+    expect(gateClientOp(op, as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(op, as('participate'))).toEqual({ kind: 'participant-content' });
+    expect(gateClientOp(op, as('view'))).toEqual(DROP);
+  });
+
   // docs/specs/012-collaboration/comment-reactions.md "Share roles": whoever may comment may react.
   it('relays a comment reaction from an Editor and a Participant as itself, never from a Viewer', () => {
     const react = (by: string) => ({

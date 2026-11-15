@@ -64,6 +64,9 @@ export const PLAN_GLYPHS = {
   shield: 'M8 1.5 13.5 3.5v4c0 3.5-2.5 5.8-5.5 7-3-1.2-5.5-3.5-5.5-7v-4Z',
   lock: 'M3.5 7h9v7h-9ZM5.5 7V5a2.5 2.5 0 0 1 5 0v2M8 9.8v1.7',
   eye: 'M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8ZM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
+  // The eye struck through (the Hidden tab's icon): the eye's outline broken where the stroke crosses it.
+  'eye-off':
+    'M6.4 3.7A6.6 6.6 0 0 1 8 3.5c4 0 6.5 4.5 6.5 4.5a12 12 0 0 1-1.7 2.3M9.4 9.4A2 2 0 0 1 6.6 6.6M11.3 11.7A6.4 6.4 0 0 1 8 12.5C4 12.5 1.5 8 1.5 8a12 12 0 0 1 2.8-3.4M2 2l12 12',
   fire: 'M8 14.5a4.5 4.5 0 0 0 4.5-4.5c0-3-2.5-4.5-3-8-1.5 1.5-2 3-2 4.5-1-.5-1.5-1.5-1.5-2.5C4.5 5.5 3.5 7.5 3.5 10A4.5 4.5 0 0 0 8 14.5Z',
   sparkle: 'M8 1.5c.5 3 2.5 5 6.5 6.5-4 1.5-6 3.5-6.5 6.5-.5-3-2.5-5-6.5-6.5 4-1.5 6-3.5 6.5-6.5Z',
   info: 'M8 14.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM8 7.5V11M8 5h.01',
@@ -159,6 +162,7 @@ export const PLAN_GLYPH_CATEGORIES: readonly {
       'shield',
       'lock',
       'eye',
+      'eye-off',
       'fire',
       'sparkle',
       'info',
@@ -242,6 +246,7 @@ export const PLAN_GLYPH_KEYWORDS: Record<PlanGlyphId, string> = {
   shield: 'security protect safe',
   lock: 'private secure locked',
   eye: 'view watch visible review',
+  'eye-off': 'hidden hide invisible unseen',
   fire: 'hot urgent flame',
   sparkle: 'new magic shine ai',
   info: 'information about details',

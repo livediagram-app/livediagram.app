@@ -52,6 +52,7 @@ export function SavedFilterChips({
   quick,
   onQuick,
   mine,
+  canApply = true,
   now,
   canEdit,
   onSetup,
@@ -62,6 +63,8 @@ export function SavedFilterChips({
   onQuick: (q: QuickFilter) => void;
   // The viewer's person id (Only Mine), or null.
   mine: string | null;
+  // Pressing a chip sets the board's filter: an Editor's and a Participant's; a Viewer's chips are disabled.
+  canApply?: boolean;
   now: Date;
   // An Editor's: Save Filter and each chip's menu.
   canEdit: boolean;
@@ -116,7 +119,8 @@ export function SavedFilterChips({
             <button
               type="button"
               aria-pressed={on}
-              className="flex h-full max-w-40 cursor-pointer items-center gap-1 px-2 transition hover:bg-black/5 dark:hover:bg-white/10"
+              disabled={!canApply}
+              className="flex h-full max-w-40 items-center gap-1 px-2 transition enabled:cursor-pointer enabled:hover:bg-black/5 dark:enabled:hover:bg-white/10"
               onClick={() => {
                 if (on) onQuick({});
                 else {

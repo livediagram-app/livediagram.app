@@ -324,7 +324,7 @@ describe("a design's content lives in its own Durable Object", () => {
       const req = new Request(input, init);
       if (req.method === 'POST' && new URL(req.url).pathname === '/api/index/items') {
         indexCalls.push('POST /api/index/items');
-        const { id } = (await req.json()) as { id: string };
+        const { id } = await req.json<{ id: string }>();
         return Response.json(
           {
             item: { id, folderId: null, teamId: null },
@@ -484,7 +484,7 @@ describe("an API client's create, made in the index by the worker", () => {
       const req = new Request(input, init);
       const path = new URL(req.url).pathname;
       if (req.method === 'POST' && path.endsWith('/items')) {
-        const body = (await req.json()) as Record<string, unknown>;
+        const body = await req.json<Record<string, unknown>>();
         creates.push(body);
         if (answer === 'exists') return Response.json({ error: 'item_exists' }, { status: 409 });
         return Response.json({

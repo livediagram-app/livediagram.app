@@ -38,4 +38,10 @@ describe('capStoredName', () => {
     const stored = capStoredName(long, null, 'tab');
     expect(info).toHaveBeenCalledWith('[names] capped tab name', long.length, [...stored].length);
   });
+
+  it('leaves a name at the cap whole and cuts one past it to the cap', () => {
+    const atCap = 'x'.repeat(NAME_MAX_LENGTH);
+    expect(capStoredName(atCap, null, 'tab')).toBe(atCap);
+    expect([...capStoredName(`${atCap}x`, null, 'tab')].length).toBe(NAME_MAX_LENGTH);
+  });
 });

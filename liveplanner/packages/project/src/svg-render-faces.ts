@@ -62,7 +62,7 @@ export function svgBehaviourFace(
     case 'picker':
       return picker(el, cx, cy, title, color, surface);
     case 'comment-pin':
-      // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, the composer.
+      // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, read only.
       return svgCommentPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
     case 'action-card':
       // docs/specs/012-collaboration/action-panel.md "The card": a row per action, the Add Action bar.

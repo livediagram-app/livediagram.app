@@ -173,7 +173,7 @@ Say the order you used, and why, in the report.
 
 **Cards move themselves.** The Work Tracker plan's Automations move a card to Done when its linked PR merges,
 whoever merges it, and flag a card whose PR closes unmerged, with a comment (`list_rules` lists them). A PR links
-its cards by the card's Pull Request field or by naming them in its title or body as "Work Tracker 12" (the plan's
+its cards only by naming them in its title or body as "Work Tracker 12" (the plan's
 name before each number; "Work Item 12" or a bare "#12" links nothing). So never move cards after a merge. A part of
 a Large card merges while the card is In Progress, which the rule skips, so the card waits for its last part. After
 closing and reopening a PR to refresh its merge ref, the Closed rule has flagged its cards and started an Automation

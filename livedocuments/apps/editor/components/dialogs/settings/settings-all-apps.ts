@@ -1,6 +1,6 @@
 import { isAllSetting, isAllSettingRow } from '@liveworkspace/settings';
 import { UI_SCALE_PARTS } from '@liveworkspace/workbench/lib/ui-scale';
-import { preferencesKeptLocally } from '@/lib/preferences-sync';
+import { preferencesKeptLocally } from '@liveworkspace/workbench/lib/preferences-local-only';
 
 // Whether a Settings row's value is one every liveworkspace app shares (ALL_SETTING_KEYS), so the
 // row says "All apps" and nobody is surprised when the change turns up in another app. A row's key

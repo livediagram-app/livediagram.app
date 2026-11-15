@@ -9,7 +9,13 @@
 // all when there is not.
 
 import dynamic from 'next/dynamic';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  resolveSlide,
+  slideBuildOrders,
+  stepBuild,
+  type PresentingBuild,
+} from '@livedocuments/document';
 
 import { loadedPresentationOverlay, loadPresentationOverlay } from '@/lib/editor-deferred-code';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
@@ -51,6 +57,9 @@ export function PresentationHost() {
   // The slide last asked for. React holds a transition while a View Transition runs, so `at` lags behind quick
   // presses; a step counts from here instead, and every press lands (presentation-mode.md "Motion").
   const asked = useRef<number | null>(null);
+  // The build position last asked for (presentation-mode.md "Builds"), beside `asked`: a quick press counts from the
+  // build a move still on its way set, not the one on screen.
+  const askedBuild = useRef<PresentingBuild | null>(null);
   // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned by the deck hook, because
   // the camera reads them too.
   const config = slideDeck?.config;
@@ -78,6 +87,7 @@ export function PresentationHost() {
       prevAt.current = null;
       prevShown.current = null;
       asked.current = null;
+      askedBuild.current = null;
       return;
     }
     const before = prevAt.current;
@@ -120,6 +130,18 @@ export function PresentationHost() {
     [],
   );
 
+  // The slide on screen's builds for the overlay (how many show, how many it has), worked out once per slide or step:
+  // resolving a slide lays out its tab's pages.
+  const onScreen = at === null ? undefined : slideDeck?.runnable[at];
+  const presentingBuild = slideDeck?.presentingBuild ?? null;
+  const build = useMemo(() => {
+    if (!onScreen) return { shown: 0, count: 0 };
+    const count = slideBuildOrders(resolveSlide(onScreen.slide, onScreen.tab)).length;
+    const shown =
+      presentingBuild?.slideId === onScreen.slide.id ? Math.min(presentingBuild.shown, count) : 0;
+    return { shown, count };
+  }, [onScreen, presentingBuild]);
+
   if (!slideDeck || at === null || !config || !Overlay) return null;
   // An item slide is the card itself, drawn over the canvas (docs/specs/012-collaboration/presentation-mode.md
   // "Item slides").
@@ -130,6 +152,28 @@ export function PresentationHost() {
   const go = (next: number, step?: 1 | -1): number | null => {
     const from = asked.current ?? at;
     const ends = slideDeck.runnable.length;
+    const run = slideDeck.runnable;
+    // A slide's builds (presentation-mode.md "Builds"): how many it has, and how many show at `from`.
+    const buildsOf = (i: number) => {
+      const st = run[i];
+      return st ? slideBuildOrders(resolveSlide(st.slide, st.tab)).length : 0;
+    };
+    const setBuild = (b: PresentingBuild | null, alongMove: boolean) => {
+      askedBuild.current = b;
+      // While a move is on its way React holds it in a transition; the build rides the same one so the two commit
+      // together, and the slide leaving never loses its builds a frame early.
+      if (alongMove) startTransition(() => slideDeck.setPresentingBuild(b));
+      else slideDeck.setPresentingBuild(b);
+    };
+    if (step !== undefined && from < ends) {
+      const here = run[from]!.slide.id;
+      const shown = askedBuild.current?.slideId === here ? askedBuild.current.shown : 0;
+      const built = stepBuild({ slideId: here, shown }, buildsOf(from), step);
+      if (built) {
+        setBuild(built, asked.current !== null && asked.current !== at);
+        return from;
+      }
+    }
     let target = Math.min(Math.max(0, next), ends);
     if (step !== undefined) {
       target = Math.max(0, from + step);
@@ -144,9 +188,18 @@ export function PresentationHost() {
       }
     }
     asked.current = target;
+    // The slide it lands on: finished going back a step (every build showing, none replaying), else unbuilt.
+    const count = step === -1 ? buildsOf(target) : 0;
+    const arrival: PresentingBuild | null =
+      count > 0 ? { slideId: run[target]!.slide.id, shown: count, entering: false } : null;
+    askedBuild.current = arrival;
+    const land = () => {
+      slideDeck.setPresentingBuild(arrival);
+      slideDeck.setPresentingAt(target);
+    };
     const type = slideTransitionType(config.transition, from, target);
-    if (type) startTypedTransition(type, () => slideDeck.setPresentingAt(target));
-    else slideDeck.setPresentingAt(target);
+    if (type) startTypedTransition(type, land);
+    else land();
     return target;
   };
   return (
@@ -155,6 +208,7 @@ export function PresentationHost() {
       onSetCanvasTool={setCanvasTool}
       steps={slideDeck.runnable}
       at={at}
+      build={build}
       onGo={go}
       onExit={slideDeck.exitPresentation}
       direction={direction}

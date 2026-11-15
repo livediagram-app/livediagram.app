@@ -9,19 +9,22 @@ import {
   test,
 } from '../fixtures';
 import { runCanvasProbe } from '@liveworkspace/e2e-kit/perf/canvas-probe';
-import { buildReferenceBoard } from './reference-board';
+import { FURNITURE_KINDS, buildReferenceBoard } from './reference-board';
 
 // The canvas performance probe (docs/specs/008-canvas/canvas-performance.md "Measuring";
-// docs/instructions/trace-a-canvas-gesture.md): the reference board on a whiteboard and a diagram, at fit and at 100%, every
-// gesture traced with the CPU slowed to the reference speed, judged against the budget. It reports and never fails
+// docs/instructions/trace-a-canvas-gesture.md): the reference Space on its one tab, at fit and at 100%, every gesture
+// traced with the CPU slowed to the reference speed, judged against the budget. livehuddle has one kind of tab and no
+// pen (docs/specs/007-editor/editor-modes.md, docs/specs/002-project-scope/not-in-livehuddle.md), so the whiteboard
+// series and the stroke row livediagram measures are not run here. It reports and never fails
 // on a budget miss; a harness error (seeding, the stack, a missing element) does fail it. The runner is
 // @liveworkspace/e2e-kit's (perf/canvas-probe.ts); this hands it livehuddle's seed, sign-in and editor path.
 // Run with `pnpm --filter @livehuddle/editor perf:canvas`.
 
-type Tab = 'whiteboard' | 'diagram';
+type Tab = 'space';
 
+// The gestures select and drag a piece of furniture, the commonest thing moved in a Space.
 const SHAPE_IDS = buildReferenceBoard()
-  .filter((el) => el.type === 'shape')
+  .filter((el) => el.type === 'shape' && FURNITURE_KINDS.includes(el.shape))
   .map((el) => el.id);
 
 async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promise<string> {
@@ -32,16 +35,8 @@ async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promi
     ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
     {
       id,
-      name: `Reference board (${tab})`,
-      // The whiteboard series is a general tab opening in Draw mode (docs/specs/007-editor/editor-modes.md).
-      tabs: [
-        {
-          id: crypto.randomUUID(),
-          name: 'Board',
-          ...(tab === 'whiteboard' ? { opensIn: 'draw' } : {}),
-          elements,
-        },
-      ],
+      name: `Reference Space (${tab})`,
+      tabs: [{ id: crypto.randomUUID(), name: 'Space', opensIn: 'workshop', elements }],
     },
   );
   expect(res.ok(), `seeding the ${tab} board`).toBe(true);
@@ -54,10 +49,10 @@ test('canvas performance budget', async ({ browser, baseURL, page }) => {
   await runCanvasProbe<Tab>(
     { browser, baseURL, page },
     {
-      tabs: ['whiteboard', 'diagram'],
+      tabs: ['space'],
       shapeIds: SHAPE_IDS,
       bareExclude: '[data-element-id], [data-floating-panel], header, nav',
-      strokeKey: (tab) => (tab === 'whiteboard' ? '1' : 'p'),
+      strokeKey: null,
       mintGuest,
       seed,
       // The guest's token and a confirmed name, before the first page loads.

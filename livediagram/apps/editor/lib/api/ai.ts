@@ -7,39 +7,21 @@ import type {
   ReadNotesResponse,
 } from '@livediagram/api-schema';
 import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
+import { createCapabilitiesClient } from '@liveworkspace/api-client';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
-// Fetch server capabilities. Returns everything fail-closed (false) on any
-// network error so callers degrade gracefully.
-//
-// Fetched once per page: the answer is deployment config, the same for every
-// caller, and the editor, the Drive mirror and each Settings open all ask.
-// A failed answer is not kept, so the next caller asks again.
-let capabilities: Promise<CapabilitiesResponse> | null = null;
+// Fetch server capabilities (the shared one-ask client, @liveworkspace/api-client): fail-closed (every
+// feature off) on any network error so callers degrade gracefully, fetched once per page, and a failed
+// answer is not kept, so the next caller asks again.
+const capabilities = createCapabilitiesClient<CapabilitiesResponse>({
+  request: () => apiFetch(`${API_BASE}/capabilities`),
+  closed: { aiEnabled: false, emailEnabled: false },
+});
 
-export function apiGetCapabilities(): Promise<CapabilitiesResponse> {
-  capabilities ??= fetchCapabilities().then(({ caps, ok }) => {
-    if (!ok) capabilities = null;
-    return caps;
-  });
-  return capabilities;
-}
+export const apiGetCapabilities = capabilities.get;
 
 // Tests only: a fresh page.
-export function resetCapabilitiesForTests(): void {
-  capabilities = null;
-}
-
-async function fetchCapabilities(): Promise<{ caps: CapabilitiesResponse; ok: boolean }> {
-  const closed = { aiEnabled: false, emailEnabled: false };
-  try {
-    const res = await apiFetch(`${API_BASE}/capabilities`);
-    if (!res.ok) return { caps: closed, ok: false };
-    return { caps: (await res.json()) as CapabilitiesResponse, ok: true };
-  } catch {
-    return { caps: closed, ok: false };
-  }
-}
+export const resetCapabilitiesForTests = capabilities.reset;
 
 // Read the handwriting on sticky-note crops (docs/specs/021-event-storming/event-storming.md Phase 8).
 //

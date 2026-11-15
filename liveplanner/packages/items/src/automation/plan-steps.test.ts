@@ -139,6 +139,25 @@ describe('Assign in Turn', () => {
     expect(r.turns).toBe(2);
   });
 
+  // Spec "Assign in turn": left means gone from the plan's people, which hold everyone a card names. A teammate taken
+  // off the team who is still a card's assignee is among them, so their turn is kept (nothing tells them from a
+  // share link's Editor).
+  it('keeps the turn of someone a card still names', () => {
+    const r = done(planActions([rotate([ALI.id, SAM.id])], ctxFor(bug(), { turn: 0 })));
+    expect(r.patch.set?.['assignee']).toEqual(ALI);
+    expect(r.turns).toBe(1);
+  });
+
+  it('carries the run’s turns into a rest planned afresh after an AI step', () => {
+    const r = done(
+      planActions([rotate([SAM.id, ALI.id])], ctxFor(bug(), { turn: 0 }), {
+        carry: { actions: 1, turns: 1, made: 0 },
+      }),
+    );
+    expect(r.patch.set?.['assignee']).toEqual(ALI);
+    expect(r.turns).toBe(2);
+  });
+
   it('fails when nobody in turn is left', () => {
     const r = planActions([rotate(['p-x', 'p-y'])], ctxFor(bug()));
     expect('failed' in r && r.failed).toBe('Nobody in turn is in the plan any more');

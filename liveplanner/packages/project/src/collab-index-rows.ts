@@ -2,9 +2,10 @@
 // a tab of a project in This Browser contributes to the Inbox read in the browser (§2.6).
 //
 // A pure projection of the tab's elements into the rows `collab_actions`
-// and `collab_threads` hold: one per element carrying an action, one per
-// element carrying a thread with at least one comment, and one per Sheet cell
-// carrying one (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"). The api's db layer
+// and `collab_threads` hold: one per element carrying an action, and one per Sheet cell
+// carrying a thread with at least one comment (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"). An element's
+// own thread sends no row (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element"): it is kept
+// as stored, and leaves the Inbox on the tab's next push. Card threads reach the index through `~cards`, apart. The api's db layer
 // turns these into statements (every tab write path goes through it); the
 // editor's offline Inbox read filters them directly.
 //
@@ -84,12 +85,6 @@ const NO_SHEETS: SheetNamesOf = { title: () => undefined, cellRef: () => undefin
 // The store id of a Sheet element's sheet, or undefined.
 function sheetIdOf(el: Element): string | undefined {
   return el.type === 'shape' ? el.planSheet?.sheetId : undefined;
-}
-
-type ThreadLike = { comments?: Comment[]; resolved?: boolean };
-
-function threadOf(el: Element): ThreadLike | undefined {
-  return (el as { commentThread?: ThreadLike }).commentThread;
 }
 
 // A thread's row, from its comments (at least one).
@@ -184,8 +179,8 @@ export function collabIndexRowsFromElements(
   const actions: CollabActionRow[] = [];
   const threads: CollabThreadRow[] = [];
   for (const el of elements) {
-    // Actions and threads only ever hang off boxed elements (docs/specs/012-collaboration/assigned-actions.md
-    // §1, docs/specs/008-canvas/canvas-and-palette.md), which is also what gives them a display label.
+    // Actions and cell threads only ever hang off boxed elements (docs/specs/012-collaboration/assigned-actions.md
+    // §1, docs/specs/029-sheets/sheet.md), which is also what gives them a display label.
     if (!isBoxed(el)) continue;
     // Worked out only for an element with something to list.
     let label: string | undefined;
@@ -219,10 +214,7 @@ export function collabIndexRowsFromElements(
         updatedAt: action.updatedAt,
       });
     }
-    const own = threadOf(el);
-    if (own?.comments?.length)
-      threads.push(threadRow(el.id, labelOf(), own.comments, own.resolved));
-    // A Sheet's cells' threads follow its own.
+    // A Sheet's cells' threads; never the element's own, Plan item or not.
     for (const row of cellThreadRows(el, labelOf, sheets)) threads.push(row);
   }
   return { actions, threads };

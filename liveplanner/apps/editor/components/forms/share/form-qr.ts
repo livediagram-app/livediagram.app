@@ -3,6 +3,7 @@
 // joins the editor's first load. Drawn from the module grid as one SVG path, and onto a canvas for the PNG, black on
 // white in both halves so every camera reads it.
 import type { encode as Encode } from 'uqr';
+import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 
 // Error correction M (15%) and the standard's four-module quiet zone (blueprint DEFAULTS D19).
 const QR_ECC = 'M';
@@ -72,9 +73,5 @@ export function qrPngBlob(m: QrModules, minPx = QR_PNG_MIN_PX): Promise<Blob | n
 
 // A download's name from the form's heading: characters files refuse dropped, "Form" when nothing is left.
 export function qrFileName(heading: string, ext: 'png' | 'svg'): string {
-  const name = heading
-    .replace(/[\\/:*?"<>|]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return `${name || 'Form'} QR Code.${ext}`;
+  return `${sanitizeFilename(heading, 'Form')} QR Code.${ext}`;
 }

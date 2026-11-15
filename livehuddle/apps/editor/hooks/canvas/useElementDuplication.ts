@@ -15,6 +15,7 @@ import {
 } from '@livehuddle/document';
 import { groupDuplicateOffset, placeDuplicate } from '@/lib/duplicate-placement';
 import { trackDuplicated } from '@/lib/element-telemetry';
+import { noteDuplicate } from '@/lib/duplicate-origin';
 
 export function useElementDuplication(deps: {
   // Read when a duplicate runs (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -41,6 +42,11 @@ export function useElementDuplication(deps: {
     if (copies.length === 0) return;
     commit((els) => [...els, ...copies]);
     trackDuplicated(copies);
+    // The toolbar over the copies keeps off the originals (duplicate-origin.ts, Work Tracker 849).
+    noteDuplicate(
+      [...multiSelectedIds],
+      copies.map((c) => c.id),
+    );
     setMultiSelectedIds(new Set(copies.map((c) => c.id)));
   };
 
@@ -65,6 +71,7 @@ export function useElementDuplication(deps: {
     );
     commit((els) => [...els, copy]);
     trackDuplicated([copy]);
+    noteDuplicate([source.id], [copy.id]);
     setSelectedId(copy.id);
   };
 

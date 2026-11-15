@@ -2,7 +2,7 @@ import { useDeckFollowsPages } from '../useDeckFollowsPages';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { useKeyboardAvoidance } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useEffectEvent } from 'react';
-import { resolveSlide, slideFrame } from '@livedocuments/document';
+import { buildOf, presentedBuild, resolveSlide, slideFrame } from '@livedocuments/document';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useShowFollowersMyView } from '@liveworkspace/workbench/hooks/collab/useShowFollowersMyView';
 import { commitUserPreferences } from '@/lib/user-preferences';
@@ -155,6 +155,29 @@ export function useEditorViewport({
     () => (presentingStep ? resolveSlide(presentingStep.slide, presentingStep.tab) : null),
     [presentingStep],
   );
+  // What the canvas draws of it (presentation-mode.md "Builds"): the slide less the builds still to come, and the
+  // elements the last forward step brought in, for their entrance. The camera keeps framing the whole slide above,
+  // so a slide never refits as it builds.
+  const presentingBuild = slideDeck.presentingBuild;
+  const { presentedElements, buildEntrance } = useMemo(() => {
+    if (!presentingElements) return { presentedElements: null, buildEntrance: null };
+    const at = presentingBuild?.slideId === presentingStep?.slide.id ? presentingBuild : null;
+    const { shown, entering } = presentedBuild(presentingElements, at?.shown ?? 0);
+    const step = at?.entering ? entering : [];
+    // An arrow has no build of its own: it comes in the way the step's first element does.
+    const stepEffect = step.map(buildOf).find(Boolean)?.effect ?? 'fade';
+    return {
+      presentedElements: shown,
+      // Keyed by the step itself, so a peer's edit re-deriving this never replays it.
+      buildEntrance:
+        at && step.length > 0
+          ? {
+              key: at,
+              items: step.map((el) => ({ id: el.id, effect: buildOf(el)?.effect ?? stepEffect })),
+            }
+          : null,
+    };
+  }, [presentingElements, presentingBuild, presentingStep]);
 
   // Where the editor was looking before the deck took over, so exiting puts it
   // back. Without this you left a presentation zoomed to whatever the last
@@ -353,6 +376,8 @@ export function useEditorViewport({
     slideDeck,
     presentingStep,
     presentingElements,
+    presentedElements,
+    buildEntrance,
     presenting,
     keyboardEnabled,
     followMe,

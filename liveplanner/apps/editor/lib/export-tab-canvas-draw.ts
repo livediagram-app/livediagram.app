@@ -24,6 +24,8 @@ import {
   EXPORT_IMAGE_FILL,
   EXPORT_IMAGE_STROKE,
   LABEL_LINE_HEIGHT,
+  clampExportRunLines,
+  fitWholeWordLines,
   wrapExportRuns,
   MUTED_RUN_OPACITY,
   wrapLabel,
@@ -170,7 +172,11 @@ export function drawBoxed(
       // SVG does), then lay each line's spans from its anchor-derived start.
       const fontFor = (r: ExportRun) =>
         `${r.bold ? '600' : '400'} ${r.italic ? 'italic ' : ''}${r.size}px ${labelFont}`;
-      const lines = wrapExportRuns(label.runs, label.maxWidth, label.fontFamily);
+      // Held to the label's lines (a lane title in its gutter, docs/specs/009-elements/lane.md) as the SVG holds it.
+      const wrapped = wrapExportRuns(label.runs, label.maxWidth, label.fontFamily);
+      const lines = label.maxLines
+        ? clampExportRunLines(wrapped, label.maxLines, label.maxWidth, label.fontFamily)
+        : wrapped;
       const lineH = LABEL_LINE_HEIGHT * Math.max(...label.runs.map((r) => r.size));
       let ly = firstY(lines.length, lineH);
       ctx.textAlign = 'left';
@@ -205,7 +211,11 @@ export function drawBoxed(
         label.anchor === 'end' ? 'right' : label.anchor === 'start' ? 'left' : 'center';
       // Wrap to the element width so long labels stay inside the box, then
       // stack the lines from the label's vertical anchor.
-      const lines = wrapLabel(label.text, label.maxWidth, (s) => ctx.measureText(s).width);
+      // A lane title in its gutter reads in whole words, as the SVG lays it out.
+      const measure = (s: string) => ctx.measureText(s).width;
+      const lines = label.maxLines
+        ? fitWholeWordLines(label.text, label.maxWidth, label.maxLines, measure)
+        : wrapLabel(label.text, label.maxWidth, measure);
       const lineH = label.size * LABEL_LINE_HEIGHT;
       let ly = firstY(lines.length, lineH);
       for (const line of lines) {

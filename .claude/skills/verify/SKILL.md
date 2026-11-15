@@ -19,6 +19,11 @@ puts the api on the same origin as production does; the editor's own port can't 
 | livedesign    | 3400              | 3402 (`apps/live`) | 8989                      |
 | livehuddle    | 3500              | 3502               | 9087                      |
 
+- A verifier starts a product in its own port block from the shared verify kit (`.verify-kit/` beside `.turbo/`, local and
+  gitignored): `.verify-kit/<product>/start.sh <worktree> <first port> <out dir>` for livediagram, livedocuments,
+  livehuddle and liveplanner, which puts the router on the first port, the editor on +2, the api on +6 and the
+  inspectors on +8 and +9, each wrangler with its own registry and state. liveplanner reads its sign-in client from
+  `clients/liveplanner-<first port>.env` (copy another, change the port). The kit README lists the helpers.
 - Check what's already listening first: `lsof -nP -iTCP:3100 -sTCP:LISTEN` (and the api port). The
   owner usually has the dev servers running. Never start a second `pnpm dev` over a running one, and
   never `pkill` dev servers or workers: the registry is machine-wide and other sessions use them.
@@ -50,15 +55,21 @@ An existing `.dev.vars` (the owner's main checkout) is left as it is, with whate
 clients sit beside it. Ask before editing a `.dev.vars` you didn't make.
 
 - Codes aren't emailed locally: each sign-in code is printed in the accounts Worker's output.
+- Pictures (Explorer previews, a share link's `image.svg`/`image.png`/`card`, Community card images) come from the media
+  service (8792, part of `dev:workspace`), through the router's `PREVIEWS_ORIGIN`. Without it running the router answers
+  `502` "the previews service ... could not be reached" and cards show a broken image: start `dev:workspace`, or a
+  private media Worker with the router's `PREVIEWS_ORIGIN` pointed at it. Any `502` "router: ... could not be
+  reached" is the same thing for the downstream it names: that server of the stack isn't running.
 - Running a second stack in another port block: give the site `ACCOUNTS_DEV_ORIGIN` (and `INDEX_DEV_ORIGIN`,
   `MEDIA_DEV_ORIGIN`), accounts `BASE_URL` and `--local-upstream` at that site, the router `--var` overrides for
-  `WORKSPACE_ORIGIN`, `EDITOR_ORIGIN` and `API_ORIGIN`, and every `wrangler` its own `WRANGLER_REGISTRY_PATH`
+  `WORKSPACE_ORIGIN`, `EDITOR_ORIGIN`, `API_ORIGIN` and `PREVIEWS_ORIGIN`, and every `wrangler` its own `WRANGLER_REGISTRY_PATH`
   and `--persist-to`, so nothing reaches the workers already running. Seed the accounts database with
   `LOCAL_CLIENT_ORIGINS=<product>.app=http://localhost:<your router port> corepack pnpm db:seed:local` (add
   `-- --persist-to <dir>` when its state is elsewhere), so the local client takes your router as a redirect. The accounts Worker accepts a sign-in on an
   app's own address only on that app's first port (3500 for livehuddle), so give it
   `SIGN_IN_ON_APP_ORIGINS=false` there: sign-in then runs on the site's address and comes back to the app.
-- Running two e2e stacks (`scripts/e2e-stack.mjs`) side by side: give each its own `E2E_EDITOR_PORT`, `E2E_API_PORT`,
+- Running two e2e stacks (`scripts/e2e-stack.mjs`) side by side: every product defaults to its own ports (a test guards
+  that no two clash), so two products' defaults run together; for two of one product give each its own `E2E_EDITOR_PORT`, `E2E_API_PORT`,
   `E2E_INDEX_PORT` and `E2E_MEDIA_PORT`. The wrangler inspectors of the index, media and api follow them (each port + 10),
   so no port falls outside the stack's own; set `E2E_INDEX_INSPECTOR_PORT`, `E2E_MEDIA_INSPECTOR_PORT` or `E2E_API_INSPECTOR_PORT` to place one elsewhere.
 - Without the api's accounts vars the editor still opens: nobody can sign in, guests have no identity

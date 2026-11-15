@@ -268,6 +268,14 @@ fill, no border), an `Arrow` marked `connector` (one that joins two elements) is
 unset, so their figures are unchanged. A test pins both modes, and another that no livehuddle article names a retired
 element kind.
 
+**A figure cannot forget the mark** (Work Tracker 790). The `connector` mark is set by hand in each scene, so a new
+scene that joins two shapes with an arrow and leaves it off would show livehuddle a retired arrow. A guard in
+`packages/help-site` (`packages/help-site/src/art/connector-guard.tsx`) draws every scene of the shared kit (`src/art`), and livehuddle's help
+app runs the same guard over its own scenes (`components/`): it records each `Shape`'s box and each `Arrow`'s ends as
+drawn, and fails on an `Arrow` whose two ends each land on a different `Shape` (within 8 px of its box) and is not
+marked `connector`. An arrow with an end in open space (a gesture trail, a step from one part of the interface to the
+next, a pointer at a label) or both ends on one shape is left alone, so the guard never asks for UI-step arrows to go.
+
 <!-- legacy-names -->
 
 ## What the help centre holds

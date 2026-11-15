@@ -50,6 +50,28 @@ const allBut = (count: number, skip: number, o: RideOffset) => {
 };
 
 describe('the ride writer', () => {
+  // A layer mounted mid-gesture (the isometric depth layer, livediagram's drag-preview.md "An element's isometric side
+  // faces ride with it"): the same ids ride, so only `invalidate` makes the next apply find its nodes.
+  it('finds nodes added under the root once invalidated, with the same ids riding', () => {
+    const { root, of } = page();
+    const writer = createRideWriter();
+    writer.setRoot(root);
+    const rides = new Map([['a', rideOffset(4, 2)]]);
+    writer.apply(rides);
+    const late = document.createElement('div');
+    late.setAttribute('data-ride-id', 'a');
+    root.append(late);
+    writer.apply(rides);
+    expect(late.style.translate).toBe('');
+    writer.invalidate();
+    writer.apply(rides);
+    expect(of('a')).toEqual(['4px 2px', '4px 2px', '4px 2px']);
+    // Found once: the next frame writes only what changed, so a node it no longer owns is left alone.
+    late.style.translate = '9px 9px';
+    writer.apply(rides);
+    expect(late.style.translate).toBe('9px 9px');
+  });
+
   it('shifts every node of each riding id, and puts back the ones that stop riding', () => {
     const { root, of } = page();
     const writer = createRideWriter();

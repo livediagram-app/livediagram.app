@@ -43,6 +43,8 @@ async function list(ctx: DocumentRouteContext, id: string, tabId: string): Promi
     self: r.person_key === ownKey,
     joinedAt: r.joined_at,
     leftAt: r.left_at,
+    // Only an open visit names its key: that person is in the room, where the roster already shows it.
+    ...(r.left_at === null ? { key: r.person_key } : {}),
   }));
   // Counts only: the log is read by people too.
   console.info('[attendance] listed', { documentId: id, tabId, count: visits.length });

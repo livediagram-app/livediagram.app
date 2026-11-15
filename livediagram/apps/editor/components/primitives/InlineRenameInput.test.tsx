@@ -49,7 +49,7 @@ describe('InlineRenameInput', () => {
         onCancel={vi.fn()}
       />,
     );
-    const field = screen.getByRole('textbox', { name: 'Rename New folder' }) as HTMLInputElement;
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Rename New folder' });
     expect(document.activeElement).toBe(field);
     fireEvent.change(field, { target: { value: 'Q4 Plans' } });
     fireEvent.keyDown(field, { key: 'Enter' });

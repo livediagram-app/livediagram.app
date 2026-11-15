@@ -400,7 +400,7 @@ export function ExplorerShell() {
           key={identity.sub}
           app={app}
           client={client}
-          view={view}
+          view={itemArrival.view}
           onNavigate={onNavigate}
           itemHref={itemHref}
           onCreate={onCreate}

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
@@ -22,6 +22,7 @@ import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { useDuplicateOrigin } from '@/lib/duplicate-origin';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -56,6 +57,13 @@ export function CanvasSelectionToolbars({
         (el) => multiSelectedIds.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape),
       )
     : [];
+  // Straight after a Duplicate, the toolbar over the copies keeps off what they were copied from
+  // (canvas-and-palette.md "Selection popover", Work Tracker 849): null for every other selection.
+  const selectedIds = useMemo(
+    () => (showMultiToolbar ? [...multiSelectedIds] : selected ? [selected.id] : []),
+    [showMultiToolbar, multiSelectedIds, selected],
+  );
+  const avoid = useDuplicateOrigin(selectedIds, props.elements);
   // While a selection is moved, resized or reshaped the toolbars stand down and stop measuring
   // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
   const moving = selectionMoving(useCanvasGesture());
@@ -109,6 +117,7 @@ export function CanvasSelectionToolbars({
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
             suspended={moving}
+            avoid={avoid}
             title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
             // Edit text: on every text-CAPABLE element, even before it has
             // a label — an empty shape's "Add Text" button teaches that
@@ -195,6 +204,7 @@ export function CanvasSelectionToolbars({
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
             suspended={moving}
+            avoid={avoid}
             title={`Selected Elements (${multiSelectedIds.size})`}
           >
             <MultiSelectionToolbar

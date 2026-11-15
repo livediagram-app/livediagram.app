@@ -76,7 +76,8 @@ export function ShapesFlyout({
     fieldRef.current?.focus({ preventScroll: true });
   };
 
-  let index = 0;
+  // Each entry's place in the walk order (the keyboard's active slot): groups run one after another.
+  const places = new Map(flat.map((entry, i) => [entry, i]));
   return (
     <div data-shape-search="" className="relative flex w-[8.5rem] flex-col gap-2">
       <Fragment ref={fieldRef}>
@@ -128,7 +129,7 @@ export function ShapesFlyout({
               className="grid grid-cols-3 gap-1"
             >
               {group.entries.map((entry) => {
-                const at = index++;
+                const at = places.get(entry)!;
                 return (
                   <ShapeEntry
                     key={entry.key}

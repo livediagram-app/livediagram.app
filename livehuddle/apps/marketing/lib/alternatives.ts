@@ -7,8 +7,8 @@ import { SITE_URL } from '@livehuddle/ui';
 // competitor's own ground: the virtual office and spatial meeting place a remote team meets in. Talking
 // is shared ground: livehuddle's proximity voice, camera and screen bubbles, private rooms and the stage
 // are on at livehuddle.app (docs/specs/012-collaboration/proximity-audio.md "Turning calls on"), so no
-// page says it has no voice or video. The retired Miro and FigJam pages redirect to the hub
-// (public/_redirects).
+// page says it has no voice or video. The retired Miro, FigJam and Teamflow pages redirect to
+// the hub (public/_redirects).
 //
 // Every competitor claim below was checked against the competitor's own public pages on 2026-11-12 and
 // is dated by UPDATED. A claim no current page confirms is softened or left out, never kept from memory.
@@ -18,12 +18,6 @@ import { SITE_URL } from '@livehuddle/ui';
 //     https://www.gather.town/ (walk up and talk, office customisation),
 //     https://support.help.gather.town/articles/1982412443-getting-started-guide (desktop app),
 //     https://support.help.gather.town/articles/4056265393 (Google Calendar and Chrome extension).
-//   Teamflow: https://www.teamflowhq.com/pricing (Free for up to 5 employees, $15 or $25 per employee a
-//     month on Seed and Business, 200 people per floor, apps open per person, Download and web login),
-//     https://www.teamflowhq.com/ (meet, co-work and share documents and apps). teamflow.com now shows a
-//     different workflow product, and a rival's blog says the virtual office closed in 2023
-//     (https://development.kumospace.com/blog/teamflow-shutdown, unconfirmed by Teamflow), so the page
-//     stays on what teamflowhq.com itself says.
 //   Kumospace: https://www.kumospace.com/pricing (Free up to 5 members, Business $16 per member a month,
 //     roles on all plans, webinar platform, recording on Business, Windows and macOS desktop apps,
 //     furniture customisation), https://www.kumospace.com/ (spatial audio, events, Google Calendar and
@@ -135,105 +129,6 @@ const LIST: Alternative[] = [
       {
         q: 'Is livehuddle really free?',
         a: 'Yes. Every feature is free for everyone, with no paid tier and no team-size limit on a plan. The code is MIT-licensed and public.',
-      },
-    ],
-  },
-  {
-    slug: 'teamflow',
-    name: 'Teamflow',
-    highlights: ['Free and open source', 'No install', 'A board in every room'],
-    title: 'Teamflow alternative for a virtual office · livehuddle',
-    description:
-      'A free, open-source Teamflow alternative: a virtual office in the browser where your team walks between rooms as characters, with notes on the walls.',
-    h1: 'The free, open-source Teamflow alternative',
-    lede: 'Teamflow is a virtual office where a team meets, co-works and shares documents and apps in rooms you move between. livehuddle is a virtual office too, where everyone walks between rooms as a character, talks to whoever is near, and the walls hold the meeting. It is free, open source and needs no install.',
-    rows: [
-      {
-        label: 'Price',
-        us: 'Free, every feature',
-        them: 'Per-employee plans, free for up to 5 people',
-      },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, a hosted product' },
-      {
-        label: 'Start without an account',
-        us: 'Yes, create and share a Space as a guest',
-        them: 'Employees sign up; guests join by invite',
-      },
-      {
-        label: 'Voice and video',
-        us: 'Built in: proximity voice, camera and screen bubbles over your character',
-        them: 'Built in: meet and co-work in a shared office',
-      },
-      {
-        label: 'Getting in',
-        us: 'Any modern browser, nothing to install',
-        them: 'A desktop app, and the browser',
-      },
-      {
-        label: 'In a room',
-        us: 'Stickies, stickers, and a Timer and a Stopwatch for any room',
-        them: 'Shared documents and apps beside the call',
-      },
-      {
-        label: 'Programmatic access',
-        us: 'A free REST API with personal tokens',
-        them: 'None listed on its pricing page',
-      },
-    ],
-    themBest: [
-      'A virtual office built round meeting face to face, rather than a character with a camera bubble above it.',
-      'Floors for up to 200 people, with no limit on invited teammates or guests.',
-      'Apps that sit beside the call in a room, so notes and shared documents live where the conversation is.',
-      'A desktop app as well as the web, so the office is a click away all day.',
-    ],
-    usBest: [
-      'Free for everyone and MIT-licensed, with no per-seat pricing and nothing to upgrade to.',
-      'Open a link and walk in from any modern browser, with nothing to install and no sign-up, even to create a Space or to talk.',
-      'Walk up to someone and you hear them, with a camera or a shared screen as a bubble above your character, and a meeting room’s walls keeping its call private.',
-      'A place you can see: everyone is a character in their own colour and outfit, with a status (Available, Focusing, Out to Lunch, Angry and nine more, each worn on the character), speech bubbles and five moves.',
-      '27 templates: a blank Space, and offices, halls, bars, gardens, games rooms, houses and whole campuses to walk round, and office pieces to build more rooms.',
-      'The walls hold the meeting: sticky notes, text and stickers, and a Timer or a Stopwatch in any room.',
-      'Bring Focus and follow-me to walk the room through something, and a burst of confetti, sparkles, hearts, applause or fireworks round your character when it goes well.',
-      'A free REST API, so your own scripts can set up and change your Spaces.',
-    ],
-    sections: [
-      {
-        heading: 'Two kinds of virtual office',
-        paragraphs: [
-          'Teamflow puts the team on a shared floor to meet and co-work, with documents and apps beside the conversation. livehuddle puts the team’s characters on a floor plan: you walk into a room, sit at the meeting table or a desk, and everyone can see where everyone is and what they are up to from their status.',
-          'Both put the call in the office. In livehuddle you hear the people near you, a camera or a shared screen shows as a bubble above your character to whoever is in earshot, and a meeting room is a call of its own that nobody outside hears. If you want a floor built round meeting face to face, with documents and apps open beside the call, Teamflow is the better fit.',
-        ],
-      },
-      {
-        heading: 'A board in every room',
-        paragraphs: [
-          'A livehuddle Space is a board as well as a place. A stand-up in the Team Pod can start with a sticky note per person and a Timer on the wall. One person can hold the facilitator baton so the timer answers to them, and Bring Focus offers everyone a jump to the thing you mean.',
-        ],
-      },
-      {
-        heading: 'Open from a link, for free',
-        paragraphs: [
-          'There is no paid tier, no seat to buy and no app to install. Anyone can open a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. A share link is an Editor or a Participant link, and can carry a password or an expiry, or be revoked at any time.',
-          'The whole codebase is MIT-licensed and public. Signed in, your Spaces can sync to your own Google Drive, and a Space in This Browser never reaches our servers at all.',
-        ],
-      },
-    ],
-    faqs: [
-      {
-        q: 'Does livehuddle have video like Teamflow?',
-        a: 'Yes, as bubbles over the characters rather than faces on the floor. Walk up to someone and you hear each other; turn on your camera or share a screen and it shows above your character to the people in earshot, who can press it to make it bigger.',
-      },
-      {
-        q: 'Do I need to install anything?',
-        a: 'No. livehuddle runs in any modern browser on a laptop, desktop or tablet, and a phone can join to look and walk. If you like, it installs to a computer’s or phone’s home screen like an app, straight from the browser.',
-      },
-      {
-        q: 'Can I move my Teamflow office over?',
-        a: 'There is no Teamflow importer. The Virtual Office template gives you rooms, desks and a meeting table to start from, and every piece can be moved, added or removed.',
-      },
-      {
-        q: 'Is livehuddle really free?',
-        a: 'Yes. Every feature is free for everyone, with no paid tier and no per-seat pricing. The code is MIT-licensed and public.',
       },
     ],
   },
@@ -350,7 +245,7 @@ export const COMPARISONS: Comparisons = {
   hub: {
     title: 'How livehuddle compares · alternatives',
     description:
-      'Honest, side-by-side comparisons of livehuddle with Gather, Teamflow and Kumospace as a virtual office, including where each is the better pick.',
+      'Honest, side-by-side comparisons of livehuddle with Gather and Kumospace as a virtual office, including where each is the better pick.',
     heading: 'How livehuddle compares',
     lede: 'Looking for a virtual office for your team? Here is an honest, side-by-side look at how livehuddle compares with the spatial meeting tools you may know, including where each one is the better pick.',
   },

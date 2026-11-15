@@ -277,7 +277,7 @@ describe('POST room-ticket', () => {
         grant: null,
       }),
     );
-    const { ticket, adderKey } = (await res!.json()) as { ticket: string; adderKey?: string };
+    const { ticket, adderKey } = await res!.json<{ ticket: string; adderKey?: string }>();
     expect(ticket.startsWith('rt2~')).toBe(true);
     expect(ticket).not.toContain(t);
     expect(adderKey).toBe(await adderKeyFor('p1', 'user_a'));

@@ -26,8 +26,12 @@ avatar at once (`setSessionColour`). `signOut` resolves false when the API refus
 `/explorer?item=<id>` ([one-explorer.md](../../004-index/one-explorer.md#opening-from-an-open-item)): `pending` while
 the person is unknown and the place is looked up (This Browser's list, else one `GET /items/:id` through
 `resolveItemView`), during which ExplorerShell shows the skeleton; then `router.replace` to the place, or, when the
-index can't answer, the address without `item`. `arrivedItem` is the id while the view shown is that place (whatever
-the lens), handed to the Explorer, whose list views bring it into their window and mark it.
+index can't answer, the address without `item`. From the answer until the address first shows the place, the hook
+hands back the place as `view`, and ExplorerShell renders the Explorer on it rather than on the address's view, so
+the Explorer draws without waiting for the router's move (its lists key on the view's path, so the move fetches
+nothing again); once the address has shown the place the hook hands back the address's view, wherever the person
+goes. `arrivedItem` is the id while the view shown is that place (whatever the lens), handed to the Explorer, whose
+list views bring it into their window and mark it.
 
 ### Signing in (`components/account/SignInFlow.tsx`, `lib/accounts.ts`)
 
@@ -134,8 +138,8 @@ export (every script the page's HTML asks for, gzip level 9):
 | `/explorer` | 388.3 KiB, 17 | 385.7 KiB, 18              | 371.1, 17 |
 
 (KiB gzipped, script files.) What `/` still carries over `ad24a3eec8^`, from the two builds' source maps: about
-3 KiB is `global-error.tsx`'s own copy of the appearance store and the app list it resolves the address with
-(deliberate: the page stands in for the layout and must be light or dark as the site is); about 2 KiB is the lazy
+3 KiB was `global-error.tsx`'s own copy of the appearance store and the app list it resolves the address with
+(the page stands in for the layout and must be light or dark as the site is; cut on 2026-11-14, below); about 2 KiB is the lazy
 card's wrapper, the plain card, the title hook and Turbopack's async-import runtime, a copy in each error file; about
 1.5 KiB is the app list itself growing with livehuddle (#1186, #1251) and each app's logo on sign-in (#1333); 0.5 KiB
 is the account menu's dark-mode hover (#1606); 0.4 KiB is Next 16.4.2 to 16.4.5's runtime. Against that, the
@@ -145,6 +149,17 @@ panels moved out of its first load. The page's HTML (51.7 KiB gzipped on `/`) is
 The site's `build` ends with `scripts/first-load-budget.ts` (`lib/first-load/budget.ts`): it sums the same numbers
 from `out/` and fails the build when `/` passes 212 KiB or `/explorer` 380 KiB. `app/first-load-lazy.test.ts` keeps
 the error files' imports light and the check in the build.
+
+**The root error boundary reads light or dark off the page it replaces (2026-11-14, Work Tracker 772).**
+`global-error.tsx` no longer imports the Appearance store: its first render, which runs before its own `<html>`
+replaces the page's, reads the `dark` class the layout's pre-paint script and store keep on `<html>`
+(`useState(wasDark)`) and renders its `<html>` with it, so it is light or dark as the failed page was. Measured the
+same way, from production builds before and after: `/` 208.9 to 206.2 KiB and `/explorer` 374.2 to 371.4 KiB, 2,782
+bytes gzipped off every page (2,890 off five). Against import-free `error.tsx` and `global-error.tsx`, the two files
+now add 2,110 bytes to every page: the lazy card's wrapper, the plain card and the title hook, a copy in each.
+`app/first-load-lazy.test.ts` holds `global-error.tsx` to `react` and `LazyPageError`. The editors' root error
+boundaries were measured the same day and add 327 to 414 bytes each (what they import is already in their layouts'
+chunks; each product's `docs/specs/016-platform/web-performance.md`).
 
 ## Presentation and UX
 
@@ -503,16 +518,16 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 
 ## Testing
 
-| Area                                                                                                                                                                                                | Files    | Pins                                                                                                                                   |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/telemetry/**`                                                                                                                                                                                  | 51       | the telemetry dashboard: each app's emitters, series, funnels, rankings, retired events, shared views                                  |
-| `lib/explorer/**`                                                                                                                                                                                   | 15       | the Explorer's host: arrival, addresses, app sessions, telemetry                                                                       |
-| `lib/*.test.ts`                                                                                                                                                                                     | 10       | sign-in helpers, session, redirects, settings, teams, apps                                                                             |
-| `lib/appearance/**`                                                                                                                                                                                 | 2        | the site's Appearance: each app's key on its address, the boot script, the store                                                       |
-| `lib/status`, `components/status`                                                                                                                                                                   | 4        | the status page                                                                                                                        |
-| `lib/drive`, `components/drive`                                                                                                                                                                     | 2        | Drive connect pages and switch dialog                                                                                                  |
-| root guards (`appearance-guard`, `dark-pair-guard`, `optical-guard`, `touch-target-guard`, `trusted-types-guard`, `motion-budget`, `asset-prefix`, `cache-headers`) and `e2e/trusted-types.spec.ts` | 9        | site-wide rules: themes, dark pairs across stylesheets, optics, touch targets, Trusted Types, motion, the asset prefix and its caching |
-| `packages/sites`, `packages/account-menu`, `packages/settings-ui`                                                                                                                                   | the rest | the shared pieces the site renders                                                                                                     |
+| Area                                                                                                                                                                                                                   | Files    | Pins                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/telemetry/**`                                                                                                                                                                                                     | 51       | the telemetry dashboard: each app's emitters, series, funnels, rankings, retired events, shared views                                  |
+| `lib/explorer/**`                                                                                                                                                                                                      | 15       | the Explorer's host: arrival, addresses, app sessions, telemetry                                                                       |
+| `lib/*.test.ts`                                                                                                                                                                                                        | 10       | sign-in helpers, session, redirects, settings, teams, apps                                                                             |
+| `lib/appearance/**`                                                                                                                                                                                                    | 2        | the site's Appearance: each app's key on its address, the boot script, the store                                                       |
+| `lib/status`, `components/status`                                                                                                                                                                                      | 4        | the status page                                                                                                                        |
+| `lib/drive`, `components/drive`                                                                                                                                                                                        | 2        | Drive connect pages and switch dialog                                                                                                  |
+| root guards (`appearance-guard`, `dark-pair-guard`, `hover-tie-guard`, `optical-guard`, `touch-target-guard`, `trusted-types-guard`, `motion-budget`, `asset-prefix`, `cache-headers`) and `e2e/trusted-types.spec.ts` | 9        | site-wide rules: themes, dark pairs across stylesheets, optics, touch targets, Trusted Types, motion, the asset prefix and its caching |
+| `packages/sites`, `packages/account-menu`, `packages/settings-ui`                                                                                                                                                      | the rest | the shared pieces the site renders                                                                                                     |
 
 131 test files:
 
@@ -584,6 +599,8 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/asset-prefix.test.ts`
 - `liveworkspace/apps/site/cache-headers.test.ts`
 - `liveworkspace/apps/site/dark-pair-guard.test.ts`
+- `liveworkspace/apps/site/hover-tie-guard.test.ts`
+- `liveworkspace/apps/site/lib/stylesheet-scan.ts`
 - `liveworkspace/apps/site/components/LazyPageError.test.tsx`
 - `liveworkspace/apps/site/components/drive/drive-switch-dialog.test.tsx`
 - `liveworkspace/apps/site/components/settings/site-settings-dialog.test.tsx`

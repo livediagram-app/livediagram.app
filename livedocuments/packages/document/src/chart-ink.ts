@@ -8,7 +8,11 @@
 // match. Pure.
 // What finds the ground a chart sits on is @liveworkspace/element-model/chart-page-grounds, bound here to this
 // model's pages.
-import { chartPageGroundsFor } from '@liveworkspace/element-model/chart-page-grounds';
+import {
+  chartPageGroundsFor,
+  isPaletteChart,
+} from '@liveworkspace/element-model/chart-page-grounds';
+import { isMapShape } from './map-model';
 import { pageAt } from './page';
 import { elementAnchorPoint, pageFillTone } from './page-content';
 import { layerBands } from './layers';
@@ -28,7 +32,8 @@ export {
 /**
  * What each chart on a page with a fill of its own sits on, by element id: the tones re-inking
  * would measure it against. A chart on the plain paper, on no page, or over a surface of unknown
- * tone is absent and drawn as it is.
+ * tone is absent and drawn as it is. A map is given its ground too: its paper (borders, the inset
+ * plate, pin rings) is drawn in it (docs/specs/009-elements/map.md "What it shows").
  */
 export const chartPageGrounds = chartPageGroundsFor({
   isBoxed,
@@ -37,4 +42,5 @@ export const chartPageGrounds = chartPageGroundsFor({
   pageFillTone,
   layerBands,
   pageGroundUnder,
+  takesGround: (el) => isPaletteChart(el) || (el.type === 'shape' && isMapShape(el.shape)),
 });

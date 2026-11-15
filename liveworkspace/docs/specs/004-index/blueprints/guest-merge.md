@@ -57,8 +57,8 @@ this deployment does not run counts as confirmed; a failure gets `attempts + 1`,
 2. The person from `X-Index-Person`: an account id, or a guest matching the guest id pattern (`401` otherwise).
 3. `MIGRATION_LIMITER` keyed `handoff:<person>`, before the body is read: `429 rate_limited`.
 4. The body read against 32 MiB: over is `413 payload_too_large`; not an object `400`.
-5. `app` one of `liveplanner`, `livedocuments`, `livedesign` (`400 invalid_app`); `title` 1 to 500 (`400
-invalid_title`); `payload` `{ v: 1, app: <same>, id: <id>, tabs: [] }` (`400`).
+5. `app` one of `liveplanner`, `livedocuments`, `livedesign` (`400 invalid_app`); `title` text with something in it, shortened to the name cap
+   ([items.md](items.md) "The name cap"; `400 invalid_title` otherwise); `payload` `{ v: 1, app: <same>, id: <id>, tabs: [] }` (`400`).
 6. The item made as `POST /items` would: the person's, `source 'import'`, root of their own space, no team, with its
    `created { source: 'import' }` event; a taken id is `409 item_exists`.
 7. The app's `PUT /items/:id/migration` with the payload, `ownerId` the person and `teamId` null whatever it said, 30 s.

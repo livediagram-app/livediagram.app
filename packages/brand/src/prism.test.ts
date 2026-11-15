@@ -1,6 +1,7 @@
 import { contrastRatio } from './colour';
 import { describe, expect, it } from 'vitest';
 import { PRISM_STOPS, prismPalette, prismPalettes } from './prism';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 const PRISM_PALETTES = prismPalettes('livediagram');
 
@@ -75,7 +76,7 @@ describe('prismPalette', () => {
   });
 
   it('derives a palette well inside a frame budget', () => {
-    const start = performance.now();
+    const start = cpuNowMs();
     for (let i = 0; i < 200; i++)
       prismPalette(
         'livediagram',
@@ -83,6 +84,6 @@ describe('prismPalette', () => {
         THEME_STROKES[i % THEME_STROKES.length],
       );
     // 200 derivations; one theme change needs two.
-    expect(performance.now() - start).toBeLessThan(100);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(100));
   });
 });

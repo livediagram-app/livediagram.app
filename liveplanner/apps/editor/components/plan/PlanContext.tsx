@@ -25,6 +25,7 @@ import type {
   ItemMoveOf,
   ItemPerson,
   ItemTypeDef,
+  BoardFilter,
   PlanBoardSetup,
   PullRequestStatuses,
   StatusPhase,
@@ -117,6 +118,9 @@ export type PlanContextValue = {
   // reads its picture through it (docs/specs/026-plan/item-types.md "Image fields"). Absent outside a project.
   itemsScope?: ItemsScope | null;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
+  // The board's filter (docs/specs/026-plan/board-widgets.md "The board's filter"): sets or clears only
+  // `planBoard.filter`, so a Participant's commit passes the participant rule. Absent outside a project.
+  setBoardFilter?: (boardId: string, filter: BoardFilter | undefined) => void;
   // Delete Status: the state's columns off every board but `exceptBoardId` (the one deleting it updates itself).
   removeStatusColumns: (status: string, exceptBoardId: string) => void;
   // A plan view's settings (the Gantt's swimlanes and names width): one element edit, synced and undoable.

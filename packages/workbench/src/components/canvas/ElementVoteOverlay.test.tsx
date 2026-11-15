@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import type { ReactElement } from 'react';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { VoteRulesVote } from '@liveworkspace/model-core/vote-rules';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { CanvasZoomProvider } from './CanvasZoomContext';
+import { CanvasZoomProvider, ZOOM_SETTLE_MS } from './CanvasZoomContext';
 import { ElementVoteOverlay } from './ElementVoteOverlay';
 
 // docs/specs/012-collaboration/session-tools.md (livediagram and liveplanner): the one dot-vote overlay both products'
@@ -198,7 +198,11 @@ describe('ElementVoteOverlay at a phone’s full Fit of a large board', () => {
     expect(dot(others)!.firstElementChild!.className).toContain('bg-slate-700');
     others.unmount();
     const empty = overlay(0.13, { box: SMALL, vote: vote({ votes: {} }) });
-    expect(dot(empty)!.firstElementChild!.className).toContain('ring-slate-400');
+    // Hollow in both themes: nothing filled inside the ring, so the note shows through (never `dark:bg-slate-900`).
+    const hollow = dot(empty)!.firstElementChild!.className;
+    expect(hollow).toContain('bg-transparent');
+    expect(hollow).toContain('ring-slate-700');
+    expect(hollow).not.toMatch(/(^|\s)(dark:)?bg-(white|slate)/);
     expect(dot(empty)!.firstElementChild!.getAttribute('aria-label')).toBe('0 votes on Idea');
   });
 
@@ -255,9 +259,10 @@ describe('ElementVoteOverlay at a phone’s full Fit of a large board', () => {
   });
 });
 
-// The size check runs for every shown stepper on each zoom frame, so a large board's full Fit must stay cheap. As on
-// the canvas, the overlays are built once and only the zoom changes, so a frame re-renders the zoom's readers alone:
-// each shown stepper, as on main (a dot is one span where a badge is a button with two, so a frame costs no more).
+// The size check runs for every shown stepper once the zoom stands still, never on a zoom step (Work Tracker 885), so a
+// large board's full Fit costs its steps nothing and its settle stays cheap. As on the canvas, the overlays are built
+// once and only the zoom changes, so a step re-renders none of them and the settle re-renders the steppers whose fold
+// or dot flips.
 // The board is built and first drawn outside the timed part. The CPU budget is the guard; the long timeouts only keep
 // a loaded runner's wall clock from failing it.
 describe('ElementVoteOverlay on a 2,000-note board', () => {
@@ -285,15 +290,29 @@ describe('ElementVoteOverlay on a 2,000-note board', () => {
     r = render(board(0.4));
   }, WALL_TIMEOUT_MS);
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it(
-    'zooms out to the dots and through its full Fit within a CPU budget',
+    'zooms out through its full Fit asking no stepper, then shrinks them to dots within a CPU budget',
     () => {
+      vi.useFakeTimers();
       const frames = [0.3, 0.2, 0.15, 0.13, 0.12, 0.11];
-      const ms = cpuMsOf(() => {
+      const steps = cpuMsOf(() => {
         for (const z of frames) r.rerender(board(z));
       });
+      // Mid-zoom every stepper rides with the board as it was: nothing has folded or shrunk yet.
+      expect(r.container.querySelectorAll('.lvd-vote-dot')).toHaveLength(0);
+      const settle = cpuMsOf(() => {
+        act(() => {
+          vi.advanceTimersByTime(ZOOM_SETTLE_MS);
+        });
+      });
       expect(r.container.querySelectorAll('.lvd-vote-dot')).toHaveLength(2000);
-      expect(ms).toBeLessThan(cpuBudgetMs(1500));
+      // The steps walk none of the 2,000 overlays: a frame of a pinch is the provider's alone.
+      expect(steps).toBeLessThan(cpuBudgetMs(60));
+      expect(steps + settle).toBeLessThan(cpuBudgetMs(1500));
     },
     WALL_TIMEOUT_MS,
   );

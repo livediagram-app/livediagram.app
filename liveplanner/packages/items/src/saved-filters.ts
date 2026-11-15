@@ -40,6 +40,13 @@ function isSavedBoardFilter(v: unknown): v is SavedBoardFilter {
   if (!isObj(v)) return false;
   if (typeof v['id'] !== 'string' || !v['id'] || v['id'].length > ID_MAX) return false;
   if (!isName(v['name'])) return false;
+  return savedFilterFieldsValid(v);
+}
+
+// What a saved filter (or the board's own filter, board-filter.ts) narrows by, as validation accepts it: words up to
+// SAVED_FILTER_TEXT_MAX, at most 8 well-formed field chips, Only Mine as a flag, a person, a type, a priority and a
+// due window each well formed.
+export function savedFilterFieldsValid(v: Record<string, unknown>): boolean {
   if (
     v['text'] !== undefined &&
     (typeof v['text'] !== 'string' || v['text'].length > SAVED_FILTER_TEXT_MAX)
@@ -116,7 +123,7 @@ export function savedFilterFrom(quick: QuickFilter, name: string, id: string): S
 // A saved filter as the quick filter it means for this viewer, today: Only Mine their own cards (left out for someone
 // with no person id), a Due Soon window counted from `today` (a day number), the board's done statuses left out.
 export function resolveSavedFilter(
-  saved: SavedBoardFilter,
+  saved: SavedBoardFilter | Omit<SavedBoardFilter, 'id' | 'name'>,
   opts: { mine: string | null; today: number; soonDays: number; finished: readonly string[] },
 ): QuickFilter {
   let due: QuickDueWindow | undefined;

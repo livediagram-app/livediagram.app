@@ -3,7 +3,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { plural } from '@liveworkspace/model-core/plural';
 import { GlyphDisc, SOLID_BRAND_DARK } from '@liveworkspace/ui';
-import { CounterScaled, useCanvasZoom } from './CanvasZoomContext';
+import { useSettledZoomSelector, ZoomFollowing } from './CanvasZoomContext';
 import { useVoteBadge, voteBadgeShrinks, voteStepperCollapses } from './vote-badge';
 import { VoteDot } from './VoteDot';
 
@@ -38,9 +38,10 @@ export function VoteStepper({
   onRetractVote?: (elementId: string) => void;
   onCastVote?: (elementId: string) => void;
 }) {
-  const zoom = useCanvasZoom();
-  const shrunk = voteBadgeShrinks(box, zoom);
-  const collapsed = voteStepperCollapses(box, zoom);
+  // Read by what they decide, once the zoom stands still: a zoom step asks neither, and a settle renders this only
+  // where the fold or the dot flips.
+  const shrunk = useSettledZoomSelector((zoom) => voteBadgeShrinks(box, zoom));
+  const collapsed = useSettledZoomSelector((zoom) => voteStepperCollapses(box, zoom));
   // Shrinking to a dot lifts the fold too, so an open stepper closes and a later zoom in starts on the badge.
   const { ref: stepperRef, open, setOpen } = useVoteBadge(collapsed && !shrunk);
   // The badge opened from the keyboard hands focus to the stepper it opened: plus, or minus once plus is spent.
@@ -58,7 +59,7 @@ export function VoteStepper({
   }
   if (collapsed && !open) {
     return (
-      <CounterScaled
+      <ZoomFollowing
         // Hung a third off the element's corner, so a small note keeps nearly all of its text in view.
         className="lvd-vote-badge absolute bottom-0 right-0 z-10 origin-bottom-right"
         // A press on the badge opens it; it must not reach the element, whose own press casts a dot.
@@ -96,11 +97,11 @@ export function VoteStepper({
             +
           </span>
         </button>
-      </CounterScaled>
+      </ZoomFollowing>
     );
   }
   return (
-    <CounterScaled
+    <ZoomFollowing
       ref={stepperRef}
       // Sits INSIDE the element's bottom-right rather than hanging off
       // the corner: the stepper is a control you aim at, so it wants
@@ -165,7 +166,7 @@ export function VoteStepper({
           +
         </VoteStepButton>
       </div>
-    </CounterScaled>
+    </ZoomFollowing>
   );
 }
 

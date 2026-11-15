@@ -3,6 +3,7 @@ import { faceAttrs } from '@liveworkspace/model-core/face-finish';
 import { markedGroup, replaceBlocks } from '@liveworkspace/model-core/svg-markup-blocks';
 import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
 import { svgSketchFace } from './svg-render-sketch';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('markedGroup', () => {
   it('finds the group whose opening tag carries the attribute', () => {
@@ -33,11 +34,11 @@ describe('replaceBlocks', () => {
 // CodeQL js/polynomial-redos: the face passes read markup in one linear pass. Worst cases that a backtracking pattern
 // rescans from every opening tag must finish within a small budget.
 describe('linear on hostile markup', () => {
-  const budgetMs = 250;
+  const budgetMs = cpuBudgetMs(250);
   const time = (fn: () => void) => {
-    const t = performance.now();
+    const t = cpuNowMs();
     fn();
-    return performance.now() - t;
+    return cpuNowMs() - t;
   };
 
   it('reads attributes from a long run of name characters', () => {

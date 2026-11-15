@@ -3,7 +3,8 @@
 // the Card Types panel and one item on two boards. Composed from the shared primitives so the house style
 // holds; the labels are the editor's own (PlanColumnPopover, ItemPanel, PlanCardMenu, CardTypesPanel...).
 //
-// This module is the entry: the board scenes live in ./plan-board, the card scenes in ./plan-cards, and
+// This module is the entry: the board scenes live in ./plan-board, the card scenes in ./plan-cards (a card's Hidden
+// tab in ./plan-card-hidden, a type's tab icons in ./plan-card-tab-icons, a newer field in ./plan-newer-field), and
 // the pieces both draw with (a card, a header widget, a cog, a column) in ./plan-parts.
 
 export { PlanBoardScene, PlanBoardPickerScene, PlanColumnSettingsScene } from './plan-board';
@@ -14,3 +15,6 @@ export {
   PlanItemTwoBoardsScene,
   PlanCardThreadsScene,
 } from './plan-cards';
+export { PlanCardHiddenTabScene } from './plan-card-hidden';
+export { PlanCardTabIconsScene } from './plan-card-tab-icons';
+export { PlanNewerFieldScene } from './plan-newer-field';
