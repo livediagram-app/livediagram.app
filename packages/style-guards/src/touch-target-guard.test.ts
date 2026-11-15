@@ -29,6 +29,15 @@ export const props = { className: 'touch-target-y h-6' };`);
     expect(v.map((x) => x.line)).toEqual([2, 4]);
   });
 
+  it('flags touch-target-packed on a static host, and accepts a positioned one', () => {
+    expect(scan(`export const A = () => <b className="h-9 touch-target-packed" />;`)).toHaveLength(
+      1,
+    );
+    expect(
+      scan(`export const A = () => <b className="relative h-9 touch-target-packed" />;`),
+    ).toEqual([]);
+  });
+
   it('accepts a host positioned in the same class list, however it is built', () => {
     expect(
       scan(`export const A = ({ on }: { on: boolean }) => (

@@ -435,6 +435,15 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
   `TOOLBAR_CONTROL_REST` and pressed in `DOCK_PRESSED` (`PaletteIconButton`'s active tone,
   `bg-brand-100 ring-1 ring-brand-300`) (spec "What a whiteboard shows"). The drag's `SlotGhost`
   is the same 36 px.
+- On a coarse pointer (spec "On a touch screen"): each `DockToolbar` carries `PACKED_TOOLBAR_ITEMS`
+  (`isolate [&_.h-9]:relative [&_.h-9]:touch-target-packed`), so every 36 px button gets a 44 x 44 px `::before`
+  pad at `z-index: -1` inside its group's stacking context: drawn tiles win their own boxes, overlaps and gaps go
+  to a pad. The scroller is `touch-pan-x`. Behind the card, inside the wrapper, an `aria-hidden` reach
+  (`data-dock-reach`, `absolute -inset-1.5 -z-10 touch-none`, `hidden pointer-coarse:block`) is pointer-events-auto,
+  so a tap up to `DOCK_REACH_PX` (6) past the card's edge lands on the dock (the wrapper's `pointerdown` stops it
+  reaching the board) and does nothing. 6 px stays inside the 8 px `MENU_CARD_GAP_PX` beside the menu card and the
+  8 px above the bottom-right cluster, so it never covers a neighbour. The editor root's `overscroll-none`
+  (touch-targets.md) keeps any drag from pulling to refresh.
 - Flyouts sit on the board side of their opener in whichever group, centred on it
   `OFF_DOCK_GAP_PX` off the dock: below a top dock, above a bottom one; so does the pins-full
   hint. Each is a `fixed` card (`rounded-xl
@@ -503,6 +512,7 @@ to measure` (warn).
 | Preference parsing and writing, emptied pins kept         | `apps/editor/lib/whiteboard-dock-prefs.test.ts`                                    |
 | Picks counted, search pick, S request, pins, unpin count  | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`                                  |
 | Groups, order, tab stops, arrows, scroll re-anchoring     | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                 |
+| 44 x 44 pads behind the tiles, the reach, no page pan     | `DockToolbar.test.tsx`, `WhiteboardDock.test.tsx` "on a touch screen"              |
 | Fold order, runs, bar width, pins before tools            | `apps/editor/lib/whiteboard-dock-fold.test.ts`                                     |
 | Centred from lg only where it folds no more               | `whiteboard-dock-fold.test.ts` "placeTopDock", `WhiteboardDock.test.tsx` "from lg" |
 | More Tools: folded tiles, pressed, arm, a tool's flyout   | `apps/editor/components/canvas/whiteboard/MoreToolsFlyout.test.tsx`                |
@@ -531,6 +541,7 @@ to measure` (warn).
 | `DockButton` size             | 36 px    | spec (the strip's tile)             | 36                |
 | `DOCK_ICON_PX`                | 18 px    | the strip's glyph size              | 18                |
 | `OFF_DOCK_GAP_PX`             | 8 px     | D36                                 | 4 to 12           |
+| `DOCK_REACH_PX`               | 6 px     | spec (inside the 8 px card gap)     | 4 to 7            |
 | `VIEWPORT_MARGIN_PX`          | 12 px    | the flyouts' clamp margin           | 8 to 16           |
 | `TIP_INSET_PX`                | 14 px    | D37 (card radius 12 + 2)            | 12 to 20          |
 | Tip size                      | 10 px    | D37                                 | 8 to 12           |

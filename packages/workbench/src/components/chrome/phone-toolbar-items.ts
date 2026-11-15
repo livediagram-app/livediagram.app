@@ -7,6 +7,13 @@
 // (or use their own row classes), so they are untouched.
 export const PHONE_TOOLBAR_ITEMS = 'phone:[&_.px-2]:px-1 [&_.h-9]:relative [&_.h-9]:touch-target-y';
 
+// A packed row whose 36px items must each be a full 44 x 44 target on a touch screen, with no dead gap between them
+// (docs/specs/004-interface-design/touch-targets.md "touch-target-packed"): the pads reach both ways but sit behind
+// the items, so a drawn item wins its own box. `isolate` gives the pads the stacking context they need; so only a
+// row whose popovers portal out of it carries this (the Draw dock's groups), never a card with inline flyouts.
+export const PACKED_TOOLBAR_ITEMS =
+  'isolate phone:[&_.px-2]:px-1 [&_.h-9]:relative [&_.h-9]:touch-target-packed';
+
 // The bottom-right cluster's buttons on a phone (docs/specs/007-editor/editor-app.md "Mobile chrome", live-app.md in livedesign): at most
 // six 44px-wide buttons (Undo, Redo, Slides, Contents, Collaborate, the theme brush) beside Fit, more than a
 // phone's row holds. Each takes an equal share of the width left once

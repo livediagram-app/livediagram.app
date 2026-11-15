@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@livediagram/ui';
-import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CONTROL_REST, TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 
 type Roving = { focusKey: string; setFocusKey: (key: string) => void };
@@ -81,9 +81,10 @@ export function DockToolbar({
         // Watch It Built's anchors in Draw (docs/specs/007-editor/watch-it-built.md): dock-drawing, dock-shapes, dock-settings.
         data-tour-id={`dock-${group}`}
         onKeyDown={onKeyDown}
-        // A run of the dock's card (DockBody draws the card and the hairlines between groups), its items 44px-tall
-        // tap areas on a touch screen.
-        className={`relative flex shrink-0 items-center gap-0.5 ${PHONE_TOOLBAR_ITEMS}`}
+        // A run of the dock's card (DockBody draws the card and the hairlines between groups). On a touch screen
+        // each item is a 44 x 44 tap area drawn behind the tiles, so the 2px gaps pick a tool too
+        // (docs/specs/023-draw-mode/draw-mode.md "On a touch screen").
+        className={`relative flex shrink-0 items-center gap-0.5 ${PACKED_TOOLBAR_ITEMS}`}
       >
         {children}
       </div>

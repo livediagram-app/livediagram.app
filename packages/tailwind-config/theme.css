@@ -238,6 +238,20 @@
     }
   }
 }
+/* `touch-target-packed` gives a packed row's controls the full 44px both ways anyway, by drawing the pad behind
+ * them (`z-index: -1`): a drawn control always wins its own box, and the gaps and edges between them go to a
+ * neighbour's pad, so a tap beside a tile picks one rather than falling through (the Draw dock). Its row must make
+ * a stacking context (`isolate`), or the pads drop behind the card's background and take nothing. */
+@utility touch-target-packed {
+  @media (pointer: coarse) {
+    &::before {
+      content: '';
+      position: absolute;
+      inset: min(0px, calc(50% - 22px));
+      z-index: -1;
+    }
+  }
+}
 
 /* An icon at a control's first or last edge is drawn inside its box with blank space around it, so
  * padding measured to the box reads lopsided. Pull the icon in by its own blank margin, which its Glyph

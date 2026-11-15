@@ -21,13 +21,21 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
   strip's tiles, 2px apart) the pad reaches vertically only, so two pads never compete for one tap.
   The toolbar cards apply it to their 36px items (`PHONE_TOOLBAR_ITEMS`).
+- **`touch-target-packed` where a packed row must still give 44 x 44.** The pad reaches 44px both ways, as
+  `touch-target` does, but sits behind the controls (`z-index: -1`, inside a row that makes its own stacking context
+  with `isolate`). Where two pads overlap, the drawn tile always wins its own box, and the gap and the pad's edges go
+  to the nearest tile's pad, so a tap beside a tile picks a tool rather than falling through. `PACKED_TOOLBAR_ITEMS`
+  (`@liveworkspace/workbench/components/chrome/phone-toolbar-items`) applies it to a row's 36px items with the
+  `isolate` it needs. The Draw dock's groups carry it ([Draw mode](../023-draw-mode/draw-mode.md) "On a touch
+  screen"); a row whose popovers hang inline from it keeps `touch-target-y`, since `isolate` would trap them.
 - **Shared controls carry it**, so every caller does: the chrome buttons (`CHROME_BTN`), the
   `⋯` triggers (`EllipsisTriggerButton`, the tab menu), the help `?` (`HelpArticleLink`), panel
   header buttons (`MovablePanelHeader`, `SettingsPopover`), the dialog close in both shapes
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
-- **Every canvas toolbar pads its items.** The Palette strip, the Draw dock's pills (`DockToolbar`)
-  and the menu button's own card in Draw (`ToolbarExplorerButton`) all carry `PHONE_TOOLBAR_ITEMS`;
+- **Every canvas toolbar pads its items.** The Palette strip and the menu button's own card in Draw
+  (`ToolbarExplorerButton`) carry `PHONE_TOOLBAR_ITEMS`, the Draw dock's groups (`DockToolbar`)
+  `PACKED_TOOLBAR_ITEMS`;
   the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do a tab's name,
   the role pill (Editing / Viewing), the tour card's buttons and a page's lock and cog.
 - **A tab's presence avatars** (`TabPresenceStack`) draw at 16px and overlap under a mouse. On a touch screen they
@@ -70,6 +78,12 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   pixels a pad reaches past it. Such a scroller hides its other axis (`overflow-y-hidden` on the
   tab bar's tab row and the strip's rail, `overflow-x-hidden` on the Explorer tree), which clips
   the pads at that edge by a few pixels.
+- **The editor never pulls to refresh.** A drag that starts on the canvas, a toolbar or just beside one must
+  never reach the browser's pull-to-refresh and reload the board. The editor app's root (`<html>` and `<body>`
+  in `apps/editor/app/layout.tsx`) sets `overscroll-behavior: none` (`overscroll-none`), and the canvas takes
+  every touch itself (`touch-none`). It is the editor app's own layout: the marketing site and the help centre
+  keep the browser's pull-to-refresh. `overscroll-behavior` is not inherited, so panels, sheets and menus inside
+  the editor scroll as before (they set `overscroll-contain` where a swipe must not chain).
 - **Toolbars keep their drawn sizes on a phone:** 36px items, the bottom-right cluster's 44px.
   Fitting more tiles is the strip's swipe's job ([Toolbar layout](../007-editor/toolbar-layout.md)),
   not smaller targets.

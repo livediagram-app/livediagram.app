@@ -113,6 +113,13 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   behaves stay Draw's own (pens that stay in hand, flyouts, pinned shapes). Each group is still
   its own toolbar for assistive technology ("Drawing tools", "Shapes", "Settings"), each one Tab
   stop with arrow keys moving within it.
+- **On a touch screen** the dock looks the same, only its tap areas grow
+  ([Touch targets](../004-interface-design/touch-targets.md)): each 36 px tile is a 44 x 44 px target
+  (`touch-target-packed`, drawn behind the tiles so a tile always wins its own box and a tap in a gap picks the
+  nearest tool), and the bar itself reaches 6 px past its card's edge, an invisible margin that takes a tap and does
+  nothing, so a near miss never lands on the board. A drag on the bar or that margin never moves the page: the margin
+  is `touch-none`, the card scrolls sideways only (`touch-pan-x`, a phone's dock scrolls), and the editor's root
+  never pulls to refresh.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool). A board with content opens on
      Select; an empty one puts the active pen in hand.
