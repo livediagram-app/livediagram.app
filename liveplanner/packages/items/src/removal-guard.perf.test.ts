@@ -18,7 +18,7 @@ const boards: PlanBoardOutline[] = Array.from({ length: 10 }, (_, b) => ({
   columns: STATUSES.map((status) => ({ status, name: status })),
 }));
 const cards = Array.from({ length: 10_000 }, (_, i) =>
-  item({ title: `Card ${i}`, status: STATUSES[i % STATUSES.length] }),
+  item({ title: `Card ${i}`, status: STATUSES[i % STATUSES.length]! }),
 );
 
 describe('the removal guard at the limits', () => {
