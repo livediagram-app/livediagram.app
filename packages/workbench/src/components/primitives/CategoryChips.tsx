@@ -1,7 +1,8 @@
 'use client';
 
 // A row of category chips, each with its count, one pressed at a time (All first, by the caller's list): the layout
-// gallery's categories and a logo page's display library. The row scrolls sideways rather than wrapping.
+// gallery's categories and a logo page's display library. The row scrolls sideways rather than wrapping, unless
+// `wrap` is set for a narrow home (a menu flyout), where a hidden chip could not be reached with a mouse wheel.
 
 export type CategoryChip = { id: string; label: string; count: number };
 
@@ -10,17 +11,23 @@ export function CategoryChips({
   value,
   onChoose,
   ariaLabel,
+  wrap = false,
 }: {
   chips: readonly CategoryChip[];
   value: string;
   onChoose: (id: string) => void;
   ariaLabel: string;
+  wrap?: boolean;
 }) {
   return (
     <div
       role="group"
       aria-label={ariaLabel}
-      className="-mx-1 flex shrink-0 gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className={
+        wrap
+          ? 'flex shrink-0 flex-wrap gap-1.5'
+          : '-mx-1 flex shrink-0 gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+      }
     >
       {chips.map((c) => {
         const on = c.id === value;

@@ -4,6 +4,7 @@
 // face named in its own face; a hover previews, a press sets, and only a text on a logo page offers it.
 
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DISPLAY_FONTS } from '@livedesign/design';
 import { sentUrl } from '@liveworkspace/vitest-config/sent-request';
@@ -95,6 +96,49 @@ describe('DisplayFontLibrary', () => {
     expect(onPreviewEnd).toHaveBeenCalled();
     fireEvent.click(row);
     expect(onSetFont).toHaveBeenLastCalledWith('bebas-neue');
+  });
+
+  it('keeps the in-use mark on the applied face while a hover previews another', () => {
+    // A preview sets the element's face, so the menu hands the previewed one back as the current face.
+    function Harness() {
+      const [applied, setApplied] = useState('lobster');
+      const [previewed, setPreviewed] = useState<string | null>(null);
+      return (
+        <DisplayFontLibrary
+          currentFont={previewed ?? applied}
+          onSetFont={(f) => {
+            setPreviewed(null);
+            setApplied(f);
+          }}
+          onPreviewFont={setPreviewed}
+          onPreviewEnd={() => setPreviewed(null)}
+        />
+      );
+    }
+    render(<Harness />);
+    const pressed = () =>
+      within(list())
+        .getAllByRole('button')
+        .filter((b) => b.getAttribute('aria-pressed') === 'true')
+        .map((b) => b.textContent);
+    const bebas = within(list()).getByRole('button', { name: /Bebas Neue/ });
+    const anton = within(list()).getByRole('button', { name: /Anton/ });
+    fireEvent.pointerEnter(bebas, { pointerType: 'mouse' });
+    fireEvent.pointerLeave(bebas, { pointerType: 'mouse' });
+    fireEvent.pointerEnter(anton, { pointerType: 'mouse' });
+    expect(pressed()).toEqual([expect.stringContaining('Lobster')]);
+    fireEvent.click(anton);
+    expect(pressed()).toEqual([expect.stringContaining('Anton')]);
+    fireEvent.pointerEnter(bebas, { pointerType: 'mouse' });
+    fireEvent.pointerLeave(list(), { pointerType: 'mouse' });
+    expect(pressed()).toEqual([expect.stringContaining('Anton')]);
+  });
+
+  it('wraps its category chips, so every one is in reach in a narrow flyout', () => {
+    render(<DisplayFontLibrary currentFont={null} onSetFont={vi.fn()} />);
+    const chips = screen.getByRole('group', { name: 'Display face categories' });
+    expect(chips.className).toContain('flex-wrap');
+    expect(chips.className).not.toContain('overflow-x-auto');
   });
 });
 

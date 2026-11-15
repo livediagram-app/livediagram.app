@@ -51,6 +51,18 @@ export function DisplayFontLibrary({
 }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>(ALL);
+  // The face applied before a hover began: a preview sets the element's face, so the in-use mark would follow the
+  // pointer. Held from the first hover until the pointer leaves the list or a face is chosen.
+  const [held, setHeld] = useState<{ font: string | null } | null>(null);
+  const inUse = held ? held.font : currentFont;
+  const preview = (font: string) => {
+    setHeld((h) => h ?? { font: currentFont });
+    onPreviewFont?.(font);
+  };
+  const set = (font: string) => {
+    setHeld(null);
+    onSetFont(font);
+  };
   useEffect(() => {
     void loadDisplayPreviews();
   }, []);
@@ -88,13 +100,17 @@ export function DisplayFontLibrary({
         value={category}
         onChoose={setCategory}
         ariaLabel="Display face categories"
+        wrap
       />
       <div
         role="group"
         aria-label="Display faces"
         className="-mx-1 flex flex-col gap-0.5 overflow-y-auto px-1"
         style={{ maxHeight: DISPLAY_LIBRARY_LIST_MAX_PX }}
-        onPointerLeave={onMouseHover(() => onPreviewEnd?.())}
+        onPointerLeave={onMouseHover(() => {
+          setHeld(null);
+          onPreviewEnd?.();
+        })}
       >
         {shown.length === 0 ? (
           <NoMatches
@@ -113,9 +129,9 @@ export function DisplayFontLibrary({
             <DisplayFontRow
               key={f.id}
               font={f}
-              active={currentFont === f.id}
-              onSet={onSetFont}
-              onPreview={onPreviewFont}
+              active={inUse === f.id}
+              onSet={set}
+              onPreview={preview}
               onPreviewEnd={onPreviewEnd}
             />
           ))

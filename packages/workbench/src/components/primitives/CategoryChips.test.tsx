@@ -29,6 +29,19 @@ describe('CategoryChips', () => {
     );
   });
 
+  it('scrolls sideways by default and wraps when asked', () => {
+    const { rerender } = render(
+      <CategoryChips chips={chips} value="all" onChoose={() => {}} ariaLabel="Categories" />,
+    );
+    const row = screen.getByRole('group', { name: 'Categories' });
+    expect(row.className).toContain('overflow-x-auto');
+    rerender(
+      <CategoryChips chips={chips} value="all" onChoose={() => {}} ariaLabel="Categories" wrap />,
+    );
+    expect(row.className).toContain('flex-wrap');
+    expect(row.className).not.toContain('overflow-x-auto');
+  });
+
   it('chooses a category on a press', () => {
     const onChoose = vi.fn();
     render(<CategoryChips chips={chips} value="all" onChoose={onChoose} ariaLabel="Categories" />);
