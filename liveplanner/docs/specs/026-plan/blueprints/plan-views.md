@@ -220,6 +220,36 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
   `PALETTE_TELEMETRY_TYPES.shapes`.
 - `Plan · Changed · ViewDates` (a Dates pick) and `Plan · Changed · ViewMeasure` (a Count By pick).
 
+## Flow charts
+
+Derived from spec "Flow charts"; built in parts (Work Tracker 854). Part 1 shipped the data: the daily flow counts
+([item-store blueprint](item-store.md#flow-counts), `packages/items/src/flow-counts.ts`, plan schema step V29).
+
+| Spec term        | Identifier                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| Cycle Time       | `PlanVisualisation` `'cycle-time'`                                                            |
+| Throughput       | `PlanVisualisation` `'throughput'`                                                            |
+| Cumulative Flow  | `PlanVisualisation` `'cumulative-flow'`                                                       |
+| range            | `PlanViewRef.rangeDays?: 14 \| 90 \| 180` (absent is 30; `FLOW_RANGES`, `FLOW_RANGE_DEFAULT`) |
+| finished/started | moves into a `done` / `doing` phase status (`statusPhasesOf`), read from `item_history`       |
+| flow day         | `flowDayOf(ms)`; `FlowCountRow`, `flowCountsOf` (part 1)                                      |
+
+- Part 2 (data read): a new flow metrics module in `@liveplanner/items`, `cycleTimesOf(moves, phases, fromDay, toDay)` (per card:
+  last finish in range, first `doing` entry before it, else its oldest kept entry or `createdAt`; days to one
+  decimal; the 50th and 85th percentiles by nearest rank) and `throughputOf(finishes, fromDay, toDay, period)`
+  (Monday weeks, days for 14; the average over whole periods). `GET /projects/:id/flow?days=&types=` (gate `read`,
+  `400 flow_range` past `FLOW_DAYS_MAX`), answering `{ counts: FlowCountRow[], moves: { itemId, at, from, to }[] }`
+  read from `flow_counts` and from `item_history` rows whose `changes` hold a `moved` (by `at` in range), never an
+  author or value.
+- Part 3 (visible): the three views in `apps/editor/components/plan/views/` (`CycleTimeView`, `ThroughputView`,
+  `CumulativeFlowView`), one read per tab shared by its flow charts (`usePlanFlow`, re-read when `items_rev` moves,
+  debounced), Chart Settings' **Range** section, palette tiles and Dashboard slot choices, `svgPlanView` labels, the
+  states and copy the spec gives, telemetry `Plan` · `Changed` · `ViewRange`, and the help articles
+  (plan/visualisations, plan/dashboards).
+- Part 4 (agents): the view ids and `rangeDays` in the Dashboard spec of `create_project` / `add_tab` and the plan view
+  element of `update_project`, `read_project`'s description ("Cycle Time, last 30 days"), the CLI; role tests
+  end to end; fold-back.
+
 ## Performance and limits
 
 - Each model is linear in the project's items (capped by the item store), memoised on the items map, the phases
