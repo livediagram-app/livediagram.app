@@ -10,6 +10,7 @@ import {
   serverDocumentFormat,
   subscribeServerRelease,
 } from '@/lib/server-release';
+import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 
 export function NewVersionPrompt(props: { hasUnsavedChanges: () => boolean; reload?: () => void }) {
   return (
@@ -23,4 +24,12 @@ export function NewVersionPrompt(props: { hasUnsavedChanges: () => boolean; relo
       {...props}
     />
   );
+}
+
+/** The prompt in the editor, which asks the chrome store whether edits are unsaved when it needs to know, so the editor
+ *  view places it once and its renders (a typing commit among them) never reach it
+ *  (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits"). */
+export function EditorNewVersionPrompt() {
+  const chrome = useEditorChromeStore();
+  return <NewVersionPrompt hasUnsavedChanges={() => chrome.get().hasUnsavedChanges()} />;
 }

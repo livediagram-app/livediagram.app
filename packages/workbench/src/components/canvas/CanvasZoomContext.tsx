@@ -12,6 +12,11 @@
 // vote open on 2,000 notes cost about 70 ms more per zoom frame in Chromium while each dot rendered and re-scaled on
 // every step (Work Tracker 778), and asking its 4,000 selectors on each step was most of what remained (Work Tracker
 // 885). `useCanvasZoomSelector` asks on every step, for the few parts that change shape mid-zoom.
+//
+// `useCanvasZoom` itself subscribes to the store, as the selectors do, rather than reading a context: a context value
+// that changes on every step makes React search the whole subtree under the provider for its readers on each step,
+// the bailed-out element views included. On a 2,000-note board that search was about 4 ms of every zoom step, most of
+// the step's script (Work Tracker 904); a store tells its readers directly.
 
 import {
   createContext,
@@ -36,7 +41,6 @@ type ZoomStore = {
 // How long the zoom stands still before the parts that follow it by settling take their size.
 export const ZOOM_SETTLE_MS = 120;
 const ZoomStoreContext = createContext<ZoomStore | null>(null);
-const CanvasZoomContext = createContext(1);
 
 // A zoom step, told to the store: what to draw at now, then the listeners, then (once the zoom stands still) the
 // parts that settle. Plain functions on the store, so the provider only calls them.
@@ -69,15 +73,14 @@ export function CanvasZoomProvider({ zoom, children }: { zoom: number; children:
   readZoom(store, zoom);
   useLayoutEffect(() => announceZoom(store), [store, zoom]);
   useLayoutEffect(() => () => stopSettling(store), [store]);
-  return (
-    <ZoomStoreContext.Provider value={store}>
-      <CanvasZoomContext.Provider value={zoom}>{children}</CanvasZoomContext.Provider>
-    </ZoomStoreContext.Provider>
-  );
+  return <ZoomStoreContext.Provider value={store}>{children}</ZoomStoreContext.Provider>;
 }
 
+const asIs = (zoom: number): number => zoom;
+
+/** The zoom, rendering on every step: for the few parts drawn at the zoom (a grip, a counter-scaled badge). */
 export function useCanvasZoom(): number {
-  return useContext(CanvasZoomContext);
+  return useCanvasZoomSelector(asIs);
 }
 
 /**

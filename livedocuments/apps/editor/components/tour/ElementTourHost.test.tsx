@@ -41,7 +41,11 @@ vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => viewport.phone,
 }));
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
+vi.mock('@/app/document/[id]/EditorContext', () => ({
+  useEditorContext: () => ctx.current,
+  useEditorChrome: (select: (v: unknown) => unknown) => select(ctx.current),
+  useEditorChromeStore: () => ({ get: () => ctx.current }),
+}));
 
 const setUserPreferences = vi.fn();
 const writeUserPreferences = vi.fn();

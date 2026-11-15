@@ -2,7 +2,7 @@
 // Kept here to avoid duplication across the three view components.
 
 import { useElementIndicatorsSuppressed } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
+import type { ComponentProps, CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { LockIcon, SOLID_BRAND_DARK } from '@livediagram/ui';
 import type { DragMode } from '@/lib/canvas';
 import { handlePressStarts } from '@liveworkspace/workbench/lib/double-press';
@@ -246,8 +246,33 @@ export function SelectionChromeLayer({
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
 }) {
-  const zoom = useCanvasZoom();
+  // Nothing to draw, nothing read: every element on the board places this layer, and one that read the zoom here
+  // rendered on every zoom step only to draw nothing (2,000 renders a step on a 2,000-note board, Work Tracker 904).
   if (!showHandles && !showAnchors) return null;
+  return (
+    <SelectionChromeFrame
+      elementId={elementId}
+      box={box}
+      rotation={rotation}
+      shiftX={shiftX}
+      showHandles={showHandles}
+      showAnchors={showAnchors}
+      onBeginDrag={onBeginDrag}
+    />
+  );
+}
+
+// The frame itself, drawn at the zoom (its grips keep their size on screen).
+function SelectionChromeFrame({
+  elementId,
+  box,
+  rotation,
+  shiftX,
+  showHandles,
+  showAnchors,
+  onBeginDrag,
+}: ComponentProps<typeof SelectionChromeLayer>) {
+  const zoom = useCanvasZoom();
   const transform = [
     shiftX ? `translateX(${shiftX}px)` : '',
     rotation % 360 !== 0 ? `rotate(${rotation}deg)` : '',

@@ -12,19 +12,22 @@ import {
 } from '@liveworkspace/workbench/components/canvas/PageContentsPanel';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
-import { usePageContents } from '@/hooks/ui/usePageContents';
+import { usePageContents, type WritingStore } from '@/hooks/ui/usePageContents';
 import { ContentsAddPage } from './ContentsAddPage';
 import { contentsBadges } from './contents-badges';
 
 export function PageContentsPanel({
   view,
   tab,
+  writing,
   anchor,
   onClose,
   onDock,
 }: {
   view: PagesModeView;
   tab: PageThumbTab;
+  // The writing, read from its store so a typing commit renders this list and not the chrome placing it.
+  writing?: WritingStore;
   anchor?: DockAnchor;
   onClose: () => void;
   // Docks Contents as the sidebar again (a desktop's; a phone has no sidebar).
@@ -35,6 +38,7 @@ export function PageContentsPanel({
   const contents = usePageContents({
     view,
     tab,
+    writing,
     here,
     ...(mobile ? { onWent: onClose } : {}),
   });

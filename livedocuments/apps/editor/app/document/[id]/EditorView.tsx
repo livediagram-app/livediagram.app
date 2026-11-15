@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { track } from '@/lib/telemetry';
-import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
+import { EditorNewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 import { useRegionCycle } from '@liveworkspace/workbench/hooks/ui/useRegionCycle';
 import { useEffect } from 'react';
@@ -57,7 +57,7 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
-import { FindHost } from '@/components/find/FindHost';
+import { EditorFindHost } from '@/components/find/FindHost';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
@@ -112,6 +112,10 @@ const TOURS = (
   </AreaErrorBoundary>
 );
 const START_PANELS = <EditorStartPanels />;
+// An editor older than the server's document format offers a reload, once its edits are saved
+// (docs/specs/016-platform/new-version-prompt.md). It reads the unsaved state from the chrome store, so the view's
+// renders never reach it.
+const NEW_VERSION_PROMPT = <EditorNewVersionPrompt />;
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read
@@ -139,7 +143,6 @@ export function EditorView() {
     // workbench-embeds.md, Surface table).
     appChrome,
     workbench,
-    quickStyleDeps,
     canvasTool,
     drag,
     accountUserId,
@@ -358,7 +361,6 @@ export function EditorView() {
               element menu is open, which is the complete home of every setting. */}
                       <AreaErrorBoundary area="QuickStyle">
                         <QuickStyleHost
-                          deps={quickStyleDeps}
                           hidden={
                             // Not beside another tab (docs/specs/007-editor/split-view.md): half a window has
                             // no room for it next to the selection.
@@ -373,8 +375,7 @@ export function EditorView() {
                       </AreaErrorBoundary>
                       {/* Find and replace over the canvas (docs/specs/007-editor/find-and-replace.md). */}
                       <AreaErrorBoundary area="Search">
-                        <FindHost
-                          deps={ctx.findDeps}
+                        <EditorFindHost
                           openerRef={ctx.findOpenRef}
                           canvasMainRef={ctx.canvasMainRef}
                         />
@@ -411,9 +412,7 @@ export function EditorView() {
                         }
                       />
 
-                      {/* An editor older than the server's document format offers a reload, once its edits
-            are saved (docs/specs/016-platform/new-version-prompt.md). */}
-                      <NewVersionPrompt hasUnsavedChanges={ctx.hasUnsavedChanges} />
+                      {NEW_VERSION_PROMPT}
                     </div>
                   )}
                 </SplitViewFrame>

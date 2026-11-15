@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, render } from '@testing-library/react';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   CanvasZoomProvider,
@@ -49,6 +49,28 @@ describe('following the zoom', () => {
     const Probe = () => <b data-zoom={useCanvasZoom()} />;
     const outside = render(<Probe />);
     expect(outside.container.querySelector('b')!.dataset.zoom).toBe('1');
+  });
+
+  // Work Tracker 904: the zoom's readers are told by the store, so a zoom step renders them and nothing between them
+  // and the provider, and React searches no subtree for them.
+  it('renders a zoom reader on every step and nothing between it and the provider', () => {
+    let between = 0;
+    const Reader = () => <b data-zoom={useCanvasZoom()} />;
+    const Between = memo(function Between() {
+      useEffect(() => {
+        between += 1;
+      });
+      return <Reader />;
+    });
+    const tree = <Between />;
+    const at = (zoom: number) => <CanvasZoomProvider zoom={zoom}>{tree}</CanvasZoomProvider>;
+    const { container, rerender } = render(at(1));
+    const before = between;
+    for (const zoom of [1.5, 2, 3]) {
+      rerender(at(zoom));
+      expect(container.querySelector('b')!.dataset.zoom).toBe(String(zoom));
+    }
+    expect(between).toBe(before);
   });
 
   it('renders a selector’s part only when its answer changes', () => {
