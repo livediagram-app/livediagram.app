@@ -933,7 +933,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [201, 400, 401, 403, 404, 405],
   },
   {
-    method: 'PATCH',
+    method: 'PUT',
     path: '/projects/{id}/calendar-feed',
     segment: 'projects',
     tag: 'Calendar',

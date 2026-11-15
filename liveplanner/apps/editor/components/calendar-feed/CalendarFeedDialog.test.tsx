@@ -61,10 +61,13 @@ describe('Off', () => {
     await open({ feed: null, boards: BOARDS });
     expect(stateOf()).toBe('off');
     expect(screen.getByText(/Anyone with this link can see the titles and dates/)).toBeTruthy();
-    const board = screen.getByLabelText('Board') as HTMLSelectElement;
+    const board = screen.getByLabelText<HTMLSelectElement>('Board');
     expect([...board.options].map((o) => o.textContent)).toEqual(['All Boards', 'Roadmap', 'Bugs']);
     fireEvent.change(board, { target: { value: 'b2' } });
     fireEvent.click(screen.getByRole('switch', { name: /Only My Cards/ }));
+    // Include Done Cards on and off again: the link is made without done cards.
+    fireEvent.click(screen.getByRole('switch', { name: /Include Done Cards/ }));
+    fireEvent.click(screen.getByRole('switch', { name: /Include Done Cards/ }));
     // Choosing in Off saves nothing yet.
     expect(client.changeCalendarFeed).not.toHaveBeenCalled();
 
@@ -73,7 +76,7 @@ describe('Off', () => {
       path: PATH,
     });
     fireEvent.click(screen.getByRole('button', { name: 'Make Calendar Link' }));
-    const field = (await screen.findByLabelText('Calendar link')) as HTMLInputElement;
+    const field = await screen.findByLabelText<HTMLInputElement>('Calendar link');
     expect(client.issueCalendarFeed).toHaveBeenCalledWith(SCOPE, {
       boardId: 'b2',
       mine: true,
@@ -110,7 +113,7 @@ describe('Off', () => {
     await open({ feed: null, boards: BOARDS });
     client.issueCalendarFeed.mockResolvedValue({ feed: FEED, path: PATH });
     fireEvent.click(screen.getByRole('button', { name: 'Make Calendar Link' }));
-    const field = (await screen.findByLabelText('Calendar link')) as HTMLInputElement;
+    const field = await screen.findByLabelText<HTMLInputElement>('Calendar link');
     writeText.mockRejectedValue(new Error('denied'));
     fireEvent.click(screen.getByRole('button', { name: 'Copy Link' }));
     await waitFor(() => expect(document.activeElement).toBe(field));
@@ -140,7 +143,7 @@ describe('On', () => {
     expect(stateOf()).toBe('on');
     expect(screen.getByText(/^Your calendar link is on\. Made .*2026\.$/)).toBeTruthy();
     expect(screen.queryByLabelText('Calendar link')).toBeNull();
-    expect((screen.getByLabelText('Board') as HTMLSelectElement).value).toBe('b1');
+    expect(screen.getByLabelText<HTMLSelectElement>('Board').value).toBe('b1');
     expect(
       screen.getByRole('switch', { name: /Include Done Cards/ }).getAttribute('aria-checked'),
     ).toBe('true');
@@ -174,7 +177,7 @@ describe('On', () => {
 
   it('shows a board that went for what it is, until another is picked', async () => {
     await open({ feed: { ...FEED, boardId: 'gone' }, boards: BOARDS });
-    const board = screen.getByLabelText('Board') as HTMLSelectElement;
+    const board = screen.getByLabelText<HTMLSelectElement>('Board');
     expect(board.value).toBe('gone');
     expect(board.selectedOptions[0]!.textContent).toBe('Removed Board');
     client.changeCalendarFeed.mockResolvedValue({ feed: FEED });
@@ -217,6 +220,15 @@ describe('On', () => {
     );
     expect(document.querySelector('[data-confirm-popover]')).toBeNull();
     expect(client.turnOffCalendarFeed).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset Link' }));
+    fireEvent.click(
+      within(document.querySelector('[data-confirm-popover]') as HTMLElement).getByRole('button', {
+        name: 'Cancel',
+      }),
+    );
+    expect(document.querySelector('[data-confirm-popover]')).toBeNull();
+    expect(client.issueCalendarFeed).not.toHaveBeenCalled();
   });
 
   it('turns off behind its confirm, back to Off with Make Calendar Link focused', async () => {

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // share link, each answered or refused as the api says.
 const core = vi.hoisted(() => ({
   API_BASE: 'https://api.test/api',
-  apiFetch: vi.fn(),
+  apiFetch: vi.fn<(url: string, init: RequestInit) => Promise<Response>>(),
   apiHeaders: vi.fn(async () => ({ Authorization: 'Bearer t' })),
 }));
 vi.mock('@/lib/api/core', async (importOriginal) => ({
@@ -49,7 +49,7 @@ describe('the calendar feed client', () => {
     expect(core.apiHeaders).toHaveBeenLastCalledWith('user_1', { share: null, body: true });
     core.apiFetch.mockResolvedValueOnce(Response.json({ feed: { mine: true } }));
     expect(await changeCalendarFeed(SCOPE, OPTIONS)).toEqual({ feed: { mine: true } });
-    expect(core.apiFetch.mock.lastCall![1].method).toBe('PATCH');
+    expect(core.apiFetch.mock.lastCall![1].method).toBe('PUT');
     core.apiFetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
     await expect(turnOffCalendarFeed(SCOPE)).resolves.toBeUndefined();
     expect(core.apiFetch.mock.lastCall![1].method).toBe('DELETE');

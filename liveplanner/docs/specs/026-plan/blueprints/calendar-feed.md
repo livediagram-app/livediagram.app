@@ -178,7 +178,7 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 ### Files
 
 - `packages/api-schema/src/calendar-feed.ts`: `CalendarFeedOptions`, `CalendarFeedSettings`, `CalendarFeedBoard`,
-  `CalendarFeedResponse` (`GET`), `CalendarFeedIssueResponse` (`POST`), `CalendarFeedOptionsResponse` (`PATCH`),
+  `CalendarFeedResponse` (`GET`), `CalendarFeedIssueResponse` (`POST`), `CalendarFeedOptionsResponse` (`PUT`),
   `CALENDAR_FEED_ERRORS`.
 - `apps/api/src/calendar/feed-store.ts`: adds `calendarFeedFor(env, planId, personId)` (the person's own row, no
   hash) and `setCalendarFeedOptions(env, planId, personId, options)` (whether a row changed).
@@ -201,7 +201,8 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 - `GET /calendar-feed` 200 `{ feed: CalendarFeedSettings | null, boards: CalendarFeedBoard[] }`.
 - `POST /calendar-feed` body `CalendarFeedOptions` 201 `{ feed, path }`; `path` is `/api/calendar/<id>/<token>.ics`,
   the one time the token leaves the room. The editor resolves it against its `API_BASE`'s origin (`feedUrlOf`).
-- `PATCH /calendar-feed` body `CalendarFeedOptions` 200 `{ feed }`; 404 `calendar_feed_not_found` without a feed.
+- `PUT /calendar-feed` body `CalendarFeedOptions` 200 `{ feed }`; 404 `calendar_feed_not_found` without a feed. `PUT`, not
+  `PATCH`: the api's CORS allows GET, POST, PUT and DELETE, so a cross-origin editor's `PATCH` fails its preflight.
 - `DELETE /calendar-feed` 204.
 - Body: `boardId` null or a string naming a board `feedBoardsOf` lists; `mine`, `includeDone` booleans (absent:
   false). Anything else: 400 `calendar_feed_invalid`. An unparseable body: 400 as `readBody`.
@@ -219,7 +220,7 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 - Editor: `calendarFeedScopeFor` is `{ ownerId, projectId }` when hydrated, not an embed, not offline, signed in, and
   the items scope has no share code and no tab; else null (no row).
 - Dialog: on open, `GET`; `feed` null is Off, else On. Make Calendar Link and Reset Link `POST` the shown options and
-  go to Just made with the url. An option change in Just made or On `PATCH`es at once (optimistic, rolled back with
+  go to Just made with the url. An option change in Just made or On `PUT`s at once (optimistic, rolled back with
   the error line on failure); in Off it only changes the choice. Turn Off `DELETE`s and goes to Off. Closing forgets
   the url: it is never stored, so reopening shows On.
 
@@ -270,8 +271,8 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 
 - `routes/calendar-feed-routes.test.ts`: owner and team member may read, make, change, reset and turn off;
   `editor_link`, `tab_editor_link`, `participant`, `viewer`, every token, `workbench`, `guest` and `link_visitor` are
-  refused on every route and nothing changes; a reset link stops the old token; options kept on PATCH; invalid
-  bodies; 404 PATCH without a feed; 405; the plan's boards in `GET` (so `feedBoardsOf`).
+  refused on every route and nothing changes; a reset link stops the old token; options kept on PUT; invalid
+  bodies; 404 PUT without a feed; 405; the plan's boards in `GET` (so `feedBoardsOf`).
 - Editor: `calendar-feed-gate.test.ts` (who sees the row, and the links: `feedUrlOf`, Google's and Apple's),
   `calendar-feed-client.test.ts` (the four calls), `CalendarFeedDialog.test.tsx` (each state, make, copy, reset, turn
   off, an option change saving and rolling back, errors, board labels, and the tab menu row through the host).

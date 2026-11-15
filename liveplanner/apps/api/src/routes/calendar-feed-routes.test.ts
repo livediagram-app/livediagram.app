@@ -76,7 +76,7 @@ describe('the owner and a team member, signed in', () => {
     });
 
     // Options change, the link stays.
-    const changed = await w.as(who, 'PATCH', '/calendar-feed', {
+    const changed = await w.as(who, 'PUT', '/calendar-feed', {
       boardId: null,
       mine: true,
       includeDone: true,
@@ -117,7 +117,7 @@ describe('anyone else', () => {
   const ROUTES: [string, unknown?][] = [
     ['GET'],
     ['POST', ALL],
-    ['PATCH', { ...ALL, mine: true }],
+    ['PUT', { ...ALL, mine: true }],
     ['DELETE'],
   ];
   it.each(REFUSED)('%s is refused on every route, and nothing changes', async (who) => {
@@ -162,21 +162,21 @@ describe('the options', () => {
   });
 
   it('answers 404 to a change with no feed, and makes none', async () => {
-    const res = await w.as('owner', 'PATCH', '/calendar-feed', ALL);
+    const res = await w.as('owner', 'PUT', '/calendar-feed', ALL);
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: 'calendar_feed_not_found' });
     expect(await calendarFeedFor(planEnv(), 'A', USER)).toBeNull();
   });
 
   it('refuses a bad body on a change before looking for the feed', async () => {
-    const res = await w.as('owner', 'PATCH', '/calendar-feed', { ...ALL, mine: 2 });
+    const res = await w.as('owner', 'PUT', '/calendar-feed', { ...ALL, mine: 2 });
     expect(res.status).toBe(400);
   });
 });
 
 describe('the path', () => {
   it('answers 405 to another method', async () => {
-    expect((await w.as('owner', 'PUT', '/calendar-feed', ALL)).status).toBe(405);
+    expect((await w.as('owner', 'PATCH', '/calendar-feed', ALL)).status).toBe(405);
   });
 
   it('leaves a longer path to the other routes', async () => {

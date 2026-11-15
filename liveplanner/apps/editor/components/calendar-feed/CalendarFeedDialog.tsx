@@ -71,7 +71,6 @@ export function CalendarFeedDialog({
   const focusNext = useRef<'copy' | 'make' | null>(null);
 
   const read = useCallback(async () => {
-    setReadFailed(false);
     try {
       const loaded = await readCalendarFeed(scope);
       setData(loaded);
@@ -81,6 +80,7 @@ export function CalendarFeedDialog({
     }
   }, [scope]);
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- a fetch from the api: its state lands after the await, never synchronously
     void read();
   }, [read]);
 
@@ -161,7 +161,14 @@ export function CalendarFeedDialog({
               <p role="alert" className="text-sm text-slate-700 dark:text-slate-200">
                 Couldn’t load your calendar link.
               </p>
-              <Button size="sm" variant="secondary" onClick={() => void read()}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setReadFailed(false);
+                  void read();
+                }}
+              >
                 Try Again
               </Button>
             </div>

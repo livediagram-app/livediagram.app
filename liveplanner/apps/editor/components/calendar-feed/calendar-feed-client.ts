@@ -48,7 +48,7 @@ export async function changeCalendarFeed(
   options: CalendarFeedOptions,
 ): Promise<CalendarFeedOptionsResponse> {
   return expectOk<CalendarFeedOptionsResponse>(
-    await call(scope, 'PATCH', options),
+    await call(scope, 'PUT', options),
     'change calendar feed',
   );
 }

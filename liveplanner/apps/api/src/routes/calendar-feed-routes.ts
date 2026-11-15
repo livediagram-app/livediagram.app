@@ -5,7 +5,7 @@
 //
 //   GET    the person's feed (its options and when its link was made, never the link) and the plan's boards
 //   POST   make the feed with the body's options, or, over an existing one, Reset Link; answers the link's path once
-//   PATCH  change the feed's options, keeping its link (404 without a feed)
+//   PUT  change the feed's options, keeping its link (404 without a feed)
 //   DELETE Turn Off
 import type {
   CalendarFeedIssueResponse,
@@ -69,7 +69,7 @@ async function optionsOf(
     if (!boards.some((b) => b.id === boardId))
       return refuse(400, 'calendar_feed_invalid', 'invalid');
   }
-  return { boardId: boardId as string | null, mine, includeDone };
+  return { boardId, mine, includeDone };
 }
 
 async function read(ctx: PlanRouteContext, projectId: string, person: string): Promise<Response> {
@@ -118,7 +118,7 @@ async function turnOff(
 
 type Door = (ctx: PlanRouteContext, projectId: string, person: string) => Promise<Response>;
 
-const DOORS: Record<string, Door> = { GET: read, POST: issue, PATCH: change, DELETE: turnOff };
+const DOORS: Record<string, Door> = { GET: read, POST: issue, PUT: change, DELETE: turnOff };
 
 /** `/api/projects/:id/calendar-feed`, or null for any other path. */
 export async function handleCalendarFeedRoutes(ctx: PlanRouteContext): Promise<Response | null> {
@@ -126,7 +126,7 @@ export async function handleCalendarFeedRoutes(ctx: PlanRouteContext): Promise<R
   if (segments.length !== 4 || segments[3] !== 'calendar-feed') return null;
   const method = request.method;
   const door =
-    method === 'GET' || method === 'POST' || method === 'PATCH' || method === 'DELETE'
+    method === 'GET' || method === 'POST' || method === 'PUT' || method === 'DELETE'
       ? DOORS[method]!
       : null;
   if (!door) return methodNotAllowed();

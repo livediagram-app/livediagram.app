@@ -119,7 +119,7 @@ stops at once." The help article says the same.
 
 - `GET`: their feed's options and when it was made (never the link), or none, and the plan's boards to pick from.
 - `POST`: make the feed with the body's options, or, over an existing one, Reset Link with them; answers the link once.
-- `PATCH`: change an existing feed's options, keeping its link; 404 when they have none.
+- `PUT`: change an existing feed's options, keeping its link; 404 when they have none.
 - `DELETE`: Turn Off; answers 204 whether or not there was one.
 
 Each needs a person **signed in, in person**: never an API token (read-only or not) or a workbench session, which

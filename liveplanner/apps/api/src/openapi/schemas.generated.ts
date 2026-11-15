@@ -3753,7 +3753,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "CalendarFeedOptionsResponse": {
     "additionalProperties": false,
-    "description": "PATCH /api/projects/:id/calendar-feed: the feed with its new options, its link kept.",
+    "description": "PUT /api/projects/:id/calendar-feed: the feed with its new options, its link kept.",
     "properties": {
       "feed": {
         "$ref": "#/components/schemas/CalendarFeedSettings"

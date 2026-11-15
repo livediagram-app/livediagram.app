@@ -22,7 +22,7 @@ export type CalendarFeedResponse = {
  *  (`/api/calendar/<plan id>/lpf_….ics`), answered this once. */
 export type CalendarFeedIssueResponse = { feed: CalendarFeedSettings; path: string };
 
-/** PATCH /api/projects/:id/calendar-feed: the feed with its new options, its link kept. */
+/** PUT /api/projects/:id/calendar-feed: the feed with its new options, its link kept. */
 export type CalendarFeedOptionsResponse = { feed: CalendarFeedSettings };
 
 /** The refusals the routes name. */
