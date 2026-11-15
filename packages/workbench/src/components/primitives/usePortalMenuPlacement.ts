@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { POPOVER_VIEWPORT_MARGIN } from '@liveworkspace/ui';
 import { clampToViewport, VIEWPORT_EDGE_MARGIN } from '../../lib/clamp-to-viewport';
 import { useReposition } from '../../hooks/canvas/useReposition';
 import { besideSpot } from './beside-placement';
@@ -45,7 +46,9 @@ export function usePortalMenuPlacement(
   const reposition = useCallback(() => {
     if (!anchor) return;
     if (node) {
-      const room = window.innerHeight - 2 * VIEWPORT_EDGE_MARGIN;
+      // The edge inset read from @liveworkspace/ui itself (VIEWPORT_EDGE_MARGIN's source), which the products' menu
+      // tests leave unmocked when they stub clampToViewport.
+      const room = window.innerHeight - 2 * POPOVER_VIEWPORT_MARGIN;
       setCap(node.scrollHeight > room ? room : null);
     }
     if (beside && node) {
