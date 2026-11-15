@@ -1080,7 +1080,8 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
     Gantts in swimlanes 118 ms with one Gantt model per settings (`keptGanttModel`; 310 ms with a model a picture,
     past its 300 ms budget, so it is kept per cards and settings in this change) (`plan-view-art.perf.test.ts`); ten
     field widgets 15 ms (`field-widget-stats.perf.test.ts`); the flow chart's read 296 ms, 2.46 MB
-    (`flow-route.test.ts`, 500 ms).
+    (`flow-route.test.ts`, 500 ms); the three flow charts drawn 230 to 300 ms in jsdom, a dot a card on Cycle Time
+    (`FlowViews.test.tsx`, budget 600 ms, was 250 ms at 2,000).
   - Board redraws in jsdom: a Tab Style pick that changes no card 11 to 80 ms, a theme that redraws every face 2.0
     to 2.5 s (`PlanBoardView.busy.perf.test.tsx`, budgets 250 ms and 6,000 ms, was 3,000; 4.2 s inside the loaded full suite); a remote filter change
     that swaps 1,667 cards 1.3 to 1.9 s (`PlanBoardView.filter.perf.test.tsx`, budget 3,000 ms, was 1,500). jsdom

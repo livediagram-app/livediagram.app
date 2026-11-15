@@ -335,7 +335,7 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
 | Slot name in exports                                 | packages/plan-art/src/dashboard-export.test.ts, dashboard-card-art.test.ts, plan-view-art.test.ts                                                                                                          |
 | Flow store: share, debounce, drop, error, retry      | apps/editor/hooks/plan/plan-flow-store.test.ts                                                                                                                                                             |
 | Flow geometry, bands, summaries                      | apps/editor/components/plan/views/flow-chart-model.test.ts                                                                                                                                                 |
-| Flow charts: states, hover, keys, roles, 2,000 cards | apps/editor/components/plan/views/FlowViews.test.tsx                                                                                                                                                       |
+| Flow charts: states, hover, keys, roles, a full plan | apps/editor/components/plan/views/FlowViews.test.tsx                                                                                                                                                       |
 | Agent chart names                                    | packages/agent-verbs/src/plan/dashboard-input.test.ts, packages/templates/src/dashboard-builder.test.ts                                                                                                    |
 
 ## Constants and configuration
