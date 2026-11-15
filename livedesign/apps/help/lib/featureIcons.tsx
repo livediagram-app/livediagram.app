@@ -244,6 +244,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 12.5v3" strokeDasharray="1 1.5" />
     </Glyph>
   ),
+  // Two screens with an arrow from a button on the first into the second: a prototype's link between screens.
+  prototypes: (
+    <Glyph>
+      <rect x="2.5" y="4" width="7.5" height="15" rx="1.5" />
+      <rect x="14" y="4" width="7.5" height="15" rx="1.5" />
+      <path d="M4.5 14h3.5" />
+      <path d="M8 14c2.5 0 3-4.5 6-4.5M12.25 7.75 14 9.5l-1.75 1.75" />
+    </Glyph>
+  ),
   // Two stacked layers of a photo, the front one a landscape: a picture made of layers.
   'photo-pages': (
     <Glyph>
