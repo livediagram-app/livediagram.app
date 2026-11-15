@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { createShape, provideMapGeometry, type ShapeElement } from '@livedocuments/document';
+import {
+  MAP_LAND_GROUND_MIX,
+  createShape,
+  provideMapGeometry,
+  tint,
+  type ShapeElement,
+} from '@livedocuments/document';
 import { MAP_GEOMETRY } from '@livedocuments/document/map-geometry';
 import { MapDialog } from './MapDialog';
 import { cleanMapPatch, type MapPatch } from '@/hooks/canvas/useMapSetters';
@@ -11,17 +17,42 @@ import { cleanMapPatch, type MapPatch } from '@/hooks/canvas/useMapSetters';
 
 beforeAll(() => provideMapGeometry(MAP_GEOMETRY));
 
-const open = (over: Partial<ShapeElement> = {}) => {
+const open = (over: Partial<ShapeElement> = {}, ground?: readonly string[]) => {
   const onCommit = vi.fn<(patch: MapPatch) => void>();
   const onClose = vi.fn();
   const element = { ...createShape('map', 0, 0), id: 'm', ...over } as ShapeElement;
   const view = render(
-    <MapDialog element={element} accent="#3b82f6" onCommit={onCommit} onClose={onClose} />,
+    <MapDialog
+      element={element}
+      accent="#3b82f6"
+      ground={ground}
+      onCommit={onCommit}
+      onClose={onClose}
+    />,
   );
   return { onCommit, onClose, view };
 };
 
 describe('MapDialog', () => {
+  // map.md "The Map dialog": the preview follows the page the map sits on, as the canvas and the export do.
+  it("draws its preview on the map's page: its paper, a tint of it for the land, and readable pin ink", () => {
+    open({ mapPins: [{ id: 'a', lat: 1, lon: 2, label: 'Here' }] }, ['#7c2d12']);
+    const preview = screen.getByRole('img', { name: /^Map of/ });
+    expect(preview.style.backgroundColor).toBe('rgb(124, 45, 18)');
+    expect(document.querySelector('[data-map-country="FR"]')!.getAttribute('fill')).toBe(
+      tint('#7c2d12', MAP_LAND_GROUND_MIX),
+    );
+    expect(preview.querySelector('circle')!.getAttribute('fill')).toBe('#ffffff');
+  });
+
+  it('keeps the light preview on the plain paper', () => {
+    open({ mapPins: [{ id: 'a', lat: 1, lon: 2 }] });
+    const preview = screen.getByRole('img', { name: /^Map of/ });
+    expect(preview.style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(document.querySelector('[data-map-country="FR"]')!.getAttribute('fill')).toBe('#dbe3ec');
+    expect(preview.querySelector('circle')!.getAttribute('fill')).toBe('#0f172a');
+  });
+
   it('toggles a country from the preview and commits once on Done', () => {
     const { onCommit, onClose } = open();
     const fr = document.querySelector('[data-map-country="FR"]')!;

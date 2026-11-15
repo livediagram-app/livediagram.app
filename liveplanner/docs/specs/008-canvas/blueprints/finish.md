@@ -382,9 +382,9 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
   table: cell borders joined into whole rules, `data-marker-rules` hiding the pieces). An inset hairline ring
   (`box-shadow: c 0 0 0 Npx inset`) counts as a frame's line (`data-marker-drawn="ring"` drops it).
 - The face's own box (`MARKER_FACE_BODY_SLACK_PX`) is coloured in once, its ink at `z-index: -1` in a box the pass
-  isolates (`data-marker-isolated`), and never when the element's body is already drawn by hand (`FaceBox.bodyDrawn`,
+  isolates (`data-marker-isolated`), or outlined once as a frame, and neither when the element's body is already drawn by hand (`FaceBox.bodyDrawn`,
   a `svg[data-finish]` body) or the surface is a page (`useFaceFinishPass(..., { page: true })`: OverFace and the
-  Dashboard page).
+  Dashboard page). The canvas pass reads `bodyDrawn` as the export does (`readParts` in `useFaceFinishPass.ts`), so a Marker table's outer frame is its body's alone (`markerElementPaint`, `MARKER_TABLE_FRAME_PX`, inked `handDrawnInk`), never a second `markerFrameInk` frame over it; the grid's own outer border is hidden under the body (face-finish.css, `[data-face-finish='marker'] > svg[data-finish='marker'] ~ [data-marker-grid]`) and the export drops `svgTableShape`'s outer rect (`data-marker-body-frame`) under it.
 - Dashboard (`components/plan/dashboard/DashboardPage.tsx`): the page provides `FaceFinishProvider` and
   `data-face-finish` from `resolveFinish(undefined, tab.finish)`, letters itself with
   `planFontStyle(resolveFontStack(elementFontId({}, tab.font, tab.finish)))`, and runs the pass as a page.

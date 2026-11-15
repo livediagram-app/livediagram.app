@@ -168,7 +168,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
 - **Images** stay photos: under Sketch and Marker a hand-drawn line goes round one (a circle round an avatar), in
   its own line colour or the default ink; its picture is never shaded or wobbled.
 - **Tables:** under Marker a table's grid is drawn as whole rules, one marker stroke per row and column line. A
-  spreadsheet's working grid scrolls, so it keeps its plain lines inside its marker frame.
+  spreadsheet's working grid scrolls, so it keeps its plain lines inside its marker frame. A table's outer frame is its hand-drawn body, drawn once in its line colour (in a stronger shade only as Pale lines says) and at the same width on the canvas and in PNG and SVG exports; the face never draws a second frame over it, and the grid's own straight outer line is hidden under it (and left out of the export).
 
 ### Stickers
 

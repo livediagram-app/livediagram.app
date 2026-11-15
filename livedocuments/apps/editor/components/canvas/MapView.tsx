@@ -36,7 +36,7 @@ export function MapView({
   const ground = useChartGround(element.id);
   const colours = useMemo(
     () => ({
-      land: mapLandColour(element.fillColor, surface),
+      land: mapLandColour(element.fillColor, surface, ground),
       accent,
       paper: mapPaperColour(surface, ground),
       text: textColor,
