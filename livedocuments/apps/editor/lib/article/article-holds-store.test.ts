@@ -58,7 +58,11 @@ describe('our hold', () => {
     setArticleHoldsLive(true);
     const { changes, answers } = listen();
     noteArticleTyping('f', { blockId: 'b' });
-    expect(getLocalArticleHold()).toMatchObject({ flow: 'f', spot: { blockId: 'b' }, state: 'pending' });
+    expect(getLocalArticleHold()).toMatchObject({
+      flow: 'f',
+      spot: { blockId: 'b' },
+      state: 'pending',
+    });
     expect(pendingArticleHoldBlock('f')).toBe('b');
     expect(pendingArticleHoldBlock('g')).toBeNull();
     noteArticleTyping('f', { blockId: 'b' });

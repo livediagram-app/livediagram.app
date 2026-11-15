@@ -27,8 +27,7 @@ export function holdIsLive(hold: StoredArticleHold, now: number): boolean {
 }
 
 export type HoldVerdict =
-  | { kind: 'granted' }
-  | { kind: 'refused'; holder: HoldingSession & { hold: StoredArticleHold } };
+  { kind: 'granted' } | { kind: 'refused'; holder: HoldingSession & { hold: StoredArticleHold } };
 
 /** A claim judged against every other live session's hold: refused when one holds the same place on the same tab
  *  and is live, else given. The claimant's own hold never stands in its way (a refresh, or a move). */
@@ -41,7 +40,8 @@ export function judgeArticleHold(
   for (const s of sessions) {
     const hold = s.hold;
     if (s.presenceId === claimant || !hold || !holdIsLive(hold, now)) continue;
-    if (hold.tabId === claim.tabId && sameHoldPlace(hold, claim)) return { kind: 'refused', holder: { ...s, hold } };
+    if (hold.tabId === claim.tabId && sameHoldPlace(hold, claim))
+      return { kind: 'refused', holder: { ...s, hold } };
   }
   return { kind: 'granted' };
 }

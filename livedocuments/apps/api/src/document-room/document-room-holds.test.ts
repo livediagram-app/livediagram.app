@@ -88,7 +88,7 @@ const claim = (blockId = 'b1', extra: Record<string, string> = {}) => ({
 
 async function holds(room: DocumentRoom, tab = 't') {
   const res = await room.fetch(new Request(`https://room/holds?tab=${tab}`));
-  return ((await res.json()) as { holds: unknown[] }).holds;
+  return (await res.json<{ holds: unknown[] }>()).holds;
 }
 
 afterEach(() => {
@@ -158,7 +158,9 @@ describe('paragraph holds in the room', () => {
     send(room, b.ws, claim('b2'));
     a.ws.sent.length = 0;
     send(room, b.ws, claim('b1'));
-    expect(ops(a.ws)).toEqual([{ kind: 'op', from: b.id, op: { kind: 'article-hold', tabId: 't', flow: null } }]);
+    expect(ops(a.ws)).toEqual([
+      { kind: 'op', from: b.id, op: { kind: 'article-hold', tabId: 't', flow: null } },
+    ]);
     expect(await holds(room)).toEqual([{ flow: 'f', blockId: 'b1', name: 'a', color: '#123456' }]);
   });
 

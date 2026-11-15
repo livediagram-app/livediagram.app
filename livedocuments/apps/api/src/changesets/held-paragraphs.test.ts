@@ -76,8 +76,12 @@ describe('which writes meet a hold', () => {
 });
 
 describe('the refusal says who is writing where', () => {
-  const tab = (blocks: ArticleBlock[]): Tab =>
-    ({ id: 't', name: 'T', elements: [], articles: { f: { blocks } } }) as unknown as Tab;
+  const tab = (blocks: ArticleBlock[]): Tab => ({
+    id: 't',
+    name: 'T',
+    elements: [],
+    articles: { f: { blocks } },
+  });
   const by = { name: 'Sam Lee', color: '#f00' };
 
   it('quotes a paragraph by its opening words, cut with an ellipsis past 40 characters', () => {
@@ -93,7 +97,7 @@ describe('the refusal says who is writing where', () => {
   it('names an empty or missing paragraph, a cell, a table and a block with no text plainly', () => {
     const blocks: ArticleBlock[] = [
       para('empty', '  '),
-      { id: 'd', type: 'divider' } as ArticleBlock,
+      { id: 'd', type: 'divider' },
       {
         id: 'tbl',
         type: 'table',

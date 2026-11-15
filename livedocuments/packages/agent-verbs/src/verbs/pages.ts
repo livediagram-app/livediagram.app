@@ -331,7 +331,9 @@ export const articleSet = defineVerb({
     pageNumbers: z.boolean().optional().describe('Page numbers on'),
     // A paragraph a person is typing in holds the write back (docs/specs/024-agents/pages-for-agents.md "Held
     // paragraphs"): retried every HELD_RETRY_INTERVAL_MS while the next try fits in the seconds given.
-    waitHeld: writeFlags.waitHeld.describe('Retry this many seconds while people hold the paragraphs'),
+    waitHeld: writeFlags.waitHeld.describe(
+      'Retry this many seconds while people hold the paragraphs',
+    ),
   }),
   output: doneOutput.extend({ flow: z.string(), title: z.string(), created: z.boolean() }),
   run: async (ctx, input) => {
@@ -375,7 +377,6 @@ export const articleSet = defineVerb({
     examples: [
       'livedocuments article set "Project brief" brief.md',
       'cat notes.md | livedocuments article set 3f9c - --article Notes --append',
-      'livedocuments article set "Project brief" brief.md --wait-held 30',
     ],
     prints: 'what was written',
   },

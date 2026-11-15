@@ -35,7 +35,12 @@ export function holdSpotOf(state: EditorState): ArticleHoldSpot | null {
 }
 
 /** A held stretch of the writing: the held node's range, and for a cell its table's. */
-type HeldRange = { hold: ArticlePeerHold; from: number; to: number; table?: { from: number; to: number } };
+type HeldRange = {
+  hold: ArticlePeerHold;
+  from: number;
+  to: number;
+  table?: { from: number; to: number };
+};
 
 /** Where each hold falls in `doc`; a hold whose block (or cell) went is not there. */
 function heldRanges(doc: PMNode, holds: readonly ArticlePeerHold[]): HeldRange[] {
@@ -57,7 +62,12 @@ function heldRanges(doc: PMNode, holds: readonly ArticlePeerHold[]): HeldRange[]
         let cellPos = pos + 1 + rowOffset + 1;
         for (let i = 0; i < colAt; i += 1) cellPos += row.child(i).nodeSize;
         const cell = row.child(colAt);
-        out.push({ hold, from: cellPos, to: cellPos + cell.nodeSize, table: { from: pos, to: end } });
+        out.push({
+          hold,
+          from: cellPos,
+          to: cellPos + cell.nodeSize,
+          table: { from: pos, to: end },
+        });
       });
     }
   });
@@ -75,7 +85,11 @@ function insideOneCell(doc: PMNode, a: number, b: number): boolean {
 }
 
 /** The hold a step meets in `doc` (the document before it), if any. */
-function heldBy(doc: PMNode, ranges: readonly HeldRange[], step: Transaction['steps'][number]): ArticlePeerHold | null {
+function heldBy(
+  doc: PMNode,
+  ranges: readonly HeldRange[],
+  step: Transaction['steps'][number],
+): ArticlePeerHold | null {
   const s = step as unknown as { from?: number; to?: number; pos?: number };
   const a = typeof s.from === 'number' ? s.from : s.pos;
   const b = typeof s.to === 'number' ? s.to : typeof s.pos === 'number' ? s.pos + 1 : undefined;
@@ -83,7 +97,8 @@ function heldBy(doc: PMNode, ranges: readonly HeldRange[], step: Transaction['st
   for (const r of ranges) {
     if (reaches(a, b, r.from, r.to)) return r.hold;
     // A cell held holds its table's shape too: a change in the table but in no one cell's text.
-    if (r.table && reaches(a, b, r.table.from, r.table.to) && !insideOneCell(doc, a, b)) return r.hold;
+    if (r.table && reaches(a, b, r.table.from, r.table.to) && !insideOneCell(doc, a, b))
+      return r.hold;
   }
   return null;
 }

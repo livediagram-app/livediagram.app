@@ -43,7 +43,8 @@ export function useArticleHoldBroadcast(deps: {
     const onChange = (change: LocalHoldChange) => {
       const hold = getLocalArticleHold();
       if (change === 'release' || !hold) {
-        if (said) room()?.send({ kind: 'op', op: { kind: 'article-hold', tabId: activeId, flow: null } });
+        if (said)
+          room()?.send({ kind: 'op', op: { kind: 'article-hold', tabId: activeId, flow: null } });
         said = false;
         return;
       }
@@ -65,7 +66,8 @@ export function useArticleHoldBroadcast(deps: {
     return () => {
       unsubscribe();
       // Leaving the tab, or the room closing: our hold goes, and the room hears it while it can.
-      if (said) room()?.send({ kind: 'op', op: { kind: 'article-hold', tabId: activeId, flow: null } });
+      if (said)
+        room()?.send({ kind: 'op', op: { kind: 'article-hold', tabId: activeId, flow: null } });
       releaseArticleHold();
       setArticleHoldsLive(false);
     };

@@ -42,7 +42,10 @@ describe('the held notice', () => {
     announceArticleHeld('Ann', 10_000);
     announceArticleHeld('Ann', 11_000);
     announceArticleHeld('Bob', 12_600);
-    expect(toast.mock.calls).toEqual([[articleHeldNotice('Ann')], ['Bob is writing in this paragraph.']]);
+    expect(toast.mock.calls).toEqual([
+      [articleHeldNotice('Ann')],
+      ['Bob is writing in this paragraph.'],
+    ]);
     setArticleHeldToast(null);
     announceArticleHeld('Cy', 20_000);
     expect(toast).toHaveBeenCalledTimes(2);

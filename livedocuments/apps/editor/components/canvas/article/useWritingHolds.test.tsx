@@ -32,7 +32,10 @@ const blocks: ArticleBlock[] = [
 
 function setup() {
   const view = new EditorView(document.createElement('div'), {
-    state: EditorState.create({ doc: blocksToDoc(blocks), plugins: [articleHoldsPlugin(() => {})] }),
+    state: EditorState.create({
+      doc: blocksToDoc(blocks),
+      plugins: [articleHoldsPlugin(() => {})],
+    }),
   });
   const viewRef = { current: view };
   const committed = { current: { blocks } as ArticleFlow };
@@ -85,6 +88,17 @@ describe('useWritingHolds', () => {
     act(() => noteArticleTyping('f', { blockId: 'b' }));
     act(() => answerArticleClaim(getLocalArticleHold()!.seq, true));
     expect(docToBlocks(view.state.doc, committed.current.blocks)).toBe(committed.current.blocks);
+  });
+
+  it('waits for the writing to mount before bringing holds in', () => {
+    setArticleHoldsTab('t');
+    syncArticleHolders([{ id: 'ann', name: 'Ann', color: '#f00' }]);
+    const viewRef = { current: null };
+    const committed = { current: { blocks } as ArticleFlow };
+    renderHook(() => useWritingHolds({ flow: 'f', viewRef, committed, scheduleCommit: vi.fn() }));
+    expect(() =>
+      act(() => receiveArticleHold('ann', { tabId: 't', flow: 'f', blockId: 'b' })),
+    ).not.toThrow();
   });
 
   it('does nothing once the writing is gone', () => {

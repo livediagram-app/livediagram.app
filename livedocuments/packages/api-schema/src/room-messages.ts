@@ -365,7 +365,14 @@ export type RoomOp =
   | { kind: 'article-caret'; tabId: string; flow: null }
   // The sender's hold on a paragraph or a table cell (docs/specs/007-editor/article-pages.md "Holding a paragraph"),
   // or (`flow: null`) the sender letting go. Parsed with parseArticleHold.
-  | { kind: 'article-hold'; tabId: string; flow: string; blockId: string; row?: string; col?: string }
+  | {
+      kind: 'article-hold';
+      tabId: string;
+      flow: string;
+      blockId: string;
+      row?: string;
+      col?: string;
+    }
   | { kind: 'article-hold'; tabId: string; flow: null }
   // One sample of the sender's laser-pointer trail (canvas-coords).
   // Sent on every pointer move while the sender is in laser tool

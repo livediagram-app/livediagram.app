@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { EditorState, NodeSelection, TextSelection } from 'prosemirror-state';
 import {
   applyArticleOps,
@@ -39,7 +40,10 @@ const ann = (spot: Partial<ArticlePeerHold> = {}): ArticlePeerHold => ({
 });
 
 function fresh(onRefused = vi.fn(), from: ArticleBlock[] = blocks) {
-  const state = EditorState.create({ doc: blocksToDoc(from), plugins: [articleHoldsPlugin(onRefused)] });
+  const state = EditorState.create({
+    doc: blocksToDoc(from),
+    plugins: [articleHoldsPlugin(onRefused)],
+  });
   return { state, onRefused };
 }
 
@@ -72,7 +76,8 @@ const typed = (state: EditorState, at: number, text: string) =>
 describe('where our hold is', () => {
   it('is the block at the caret, and in a table the cell by its row and column ids', () => {
     const { state } = fresh();
-    const at = (pos: number) => state.apply(state.tr.setSelection(TextSelection.create(state.doc, pos)));
+    const at = (pos: number) =>
+      state.apply(state.tr.setSelection(TextSelection.create(state.doc, pos)));
     expect(holdSpotOf(at(textStart(state, 'b') + 2))).toEqual({ blockId: 'b' });
     expect(holdSpotOf(at(cellStart(state, 1, 1)))).toEqual({
       blockId: 'tbl',
@@ -86,7 +91,9 @@ describe('where our hold is', () => {
     const noId = EditorState.create({
       doc: blocksToDoc([{ id: '', type: 'paragraph', runs: [{ text: 'x' }] }]),
     });
-    expect(holdSpotOf(noId.apply(noId.tr.setSelection(TextSelection.create(noId.doc, 1))))).toBeNull();
+    expect(
+      holdSpotOf(noId.apply(noId.tr.setSelection(TextSelection.create(noId.doc, 1)))),
+    ).toBeNull();
     const divided = EditorState.create({
       doc: blocksToDoc([{ id: 'd', type: 'divider' }, ...blocks]),
     });
@@ -109,7 +116,7 @@ describe('the holds plugin', () => {
       [7, 15],
       [8, 8],
     ]);
-    const chip = (found[1]!.type as unknown as { toDOM: () => HTMLElement }).toDOM();
+    const chip = (found[1] as unknown as { type: { toDOM: () => HTMLElement } }).type.toDOM();
     expect(chip.dataset.name).toBe('Ann is writing');
     expect(chip.getAttribute('aria-hidden')).toBe('true');
     expect(chip.style.getPropertyValue('--article-held')).toBe('#f00');
@@ -124,7 +131,9 @@ describe('the holds plugin', () => {
     expect(articleHoldsKey.getState(state)!.decorations.find()[0]!.from).toBe(12);
     // A cell in a row or column the table no longer has holds nothing.
     const stray = ann({ blockId: 'tbl', row: 'nope', col: table.cols[0]!.id });
-    const s2 = state.apply(setArticleHolds(state, [stray, ann({ blockId: 'a', row: 'r', col: 'c' })]));
+    const s2 = state.apply(
+      setArticleHolds(state, [stray, ann({ blockId: 'a', row: 'r', col: 'c' })]),
+    );
     expect(articleHoldsKey.getState(s2)!.decorations.find()).toEqual([]);
     expect(onlyHolds(s2.tr)).toBe(false);
   });
@@ -153,7 +162,9 @@ describe('the holds plugin', () => {
     const before = textStart(state, 'b') - 1;
     const para = state.schema.nodes.paragraph!.create({ id: 'n' });
     expect(state.apply(state.tr.insert(before, para)).doc).not.toBe(state.doc);
-    const remote = state.tr.insertText('peer', textStart(state, 'b')).setMeta('article-remote', true);
+    const remote = state.tr
+      .insertText('peer', textStart(state, 'b'))
+      .setMeta('article-remote', true);
     expect(state.apply(remote).doc).not.toBe(state.doc);
     expect(onRefused).not.toHaveBeenCalled();
     // With nobody holding anything, nothing is refused.
@@ -179,7 +190,9 @@ describe('the holds plugin', () => {
   it('lets what a plugin appends through', () => {
     const { state: s0 } = fresh();
     const state = s0.apply(setArticleHolds(s0, [ann()]));
-    const tr = state.tr.insertText('x', textStart(state, 'b')).setMeta('appendedTransaction', state.tr);
+    const tr = state.tr
+      .insertText('x', textStart(state, 'b'))
+      .setMeta('appendedTransaction', state.tr);
     expect(state.apply(tr).doc).not.toBe(state.doc);
   });
 });
@@ -201,7 +214,9 @@ describe('two people typing into one paragraph never lose words', () => {
     for (const o of others) {
       const incoming = applyArticleOps(o.committed, ops);
       const mine = docToBlocks(o.state.doc, o.committed.blocks);
-      const localOps = diffArticleFlow(o.committed, { blocks: mine }).filter((op) => op.kind !== 'style');
+      const localOps = diffArticleFlow(o.committed, { blocks: mine }).filter(
+        (op) => op.kind !== 'style',
+      );
       o.committed = incoming;
       const merged = localOps.length ? applyArticleOps(incoming, localOps).blocks : incoming.blocks;
       const tr = replaceContentTr(o.state, merged, false);
@@ -256,5 +271,27 @@ describe('two people typing into one paragraph never lose words', () => {
     expect(docToBlocks(ann.state.doc, ann.committed.blocks)).toEqual(
       docToBlocks(bob.state.doc, bob.committed.blocks),
     );
+  });
+});
+
+describe('the cost of holds while typing', () => {
+  it('keeps a keystroke in a 5,000-paragraph article with three holds inside its budget', () => {
+    const many: ArticleBlock[] = Array.from({ length: 5000 }, (_, i) => ({
+      id: `p${i}`,
+      type: 'paragraph',
+      runs: [{ text: 'word '.repeat(20).trim() }],
+    }));
+    let state = EditorState.create({
+      doc: blocksToDoc(many),
+      plugins: [articleHoldsPlugin(() => {})],
+    });
+    const holds = ['p10', 'p2500', 'p4990'].map((blockId, i) => ann({ id: `h${i}`, blockId }));
+    state = state.apply(setArticleHolds(state, holds));
+    // Typing at the start of the first paragraph, which nobody holds: the filter, the decorations and the apply.
+    const spent = cpuMsOf(() => {
+      for (let k = 0; k < 50; k += 1) state = state.apply(state.tr.insertText('x', 1));
+    });
+    expect(state.doc.firstChild!.textContent.startsWith('x'.repeat(50))).toBe(true);
+    expect(spent / 50).toBeLessThan(cpuBudgetMs(8));
   });
 });

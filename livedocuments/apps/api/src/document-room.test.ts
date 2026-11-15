@@ -668,7 +668,8 @@ describe('DocumentRoom op-role enforcement', () => {
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview'];
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
-  const ROOM_DECIDED_PRESENCE_KINDS = ['follow'];
+  // `article-hold` is arbitrated, and never from a viewer, who holds nothing (document-room-holds.test.ts).
+  const ROOM_DECIDED_PRESENCE_KINDS = ['follow', 'article-hold'];
   for (const kind of [...PRESENCE_OP_KINDS].filter(
     (k) => !EDITOR_ONLY_PRESENCE_KINDS.includes(k) && !ROOM_DECIDED_PRESENCE_KINDS.includes(k),
   )) {

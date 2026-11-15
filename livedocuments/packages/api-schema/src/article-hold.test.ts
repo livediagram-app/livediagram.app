@@ -26,7 +26,14 @@ describe('article-hold on the wire', () => {
 
   it('keeps a cell hold with its row and column', () => {
     expect(
-      parseArticleHold({ kind: 'article-hold', tabId: 't', flow: 'f', blockId: 'b', row: 'r', col: 'c' }),
+      parseArticleHold({
+        kind: 'article-hold',
+        tabId: 't',
+        flow: 'f',
+        blockId: 'b',
+        row: 'r',
+        col: 'c',
+      }),
     ).toEqual({ tabId: 't', flow: 'f', blockId: 'b', row: 'r', col: 'c' });
   });
 

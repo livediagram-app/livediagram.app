@@ -3,7 +3,12 @@
 // and relayed once given, or the holder's hold sent back to the claimant alone; a release cleared and relayed.
 // A claim sent with a `ref` is answered with a `cursor` frame echoing it, after any refusal, so the claimant's
 // `sequence(op)` settles once it knows. Each takes the room.
-import { isRoomOpRef, levelAtLeast, parseArticleHold, parseStoredLevel } from '@livedocuments/api-schema';
+import {
+  isRoomOpRef,
+  levelAtLeast,
+  parseArticleHold,
+  parseStoredLevel,
+} from '@livedocuments/api-schema';
 import {
   holdOp,
   judgeArticleHold,
@@ -35,7 +40,10 @@ export function readHolds(room: DocumentRoom, tabId: string, now = Date.now()) {
 
 function store(ws: WebSocket, session: SessionAttachment, hold: StoredArticleHold | null): void {
   const { articleHold: _was, ...rest } = session;
-  ws.serializeAttachment({ ...rest, ...(hold ? { articleHold: hold } : {}) } satisfies SessionAttachment);
+  ws.serializeAttachment({
+    ...rest,
+    ...(hold ? { articleHold: hold } : {}),
+  } satisfies SessionAttachment);
 }
 
 /** One `article-hold` op from a session: never from a Viewer, who holds nothing, and dropped when malformed. */
@@ -52,7 +60,10 @@ export function answerArticleHold(
   const hold = parseArticleHold(op);
   if (!hold) return;
   const relayRelease = (tabId: string) =>
-    room.broadcast({ kind: 'op', from: sender.id, op: { kind: 'article-hold', tabId, flow: null } }, ws);
+    room.broadcast(
+      { kind: 'op', from: sender.id, op: { kind: 'article-hold', tabId, flow: null } },
+      ws,
+    );
   if (hold.flow === null) {
     if (session.articleHold) {
       store(ws, session, null);
@@ -66,7 +77,11 @@ export function answerArticleHold(
         store(ws, session, null);
         relayRelease(session.articleHold.tabId);
       }
-      sendTo(room, ws, { kind: 'op', from: verdict.holder.presenceId, op: holdOp(verdict.holder.hold) });
+      sendTo(room, ws, {
+        kind: 'op',
+        from: verdict.holder.presenceId,
+        op: holdOp(verdict.holder.hold),
+      });
       console.info('[room] hold refused', { tabId: hold.tabId });
     } else {
       const stored: StoredArticleHold = { ...hold, at: now };

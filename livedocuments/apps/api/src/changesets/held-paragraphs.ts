@@ -38,7 +38,8 @@ export function heldArticleTargets(
       for (const h of inFlow) {
         if (h.blockId !== blockId) continue;
         // A cell's text meets only its own cell's hold, or the hold of its block as a whole.
-        if (a.kind === 'cell' && h.row !== undefined && (h.row !== a.row || h.col !== a.col)) continue;
+        if (a.kind === 'cell' && h.row !== undefined && (h.row !== a.row || h.col !== a.col))
+          continue;
         met.add(h);
       }
     }
