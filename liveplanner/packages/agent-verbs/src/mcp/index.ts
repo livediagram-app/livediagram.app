@@ -9,4 +9,5 @@ export * from './sheet-schema';
 export * from './form-schema';
 export * from './tracker-schema';
 export * from './archive-tools';
+export * from './view-tool';
 export * from '../verbs/mcp-tools';
