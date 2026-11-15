@@ -14,6 +14,7 @@ import type { Copier } from '@liveworkspace/index-app';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { CalendarFeed } from './calendar/feed-store';
 import type { FeedRead } from './calendar/feed-events';
+import type { FeedRoomAnswer, FeedRoomCall } from './calendar/feed-room';
 import type { HookAnswer, HookCall } from './plan-room/automations/automation-incoming';
 import type { GithubRoomAnswer, GithubRoomCall } from './plan-room/github/github-room';
 import type { ProjectFileImport } from './plan-room/project-file';
@@ -155,8 +156,11 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     incomingHook: (ruleId, call) => room.incomingHook(planId, ruleId, call),
     emailOptOut: (token) => room.emailOptOut(planId, token),
     github: (call) => room.github(planId, call),
-    calendarFeed: (tokenHash) => room.calendarFeed(planId, tokenHash),
-    calendarFeedEvents: (feed, now) => room.calendarFeedEvents(planId, feed, now),
+    // One RPC, two calls (calendar/feed-room.ts): the answer's shape follows the call's kind.
+    calendarFeed: (tokenHash) =>
+      room.calendarFeed(planId, { kind: 'feed', tokenHash }) as Promise<CalendarFeed | null>,
+    calendarFeedEvents: (feed, now) =>
+      room.calendarFeed(planId, { kind: 'events', feed, now }) as Promise<FeedRead | null>,
   };
 }
 
@@ -209,7 +213,6 @@ export type PlanRoomRpc = {
   incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
   emailOptOut(planId: string, token: string): Promise<boolean>;
   github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer>;
-  calendarFeed(planId: string, tokenHash: string): Promise<CalendarFeed | null>;
-  calendarFeedEvents(planId: string, feed: CalendarFeed, now: number): Promise<FeedRead | null>;
+  calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer>;
   fetch(request: Request): Promise<Response>;
 };

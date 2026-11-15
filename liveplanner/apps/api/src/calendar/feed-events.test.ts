@@ -267,8 +267,8 @@ describe('the plan room', () => {
     const { open } = planNamespace(() => ({}) as Env);
     const plan = open('R');
     const hash = await feedTokenHash(`lpf_${'A'.repeat(43)}`);
-    expect(await plan.room.calendarFeed('R', hash)).toBeNull();
-    expect(await plan.room.calendarFeedEvents('R', ALL, NOW)).toBeNull();
+    expect(await plan.room.calendarFeed('R', { kind: 'feed', tokenHash: hash })).toBeNull();
+    expect(await plan.room.calendarFeed('R', { kind: 'events', feed: ALL, now: NOW })).toBeNull();
     expect(plan.room.storedSchema()).toBe(false);
     // A stored plan: its schema made by another RPC, its row and a feed.
     await plan.room.grantImage('R', 'img');
@@ -284,9 +284,11 @@ describe('the plan room', () => {
          VALUES ('R', ?, ?, NULL, 0, 1, 1)`,
       )
       .run(ADA, hash);
-    const feed = await plan.room.calendarFeed('R', hash);
+    const feed = await plan.room.calendarFeed('R', { kind: 'feed', tokenHash: hash });
     expect(feed).toEqual({ ...ALL, includeDone: true });
-    expect(await plan.room.calendarFeedEvents('R', feed!, NOW)).toEqual({
+    expect(
+      await plan.room.calendarFeed('R', { kind: 'events', feed: feed as CalendarFeed, now: NOW }),
+    ).toEqual({
       name: 'Room',
       truncated: false,
       events: [],

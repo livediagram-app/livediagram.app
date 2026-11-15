@@ -27,8 +27,11 @@ My Work feed at liveworkspace.
 - `apps/api/src/calendar/feed-access.ts`: `calendarFeedAccess(env, planId, personId)`.
 - `apps/api/src/routes/calendar-feed-route.ts`: `handleCalendarFeed(request, env)`, dispatched in `index.ts` before
   identity (`segments[1] === 'calendar'`).
-- Plan room RPCs (`plan-room.ts`, `plan-client.ts`): `calendarFeed(planId, tokenHash)` and
-  `calendarFeedEvents(planId, feed, now)`; an id nothing has written answers null without making a schema.
+- `apps/api/src/calendar/feed-room.ts`: `answerFeedCall(env, planId, call)`, the room's one RPC for a fetch,
+  `calendarFeed(planId, { kind: 'feed', tokenHash } | { kind: 'events', feed, now })` (`plan-room.ts`), which the
+  worker's client names as `calendarFeed(tokenHash)` and `calendarFeedEvents(feed, now)` (`plan-client.ts`). An id
+  nothing has written answers null without making a schema (`plan-room-content.ts` `bindStoredPlan`, which the other
+  token doors share).
 - `plan-schema.ts`: one step, V30, `CALENDAR_FEEDS_SCHEMA`. `plan-anonymise.ts`: a closed account's feed rows go.
 
 ## Data and persistence
