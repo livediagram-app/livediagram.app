@@ -7,6 +7,7 @@ import {
   fieldEndPosition,
   isBoxed,
   nearestOfferedAnchor,
+  startsAtExactAnchor,
   withMindSubtrees,
   type Anchor,
   type ArrowElement,
@@ -189,6 +190,8 @@ export function useBoxedDragHandlers({
     // applies.
     const theme = getTheme(d.activeTab.theme);
     const inheritedStroke = theme.elementStroke ?? undefined;
+    // Drawn from a mind node or a flowchart step it starts at the exact anchor (docs/specs/008-canvas/arrow-anchors.md).
+    const exact = startsAtExactAnchor(element) ? { exactStart: true } : {};
     // placeOutPx (mobile Arrow option): don't enter a drag — drop a free
     // arrow that runs straight out from the anchor by that many px and
     // select it so the user can reposition it by hand.
@@ -204,6 +207,7 @@ export function useBoxedDragHandlers({
           y: start.y + dir.y * opts.placeOutPx,
         },
         ...(inheritedStroke ? { strokeColor: inheritedStroke } : {}),
+        ...exact,
       });
       d.commit((els) => [...els, placed]);
       d.setSelectedId(placed.id);
@@ -216,6 +220,7 @@ export function useBoxedDragHandlers({
       from: fromEnd,
       to: { kind: 'free', x: start.x, y: start.y },
       ...(inheritedStroke ? { strokeColor: inheritedStroke } : {}),
+      ...exact,
     });
     d.commit((els) => [...els, arrow]);
     d.setSelectedId(arrow.id);

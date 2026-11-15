@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { branchExits, withExactEnds } from './graph-branches';
-import { layoutGraph } from './graph-input';
+import { branchExits, withExactEnds, withExactStarts } from './graph-branches';
+import { graphFromMermaid, layoutGraph } from './graph-input';
 import { frameHeadingRect } from './auto-layout-cluster-seats';
 import { arrowRoutePoints } from './arrow-label-layout';
 import type { Anchor, ArrowElement, BoxedElement, Element } from './index';
@@ -524,5 +524,94 @@ describe('a bus says it once', () => {
   it('keeps each label where the arrows say different things', () => {
     const arrows = graph(['orders', 'payments', 'stock']);
     expect(arrows.filter((a) => a.label)).toHaveLength(3);
+  });
+});
+
+// docs/specs/008-canvas/arrow-anchors.md "In mind maps and flowcharts it is on by default": a flow's starts.
+describe('withExactStarts', () => {
+  const exact = (els: Element[], id: string) =>
+    (els.find((e) => e.id === id) as ArrowElement).exactStart;
+
+  it('makes a start exact when it is the only end fanning at its anchor', () => {
+    const els = withExactStarts([box('a', 0, 0), box('b', 0, 200), arrow('ab', 'a', 'b')]);
+    expect(exact(els, 'ab')).toBe(true);
+  });
+
+  it('leaves starts that share their anchor with another fanning end, so no line moves', () => {
+    const els = withExactStarts([
+      box('a', 0, 0),
+      box('b', -100, 200),
+      box('c', 100, 200),
+      arrow('ab', 'a', 'b'),
+      arrow('ac', 'a', 'c', { strokeStyle: 'dashed' }),
+      // An end arriving at a's south anchor fans with the starts there too.
+      arrow('ca', 'c', 'a', {}, ['e', 's']),
+    ]);
+    expect(exact(els, 'ab')).toBeUndefined();
+    expect(exact(els, 'ac')).toBeUndefined();
+  });
+
+  it('counts exact ends out of the fan, and keeps a start that already says', () => {
+    const els = withExactStarts([
+      box('a', 0, 0),
+      box('b', -100, 200),
+      box('c', 100, 200),
+      arrow('ab', 'a', 'b', { exactStart: true }),
+      arrow('ac', 'a', 'c'),
+      arrow('ba', 'b', 'a', { exactEnd: true }, ['n', 's']),
+      arrow('cb', 'c', 'b', { exactStart: false }, ['w', 'e']),
+    ]);
+    expect(exact(els, 'ac')).toBe(true);
+    expect(exact(els, 'cb')).toBe(false);
+  });
+
+  it('leaves a free start alone', () => {
+    const free: ArrowElement = {
+      id: 'f',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'pinned', elementId: 'a', anchor: 'n' },
+    };
+    expect(exact(withExactStarts([box('a', 0, 0), free]), 'f')).toBeUndefined();
+  });
+
+  it("starts a flow's and a mind map's lines exactly, the Mermaid import's too", () => {
+    const flow = layoutGraph({
+      nodes: [
+        { id: 'a', label: 'Start', shape: 'stadium' },
+        { id: 'b', label: 'Check' },
+        { id: 'c', label: 'Done', shape: 'stadium' },
+      ],
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'c' },
+      ],
+    });
+    const lines = flow.filter((e): e is ArrowElement => e.type === 'arrow');
+    expect(lines.length).toBe(2);
+    expect(lines.every((a) => a.exactStart === true)).toBe(true);
+    const mind = layoutGraph({
+      style: 'mindmap',
+      nodes: [
+        { id: 'r', label: 'Root' },
+        { id: 'x', label: 'One' },
+        { id: 'y', label: 'Two' },
+      ],
+      edges: [
+        { from: 'r', to: 'x' },
+        { from: 'r', to: 'y' },
+      ],
+    });
+    const spokes = mind.filter((e): e is ArrowElement => e.type === 'arrow');
+    expect(spokes.length).toBe(2);
+    expect(spokes.every((a) => a.exactStart === true)).toBe(true);
+    // The editor's Mermaid import lays out through the same flow.
+    const read = graphFromMermaid('flowchart TD\n  A[Order] --> B{Paid?}\n  B -->|Yes| C[Ship]\n');
+    if (!read.ok) throw new Error(read.error);
+    const imported = layoutGraph(read.graph, { wholeLabels: true }).filter(
+      (e): e is ArrowElement => e.type === 'arrow',
+    );
+    expect(imported.length).toBe(2);
+    expect(imported.every((a) => a.exactStart === true)).toBe(true);
   });
 });

@@ -271,6 +271,15 @@ anchor fan among themselves. Re-pinning the `to` end by hand (dragging it to ano
 auto-rebind keeps it. `exactStart` stays the user's switch. `exactEnd` is validated like `exactStart` (boolean, absent =
 fanned).
 
+**Exact start by default.** `startsAtExactAnchor(el)` (`packages/element-model/src/exact-start.ts`, re-exported by
+`@livediagram/document`) is true for a mind node (`shape === 'mind-node'`) and a flowchart step (`isFlowchartStep`).
+The creation paths that set `exactStart: true` on a new arrow whose pinned start is one: `beginAnchorDrag` (`useBoxedDragHandlers`), `connectArrowTo`
+(`useArrowConnect`), the Shift chain (`editor-drag-release`, copying the chained arrow's own value), `planMindGrowth`
+and `growMindChild` (element-model), `applyMindOutline`'s new connectors, `buildMindTemplate` (templates and graph
+`mindmap`), `planFlowchartStep`, `liveFlowchart` (flowchart templates), edit-operations `connect`, and graph input's
+`flow` style through `withExactStarts` (`graph-branches.ts`: only a start that is the one fanning end at its anchor,
+so no drawn line moves). Nothing rewrites a stored arrow.
+
 ## Interfaces and contracts
 
 ```ts

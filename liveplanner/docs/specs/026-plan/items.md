@@ -756,6 +756,8 @@ Each entry is **tagged** by how it was made:
 - History is **read while a card's Activity tab is open** (when it is picked, and again when the open card changes
   while it shows), one request for that card, never sent with the room's item ops and never with the store. A card
   whose Activity tab is never picked reads nothing.
+- The [flow charts](plan-views.md#flow-charts) read history too, across the plan: only the moves within their range,
+  to work out when each card started and finished. They answer days and counts, never an entry's author or values.
 - **Grouped**: entries one person makes with the same tag within a minute of the first of them read as one entry,
   each field once at its latest value ("Sam moved this from To Do to Review and set Priority to High"). A move
   there and back, a flag on and off, or a trash and restore within the minute drops out; a group with nothing left
@@ -810,6 +812,34 @@ In the card panel, on a tab of its own, **Activity**, never mixed with the threa
 - It was first an **Activity** switch in the Comments header that interleaved the rows with the open threads by
   time, then a collapsible section below Comments (Work Tracker #164); the owner moved it to a tab of its own on
   every card type.
+
+## Flow counts
+
+The plan keeps a small count, day by day, of how many cards of each type stood in each status: the **flow
+counts** the [Cumulative Flow](plan-views.md#flow-charts) chart draws. A card's history answers how one card moved;
+the flow counts answer how the whole plan's work stood on each day, which history alone cannot (it is capped per
+card and read one card at a time).
+
+| Term           | Means                                                                    | Never called            |
+| -------------- | ------------------------------------------------------------------------ | ----------------------- |
+| **flow count** | How many cards of one type stood in one status at the end of one UTC day | snapshot, metric, tally |
+| **flow day**   | A whole UTC day, numbered from 1 January 1970, as the counts are kept    | date, period            |
+
+- **Kept by the plan, as cards change**: every write that makes, deletes, moves (a status change) or retypes a card
+  updates the day's counts in the same write, whichever way it arrives (the editor, an agent, a form, an import, a
+  copy, an undo, Empty Trash). Edits that change neither leave them alone, and so do archiving and flags: an archived
+  card still counts in its status.
+- **A day with no change** keeps no row of its own: it reads the last day before it that has one. The first change of
+  a day carries the day before's counts forward, then applies itself.
+- **Starts on the day the plan first keeps them**: a plan from before starts counting that day from its cards as they
+  stand, and a copy, an import or a file opened into a new plan starts counting the day it is made. Nothing is guessed
+  for the days before.
+- **The Trash** is a status like any other here; the charts leave it out.
+- **Kept bounded, in the plan**: in the plan's own Durable Object storage, never in D1. The daily upkeep drops every
+  day older than 180 days but the last one before them, which the days after it carry. A count is a few bytes; a plan
+  keeps one row per type and status it holds for each day something changed.
+- **Who may read them**: anyone who may read the plan, through its flow charts; nobody writes them but the plan.
+  Copies, files and offline records never carry them, and deleting the plan deletes them.
 
 ## No New Card button
 

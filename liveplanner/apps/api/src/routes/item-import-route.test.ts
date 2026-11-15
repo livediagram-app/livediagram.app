@@ -375,8 +375,10 @@ describe('an import at the caps', () => {
 // docs/specs/026-plan/blueprints/tracker-import.md "Performance and limits": the landing reads every held card into the
 // plan's Durable Object (128 MB), so an import's JSON is capped (ITEM_IMPORT_JSON_MAX) and an import at that cap lands
 // under the 64 MB budget. The peak is the live heap (a forced collection before each sample) at every write batch and
-// room relay of the last part, over the heap before it; measured about 57 MB.
-describe('the landing’s memory', () => {
+// room relay of the last part, over the heap before it; measured about 57 MB. The budget is memory, not time: a forced
+// collection at every batch and relay makes the landing take about 2.5 s on CI and over 5 s (the default timeout) on a
+// loaded coverage run, so the timeout is wide on purpose.
+describe('the landing’s memory', { timeout: 30_000 }, () => {
   const LANDING_HEAP_BUDGET = 64 * 1024 * 1024;
 
   it('lands an import at the JSON cap under the memory budget', async () => {

@@ -15,9 +15,10 @@ import { withoutLegacyThread } from '@liveplanner/project';
 import { disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
 import { CHANGESET_RETENTION_MS } from '@liveplanner/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
+import { deleteOldFlowCounts } from '../db/flow-counts';
 import { deleteOldItemHistory } from '../db/item-history';
 import { ITEM_IMPORT_HOLD_MS, sweepHeldImports } from '../db/item-imports';
-import { ITEM_HISTORY_MAX_AGE_MS } from '@liveplanner/items';
+import { ITEM_HISTORY_MAX_AGE_MS, flowDayOf } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
 import { planShares } from './tab-shares';
 import { planRoom } from '../plan-client';
@@ -159,7 +160,7 @@ export async function drainIndex(room: PlanRoom): Promise<void> {
 
 // The plan's daily upkeep, once a day per plan with content: sheets unreferenced for 30 days expire
 // (sheet-sweep.ts), changesets past their retention go (CS28), and so do card history entries past their age
-// (db/item-history.ts).
+// (db/item-history.ts) and flow counts past theirs (db/flow-counts.ts).
 export async function maintain(room: PlanRoom, now: number): Promise<void> {
   const env = room.roomEnv;
   const planId = room.planId;
@@ -173,6 +174,8 @@ export async function maintain(room: PlanRoom, now: number): Promise<void> {
     if (gone > 0) console.info('[changeset] retention', { planId, deleted: gone });
     const aged = await deleteOldItemHistory(env, now - ITEM_HISTORY_MAX_AGE_MS);
     if (aged > 0) console.info('[items] history.retention', { planId, deleted: aged });
+    const days = await deleteOldFlowCounts(env, flowDayOf(now));
+    if (days > 0) console.info('[items] flow.retention', { planId, deleted: days });
     // An import's parts left waiting for its last (db/item-imports.ts).
     const held = await sweepHeldImports(env, planId, now - ITEM_IMPORT_HOLD_MS);
     if (held > 0) console.info('[items] import.swept', { planId, cards: held });

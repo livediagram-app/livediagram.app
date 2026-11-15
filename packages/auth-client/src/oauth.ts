@@ -1,4 +1,5 @@
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
+import type { KeysFetcher } from './verify';
 // The app side of signing in through liveworkspace.app: an authorization-code flow with
 // PKCE. The redirect leaves the app's domain on purpose. livediagram.app, liveplanner.app
 // and liveworkspace.app are separate sites, so the accounts cookie can only be read on a
@@ -121,25 +122,83 @@ export function basicAuthorization(credentials: ClientCredentials): string {
   return `Basic ${btoa(`${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`)}`;
 }
 
+// How long a token request waits on the accounts site. A Worker's fetch to another Worker can stall (2026-11-13,
+// and 2026-11-15, when every app's POST /api/auth/token hung and the Explorers stayed on their placeholders), so the
+// request is given up on rather than held until the browser gives up.
+export const TOKEN_REQUEST_TIMEOUT_MS = 8_000;
+
+/** A token request that failed. `status` is the accounts site's answer, or null when there was none in time (a
+ *  stall, a network error). Only a 4xx says the session is over (`refused`); anything else may pass. */
+export class TokenRequestError extends Error {
+  readonly status: number | null;
+  constructor(status: number | null, message: string) {
+    super(message);
+    this.name = 'TokenRequestError';
+    this.status = status;
+  }
+  get refused(): boolean {
+    return this.status !== null && this.status >= 400 && this.status < 500;
+  }
+}
+
+/** Whether `err` says the accounts site turned the request down (a 4xx), not that it couldn't be reached. Anything
+ *  that isn't a TokenRequestError (a body that isn't a token set) counts as refused, as it always has. */
+export function accountsRefused(err: unknown): boolean {
+  return !(err instanceof TokenRequestError) || err.refused;
+}
+
+/**
+ * `fetch` over a service binding to the accounts Worker (ACCOUNTS), falling back to the public route when there is
+ * no binding or it throws for any reason but the request's own timeout (a local run without accounts bound). A
+ * Worker's fetch to another Worker's public route can stall; a binding's does not.
+ */
+export function accountsFetch(via?: KeysFetcher, fallback: typeof fetch = fetch): typeof fetch {
+  if (!via) return fallback;
+  return async (input, init) => {
+    const url = input instanceof Request ? input.url : String(input);
+    try {
+      return await via.fetch(url, init);
+    } catch (err) {
+      if (init?.signal?.aborted) throw err;
+      return fallback(input, init);
+    }
+  };
+}
+
 async function requestTokens(
   credentials: ClientCredentials,
   params: Record<string, string>,
   fetchImpl: typeof fetch,
 ): Promise<TokenSet> {
-  const response = await fetchImpl(accountsRoute(credentials.accountsUrl, `${AUTH_PATH}/token`), {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-      accept: 'application/json',
-      authorization: basicAuthorization(credentials),
-    },
-    body: new URLSearchParams(params).toString(),
-  });
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`token request failed (${response.status}): ${detail.slice(0, 200)}`);
+  let response: Response;
+  let body: Record<string, unknown>;
+  try {
+    response = await fetchImpl(accountsRoute(credentials.accountsUrl, `${AUTH_PATH}/token`), {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        accept: 'application/json',
+        authorization: basicAuthorization(credentials),
+      },
+      body: new URLSearchParams(params).toString(),
+      signal: AbortSignal.timeout(TOKEN_REQUEST_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new TokenRequestError(
+        response.status,
+        `token request failed (${response.status}): ${detail.slice(0, 200)}`,
+      );
+    }
+    body = (await response.json()) as Record<string, unknown>;
+  } catch (err) {
+    if (err instanceof TokenRequestError) throw err;
+    // No answer in time, or none at all: not a refusal.
+    throw new TokenRequestError(
+      null,
+      `token request got no answer: ${err instanceof Error ? err.name : 'unknown'}`,
+    );
   }
-  const body = (await response.json()) as Record<string, unknown>;
   if (typeof body.access_token !== 'string') throw new Error('token response had no access_token');
   return {
     accessToken: body.access_token,

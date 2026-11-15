@@ -164,6 +164,10 @@ function send(app: TelemetrySender, category: string, action: string, type?: str
 export const trackHome: HomeTelemetry = (action, type) =>
   action === 'Selected' ? track('Home', 'Selected', type) : track('Home', 'Loaded', type);
 
+// The Explorer gave up waiting to know the person (ExplorerShell's bounded wait, or no answer): it shows Try Again
+// instead of its placeholders.
+export const trackExplorerStalled = () => track('Home', 'Loaded', 'Stalled');
+
 // Folders, default folders, the Trash and team libraries. An event about one item (or one app's default folder)
 // counts for that app, whatever the page is filtered to; a folder's for the page's app. An item's team events name
 // it by its app's noun, a literal per app so the dashboards read each.

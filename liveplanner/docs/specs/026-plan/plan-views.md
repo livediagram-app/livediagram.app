@@ -71,6 +71,9 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 | Cards by Field     | A bar per value of a field (Assignee by default), split Not Started, In Progress, Done                            |
 | Priority by Status | A grid of priority (Urgent to Low, then None) by status phase, each cell the cards in both                        |
 | Card Search        | The cards matching the filters in its top bar, drawn as a board draws them, side by side where there is room      |
+| Cycle Time         | How long each card finished in a range took, with the 50th and 85th percentile ([Flow charts](#flow-charts))      |
+| Throughput         | How many cards were finished each week of a range ([Flow charts](#flow-charts))                                   |
+| Cumulative Flow    | How many cards stood in each status on each day of a range ([Flow charts](#flow-charts))                          |
 
 - **Status Breakdown** (`status-mix`) is removed from everything that makes views: the palette, Start Planning's
   Visualisations (searching "status" or "breakdown" finds Cards by Field), a Dashboard slot's choices, the
@@ -415,6 +418,53 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   "No cards match these filters" with **Clear Filters** for an Editor (with filters), "No cards yet" ("Add cards to a
   board.") without.
   Telemetry: `Plan` · `Added` / `Removed` · `SearchFilter`.
+
+### Flow charts
+
+Every other plan view is a picture of today. The **flow charts** show how work moves over time: how long a card
+takes to get done, how many get done, and where cards pile up. They are three visualisations, built in parts (Work
+Tracker 854): the plan keeps the data first ([Flow counts](items.md#flow-counts)), so a team has weeks of it by the
+time the charts arrive.
+
+| Visualisation   | View id           | Shows                                                                                          |
+| --------------- | ----------------- | ---------------------------------------------------------------------------------------------- |
+| Cycle Time      | `cycle-time`      | A dot per card finished in the range: the day it finished, and how many days it took           |
+| Throughput      | `throughput`      | A bar per week (per day over 14 days) of how many cards were finished, with the average        |
+| Cumulative Flow | `cumulative-flow` | A band per status, stacked, for each day of the range: how many cards stood in it at day's end |
+
+- **Range**: each flow chart reads a range ending today, **Last 14 Days**, **Last 30 Days** (the default),
+  **Last 90 Days** or **Last 180 Days**, stored as `rangeDays` (14, 30, 90 or 180) only when not 30. Never longer than
+  180 days, the age a card's history and the flow counts are kept. Days are whole UTC days, as the counts are kept.
+- **Finished** is a move into a Done phase status ([What a plan view reads](#what-a-plan-view-reads)). **Started**
+  is the first move into an In Progress phase status before that finish; a card that never passed through one starts
+  when it was made. Both are read from each card's [history](items.md#history), so a card whose start is older than
+  the history it keeps starts at its oldest kept entry, or when it was made when that is later.
+- **Card types**: each charts only the card types it shows ([Card types for every view](#card-types-for-every-view)),
+  every type by default.
+- **Cycle Time**: x is the day each card of the range finished (its last finish in the range, once per card), y the
+  days from started to finished, to one decimal. Two lines cross it: the **50th** and **85th percentile**, named in
+  the header ("85% in 6 days or less"). Hovering a dot names its card and its days; pressing it opens the card, as any
+  view's entry does.
+- **Throughput**: a bar per Monday-started week (per day in Last 14 Days) of the cards finished in it, each card
+  counted once, in the period of its last finish; a dashed line at the average per period, named in the header
+  ("8 a week on average"). A period still running (this week) is drawn lighter.
+- **Cumulative Flow**: a stacked area, a band per status the chart's card types hold, ordered as the project's boards
+  name them with the Done phase at the bottom and the first column on top, each in its phase's colour family. It reads
+  the daily [flow counts](items.md#flow-counts): a card in the Trash is never counted, and an archived card still
+  counts in its status, so the done band never drops when finished cards are archived. Before the plan's first
+  counted day the chart draws nothing and says when counting began ("Counting since 15 Nov").
+- **Who sees what**: every role that may read the plan sees the flow charts (a Viewer included); only an Editor
+  changes a chart's Range or Card Types (Chart Settings, as every chart setting). A tab-scoped link reads every card,
+  as every plan view on its tab makes it do ([On the canvas](#on-the-canvas)).
+- **States**: before the data arrives, **Loading flow…**; a plan with no finish in the range, **No cards finished in
+  this range** (Cycle Time, Throughput); a failed read, **Couldn't Load Flow** with **Try Again**. A This Browser plan
+  keeps no history or counts: **Flow Needs a Cloud Plan** and "Flow charts read the plan's history, which plans in
+  This Browser don't keep."
+- **Agents** name the three by their view ids in a Dashboard tab (`create_project`, `add_tab`) and in a plan view
+  element's `planView` (`update_project`), with `rangeDays`; `read_project` describes each by name and range
+  ("Cycle Time, last 30 days").
+- **Telemetry**: placed as every plan view (`Element` · `Added` · `PlanView`); a Range change sends `Plan` ·
+  `Changed` · `ViewRange`.
 
 ### Using the space
 

@@ -213,7 +213,8 @@ export function applyMindOutline(
         : undefined) ?? mindConnectorStyleSource(next, parent);
     const arrow = createPinnedArrow(parent.id, 'e', child.id, 'w');
     arrow.id = dress.newId();
-    next = [...next, dress.connector({ ...arrow, ...MIND_CONNECTOR_LOOK }, from)];
+    // Exact at its start, as every new mind connector (exact-start.ts).
+    next = [...next, dress.connector({ ...arrow, ...MIND_CONNECTOR_LOOK, exactStart: true }, from)];
   };
   const byId = (id: ElementId) =>
     next.find((el): el is ShapeElement => el.id === id && el.type === 'shape');
