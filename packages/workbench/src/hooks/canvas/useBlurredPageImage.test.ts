@@ -12,7 +12,7 @@ const { acquire, release } = vi.hoisted(() => {
   }));
   return { acquire, release };
 });
-vi.mock('@/lib/page-image-blur', () => ({ acquireBlurredImage: acquire }));
+vi.mock('../../lib/page-image-blur', () => ({ acquireBlurredImage: acquire }));
 
 const { useBlurredPageImage, BLUR_SETTLE_MS } = await import('./useBlurredPageImage');
 

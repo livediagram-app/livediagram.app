@@ -1273,6 +1273,32 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/projects/{id}/flow',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      "How the plan's work flowed over a range ending today: the daily count of cards in each status (`counts`, by card type), and each card that moved in the range with its type, when it was made and its moves over the history the plan keeps (`cards`, `moves`, statuses only). Cumulative Flow, Cycle Time and Throughput are worked out from it. `days` is 1 to 180 (30 when absent); `types` names card types, comma-separated (every type when absent). Anyone who may read the plan may read it; a link scoped to a tab that shows only some cards may not.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    query: [
+      {
+        name: 'days',
+        required: false,
+        description: 'The range in days, ending today: 1 to 180, 30 when absent.',
+      },
+      {
+        name: 'types',
+        required: false,
+        description:
+          'Card type ids, comma-separated: only these are counted. Every type when absent.',
+      },
+      ITEM_TAB_QUERY,
+    ],
+    responseSchema: 'FlowResponse',
+    statuses: [200, 400, 401, 403, 404, 410],
+  },
+  {
+    method: 'GET',
     path: '/projects/{id}/threads',
     segment: 'projects',
     tag: 'Items',

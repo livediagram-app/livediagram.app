@@ -3,6 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./images.md - when working on Image element + per-owner gallery: the image element, the gallery on liveworkspace's media service, the `image_refs` reference index each design keeps, and placement grants
+- ./picture-crop-and-mask.md - when working on Picture crop, mask and greyscale: keep part of an image, cut it to a shape, draw it in grey; the crop overlay on the canvas
 - ./image-search.md - when working on Image search: the image picker's Search tab, openly licensed pictures from Openverse saved into the gallery
 - ./blueprints/README.md - when implementing or changing an element from its blueprint
 - ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image

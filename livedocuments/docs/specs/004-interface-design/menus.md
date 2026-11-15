@@ -97,6 +97,13 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 - Opening a flyout from the keyboard moves focus to its first control; Escape in the flyout closes
   only the flyout and returns focus to its trigger.
 
+## A menu taller than the screen
+
+An anchored menu is nudged back inside the screen when its anchor sits near an edge. One taller than the screen (a
+long list on a phone, or on a phone held sideways) is held to the screen's height less
+the edge margin at top and bottom and scrolls inside itself, so its first item is never above the top edge and every
+item stays in reach. A menu that fits keeps its own height and never scrolls.
+
 ## Focus ring
 
 Every item and control in either kind of menu shows the keyboard focus ring **inside** its own edge

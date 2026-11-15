@@ -3,26 +3,29 @@
 Derived from [Picture crop, mask and greyscale](../picture-crop-and-mask.md). The spec decides; this file only adds
 engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
+The rules, the export, the crop math and the overlay are livedesign's too, so they live in shared packages; this
+product binds them to its element union and its menus. Paths starting `../` are from the monorepo root.
+
 Scope, by file:
 
-| File                                                      | Role                                                                                                                                       |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/image-frame.ts`                    | `ImageCrop`, `ImageMask`, `IMAGE_MASKS`, `isImageCrop`, `isImageMask`, `cleanImageCrop`, `imageLayout`, `imageMaskPath`, `imageDrawsCover` |
-| `packages/document/src/element-types.ts`                  | `crop`, `mask`, `greyscale` on `ImageElement`                                                                                              |
-| `packages/document/src/element-fields.ts`                 | The three fields on the image's field list                                                                                                 |
-| `packages/document/src/validate.ts`                       | `IMAGE_FIELD_CHECKS` rows for the three fields                                                                                             |
-| `packages/document/src/svg-render-image-icon.ts`          | `svgImageShape`: layout, mask clip, greyscale filter                                                                                       |
-| `packages/document/src/svg-render-describe.ts`            | The image `ExportShape` carries the element's crop / mask / greyscale through                                                              |
-| `apps/editor/lib/export-tab-canvas-draw.ts`               | `drawImageElement`: the same layout and clip on a 2D canvas                                                                                |
-| `apps/editor/lib/image-greyscale.ts`                      | `canvasFilters`, `greyCopy`: the canvas filter, else a grey copy of the pixels                                                             |
-| `apps/editor/components/canvas/ImageElementView.tsx`      | The canvas face: laid-out `<img>`, `clip-path`, `filter`                                                                                   |
-| `apps/editor/lib/image-crop-store.ts`                     | The one image being cropped (`startImageCrop`, `endImageCrop`, `useIsImageCropping`)                                                       |
-| `apps/editor/lib/image-crop-math.ts`                      | `cropSessionStart`, `panPicture`, `dragFrame`, `zoomPicture`, `fitAspect`, `cropSessionResult`                                             |
-| `apps/editor/components/canvas/ImageCropOverlay.tsx`      | The veil, frame, handles and gestures, in the grips layer                                                                                  |
-| `apps/editor/components/canvas/ImageCropBar.tsx`          | Aspect, Zoom, Reset, Cancel, Done                                                                                                          |
-| `apps/editor/hooks/canvas/useEditorImages.ts`             | `commitImageCrop` on `imageContext` (Editors only)                                                                                         |
-| `apps/editor/components/palette/ImagePictureControls.tsx` | Mask tiles and the Greyscale toggle; Crop Image sits in `ElementContentSections.tsx`                                                       |
-| `apps/editor/lib/office-import/pptx.ts`, `build-deck.ts`  | `a:srcRect` into `crop`                                                                                                                    |
+| File                                                               | Role                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `../packages/element-model/src/image-frame.ts`                     | `ImageCrop`, `ImageMask`, `IMAGE_MASKS`, `isImageCrop`, `isImageMask`, `cleanImageCrop`, `imageLayout`, `imageMaskPath`, `imageDrawsCover`, `MASK_LABEL`, `withImageMask`, `withImageGreyscale`; re-exported by `packages/document/src/index.ts` |
+| `packages/document/src/element-types.ts`                           | `crop`, `mask`, `greyscale` on `ImageElement`                                                                                                                                                                                                    |
+| `packages/document/src/element-fields.ts`                          | The three fields on the image's field list                                                                                                                                                                                                       |
+| `packages/document/src/validate.ts`                                | `IMAGE_FIELD_CHECKS` rows for the three fields                                                                                                                                                                                                   |
+| `../packages/element-model/src/svg-render-image-icon.ts`           | `svgImageShape`: layout, mask clip, greyscale filter                                                                                                                                                                                             |
+| `packages/document/src/svg-render-describe.ts`                     | The image `ExportShape` carries the element's crop / mask / greyscale through                                                                                                                                                                    |
+| `../packages/workbench/src/lib/image-canvas-draw.ts`               | `drawPictureOnCanvas`: the same layout and clip on a 2D canvas, for `apps/editor/lib/export-tab-canvas-draw.ts`                                                                                                                                  |
+| `../packages/workbench/src/lib/image-greyscale.ts`                 | `canvasFilters`, `greyCopy`: the canvas filter, else a grey copy of the pixels                                                                                                                                                                   |
+| `apps/editor/components/canvas/ImageElementView.tsx`               | The canvas face: laid-out `<img>`, `clip-path`, `filter`                                                                                                                                                                                         |
+| `../packages/workbench/src/lib/image-crop-store.ts`                | The one image being cropped (`startImageCrop`, `endImageCrop`, `useIsImageCropping`)                                                                                                                                                             |
+| `../packages/workbench/src/lib/image-crop-math.ts`                 | `cropSessionStart`, `panPicture`, `dragFrame`, `zoomPicture`, `fitAspect`, `cropSessionResult`                                                                                                                                                   |
+| `../packages/workbench/src/components/canvas/ImageCropOverlay.tsx` | The veil, frame, handles and gestures, in the grips layer                                                                                                                                                                                        |
+| `../packages/workbench/src/components/canvas/ImageCropBar.tsx`     | Aspect, Zoom, Reset, Cancel, Done                                                                                                                                                                                                                |
+| `apps/editor/hooks/canvas/useEditorImages.ts`                      | `commitImageCrop` on `imageContext` (Editors only)                                                                                                                                                                                               |
+| `apps/editor/components/palette/ImagePictureControls.tsx`          | Mask tiles and the Greyscale toggle; Crop Image sits in `ElementContentSections.tsx`                                                                                                                                                             |
+| `apps/editor/lib/office-import/pptx.ts`, `build-deck.ts`           | `a:srcRect` into `crop`                                                                                                                                                                                                                          |
 
 ## Domain and naming
 
@@ -88,7 +91,7 @@ An SVG path `d` in the box's px, every coordinate rounded to 2 decimals:
 - The empty face takes `round` when `borderRadius === 'full'` or `mask === 'circle'`.
 - Sketch edge: `sketchOverlay()` is skipped for an image with a mask (`BoxedElementView`).
 
-### Cropping (`apps/editor/lib/image-crop-math.ts`, all pure, canvas units in the element's frame)
+### Cropping (`../packages/workbench/src/lib/image-crop-math.ts`, all pure, canvas units in the element's frame)
 
 - `cropSessionStart(el, natural)`: `frame = {0, 0, W, H}`; `picture` = `imageLayout(...).picture` with
   `fit = cover` when the image draws cover, else (a contain picture with no crop) the picture fitted to cover the
@@ -179,18 +182,19 @@ server.
 
 ## Testing
 
-| Rule                              | Test                                                                   |
-| --------------------------------- | ---------------------------------------------------------------------- |
-| Guards, clean, layout, mask paths | `packages/document/src/image-frame.test.ts`                            |
-| Validation of the three fields    | `packages/document/src/image-frame.test.ts`                            |
-| SVG export: clip, crop, greyscale | `packages/document/src/image-frame.test.ts`                            |
-| Crop math                         | `apps/editor/lib/image-crop-math.test.ts`                              |
-| Canvas face                       | `apps/editor/components/canvas/ImageElementView.test.tsx`              |
-| Menu controls, roles              | `apps/editor/components/palette/ImagePictureControls.test.tsx`         |
-| Crop Image tile, locked           | `apps/editor/components/palette/EditorContextMenu.image-crop.test.tsx` |
-| Overlay keys and Done / Cancel    | `apps/editor/components/canvas/ImageCropOverlay.test.tsx`              |
-| Editor-only commit                | `apps/editor/hooks/canvas/useEditorImages.test.ts`                     |
-| PPTX srcRect                      | `apps/editor/lib/office-import/pptx.test.ts`                           |
+| Rule                              | Test                                                                    |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| Guards, clean, layout, mask paths | `../packages/element-model/src/image-frame.test.ts`                     |
+| Validation of the three fields    | `packages/document/src/image-frame-fields.test.ts`                      |
+| SVG export: clip, crop, greyscale | `packages/document/src/image-frame-fields.test.ts`                      |
+| Crop math                         | `../packages/workbench/src/lib/image-crop-math.test.ts`                 |
+| PNG / PDF painter                 | `../packages/workbench/src/lib/image-canvas-draw.test.ts`               |
+| Canvas face                       | `apps/editor/components/canvas/ImageElementView.test.tsx`               |
+| Menu controls, roles              | `apps/editor/components/palette/ImagePictureControls.test.tsx`          |
+| Crop Image tile, locked           | `apps/editor/components/palette/EditorContextMenu.image-crop.test.tsx`  |
+| Overlay keys and Done / Cancel    | `../packages/workbench/src/components/canvas/ImageCropOverlay.test.tsx` |
+| Editor-only commit                | `apps/editor/hooks/canvas/useEditorImages.test.ts`                      |
+| PPTX srcRect                      | `apps/editor/lib/office-import/pptx.test.ts`                            |
 
 ## Constants and configuration
 

@@ -753,6 +753,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Changed|Cards':
     'Someone changed several selected cards at once from the selection bar (assign, priority, labels, a field, flag, archive or trash).',
   'Plan|Used|SavedFilter': "Someone applied one of a board's saved filters by pressing its chip.",
+  'Plan|Used|CardTemplate':
+    'Someone started a card from one of its card type’s templates in Add a Card, so it began filled in.',
   'Plan|Added|SavedFilter': "Someone saved the board's current filter as a named saved filter.",
   'Plan|Renamed|SavedFilter': 'Someone renamed one of a board’s saved filters.',
   'Plan|Changed|SavedFilter':
@@ -2677,7 +2679,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Removed':
     "Someone took a filter off a Card Search view, or deleted one of a board's saved filters.",
   'Plan|Selected': 'Someone started selecting several cards on a board, to change them together.',
-  'Plan|Used': "Someone applied one of a board's saved filters.",
+  'Plan|Used':
+    "Someone applied one of a board's saved filters, or started a card from one of its card type's templates.",
   'Plan|Copied': 'Someone copied something from a plan, like a new webhook secret.',
   'Plan|Renamed': "Someone renamed one of a board's saved filters.",
   'Plan|Toggled':

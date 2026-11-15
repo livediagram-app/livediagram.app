@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { BlurCopyRequest, BlurCopyResponse } from './page-image-blur-protocol';
+import { WORKBENCH_DEFAULTS, configureWorkbench, resetWorkbenchForTests } from '../bindings';
+import type { BlurCopyRequest, BlurCopyResponse } from '@liveworkspace/page-background/image-blur';
 import {
   BLUR_CACHE_SIZE,
   acquireBlurredImage,
@@ -104,33 +105,6 @@ describe('the blurred copy', () => {
     expect(again.url).toBe(made[1]);
   });
 
-  it('starts the module worker where the browser has OffscreenCanvas', async () => {
-    const started: { url: string; type: string }[] = [];
-    const fake = fakeWorker();
-    vi.stubGlobal(
-      'Worker',
-      class {
-        constructor(url: URL, opts: { type: string }) {
-          started.push({ url: String(url), type: opts.type });
-          return fake.w;
-        }
-      },
-    );
-    vi.stubGlobal('OffscreenCanvas', class {});
-    vi.stubGlobal('createImageBitmap', vi.fn());
-    try {
-      clearBlurCache(undefined);
-      acquireBlurredImage('pic.jpg', page, 20);
-      await tick();
-      expect(started).toEqual([
-        { url: expect.stringContaining('page-image-blur.worker'), type: 'module' },
-      ]);
-      expect(fake.sent).toHaveLength(1);
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
   it('is made on the page when the worker cannot read the picture', async () => {
     const fake = fakeWorker();
     clearBlurCache(() => fake.w);
@@ -208,5 +182,27 @@ describe('the blurred copy', () => {
     } as unknown as CanvasRenderingContext2D);
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((done) => done(null));
     await expect(acquireBlurredImage('y.jpg', page, 20).url).resolves.toBeNull();
+  });
+});
+
+describe("the editor's own worker", () => {
+  afterEach(() => {
+    resetWorkbenchForTests();
+    vi.unstubAllGlobals();
+  });
+
+  it('is the one the editor binds, where the browser can run a worker', async () => {
+    vi.stubGlobal('Worker', class {});
+    vi.stubGlobal('OffscreenCanvas', class {});
+    vi.stubGlobal('createImageBitmap', vi.fn());
+    const fake = fakeWorker();
+    configureWorkbench({ ...WORKBENCH_DEFAULTS, blurWorker: () => fake.w });
+    clearBlurCache(undefined);
+    const held = acquireBlurredImage('bound.jpg', page, 20);
+    await tick();
+    expect(fake.sent).toHaveLength(1);
+    fake.reply({ id: fake.sent[0]!.id, blob: new Blob(['x']) });
+    await expect(held.url).resolves.toBe('blob:copy-1');
+    held.release();
   });
 });

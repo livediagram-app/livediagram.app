@@ -24,6 +24,8 @@ export type BoxedChromeLocals = {
   own: { fill?: string; stroke?: string; text?: string };
   surface: ReturnType<typeof useElementSurface>;
   rotation: number;
+  // A picture being cropped, whose crop overlay takes the handles' place.
+  cropping: boolean;
   isAnnotation: boolean;
   hovering: boolean;
 };
@@ -51,6 +53,7 @@ export function useBoxedElementChrome(
     own,
     surface,
     rotation,
+    cropping,
     isAnnotation,
     hovering,
   }: BoxedChromeLocals,
@@ -102,7 +105,8 @@ export function useBoxedElementChrome(
         elementId={element.id}
         box={element}
         rotation={rotation}
-        showHandles={showHandles}
+        // The crop overlay's handles take the box's place while it is cropped (picture-crop-and-mask.md).
+        showHandles={showHandles && !cropping}
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}
       />

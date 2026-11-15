@@ -121,7 +121,7 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 - The route never takes an `Authorization` header, never sets cookies, and the token is never logged (the log names
   the reason and counts only).
 - Access is the index's and accounts', asked fresh each fetch; the feed answers nothing it did not just check.
-- Rate limit per feed (D114). An attacker guessing tokens wakes rooms, as any token door does; the plan id must also
+- Rate limit per feed (D119). An attacker guessing tokens wakes rooms, as any token door does; the plan id must also
   be known.
 
 ## Performance and limits

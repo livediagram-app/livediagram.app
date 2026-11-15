@@ -79,6 +79,21 @@ describe('image fills are read safely', () => {
   });
 });
 
+describe('a picture’s Blur is read safely', () => {
+  const blurOf = (blur: unknown) => {
+    const f = read({ kind: 'image', imageId: ID, blur }).background?.fill;
+    return f?.kind === 'image' ? f.blur : 'not an image';
+  };
+  it('keeps a share of 0..1 in steps of 0.05, and drops none, nonsense and zero', () => {
+    expect(blurOf(0.42)).toBe(0.4);
+    expect(blurOf(3)).toBe(1);
+    expect(blurOf(-1)).toBeUndefined();
+    expect(blurOf(0)).toBeUndefined();
+    expect(blurOf('soft')).toBeUndefined();
+    expect(blurOf(Number.NaN)).toBeUndefined();
+  });
+});
+
 describe('a picture page reads as its tone under its overlay', () => {
   const fill = (overlay?: PageImageFill['overlay'], tone = '#000000'): PageImageFill => ({
     kind: 'image',
@@ -116,6 +131,8 @@ describe('a picture page reads as its tone under its overlay', () => {
     expect(sameFill(a, { ...a })).toBe(true);
     expect(sameFill(a, { ...a, overlay: { kind: 'light', strength: 0.5 } })).toBe(false);
     expect(sameFill(a, { ...a, position: 'top' })).toBe(false);
+    expect(sameFill(a, { ...a, blur: 0.4 })).toBe(false);
+    expect(sameFill({ ...a, blur: 0.4 }, { ...a, blur: 0.4 })).toBe(true);
     expect(sameFill(a, { kind: 'solid', color: '#000000' })).toBe(false);
   });
 });

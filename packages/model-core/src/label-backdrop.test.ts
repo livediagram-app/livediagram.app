@@ -23,7 +23,7 @@ const colours: LabelInkColours<El> = {
   // Too far for any walk to help: the factory then falls back to black or white, whichever reads.
   reachContrast: (fg) => fg,
 };
-const { labelBackdrops, withReadableLabelInks } = labelInks(colours);
+const { labelBackdrops, withReadableLabelInks, backdropBehind } = labelInks(colours);
 
 const text = (id: string, over: Record<string, unknown> = {}): El => ({
   id,
@@ -98,6 +98,42 @@ describe('labelBackdrops', () => {
     const next = [...board];
     expect(labelBackdrops(next, '#ffffff')).not.toBe(light);
     expect(labelBackdrops(next, '#ffffff')).toEqual(light);
+  });
+});
+
+describe('backdropBehind', () => {
+  const box = { x: 0, y: 0, width: 100, height: 20 };
+
+  it('reads a box as if painted straight after an element, never against that element itself', () => {
+    const board = [
+      panel('under', '#eef2ff'),
+      panel('over', '#334155'),
+      panel('same', '#000000', box),
+    ];
+    // After the last: the same-sized element is not larger than the box, so the next panel down shows.
+    expect(backdropBehind(board, '#ffffff', box, 2)).toBe('#334155');
+    // After the first: what was painted later does not count.
+    expect(backdropBehind(board, '#ffffff', box, 0)).toBe('#eef2ff');
+    expect(backdropBehind([], '#0f172a', box, 0)).toBe('#0f172a');
+  });
+
+  it('orders a grid panel and a panel too wide for the grid by paint order', () => {
+    const huge = panel('h', '#eef2ff', {
+      x: -2_000_000,
+      y: -2_000_000,
+      width: 4_000_000,
+      height: 4_000_000,
+    });
+    expect(backdropBehind([panel('p', '#334155'), huge], '#ffffff', box, 1)).toBe('#eef2ff');
+    expect(backdropBehind([huge, panel('p', '#334155')], '#ffffff', box, 1)).toBe('#334155');
+  });
+
+  it('answers null for a canvas that is not a hex colour, and agrees with labelBackdrops on the same board', () => {
+    expect(backdropBehind([], 'transparent', box, 0)).toBeNull();
+    const board = [panel('p', '#000000', { opacity: 0.5 }), text('a')];
+    expect(backdropBehind(board, '#ffffff', box, 0)).toBe(
+      labelBackdrops(board, '#ffffff').get(1)?.behind,
+    );
   });
 });
 

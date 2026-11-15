@@ -3,6 +3,7 @@
 // An empty page's layout card (docs/specs/007-editor/pages-mode.md "Layouts"); a logo page's
 // adds Start From Scratch (docs/specs/007-editor/logo-pages.md "Logo layouts").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages, newLogoPage } from '@livedesign/design';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
@@ -50,6 +51,37 @@ describe('EmptyPageLayouts', () => {
     fireEvent.keyDown(hide, { key: 'Escape' });
     expect(onHide).toHaveBeenCalledTimes(1);
     expect(onCanvasKey).toHaveBeenCalledTimes(1);
+  });
+
+  it('hands the focus to the canvas when Escape or Hide puts the card away', () => {
+    const [page] = layOutPages([newLogoPage('l')]);
+    // The host takes the card away once it is hidden, as CanvasPages does.
+    function Host() {
+      const [shown, setShown] = useState(true);
+      return (
+        <main tabIndex={0} aria-label="Canvas" data-canvas-a11y-root="">
+          {shown ? (
+            <EmptyPageLayouts
+              page={page!}
+              zoom={1}
+              onApply={vi.fn()}
+              onHide={() => setShown(false)}
+              onBlank={vi.fn()}
+            />
+          ) : null}
+        </main>
+      );
+    }
+    const { unmount } = render(<Host />);
+    const hide = screen.getByRole('button', { name: 'Hide' });
+    hide.focus();
+    fireEvent.keyDown(hide, { key: 'Escape' });
+    expect(screen.queryByRole('button', { name: 'Hide' })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('main', { name: 'Canvas' }));
+    unmount();
+    render(<Host />);
+    fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
+    expect(document.activeElement).toBe(screen.getByRole('main', { name: 'Canvas' }));
   });
 
   it('offers no Start From Scratch on an infographic page', () => {

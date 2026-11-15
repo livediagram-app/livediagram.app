@@ -8,6 +8,7 @@ Follow the references below only as needed; never upfront.
 - ./embeds.md - when implementing or changing the embed element, `embedTargetFor`, its providers or the no-load notice
 - ./image-reference-index.md - when implementing or changing `image_refs`, its writers, the push to the media service, or the share and render reads
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export
+- ./picture-crop-and-mask.md - when implementing or changing an image's crop, mask or greyscale, the crop overlay or their export
 - ./image-search.md - when implementing or changing the picker's Search tab and its Openverse proxy
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
 - ./progress.md - when implementing or changing the progress bar / ring, its fill animation or its menu

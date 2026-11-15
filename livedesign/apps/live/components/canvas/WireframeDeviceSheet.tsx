@@ -16,6 +16,7 @@ import {
   type WireframeFrameTheme,
 } from '@livedesign/design';
 import { pageSheetStyle } from '@/lib/page-paint';
+import { usePageSheetImage } from '@/hooks/canvas/usePageSheetImage';
 
 export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({
   page,
@@ -34,6 +35,8 @@ export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({
   children?: ReactNode;
 }) {
   const g = pageDeviceGeometry(page);
+  // A blurred picture paints from its copy, made for the screen it fills (pages-mode.md "Image backgrounds", Blur).
+  const imageSrc = usePageSheetImage(background, g?.screen ?? page.rect, resolveImage);
   // The frame drawn at the sheet's own corner: the sheet is positioned, so its art starts at 0, 0.
   const under = useMemo(
     () =>
@@ -52,7 +55,7 @@ export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({
     width: g.screen.width,
     height: g.screen.height,
     clipPath: `path('${deviceScreenPath(g, -g.screen.x, -g.screen.y)}')`,
-    ...pageSheetStyle(background, resolveImage),
+    ...pageSheetStyle(background, resolveImage, imageSrc),
   };
   return (
     <>

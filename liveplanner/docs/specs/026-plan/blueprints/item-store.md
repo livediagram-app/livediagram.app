@@ -736,7 +736,7 @@ Toggled · ActivityOn`. The tab bar is `ItemPanelTabs.tsx`. `CardThreads` draws 
 
 The plan's daily flow counts (spec items.md "Flow counts"): how many cards of each type stood in each status at the
 end of each UTC day, kept by triggers on `items` in the plan's own SQLite, read for a range by the flow charts (spec
-plan-views.md "Flow charts"; their read route is part 2 of Work Tracker 854).
+plan-views.md "Flow charts"; their read route is [Flow read](#flow-read)).
 
 ### Pure core (`packages/items/src/flow-counts.ts`)
 
@@ -787,12 +787,49 @@ FLOW_DAYS_MAX)`, so the last day before the kept range stays as the baseline. Ca
 - Copies, project files and offline records never read the table; a new plan's own inserts start its counts on the
   day it is made. This Browser plans have no plan room and keep none.
 
+### Flow read (part 2, `apps/api/src/routes/flow-route.ts`, `apps/api/src/db/flow-history.ts`)
+
+`GET /projects/:id/flow?days=&types=[&tabId=]`, dispatched from `project-subresource-routes.ts`
+(`handleFlowRoute`), answering `FlowResponse` (`packages/api-schema/src/flow.ts`):
+
+```ts
+type FlowResponse = {
+  fromDay: number; // flow day of the range's first day
+  toDay: number; // today, as a flow day
+  counts: FlowCountRow[]; // readFlowCounts(fromDay, toDay), the asked types only
+  cards: FlowCard[]; // each card that moved in the range, of the asked types, with its kept moves
+};
+// FlowCard = { id, type, createdAt, since, moves: FlowStep[] }; FlowStep = [at, from, to], oldest first. A tuple,
+// grouped by card: a 2,000-card plan's 24,000 moves as { itemId, at, from, to } objects measured 1.9 MB, as tuples
+// 1.06 MB (94 KB gzipped).
+```
+
+- Gate: `itemCaller(ctx, id, 'read')` (Editor, Participant, Viewer, an agent's token). A tab-scoped caller whose tab
+  does not show every card (`scopeTakesNew` false) gets `403 flow_needs_every_card`; a Community post's link is
+  never passed (`community` unset), so it is refused as any other non-reader. Only `GET` (else 405).
+- Query (`flowQueryOf`): `days` absent is `FLOW_RANGE_DEFAULT`; otherwise digits only, 1 to `FLOW_DAYS_MAX`, else `400
+flow_range`. `types` absent or empty is every type; otherwise comma-separated ids, at most `ITEM_TYPES_MAX`, else `400
+flow_types`. Read with a split, never a regex.
+- `toDay = flowDayOf(now)`, `fromDay = toDay - days + 1`, `kept = now - ITEM_HISTORY_MAX_AGE_MS`.
+- `readFlowMoves(env, id, kept)` (`db/flow-history.ts`): one statement, `SELECT h.item_id, h.at, j.value ->>
+'$.from', j.value ->> '$.to' FROM item_history h, json_each(h.changes) j WHERE h.plan_id = ? AND h.at >= ? AND
+instr(h.changes, '"kind":"moved"') > 0 AND j.value ->> '$.kind' = 'moved' ORDER BY h.id, j.key`: the `instr`
+  skips the JSON walk of every entry that holds no move. Never `by`, `tag` or a value.
+- The cards that moved on or after `fromDay * DAY_MS`; `readFlowCards(env, id, ids, kept)`: `SELECT id, type,
+created_at, (SELECT MIN(at) FROM item_history h WHERE h.plan_id = i.plan_id AND h.item_id = i.id AND h.at >= ?)
+FROM items i WHERE plan_id = ? AND id IN (SELECT value FROM json_each(?))` (the ids as one JSON parameter). Cards
+  outside `types` drop; each kept card takes its moves as `[at, from, to]` steps, in the moves' order.
+- Logs `[items] flow.read { projectId, days, counts, cards, moves }`. Nothing is written.
+- Cost (measured on node:sqlite, `flow-route.test.ts` holds the budget): a 2,000-card plan with 180 days of history
+  (50,000 entries, 24,000 of them moves) and 12 count pairs a day answers the 180-day range in 135 to 150 ms of CPU,
+  1.06 MB (94 KB gzipped). The moves read is linear in the kept entries; the cards read one seek per moved card.
+  `cycleTimesOf` over the same 2,000 cards takes 6 to 8 ms of CPU warm, 18 ms on the first call
+  (`flow-metrics.test.ts`, a 100 ms budget).
+
 ### Parts still to build (Work Tracker 854)
 
-- Part 2: cycle time and throughput from card history (a new flow metrics module in `@liveplanner/items`), a plan-wide read of
-  history's moves in a range (bounded by `FLOW_DAYS_MAX`), and `GET /projects/:id/flow?types=&days=` answering all
-  three charts' data, gated `read`, with role and tab-scope tests and a 2,000-card budget.
-- Part 3: the three visualisations ([plan-views blueprint](plan-views.md#flow-charts)).
+- Part 3: the three visualisations ([plan-views blueprint](plan-views.md#flow-charts)), drawn from `FlowResponse`
+  through `flowCountsOf`, `cycleTimesOf` and `throughputOf`.
 - Part 4: the agents' doors and fold-back.
 
 ## Live: room op
@@ -1047,7 +1084,7 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
 `items.refetch.gap`, `items.refetch.stale`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
 `comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api), `history.read`,
-`history.append.failed`, `history.retention`, `flow.retention` (api), `items.history.failed` (editor), `[repeats] made`,
+`history.append.failed`, `history.retention`, `flow.retention`, `flow.read` (api), `items.history.failed` (editor), `[repeats] made`,
 `[repeats] settled` (a copy already there), `[repeats] items_full`, `[repeats] failed` (api). Api logs never
 include `fields` or comment text.
 
@@ -1082,6 +1119,8 @@ include `fields` or comment text.
 | History: writes tagged, roles, scope, redacted       | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                                                                                          |
 | Flow counts: carry, Trash, types, range, bound       | `packages/items/src/flow-counts.test.ts`                                                                                                                                                                                                                  |
 | Flow counts: triggers, seed, read, trim, 2,000 cards | `apps/api/src/db/flow-counts.test.ts` (step seed and rerun included)                                                                                                                                                                                      |
+| Flow metrics: finish, start, percentiles, periods    | `packages/items/src/flow-metrics.test.ts`                                                                                                                                                                                                                 |
+| Flow read: query, roles, tab scope, types, 2,000     | `apps/api/src/routes/flow-route.test.ts`                                                                                                                                                                                                                  |
 | History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`                                                                |
 | Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`                                                                             |
 | Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                                                                                            |
@@ -1124,6 +1163,9 @@ include `fields` or comment text.
 | `ITEM_HISTORY_REFETCH_MS`   | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
 | `FLOW_DAYS_MAX`             | 180                       | Card 854 answer (b); `ITEM_HISTORY_MAX_AGE_MS` in days  |
 | `FLOW_NO_STATUS`            | `''`                      | The key is never null; no status a column can hold      |
+| `FLOW_RANGES`               | `[14, 30, 90, 180]`       | Spec "Range"                                            |
+| `FLOW_RANGE_DEFAULT`        | 30                        | Spec "Range": Last 30 Days                              |
+| `FLOW_DAILY_MAX`            | 14                        | Spec: per day in Last 14 Days                           |
 | `ACTIVITY_ENTRIES_SHOWN`    | 20                        | Spec; a tab's worth before Show More                    |
 | `REPEAT_COPIES_PER_WAKE`    | 25                        | Bounds one alarm's work; 10 to 100                      |
 | `REPEAT_MORE_MS`            | 1000                      | The next wake while rows remain; 0.5 to 10 s            |

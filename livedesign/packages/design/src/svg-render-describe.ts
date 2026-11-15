@@ -13,6 +13,7 @@ import type {
 import type { ResolveTabWindow } from './tab-window';
 import type { TagColour } from './tag-colours';
 import { imageCornerPx } from './drawn-outline-finish';
+import { imageDrawsCover } from '@liveworkspace/element-model/image-frame';
 import {
   defaultFillColor,
   defaultPadding,
@@ -153,7 +154,8 @@ export function describeBoxedExport(
     // 'full' → circle), objectFit defaults to 'contain'.
     // Square by default under Professional (docs/specs/008-canvas/finish.md "Images").
     const radius = imageCornerPx(el, resolveFinish(undefined, opts.tabFinish));
-    const objectFit = el.objectFit ?? 'contain';
+    // A masked picture always covers its shape (docs/specs/009-elements/picture-crop-and-mask.md).
+    const objectFit = imageDrawsCover(el) ? 'cover' : 'contain';
     const href = el.imageId ? resolveImageHref?.(el.imageId) : undefined;
     return {
       opacity,

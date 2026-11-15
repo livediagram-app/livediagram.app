@@ -1,7 +1,7 @@
 // One boxed element as an export draws it (docs/specs/015-api/mcp-server.md §5), split out of svg-render.ts:
 // its face (svgBoxedFace) and the finish pass over it (svgBoxed). svg-render.ts re-exports svgBoxed.
 
-import { isImageMask } from './image-frame';
+import { isImageMask } from '@liveworkspace/element-model/image-frame';
 import { svgTabWindow } from './tab-window';
 import {
   hasShapeSilhouette,
@@ -158,7 +158,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   if (shape.kind === 'image') {
     shapeStr =
       (shape.href
-        ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
+        ? svgImageShape(el, shape.href, shape.objectFit, shape.radius, { altTitle: true })
         : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
       // Its hand-drawn edge (finish.md "Images"), then a hero's caption card

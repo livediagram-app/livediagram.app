@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetWorkbenchForTests, workbench } from '@liveworkspace/workbench/bindings';
 import { PANEL_LAYOUT_CHANGED_EVENT } from './panel-layout';
 import { bindWorkbench } from './workbench-bindings';
@@ -33,6 +33,27 @@ describe('workbench bindings', () => {
     expect(FORMAT_CONFIG_KEY).toBe('livedocuments:v2:format-config');
     expect(SPOTLIGHT_CONFIG_KEY).toBe('livedocuments:v2:spotlight-config');
     expect(E2E_SESSION_KEY).toBe('livedocuments:e2e:session');
+  });
+
+  it('starts the page picture Blur worker from its own entry, as a module', () => {
+    const started: { url: string; type: string }[] = [];
+    vi.stubGlobal(
+      'Worker',
+      class {
+        constructor(url: URL, opts: { type: string }) {
+          started.push({ url: String(url), type: opts.type });
+        }
+      },
+    );
+    try {
+      bindWorkbench();
+      expect(workbench.blurWorker()).not.toBeNull();
+      expect(started).toEqual([
+        { url: expect.stringContaining('page-image-blur.worker'), type: 'module' },
+      ]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('hands the workbench these facts', () => {

@@ -156,15 +156,20 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         fresh={plan.freshItemId === item.id}
         trail={trail}
         linkedGroups={linkedGroups}
-        onAddLinked={(group, typeId) => {
+        onAddLinked={(group, typeId, start) => {
           // A new card of that type, already linked here, in its type's Default State (its own, else its built-in
-          // one by name), else the first status its type uses; opened next.
+          // one by name), else the first status its type uses; opened next. A template's values (`start`) under the
+          // link.
           const type = typeIn(ctx.types, typeId);
           const status = newCardStatus(type, ctx.statusNames);
           const id = newItemId();
           void ctx.addItem({
             type: typeId,
-            fields: { title: type.newTitle, [group.fieldId]: group.several ? [item.id] : item.id },
+            fields: {
+              title: type.newTitle,
+              ...start,
+              [group.fieldId]: group.several ? [item.id] : item.id,
+            },
             status,
             after: null,
             id,

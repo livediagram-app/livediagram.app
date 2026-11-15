@@ -8,10 +8,14 @@
 // menu does; a wheel or trackpad pan outside it closes it too, since the board it hangs from moves
 // away. On a phone it is a bottom sheet that takes focus on its first choice and closes on Escape or a tap outside
 // it, focus going back to the button. It wears the board's colours (the tab's theme), as the cells it opens from do;
-// a new card type is made from the Card Types panel or Board, Supported Cards, not from here.
+// a new card type is made from the Card Types panel or Board, Supported Cards, not from here. A type's card templates
+// are rows of their own under it (docs/specs/026-plan/item-types.md "Where a card is added, its templates are
+// offered"): choosing one adds the card filled in from it.
 import { useCallback, useEffect, useRef, type SyntheticEvent } from 'react';
-import { type ItemFields, type ItemTypeDef } from '@liveplanner/items';
-import { useClickOutside, useEscape } from '@liveplanner/ui';
+import { type ItemTypeDef } from '@liveplanner/items';
+import { lucideGlyph, useClickOutside, useEscape } from '@liveplanner/ui';
+import { lucideClipboardType } from '@liveworkspace/icons/lucide';
+import { track } from '@/lib/telemetry';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { OptionRows } from './OptionRows';
@@ -19,9 +23,19 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { CardTypeTile } from './CardTypeTile';
 import { typeSummary } from './card-type-summary';
-import type { PlanPalette } from './plan-palette';
+import {
+  addCardChoices,
+  hasTemplates,
+  newCardOf,
+  templateSummary,
+  type NewCard,
+} from './card-template-start';
+import { ACCENT_TEXT, ACCENT_TINT, accentVars, type PlanPalette } from './plan-palette';
 
-export type NewCard = { type: string; fields: ItemFields };
+export type { NewCard } from './card-template-start';
+
+// The Templates tab's glyph (ItemTypeTemplates), so a template looks the same where it is made and where it is used.
+const TemplateGlyph = lucideGlyph(lucideClipboardType, 15);
 
 // A portal's events still bubble up the React tree to the board and canvas.
 const stop = (e: SyntheticEvent) => e.stopPropagation();
@@ -107,6 +121,9 @@ export function AddCardPopover({
       <PortalMenu
         anchor={anchor}
         placement="below-start"
+        // Templates carry what they fill under their names ("Title, Description, Checklist, Labels"): the wider
+        // menu keeps that line whole. A plan without templates keeps the menu it had.
+        wide={types.some(hasTemplates)}
         onClose={onClose}
         initialFocus="first"
         {...(palette
@@ -154,25 +171,54 @@ function AddCardChoices({
         No card types on this board yet. Turn one on in Board, Supported Cards.
       </p>
     );
+  const choices = addCardChoices(types);
   return (
     <OptionRows
       kind="action"
       label="Card Types"
       className="mx-1 my-1"
       {...(palette ? { palette } : {})}
-      rows={types.map((t) => ({
-        id: t.id,
-        label: t.label,
-        // The header chips' small card (CardTypeTile), and what the type holds under its name.
-        icon: <CardTypeTile color={t.color} glyph={t.glyph} size={28} />,
-        detail: typeSummary(t),
-        // Spoken by its name alone: the field count is a sighted aside.
-        ariaLabel: t.label,
-      }))}
+      rows={choices.map(({ id, type: t, template }) =>
+        template
+          ? {
+              id,
+              label: template.name,
+              icon: <TemplateTile color={t.color} />,
+              // What it fills, under its name; spoken as the card it makes ("Bug from Bug Report").
+              detail: templateSummary(t, template),
+              ariaLabel: `${t.label} from ${template.name}`,
+              inset: true,
+            }
+          : {
+              id,
+              label: t.label,
+              // The header chips' small card (CardTypeTile), and what the type holds under its name.
+              icon: <CardTypeTile color={t.color} glyph={t.glyph} size={28} />,
+              detail: typeSummary(t),
+              // Spoken by its name alone: the field count is a sighted aside.
+              ariaLabel: t.label,
+            },
+      )}
       onPick={(id) => {
-        const t = types.find((x) => x.id === id);
-        if (t) onAdd({ type: t.id, fields: { title: t.newTitle } });
+        const choice = choices.find((c) => c.id === id);
+        if (!choice) return;
+        if (choice.template) track('Plan', 'Used', 'CardTemplate');
+        onAdd(newCardOf(choice.type, choice.template));
       }}
     />
+  );
+}
+
+// A template's picture: the Templates tab's glyph on a tint of its type's colour, the size of the type's small card,
+// so the names line up down the menu.
+function TemplateTile({ color }: { color: string }) {
+  return (
+    <span
+      aria-hidden
+      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
+      style={accentVars(color)}
+    >
+      <TemplateGlyph />
+    </span>
   );
 }
