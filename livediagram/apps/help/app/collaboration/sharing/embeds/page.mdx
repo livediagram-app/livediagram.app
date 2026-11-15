@@ -48,6 +48,13 @@ Because the embed joins the same realtime room as any viewer, it **live-updates*
 
 The snippet is 800 by 500 pixels with a hairline border and rounded corners, which you can adjust in the markup. If the canvas has a [share password](/help/collaboration/sharing/share-passwords/), readers are prompted for it inside the embed frame (the **Password Protection** switch notes that embeds are included). A link scoped to [one tab](/help/collaboration/sharing/one-tab/) embeds that tab only.
 
+## Pasting a share link
+
+You don't have to copy a snippet at all. Paste the share link itself into a tool that reads oEmbed, such as Notion, Medium or Ghost, and it unfolds into a live, read-only view of the canvas. Slack may show only the link's preview card (the name and a picture) until it lists livediagram as an oEmbed provider, so don't count on a live view there.
+
+- **Always read-only.** Even a link from an Editor pass unfolds as a viewer, so a public page never hands its readers edit rights. To embed something people can edit, use the iframe snippet from an Editor pass, as above.
+- **Only what the link shows.** A link that is revoked, [expired](/help/collaboration/sharing/share-link-expiry/) or in the trash, or that has a [share password](/help/collaboration/sharing/share-passwords/), doesn't unfold: the tool keeps the plain link. A host may keep an unfolded copy for up to five minutes after you revoke a link, but the frame itself shows the not-found message as soon as it loads.
+
 ## When an embed stops working
 
 An embed lives exactly as long as its share link. If you revoke the link, or it [expires](/help/collaboration/sharing/share-link-expiry/), the frame shows a small not-found message instead of the canvas. Create a new pass and paste its snippet to bring it back.
