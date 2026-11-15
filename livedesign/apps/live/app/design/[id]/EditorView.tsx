@@ -96,7 +96,7 @@ export function EditorView() {
     workbench,
     quickStyleDeps,
     canvasTool,
-    drag,
+    dragStore,
     accountUserId,
     contextMenu,
     copying,
@@ -387,7 +387,7 @@ export function EditorView() {
           right now. Suppressed while a mode banner owns the top slot. */}
                           <ModifierHint
                             readOnly={isReadOnly}
-                            drag={drag}
+                            dragStore={dragStore}
                             elements={activeTab.elements}
                             hasElements={activeTab.elements.length > 0}
                             suppressed={

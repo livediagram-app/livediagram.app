@@ -439,3 +439,13 @@ export * from './drawn-count';
 export { indefiniteArticle, withArticle } from '@liveplanner/items';
 // A board's title and column name caps, for the agent write paths above this one (edit-operations).
 export { PLAN_COLUMN_NAME_MAX, PLAN_TITLE_MAX } from '@liveplanner/items';
+// The flow charts' view ids and ranges, and a plan view's settings check, for the agent doors above this one
+// (edit-operations' element format and dashboard body, project-views' outline).
+export {
+  FLOW_RANGES,
+  FLOW_RANGE_DEFAULT,
+  FLOW_VIEWS,
+  flowRangeOf,
+  isFlowView,
+  isPlanViewSettings,
+} from '@liveplanner/items';
