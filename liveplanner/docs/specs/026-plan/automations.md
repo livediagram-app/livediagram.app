@@ -1303,7 +1303,7 @@ part at fault, the words, and the command to run next).
 
 - A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty. A plan made from
   a template has none.
-- An **export** of a plan (its file) carries its rules; an import of that file brings them back off, each checked as
+- An **export** of a plan (its file) carries its rules (who made and last changed each by name and colour, without account ids); an import of that file brings them back off, each checked as
   a save checks it against the file's card types: a rule a save would refuse (one that does not read, a name an
   earlier one holds, a Field Changed on a field it never hears, a Checkbox set to anything but Yes or No) is left
   behind.

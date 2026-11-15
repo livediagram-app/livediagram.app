@@ -45,7 +45,7 @@ import { listSheets } from '../db/sheets';
 import { MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
 import type { PlanEnv } from '../types';
-import { copiedRules, rulesFromFile } from './automations/automation-copy';
+import { copiedRules, ruleForFile, rulesFromFile } from './automations/automation-copy';
 import {
   COPY_PLAN,
   copiedThreads,
@@ -97,7 +97,8 @@ export async function exportProjectFile(
     listSheets(env, planId),
     // Its cards' threads, without author ids: the file travels.
     copiedThreads(env, planId, null, null).then((all) => all.map(threadForRoom)),
-    copiedRules(env),
+    // Its rules, without who made them by account id, for the same reason.
+    copiedRules(env).then((all) => all.map(ruleForFile)),
   ]);
   // Cards in their key order, so the same store always writes the same bytes.
   items.sort((a, b) => a.key - b.key);
@@ -121,8 +122,8 @@ export async function exportProjectFile(
 // ---------- Import ------------------------------------------------------------------------------------------------
 
 // What a new plan is made of: its content as a copy carries it (fresh tab ids, links re-pointed; cards and Sheets
-// keep their ids, as a copy's do, since each plan has its own stores).
-export type ProjectFileContent = { copy: PlanCopy };
+// keep their ids, as a copy's do, since each plan has its own stores), and the name the file gives the plan.
+export type ProjectFileContent = { copy: PlanCopy; title: string };
 
 type Failure = 'invalid_file' | 'too_large';
 export type ProjectFileRead =
@@ -285,6 +286,7 @@ export function readProjectFile(text: string, now = Date.now()): ProjectFileRead
   return {
     ok: true,
     content: {
+      title: project.name,
       copy: {
         itemTypes: itemTypes ? JSON.stringify(itemTypes) : null,
         itemsRev: items.length > 0 ? 1 : 0,
@@ -317,7 +319,12 @@ function threadsOf(
   return kept.length ? { threads: kept } : {};
 }
 
-export type ProjectFileImport = ProjectFileContent & { name: string; ownerId: string };
+// `teamId`: the team the new plan's grant names (an import from the editor into a team space), else none.
+export type ProjectFileImport = Pick<ProjectFileContent, 'copy'> & {
+  name: string;
+  ownerId: string;
+  teamId?: string | null;
+};
 
 // Inside the new plan's object: its content lands as a copy's does (one transaction, refused when the plan already
 // holds content), then its row is started as its owner's, with its name.
@@ -333,7 +340,7 @@ export async function importProjectFile(
   await initPlan(env, planId, {
     name: file.name,
     ownerId: file.ownerId,
-    teamId: null,
+    teamId: file.teamId ?? null,
     source: null,
     opensIn: null,
     tabKind: null,

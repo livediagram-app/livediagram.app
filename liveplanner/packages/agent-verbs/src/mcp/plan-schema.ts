@@ -1014,6 +1014,7 @@ const listedItem = z.object({
 });
 
 export const listItemsOutput = {
+  projectId: z.string().describe('The plan id, as the interactive view reads it.'),
   boards: z.array(listedBoard).describe('The Plan boards, in tab then canvas order.'),
   notOnBoard: z.array(z.string()).describe('Cards no board column shows.'),
   count: z.number().describe('How many items this answer lists.'),

@@ -66,6 +66,7 @@ import {
   mcpShareProject,
 } from '@liveplanner/agent-verbs/mcp';
 import { registerTabTools } from './tab-tools';
+import { registerViewTool, VIEW_TOOL_META } from './view-tab';
 import { changesetErrorText, isChangesetRefusal } from './changeset-client';
 import { DASHBOARD_ALONE, addOperationsFor, addToTemplateTab, getTab } from './template-elements';
 export { templateNote } from './tab-tools';
@@ -90,8 +91,12 @@ export function registerTools(server: McpServer, env: Env): void {
     return textResult({ count: matched.length, projects: matched });
   });
 
-  registerTool(server, env, mcpReadProject, async (args, extra) =>
-    readProject(env, requireToken(extra as Extra), args),
+  registerTool(
+    server,
+    env,
+    mcpReadProject,
+    async (args, extra) => readProject(env, requireToken(extra as Extra), args),
+    VIEW_TOOL_META,
   );
 
   registerTool(server, env, mcpListTemplates, async (_args, extra) => {
@@ -389,4 +394,7 @@ export function registerTools(server: McpServer, env: Env): void {
       throw err;
     }
   });
+
+  // The interactive view's own call (docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)").
+  registerViewTool(server, env);
 }

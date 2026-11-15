@@ -90,21 +90,88 @@ describe('item ls', () => {
       '#1  bug   Doing  "Fix login"',
       '#2  task  To Do  "Docs"',
     ]);
-    const bugs = await itemLs.run!(ctx, { project: DOC_A, type: 'bug', status: undefined });
+    const bugs = await itemLs.run!(ctx, { project: DOC_A, type: ['bug'], status: undefined });
     expect(itemLs.quiet!(bugs)).toEqual(['#1']);
     expect(
-      (await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: 'todo' })).items,
+      (await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: ['todo'] })).items,
     ).toHaveLength(1);
     expect(
-      (await itemLs.run!(ctx, { project: DOC_A, type: 'Bug', status: 'to do' })).items,
+      (await itemLs.run!(ctx, { project: DOC_A, type: ['Bug'], status: ['to do'] })).items,
     ).toHaveLength(0);
     // Named as item add and set name a column: in-progress style spelling reads the same column.
     expect(
-      (await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: 'TO-DO' })).items,
+      (await itemLs.run!(ctx, { project: DOC_A, type: undefined, status: ['TO-DO'] })).items,
     ).toHaveLength(1);
     await expect(
-      itemLs.run!(ctx, { project: DOC_A, type: undefined, status: 'Review' }),
+      itemLs.run!(ctx, { project: DOC_A, type: undefined, status: ['Review'] }),
     ).rejects.toMatchObject({ code: 'status_unknown' });
+  });
+
+  // docs/specs/026-plan/plan-agents.md "item ls" (Work Tracker 913): list_items' filters, every card by default.
+  describe('list_items’ filters', () => {
+    const at = (day: number) => Date.UTC(2026, 10, day);
+    const FILTERED = [
+      {
+        ...item(1, 'itemf1', { title: 'Checkout bug', status: 'doing' }, 'bug'),
+        updatedAt: at(10),
+      },
+      { ...item(2, 'itemf2', { title: 'Shipped', status: 'done' }), updatedAt: at(12) },
+      {
+        ...item(3, 'itemf3', { title: 'Docs', description: 'Explain checkout', status: 'todo' }),
+        updatedAt: at(1),
+      },
+      { ...item(4, 'itemf4', { title: 'Old checkout', status: 'done' }), updatedAt: at(2) },
+    ];
+    const ctxOf = () => api({ [path]: () => Response.json({ items: FILTERED, rev: 4 }) }).ctx;
+    const ls = (input: Record<string, unknown>) =>
+      itemLs.run!(ctxOf(), itemLs.input.parse({ project: DOC_A, ...input }));
+    const keys = (out: { items: { key: number }[] }) => out.items.map((i) => i.key);
+
+    it('lists every card, closed ones too, when no text or time filter is given', async () => {
+      const out = await ls({});
+      expect(keys(out)).toEqual([1, 2, 3, 4]);
+      expect(out).not.toHaveProperty('closedLeftOut');
+      expect(keys(await ls({ includeClosed: true }))).toEqual([1, 2, 3, 4]);
+    });
+
+    it('takes several columns and card types, each repeated', async () => {
+      expect(keys(await ls({ status: ['To Do', 'Done'] }))).toEqual([2, 3, 4]);
+      expect(keys(await ls({ type: ['bug', 'task'], status: ['Doing'] }))).toEqual([1]);
+    });
+
+    it('narrows by text and time, leaving closed cards out and saying how many', async () => {
+      const text = await ls({ query: 'CHECKOUT' });
+      expect(keys(text)).toEqual([1, 3]);
+      expect(text.closedLeftOut).toBe(1);
+      expect(itemLs.text!(text).at(-1)).toBe(
+        '1 closed card (in a done column such as Done or Cancelled, trashed or archived) left out: add --include-closed to list them, or name their column with --status.',
+      );
+      const since = await ls({ updatedSince: '2026-11-05' });
+      expect(keys(since)).toEqual([1]);
+      expect(itemLs.text!(since).at(-1)).toContain('1 closed card ');
+      const both = await ls({ query: 'checkout', updatedSince: '2026-11-05' });
+      expect(keys(both)).toEqual([1]);
+      expect(both).not.toHaveProperty('closedLeftOut');
+    });
+
+    it('lists the closed ones too with --include-closed, or when --status names their column', async () => {
+      const all = await ls({ query: 'checkout', includeClosed: true });
+      expect(keys(all)).toEqual([1, 3, 4]);
+      expect(all).not.toHaveProperty('closedLeftOut');
+      expect(keys(await ls({ query: 'checkout', status: ['Done'] }))).toEqual([4]);
+      const year = await ls({ updatedSince: '2026-01-01' });
+      expect(keys(year)).toEqual([1, 3]);
+      expect(itemLs.text!(year).at(-1)).toBe(
+        '2 closed cards (in a done column such as Done or Cancelled, trashed or archived) left out: add --include-closed to list them, or name their column with --status.',
+      );
+    });
+
+    it('refuses a date it cannot read, in the CLI’s words', async () => {
+      await expect(ls({ updatedSince: 'last week' })).rejects.toMatchObject({
+        code: 'updated_since_invalid',
+        message: expect.stringContaining('--updated-since "last week" is not a date'),
+      });
+    });
   });
 });
 

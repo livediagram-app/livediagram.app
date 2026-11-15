@@ -8,6 +8,7 @@ import {
   FollowAlongArt,
   FontsArt,
   InspectArt,
+  PrototypeArt,
   LaserArt,
   LiveImageArt,
   LogoLayoutsArt,
@@ -116,6 +117,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Hand the screens to developers',
         description:
           'Turn on Inspect and click anything on a wireframe: its size, position, spacing to its neighbours, colours, border and type, in points. Copy it as CSS, export it at 1x, 2x or 3x, and send a link that opens with Inspect on. Viewers get all of it, and nothing can change.',
+      },
+      {
+        art: <PrototypeArt />,
+        href: '/help/pages/wireframe-pages/',
+        group: 'Wireframes',
+        title: 'Click through the screens',
+        description:
+          'Link a button or any other element to another screen of the tab, or back to the one before, with a Slide or Dissolve. Press Prototype and the screens play one at a time in their device frame, a press following each link, then share the walk-through as a link.',
       },
       {
         art: <PagesArt />,

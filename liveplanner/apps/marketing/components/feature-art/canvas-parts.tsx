@@ -332,3 +332,8 @@ export function Tab({
     </g>
   );
 }
+
+/** A short grey bar standing in for a line of text. */
+export function Bar({ x, y, w }: { x: number; y: number; w: number }) {
+  return <rect className={LINE} x={x} y={y} width={w} height="3" rx="1.5" />;
+}

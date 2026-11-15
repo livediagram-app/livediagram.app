@@ -34,27 +34,36 @@ import {
 import { clientFor } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
+import { VIEW_TOOL_META } from './view-tab';
 import { appBase, deepLink, errorResult, requireToken, stopped, textResult } from './tool-helpers';
 
 export function registerPlanTools(server: McpServer, env: Env): void {
-  registerTool(server, env, mcpListItems, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra));
-    const state = await readPlanState(api, args.projectId);
-    // A column or card type named as change_items names them; an unknown one is refused with the names there are.
-    const filter = resolveListingFilter(state, args);
-    if (!filter.ok) return errorResult(filter.message);
-    // Open cards without formatting runs unless asked, a page at a time under the size budget, saying what it left
-    // out (docs/specs/026-plan/plan-agents.md "What list_items leaves out unless asked").
-    const page = resolveListItemsPage(args);
-    if (!page.ok) return errorResult(page.message);
-    // Each picture listed with a link the agent's own token reads (docs/specs/015-api/mcp-server.md §4.5b).
-    return textResult(
-      listItemsPage(state, filter, page, {
-        pictureLink: pictureLinkFor(appBase(env), args.projectId),
-        url: deepLink(env, args.projectId),
-      }),
-    );
-  });
+  registerTool(
+    server,
+    env,
+    mcpListItems,
+    async (args, extra) => {
+      const api = clientFor(env, requireToken(extra));
+      const state = await readPlanState(api, args.projectId);
+      // A column or card type named as change_items names them; an unknown one is refused with the names there are.
+      const filter = resolveListingFilter(state, args);
+      if (!filter.ok) return errorResult(filter.message);
+      // Open cards without formatting runs unless asked, a page at a time under the size budget, saying what it left
+      // out (docs/specs/026-plan/plan-agents.md "What list_items leaves out unless asked").
+      const page = resolveListItemsPage(args);
+      if (!page.ok) return errorResult(page.message);
+      // Each picture listed with a link the agent's own token reads (docs/specs/015-api/mcp-server.md §4.5b).
+      // The plan's id first, so the interactive view knows which plan to draw (mcp-server.md "Interactive view").
+      return textResult({
+        projectId: args.projectId,
+        ...listItemsPage(state, filter, page, {
+          pictureLink: pictureLinkFor(appBase(env), args.projectId),
+          url: deepLink(env, args.projectId),
+        }),
+      });
+    },
+    VIEW_TOOL_META,
+  );
 
   registerTool(server, env, mcpChangeItems, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));

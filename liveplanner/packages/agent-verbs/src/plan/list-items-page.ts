@@ -152,16 +152,15 @@ const holdsText = (i: Item, query: string) => {
   return typeof description === 'string' && description.toLowerCase().includes(query);
 };
 
-// One page of list_items: the cards a resolved filter and page keep, by number after the cursor, until the limit or
-// the budget. Only the cards listed (and the one that stops the page) have their fields worked out.
-export function listItemsPage(
+// The cards a resolved filter and page's narrowing keep (types, columns, text, when they changed, closed or not), by
+// number, with how many closed ones matched the rest and were left out: what list_items pages and `item ls` lists
+// whole (Work Tracker 913). One pass over the cards.
+export function keptListItems(
   state: PlanState,
   filter: ResolvedListingFilter,
-  page: ListItemsPage,
-  { pictureLink, url }: { pictureLink?: PictureLink; url: string },
-): ListItemsAnswer {
-  const { plan } = state;
-  const isDone = doneStatusesOf(plan.boards);
+  page: Pick<ListItemsPage, 'query' | 'updatedSince' | 'includeClosed'>,
+): { kept: Item[]; closed: number; closedOut: boolean } {
+  const isDone = doneStatusesOf(state.plan.boards);
   // A column filter lists every card in the columns it names, closed or not.
   const closedOut = !page.includeClosed && !filter.statuses;
   let closed = 0;
@@ -177,6 +176,19 @@ export function listItemsPage(
     kept.push(i);
   }
   kept.sort((a, b) => a.key - b.key);
+  return { kept, closed, closedOut };
+}
+
+// One page of list_items: the cards a resolved filter and page keep, by number after the cursor, until the limit or
+// the budget. Only the cards listed (and the one that stops the page) have their fields worked out.
+export function listItemsPage(
+  state: PlanState,
+  filter: ResolvedListingFilter,
+  page: ListItemsPage,
+  { pictureLink, url }: { pictureLink?: PictureLink; url: string },
+): ListItemsAnswer {
+  const { plan } = state;
+  const { kept, closed, closedOut } = keptListItems(state, filter, page);
   // Whether the card just built had formatting left out, and whether any listed card had.
   let cardRich: boolean;
   let richLeftOut = false;

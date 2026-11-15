@@ -17,7 +17,13 @@ import { applyItemChanges, type ItemChange } from '../plan/item-changes';
 import { FIELD_HINT } from '../plan/api-refusal';
 import { pictureLinkFor } from '../plan/card-pictures';
 import { listedPullRequestSchema, pullRequestLine } from '../plan/card-pull-requests';
-import { planListing, resolveListingFilter } from '../plan/plan-listing';
+import { keptListItems, resolveListItemsPage } from '../plan/list-items-page';
+import {
+  itemLister,
+  listedBoards,
+  NO_BOARD_HINT,
+  resolveListingFilter,
+} from '../plan/plan-listing';
 import { readPlanState, type PlanState } from '../plan/plan-state';
 import { columns, projectOf } from './shared';
 
@@ -116,18 +122,53 @@ export function withPictureRemovals(fields: ItemFields, pairs: readonly string[]
 
 const lineOut = z.object({ item: itemOut, text: z.string() });
 
+// The words `item ls` prints after its cards when it left closed ones out: list_items' note in the CLI's flags.
+export function closedLeftOutLine(closed: number): string {
+  return (
+    `${closed} closed card${closed === 1 ? '' : 's'} (in a done column such as Done or Cancelled, trashed or ` +
+    'archived) left out: add --include-closed to list them, or name their column with --status.'
+  );
+}
+
 export const itemLs = defineVerb({
   id: 'item.ls',
   summary: 'The items of a plan',
   description:
-    'Lists the items Plan boards show: number, type, status and title, narrowed by type or status.',
+    'Lists the items Plan boards show: number, type, status and title, narrowed by types, columns, text or when ' +
+    'they changed. Every card is listed unless --query or --updated-since is given; then, as list_items does, a ' +
+    'closed card (in a done column, trashed or archived) is left out unless --include-closed is, or --status names ' +
+    'its column.',
   behaviour: 'read',
   input: z.object({
     project: projectArg,
-    type: z.string().optional().describe('Only items of this type (task, note, project...)'),
-    status: z.string().optional().describe('Only items with this status (a column)'),
+    type: z
+      .array(z.string())
+      .optional()
+      .describe('Only items of this type (task, note, project...); repeat for several'),
+    status: z
+      .array(z.string())
+      .optional()
+      .describe('Only items in this status (a column); repeat for several'),
+    query: z
+      .string()
+      .optional()
+      .describe('Only items whose title or description holds this text, ignoring case'),
+    updatedSince: z
+      .string()
+      .optional()
+      .describe(
+        'Only items changed at or after this ISO date or time (2026-11-01, 2026-11-01T09:00:00Z)',
+      ),
+    includeClosed: z
+      .boolean()
+      .optional()
+      .describe('With --query or --updated-since, list closed items too'),
   }),
-  output: z.object({ items: z.array(listedItemOut), boards: z.array(z.string()) }),
+  output: z.object({
+    items: z.array(listedItemOut),
+    boards: z.array(z.string()),
+    closedLeftOut: z.number().optional(),
+  }),
   listKey: 'items',
   run: async (ctx, input) => {
     const { projectId, state } = await planOf(ctx, input.project);
@@ -139,31 +180,51 @@ export const itemLs = defineVerb({
         message: filter.message,
         hint: 'list the columns and card types with: liveplanner item ls <project>',
       });
+    // list_items' narrowing (Work Tracker 913), read as it reads it. Every card stays listed, closed ones too, unless
+    // a text or time filter asks for list_items' open-cards answer, so a script that ran item ls before still works.
+    const narrowed = input.query !== undefined || input.updatedSince !== undefined;
+    const page = resolveListItemsPage({
+      query: input.query,
+      updatedSince: input.updatedSince,
+      includeClosed: input.includeClosed === true || !narrowed,
+    });
+    if (!page.ok)
+      throw new VerbRefusal({
+        status: 400,
+        code: page.code,
+        message: page.message.replace('updatedSince', '--updated-since'),
+        hint: 'for example: liveplanner item ls <project> --updated-since 2026-11-01',
+      });
+    const { kept, closed, closedOut } = keptListItems(state, filter, page);
     // Each picture with a link the CLI's token reads (docs/specs/015-api/cli.md "Pictures").
-    const listing = planListing(state, filter, pictureLinkFor(ctx.host, projectId));
-    const keys = new Map(state.items.map((i) => [i.id, i.key]));
+    const lister = itemLister(state, pictureLinkFor(ctx.host, projectId));
+    const listed = listedBoards(state, { closedOut });
     // A board's line: its title and each column with its card count, a done column ticked, then its header widgets
     // ("Sprint: To Do 2 · Done ✓ 1 | Widgets: Item Count, Filter").
-    const boards = listing.boards.map(
+    const boards = listed.boards.map(
       (b) =>
         `${b.title}: ${b.columns.map((c) => `${c.name}${c.done ? ' ✓' : ''} ${c.cards.length}`).join(' · ')}` +
         (b.widgets?.length ? ` | Widgets: ${b.widgets.join(', ')}` : ''),
     );
     return {
-      boards: listing.hint ? [listing.hint] : boards,
-      items: listing.items.map((i) => ({
-        id: i.id,
-        key: keys.get(i.id)!,
-        type: i.type,
-        status: i.column ?? i.status,
-        title: i.title,
-        fields: i.fields,
-        ...(i.pullRequests ? { pullRequests: i.pullRequests } : {}),
-      })),
+      boards: state.plan.boards.length === 0 ? [NO_BOARD_HINT] : boards,
+      items: kept.map((item) => {
+        const i = lister(item);
+        return {
+          id: i.id,
+          key: item.key,
+          type: i.type,
+          status: i.column ?? i.status,
+          title: i.title,
+          fields: i.fields,
+          ...(i.pullRequests ? { pullRequests: i.pullRequests } : {}),
+        };
+      }),
+      ...(closed > 0 ? { closedLeftOut: closed } : {}),
     };
   },
   // A card's linked pull requests end its line: "acme/web#42 open, checks failing; acme/api#7 merged".
-  text: ({ items, boards }) => [
+  text: ({ items, boards, closedLeftOut }) => [
     ...boards,
     ...columns(
       items.map((i) => [
@@ -175,13 +236,14 @@ export const itemLs = defineVerb({
           (i.pullRequests?.length ? `  ${i.pullRequests.map(pullRequestLine).join('; ')}` : ''),
       ]),
     ),
+    ...(closedLeftOut ? [closedLeftOutLine(closedLeftOut)] : []),
   ],
   quiet: ({ items }) => items.map((i) => `#${i.key}`),
   cli: {
     positionals: ['project'],
     examples: [
-      'liveplanner item ls "Sprint 14"',
-      'liveplanner item ls 3f9c --type task --status new',
+      'liveplanner item ls 3f9c --status "To Do" --status Doing --type bug --type task',
+      'liveplanner item ls "Sprint 14" --query checkout --updated-since 2026-11-01 --include-closed',
     ],
     prints:
       'one item a line: #number, type, status, title, flagged on a flagged card, then its pull requests with their states',

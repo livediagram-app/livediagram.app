@@ -1,13 +1,17 @@
 import type { HeroSceneKey } from '@/components/hero-scenes';
 import {
   ApiArt,
+  AttendanceArt,
   ArriveArt,
   BringFocusArt,
   BrowserSpaceArt,
   BubbleArt,
+  CameraBubbleArt,
   CameraArt,
   CharacterArt,
   CommunitySpaceArt,
+  DirectoryArt,
+  DoNotDisturbArt,
   DriveCopyArt,
   EveryMeetingArt,
   EveryoneArt,
@@ -16,16 +20,21 @@ import {
   FollowArt,
   FourSpacesArt,
   FurnitureArt,
+  KnockArt,
   NoteUndoArt,
   PortalArt,
   PresenceArt,
+  PrivateRoomArt,
   ReactArt,
   RealtimeArt,
   RevokeArt,
+  ScreenShareArt,
   SelectedNoteArt,
   SessionToolsArt,
   ShareLinksArt,
+  StageArt,
   StatusArt,
+  TalkNearArt,
   TeamsArt,
   WalkInArt,
 } from '@/components/FeatureArt';
@@ -130,6 +139,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Fences and room walls keep characters where they belong, and they come in by the doorway. Step into a portal and you come out of its partner, on this tab or another, so a Space can run to several floors.',
       },
       {
+        art: <DirectoryArt />,
+        href: '/help/palette/directory/',
+        group: 'Rooms to meet in',
+        title: 'Floors, lifts and a directory',
+        description:
+          'Each tab of a Space can be a floor. Take the Elevator to any floor or the Stairs one floor up or down, and check the Directory for every room in the building with who is in each, then Walk There or go straight in.',
+      },
+      {
         art: <EveryoneArt />,
         href: '/help/selection-modes/walking-together/',
         group: 'Say hello',
@@ -176,18 +193,74 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Meetings',
     scene: 'hall',
     cta: 'Explore meetings',
-    title: 'Run the meeting from the room',
+    title: 'Talk it through, right where you stand',
     description:
-      'What a meeting needs is in the room: a timer everyone sees, a baton so one person runs it, and a way to ask everyone to look at the same thing.',
+      'Walk up to someone and you are talking: voices fade as you walk apart, a room’s walls keep its call private, and a camera or a shared screen shows above your head. The rest of the meeting is in the room too: a timer, a stage and a baton for whoever runs it.',
     metaDescription:
-      'Run stand-ups and all-hands in a Space: a Timer and a Stopwatch on the wall, a facilitator baton and Bring Focus.',
+      'Talk in a Space by walking up to people: private rooms, cameras and screens above your head, a stage for the all-hands, and a timer on the wall.',
     highlights: [
-      'Timer and Stopwatch',
-      'One person runs the room',
-      'Ask the room to look here',
-      'A Space for every meeting',
+      'Talk to whoever is near you',
+      'Rooms keep a call private',
+      'Your camera, above your head',
+      'Speak from the stage',
     ],
     items: [
+      {
+        art: <TalkNearArt />,
+        href: '/help/collaboration/proximity-audio/',
+        group: 'Talk',
+        title: 'Talk to whoever is near you',
+        description:
+          'There is nothing to join: walk up to people and you hear each other, louder the closer you stand and fading as you walk away, with voices to your left heard on your left. Someone talking further off shows it, so you can walk over. Your microphone starts muted.',
+      },
+      {
+        art: <PrivateRoomArt />,
+        href: '/help/collaboration/proximity-audio/#rooms-are-private',
+        group: 'Talk',
+        title: 'Rooms keep a call private',
+        description:
+          'Step into a room and its walls keep the conversation in: nobody outside hears a word, however close they stand to the door, and two rooms side by side never hear each other. A phone booth inside an open-plan room is a quiet corner of its own.',
+      },
+      {
+        art: <CameraBubbleArt />,
+        href: '/help/collaboration/cameras-and-screen-sharing/',
+        group: 'Talk',
+        title: 'Your camera, above your head',
+        description:
+          'Turn on your camera and it shows as a bubble just above your character, to the people who can hear you and nobody else. Press any bubble to see it large. Walk away and it goes; walk back and it returns.',
+      },
+      {
+        art: <ScreenShareArt />,
+        href: '/help/collaboration/cameras-and-screen-sharing/',
+        group: 'Talk',
+        title: 'Share your screen',
+        description:
+          'Editors can share a screen, a window or a browser tab, and it shows over your head to the people near you, tuned so text reads clearly. Put a Screen on a meeting room’s wall and a share in that room plays on it for everyone inside.',
+      },
+      {
+        art: <StageArt />,
+        href: '/help/palette/virtual-office/stage/',
+        group: 'Talk',
+        title: 'Speak from the stage',
+        description:
+          'Walk onto a Stage and the whole Space hears you, in any room or none, while the audience whisper to their neighbours unheard. Raise Hand asks to speak, and whoever is on the stage can let you.',
+      },
+      {
+        art: <DoNotDisturbArt />,
+        href: '/help/collaboration/proximity-audio/#do-not-disturb',
+        group: 'Talk',
+        title: 'Quiet when you need it',
+        description:
+          'Set Do Not Disturb and no voice, camera or screen reaches you, and knocks and chimes stay quiet, while you can still speak to a neighbour. When you do want someone, Nudge them from Collaborators and their screen chimes with a way to find you.',
+      },
+      {
+        art: <KnockArt />,
+        href: '/help/palette/room-sign/',
+        group: 'Run the room',
+        title: 'Knock before you walk in',
+        description:
+          'A Room Sign by the door says whether a room is Free or In Use, with how many inside and for how long. Press Knock and the people inside see who is asking, with Let In and Not Now.',
+      },
       {
         art: <SessionToolsArt />,
         href: '/help/collaboration/session-tools/timer/',
@@ -219,6 +292,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'A Space for every meeting',
         description:
           'Start from a Team Pod for the stand-up, an All-Hands Hall with a stage, a Conference Venue or an Expo Hall for the big day, a whole Virtual Office, or a blank Space you furnish yourself.',
+      },
+      {
+        art: <AttendanceArt />,
+        href: '/help/collaboration/live-presence/tab-attendance/',
+        group: 'Run the room',
+        title: 'Who came, and for how long',
+        description:
+          'Open a tab’s Attendance after the stand-up to see who came in, when they joined and left, and how long they stayed, kept for 90 days. A dropped connection or a quick reload is never counted as leaving.',
       },
     ],
   },

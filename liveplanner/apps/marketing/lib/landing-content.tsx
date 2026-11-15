@@ -9,14 +9,22 @@ import {
   BoardWidgetsArt,
   DashboardArrangeArt,
   DashboardUtilitiesArt,
+  CalendarFeedArt,
+  CardActivityArt,
   CardCommentsArt,
+  CardTemplateArt,
   CardDetailArt,
   CardTypesArt,
   CellCommentsArt,
   CollaboratorsArt,
   CommentsArt,
+  ConnectedFilesArt,
   ConditionalFormatArt,
   DashboardArt,
+  DescribePlanArt,
+  DescribeRuleArt,
+  DriveCopyArt,
+  EmbedBoardArt,
   ExpiryArt,
   FindCardArt,
   FormAlertsArt,
@@ -24,6 +32,7 @@ import {
   FormResponsesArt,
   FormSectionsArt,
   FormShareArt,
+  GithubPrArt,
   HiddenVotesArt,
   IncomingWebhookArt,
   McpArt,
@@ -40,6 +49,7 @@ import {
   SelectionGlowArt,
   SessionToolsArt,
   ShareLinksArt,
+  SharePasswordArt,
   SharedItemsArt,
   SuggestedDashboardsArt,
   SheetFigureArt,
@@ -139,6 +149,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Card types and fields of your own',
         description:
           'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, pictures, a link to another card, formulas and rollups, a timer that tracks time, and more. Build a Bug and a Story on one base type and change their shared fields in one place.',
+      },
+      {
+        art: <CardTemplateArt />,
+        href: '/help/plan/card-templates/',
+        title: 'Start a card from a template',
+        description:
+          'Save the cards your team files again and again, such as a bug report with its steps to reproduce or a release with its checklist, as card templates. A new card then starts filled in, from Add card, a chip or New.',
+      },
+      {
+        art: <CardActivityArt />,
+        href: '/help/plan/card-activity/',
+        title: 'Every card keeps its history',
+        description:
+          'Open a card’s Activity to see who made it, who moved it from column to column and who changed its fields, and when. Changes an agent made are marked, so “who moved this?” never needs asking.',
       },
       {
         art: <BoardWidgetsArt />,
@@ -434,6 +458,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Pick a ready-made rule, such as Stamp the Finish Date, Triage New Bugs, Overdue Nudge or Close the Parent, and it opens filled in with your plan’s own columns and fields. Change what you like, then save it and switch it on.',
       },
       {
+        art: <DescribeRuleArt />,
+        href: '/help/plan/automations/',
+        title: 'Describe a rule in your words',
+        description:
+          'Say what a rule should do, such as “when a bug moves to Done, comment Fixed and flag it”, and AI drafts it in the builder, unsaved and off, for you to check, test and switch on. Nothing runs until you save it.',
+      },
+      {
         art: <TriggersArt />,
         href: '/help/plan/automations/',
         title: 'Triggers for every moment',
@@ -474,6 +505,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Start a rule from another tool',
         description:
           'Give a rule its own address and secret, and another tool can start it with one call: a deploy finishing can move its cards to Done, or a support tool can open a card.',
+      },
+      {
+        art: <GithubPrArt />,
+        href: '/help/plan/connect-github/',
+        title: 'Cards that follow the code',
+        description:
+          'Connect a plan to GitHub and each card shows where its pull requests stand: draft, open, checks passing or failing, merged or closed. Rules act when one opens, merges or its checks finish, so a card moves to Done when its code lands.',
       },
       {
         art: <AuditTrailArt />,
@@ -589,6 +627,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The plan is yours again.',
       },
       {
+        art: <EmbedBoardArt />,
+        href: '/help/collaboration/sharing/embeds/',
+        group: 'Share & access',
+        title: 'Embed a live board',
+        description:
+          'Paste an embed from a share link into a wiki, a doc or your own site and the board, sheet, dashboard or form shows there, kept live. A view-only link embeds it read-only; an editor link lets readers move cards right there.',
+      },
+      {
+        art: <SharePasswordArt />,
+        href: '/help/collaboration/sharing/share-passwords/',
+        group: 'Share & access',
+        title: 'A password on the plan',
+        description:
+          'Add a password and anyone arriving by a share link, or an embed, must enter it before the plan opens. You and your team never need it, and Remove takes it off again.',
+      },
+      {
         art: <McpArt />,
         href: '/help/account-and-data/connect-ai-mcp/',
         group: 'Agents & your tools',
@@ -603,6 +657,38 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'An API and a CLI',
         description:
           'The same plan, cards and sheets over a plain HTTP API with personal tokens, and a command-line tool for scripts and agents that live in a terminal.',
+      },
+      {
+        art: <DescribePlanArt />,
+        href: '/help/plan/describe-a-plan/',
+        group: 'Agents & your tools',
+        title: 'Describe it, get the board',
+        description:
+          'When your work runs its own way, sign in and say it in your own words: a hiring pipeline with Applied, Screen, Interview and Offer, say. AI drafts the columns, the card types with their fields and a starter rule or two, for you to check and change before Make Plan makes anything.',
+      },
+      {
+        art: <CalendarFeedArt />,
+        href: '/help/plan/calendar-feed/',
+        group: 'Beyond the plan',
+        title: 'Dates in your calendar',
+        description:
+          'Signed in, Subscribe to Calendar puts the plan’s card dates in Google Calendar, Outlook or Apple Calendar from a private link, kept up to date: one board or all, only your cards if you like. Reset Link stops the old one at once.',
+      },
+      {
+        art: <ConnectedFilesArt />,
+        href: '/help/tabs/connected-files/',
+        group: 'Beyond the plan',
+        title: 'Files from your other apps',
+        description:
+          'Connect a file from any liveworkspace app as a tab beside your boards and sheets, so the brief, the screens and the architecture behind the plan are one tap away, each with a preview and a way in.',
+      },
+      {
+        art: <DriveCopyArt />,
+        href: '/help/account-and-data/google-drive/',
+        group: 'Beyond the plan',
+        title: 'A copy in your Google Drive',
+        description:
+          'Signed in, connect Google Drive and every plan you own is kept as a file in your own Drive, in folders that match yours. Renames, moves and deletions sync both ways.',
       },
     ],
   },

@@ -81,6 +81,7 @@ function open(t: TrackerImportActions = tracker()) {
       onImportFile={vi.fn()}
       onImportText={vi.fn()}
       tracker={t}
+      planFile={{ offered: false, blocked: null, importFile: vi.fn() }}
       onClose={onDone}
     />,
   );
@@ -214,7 +215,7 @@ describe('TrackerImportPanel: a file dropped on the preview', () => {
     await onPreview();
     dropOn('{"a":1}', 'notes.json');
     expect((await screen.findByRole('alert')).textContent).toBe(
-      "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export.",
+      "That file isn't a liveplanner tab, a whole plan's .liveplanner file, or a Trello, Asana, Jira or Linear export.",
     );
     expect(screen.getByRole('heading', { name: 'Import from Jira' })).toBeTruthy();
     picker.pickTabFile.mockResolvedValueOnce(null);

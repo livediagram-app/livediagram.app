@@ -334,7 +334,11 @@ describe('copies, exports and deletes', () => {
     const read = readProjectFile(String(file.body));
     if (!read.ok) throw new Error(read.failure);
     const [rule] = read.content.copy.automations!;
-    expect(rule).toMatchObject({ name: 'Done stamp', enabled: false, made: held.made });
+    expect(rule).toMatchObject({
+      name: 'Done stamp',
+      enabled: false,
+      made: { ...held.made, by: { ...held.made.by, id: '' } },
+    });
     expect(rule!.id).not.toBe(held.id);
     const c = await emptyRoom('C');
     await c.room.importCopy('C', read.content.copy);
