@@ -49,13 +49,15 @@ export type ChipCard = {
 };
 
 // A chip's click: a card of the type at the end of the column of its starting status when the board has one, else
-// the board's first column, in the first row (taking the row's field). Null on a board with no columns.
+// the board's first column, in the first row (taking the row's field). `start` is a card template's values (the Add
+// a Card menu's pick, card-template-start.ts), under the row's field. Null on a board with no columns.
 export function chipClickCell(
   setup: PlanBoardSetup,
   projection: BoardProjection,
   types: readonly ItemTypeDef[],
   typeId: string,
   statusNames: ReadonlyMap<string, string>,
+  start?: ItemFields,
 ): ChipCard | null {
   const def = typeIn(types, typeId);
   const starting = newCardStatus(def, statusNames);
@@ -65,7 +67,11 @@ export function chipClickCell(
   const cell = col.lanes.find((l) => l.laneKey === lane?.key)?.items ?? [];
   return {
     type: def.id,
-    fields: { title: def.newTitle, ...(projection.swimlanes ? (laneMove(lane).set ?? {}) : {}) },
+    fields: {
+      title: def.newTitle,
+      ...start,
+      ...(projection.swimlanes ? (laneMove(lane).set ?? {}) : {}),
+    },
     status: cellStatus(setup, col.column.status, lane),
     after: cell[cell.length - 1]?.id ?? null,
     columnName: col.column.name,

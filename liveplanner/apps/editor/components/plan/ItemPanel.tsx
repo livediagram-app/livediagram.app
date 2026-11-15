@@ -25,6 +25,7 @@ import {
   tabsOf,
   typeIn,
   type Item,
+  type ItemFields,
   type ItemFieldValue,
   type ItemPatch,
   type ItemPerson,
@@ -124,7 +125,8 @@ type ItemPanelProps = {
   // The cards linking here through a Card field, a group per field (docs/specs/026-plan/item-types.md "Card fields").
   linkedGroups?: readonly LinkedGroup[];
   // Make a new card of `typeId` already linked here through the group's field.
-  onAddLinked?: (group: LinkedGroup, typeId: string) => void;
+  // `start`: a card template's values, when New {Type} started the card from one.
+  onAddLinked?: (group: LinkedGroup, typeId: string, start?: ItemFields) => void;
   // Link an existing card here through the group's field (docs/specs/026-plan/item-types.md "Link Existing"):
   // sets that card's field to this one; false: refused. `moved`: it linked to another card before.
   onLinkExisting?: (group: LinkedGroup, cardId: string, moved: boolean) => Promise<boolean>;
@@ -314,7 +316,7 @@ function ItemPanelContent({
       statusNames={statusNames}
       canAdd={canEdit && !!onAddLinked}
       onOpen={(id) => onOpenItem(id, 'ChildCard')}
-      onAdd={(g, typeId) => onAddLinked?.(g, typeId)}
+      onAdd={(...made) => onAddLinked?.(...made)}
       onLinkExisting={onLinkExisting}
     />
   );

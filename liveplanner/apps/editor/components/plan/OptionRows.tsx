@@ -26,6 +26,8 @@ export type OptionRow = {
   disabled?: boolean;
   // A spoken name when the label alone would not say what pressing it does ("Add To Do").
   ariaLabel?: string;
+  // Indented under the row before it (a card template under its type, in Add a Card).
+  inset?: boolean;
 };
 
 type Kind =
@@ -129,7 +131,7 @@ export function OptionRows({
             tabIndex={inMenu ? -1 : r.id === tabStop ? 0 : -1}
             data-option={r.id}
             aria-label={r.ariaLabel}
-            className={`${ROW} ${on ? ON : palette ? OFF_BOARD : OFF_MENU}`}
+            className={`${ROW} ${r.inset ? 'pl-7' : ''} ${on ? ON : palette ? OFF_BOARD : OFF_MENU}`}
             style={
               palette
                 ? { borderColor: palette.cardBorder, ...(on ? {} : { color: palette.text }) }
