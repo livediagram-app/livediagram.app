@@ -613,7 +613,10 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
   - The writing (`apps/editor/lib/article/article-holds.ts`, `articleHoldsPlugin(onRefused)`): the holds arrive by a
     meta transaction (`setArticleHolds`), never in the history. Decorations: `Decoration.node` on each held block (or
     cell) with `data-held`, `--article-held: <colour>` and `title="<Name> is writing here"`, and a widget chip at its start
-    (`.article-held-chip`, aria-hidden). `filterTransaction` refuses a local transaction that changes the doc in a
+    (`.article-held-chip`, aria-hidden, `data-name` the writer's name). The chip's `::after` is placed against the
+    held block (`position: relative` on a held top-level block or cell): in the left margin beside the first line,
+    `max-width` the page margin less 16 px (`--article-margin`, set on the flow from `flowFrame`) with an ellipsis,
+    joined to the outline by a `::before` tick; in a cell, on its top right corner over the padding. `filterTransaction` refuses a local transaction that changes the doc in a
     held range: a step's range (its `from`/`to`, or `pos` for an attribute step) meeting a held block's inside, or for
     a held cell its cell, or its table outside every cell (a change of shape); `article-remote` transactions always
     pass. A refusal calls `onRefused(holder)`, which says `announceArticleHeld(name)` at most every 2.5 s. A new margin

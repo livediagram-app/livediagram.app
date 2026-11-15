@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { EditorState, NodeSelection, TextSelection } from 'prosemirror-state';
@@ -117,7 +119,7 @@ describe('the holds plugin', () => {
       [8, 8],
     ]);
     const chip = (found[1] as unknown as { type: { toDOM: () => HTMLElement } }).type.toDOM();
-    expect(chip.dataset.name).toBe('Ann is writing');
+    expect(chip.dataset.name).toBe('Ann');
     expect(chip.getAttribute('aria-hidden')).toBe('true');
     expect(chip.style.getPropertyValue('--article-held')).toBe('#f00');
   });
@@ -293,5 +295,30 @@ describe('the cost of holds while typing', () => {
     });
     expect(state.doc.firstChild!.textContent.startsWith('x'.repeat(50))).toBe(true);
     expect(spent / 50).toBeLessThan(cpuBudgetMs(8));
+  });
+});
+
+describe('where the name chip sits', () => {
+  // A chip above the paragraph covered the descenders of a heading right above it (PR #1817's verification): it
+  // hangs in the page's margin instead, cut to the margin, and a cell's sits on its own corner.
+  const css = readFileSync(join(__dirname, '../../app/article-pages.css'), 'utf8');
+  const rule = (selector: string) => {
+    const at = css.indexOf(`${selector} {`);
+    expect(at).toBeGreaterThan(-1);
+    return css.slice(at, css.indexOf('}', at));
+  };
+
+  it('puts a block’s chip in the left margin, never above the block', () => {
+    const chip = rule('.article-flow .article-held-chip::after');
+    expect(chip).toMatch(/right: calc\(100% \+ \d+px\)/);
+    expect(chip).toContain('max-width: calc(var(--article-margin');
+    expect(chip).toContain('text-overflow: ellipsis');
+    expect(css).not.toMatch(/article-held-chip[^{]*\{[^}]*bottom:/);
+  });
+
+  it('puts a cell’s chip on the cell’s own corner', () => {
+    const cell = rule('.article-flow th[data-held] .article-held-chip::after');
+    expect(cell).toContain('right: 6px');
+    expect(cell).toContain('translateY(-50%)');
   });
 });

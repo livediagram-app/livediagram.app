@@ -356,32 +356,69 @@
   border-radius: 2px;
   transition: outline-color 150ms ease;
 }
+/* The writer's name chip hangs off the held block itself, so it never covers the writing around it: a top-level
+   block's chip sits in the page's left margin beside its first line, joined to the outline by a short tick and cut
+   with an ellipsis to the margin (the page clips anything past its edge); a cell's chip sits on the cell's top right
+   corner, over the padding (6 px) either side of the rule. */
+.article-flow > [data-held],
+.article-flow td[data-held],
+.article-flow th[data-held] {
+  position: relative;
+}
 .article-flow td[data-held],
 .article-flow th[data-held] {
   outline-offset: -2px;
 }
 .article-flow .article-held-chip {
-  position: relative;
   display: inline;
-  margin-right: -1px;
   user-select: none;
   pointer-events: none;
 }
+.article-flow .article-held-chip::after,
+.article-flow .article-held-chip::before {
+  position: absolute;
+  background: var(--article-held);
+}
 .article-flow .article-held-chip::after {
   content: attr(data-name);
-  position: absolute;
-  bottom: calc(100% + 4px);
-  left: -5px;
+  top: 2px;
+  right: calc(100% + 12px);
+  max-width: calc(var(--article-margin, 48px) - 16px);
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
   padding: 1px 6px;
-  border-radius: 4px 4px 4px 0;
-  background: var(--article-held);
+  border-radius: 4px;
   color: white;
-  font: 600 10px/1.4 var(--article-body-font);
+  font: 600 10px/14px var(--article-body-font);
   font-style: normal;
   letter-spacing: 0.01em;
   text-transform: none;
+  text-align: left;
+  text-indent: 0;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+}
+.article-flow .article-held-chip::before {
+  content: '';
+  top: 9px;
+  right: calc(100% + 5px);
+  width: 7px;
+  height: 2px;
+}
+.article-flow td[data-held] .article-held-chip::after,
+.article-flow th[data-held] .article-held-chip::after {
+  top: 0;
+  right: 6px;
+  max-width: calc(100% - 12px);
+  padding: 0 5px;
+  font-size: 9px;
+  line-height: 12px;
+  transform: translateY(-50%);
+}
+.article-flow td[data-held] .article-held-chip::before,
+.article-flow th[data-held] .article-held-chip::before {
+  content: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

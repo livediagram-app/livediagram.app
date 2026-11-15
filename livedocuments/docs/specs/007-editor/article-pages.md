@@ -723,8 +723,10 @@ types in it until they let go. Nothing about what is stored changes, and no lett
   never replaced) with a notice: "<Name> is writing in this paragraph." From then on they see the
   hold as anyone does.
 - **What others see.** A held paragraph or cell is outlined in its writer's colour, with a chip
-  above its top left corner naming them ("Sam Lee is writing"), drawn over the page like their
-  caret, never stored, exported or in a thumbnail. Others can still read it, select and copy its
+  naming them ("Sam Lee") in the page's left margin beside its first line, joined to the outline by a short tick and
+  cut short with an ellipsis where the margin is narrower than the name (a cell's chip sits on its top right corner,
+  over the cell's padding), so it never covers the writing around it; hovering the paragraph says "Sam Lee is writing
+  here". The chip is drawn over the page like their caret, never stored, exported or in a thumbnail. Others can still read it, select and copy its
   text, open its margin notes and comment in their threads, and type in every other paragraph.
   Typing, pasting, formatting, deleting into it or joining another block into it is refused, with
   the same notice at most once every 2.5 s; a new margin note on its text waits for the hold to

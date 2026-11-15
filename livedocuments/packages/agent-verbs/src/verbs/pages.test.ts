@@ -420,7 +420,7 @@ describe('article get and article set', () => {
     const once = setUp(undefined, held, 'x');
     await expect(
       articleSet.run!(once.ctx, articleSet.input.parse({ doc: DOC_A, file: '-' })),
-    ).rejects.toBeInstanceOf(VerbRefusal);
+    ).rejects.toMatchObject({ hint: 'wait for them to pause with: --wait-held <seconds>' });
     expect(once.sent).toHaveLength(1);
   });
 

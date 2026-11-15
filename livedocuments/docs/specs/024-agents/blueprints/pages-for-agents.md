@@ -240,7 +240,8 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 - `article set <doc> <file|-> [--tab] [--article] [--new] [--append] [--size] [--orientation] [--look]
 [--accent] [--page-numbers] [--wait-held <seconds>]`. `--wait-held` (1 to 3600) retries a `paragraphs_held` refusal
   every `HELD_RETRY_INTERVAL_MS` (2 s) while the next try still fits in the seconds given, logging `held retry <n>`;
-  past them the refusal stands.
+  past them the refusal stands, with the hint `HELD_HINT` (`wait for them to pause with: --wait-held <seconds>`)
+  in place of the `page ls` one.
 - `page` and `article` are named-only resources in the top-level help (its 500-token budget).
 
 ## Data and persistence
