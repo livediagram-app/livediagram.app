@@ -445,6 +445,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone dragged an arrow's end onto another element, pinning that end to it so the arrow follows if the element moves.",
   'Element|Linked|Document': 'Someone linked an element to another design.',
   'Element|Linked|Tab': 'Someone linked an element to another tab.',
+  'Element|Linked|Screen': 'Someone linked an element on a wireframe to another screen of its tab.',
+  'Element|Linked|ScreenBack':
+    'Someone linked an element on a wireframe back to the screen shown before.',
   'Element|Linked|Url': 'Someone linked an element to a web address.',
   'Element|Locked|': "An element's lock was turned on (no edits allowed).",
   'Element|Reordered|Back': 'Someone sent an element to the back of the stack.',
