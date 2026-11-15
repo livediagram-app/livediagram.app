@@ -12,7 +12,14 @@ import type { Env } from '@liveworkspace/mcp-kit/env';
 vi.mock('@liveworkspace/mcp-kit/render', () => ({ svgToPngBase64: async () => '' }));
 
 import { registerTools } from './tools';
-import { clickableElements, registerViewPage, VIEW_URI, viewBoxOf } from './view-tab';
+import {
+  clickableElements,
+  registerViewPage,
+  roomSocketUrl,
+  VIEW_URI,
+  viewBoxOf,
+  viewLive,
+} from './view-tab';
 
 // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the page, the tools that link it, and view_tab.
 
@@ -37,17 +44,26 @@ describe('the interactive view', () => {
     expect(linked).toEqual(['add_tab', 'create_document', 'read_document', 'update_document']);
   });
 
-  it('keeps view_tab from the model in a host with MCP Apps', () => {
-    const view = registrations().find((r) => r.name === 'view_tab')!;
-    expect(view.config._meta).toEqual({ ui: { visibility: ['app'] } });
+  it('keeps view_tab and view_live from the model in a host with MCP Apps', () => {
+    for (const name of ['view_tab', 'view_live']) {
+      const view = registrations().find((r) => r.name === name)!;
+      expect(view.config._meta, name).toEqual({ ui: { visibility: ['app'] } });
+    }
   });
 
-  it('lists the page under its ui:// address', () => {
-    const uris: string[] = [];
-    registerViewPage({
-      registerResource: (_n: string, uri: string) => void uris.push(uri),
-    } as unknown as McpServer);
-    expect(uris).toEqual([VIEW_URI]);
+  it('lists the page under its ui:// address, its CSP allowing only the editor host’s socket', () => {
+    const seen: { uri: string; meta: { ui: { csp: unknown } } }[] = [];
+    const server = {
+      registerResource: (_n: string, uri: string, m: { _meta: { ui: { csp: unknown } } }) =>
+        void seen.push({ uri, meta: m._meta }),
+    } as unknown as McpServer;
+    registerViewPage(server, {});
+    registerViewPage(server, { CONSENT_BASE_URL: 'http://localhost:3100' });
+    expect(seen.map((r) => r.uri)).toEqual([VIEW_URI, VIEW_URI]);
+    expect(seen.map((r) => r.meta.ui.csp)).toEqual([
+      { connectDomains: ['wss://www.livediagram.app'], resourceDomains: [] },
+      { connectDomains: ['ws://localhost:3100'], resourceDomains: [] },
+    ]);
   });
 
   it('reads the SVG’s view box, and an unreadable one as empty', () => {
@@ -82,6 +98,57 @@ describe('the interactive view', () => {
       { id: 'pay', ref: 'pay', label: 'Pay', x: 0, y: 0, width: 10, height: 10 },
       { id: 'ship', ref: 'ship', label: null, x: 20, y: 0, width: 10, height: 10 },
     ]);
+  });
+});
+
+// docs/specs/015-api/mcp-server.md "Live updates": view_live mints a view-only ticket for the token's owner and
+// hands it to the view alone: never in the text line or a log.
+describe('view_live', () => {
+  const envAnswering = (answer: (request: Request) => Response) =>
+    ({
+      API: { fetch: async (request: Request) => answer(request) },
+      CONSENT_BASE_URL: 'https://www.livediagram.app',
+    }) as unknown as Env;
+
+  it('mints a view-only ticket through the token, in structured content only', async () => {
+    const seen: Request[] = [];
+    const env = envAnswering((request) => {
+      seen.push(request);
+      return Response.json({ ticket: 'rt2~sealed-ticket', expiresAt: Date.now() + 600_000 });
+    });
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const result = await viewLive(env, 'lwt_token', { documentId: 'd 1' });
+    expect(seen).toHaveLength(1);
+    expect(seen[0]!.method).toBe('POST');
+    expect(new URL(seen[0]!.url).pathname).toBe('/api/documents/d%201/room-ticket');
+    expect(new URL(seen[0]!.url).search).toBe('?cap=view');
+    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer lwt_token');
+    expect(result.structuredContent).toMatchObject({
+      documentId: 'd 1',
+      url: 'wss://www.livediagram.app/api/documents/d%201/ws',
+      ticket: 'rt2~sealed-ticket',
+    });
+    expect(JSON.stringify(result.content)).not.toContain('sealed-ticket');
+    expect(JSON.stringify(info.mock.calls)).not.toContain('sealed-ticket');
+    info.mockRestore();
+  });
+
+  it('passes on the api refusing the owner, as for a revoked grant', async () => {
+    const env = envAnswering(() => Response.json({ error: 'not_found' }, { status: 404 }));
+    await expect(viewLive(env, 'lwt_token', { documentId: 'gone' })).rejects.toThrow();
+  });
+
+  it('answers an error, and no ticket, when the api says no lapse', async () => {
+    const env = envAnswering(() => Response.json({ ticket: 'G.bare' }));
+    const result = await viewLive(env, 'lwt_token', { documentId: 'd1' });
+    expect(result.isError).toBe(true);
+    expect(JSON.stringify(result)).not.toContain('G.bare');
+  });
+
+  it('opens the room on the deployment’s own editor host', () => {
+    expect(roomSocketUrl({ CONSENT_BASE_URL: 'https://staging.livediagram.app' }, 'd1')).toBe(
+      'wss://staging.livediagram.app/api/documents/d1/ws',
+    );
   });
 });
 

@@ -21,6 +21,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   list_threads: 'comment ls',
   change_threads: 'comment add',
   view_tab: 'document view',
+  view_live: 'watch',
   list_images: 'image ls',
   upload_image: 'image add',
   delete_image: 'image rm',

@@ -49,3 +49,28 @@ export const mcpViewTab = mcpTool('view_tab', {
   inputSchema: viewTabShape,
   outputSchema: viewTabOutput,
 });
+
+// view_live (docs/specs/015-api/mcp-server.md "Live updates"): the ticket the view follows the document's room with,
+// minted for the token's owner, view-only and short-lived. Kept from the model like view_tab.
+export const viewLiveShape = {
+  documentId: z.string().describe('The document id.'),
+};
+
+export const viewLiveOutput = {
+  documentId: z.string().describe('The document id.'),
+  url: z.string().describe('The room’s WebSocket address, to open with ?t=<ticket>.'),
+  ticket: z
+    .string()
+    .describe('The view-only room ticket: it admits at view and lapses at expiresAt.'),
+  expiresAt: z.number().describe('When the ticket lapses, epoch milliseconds.'),
+};
+
+export const mcpViewLive = mcpTool('view_live', {
+  behaviour: 'read',
+  title: 'Follow a document live in the interactive view',
+  description:
+    'The interactive view’s own call: a short-lived, view-only ticket into the document’s room, so the view ' +
+    'draws the tab again when it changes. To read a tab, use read_document.',
+  inputSchema: viewLiveShape,
+  outputSchema: viewLiveOutput,
+});
