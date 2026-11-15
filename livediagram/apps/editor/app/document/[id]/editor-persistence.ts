@@ -26,12 +26,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // rather than a parsed Deck so hydration has one obvious moment, and a deck
   // the parser cannot read costs the deck rather than the document.
   const [documentPresentation, setDocumentPresentation] = useState<string | null>(null);
-  // Reflect the document name in the browser tab so users with many
-  // tabs open can spot the right one. Falls back to the bare brand
-  // until hydration lands the real name.
-  useEffect(() => {
-    document.title = documentName ? `${documentName} | livediagram` : 'livediagram';
-  }, [documentName]);
+  // The browser tab's title follows the name in editor-page.tsx (useBrowserTabTitle).
 
   // Brief error string surfaced by the Import-tab flow when the
   // picked file is malformed or its schema is newer than this

@@ -12,6 +12,11 @@
 // DeferredAuthState the app tree already consumes.
 
 import { askSignOut } from '@liveworkspace/auth-client/sign-out';
+import {
+  askToken,
+  askTokenUntilKnown,
+  type TokenAnswer,
+} from '@liveworkspace/auth-client/token-answer';
 import { retrySilentSignIn } from '@liveworkspace/auth-client/silent';
 import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
@@ -41,21 +46,14 @@ const EXPIRY_MARGIN_MS = 60_000;
 let current: Session | null = null;
 let inflight: Promise<Session | null> | null = null;
 
+// The api's last answer, for the page's first ask: an unknown one is asked again, never read as signed out
+// (@liveworkspace/auth-client/token-answer).
+let lastAnswer: TokenAnswer<Session> = { kind: 'signed-out' };
+
 async function requestSession(): Promise<Session | null> {
-  try {
-    const res = await fetch(`${API_BASE}/auth/token`, {
-      method: 'POST',
-      credentials: 'same-origin',
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    const body = (await res.json()) as Partial<Session> & { signedIn?: boolean };
-    if (!body.signedIn || !body.accessToken || !body.user?.id) return null;
-    return { accessToken: body.accessToken, expiresAt: body.expiresAt ?? 0, user: body.user };
-  } catch {
-    // Offline or the api unreachable: no session this time. The next getToken tries again.
-    return null;
-  }
+  const answer = await askToken<SessionUser>(API_BASE);
+  lastAnswer = answer;
+  return answer.kind === 'signed-in' ? answer.session : null;
 }
 
 // One refresh at a time for the whole page: the editor asks for a token on every save, and
@@ -141,7 +139,18 @@ function stateOf(session: Session | null): DeferredAuthState {
 // at once, with no request on every page load. A stale hint only costs the one request it saves.
 async function initialSession(): Promise<Session | null> {
   if (!readSignedInHint()) return null;
-  const session = await refresh();
+  // Asked until the api answers: a token request that fails or times out says nothing about the session, and
+  // settling as a guest then would open the person's private items as not found.
+  const answer = await askTokenUntilKnown<Session>(
+    async () => {
+      const session = await refresh();
+      return session ? { kind: 'signed-in', session } : lastAnswer;
+    },
+    {
+      onUnknown: (reason) => console.warn(`[auth] token answer unknown (${reason}), asking again`),
+    },
+  );
+  const session = answer.kind === 'signed-in' ? answer.session : null;
   // A hint that outlived its session (it ended in another app): the answer cleared the hint, and the silent sign-in
   // asks again, once, in case the person has signed in elsewhere since (liveworkspace/docs/specs/003-accounts/
   // accounts.md "A hint that outlived its session"). Only here, on the page's first answer: a session ending under

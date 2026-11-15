@@ -100,6 +100,71 @@ export function markLanding<S extends object>(
   });
 }
 
+/** The setters with `key` (the page's not-found setter) checked first: a `true` that `intercept` takes over is never
+ *  set. A Proxy, like markLanding's, so setters read lazily stay as they are. */
+export function guardNotFound<S extends object>(set: S, key: string, intercept: () => boolean): S {
+  return new Proxy(set, {
+    get(target, k, receiver) {
+      const value: unknown = Reflect.get(target, k, receiver);
+      if (k !== key || typeof value !== 'function') return value;
+      return (shown: unknown) => {
+        if (shown === true && intercept()) return;
+        (value as (v: unknown) => void)(shown);
+      };
+    },
+  });
+}
+
+/** Why a warm open fell back to the ordinary load. */
+export type WarmOpenFallbackReason = 'not-found';
+
+export type WarmOpenFallbackDeps = {
+  storage: () => Pick<Storage, 'getItem' | 'setItem'>;
+  forget: () => Promise<unknown>;
+  reload: () => void;
+  warn: (line: string) => void;
+};
+
+// The session key that marks an item's fallback as taken, so a second not found in this tab's session shows.
+const FALLBACK_KEY = 'warm-open-fallback:';
+
+/** The warm open's safety net (offline-mode.md "Never a wrong not found"): a load that ends on not found after a warm
+ *  paint forgets the copy and reloads, cold, once per item per tab session, so only an ordinary open's not found ever
+ *  shows. True when it took over (the caller shows nothing); false when this session already fell back for the item,
+ *  or the session store is unusable (the caller shows the not found, as a cold open would). */
+export function warmOpenFallback(
+  reason: WarmOpenFallbackReason,
+  itemKey: string,
+  deps: WarmOpenFallbackDeps,
+): boolean {
+  const key = `${FALLBACK_KEY}${itemKey}`;
+  try {
+    const store = deps.storage();
+    if (store.getItem(key) !== null) return false;
+    store.setItem(key, reason);
+  } catch {
+    // No session store: no way to know a reload is the first, so never risk a loop.
+    return false;
+  }
+  deps.warn(`[load] warm-open-fallback ${reason}: reloading without the last seen copy`);
+  // The forget never rejects and is bounded by the store's timeout; the reload follows either way.
+  void deps
+    .forget()
+    .catch(() => {})
+    .finally(() => deps.reload());
+  return true;
+}
+
+/** The browser's fallback deps for an item's copy: this tab's session store, a console warning and a page reload. */
+export function browserWarmOpenFallbackDeps(forget: () => Promise<unknown>): WarmOpenFallbackDeps {
+  return {
+    storage: () => window.sessionStorage,
+    forget,
+    reload: () => window.location.reload(),
+    warn: (line) => console.warn(line),
+  };
+}
+
 /** A performance measure named `name` from `from` (the load's start on the performance clock, or now) to the next
  *  frame on screen: the warm paint's and the catch-up's timing marks. */
 export function measureAfterPaint(name: string, from: number | undefined): void {

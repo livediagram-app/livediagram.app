@@ -27,6 +27,8 @@ const HELD_AT_100 = [
   'src/lib/api/last-seen-follower.ts',
   'src/hooks/persistence/useLastSeenFollow.ts',
   'src/lib/warm-open.ts',
+  // The tab title an editor route holds (offline-mode.md "The tab title" in each product).
+  'src/hooks/editor/useBrowserTabTitle.ts',
   'src/lib/api/tab-saved.ts',
   'src/hooks/persistence/useTabDrafts.ts',
   'src/lib/api/xhr-fetch.ts',

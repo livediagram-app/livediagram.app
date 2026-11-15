@@ -8,7 +8,11 @@ import {
   markLanding,
   measureAfterPaint,
   readWarmCopy,
+  browserWarmOpenFallbackDeps,
+  guardNotFound,
+  warmOpenFallback,
   type WarmOpenCopies,
+  type WarmOpenFallbackDeps,
 } from './warm-open';
 
 // The warm open (livediagram's docs/specs/006-document/offline-mode.md "Warm open of a cloud document"): the copy is
@@ -236,5 +240,99 @@ describe('measureAfterPaint', () => {
     measure.mockRestore();
     vi.stubGlobal('performance', undefined);
     expect(() => measureAfterPaint('warm-paint', 0)).not.toThrow();
+  });
+});
+
+// offline-mode.md "Never a wrong not found".
+describe('warmOpenFallback', () => {
+  const depsWith = (store: Map<string, string> | null) => {
+    const deps = {
+      storage: () => {
+        if (!store) throw new Error('no session storage');
+        return {
+          getItem: (k: string) => store.get(k) ?? null,
+          setItem: (k: string, v: string) => void store.set(k, v),
+        };
+      },
+      forget: vi.fn(async () => {}),
+      reload: vi.fn(),
+      warn: vi.fn(),
+    } satisfies WarmOpenFallbackDeps;
+    return deps;
+  };
+  const settle = () => new Promise((r) => setTimeout(r, 0));
+
+  it('forgets the copy and reloads, cold, the first time an item ends on not found', async () => {
+    const deps = depsWith(new Map());
+    expect(warmOpenFallback('not-found', 'doc-1', deps)).toBe(true);
+    await settle();
+    expect(deps.forget).toHaveBeenCalledOnce();
+    expect(deps.reload).toHaveBeenCalledOnce();
+    expect(deps.warn).toHaveBeenCalledWith(
+      expect.stringContaining('[load] warm-open-fallback not-found'),
+    );
+  });
+
+  it('lets the second not found in the session show, so a gone item never loops', async () => {
+    const store = new Map<string, string>();
+    expect(warmOpenFallback('not-found', 'doc-1', depsWith(store))).toBe(true);
+    const again = depsWith(store);
+    expect(warmOpenFallback('not-found', 'doc-1', again)).toBe(false);
+    expect(warmOpenFallback('not-found', 'doc-2', depsWith(store))).toBe(true);
+    await settle();
+    expect(again.reload).not.toHaveBeenCalled();
+  });
+
+  it('shows the not found when there is no session store to guard the reload', () => {
+    const deps = depsWith(null);
+    expect(warmOpenFallback('not-found', 'doc-1', deps)).toBe(false);
+    expect(deps.reload).not.toHaveBeenCalled();
+  });
+
+  it('reloads even when the forget fails', async () => {
+    const deps = depsWith(new Map());
+    deps.forget.mockRejectedValueOnce(new Error('idb'));
+    warmOpenFallback('not-found', 'doc-1', deps);
+    await settle();
+    expect(deps.reload).toHaveBeenCalledOnce();
+  });
+
+  it("binds the browser's session store, console and reload", () => {
+    const sessionStorage = { getItem: () => null, setItem: () => {} };
+    const reload = vi.fn();
+    vi.stubGlobal('window', { sessionStorage, location: { reload } });
+    try {
+      const forget = vi.fn(async () => {});
+      const deps = browserWarmOpenFallbackDeps(forget);
+      expect(deps.storage()).toBe(sessionStorage);
+      expect(deps.forget).toBe(forget);
+      deps.reload();
+      expect(reload).toHaveBeenCalledOnce();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      deps.warn('line');
+      expect(warn).toHaveBeenCalledWith('line');
+      warn.mockRestore();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('guardNotFound', () => {
+  it('checks a not found first, and passes everything else straight through', () => {
+    const setNotFound = vi.fn();
+    const setName = vi.fn();
+    let takeOver = true;
+    const set = guardNotFound({ setNotFound, setName, count: 1 }, 'setNotFound', () => takeOver);
+    set.setNotFound(true);
+    expect(setNotFound).not.toHaveBeenCalled();
+    set.setNotFound(false);
+    expect(setNotFound).toHaveBeenCalledWith(false);
+    takeOver = false;
+    set.setNotFound(true);
+    expect(setNotFound).toHaveBeenLastCalledWith(true);
+    set.setName('x');
+    expect(setName).toHaveBeenCalledWith('x');
+    expect(set.count).toBe(1);
   });
 });

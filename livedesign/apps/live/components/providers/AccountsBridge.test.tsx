@@ -142,9 +142,23 @@ describe('AccountsBridge', () => {
     expect(retrySilentSignIn).not.toHaveBeenCalled();
   });
 
-  it('settles as a guest when the api cannot be reached', async () => {
-    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
-    expect(await mount()).toMatchObject({ authLoaded: true, isSignedIn: false });
+  // liveworkspace/docs/specs/003-accounts/accounts.md "An answer that never came": a token request that fails says
+  // nothing about the session, and settling as a guest on it opened the person's own items as not found.
+  it('keeps asking while the api cannot be reached, and never settles as a guest on it', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fetchMock
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(signedIn('access-1'));
+    const onState = vi.fn<(s: DeferredAuthState) => void>();
+    render(<AccountsBridge onState={onState} />);
+    await waitFor(() => expect(onState).toHaveBeenCalled(), { timeout: 3_000 });
+    expect(onState.mock.lastCall![0]).toMatchObject({ authLoaded: true, isSignedIn: true });
+    expect(onState.mock.calls.every(([s]) => s.isSignedIn || !s.authLoaded)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('[auth] token answer unknown (TypeError)'),
+    );
+    warn.mockRestore();
   });
 
   it('publishes the signed-in account', async () => {
