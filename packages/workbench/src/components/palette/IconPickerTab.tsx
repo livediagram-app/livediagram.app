@@ -61,6 +61,33 @@ export function createIconPickerTab({
     );
   }
 
+  // A grid of icon tiles, five to a row. `bounded` caps it at its own scroll height, for a browse whose pane does not
+  // scroll; the Icons category's grouped search results (IconsCategoryTab) leave it to the pane.
+  function IconGrid({
+    icons,
+    addIcon,
+    bounded = true,
+  }: {
+    icons: IconDef[];
+    addIcon: (iconId: string) => void;
+    bounded?: boolean;
+  }) {
+    return (
+      // overflow-x-hidden: a vertical scrollbar narrows the row enough that
+      // five fixed-width tiles overflow by a few px, and `overflow-y-auto`
+      // would otherwise also surface a horizontal scrollbar (CSS resolves
+      // the other axis to auto). justify-items-center keeps the slack
+      // symmetric so nothing visible clips.
+      <div
+        className={`grid grid-cols-5 justify-items-center gap-1 overflow-x-hidden ${bounded ? 'max-h-72 overflow-y-auto' : ''}`}
+      >
+        {icons.map((icon) => (
+          <IconTile key={icon.id} icon={icon} onAdd={addIcon} />
+        ))}
+      </div>
+    );
+  }
+
   // The Icons browse's groups, also the Toolbar strip's tiles for the category. Category artwork = the category's first
   // glyph, mirroring the Tools tab's "a category looks like what it holds".
   function iconBrowseGroups(): BrowserCategory<IconDef>[] {
@@ -105,18 +132,7 @@ export function createIconPickerTab({
         // The parent already searched the whole catalogue for this query, so
         // the results come back rather than being recomputed here.
         search={() => iconResults}
-        renderItems={(icons) => (
-          // overflow-x-hidden: a vertical scrollbar narrows the row enough that
-          // five fixed-width tiles overflow by a few px, and `overflow-y-auto`
-          // would otherwise also surface a horizontal scrollbar (CSS resolves
-          // the other axis to auto). justify-items-center keeps the slack
-          // symmetric so nothing visible clips.
-          <div className="grid max-h-72 grid-cols-5 justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
-            {icons.map((icon) => (
-              <IconTile key={icon.id} icon={icon} onAdd={addIcon} />
-            ))}
-          </div>
-        )}
+        renderItems={(icons) => <IconGrid icons={icons} addIcon={addIcon} />}
         query={iconQuery}
         onQueryChange={setIconQuery}
         searchInput={{
@@ -133,5 +149,5 @@ export function createIconPickerTab({
     );
   }
 
-  return { IconPickerTab, iconBrowseGroups };
+  return { IconPickerTab, IconGrid, iconBrowseGroups };
 }

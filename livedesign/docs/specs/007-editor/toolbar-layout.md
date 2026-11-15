@@ -46,11 +46,11 @@ under the pointer as a category is switched.
   Stack sits in Components and the Timeline and Table in Data and Concepts.
 - **The bars**, by page kind (`palette-layouts.ts`):
 
-  | Page kind                      | Bar                                                                           |
-  | ------------------------------ | ----------------------------------------------------------------------------- |
-  | Design (a blank page, a photo) | Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
-  | Wireframe                      | Components, Elements · Shapes, Write · Icons, Stickers, Media · Data          |
-  | Logo                           | Draw, Shapes, Write, Icons, Media                                             |
+  | Page kind                      | Bar                                                        |
+  | ------------------------------ | ---------------------------------------------------------- |
+  | Design (a blank page, a photo) | Shapes, Write · Concepts, Components · Icons, Media · Data |
+  | Wireframe                      | Components, Elements · Shapes, Write · Icons, Media · Data |
+  | Logo                           | Draw, Shapes, Write, Icons, Media                          |
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
@@ -134,7 +134,9 @@ it up instead, save on a phone), a second press closes it, and resting on anothe
 lies over the flyout. Its header names the tile and says what can change after a preset is placed; its presets are
 one column of cards, placing and dragging as any tile.
 
-### Icons and Stickers: two panes
+The **Devices** row in Components opens the same way: its side panel lists the seven device frames ("Frames to set a screen design in."), each placing and dragging as any tile, the row's line reading "7 devices" where a presets row reads "6 presets". Devices was a category of its own until the owner folded it in (2026-11-15) to quiet the bar while keeping the frames one rest away.
+
+### Icons: two panes
 
 A catalogue's flyout browses as **two panes** ([Browsing the palette by category](../010-palette/palette-category-browse.md)):
 the groups down a 188 px rail on the left, each its glyph, name and count badge, the open one raised with a brand
@@ -142,6 +144,8 @@ edge; the open group's entries on the right under a sticky heading with its coun
 top that cuts across every group ("Results for “…”"). Nothing to drill into or back out of. The panes keep one
 height, so switching group never moves the flyout. Each reopens on the group it was left on, for the page load
 (`BrowseMemory`); a query is not kept.
+
+**Icons holds the stickers** (owner, 2026-11-15): one category, an **Icons | Stickers** switch beside its search box picking which catalogue the panes browse (remembered in this browser), and one search over both whose results come in two labelled groups, Icons then Stickers ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Icons category"). A layout without stickers shows the icons alone, with no switch.
 
 ## Search: every element type
 
@@ -193,12 +197,11 @@ which moved things under the pointer after every add; it is gone, its stored lis
 
 - **Shapes**: the basics (Square, Circle, Diamond) | the rest.
 - **Write**: Text | Note, Callout.
-- **Components**: the layout blocks (Hero, Header, Banner, Stack) | the web blocks | Code, Checklist.
-- **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
+- **Components**: the layout blocks (Hero, Header, Banner, Stack, the Devices row) | the web blocks | Code, Checklist.
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating) | Table.
 
-Popular divides where its tiles' own groups do (after the Diamond), and the Icons and Stickers
+Popular divides where its tiles' own groups do (after the Diamond), and the Icons category's
 catalogues have none. A divider shows only between two tiles both on the strip, and on a phone's
 swiping strip only while a tile on each side of it is at least partly in view: scrolled to where
 the tiles after it are out of sight, it is hidden, never left standing at the strip's edge (`useEdgeDividers`, re-checked as the strip scrolls or resizes). They take room, about

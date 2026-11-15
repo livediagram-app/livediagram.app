@@ -80,10 +80,8 @@ export const BAR: readonly string[] = [
   '|',
   'Concepts',
   'Components',
-  'Devices',
   '|',
   'Icons',
-  'Stickers',
   'Media',
   '|',
   'Data',
@@ -125,28 +123,12 @@ export function BarGlyph({ name, active = false }: { name: string; active?: bool
           <path d="M-6 -1 H6 M-3.5 2 H1" {...s} />
         </g>
       );
-    case 'Devices':
-      return (
-        <g>
-          <rect x={-3.5} y={-6} width={7} height={12} rx={1.5} {...s} />
-          <path d="M-1 3.5 H1" {...s} />
-        </g>
-      );
     case 'Icons':
       return (
         <path
           d="M0 -6 L1.8 -1.9 L6 -1.6 L2.8 1.2 L3.7 5.5 L0 3.2 L-3.7 5.5 L-2.8 1.2 L-6 -1.6 L-1.8 -1.9 Z"
           {...s}
         />
-      );
-    case 'Stickers':
-      return (
-        <g>
-          <circle r={5.5} {...s} />
-          <path d="M-2.5 1.5 Q0 4 2.5 1.5" {...s} />
-          <circle cx={-2} cy={-1.5} r={0.8} className={dot} />
-          <circle cx={2} cy={-1.5} r={0.8} className={dot} />
-        </g>
       );
     case 'Media':
       return (

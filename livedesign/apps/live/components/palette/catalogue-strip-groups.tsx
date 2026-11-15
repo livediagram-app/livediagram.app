@@ -4,11 +4,10 @@ import { useRef, type ReactNode } from 'react';
 import { ChevronDownIcon, HoverCard } from '@livedesign/ui';
 import { isIconCatalogsLoaded } from '@liveworkspace/workbench/lib/icon-registry';
 import { iconBrowseGroups } from './IconPickerTab';
-import { stickerBrowseGroups } from './StickerPickerTab';
 import { techBrowseGroups } from './TechPickerTab';
 import type { PaletteTileDef } from './palette-tile-defs';
 
-// The Toolbar strip's tiles for Icons, Stickers and Technology (docs/specs/007-editor/toolbar-layout.md "More"): the
+// The Toolbar strip's tiles for Icons and Technology (docs/specs/007-editor/toolbar-layout.md "More"): the
 // catalogue's browse groups, each opening a popover of its entries. The groups are the browse's own
 // (PaletteCategoryBrowser), so the strip and the More body never disagree.
 
@@ -33,11 +32,9 @@ export function catalogueStripGroups(categoryId: string): StripGroup[] | null {
   const groups =
     categoryId === 'icons'
       ? iconBrowseGroups()
-      : categoryId === 'stickers'
-        ? stickerBrowseGroups()
-        : categoryId === 'technology'
-          ? techBrowseGroups()
-          : null;
+      : categoryId === 'technology'
+        ? techBrowseGroups()
+        : null;
   if (!groups) return null;
   const strip = groups
     .filter((g) => g.items.length > 0)

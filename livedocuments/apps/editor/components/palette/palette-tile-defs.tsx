@@ -11,7 +11,7 @@ import { ELEMENT_TILES } from './tile-defs/element-tiles';
 import { CONCEPT_TILES } from './tile-defs/concept-tiles';
 import { DATA_TILES } from './tile-defs/data-tiles';
 import { COMPONENT_TILES } from './tile-defs/component-tiles';
-import { DEVICE_TILES } from './tile-defs/device-tiles';
+import { DEVICE_TILES, DEVICES_ROW_TILE } from './tile-defs/device-tiles';
 
 export { TILE_GLYPH_PX, TOOL_GROUPS } from './tile-defs/types';
 export type { PaletteTileDef, PaletteTileSection, ToolGroupId } from './tile-defs/types';
@@ -33,6 +33,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   ...DATA_TILES,
   ...COMPONENT_TILES,
   ...DEVICE_TILES,
+  DEVICES_ROW_TILE,
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

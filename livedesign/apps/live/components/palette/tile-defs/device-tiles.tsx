@@ -1,8 +1,9 @@
-import { Glyph } from '@livedesign/ui';
+import { DevicesTabIcon, Glyph } from '@livedesign/ui';
 import type { PaletteTileDef } from './types';
 
 // The Devices tiles: one section of the palette tile catalogue,
-// joined into PALETTE_TILES by palette-tile-defs.tsx in catalogue order.
+// joined into PALETTE_TILES by palette-tile-defs.tsx in catalogue order. No category lists them: the Devices row in
+// Components (DEVICES_ROW_TILE) opens them, and Search finds each by name.
 
 export const DEVICE_TILES: PaletteTileDef[] = [
   // --- Devices (docs/specs/008-canvas/canvas-and-palette.md) ------------------------------------------------------
@@ -116,3 +117,21 @@ export const DEVICE_TILES: PaletteTileDef[] = [
     ),
   },
 ];
+
+// The Devices row in Components (docs/specs/008-canvas/canvas-and-palette.md "Devices"): a parent row whose side panel
+// lists the seven frames, opened the way the Card's opens its presets. Each frame is an element of its own, so Search
+// and the counts list the frames, never the row; its own action is only the type's due (the row opens, never places).
+export const DEVICES_ROW_TILE: PaletteTileDef = {
+  id: 'components:devices',
+  section: 'components',
+  label: 'Devices',
+  caption: 'Devices',
+  blurb: 'Browser, laptop, phone and more',
+  description:
+    'Device frames to set a screen in: a browser, a monitor, a laptop, a phone, a tablet, a foldable and a smartwatch.',
+  action: { type: 'shape', kind: 'browser' },
+  variants: DEVICE_TILES,
+  variantsHint: 'Frames to set a screen design in.',
+  parentOf: 'devices',
+  icon: <DevicesTabIcon />,
+};

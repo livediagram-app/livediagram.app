@@ -261,7 +261,7 @@ holds.
   it holds the category's own tiles (`tilesForCategory`), so a layout spells
   out only where a mode differs. `boardOnly` keeps a category to
   event-storming boards.
-- **Catalogue categories** (My shapes, Icons, Stickers, Tech) are
+- **Catalogue categories** (My shapes, Icons, Tech) are
   bodies with their own content and take no tile list.
 - **A body decides presentation only** (a grid, rows with a blurb, Media's
   and Components' collapsed groups); it
@@ -273,7 +273,7 @@ holds.
 - Draw mode shows its own tools in place of the palette, so it borrows
   Diagram's layout.
 
-Today the layouts differ as below. Diagram offers no **Stickers** and no **Collaborate**: both are Workshop's ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)), though Search still finds and places them in Diagram. Within the shared categories,
+Today the layouts differ as below. Diagram offers no **Stickers** (its Icons has no Stickers side) and no **Collaborate**: both are Workshop's ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)), though Search still finds and places them in Diagram. Within the shared categories,
 **Sankey** sits in **Concepts**, after the concept graphics, in Diagram: a flow drawn as wide as
 what it carries explains an idea the way a funnel or a cycle does. Workshop offers no **Concepts**: concept
 graphics lay out an idea for a diagram, which a session does not stop to draw.

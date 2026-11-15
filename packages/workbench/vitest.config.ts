@@ -79,6 +79,9 @@ const HELD_AT_100 = [
   'src/lib/selection-write-hold.ts',
   'src/lib/remote-selection.ts',
   'src/components/comments/CommentMarks.tsx',
+  // The palette's Icons category, icons and stickers in one (docs/specs/008-canvas/canvas-and-palette.md "Icons
+  // category" in each editor).
+  'src/components/palette/IconsCategoryTab.tsx',
 ];
 
 export default defineProject({

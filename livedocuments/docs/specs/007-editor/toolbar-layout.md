@@ -9,7 +9,7 @@ someone is on, each opening a flyout of its tiles:
 
 ```
  ☰ ⬡|✎   ┌────────────────────────────────────────────────────────────────────────┐
- │        │ [↖ ▾] │ Shapes Write │ Concepts Components Devices │ Icons … │ [🔍] │
+ │        │ [↖ ▾] │ Shapes Write │ Concepts Components │ Icons Media … │ [🔍] │
  ▼        └────────────────────────────────────────────────────────────────────────┘
  Explorer            (Undo/Redo, Slides, Contents, zoom: the bottom-right cluster)
 ```
@@ -44,10 +44,10 @@ under the pointer as a category is switched.
   Stack sits in Components and the Timeline and Table in Data and Concepts.
 - **The bars**, by page kind (`palette-layouts.ts`):
 
-  | Page kind            | Bar                                                                           |
-  | -------------------- | ----------------------------------------------------------------------------- |
-  | Infographic (Design) | Shapes, Write · Concepts, Components, Devices · Icons, Stickers, Media · Data |
-  | Slide                | Write, Shapes, Media · Data, Concepts, Components, Devices · Icons, Stickers  |
+  | Page kind            | Bar                                                        |
+  | -------------------- | ---------------------------------------------------------- |
+  | Infographic (Design) | Shapes, Write · Concepts, Components · Icons, Media · Data |
+  | Slide                | Write, Shapes, Media · Data, Concepts, Components · Icons  |
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
@@ -130,7 +130,9 @@ the window. Resting on the tile for 150 ms opens it, a press opens it at once, a
 resting on another tile closes it. On a phone it lies over the flyout. Its header names the tile and says what can
 change after a preset is placed; its presets are one column of cards, placing and dragging as any tile.
 
-### Icons and Stickers: two panes
+The **Devices** row in Components opens the same way: its side panel lists the seven device frames ("Frames to set a screen design in."), each placing and dragging as any tile, the row's line reading "7 devices" where a presets row reads "6 presets". Devices was a category of its own until the owner folded it in (2026-11-15) to quiet the bar while keeping the frames one rest away.
+
+### Icons: two panes
 
 A catalogue's flyout browses as **two panes** ([Browsing the palette by category](../010-palette/palette-category-browse.md)):
 the groups down a 188 px rail on the left, each its glyph, name and count badge, the open one raised with a brand
@@ -138,6 +140,8 @@ edge; the open group's entries on the right under a sticky heading with its coun
 top that cuts across every group ("Results for “…”"). Nothing to drill into or back out of. The panes keep one
 height, so switching group never moves the flyout. Each reopens on the group it was left on, for the page load
 (`BrowseMemory`); a query is not kept.
+
+**Icons holds the stickers** (owner, 2026-11-15): one category, an **Icons | Stickers** switch beside its search box picking which catalogue the panes browse (remembered in this browser), and one search over both whose results come in two labelled groups, Icons then Stickers ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Icons category"). A layout without stickers shows the icons alone, with no switch.
 
 ## Search: every element type
 
@@ -190,12 +194,11 @@ after every add.
 
 - **Shapes**: the basics (Square, Circle, Diamond) | the rest.
 - **Write**: Text | Note, Callout.
-- **Components**: the layout blocks (Hero, Header, Banner, Stack) | the web blocks | Code, Checklist.
-- **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
+- **Components**: the layout blocks (Hero, Header, Banner, Stack, the Devices row) | the web blocks | Code, Checklist.
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating) | Table.
 
-The Icons and Stickers catalogues have none: they browse by their own groups ("Icons and Stickers: two panes").
+The Icons category's catalogues have none: they browse by their own groups ("Icons: two panes").
 
 The strip is hidden rather than unmounted while zen or the welcome flow hides the chrome, so a catalogue's flyout
 still reopens on the group it was left on. Nothing about the bar is stored across page loads.

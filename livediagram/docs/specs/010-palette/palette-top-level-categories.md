@@ -21,7 +21,8 @@ mode"](../007-editor/editor-modes.md#the-palette-per-mode).
 The full set, in band order: **Popular**, then **Shapes / Write / Draw /
 Devices**, then **Icons / Stickers / Technology / Media / Components**, then
 **Data / Collaborate**. (Stickers joined the Decorate band later, in
-[Stickers](stickers.md); a first Collaborate category was merged into Behaviours later
+[Stickers](stickers.md), and later still became the Icons category's Stickers side, and Devices left the
+categories for Search (owner, 2026-11-15); a first Collaborate category was merged into Behaviours later
 still, and Behaviours was then renamed Collaborate; see below.)
 
 Where things landed, for anything that moved:
@@ -41,14 +42,14 @@ tools plus Frame). The **User / actor** tile was deleted outright; see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band            | Categories                                                                                                                                                                                                                                             |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| _(no heading)_  | Popular, full width                                                                                                                                                                                                                                    |
-| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw                                                                                                                                             |
-| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Event Storming (on an event-storming board only); Components and Devices are in the catalogue but on no mode's strip (Search only) |
-| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                                                                                     |
-| **Dynamic**     | Data (Workshop)                                                                                                                                                                                                                                        |
-| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                                                                               |
+| Band            | Categories                                                                                                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _(no heading)_  | Popular, full width                                                                                                                                                                                                                                                |
+| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw                                                                                                                                                         |
+| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Event Storming (on an event-storming board only); Components is in the catalogue but on no mode's strip, and the device frames are Search only |
+| **Decorate**    | Icons (with the stickers on its Stickers side, in Workshop), Technology, Media                                                                                                                                                                                     |
+| **Dynamic**     | Data (Workshop)                                                                                                                                                                                                                                                    |
+| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                                                                                           |
 
 ## Why flatten
 

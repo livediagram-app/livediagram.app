@@ -45,13 +45,10 @@ const TAGLINES: Readonly<Record<string, string>> = {
   draw: 'Sketch, outline and connect by hand.',
   build: 'Frames, stacks and tables that hold other work.',
   concepts: 'Ideas laid out as one element that arranges itself.',
-  icons: 'Single-colour glyphs for any idea.',
   technology: 'Cloud and infrastructure marks for architecture.',
   media: 'Pictures and people.',
-  stickers: 'Colour emoji to react, mark status and celebrate.',
   data: 'Charts and meters that read at a glance.',
   components: 'Ready-made blocks that follow the theme.',
-  devices: 'Frames to set a screen design in.',
 };
 
 export function flyoutTagline(categoryId: string, fallback: string): string {
@@ -77,8 +74,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'components:card': 'Page Blocks',
   // Page Blocks where a layout leaves out the Card and the Badge.
   'components:step': 'Page Blocks',
-  'devices:browser': 'Desktop',
-  'devices:phone': 'Mobile',
   'tools:image': 'Pictures',
   'media:embed-youtube': 'Embeds',
   'tools:avatar': 'People',

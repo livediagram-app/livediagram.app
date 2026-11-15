@@ -3,7 +3,7 @@ import { Arrow, Cursor, Label, SelectionBox } from '@liveworkspace/help-site/art
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 // The strip on a slide, as Palette Tools lists it: Write first, then Shapes, Media, Data, Concepts and Components
-// (Devices, Icons and Stickers follow, past the stage's edge). Each name's centre along the strip.
+// (Icons follows, past the stage's edge). Each name's centre along the strip.
 const CATEGORIES = [
   { name: 'Write', x: 96 },
   { name: 'Shapes', x: 134 },

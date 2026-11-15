@@ -90,7 +90,6 @@ describe('palette layouts', () => {
       'collab-mode',
       'collab-navigate',
       'icons',
-      'stickers',
       'media',
       'data',
     ]);
