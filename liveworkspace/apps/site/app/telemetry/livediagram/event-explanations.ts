@@ -1094,6 +1094,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Imported|Drawio':
     'Someone imported a draw.io file: its first page into a tab, any further pages as new tabs.',
   'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
+  'Tab|Imported|Wrangler':
+    'Someone drew an architecture diagram in a tab from a Cloudflare wrangler.toml file.',
+  'Tab|Imported|Compose':
+    'Someone drew an architecture diagram in a tab from a Docker Compose file.',
   'Element|Imported|Excalidraw':
     'Someone pasted or dropped a drawing copied from Excalidraw onto the canvas.',
   'Tab|Imported|ExcalidrawPng':

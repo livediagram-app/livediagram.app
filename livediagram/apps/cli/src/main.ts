@@ -7,6 +7,7 @@ import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
+import type { FromCodeInput } from './commands/from-code';
 import { linkInit, linkLs, linksFor, linkStatus } from './commands/link';
 import { pullDocument, type PullInput } from './commands/pull';
 import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
@@ -51,6 +52,11 @@ function runOffline(io: CliIo, verb: Verb, input: Input, log: DebugLog): Promise
   if (verb.id === 'graph.render')
     return import('./commands/render').then(({ renderGraph }) =>
       renderGraph(io, inputReader(io), input as { file: string; png?: string; svg?: string }, log),
+    );
+  // `link from-code --dry-run` only reads and draws: no host (infrastructure-import.md "The CLI").
+  if (verb.id === 'link.from-code' && input.dryRun)
+    return import('./commands/from-code').then(({ linkFromCode }) =>
+      linkFromCode(io, null, input as FromCodeInput, log),
     );
   if (verb.id === 'graph.lint') {
     const file = input.file as string;
@@ -162,6 +168,10 @@ async function runOnline(
   if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
   if (verb.id === 'watch') return watch(io, ctx, caps.apiBase, input as WatchInput, json);
   if (verb.id === 'link.init') return linkInit(io, ctx, input);
+  if (verb.id === 'link.from-code') {
+    const { linkFromCode } = await import('./commands/from-code');
+    return linkFromCode(io, ctx, input, log);
+  }
   if (verb.id === 'link.status') return linkStatus(io, ctx, links, Boolean(input.all));
   if (verb.id === 'link.ls') return linkLs(io, ctx, links, input.limit as number);
   if (verb.id === 'sync') return syncLinks(io, ctx, caps.apiBase, links, input);

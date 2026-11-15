@@ -141,6 +141,52 @@ export const linkLs = defineVerb({
   },
 });
 
+// `link from-code` (docs/specs/020-import-export/infrastructure-import.md "The CLI"): infrastructure files drawn as
+// a tab. The CLI reads the files, so it runs the verb; `--dry-run` needs no host.
+export const linkFromCode = defineVerb({
+  id: 'link.from-code',
+  summary: 'Draw wrangler.toml or Compose files as a tab',
+  description:
+    'Reads wrangler.toml and Docker Compose files (the ones named, else those in this directory) and draws them as one laid-out architecture tab: a new document, or a tab added to --doc. Keys it does not draw are named on stderr. --dry-run prints the graph as JSON instead, without signing in.',
+  behaviour: 'write',
+  local: true,
+  input: z.object({
+    files: z
+      .array(z.string())
+      .optional()
+      .describe('wrangler.toml or Compose files; those in this directory by default'),
+    doc: z.string().optional().describe('A document to add the tab to; a new document by default'),
+    name: z
+      .string()
+      .min(1)
+      .optional()
+      .describe('The document or tab name; the drawing’s title by default'),
+    env: z
+      .string()
+      .optional()
+      .describe('A wrangler.toml environment to draw in place of the top level'),
+    dryRun: z.boolean().optional().describe('Print the graph as JSON; create nothing'),
+  }),
+  output: z.object({
+    text: z.string(),
+    id: z.string().nullable(),
+    dryRun: z.boolean(),
+    graph: z.unknown(),
+  }),
+  text: ({ text }) => [text],
+  json: ({ dryRun, graph, id, text }) => (dryRun ? graph : { id, text }),
+  quiet: ({ id }) => (id ? [id] : []),
+  cli: {
+    positionals: ['...files'],
+    examples: [
+      'livediagram link from-code',
+      'livediagram link from-code apps/*/wrangler.toml --doc "Architecture"',
+    ],
+    prints:
+      'the document or tab line, as document create or tab add prints it; with --dry-run, the graph as JSON',
+  },
+});
+
 export const sync = defineVerb({
   id: 'sync',
   files: true,

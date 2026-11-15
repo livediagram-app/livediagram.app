@@ -22,7 +22,12 @@ naming what the format can express. Bridges reuse the existing importers ([Merma
 | Graphviz DOT (code2flow, pydeps, ...)           | `.dot`, `.gv`                             | in                                                         |
 | draw.io                                         | `.drawio`, `.drawio.svg`, `.drawio.png`   | in                                                         |
 | Excalidraw                                      | `.excalidraw`                             | two-way                                                    |
+| Wrangler, Docker Compose                        | `wrangler.toml`, `compose.yml`, ...       | in                                                         |
 
+- **Infrastructure code.** Until binding is built, [Infrastructure code import](../020-import-export/infrastructure-import.md)
+  draws a `wrangler.toml` or Compose file into a new tab once (`livediagram link from-code`, or the editor's Import).
+  Re-running it makes a new tab; merging a changed file into the tab already drawn waits for this spec's machinery,
+  when the import becomes an `in` bridge whose node ids (slugs of the resources) are the identity below.
 - **Direction** is per binding: `two-way` (the default where the format allows), `in` (the file feeds livediagram
   and is never written: generated files, formats without a serialiser) or `out` (livediagram writes the file and
   never reads it: a published Mermaid copy of a richer diagram).

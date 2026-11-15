@@ -48,7 +48,7 @@ import {
 } from './verbs/lifecycle';
 import { documentArchive, documentUnarchive } from './verbs/archive';
 import { tabLint, tabLs, tabView } from './verbs/tab';
-import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
+import { linkFromCode, linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
 
@@ -110,6 +110,7 @@ export const VERBS: readonly Verb[] = [
   linkInit,
   linkStatus,
   linkLs,
+  linkFromCode,
   sync,
   workbenchOpen,
   workbenchPair,
