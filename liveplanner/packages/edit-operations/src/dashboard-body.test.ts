@@ -72,6 +72,68 @@ describe('dashboard replace', () => {
   });
 });
 
+// docs/specs/026-plan/plan-agents.md "Making a dashboard": a flow chart's range on a replace's dashboard body.
+describe('flow charts in a dashboard body', () => {
+  const flowChart = (view: string, settings?: Record<string, unknown>) =>
+    dashboardSpecIssue({ charts: [{ view, ...(settings ? { settings } : {}) }] });
+
+  it('takes the three flow charts with each range, and their card types', () => {
+    for (const view of ['cycle-time', 'throughput', 'cumulative-flow']) {
+      expect(flowChart(view)).toBeNull();
+      for (const rangeDays of [14, 30, 90, 180]) expect(flowChart(view, { rangeDays })).toBeNull();
+    }
+    expect(flowChart('throughput', { types: ['bug'], rangeDays: 90 })).toBeNull();
+  });
+
+  it('refuses a range outside the four, or a range on another chart, naming what fits', () => {
+    for (const rangeDays of [7, 0, 365, '30', null]) {
+      const issue = flowChart('cycle-time', { rangeDays });
+      expect(issue).toContain('charts[0].settings.rangeDays');
+      expect(issue).toContain('14, 30, 90, 180 days');
+    }
+    expect(flowChart('gantt', { rangeDays: 90 })).toContain(
+      'cycle-time, throughput, cumulative-flow',
+    );
+  });
+
+  it('refuses settings no plan view takes', () => {
+    expect(flowChart('throughput', { types: [] })).toBe(
+      'dashboard.charts[0].settings: not settings a throughput chart takes',
+    );
+  });
+
+  it('builds each flow chart with its range, the default never stored', () => {
+    const out = applyReplace(
+      null,
+      {
+        dashboard: {
+          charts: [
+            { view: 'cycle-time', settings: { rangeDays: 90 } },
+            { view: 'throughput', settings: { rangeDays: 30 } },
+            { view: 'cumulative-flow' },
+          ],
+        },
+      },
+      { tabId: 't1', name: 'Flow' },
+    );
+    if ('errors' in out) throw new Error(JSON.stringify(out.errors));
+    expect(out.tab.elements.map((el) => (el as { planView?: unknown }).planView)).toEqual([
+      { view: 'cycle-time', rangeDays: 90 },
+      { view: 'throughput' },
+      { view: 'cumulative-flow' },
+    ]);
+  });
+
+  it('refuses a bad range before anything is built', () => {
+    const out = applyReplace(
+      null,
+      { dashboard: { charts: [{ view: 'throughput', settings: { rangeDays: 7 as never } }] } },
+      { tabId: 't1', name: 'Flow' },
+    );
+    expect('errors' in out && JSON.stringify(out.errors)).toContain('rangeDays');
+  });
+});
+
 describe('dashboard replace, refused', () => {
   it('refuses a dashboard spec that is not one, naming the problem', () => {
     const out = applyReplace(null, { dashboard: 'charts please' } as unknown as ReplaceBody, {

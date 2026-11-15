@@ -1,6 +1,7 @@
 // A replace's `dashboard` body checked before it builds (docs/specs/026-plan/plan-agents.md "Making a dashboard"):
 // its tabs by id with what each holds, its metric kinds, its charts by view (Status Breakdown is no longer offered),
-// its notes. Each problem named.
+// its notes, a chart's settings as a plan view takes them (a flow chart's range among them). Each problem named.
+import { FLOW_RANGES, FLOW_VIEWS, isFlowView, isPlanViewSettings } from '@liveplanner/project';
 import {
   DASHBOARD_CHART_VIEWS as CHART_VIEWS,
   DASHBOARD_METRIC_KINDS as METRIC_KINDS,
@@ -32,8 +33,21 @@ export function dashboardSpecIssue(input: unknown): string | null {
     for (const [i, c] of charts.entries()) {
       if (!isObj(c) || !(CHART_VIEWS as readonly unknown[]).includes(c['view']))
         return `dashboard.charts[${i}]: view is one of ${CHART_VIEWS.join(', ')}`;
-      if (c['settings'] !== undefined && !isObj(c['settings']))
-        return `dashboard.charts[${i}].settings: expected an object`;
+      const settings = c['settings'];
+      if (settings === undefined) continue;
+      if (!isObj(settings)) return `dashboard.charts[${i}].settings: expected an object`;
+      // A flow chart's range (docs/specs/026-plan/plan-views.md "Flow charts"): only on one, and one of FLOW_RANGES.
+      if (
+        settings['rangeDays'] !== undefined &&
+        (!isFlowView(c['view']) ||
+          !(FLOW_RANGES as readonly unknown[]).includes(settings['rangeDays']))
+      )
+        return (
+          `dashboard.charts[${i}].settings.rangeDays: a flow chart's (${FLOW_VIEWS.join(', ')}) range, ` +
+          `${FLOW_RANGES.join(', ')} days`
+        );
+      if (!isPlanViewSettings({ ...settings, view: c['view'] }))
+        return `dashboard.charts[${i}].settings: not settings a ${String(c['view'])} chart takes`;
     }
   }
   if (notes !== undefined) {

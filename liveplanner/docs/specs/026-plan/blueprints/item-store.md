@@ -102,7 +102,7 @@ interface ItemMove extends ItemPlace {
 
 ### Validation (`validateFields(fields, mode)`)
 
-Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. Rejections are a closed union:
+Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field, limit? }` (`FieldsRefusal`). Rejections are a closed union:
 `title_required`, `title_too_long`, `field_key_invalid`, `field_value_invalid`, `fields_too_many`,
 `fields_too_large`, `votes_read_only`, `comments_read_only`, `type_invalid`, `id_invalid`, `place_invalid`.
 
@@ -124,11 +124,29 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 | comments    | rejected in create/patch and clear (`comments_read_only`)                                                                                                                    |
 | timestamp   | `statusSince` only: a finite integer ms epoch ≥ 0                                                                                                                            |
 | stamps      | `createdAt`, `createdBy`, `updatedAt`, `updatedBy` (`STAMP_FIELDS`) refused as keys (`field_key_invalid`): they are the item's own stamps, never in `fields`                 |
-| unknown     | scalar, or array of ≤ 50 scalars; strings ≤ 2,000                                                                                                                            |
+| unknown     | scalar (its own string ≤ `ITEM_LONG_TEXT_MAX`, 10,000: the store cannot tell a Long Text from a Text field), or array of ≤ 50 scalars (strings ≤ 2,000)                      |
+| rich        | `descriptionRich`, `<f-id>Rich`: runs whose text ≤ `richTextMaxOf(key)` (10,000 for both)                                                                                    |
 
 - Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`,
   measured without `comments` (`fieldsByteSize`); the thread is measured on its own (`commentsByteSize`).
 - A type id matches `/^[a-z][a-z0-9-]{0,31}$/`.
+- **The limit a refusal broke** (`field-limits.ts`, Work Tracker 944): a refused value is read again for its limit
+  (`brokenLimitOf(shape, value, max)`, only once refused, so a valid write pays nothing), its shape the built-in's kind
+  (`title`, `long-text`, `status`, `labels`, `checklist`), `rich` for a formatting key, or a custom field's own
+  (`undefined`: its text, a checklist's rows, people, a scalar list). `FieldLimit = { unit: 'characters' | 'rows' |
+'labels' | 'values', max, given, row?, entry?: 'row' | 'label' | 'value' }`; a value of the wrong shape has none.
+  `fieldLimitWords(name, limit)` words it ("Solution is 12,412 characters; the most is 10,000", "Acceptance Criteria row
+  3 is 230 characters; the most is 200 a row", "Acceptance Criteria has 51 rows; the most is 50"), and
+  `readFieldLimit(raw)` reads one from a refusal's body. `textMaxOfKind(kind)` is a custom field's text limit by kind
+  (Long Text 10,000, any other 2,000): the card panel's inputs, a CSV import and Edit Field's kind change cut to it, and
+  the agents' naming refuses a Text past it (`plan-names.ts`).
+- **The api's refusal names it** (`write-checks.ts` `fieldRefusalOf(error, fields, mode)`, `item-route-kit.ts`
+  `rejectedRead`): a create, patch or move whose read is refused answers `{ error, id?, field?, limit? }`, the body's
+  own fields checked again only on that path. The agents read `field` and `limit` (`agent-verbs` `apiRefusalOf(err,
+nameOf)`, `fieldNamer(types, type)` naming the id as the change's card shows it). Decision: this stays in
+  liveplanner's agent verbs, not `@liveworkspace/agent-verbs`, since only liveplanner's item store refuses a value by
+  field and limit; the other products' apis refuse a whole file (`createApiRefusal`). A second product with
+  per-field limits moves `readFieldLimit` and `fieldLimitWords` there.
 
 ### The AI assistant Assignee (`assistant.ts`)
 
@@ -289,6 +307,7 @@ CREATE UNIQUE INDEX items_plan_key ON items(plan_id, item_key);
 -- on the plan's own row:
 --   plan.items_rev INTEGER NOT NULL DEFAULT 0
 --   plan.items_next_key INTEGER NOT NULL DEFAULT 1
+--   plan.items_bytes INTEGER NOT NULL DEFAULT 0   -- step V31: every card's fields bytes, kept by triggers
 ```
 
 - Field classification: `fields` is user content (never logged); `created_by`/`updated_by` display identity;
@@ -324,14 +343,16 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
 `/items/import` is a whole import: its parts are held in the plan's SQLite (`item_import_parts`, 202
 `{ staged }`) and the last one lands every card, with its threads, in one transaction (201 `ItemsResponse`), or
 none (blueprint [tracker-import.md](tracker-import.md) "A whole import"). Its other answers: `409 import_incomplete`
-(a part missing at the last), `413 items_full` (past the plan's room, held parts counted), `413 import_too_large`
+(a part missing at the last), `413 items_full` (past the plan's room, held parts counted), `413 plan_full` (past
+the plan fields budget, "Performance and limits"), `413 import_too_large`
 (the import's JSON past `ITEM_IMPORT_JSON_MAX`, 26 MiB), and those of `/items/bulk`.
 
 - Tab-scoped grants: GET requires `tabId` matching the grant and filters to `itemIdsShownOnTab` of that tab's
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the
   tab's scope).
 - Rejections: `400 { error: ItemRejection }`, `404 item_not_found`, `409 item_exists` (create with a taken id),
-  `409 item_busy`, `413 items_full`, plus the project gates' 403/404/410.
+  `409 item_busy`, `413 items_full`, `413 plan_full` (`{ error, message }`: the plan's cards would hold more than
+  `PLAN_FIELDS_BYTES` together), plus the project gates' 403/404/410.
 - `ItemCreate.key` is honoured only when `< items_next_key` and free; otherwise the store assigns one.
 - `POST /projects` create body accepts `items?: ItemCreate[]` (sync to cloud), written in the
   same request after the tabs.
@@ -1015,20 +1036,22 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 
 ## Errors and edge cases
 
-| Case                                            | Handling                                                                       |
-| ----------------------------------------------- | ------------------------------------------------------------------------------ |
-| Unknown type                                    | Kept; drawn with the fallback type (grey, generic glyph)                       |
-| Card points at a missing item                   | "Item not found" face                                                          |
-| Move relative to a neighbour that was deleted   | Falls back to the column end                                                   |
-| Undo patch after someone else changed the field | Writes the old value anyway (last write wins), as canvas undo                  |
-| Create at the cap                               | `413 items_full`; toast "This plan already holds 5,000 cards, the most it can" |
-| Comment on a full thread                        | `413 comments_full`; toast "This card holds the most comments it can"          |
-| Delete a comment already gone                   | `404 comment_not_found`; the store refetches                                   |
-| Resolve a resolved thread                       | 204, nothing written or relayed                                                |
-| Room copy lands after our answer                | Our own comments keep their author id (`keepOwnCommentAuthors`)                |
-| A type stops offering comments                  | The thread stays stored, unshown (like votes)                                  |
-| Room op arrives before the GET answer           | Kept; GET merges by higher rev                                                 |
-| Offline record without `items`                  | Empty store                                                                    |
+| Case                                            | Handling                                                                                                                                                                    |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unknown type                                    | Kept; drawn with the fallback type (grey, generic glyph)                                                                                                                    |
+| Card points at a missing item                   | "Item not found" face                                                                                                                                                       |
+| Move relative to a neighbour that was deleted   | Falls back to the column end                                                                                                                                                |
+| Undo patch after someone else changed the field | Writes the old value anyway (last write wins), as canvas undo                                                                                                               |
+| Create at the cap                               | `413 items_full`; toast "This plan already holds 5,000 cards, the most it can"                                                                                              |
+| A write past the plan fields budget             | `413 plan_full`; toast "This plan's cards are full: they hold 16 MB together, the most a plan can. Shorten long descriptions, empty or delete cards, or start another plan" |
+| A field value past its limit (api)              | `400 field_value_invalid` with `field` and `limit`; toast names the field as the card shows it ("Solution is 12,412 characters; the most is 10,000.")                       |
+| Comment on a full thread                        | `413 comments_full`; toast "This card holds the most comments it can"                                                                                                       |
+| Delete a comment already gone                   | `404 comment_not_found`; the store refetches                                                                                                                                |
+| Resolve a resolved thread                       | 204, nothing written or relayed                                                                                                                                             |
+| Room copy lands after our answer                | Our own comments keep their author id (`keepOwnCommentAuthors`)                                                                                                             |
+| A type stops offering comments                  | The thread stays stored, unshown (like votes)                                                                                                                               |
+| Room op arrives before the GET answer           | Kept; GET merges by higher rev                                                                                                                                              |
+| Offline record without `items`                  | Empty store                                                                                                                                                                 |
 
 ## Security and trust
 
@@ -1052,12 +1075,64 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 ## Performance and limits
 
 - **The cap** (`ITEMS_MAX`, 5,000; raised from 2,000 by the owner 2026-11-15, Work Tracker 672): storage is not the
-  limit (a plan's Durable Object SQLite holds about 10 GB; 5,000 × 16 KB is 80 MB, under 1%), the editor is: it loads
+  limit (a plan's Durable Object SQLite holds about 10 GB; 5,000 × 64 KB is 320 MB, about 3%), the editor is: it loads
   every card in one GET and keeps them all in memory, and boards, dashboards, Gantt and the plan views work over the
   whole set. Windowed loading and server-side projections are the next step past 5,000 and stay out of scope.
-- Worst case 5,000 items × 16 KB = 80 MB is refused by the GET's practical size: the GET streams one JSON array, and
-  a typical card is 0.5 to 0.75 KB. The per-item cap bounds the row; SQLite's 2 MB row limit in a Durable Object is
-  never reached.
+- **A card's 64 KB** (`ITEM_FIELDS_BYTES`, raised from 16 KB by the owner 2026-11-15, Work Tracker 944, so a custom
+  Long Text holds 10,000 characters). The per-item cap bounds the row; SQLite's 2 MB row limit is never reached. A
+  plan's cards together are bounded by the count (`items_full`, 413) and by the plan fields budget below. Measured GET
+  `/items` at 5,000 cards on node:sqlite (CPU time, answer size, live heap the answer raised), one-off with the
+  first-load test's cards plus each case's fields:
+  - typical (the first-load card): 66 ms, 3.4 MB (0.67 KB a card), 17 MB heap;
+  - a 2,000-character Long Text on every card: 62 ms, 13.5 MB (2.6 KB a card), 45 MB;
+  - the old worst case, every card at 16 KB: 355 ms, 80 MB, 317 MB;
+  - every card with a formatted 9,000-character Long Text beside a full formatted description: 845 to 1,008 ms,
+    209.5 MB (41 KB a card), 823 to 887 MB;
+  - every card at 64 KB: 1,313 ms, 340.5 MB, 1,412 MB.
+    A Worker or Durable Object has 128 MB, so one GET of a plan answering past about 30 MB fails, as it already did at
+    the old worst case (80 MB). At 64 KB a card that is reached by about 470 such cards (1,900 at 16 KB); a plan of
+    ordinary cards with long Long Texts (a 2,000-character one on every card) stays at 13.5 MB. Agents read a plan in
+    pages (`list_items`, about 200,000 characters a page).
+- **The plan fields budget** (`PLAN_FIELDS_BYTES`, 16 MiB, Work Tracker 944): the sum of every card's stored fields
+  JSON, so no plan can grow to a GET it cannot answer. Chosen from the measurements above: the live heap a GET raises
+  is 3.3 to 5 times its answer (17 MB for 3.4 MB, 45 MB for 13.5 MB, 317 MB for 80 MB), and the answer is the stored
+  fields plus about 0.2 KB a card of id, key, rank, people and dates (about 1 MB at 5,000 cards). Measured with a plan
+  filled to 16 MiB in the shape that answers most for its bytes (5,000 cards sharing it): GET answers 17.1 MB in 78 to
+  83 ms of CPU and raises 72 MB of heap (`item-plan-budget.test.ts`, GC exposed, two runs), inside the 128 MB with
+  room for the object's own work; at 24 MiB it answers 25.1 MB and raises 103.5 MB, too close to the edge to allow. And
+  16 MiB sits above every ordinary plan: 2.1 MB of fields typical at 5,000 cards, 12.2 MB with a 2,000-character Long
+  Text on every card.
+  - Kept on the store's head: `plan.items_bytes`, the running total, kept by three triggers on `items` (schema step
+    V31, `plan-room/items-bytes-schema.ts`), so every write path keeps it without knowing: the api's creates, patches,
+    moves, tallies and time writes, an import, a form response, an automation, a repeat's copy, a copy, the migration
+    door, Anonymise, Empty Trash and a plan's delete. The step seeds the total from the cards as they stand. Bytes are
+    `length(CAST(fields AS BLOB))`, the stored JSON's UTF-8 bytes, as `fieldsByteSize` counts them.
+  - Checked where cards grow: `buildCreates` (a create, many creates, an import's landing, a form response),
+    `writeItem` (one card's patch or time write), `writeItemsWithRetry` (many patches), an automation's Set Field and
+    Create Card, and a repeat's copy. Each sums its growth (new bytes less old, by `fieldsByteSize`) and refuses
+    `413 plan_full` only when the growth is above 0 and the head's total plus it passes the budget, so a plan already
+    past it (none can be made past it now, but one could have been before) still loads, and an edit that shrinks it,
+    a delete or a move between columns always lands. A change of column is not counted (`fieldsGrowth` takes the
+    status and status-since as they were): a status is a short name, so it cannot grow a plan towards a failing read.
+    Moves (`/items/moves`, `/items/:id/move`), many patches, tallies and time writes all pass through the same check,
+    so a move that also sets a field, or a vote, is counted. Copies, the migration door and Anonymise are not refused:
+    they carry cards that already fit, and the triggers count them. An automation refused records "The plan's cards
+    hold as much as they may" on its run; a repeat settles its day without a copy and logs `[repeats] plan_full`.
+  - Two writes racing past the check could overshoot it by at most one request (8 MB). The handler runs inside the
+    plan's Durable Object and does no outside I/O between the check and its write, so in practice they cannot; even
+    so, that worst case (24 MiB) measures 25.1 MB and 103.5 MB of heap, still under 128 MB.
+  - Cost: the triggers add one primary-key `UPDATE plan` per card row written, lost in the noise of the writes
+    themselves (`items-bytes-schema.test.ts`, the quicker of two runs each, full schema): 5,000 cards made in one
+    transaction 631 ms without and 634 ms with; all 5,000 edited in one statement 32.8 ms and 34.7 ms; 200 single
+    edits 64.3 ms and 66.2 ms (0.01 ms a write). The check reads the head's total
+    only when a write grows the plan (one primary-key read), and measures the old and new fields it already holds.
+- **The 413s at the cap**: `items_full` still counts cards, not bytes; a request still holds at most 8 MB
+  (`MAX_BODY_BYTES`), and every many-card write is cut under it by size as well as by `ITEM_BULK_MAX`: creates and
+  imports by `createBatches` (`ITEM_WRITE_BYTES`, 6 MB), and now the editor's many-card patches, moves and tallies too
+  (`postInChunks`, 200 full 64 KB changes would be 13 MB). An import still holds at most `ITEM_IMPORT_JSON_MAX` (26 MB).
+  A write's validation is linear in its fields: a card with every built-in at its limit beside a formatted 9,000-character
+  Long Text is 53,268 bytes, and validating and measuring it takes 0.15 ms of CPU (`fields.test.ts`, 200 writes in 30 ms,
+  budget 200 ms).
 - **Measured at 5,000 cards** (M-series Mac, CPU time; every budget below holds with room, and each test reads
   `ITEMS_MAX`, so a change to the cap re-measures them):
   - First load: GET /items answers in 44 ms of CPU on node:sqlite, 3.4 MB (0.68 KB a card of a 260-character
@@ -1099,6 +1174,14 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
   334 and 401 digits at 2,000, past `isValidRank`'s 64).
 - Room op carries only the changed items. A card with a long thread (up to `ITEM_COMMENTS_BYTES`, 128 KB) sends
   its whole thread with every write to it: typical threads are a few KB; the cap bounds the worst case.
+- Room op at 64 KB a card (Work Tracker 944): one request of 200 patches to full cards relays every whole card, a
+  12.5 MiB frame (measured: serialised once in 44 ms of CPU, then sent to each socket). The editor's own many-card
+  writes are cut by size (`postInChunks`, 6 MB), so its frames stay under about 6 MB; an api client sending 200 small
+  patches to full cards reaches the 12.5 MiB. Whether the platform's WebSocket message limit takes a frame that size
+  was not measured here (no deployed room to try it on; the local runtime is not the limit). If a send throws,
+  `broadcast` catches it and drops that socket's frame alone: the client sees a revision gap on the next op and
+  reads the store again (`items.refetch.gap`), so a card is late, never lost. Splitting the relay by size is the fix
+  if a frame that size is refused.
 
 - History: a card write adds one batch to its request, of one row insert (one table row and one index entry, about
   0.2 KB) and one bounded delete per card it changed; measured in `apps/api/src/db/item-history.test.ts` (rows
@@ -1123,92 +1206,98 @@ Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, 
 `items.refetch.gap`, `items.refetch.stale`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
 `comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api), `history.read`,
 `history.append.failed`, `history.retention`, `flow.retention`, `flow.read` (api), `items.history.failed` (editor), `[repeats] made`,
-`[repeats] settled` (a copy already there), `[repeats] items_full`, `[repeats] failed` (api). Api logs never
+`[repeats] settled` (a copy already there), `[repeats] items_full`, `[repeats] plan_full`, `[repeats] failed` (api). Api logs never
 include `fields` or comment text.
 
 ## Testing
 
-| Rule                                                 | Test                                                                                                                                                                                                                                                      |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation per kind, every rejection                 | `packages/items/src/fields.test.ts`                                                                                                                                                                                                                       |
-| Long Text formatting: key, limit, stale runs         | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                                                                                      |
-| Label usage, spelling, matching, a full plan         | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                                                                                             |
-| Rank always between, stable under repeats            | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                                                                                         |
-| Bulk create grows linearly, keeps column order       | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                                                                               |
-| Write checks shared with offline                     | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                                                |
-| Partial many-item write: answer, client, undo        | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                                                                                |
-| Archive drag-off is one move                         | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                      |
-| apply functions                                      | `apply.test.ts`                                                                                                                                                                                                                                           |
-| Projection: columns, lanes, unplaced, quick          | `board.test.ts`                                                                                                                                                                                                                                           |
-| Tab-scoped set                                       | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                                                                                     |
-| Routes: gates, rejections, keys, cascade, copy       | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                 |
-| Room op redacted for a tab-scoped session            | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                                         |
-| Store transitions, inverses, sync order              | `packages/items/src/store.test.ts`                                                                                                                                                                                                                        |
-| Undo interleaving                                    | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                                                                                        |
-| Agent verbs and tools                                | `agent-verbs/src/verbs/item.test.ts`, `agent-verbs/src/verbs/thread.test.ts`, `agent-verbs/src/plan/card-threads.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                           |
-| Offline store                                        | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                                                                                           |
-| Comments field: read-only, budget, restore           | `packages/items/src/comments-field.test.ts`                                                                                                                                                                                                               |
-| Thread ops, titles, redaction, restore, legacy       | `packages/project/src/card-threads.test.ts`, `apps/api/src/plan-room/card-thread-schema.test.ts`                                                                                                                                                          |
-| Thread routes: roles, agents, cross-plan, AI         | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                                                                                          |
-| Editor thread writes, room merge, refusals           | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                                                                                            |
-| Panel threads, Add to Card, shared chip, words       | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                                                                              |
-| History: changes, values, grouping, redaction        | `packages/items/src/item-history.test.ts`                                                                                                                                                                                                                 |
-| History: storage, bounds, cascade, no D1             | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                                                                                      |
-| History: writes tagged, roles, scope, redacted       | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                                                                                          |
-| Flow counts: carry, Trash, types, range, bound       | `packages/items/src/flow-counts.test.ts`                                                                                                                                                                                                                  |
-| Flow counts: triggers, seed, read, trim, a full plan | `apps/api/src/db/flow-counts.test.ts` (step seed and rerun included)                                                                                                                                                                                      |
-| Flow metrics: finish, start, percentiles, periods    | `packages/items/src/flow-metrics.test.ts`                                                                                                                                                                                                                 |
-| Flow read: query, roles, tab scope, types, 2,000     | `apps/api/src/routes/flow-route.test.ts`                                                                                                                                                                                                                  |
-| History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`                                                                |
-| Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`                                                                             |
-| Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                                                                                            |
-| Repeats: rules, days, zones, DST, month ends         | `packages/items/src/repeat.test.ts`, `packages/items/src/repeat-dates.test.ts`, `packages/items/src/repeat-copy.test.ts`                                                                                                                                  |
-| Repeats: alarm, once a day, late, restart, stop      | `apps/api/src/plan-room/card-repeats.test.ts`, `apps/api/src/plan-room/card-repeats.edges.test.ts` (full plan, retries, parked rows)                                                                                                                      |
-| Repeats: Editor gate, roles                          | `apps/api/src/routes/item-repeat-gate.test.ts`, `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `apps/editor/components/plan/ItemRepeatLine.test.tsx`                                                                                               |
-| Repeats: dialog, glyph, Activity line                | `apps/editor/components/plan/RepeatDialog.test.tsx`, `apps/editor/components/plan/PlanCardFace.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                                                                                    |
-| AI assistant Assignee: shape, checks, notify, copies | `packages/items/src/assistant.test.ts`, `packages/items/src/fields.test.ts`, `packages/items/src/notify-fields.test.ts`, `apps/api/src/routes/item-assistant-assignee.test.ts` (roles, copy, Community, Drive file), `apps/editor/lib/import-tab.test.ts` |
-| Tab import: parse, plan, land, report                | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts`                                                               |
+| Rule                                                 | Test                                                                                                                                                                                                                                                                          |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation per kind, every rejection                 | `packages/items/src/fields.test.ts`                                                                                                                                                                                                                                           |
+| A refusal's field and limit, worded, every door      | `packages/items/src/field-limits.test.ts`, `fields.test.ts`, `write-checks.test.ts`, `plan-names.test.ts`, `apps/api/src/routes/item-field-refusals.test.ts`, `agent-verbs/src/plan/field-refusals.test.ts`                                                                   |
+| Long Text formatting: key, limit, stale runs         | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                                                                                                          |
+| Label usage, spelling, matching, a full plan         | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                                                                                                                 |
+| Rank always between, stable under repeats            | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                                                                                                             |
+| Bulk create grows linearly, keeps column order       | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                   |
+| Write checks shared with offline                     | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                                                                    |
+| Partial many-item write: answer, client, undo        | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                                                                                                    |
+| Archive drag-off is one move                         | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                          |
+| apply functions                                      | `apply.test.ts`                                                                                                                                                                                                                                                               |
+| Projection: columns, lanes, unplaced, quick          | `board.test.ts`                                                                                                                                                                                                                                                               |
+| Tab-scoped set                                       | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                                                                                                         |
+| Routes: gates, rejections, keys, cascade, copy       | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                                     |
+| Room op redacted for a tab-scoped session            | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                                                             |
+| Store transitions, inverses, sync order              | `packages/items/src/store.test.ts`                                                                                                                                                                                                                                            |
+| Undo interleaving                                    | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                                                                                                            |
+| Agent verbs and tools                                | `agent-verbs/src/verbs/item.test.ts`, `agent-verbs/src/verbs/thread.test.ts`, `agent-verbs/src/plan/card-threads.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                                               |
+| Offline store                                        | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                                                                                                               |
+| Comments field: read-only, budget, restore           | `packages/items/src/comments-field.test.ts`                                                                                                                                                                                                                                   |
+| Thread ops, titles, redaction, restore, legacy       | `packages/project/src/card-threads.test.ts`, `apps/api/src/plan-room/card-thread-schema.test.ts`                                                                                                                                                                              |
+| Thread routes: roles, agents, cross-plan, AI         | `apps/api/src/routes/card-thread-routes.test.ts`                                                                                                                                                                                                                              |
+| Editor thread writes, room merge, refusals           | `apps/editor/hooks/plan/useCardThreads.test.ts`, `apps/editor/lib/api/card-threads.test.ts`, `apps/editor/lib/offline/offline-threads.test.ts`                                                                                                                                |
+| Panel threads, Add to Card, shared chip, words       | `apps/editor/components/plan/threads/*.test.tsx`, `apps/editor/components/plan/threads/thread-words.test.ts`                                                                                                                                                                  |
+| History: changes, values, grouping, redaction        | `packages/items/src/item-history.test.ts`                                                                                                                                                                                                                                     |
+| History: storage, bounds, cascade, no D1             | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                                                                                                          |
+| History: writes tagged, roles, scope, redacted       | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                                                                                                              |
+| Flow counts: carry, Trash, types, range, bound       | `packages/items/src/flow-counts.test.ts`                                                                                                                                                                                                                                      |
+| Flow counts: triggers, seed, read, trim, a full plan | `apps/api/src/db/flow-counts.test.ts` (step seed and rerun included)                                                                                                                                                                                                          |
+| Flow metrics: finish, start, percentiles, periods    | `packages/items/src/flow-metrics.test.ts`                                                                                                                                                                                                                                     |
+| Plan fields budget: triggers, seed, refusals, GET    | `apps/api/src/plan-room/items-bytes-schema.test.ts` (every write kind keeps the total, the seed, cost), `apps/api/src/routes/item-plan-budget.test.ts` (each door refuses `plan_full`, shrinking lands past it, a plan filled to the budget still answers GET under its heap) |
+| Flow read: query, roles, tab scope, types, 2,000     | `apps/api/src/routes/flow-route.test.ts`                                                                                                                                                                                                                                      |
+| History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`                                                                                    |
+| Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`                                                                                                 |
+| Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                                                                                                                |
+| Repeats: rules, days, zones, DST, month ends         | `packages/items/src/repeat.test.ts`, `packages/items/src/repeat-dates.test.ts`, `packages/items/src/repeat-copy.test.ts`                                                                                                                                                      |
+| Repeats: alarm, once a day, late, restart, stop      | `apps/api/src/plan-room/card-repeats.test.ts`, `apps/api/src/plan-room/card-repeats.edges.test.ts` (full plan, retries, parked rows)                                                                                                                                          |
+| Repeats: Editor gate, roles                          | `apps/api/src/routes/item-repeat-gate.test.ts`, `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `apps/editor/components/plan/ItemRepeatLine.test.tsx`                                                                                                                   |
+| Repeats: dialog, glyph, Activity line                | `apps/editor/components/plan/RepeatDialog.test.tsx`, `apps/editor/components/plan/PlanCardFace.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`                                                                                                        |
+| AI assistant Assignee: shape, checks, notify, copies | `packages/items/src/assistant.test.ts`, `packages/items/src/fields.test.ts`, `packages/items/src/notify-fields.test.ts`, `apps/api/src/routes/item-assistant-assignee.test.ts` (roles, copy, Community, Drive file), `apps/editor/lib/import-tab.test.ts`                     |
+| Tab import: parse, plan, land, report                | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts`                                                                                   |
 
 ## Constants and configuration
 
-| Constant                    | Value                     | Provenance / safe range                                                                                                                      |
-| --------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ITEMS_MAX`                 | 5000                      | Spec (owner 2026-11-15, Work Tracker 672, was 2000); measured at the cap in "Performance and limits"; safe to 5,000 without windowed loading |
-| `ASSISTANT_ID_PREFIX`       | `ai-`                     | Spec (items.md "Handing a card to an AI assistant")                                                                                          |
-| `ASSISTANT_CLIENT_MAX`      | 40                        | Spec; an MCP client's name fits                                                                                                              |
-| `ASSISTANT_CLIENT_SLUG_MAX` | 24                        | Spec; keeps the id at 52, inside the person kind's 64                                                                                        |
-| `ITEM_FIELDS_BYTES`         | 16384                     | Spec; 4 KB–64 KB                                                                                                                             |
-| `ITEM_FIELDS_MAX`           | 64                        | Spec                                                                                                                                         |
-| `ITEM_TITLE_MAX`            | 500                       | Spec; raised from 200 for long card titles                                                                                                   |
-| `ITEM_DESCRIPTION_MAX`      | 10000                     | Spec                                                                                                                                         |
-| `ITEM_LABELS_MAX`           | 12                        | Spec                                                                                                                                         |
-| `ITEM_CHECKLIST_MAX`        | 50                        | Spec                                                                                                                                         |
-| `ITEM_BULK_MAX`             | 200                       | A sync of a big offline doc batches                                                                                                          |
-| `BIG_ITEMS_CHANGE`          | 200                       | `usePlanItems.ts`: a store change drawn as a transition                                                                                      |
-| `ITEM_WRITE_RETRIES`        | 3                         | As changesets' retry                                                                                                                         |
-| `ITEM_KEY_MAX`              | 1000000                   | A named key's ceiling; keeps the next key far from 2^53                                                                                      |
-| `ITEM_COMMENTS_MAX`         | 200                       | Spec; a card's conversation, well past a real one                                                                                            |
-| `ITEM_COMMENTS_BYTES`       | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                                                                                                     |
-| `ITEM_REFETCH_DEBOUNCE_MS`  | 400                       | Coalesces a burst of gaps                                                                                                                    |
-| `ITEM_ID_PATTERN`           | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                                                                                                          |
-| `ITEM_FIELD_KEY_PATTERN`    | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                                                                                                         |
-| `ITEM_HISTORY_MAX`          | 200                       | Card #122; a busy card's year of moves; 50 to 1000                                                                                           |
-| `ITEM_HISTORY_MAX_AGE_MS`   | 180 days                  | What a reader asks about; 30 to 365 days                                                                                                     |
-| `ITEM_HISTORY_GROUP_MS`     | 60000                     | Spec "within a minute"                                                                                                                       |
-| `ITEM_HISTORY_VALUE_MAX`    | 80                        | One readable line; 40 to 200                                                                                                                 |
-| `ITEM_HISTORY_LIST_MAX`     | 12                        | `ITEM_LABELS_MAX`                                                                                                                            |
-| `ITEM_HISTORY_CHANGES_MAX`  | 16                        | Bounds one entry; a write changes a few fields                                                                                               |
-| `ITEM_HISTORY_REFETCH_MS`   | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                                                                                                                |
-| `FLOW_DAYS_MAX`             | 180                       | Card 854 answer (b); `ITEM_HISTORY_MAX_AGE_MS` in days                                                                                       |
-| `FLOW_NO_STATUS`            | `''`                      | The key is never null; no status a column can hold                                                                                           |
-| `FLOW_RANGES`               | `[14, 30, 90, 180]`       | Spec "Range"                                                                                                                                 |
-| `FLOW_RANGE_DEFAULT`        | 30                        | Spec "Range": Last 30 Days                                                                                                                   |
-| `FLOW_DAILY_MAX`            | 14                        | Spec: per day in Last 14 Days                                                                                                                |
-| `ACTIVITY_ENTRIES_SHOWN`    | 20                        | Spec; a tab's worth before Show More                                                                                                         |
-| `REPEAT_COPIES_PER_WAKE`    | 25                        | Bounds one alarm's work; 10 to 100                                                                                                           |
-| `REPEAT_MORE_MS`            | 1000                      | The next wake while rows remain; 0.5 to 10 s                                                                                                 |
-| `REPEAT_SEARCH_DAYS`        | 400                       | A year and a month: every rule meets a day within it                                                                                         |
-| `REPEAT_ZONE_CACHE_MAX`     | 32                        | Zones a plan's rules name; 8 to 64                                                                                                           |
+| Constant                    | Value                     | Provenance / safe range                                                                                                                                                            |
+| --------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ITEMS_MAX`                 | 5000                      | Spec (owner 2026-11-15, Work Tracker 672, was 2000); measured at the cap in "Performance and limits"; safe to 5,000 without windowed loading                                       |
+| `ASSISTANT_ID_PREFIX`       | `ai-`                     | Spec (items.md "Handing a card to an AI assistant")                                                                                                                                |
+| `ASSISTANT_CLIENT_MAX`      | 40                        | Spec; an MCP client's name fits                                                                                                                                                    |
+| `ASSISTANT_CLIENT_SLUG_MAX` | 24                        | Spec; keeps the id at 52, inside the person kind's 64                                                                                                                              |
+| `ITEM_FIELDS_BYTES`         | 65536                     | Spec (owner 2026-11-15, Work Tracker 944, was 16384): every built-in at its limit beside a formatted 9,000-character Long Text; 16 KB–64 KB                                        |
+| `PLAN_FIELDS_BYTES`         | 16777216                  | Work Tracker 944: a plan's cards' fields together; keeps GET `/items` at 17.1 MB and 72 MB of heap at 5,000 cards ("Performance and limits"); 24 MiB raises 103.5 MB, too near 128 |
+| `ITEM_FIELDS_MAX`           | 64                        | Spec                                                                                                                                                                               |
+| `ITEM_TITLE_MAX`            | 500                       | Spec; raised from 200 for long card titles                                                                                                                                         |
+| `ITEM_DESCRIPTION_MAX`      | 10000                     | Spec                                                                                                                                                                               |
+| `ITEM_LONG_TEXT_MAX`        | 10000                     | Spec (Work Tracker 944, was 2000): `ITEM_DESCRIPTION_MAX`                                                                                                                          |
+| `ITEM_UNKNOWN_STRING_MAX`   | 2000                      | A Text field, and each string in a custom field's list                                                                                                                             |
+| `CARD_TEMPLATE_BYTES`       | 16384                     | One card template's values: a card's old budget, so ten fit `CARD_TEMPLATES_BYTES`                                                                                                 |
+| `ITEM_LABELS_MAX`           | 12                        | Spec                                                                                                                                                                               |
+| `ITEM_CHECKLIST_MAX`        | 50                        | Spec                                                                                                                                                                               |
+| `ITEM_BULK_MAX`             | 200                       | A sync of a big offline doc batches                                                                                                                                                |
+| `BIG_ITEMS_CHANGE`          | 200                       | `usePlanItems.ts`: a store change drawn as a transition                                                                                                                            |
+| `ITEM_WRITE_RETRIES`        | 3                         | As changesets' retry                                                                                                                                                               |
+| `ITEM_KEY_MAX`              | 1000000                   | A named key's ceiling; keeps the next key far from 2^53                                                                                                                            |
+| `ITEM_COMMENTS_MAX`         | 200                       | Spec; a card's conversation, well past a real one                                                                                                                                  |
+| `ITEM_COMMENTS_BYTES`       | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                                                                                                                                           |
+| `ITEM_REFETCH_DEBOUNCE_MS`  | 400                       | Coalesces a burst of gaps                                                                                                                                                          |
+| `ITEM_ID_PATTERN`           | `/^[A-Za-z0-9_-]{6,32}$/` | Client ids are 12-char nanoid-style                                                                                                                                                |
+| `ITEM_FIELD_KEY_PATTERN`    | `/^[A-Za-z0-9_-]{1,40}$/` | Spec                                                                                                                                                                               |
+| `ITEM_HISTORY_MAX`          | 200                       | Card #122; a busy card's year of moves; 50 to 1000                                                                                                                                 |
+| `ITEM_HISTORY_MAX_AGE_MS`   | 180 days                  | What a reader asks about; 30 to 365 days                                                                                                                                           |
+| `ITEM_HISTORY_GROUP_MS`     | 60000                     | Spec "within a minute"                                                                                                                                                             |
+| `ITEM_HISTORY_VALUE_MAX`    | 80                        | One readable line; 40 to 200                                                                                                                                                       |
+| `ITEM_HISTORY_LIST_MAX`     | 12                        | `ITEM_LABELS_MAX`                                                                                                                                                                  |
+| `ITEM_HISTORY_CHANGES_MAX`  | 16                        | Bounds one entry; a write changes a few fields                                                                                                                                     |
+| `ITEM_HISTORY_REFETCH_MS`   | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                                                                                                                                                      |
+| `FLOW_DAYS_MAX`             | 180                       | Card 854 answer (b); `ITEM_HISTORY_MAX_AGE_MS` in days                                                                                                                             |
+| `FLOW_NO_STATUS`            | `''`                      | The key is never null; no status a column can hold                                                                                                                                 |
+| `FLOW_RANGES`               | `[14, 30, 90, 180]`       | Spec "Range"                                                                                                                                                                       |
+| `FLOW_RANGE_DEFAULT`        | 30                        | Spec "Range": Last 30 Days                                                                                                                                                         |
+| `FLOW_DAILY_MAX`            | 14                        | Spec: per day in Last 14 Days                                                                                                                                                      |
+| `ACTIVITY_ENTRIES_SHOWN`    | 20                        | Spec; a tab's worth before Show More                                                                                                                                               |
+| `REPEAT_COPIES_PER_WAKE`    | 25                        | Bounds one alarm's work; 10 to 100                                                                                                                                                 |
+| `REPEAT_MORE_MS`            | 1000                      | The next wake while rows remain; 0.5 to 10 s                                                                                                                                       |
+| `REPEAT_SEARCH_DAYS`        | 400                       | A year and a month: every rule meets a day within it                                                                                                                               |
+| `REPEAT_ZONE_CACHE_MAX`     | 32                        | Zones a plan's rules name; 8 to 64                                                                                                                                                 |
 
 ## Many moves (`moves`)
 

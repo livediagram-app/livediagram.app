@@ -2,15 +2,37 @@
 // and the next call to make, the same words on the CLI and the MCP. A 5xx or anything not from the api is not a
 // refusal: the caller lets it throw.
 import { ApiError } from '@liveworkspace/api-client';
+import {
+  ITEM_CHECKLIST_MAX,
+  ITEM_CHECKLIST_TEXT_MAX,
+  ITEM_DESCRIPTION_MAX,
+  ITEM_TITLE_MAX,
+  ITEM_UNKNOWN_STRING_MAX,
+  PLAN_FIELDS_BYTES,
+  fieldLimitWords,
+  readFieldLimit,
+  type FieldLimit,
+} from '@liveplanner/items';
 import { archiveRefusalWords, createDeleteRefusal } from '@liveworkspace/agent-verbs/api-refusal';
 import { AGENT_PRODUCT } from '../agent-product';
 import { VerbRefusal } from '../define';
 import { SHEET_REFUSAL_WORDS } from '../sheets/sheet-refusals';
 
+const n = (x: number) => x.toLocaleString('en-GB');
+
+// The limits change_items' description and a refused field value state (docs/specs/015-api/mcp-server.md §4.9b).
+export const FIELD_LIMITS =
+  `A title holds up to ${n(ITEM_TITLE_MAX)} characters, the description and a Long Text field ` +
+  `${n(ITEM_DESCRIPTION_MAX)} (as plain text, once Markdown is read), a Text field ${n(ITEM_UNKNOWN_STRING_MAX)}, ` +
+  `and a checklist ${ITEM_CHECKLIST_MAX} rows of up to ${ITEM_CHECKLIST_TEXT_MAX} characters.`;
+
 export const FIELD_HINT =
   'Fields: title, description, status (a column name), assignee (a name), priority (urgent|high|medium|low), ' +
   'labels, estimate (0-999), start and due (YYYY-MM-DD), color (a Plan swatch), checklist [{text,done}], ' +
-  "parent (#number of a Project), and the card type's custom fields by name.";
+  `parent (#number of a Project), and the card type's custom fields by name. ${FIELD_LIMITS}`;
+
+// A field id as the card shows it (@liveplanner/items field-namer.ts), for item-changes.ts.
+export { fieldNamer } from '@liveplanner/items';
 
 const BY_CODE: Readonly<Record<string, string>> = {
   status_excluded:
@@ -31,6 +53,14 @@ const BY_CODE: Readonly<Record<string, string>> = {
   item_types_stale:
     'someone else kept changing the card types at the same moment: list_items reads them again, then retry.',
   place_invalid: 'the column or position is not valid.',
+  fields_too_large:
+    'the card would hold more than its 64 KB of fields: shorten the longest (a description, a Long Text field, ' +
+    'checklist rows).',
+  // The plan fields budget (docs/specs/026-plan/items.md "Limits").
+  plan_full:
+    `the plan's cards together hold the most a plan can (${PLAN_FIELDS_BYTES / 1024 / 1024} MB of fields). ` +
+    'Shorten long descriptions or Long Text fields, empty or delete cards no longer needed, or put new cards in ' +
+    'another plan (create_project). Moving cards between columns still works.',
   ...SHEET_REFUSAL_WORDS,
   // Forms (docs/specs/030-forms/forms.md "Agents").
   form_locked:
@@ -67,15 +97,44 @@ interface ApiRefusal {
   message: string;
 }
 
-export function apiRefusalOf(err: unknown): ApiRefusal | null {
+// The field a refusal names and the limit its value broke (docs/specs/026-plan/items.md "Limits"), from the api's body.
+function refusedFieldOf(body: string): { field?: string; limit?: FieldLimit } {
+  try {
+    const parsed: unknown = JSON.parse(body);
+    if (!parsed || typeof parsed !== 'object') return {};
+    const { field, limit: raw } = parsed as { field?: unknown; limit?: unknown };
+    const limit = readFieldLimit(raw);
+    return {
+      ...(typeof field === 'string' && field ? { field } : {}),
+      ...(limit ? { limit } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
+// `nameOf` names a field id as the card shows it ("Solution" for `f-solution`), so a value refused for its length or
+// count says which field and why (docs/specs/026-plan/plan-agents.md "Errors that teach"); without it, the id.
+export function apiRefusalOf(
+  err: unknown,
+  nameOf: (field: string) => string = (field) => field,
+): ApiRefusal | null {
   // A refusal a shared verb words itself (a picture too large, a full gallery), said as it is.
   if (err instanceof VerbRefusal) return { code: err.code, message: err.message };
   if (!(err instanceof ApiError) || err.status >= 500) return null;
   const code = err.code ?? `http_${err.status}`;
+  const { field, limit } = refusedFieldOf(err.body);
+  if (field && limit)
+    return { code, message: `The api refused it: ${fieldLimitWords(nameOf(field), limit)}` };
   const known = (err.code && BY_CODE[err.code]) || BY_STATUS[err.status];
   if (known) return { code, message: `The api refused it: ${known}` };
-  if (err.code && /field|value|label|checklist|estimate|priority|date|colou?r/.test(err.code))
-    return { code, message: `The api refused a field value (${err.code}). ${FIELD_HINT}` };
+  if (
+    err.code &&
+    /field|value|label|checklist|estimate|priority|date|colou?r|title/.test(err.code)
+  ) {
+    const which = field ? `the value of ${nameOf(field)}` : 'a field value';
+    return { code, message: `The api refused ${which} (${err.code}). ${FIELD_HINT}` };
+  }
   return { code, message: `The api refused it (${code}).` };
 }
 

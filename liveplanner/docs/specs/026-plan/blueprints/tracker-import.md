@@ -287,7 +287,7 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 | Over 5,000 cards / no cards                | `too_many_cards` (count) / `no_cards`, inline; nothing offered                               |
 | Plan lacks room or the catalogue is full   | preview `fits: false`, tab target dimmed with `reason`, New Plan chosen; agents `items_full` |
 | More than 12 statuses                      | folded into `Other`, counted                                                                 |
-| A card's fields over 16 KB                 | `fitFields`, counted `shortened`                                                             |
+| A card's fields over 64 KB                 | `fitFields`, counted `shortened`                                                             |
 | Item store never loads                     | nothing written; "Couldn’t import those cards. Try again."                                   |
 | A card write fails part way                | no card lands (one transaction); held parts cleared, or swept within the hour                |
 | An import's JSON past 26 MiB (API only)    | `413 import_too_large`; nothing lands, held parts cleared                                    |

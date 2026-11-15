@@ -28,6 +28,7 @@ import {
   itemCaller,
   itemNotFound,
   retiresItem,
+  rejectedRead,
   timeTracked,
   writer,
 } from './item-route-kit';
@@ -49,7 +50,7 @@ function readMoves(raw: unknown): ItemMoveOf[] | Response {
       return badRequest('each item needs its id');
     const { id, ...body } = entry as Record<string, unknown> & { id: string };
     const move = readItemMove(body);
-    if (typeof move === 'string') return rejectedFor(id, move);
+    if (typeof move === 'string') return rejectedRead(move, body.set, 'patch', id);
     out.push({ id, move });
   }
   return out;

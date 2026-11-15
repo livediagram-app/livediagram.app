@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  fieldsByteSize,
   fieldsWithinBounds,
   isValidItemId,
   isValidItemType,
@@ -7,7 +9,15 @@ import {
   validateFields,
   validateVotes,
 } from './fields';
-import { ITEM_FIELDS_MAX, ITEM_TITLE_MAX } from './limits';
+import {
+  ITEM_CHECKLIST_MAX,
+  ITEM_DESCRIPTION_MAX,
+  ITEM_FIELDS_BYTES,
+  ITEM_FIELDS_MAX,
+  ITEM_LONG_TEXT_MAX,
+  ITEM_TITLE_MAX,
+  ITEM_UNKNOWN_STRING_MAX,
+} from './limits';
 
 describe('validateFields', () => {
   it('requires a title on create, trims it', () => {
@@ -47,7 +57,8 @@ describe('validateFields', () => {
       [{ votes: {} }, 'votes_read_only'],
       [{ 'bad key': 1 }, 'field_key_invalid'],
       [{ custom: { nested: 1 } }, 'field_value_invalid'],
-      [{ custom: 'x'.repeat(2001) }, 'field_value_invalid'],
+      [{ custom: 'x'.repeat(ITEM_LONG_TEXT_MAX + 1) }, 'field_value_invalid'],
+      [{ custom: ['x'.repeat(ITEM_UNKNOWN_STRING_MAX + 1)] }, 'field_value_invalid'],
     ];
     for (const [input, error] of bad)
       expect(validateFields(input, 'patch')).toMatchObject({ ok: false, error });
@@ -96,7 +107,7 @@ describe('validateFields', () => {
     expect(validateFields('x', 'patch')).toMatchObject({ error: 'field_value_invalid' });
     expect(fieldsWithinBounds(many)).toBe('fields_too_many');
     const big = Object.fromEntries(
-      Array.from({ length: 10 }, (_, i) => [`k${i}`, 'x'.repeat(2000)]),
+      Array.from({ length: 7 }, (_, i) => [`k${i}`, 'x'.repeat(ITEM_LONG_TEXT_MAX)]),
     );
     expect(fieldsWithinBounds(big)).toBe('fields_too_large');
     expect(fieldsWithinBounds({ title: 'ok' })).toBeNull();
@@ -181,5 +192,133 @@ describe('validateFields, an AI assistant Assignee', () => {
       ok: true,
       fields: { 'f-owners': [THOMAS] },
     });
+  });
+});
+
+// docs/specs/026-plan/items.md "Limits": a refused value names its field and the limit it broke (Work Tracker 944).
+describe('a refusal names the field and the limit', () => {
+  const refusal = (input: Record<string, unknown>) => validateFields(input, 'patch');
+
+  it('gives a custom Long Text the Description’s 10,000 characters', () => {
+    expect(refusal({ 'f-solution': 's'.repeat(9000) })).toEqual({
+      ok: true,
+      fields: { 'f-solution': 's'.repeat(9000) },
+    });
+    expect(refusal({ 'f-solution': 's'.repeat(ITEM_LONG_TEXT_MAX + 1) })).toEqual({
+      ok: false,
+      error: 'field_value_invalid',
+      field: 'f-solution',
+      limit: { unit: 'characters', max: 10_000, given: 10_001 },
+    });
+  });
+
+  it('names the title, the description and a status past their length', () => {
+    expect(refusal({ title: 't'.repeat(ITEM_TITLE_MAX + 2) })).toMatchObject({
+      error: 'title_too_long',
+      field: 'title',
+      limit: { unit: 'characters', max: ITEM_TITLE_MAX, given: ITEM_TITLE_MAX + 2 },
+    });
+    expect(refusal({ description: 'd'.repeat(ITEM_DESCRIPTION_MAX + 1) })).toMatchObject({
+      field: 'description',
+      limit: { unit: 'characters', max: ITEM_DESCRIPTION_MAX },
+    });
+    expect(refusal({ status: 's'.repeat(41) })).toMatchObject({
+      field: 'status',
+      limit: { unit: 'characters', max: 40, given: 41 },
+    });
+  });
+
+  it('names the checklist row too long, or the rows too many, built-in or custom', () => {
+    const rows = (n: number, long?: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        text: i === long ? 'r'.repeat(230) : 'ok',
+        done: false,
+      }));
+    for (const key of ['checklist', 'f-acceptance']) {
+      expect(refusal({ [key]: rows(7, 2) })).toMatchObject({
+        field: key,
+        limit: { unit: 'characters', max: 200, given: 230, row: 3, entry: 'row' },
+      });
+      expect(refusal({ [key]: rows(ITEM_CHECKLIST_MAX + 1) })).toMatchObject({
+        field: key,
+        limit: { unit: 'rows', max: 50, given: 51 },
+      });
+    }
+  });
+
+  it('names labels, a list’s values and its people past their counts', () => {
+    expect(refusal({ labels: ['a', 'l'.repeat(33)] })).toMatchObject({
+      limit: { unit: 'characters', max: 32, given: 33, row: 2, entry: 'label' },
+    });
+    expect(refusal({ labels: Array.from({ length: 13 }, (_, i) => `l${i}`) })).toMatchObject({
+      limit: { unit: 'labels', max: 12, given: 13 },
+    });
+    expect(refusal({ custom: Array.from({ length: 51 }, () => 'v') })).toMatchObject({
+      limit: { unit: 'values', max: 50, given: 51 },
+    });
+    expect(refusal({ custom: ['v', 'v'.repeat(ITEM_UNKNOWN_STRING_MAX + 1)] })).toMatchObject({
+      limit: { unit: 'characters', row: 2, entry: 'value' },
+    });
+    const person = { id: 'p1', name: 'P', color: '#112233' };
+    expect(refusal({ people: Array.from({ length: 21 }, () => person) })).toMatchObject({
+      limit: { unit: 'values', max: 20, given: 21 },
+    });
+  });
+
+  it('gives no limit to a value of the wrong shape', () => {
+    for (const input of [
+      { title: 3 },
+      { description: 4 },
+      { status: 5 },
+      { labels: 'a' },
+      { checklist: 'a' },
+      { checklist: [{ text: 'a' }] },
+      { custom: { nested: 1 } },
+      { custom: [1, { a: 1 }] },
+      { custom: [{ id: 'p1', name: 'P', color: 'red' }] },
+      { descriptionRich: 'plain' },
+      { estimate: 1000 },
+    ]) {
+      const r = refusal(input);
+      expect(r.ok).toBe(false);
+      expect(r).not.toHaveProperty('limit');
+    }
+  });
+
+  it('fits a formatted 9,000-character Long Text beside a full formatted description', () => {
+    const marked = (n: number) =>
+      Array.from({ length: n / 100 }, (_, i) => ({
+        text: 'w'.repeat(100),
+        ...(i % 2 ? { bold: true } : {}),
+      }));
+    const fields = {
+      title: 't'.repeat(ITEM_TITLE_MAX),
+      description: 'd'.repeat(ITEM_DESCRIPTION_MAX),
+      descriptionRich: marked(ITEM_DESCRIPTION_MAX),
+      'f-solution': 's'.repeat(9000),
+      'f-solutionRich': marked(9000),
+      checklist: Array.from({ length: ITEM_CHECKLIST_MAX }, () => ({
+        text: 'c'.repeat(200),
+        done: false,
+      })),
+    };
+    const checked = validateFields(fields, 'create');
+    expect(checked.ok).toBe(true);
+    const bytes = fieldsByteSize(checked.ok ? checked.fields : {});
+    expect(bytes).toBeLessThan(ITEM_FIELDS_BYTES);
+    expect(fieldsWithinBounds(checked.ok ? checked.fields : {})).toBeNull();
+    // Every write validates and measures its card's fields: linear in them. Measured 30 ms for 200 (0.15 ms a write of
+    // this 53 KB card, beside a refused 10,001-character value).
+    let refused = 0;
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 200; i++) {
+        const r = validateFields(fields, 'create');
+        if (r.ok) fieldsByteSize(r.fields);
+        if (!validateFields({ 'f-x': 'x'.repeat(ITEM_LONG_TEXT_MAX + 1) }, 'patch').ok)
+          refused += 1;
+      }
+    });
+    expect(refused).toBe(200);
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 });

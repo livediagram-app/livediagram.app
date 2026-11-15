@@ -52,7 +52,10 @@ import {
 import { isAccountId } from '@liveworkspace/auth-client';
 import {
   getItemStoreHead,
+  fieldsGrowth,
   insertItems,
+  passesPlanBudget,
+  planFullFor,
   listItems,
   readItem,
   updateItemAtRev,
@@ -168,6 +171,8 @@ export async function patchCard(
         : applyPatch(before, patch, { now, by });
     const refused = refusalOf(plan, next, before);
     if (refused) return { ok: false, reason: refused };
+    if (await planFullFor(deps.env, deps.planId, fieldsGrowth([{ before, next }])))
+      return { ok: false, reason: PLAN_FULL_REASON };
     const rev = await updateItemAtRev(deps.env, deps.planId, next, before.rev);
     if (rev === null) continue;
     deps.relay([next], rev);
@@ -176,6 +181,9 @@ export async function patchCard(
   }
   return { ok: false, reason: 'The card kept changing' };
 }
+
+// A write past the plan fields budget (docs/specs/026-plan/items.md "Limits"), as the run's log shows it.
+const PLAN_FULL_REASON = "The plan's cards hold as much as they may";
 
 // The card a Create Card makes, in its column or its type's Default State, by Automation.
 async function createCard(
@@ -216,6 +224,8 @@ async function createCard(
       by: automationPerson(rule.name, source.via),
       items: itemPlacer(items),
     });
+    if (passesPlanBudget(head.bytes, fieldsGrowth([{ before: null, next: made }])))
+      return { ok: false, reason: PLAN_FULL_REASON };
     try {
       const rev = await insertItems(deps.env, deps.planId, [made]);
       deps.relay([made], rev);

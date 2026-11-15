@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { item } from './test-items';
 import { ITEM_TYPES } from './item-types';
 import {
+  fieldRefusalOf,
   readItemCreate,
   readItemMove,
   readItemPlace,
@@ -165,5 +166,27 @@ describe('a Blocked By loop', () => {
     ).toBe('blocks_cycle');
     // A write adding no link passes.
     expect(writtenItemsRefusal(patch, [a, b], [a], blocking)).toBeNull();
+  });
+});
+
+// docs/specs/026-plan/items.md "Limits": the api's refusal names the field and the limit (Work Tracker 944).
+describe('the field a refused read is about', () => {
+  it('names the field and the limit its value broke', () => {
+    const fields = { title: 'A', 'f-solution': 's'.repeat(10_001) };
+    expect(readItemCreate({ type: 'task', fields })).toBe('field_value_invalid');
+    expect(fieldRefusalOf('field_value_invalid', fields, 'create')).toEqual({
+      field: 'f-solution',
+      limit: { unit: 'characters', max: 10_000, given: 10_001 },
+    });
+    expect(fieldRefusalOf('field_value_invalid', { due: 'soon' }, 'patch')).toEqual({
+      field: 'due',
+    });
+  });
+
+  it('names nothing when the refusal was not the fields’', () => {
+    expect(fieldRefusalOf('type_invalid', { title: 'A' }, 'create')).toEqual({});
+    expect(fieldRefusalOf('field_value_invalid', undefined, 'patch')).toEqual({});
+    expect(fieldRefusalOf('fields_too_many', { title: 'A' }, 'create')).toEqual({});
+    expect(fieldRefusalOf('field_value_invalid', 'x', 'patch')).toEqual({});
   });
 });

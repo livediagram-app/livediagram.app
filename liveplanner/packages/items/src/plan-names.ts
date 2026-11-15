@@ -12,9 +12,11 @@ import {
 } from './item-types';
 import { holdsSeveral } from './several-values';
 import { knownFieldKind, PRIORITIES, validDate, validateFields } from './fields';
+import { fieldLimitWords, textMaxOfKind } from './field-limits';
 import {
   FIELD_VALUES_MAX,
   ITEM_CHECKLIST_MAX,
+  ITEM_CHECKLIST_TEXT_MAX,
   ITEM_LABEL_MAX,
   ITEM_LABELS_MAX,
   ITEM_NUMBER_MAX,
@@ -321,6 +323,17 @@ export function resolveFields(
       out[key] = v.value;
       continue;
     }
+    // A Text field holds less than the store keeps for any custom field (a Long Text's limit), so it is held here; a
+    // Long Text's Markdown is read to plain text first, so the api holds it, naming it (items.md "Limits").
+    if (field.kind === 'text' && typeof value === 'string' && value.length > textMaxOfKind('text'))
+      return refuse(
+        'value_invalid',
+        fieldLimitWords(field.label, {
+          unit: 'characters',
+          max: textMaxOfKind('text'),
+          given: value.length,
+        }),
+      );
     const asBuiltIn = builtInFieldOfKind(field.kind);
     if (asBuiltIn) {
       const v = builtInValue(asBuiltIn, value, naming);
@@ -562,6 +575,8 @@ function checkedBuiltIn(
   const result = validateFields({ [key]: given }, 'patch');
   if (result.ok) return { ok: true, value: result.fields[key] };
   const label = name;
+  // A value past a limit says which and how far, never quoted back (plan-agents.md "Errors that teach").
+  if (result.limit) return refuse('value_invalid', fieldLimitWords(label, result.limit));
   const shown = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
   const takes: Partial<Record<string, string>> = {
     number: `a number from 0 to ${ITEM_NUMBER_MAX}`,
@@ -570,7 +585,7 @@ function checkedBuiltIn(
     flag: 'TRUE, or nothing to leave it off',
     colour: 'a colour as #rrggbb',
     labels: `up to ${ITEM_LABELS_MAX} labels of up to ${ITEM_LABEL_MAX} characters`,
-    checklist: `up to ${ITEM_CHECKLIST_MAX} rows`,
+    checklist: `up to ${ITEM_CHECKLIST_MAX} rows of up to ${ITEM_CHECKLIST_TEXT_MAX} characters`,
     text: `up to ${ITEM_TITLE_MAX} characters`,
   };
   return refuse(

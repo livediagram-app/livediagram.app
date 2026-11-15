@@ -22,6 +22,7 @@ import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
 import { FLOW_COUNTS_SCHEMA } from './flow-counts-schema';
+import { itemsBytesStep } from './items-bytes-schema';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 import { ITEM_IMPORTS_SCHEMA } from './item-imports-schema';
 import {
@@ -528,6 +529,10 @@ const V29 = FLOW_COUNTS_SCHEMA;
 // feed options.
 const V30 = CALENDAR_FEEDS_SCHEMA;
 
+// The plan fields budget's running total (items-bytes-schema.ts; docs/specs/026-plan/items.md "Limits"):
+// `plan.items_bytes`, seeded from the cards, and the triggers on `items` that keep it. Asks first, as V10 does.
+const V31 = itemsBytesStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -559,6 +564,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V28,
   V29,
   V30,
+  V31,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

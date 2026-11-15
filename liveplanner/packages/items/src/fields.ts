@@ -16,6 +16,7 @@ import {
   ITEM_ID_PATTERN,
   ITEM_LABELS_MAX,
   ITEM_LABEL_MAX,
+  ITEM_LONG_TEXT_MAX,
   ITEM_NUMBER_MAX,
   ITEM_STATUS_MAX,
   ITEM_TITLE_MAX,
@@ -34,6 +35,7 @@ import { isStatusSince } from './status-since';
 import { isStampField } from './card-stamps';
 import { REPEAT_FIELD, readRepeatRule } from './repeat';
 import { isAssistantId, normaliseAssistant } from './assistant';
+import { brokenLimitOf, type FieldLimit, type LimitShape } from './field-limits';
 
 type ItemFieldKind =
   | 'text'
@@ -120,8 +122,30 @@ export type ItemRejection =
   // "Blocked By").
   | 'blocks_cycle';
 
-type FieldsResult =
-  { ok: true; fields: ItemFields } | { ok: false; error: ItemRejection; field?: string };
+// A refusal names the field, and the limit its value broke when it broke one (field-limits.ts).
+export type FieldsRefusal = { ok: false; error: ItemRejection; field?: string; limit?: FieldLimit };
+type FieldsResult = { ok: true; fields: ItemFields } | FieldsRefusal;
+
+// The shape a refused value's limit is read as: a built-in field's kind where it has limits, a custom field's own.
+const LIMIT_SHAPES: Partial<Record<ItemFieldKind, LimitShape>> = {
+  text: 'title',
+  'long-text': 'long-text',
+  status: 'status',
+  labels: 'labels',
+  checklist: 'checklist',
+};
+
+// `key`'s value refused, with the limit it broke when it broke one.
+function refusedValue(
+  key: string,
+  v: unknown,
+  shape: LimitShape | undefined,
+  error: ItemRejection = 'field_value_invalid',
+  max?: number,
+): FieldsRefusal {
+  const limit = brokenLimitOf(shape, v, max);
+  return { ok: false, error, field: key, ...(limit ? { limit } : {}) };
+}
 
 export function knownFieldKind(key: string): ItemFieldKind | undefined {
   return Object.prototype.hasOwnProperty.call(KNOWN_FIELDS, key)
@@ -246,8 +270,10 @@ function normaliseKnownField(
 
 // A custom field's value: a scalar or a list of them, or the two shapes a built-in field's kind keeps that are not
 // (docs/specs/026-plan/item-types.md "Custom field kinds"): a Person field's `{ id, name, color }`, and a Checklist
-// field's `{ text, done }` rows, checked as the Assignee's and the Checklist's are, and a list of people.
+// field's `{ text, done }` rows, checked as the Assignee's and the Checklist's are, and a list of people. A field's own
+// text is held to a Long Text's limit, the most any custom field holds; a string in a list to ITEM_UNKNOWN_STRING_MAX.
 function normaliseUnknown(v: unknown): ItemFieldValue | undefined {
+  if (typeof v === 'string') return v.length <= ITEM_LONG_TEXT_MAX ? v : undefined;
   if (isScalar(v)) return v;
   if (isObj(v)) return normaliseKnown('person', v);
   if (!Array.isArray(v)) return undefined;
@@ -287,13 +313,13 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
       if (typeof v !== 'string') return { ok: false, error: 'field_value_invalid', field: key };
       const t = v.trim();
       if (t.length === 0) return { ok: false, error: 'title_required', field: key };
-      if (t.length > ITEM_TITLE_MAX) return { ok: false, error: 'title_too_long', field: key };
+      if (t.length > ITEM_TITLE_MAX) return refusedValue(key, v, 'title', 'title_too_long');
       fields[key] = t;
       continue;
     }
     if (isRichFieldKey(key)) {
       const runs = normaliseRichRuns(v, richTextMaxOf(key));
-      if (!runs) return { ok: false, error: 'field_value_invalid', field: key };
+      if (!runs) return refusedValue(key, v, 'rich', undefined, richTextMaxOf(key));
       fields[key] = runs;
       continue;
     }
@@ -313,9 +339,8 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
       continue;
     }
     if (kind === 'long-text') {
-      if (typeof v !== 'string' || v.length > ITEM_DESCRIPTION_MAX) {
-        return { ok: false, error: 'field_value_invalid', field: key };
-      }
+      if (typeof v !== 'string' || v.length > ITEM_DESCRIPTION_MAX)
+        return refusedValue(key, v, 'long-text');
       fields[key] = v;
       continue;
     }
@@ -337,7 +362,7 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
     // project, a seed) may hold any value there. Making one drops a value that is not a swatch rather than
     // refusing the whole item; setting one still has to be a swatch.
     if (value === undefined && kind === 'colour' && mode === 'create') continue;
-    if (value === undefined) return { ok: false, error: 'field_value_invalid', field: key };
+    if (value === undefined) return refusedValue(key, v, kind ? LIMIT_SHAPES[kind] : undefined);
     fields[key] = value;
   }
   if (mode === 'create' && typeof fields['title'] !== 'string') {

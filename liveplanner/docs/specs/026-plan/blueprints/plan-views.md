@@ -303,9 +303,31 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
     plan to see the flow.".
   - Telemetry: `Plan · Changed · ViewRange`, charted on the site as "Flow Chart Ranges Changed".
   - Help: plan/visualisations "See How Work Flows" and Range, plan/dashboards.
-- Part 4 (agents): the view ids and `rangeDays` in the Dashboard spec of `create_project` / `add_tab` and the plan view
-  element of `update_project`, `read_project`'s description ("Cycle Time, last 30 days"), the CLI; role tests
-  end to end; fold-back.
+- Part 4 (agents, shipped):
+  - Dashboard input (`packages/agent-verbs/src/plan/dashboard-input.ts`): a chart's `rangeDays?: number`; on a view
+    outside `FLOW_VIEWS` refused "rangeDays is a flow chart's range (cycle-time, throughput, cumulative-flow), not
+    <view>'s."; outside `FLOW_RANGES` refused "No range of <n> days. A flow chart reads 14, 30, 90, 180 days."; kept in
+    `settings.rangeDays` unless `FLOW_RANGE_DEFAULT`. The MCP schema (`packages/agent-verbs/src/mcp/schema.ts` `dashboardField.charts`) takes
+    `rangeDays: z.literal(FLOW_RANGES)` and names the three views in `view`'s description.
+  - The builder (`packages/templates/src/dashboard-builder.ts` `planViewElement`) drops a `rangeDays` of
+    `FLOW_RANGE_DEFAULT`, so a REST or CLI replace never stores 30 either.
+  - A replace's `dashboard` body (`packages/edit-operations/src/dashboard-body.ts` `dashboardSpecIssue`): a chart's
+    `settings.rangeDays` off a flow view or outside `FLOW_RANGES` is "dashboard.charts[i].settings.rangeDays: a flow
+    chart's (cycle-time, throughput, cumulative-flow) range, 14, 30, 90, 180 days"; any settings
+    `isPlanViewSettings({ ...settings, view })` refuses is "dashboard.charts[i].settings: not settings a <view> chart
+    takes".
+  - The element format: `PLAN_VIEW_FORMAT` (`packages/edit-operations/src/plan-elements.ts`), read off
+    `DASHBOARD_METRIC_KINDS`, `DASHBOARD_CHART_VIEWS`, `FLOW_VIEWS` and `FLOW_RANGES`, is printed by
+    `elementFormatText('plan-view')` (`liveplanner schema plan-view`, `GET /api/schema/plan-view`) and the MCP's
+    inline `ELEMENT_SCHEMA_HINT` and `elementSchemaDoc`. A plan view element's `planView.rangeDays` is checked by
+    `isPlanViewSettings` as any other write (`invalid_result`).
+  - The outline (`packages/project-views/src/content-summary.ts`): a flow view's summary is `view=<id>
+rangeDays=<flowRangeOf>`, the range always named. `@liveplanner/project` re-exports `FLOW_RANGES`,
+    `FLOW_RANGE_DEFAULT`, `FLOW_VIEWS`, `flowRangeOf`, `isFlowView` and `isPlanViewSettings` for the packages above
+    it.
+  - Roles: no new gate. A chart's settings change by element writes, which `gateEdit` holds for an Editor (changesets
+    and tab saves); a tab-scoped edit link's write to another tab is 404 (`deniedEdit`); the flow read is the part 2
+    route's.
 
 ## Performance and limits
 
@@ -315,28 +337,31 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
 
 ## Testing
 
-| Rule                                                 | Test                                                                                                                                                                                                       |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ids, sizes, phases, metric board                     | packages/items/src/plan-views.test.ts                                                                                                                                                                      |
-| Gantt rows, marks, axis, ticks, drags, scales        | packages/items/src/plan-view-gantt.test.ts                                                                                                                                                                 |
-| Calendar, workload, status, priority models          | packages/items/src/plan-view-charts.test.ts                                                                                                                                                                |
-| Calendar moves, Start Calendar model                 | packages/items/src/calendar-move.test.ts                                                                                                                                                                   |
-| Calendar drag, keyboard move, roles, Start Cal       | apps/editor/components/plan/views/CalendarView.test.tsx                                                                                                                                                    |
-| Element seed, validation, export box                 | packages/project/src/plan-shapes.test.ts                                                                                                                                                                   |
-| Rendering, empty and loading, opening, metrics       | apps/editor/components/plan/views/PlanViewView.test.tsx                                                                                                                                                    |
-| Gantt window pin, pan, slop, cleanup                 | apps/editor/components/plan/views/useGanttWindow.test.ts                                                                                                                                                   |
-| Gantt View flyout (card types, swimlanes)            | apps/editor/components/palette/PlanViewMenuSection.test.tsx                                                                                                                                                |
-| Gantt row order (apply, reorder, validation)         | packages/items/src/gantt-row-order.test.ts                                                                                                                                                                 |
-| Gantt row drag, keyboard move, lanes                 | apps/editor/components/plan/views/GanttRowOrder.test.tsx                                                                                                                                                   |
-| Palette categories and tiles                         | apps/editor/components/palette/palette-*.test.ts(x)                                                                                                                                                        |
-| Slot name: read, cap, remap, set and clear           | packages/project/src/slot-name.test.ts                                                                                                                                                                     |
-| Slot name field: offered, save, Escape, clear, roles | apps/editor/components/plan/dashboard/SlotNameField.test.tsx                                                                                                                                               |
-| Slot name shown on a chart, metric and figures       | apps/editor/components/plan/views/PlanViewView.slot-name.test.tsx, apps/editor/components/plan/dashboard/DashboardSheetMetric.test.tsx, apps/editor/components/plan/dashboard/DashboardFormMetric.test.tsx |
-| Slot name in exports                                 | packages/plan-art/src/dashboard-export.test.ts, dashboard-card-art.test.ts, plan-view-art.test.ts                                                                                                          |
-| Flow store: share, debounce, drop, error, retry      | apps/editor/hooks/plan/plan-flow-store.test.ts                                                                                                                                                             |
-| Flow geometry, bands, summaries                      | apps/editor/components/plan/views/flow-chart-model.test.ts                                                                                                                                                 |
-| Flow charts: states, hover, keys, roles, a full plan | apps/editor/components/plan/views/FlowViews.test.tsx                                                                                                                                                       |
-| Agent chart names                                    | packages/agent-verbs/src/plan/dashboard-input.test.ts, packages/templates/src/dashboard-builder.test.ts                                                                                                    |
+| Rule                                                 | Test                                                                                                                                                                                                                                               |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ids, sizes, phases, metric board                     | packages/items/src/plan-views.test.ts                                                                                                                                                                                                              |
+| Gantt rows, marks, axis, ticks, drags, scales        | packages/items/src/plan-view-gantt.test.ts                                                                                                                                                                                                         |
+| Calendar, workload, status, priority models          | packages/items/src/plan-view-charts.test.ts                                                                                                                                                                                                        |
+| Calendar moves, Start Calendar model                 | packages/items/src/calendar-move.test.ts                                                                                                                                                                                                           |
+| Calendar drag, keyboard move, roles, Start Cal       | apps/editor/components/plan/views/CalendarView.test.tsx                                                                                                                                                                                            |
+| Element seed, validation, export box                 | packages/project/src/plan-shapes.test.ts                                                                                                                                                                                                           |
+| Rendering, empty and loading, opening, metrics       | apps/editor/components/plan/views/PlanViewView.test.tsx                                                                                                                                                                                            |
+| Gantt window pin, pan, slop, cleanup                 | apps/editor/components/plan/views/useGanttWindow.test.ts                                                                                                                                                                                           |
+| Gantt View flyout (card types, swimlanes)            | apps/editor/components/palette/PlanViewMenuSection.test.tsx                                                                                                                                                                                        |
+| Gantt row order (apply, reorder, validation)         | packages/items/src/gantt-row-order.test.ts                                                                                                                                                                                                         |
+| Gantt row drag, keyboard move, lanes                 | apps/editor/components/plan/views/GanttRowOrder.test.tsx                                                                                                                                                                                           |
+| Palette categories and tiles                         | apps/editor/components/palette/palette-*.test.ts(x)                                                                                                                                                                                                |
+| Slot name: read, cap, remap, set and clear           | packages/project/src/slot-name.test.ts                                                                                                                                                                                                             |
+| Slot name field: offered, save, Escape, clear, roles | apps/editor/components/plan/dashboard/SlotNameField.test.tsx                                                                                                                                                                                       |
+| Slot name shown on a chart, metric and figures       | apps/editor/components/plan/views/PlanViewView.slot-name.test.tsx, apps/editor/components/plan/dashboard/DashboardSheetMetric.test.tsx, apps/editor/components/plan/dashboard/DashboardFormMetric.test.tsx                                         |
+| Slot name in exports                                 | packages/plan-art/src/dashboard-export.test.ts, dashboard-card-art.test.ts, plan-view-art.test.ts                                                                                                                                                  |
+| Flow store: share, debounce, drop, error, retry      | apps/editor/hooks/plan/plan-flow-store.test.ts                                                                                                                                                                                                     |
+| Flow geometry, bands, summaries                      | apps/editor/components/plan/views/flow-chart-model.test.ts                                                                                                                                                                                         |
+| Flow charts: states, hover, keys, roles, a full plan | apps/editor/components/plan/views/FlowViews.test.tsx                                                                                                                                                                                               |
+| Agent chart names                                    | packages/agent-verbs/src/plan/dashboard-input.test.ts, packages/templates/src/dashboard-builder.test.ts                                                                                                                                            |
+| Flow charts for agents: input, body, format, outline | packages/agent-verbs/src/plan/dashboard-input.test.ts, packages/agent-verbs/src/mcp/schema.test.ts, packages/edit-operations/src/dashboard-body.test.ts, element-format.test.ts, index.test.ts, packages/project-views/src/content-summary.test.ts |
+| Flow charts through the MCP doors and roles          | apps/mcp/src/flow-charts.test.ts                                                                                                                                                                                                                   |
+| Flow chart settings and reads by role, end to end    | apps/api/src/routes/flow-chart-roles.test.ts                                                                                                                                                                                                       |
 
 ## Constants and configuration
 

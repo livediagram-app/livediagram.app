@@ -214,7 +214,8 @@ describe('the pictures a plan reports', () => {
   // quarter a Several Images list of three and two labels). Measured at 6.0 ms on a loaded laptop with the lists' scan,
   // 3.9 ms on the same plan without it (the plan holding a grant; at most once a minute a plan); the budget fails only
   // on a quadratic turn.
-  it('stays cheap on a full plan (ITEMS_MAX cards)', async () => {
+  // The budget is CPU time, not wall time: a loaded CI runner stretches only the wall clock past vitest's 5 s default.
+  it('stays cheap on a full plan (ITEMS_MAX cards)', { timeout: 30_000 }, async () => {
     const p = plan();
     const filler = 'x'.repeat(400);
     for (let i = 0; i < ITEMS_MAX; i++) {

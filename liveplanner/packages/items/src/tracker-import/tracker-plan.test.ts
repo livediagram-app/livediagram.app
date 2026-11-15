@@ -368,11 +368,22 @@ describe('caps', () => {
       text: `${i} ${'c'.repeat(190)}`,
       done: false,
     }));
+    // Five long extras in a three-byte script (2,000 characters, 6,000 bytes each) beside a full description pass the
+    // card's 64 KB; without the description they fit.
+    const extras = Array.from({ length: 5 }, (_, i) => ({
+      key: `e${i}`,
+      label: `Notes ${i}`,
+      kind: 'text' as const,
+    }));
+    const long = Object.fromEntries(extras.map((e) => [e.key, '€'.repeat(2000)]));
     const plan = planTrackerImport(
-      boardOf([
-        blank('Big', 'Todo', { description: 'd'.repeat(10_000), checklist }),
-        blank('Bad', 'Todo', { due: 'not a day' }),
-      ]),
+      boardOf(
+        [
+          blank('Big', 'Todo', { description: '€'.repeat(10_000), checklist, extras: long }),
+          blank('Bad', 'Todo', { due: 'not a day' }),
+        ],
+        { extras },
+      ),
       ctx(),
     );
     expect(plan.creates).toHaveLength(1);
