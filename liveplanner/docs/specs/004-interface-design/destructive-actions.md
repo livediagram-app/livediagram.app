@@ -13,5 +13,10 @@ the same row, tile, icon button or button as its neighbours.
   purpose (the card panel's ⋯ menu ends in Trash).
 - **Toolbars and panels**: the element toolbars' Delete, a row's remove cross, a Trash drop target and the Trash
   count badge use the neutral or brand tones their neighbours use (the Plan Trash badge is grey).
+- **Many cards at once**: a run of card deletes and Trash moves past the plan's limit is held by the server rather
+  than landing ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) "Mass card
+  removals"). The editor keeps the held change under a neutral Needs Review banner with a pause mark, never red: nothing
+  went wrong, it is a check. The safe choice, Keep Cards, is its primary button; the removal says exactly what it does
+  ("Remove 11 Cards") as a secondary button.
 - **Still red**: errors and validation (an invalid field, a failed import, an expired stamp) and states that mean
   something went wrong or is refused (a refused drop); never a control because it deletes.

@@ -11,6 +11,10 @@ import {
   planQueue,
   planQueueKey,
   waitingChangeCount,
+  heldCardCount,
+  heldGroups,
+  confirmHeldChanges,
+  keepHeldCards,
 } from '@/lib/offline-queue/plan-queue';
 import { signalReconnect } from '@/lib/offline-queue/reconnect';
 
@@ -267,5 +271,81 @@ describe('usePlanItems offline, by role', () => {
     // The delete was sent, as a Participant's online one is, and its failure told.
     expect(api.writeItem).toHaveBeenCalledTimes(1);
     expect(onError).toHaveBeenCalled();
+  });
+
+  // offline-changes.md "Held for review".
+  it('keeps a removal the server held, still shown, and sends it confirmed on Remove N Cards', async () => {
+    const two = { items: [card(), card('B', 'item-two', 2)], rev: 1, nextKey: 3 };
+    api.fetchItems.mockResolvedValue(two);
+    const { result, onError } = mount();
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    api.writeItem.mockRejectedValueOnce(
+      Object.assign(new ApiError('item delete', 409, 'removal_held'), {
+        reason: 'empties-board',
+        board: 'Sprint',
+      }),
+    );
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.write({ kind: 'delete', id: 'item-one' });
+    });
+    expect(ok).toBe(true);
+    expect(onError).not.toHaveBeenCalled();
+    expect(result.current.items.has('item-one')).toBe(false);
+    expect(heldCardCount()).toBe(1);
+    expect(waitingChangeCount()).toBe(0);
+    // It keeps why, and the title the card had before it was hidden, for the Needs Review banner.
+    expect(heldGroups()).toEqual([
+      { board: 'Sprint', reason: 'empties-board', cards: 1, titles: ['A'] },
+    ]);
+    // A later change is sent at once: a held one waits for the person, not the connection.
+    await act(async () => {
+      await result.current.write(retitle('Later', 'item-two'));
+    });
+    expect(api.writeItem).toHaveBeenCalledTimes(2);
+    // A reload lays the held removal back over the server's copy.
+    api.fetchItems.mockClear();
+    api.fetchItems.mockResolvedValue({ ...two, rev: 3 });
+    act(() => result.current.refetch());
+    await waitFor(() => expect(api.fetchItems).toHaveBeenCalled());
+    expect(result.current.items.has('item-one')).toBe(false);
+    await act(async () => confirmHeldChanges());
+    await waitFor(() => expect(heldCardCount()).toBe(0));
+    await waitFor(() => expect(planQueue('doc', 'owner-me').count()).toBe(0));
+    expect(api.writeItem).toHaveBeenLastCalledWith(
+      expect.anything(),
+      { kind: 'delete', id: 'item-one' },
+      expect.anything(),
+      { confirmRemoval: true },
+    );
+  });
+
+  it('brings the cards back on Keep Cards', async () => {
+    const { result } = mount();
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    api.writeItem.mockRejectedValueOnce(new ApiError('item delete', 409, 'removal_held'));
+    await act(async () => {
+      await result.current.write({ kind: 'delete', id: 'item-one' });
+    });
+    expect(result.current.items.has('item-one')).toBe(false);
+    await act(async () => keepHeldCards());
+    await waitFor(() => expect(result.current.items.has('item-one')).toBe(true));
+    expect(heldCardCount()).toBe(0);
+  });
+
+  it('brings a held Trash move back without a reload, though the server copy has the same rev', async () => {
+    const { result } = mount();
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    api.writeItem.mockRejectedValueOnce(new ApiError('items change', 409, 'removal_held'));
+    await act(async () => {
+      await result.current.write({
+        kind: 'patches',
+        patches: [{ id: 'item-one', patch: { set: { status: 'trash' } } }],
+      });
+    });
+    expect(result.current.items.get('item-one')?.fields.status).toBe('trash');
+    expect(heldCardCount()).toBe(1);
+    await act(async () => keepHeldCards());
+    await waitFor(() => expect(result.current.items.get('item-one')?.fields.status).toBe('todo'));
   });
 });

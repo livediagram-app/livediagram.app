@@ -2,10 +2,11 @@
 // card and sheet writes this browser made that the server has not answered for want of a connection, in the order
 // they were made, stored in localStorage as each joins so a reload, a closed tab or a crash keeps them. One queue per
 // plan and person (the key names both), shared by the item store and the sheet store.
-import type { ItemWrite } from '@liveplanner/items';
+import { itemIdsOfWrite, type ItemWrite } from '@liveplanner/items';
 import type { SheetCreateRequest } from '@liveplanner/api-schema';
 import type { SheetWrite } from '@liveplanner/sheets';
 import { OFFLINE_QUEUE_KEY_PREFIX } from '@liveplanner/ui';
+import { heldWhyOfStored, type HeldGroup, type HeldWhy } from './removal-held';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Spec "Bounds": at most this many changes, and this many characters of their stored JSON, per plan. Safe ranges
@@ -21,7 +22,18 @@ const VERSION = 1;
 export type SheetWriteFlags = { undo?: true; unchecked?: true };
 
 export type QueuedChange =
-  | { id: string; seq: number; store: 'items'; write: ItemWrite }
+  | {
+      id: string;
+      seq: number;
+      store: 'items';
+      write: ItemWrite;
+      // Held by the server as a mass removal (offline-changes.md "Held for review"): kept, skipped by the replay.
+      held?: true;
+      // Why it was held (the server's reason and board, the cards' titles), for the Needs Review banner.
+      why?: HeldWhy;
+      // Remove N Cards was chosen: sent again with `confirmRemoval`.
+      confirmed?: true;
+    }
   | {
       id: string;
       seq: number;
@@ -44,6 +56,7 @@ export type QueuedChange =
 export type QueueStore = QueuedChange['store'];
 
 type Stored = { v: number; changes: QueuedChange[] };
+type ItemChange = Extract<QueuedChange, { store: 'items' }>;
 
 let lastSeq = 0;
 // When a change was made, as a number that only grows within the page and across reloads (milliseconds times a
@@ -98,6 +111,9 @@ export class PlanQueue {
   private readonly sizes = new Map<string, number>();
   private bytes = 0;
   private readonly counts: Record<QueueStore, number> = { items: 0, sheets: 0 };
+  private held = 0;
+  // The cards the held changes would remove (a selection's Trash is one change of many cards).
+  private heldCards = 0;
 
   constructor(key: string, storage: Storage | null, onChange: () => void = () => {}) {
     this.key = key;
@@ -113,11 +129,80 @@ export class PlanQueue {
     else this.sizes.delete(change.id);
     this.bytes += sign * bytes;
     this.counts[change.store] += sign;
+    if (change.store === 'items' && change.held) {
+      this.held += sign;
+      this.heldCards += sign * itemIdsOfWrite(change.write).length;
+    }
   }
 
   /** How many changes wait, of one store or of both. O(1). */
   count(store?: QueueStore): number {
     return store ? this.counts[store] : this.counts.items + this.counts.sheets;
+  }
+
+  /** How many changes are held for review (offline-changes.md "Held for review"). O(1). */
+  heldCount(): number {
+    return this.held;
+  }
+
+  /** How many cards the held changes would remove (the Needs Review banner's count). O(1). */
+  heldCardCount(): number {
+    return this.heldCards;
+  }
+
+  /** How many changes wait to be sent, of one store or of both: those held for review are left out. O(1). */
+  waiting(store?: QueueStore): number {
+    return this.count(store) - (store === 'sheets' ? 0 : this.held);
+  }
+
+  // Each card change `pick` chooses rewritten by `to`, kept in place and stored; the number rewritten.
+  private rewrite(pick: (c: ItemChange) => boolean, to: (c: ItemChange) => ItemChange): number {
+    let n = 0;
+    this.list = this.list.map((c) => {
+      if (c.store !== 'items' || !pick(c)) return c;
+      const next = to(c);
+      this.account(c, -1);
+      this.account(next, 1);
+      n += 1;
+      return next;
+    });
+    if (n > 0) {
+      this.persist();
+      this.onChange();
+    }
+    return n;
+  }
+
+  /** Marks these card changes held: the server held them as a mass removal, for `why` (given only when it says more). */
+  hold(ids: readonly string[], why?: (c: ItemChange) => HeldWhy): void {
+    const set = new Set(ids);
+    this.rewrite(
+      (c) => set.has(c.id) && !c.held,
+      ({ confirmed: _confirmed, ...c }) => {
+        const w = why?.(c);
+        return { ...c, held: true, ...(w && Object.keys(w).length > 0 ? { why: w } : {}) };
+      },
+    );
+  }
+
+  /** The held card changes, oldest first. */
+  heldChanges(): ItemChange[] {
+    return this.list.filter((c): c is ItemChange => c.store === 'items' && c.held === true);
+  }
+
+  /** Remove N Cards: every held change is to be sent again, confirmed. The number confirmed. */
+  confirmHeld(): number {
+    return this.rewrite(
+      (c) => c.held === true,
+      ({ held: _held, why: _why, ...c }) => ({ ...c, confirmed: true }),
+    );
+  }
+
+  /** Keep Cards: every held change is dropped. The cards they named, so the board's reload takes the server's copy. */
+  dropHeld(): string[] {
+    const held = this.heldChanges();
+    this.remove(held.map((c) => c.id));
+    return held.flatMap((c) => itemIdsOfWrite(c.write));
   }
 
   /** The bytes the queue's changes take as stored JSON. */
@@ -189,12 +274,18 @@ export class PlanQueue {
 const queues = new Map<string, PlanQueue>();
 const listeners = new Set<() => void>();
 let waiting = 0;
+let heldTotal = 0;
 
 function recount(): void {
   let n = 0;
-  for (const q of queues.values()) n += q.count();
-  if (n === waiting) return;
+  let h = 0;
+  for (const q of queues.values()) {
+    n += q.waiting();
+    h += q.heldCardCount();
+  }
+  if (n === waiting && h === heldTotal) return;
   waiting = n;
+  heldTotal = h;
   for (const l of listeners) l();
 }
 
@@ -210,7 +301,63 @@ export function planQueue(projectId: string, ownerId: string): PlanQueue {
   return q;
 }
 
-/** How many changes wait in this page's queues (the offline banner's count). */
+/** How many cards the changes held for review in this page's queues would remove (the Needs Review banner's count). */
+export function heldCardCount(): number {
+  return heldTotal;
+}
+
+/** The held cards of this page's queues by board and reason, for the Needs Review banner's line and list. O(queue):
+ *  read when the held count changes, never on the write path. */
+export function heldGroups(): HeldGroup[] {
+  const groups = new Map<string, HeldGroup>();
+  for (const q of queues.values())
+    for (const c of q.heldChanges()) {
+      const why = heldWhyOfStored(c.why);
+      const board = why.board ?? null;
+      const reason = why.reason ?? null;
+      const key = `${reason ?? ''}\u0000${board ?? ''}`;
+      const g = groups.get(key) ?? { board, reason, cards: 0, titles: [] };
+      g.cards += itemIdsOfWrite(c.write).length;
+      g.titles.push(...(why.titles ?? []));
+      groups.set(key, g);
+    }
+  return [...groups.values()];
+}
+
+// What the person chose for the held changes: told to the card replay, which sends or reads the board again.
+export type HeldReview = 'confirmed' | 'kept';
+// `cards`: on 'kept', the cards the dropped changes named.
+type HeldReviewListener = (review: HeldReview, cards: readonly string[]) => void;
+const reviewListeners = new Set<HeldReviewListener>();
+
+export function subscribeHeldReview(listener: HeldReviewListener): () => void {
+  reviewListeners.add(listener);
+  return () => {
+    reviewListeners.delete(listener);
+  };
+}
+
+function review(what: HeldReview, n: number, cards: readonly string[] = []): void {
+  if (n === 0) return;
+  debugLog('[offline-queue] items.held-review', { what, count: n });
+  for (const l of reviewListeners) l(what, cards);
+}
+
+/** Remove N Cards: every held change in the page's queues is sent again, confirmed. */
+export function confirmHeldChanges(): void {
+  let n = 0;
+  for (const q of queues.values()) n += q.confirmHeld();
+  review('confirmed', n);
+}
+
+/** Keep Cards: every held change is dropped, and the board is read again so the cards come back. */
+export function keepHeldCards(): void {
+  const cards: string[] = [];
+  for (const q of queues.values()) cards.push(...q.dropHeld());
+  review('kept', cards.length, cards);
+}
+
+/** How many changes wait in this page's queues (the offline banner's count); held ones are left out. */
 export function waitingChangeCount(): number {
   return waiting;
 }
@@ -226,5 +373,7 @@ export function subscribeWaitingChanges(listener: () => void): () => void {
 export function forgetPlanQueues(): void {
   queues.clear();
   waiting = 0;
+  heldTotal = 0;
+  reviewListeners.clear();
   lastSeq = 0;
 }

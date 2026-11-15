@@ -351,8 +351,8 @@ the plan fields budget, "Performance and limits"), `413 import_too_large`
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the
   tab's scope).
 - Rejections: `400 { error: ItemRejection }`, `404 item_not_found`, `409 item_exists` (create with a taken id),
-  `409 item_busy`, `413 items_full`, `413 plan_full` (`{ error, message }`: the plan's cards would hold more than
-  `PLAN_FIELDS_BYTES` together), plus the project gates' 403/404/410.
+  `409 item_busy`, `409 removal_held` (below), `413 items_full`, `413 plan_full` (`{ error, message }`: the plan's
+  cards would hold more than `PLAN_FIELDS_BYTES` together), plus the project gates' 403/404/410.
 - `ItemCreate.key` is honoured only when `< items_next_key` and free; otherwise the store assigns one.
 - `POST /projects` create body accepts `items?: ItemCreate[]` (sync to cloud), written in the
   same request after the tabs.
@@ -380,6 +380,19 @@ the plan fields budget, "Performance and limits"), `413 import_too_large`
   then `writeItemsWithRetry` writes the batch at the revs read, relays one room op, appends history, and retries an
   item a concurrent write moved on (it ranks again against the store as it then is). Logs `[items] moved` with the
   count; a refusal logs `[items] items.rejected` with the id.
+- **Mass removals** (realtime-conflict-resolution.md "Mass card removals"): a `DELETE /items/:id`, and any patch,
+  many-patch or many-move whose result moves a card into the Trash from outside it, asks the room's `RemovalGuard`
+  (`env.REMOVAL_GUARD`, `plan-room/removal-guard-store.ts`) through `admitRemovals(ctx, caller, ids)`
+  (`routes/item-removal-gate.ts`) before writing. The pure judgement is `judgeRemoval(boards, removed)` with
+  `removalBoardsOf(outline.boards, items)` and `removalLimit(had)` in `packages/items/src/removal-guard.ts`. A refusal
+  answers `409 { error: 'removal_held', reason, board, count, limit, message }` and keeps a `HeldRemoval` in storage
+  key `removal-quarantine` (last `REMOVAL_QUARANTINE_MAX`, 50; card ids capped at `REMOVAL_QUARANTINE_IDS`, 200). An
+  admitted write that does not land (a lost rev race, a 404) releases its ids (`ticket.release`); the many-item loop
+  (`writeItemsWithRetry`) admits each attempt's trashed cards and releases those that did not land. A person's
+  `?confirmRemoval=1` skips the guard; a token's is ignored. With no guard in the env (a unit test without a room)
+  nothing is judged. Runs live in memory (`RemovalGuard.runs`, at most `REMOVAL_RUNS_MAX` (200), ended runs swept on each
+  admit). A run's first removal reads the board tabs and the store once and counts each board: about 20 ms of CPU for
+  ten boards over 10,000 cards (`removal-guard.perf.test.ts`); each removal after is O(boards x run size).
 - A create, bulk create or seed (`createMany`) reads the store once per attempt: a named key is free when that
   read's keys lack it (a key a racing write took fails the insert, which retries), and one `itemPlacer` ranks every
   create, so n creates cost no per-create query and one sort per column.

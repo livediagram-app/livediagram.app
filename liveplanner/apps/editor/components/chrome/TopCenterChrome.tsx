@@ -1,8 +1,9 @@
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';
+import { HeldRemovalsBanner } from '@/components/chrome/HeldRemovalsBanner';
 import { TopCenterStack } from '@liveworkspace/workbench/components/chrome/TopCenter';
 
-// Everything that floats at the top of the canvas: the Offline banner. (The session timer and the vote's status and
+// Everything that floats at the top of the canvas: the Offline banner and the Needs Review banner. (The session timer and the vote's status and
 // results walkthrough live in the Session strip's popovers, docs/specs/012-collaboration/session-tools.md; the
 // multi-selection toolbar floats over the selection itself, via Canvas + FloatingToolbar.) Extracted from
 // CanvasChrome so the chrome shell stays lean.
@@ -17,6 +18,8 @@ export function TopCenterChrome({ readOnly, participantPalette = false }: TopCen
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): says whether anything on screen is being
           saved. */}
       <OfflineBanner readOnly={readOnly === true} />
+      {/* Needs Review (docs/specs/007-editor/offline-changes.md "Held for review"): card removals the server held. */}
+      <HeldRemovalsBanner readOnly={readOnly === true} />
     </TopCenterStack>
   );
 }
