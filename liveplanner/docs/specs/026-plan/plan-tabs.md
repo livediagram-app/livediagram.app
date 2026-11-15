@@ -84,11 +84,37 @@ as every dialog's does, so no row lights up unasked.
   tool's mark, its file type at the right and a line naming the file and where the tool keeps it
   ([Importing from another tool](tracker-import.md#where-it-lives)). Under the section, one quiet line: "A one-off
   copy into a new Board tab or plan, after a preview."
+- **A Whole Plan**, for an Editor only, under the tools: one row, **liveplanner Plan**, with the prism tile, a
+  `.liveplanner` file chip and "A whole plan's .liveplanner file from Export. Makes a new plan." (the
+  [Whole Plan](#whole-plan) export read back). Pressing it opens the file picker (`.liveplanner` or `.json`); the file
+  is read and checked in the browser (over 8 MB refused unread, then its envelope: the `liveplanner.project` kind
+  and a schema version this build reads), and a preview replaces the list under an **All Imports** back bar, headed
+  **Import a Plan**, "See what it will make, then import it.": the plan's name, then how many tabs, cards, card
+  types, comment threads and rules it holds (each count that is above zero), a quiet line "Rules come in off: turn
+  them on in Automations." when it holds any, the pictures line (below), and **Import as New Plan**. Pressing it
+  makes a new plan of the importer's own, in My Work, named as the file names it, with every tab (fresh
+  tab ids, links between them re-pointed), card (same ids and keys), card type, Sheet, comment thread and rule (off);
+  then it opens. While it imports the button reads **Importing…** and the back bar is held.
+  - **Pictures** stay links: a card's pictures and Image fields keep their ids and the file carries no bytes, so in
+    the new plan a picture shows only to whoever uploaded it ("Pictures stay with the plan they came from: they show
+    here only to whoever uploaded them."), the line shown only when a card holds one.
+  - Refusals are said on the list (or the preview, which stays): a file of another kind "That file isn't a
+    liveplanner plan. Export one with Whole Plan, then import it.", a newer schema "That plan was exported by a newer
+    liveplanner. Reload the page, then try again.", over 8 MB "That plan's file is over 8 MB, the most an import reads.", and the api refusing it
+    (a malformed tab, card, card type or Sheet, or past any store's cap) "Couldn't import that plan: its file is
+    damaged or holds more than a plan can." Anything else: "Couldn't import that plan. Try again."
+  - A guest imports as a signed-in Editor does: the new plan is saved on liveworkspace servers under their guest id,
+    as a guest's plan is when they turn on Sync Plan to Server ([Save locations](../006-project/save-locations.md)).
+    The door asks only what making a synced plan asks (an identity, guest or account, and an Editor's grant on the
+    new plan); never signing in.
+  - While the browser is offline the row is dimmed: "You're offline. Connect to import a whole plan." The new plan
+    is made on the server, so an import needs it.
 - **Dropping a file** anywhere on the dialog, on any step (the list, the liveplanner Tab step or a tool's preview),
   reads it as what it is: a liveplanner tab's JSON goes to the liveplanner
-  Tab import (when the tab offers it, and not locked), another tool's export to its preview (an Editor's), and any
+  Tab import (when the tab offers it, and not locked), a whole plan's file to its preview (an Editor's, online),
+  another tool's export to its preview (an Editor's), and any
   other CSV into a Board or Sheet tab as its CSV row would. A file none of them takes says why on the step it was dropped
-  on, which stays as it was (a preview stays, and so does what was typed in the box): "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export." (a Dashboard or
+  on, which stays as it was (a preview stays, and so does what was typed in the box): "That file isn't a liveplanner tab, a whole plan's .liveplanner file, or a Trello, Asana, Jira or Linear export." (a Dashboard or
   Form tab), "That file isn't a CSV or a Trello, Asana, Jira or Linear export." (a Board or Sheet tab), "A liveplanner
   tab's JSON imports into a Dashboard or Form tab. This tab takes a CSV.", "This tab takes a CSV, and that file is
   JSON." (no tools offered), the row's own reason when it is dimmed, or the tool reader's refusal (not JSON, no cards,
@@ -105,8 +131,8 @@ as every dialog's does, so no row lights up unasked.
 - The rows are the Plan option list ([Option lists](plan-board.md#option-lists)): one is in the Tab order,
   ArrowUp / ArrowDown / Home / End move between them, Enter or Space presses. On a phone the dialog is a sheet and its
   rows' lines wrap rather than cut.
-- **The tab menu row** is dimmed only when the dialog would offer nothing to press: no tool section and the Into This
-  Tab row dimmed.
+- **The tab menu row** is dimmed only when the dialog would offer nothing to press: no tool or whole-plan section and
+  the Into This Tab row dimmed.
 
 ### Names
 
@@ -428,6 +454,8 @@ laid out, never the canvas hidden under it:
 | Form tab      | JSON                         |
 | Any other tab | every format but CSV         |
 
+Every kind also ends with [Whole Plan](#whole-plan), the plan's file, for an Editor.
+
 **CSV** opens a text panel like JSON's and Markdown's (view, copy, **Download .csv**): a Board tab's cards the board
 shows, a Sheet tab's cells as shown, both safe to open (a field a spreadsheet would run as a formula made inert).
 Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · Csv`, `Sheet · Exported · Csv`). Any other tab has neither, so
@@ -461,7 +489,29 @@ offered.
   drawn on a canvas); Hidden layers neither.
 - **Markdown** of a Board tab is its board's outline (each column and its cards); **JSON** of a Dashboard tab is the
   file its Import reads back.
-- Telemetry: the formats' existing `Project · Exported · <Format>`; no new values.
+- Telemetry: the formats' existing `Project · Exported · <Format>`, and `Project · Exported · Plan` for the Whole
+  Plan file.
+
+### Whole Plan
+
+Every tab's Export dialog ends with one more card, **Whole Plan** (`.liveplanner`): "Every tab, card, card type,
+comment and rule in one file, to import back as a new plan." It is the plan's own `liveplanner.project` envelope, the
+file the Drive mirror and the CLI read and write ([api.md](../015-api/api.md) "Internal"), not a format of the tab:
+cards, card types, comment threads and rules belong to the plan, never to one board.
+
+- **Who**: an Editor of the whole plan, on a plan saved on the server (a signed-in person's, or a guest's synced
+  plan). A Participant, a Viewer and a visitor on a
+  tab-scoped link don't see the card (the file holds every tab, and the rules only an Editor sees), and the api
+  refuses them; a This Browser plan has no card, since the file is written from the plan's server copy.
+- Pressing it opens a panel under the dialog's back bar: what the file holds (every tab with its folder, every card
+  with its fields, the card types and their templates, the Sheets, every comment thread without the commenters'
+  account ids, and the Automations rules, their makers and last editors by name and colour without account ids),
+  the pictures line ("Pictures stay links: the file names them and carries
+  no image bytes."), and **Download .liveplanner**, which saves `<plan name>.liveplanner`. While it is prepared the
+  button reads **Preparing…** and is held; a failure says "Couldn't prepare the file. Try again." under it.
+- The file reads back as a new plan from the Import dialog's [A Whole Plan](#the-import-dialog) row, or the Drive
+  mirror's Import. Export then import gives the same plan: the same tabs in the same order and folders, the same
+  cards with the same keys and fields, card types, Sheets and comment threads, and every rule, off.
 
 ## Form Metrics
 

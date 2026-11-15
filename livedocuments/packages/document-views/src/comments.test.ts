@@ -87,6 +87,33 @@ describe('commentHosts', () => {
 });
 
 describe('threadListingLines', () => {
+  it('leads a listed comment with its id and marks an agent’s and an edited one (Work Tracker 920)', () => {
+    const at = Date.UTC(2026, 8, 27);
+    const lines = threadListingLines({
+      ref: 'api',
+      label: null,
+      resolved: false,
+      tabName: 'Main',
+      comments: [
+        {
+          id: '3f9c1a2b-7d',
+          authorName: 'Claude',
+          createdAt: at,
+          text: 'Done',
+          ai: true,
+          edited: true,
+        },
+        { id: 'c1f0aaaa-11', authorName: 'Sam', createdAt: at, text: 'Thanks', editedAt: 5 },
+        { id: 'c2f0bbbb-22', authorName: 'Ana', createdAt: at, text: 'Ok' },
+      ],
+    });
+    expect(lines.slice(1)).toEqual([
+      '  3f9c1a2b Claude [AI] (edited) 2026-09-27: "Done"',
+      '  c1f0aaaa Sam (edited) 2026-09-27: "Thanks"',
+      '  c2f0bbbb Ana 2026-09-27: "Ok"',
+    ]);
+  });
+
   it('prints a listed thread as the comments view does, with its tab', () => {
     const lines = threadListingLines({
       ref: 'api',

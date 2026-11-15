@@ -2,8 +2,9 @@
 // it. Pure.
 import { tabKindOf, type Tab } from '@liveplanner/project';
 
-// The Export dialog's format keys ('file' is the liveplanner .json).
-export type ExportFormatKey = 'markdown' | 'csv' | 'pdf' | 'png' | 'svg' | 'file';
+// The Export dialog's format keys ('file' is the liveplanner tab's .json; 'plan' the whole plan's .liveplanner file,
+// offered beside every tab's formats to an Editor of the whole plan: plan-tabs.md "Whole Plan").
+export type ExportFormatKey = 'markdown' | 'csv' | 'pdf' | 'png' | 'svg' | 'file' | 'plan';
 
 // A Board tab: its picture, its board's outline (each column and its cards) and its cards as CSV. A Sheet tab: its
 // picture and its cells as CSV. A Dashboard tab: its page's picture, and the JSON its Import reads back.

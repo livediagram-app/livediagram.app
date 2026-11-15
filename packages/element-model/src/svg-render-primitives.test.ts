@@ -1,5 +1,5 @@
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   clampLabelLines,
   fitWholeWordLines,
@@ -9,10 +9,15 @@ import {
   graphemes,
   labelMaxWidth,
   labelMeasure,
+  LANE_TITLE_RESERVE_PX,
+  laneTitleMeasure,
+  laneTitleRoom,
   r2,
+  resetLabelMeasureContext,
   svgIconGlyph,
   wrapLabel,
 } from './svg-render-primitives';
+import { standInBrowser, standInWidth } from './testing/font-stand-in';
 
 // One unit a character, so a width is a character count.
 const chars = (s: string) => [...s].length;
@@ -166,5 +171,59 @@ describe('svgIconGlyph', () => {
   it('keeps a coloured icon its own paint', () => {
     const svg = svgIconGlyph({ x: 0, y: 0 }, { markup: '<g/>', colored: true }, r, '#123456');
     expect(svg).not.toContain('stroke=');
+  });
+});
+
+// docs/specs/009-elements/lane.md "A title wraps in its gutter" (Work Tracker 910): one lane-title measure for the
+// canvas and every export, at the canvas's weight, measured against a real-font stand-in.
+describe('the lane-title measure', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetLabelMeasureContext();
+  });
+
+  const withCanvas = () => {
+    vi.stubGlobal('document', standInBrowser().document);
+    resetLabelMeasureContext();
+  };
+
+  it('measures at the canvas label’s weight, 500 or 600 bold, where a label measures at 400', () => {
+    withCanvas();
+    expect(laneTitleMeasure(14, false, false)('Infrastructure')).toBe(
+      standInWidth('500 14px x', 'Infrastructure'),
+    );
+    expect(laneTitleMeasure(14, true, true, 'Inter')('Ops')).toBe(
+      standInWidth('600 14px x', 'Ops'),
+    );
+    expect(labelMeasure(14, false, false)('Infrastructure')).toBe(
+      standInWidth('400 14px x', 'Infrastructure'),
+    );
+  });
+
+  it('holds its own font while another measure uses the context between its calls', () => {
+    withCanvas();
+    const lane = laneTitleMeasure(14, false, false);
+    const before = lane('Sales');
+    labelMeasure(30, true, false)('x');
+    expect(lane('Sales')).toBe(before);
+  });
+
+  it('falls back to the estimate without a canvas, and when making one throws', () => {
+    expect(laneTitleMeasure(20, false, false)('abcd')).toBeCloseTo(4 * 20 * 0.55);
+    vi.stubGlobal('document', {
+      createElement: () => ({
+        getContext: () => {
+          throw new Error('no canvas');
+        },
+      }),
+    });
+    resetLabelMeasureContext();
+    expect(laneTitleMeasure(20, false, false)('abcd')).toBeCloseTo(4 * 20 * 0.55);
+  });
+
+  it('holds back the reserve pixel, never below nothing', () => {
+    expect(LANE_TITLE_RESERVE_PX).toBe(1);
+    expect(laneTitleRoom(120)).toBe(119);
+    expect(laneTitleRoom(0)).toBe(0);
   });
 });

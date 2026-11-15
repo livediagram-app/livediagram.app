@@ -25,6 +25,8 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // A session that may not import from another tool (a Participant or a Viewer): no tool section.
 const NO_TRACKER = { canImport: false, contextFor: vi.fn(), importPlan: vi.fn() };
 const EDITOR = { canImport: true, contextFor: vi.fn(async () => null), importPlan: vi.fn() };
+// No A Whole Plan section (the tools' tests): it has its own, ImportTabDialog.plan-file.test.tsx.
+const NO_PLAN_FILE = { offered: false, blocked: null, importFile: vi.fn() };
 const JSON_TAB: IntoTab = { kind: 'json' };
 const csvTab = (over: Partial<Extract<IntoTab, { kind: 'csv' }>> = {}) =>
   ({ kind: 'csv', target: 'board', onPick: vi.fn(), onFile: vi.fn(), ...over }) as Extract<
@@ -52,6 +54,7 @@ function open({
       onImportFile={vi.fn(async () => outcome)}
       onImportText={onImportText}
       tracker={tracker}
+      planFile={NO_PLAN_FILE}
       onClose={onClose}
     />,
   );
@@ -334,6 +337,7 @@ describe('ImportTabDialog: a file dropped on the liveplanner Tab step', () => {
         onImportFile={onImportFile}
         onImportText={vi.fn()}
         tracker={NO_TRACKER}
+        planFile={NO_PLAN_FILE}
         onClose={vi.fn()}
       />,
     );
@@ -401,6 +405,7 @@ describe('ImportTabDialog: a file dropped on the liveplanner Tab step', () => {
         onImportFile={vi.fn()}
         onImportText={onImportText}
         tracker={NO_TRACKER}
+        planFile={NO_PLAN_FILE}
         onClose={vi.fn()}
       />,
     );

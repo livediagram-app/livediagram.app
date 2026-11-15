@@ -29,6 +29,31 @@ const to = (text: string, intoTab: IntoTab, tools: boolean) =>
   );
 
 describe('routeImportDrop', () => {
+  it('sends a whole plan’s file to its preview when A Whole Plan is offered, before any tab or tool test', async () => {
+    const PLAN = JSON.stringify(
+      { kind: 'liveplanner.project', schemaVersion: 1, project: { id: 'A', name: 'P', tabs: [] } },
+      null,
+      2,
+    );
+    const plan = (offered: boolean, blocked: string | null = null) => ({ offered, blocked });
+    const read = async (intoTab: IntoTab, offered: boolean, blocked: string | null = null) =>
+      routeImportDrop(
+        PLAN,
+        'p.liveplanner',
+        { intoTab, tools: true, plan: plan(offered, blocked) },
+        () => {
+          throw new Error('a plan file is never a tool’s');
+        },
+      );
+    expect(await read(JSON_TAB, true)).toEqual({ to: 'plan' });
+    expect(await read(CSV_TAB, true)).toEqual({ to: 'plan' });
+    expect(await read(JSON_TAB, true, 'Sign in.')).toEqual({ to: 'error', error: 'Sign in.' });
+    expect(await read(JSON_TAB, false)).toEqual({ to: 'error', error: DROP_UNKNOWN });
+    expect(await read(CSV_TAB, false)).toEqual({ to: 'error', error: DROP_NOT_CSV });
+    // Without the option, as the tools' callers pass it, a plan's file is no file the dialog takes.
+    expect(await to(PLAN, JSON_TAB, false)).toEqual({ to: 'error', error: DROP_UNKNOWN });
+  });
+
   it('sends a liveplanner tab’s JSON to the tab that takes it, told by its first lines', async () => {
     expect(await to(TAB_JSON, JSON_TAB, true)).toEqual({ to: 'tab-json' });
     expect(await to(TAB_JSON, JSON_TAB, false)).toEqual({ to: 'tab-json' });

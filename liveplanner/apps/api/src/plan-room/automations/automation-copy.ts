@@ -60,6 +60,16 @@ export function copiedRuleStatements(
   });
 }
 
+// A rule as a plan's file carries it: who made and last changed it by name and colour, without their account ids (the
+// file travels, as its threads do without author ids).
+export function ruleForFile(rule: AutomationRule): AutomationRule {
+  const unnamed = (stamp: AutomationStamp): AutomationStamp => ({
+    ...stamp,
+    by: { ...stamp.by, id: '' },
+  });
+  return { ...rule, made: unnamed(rule.made), edited: unnamed(rule.edited) };
+}
+
 const isStamp = (v: unknown): v is AutomationStamp =>
   !!v &&
   typeof v === 'object' &&

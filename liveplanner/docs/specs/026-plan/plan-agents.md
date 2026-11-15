@@ -106,8 +106,12 @@ never told a change worked when it shows on no board.
   types, so any page names everything a write takes. A page lists at least one card when any remains, so paging
   always ends (one card is bounded by the item store's limits). A cursor `list_items` did not give is refused
   (`cursor_invalid`).
-- The CLI's `item ls` keeps listing every card, as before: its output is a line a card, not one answer an assistant
-  must take whole.
+- The CLI's `item ls` keeps listing every card, as before, unpaged: its output is a line a card, not one answer an
+  assistant must take whole. It takes the same filters (Work Tracker 913): `--type` and `--status`, each repeatable
+  for several, `--query` and `--updated-since`, and `--include-closed`. So a script that ran it before still gets
+  every card, closed cards are left out only once `--query` or `--updated-since` asks for list_items' answer, unless
+  `--include-closed` is given or `--status` names their column; a last line then says how many were left out and
+  which flag brings them back. A date `--updated-since` cannot read is refused (`updated_since_invalid`).
 - A card linked to pull requests the plan has a state for lists them as `pullRequests` (each its `name`, `state`,
   `checks` when an open one or a draft has them, `title`, `url`, and the `field` holding it), with exactly the
   visibility the board gives the caller ([GitHub pull requests](github-pull-requests.md#agents)).

@@ -9,6 +9,7 @@ import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { intoTabOf } from '@/components/dialogs/import/into-tab';
+import { wholePlanOffer } from '@/components/dialogs/whole-plan-offer';
 import { panelEnabled } from '@/lib/user-preferences';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
@@ -59,6 +60,8 @@ export function EditorTabDialogs() {
     importTextIntoActiveTab,
     setImportOpen,
     trackerImport,
+    planFileImport,
+    isStructureReadOnly,
     shareDialogOpen,
     selfParticipant,
     projectId,
@@ -109,6 +112,14 @@ export function EditorTabDialogs() {
           // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
           projectTabs={tabs}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
+          // The plan's own file (docs/specs/026-plan/plan-tabs.md "Whole Plan"): an Editor of the whole plan's, on a
+          // plan saved on the server, a guest's synced plan too (a This Browser plan has no server copy to write it from).
+          wholePlan={wholePlanOffer({
+            projectId,
+            ownerId: selfParticipant.id,
+            isOffline,
+            isStructureReadOnly,
+          })}
           onClose={() => setExportOpen(false)}
         />
       ) : null}
@@ -119,6 +130,7 @@ export function EditorTabDialogs() {
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
           tracker={trackerImport}
+          planFile={planFileImport}
           onClose={() => setImportOpen(false)}
         />
       ) : null}
