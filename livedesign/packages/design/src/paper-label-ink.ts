@@ -4,7 +4,7 @@
 // it read on white (3:1 at the least), its hue kept: a wireframe's ink, body and muted greys stay three steps, each at
 // 4.5:1 or more, where the shared 3:1 walk (label-backdrop.ts) drew all three as one dim grey. Pure.
 import { contrastRatio } from './colors';
-import { LABEL_BACKDROP_CONTRAST, labelBackdrops } from './label-backdrop';
+import { LABEL_BACKDROP_CONTRAST, backdropBehind, labelBackdrops } from './label-backdrop';
 import { reachContrast } from './readable-colour';
 import type { Element } from './index';
 
@@ -91,38 +91,22 @@ function markOf(el: Element): { colour: string; stroke: boolean } | null {
 }
 
 /** What is drawn behind each ink mark (an icon, a filled part) on `paper`, by id, with the colour it paints in; only
- *  `ids`' when given. The label lookup asked through a probe (a word in the part's colour on the part's box, painted
- *  straight after it), so the part, the same size, is never its own backdrop and everything under it is read as for a
- *  label. One labelBackdrops pass. */
+ *  `ids`' when given. Read as for a word in the part's colour on the part's box, painted straight after it
+ *  (backdropBehind), so the part, the same size, is never its own backdrop and everything under it is read as for a
+ *  label. Shares the board's backdrop grid with labelBackdrops: the mark pass and the label passes in inkedOnPaper
+ *  bucket each board once per paper (Work Tracker 896). */
 export function paperMarkBackdrops(
   elements: readonly Element[],
   paper: string,
   ids?: ReadonlySet<string>,
 ): Map<string, { colour: string; behind: string }> {
-  const probed: Element[] = [];
-  const probeOf = new Map<number, string>();
-  for (const el of elements) {
-    probed.push(el);
-    const mark = !ids || ids.has(el.id) ? markOf(el) : null;
-    if (!mark) continue;
-    const m = el as Mark;
-    probeOf.set(probed.length, el.id);
-    probed.push({
-      id: el.id,
-      type: 'text',
-      x: m.x,
-      y: m.y,
-      width: m.width,
-      height: m.height,
-      label: '.',
-      textColor: mark.colour,
-    } as unknown as Element);
-  }
   const out = new Map<string, { colour: string; behind: string }>();
-  for (const [i, { ink, behind }] of labelBackdrops(probed, paper)) {
-    const id = probeOf.get(i);
-    if (id !== undefined) out.set(id, { colour: ink, behind });
-  }
+  elements.forEach((el, i) => {
+    const mark = !ids || ids.has(el.id) ? markOf(el) : null;
+    if (!mark) return;
+    const behind = backdropBehind(elements, paper, el as Mark, i);
+    if (behind) out.set(el.id, { colour: mark.colour, behind });
+  });
   return out;
 }
 
@@ -144,18 +128,32 @@ export function withPaperMarkInks<T extends Element>(
   if (drawn === stored) return after;
   // Only a part reading worse on the drawn paper than on the stored one, and under 3:1 for a fill, can need a walk:
   // the rest are skipped before any backdrop is looked up, so a page with no sunk part pays one colour check each.
+  // A board repeats a handful of colours: each one's contrast on the two papers is worked out once per call.
+  const onPapers = new Map<string, readonly [number, number]>();
+  const ratiosOf = (colour: string) => {
+    let known = onPapers.get(colour);
+    if (!known) {
+      known = [contrastRatio(colour, drawnPaper), contrastRatio(colour, storedPaper)];
+      onPapers.set(colour, known);
+    }
+    return known;
+  };
   const sinking = new Set<string>();
   for (const el of after) {
     const mark = markOf(el);
     if (!mark) continue;
-    const ratio = contrastRatio(mark.colour, drawnPaper);
-    if (
-      ratio < contrastRatio(mark.colour, storedPaper) - SLACK &&
-      (mark.stroke || ratio < LABEL_BACKDROP_CONTRAST - SLACK)
-    )
+    const [ratio, was] = ratiosOf(mark.colour);
+    if (ratio < was - SLACK && (mark.stroke || ratio < LABEL_BACKDROP_CONTRAST - SLACK))
       sinking.add(el.id);
   }
   if (sinking.size === 0) return after;
+  const pairs = new Map<string, number>();
+  const pairRatio = (a: string, b: string) => {
+    const key = `${a}|${b}`;
+    let r = pairs.get(key);
+    if (r === undefined) pairs.set(key, (r = contrastRatio(a, b)));
+    return r;
+  };
   const now = paperMarkBackdrops(after, drawnPaper, sinking);
   const was = paperMarkBackdrops(before, storedPaper, sinking);
   let out: T[] | null = null;
@@ -164,8 +162,8 @@ export function withPaperMarkInks<T extends Element>(
     const prior = was.get(el.id);
     if (!seen || !prior) return;
     if (seen.behind.toLowerCase() !== drawn || prior.behind.toLowerCase() !== stored) return;
-    const made = contrastRatio(prior.colour, prior.behind);
-    const ratio = contrastRatio(seen.colour, seen.behind);
+    const made = pairRatio(prior.colour, prior.behind);
+    const ratio = pairRatio(seen.colour, seen.behind);
     const stroke = (el as Mark).shape === 'icon';
     const target = stroke ? Math.max(LABEL_BACKDROP_CONTRAST, made) : LABEL_BACKDROP_CONTRAST;
     if (!(ratio < made - SLACK && ratio < target - SLACK)) return;
