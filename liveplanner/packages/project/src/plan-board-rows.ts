@@ -7,7 +7,7 @@
 // own batch, and the editor's offline Inbox read (§2.6) uses them in place of the table.
 
 import type { Element } from './index';
-import { isDoneColumn, normaliseBoardSetup } from '@liveplanner/items';
+import { boardShowsType, isDoneColumn, normaliseBoardSetup } from '@liveplanner/items';
 
 // The status an All Cards board writes: it shows every card whatever its status, so the read can land a card
 // there when no column holds it. Never a real status (a status is trimmed text a person typed).
@@ -79,6 +79,21 @@ export type CardPlaces = {
   // Whether `status` is a board's done column (docs/specs/026-plan/plan-board.md "Done columns"): such a card is no
   // longer waiting on anyone.
   isDone(status: string | undefined): boolean;
+  // Whether the board `elementId` shows a card in `status` of `type` (a calendar feed's Board option): a column of it
+  // holds the status, or it is an All Cards board, and it shows the type (boardShowsType). Two boards sharing a
+  // status each show the card, whichever one it opens on (Work Tracker 993).
+  shows(
+    elementId: string,
+    status: string | undefined,
+    type: string,
+    types?: readonly { id: string }[],
+  ): boolean;
+  // A board's title as it shows ('Board' for an untitled one) and the name of its column holding `status` (null on an
+  // All Cards board or when none does), or null for no such board.
+  placeOn(
+    elementId: string,
+    status: string | undefined,
+  ): { title: string; column: string | null } | null;
 };
 
 /** Where a plan's cards open, from its tabs in order: the Inbox's card rows, in the browser (This Browser's plans)
@@ -92,6 +107,24 @@ export function cardPlacesOf(
       boards.push({ ...b, tabId: tab.id, tabName: tab.name, tabOrder });
   });
   const done = new Set(boards.filter((b) => b.done).map((b) => b.status));
+  // Each board's statuses and the card types it names, for `shows`.
+  const shown = new Map<
+    string,
+    { title: string; statuses: Set<string>; columns: Map<string, string>; addTypes?: string[] }
+  >();
+  for (const tab of tabs) {
+    for (const el of tab.elements) {
+      if (el.type !== 'shape' || el.shape !== 'plan-board' || !el.planBoard) continue;
+      const setup = normaliseBoardSetup(el.planBoard);
+      if (!setup || setup.archive) continue;
+      shown.set(el.id, {
+        title: setup.title.trim() || 'Board',
+        statuses: new Set(setup.allCards ? [ALL_CARDS_STATUS] : setup.columns.map((c) => c.status)),
+        columns: new Map(setup.allCards ? [] : setup.columns.map((c) => [c.status, c.name])),
+        ...(setup.addTypes ? { addTypes: setup.addTypes } : {}),
+      });
+    }
+  }
   const fit = (s: string, status: string | undefined) =>
     s === status ? 0 : s === ALL_CARDS_STATUS ? 1 : 2;
   // Each status's board, worked out once: a plan's cards share a handful of statuses, and both the board and the
@@ -132,5 +165,21 @@ export function cardPlacesOf(
       return { name: best.name, ...(best.color ? { color: best.color } : {}), done: best.done };
     },
     isDone: (status) => status !== undefined && done.has(status),
+    shows(elementId, status, type, types) {
+      const board = shown.get(elementId);
+      if (!board) return false;
+      const holds =
+        board.statuses.has(ALL_CARDS_STATUS) ||
+        (status !== undefined && board.statuses.has(status));
+      return holds && boardShowsType(board, type, types);
+    },
+    placeOn(elementId, status) {
+      const board = shown.get(elementId);
+      if (!board) return null;
+      return {
+        title: board.title,
+        column: (status !== undefined && board.columns.get(status)) || null,
+      };
+    },
   };
 }

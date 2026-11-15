@@ -16,12 +16,17 @@ const client = vi.hoisted(() => ({
   issueCalendarFeed: vi.fn(),
   changeCalendarFeed: vi.fn(),
   turnOffCalendarFeed: vi.fn(),
+  readMyWorkCalendarFeed: vi.fn(),
+  issueMyWorkCalendarFeed: vi.fn(),
+  turnOffMyWorkCalendarFeed: vi.fn(),
 }));
 vi.mock('./calendar-feed-client', () => client);
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 const SCOPE = { ownerId: 'user_1', projectId: 'p1' };
+const PLAN = { kind: 'plan', scope: SCOPE } as const;
+const MY_WORK = { kind: 'my-work', ownerId: 'user_1' } as const;
 const BOARDS = [
   { id: 'b1', title: 'Roadmap', tabName: 'Plan' },
   { id: 'b2', title: 'Bugs', tabName: 'Triage' },
@@ -34,7 +39,7 @@ const writeText = vi.fn();
 const answer = (r: CalendarFeedResponse) => client.readCalendarFeed.mockResolvedValue(r);
 const open = async (r: CalendarFeedResponse, onClose = vi.fn()) => {
   answer(r);
-  render(<CalendarFeedDialog scope={SCOPE} onClose={onClose} />);
+  render(<CalendarFeedDialog target={PLAN} onClose={onClose} />);
   await screen.findByText('What It Shows');
   return onClose;
 };
@@ -257,7 +262,7 @@ describe('On', () => {
 describe('reading', () => {
   it('shows a quiet loading row, then a failure with Try Again that reads again', async () => {
     client.readCalendarFeed.mockRejectedValueOnce(new Error('503'));
-    render(<CalendarFeedDialog scope={SCOPE} onClose={vi.fn()} />);
+    render(<CalendarFeedDialog target={PLAN} onClose={vi.fn()} />);
     expect(stateOf()).toBe('loading');
     expect((await screen.findByRole('alert')).textContent).toBe(
       'Couldn’t load your calendar link.',
@@ -267,6 +272,56 @@ describe('reading', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     await screen.findByText('What It Shows');
     expect(stateOf()).toBe('off');
+  });
+});
+
+// "The My Work feed": the same dialog for the person's own cards across plans, with no options, its own copy and
+// its own telemetry types.
+describe('the My Work feed', () => {
+  const MY_PATH = '/api/calendar/my-work/lpf_abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG.ics';
+  const openMine = async (feed: { createdAt: number } | null) => {
+    client.readMyWorkCalendarFeed.mockResolvedValue({ feed });
+    render(<CalendarFeedDialog target={MY_WORK} onClose={vi.fn()} />);
+    await waitFor(() => expect(stateOf()).not.toBe('loading'));
+  };
+
+  it('makes the link with no options, copies and hands it on as the My Work feed', async () => {
+    await openMine(null);
+    expect(stateOf()).toBe('off');
+    expect(screen.getByText('Your cards in your own calendar.')).toBeTruthy();
+    expect(screen.getByText(/Each open card assigned to you, in any plan you own/)).toBeTruthy();
+    expect(screen.queryByText('What It Shows')).toBeNull();
+    expect(document.querySelector('[data-calendar-feed-privacy]')).toBeTruthy();
+    client.issueMyWorkCalendarFeed.mockResolvedValue({ feed: { createdAt: MADE }, path: MY_PATH });
+    fireEvent.click(screen.getByRole('button', { name: 'Make Calendar Link' }));
+    await waitFor(() => expect(stateOf()).toBe('made'));
+    expect(client.issueMyWorkCalendarFeed).toHaveBeenCalledWith('user_1');
+    expect(track).toHaveBeenCalledWith('Plan', 'Created', 'MyWorkCalendarFeed');
+    fireEvent.click(screen.getByRole('button', { name: 'Copy Link' }));
+    await waitFor(() => expect(track).toHaveBeenCalledWith('Plan', 'Copied', 'MyWorkCalendarFeed'));
+    fireEvent.click(screen.getByText('Google Calendar'));
+    expect(track).toHaveBeenCalledWith('Plan', 'Shared', 'MyWorkCalendarFeedGoogle');
+    fireEvent.click(screen.getByText('Apple Calendar'));
+    expect(track).toHaveBeenCalledWith('Plan', 'Shared', 'MyWorkCalendarFeedApple');
+    expect(client.readCalendarFeed).not.toHaveBeenCalled();
+  });
+
+  it('resets and turns off the person’s own feed', async () => {
+    await openMine({ createdAt: MADE });
+    expect(stateOf()).toBe('on');
+    client.issueMyWorkCalendarFeed.mockResolvedValue({ feed: { createdAt: MADE }, path: MY_PATH });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset Link' }));
+    confirmIn('Reset Link');
+    await waitFor(() => expect(stateOf()).toBe('made'));
+    expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'MyWorkCalendarFeedLink');
+    cleanup();
+    await openMine({ createdAt: MADE });
+    client.turnOffMyWorkCalendarFeed.mockResolvedValue(undefined);
+    fireEvent.click(screen.getByRole('button', { name: 'Turn Off' }));
+    confirmIn('Turn Off');
+    await waitFor(() => expect(stateOf()).toBe('off'));
+    expect(client.turnOffMyWorkCalendarFeed).toHaveBeenCalledWith('user_1');
+    expect(track).toHaveBeenCalledWith('Plan', 'Ended', 'MyWorkCalendarFeed');
   });
 });
 

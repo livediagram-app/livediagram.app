@@ -145,20 +145,22 @@ moves between them, and the one account that joins them.
    **Start Designing**, **Start Huddling**. Below `lg` the window sits between the summary and the three things it does.
    Every logo is the app's own UI package `Brand`, with its hover
    shimmer, "live" in the app's deep shade on light and its own 400 on dark, which reads at AA on a dark card where its 500
-   accent does not (`components/landing/AppLogo.tsx`). The copy is
+   accent does not (`components/landing/AppLogo.tsx`). The three things are each app's headline features as it stands (livediagram's workshops, liveplanner's
+   automations, livedesign's clickable wireframes, livehuddle's voice, cameras and screens), so an app that gains one
+   changes its card in the same change. The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
    WCAG AA. On a dark page, text in an app's colour (a link, a name, a card's call to action, here and on every
    page of the site) is its light shade, `light` in `@liveworkspace/sites` (its brand-400), which passes AA on every
    dark surface; the accent itself does not for each app (liveplanner's violet-500 is 4.1:1 on slate-900).
 3. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
-   the same promises", ten tiles that fill every row, each with a small piece of the product drawn
+   the same promises", thirteen tiles that fill every row (18 cells over three columns, 16 over two), each with a small piece of the product drawn
    in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
    account (the large tile, the sign-in box beside each app signed in, with Create your account);
    live by default (people in the work as each app shows them: a cursor on a canvas, a ring on a held card, a
    character in a Space; the words promise real-time collaboration, never a cursor in every app); share by link (the share box); one Explorer for
    everything (full width: the words beside a folder holding a Canvas, a Plan, a Document, a
-   Design and a Space, two by two with the Space across the foot); one Inbox; teams across every app; one key for scripts and AI (a token in a
-   terminal, checked against every app's API by a script, since there is no liveworkspace CLI); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
+   Design and a Space, two by two with the Space across the foot); connected across apps (a plan's tab bar holding connected files from the other apps, one open as a preview; two columns wide on a tablet); one Inbox; teams across every app; one key for scripts and AI (a token in a
+   terminal, checked against every app's API by a script, since there is no liveworkspace CLI); a copy in your Google Drive (the liveworkspace folder in Drive, a file from each app, each synced); on your phone, too (an installed app's notification on a home screen of the apps); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's

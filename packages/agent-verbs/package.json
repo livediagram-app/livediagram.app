@@ -22,6 +22,7 @@
     "./mcp/thread-run": "./src/mcp/thread-run.ts",
     "./mcp/thread-tools": "./src/mcp/thread-tools.ts",
     "./mcp/tool": "./src/mcp/tool.ts",
+    "./mcp/view-tool": "./src/mcp/view-tool.ts",
     "./product": "./src/product.ts",
     "./refs": "./src/refs.ts",
     "./testing/fake-api": "./src/testing/fake-api.ts",

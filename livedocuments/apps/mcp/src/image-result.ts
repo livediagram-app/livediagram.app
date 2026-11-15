@@ -24,10 +24,9 @@ import { emojiGlyphsOf, previewEmoji } from './preview-emoji';
 import { svgToPngBase64 } from '@liveworkspace/mcp-kit/render';
 import { INTER_ITALIC, previewFonts } from './preview-fonts';
 import {
-  PREVIEW_IMAGE_BUDGET_BYTES,
-  PREVIEW_IMAGE_BUDGET_PIXELS,
-  PREVIEW_IMAGE_MAX_BYTES,
+  PREVIEW_PICTURE_LIMITS,
   previewLeftOutNote,
+  type PictureLimits,
 } from '@liveworkspace/mcp-kit/preview-budget';
 import { apiFetch } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
@@ -47,7 +46,12 @@ type ImageResolver = {
   leftOut: number;
 };
 
-async function buildImageResolver(env: Env, token: string, tab: Tab): Promise<ImageResolver> {
+async function buildImageResolver(
+  env: Env,
+  token: string,
+  tab: Tab,
+  limits: PictureLimits,
+): Promise<ImageResolver> {
   let leftOut = 0;
   const byId = await embedTabImages(
     tab,
@@ -57,9 +61,7 @@ async function buildImageResolver(env: Env, token: string, tab: Tab): Promise<Im
       return { bytes: await res.arrayBuffer(), contentType: res.headers.get('Content-Type') };
     },
     {
-      maxBytesPerImage: PREVIEW_IMAGE_MAX_BYTES,
-      totalBudgetBytes: PREVIEW_IMAGE_BUDGET_BYTES,
-      totalBudgetPixels: PREVIEW_IMAGE_BUDGET_PIXELS,
+      ...limits,
       onOverLimit: () => {
         leftOut += 1;
       },
@@ -89,24 +91,50 @@ export async function tabPreview(
   // One page of the tab to draw alone (read_document's `page`); every page when absent.
   page?: LaidOutPage,
 ): Promise<(TextBlock | ImageBlock)[]> {
-  // A tab draws as its pages (svg-render-pages.ts), as the editor exports them. Its pictures and its faces are
-  // fetched together rather than one after another.
-  const [{ resolveImageHref, leftOut }, fonts, emoji] = await Promise.all([
-    auth ? buildImageResolver(auth.env, auth.token, tab) : NO_IMAGES,
+  // Its drawing and its faces are fetched together rather than one after another.
+  const [{ svg, leftOut }, fonts] = await Promise.all([
+    tabSvg(tab, auth, page),
     previewFonts(tabFontIds(tab)),
-    previewEmoji(emojiGlyphsOf(tab.elements)),
-    // A map's land (docs/specs/009-elements/map.md), loaded only when the tab has one.
-    ensureMapGeometry(tab.elements),
   ]);
-  const drawWith = { resolveImageHref, ...previewResolvers(emoji) };
-  // Every tab has at least one page, so the pages always draw.
-  const svg = page ? renderPageToSvg(tab, page, drawWith) : renderPagesToSvg(tab, drawWith)!;
   const image: ImageBlock = {
     type: 'image',
     data: await svgToPngBase64(svg, fonts),
     mimeType: 'image/png',
   };
   return previewBlocks(image, leftOut);
+}
+
+// How the interactive view draws a page rather than the PNG (view-tab.ts, docs/specs/015-api/mcp-server.md
+// "Interactive view (MCP Apps)"): its smaller picture budget, the shown page's pictures only, and the articles'
+// writing it already estimated.
+type SvgOptions = {
+  limits?: PictureLimits;
+  pictures?: Tab;
+  writingSvg?: (page: LaidOutPage) => string | undefined;
+};
+
+// The tab drawn as its pages (svg-render-pages.ts), as the editor exports them, or one page alone: its pictures,
+// icons, emoji and map land resolved as the editor draws them. The PNG's source, and what the interactive view draws.
+export async function tabSvg(
+  tab: Tab,
+  auth?: { env: Env; token: string },
+  page?: LaidOutPage,
+  { limits = PREVIEW_PICTURE_LIMITS, pictures = tab, writingSvg }: SvgOptions = {},
+): Promise<{ svg: string; leftOut: number }> {
+  const [{ resolveImageHref, leftOut }, emoji] = await Promise.all([
+    auth ? buildImageResolver(auth.env, auth.token, pictures, limits) : NO_IMAGES,
+    previewEmoji(emojiGlyphsOf(tab.elements)),
+    // A map's land (docs/specs/009-elements/map.md), loaded only when the tab has one.
+    ensureMapGeometry(tab.elements),
+  ]);
+  const drawWith = {
+    resolveImageHref,
+    ...previewResolvers(emoji),
+    ...(writingSvg ? { writingSvg } : {}),
+  };
+  // Every tab has at least one page, so the pages always draw.
+  const svg = page ? renderPageToSvg(tab, page, drawWith) : renderPagesToSvg(tab, drawWith)!;
+  return { svg, leftOut };
 }
 
 // The editor's font ids a tab draws in: its elements' and its own, and its articles' heading and body faces (the fonts

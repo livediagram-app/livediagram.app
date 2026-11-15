@@ -11,6 +11,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/app-routes.ts`                    | `/app/…` dispatch; the summary push                                                                                                                             |
 | `liveworkspace/apps/index/src/collab-push.ts`                   | `parseCard`, `parseThread`, `parseAction`, `pushCollab`, `collabEvents`, `retractedComments`, `parseForm`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen` |
 | `liveworkspace/apps/index/src/inbox.ts`                         | `inboxQueries`, `handleInbox`                                                                                                                                   |
+| `liveworkspace/apps/index/src/calendar-feeds.ts`                | `handleCalendarFeed`, `calendarFeedByToken`, `calendarCardsQuery`: a person's calendar feed and its cards                                                       |
 | `packages/explorer/src/inbox-apps.ts`                           | `APPS_WITHOUT_INBOX` (livehuddle), `appHasInbox`: the per-app switch that hides the Inbox and skips its fetch                                                   |
 | `liveworkspace/apps/index/scripts/livehuddle-inbox-cleanup.sql` | The one-off cleanup of livehuddle's Inbox rows from before it stopped pushing (Work Tracker 736)                                                                |
 | `packages/index-app/src/outbox.ts`                              | The item's outbox in its Durable Object: what it owes the index, drained on idle                                                                                |
@@ -40,7 +41,8 @@ Scope, by file:
 | `GET /app/forms/:code`                         |                                                                          | `{ itemId, tabId }` for a live code of this app's; else `404`                                                                                                                                                                                                                                                           |
 | `GET /app/items/:id/forms/:tabId/seen/:person` |                                                                          | `{ seen }` (0 when none)                                                                                                                                                                                                                                                                                                |
 
-Parsing. Shown text is cut, not refused: labels, names and titles to 200, texts to 500, colours to 32. Ids and times
+Parsing. A card's `start` and `due` are kept only as `YYYY-MM-DD` strings; anything else is dropped from the card,
+never the push refused. Shown text is cut, not refused: labels, names and titles to 200, texts to 500, colours to 32. Ids and times
 must be well formed. A thread needs `elementId`, `elementLabel`, `resolved` (boolean), `commentCount`,
 `participantIds` and `mentionedIds` (≤ 100 ids), `latestText`, `latestAuthorName`, `firstAt`, `latestAt`, and may
 carry `latestAuthorColor`, `latestAuthorId`, `resolvedById`, `agentIds` (≤ 100 ids; they join `collab_thread_people`
@@ -89,11 +91,44 @@ An element part's thread (a Sheet cell's, `elementId` `<elementId>:<cell>`) is f
 (`GET …/comments?status=all`) by `listedThreadKey` (`inbox-actions.ts`: `elementId`, then `:cell` when the listing
 gives one); Reply posts the listed thread's own `elementId` and `cell`, Resolve its first comment as any thread's.
 
+The header's doors (`InboxHost.headerActions`, `packages/explorer/src/types.ts`): each a `HeaderIconButton`
+(`packages/explorer/src/ui/HeaderIconButton.tsx`, the panel header's quiet glyph button), drawn in the panel's header
+row before the filter's slot (`panel/Pane.tsx`) and in the page's `PaneHeader` actions before its slot
+(`InboxPane.tsx`), whatever the list's state.
+
 A Plan card's row (an action or thread with `card`) draws `CardStatusChip` (`packages/explorer/src/explorer/badges.tsx`)
 from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. `inboxCount`
 (`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`; `threadReason` reads a
 thread reached for no other reason (an agent with the reader's token wrote in it, nobody mentioned them, the item is
 not theirs) as `agent`, **Your agent wrote**.
+
+### Calendar feeds (`liveworkspace/apps/index/src/calendar-feeds.ts`)
+
+The person's feed of their open, dated cards in one app ([one-explorer-contracts.md "Calendar feeds"](../one-explorer-contracts.md#calendar-feeds)).
+
+| Route                                | Caller                                 | Answer                                                                                                                                               |
+| ------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /calendar-feed`                 | an app for an account (`person.app`)   | `{ feed: { createdAt } \| null }`                                                                                                                    |
+| `PUT /calendar-feed`                 | the same                               | body `{ tokenHash }` (`^[0-9a-f]{64}$`, else `400 calendar_feed_invalid`): upsert on `(person_id, app)`, `created_at` now; `{ feed: { createdAt } }` |
+| `DELETE /calendar-feed`              | the same                               | `204`, whether or not one went                                                                                                                       |
+| `GET /calendar-feed/cards`           | the same, its teams in `X-Index-Teams` | `{ cards: CalendarCard[] }` (below)                                                                                                                  |
+| `GET /app/calendar-feeds/:tokenHash` | the app's key                          | `{ personId }` for this app's row with that hash; else, or a malformed hash, `404`                                                                   |
+
+Any other caller of `/calendar-feed…` (a person's own token, a link visitor, the Drive mirror, the export) is
+`403 calendar_feed_app_only`; another method, or another path below it, `404`. The cards read:
+
+```sql
+SELECT a.item_id, i.title, a.element_id, a.card, a.updated_at
+FROM collab_actions a JOIN items i ON i.id = a.item_id
+WHERE a.assignee_id = ? AND a.status = 'open' AND a.app = ? AND a.tab_id = '~cards' AND i.trashed_at IS NULL
+  AND (json_extract(a.card, '$.start') IS NOT NULL OR json_extract(a.card, '$.due') IS NOT NULL)
+  AND ((i.owner_id = ? AND i.team_id IS NULL) OR i.scope IN (SELECT value FROM json_each(?)))
+ORDER BY a.updated_at DESC LIMIT 1000
+```
+
+`CalendarCard` (`@liveworkspace/index-client`) is `{ itemId, itemTitle, cardId, card: CollabCard, updatedAt }`
+(`cardId` the action's `elementId`). A row whose card JSON does not parse is skipped. The reach is the Inbox's
+`reachable` without its link clause: a plan reached only through a share link never lists.
 
 ## Data and persistence
 
@@ -102,6 +137,7 @@ not theirs) as `agent`, **Your agent wrote**.
 | `collab_threads`       | `(app, item_id, tab_id, element_id)`            | `collab_threads_item (item_id, tab_id, resolved, latest_at DESC)`                                                      | collab push; purge anonymises | Inbox, events       |
 | `collab_thread_people` | `(person_id, app, item_id, tab_id, element_id)` | `collab_thread_people_item (item_id, tab_id)`                                                                          | collab push; merge; purge     | Inbox               |
 | `collab_actions`       | `(app, item_id, tab_id, element_id, action_id)` | `collab_actions_item`; `collab_actions_assignee (assignee_id, status, updated_at DESC)`; `collab_actions_assigner (…)` | collab push; merge; purge     | Inbox, events       |
+| `calendar_feeds`       | `(person_id, app)`                              | `calendar_feeds_token` UNIQUE `(token_hash)` (0018)                                                                    | calendar feed routes; purge   | feed routes         |
 | `collab_forms`         | `(item_id, tab_id)`                             | `collab_forms_code` UNIQUE `(code) WHERE code IS NOT NULL` (0004)                                                      | form push                     | Inbox, `formByCode` |
 | `collab_form_reads`    | `(person_id, item_id, tab_id)`                  | `collab_form_reads_item (item_id)`                                                                                     | seen push; merge; purge       | Inbox, `formSeen`   |
 
@@ -130,21 +166,22 @@ on production with `--remote`.
 
 ## Testing
 
-| Test                                                            | Pins                                                                               |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/inbox.test.ts` (11)               | Inbox threads, cards, forms; the Inbox at scale                                    |
-| `liveworkspace/apps/index/src/app.test.ts` (15)                 | app pushes and the Inbox among the rest                                            |
-| `packages/index-app/src/outbox.test.ts`                         | the outbox's keys, drain, caps and retries                                         |
-| `packages/index-app/src/cards.test.ts`, `forms.test.ts`         | cards under `~cards`; a form's code lookup                                         |
-| `packages/explorer/src/inbox-apps.test.tsx`                     | no Inbox for livehuddle; the other four keep it                                    |
-| `liveworkspace/apps/index/src/livehuddle-inbox-cleanup.test.ts` | the cleanup deletes livehuddle's thread, people and action rows only, twice safely |
+| Test                                                            | Pins                                                                                |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/inbox.test.ts` (11)               | Inbox threads, cards, forms; the Inbox at scale                                     |
+| `liveworkspace/apps/index/src/calendar-feeds.test.ts`           | feed make, reset, read, turn off, token lookup, the cards read's reach and refusals |
+| `liveworkspace/apps/index/src/app.test.ts` (15)                 | app pushes and the Inbox among the rest                                             |
+| `packages/index-app/src/outbox.test.ts`                         | the outbox's keys, drain, caps and retries                                          |
+| `packages/index-app/src/cards.test.ts`, `forms.test.ts`         | cards under `~cards`; a form's code lookup                                          |
+| `packages/explorer/src/inbox-apps.test.tsx`                     | no Inbox for livehuddle; the other four keep it                                     |
+| `liveworkspace/apps/index/src/livehuddle-inbox-cleanup.test.ts` | the cleanup deletes livehuddle's thread, people and action rows only, twice safely  |
 
 ## Constants and configuration
 
 `SUMMARY_MAX_BYTES` 2048, `COLLAB_MAX_THREADS` 500, `COLLAB_MAX_ACTIONS` 500, `COLLAB_CARDS_TAB` `'~cards'`,
 `COLLAB_EVENTS_MAX` 100, `INDEX_BODY_MAX_BYTES` 512 KiB (the index's `MAX_BODY_BYTES`, and the most a collab push
 `capCollabPush` sends), `COLLAB_TEXT_MAX` 500, `COLLAB_PEOPLE_MAX` 100 (`packages/index-client`); `LABEL_MAX` 200,
-`TEXT_MAX` 500 (`COLLAB_TEXT_MAX`), `COLOR_MAX` 32, `PEOPLE_MAX` 100 (`COLLAB_PEOPLE_MAX`),
+`TEXT_MAX` 500 (`COLLAB_TEXT_MAX`), `COLOR_MAX` 32, `CALENDAR_CARDS_MAX` 1,000 (`calendar-feeds.ts`), `PEOPLE_MAX` 100 (`COLLAB_PEOPLE_MAX`),
 `RESPONSES_MAX` 10,000,000 (`collab-push.ts`); `INBOX_LIMIT_DEFAULT` 100 (`config.ts`); `FUTURE_SLACK_MS` 5 min
 (`events.ts`); `FLUSH_IDLE_MS` 2 s, `FLUSH_MIN_GAP_MS` 60 s, `FLUSH_RETRY_MS` 60 s (a key's first wait after a
 failure, doubling to `RETRY_MAX_MS` 1 h), `OUTBOX_MAX_ATTEMPTS` 12, `FINAL_STATUSES` 400, 403, 413, 422, `DRAIN_TABS`

@@ -7,6 +7,7 @@ vi.mock('./image-result', () => ({
     content: [{ type: 'text', text: JSON.stringify(value) }],
     structuredContent: value,
   }),
+  tabSvg: async () => ({ svg: '<svg viewBox="-10 -10 120 80"></svg>', leftOut: 0 }),
 }));
 
 import { connectTestClient } from './mcp-test-client';
@@ -224,6 +225,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'changeThreadsOutput',
     args: { documentId: 'd1', changes: [{ op: 'resolve', ref: 'e1' }] },
   },
+  { tool: 'view_tab', output: 'viewTabOutput', args: { documentId: 'd1' } },
 ];
 
 describe('tool output schemas', () => {
@@ -263,6 +265,9 @@ describe('tool output schemas', () => {
         const [viewText, line, ...extra] = first!.text.split('\n');
         expect([viewText, extra]).toEqual([text, []]);
         expect(JSON.parse(line!)).toEqual({ ...rest, tab: tabMeta });
+      } else if (tool === 'view_tab') {
+        // The view's own tool says one line, not its SVG (docs/specs/015-api/mcp-server.md "Interactive view").
+        expect(first!.text).toMatch(/^Drew tab ".*" for the interactive view\.$/);
       } else {
         expect(JSON.parse(first!.text)).toEqual(structured);
       }

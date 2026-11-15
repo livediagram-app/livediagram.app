@@ -121,6 +121,10 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       send('DELETE', appConnectionPath(hostId, connectionId, tabId)),
     // Where up to COMMUNITY_STATES_MAX Community posts' items stand (the Community's sweep), one answer per post, in
     // order. Read only.
+    // The person whose calendar feed in this app has this token hash, or null (one-explorer-contracts.md "Calendar
+    // feeds").
+    calendarFeedByToken: async (tokenHash: string) =>
+      (await get<{ personId: string }>(`/calendar-feeds/${enc(tokenHash)}`))?.personId ?? null,
     communityStates: async (posts: readonly CommunityStateAsk[]): Promise<CommunityStateAnswer[]> =>
       (await post<{ states: CommunityStateAnswer[] }>('/community/states', { posts })).states,
   };

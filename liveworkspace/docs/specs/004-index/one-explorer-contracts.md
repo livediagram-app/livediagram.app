@@ -299,8 +299,8 @@ holds for that person:
   every app, the Trash included, and with each one its favourites, opens, share links, password,
   Shared with me rows and comment and action rows.
 - **Deleted**: their folders, favourites, opens (Recent), use
-  days (Most Used), Shared with me rows, placement defaults, and their own `favourited` events (the
-  events of their own items went with the items).
+  days (Most Used), Shared with me rows, placement defaults, their calendar feeds ([Calendar feeds](#calendar-feeds)),
+  and their own `favourited` events (the events of their own items went with the items).
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
@@ -587,7 +587,9 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
   action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
   thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,
-typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {name, color?, done} | null}` (`board`
+typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {name, color?, done} | null, start?,
+due?}` (`start` and `due` the card's Start and Due days, `YYYY-MM-DD`, on an assigned card's action, for the person's
+  calendar feed below; absent when the card has none, and a malformed one is dropped, never the push refused; `board`
   is where the row opens it; null when no board shows it; `column` the column on that board holding the card's
   status as of the push: its name, its colour (`#rrggbb`) when it has one, and whether it is a done column; null or
   absent when no column holds it, as on an All Cards board, or when the column is gone; `id` the card's id, given
@@ -876,6 +878,10 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   with their keys, the item's thumbnail where the host draws one (the host's `renderThumbnail`, the item read from
   the index once the choice has rested 200 ms and kept, at most 64), then the thread, the action's note or the
   form's responses, and a reply field where Reply is offered.
+- **The header's own doors.** An app may add quiet glyph buttons to the Inbox's header, beside the filter, through
+  the host's `InboxHost.headerActions` (`{ id, label, icon, onClick }`, each a header icon button named by its label
+  and tooltip): in the editor's panel in the panel's header row, on the page in the pane header. liveplanner's
+  Subscribe to Calendar is one ([Calendar feeds](#calendar-feeds)). Shown whatever the list holds, empty or loading.
 - **The verbs.** Open in the app (↵) is always there, through the host's `itemHref` with an `ItemPlace`: the tab and
   element, `open: 'action' | 'comments'` for the popover, `cardId` for a card, and `threadId` for a card's thread
   (`Activity·Selected`, by row kind).
@@ -915,6 +921,29 @@ thread on my item I have not written in myself, an agent's question with my toke
 Work I handed out, threads I replied in and form responses are listed but not counted. Coming back to the browser tab reads it again (at most
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in
 This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill.
+
+## Calendar feeds
+
+A person's calendar feed of the open cards assigned to them in one app (liveplanner's My Work feed,
+liveplanner/docs/specs/026-plan/calendar-feed.md "The My Work feed"): the app makes the link, keeps nothing and serves
+the `.ics`; the index keeps the feed's token hash beside the cards it lists, and answers who a token is and which cards
+are theirs, each asked fresh on every fetch.
+
+- **One feed per person per app**: `calendar_feeds (person_id, app, token_hash, created_at)`, the token's SHA-256
+  only (64 lowercase hex), never the token. A new hash over an existing feed is Reset Link: the old one stops at once.
+  Dropped with the person by the account purge.
+- **The person's own feed, through their app only.** `GET /calendar-feed` (`{feed: {createdAt} | null}`),
+  `PUT /calendar-feed` `{tokenHash}` (make or reset: `{feed: {createdAt}}`) and `DELETE /calendar-feed` (`204`) are
+  answered only to an app acting for an account (its key, `X-Index-App`, `X-Index-Person`), for that app; any other
+  caller (a person's own token, a link, the Drive mirror, the export) gets `403 calendar_feed_app_only`. The app has
+  already checked the person is signed in, in person.
+- **Their cards**: `GET /calendar-feed/cards`, the same caller with the person's teams in `X-Index-Teams` (read fresh
+  from accounts by the app): `{cards: [{itemId, itemTitle, cardId, card, updatedAt}]}`, the app's open card actions
+  assigned to the person (`tab_id` `~cards`, `assignee_id` the person) whose card has a `start` or a `due`, on live items
+  the person owns or reaches through one of those teams, never through a link; newest change first, at most
+  `CALENDAR_CARDS_MAX` (1,000). One indexed read (`collab_actions_assignee`).
+- **A token's person**: `GET /app/calendar-feeds/:tokenHash` (the app's key) answers `{personId}` for that app's feed
+  with that hash, else `404`; a malformed hash is `404` too.
 
 ## This Browser's list (in the browser, never the index)
 

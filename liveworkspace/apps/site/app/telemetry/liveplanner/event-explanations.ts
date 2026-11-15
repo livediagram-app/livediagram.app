@@ -796,6 +796,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Shared|CalendarFeedGoogle': 'Someone handed their new calendar link to Google Calendar.',
   'Plan|Shared|CalendarFeedApple': 'Someone handed their new calendar link to Apple Calendar.',
   'Plan|Ended|CalendarFeed': 'Someone turned off their calendar link.',
+  'UI|Opened|MyWorkCalendarFeed': "Someone opened Subscribe to Calendar from the Inbox's header.",
+  'Plan|Created|MyWorkCalendarFeed':
+    'Someone made a private calendar link to the cards assigned to them across their plans.',
+  'Plan|Changed|MyWorkCalendarFeedLink':
+    'Someone reset their My Work calendar link: a new one, the old one stopped.',
+  'Plan|Copied|MyWorkCalendarFeed': 'Someone copied their new My Work calendar link.',
+  'Plan|Shared|MyWorkCalendarFeedGoogle':
+    'Someone handed their new My Work calendar link to Google Calendar.',
+  'Plan|Shared|MyWorkCalendarFeedApple':
+    'Someone handed their new My Work calendar link to Apple Calendar.',
+  'Plan|Ended|MyWorkCalendarFeed': 'Someone turned off their My Work calendar link.',
   'Plan|Created|AutomationRuleGithub':
     'Someone saved a new automation rule started by a pull request on GitHub.',
   'Plan|Tested|AutomationRule':

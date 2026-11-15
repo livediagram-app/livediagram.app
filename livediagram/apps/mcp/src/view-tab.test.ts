@@ -12,14 +12,7 @@ import type { Env } from '@liveworkspace/mcp-kit/env';
 vi.mock('@liveworkspace/mcp-kit/render', () => ({ svgToPngBase64: async () => '' }));
 
 import { registerTools } from './tools';
-import {
-  clickableElements,
-  registerViewPage,
-  roomSocketUrl,
-  VIEW_URI,
-  viewBoxOf,
-  viewLive,
-} from './view-tab';
+import { clickableElements, registerViewPage, roomSocketUrl, VIEW_URI, viewLive } from './view-tab';
 
 // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the page, the tools that link it, and view_tab.
 
@@ -64,18 +57,6 @@ describe('the interactive view', () => {
       { connectDomains: ['wss://www.livediagram.app'], resourceDomains: [] },
       { connectDomains: ['ws://localhost:3100'], resourceDomains: [] },
     ]);
-  });
-
-  it('reads the SVG’s view box, and an unreadable one as empty', () => {
-    expect(viewBoxOf('<svg width="1" viewBox="-12.5 -8 300 200.25">')).toEqual({
-      x: -12.5,
-      y: -8,
-      width: 300,
-      height: 200.25,
-    });
-    expect(viewBoxOf('<svg>')).toEqual({ x: 0, y: 0, width: 0, height: 0 });
-    expect(viewBoxOf('<svg viewBox="a b c d">')).toEqual({ x: 0, y: 0, width: 0, height: 0 });
-    expect(viewBoxOf('<svg viewBox="1 2')).toEqual({ x: 0, y: 0, width: 0, height: 0 });
   });
 
   it('offers every boxed element drawn, with its ref and label, never an arrow or a hidden layer’s', () => {

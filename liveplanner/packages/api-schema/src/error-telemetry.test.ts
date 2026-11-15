@@ -34,6 +34,8 @@ describe('apiRouteLabel', () => {
     expect(apiRouteLabel('GET', 'http://localhost:8887/api/trash?cursor=abc')).toBe('Get.Trash');
     expect(apiRouteLabel('GET', '/api/preferences')).toBe('Get.Preferences');
     expect(apiRouteLabel('POST', '/api/trash/0b7c5f9e-1111/restore')).toBe('Post.Trash.Restore');
+    expect(apiRouteLabel('POST', '/api/my-work/calendar-feed')).toBe('Post.MyWork.CalendarFeed');
+    expect(apiRouteLabel('PUT', '/api/projects/x/calendar-feed')).toBe('Put.Projects.CalendarFeed');
   });
 
   it('never echoes a share code or an unknown resource', () => {

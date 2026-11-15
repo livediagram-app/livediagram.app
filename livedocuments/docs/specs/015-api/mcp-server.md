@@ -1011,6 +1011,50 @@ Worker (no DOM, no React).
   box-with-caption fallback. Without a resolver (or for an unknown id) the
   renderer still emits that fallback, so resolver-less callers are unchanged.
 
+## 5a. Interactive view (MCP Apps)
+
+The PNG is flat: nobody can zoom into a dense slide, flip to page 7 of a report or click through to the element they
+want to change. A host that supports **MCP Apps** (the `io.modelcontextprotocol/ui` extension, stable 2026-01-26:
+Claude, ChatGPT, VS Code Copilot, Cursor) renders a tool's linked view in a sandboxed frame beside its result.
+livediagram built the pilot (its mcp-server.md "Interactive view (MCP Apps)"); livedocuments shows the same view, one
+page at a time.
+
+- **The view resource.** The server lists `ui://livedocuments/view.html` (`text/html;profile=mcp-app`), the shared
+  viewer page (`@liveworkspace/mcp-kit/app-view`, `viewerHtml('livedocuments', { idKey: 'documentId', live: false })`)
+  with its script and styles inline, its size held under `VIEWER_HTML_BUDGET_BYTES` (24 KB) by a test. The SVG is
+  drawn as an image, so nothing in it runs or fetches: its `_meta.ui.csp` allows no connection and no resource
+  domain (`connectDomains: []`, `resourceDomains: []`), and it asks for a border.
+- **The tools that link it.** `create_document`, `add_tab`, `update_document`, `read_document`, `change_pages` and
+  `write_article` carry `_meta.ui.resourceUri` (and the older flat `ui/resourceUri` key) in their definitions. Their
+  results are unchanged: **the PNG always stays**, since the model checks its work from it (§5) and a host without
+  MCP Apps shows only it.
+- **What the view does.** It takes the document and tab from the tool's structured result (`documentId` or `id`,
+  `tabId`, `tab.id` or the first of `tabIds`) and asks the server for that tab through the host
+  (`tools/call view_tab`). It shows **one page at a time**, drawn as the PNG draws a page alone (`renderPageToSvg`,
+  an article's writing estimated as the preview estimates it, its pictures, icons and emoji resolved the same way).
+  Wheel, pinch and the + and - buttons zoom about the pointer, dragging pans, Fit returns to the whole page; a pager
+  in the header (previous, "2 / 7" with the page's name as its title, next; Page Up and Page Down from the keyboard)
+  flips pages, and a strip of the document's tabs switches tab, each another `view_tab`. Clicking an element opens
+  the editor at it (`ui/open-link` to `/document/<id>#t=<tab>&el=<element>`, the Inbox's element deep link), and
+  **Open in editor** opens the tab. A tab that cannot be read says so in the frame; nothing is cached between results.
+- **`view_tab`**: `{ documentId, tabId?, pageId? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a
+  host with MCP Apps keeps it from the model): one page's SVG (the first page when `pageId` is absent or names no
+  page), its view box, the box of every element drawn on that page with its ref and label (for the click), the tab's
+  pages (`{ id, name }`, a page with no name named by its place, "Page 2") and the shown one's id, the document's tabs
+  and link. Its text block is one short line, not the SVG; `read_document` stays the model's read.
+- **Pictures.** The view embeds a page's pictures within the view's own, smaller budget (`VIEW_IMAGE_MAX_BYTES`
+  512 KB a picture, `VIEW_IMAGE_BUDGET_BYTES` 2 MB and `VIEW_IMAGE_BUDGET_PIXELS` 4 million together,
+  `@liveworkspace/mcp-kit/preview-budget`), and only the shown page's: a picture past it keeps its placeholder, so a
+  page of large photos never sends megabytes into the frame.
+- **Authority.** The view holds no lasting credential. It reads only through the host's own connection to this
+  server, so every `view_tab` is the user's token through the api's ordinary read gate, and a read-only token reads as
+  it does today. No share link is minted, ever. The view is read-only for every token, whatever its share role.
+- **Live updates.** Not yet: the view shows the tab as it was when drawn, and its header carries no live mark. A new
+  tool result draws it afresh. Following the room as livediagram's view does needs a view-only room ticket on this
+  api first.
+- **Cost.** `view_tab` renders SVG only, no resvg. A test holds one page's SVG build, on the densest slide of a
+  40-page deck, to a CPU budget and its size to under 1 MB.
+
 ## 6. Rollout
 
 1. **`apps/mcp` skeleton**: worker, Hono, MCP SDK, service binding to api,

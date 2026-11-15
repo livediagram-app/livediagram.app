@@ -156,4 +156,43 @@ describe('cardPlacesOf', () => {
     expect(places.columnFor(undefined)).toBeNull();
     expect(cardPlacesOf([]).columnFor('todo')).toBeNull();
   });
+
+  // A calendar feed's Board option (Work Tracker 993): two boards sharing a status (the Kanban and To-do list
+  // templates both use todo~ and done~) each show the card, not only the one it opens on.
+  it('says whether a board shows a card, by its statuses, All Cards and its card types', () => {
+    const shared = [
+      ...tabs,
+      {
+        id: 't4',
+        name: 'Kanban',
+        elements: [board('k', { title: 'Kanban', columns: columns('todo') })],
+      },
+      {
+        id: 't5',
+        name: 'Bugs',
+        elements: [
+          board('typed', { title: 'Bugs', columns: columns('todo'), addTypes: ['bug'] }),
+          board('archive', { title: 'Archive', archive: true, columns: columns('todo') }),
+        ],
+      },
+    ];
+    const places = cardPlacesOf(shared);
+    expect(places.boardFor('todo')?.elementId).toBe('b');
+    expect(places.shows('b', 'todo', 'task')).toBe(true);
+    expect(places.shows('k', 'todo', 'task')).toBe(true);
+    expect(places.shows('k', 'done', 'task')).toBe(false);
+    expect(places.shows('k', undefined, 'task')).toBe(false);
+    expect(places.shows('all', 'anything', 'task')).toBe(true);
+    expect(places.shows('typed', 'todo', 'bug')).toBe(true);
+    expect(places.shows('typed', 'todo', 'task')).toBe(false);
+    // With the catalogue: a board whose every named type is gone shows every type again.
+    expect(places.shows('typed', 'todo', 'task', [{ id: 'task' }])).toBe(true);
+    expect(places.shows('archive', 'todo', 'task')).toBe(false);
+    expect(places.shows('missing', 'todo', 'task')).toBe(false);
+    expect(places.placeOn('k', 'todo')).toEqual({ title: 'Kanban', column: 'todo' });
+    expect(places.placeOn('k', 'done')).toEqual({ title: 'Kanban', column: null });
+    expect(places.placeOn('all', 'todo')).toEqual({ title: 'All', column: null });
+    expect(places.placeOn('k', undefined)).toEqual({ title: 'Kanban', column: null });
+    expect(places.placeOn('missing', 'todo')).toBeNull();
+  });
 });

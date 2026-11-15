@@ -955,6 +955,47 @@ Worker (no DOM, no React).
   box-with-caption fallback. Without a resolver (or for an unknown id) the
   renderer still emits that fallback, so resolver-less callers are unchanged.
 
+## 5a. Interactive view (MCP Apps)
+
+`list_items` and `read_project` answer in text, so an assistant cannot show the board itself in the chat. A host that
+supports **MCP Apps** (the `io.modelcontextprotocol/ui` extension, stable 2026-01-26: Claude, ChatGPT, VS Code
+Copilot, Cursor) renders a tool's linked view in a sandboxed frame beside its result. livediagram built the pilot (its
+mcp-server.md "Interactive view (MCP Apps)"); liveplanner's view shows a **board**: its columns and their cards.
+
+- **The view resource.** The server lists `ui://liveplanner/view.html` (`text/html;profile=mcp-app`), the shared
+  viewer page in its board form (`@liveworkspace/mcp-kit/app-view`,
+  `viewerHtml('liveplanner', { idKey: 'projectId', board: true, live: false })`) with its script and styles inline,
+  its size held under `VIEWER_HTML_BUDGET_BYTES` (24 KB) by a test. It draws the board as plain HTML from text, never
+  markup it is sent, and fetches nothing: its `_meta.ui.csp` allows no connection and no resource domain
+  (`connectDomains: []`, `resourceDomains: []`), and it asks for a border.
+- **The tools that link it.** `list_items` and `read_project` carry `_meta.ui.resourceUri` (and the older flat
+  `ui/resourceUri` key) in their definitions. Their results are unchanged but for `list_items` naming its
+  `projectId`, so the view knows the plan.
+- **What the view does.** It takes the plan and tab from the tool's structured result (`projectId` or `id`, `tabId`
+  or `tab.id`) and asks the server for that tab's boards through the host (`tools/call view_tab`). Each board shows
+  its columns side by side, scrolling across, each headed by its name and its card count (with its WIP limit, `3 / 5`,
+  when it has one; a done column muted), and its cards in the board's own order, each card its `#number`, its title
+  and its type's colour stripe. A strip of the plan's board tabs switches tab (another `view_tab`). Clicking a card
+  opens the editor at it on its board (`ui/open-link` to `/project/<id>#t=<tab>&el=<board element>&item=<card id>`,
+  the Inbox's card deep link); **Open in editor** opens the tab. A tab with no board (or none named) shows the plan's
+  first board tab; a plan with no board says so in the frame.
+- **Draw only what fits.** The view draws at most `VIEW_BOARD_COLUMN_CARDS` (30) cards a column and
+  `VIEW_BOARD_CARDS` (300) in all, each title cut at `VIEW_CARD_TITLE_MAX` (120) characters; a column with more says
+  "+ 12 more", which opens the board in the editor. Archived and trashed cards are never drawn. The All Cards and
+  Archive boards are not drawn.
+- **`view_tab`**: `{ projectId, tabId? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a host with
+  MCP Apps keeps it from the model): the tab's boards (each its element id, title and columns, each column its name,
+  status, card count, WIP limit, whether done, and the cards it draws as `{ id, ref, title, color }`), the plan's
+  board tabs and its link. Its text block is one short line; `list_items` stays the model's read.
+- **Authority.** The view holds no lasting credential. It reads only through the host's own connection to this
+  server, so every `view_tab` is the user's token through the api's ordinary read gate, and a read-only token reads as
+  it does today. No share link is minted, ever. The view is read-only for every token, whatever its share role.
+- **Live updates.** Not yet: the view shows the board as it was when drawn, and its header carries no live mark. A new
+  tool result draws it afresh.
+- **Cost.** One `view_tab` reads the items and the plan once (the reads `list_items` makes) and groups the cards by
+  column in one pass. A test holds building the view of a 2,000-card board to a CPU budget and its size to under
+  64 KB.
+
 ## 6. Rollout
 
 1. **`apps/mcp` skeleton**: worker, Hono, MCP SDK, service binding to api,

@@ -6,6 +6,7 @@
 export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   find_documents: 'document ls',
   read_document: 'document view',
+  view_tab: 'tab view',
   list_templates: 'template ls',
   search_icons: 'icon search',
   create_document: 'document create',

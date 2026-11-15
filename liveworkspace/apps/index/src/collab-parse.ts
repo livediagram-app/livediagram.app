@@ -66,8 +66,15 @@ export function parseCard(value: unknown): CollabCard | null | undefined {
     title,
     board,
     ...(column ? { column } : {}),
+    ...(isDay(c.start) ? { start: c.start } : {}),
+    ...(isDay(c.due) ? { due: c.due } : {}),
   };
 }
+
+// A card's Start or Due day (one-explorer-contracts.md "Calendar feeds"): `YYYY-MM-DD` only; anything else is dropped
+// from the card, never the push refused, so an older or newer app's push still lands.
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const isDay = (value: unknown): value is string => typeof value === 'string' && DAY.test(value);
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 

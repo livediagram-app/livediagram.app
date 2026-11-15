@@ -57,14 +57,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Does it work on my phone or tablet?',
         a: (
           <>
-            It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
-            gives you the full editor, and a tap is all it takes to walk your character. Small phone
-            screens are best for viewing and light edits. See{' '}
-            <a href="/help/supported-devices/">supported devices</a>.
+            It runs in any modern browser, with nothing to install, and you can add it to your home
+            screen to open it like an app. A laptop, desktop or tablet gives you the full editor,
+            and a tap is all it takes to walk your character. Small phone screens are best for
+            viewing and light edits. See <a href="/help/supported-devices/">supported devices</a>.
           </>
         ),
         aText:
-          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor, and a tap is all it takes to walk your character. Small phone screens are best for viewing and light edits. See supported devices.',
+          'It runs in any modern browser, with nothing to install, and you can add it to your home screen to open it like an app. A laptop, desktop or tablet gives you the full editor, and a tap is all it takes to walk your character. Small phone screens are best for viewing and light edits. See supported devices.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -231,12 +231,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Home shows the spaces you use most and what was shared with you while you were away.
-            Once you sign in, emails can tell you too, and you choose which in Settings. See{' '}
-            <a href="/help/explorer/home/">Home</a>.
+            Once you sign in, emails and notifications on your phone can tell you too, and you
+            choose which in Settings. See <a href="/help/explorer/home/">Home</a>.
           </>
         ),
         aText:
-          'Home shows the spaces you use most and what was shared with you while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See Home.',
+          'Home shows the spaces you use most and what was shared with you while you were away. Once you sign in, emails and notifications on your phone can tell you too, and you choose which in Settings. See Home.',
       },
       {
         q: 'Is it good for stand-ups, all-hands and a virtual office?',
@@ -255,6 +255,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Can we talk by voice or video in a Space?',
         a: 'Yes. Walk up to someone and you hear each other, the voice fading as you walk apart; your microphone starts muted until you unmute. Turn on a camera or share a screen and it shows as a bubble above your character to the people in earshot. A meeting room is a call of its own that nobody outside hears, and whoever stands on a stage is heard by everyone on its tab. Guests on a Participant link talk too, with no sign-in.',
+      },
+      {
+        q: 'Can I knock before walking in on a meeting?',
+        a: 'Yes. A Room Sign by the door says whether the room is Free or In Use, and how many are inside. Press Knock and the people inside see who is asking, with Let In and Not Now. Set your status to Do Not Disturb when you need quiet: no voice, camera or screen reaches you, and knocks and chimes stay silent.',
+      },
+      {
+        q: 'Can I see who came to a meeting?',
+        a: 'Yes. Open a tab’s Attendance from its menu to see who came in, when they joined and left, and how long they stayed, grouped by day and kept for 90 days. Editors and Participants can open it; it is never part of an export or a copy.',
       },
     ],
   },

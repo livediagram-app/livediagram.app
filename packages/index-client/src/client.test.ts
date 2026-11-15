@@ -438,3 +438,58 @@ describe('bounded reads', () => {
     }
   });
 });
+
+describe('calendar feeds', () => {
+  it('reads, makes, turns off and lists the cards of the person’s feed', async () => {
+    const card = {
+      key: 1,
+      type: 'task',
+      typeLabel: 'Task',
+      title: 'A',
+      board: null,
+      due: '2026-11-20',
+    };
+    const row = { itemId: 'p1', itemTitle: 'Plan', cardId: 'c1', card, updatedAt: 5 };
+    const { seen, doFetch } = fakeFetch(({ url, method }) =>
+      method === 'DELETE'
+        ? new Response(null, { status: 204 })
+        : url.endsWith('/cards')
+          ? Response.json({ cards: [row] })
+          : Response.json({ feed: { createdAt: 3 } }),
+    );
+    const client = createIndexClient({
+      baseUrl: 'https://x/api/index',
+      getToken: () => 't',
+      fetch: doFetch,
+    });
+    expect(await client.calendarFeed()).toEqual({ feed: { createdAt: 3 } });
+    expect(await client.putCalendarFeed('ab')).toEqual({ feed: { createdAt: 3 } });
+    expect(await client.deleteCalendarFeed()).toBeUndefined();
+    expect(await client.calendarCards()).toEqual([row]);
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'GET https://x/api/index/calendar-feed',
+      'PUT https://x/api/index/calendar-feed',
+      'DELETE https://x/api/index/calendar-feed',
+      'GET https://x/api/index/calendar-feed/cards',
+    ]);
+    expect(seen[1]!.body).toEqual({ tokenHash: 'ab' });
+  });
+
+  it('names a token’s person for the app, or null', async () => {
+    const { seen, doFetch } = fakeFetch(({ url }) =>
+      url.endsWith('/known')
+        ? Response.json({ personId: 'user_a' })
+        : new Response(null, { status: 404 }),
+    );
+    const app = createIndexAppClient({
+      app: 'liveplanner',
+      key: 'k',
+      baseUrl: 'https://x/api/index',
+      fetch: doFetch,
+    });
+    expect(await app.calendarFeedByToken('known')).toBe('user_a');
+    expect(await app.calendarFeedByToken('gone')).toBeNull();
+    expect(seen[0]!.url).toBe('https://x/api/index/app/calendar-feeds/known');
+    expect(seen[0]!.headers.get('X-Index-App')).toBe('liveplanner');
+  });
+});

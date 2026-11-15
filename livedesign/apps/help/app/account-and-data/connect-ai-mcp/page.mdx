@@ -60,6 +60,12 @@ Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the stick
 
 When the AI changes a design you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). An element someone else in the design has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
 
+## Interactive view
+
+In an AI tool that shows interactive results (Claude does), creating, changing or reading a design also opens a small view of it beside the answer. It shows one page at a time: flip pages with the arrows in its header (or Page Up and Page Down), switch between the design's tabs, pan and zoom, and click an element to open it in the editor. The view is read-only: nothing you do in it changes the design.
+
+The view uses your own connection, never a share link, and draws only the page you are on, so a long flow of screens stays quick, and big photos are left out of it rather than slowing it down. It shows the design as it was when it opened; ask the AI again, or open the editor, to see later changes. The picture of the tab in the chat stays too, so the answer still makes sense in tools without the view.
+
 The AI does the thinking; livedesign validates, lays out, saves, and renders what it produces. The MCP server runs no AI model of its own. New designs an AI creates land at the root of **My Work** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
 
 ## What a connection can and can't touch

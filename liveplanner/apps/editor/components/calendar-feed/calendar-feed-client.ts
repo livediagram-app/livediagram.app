@@ -7,6 +7,8 @@ import type {
   CalendarFeedOptions,
   CalendarFeedOptionsResponse,
   CalendarFeedResponse,
+  MyWorkCalendarFeedIssueResponse,
+  MyWorkCalendarFeedResponse,
 } from '@liveplanner/api-schema';
 import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from '@/lib/api/core';
 import type { CalendarFeedScope } from './calendar-feed-gate';
@@ -56,4 +58,32 @@ export async function changeCalendarFeed(
 /** Turn Off. */
 export async function turnOffCalendarFeed(scope: CalendarFeedScope): Promise<void> {
   return expectOkVoid(await call(scope, 'DELETE'), 'turn off calendar feed');
+}
+
+// The My Work feed (docs/specs/026-plan/calendar-feed.md "The My Work feed"): the person's own, across plans.
+async function myWork(ownerId: string, method: string): Promise<Response> {
+  return apiFetch(`${API_BASE}/my-work/calendar-feed`, {
+    method,
+    headers: await apiHeaders(ownerId, { share: null, body: false }),
+  });
+}
+
+/** Whether the person has a My Work feed, and when its link was made (never the link). */
+export async function readMyWorkCalendarFeed(ownerId: string): Promise<MyWorkCalendarFeedResponse> {
+  return expectOk<MyWorkCalendarFeedResponse>(await myWork(ownerId, 'GET'), 'read my work feed');
+}
+
+/** Make the My Work feed, or Reset Link over an existing one: the link's path, this once. */
+export async function issueMyWorkCalendarFeed(
+  ownerId: string,
+): Promise<MyWorkCalendarFeedIssueResponse> {
+  return expectOk<MyWorkCalendarFeedIssueResponse>(
+    await myWork(ownerId, 'POST'),
+    'make my work feed',
+  );
+}
+
+/** Turn Off the My Work feed. */
+export async function turnOffMyWorkCalendarFeed(ownerId: string): Promise<void> {
+  return expectOkVoid(await myWork(ownerId, 'DELETE'), 'turn off my work feed');
 }

@@ -410,6 +410,33 @@ describe('the cards push', () => {
     expect(cards.actions.map((a) => [a.actionId, a.assigneeId])).toEqual([['c2', 'owner']]);
   });
 
+  // The My Work calendar feed (docs/specs/026-plan/calendar-feed.md "The My Work feed"): an assigned card's days.
+  it("carries an assigned card's Start and Due days, plain days only", async () => {
+    const db = plan();
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    await insertItems(db.env, 'P', [
+      await card('c1', 1, {
+        status: 'new',
+        assignee: await person('owner'),
+        start: '2026-11-01',
+        due: '2026-11-20',
+      }),
+      await card('c2', 2, {
+        status: 'new',
+        assignee: await person('owner'),
+        due: '2026-11-20T09:00',
+      }),
+    ]);
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    const cards = index.collab.find((c) => c.tab === '~cards')!.push;
+    const byId = Object.fromEntries(cards.actions.map((a) => [a.actionId, a.card]));
+    expect(byId.c1).toMatchObject({ start: '2026-11-01', due: '2026-11-20' });
+    expect(byId.c2).not.toHaveProperty('due');
+    expect(byId.c2).not.toHaveProperty('start');
+  });
+
   it("pushes one action a person a card's notifying Person fields tell, by its type", async () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);

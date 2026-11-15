@@ -26,8 +26,12 @@ export type AppCopy = {
 export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
   'livediagram.app': {
     summary:
-      'A real-time canvas for diagrams, whiteboards and mind maps, for teams who think visually.',
-    highlights: ['Diagrams and flowcharts', 'Whiteboards and sketches', 'Mind maps'],
+      'A real-time canvas for diagrams, whiteboards and workshops, for teams who think visually.',
+    highlights: [
+      'Diagrams, flowcharts and mind maps',
+      'Whiteboards you draw on',
+      'Workshops with timers and votes',
+    ],
     art: 'diagram',
     deep: '#0369a1',
     tagline: 'Think it through, together.',
@@ -35,8 +39,12 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
   },
   'liveplanner.app': {
     summary:
-      'Boards of cards, spreadsheets, dashboards and forms in one project, planned together and shared with one link.',
-    highlights: ['Boards of cards', 'Sheets and dashboards', 'Forms that fill the plan'],
+      'Boards of cards, spreadsheets, dashboards and forms in one plan, with rules that do the routine steps for you, planned together and shared with one link.',
+    highlights: [
+      'Boards, sheets and dashboards',
+      'Forms that fill the plan',
+      'Automations that move the work',
+    ],
     art: 'board',
     deep: '#6d28d9',
     tagline: 'Turn it into a plan.',
@@ -53,8 +61,12 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
   },
   'livedesign.app': {
     summary:
-      'Logos, wireframes and photo editing on artboards, designed together and exported when they are ready.',
-    highlights: ['Logos and brand marks', 'Wireframes for sites and apps', 'Photo editing'],
+      'Logos, wireframes and photo editing on artboards, designed together, clicked through and exported when they are ready.',
+    highlights: [
+      'Logos and brand marks',
+      'Wireframes you can click through',
+      'Photo editing in layers',
+    ],
     art: 'design',
     deep: '#be123c',
     tagline: 'Make it look right.',
@@ -65,7 +77,7 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
       'A Space your team meets in: walk in as your own character, find everyone round the table, and talk with whoever is near you.',
     highlights: [
       'Rooms you walk round together',
-      'Calls with the people near you',
+      'Voice, cameras and screens nearby',
       'Offices, homes, venues and campuses',
     ],
     art: 'huddle',

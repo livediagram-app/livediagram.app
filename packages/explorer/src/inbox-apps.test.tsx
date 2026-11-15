@@ -1,7 +1,7 @@
 // The per-app Inbox switch (inbox-apps.ts): livehuddle's Explorer, the editor's panel and its pages alike, has no
 // Inbox row, section, badge or hero pill, never reads GET /inbox, and opens Home at the Inbox's address. The other
 // four products keep every one of them.
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { App, InboxAction } from '@liveworkspace/index-client';
 import { createFakeIndex } from './test/fakeClient';
@@ -125,6 +125,31 @@ describe('the Explorer page', () => {
 describe("the editor's Explorer panel", () => {
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
+
+  it("draws the host's Inbox header doors in the panel's header row", async () => {
+    localStorage.setItem(panelSectionStorageKey('liveplanner'), 'inbox');
+    const onClick = vi.fn();
+    const index = indexWithInbox('liveplanner');
+    render(
+      <ExplorerPanel
+        app="liveplanner"
+        client={index.client}
+        itemHref={(item) => `/open/${item.id}`}
+        onCreate={vi.fn()}
+        onOpenExplorer={vi.fn()}
+        viewerId="user_me"
+        inbox={{
+          headerActions: [
+            { id: 'calendar', label: 'Subscribe to Calendar', icon: <svg />, onClick },
+          ],
+        }}
+      />,
+    );
+    const door = await screen.findByRole('button', { name: 'Subscribe to Calendar' });
+    expect(door.getAttribute('data-header-action')).toBe('calendar');
+    fireEvent.click(door);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
 
   it('shows livehuddle no Inbox in the rail, even when the browser remembers it', async () => {
     localStorage.setItem(panelSectionStorageKey('livehuddle'), 'inbox');

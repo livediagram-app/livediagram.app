@@ -48,6 +48,7 @@ import { handleTrash } from './routes/trash';
 import { handleAutomationHook } from './routes/automation-hook-routes';
 import { handleEmailOptOut } from './routes/email-optout-route';
 import { handleCalendarFeed } from './routes/calendar-feed-route';
+import { handleMyWorkCalendarFeedRoutes } from './routes/my-work-calendar-feed-routes';
 import { handleGithub } from './github/webhook-route';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
@@ -325,6 +326,9 @@ async function routeApiRequest(
       return await handleOauthExchange(ctx);
     case 'account':
       return await handleAccount(ctx);
+    // The person's My Work calendar feed (docs/specs/026-plan/calendar-feed.md "The My Work feed").
+    case 'my-work':
+      return await handleMyWorkCalendarFeedRoutes(ctx);
     // Describe a Plan (docs/specs/026-plan/describe-a-plan.md): a board and card types drafted from words, made nowhere.
     case 'plan-drafts':
       return await handlePlanDrafts(ctx);

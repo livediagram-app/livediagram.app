@@ -15,8 +15,11 @@ vi.mock('@/lib/api/core', async (importOriginal) => ({
 import {
   changeCalendarFeed,
   issueCalendarFeed,
+  issueMyWorkCalendarFeed,
   readCalendarFeed,
+  readMyWorkCalendarFeed,
   turnOffCalendarFeed,
+  turnOffMyWorkCalendarFeed,
 } from './calendar-feed-client';
 
 const SCOPE = { ownerId: 'user_1', projectId: 'p 1' };
@@ -60,5 +63,29 @@ describe('the calendar feed client', () => {
       Response.json({ error: 'calendar_feed_needs_member' }, { status: 403 }),
     );
     await expect(readCalendarFeed(SCOPE)).rejects.toThrow();
+  });
+});
+
+describe('the My Work feed client', () => {
+  it('reads, makes and turns off the person’s own feed at /my-work/calendar-feed', async () => {
+    const MINE = 'https://api.test/api/my-work/calendar-feed';
+    core.apiFetch
+      .mockResolvedValueOnce(Response.json({ feed: null }))
+      .mockResolvedValueOnce(
+        Response.json(
+          { feed: { createdAt: 1 }, path: '/api/calendar/my-work/x.ics' },
+          { status: 201 },
+        ),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    expect(await readMyWorkCalendarFeed('user_1')).toEqual({ feed: null });
+    expect((await issueMyWorkCalendarFeed('user_1')).path).toBe('/api/calendar/my-work/x.ics');
+    await turnOffMyWorkCalendarFeed('user_1');
+    expect(core.apiFetch.mock.calls.map(([url, init]) => [url, init.method])).toEqual([
+      [MINE, 'GET'],
+      [MINE, 'POST'],
+      [MINE, 'DELETE'],
+    ]);
+    expect(core.apiHeaders).toHaveBeenCalledWith('user_1', { share: null, body: false });
   });
 });
