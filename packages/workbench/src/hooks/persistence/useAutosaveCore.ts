@@ -177,6 +177,9 @@ export type AutosaveOptions<Tab, R, J, Writes, S> = {
   noteTabRevision?: (tabId: string, rev: number) => void;
   // A Participant's saves are element ops to the room, never a tab PUT, a tab delete or the item's metadata.
   participant?: boolean;
+  // Told once the newest save landed, with the baseline it left and the revision each tab PUT wrote: the last seen
+  // copy follows it (useLastSeenFollow, each product's offline-mode.md "Warm open of a cloud document").
+  onSaveLanded?: (landed: { tabs: Tab[]; name: string; revs: ReadonlyMap<string, number> }) => void;
 };
 
 export function useAutosaveCore<
@@ -209,6 +212,7 @@ export function useAutosaveCore<
     changesetSeen,
     noteTabRevision,
     participant = false,
+    onSaveLanded,
   } = opts;
 
   // The caller passes a fresh function each render; read it when a save is refused (an effect event), so it never
@@ -217,6 +221,10 @@ export function useAutosaveCore<
   // Read when a save answers, never a trigger of the debounced save.
   const noteRevision = useEffectEvent((tabId: string, rev: number) =>
     noteTabRevision?.(tabId, rev),
+  );
+  const tellLanded = useEffectEvent(
+    (landed: { tabs: Tab[]; name: string; revs: ReadonlyMap<string, number> }) =>
+      onSaveLanded?.(landed),
   );
 
   // Set once the server has told us we may not write to this item at all (403). Unlike a network failure that's
@@ -400,6 +408,8 @@ export function useAutosaveCore<
       // The saves of tabs the last save did not have: the tab order waits for them (below).
       const newTabWrites: Promise<unknown>[] = [];
       const savedIds = new Set(lastSavedTabsRef.current.map((t) => t.id));
+      // The revision each tab PUT of this save wrote, for the last seen copy.
+      const revs = new Map<string, number>();
       for (const t of [...changedTabs, ...resaveTabs]) {
         // Granular ops (realtime-conflict-resolution.md, Level 0), derived from the last state peers saw, so
         // concurrent different-element edits merge instead of the whole tab clobbering.
@@ -449,12 +459,12 @@ export function useAutosaveCore<
             prepared,
           ),
         );
-        const write = deps.notesRevisions
-          ? queued.then((rev) => {
-              if (rev !== null) noteRevision(t.id, rev);
-              deps.noteTabSaved?.(itemId, t.id);
-            })
-          : queued;
+        const write = queued.then((rev) => {
+          if (rev !== null) revs.set(t.id, rev);
+          if (!deps.notesRevisions) return;
+          if (rev !== null) noteRevision(t.id, rev);
+          deps.noteTabSaved?.(itemId, t.id);
+        });
         writes.push(write);
         if (!savedIds.has(t.id)) newTabWrites.push(write);
       }
@@ -509,6 +519,7 @@ export function useAutosaveCore<
             const next = deps.baseline.after(journal, mark, tabs, itemName);
             lastSavedTabsRef.current = next.tabs;
             lastSavedNameRef.current = next.name;
+            tellLanded({ tabs: next.tabs, name: next.name, revs });
           }
           // Peers' element changes to what we just wrote, from the snapshot to a moment after the write: ours may
           // have landed over theirs in the stored tab, so those tabs are written again with what is on screen.
