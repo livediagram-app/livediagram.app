@@ -59,6 +59,9 @@ export type VersionRestoreResponse = {
 };
 export type VersionCopyResponse = { tab: { id: string; name: string; rev: number } };
 
+// The summary a Make a Copy changeset carries.
+export const COPY_SUMMARY = 'Copied a version';
+
 // The summary a restore's changeset carries: what the toast and the changeset history show.
 export function restoreSummary(name: string | null): string {
   if (!name) return 'Restored a version';

@@ -9,7 +9,7 @@ import {
   type Element,
   type Tab,
 } from '@livedocuments/document';
-import type { VersionCopyResponse } from '@livedocuments/api-schema';
+import { COPY_SUMMARY, type VersionCopyResponse } from '@livedocuments/api-schema';
 import { lastChangesetRev, type StoredVersion } from '../db';
 import { capStoredName } from '../names';
 import type { DocumentDTO, DocumentEnv } from '../types';
@@ -62,12 +62,12 @@ export async function copyVersion(args: {
     orderIndex: nextOrderIndex(document.tabs),
     author: args.author,
     tokenId: args.tokenId,
-    summary: 'Copied a version',
+    summary: COPY_SUMMARY,
     baseRev: null,
     rebasedOver: 0,
     prevRev: await lastChangesetRev(env, id),
     results: [],
-    textFor: () => 'Copied a version',
+    textFor: () => COPY_SUMMARY,
     revertOf: null,
   });
   if (outcome.kind === 'too_large') {
