@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest';
 import type { DocumentCommentThread } from '@livedocuments/api-schema';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
-import { commentAdd, commentLs, commentReopen, commentReply, commentResolve } from './comment';
+import {
+  commentAdd,
+  commentDelete,
+  commentEdit,
+  commentLs,
+  commentReopen,
+  commentReply,
+  commentResolve,
+} from './comment';
 import { presenceClear, presenceSet } from './presence';
 
 // docs/specs/015-api/cli.md "Commands" (comment, presence), blueprint "Addressing" (CLI78).
@@ -95,9 +103,9 @@ describe('comment ls', () => {
     const all = await commentLs.run!(ctx, { doc: DOC_A, status: 'open' });
     expect(commentLs.text!(all)).toEqual([
       'api-gw "Gateway" · open · 1 · tab "Overview"',
-      '  Sam 2026-10-01: "Retry?"',
+      '  c1 Sam 2026-10-01: "Retry?"',
       'x9 · open · 1 · tab "Details"',
-      '  Sam 2026-10-01: "Retry?"',
+      '  c1 Sam 2026-10-01: "Retry?"',
     ]);
     expect(all.threads[0]!.comments[0]).not.toHaveProperty('authorId');
     const one = await commentLs.run!(ctx, { doc: DOC_A, tab: 'Details', status: 'open' });
@@ -123,6 +131,30 @@ describe('comment ls', () => {
     const out = await commentLs.run!(contextOf(api, [], []), { doc: DOC_A, status: 'open' });
     expect(out.threads[0]!.comments[0]!.reactions).toEqual(reactions);
     expect(out.threads[1]!.comments[0]).not.toHaveProperty('reactions');
+  });
+
+  it('marks an agent’s comment and an edited one, and leaves the marks off the rest (Work Tracker 920)', async () => {
+    const base = thread({});
+    const listing = {
+      threads: [
+        {
+          ...base,
+          comments: [
+            { ...base.comments[0]!, id: 'c1', ai: true as const, editedAt: 7 },
+            { ...base.comments[0]!, id: 'c2' },
+          ],
+        },
+      ],
+    };
+    const api = fakeApi({ ...tabsOfA, [`/documents/${DOC_A}/comments?status=open`]: listing });
+    const out = await commentLs.run!(contextOf(api, [], []), { doc: DOC_A, status: 'open' });
+    expect(out.threads[0]!.comments[0]).toMatchObject({ ai: true, edited: true });
+    expect(out.threads[0]!.comments[1]).not.toHaveProperty('ai');
+    expect(out.threads[0]!.comments[1]).not.toHaveProperty('edited');
+    expect(commentLs.text!(out).slice(1)).toEqual([
+      '  c1 Sam [AI] (edited) 2026-10-01: "Retry?"',
+      '  c2 Sam 2026-10-01: "Retry?"',
+    ]);
   });
 });
 
@@ -274,5 +306,34 @@ describe('presence set and clear', () => {
     await expect(presenceClear.run!(refused, { doc: DOC_A })).rejects.toMatchObject({
       status: 503,
     });
+  });
+});
+
+// The shared `comment edit` and `comment delete` (@liveworkspace/agent-verbs/verbs/comment-change), bound to this
+// product's addressing: the token's own comment, by its element's ref and id (Work Tracker 920).
+describe('comment edit and delete', () => {
+  it('change the agent’s own comment through this product’s comment endpoints', async () => {
+    const base = thread({});
+    const own = { ...base.comments[0]!, id: 'c7aaaaaa', ai: true as const };
+    const { seen, route } = recorder(() => undefined);
+    const api = fakeApi({
+      ...tabsOfA,
+      [`/documents/${DOC_A}/comments?status=all`]: { threads: [{ ...base, comments: [own] }] },
+      [`${TAB}/comments/c7aaaaaa`]: route,
+    });
+    const ctx = contextOf(api, [], []);
+    const edited = await commentEdit.run!(ctx, {
+      doc: DOC_A,
+      ref: 'api-gw',
+      comment: 'c7aa',
+      text: 'Done',
+    });
+    expect(edited.text).toBe('~ comment c7aaaaaa on api-gw');
+    const gone = await commentDelete.run!(ctx, { doc: DOC_A, ref: 'api-gw', comment: 'c7aaaaaa' });
+    expect(gone.text).toBe('- comment c7aaaaaa from api-gw');
+    expect(seen.map((s) => [s.method, s.path, s.body])).toEqual([
+      ['PUT', `${TAB}/comments/c7aaaaaa`, { text: 'Done' }],
+      ['DELETE', `${TAB}/comments/c7aaaaaa`, undefined],
+    ]);
   });
 });

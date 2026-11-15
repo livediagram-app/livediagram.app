@@ -219,7 +219,19 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
   no change, and no long task; hiding every card 35 to 52 ms; swapping 667 cards for another 667 160 to 174 ms, showing
   all 2,000 from none 205 to 206 ms, both split into tasks under 50 ms. The columns draw only the cards in view (84 to
   96 card faces of the 667 or 2,000 shown), so drawing never scales with the cards a change shows. One change crossed
-  50 ms: narrowing all 2,000 to 667 ran one 51 to 53 ms task, a follow-up rather than a fix here.
+  50 ms: narrowing all 2,000 to 667 ran one 51 to 53 ms task.
+- **The narrowing task** (Work Tracker 909). Profiled (same set-up, three runs, a Participant's board at 4x watching
+  the owner type the filter): narrowing ran 199 to 256 ms of main thread, with one long task each run (80, 55 and
+  51 ms). The long task was the whole re-render and commit in one go: React's render and commit of the board, then
+  the layout the run reveal reads as the new runs mount (`getBoundingClientRect` in `useCardRunReveal`'s `attach`,
+  the one forced layout of the commit) and the card flip's place reads (`placeWithin`, `checkVisibility`). None of
+  those is wasted work: the layout is read once for every run, and the flip reads only the near runs. So
+  `PlanBoardView` hands the projection `useDeferredValue(applied)`: the filter bar and the filter state take the
+  change at once, and the cards' projection and draw follow as a deferred render React yields in every few ms.
+  After, three runs: narrowing 210 to 301 ms of main thread with **no long task**; swapping 667 145 to 206 ms, hiding
+  all 37 to 56 ms and showing all 2,000 210 to 227 ms, all with no long task; the same 104, 96, 0 and 92 card faces
+  drawn as before. A teammate's filter arriving takes the same path. The cost is the risk the card named: the cards
+  may show the old filter for one frame after the filter bar shows the new one.
 - The gallery computes For You only on open, and draws a tile's preview only once `useSeen` reports it near view
   (`SEEN_MARGIN`); `fields` is memoised on `addTypes` and the types, so adding a widget never rebuilds sections.
 

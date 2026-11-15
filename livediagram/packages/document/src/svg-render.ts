@@ -29,6 +29,7 @@ export {
   LABEL_LINE_HEIGHT,
   labelMaxWidth,
   labelMeasure,
+  laneTitleMeasure,
   r2,
   wrapLabel,
   xmlEscape,

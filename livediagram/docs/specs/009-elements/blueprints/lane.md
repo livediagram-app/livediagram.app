@@ -88,15 +88,20 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
     null. The padding inside it is `acrossTitlePadding(padding)` = `min(padding, PADDING_PX.sm)`. At rest the canvas
     lays the label out in it (`laneTitleFrame`, `lane-title-frame.ts` in `@liveworkspace/workbench`: an absolute,
     `overflow: hidden` box of the strip). A plain title is laid out ahead of render by `laneTitleText`: room =
-    `strip.width - 2 × padding - 1`, the px from `wholeWordFontPx` (the label's px when every word fits, else the
+    `laneTitleRoom(strip.width - 2 × padding)` (one px held back, `LANE_TITLE_RESERVE_PX`), the px from `wholeWordFontPx` (the label's px when every word fits, else the
     largest whole px down to 14 at which they do, found by halving), then `fitWholeWordLines` (wrap between words
     only; a word still too wide keeps the most graphemes that fit beside `…`, found by halving; past 3 lines the
     third drops whole words from its end, then is cut). It renders those lines joined by `\n` under
     `whitespace-pre`, at the stepped px. A formatted title is clamped by `line-clamp-3` with `overflow-wrap: normal`.
     While editing the frame is `overflow: visible`, unclamped, and the editor is top-aligned so it grows downward.
-    The export uses the same padding, `maxWidth`, `wholeWordFontPx` size (with `labelMeasure`) and `maxLines = 3`,
-    and `fitWholeWordLines`; a formatted title's runs go through `clampExportRunLines`. The PNG drawer
-    (`export-tab-canvas-draw.ts`) lays both out the same way. The stored label is never shortened.
+    The canvas, the SVG export (`svg-render-describe.ts`, `svg-render-boxed.ts`) and the PNG drawer
+    (`export-tab-canvas-draw.ts`) all measure a plain title with `laneTitleMeasure(px, bold, italic, family)` from
+    `@liveworkspace/element-model`: one shared 2D context, the font set on every call, at the canvas label's weight
+    (`LANE_TITLE_WEIGHT` 500, `LANE_TITLE_BOLD_WEIGHT` 600), so each cuts an overlong word at the same letter (Work
+    Tracker 910; `lane-title-export-parity.test.ts` checks it with a real-font stand-in, `packages/element-model/src/testing/font-stand-in.ts`).
+    With no canvas (a Worker) it falls back to `labelMeasure`'s estimate. The export uses the same padding, room,
+    `wholeWordFontPx` size and `maxLines = 3`, and `fitWholeWordLines`; a formatted title's runs go through
+    `clampExportRunLines`. The stored label is never shortened.
 
 Guards:
 

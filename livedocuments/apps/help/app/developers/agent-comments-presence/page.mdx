@@ -80,9 +80,11 @@ livedocuments comment add "Shop" n2 "Should this be idempotent?"   # starts a th
 livedocuments comment reply "Shop" n2 "Yes, keyed by order id"
 livedocuments comment resolve "Shop" n2
 livedocuments comment reopen "Shop" n2
+livedocuments comment edit "Shop" n2 3f9c1a2b "Yes, keyed by order id and day"   # your own comment, by its id
+livedocuments comment delete "Shop" n2 3f9c1a2b
 ```
 
-Add `--tab Flow` when the element is not on the first tab. `reply`, `resolve` and `reopen` on an element with no thread are refused, with the `comment add` command to start one.
+Add `--tab Flow` when the element is not on the first tab. `reply`, `resolve` and `reopen` on an element with no thread are refused, with the `comment add` command to start one. `comment ls` prints each comment's id (its first eight characters) and marks one an agent wrote `[AI]` and an edited one `(edited)`; `edit` and `delete` take that id or four or more characters of it, and change only comments an agent wrote, so a person's are refused before any call.
 
 Over the API, a thread is named by **any comment in it**, so take a comment id from the listing:
 

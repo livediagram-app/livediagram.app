@@ -74,6 +74,11 @@ on the CLI's host that its token reads.
 `item set --fields flagged=false` or `--clear flagged` unflags it, and `item ls` ends a flagged card's line with
 `flagged`, as the MCP's `change_items` and `list_items` do ([Flagging a card](../026-plan/plan-agents.md)).
 
+**Item filters.** `item ls` takes `list_items`' filters: `--type` and `--status` (each repeatable), `--query`,
+`--updated-since` and `--include-closed`. It lists every card unless `--query` or `--updated-since` is given; then a
+closed card is left out unless `--include-closed` is, or `--status` names its column, and a last line counts them
+([What list_items leaves out](../026-plan/plan-agents.md)).
+
 **Addressing.** `<project>` is a project name, an id prefix, or a pasted liveplanner URL; an ambiguous one is refused
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A
 pulled file's path reads its views offline. `--tab` takes a tab name or id prefix and defaults to the first tab.
