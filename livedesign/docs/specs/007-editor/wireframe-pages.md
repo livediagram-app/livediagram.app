@@ -417,8 +417,8 @@ exporting. Linking the element again, or clearing its link, mends it.
   hotspot is the element's drawn box, cut to the screen; a press on the topmost hotspot under the pointer wins. The
   pointer is a hand over a hotspot.
 - A press anywhere else on the stage **flashes the hotspots** on the screen: each lights in the brand colour (a
-  soft fill and an outline) and fades within 0.7 s, so a person can see what is clickable.
-- **Transitions** take 280 ms: Slide moves the new screen in from the right over the old one, which shifts a third
+  soft fill and an outline), holds half a second and fades, so a person can see what is clickable.
+- **Transitions** take 250 ms: Slide moves the new screen in from the right over the old one, which shifts a third
   of the way left and dims (a back link's slide runs the other way); Dissolve fades the new screen in over the old.
   Under reduced motion (the system's setting or Reduce Motion in Settings) every change is instant.
 - **Keys**: the arrow keys (Left, Right) step through the screens in the tab's order, as Previous and Next do; Tab

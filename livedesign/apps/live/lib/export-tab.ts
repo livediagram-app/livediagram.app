@@ -98,10 +98,12 @@ export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string 
   const tab = expandForExport(source);
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
+  const imageHref = opts.imageHref ?? ((id: string) => opts.images?.get(id)?.href);
   const frame = opts.page
     ? pageExportFrame(opts.page, {
         transparentPaper: opts.transparentPaper,
-        imageHref: (id) => opts.images?.get(id)?.href,
+        imageHref,
+        ...(opts.idPrefix ? { idPrefix: opts.idPrefix } : {}),
         frameTheme: tabWireframeFrameTheme(tab),
         // A photo page draws its photo's preview (loadTabImages).
         photoHref: (pageId) => opts.images?.get(photoImageKey(pageId))?.href,
@@ -173,7 +175,8 @@ export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string 
   // Within each band: every element in array order, arrows interleaved with boxes (same z-order as
   // the canvas and the PNG / PDF); bands stack bottom -> top with frame sections behind their
   // band-mates (docs/specs/006-design/layers.md "Exports stack like the canvas").
-  const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
+  const resolveImageHref =
+    opts.imageHref ?? (opts.images ? (id: string) => opts.images!.get(id)?.href : undefined);
   // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
   const bandsStart = parts.length;
   for (const band of bands) {
