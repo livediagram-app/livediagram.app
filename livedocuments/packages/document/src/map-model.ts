@@ -3,6 +3,7 @@
 // pins are placed with, and the validators the store and the editor share. Light: the country
 // geometry itself is `map-geometry.generated.ts`, reached only through the
 // `@livedocuments/document/map-geometry` subpath and loaded on demand.
+import { hexToRgb, isLightColor, shade, tint } from '@liveworkspace/element-model/colour-math';
 
 export const MAP_REGIONS = [
   'world',
@@ -187,11 +188,25 @@ export function providedMapGeometry(): MapGeometry | null {
 // paper a pin's ring and a label's halo are drawn in.
 export const MAP_DEFAULT_ACCENT = '#3b82f6';
 
+/** How far the default land is pulled from the ground it sits on, 0..1, toward black on a light ground and white on
+ *  a dark one: on the plain dark paper (#0f172a) that lands near the old slate default (#334155). */
+export const MAP_LAND_GROUND_MIX = 0.16;
+
+/** The land's colour (map.md "What it shows"): the element's own fill whenever one is picked; else, on a page with a
+ *  fill of its own (`ground`, as for mapPaperColour), a soft tint of that paper toward its contrast side, so a dark or
+ *  coloured page's map reads as a shade of the page; else the surface's soft default. */
 export function mapLandColour(
   fill: string | undefined,
   surface: 'light' | 'dark' = 'light',
+  ground?: readonly string[],
 ): string {
-  return fill ?? (surface === 'dark' ? '#334155' : '#dbe3ec');
+  if (fill !== undefined) return fill;
+  const paper = ground && ground.length > 0 ? mapPaperColour(surface, ground) : null;
+  if (paper && hexToRgb(paper))
+    return isLightColor(paper)
+      ? shade(paper, MAP_LAND_GROUND_MIX)
+      : tint(paper, MAP_LAND_GROUND_MIX);
+  return surface === 'dark' ? '#334155' : '#dbe3ec';
 }
 
 /** The paper the map's borders, inset plate, pin rings and label halos are drawn in (map.md "What it shows"): what it

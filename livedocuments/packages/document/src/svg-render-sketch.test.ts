@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, createTable, renderElementsToSvg, type Element, type Tab } from './index';
+import { handDrawnInk } from '@liveworkspace/element-model/marker-face';
 import { SKETCH_FACE_FILTER, svgSketchArtDefs, svgSketchFace } from './svg-render-sketch';
 
 // docs/specs/008-canvas/finish.md "Every other face is drawn by hand too": a face's ink goes through the wobble, its
@@ -103,6 +104,18 @@ describe('renderElementsToSvg under Sketch', () => {
     expect(svg).not.toContain('data-marker-part="shape"');
     expect(svg.match(/data-marker-part="line"/g)).toHaveLength(4);
     expect(svg).not.toContain('<line');
+  });
+
+  // finish.md "Tables" and "Pale lines": the frame is drawn once, by the body, in the ink and width the canvas's
+  // SketchOverlay draws it in (handDrawnInk of the grid colour, MARKER_TABLE_FRAME_PX), never a darker second frame.
+  it("draws a Marker table's outer frame once, in the canvas's ink and width", () => {
+    const table = { ...createTable(0, 0), id: 'tb', headerRow: true } as Element;
+    const svg = renderElementsToSvg({ ...tabOf([table]), finish: 'marker' });
+    expect(svg).not.toContain('data-marker-part="frame"');
+    const body = svg.slice(svg.indexOf('data-finish="marker"'));
+    const ink = handDrawnInk('#94a3b8', 'transparent');
+    expect(ink).toBe('#94a3b8');
+    expect(body).toMatch(new RegExp(`stroke="${ink}"[^>]*stroke-width="2.5"`));
   });
 
   it("draws only a tab window's frame by hand", () => {

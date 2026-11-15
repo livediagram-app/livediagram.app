@@ -32,7 +32,10 @@ no tiles, no zoom and no streets, and nothing is fetched from anywhere when it d
   faint land (Mexico) shows under, beside or between them; on a dark or coloured page the plate is
   the page's own colour and reads as part of the page, never as a box.
 - **Highlighted countries** are filled in the accent (the element's stroke colour). The rest of the
-  land is the element's fill colour, else a soft neutral for the paper it sits on. Country borders
+  land is the element's fill colour when one is picked (never changed), else a soft tint of the paper it sits on:
+  the paper pulled a little toward its contrast side (darker on a light paper, lighter on a dark one), so on a
+  dark or coloured page the land is a shade of that page, never the plain canvas's navy or grey. On the plain
+  paper it stays the soft grey (light canvas) or slate (dark canvas). Country borders
   are thin lines in the paper colour.
 - **The paper** is what the map sits on: on a page with a fill of its own, that page's colour (a
   card's, when the map sits on one; a gradient's tone midway across the map), else the plain paper
