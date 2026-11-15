@@ -534,7 +534,8 @@ In Plan mode:
   text, as the cells it opens from): a row per card type the board shows, each drawn as the header's chips draw
   it (a small card in its colour with its glyph, [Card type chips](#card-type-chips)), its name, and under it "N
   fields" (and "N custom"), spoken by its name alone; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
-  (taking the row's field). Arrow keys move between the rows as in every menu; Escape, a press anywhere
+  (taking the row's field). Under a type that holds [card templates](item-types.md#the-add-card-picker), each template
+  is a row of its own, indented, and choosing one adds the card filled in from it, in the same place. Arrow keys move between the rows as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
   typing names it (see **Open an item**).
 - <a id="card-type-chips"></a>**Card type chips**: the board's header holds, right after its title, a **chip per
@@ -549,6 +550,9 @@ In Plan mode:
   - **A click** (or Enter or Space on a focused chip) adds a card of the type at the end of the column of the type's
     starting status (its Default State, as New {Type} uses) when the board has one, else the board's first column,
     in the first row (taking that row's field), and opens it in its panel to be named, exactly as Add card does.
+    For a type with [card templates](item-types.md#the-add-card-picker), the press opens the Add a Card menu hung from
+    the chip with that type alone (blank first, then its templates), and the card goes to that same place. The chip's
+    hover card then reads "Click to start one from a template, or drag it onto the board."
   - **A drag** carries a card of the type: a small card in its colour and glyph, reading its new-card title ("New
     task"), follows the pointer, and over a board the cell under it opens the same placeholder a dragged card does
     (the column, the row and the place among its cards); a column whose status the type leaves out shows it red
