@@ -27,4 +27,9 @@ describe('TabBar Button Labels', () => {
     );
     expect(searchText()).toBe('');
   });
+
+  it('names History beside its clock, between Search and Settings, when the bar offers it', () => {
+    render(<TabBar {...props({ onOpenSearch: () => {}, onOpenHistory: () => {} })} />);
+    expect(screen.getByRole('button', { name: 'History' }).textContent).toBe('History');
+  });
 });

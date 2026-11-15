@@ -16,7 +16,7 @@ import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { RolePill } from '@/components/chrome/RoleIndicator';
-import { HistoryHeaderButton, offersHistory } from '@/components/versions/HistoryHeaderButton';
+import { offersHistory, openHistoryFromFooter } from '@/components/versions/HistoryButton';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { useEditorChrome, useEditorChromeStore } from './EditorContext';
@@ -60,23 +60,8 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const ownerName = useEditorChrome((s) => resolveOwnerBadge(s)?.name ?? null);
   const isSelf = useEditorChrome((s) => s.isOwner);
   const canToggleRole = useEditorChrome((s) => s.canToggleRole);
-  // Version History (docs/specs/006-document/version-history.md "In the editor"): its own gate's slices.
-  const activeId = useEditorChrome((s) => s.activeId);
-  const embedMode = useEditorChrome((s) => s.embedMode);
-  const inWorkbench = useEditorChrome((s) => s.workbench !== null);
   const { isOffline, headerCommunity, isMobileViewport } = view;
   if (hidden) return null;
-  const history = offersHistory({
-    documentId,
-    hydrated,
-    offline: isOffline,
-    embed: embedMode,
-    workbench: inWorkbench,
-    welcomeOpen: anyWelcomeOpen,
-    community: communityVisitor,
-  }) ? (
-    <HistoryHeaderButton activeTabId={activeId} />
-  ) : undefined;
   return (
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="Header" fallback="panel">
@@ -125,7 +110,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
                 }
               : undefined
           }
-          leadAction={history}
           onOpenAccount={() => chrome.get().openSettingsOn('account')}
           onOpenShare={() => {
             chrome.get().setShareDialogOpen(true);
@@ -186,8 +170,21 @@ function EditorViewFooterBar(view: {
     s.contextMenu?.mode === 'canvas' ? s.contextMenu : null,
   );
   const hasClipboard = useEditorChrome((s) => s.hasClipboard);
+  // Version History (docs/specs/006-document/version-history.md "In the editor"): the gate's own slices.
+  const hydrated = useEditorChrome((s) => s.hydrated);
+  const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const { isOffline, onSelectTab } = view;
   if (hidden) return null;
+  // The bar is already hidden in an embed and behind a welcome, so those two answer false here.
+  const history = offersHistory({
+    documentId,
+    hydrated,
+    offline: isOffline,
+    embed: false,
+    workbench: inWorkbench,
+    welcomeOpen: false,
+    community: communityVisitor,
+  });
   return (
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
@@ -253,6 +250,8 @@ function EditorViewFooterBar(view: {
           onOpenSearch={() =>
             openSearchWithPrefetch(chrome.get().setSearchOpen, chrome.get().loadAllTabs)
           }
+          // History, between Search and Settings, on a document stored on the server, for every role.
+          onOpenHistory={history ? () => openHistoryFromFooter(chrome.get().activeId) : undefined}
           // Canvas right-click (desktop) + long-press (touch) open the active
           // tab's menu with the canvas sections folded in, rendered by the
           // TabBar so it reuses every tab handler. Element / multi context

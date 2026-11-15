@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
 // The bottom bar's right-hand cluster (docs/specs/007-editor/editor-app.md "Tab bar"): the Start Tour button leads it,
-// immediately left of Search, then Settings; with no tour on offer, Search leads.
+// immediately left of Search, then History (on a stored document, docs/specs/006-document/version-history.md "In the
+// editor"), then Settings; with no tour on offer, Search leads.
 
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -23,14 +24,16 @@ const controls = () =>
     el.getAttribute('aria-label'),
   );
 
-function Bar() {
+function Bar({ onOpenHistory }: { onOpenHistory?: () => void }) {
   return (
     <div data-testid="bar">
       <ChromeControls
         onOpenSearch={() => {}}
+        onOpenHistory={onOpenHistory}
         onOpenSettings={() => {}}
         labelled
         appearance={false}
+        github={false}
       />
     </div>
   );
@@ -50,5 +53,17 @@ describe('ChromeControls order', () => {
     render(<Bar />);
     expect(controls()[0]).toBe('Search');
     expect(controls()).not.toContain('Start Draw Tour');
+  });
+});
+
+describe('ChromeControls History', () => {
+  it('sits between Search and Settings when the editor offers it', () => {
+    render(<Bar onOpenHistory={() => {}} />);
+    expect(controls()).toEqual(['Search', 'History', 'Settings']);
+  });
+
+  it('is not drawn without a handler (This Browser, the Explorer bar)', () => {
+    render(<Bar />);
+    expect(controls()).toEqual(['Search', 'Settings']);
   });
 });
