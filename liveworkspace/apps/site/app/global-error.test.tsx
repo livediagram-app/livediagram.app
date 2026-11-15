@@ -39,4 +39,19 @@ describe('GlobalError', () => {
     expect(console.error).toHaveBeenCalled();
     act(() => root.unmount());
   });
+
+  // It keeps the light or dark the failed page was painted in (the `dark` class the layout left on <html>), with no
+  // copy of the Appearance store in every page's first load (Work Tracker 772).
+  it.each([
+    ['dark', true],
+    ['light', false],
+  ])('stays %s as the page was', async (_label, dark) => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await LazyPageError.preload();
+    document.documentElement.classList.toggle('dark', dark);
+    const root = createRoot(document);
+    act(() => root.render(<GlobalError error={new Error('boom')} reset={() => {}} />));
+    expect(document.documentElement.classList.contains('dark')).toBe(dark);
+    act(() => root.unmount());
+  });
 });

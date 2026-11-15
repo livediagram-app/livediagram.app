@@ -26,6 +26,13 @@ describe('every page’s first load', () => {
     },
   );
 
+  it('the root error boundary keeps the page light or dark without the Appearance store', () => {
+    // A copy of the store (and the app list it resolves the address with) cost every page about 3 KiB (Work Tracker 772).
+    expect(staticImports(read('app/global-error.tsx')).sort()).toEqual(
+      ['@/components/LazyPageError', 'react'].sort(),
+    );
+  });
+
   it('the light pieces those files share import nothing heavy', () => {
     const lazy = read('components/LazyPageError.tsx');
     expect(staticImports(lazy)).toEqual(['@liveworkspace/ui/lazy-panel', './page-error-title']);

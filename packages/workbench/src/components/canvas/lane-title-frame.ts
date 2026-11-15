@@ -1,15 +1,20 @@
+// A lane title's frame and whole-word layout on the canvas (docs/specs/009-elements/lane.md "A title wraps in its
+// gutter", "Upright titles", in livediagram and liveplanner): one copy, so both editors' canvases lay a title out as
+// their exports do, from the same shared helpers (@liveworkspace/element-model).
 import type { CSSProperties } from 'react';
 import {
   LANE_TITLE_MAX_LINES,
   acrossTitleStrip,
-  estimatedLabelMeasure,
-  fitWholeWordLines,
-  wholeWordFontPx,
   type LaneLike,
   type LaneTitleStrip,
   type UprightTitleStrip,
-} from '@livediagram/document';
-import { uprightTitleFrame } from '@/components/canvas/upright-title';
+} from '@liveworkspace/element-model/lane-gutter';
+import {
+  estimatedLabelMeasure,
+  fitWholeWordLines,
+  wholeWordFontPx,
+} from '@liveworkspace/element-model/svg-render-primitives';
+import { uprightTitleFrame } from './upright-title';
 
 /** A lane title's frame in its side strip: where the label (and its editor) lay out, and how it clips. */
 export type LabelFrame = { style: CSSProperties; className?: string };

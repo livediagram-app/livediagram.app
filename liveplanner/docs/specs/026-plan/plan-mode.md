@@ -327,6 +327,11 @@ which are untouched by this. For everyone whatever their share role:
 - the api's tab comment endpoint refuses a new comment, or a reply, on an element's own thread
   (`400 element_comments_retired`); a cell's add, reply, resolve and delete, and resolve, reopen and delete-own on a
   stored element thread, still work, and the CLI's `comment add` and `comment reply` ask for `--cell`;
+- a tab save or a changeset that adds a comment to an element's own thread has it **stripped by the server**
+  (`withoutNewElementComments`, before the authors are set): the comments already stored on it stay, so resolve,
+  reopen and delete still work, and the rest of the save lands as sent. A cell's new comment is kept;
+- a save's new-comment email, mention emails and phone pushes read only cell threads (`newCommentsBy`,
+  `pushNewComments`), so a stored element thread never notifies anyone; a cell's new comment still does;
 - the platform index gets no row for an element's own thread (`collabIndexRowsFromElements`), so it leaves the Inbox
   on the tab's next push; card rows (`~cards`) and cell rows are unchanged.
 

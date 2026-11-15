@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                     | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                                |
 | `../packages/workbench/src/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                                                    |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                                            |
-| `apps/editor/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                                        |
+| `../packages/workbench/src/components/chrome/AuthControls.tsx`              | Account command menu                                                                                                        |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                                      |
 | `../packages/explorer/src/dialogs/share/CopyMenu.tsx`                       | Command menu, or control menu when it carries a header control                                                              |
 | `livediagram/apps/editor/components/canvas/whiteboard/ColourPicker.tsx`     | Custom colour command menu; its own focus and Escape deleted                                                                |

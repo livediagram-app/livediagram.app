@@ -102,6 +102,22 @@ or a reload: a team in a standup looks at the same slice.
   card (as before): nothing on screen would say why cards are missing.
 - **Saved filters** stay as they are: applying one sets the board's filter for everyone.
 
+### When the filter hides every card
+
+The filter is shared, so someone opening a board may find its columns empty because of a teammate's filter. When the
+board's filter hides every card the board holds, the board says so in its columns instead of looking empty.
+
+- **Where**: one short hint in the first open column, in the first swimlane, where its first card would be, drawn in
+  the board's own card colours with a dashed edge (empty-states.md "In place of one item").
+- **What it says**: the no-match title (`No cards match “words”`, or `No cards match these filters` when only chips
+  narrow), then "The board’s filter hides all 12 cards." ("its one card" for one), with a funnel icon.
+- **Show All**: offered to an Editor and a Participant, and clears the board's filter for everyone at once (no typing
+  pause, even when only words were left). A **Viewer** reads the hint without the button.
+- **Per viewer**: worked out from the filter as it applies to this viewer, so Only Mine or Due Soon can hide every card
+  for one person and none for another.
+- **Never**: on a phone or in a Dashboard slot (the filter stands down there), on a board that really holds no cards
+  (its own empty state shows), while cards are loading, or while the filter leaves at least one card.
+
 ## The Filter widget
 
 - **One field**: the board's words and its field filters are one search ([Search and

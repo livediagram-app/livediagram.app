@@ -11,7 +11,7 @@ import {
 } from '@liveworkspace/workbench/components/chrome/header-action';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { HoverCard } from '@liveplanner/ui';
-import { AuthControls } from '@/components/chrome/AuthControls';
+import { AuthControls } from '@liveworkspace/workbench/components/chrome/AuthControls';
 import { useFormShareHost } from '@/lib/form-share-store';
 
 export type { SaveStatus } from '@liveworkspace/workbench/components/chrome/EditorHeader';

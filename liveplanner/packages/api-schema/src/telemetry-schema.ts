@@ -414,8 +414,8 @@ export const PALETTE_TELEMETRY_TYPES = {
   collaborate: [
     'Temperature',
     'Decision',
-    // Comment pin (docs/specs/012-collaboration/comment-pin.md).
-    'CommentPin',
+    // The Comment panel (docs/specs/012-collaboration/comment-pin.md) is retired: no `CommentPin` (telemetry.md
+    // "Comment panel").
     // Action panel (docs/specs/012-collaboration/action-panel.md).
     'ActionPanel',
   ],

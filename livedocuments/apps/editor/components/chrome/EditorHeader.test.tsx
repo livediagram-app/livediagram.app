@@ -14,9 +14,6 @@ vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
     signOut: vi.fn(),
   }),
 }));
-vi.mock('@/components/chrome/auth-shared', () => ({
-  useAuthHrefs: () => ({ signInHref: '/sign-in/' }),
-}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { EditorHeader } = await import('./EditorHeader');
@@ -259,5 +256,30 @@ describe('EditorHeader logo', () => {
   it('opens the Explorer as before with no document', () => {
     const { container } = renderHeader();
     expect(logo(container)).toBe('/explorer/home');
+  });
+});
+
+// Your own Google picture in the account control, whatever Show My Google Picture says
+// (the own-picture store, docs/specs/014-identity), while the session's user carries none.
+describe('EditorHeader account picture', () => {
+  it('draws the own-picture store, even with Show My Google Picture off', async () => {
+    const { setOwnPicture, resetOwnPictureForTests } = await import('@/lib/own-picture');
+    setOwnPicture({ picture: 'https://lh3.googleusercontent.com/a/mine', hidden: true });
+    try {
+      render(
+        <EditorHeader
+          documentName="Untitled document"
+          showShare
+          shareable={false}
+          onMakeCopy={() => {}}
+          onOpenShare={() => {}}
+          onRename={() => {}}
+        />,
+      );
+      const img = screen.getByRole('button', { name: 'Account menu' }).querySelector('img');
+      expect(img?.getAttribute('src')).toContain('lh3.googleusercontent.com');
+    } finally {
+      resetOwnPictureForTests();
+    }
   });
 });

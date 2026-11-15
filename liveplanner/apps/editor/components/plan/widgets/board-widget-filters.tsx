@@ -20,6 +20,7 @@ import {
   type WidgetContext,
   type WidgetPill,
 } from './board-widget-parts';
+import { keptStat } from './kept-stat';
 
 export function mineWidget(ctx: WidgetContext): React.JSX.Element {
   const { palette } = ctx;
@@ -54,7 +55,7 @@ export function mineWidget(ctx: WidgetContext): React.JSX.Element {
 
 export function peopleWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { palette } = ctx;
-  const people = boardPeople(ctx.items);
+  const people = keptStat(ctx.items, 'people', () => boardPeople(ctx.items));
   if (people.length === 0)
     return (
       <span className={WIDGET_PILL} style={pill}>
@@ -128,9 +129,9 @@ export function typesWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Ele
   // the type they show as.
   const catalogue = ctx.types;
   const merged = new Map<string, { def: ItemTypeDef; count: number }>();
-  for (const { type, count } of boardTypeCounts(
-    ctx.items,
-    catalogue.map((t) => t.id),
+  const order = catalogue.map((t) => t.id);
+  for (const { type, count } of keptStat(ctx.items, `types|${order.join('\u0000')}`, () =>
+    boardTypeCounts(ctx.items, order),
   )) {
     const def = typeIn(catalogue, type);
     const row = merged.get(def.id);

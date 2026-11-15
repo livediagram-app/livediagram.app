@@ -51,7 +51,8 @@ What differs from a frame is presentation only:
     recoloured lane carries its gutter with it. The field is shared with a
     table's header row, because a heading band is one idea wearing two
     silhouettes.
-  - **Dragging the seam** between the gutter and the body sets `headerSize`.
+  - **Dragging the seam** between the gutter and the body sets `headerSize` (on livediagram's canvas; liveplanner's
+    canvas draws the gutter read-only, see [On the canvas](#on-the-canvas), and draws a stored `headerSize`).
     132 and 64 suit only the titles they were measured against; a lane holding "Q3 Marketing Programme" wants more than
     one holding "Q3". One commit per gesture, so a drag is one undo step, and
     the seam is clamped so a gutter can neither vanish nor eat the lane.
@@ -79,7 +80,8 @@ What differs from a frame is presentation only:
 ## Aligning the title re-orients the lane
 
 The gutter is the title's backdrop, so it runs along whichever **edge the
-title is pinned to** (`laneGutterEdge` in `packages/project/src/lane-gutter.ts`, drawn by `LaneGutter.tsx`):
+title is pinned to** (`laneGutterEdge` in `packages/project/src/lane-gutter.ts`, drawn on the canvas by
+`LaneGutterStrip`, `@liveworkspace/workbench`):
 
 | Title alignment           | Gutter                                          |
 | ------------------------- | ----------------------------------------------- |
@@ -127,6 +129,23 @@ seam, and past `LANE_TITLE_MAX_LINES` (3) lines the last one ends in an ellipsis
 
 The export (`svg-render-describe.ts` and `svg-render-boxed.ts` in `@liveplanner/project`) lays the title out exactly
 as livediagram's does, from the same shared helpers.
+
+### On the canvas
+
+The canvas draws a lane as the export does, **read-only** (Work Tracker 877), so canvas and export show the same
+wrapped title:
+
+- **The gutter**: the tinted strip with its divider on the title's edge (`LaneGutterStrip`, `@liveworkspace/workbench`,
+  the strip livediagram's `LaneGutter` draws under its seam), `laneDrawnSize` thick, its colour the heading colour
+  (`headerFill`) or the 10% wash of the lane's stroke. There is **no seam to drag**: a `headerSize` stored by an import
+  or livediagram is drawn, never changed here.
+- **The title** lays out in the strip (`laneTitleOf`, `apps/editor/components/canvas/lane-title.ts`, over the shared
+  `laneTitleFrame` and `laneTitleText` in `@liveworkspace/workbench`): whole words, the same step-down for a long
+  word, at most three lines, the last ending in an ellipsis, with the small padding; a formatted title is clamped to
+  three lines by CSS; an upright title turns in its strip (`uprightTitleFrame`). While the title is edited it hangs
+  from the strip's top, unclipped.
+- **Nothing moves**: the gutter is drawn inside the lane's own box, so the lane's size and every element on it keep
+  their positions; only the title's lines change, from one long line to its wrapped lines.
 
 ## Upright titles
 
