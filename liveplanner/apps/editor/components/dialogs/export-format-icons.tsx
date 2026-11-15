@@ -124,6 +124,38 @@ export function FormatIcon({ kind }: { kind: Format }) {
           </text>
         </svg>
       );
+    case 'plan':
+      // The plan's file: a stack of tabs in the brand's violet, the front one ruled like a board's cards.
+      return (
+        <svg width="30" height="26" viewBox="0 0 30 26" aria-hidden>
+          <rect
+            x="7"
+            y="1"
+            width="21"
+            height="17"
+            rx="2.5"
+            fill="rgb(237 233 254)"
+            stroke="rgb(196 181 253)"
+            strokeWidth="1.25"
+          />
+          <rect
+            x="2"
+            y="6"
+            width="21"
+            height="17"
+            rx="2.5"
+            fill="rgb(255 255 255)"
+            stroke="rgb(139 92 246)"
+            strokeWidth="1.25"
+          />
+          <path
+            d="M6 11.5h6M6 15h9M6 18.5h4"
+            stroke="rgb(124 58 237)"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
     case 'file':
       return (
         <svg width="34" height="20" viewBox="0 0 34 20" aria-hidden>

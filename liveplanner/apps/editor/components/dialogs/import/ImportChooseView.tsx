@@ -1,13 +1,20 @@
 'use client';
 
 // The Import dialog's list (docs/specs/026-plan/plan-tabs.md "The Import dialog"): Into This Tab, then A Board from
-// Another Tool for an Editor, each a Plan option list of rows with their icon, name, file type and a line saying what
+// Another Tool and A Whole Plan for an Editor, each a Plan option list of rows with their icon, name, file type and a line saying what
 // file to bring. A file dropped on it is the dialog's (useFileDrop, on every step), which decides where it goes.
 import { useEffect, useRef, type ReactNode } from 'react';
 import type { TrackerSource } from '@liveplanner/items';
 import { OptionRows, type OptionRow } from '@/components/plan/OptionRows';
 import type { IntoTab } from './into-tab';
-import { intoTabCopy, TOOL_ROWS, TOOLS_NOTE, type ImportRowCopy } from './import-options';
+import {
+  intoTabCopy,
+  PLAN_FILE_ROW,
+  TOOL_ROWS,
+  TOOLS_NOTE,
+  type ImportRowCopy,
+} from './import-options';
+import { PLAN_SECTION } from './plan-file-copy';
 import { ImportError } from './ImportError';
 
 const HEADING =
@@ -58,6 +65,8 @@ export function ImportChooseView({
   error,
   onIntoTab,
   onTool,
+  wholePlan,
+  onWholePlan,
 }: {
   intoTab: IntoTab;
   // Whether this person may import a board from another tool (an Editor).
@@ -67,6 +76,9 @@ export function ImportChooseView({
   error: string | null;
   onIntoTab: () => void;
   onTool: (source: TrackerSource) => void;
+  // The A Whole Plan section (an Editor's): why its row is dimmed (a guest), and whether its file is being read.
+  wholePlan: { offered: boolean; blocked: string | null; reading: boolean };
+  onWholePlan: () => void;
 }) {
   // The format is the first decision: on a desktop the list opens with focus on its first row that can be pressed (Into
   // This Tab, or Trello when that row is dimmed). Runs before the dialog's focus trap, which keeps a focus already
@@ -105,6 +117,24 @@ export function ImportChooseView({
             />
           </div>
           <p className={NOTE}>{TOOLS_NOTE}</p>
+        </Section>
+      ) : null}
+      {wholePlan.offered ? (
+        <Section id="import-whole-plan" title={PLAN_SECTION}>
+          <div aria-busy={wholePlan.reading}>
+            <OptionRows
+              kind="action"
+              label={PLAN_SECTION}
+              rows={[
+                rowOf('plan', PLAN_FILE_ROW, {
+                  ...(wholePlan.blocked ? { disabled: true } : {}),
+                  ...(wholePlan.reading ? { detail: hintOf('Reading the File…') } : {}),
+                }),
+              ]}
+              onPick={onWholePlan}
+            />
+          </div>
+          {wholePlan.blocked ? <p className={NOTE}>{wholePlan.blocked}</p> : null}
         </Section>
       ) : null}
       {error ? <ImportError>{error}</ImportError> : null}

@@ -33,6 +33,7 @@ import { handleProjectSharedTabs } from './project-shared-tabs-route';
 import { relayProjectRename } from '../room-client';
 import { handleProjectRoomRoutes } from './project-room-routes';
 import { handleProjectSubresources } from './project-subresource-routes';
+import { handleProjectFile } from './project-file-route';
 import { seedIntentOf } from './project-seed';
 import type { ProjectDTO } from '../types';
 import { notifyMilestone } from '../email/notifications';
@@ -330,6 +331,12 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
   {
     const communityResp = await handleCommunityOwnerRoutes(ctx);
     if (communityResp) return communityResp;
+  }
+
+  // /api/projects/<id>/file: the plan's .liveplanner file, and a new plan from one (project-file-route.ts).
+  {
+    const fileResp = await handleProjectFile(ctx);
+    if (fileResp) return fileResp;
   }
 
   const subResp = await handleProjectSubresources(ctx);
