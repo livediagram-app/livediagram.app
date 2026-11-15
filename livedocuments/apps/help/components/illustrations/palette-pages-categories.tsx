@@ -1,4 +1,4 @@
-// Palette category scenes for the Components, Devices and Icons articles (docs/specs/018-help/help-app.md,
+// Palette category scenes for the Components, Devices and Icons articles (Devices a row in Components) (docs/specs/018-help/help-app.md,
 // drawing docs/specs/010-palette/palette-top-level-categories.md and docs/specs/010-palette/palette-category-browse.md).
 //
 // Drawn as the category's flyout shows them, hanging under the palette strip with the category pressed on its
@@ -24,11 +24,14 @@ const DROP = 18;
  *  the title bar, then its body. `h` and `sceneH` are measured as if the panel's body began at y 52. */
 function PaletteFrame({
   category,
+  title = category,
   h,
   sceneH,
   children,
 }: {
   category: string;
+  /** The panel's title, where it is not the category's own name (a row's side panel). */
+  title?: string;
   h: number;
   sceneH: number;
   children: ReactNode;
@@ -36,7 +39,7 @@ function PaletteFrame({
   return (
     <Scene w={420} h={sceneH + DROP} bg="plain">
       <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
-      <Panel x={PX} y={48} w={PW} h={h - DROP} title={category.toUpperCase()}>
+      <Panel x={PX} y={48} w={PW} h={h - DROP} title={title.toUpperCase()}>
         <g transform={`translate(0 ${DROP})`}>{children}</g>
       </Panel>
     </Scene>
@@ -225,8 +228,8 @@ export function ComponentsCategory() {
   );
 }
 
-/** The Devices category: seven frames as rows, each named with what it is
- *  for. */
+/** The Devices row's side panel, Components pressed on the bar: seven frames as rows, each named with what it
+ *  is for. */
 export function DevicesCategory() {
   const x = PX + 12;
   const rows: [string, string, ReactNode][] = [
@@ -263,7 +266,7 @@ export function DevicesCategory() {
     ],
   ];
   return (
-    <PaletteFrame category="Devices" h={274} sceneH={298}>
+    <PaletteFrame category="Components" title="Devices" h={274} sceneH={298}>
       {rows.map(([name, blurb, glyph], i) => (
         <Row key={name} x={x} y={62 + i * 31} name={name} blurb={blurb} glyph={glyph} />
       ))}
