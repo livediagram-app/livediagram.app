@@ -36,6 +36,35 @@ describe('svgImageShape', () => {
     expect(cover).toContain('href="a.png?x=1&amp;y=2"');
     expect(svgImageShape(box(), 'a.png', 'contain', 4)).toContain('xMidYMid meet');
   });
+
+  // docs/specs/009-elements/picture-crop-and-mask.md, in livedocuments and livedesign: read off any image element.
+  const pic = (over: Record<string, unknown>) =>
+    ({ ...box(), type: 'image', naturalWidth: 240, naturalHeight: 80, ...over }) as unknown as ShapeElement;
+
+  it('cuts a masked picture to its shape and greys it by a colour matrix', () => {
+    const svg = svgImageShape(pic({ mask: 'circle', greyscale: true }), 'a.png', 'cover', 0);
+    expect(svg).toContain('<clipPath id="lvd-img-el1"><path d="');
+    expect(svg).toContain('<filter id="lvd-img-el1-grey"');
+    expect(svg).toContain('preserveAspectRatio="none"');
+  });
+
+  it('lays a crop out, a letterboxed one inside its part', () => {
+    const wide = svgImageShape(pic({ crop: { x: 0, y: 0, width: 1, height: 1 } }), 'a.png', 'contain', 0);
+    expect(wide).toContain('lvd-img-el1-part');
+    const fits = svgImageShape(pic({ crop: { x: 0.5, y: 0, width: 0.5, height: 1 } }), 'a.png', 'contain', 0);
+    expect(fits).not.toContain('-part');
+  });
+
+  it('names the picture by its alt text only when asked', () => {
+    const alt = pic({ alt: ' Harbour <dawn> ' });
+    expect(svgImageShape(alt, 'a.png', 'cover', 0, { altTitle: true })).toContain(
+      '<title>Harbour &lt;dawn&gt;</title></image>',
+    );
+    expect(svgImageShape(alt, 'a.png', 'cover', 0)).not.toContain('<title>');
+    expect(svgImageShape(pic({ alt: '  ' }), 'a.png', 'cover', 0, { altTitle: true })).not.toContain(
+      '<title>',
+    );
+  });
 });
 
 describe('svgIconShape', () => {

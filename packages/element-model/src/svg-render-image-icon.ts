@@ -21,7 +21,7 @@ import {
 import { r2, xmlEscape } from './svg-render-primitives';
 
 // The picture fields a product's image element may carry (livedocuments and livedesign do; docs/specs/009-elements/
-// picture-crop-and-mask.md and images.md "Alt text"). Read structurally: a product without them draws as before.
+// picture-crop-and-mask.md). Read structurally: a product without them draws as before.
 type PictureFields = {
   crop?: ImageCrop;
   mask?: unknown;
@@ -42,6 +42,9 @@ export function svgImageShape(
   href: string,
   objectFit: 'cover' | 'contain',
   radius: number,
+  // The alt text as the <image>'s <title> (livedocuments' docs/specs/009-elements/images.md "Alt text"); off, the
+  // other products' exports stay as they were.
+  options: { altTitle?: boolean } = {},
 ): string {
   const x = r2(el.x);
   const y = r2(el.y);
@@ -74,7 +77,7 @@ export function svgImageShape(
     const l = imageLayout(el, natural, image.crop, objectFit);
     const pic = imageTag(
       `x="${r2(el.x + l.picture.x)}" y="${r2(el.y + l.picture.y)}" width="${r2(l.picture.width)}" height="${r2(l.picture.height)}" preserveAspectRatio="none" href="${xmlEscape(href)}"${filterAttr}`,
-      el,
+      options.altTitle ? el : null,
     );
     // A letterboxed crop keeps its own edges: the picture past the part is cut off.
     const partClip = `${clipId}-part`;
@@ -87,7 +90,7 @@ export function svgImageShape(
     const par = objectFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet';
     picture = imageTag(
       `x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par}" href="${xmlEscape(href)}"${filterAttr}`,
-      el,
+      options.altTitle ? el : null,
     );
   }
   return (
@@ -105,8 +108,8 @@ const GREY_MATRIX =
 
 // The <image>, with the picture's alt text as its <title> (docs/specs/009-elements/images.md "Alt text"): what a
 // screen reader names it by, and the tooltip a viewer shows.
-function imageTag(attrs: string, el: BoxedElement): string {
-  const raw = el.type === 'image' ? (el as PictureFields).alt : undefined;
+function imageTag(attrs: string, el: BoxedElement | null): string {
+  const raw = el?.type === 'image' ? (el as PictureFields).alt : undefined;
   const alt = typeof raw === 'string' ? raw.trim() : '';
   return alt ? `<image ${attrs}><title>${xmlEscape(alt)}</title></image>` : `<image ${attrs}/>`;
 }

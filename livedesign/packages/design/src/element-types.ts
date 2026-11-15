@@ -18,6 +18,7 @@ import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
 import type { AttachPoint } from './attachment';
+import type { ImageCrop, ImageMask } from '@liveworkspace/element-model/image-frame';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
@@ -785,6 +786,11 @@ export type ImageElement = {
   // box (cropping) — used by the hero + avatar (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md) so a
   // photo fills the area / circle rather than letterboxing.
   objectFit?: 'cover' | 'contain';
+  // The part of the picture shown, the shape it is cut to, and drawn without colour
+  // (docs/specs/009-elements/picture-crop-and-mask.md). Absent = the whole picture, the box, in colour.
+  crop?: ImageCrop;
+  mask?: ImageMask;
+  greyscale?: true;
   // Hero caption card (docs/specs/009-elements/web-components-and-no-groups.md): a themed card inset near the bottom of the
   // image carrying a title + a supporting line, in `fillColor` with
   // `textColor` (white by default). Present = shown; the palette's Hero is an

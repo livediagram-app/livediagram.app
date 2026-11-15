@@ -2,6 +2,7 @@
 // the fill's shape, how a stored one is read, the tone the page reads as under its overlay, and the
 // gallery images a tab's pages name. Pure, shared by the editor, the exports, the api's image
 // reference index and the agents' page summaries.
+import { parsePageImageBlur } from '@liveworkspace/page-background/image-blur';
 import { isImageCredit, type ImageCredit } from './image-credit';
 
 // The overlays over the picture, under everything on the page.
@@ -24,11 +25,21 @@ export type PageImageFill = {
   // Absent is no overlay.
   overlay?: PageImageOverlay;
   position?: PageImagePosition;
+  // How soft the picture is drawn, 0 to 1 of PAGE_IMAGE_BLUR_MAX; absent is sharp.
+  blur?: number;
   // The search pick's credit (docs/specs/009-elements/image-search.md "Credit on the element").
   credit?: ImageCredit;
   // A hover preview's picture (an Openverse thumbnail, https): never stored, dropped on read.
   preview?: string;
 };
+
+// Blur (docs/specs/007-editor/pages-mode.md "Image backgrounds"): the stored value's rules are livedocuments' too, so
+// they live in @liveworkspace/page-background/image-blur and are re-exported here.
+export {
+  PAGE_IMAGE_BLUR_MAX,
+  pageImageBlurSigma,
+  parsePageImageBlur,
+} from '@liveworkspace/page-background/image-blur';
 
 // The most an overlay covers: always some picture shows through.
 export const PAGE_IMAGE_OVERLAY_MAX = 0.9;
@@ -81,12 +92,14 @@ export function parsePageImageFill(f: Record<string, unknown>): PageImageFill | 
   const position = PAGE_IMAGE_POSITIONS.includes(f.position as PageImagePosition)
     ? (f.position as PageImagePosition)
     : undefined;
+  const blur = parsePageImageBlur(f.blur);
   return {
     kind: 'image',
     imageId: f.imageId,
     ...(typeof f.tone === 'string' && HEX.test(f.tone) ? { tone: f.tone } : {}),
     ...(overlay ? { overlay } : {}),
     ...(position ? { position } : {}),
+    ...(blur ? { blur } : {}),
     ...(isImageCredit(f.credit) ? { credit: f.credit } : {}),
   };
 }
@@ -97,6 +110,7 @@ export function samePageImage(a: PageImageFill, b: PageImageFill): boolean {
     a.imageId === b.imageId &&
     a.preview === b.preview &&
     a.position === b.position &&
+    (a.blur ?? 0) === (b.blur ?? 0) &&
     a.overlay?.kind === b.overlay?.kind &&
     a.overlay?.strength === b.overlay?.strength &&
     a.overlay?.color === b.overlay?.color
