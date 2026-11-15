@@ -69,6 +69,7 @@ const HELD_AT_100 = [
   'src/lib/own-writes.ts',
   'src/lib/selection-write-hold.ts',
   'src/lib/remote-selection.ts',
+  'src/components/comments/CommentMarks.tsx',
 ];
 
 export default defineProject({
