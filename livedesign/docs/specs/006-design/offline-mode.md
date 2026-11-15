@@ -143,6 +143,68 @@ fresh browser profile per first visit), guest create to first canvas paint:
 The one request left is `GET /api/capabilities`; the guest id, participant and
 Explorer lists follow after the paint.
 
+## Warm open of a cloud design
+
+A cloud design waits on three things in a row before it paints: auth settling, the
+participant ([`resolveParticipant`](#instant-open)) and the tab fetch. In livediagram about a
+third of opens took over 4 s (telemetry, `DocumentLoad.*`, October 2026), and every
+editor loads the same way. A cloud design this
+browser has opened before can paint at once from **the last copy seen**, the way Linear,
+Figma and Notion show their last synced copy and catch up in the background
+(Work Tracker 890).
+
+**The last copy seen.** Each time a cloud design opens by its own address or by a share
+link, the editor keeps what that load answered in this browser: the design's meta (name,
+tab list, owner fields), the first tab's body and revision, and how the reader came in (the
+role, the owner's chrome, the share code the address carried and the tab a tab-scoped link
+opens). It lives in its own IndexedDB database (`livedesign-last-seen`), never on the
+server.
+
+- **Per reader.** A copy is keyed by who read it: the account id, or the guest's id. It is
+  read back only for that reader, and every load drops the copies any other reader left,
+  so a browser holds one reader's copies at most (a sign-out in another app, or a second
+  account, empties the rest on the next load).
+- **Cleared on sign-out.** Signing out, and deleting the account, empties the store before
+  the sign-out hop.
+- **Lost access forgets.** A load that ends on not found, on the deleted card or behind a
+  share password removes that design's copy. A load that cannot reach the server keeps
+  it.
+- **Bounded.** At most 20 copies, the oldest seen dropped first; a copy over 1,000,000
+  characters of JSON is not kept (a bigger design opens as it does today); a copy older
+  than 30 days is never read. Embeds, Community posts, workbenches and This Browser
+  designs keep none.
+
+**The warm open.** Before auth settles, an address naming a cloud design with a copy for
+the reader this browser expects (the account the signed-in hint names, else the guest
+token's id) paints that copy under the `'self'` placeholder, read-only. A share link
+warm-opens only when its share code is the one the copy was kept under.
+
+- **Edits wait for the participant.** Nothing can be changed, and nothing is saved, until
+  the reader resolves and the fresh copy lands.
+- **The ordinary load catches up** behind it, unchanged: auth, the participant, the
+  design and the first tab. Its answer replaces the copy in place (the same tabs by id,
+  no opening screen between, nothing typed to lose because editing waited) and its role
+  applies: a Viewer stays read-only, a Participant gets a Participant's tools, an Editor
+  can edit.
+- **Lost access on catch-up** swaps the copy for the screen the load ends on (not found,
+  the deleted card, the password gate) and forgets the copy.
+- `DocumentLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its
+  own.
+
+**Built so far.** Part 1 keeps, bounds and clears the copies (`createLastSeenCopies` in
+`@liveworkspace/workbench/lib/api/last-seen-copies`); nothing reads them yet, so opening a
+design looks as it did. The warm open itself, its catch-up and its timing follow in later
+parts ([Last seen copy blueprint](blueprints/last-seen-copy.md)).
+
+**Measured** (headless Chromium, 25 runs each, median / p95): keeping a copy and reading it
+back cost about a millisecond against the seconds the warm open saves.
+
+| First tab      | Copy size | Stringify    | Write        | Open and read | Parse        |
+| -------------- | --------- | ------------ | ------------ | ------------- | ------------ |
+| 50 elements    | 12 KB     | 0.0 / 0.1 ms | 0.3 / 3.4 ms | 0.2 / 1.2 ms  | 0.0 / 0.1 ms |
+| 500 elements   | 120 KB    | 0.2 / 0.3 ms | 0.3 / 1.5 ms | 0.2 / 0.8 ms  | 0.1 / 0.2 ms |
+| 2,000 elements | 480 KB    | 0.7 / 0.7 ms | 0.7 / 3.4 ms | 0.5 / 2.2 ms  | 0.5 / 0.6 ms |
+
 ## Archived in This Browser
 
 A design in This Browser can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the

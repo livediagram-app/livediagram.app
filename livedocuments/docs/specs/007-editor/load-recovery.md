@@ -44,6 +44,12 @@ screen. It never stays on the opening screen indefinitely.
   at most **10 seconds** per attempt. A signed-in load with no token fails
   with the existing "no session token" error, which shows the load-error
   screen.
+- **The last copy seen never holds the load.** A load that reaches the document keeps its
+  copy, and one that ends on not found, the deleted card or the password gate forgets it
+  ([Offline Mode → Warm open of a cloud document](../006-document/offline-mode.md#warm-open-of-a-cloud-document)),
+  without waiting: the store's calls never throw and are never awaited by the load. A warm
+  open (a later part) paints the copy first and the load above still runs to its end, with
+  the same watchdog, and replaces it.
 
 ## Self-healing on the opening screen
 

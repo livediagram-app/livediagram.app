@@ -26,3 +26,10 @@
 - [x] Observability
 - [x] Testing
 - [x] Constants and configuration
+
+## last-seen-copy
+
+- [x] Domain and naming
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Defaults ledger
