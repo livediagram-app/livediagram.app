@@ -54,3 +54,27 @@ describe('openerFor', () => {
     expect(openerFor('linux', '--help')).toBeNull();
   });
 });
+
+describe('runTool and a git hook environment', () => {
+  const show = ['-e', 'process.stdout.write(process.env.GIT_DIR ?? "unset")'];
+
+  it('keeps GIT_DIR for a command that is not git', async () => {
+    process.env.GIT_DIR = '/hook/repo';
+    try {
+      const run = await nodeIo().runTool(process.execPath, show, '');
+      expect(run).toEqual({ code: 0, stdout: '/hook/repo' });
+    } finally {
+      delete process.env.GIT_DIR;
+    }
+  });
+
+  it('strips GIT_DIR for git, so it answers for the directory it is asked about', async () => {
+    process.env.GIT_DIR = '/hook/repo/.git';
+    try {
+      const run = await nodeIo().runTool('git', ['rev-parse', '--git-dir'], '');
+      expect(run?.stdout.trim()).not.toBe('/hook/repo/.git');
+    } finally {
+      delete process.env.GIT_DIR;
+    }
+  });
+});
