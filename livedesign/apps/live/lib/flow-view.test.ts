@@ -17,6 +17,7 @@ import {
   FLOW_ENTRY_STEP,
   FLOW_GAP_SIDE_PX,
   FLOW_LANE_BASE_PX,
+  FLOW_LANE_SPREAD,
   FLOW_LANE_STEP_PX,
   FLOW_PULL_MIN_PX,
   FLOW_STUB_PX,
@@ -123,6 +124,18 @@ describe('flowLinks', () => {
       1,
     );
     expect(laneOf(three[2]!)).toBe(top - FLOW_LANE_BASE_PX - 2 * FLOW_LANE_STEP_PX);
+    // A crowd over one stretch climbs no higher than the spread, and shares the top lane past it.
+    const crowd = flowLinks(
+      Array.from({ length: FLOW_LANE_SPREAD + 3 }, (_, i) =>
+        linked(`c${i}`, 0, to('p3'), { x: 40, y: 20 + i * 30 }),
+      ),
+      undefined,
+      pages,
+      1,
+    );
+    const highest = top - FLOW_LANE_BASE_PX - FLOW_LANE_SPREAD * FLOW_LANE_STEP_PX;
+    expect(Math.min(...crowd.map(laneOf))).toBe(highest);
+    expect(crowd.slice(FLOW_LANE_SPREAD).map(laneOf)).toEqual(Array(3).fill(highest));
   });
 
   it('rises on its own screen’s side of a gap, apart from an arc the other way', () => {

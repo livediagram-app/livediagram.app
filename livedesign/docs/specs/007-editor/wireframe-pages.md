@@ -463,8 +463,8 @@ so a team sees every path through the screens at once while it edits them.
   - a screen link to a screen further along: a line out of the box's facing side to the gap beside its screen, up
     that gap (on its own screen's side of the gap's middle, so arcs leaving the two screens either side of one gap
     never share its column), over the row of screens (clear of their labels, higher the more screens it passes, and a
-    lane higher again where an earlier arc already runs over any of the same screens, so no two arcs ever lie on one
-    another) and down onto the target's top edge near its side, with rounded corners and an arrowhead pointing down
+    lane higher again, up to four, where an earlier arc already runs over any of the same screens, so arcs never lie
+    on one another short of a crowd of them over one stretch) and down onto the target's top edge near its side, with rounded corners and an arrowhead pointing down
     into it, so it never crosses a screen it passes;
   - a **back link**: the outline and a small **Back** tag beside the box, no arrow (where it goes depends on the walk);
   - a **broken** link: the outline dashed and in the warning red (dashed too, since the brand is a red), a short

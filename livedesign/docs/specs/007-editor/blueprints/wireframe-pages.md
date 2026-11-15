@@ -298,8 +298,10 @@ transition, direction: 'forward' | 'back', seq }` (`transition` the link's `page
     element's page and the next one towards the target moved `min(FLOW_GAP_SIDE_PX / zoom, gap / 4)` towards the
     element's page (so a rightward and a leftward arc in one gap never share a column), up that gap to a lane
     `(FLOW_LANE_BASE_PX + FLOW_LANE_STEP_PX * lane) / zoom` above the highest top of the pages from the source to the
-    target inclusive, where `lane` is the lowest lane from `span - 2` up (`span` the index gap) that no earlier arc
-    holds over an overlapping run of pages (page indices `[lo, hi]` overlap when each starts before the other ends),
+    target inclusive, where `lane` is the lowest lane from `span - 2` up (`span` the index gap), at most
+    `FLOW_LANE_SPREAD` above it, that no earlier arc holds over an overlapping run of pages (page indices `[lo, hi]`
+    overlap when each starts before the other ends); with all of those held it takes the highest and holds nothing,
+    so each lane's runs stay apart (at most one per page) and the walk stays linear in the links,
     level along it, and down onto the target's top edge at `x` its near side plus
     `FLOW_ENTRY_FRACTION` of its width plus `FLOW_ENTRY_STEP` for each earlier arc into that target (capped at
     `FLOW_ENTRY_MAX`): straight runs joined by quadratic corners of `FLOW_CORNER_PX / zoom` (never more than the
@@ -424,6 +426,7 @@ Played) and `UI · Copied · PrototypeLink` (counted in Share Links Copied). Flo
 | `FLOW_PULL_MIN_PX`                     | 40 (screen px, a curve's least handle)     | `flow-view.ts`               |
 | `FLOW_LANE_BASE_PX` / `_STEP_PX`       | 44 / 20 (screen px over the row's top)     | `flow-view.ts`               |
 | `FLOW_GAP_SIDE_PX`                     | 6 (screen px off a gap's middle)           | `flow-view.ts`               |
+| `FLOW_LANE_SPREAD`                     | 4 (lanes an arc rises over its own)        | `flow-view.ts`               |
 | `FLOW_ENTRY_FRACTION` / `_STEP`/`_MAX` | 0.2 / 0.12 / 0.8 (of the target's width)   | `flow-view.ts`               |
 | `FLOW_CORNER_PX`                       | 12 (screen px, an arc's corner radius)     | `flow-view.ts`               |
 | `FLOW_STUB_PX`                         | 32 (screen px, the broken stub)            | `flow-view.ts`               |

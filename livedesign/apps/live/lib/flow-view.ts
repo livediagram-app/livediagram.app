@@ -28,6 +28,9 @@ export const FLOW_LANE_STEP_PX = 20;
 // How far (screen px) an arc rises off its gap's middle, towards its own screen, so a rightward and a leftward arc in
 // one gap never share a column.
 export const FLOW_GAP_SIDE_PX = 6;
+// How many lanes over its own an arc rises to clear earlier arcs: past it, a crowd of arcs over one stretch shares the
+// top one rather than climbing off the canvas (and each lane's runs stay apart, so the walk stays linear).
+export const FLOW_LANE_SPREAD = 4;
 // Where an arc lands on its target's top edge: this share of its width in from the near side, a step further for
 // each earlier arc into the same screen, never past the cap.
 export const FLOW_ENTRY_FRACTION = 0.2;
@@ -177,9 +180,10 @@ export function flowLinks(
       const hi = lo + span;
       let rowTop = Infinity;
       for (let i = lo; i <= hi; i++) rowTop = Math.min(rowTop, pages[i]!.rect.y);
+      const held = (l: number) => lanes[l]?.some(([a, b]) => a < hi && lo < b) ?? false;
       let lane = span - 2;
-      while (lanes[lane]?.some(([a, b]) => a < hi && lo < b)) lane++;
-      (lanes[lane] ??= []).push([lo, hi]);
+      while (lane < span - 2 + FLOW_LANE_SPREAD && held(lane)) lane++;
+      if (!held(lane)) (lanes[lane] ??= []).push([lo, hi]);
       const laneY = rowTop - (FLOW_LANE_BASE_PX + FLOW_LANE_STEP_PX * lane) / zoom;
       const slot = arcsInto.get(to.id) ?? 0;
       arcsInto.set(to.id, slot + 1);
