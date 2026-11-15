@@ -5,7 +5,7 @@
 // Calendar Link. Just made: the link, shown this once, to copy or hand to a calendar. On: when the link was made,
 // Reset Link and Turn Off, each behind a confirm. The options sit under every state: in Off they are what the link
 // is made with; once a feed exists a change saves at once and keeps the link. The privacy note is always there.
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type {
   CalendarFeedBoard,
   CalendarFeedOptions,
@@ -85,7 +85,9 @@ export function CalendarFeedDialog({
   }, [read]);
 
   const state = !data ? null : data.feed === null ? 'off' : madeUrl ? 'made' : 'on';
-  useEffect(() => {
+  // In the commit that shows the new state, not a passive effect after it: a passive effect runs in a later task, by
+  // when a press the person already made (Copy Link failing over to the field) has moved focus, and it took it back.
+  useLayoutEffect(() => {
     const next = focusNext.current;
     if (!next) return;
     focusNext.current = null;
