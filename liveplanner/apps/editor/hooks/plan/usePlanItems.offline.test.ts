@@ -11,7 +11,7 @@ import {
   planQueue,
   planQueueKey,
   waitingChangeCount,
-  heldChangeCount,
+  heldCardCount,
   confirmHeldChanges,
   keepHeldCards,
 } from '@/lib/offline-queue/plan-queue';
@@ -286,7 +286,7 @@ describe('usePlanItems offline, by role', () => {
     expect(ok).toBe(true);
     expect(onError).not.toHaveBeenCalled();
     expect(result.current.items.has('item-one')).toBe(false);
-    expect(heldChangeCount()).toBe(1);
+    expect(heldCardCount()).toBe(1);
     expect(waitingChangeCount()).toBe(0);
     // A later change is sent at once: a held one waits for the person, not the connection.
     await act(async () => {
@@ -300,7 +300,7 @@ describe('usePlanItems offline, by role', () => {
     await waitFor(() => expect(api.fetchItems).toHaveBeenCalled());
     expect(result.current.items.has('item-one')).toBe(false);
     await act(async () => confirmHeldChanges());
-    await waitFor(() => expect(heldChangeCount()).toBe(0));
+    await waitFor(() => expect(heldCardCount()).toBe(0));
     await waitFor(() => expect(planQueue('doc', 'owner-me').count()).toBe(0));
     expect(api.writeItem).toHaveBeenLastCalledWith(
       expect.anything(),
@@ -320,6 +320,22 @@ describe('usePlanItems offline, by role', () => {
     expect(result.current.items.has('item-one')).toBe(false);
     await act(async () => keepHeldCards());
     await waitFor(() => expect(result.current.items.has('item-one')).toBe(true));
-    expect(heldChangeCount()).toBe(0);
+    expect(heldCardCount()).toBe(0);
+  });
+
+  it('brings a held Trash move back without a reload, though the server copy has the same rev', async () => {
+    const { result } = mount();
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    api.writeItem.mockRejectedValueOnce(new ApiError('items change', 409, 'removal_held'));
+    await act(async () => {
+      await result.current.write({
+        kind: 'patches',
+        patches: [{ id: 'item-one', patch: { set: { status: 'trash' } } }],
+      });
+    });
+    expect(result.current.items.get('item-one')?.fields.status).toBe('trash');
+    expect(heldCardCount()).toBe(1);
+    await act(async () => keepHeldCards());
+    await waitFor(() => expect(result.current.items.get('item-one')?.fields.status).toBe('todo'));
   });
 });

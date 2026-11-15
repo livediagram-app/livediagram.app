@@ -8,7 +8,7 @@ import {
 } from '@liveworkspace/workbench/components/chrome/TopCenter';
 import {
   confirmHeldChanges,
-  heldChangeCount,
+  heldCardCount,
   keepHeldCards,
   subscribeWaitingChanges,
 } from '@/lib/offline-queue/plan-queue';
@@ -21,7 +21,7 @@ const noneHeld = () => 0;
 // cards or removes them anyway. Neutral, never red (docs/specs/004-interface-design/destructive-actions.md): nothing
 // went wrong, it is a check. Only an Editor removes cards, so a read-only session never sees it.
 export function HeldRemovalsBanner({ readOnly }: { readOnly: boolean }) {
-  const held = useSyncExternalStore(subscribeWaitingChanges, heldChangeCount, noneHeld);
+  const held = useSyncExternalStore(subscribeWaitingChanges, heldCardCount, noneHeld);
   if (readOnly || held === 0) return null;
   return (
     <TopCenterRow>

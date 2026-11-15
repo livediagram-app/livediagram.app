@@ -87,8 +87,11 @@ take too many cards off a board at once (`removal_held`, [Realtime conflict reso
   as it was made online or on replay. Held changes are skipped by the replay, so the changes behind them are still
   sent, and they are not counted by the offline banner.
 - A **Needs Review** banner, in the top-centre stack under the offline banner, says "1 card removal is held: it would
-  take many cards off a board at once." ("3 card removals are held: they would ..."), with two buttons:
-  - **Keep Cards** drops the held changes and reads the board again, so the cards come back.
+  take too many cards off a board, or empty it." ("11 card removals are held: they would ..."), with two buttons. It
+  counts cards, not changes: a selection of 11 cards sent to the Trash together is 11. One line covers both reasons,
+  since the refusal names no reason the editor reads.
+  - **Keep Cards** drops the held changes and reads the board again, taking the server's copy of every card they
+    named, so the cards come back at once, with no reload.
   - **Remove Anyway** sends them again, confirmed (`?confirmRemoval=1`), which the server does not judge.
 - Held changes are kept across a reload like any waiting change, and count toward the queue's bounds.
 - Only an Editor sees the banner: a Participant or a Viewer never removes a card.

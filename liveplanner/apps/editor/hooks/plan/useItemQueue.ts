@@ -62,6 +62,8 @@ export function useItemQueue(opts: {
   landed: (answer: ItemWriteAnswer) => void;
   refused: (write: ItemWrite, e: unknown) => void;
   load: () => Promise<void>;
+  // Keep Cards dropped held removals of these cards: the next load takes the server's copy of them.
+  kept?: (cards: readonly string[]) => void;
   // Read again from the server (debounced), when nothing waits.
   refetch: () => void;
   // The board has loaded: what a reload kept is sent now.
@@ -129,8 +131,9 @@ export function useItemQueue(opts: {
   // Keep Cards reads the board again, so the cards come back.
   useEffect(
     () =>
-      subscribeHeldReview((review) => {
+      subscribeHeldReview((review, cards) => {
         if (review === 'kept') {
+          latest.current.kept?.(cards);
           void latest.current.load();
           return;
         }

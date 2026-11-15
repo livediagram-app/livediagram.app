@@ -37,7 +37,7 @@ describe('HeldRemovalsBanner', () => {
     render(<HeldRemovalsBanner readOnly={false} />);
     act(() => hold(3));
     expect(screen.getByRole('status').textContent).toBe(
-      '3 card removals are held: they would take many cards off a board at once.',
+      '3 card removals are held: they would take too many cards off a board, or empty it.',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Remove Anyway' }));
     expect(reviews).toEqual(['confirmed']);

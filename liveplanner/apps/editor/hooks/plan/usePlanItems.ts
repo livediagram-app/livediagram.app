@@ -380,6 +380,8 @@ export function usePlanItems(opts: {
       itemIdsOfWrite(w).forEach((id) => unconfirmedRef.current.add(id));
       callbacks.current.onError(writeFailureMessage(err));
     },
+    // The cards Keep Cards brought back were laid over as removed: the reload takes the server's copy of them.
+    kept: (cards) => cards.forEach((id) => unconfirmedRef.current.add(id)),
     load,
     refetch,
     loaded: status === 'ready',

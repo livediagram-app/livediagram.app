@@ -6,7 +6,7 @@ import { replayItemQueue } from './item-replay';
 import {
   confirmHeldChanges,
   forgetPlanQueues,
-  heldChangeCount,
+  heldCardCount,
   keepHeldCards,
   planQueue,
   subscribeHeldReview,
@@ -49,10 +49,10 @@ describe('isRemovalHeld and heldCopy', () => {
     expect(isRemovalHeld(new Error('x'))).toBe(false);
     expect(isRemovalHeld(null)).toBe(false);
     expect(heldCopy(1)).toBe(
-      '1 card removal is held: it would take many cards off a board at once.',
+      '1 card removal is held: it would take too many cards off a board, or empty it.',
     );
     expect(heldCopy(3)).toBe(
-      '3 card removals are held: they would take many cards off a board at once.',
+      '3 card removals are held: they would take too many cards off a board, or empty it.',
     );
   });
 });
@@ -70,7 +70,7 @@ describe('a held removal in the replay', () => {
     expect(d.queue.changes('items')).toEqual([{ ...del('a', 1), held: true }]);
     expect(d.queue.heldCount()).toBe(1);
     expect(d.queue.waiting('items')).toBe(0);
-    expect(heldChangeCount()).toBe(1);
+    expect(heldCardCount()).toBe(1);
     expect(waitingChangeCount()).toBe(0);
     // A second replay sends nothing: the held change waits for the person.
     expect(await replayItemQueue(d)).toEqual({ outcome: 'done', sent: 0 });
@@ -100,7 +100,7 @@ describe('a held removal in the replay', () => {
     d.queue.add(trash('c', 3));
     confirmHeldChanges();
     expect(reviews).toEqual(['confirmed']);
-    expect(heldChangeCount()).toBe(0);
+    expect(heldCardCount()).toBe(0);
     expect(d.queue.changes('items')[0]).toEqual({ ...trash('a', 1), confirmed: true });
     expect(await replayItemQueue(d)).toEqual({ outcome: 'done', sent: 3 });
     expect(d.send.mock.calls.map(([w, o]) => [w.kind, o])).toEqual([
@@ -125,10 +125,33 @@ describe('a held removal in the replay', () => {
     keepHeldCards();
     expect(reviews).toEqual(['kept']);
     expect(q.changes('items').map((c) => c.id)).toEqual(['i2']);
-    expect(heldChangeCount()).toBe(0);
+    expect(heldCardCount()).toBe(0);
     stop();
     keepHeldCards();
     expect(reviews).toEqual(['kept']);
+  });
+
+  it('counts the cards a held change names, and tells Keep Cards which', () => {
+    const told: (readonly string[])[] = [];
+    subscribeHeldReview((_r, cards) => told.push(cards));
+    const q = planQueue('p', 'o');
+    q.add({
+      id: 'i1',
+      seq: 1,
+      store: 'items',
+      write: {
+        kind: 'patches',
+        patches: ['a', 'b', 'c'].map((id) => ({ id, patch: { set: { status: 'trash' } } })),
+      },
+    });
+    q.add(del('d', 2));
+    q.hold(['i1', 'i2']);
+    expect(q.heldCount()).toBe(2);
+    expect(q.heldCardCount()).toBe(4);
+    expect(heldCardCount()).toBe(4);
+    keepHeldCards();
+    expect(told).toEqual([['a', 'b', 'c', 'd']]);
+    expect(heldCardCount()).toBe(0);
   });
 
   it('keeps the held mark across a reload', () => {
@@ -137,7 +160,7 @@ describe('a held removal in the replay', () => {
     forgetPlanQueues();
     const again = planQueue('p', 'o');
     expect(again.heldCount()).toBe(1);
-    expect(heldChangeCount()).toBe(1);
+    expect(heldCardCount()).toBe(1);
     expect(again.waiting()).toBe(0);
     expect(again.waiting('sheets')).toBe(0);
   });

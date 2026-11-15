@@ -5,20 +5,20 @@ Paths are under `apps/editor/` unless they say otherwise.
 
 ## Domain and naming
 
-| Term                         | Identifier                                                                                              |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------- |
-| A waiting change             | `QueuedChange` (`lib/offline-queue/plan-queue.ts`), `store: 'items' \| 'sheets'`                        |
-| The queue                    | `PlanQueue`; the page's one per plan and person: `planQueue(projectId, ownerId)`                        |
-| When a change was made       | `seq`, from `nextSeq()`                                                                                 |
-| The banner's count           | `waitingChangeCount()` / `subscribeWaitingChanges` (all of the page's queues)                           |
-| "The connection may be back" | `onReconnect(listener)`, fired by the window's `online` event and `signalReconnect()` (room joined)     |
-| No answer                    | `isConnectionFailure(e)` (`lib/offline-queue/reconnect.ts`)                                             |
-| Role gate                    | `itemWriteMayWait(level, write)`, `sheetOpMayWait(rights, op, write)` (`queue-roles.ts`)                |
-| Card replay                  | `replayItemQueue(deps)`, `nextItemBatch(changes, splitThrough)`, `alreadyLanded(write, e)`              |
-| Card side in the editor      | `useItemQueue` + `withWaitingItems` (`hooks/plan/useItemQueue.ts`), wired in `usePlanItems`             |
-| A held removal               | `held: true` on an items `QueuedChange`; `isRemovalHeld(e)` (`lib/offline-queue/removal-held.ts`)       |
-| Held count, review           | `heldChangeCount()`, `confirmHeldChanges()`, `keepHeldCards()`, `subscribeHeldReview` (`plan-queue.ts`) |
-| Sheet side                   | `SheetQueueKeeper` (`components/sheets/sheet-store-queue.ts`), owned by `SheetStore`                    |
+| Term                         | Identifier                                                                                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| A waiting change             | `QueuedChange` (`lib/offline-queue/plan-queue.ts`), `store: 'items' \| 'sheets'`                      |
+| The queue                    | `PlanQueue`; the page's one per plan and person: `planQueue(projectId, ownerId)`                      |
+| When a change was made       | `seq`, from `nextSeq()`                                                                               |
+| The banner's count           | `waitingChangeCount()` / `subscribeWaitingChanges` (all of the page's queues)                         |
+| "The connection may be back" | `onReconnect(listener)`, fired by the window's `online` event and `signalReconnect()` (room joined)   |
+| No answer                    | `isConnectionFailure(e)` (`lib/offline-queue/reconnect.ts`)                                           |
+| Role gate                    | `itemWriteMayWait(level, write)`, `sheetOpMayWait(rights, op, write)` (`queue-roles.ts`)              |
+| Card replay                  | `replayItemQueue(deps)`, `nextItemBatch(changes, splitThrough)`, `alreadyLanded(write, e)`            |
+| Card side in the editor      | `useItemQueue` + `withWaitingItems` (`hooks/plan/useItemQueue.ts`), wired in `usePlanItems`           |
+| A held removal               | `held: true` on an items `QueuedChange`; `isRemovalHeld(e)` (`lib/offline-queue/removal-held.ts`)     |
+| Held count, review           | `heldCardCount()`, `confirmHeldChanges()`, `keepHeldCards()`, `subscribeHeldReview` (`plan-queue.ts`) |
+| Sheet side                   | `SheetQueueKeeper` (`components/sheets/sheet-store-queue.ts`), owned by `SheetStore`                  |
 
 ## Constants and configuration
 
@@ -66,9 +66,11 @@ made: []`; the undo step is pushed as for a landed write.
 7. A refusal `isRemovalHeld(err)` (code `removal_held`) with a queue and a change that may wait: the change joins the
    queue `held: true` (still applied), no toast, no load; answer `ok: true, made: []`.
 
-**Held removals** (`HeldRemovalsBanner`, `components/chrome/`): shown while `heldChangeCount() > 0` and not
-read-only. Keep Cards calls `keepHeldCards()` (every page queue drops its held changes; listeners of
-`subscribeHeldReview` get `'kept'`, and `useItemQueue` calls `load()`). Remove Anyway calls `confirmHeldChanges()`
+**Held removals** (`HeldRemovalsBanner`, `components/chrome/`): shown while `heldCardCount() > 0` and not
+read-only. Keep Cards calls `keepHeldCards()` (every page queue drops its held changes, `dropHeld()` answering the card
+ids they named; listeners of `subscribeHeldReview` get `('kept', cards)`, and `useItemQueue` hands the cards to
+`usePlanItems`' `kept`, which marks them unconfirmed, then calls `load()`, so the server's copy of each replaces the one
+laid over as removed, even at the same rev). Remove Anyway calls `confirmHeldChanges()`
 (held become `confirmed`; listeners get `'confirmed'`, and `useItemQueue` flushes).
 
 **Card replay** (`useItemQueue`): one replay at a time (`flushingRef`).
@@ -114,7 +116,8 @@ bridge.canShape }`):
 ## Interfaces and contracts
 
 - `PlanQueue.add(change): 'ok' | 'full'` (no-op `'ok'` for a held id); `remove(ids)`; `changes(store)`; `count(store?)`
-  (O(1)); `heldCount()` (O(1)); `hold(ids)`; `confirmHeld()`; `dropHeld()`; `size()`; `has(id)`.
+  (O(1)); `heldCount()` and `heldCardCount()` (O(1), the second counting `itemIdsOfWrite` of each held change); `hold(ids)`;
+  `confirmHeld()`; `dropHeld(): string[]`; `size()`; `has(id)`.
 - `writeItem(scope, write, by, { confirmRemoval? })` adds `confirmRemoval=1` to the request's query.
 - `replayItemQueue({ queue, send, landed, refused }) → { outcome: 'done' | 'stalled', sent }`.
 - `usePlanItems({ ..., level?: AccessLevel })`.
@@ -160,8 +163,8 @@ bridge.canShape }`):
   N changes wait in this browser and save when you reconnect."
 - Online, waiting: "Saving 1 change made without a connection." / "Saving N changes made without a connection."
 - Full: the error toast `PLAN_QUEUE_FULL_MESSAGE`.
-- Held: "1 card removal is held: it would take many cards off a board at once." / "N card removals are held: they
-  would take many cards off a board at once.", buttons Keep Cards (secondary) and Remove Anyway (primary).
+- Held, counting cards: "1 card removal is held: it would take too many cards off a board, or empty it." / "N card
+  removals are held: they would take too many cards off a board, or empty it.", buttons Keep Cards (secondary) and Remove Anyway (primary).
 - The waiting count leaves held changes out (`waitingChangeCount()` = all changes less held ones).
 
 ## Accessibility
