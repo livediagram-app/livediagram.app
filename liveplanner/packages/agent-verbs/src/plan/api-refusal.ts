@@ -8,12 +8,10 @@ import {
   ITEM_DESCRIPTION_MAX,
   ITEM_TITLE_MAX,
   ITEM_UNKNOWN_STRING_MAX,
-  customFieldOf,
+  PLAN_FIELDS_BYTES,
   fieldLimitWords,
   readFieldLimit,
-  typeFieldLabel,
   type FieldLimit,
-  type ItemTypeDef,
 } from '@liveplanner/items';
 import { archiveRefusalWords, createDeleteRefusal } from '@liveworkspace/agent-verbs/api-refusal';
 import { AGENT_PRODUCT } from '../agent-product';
@@ -33,20 +31,8 @@ export const FIELD_HINT =
   'labels, estimate (0-999), start and due (YYYY-MM-DD), color (a Plan swatch), checklist [{text,done}], ' +
   `parent (#number of a Project), and the card type's custom fields by name. ${FIELD_LIMITS}`;
 
-// A field id as the card shows it (docs/specs/026-plan/plan-agents.md "Errors that teach"): a custom field's label (a
-// Long Text's formatting key named as its field), else the built-in's name as `type` (the change's card type) calls it.
-export function fieldNamer(
-  types: readonly ItemTypeDef[],
-  type: () => ItemTypeDef | undefined,
-): (field: string) => string {
-  return (field) => {
-    const id = /^f-.+Rich$/.test(field) || field === 'descriptionRich' ? field.slice(0, -4) : field;
-    const own = type();
-    const custom =
-      (own && customFieldOf(own, id)) ?? types.map((t) => customFieldOf(t, id)).find(Boolean);
-    return custom ? custom.label : typeFieldLabel(own, id);
-  };
-}
+// A field id as the card shows it (@liveplanner/items field-namer.ts), for item-changes.ts.
+export { fieldNamer } from '@liveplanner/items';
 
 const BY_CODE: Readonly<Record<string, string>> = {
   status_excluded:
@@ -70,6 +56,11 @@ const BY_CODE: Readonly<Record<string, string>> = {
   fields_too_large:
     'the card would hold more than its 64 KB of fields: shorten the longest (a description, a Long Text field, ' +
     'checklist rows).',
+  // The plan fields budget (docs/specs/026-plan/items.md "Limits").
+  plan_full:
+    `the plan's cards together hold the most a plan can (${PLAN_FIELDS_BYTES / 1024 / 1024} MB of fields). ` +
+    'Shorten long descriptions or Long Text fields, empty or delete cards no longer needed, or put new cards in ' +
+    'another plan (create_project). Moving cards between columns still works.',
   ...SHEET_REFUSAL_WORDS,
   // Forms (docs/specs/030-forms/forms.md "Agents").
   form_locked:

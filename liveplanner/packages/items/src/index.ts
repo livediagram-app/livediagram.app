@@ -17,6 +17,7 @@ export * from './template-names';
 export { templateProblem } from './type-change-templates';
 export * from './fields';
 export * from './field-limits';
+export * from './field-namer';
 export * from './item-colour';
 export * from './limits';
 export * from './rank';

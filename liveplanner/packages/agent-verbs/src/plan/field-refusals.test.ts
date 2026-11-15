@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ApiError } from '@liveworkspace/api-client';
 import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { fakeApi } from '../testing/fake-api';
-import { FIELD_HINT, FIELD_LIMITS, apiRefusalOf, fieldNamer } from './api-refusal';
+import { FIELD_HINT, FIELD_LIMITS, apiRefusalOf } from './api-refusal';
 import { applyItemChanges } from './item-changes';
 import { readPlanState } from './plan-state';
 
@@ -74,6 +74,13 @@ describe('a refused field value', () => {
       'The api refused a field value (title_too_long)',
     );
     expect(apiRefusalOf(refused({ error: 'fields_too_large' }))!.message).toContain('64 KB');
+    // A plan past its fields budget says so in plain words, and what to do (items.md "Limits").
+    const full = apiRefusalOf(new ApiError(413, JSON.stringify({ error: 'plan_full' })))!;
+    expect(full.code).toBe('plan_full');
+    expect(full.message).toContain(
+      "the plan's cards together hold the most a plan can (16 MB of fields)",
+    );
+    expect(full.message).toContain('create_project');
     // A code it words itself still wins over the field it names.
     expect(apiRefusalOf(refused({ error: 'field_required', field: 'f-x' }))!.message).toContain(
       'required custom field',
@@ -92,21 +99,6 @@ describe('a refused field value', () => {
       'A title holds up to 500 characters, the description and a Long Text field 10,000 (as plain text, once ' +
         'Markdown is read), a Text field 2,000, and a checklist 50 rows of up to 200 characters.',
     );
-  });
-});
-
-describe('fieldNamer', () => {
-  it('names a field as the change’s card shows it', () => {
-    const name = fieldNamer([IDEA, OTHER], () => IDEA);
-    expect(name('f-solution')).toBe('Solution');
-    expect(name('f-solutionRich')).toBe('Solution');
-    // A field another type holds, and a built-in as the type renames it, else its own name.
-    expect(name('f-impact')).toBe('Impact');
-    expect(name('description')).toBe('Problem');
-    expect(name('descriptionRich')).toBe('Problem');
-    expect(name('checklist')).toBe('Checklist');
-    expect(name('f-gone')).toBe('f-gone');
-    expect(fieldNamer([IDEA], () => undefined)('description')).toBe('Description');
   });
 });
 

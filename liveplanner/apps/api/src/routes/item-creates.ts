@@ -19,13 +19,14 @@ import {
   type ItemPerson,
   type ItemRejection,
 } from '@liveplanner/items';
-import { getItemStoreHead, insertItems, listItems } from '../db';
+import { fieldsGrowth, getItemStoreHead, insertItems, listItems, passesPlanBudget } from '../db';
 import { badRequest, conflict, json } from '../responses';
 import { cardBackOnThreads, readRestoredThreads } from './card-thread-cards';
 import {
   calculatedSet,
   timeTracked,
   itemBusy,
+  planFull,
   itemRetryPause,
   rejected,
   rejectedRead,
@@ -126,6 +127,9 @@ export async function buildCreates(
     placer.add(item);
     made.push(item);
   }
+  // The plan fields budget (items.md "Limits"): the head's running total and every made card's fields.
+  if (passesPlanBudget(head.bytes, fieldsGrowth(made.map((next) => ({ before: null, next })))))
+    return planFull();
   return made;
 }
 

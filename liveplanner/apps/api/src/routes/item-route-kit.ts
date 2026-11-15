@@ -19,6 +19,7 @@ import {
   blockingCycleOf,
   blockingLoopMessage,
   fieldRefusalOf,
+  PLAN_FIELDS_BYTES,
   type BlockingChange,
   type Item,
   type ItemPerson,
@@ -205,6 +206,18 @@ export async function isItemEditor(ctx: PlanRouteContext, caller: ItemCaller): P
 export const ITEM_RETRY_PAUSE_MS = 15;
 export const itemRetryPause = (attempt: number): Promise<void> =>
   new Promise((r) => setTimeout(r, ITEM_RETRY_PAUSE_MS * attempt * Math.random()));
+
+// A write that would take the plan's cards past the plan fields budget (docs/specs/026-plan/items.md "Limits").
+export const planFull = () => {
+  console.info('[items] items.rejected plan_full');
+  return json(
+    {
+      error: 'plan_full',
+      message: `a plan's cards hold up to ${PLAN_FIELDS_BYTES / 1024 / 1024} MB of fields together`,
+    },
+    { status: 413 },
+  );
+};
 
 export const itemBusy = () => {
   console.warn('[items] items.write.busy');

@@ -22,7 +22,14 @@ import {
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { getItemStoreHead, insertItems, listItems, readItem } from '../db';
+import {
+  fieldsGrowth,
+  getItemStoreHead,
+  insertItems,
+  listItems,
+  passesPlanBudget,
+  readItem,
+} from '../db';
 import { appendItemHistory } from '../db/item-history';
 import { planTabs } from '../routes/plan-route';
 import type { PlanEnv } from '../types';
@@ -247,6 +254,12 @@ export class RepeatSchedule {
         },
         { id, key, now, by: REPEAT_PERSON, items: reads.placer },
       );
+      // The plan fields budget (items.md "Limits"): settled without a copy, as a full plan is.
+      if (passesPlanBudget(head.bytes, fieldsGrowth([{ before: null, next: made }]))) {
+        console.warn('[repeats] plan_full', { planId });
+        this.settle(row.item_id, make, nextAt);
+        return false;
+      }
       try {
         const rev = await insertItems(env, planId, [made], [settle]);
         reads.ids.add(id);

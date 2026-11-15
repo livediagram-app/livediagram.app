@@ -165,3 +165,74 @@ describe('writeItem patches refused part way', () => {
     expect(failure).toMatchObject({ code: 'item_busy' });
   });
 });
+
+// docs/specs/026-plan/items.md "Limits": a refused value's field and limit ride on the error the toast reads.
+describe('writeItem refused for a field', () => {
+  const limit = { unit: 'characters', max: 10_000, given: 12_412 };
+  const refusal = { error: 'field_value_invalid', id: 'i1', field: 'f-solution', limit };
+
+  it('carries the field and limit on one card’s refusal, many cards’ and a part-landed one', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json(refusal, { status: 400 })),
+    );
+    const one = await writeItem(
+      scope,
+      { kind: 'patch', id: 'i1', patch: { set: { 'f-solution': 's' } } },
+      by,
+    ).catch((e: unknown) => e);
+    expect(one).toMatchObject({ code: 'field_value_invalid', field: 'f-solution', limit });
+    const many = await writeItem(
+      scope,
+      { kind: 'patches', patches: [{ id: 'i1', patch: { set: { 'f-solution': 's' } } }] },
+      by,
+    ).catch((e: unknown) => e);
+    expect(many).toMatchObject({ code: 'field_value_invalid', field: 'f-solution', limit });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({ ...refusal, items: [{ id: 'i0' }], rev: 3 }, { status: 400 }),
+      ),
+    );
+    const part = await writeItem(
+      scope,
+      {
+        kind: 'patches',
+        patches: [
+          { id: 'i0', patch: {} },
+          { id: 'i1', patch: {} },
+        ],
+      },
+      by,
+    ).catch((e: unknown) => e);
+    expect(part).toBeInstanceOf(ItemWritePartlyLanded);
+    expect(part).toMatchObject({ code: 'field_value_invalid', field: 'f-solution', limit });
+  });
+
+  it('carries nothing more for a refusal that names no field, or a body that is not JSON', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({ error: 'plan_full', limit: { unit: 'x' } }, { status: 413 }),
+      ),
+    );
+    const full = await writeItem(
+      scope,
+      { kind: 'patch', id: 'i1', patch: { set: { title: 'x' } } },
+      by,
+    ).catch((e: unknown) => e);
+    expect(full).toMatchObject({ code: 'plan_full' });
+    expect(full).not.toHaveProperty('field');
+    expect(full).not.toHaveProperty('limit');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('down', { status: 400 })),
+    );
+    const plain = await writeItem(
+      scope,
+      { kind: 'patch', id: 'i1', patch: { set: { title: 'x' } } },
+      by,
+    ).catch((e: unknown) => e);
+    expect(plain).not.toHaveProperty('field');
+  });
+});

@@ -5,6 +5,9 @@ export const ITEMS_MAX = 5000;
 // Room for every built-in field at its limit beside a formatted 9,000-character Long Text, whose runs roughly double
 // it (owner 2026-11-15, Work Tracker 944; was 16 KB).
 export const ITEM_FIELDS_BYTES = 65_536;
+// Every card's stored fields together (items.md "Limits", Work Tracker 944): the whole plan still loads in one GET, and
+// 16 MiB answers 17.1 MB at 5,000 cards, raising 72 MB of a Worker's 128 (blueprint item-store.md "Performance and limits").
+export const PLAN_FIELDS_BYTES = 16 * 1024 * 1024;
 export const ITEM_FIELDS_MAX = 64;
 export const ITEM_TITLE_MAX = 500;
 export const ITEM_DESCRIPTION_MAX = 10_000;

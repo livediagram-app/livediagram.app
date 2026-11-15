@@ -4,7 +4,13 @@
 
 import { ANONYMISED_NAME, ANONYMISED_PERSON } from '@liveworkspace/index-app';
 import { isSafeColourValue } from '@liveplanner/project';
-import type { Item, ItemPerson } from '@liveplanner/items';
+import {
+  PLAN_FIELDS_BYTES,
+  STATUS_SINCE_FIELD,
+  type Item,
+  type ItemFields,
+  type ItemPerson,
+} from '@liveplanner/items';
 import type { PlanEnv } from '../types';
 
 type ItemRow = {
@@ -73,17 +79,71 @@ function itemFromRow(row: ItemRow): Item {
   };
 }
 
-type ItemStoreHead = { rev: number; nextKey: number; count: number };
+// `bytes`: every card's stored fields together (plan.items_bytes, kept by triggers: plan-room/items-bytes-schema.ts).
+type ItemStoreHead = { rev: number; nextKey: number; count: number; bytes: number };
 
 export async function getItemStoreHead(env: PlanEnv, projectId: string): Promise<ItemStoreHead> {
   const row = await env.PLAN_DB.prepare(
-    `SELECT d.items_rev AS rev, d.items_next_key AS next_key,
+    `SELECT d.items_rev AS rev, d.items_next_key AS next_key, d.items_bytes AS bytes,
             (SELECT COUNT(*) FROM items i WHERE i.plan_id = d.id) AS count
        FROM plan d WHERE d.id = ?`,
   )
     .bind(projectId)
-    .first<{ rev: number; next_key: number; count: number }>();
-  return { rev: row?.rev ?? 0, nextKey: row?.next_key ?? 1, count: row?.count ?? 0 };
+    .first<{ rev: number; next_key: number; count: number; bytes: number }>();
+  return {
+    rev: row?.rev ?? 0,
+    nextKey: row?.next_key ?? 1,
+    count: row?.count ?? 0,
+    bytes: row?.bytes ?? 0,
+  };
+}
+
+// The plan fields budget (docs/specs/026-plan/items.md "Limits", blueprint item-store.md "Performance and limits").
+// A card's fields as the store keeps them, in UTF-8 bytes: what the triggers count (length(CAST(fields AS BLOB))).
+export function storedFieldsBytes(fields: ItemFields | Record<string, unknown>): number {
+  return new TextEncoder().encode(JSON.stringify(fields)).length;
+}
+
+// How many bytes `writes` add to the plan: each card's new fields less its old (none for a create). A change of column
+// is not counted (its status and status-since taken as they were): a status is a short name, so moving a card on a full
+// plan is never refused.
+export function fieldsGrowth(writes: readonly { before: Item | null; next: Item }[]): number {
+  let growth = 0;
+  for (const { before, next } of writes) {
+    if (!before) {
+      growth += storedFieldsBytes(next.fields);
+      continue;
+    }
+    if (before.fields === next.fields) continue;
+    // JSON.stringify leaves out a key whose value is undefined, as the stored card does a missing one.
+    const kept: Record<string, unknown> = {
+      ...next.fields,
+      status: before.fields.status,
+      [STATUS_SINCE_FIELD]: before.fields[STATUS_SINCE_FIELD],
+    };
+    growth += storedFieldsBytes(kept) - storedFieldsBytes(before.fields);
+  }
+  return growth;
+}
+
+// Whether growing a plan holding `bytes` by `growth` passes the budget. A write that adds nothing, or shrinks the
+// plan, never does, so a plan already past it can still be trimmed.
+export function passesPlanBudget(bytes: number, growth: number): boolean {
+  return growth > 0 && bytes + growth > PLAN_FIELDS_BYTES;
+}
+
+// Whether `growth` more bytes would take the plan past its budget: the head's total is read only for a write that
+// grows the plan.
+export async function planFullFor(
+  env: PlanEnv,
+  projectId: string,
+  growth: number,
+): Promise<boolean> {
+  if (growth <= 0) return false;
+  const row = await env.PLAN_DB.prepare(`SELECT items_bytes AS bytes FROM plan WHERE id = ?`)
+    .bind(projectId)
+    .first<{ bytes: number }>();
+  return passesPlanBudget(row?.bytes ?? 0, growth);
 }
 
 // The store's revision alone: what a read needs, without the head's count.

@@ -29,7 +29,15 @@ import {
   type Item,
   type ItemPerson,
 } from '@liveplanner/items';
-import { deleteItemRow, getItemsRev, listItems, readItem, updateItemAtRev } from '../db';
+import {
+  deleteItemRow,
+  fieldsGrowth,
+  getItemsRev,
+  listItems,
+  planFullFor,
+  readItem,
+  updateItemAtRev,
+} from '../db';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { startOnCard } from './card-thread-routes';
 import { cardLeftThreads, threadLinksOf } from './card-thread-cards';
@@ -44,6 +52,7 @@ import {
   itemRetryPause,
   itemCaller,
   itemNotFound,
+  planFull,
   isItemEditor,
   blockersRefused,
   rejected,
@@ -248,6 +257,8 @@ export async function writeItem(
     if (bound) return rejected(bound);
     const blocked = await blockersRefused(ctx, caller, [{ before: item, next }]);
     if (blocked) return blocked;
+    if (await planFullFor(ctx.env, caller.projectId, fieldsGrowth([{ before: item, next }])))
+      return planFull();
     const rev = await updateItemAtRev(ctx.env, caller.projectId, next, item.rev);
     if (rev !== null) {
       relay(ctx, caller.projectId, [next], [], rev);

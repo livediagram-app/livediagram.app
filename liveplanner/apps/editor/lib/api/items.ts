@@ -6,6 +6,8 @@ import type { ItemResponse, ItemsImportStaged, ItemsResponse } from '@liveplanne
 import {
   createBatches,
   importParts,
+  readFieldLimit,
+  type FieldLimit,
   type Item,
   type ItemCreate,
   type ItemPerson,
@@ -14,6 +16,7 @@ import {
   type ItemWrite,
 } from '@liveplanner/items';
 import { isOfflineId } from '../offline/offline-store';
+import { refusedFieldOf, type RefusedField } from './refused-field';
 import { offlineFetchItems, offlineWriteItem } from '../offline/offline-items';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -35,11 +38,32 @@ export type ItemWriteAnswer = { upserts: Item[]; removed: string[]; rev: number 
 export class ItemWritePartlyLanded extends Error {
   readonly code: string | null;
   readonly landed: ItemWriteAnswer;
+  readonly field?: string;
+  readonly limit?: FieldLimit;
   constructor(landed: ItemWriteAnswer, failure: unknown) {
     super(failure instanceof Error ? failure.message : String(failure));
     this.name = 'ItemWritePartlyLanded';
     this.code = (failure as { code?: string } | null)?.code ?? null;
     this.landed = landed;
+    Object.assign(this, refusedFieldOf(failure));
+  }
+}
+
+// expectOk, with a refusal's field and limit from its body on the error it throws.
+async function expectItemsOk<T>(res: Response, action: string): Promise<T> {
+  if (res.ok) return expectOk<T>(res, action);
+  let named: RefusedField = {};
+  try {
+    const body = (await res.clone().json()) as { field?: unknown; limit?: unknown };
+    const limit = readFieldLimit(body.limit);
+    named = refusedFieldOf({ field: body.field, ...(limit ? { limit } : {}) });
+  } catch {
+    // Not JSON: the code alone, as before.
+  }
+  try {
+    return await expectOk<T>(res, action);
+  } catch (err) {
+    throw Object.assign(err as Error, named);
   }
 }
 
@@ -104,7 +128,7 @@ async function post<T>(scope: ItemsScope, rest: string, body: unknown, action: s
       await new Promise((r) => setTimeout(r, ITEM_BUSY_PAUSE_MS * attempt * (0.5 + Math.random())));
       continue;
     }
-    return expectOk<T>(res, action);
+    return expectItemsOk<T>(res, action);
   }
 }
 
@@ -141,7 +165,7 @@ async function postInChunks(
     });
     const partial = res.ok ? null : await landedOf(res);
     try {
-      const r = await expectOk<ItemsResponse>(res, action);
+      const r = await expectItemsOk<ItemsResponse>(res, action);
       answer.upserts.push(...r.items);
       answer.rev = r.rev;
     } catch (err) {
