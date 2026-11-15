@@ -252,7 +252,9 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
       `editor-chrome-equal.ts`), their handlers reading `useEditorChromeStore().get()`.
     - `QuickStyleHost` and `EditorFindHost` read their `deps` from the store (`useEditorChromeLatest`), compared by
       `sameDepsButWriting`: the same handlers by name, the same data, the active tab the same but for its writing.
-      Find, while open, renders for every change, as its matches read the writing.
+      Find, while open, renders for every change, as its matches read the writing. The hook says `'use no memo'`:
+      compiled, the React Compiler kept its first `store.get()` and the Quick Style bar never showed (the
+      `quick-style-panel` smoke specs catch it; unit tests run uncompiled).
     - `ModifierHint` is memoised, `LandscapeBarsHandle` sits behind `withStableEventProps`, and the editor's
       `NewVersionPrompt` is made once (`EditorNewVersionPrompt`), asking the store whether edits are unsaved.
   - Still rendering on a typing commit, each reading the document: the canvas (`CanvasView`, its pages and each
