@@ -171,24 +171,6 @@ describe('the Plan strip by share role', () => {
     expect(screen.getByRole('button', { name: /Open the Trash/ })).toBeTruthy();
   });
 
-  it('hands an Editor’s opener the Card Types button, or the folded button on a phone', () => {
-    dock.names = false;
-    for (const folded of [false, true]) {
-      const buttonRef = { current: null as HTMLButtonElement | null };
-      render(
-        <PlanCardsClusterStrip
-          folded={folded}
-          finderOpen={false}
-          onToggleFinder={() => {}}
-          types={{ open: false, onToggle: () => {}, buttonRef }}
-        />,
-      );
-      const name = folded ? 'More card tools' : 'Open Card Types';
-      expect(buttonRef.current).toBe(screen.getByRole('button', { name }));
-      cleanup();
-    }
-  });
-
   it('folds an Editor’s strip on a phone into a menu with Card Types', () => {
     dock.names = false;
     roleStrip('Editor', true);

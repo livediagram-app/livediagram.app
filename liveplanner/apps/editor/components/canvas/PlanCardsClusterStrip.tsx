@@ -39,15 +39,8 @@ export function PlanCardsClusterStrip({
   folded?: boolean;
   finderOpen: boolean;
   onToggleFinder: (button: HTMLElement) => void;
-  // The Card Types button: its panel's state and toggle, and its element for a caller that opens the panel from
-  // elsewhere. Absent (anyone but an editor), the strip has none.
-  types?:
-    | {
-        open: boolean;
-        onToggle: (button: HTMLElement) => void;
-        buttonRef?: React.Ref<HTMLButtonElement> | undefined;
-      }
-    | undefined;
+  // The Card Types button: its panel's state and toggle. Absent (anyone but an editor), the strip has none.
+  types?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Trash button: its panel's state and toggle. Absent, the strip has none.
   trash?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
 }) {
@@ -91,7 +84,6 @@ export function PlanCardsClusterStrip({
               ]
             : []),
         ]}
-        buttonRef={types.buttonRef}
       />
     );
   return (
@@ -125,7 +117,6 @@ export function PlanCardsClusterStrip({
             dataTourId="card-types"
             popoverOpen={types.open}
             onTogglePopover={types.onToggle}
-            {...(types.buttonRef ? { buttonRef: types.buttonRef } : {})}
           />
         ) : null}
       </ClusterStrip>
@@ -142,13 +133,7 @@ type FoldedRow = {
 
 // The Plan strip folded into one button, for a phone whose cluster row has no room for its three (the strip's
 // panels open above that button, as they would above their own). Lit while its menu or any of its panels is open.
-function FoldedPlanStrip({
-  rows,
-  buttonRef,
-}: {
-  rows: FoldedRow[];
-  buttonRef?: React.Ref<HTMLButtonElement> | undefined;
-}) {
+function FoldedPlanStrip({ rows }: { rows: FoldedRow[] }) {
   // The button the menu hangs from, taken from its press; null while the menu is shut.
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const menuOpen = anchor !== null;
@@ -167,7 +152,6 @@ function FoldedPlanStrip({
           onTogglePopover={(el) =>
             panelOpen ? panelOpen.onPick(el) : setAnchor(menuOpen ? null : el)
           }
-          {...(buttonRef ? { buttonRef } : {})}
         />
       </ClusterStrip>
       {menuOpen ? (

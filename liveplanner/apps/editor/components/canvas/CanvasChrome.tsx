@@ -30,7 +30,6 @@ import {
   sessionStripTools,
   stripCanStart,
 } from '@/components/canvas/SessionClusterStrip';
-import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { usePlanVoting } from '@/hooks/plan/usePlanVoting';
 import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
@@ -161,12 +160,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
 
-  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md), only
-  // for an editor: nobody else has the button (item-types.md "The Card Types panel", Share roles).
-  const cardTypesButtonRef = useCardTypesOpener(!zenMode && !readOnly, {
-    activeDockPanel,
-    handleDockButtonClick,
-  });
   // The Vote button, which a starting results walkthrough opens for whoever drives it.
   const voteButtonRef = useVoteReviewOpener(!!props.voteReview?.canControl, {
     activeDockPanel,
@@ -415,7 +408,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                     : {
                         open: activeDockPanel === 'card-types',
                         onToggle: (button) => handleDockButtonClick('card-types', button, true),
-                        buttonRef: cardTypesButtonRef,
                       }
                 }
                 folded={planStripFolded}

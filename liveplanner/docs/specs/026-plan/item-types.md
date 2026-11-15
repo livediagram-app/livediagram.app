@@ -1225,7 +1225,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   the second of one strip with **Find a Card**.
   It opens the panel as a popover hanging above the button, as Layers does from its button; it closes on a
   press outside, a second press of the button, or leaving Plan mode.
-- **Edit Cards** opens it too, for an Editor: a button at the end of the Toolbar strip while Cards is chosen.
+- The button is the panel's only door: Plan mode has [no palette](plan-mode.md#no-palette), so no Toolbar strip
+  button opens it.
 - The panel is 34 rem (544 px) wide on desktop, two types to a row; on a phone the screen's width less a margin,
   one to a row. It lists the
   catalogue as **one list**, in its order, with no headings: no type is marked apart from another, wherever it came
@@ -1253,7 +1254,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   embed that still reaches the panel).
 - **Share roles: the panel and every door into it are an Editor's** ([Share roles](../013-workspace/share-roles.md#what-a-participant-changes)),
   since only an Editor changes card types. A Participant or a Viewer gets no Card Types button in the strip and no
-  Card Types row in its folded phone menu, Edit Cards and `openCardTypes()` open nothing for them, and the Boards
+  Card Types row in its folded phone menu, and the Boards
   tour's Card Types track (the one that points at the button) is never offered to them. **Find a Card** stays for
   every role. A non-editor on a plan with **no card types** has nothing left in the strip (no Find a Card, no
   Trash), so no strip shows, never an empty one; on a phone a non-editor's strip holds at most Find a Card, so it
@@ -1816,10 +1817,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
 ## Where types show
 
-- **The palette's Cards category** lists a card per type, in catalogue order, captioned "<Name> card", each
-  tile a small card with the type's colour stripe and its glyph on the face, and lands it in a board's column as every other type's do.
-  With no types it says "No card types yet. Add one, or the default types, with Edit Cards." (someone who may only
-  view: "This project has no card types yet."), above Edit Cards.
+- **Boards** offer the types they show as their header's card type chips and in Add card, to add a card of one
+  (Plan mode has [no palette](plan-mode.md#no-palette), so no Cards category lists them).
 - **Cards** draw a type's colour (behind the card number) and glyph (an item's own [Colour](items.md#colour) is a dot beside them,
   never in their place); the item panel's type picker lists the catalogue; the Add a
   Card popover offers the types the board shows, and its title field's `name:` prefix matches a type's name
