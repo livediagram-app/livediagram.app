@@ -21,6 +21,7 @@ export {
   PLAN_ELEMENT_ABOUT,
   PLAN_ELEMENT_KINDS,
   PLAN_KIND_FIELDS,
+  PLAN_VIEW_FORMAT,
   isPlanElementKind,
   planElementIssue,
   type PlanElementKind,

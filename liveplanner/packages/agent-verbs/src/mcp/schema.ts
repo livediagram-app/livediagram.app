@@ -7,7 +7,7 @@
 // guard.
 import { z } from 'zod';
 import { findArchived } from './archive-tools';
-import { METRIC_KINDS, PLAN_VISUALISATIONS } from '@liveplanner/items';
+import { FLOW_RANGES, METRIC_KINDS, PLAN_VISUALISATIONS } from '@liveplanner/items';
 import {
   FIND_QUERY_MAX_LENGTH,
   REF_INPUT_MAX_LENGTH,
@@ -19,6 +19,7 @@ import {
   PLAN_ELEMENT_ABOUT,
   PLAN_ELEMENT_KINDS,
   PLAN_KIND_FIELDS,
+  PLAN_VIEW_FORMAT,
 } from '@liveplanner/edit-operations';
 import {
   ELEMENT_FIELD_VALUES,
@@ -60,6 +61,8 @@ const ELEMENT_SCHEMA_HINT =
   'A liveplanner tab holds only these shapes; any other element is refused. ' +
   KIND_LINES.join(' ') +
   ' ' +
+  PLAN_VIEW_FORMAT +
+  ' ' +
   CHART_SOURCE +
   " Cards are items (change_items), cells are a sheet's (change_sheet), and a Dashboard is easiest made " +
   'whole with "dashboard".';
@@ -78,6 +81,8 @@ with an optional ${fieldsText(PLAN_COMMON_FIELDS.filter((f) => !['x', 'y', 'widt
 A tab holds only these shapes; any other element is refused:
 
 ${KIND_LINES.map((l) => `- ${l}`).join('\n')}
+
+${PLAN_VIEW_FORMAT}
 
 ${CHART_SOURCE}
 
@@ -168,7 +173,8 @@ const dashboardField = z
             .exclude(['status-mix'])
             .describe(
               'gantt, calendar (by due date), start-calendar, workload (cards by a field), priority-matrix ' +
-                '(priority by status), search.',
+                '(priority by status), search, and the flow charts cycle-time (days each finished card took), ' +
+                'throughput (cards finished a week) and cumulative-flow (cards in each status a day).',
             ),
           groupBy: z
             .string()
@@ -200,6 +206,13 @@ const dashboardField = z
             .optional()
             .describe(
               "The slot's own name, shown in place of the chart's generated heading (up to 80 characters).",
+            ),
+          rangeDays: z
+            .literal(FLOW_RANGES)
+            .optional()
+            .describe(
+              'cycle-time, throughput and cumulative-flow only: the days it reads, ending today: ' +
+                `${FLOW_RANGES.join(', ')} (30 by default).`,
             ),
         }),
       )
