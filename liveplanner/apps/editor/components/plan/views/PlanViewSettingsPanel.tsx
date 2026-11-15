@@ -7,9 +7,11 @@
 // flyout (planViewSettingsModel), so either does.
 import { useState, type ReactNode } from 'react';
 import type { PlanViewRef } from '@liveplanner/project';
+import { isFlowView } from '@liveplanner/items';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalendar,
+  lucideCalendarRange,
   lucideCircleDot,
   lucideHash,
   lucideGroup,
@@ -22,6 +24,7 @@ import { usePlan } from '../PlanContext';
 import { PHASE_COLOURS } from './view-frame';
 import { planViewSettingsModel, viewTypesNote } from './plan-view-settings';
 import { ViewDateOptions, ViewMeasureOptions } from './ViewFieldSettings';
+import { FlowRangeOptions } from './FlowRangeOptions';
 
 const TypesGlyph = lucideGlyph(lucideLayers, 14);
 const GroupGlyph = lucideGlyph(lucideGroup, 14);
@@ -29,6 +32,7 @@ const OrderGlyph = lucideGlyph(lucideCalendar, 14);
 const StatusGlyph = lucideGlyph(lucideCircleDot, 14);
 const DatesGlyph = lucideGlyph(lucideCalendar, 14);
 const MeasureGlyph = lucideGlyph(lucideHash, 14);
+const RangeGlyph = lucideGlyph(lucideCalendarRange, 14);
 
 export function PlanViewSettingsPanel({
   elementId,
@@ -45,7 +49,10 @@ export function PlanViewSettingsPanel({
 }) {
   const plan = usePlan();
   // The setting most charts are about opens first: Cards by Field's field, else the card types.
-  const [open, setOpen] = useState<string | null>(stored.view === 'workload' ? 'group' : 'types');
+  // A flow chart's range opens first there.
+  const [open, setOpen] = useState<string | null>(
+    stored.view === 'workload' ? 'group' : isFlowView(stored.view) ? 'range' : 'types',
+  );
   if (!plan) return null;
   const m = planViewSettingsModel(plan, elementId, stored);
   // The panel's own Section, or a host's (`more`).
@@ -55,6 +62,11 @@ export function PlanViewSettingsPanel({
   });
   return (
     <>
+      {m.flow ? (
+        <BoardSettingsSection title="Range" icon={<RangeGlyph />} {...section('range')}>
+          <FlowRangeOptions selected={m.range} onPick={m.setRange} />
+        </BoardSettingsSection>
+      ) : null}
       {m.grouping ? (
         <BoardSettingsSection title="Group By" icon={<GroupGlyph />} {...section('group')}>
           <InfoNote>The field this chart gives a bar to each value of.</InfoNote>

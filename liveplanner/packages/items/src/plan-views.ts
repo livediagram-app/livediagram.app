@@ -23,6 +23,7 @@ import { doneColumnsOf } from './done-columns';
 import { ITEM_TYPES, LEGACY_PARENT_GROUPING, type ItemTypeDef } from './item-types';
 import { isCardSearchFilters } from './card-search';
 import { isPlanViewStatuses } from './plan-view-statuses';
+import { FLOW_RANGE_DEFAULT, isFlowRange, type FlowRange } from './flow-metrics';
 import {
   BUILT_IN_DATES,
   isViewFieldId,
@@ -56,6 +57,9 @@ export const PLAN_VISUALISATIONS = [
   'status-mix',
   'priority-matrix',
   'search',
+  'cycle-time',
+  'throughput',
+  'cumulative-flow',
 ] as const;
 export type PlanVisualisation = (typeof PLAN_VISUALISATIONS)[number];
 
@@ -131,6 +135,8 @@ export function isPlanViewSettings(value: unknown): boolean {
     if (v[key] !== undefined && !isViewFieldId(v[key])) return false;
   if (v['filters'] !== undefined && !isCardSearchFilters(v['filters'])) return false;
   if (v['statuses'] !== undefined && !isPlanViewStatuses(v['statuses'])) return false;
+  // A flow chart's range ("Flow charts"): one of FLOW_RANGES (30, the default, is accepted and never written).
+  if (v['rangeDays'] !== undefined && !isFlowRange(v['rangeDays'])) return false;
   const w = v['namesWidth'];
   if (
     w !== undefined &&
@@ -279,7 +285,24 @@ export const PLAN_VISUALISATION_LABELS: Readonly<Record<PlanVisualisation, strin
   'status-mix': 'Status Breakdown',
   'priority-matrix': 'Priority by Status',
   search: 'Card Search',
+  'cycle-time': 'Cycle Time',
+  throughput: 'Throughput',
+  'cumulative-flow': 'Cumulative Flow',
 };
+
+// The flow charts (docs/specs/026-plan/plan-views.md "Flow charts"): they read the plan's history over a range, not
+// today's cards.
+export const FLOW_VIEWS = ['cycle-time', 'throughput', 'cumulative-flow'] as const;
+export type FlowView = (typeof FLOW_VIEWS)[number];
+export function isFlowView(view: unknown): view is FlowView {
+  return (FLOW_VIEWS as readonly unknown[]).includes(view);
+}
+
+// The range a flow chart reads, in days: its own `rangeDays` when it is one of FLOW_RANGES, else FLOW_RANGE_DEFAULT.
+export function flowRangeOf(settings: { rangeDays?: unknown }): FlowRange {
+  const r = settings.rangeDays;
+  return isFlowRange(r) ? r : FLOW_RANGE_DEFAULT;
+}
 
 // Every live card: not archived, not in the Trash.
 export function liveCards(items: Iterable<Item>): Item[] {

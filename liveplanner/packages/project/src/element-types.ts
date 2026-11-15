@@ -1310,6 +1310,8 @@ export type PlanViewRef = {
   startField?: string;
   dueField?: string;
   measure?: string;
+  // A flow chart's range in days (docs/specs/026-plan/plan-views.md "Flow charts"): 14, 90 or 180; absent is 30.
+  rangeDays?: 14 | 30 | 90 | 180;
   // Its own title in place of the view's name (a Visualisation tab's chart, named with its tab,
   // docs/specs/026-plan/plan-tabs.md "Names"); absent is the view's name.
   title?: string;

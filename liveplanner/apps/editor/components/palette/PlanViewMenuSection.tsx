@@ -18,6 +18,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { InfoNote, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 import { planViewSettingsModel, viewTypesNote } from '@/components/plan/views/plan-view-settings';
 import { ViewDateOptions, ViewMeasureOptions } from '@/components/plan/views/ViewFieldSettings';
+import { FlowRangeOptions } from '@/components/plan/views/FlowRangeOptions';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
@@ -37,6 +38,15 @@ export function PlanViewMenuSection({
   const m = planViewSettingsModel(plan, element.id, element.planView);
   return (
     <MenuFlyoutSection title="View" icon={<PlanIcon size={16} />} {...flyoutProps}>
+      {m.flow ? (
+        <MenuAccordionSection
+          title="Range"
+          icon={<PlanTypeGlyph glyph="calendar" size={16} />}
+          {...sectionProps('plan-view-range')}
+        >
+          <FlowRangeOptions selected={m.range} onPick={m.setRange} />
+        </MenuAccordionSection>
+      ) : null}
       <MenuAccordionSection
         title="Card Types"
         icon={<PlanIcon size={16} />}
