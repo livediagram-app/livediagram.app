@@ -10,7 +10,6 @@ import {
   throughputOf,
   weekStartOf,
   type FlowCard,
-  type FlowMove,
 } from './flow-metrics';
 import { FLOW_DAYS_MAX } from './flow-counts';
 import { DAY_MS } from './plan-view-dates';
@@ -31,18 +30,39 @@ const phases = new Map<string, StatusPhase>([
 // Flow day 20,000 is a Friday; times are at hours into a day.
 const D = 20_000;
 const at = (day: number, hours = 0) => day * DAY_MS + hours * 3_600_000;
-const mv = (itemId: string, when: number, from: string | null, to: string | null): FlowMove => ({
+type Move = { itemId: string; step: FlowCard['moves'][number] };
+const mv = (itemId: string, when: number, from: string | null, to: string | null): Move => ({
   itemId,
-  at: when,
-  from,
-  to,
+  step: [when, from, to],
 });
 const card = (id: string, createdAt = at(D - 30), type = 'task', since = createdAt): FlowCard => ({
   id,
   type,
   createdAt,
   since,
+  moves: [],
 });
+// The cards with their moves, as the flow read sends them: each card's own, oldest first.
+const cycle = (
+  moves: readonly Move[],
+  cards: readonly FlowCard[],
+  fromDay: number,
+  toDay: number,
+  types?: ReadonlySet<string>,
+) =>
+  cycleTimesOf(
+    cards.map((c) => ({
+      ...c,
+      moves: moves
+        .filter((m) => m.itemId === c.id)
+        .map((m) => m.step)
+        .sort((a, b) => a[0] - b[0]),
+    })),
+    phases,
+    fromDay,
+    toDay,
+    types,
+  );
 
 describe('flow constants', () => {
   it('offers the ranges the spec names, never past the kept days', () => {
@@ -67,14 +87,13 @@ describe('percentileOf', () => {
 
 describe('cycleTimesOf', () => {
   it('measures from the first In Progress move to the finish, to one decimal', () => {
-    const out = cycleTimesOf(
+    const out = cycle(
       [
         mv('a', at(D - 5), 'todo', 'doing'),
         mv('a', at(D - 3, 12), 'doing', 'review'),
         mv('a', at(D - 2, 9), 'review', 'done'),
       ],
       [card('a')],
-      phases,
       D - 10,
       D,
     );
@@ -83,10 +102,9 @@ describe('cycleTimesOf', () => {
   });
 
   it('starts a card that never went In Progress when it was made, or at its oldest kept entry when later', () => {
-    const out = cycleTimesOf(
+    const out = cycle(
       [mv('made', at(D - 1), 'todo', 'done'), mv('old', at(D - 1), 'todo', 'done')],
       [card('made', at(D - 3)), card('old', at(D - 400), 'task', at(D - 2))],
-      phases,
       D - 10,
       D,
     );
@@ -97,7 +115,7 @@ describe('cycleTimesOf', () => {
   });
 
   it('counts each card once, at its last finish in the range, from the first start before it', () => {
-    const out = cycleTimesOf(
+    const out = cycle(
       [
         mv('a', at(D - 9), 'todo', 'doing'),
         mv('a', at(D - 8), 'doing', 'done'),
@@ -105,7 +123,6 @@ describe('cycleTimesOf', () => {
         mv('a', at(D - 4), 'doing', 'done'),
       ],
       [card('a')],
-      phases,
       D - 10,
       D,
     );
@@ -113,7 +130,7 @@ describe('cycleTimesOf', () => {
   });
 
   it('finishes nothing again on a move between two Done statuses, or on a move out of Done', () => {
-    const out = cycleTimesOf(
+    const out = cycle(
       [
         mv('a', at(D - 5), 'todo', 'doing'),
         mv('a', at(D - 4), 'doing', 'done'),
@@ -121,7 +138,6 @@ describe('cycleTimesOf', () => {
         mv('b', at(D - 2), 'done', 'todo'),
       ],
       [card('a'), card('b')],
-      phases,
       D - 10,
       D,
     );
@@ -129,7 +145,7 @@ describe('cycleTimesOf', () => {
   });
 
   it('leaves out finishes outside the range, other types, unknown cards and statuses no board names', () => {
-    const out = cycleTimesOf(
+    const out = cycle(
       [
         mv('early', at(D - 20), 'todo', 'done'),
         mv('late', at(D + 1), 'todo', 'done'),
@@ -139,7 +155,6 @@ describe('cycleTimesOf', () => {
         mv('none', at(D - 1), 'done', null),
       ],
       [card('early'), card('late'), card('bug', at(D - 2), 'bug'), card('odd'), card('none')],
-      phases,
       D - 10,
       D,
       new Set(['task']),
@@ -147,53 +162,36 @@ describe('cycleTimesOf', () => {
     expect(out).toEqual({ cards: [], p50: null, p85: null });
   });
 
-  it('reads moves in any order and never answers a negative time', () => {
-    const out = cycleTimesOf(
-      [mv('a', at(D - 1), 'doing', 'done'), mv('a', at(D - 3), 'todo', 'doing')],
-      [card('a'), card('b', at(D))],
-      phases,
-      D - 10,
-      D,
-    );
-    expect(out.cards[0]!.days).toBe(2);
-    const future = cycleTimesOf(
-      [mv('b', at(D - 1), 'todo', 'done')],
-      [card('b', at(D))],
-      phases,
-      D - 10,
-      D,
-    );
+  it('never answers a negative time', () => {
+    const future = cycle([mv('b', at(D - 1), 'todo', 'done')], [card('b', at(D))], D - 10, D);
     expect(future.cards[0]!.days).toBe(0);
   });
 
   it('orders the cards by finish and takes the percentiles over them', () => {
-    const moves: FlowMove[] = [];
+    const moves: Move[] = [];
     const cards: FlowCard[] = [];
     for (let i = 0; i < 10; i++) {
       cards.push(card(`c${i}`, at(D - 20)));
       moves.push(mv(`c${i}`, at(D - 20 + i), 'todo', 'doing'));
       moves.push(mv(`c${i}`, at(D - 20 + i + i + 1), 'doing', 'done'));
     }
-    const out = cycleTimesOf(moves, cards, phases, D - 30, D);
+    const out = cycle(moves, cards, D - 30, D);
     expect(out.cards.map((c) => c.days)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect(out).toMatchObject({ p50: 5, p85: 9 });
   });
 
   it('reads 2,000 cards with 180 days of moves within budget', () => {
-    const moves: FlowMove[] = [];
     const cards: FlowCard[] = [];
     const statuses = ['todo', 'doing', 'review', 'done'];
     for (let c = 0; c < 2000; c++) {
-      cards.push(card(`c${c}`, at(D - 180)));
+      const made = card(`c${c}`, at(D - 180));
       for (let m = 0; m < 12; m++)
-        moves.push(
-          mv(`c${c}`, at(D - 180 + m * 15, c % 24), statuses[m % 4]!, statuses[(m + 1) % 4]!),
-        );
+        made.moves.push([at(D - 180 + m * 15, c % 24), statuses[m % 4]!, statuses[(m + 1) % 4]!]);
+      cards.push(made);
     }
-    moves.sort((a, b) => a.at - b.at);
     let answered = 0;
     const ms = cpuMsOf(() => {
-      answered = cycleTimesOf(moves, cards, phases, D - FLOW_DAYS_MAX + 1, D).cards.length;
+      answered = cycleTimesOf(cards, phases, D - FLOW_DAYS_MAX + 1, D).cards.length;
     });
     expect(answered).toBe(2000);
     expect(ms).toBeLessThan(cpuBudgetMs(100));

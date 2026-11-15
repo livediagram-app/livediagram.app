@@ -13,10 +13,18 @@ export const FLOW_RANGE_DEFAULT = 30;
 // A range this short or shorter reads Throughput per day, a longer one per week.
 export const FLOW_DAILY_MAX = 14;
 
-// One move from a card's history: at `at`, the card went from status `from` to status `to` (null for none).
-export type FlowMove = { itemId: string; at: number; from: string | null; to: string | null };
-// A card that moved in the range: its type, when it was made, and its oldest kept history entry.
-export type FlowCard = { id: string; type: string; createdAt: number; since: number };
+// One move from a card's history, as the flow read sends it (compact: a plan's moves run to tens of thousands): at
+// `at`, the card went from status `from` to status `to` (null for none).
+export type FlowStep = [at: number, from: string | null, to: string | null];
+// A card that moved in the range: its type, when it was made, its oldest kept history entry, and its moves over the
+// history the plan keeps, oldest first.
+export type FlowCard = {
+  id: string;
+  type: string;
+  createdAt: number;
+  since: number;
+  moves: FlowStep[];
+};
 // A card finished in the range: when (`at`, and its flow day), and the days it took, to one decimal.
 export type CycleTime = { itemId: string; at: number; day: number; days: number };
 export type CycleTimes = { cards: CycleTime[]; p50: number | null; p85: number | null };
@@ -43,49 +51,39 @@ export function percentileOf(sorted: readonly number[], p: number): number | nul
 // The cards of `types` (every type when absent) that finished between flow days `fromDay` and `toDay`, each once at
 // its last finish in the range, with the days from its start. A finish is a move into a Done phase status from one
 // outside it; the start is the first move into an In Progress status before that finish, else when the card was made,
-// or its oldest kept entry when that is later (its history no longer reaches back to its making). Linear in the moves,
-// plus the sort of the answer.
+// or its oldest kept entry when that is later (its history no longer reaches back to its making). Each card's moves
+// are read oldest first, as the flow read sends them. Linear in the moves, plus the sort of the answer.
 export function cycleTimesOf(
-  moves: readonly FlowMove[],
   cards: readonly FlowCard[],
   phases: ReadonlyMap<string, StatusPhase>,
   fromDay: number,
   toDay: number,
   types?: ReadonlySet<string>,
 ): CycleTimes {
-  const byId = new Map<string, FlowCard>();
-  for (const card of cards) if (!types || types.has(card.type)) byId.set(card.id, card);
   const phaseOf = (status: string | null) => (status === null ? undefined : phases.get(status));
-  // Per card, in time order: the first start seen and the last finish in the range with the start before it.
-  const state = new Map<
-    string,
-    { started: number | null; finish: number | null; start: number | null }
-  >();
-  const ordered = moves.every((m, i) => i === 0 || moves[i - 1]!.at <= m.at)
-    ? moves
-    : [...moves].sort((a, b) => a.at - b.at);
-  for (const move of ordered) {
-    if (!byId.has(move.itemId)) continue;
-    let s = state.get(move.itemId);
-    if (!s) state.set(move.itemId, (s = { started: null, finish: null, start: null }));
-    const to = phaseOf(move.to);
-    if (to === 'doing' && s.started === null) s.started = move.at;
-    if (to !== 'done' || phaseOf(move.from) === 'done') continue;
-    const day = flowDayOf(move.at);
-    if (day < fromDay || day > toDay) continue;
-    s.finish = move.at;
-    s.start = s.started;
-  }
   const out: CycleTime[] = [];
-  for (const [itemId, s] of state) {
-    if (s.finish === null) continue;
-    const card = byId.get(itemId)!;
-    const start = s.start ?? Math.max(card.createdAt, card.since);
+  for (const card of cards) {
+    if (types && !types.has(card.type)) continue;
+    // The first start seen, and the last finish in the range with the first start before it.
+    let started: number | null = null;
+    let finish: number | null = null;
+    let start: number | null = null;
+    for (const [at, from, to] of card.moves) {
+      const phase = phaseOf(to);
+      if (phase === 'doing' && started === null) started = at;
+      if (phase !== 'done' || phaseOf(from) === 'done') continue;
+      const day = flowDayOf(at);
+      if (day < fromDay || day > toDay) continue;
+      finish = at;
+      start = started;
+    }
+    if (finish === null) continue;
+    const from = start ?? Math.max(card.createdAt, card.since);
     out.push({
-      itemId,
-      at: s.finish,
-      day: flowDayOf(s.finish),
-      days: Math.max(0, oneDecimal((s.finish - start) / DAY_MS)),
+      itemId: card.id,
+      at: finish,
+      day: flowDayOf(finish),
+      days: Math.max(0, oneDecimal((finish - from) / DAY_MS)),
     });
   }
   out.sort((a, b) => a.at - b.at || (a.itemId < b.itemId ? -1 : 1));

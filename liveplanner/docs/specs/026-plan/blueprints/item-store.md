@@ -797,9 +797,11 @@ type FlowResponse = {
   fromDay: number; // flow day of the range's first day
   toDay: number; // today, as a flow day
   counts: FlowCountRow[]; // readFlowCounts(fromDay, toDay), the asked types only
-  cards: FlowCard[]; // each card that moved in the range, of the asked types
-  moves: FlowMove[]; // those cards' moves over their kept history, oldest first
+  cards: FlowCard[]; // each card that moved in the range, of the asked types, with its kept moves
 };
+// FlowCard = { id, type, createdAt, since, moves: FlowStep[] }; FlowStep = [at, from, to], oldest first. A tuple,
+// grouped by card: a 2,000-card plan's 24,000 moves as { itemId, at, from, to } objects measured 1.9 MB, as tuples
+// 1.06 MB (94 KB gzipped).
 ```
 
 - Gate: `itemCaller(ctx, id, 'read')` (Editor, Participant, Viewer, an agent's token). A tab-scoped caller whose tab
@@ -816,8 +818,12 @@ instr(h.changes, '"kind":"moved"') > 0 AND j.value ->> '$.kind' = 'moved' ORDER 
 - The cards that moved on or after `fromDay * DAY_MS`; `readFlowCards(env, id, ids, kept)`: `SELECT id, type,
 created_at, (SELECT MIN(at) FROM item_history h WHERE h.plan_id = i.plan_id AND h.item_id = i.id AND h.at >= ?)
 FROM items i WHERE plan_id = ? AND id IN (SELECT value FROM json_each(?))` (the ids as one JSON parameter). Cards
-  outside `types` drop, then their moves.
+  outside `types` drop; each kept card takes its moves as `[at, from, to]` steps, in the moves' order.
 - Logs `[items] flow.read { projectId, days, counts, cards, moves }`. Nothing is written.
+- Cost (measured on node:sqlite, `flow-route.test.ts` holds the budget): a 2,000-card plan with 180 days of history
+  (50,000 entries, 24,000 of them moves) and 12 count pairs a day answers the 180-day range in 135 to 150 ms of CPU,
+  1.06 MB (94 KB gzipped). The moves read is linear in the kept entries; the cards read one seek per moved card.
+  `cycleTimesOf` over the same 2,000 cards takes under 10 ms (`flow-metrics.test.ts`).
 
 ### Parts still to build (Work Tracker 854)
 

@@ -236,14 +236,16 @@ Derived from spec "Flow charts"; built in parts (Work Tracker 854). Part 1 shipp
 
 - Part 2 (data read, shipped): `packages/items/src/flow-metrics.ts` and the read route ([item-store blueprint](item-store.md#flow-read)).
   - `FLOW_RANGES` = `[14, 30, 90, 180]`, `FLOW_RANGE_DEFAULT` = 30, `FLOW_DAILY_MAX` = 14 (a range this short or
-    shorter reads per day); `FlowMove = { itemId, at, from, to }` (statuses, null for none), `FlowCard = { id, type,
-createdAt, since }` (`since`: its oldest kept history entry), `CycleTime = { itemId, at, day, days }`.
-  - `cycleTimesOf(moves, cards, phases, fromDay, toDay, types?)`: moves grouped by card in time order; a card's
+    shorter reads per day); `FlowStep = [at, from, to]` (statuses, null for none), `FlowCard = { id, type,
+createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; `moves` oldest first),
+    `CycleTime = { itemId, at, day, days }`.
+  - `cycleTimesOf(cards, phases, fromDay, toDay, types?)`: each card's moves in order; a card's
     finish is its last move into a `done` status from one outside `done`, with `flowDayOf(at)` in the range; its
     start the first move into a `doing` status before that finish, else `max(createdAt, since)`; `days` =
     `(finish - start) / DAY_MS` to one decimal, never below 0. A card missing from `cards`, or of a type outside
     `types`, is skipped. Answers `{ cards: CycleTime[] (by at), p50, p85 }`, the percentiles `percentileOf` (nearest
-    rank, D111) and null with no card. Linear in moves, plus n log n for the sort.
+    rank, D111) and null with no card. Linear in moves, plus n log n for the sort; 2,000 cards of 12 moves each
+    measure under 10 ms.
   - `throughputOf(finished, fromDay, toDay, period)`: a period per day or per Monday-started week
     (`weekStartOf(day)` = `day - (day + 3) mod 7`, day 0 a Thursday) from the one holding `fromDay` to the one holding
     `toDay`; each `{ start, cards, running, whole }`, `running` for the one holding `toDay` (today, not over yet), `whole` when it lies
