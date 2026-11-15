@@ -153,7 +153,7 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 ## Testing
 
 - `calendar/ics.test.ts`: escaping, folding (ASCII and multi-byte at the boundary), all-day DTEND, line endings.
-- `calendar/feed-token.test.ts`: shape and hash.
+- `apps/api/src/calendar/feed-token.test.ts`: shape and hash.
 - `calendar/feed-events.test.ts`: spans, start-only, archived/trash/done, board and mine options, the cap keeping the
   nearest, the description and url.
 - `calendar/feed-access.test.ts`: owner, team member, removed member, share-link-only person, guest, trashed plan,
