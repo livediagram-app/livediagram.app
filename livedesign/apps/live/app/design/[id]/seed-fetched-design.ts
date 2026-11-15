@@ -1,9 +1,13 @@
+import { setCommunityState } from '@/lib/community-state-store';
+import type {
+  LastSeenCopy,
+  LastSeenFirstTab,
+} from '@liveworkspace/workbench/lib/api/last-seen-copies';
+import { keptWarmTab } from '@liveworkspace/workbench/lib/warm-open';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import type { LastSeenFirstTab } from '@liveworkspace/workbench/lib/api/last-seen-copies';
 import type { Tab } from '@livedesign/design';
 import type { LiveDoc } from '@livedesign/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
-import { setCommunityState } from '@/lib/community-state-store';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 import { placeholdersFromSummaries } from './editor-page-helpers';
@@ -17,7 +21,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // name, the #t=<id> hash tab pick, and the shareable / team / owner
 // fields. The branches keep what genuinely differs — isOwner / session
 // role / share-code bookkeeping and the identity-prompt rules.
-export function makeSeedFetchedDesign(deps: {
+export type SeedDeps = {
   activeId: string;
   // Whether this editor's first-tab read is an open of the design, for the reader's Home
   // (docs/specs/013-workspace/explorer-home.md "Opens"): true in the editor, false in an embed.
@@ -38,15 +42,23 @@ export function makeSeedFetchedDesign(deps: {
   setDesignTeamId: SetState<string | null>;
   setLoadedExistingDesign: SetState<boolean>;
   setLoadedTabIds: SetState<Set<string>>;
-}) {
+  // The first tab the warm open painted (offline-mode.md "Warm open of a cloud design"), or null: read at the
+  // revision the fresh fetch answers, the painted tab is kept, so an unchanged canvas is not drawn again.
+  warmFirstTab?: () => LastSeenFirstTab<unknown> | null;
+};
+
+// The design as the editor shows it, from a load or from the last seen copy: the tabs (placeholders, the first one
+// filled), the name and deck, the tab the address pins, and the shareable, team and owner fields.
+function showDesign(
+  deps: SeedDeps,
+  fetched: LiveDoc,
+  tabs: Tab[],
+  firstId: string | null,
+  tabScope: string | null,
+) {
   const {
     activeId,
-    recordOpen,
     resetTabs,
-    lastSavedTabsRef,
-    lastSavedNameRef,
-    loadedTabIdsRef,
-    noteChangesetSeen,
     setActiveId,
     setDesignName,
     setDesignOwnerColor,
@@ -56,7 +68,51 @@ export function makeSeedFetchedDesign(deps: {
     setDesignShareCode,
     setDesignTeamId,
     setLoadedExistingDesign,
+  } = deps;
+  resetTabs(tabs);
+  setDesignName(fetched.name);
+  // Prefer the tab id pinned in the URL fragment (#t=<id>) when
+  // it points at a real loaded tab — round-trips the user back
+  // to whichever tab they last had open before a refresh.
+  {
+    const hashMatch = window.location.hash.match(/t=([^&]+)/);
+    const hashedId = hashMatch ? hashMatch[1] : null;
+    const pickFromHash =
+      hashedId && tabs.some((t) => t.id === hashedId) && !isTabOutOfScope(hashedId, tabScope);
+    setActiveId(pickFromHash ? hashedId : (firstId ?? activeId));
+  }
+  setLoadedExistingDesign(true);
+  setDesignShareable(fetched.shareable);
+  setCommunityState(fetched.id, fetched.communityState ?? null);
+  setDesignTeamId(fetched.teamId ?? null);
+  setDesignShareCode(fetched.shareCode);
+  setDesignOwnerId(fetched.ownerId);
+  setDesignOwnerName(fetched.ownerName ?? null);
+  setDesignOwnerColor(fetched.ownerColor ?? null);
+}
+
+/** The warm open's paint (offline-mode.md "Warm open of a cloud design"): the last seen copy shown as the seed shows
+ *  a load, its first tab from the copy. Nothing is fetched, saved, marked loaded or counted: the load that catches up
+ *  does all of that. */
+export function makePaintLastSeen(deps: SeedDeps) {
+  return (copy: LastSeenCopy<LiveDoc, unknown>) => {
+    const tabs = placeholdersFromSummaries(copy.item.tabs);
+    const firstId = firstTabToLoad(copy.item.tabs, copy.access.tabScope);
+    const index = tabs.findIndex((t) => t.id === firstId);
+    if (copy.firstTab && index >= 0) tabs[index] = copy.firstTab.tab as Tab;
+    showDesign(deps, copy.item, tabs, firstId, copy.access.tabScope);
+  };
+}
+
+export function makeSeedFetchedDesign(deps: SeedDeps) {
+  const {
+    recordOpen,
+    lastSavedTabsRef,
+    lastSavedNameRef,
+    loadedTabIdsRef,
+    noteChangesetSeen,
     setLoadedTabIds,
+    warmFirstTab,
   } = deps;
   // `tabShareCode` is the share code the per-tab fetch presents as
   // authorisation: the visitor's session code, or null for the owner.
@@ -82,7 +138,9 @@ export function makeSeedFetchedDesign(deps: {
       const loaded = await apiLoadTabRevisioned(selfId, fetched.id, firstId, tabShareCode, {
         open: recordOpen,
       }).catch(() => null);
-      const first = loaded?.tab ?? null;
+      const first = loaded
+        ? (keptWarmTab<Tab>(warmFirstTab?.(), firstId, loaded.rev) ?? loaded.tab)
+        : null;
       // Only mark the tab loaded when the eager fetch actually
       // returned content. If it failed (e.g. a transient 403 from
       // a request that raced ahead of the account token / session
@@ -102,7 +160,6 @@ export function makeSeedFetchedDesign(deps: {
         track('Tab', 'Loaded');
       }
     }
-    resetTabs(placeholderTabs);
     // Seed the autosave's "last saved" mirror with the hydrated
     // state so the first save-cycle treats it as unchanged.
     // Otherwise the autosave would diff the EMPTY-elements
@@ -111,27 +168,7 @@ export function makeSeedFetchedDesign(deps: {
     // before the lazy-load could populate it.
     lastSavedTabsRef.current = placeholderTabs;
     lastSavedNameRef.current = fetched.name;
-    setDesignName(fetched.name);
-    // Prefer the tab id pinned in the URL fragment (#t=<id>) when
-    // it points at a real loaded tab — round-trips the user back
-    // to whichever tab they last had open before a refresh.
-    {
-      const hashMatch = window.location.hash.match(/t=([^&]+)/);
-      const hashedId = hashMatch ? hashMatch[1] : null;
-      const pickFromHash =
-        hashedId &&
-        placeholderTabs.some((t) => t.id === hashedId) &&
-        !isTabOutOfScope(hashedId, tabScope);
-      setActiveId(pickFromHash ? hashedId : (firstId ?? activeId));
-    }
-    setLoadedExistingDesign(true);
-    setDesignShareable(fetched.shareable);
-    setCommunityState(fetched.id, fetched.communityState ?? null);
-    setDesignTeamId(fetched.teamId ?? null);
-    setDesignShareCode(fetched.shareCode);
-    setDesignOwnerId(fetched.ownerId);
-    setDesignOwnerName(fetched.ownerName ?? null);
-    setDesignOwnerColor(fetched.ownerColor ?? null);
+    showDesign(deps, fetched, placeholderTabs, firstId, tabScope);
     // Telemetry (docs/specs/017-telemetry/telemetry.md): an existing design was opened — every open,
     // owner URL or share URL, the counterpart to Design/Created.
     track('Document', 'Loaded');

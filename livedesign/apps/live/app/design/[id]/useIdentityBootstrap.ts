@@ -12,9 +12,14 @@ import { isOfflineId } from '@/lib/offline/offline-store';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { resolveParticipant } from './resolve-participant';
 import type { Participant } from '@/lib/identity';
-import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
+import { ensureCollabKey, getGuestSelfId, hasConfirmedName } from '@/lib/local-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
-import { makeSeedFetchedDesign } from './seed-fetched-design';
+import { makePaintLastSeen, makeSeedFetchedDesign, type SeedDeps } from './seed-fetched-design';
+import { lastSeenCopies } from '@/lib/last-seen';
+import { readSignedInHint } from '@/lib/signed-in-hint';
+import type { LiveDoc } from '@livedesign/api-schema';
+import type { LastSeenCopy } from '@liveworkspace/workbench/lib/api/last-seen-copies';
+import { measureAfterPaint, readWarmCopy } from '@liveworkspace/workbench/lib/warm-open';
 
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
@@ -80,6 +85,32 @@ export function useIdentityBootstrap(opts: {
   // The bootstrap runs once auth has settled (and again on a password retry), reading everything else as
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
   const runRef = useRef(0);
+  const warmRef = useRef<LastSeenCopy<LiveDoc, unknown> | null>(null);
+  // What the seed and the warm paint show the design through (seed-fetched-design.ts), with the run's setters.
+  const seedDeps = (
+    s: BootstrapSet,
+    resetTabs: Dispatch<SetStateAction<Tab[]>>,
+    recordOpen: boolean,
+  ): SeedDeps => ({
+    activeId,
+    recordOpen,
+    resetTabs,
+    lastSavedTabsRef,
+    lastSavedNameRef,
+    loadedTabIdsRef,
+    noteChangesetSeen,
+    setActiveId: s.setActiveId,
+    setDesignName: s.setDesignName,
+    setDesignOwnerColor: s.setDesignOwnerColor,
+    setDesignOwnerId: s.setDesignOwnerId,
+    setDesignOwnerName: s.setDesignOwnerName,
+    setDesignShareable: s.setDesignShareable,
+    setDesignShareCode: s.setDesignShareCode,
+    setDesignTeamId: s.setDesignTeamId,
+    setLoadedExistingDesign: s.setLoadedExistingDesign,
+    setLoadedTabIds: s.setLoadedTabIds,
+    warmFirstTab: () => warmRef.current?.firstTab ?? null,
+  });
   // `early`: a design in This Browser opening before auth has settled (docs/specs/006-design/offline-mode.md
   // "Instant open"). It has no owner on the server to wait for, so it loads under the placeholder
   // participant and settleEarlyIdentity resolves who is reading once auth answers.
@@ -98,23 +129,13 @@ export function useIdentityBootstrap(opts: {
     const resetTabs = guardRun({ resetTabs: opts.resetTabs }, live).resetTabs;
     const guarded = guardRun(set, live);
     const {
-      setActiveId,
       setDesignId,
-      setDesignName,
       setDesignNotFound,
       setLoadError,
       setDesignTrashed,
-      setDesignOwnerColor,
-      setDesignOwnerId,
-      setDesignOwnerName,
-      setDesignShareable,
-      setDesignShareCode,
-      setDesignTeamId,
       setDesignServerStored,
       setHydrated,
       setIsOwner,
-      setLoadedExistingDesign,
-      setLoadedTabIds,
       setLoadingDesign,
       setNameConfirmed,
       setSelfParticipant,
@@ -126,26 +147,10 @@ export function useIdentityBootstrap(opts: {
 
     // The tab-seeding + owner-field body both arrival branches share —
     // see seed-fetched-design.ts.
-    const seedOnce = makeSeedFetchedDesign({
-      activeId,
-      // An embed's or a workbench's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
-      recordOpen: !embed && workbench === null,
-      resetTabs,
-      lastSavedTabsRef,
-      lastSavedNameRef,
-      loadedTabIdsRef,
-      noteChangesetSeen,
-      setActiveId,
-      setDesignName,
-      setDesignOwnerColor,
-      setDesignOwnerId,
-      setDesignOwnerName,
-      setDesignShareable,
-      setDesignShareCode,
-      setDesignTeamId,
-      setLoadedExistingDesign,
-      setLoadedTabIds,
-    });
+    // An embed's or a workbench's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
+    const seedOnce = makeSeedFetchedDesign(
+      seedDeps(guarded, resetTabs, !embed && workbench === null),
+    );
     // The seed writes refs too (the saved tabs, the loaded ids): a superseded run never starts one.
     const seedFetchedDesign: typeof seedOnce = async (...args) => {
       return live() ? seedOnce(...args) : null;
@@ -178,8 +183,11 @@ export function useIdentityBootstrap(opts: {
             : null;
         try {
           await load();
-          if (live() && getLoadProgress().step === 'done') timing?.endAfterPaint();
-          else timing?.cancel();
+          if (live() && getLoadProgress().step === 'done') {
+            timing?.endAfterPaint();
+            // The warm open's catch-up landed: its own timing mark, from the same start.
+            if (warmRef.current) measureAfterPaint('warm-catch-up', designLoadOrigin());
+          } else timing?.cancel();
         } catch (err) {
           timing?.cancel();
           // Anything the load throws outside its handled branches ends on the load-error screen, never
@@ -290,6 +298,12 @@ export function useIdentityBootstrap(opts: {
         // immediately echo the same name/color back via PUT.
         lastPersistedSelfRef.current = { name: self.name, color: self.color };
       }
+      // The warm open painted someone else's copy (a signed-in hint that outlived its session): it leaves the screen
+      // at once, and the load opens the design for whoever is reading.
+      if (warmRef.current && warmRef.current.reader !== self.id) {
+        warmRef.current = null;
+        setLoadingDesign(true);
+      }
 
       // An address that names no design and carries no share link (docs/specs/007-editor/new-design-route.md
       // "Unknown addresses"): the not-found card over the Explorer. It used to send the reader to /new, so a
@@ -322,20 +336,45 @@ export function useIdentityBootstrap(opts: {
     };
     run(watchdog, load);
   });
+  // The warm paint: the copy shown read-only (as a Viewer, whatever role it was kept with) under the placeholder
+  // participant. Nothing is saved and the room waits: both need `hydrated`, which only the catch-up sets.
+  const paintWarm = useEffectEvent((copy: LastSeenCopy<LiveDoc, unknown>, origin?: number) => {
+    debugLog('[load] warm open from the last seen copy');
+    warmRef.current = copy;
+    const s = opts.set;
+    makePaintLastSeen(seedDeps(s, opts.resetTabs, false))(copy);
+    s.setIsOwner(copy.access.isOwner);
+    s.setSessionTabScope(copy.access.tabScope);
+    s.setSessionRole('view');
+    s.setLoadingDesign(false);
+    measureAfterPaint('warm-paint', origin);
+  });
   // Instant open (docs/specs/006-design/offline-mode.md): before auth settles, a path naming a design in
-  // This Browser opens straight from this browser. Share links, embeds and workbenches always wait.
+  // This Browser opens straight from this browser. Share links, embeds and workbenches always wait. A cloud design
+  // this browser opened before warm-opens from its last seen copy instead ("Warm open of a cloud design").
   const earlyOpen = useRef(false);
   const tryEarlyOpen = useEffectEvent(async () => {
     if (authLoaded || hydrated || embed || workbench) return;
     const url = new URL(window.location.href);
     const { id } = designIdFromPath(url.pathname);
-    if (!id || url.searchParams.has('s')) return;
-    if (!(await isOfflineId(id))) return;
-    // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
-    if (runRef.current !== 0) return;
-    earlyOpen.current = true;
-    debugLog('[load] early open of a design in This Browser');
-    bootstrap(true);
+    const shareCode = url.searchParams.get('s');
+    if (id && !shareCode && (await isOfflineId(id))) {
+      // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
+      if (runRef.current !== 0) return;
+      earlyOpen.current = true;
+      debugLog('[load] early open of a design in This Browser');
+      bootstrap(true);
+      return;
+    }
+    const origin = designLoadOrigin();
+    const copy = await readWarmCopy(
+      lastSeenCopies,
+      { itemId: id, shareCode, hash: url.hash },
+      { signedIn: readSignedInHint(), guestId: getGuestSelfId() },
+    );
+    // Too late: the ordinary load has started, and paints what it fetches.
+    if (!copy || runRef.current !== 0) return;
+    paintWarm(copy, origin);
   });
   // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,
   // all in the background of a design already on screen.
@@ -350,7 +389,8 @@ export function useIdentityBootstrap(opts: {
     })().catch((err: unknown) => console.warn('[load] resolving the reader failed', err));
   });
   useLayoutEffect(() => {
-    void tryEarlyOpen();
+    // An open that cannot start early (no local index, no copy store) waits for auth as it always did.
+    tryEarlyOpen().catch((err: unknown) => debugLog('[load] no early open', err));
   }, []);
   useLayoutEffect(() => {
     if (earlyOpen.current) {
