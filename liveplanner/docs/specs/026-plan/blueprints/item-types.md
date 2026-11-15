@@ -18,6 +18,7 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 | default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                                                                                               |
 | base type         | an `ItemTypeDef` another names in `inherits`; `inheritingTypesOf(baseId, types)`, `basesFor(typeId, types)` (`type-inheritance.ts`)                                                                                                                                                                                                         |
 | inherited type    | an `ItemTypeDef` with `inherits` (its base id) and `ownFields`; `baseOf`, `inheritedFieldIds`, `withInheritance`, `inheritFrom`, `detachType` (`type-inheritance.ts`)                                                                                                                                                                       |
+| card template     | `CardTemplate` `{ id, name, fields }` (`card-templates.ts`) on `ItemTypeDef.templates?`; `readCardTemplates`, `cardTemplateFields`, `newCardTemplateId`, `cardTemplatesBytes`                                                                                                                                                               |
 
 ## Package `@liveplanner/items`
 
@@ -59,6 +60,16 @@ src/hidden-values.ts   hiddenValuesOf(item, type, types): HiddenGroup[] ({ type:
                        Calculated, Comments, Votes or Time Spent field's
 src/newer-fields.ts    isNewerField(field), readNewerField(input, id, label), NEWER_FIELD_MAX_BYTES (spec "Fields
                        from a newer version")
+src/card-templates.ts  CardTemplate, CARD_TEMPLATES_MAX (10), CARD_TEMPLATE_NAME_MAX (32), CARD_TEMPLATE_ID_PATTERN
+                       (/^tp-[a-z0-9-]{1,29}$/), CARD_TEMPLATES_BYTES (131,072), readCardTemplates(input, type, at,
+                       mode) (the type's list read against its fields: a value for a field it no longer offers
+                       dropped; every value through validateFields' patch check; ids, names, the 16 KB a template;
+                       mode 'refuse' (the api) refuses a value a template never holds, 'keep' keeps it as stored),
+                       templateTakes(type, key) (title, description, checklist, labels and the type's custom fields,
+                       less Calculated, Time Spent, Comments, Votes, Card and Image; a Rich key with its field),
+                       cardTemplateFields(type, template) (the values a new card takes: only keys templateTakes
+                       allows, for fields the type offers now), newCardTemplateId(name, taken),
+                       cardTemplatesBytes(types) (spec "Card templates")
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
                        @liveplanner/project's agent element ids)
 ```
@@ -265,6 +276,10 @@ now), [id]).ids)` per landed file; "N images added" announced at the end. The ca
   `setProjectItemTypes(env, id, catalogue | null, expectedRev?)`, one guarded UPDATE raising `item_types_rev` and
   returning it, or null when `expectedRev` is given and no longer stored; `copyProject` copies the column. Never in
   a meta upsert's UPDATE.
+- Card templates ride inside `plan.item_types` with their type: no column, table or migration of their own, so every
+  path that carries the column (copy, Duplicate, sync, the Drive envelope, a tab's JSON export) carries them. A
+  Community copy (`exportPlanCopy` with `community`) writes the column through `redactCatalogueForCommunity`
+  (`community-redact.ts`), which drops every person from the templates' values.
 - Offline: `OfflineProjectRecord.itemTypes?`; `offlineSaveItemTypes(id, catalogue, now)`; `recordToProject`
   reads it back. Duplicate (both paths), Sync to Cloud, Take Offline and the Drive envelope
   (`ProjectEnvelope.project.itemTypes?`, still version 1) carry it.
@@ -1242,31 +1257,40 @@ cards, children)` adds "{names} will keep a copy of its settings."
 
 ## Errors and edge cases
 
-| Case                                   | Handling                                                                                         |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Stored catalogue unreadable            | Built-ins (`readItemTypeCatalogue` null)                                                         |
-| Item of a type the catalogue lacks     | Drawn as `FALLBACK_ITEM_TYPE` "Item"; card tile makes a Task                                     |
-| Custom value of the wrong kind         | Shown empty; replaced by the next edit                                                           |
-| Field of a kind this build lacks       | Kept as stored, read-only (`isNewerField`); the api refuses it on a write                        |
-| Field taken off a type                 | Values kept in `fields`; shown again if it returns                                               |
-| Deleting the last type                 | Not offered (`canDelete`); `deleteType` refuses                                                  |
-| Save fails                             | That change dropped (later ones kept), toast                                                     |
-| Another change landed first (409)      | Change made again to the stored catalogue, sent again (3×)                                       |
-| 409 naming a lower revision (synced)   | Taken as stored anyway (`keepStored(next, true)`): the server's count restarted after Sync Plan  |
-| Hidden value of a deleted field/type   | Listed under Removed Fields as plain text; Remove only                                           |
-| Hidden value no field can take         | Copy To Field's menu says so; nothing written                                                    |
-| Blocks turned on over links that loop  | Cards never rewritten; both show blocked; a write adding to the loop is refused, removing is not |
-| A blocker trashed, archived or missing | Ignored by the badge, the Blocked By list and the arrows; kept on the card                       |
-| Two writes race to close a loop        | Each passes its own read; the loop shows (both blocked) until a link is removed                  |
+| Case                                   | Handling                                                                                          |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Stored catalogue unreadable            | Built-ins (`readItemTypeCatalogue` null)                                                          |
+| Item of a type the catalogue lacks     | Drawn as `FALLBACK_ITEM_TYPE` "Item"; card tile makes a Task                                      |
+| Custom value of the wrong kind         | Shown empty; replaced by the next edit                                                            |
+| Field of a kind this build lacks       | Kept as stored, read-only (`isNewerField`); the api refuses it on a write                         |
+| Field taken off a type                 | Values kept in `fields`; shown again if it returns                                                |
+| Deleting the last type                 | Not offered (`canDelete`); `deleteType` refuses                                                   |
+| Save fails                             | That change dropped (later ones kept), toast                                                      |
+| Another change landed first (409)      | Change made again to the stored catalogue, sent again (3×)                                        |
+| 409 naming a lower revision (synced)   | Taken as stored anyway (`keepStored(next, true)`): the server's count restarted after Sync Plan   |
+| Hidden value of a deleted field/type   | Listed under Removed Fields as plain text; Remove only                                            |
+| Hidden value no field can take         | Copy To Field's menu says so; nothing written                                                     |
+| Blocks turned on over links that loop  | Cards never rewritten; both show blocked; a write adding to the loop is refused, removing is not  |
+| A blocker trashed, archived or missing | Ignored by the badge, the Blocked By list and the arrows; kept on the card                        |
+| Two writes race to close a loop        | Each passes its own read; the loop shows (both blocked) until a link is removed                   |
+| Template value for a field taken off   | Dropped on the next read (`readCardTemplates`), the rest of the template kept                     |
+| Template value a template never holds  | Api write refused (`types[i].templates[j].fields`); a reader keeps it, `cardTemplateFields` skips |
+| Templates past their budget            | `types[i].templates` (over 10), `types[i].templates[j]` (over 16 KB), `templates` (over 128 KB)   |
+| Template id or name clash in a type    | Refused, `types[i].templates[j].id` / `.name`                                                     |
 
 ## Security and trust
 
 - Only whole-project editors write the catalogue; it holds names and colours, no content, so tab-scoped
-  sessions hear it. The api validates every write; the editor validates before saving (same function).
+  sessions hear it. Card templates are the type's settings, written by those same editors, not cards: they ride
+  with it to every session that hears it. A Community copy drops the people they name. The api validates every write; the editor validates before saving (same function).
 
 ## Performance and limits
 
 - 32 types × 24 fields × 12 custom fields fits `ITEM_TYPES_BYTES` (32 KB); the op carries the catalogue whole.
+- Card templates are budgeted apart: at most `CARD_TEMPLATES_BYTES` (128 KB) across the catalogue, so a stored
+  catalogue is at most 160 KB, and a catalogue without templates costs what it did (one extra pass over its types,
+  no extra encode). The check encodes each type's templates once. Measured in `card-templates.test.ts`: 50
+  validations of a catalogue holding the full 128 KB of templates inside a CPU budget.
 - Blocked By: `blockingIndexOf` is one pass over the cards and their links (at most `ITEMS_MAX` cards × 20 links a
   field), made once per items change (`planBlocking`, the SVG render once per board); a card face reads a Map. The loop
   check walks each new edge's upstream once (cards plus links), so a write of k new links costs k walks; it runs only
@@ -1404,29 +1428,35 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Tab icons: defaults, stored only when chosen, unknown read as default, inherited, agents list                    | `packages/items/src/tab-glyphs.test.ts`, `packages/items/src/type-change-face.test.ts`, `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                                                                                                                                       |
 | Tab icons: panel tabs, Details heading, picker, Reset To Default, read-only inherited                            | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                  |
 | Newer keys: kept through read, inheritance and the editor's save, dropped on the api's writes, capped            | `packages/items/src/tab-glyphs.test.ts`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                                |
+| Card templates: read, ids, names, values checked, dropped and kept, budgets, inherited, duplicated, start values | `packages/items/src/card-templates.test.ts`                                                                                                                                                                                                                                                                                                        |
+| Card templates through the api: stored, Editor only (Participant, Viewer, tab link refused), copy, Drive file    | `apps/api/src/routes/item-types-templates.test.ts`                                                                                                                                                                                                                                                                                                 |
+| Card templates: kept through the type editor's save, a tab import's added types                                  | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`, `apps/editor/lib/import-tab.test.ts`                                                                                                                                                                                                                                                   |
 | Stored-shape guard: a new type, tab or field key bumps `PROJECT_FORMAT`                                          | `packages/api-schema/src/project-format.test.ts` (and the typecheck on `packages/items/src/stored-keys.ts`)                                                                                                                                                                                                                                        |
 | Sync Plan in place: the server's revision adopted, first save lands                                              | `apps/editor/hooks/plan/useItemTypes.test.ts`, `apps/editor/app/project/[id]/useSyncInPlace.test.ts`                                                                                                                                                                                                                                               |
 | Panel, editor, card face, palette in a browser                                                                   | checked by hand against the dev stack (screenshots)                                                                                                                                                                                                                                                                                                |
 
 ## Constants and configuration
 
-| Constant                                               | Value  | Why                                                                            |
-| ------------------------------------------------------ | ------ | ------------------------------------------------------------------------------ |
-| `ITEM_TYPES_MAX`                                       | 32     | Spec "An item type"                                                            |
-| `ITEM_TYPE_FIELDS_MAX`                                 | 24     | Spec                                                                           |
-| `ITEM_TYPE_CUSTOM_MAX`                                 | 12     | Spec                                                                           |
-| `ITEM_TYPE_LABEL_MAX`                                  | 32     | Spec                                                                           |
-| `CUSTOM_CHOICE_OPTIONS_MAX`                            | 20     | Spec                                                                           |
-| `CUSTOM_CHOICE_OPTION_MAX`                             | 100    | Spec "Custom field kinds" (was D11)                                            |
-| `ITEM_TYPES_BYTES`                                     | 32,768 | Spec "Limits and validation"                                                   |
-| `ITEM_TYPES_SAVE_ATTEMPTS`, `CARD_TYPES_SAVE_ATTEMPTS` | 3      | Spec "Storage and sync": a change made again a few times, then refused; 1 to 5 |
-| `ITEM_TYPE_STATUSES_MAX`                               | 128    | Spec "An item type": ten boards of twelve columns; keeps the catalogue small   |
-| `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Legacy types only: what an old type could leave out                            |
-| `PLAN_TYPE_COLOURS`                                    | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
-| `ADD_FIELD_POPOVER_PX`                                 | 384    | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
-| `CARD_AGE_WARN_DAYS`                                   | 7      | Spec "Card display": Age turns amber                                           |
-| `CARD_AGE_ALERT_DAYS`                                  | 14     | Spec "Card display": Age turns red, Stale Cards' `STALE_DAYS`                  |
-| `IMAGE_FIELD_PICTURES_MAX`                             | 20     | Spec "Image fields": `FIELD_VALUES_MAX`, as Holds Several and Attachments      |
+| Constant                                               | Value   | Why                                                                            |
+| ------------------------------------------------------ | ------- | ------------------------------------------------------------------------------ |
+| `ITEM_TYPES_MAX`                                       | 32      | Spec "An item type"                                                            |
+| `ITEM_TYPE_FIELDS_MAX`                                 | 24      | Spec                                                                           |
+| `ITEM_TYPE_CUSTOM_MAX`                                 | 12      | Spec                                                                           |
+| `ITEM_TYPE_LABEL_MAX`                                  | 32      | Spec                                                                           |
+| `CUSTOM_CHOICE_OPTIONS_MAX`                            | 20      | Spec                                                                           |
+| `CUSTOM_CHOICE_OPTION_MAX`                             | 100     | Spec "Custom field kinds" (was D11)                                            |
+| `ITEM_TYPES_BYTES`                                     | 32,768  | Spec "Limits and validation"                                                   |
+| `ITEM_TYPES_SAVE_ATTEMPTS`, `CARD_TYPES_SAVE_ATTEMPTS` | 3       | Spec "Storage and sync": a change made again a few times, then refused; 1 to 5 |
+| `ITEM_TYPE_STATUSES_MAX`                               | 128     | Spec "An item type": ten boards of twelve columns; keeps the catalogue small   |
+| `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64      | Legacy types only: what an old type could leave out                            |
+| `PLAN_TYPE_COLOURS`                                    | 12      | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
+| `ADD_FIELD_POPOVER_PX`                                 | 384     | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
+| `CARD_AGE_WARN_DAYS`                                   | 7       | Spec "Card display": Age turns amber                                           |
+| `CARD_AGE_ALERT_DAYS`                                  | 14      | Spec "Card display": Age turns red, Stale Cards' `STALE_DAYS`                  |
+| `IMAGE_FIELD_PICTURES_MAX`                             | 20      | Spec "Image fields": `FIELD_VALUES_MAX`, as Holds Several and Attachments      |
+| `CARD_TEMPLATES_MAX`                                   | 10      | Spec "Card templates"                                                          |
+| `CARD_TEMPLATE_NAME_MAX`                               | 32      | Spec "Card templates": as a type's name                                        |
+| `CARD_TEMPLATES_BYTES`                                 | 131,072 | Spec "Card templates": every template a catalogue holds, apart from its 32 KB  |
 
 ## Default and ready-made types
 

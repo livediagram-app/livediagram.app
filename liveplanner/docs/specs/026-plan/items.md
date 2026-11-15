@@ -238,6 +238,12 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   own catalogue predates it adds it in the type editor, like any built-in field.
 - A bug is a card of the Bug type a Sprint or Bug Triage board brings.
 - A project can change these and add its own, with custom fields: see [Item types](item-types.md).
+- A card type can hold **card templates** ([Card templates](item-types.md#card-templates)): named sets of starting
+  values (a title, the Description, the Checklist, the Labels and custom field values) that a new card of that type
+  can start from. A card started from one is an ordinary card: it takes the values the template holds for the fields
+  its type offers, and is made, numbered, placed and checked (its required fields too) exactly as any card is.
+  Unlike an [example card](#example-cards), which is a card a Plan template made, a card template is no card: it
+  never shows on a board, counts or is searched.
 
 ## Colour
 
@@ -952,7 +958,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 - Images, thumbnails and api or MCP renders draw boards and cards from the project's items. The Export dialog's
   preview draws them too, so it shows what the download holds.
 - **A tab's JSON export** (the `liveplanner.tab` file) carries the items the tab shows (`itemIdsShownOnTab`, the
-  Trash left out) as `items`, and the project's stored type catalogue as `itemTypes` when it has one. Each item
+  Trash left out) as `items`, and the project's stored type catalogue as `itemTypes` when it has one (its types'
+  [card templates](item-types.md#card-templates) with it). Each item
   keeps its id, type, key, fields and rank, without its votes or comments: the file travels, and those name people.
   Both fields are additive and absent when the tab shows no items, so the file keeps its schema version.
 - **Importing that file** into a tab adds its items to the project. Every item whose id the project does not
