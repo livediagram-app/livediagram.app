@@ -1,6 +1,6 @@
 // The canvas probe's gestures (canvas-probe.ts; each product's docs/specs/008-canvas/canvas-performance.md
-// "Measuring"): at one zoom, the still board's work from a trace, then every gesture run REPEATS times untraced,
-// read from the page, and once more traced for attribution, not counted.
+// "Measuring"): at one zoom, the still board's work from a trace, then every gesture run REPEATS times, each traced,
+// and once more traced for attribution, not counted.
 
 import { writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -127,6 +127,42 @@ async function moves(page: Page, from: Point, n: number, step: (i: number) => Po
   }
 }
 
+// A press at `from`, n moves with the button held, and a release where they ended, sent straight to Chrome's
+// input. Playwright's mouse checks each move made with the left button down for an HTML drag by running two
+// scripts in every frame of the page; on the GPU-less runner each took 35 to 120 ms of the main thread, which the
+// probe read as the board's work. Playwright's own idea of the mouse is left where it was, button up.
+async function pressedMoves(
+  cdp: CDPSession,
+  page: Page,
+  from: Point,
+  n: number,
+  step: (i: number) => Point,
+) {
+  const send = (
+    type: 'mousePressed' | 'mouseMoved' | 'mouseReleased',
+    at: Point,
+    buttons: number,
+  ) =>
+    cdp.send('Input.dispatchMouseEvent', {
+      type,
+      x: at.x,
+      y: at.y,
+      button: 'left',
+      buttons,
+      clickCount: type === 'mouseMoved' ? 0 : 1,
+    });
+  await page.mouse.move(from.x, from.y);
+  await send('mousePressed', from, 1);
+  let at = from;
+  for (let i = 1; i <= n; i++) {
+    const d = step(i);
+    at = { x: from.x + d.x, y: from.y + d.y };
+    await send('mouseMoved', at, 1);
+    await page.waitForTimeout(16);
+  }
+  await send('mouseReleased', at, 0);
+}
+
 type Step = {
   gesture: Exclude<Gesture, 'open' | 'idle'>;
   setup?: () => Promise<void>;
@@ -167,10 +203,7 @@ export async function measureZoom<Tab extends string>(
           gesture: 'stroke',
           setup: () => page.keyboard.press(strokeKey(tab)),
           act: async () => {
-            await page.mouse.move(bare.x, bare.y);
-            await page.mouse.down();
-            await moves(page, bare, 30, (k) => ({ x: k * 3, y: Math.sin(k / 3) * 20 }));
-            await page.mouse.up();
+            await pressedMoves(cdp, page, bare, 30, (k) => ({ x: k * 3, y: Math.sin(k / 3) * 20 }));
             await page.waitForTimeout(400);
           },
           reset: async () => {
@@ -196,10 +229,7 @@ export async function measureZoom<Tab extends string>(
     {
       gesture: 'drag',
       act: async () => {
-        await page.mouse.move(shape.x, shape.y);
-        await page.mouse.down();
-        await moves(page, shape, 30, (k) => ({ x: k * 4, y: k * 2 }));
-        await page.mouse.up();
+        await pressedMoves(cdp, page, shape, 30, (k) => ({ x: k * 4, y: k * 2 }));
         await page.waitForTimeout(400);
       },
       reset: settleUndo,
@@ -218,10 +248,7 @@ export async function measureZoom<Tab extends string>(
     {
       gesture: 'marquee',
       act: async () => {
-        await page.mouse.move(bare.x, bare.y);
-        await page.mouse.down();
-        await moves(page, bare, 25, (k) => ({ x: k * 10, y: k * 8 }));
-        await page.mouse.up();
+        await pressedMoves(cdp, page, bare, 25, (k) => ({ x: k * 10, y: k * 8 }));
         await page.waitForTimeout(400);
       },
       reset: async () => {

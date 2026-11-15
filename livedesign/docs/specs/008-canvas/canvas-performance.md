@@ -296,6 +296,10 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   drag's longest task (a 158 ms task held 38 ms of work); with GPU raster it is small. The table
   shows the work, and the whole task beside it when the wait was 10 ms or more, so a wait is still
   seen. The traced run's trace is kept for attribution.
+- **The test runner adds no script of its own to a gesture.** A drag, marquee or stroke is sent
+  straight to the browser's input: Playwright's mouse checks every move made with the button held
+  for an HTML drag by running two scripts in every frame of the page, and on the hosted runner
+  each took 35 to 120 ms of the main thread, which the probe would read as the board's work.
 - **It runs nightly on its own**, in a scheduled workflow, against the head of `main`; a night with
   no new commit on `main` since the last run is skipped, so it spends no CI minutes on an unchanged
   build. Each run writes the budget table to the job summary and keeps the raw traces as an
