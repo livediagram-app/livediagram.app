@@ -48,6 +48,13 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     column: 'author_id',
     deleteKeeps: { when: '1 = 1', why: "a document's own store, aged out after 30 days" },
   },
+  // A tab's versions (docs/specs/006-document/version-history.md), in each document's own store: the closed account's
+  // name comes off them (document-room/document-anonymise.ts) and unnamed ones age out after 30 days.
+  {
+    table: 'tab_versions',
+    column: 'author_id',
+    deleteKeeps: { when: '1 = 1', why: "a document's own store, anonymised and aged out" },
+  },
   // The document's once-only email claims (@liveworkspace/index-app notify-claims.ts), in its own store, name their
   // sender: dropped when the index says the account closed (document-room/document-anonymise.ts), and past the
   // dedupe window as new ones are claimed.
@@ -121,6 +128,19 @@ function seed(sql: DatabaseSync, id: string) {
     added: 1,
     changed: 0,
     removed: 0,
+    created_at: T0,
+  });
+  insert(sql, 'tab_versions', {
+    id: `v-${id}`,
+    tab_id: `tab-${id}`,
+    rev: 1,
+    kind: 'manual',
+    author_id: id,
+    tab_name: 'Board',
+    data: '{"elements":[]}',
+    bytes: 15,
+    element_count: 0,
+    saved_at: T0,
     created_at: T0,
   });
   insert(sql, 'notify_claims', { key: `claim-${id}`, sender: id, at: T0 });

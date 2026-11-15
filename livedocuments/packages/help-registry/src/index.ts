@@ -154,7 +154,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one document: organise, link, and move between tabs of pages.',
-    articleCount: 9,
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -1280,6 +1280,16 @@ export const articles: Article[] = [
     title: 'Locking a Tab',
     description: "Make a tab's whole canvas read-only so it cannot be changed by accident.",
     keywords: 'read only protect freeze prevent editing lock unlock padlock',
+    category: 'Tabs',
+    categorySlug: 'tabs',
+  },
+  {
+    slug: 'version-history',
+    title: 'Version History',
+    description:
+      "Look back through a tab's earlier versions, see what changed, and restore one or copy it.",
+    keywords:
+      'history versions version restore revert undo go back earlier previous older recover rollback roll back snapshot backup named copy',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

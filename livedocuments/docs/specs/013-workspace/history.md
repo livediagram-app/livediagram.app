@@ -77,6 +77,13 @@ at a time with `itemHistory(itemId, { limit, cursor })`.
 - **Speed.** The dialog's code loads when it is first opened. The days, runs, chips and summary are worked out once
   per loaded page and filter (memoised); 1,000 loaded events group in well under a frame (a test keeps a budget).
 
+## 3a. Versions
+
+History is what happened, never the content: it opens and brings back nothing. Each tab's content at earlier moments
+is its [version history](../006-document/version-history.md), opened from the editor's header (**History**) on the
+document itself, where every role may look and an Editor restores or copies a version. The two stay apart: History is
+every app's and lives in the index; versions are livedocuments' alone and live in the document's own Durable Object.
+
 ## 4. Webhooks and the Audit Log
 
 **Webhooks** sits on the same menu, after History, for a signed-in account who can edit the whole document (its owner,

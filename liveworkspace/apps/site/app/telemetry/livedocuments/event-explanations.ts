@@ -1723,6 +1723,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'An agent showed itself on a tab, with what it is doing, through the MCP server, the CLI or the API.',
   'Agent|Reverted':
     "An agent's changeset was undone, from the editor's toast or another front door.",
+  'Version|Opened':
+    'Someone opened Version History from the header, to look at a tab\u2019s earlier versions.',
+  'Version|Named': 'An Editor named a version of a tab, or renamed one, in Version History.',
+  'Version|Undone': 'An Editor undid a restore from its toast, putting the tab back as it was.',
+  'Version|Restored':
+    'An earlier version of a tab was restored, as one undoable change: from the editor, the MCP server, the CLI or the API.',
+  'Version|Copied': 'An earlier version of a tab was copied into a new tab beside it.',
   'Mcp|Used':
     'An AI tool connected to livedocuments over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',

@@ -80,6 +80,10 @@ The defaults: a Viewer only looks; a Participant edits text and comments, but ne
 anything or changes settings; the rest is an Editor's. The role tests (the participant rule's leak test, the editor
 capabilities, the room) keep a new feature from widening a role by accident.
 
+- **Version history** ([Version history](../006-document/version-history.md#who-may-do-what)): every level looks at a
+  tab's versions (a tab link its own tab's); only an Editor names, restores or copies one. A Community visitor sees
+  none.
+
 ## Ownership
 
 Ownership is a set of powers, held by the document's **owner** (its creator) and every joined member of the team it is

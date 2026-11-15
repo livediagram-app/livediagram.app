@@ -14,6 +14,7 @@ const track = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));
 
 import { useChangesetFeed } from './useChangesetFeed';
+import { beginOwnVersionWrite, resetOwnVersionWrites } from '@/lib/own-version-writes';
 import { createRemoteOpJournal } from './save-baseline';
 import type { ToastActionSpec } from '@/hooks/ui/useToast';
 
@@ -118,6 +119,19 @@ describe('useChangesetFeed', () => {
     const { result, lastToast } = setup(new Map([['t1', 1]]), false);
     act(() => result.current.receiveChangeset(op()));
     expect(lastToast().actions.map((a) => a.label)).toEqual(['Show']);
+  });
+
+  // docs/specs/006-document/version-history.md "Restore": this editor's own restore has the panel's toast.
+  it('applies its own restore without a changeset toast', () => {
+    const { result, deps, toast } = setup();
+    const done = beginOwnVersionWrite(
+      (o) => o.tabId === 't1' && o.summary === 'Restored a version',
+    );
+    act(() => result.current.receiveChangeset(op({ summary: 'Restored a version' })));
+    done();
+    resetOwnVersionWrites();
+    expect(deps.countAppliedOp).toHaveBeenCalledTimes(1);
+    expect(toast.action).not.toHaveBeenCalled();
   });
 
   it('skips what this editor already holds', () => {

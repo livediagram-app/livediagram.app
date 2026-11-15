@@ -629,6 +629,20 @@ index as the caller; `@liveworkspace/index-app` `archive-doors.ts`). Both are de
 - While archived, every tool that opens or changes the document (`read_document`, `update_document` and the rest) is
   refused 409 `archived`, in words that name `unarchive_document` (`@liveworkspace/agent-verbs/api-refusal`).
 
+### 4.9e Version history: `list_versions` and `restore_version`
+
+A tab's [versions](../006-document/version-history.md), with exactly the REST doors' authority
+(`GET /api/documents/<id>/tabs/<tabId>/versions`, `POST .../versions/<versionId>/restore`).
+
+- **`list_versions`**: `{ documentId, tabId? }`. Read-only. The tab's versions newest first (the first tab when
+  `tabId` is absent): `{ id, rev, kind, name, author, savedAt }` each, `kind` being `idle`, `agent`, `restore` or
+  `manual`, the time ISO 8601, with the tab's id and name and the document's link.
+- **`restore_version`**: `{ documentId, tabId, versionId }`. Destructive. Makes the version the tab's content again as
+  one changeset by the user, seen at once by everyone with the tab open, keeping the tab's name and every comment on
+  what it keeps. Returns `{ restored, tabId, rev, changesetId, undoVersionId, url }`; restoring `undoVersionId` takes
+  it back. A version already the tab's content answers `restored: false`. A 404 (no such version) points at
+  `list_versions`; an element a person holds is refused 409 `elements_held`, as for `update_document`.
+
 ### 4.9d The Pages tools
 
 The pages of a tab and the articles written on them ([Pages for agents](../024-agents/pages-for-agents.md)).

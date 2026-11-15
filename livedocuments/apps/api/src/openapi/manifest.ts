@@ -13,7 +13,7 @@
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
 
-import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livedocuments/api-schema';
+import { LINT_VIEW_NAME, TAB_VIEW_NAMES, VERSION_NAMED_MAX } from '@livedocuments/api-schema';
 import { NAME_MAX_LENGTH } from '@livedocuments/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedocuments/document-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
@@ -571,6 +571,82 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     responseSchema: 'RevertResponse',
     statuses: [200, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/versions',
+    segment: 'documents',
+    tag: 'Versions',
+    summary:
+      "A tab's earlier versions, newest first: kept after a pause in editing, before an agent's changes, before a restore, and when named. Anyone who can open the tab can list them.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: listOf('versions', 'VersionSummary'),
+    statuses: [200, 401, 404, 410],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/tabs/{tabId}/versions/{versionId}',
+    segment: 'documents',
+    tag: 'Versions',
+    summary: 'One version, with the tab as it was then.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'VersionReadResponse',
+    statuses: [200, 401, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/versions',
+    segment: 'documents',
+    tag: 'Versions',
+    summary: `Name This Version: keep the tab as it is now under a name. Named versions are kept until unnamed, up to ${VERSION_NAMED_MAX} a tab.`,
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: { type: 'object', properties: { name: nameField }, required: ['name'] },
+    responseSchema: wrap('version', 'VersionSummary'),
+    statuses: [201, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/tabs/{tabId}/versions/{versionId}/name',
+    segment: 'documents',
+    tag: 'Versions',
+    summary: 'Name, rename or unname a version (an empty or null name unnames it).',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { name: { type: ['string', 'null'] } },
+      required: ['name'],
+    },
+    responseSchema: wrap('version', 'VersionSummary'),
+    statuses: [200, 400, 401, 403, 404, 409, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/versions/{versionId}/restore',
+    segment: 'documents',
+    tag: 'Versions',
+    summary:
+      "Restore a version: its content written over the tab as one changeset by you, seen live by everyone, with the content it replaced kept first as a version (`undoVersionId`). The tab's name, lock and comments stay as they are.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'VersionRestoreResponse',
+    statuses: [200, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/versions/{versionId}/copy',
+    segment: 'documents',
+    tag: 'Versions',
+    summary:
+      "Make a Copy: a new tab after the last, holding the version's content without its comments. The tab it came from is untouched.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: { type: 'object', properties: { name: nameField } },
+    responseSchema: 'VersionCopyResponse',
+    statuses: [201, 401, 403, 404, 409, 410, 413],
   },
   {
     method: 'PUT',
