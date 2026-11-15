@@ -131,7 +131,7 @@ describe('backdropBehind', () => {
   it('answers null for a canvas that is not a hex colour, and agrees with labelBackdrops on the same board', () => {
     expect(backdropBehind([], 'transparent', box, 0)).toBeNull();
     const board = [panel('p', '#000000', { opacity: 0.5 }), text('a')];
-    expect(backdropBehind(board, '#ffffff', board[1]!, 0)).toBe(
+    expect(backdropBehind(board, '#ffffff', box, 0)).toBe(
       labelBackdrops(board, '#ffffff').get(1)?.behind,
     );
   });
