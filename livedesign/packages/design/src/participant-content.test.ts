@@ -549,3 +549,42 @@ describe('images (docs/specs/013-workspace/share-roles.md)', () => {
     expect(r.tab.elements[0]).not.toHaveProperty('objectFit');
   });
 });
+
+// docs/specs/007-editor/wireframe-pages.md "Share roles": a screen link is content on an element, so a Participant
+// sets one on what it added and never on someone else's element.
+describe('applyParticipantOp: screen links', () => {
+  const link = { kind: 'page', pageId: 'page-2', transition: 'slide' };
+
+  it('sets a screen link on its own element', () => {
+    const r = applied(
+      applyParticipantOp(
+        tabOf([sticky('mine', { addedBy: ME })]),
+        { kind: 'update', element: sticky('mine', { addedBy: ME, link }) },
+        ME,
+      ),
+    );
+    expect(r.tab.elements[0]).toMatchObject({ link });
+  });
+
+  it("keeps the stored link on someone else's element", () => {
+    const stored = shape('col', { link: { kind: 'back' } });
+    const r = applyParticipantOp(
+      tabOf([stored]),
+      { kind: 'update', element: shape('col', { link }) },
+      ME,
+    );
+    expect(r.result === 'applied' ? r.tab.elements[0] : stored).toEqual(stored);
+  });
+
+  it('refuses a malformed screen link on its own element', () => {
+    const r = applyParticipantOp(
+      tabOf([sticky('mine', { addedBy: ME })]),
+      {
+        kind: 'update',
+        element: sticky('mine', { addedBy: ME, link: { kind: 'page', pageId: '' } }),
+      },
+      ME,
+    );
+    expect(r).toMatchObject({ result: 'refused', reason: 'invalid' });
+  });
+});

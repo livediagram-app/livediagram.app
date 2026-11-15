@@ -115,6 +115,8 @@ export * from './tab-stats';
 export * from './page';
 export * from './wireframe-device';
 export * from './wireframe-page';
+// Screen links and back links (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes").
+export * from './page-link';
 // Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect"): a wireframe element's measurements and spacing.
 export * from './inspect-element';
 export * from './inspect-spacing';
