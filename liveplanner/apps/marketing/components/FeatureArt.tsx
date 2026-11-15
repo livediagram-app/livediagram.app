@@ -32,3 +32,4 @@ export * from './feature-art/automations';
 export * from './feature-art/automations-more';
 // Card templates, card Activity, Describe a Plan, GitHub, the calendar feed and connected files.
 export * from './feature-art/plan-extras';
+export * from './feature-art/plan-beyond';
