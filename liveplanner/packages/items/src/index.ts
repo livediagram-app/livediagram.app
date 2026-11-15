@@ -69,6 +69,7 @@ export * from './views';
 export * from './person';
 export * from './item-history';
 export * from './flow-counts';
+export * from './flow-metrics';
 export * from './repeat';
 export * from './repeat-dates';
 export * from './repeat-words';
