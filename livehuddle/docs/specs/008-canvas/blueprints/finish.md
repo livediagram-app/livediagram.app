@@ -366,8 +366,8 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
   table: cell borders joined into whole rules, `data-marker-rules` hiding the pieces). An inset hairline ring
   (`box-shadow: c 0 0 0 Npx inset`) counts as a frame's line (`data-marker-drawn="ring"` drops it).
 - The face's own box (`MARKER_FACE_BODY_SLACK_PX`) is coloured in once, its ink at `z-index: -1` in a box the pass
-  isolates (`data-marker-isolated`), and never when the element's body is already drawn by hand (`FaceBox.bodyDrawn`,
-  a `svg[data-finish]` body) or the surface is a page (`useFaceFinishPass(..., { page: true })`).
+  isolates (`data-marker-isolated`), or outlined once as a frame, and neither when the element's body is already drawn by hand (`FaceBox.bodyDrawn`,
+  a `svg[data-finish]` body) or the surface is a page (`useFaceFinishPass(..., { page: true })`). The canvas pass reads `bodyDrawn` as the export does (`readParts` in `useFaceFinishPass.ts`), so a Marker table's outer frame is its body's alone (`markerElementPaint`, `MARKER_TABLE_FRAME_PX`, inked `handDrawnInk`), never a second `markerFrameInk` frame over it.
 - Stickers: `sticker-markup.ts` marks the shadow `data-sticker-shadow` and the emoji art `data-finish-keep`;
   `faceFinishOf` returns Professional and Marker for a sticker (Sketch wobbles it whole); face-finish.css and
   `svgProfessionalFace` / `svgMarkerFace` drop the shadow.

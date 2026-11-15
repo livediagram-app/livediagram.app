@@ -93,6 +93,20 @@ describe('drawMarkerFace', () => {
     expect(root.style.isolation).toBe('');
   });
 
+  // finish.md "Tables": a Marker table's outer frame is its hand-drawn body's (SketchOverlay, in handDrawnInk at
+  // MARKER_TABLE_FRAME_PX), as the export draws it (svgMarkerFace's FaceBox.bodyDrawn); the grid's own border is never
+  // framed a second time in markerFrameInk's darker shade.
+  it("draws no second frame over a hand-drawn body's own box (a Marker table's grid border)", () => {
+    const grid =
+      '<div class="grid" data-w="600" data-h="400" style="position:absolute;border:1px solid rgb(148, 163, 184)"></div>';
+    const bare = face(grid);
+    expect(drawMarkerFace(bare, 'el')).toBe(1);
+    expect(bare.querySelector('.grid')!.getAttribute('data-marker-drawn')).toBe('frame');
+    const drawn = face(`<svg data-finish="marker"></svg>${grid}`);
+    expect(drawMarkerFace(drawn, 'el')).toBe(0);
+    expect(drawn.querySelector('[data-marker-ink], [data-marker-drawn]')).toBeNull();
+  });
+
   it('leaves the own box of a body that fills its tab plain (the page)', () => {
     document.body.innerHTML =
       '<div id="root" data-w="400" data-h="200" style="position:absolute;background-color:rgb(241, 245, 249)"></div>';

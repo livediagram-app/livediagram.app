@@ -282,7 +282,10 @@ function readParts(
   page: boolean,
   board: FaceFinishBoard | undefined,
 ): { writes: Write[]; drawn: number; unseen: readonly Element[] } {
-  const face = { width: root.offsetWidth, height: root.offsetHeight };
+  // An element with a hand-drawn body (SketchOverlay) has its box drawn by it: its frame is the body's, never a
+  // second one over it (a Marker table's outer frame), as the export's svgMarkerFace reads it (FaceBox.bodyDrawn).
+  const bodyDrawn = !!root.querySelector(':scope > svg[data-finish]');
+  const face = { width: root.offsetWidth, height: root.offsetHeight, bodyDrawn };
   const seed = markerFaceSeed(elementId);
   const unseen: Element[] = [];
   const isUnseen = board?.unseen;
@@ -305,8 +308,8 @@ function readParts(
   const spent = () => (budget ? faceBudgetSpent(budget) : drawn >= MARKER_FACE_MAX_PARTS);
   // The face's own box is coloured in once: the outermost element that paints it (a wrapper and a card inside it the
   // same size would streak twice).
-  // An element with a hand-drawn body (SketchOverlay) has its box drawn and shaded already.
-  let ownBoxDrawn = page || !!root.querySelector(':scope > svg[data-finish]');
+  // An element with a hand-drawn body has its box drawn and shaded already.
+  let ownBoxDrawn = page || bodyDrawn;
   const ownerOf = board?.ownerOf;
   // How many parts each owner has drawn so far this take (FaceFinishBoard's ownerOf).
   const owned = new Map<string, number>();
