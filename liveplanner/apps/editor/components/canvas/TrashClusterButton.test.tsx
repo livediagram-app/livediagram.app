@@ -21,8 +21,7 @@ const strip = (withTrash = true) =>
     <PlanCardsClusterStrip
       finderOpen={false}
       onToggleFinder={() => {}}
-      typesOpen={false}
-      onToggleTypes={() => {}}
+      types={{ open: false, onToggle: () => {} }}
       trash={withTrash ? { open: false, onToggle: () => {} } : undefined}
     />,
   );
@@ -60,8 +59,7 @@ describe('the Trash in Plan’s strip', () => {
         <PlanCardsClusterStrip
           finderOpen={false}
           onToggleFinder={() => {}}
-          typesOpen={false}
-          onToggleTypes={() => {}}
+          types={{ open: false, onToggle: () => {} }}
           trash={{ open: false, onToggle: () => {} }}
         />,
       );

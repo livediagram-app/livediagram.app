@@ -25,12 +25,12 @@ const stopPress = (e: SyntheticEvent) => e.stopPropagation();
 // the Trash while it holds cards (deleting the last type sends its cards there, to restore once a type exists).
 // On a wide desktop each is named beside its icon (useDockNames), as the other strips' buttons are, in one short
 // word (Trash, Find, Types); the accessible names and hover cards keep the fuller labels, which contain them.
+// Card Types, like the Trash, is an editor's (item-types.md "The Card Types panel", Share roles): absent, a
+// Participant's or Viewer's strip holds only Find a Card, and with no card types nothing shows at all.
 export function PlanCardsClusterStrip({
   finderOpen,
   onToggleFinder,
-  typesOpen,
-  onToggleTypes,
-  typesButtonRef,
+  types,
   trash,
   folded = false,
 }: {
@@ -39,10 +39,15 @@ export function PlanCardsClusterStrip({
   folded?: boolean;
   finderOpen: boolean;
   onToggleFinder: (button: HTMLElement) => void;
-  typesOpen: boolean;
-  onToggleTypes: (button: HTMLElement) => void;
-  // The Card Types button, for a caller that opens its panel from elsewhere.
-  typesButtonRef?: React.Ref<HTMLButtonElement>;
+  // The Card Types button: its panel's state and toggle, and its element for a caller that opens the panel from
+  // elsewhere. Absent (anyone but an editor), the strip has none.
+  types?:
+    | {
+        open: boolean;
+        onToggle: (button: HTMLElement) => void;
+        buttonRef?: React.Ref<HTMLButtonElement> | undefined;
+      }
+    | undefined;
   // The Trash button: its panel's state and toggle. Absent, the strip has none.
   trash?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
 }) {
@@ -51,7 +56,11 @@ export function PlanCardsClusterStrip({
   const hasTypes = (plan?.types.length ?? 1) > 0;
   const showsTrash = !!trash && (hasTypes || hasTrashed(plan?.items.values()));
   const trashInStrip = showsTrash && !dragging;
-  if (folded)
+  // Nothing to show: a non-editor on a plan with no card types (no Find a Card, no Card Types, no Trash).
+  if (!hasTypes && !types && !showsTrash) return null;
+  // The fold makes room for three buttons; without Card Types (a non-editor, never given the Trash) there is at
+  // most Find a Card, which shows as itself.
+  if (folded && types)
     return (
       <FoldedPlanStrip
         rows={[
@@ -68,8 +77,8 @@ export function PlanCardsClusterStrip({
           {
             label: 'Card Types',
             icon: <PlanCardsIcon size={18} />,
-            open: typesOpen,
-            onPick: onToggleTypes,
+            open: types.open,
+            onPick: types.onToggle,
           },
           ...(trash && showsTrash
             ? [
@@ -82,7 +91,7 @@ export function PlanCardsClusterStrip({
               ]
             : []),
         ]}
-        buttonRef={typesButtonRef}
+        buttonRef={types.buttonRef}
       />
     );
   return (
@@ -105,18 +114,20 @@ export function PlanCardsClusterStrip({
             onTogglePopover={onToggleFinder}
           />
         ) : null}
-        <ClusterPopoverSegment
-          divided={hasTypes || trashInStrip}
-          label="Open Card Types"
-          hoverTitle="Card Types"
-          hoverDescription="The kinds of card this plan's boards hold, and the fields each one has."
-          icon={<PlanCardsIcon size={18} />}
-          name="Types"
-          dataTourId="card-types"
-          popoverOpen={typesOpen}
-          onTogglePopover={onToggleTypes}
-          {...(typesButtonRef ? { buttonRef: typesButtonRef } : {})}
-        />
+        {types ? (
+          <ClusterPopoverSegment
+            divided={hasTypes || trashInStrip}
+            label="Open Card Types"
+            hoverTitle="Card Types"
+            hoverDescription="The kinds of card this plan's boards hold, and the fields each one has."
+            icon={<PlanCardsIcon size={18} />}
+            name="Types"
+            dataTourId="card-types"
+            popoverOpen={types.open}
+            onTogglePopover={types.onToggle}
+            {...(types.buttonRef ? { buttonRef: types.buttonRef } : {})}
+          />
+        ) : null}
       </ClusterStrip>
     </>
   );

@@ -161,8 +161,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
 
-  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
-  const cardTypesButtonRef = useCardTypesOpener(!zenMode, {
+  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md), only
+  // for an editor: nobody else has the button (item-types.md "The Card Types panel", Share roles).
+  const cardTypesButtonRef = useCardTypesOpener(!zenMode && !readOnly, {
     activeDockPanel,
     handleDockButtonClick,
   });
@@ -407,9 +408,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
               <PlanCardsClusterStrip
                 finderOpen={activeDockPanel === 'plan-cards'}
                 onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}
-                typesOpen={activeDockPanel === 'card-types'}
-                onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
-                typesButtonRef={cardTypesButtonRef}
+                // Card Types is an editor's, as the Trash is (docs/specs/026-plan/item-types.md "The Card Types panel").
+                types={
+                  readOnly
+                    ? undefined
+                    : {
+                        open: activeDockPanel === 'card-types',
+                        onToggle: (button) => handleDockButtonClick('card-types', button, true),
+                        buttonRef: cardTypesButtonRef,
+                      }
+                }
                 folded={planStripFolded}
                 // The Trash leads the strip for an editor, off a phone or in its folded menu (docs/specs/026-plan/items.md "Trash").
                 trash={
