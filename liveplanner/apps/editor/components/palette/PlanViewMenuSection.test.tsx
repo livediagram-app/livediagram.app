@@ -107,6 +107,20 @@ describe('PlanViewMenuSection', () => {
     expect(plan['updateView']).not.toHaveBeenCalled();
   });
 
+  // docs/specs/026-plan/plan-views.md "Flow charts": Range in the View flyout too.
+  it('sets a flow chart’s range from its View flyout, and offers no Range to other charts', () => {
+    show({ view: 'cumulative-flow' });
+    fireEvent.click(screen.getByRole('radio', { name: 'Last 14 Days' }));
+    expect(plan['updateView']).toHaveBeenLastCalledWith('chart', {
+      view: 'cumulative-flow',
+      rangeDays: 14,
+    });
+    expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'ViewRange');
+    cleanup();
+    show({ view: 'gantt' });
+    expect(screen.queryByRole('radio', { name: 'Last 14 Days' })).toBeNull();
+  });
+
   it('sets the chart’s swimlanes, keeping its other settings, and tracks it', () => {
     show({ view: 'gantt', namesWidth: 300 });
     fireEvent.click(screen.getByRole('radio', { name: 'Assignee' }));

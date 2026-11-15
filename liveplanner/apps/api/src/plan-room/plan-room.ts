@@ -63,6 +63,7 @@ import {
   MAINTENANCE_KEY,
   restoreContentState,
   ensureSchema,
+  bindStoredPlan,
   noteWrite,
   drain,
   drainShares,
@@ -111,6 +112,7 @@ import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from '.
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
 import { purgedAt } from './plan-room-purged';
 import { RemovalGuard } from './removal-guard-store';
+import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import { notFound } from '../responses';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -573,11 +575,7 @@ export class PlanRoom extends DurableObject<Env> {
   // One call to a rule's address. An id nothing has written answers 401 and stays empty; a stored plan's schema is
   // brought up to date first (V20 holds the secrets).
   async incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
-    const schema = this.storedSchema();
-    if (schema) {
-      this.bindPlan(planId);
-      ensureSchema(this);
-    }
+    const schema = bindStoredPlan(this, planId);
     const env = this.requireEnv();
     return answerHookCall(
       { env, planId, automations: this.automations, schema, putAway: this.standing.putAway },
@@ -592,9 +590,7 @@ export class PlanRoom extends DurableObject<Env> {
   // One typed-in address's unsubscribe, by the token its email carried. An id nothing has written answers false and
   // stays empty; a stored plan's schema is brought up to date first (V28 holds the tokens).
   async emailOptOut(planId: string, token: string): Promise<boolean> {
-    if (!this.storedSchema()) return false;
-    this.bindPlan(planId);
-    ensureSchema(this);
+    if (!bindStoredPlan(this, planId)) return false;
     return optOutAddress(this.state.storage.sql, token, Date.now());
   }
 
@@ -602,12 +598,16 @@ export class PlanRoom extends DurableObject<Env> {
 
   // A connect's callback or a verified delivery. An id nothing has written answers without making a schema.
   async github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer> {
-    const schema = this.storedSchema();
-    if (schema) {
-      this.bindPlan(planId);
-      ensureSchema(this);
-    }
+    const schema = bindStoredPlan(this, planId);
     return answerGithubCall({ env: this.requireEnv(), planId, schema }, call, Date.now());
+  }
+
+  // ---------- RPC: a calendar feed link's fetch (../calendar/feed-room.ts; docs/specs/026-plan/calendar-feed.md) ---
+
+  // The feed a token's hash names, or its calendar once the worker checked access. An id nothing has written answers
+  // null and stays empty; a stored plan's schema is brought up to date first (V30 holds the feeds).
+  async calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer> {
+    return bindStoredPlan(this, planId) ? answerFeedCall(this.requireEnv(), planId, call) : null;
   }
 
   // ---------- RPC: Describe a Plan's count (plan-draft-count.ts) -------------------------------------------------

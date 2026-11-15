@@ -24,6 +24,9 @@ import { slashKey, slashPlugin, type SlashBridge } from '@/lib/article/article-s
 import { type SlashItem } from '@/lib/article/article-slash-items';
 import { setLocalArticleCaret } from '@/lib/article/article-carets-store';
 import { articlePeersPlugin, onlyPeers } from '@/lib/article/article-peers';
+import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
+import { noteArticleTyping, releaseArticleHold } from '@/lib/article/article-holds-store';
+import { announceArticleHeld } from '@/lib/article/article-hold-notice';
 import { SLASH_MENU_ID, slashOptionId } from './SlashMenu';
 import { createArticleHandle, writingScale } from './article-editor-handle';
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
@@ -176,6 +179,9 @@ export function mountArticleView({
       decorationsPlugin(isEditable),
       todoTogglePlugin(isEditable),
       articlePeersPlugin,
+      // Collaborators' holds: outlined, and our typing in them refused with a notice naming the writer
+      // (docs/specs/007-editor/article-pages.md "Holding a paragraph").
+      articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
       // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
       findHighlightPlugin(() => latest.current.flow),
       // The footnotes' numbers and the breaks above their notes; a press on a reference puts the caret in its note.
@@ -197,13 +203,15 @@ export function mountArticleView({
         p.themeAccent,
         p.ink,
       );
-      const style: CSSProperties = {
+      const style = {
         ...vars,
         left: `${frame.x}px`,
         top: `${frame.y}px`,
         width: `${frame.width}px`,
         height: `${frame.height}px`,
-      };
+        // The page's side margin, for what the writing hangs in it (a held paragraph's name chip).
+        '--article-margin': `${frame.margin}px`,
+      } as CSSProperties;
       const css = Object.entries(style)
         .map(
           ([k, v]) =>
@@ -265,11 +273,14 @@ export function mountArticleView({
       const v = viewRef.current;
       if (!v) return;
       v.updateState(v.state.apply(tr));
-      // Collaborators' carets arriving change nothing of ours: no commit, no toolbar update.
-      if (onlyPeers(tr)) return;
+      // Collaborators' carets and holds arriving change nothing of ours: no commit, no toolbar update.
+      if (onlyPeers(tr) || onlyHolds(tr)) return;
       if (tr.docChanged) {
         if (!tr.getMeta('article-remote')) {
           lastLocal.current = Date.now();
+          // Typing holds the block (or cell) it is in (docs/specs/007-editor/article-pages.md "Holding a
+          // paragraph"); a viewer types nothing.
+          if (latest.current.editable) noteArticleTyping(latest.current.flow, holdSpotOf(v.state));
           scheduleCommit();
         }
         scheduleMeasure();
@@ -320,6 +331,7 @@ export function mountArticleView({
           if (v.hasFocus()) return;
           blurActiveArticle(latest.current.flow);
           setLocalArticleCaret(latest.current.flow, null);
+          releaseArticleHold(latest.current.flow);
         }, 0);
         return false;
       },
@@ -399,5 +411,6 @@ export function mountArticleView({
     clearActiveArticle(latest.current.flow);
     if (latest.current.card) publishCardOverflow(latest.current.flow, null);
     setLocalArticleCaret(latest.current.flow, null);
+    releaseArticleHold(latest.current.flow);
   };
 }

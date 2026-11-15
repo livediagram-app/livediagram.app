@@ -27,6 +27,9 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 | transition          | `PageLinkTransition`, `PAGE_LINK_TRANSITIONS`, `DEFAULT_PAGE_LINK_TRANSITION`, `pageLinkTransitionOf`            |
 | broken link         | `ScreenLinkTarget` state `'broken'` (`resolveScreenLink`)                                                        |
 | screen links' roles | `can.linkScreens(el)`, `can.playPrototype`                                                                       |
+| Screen mode         | `LinkPickerDialog` mode `'screen'`; `ScreenLinkMode`; `ScreenChoice`, `screenLinkChoices`                        |
+| link handle         | `ScreenLinkHandle`; `showsScreenLinkHandle`; `onLinkScreen`, `onPickScreenLink`, `canLinkScreens`                |
+| link marker         | the `link` indicator with `screen: 'linked' \| 'broken'` (`ScreenIndicatorItem`); `useScreenLinkMarker`          |
 
 "Device" alone always means the page's `WireframeDeviceId`; never "mockup" or "frame" for the device itself.
 
@@ -64,6 +67,11 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 | `apps/live/lib/link-label.ts`, `components/canvas/LinkCardView.tsx`                   | A screen link's hover line (`describeLink(link, tabs, pages)`) and a link card holding one                          |
 | `apps/live/hooks/canvas/useElementLinks.ts`                                           | `followLink` leaves a screen link to Prototype mode                                                                 |
 | `apps/live/lib/editor-capabilities.ts`                                                | `linkScreens`, `playPrototype`                                                                                      |
+| `apps/live/lib/screen-link-choices.ts` (+ test)                                       | `screenLinkChoices`, `screenOfElement`, `relinkToScreen`, `showsScreenLinkHandle`, `wireframeTabPages`              |
+| `apps/live/components/dialogs/ScreenLinkMode.tsx`, `LinkPickerDialog.tsx`             | Link Element's Screen mode: the transition, the screens, Back, the broken note                                      |
+| `apps/live/components/canvas/ScreenLinkHandle.tsx`, `LayerSelectionChrome.tsx`        | The link handle, its drag line and the outlined screen                                                              |
+| `apps/live/components/canvas/screen-link-pages.tsx`, `useElementIndicators.ts`        | The tab's pages for the markers (a store, so a page edit re-renders only the linked elements) and the marker item   |
+| `apps/live/components/canvas/screen-link-glyphs.tsx`, `ElementIndicators.tsx`         | The screen, broken screen and back glyphs; the marker drawn in its state                                            |
 
 ## Behaviour and state
 
@@ -160,6 +168,40 @@ Going to a wireframe page fits the whole device, with the fit's zoom capped at `
 - **Naming.** `screenName(page, index)`: the trimmed name, else `Screen <index + 1>`. `describeScreenLink`: "Goes to
   <screen>", "Goes back to the screen before", or "Broken link: its screen was deleted".
 - **In the editor**, `followLink` does nothing for a screen link; Prototype mode follows them.
+- **Screen mode.** `EditorElementDialogs` passes `screens` (`screenLinkChoices(pagesOf(activeTab), element,
+elements)`: each page as `{ id, name: screenName(page, index), here }`, `here` the page `pageAt` finds under the
+  element's `elementAnchorPoint`) when `wireframeTabPages(pages)` and `can.linkScreens(element)`; otherwise none and
+  the dialog shows its three old modes. With `screens` the modes are Screen, External URL, Tab, Design, and the dialog
+  opens on Screen unless the current link is a url, tab, element or design link or the caller asked for a mode.
+  `ScreenLinkMode` holds the chosen transition in state (seeded `pageLinkTransitionOf(current)` for a screen link,
+  else `'instant'`); a screen row commits `{ kind: 'page', pageId, transition? }` and Back `{ kind: 'back',
+transition? }`, `transition` omitted when Instant. A `here` row is `disabled`. The broken note shows when
+  `resolveScreenLink(current, pages).state === 'broken'`. The dialog mounts for `!isReadOnly`, or for a read-only
+  session when `can.linkScreens(element)` and `screens` (a Participant's own element), then with `screenOnly`: no
+  mode switcher, the Screen mode alone; `useCloseVanishedDialogs` closes it on the same test.
+- **Link handle.** `LayerSelectionChrome` draws `ScreenLinkHandle` when `showsScreenLinkHandle` holds: one boxed
+  element selected (`selectedId`, no multi-selection), not being edited, no menu open, not in paint mode, the tab not
+  locked, `canLinkScreens(el)` (never while Inspect is on; not `readOnly`, which a Participant's canvas is), the element's anchor on a wireframe page,
+  and two or more pages. Its centre is the selection box's bottom-right corner plus
+  `(SCREEN_LINK_HANDLE_GAP_PX + SCREEN_LINK_HANDLE_PX / 2) / zoom` on each axis, counter-scaled like the quick-connect
+  pluses. A press captures the pointer and stops propagation (no element drag, no marquee); past
+  `SCREEN_LINK_DRAG_SLOP_PX` it is a drag: the pointer's canvas point is the press's plus the client delta over the
+  zoom, `pageAt(pages, point)` the target, the element's own page and no page both "none". The line is a cubic from
+  the handle to the pointer, the target outlined with its `screenName` in a pill above it. Release on a target calls
+  `onLinkScreen(elementId, pageId)`; release elsewhere, Escape or `pointercancel` drops it. A press released before the
+  slop calls `onPickScreenLink(elementId)`, which opens the picker on `'screen'`.
+- **Linking from the handle.** `useElementLinks.linkElementToScreen(elementId, pageId)` commits
+  `relinkToScreen(el.link, pageId)` on that element alone (the current transition kept from a screen link, none
+  otherwise) and tracks `Element · Linked · Screen`.
+- **Link marker.** `ScreenLinkPagesProvider` (around the element layer) holds the tab's laid-out pages and
+  `focusPage` in a store; `useScreenLinkMarker(link)` subscribes with a snapshot of the marker's description string
+  (null for no screen link), so a page edit re-renders only elements whose line changed. `elementIndicatorItems`
+  takes the marker: the `link` item with `screen: 'linked'` (label "Go to screen", word "Screen", hover title
+  "Screen link") or `screen: 'broken'` (label "Broken screen link", hover title "Broken link"), its description the
+  `describeScreenLink` line. A linked marker's click calls `focusPage(pageId)`; a back link's does nothing but its
+  card; a broken one's calls `onEditLink(id)` when given and the element may be linked, else nothing.
+  `ElementIndicators` draws a screen item with `ScreenLinkGlyph`, `BackLinkGlyph` or `BrokenScreenLinkGlyph`, a
+  broken one `text-rose-600 dark:text-rose-400` at full opacity.
 - **Roles.** `can.linkScreens(el)`: an Editor any element; a Participant `!locked && addedBy === adderKey`; a Viewer
   none. `can.playPrototype` is true for all three. The server rule is the participant content rule unchanged: `link`
   is not among the fields a Participant writes on someone else's element (`PARTICIPANT_TEXT_FIELDS`, ...), and its own
@@ -199,6 +241,9 @@ Telemetry from `page-edits.ts`: `Tab · Changed · WireframePageAdded` and `Page
 (`WIREFRAME_FRAME_EVENT`); `UI · Toggled · WireframeSystemBarsOn` / `WireframeSystemBarsOff`. Never a name or text.
 Inspect: `Canvas · Used · Inspect` (`useCanvasTool`); `UI · Copied · InspectValue`, `InspectCss`, `InspectValues`,
 `InspectLink`; `Document · Exported · InspectPng` / `InspectSvg`. Never a value, a name or a link.
+Screen links: `Element · Linked · Screen` (a screen row, or the handle's drop) and `Element · Linked · ScreenBack`
+(Back), from `EditorElementDialogs` and `useElementLinks`; charted with the site's Links Added. Never a page id or
+name.
 
 ## Testing
 
@@ -219,6 +264,9 @@ Inspect: `Canvas · Used · Inspect` (`useCanvasTool`); `UI · Copied · Inspect
 | A Participant sets a screen link on its own element only; a malformed one is refused                                                        | `packages/design/src/participant-content.test.ts` ("screen links")                                                                                                                                                                                                            |
 | Agents set a screen link and are refused a malformed one; views print it; the element format names it                                       | `packages/edit-operations/src/operations/set.test.ts`, `packages/design-views/src/attributes.test.ts`, `packages/agent-verbs/src/mcp/schema.test.ts`                                                                                                                          |
 | Roles: Editor any, Participant its own, Viewer none; every role plays; the editor leaves screen links alone                                 | `apps/live/lib/editor-capabilities.test.ts`, `hooks/canvas/useElementLinks.test.ts`, `lib/link-label.test.ts`, `components/canvas/LinkCardView.test.tsx`                                                                                                                      |
+| Screen mode: the screens, This screen, Back, the transition, the broken note; opening on it; the role gate                                  | `apps/live/components/dialogs/LinkPickerDialog.screen.test.tsx`, `apps/live/lib/screen-link-choices.test.ts`                                                                                                                                                                  |
+| The handle: when it shows (roles, lock, edit, page kind, page count), drop on a screen, own screen, off, Escape, a press opens the menu     | `apps/live/components/canvas/ScreenLinkHandle.test.tsx`, `apps/live/lib/screen-link-choices.test.ts`                                                                                                                                                                          |
+| The marker: linked, back and broken items, their clicks; a page edit re-rendering only the linked elements                                  | `apps/live/components/canvas/useElementIndicators.test.ts`, `screen-link-pages.test.tsx`                                                                                                                                                                                      |
 | The panel's sections, copy, export and link; the overlay; the address opening Inspect                                                       | `apps/live/components/panels/inspect/InspectPanel.test.tsx`, `components/canvas/inspect/InspectOverlay.test.tsx`, `useInspectHost.test.tsx`, `InspectClusterSegment.test.tsx`, `CanvasSelectionToolbars.test.tsx`; `lib/export-tab.test.ts`, `export-tab-canvas-draw.test.ts` |
 
 ## Constants and configuration
@@ -242,6 +290,9 @@ Inspect: `Canvas · Used · Inspect` (`useCanvasTool`); `UI · Copied · Inspect
 | `PAGE_LINK_TRANSITIONS`               | `instant`, `slide`, `dissolve`             | `page-link.ts`               |
 | `DEFAULT_PAGE_LINK_TRANSITION`        | `'instant'`                                | `page-link.ts`               |
 | `PAGE_LINK_ID_MAX`                    | 64 (a page id is `page-` and 8 hex)        | `page-link.ts`               |
+| `SCREEN_LINK_HANDLE_PX`               | 22 (the quick-connect plus's size)         | `ScreenLinkHandle.tsx`       |
+| `SCREEN_LINK_HANDLE_GAP_PX`           | 6 (screen px past the corner)              | `ScreenLinkHandle.tsx`       |
+| `SCREEN_LINK_DRAG_SLOP_PX`            | 4 (screen px before a press is a drag)     | `ScreenLinkHandle.tsx`       |
 
 ## Defaults ledger
 

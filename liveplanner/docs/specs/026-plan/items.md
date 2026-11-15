@@ -401,8 +401,9 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
   Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
   placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
 - **On a phone beside the Session strip** (a tab whose cards take votes) the strip is one **More Card Tools** button,
-  its menu holding Find a Card, Card Types and, for an editor, the Trash (the Trash's only door on a phone);
-  each opens its panel above that button ([Session tools](../012-collaboration/session-tools.md#the-session-strip)).
+  its menu holding Find a Card and, for an editor, Card Types and the Trash (the Trash's only door on a phone);
+  each opens its panel above that button. A Participant or Viewer has only Find a Card, so it shows as that one
+  button, and with no card types nothing shows ([The Card Types panel](item-types.md#the-card-types-panel)) ([Session tools](../012-collaboration/session-tools.md#the-session-strip)).
 - On a wide desktop (1440 px and up) each of its buttons is named beside its icon in one short word (**Trash**,
   **Find**, **Types**), as the cluster's other strips are ([Editor app](../007-editor/editor-app.md)); narrower,
   they are icons alone. Their accessible names and hover cards keep the fuller labels (Find a Card, Card
@@ -1070,7 +1071,10 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   by the api) is not kept: the field goes back to the saved value, and a toast names why ("That title is too
   long: a card title holds up to 500 characters", "That value is too long or isn't one this field takes").
 
-- Up to 2,000 items per project; a create past it is refused with `items_full`.
+- Up to 5,000 items per project; a create past it is refused with `items_full`, and the editor's toast names the cap
+  ("This plan already holds 5,000 cards, the most it can"). Every card still loads into the editor at once, so the
+  cap is set by what the editor reads and draws in good time, not by storage (blueprint
+  [item-store.md](blueprints/item-store.md) "Performance and limits").
 - Up to 20 pictures in a card's Attachments ([Attachments](#attachments)), each at most 10 MB.
 - Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
   card's comment threads sit outside that budget: up to 50 threads a card, 20 cards a thread, and 200 comments and

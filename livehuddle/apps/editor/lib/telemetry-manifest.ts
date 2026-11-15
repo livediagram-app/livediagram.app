@@ -75,7 +75,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Folder·Moved',
   'Folder·Renamed',
   'Participant·Created',
-  'Participant·Moved',
   'Participant·Returned',
   'Search·Opened',
   'Search·Searched',

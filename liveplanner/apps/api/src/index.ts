@@ -47,6 +47,7 @@ import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
 import { handleAutomationHook } from './routes/automation-hook-routes';
 import { handleEmailOptOut } from './routes/email-optout-route';
+import { handleCalendarFeed } from './routes/calendar-feed-route';
 import { handleGithub } from './github/webhook-route';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
@@ -98,6 +99,10 @@ async function routeApiRequest(
   // A rule email's unsubscribe (docs/specs/026-plan/automations.md "Typed-in addresses"): its token, never a person,
   // so answered before identity, limited per network (routes/email-optout-route.ts).
   if (segments[1] === 'email-optout') return handleEmailOptOut(request, env);
+
+  // A calendar feed's link (docs/specs/026-plan/calendar-feed.md): its feed token, never a person, so answered before
+  // identity; the person's access is asked fresh of accounts and the index (routes/calendar-feed-route.ts).
+  if (segments[1] === 'calendar') return handleCalendarFeed(request, env);
 
   // liveplanner's GitHub App (docs/specs/026-plan/github-pull-requests.md "Deliveries"): a delivery proves itself by
   // its signature and a connect's callback by its state, never by a person, so both are answered before identity

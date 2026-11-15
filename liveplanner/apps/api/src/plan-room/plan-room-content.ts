@@ -70,6 +70,16 @@ export function restoreContentState(room: PlanRoom, maintenanceAt: number | unde
 // foreign keys always find it. A row made here has no dates (0): a create or a copy sets them, and the
 // summary push never moves saved_at back.
 // A purged plan is never given one again (plan-room-purged.ts): every door that would store something refuses.
+// A token door's start (an Incoming Webhook, a rule email's unsubscribe, GitHub, a calendar feed): whether the
+// object holds a stored plan, and if so bound to it with its schema brought up to date. An id nothing has written
+// answers false and stays empty.
+export function bindStoredPlan(room: PlanRoom, planId: string): boolean {
+  if (!room.storedSchema()) return false;
+  room.bindPlan(planId);
+  ensureSchema(room);
+  return true;
+}
+
 export function ensureSchema(room: PlanRoom): void {
   if (room.schemaReady && (room.planRowReady || room.planId === null)) return;
   const sql = room.state.storage.sql;

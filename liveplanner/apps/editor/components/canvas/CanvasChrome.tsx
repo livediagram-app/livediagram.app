@@ -30,7 +30,6 @@ import {
   sessionStripTools,
   stripCanStart,
 } from '@/components/canvas/SessionClusterStrip';
-import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { usePlanVoting } from '@/hooks/plan/usePlanVoting';
 import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
@@ -161,11 +160,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
 
-  // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).
-  const cardTypesButtonRef = useCardTypesOpener(!zenMode, {
-    activeDockPanel,
-    handleDockButtonClick,
-  });
   // The Vote button, which a starting results walkthrough opens for whoever drives it.
   const voteButtonRef = useVoteReviewOpener(!!props.voteReview?.canControl, {
     activeDockPanel,
@@ -407,9 +401,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
               <PlanCardsClusterStrip
                 finderOpen={activeDockPanel === 'plan-cards'}
                 onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}
-                typesOpen={activeDockPanel === 'card-types'}
-                onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
-                typesButtonRef={cardTypesButtonRef}
+                // Card Types is an editor's, as the Trash is (docs/specs/026-plan/item-types.md "The Card Types panel").
+                types={
+                  readOnly
+                    ? undefined
+                    : {
+                        open: activeDockPanel === 'card-types',
+                        onToggle: (button) => handleDockButtonClick('card-types', button, true),
+                      }
+                }
                 folded={planStripFolded}
                 // The Trash leads the strip for an editor, off a phone or in its folded menu (docs/specs/026-plan/items.md "Trash").
                 trash={

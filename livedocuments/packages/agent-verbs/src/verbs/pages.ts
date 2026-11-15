@@ -15,6 +15,7 @@ import {
   type PagesRefused,
 } from '../pages/pages-calls';
 import { resolveTab } from '../addressing';
+import { HELD_RETRY_INTERVAL_MS, writeFlags } from '../write';
 import { documentOf, tabPath } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livedocuments URL');
@@ -24,13 +25,15 @@ const tabFlag = z
   .describe('A tab name or id prefix; the first tab when omitted');
 const LS_HINT = 'list the pages with: livedocuments page ls <doc>';
 const CHANGES_HINT = 'see the changes with: livedocuments help page set';
+// A paragraph someone is typing in (spec "Held paragraphs"): waiting is the way through, not another listing.
+const HELD_HINT = 'wait for them to pause with: --wait-held <seconds>';
 
 const refusal = (r: PagesRefused) =>
   new VerbRefusal({
     status: r.code === 'tab_needed' || r.code.endsWith('_unknown') ? 404 : 400,
     code: r.code,
     message: r.change === undefined ? r.message : `change ${r.change + 1}: ${r.message}`,
-    hint: LS_HINT,
+    hint: r.code === 'paragraphs_held' ? HELD_HINT : LS_HINT,
   });
 
 // The document, and the tab named (by name or id prefix) when one is.
@@ -328,28 +331,43 @@ export const articleSet = defineVerb({
       .describe('clean, classic, report, notebook or bold'),
     accent: z.string().optional().describe('The accent colour, a hex'),
     pageNumbers: z.boolean().optional().describe('Page numbers on'),
+    // A paragraph a person is typing in holds the write back (docs/specs/024-agents/pages-for-agents.md "Held
+    // paragraphs"): retried every HELD_RETRY_INTERVAL_MS while the next try fits in the seconds given.
+    waitHeld: writeFlags.waitHeld.describe(
+      'Retry this many seconds while people hold the paragraphs',
+    ),
   }),
   output: doneOutput.extend({ flow: z.string(), title: z.string(), created: z.boolean() }),
   run: async (ctx, input) => {
     const markdown = await ctx.readInput(input.file);
     const at = await where(ctx, input.doc, input.tab);
-    const done = await writeArticle(
-      ctx.api,
-      at.documentId,
-      {
-        ...(at.tabId ? { tabId: at.tabId } : {}),
-        markdown,
-        ...(input.article ? { article: input.article } : {}),
-        ...(input.new ? { new: true } : {}),
-        ...(input.append ? { mode: 'append' as const } : {}),
-        ...(input.size ? { size: input.size as PageSizeId } : {}),
-        ...(input.orientation ? { orientation: input.orientation } : {}),
-        ...(input.look ? { look: input.look } : {}),
-        ...(input.accent ? { accent: input.accent } : {}),
-        ...(input.pageNumbers !== undefined ? { pageNumbers: input.pageNumbers } : {}),
-      },
-      'cli',
-    );
+    const write = () =>
+      writeArticle(
+        ctx.api,
+        at.documentId,
+        {
+          ...(at.tabId ? { tabId: at.tabId } : {}),
+          markdown,
+          ...(input.article ? { article: input.article } : {}),
+          ...(input.new ? { new: true } : {}),
+          ...(input.append ? { mode: 'append' as const } : {}),
+          ...(input.size ? { size: input.size as PageSizeId } : {}),
+          ...(input.orientation ? { orientation: input.orientation } : {}),
+          ...(input.look ? { look: input.look } : {}),
+          ...(input.accent ? { accent: input.accent } : {}),
+          ...(input.pageNumbers !== undefined ? { pageNumbers: input.pageNumbers } : {}),
+        },
+        'cli',
+      );
+    const started = ctx.now();
+    let done = await write();
+    for (let attempt = 1; !done.ok && done.code === 'paragraphs_held'; attempt += 1) {
+      if (!input.waitHeld || ctx.now() - started + HELD_RETRY_INTERVAL_MS > input.waitHeld * 1000)
+        break;
+      ctx.log(`held retry ${attempt}`);
+      await ctx.sleep(HELD_RETRY_INTERVAL_MS);
+      done = await write();
+    }
     if (!done.ok) throw refusal(done);
     const article = done.article!;
     return { ...doneOf(done), flow: article.flow, title: article.title, created: article.created };

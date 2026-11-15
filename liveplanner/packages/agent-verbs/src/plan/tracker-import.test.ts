@@ -136,7 +136,7 @@ function failingSecondPart() {
     parts += 1;
     return parts === 1
       ? record({ staged: 200 }, 202)(r)
-      : record({ error: 'items_full', message: 'a plan holds 2000 items' }, 413)(r);
+      : record({ error: 'items_full', message: 'a plan holds 5000 items' }, 413)(r);
   };
 }
 

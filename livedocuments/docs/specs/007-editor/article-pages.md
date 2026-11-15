@@ -669,14 +669,17 @@ ink").
 ## Collaboration
 
 - Everyone on the tab sees the writing change as each person's commits land. The writing syncs
-  **block by block**: two people writing in different paragraphs never overwrite each other; two
-  in the same paragraph at once is last commit wins for that paragraph, the room's last on every screen
-  (see [Same-element edits converge](../012-collaboration/realtime-conflict-resolution.md#same-element-edits-converge)). A **table syncs cell by
-  cell**: a commit that only changed cells' text sends each changed cell on its own, so two people
-  in different cells of one table never overwrite each other; two in the same cell at once is last
-  commit wins for that cell. A change to the table's shape (a row or column added or removed, the
-  header row, a width) is sent as the whole table: cell edits by others that reach the room before it
-  are replaced by it, and those after it land in their cells while those cells still exist.
+  **block by block**: two people writing in different paragraphs never overwrite each other, and
+  **one person writes a paragraph at a time** ([Holding a paragraph](#holding-a-paragraph)), so two
+  people never type into the same one at once. A **table syncs cell by cell**: a commit that only
+  changed cells' text sends each changed cell on its own, so two people in different cells of one
+  table never overwrite each other, and a cell is held like a paragraph. A change to the table's
+  shape (a row or column added or removed, the header row, a width) is sent as the whole table, so
+  it waits while anyone else holds one of its cells; cell edits by others that reach the room before
+  it are replaced by it, and those after it land in their cells while those cells still exist. Where
+  a hold could not be arbitrated (the room unreachable), two commits to one paragraph are still last
+  commit wins for that paragraph, the room's last on every screen
+  (see [Same-element edits converge](../012-collaboration/realtime-conflict-resolution.md#same-element-edits-converge)).
 - **The store keeps everyone's writing.** A save sends which blocks (and cells) it changed, and the
   api applies only those over the stored writing, so after a reload two people's words in different
   paragraphs or cells are both there, as they were on screen
@@ -698,7 +701,56 @@ ink").
   a writer who left before settling, are grown by the first editor to lay the article out
   ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)).
 - **Agents** read an article as Markdown and write it from Markdown
-  ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's.
+  ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's, and
+  never over a paragraph someone holds.
+
+### Holding a paragraph
+
+The canvas's selection lock ([Editor app](editor-app.md), `lockedByOther`) carried into the
+writing: the paragraph (or table cell) someone is typing in is **held** by them, and nobody else
+types in it until they let go. Nothing about what is stored changes, and no letters are merged.
+
+- **Taking a hold.** Typing in a block (a paragraph, a heading, a list item, a quote, a code block)
+  holds it; typing in a table cell holds that cell. Putting the caret in a block, reading it or
+  selecting its text holds nothing. A hold is the room's to give: the first claim to reach the room
+  wins, and the room tells the claimant it has it. Until it answers (one socket round trip), what
+  was typed in the block stays on the writer's screen and is not committed; once it answers it is
+  committed as usual. When the room cannot answer (the socket down, or no answer within the
+  room's confirm timeout, 2 s), the writing goes ahead as it does today.
+- **Losing a race.** Two people who start in one paragraph before either sees the other's hold:
+  the room gives it to the first claim it receives, and the second person's few letters in that
+  paragraph are taken back from their screen (never committed, so the first writer's words are
+  never replaced) with a notice: "<Name> is writing in this paragraph." From then on they see the
+  hold as anyone does.
+- **What others see.** A held paragraph or cell is outlined in its writer's colour, with a chip
+  naming them ("Sam Lee") in the page's left margin beside its first line, joined to the outline by a short tick and
+  cut short with an ellipsis where the margin is narrower than the name (a cell's chip sits on its top right corner,
+  over the cell's padding), so it never covers the writing around it; hovering the paragraph says "Sam Lee is writing
+  here". The chip is drawn over the page like their caret, never stored, exported or in a thumbnail. Others can still read it, select and copy its
+  text, open its margin notes and comment in their threads, and type in every other paragraph.
+  Typing, pasting, formatting, deleting into it or joining another block into it is refused, with
+  the same notice at most once every 2.5 s; a new margin note on its text waits for the hold to
+  free (the note is part of the paragraph's text). A table with a held cell takes text in its
+  other cells but no change of shape until the hold frees.
+- **Letting go.** A hold frees when its writer's caret leaves the block, after 8 s without typing
+  in it (`ARTICLE_HOLD_IDLE_MS`), when their writing loses the caret (another app, another tab, the
+  editor closed) and when their socket goes. While they keep typing, the hold is said again at most
+  every 2 s (`ARTICLE_HOLD_REFRESH_MS`), so a person who joins mid-sentence sees it within 2 s.
+  Every hold not said again within 12 s (`ARTICLE_HOLD_EXPIRE_MS`) is gone, in the room and on every
+  screen, so a lost release, a laptop closed mid-word or a frozen tab never holds a paragraph for
+  longer.
+- **Who holds.** Editors and Participants hold the blocks they write (a Participant writes text,
+  so holds what it writes); a Viewer writes nothing and holds nothing. Holding takes nothing a role
+  lacks: the role's rights over the writing are unchanged.
+- **Agents.** An agent's write (MCP `write_article`, CLI `article set`) that would change a held
+  block or cell is refused whole, nothing written, with `409 paragraphs_held` naming each holder
+  and the paragraph's opening words; the CLI's `--wait-held <seconds>` retries every 2 s until the
+  hold frees. People outrank agents: a person's own hold refuses their agent too
+  ([Pages for agents](../024-agents/pages-for-agents.md#held-paragraphs)).
+- **On the wire** (`article-hold`, presence): the tab, the article, the block and, for a cell, its
+  row's and column's ids; or the article alone with no block for a release. Never logged or
+  replayed. The room keeps each session's hold on its socket, answers a claim to the claimant
+  alone and relays only the holds it gave.
 
 ## Telemetry
 

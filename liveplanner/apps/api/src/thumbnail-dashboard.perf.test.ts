@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@liveplanner/project';
-import { PLAN_VIEW_IDS, defaultCatalogue, type Item } from '@liveplanner/items';
+import { ITEMS_MAX, PLAN_VIEW_IDS, defaultCatalogue, type Item } from '@liveplanner/items';
 import { DASHBOARD_ROWS_MAX, DASHBOARD_SLOTS_MAX } from '@liveplanner/project';
 import { buildTemplateTabs } from '@liveplanner/templates';
 import type { PlanEnv, ProjectDTO } from './types';
@@ -95,13 +95,13 @@ beforeEach(() => {
 });
 
 describe('a Dashboard’s live image at size', () => {
-  it('draws the Overview over 50 cards, and over 2,000, within budget', async () => {
+  it('draws the Overview over 50 cards, and over a full plan (ITEMS_MAX), within budget', async () => {
     const small = await timed(50);
-    const large = await timed(2000);
+    const large = await timed(ITEMS_MAX);
     console.info('[perf] dashboard live image', {
       slots: dashboard.dashboard?.rows.flatMap((r) => r.slots).length,
       ms50: Math.round(small.ms * 10) / 10,
-      ms2000: Math.round(large.ms * 10) / 10,
+      msFull: Math.round(large.ms * 10) / 10,
       bytes50: small.svg.length,
     });
     expect(small.svg.length).toBeGreaterThan(0);
@@ -114,7 +114,7 @@ describe('a Dashboard’s live image at size', () => {
   });
 
   // The largest page there can be: every row of every slot a chart or metric, over the most cards a project holds.
-  it('draws 12 rows of 4 charts and metrics over 2,000 cards within budget', async () => {
+  it('draws 12 rows of 4 charts and metrics over a full plan (ITEMS_MAX cards) within budget', async () => {
     const views = Array.from({ length: DASHBOARD_ROWS_MAX * DASHBOARD_SLOTS_MAX }, (_, i) => ({
       id: `v${i}`,
       type: 'shape',
@@ -141,7 +141,7 @@ describe('a Dashboard’s live image at size', () => {
       },
     } as unknown as Tab;
     db.getTabBody.mockResolvedValue(stored(full));
-    const { ms, svg } = await timed(2000);
+    const { ms, svg } = await timed(ITEMS_MAX);
     console.info('[perf] fullest dashboard live image', { ms: Math.round(ms * 10) / 10 });
     expect(svg.length).toBeGreaterThan(0);
     // Measured at about 37 ms on an M-series laptop: the 48 pictures are most of it (plan-view-art.perf.test.ts).

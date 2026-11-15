@@ -173,6 +173,26 @@ Writes an article's text from **Markdown**.
   settled in the editor (below), said plainly: "Written: 42 blocks, 1,830 words. The article flows onto more pages
   as it is laid out in the editor."
 
+## Held paragraphs
+
+A person typing in an article holds the paragraph (or table cell) they type in
+([Article pages](../007-editor/article-pages.md#holding-a-paragraph)). An agent's article write that would change a
+held block, put it elsewhere, remove it or change a held cell (a whole-table write counts as changing every cell of
+its table) is refused, nothing written: `409 paragraphs_held`, its message naming each holder and the paragraph's
+opening words ("Sam Lee is writing in \"The plan for spring…\". Try again once they pause, or leave that paragraph
+as it is."), and `held` listing each `{ flow, blockId, row?, col?, by: { name, color } }`. A write that leaves every
+held block as it is goes ahead. The CLI and the MCP give the refusal the hint `wait for them to pause with: --wait-held
+<seconds>`. Page changes never touch the writing and are never held.
+
+- Every hold counts, whoever holds it, the agent owner's own included: people outrank agents, and a person mid-word
+  would lose it.
+- A write without a token (a person's own script session) is never held, as a person's revert is not
+  ([Agent changesets](agent-changesets.md#held-elements)).
+- The room's answer is the source; when it cannot be reached within the selections timeout, nothing counts as held
+  and the api logs `[pages-agent] holds-unreachable`.
+- The CLI's `article set --wait-held <seconds>` retries every 2 s while the write is held, up to the seconds given;
+  the MCP answers the refusal, which the model retries.
+
 ## Pages for the writing
 
 Where a line breaks is measured by the editor, so the server never sets an article's pages (an answer's
@@ -226,7 +246,7 @@ read budget: past it an article's Markdown stops at a block boundary with "(trun
 ## Observability
 
 Every decision logs with the `[pages-agent]` fingerprint: `applied` (document, tab, changes, rev), `refused`
-(code, change index), `stale-retry`, `relay-missed`, and in the editor `[article] grown for an absent writer`
+(code, change index), `held` (document, tab, held count), `holds-unreachable`, `stale-retry`, `relay-missed`, and in the editor `[article] grown for an absent writer`
 (flow, pages).
 
 ## Telemetry

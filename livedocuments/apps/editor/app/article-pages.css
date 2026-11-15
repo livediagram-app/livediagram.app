@@ -347,10 +347,85 @@
   opacity: 1;
 }
 
+/* A paragraph (or table cell) another person holds while writing (docs/specs/007-editor/article-pages.md "Holding
+   a paragraph", article-holds.ts): outlined in their colour, drawn as an outline so it moves nothing, with a chip
+   above its top left corner naming them. The chip is a zero-width span at the block's start, like a caret. */
+.article-flow [data-held] {
+  outline: 2px solid var(--article-held);
+  outline-offset: 3px;
+  border-radius: 2px;
+  transition: outline-color 150ms ease;
+}
+/* The writer's name chip hangs off the held block itself, so it never covers the writing around it: a top-level
+   block's chip sits in the page's left margin beside its first line, joined to the outline by a short tick and cut
+   with an ellipsis to the margin (the page clips anything past its edge); a cell's chip sits on the cell's top right
+   corner, over the padding (6 px) either side of the rule. */
+.article-flow > [data-held],
+.article-flow td[data-held],
+.article-flow th[data-held] {
+  position: relative;
+}
+.article-flow td[data-held],
+.article-flow th[data-held] {
+  outline-offset: -2px;
+}
+.article-flow .article-held-chip {
+  display: inline;
+  user-select: none;
+  pointer-events: none;
+}
+.article-flow .article-held-chip::after,
+.article-flow .article-held-chip::before {
+  position: absolute;
+  background: var(--article-held);
+}
+.article-flow .article-held-chip::after {
+  content: attr(data-name);
+  top: 2px;
+  right: calc(100% + 12px);
+  max-width: calc(var(--article-margin, 48px) - 16px);
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: white;
+  font: 600 10px/14px var(--article-body-font);
+  font-style: normal;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  text-align: left;
+  text-indent: 0;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+}
+.article-flow .article-held-chip::before {
+  content: '';
+  top: 9px;
+  right: calc(100% + 5px);
+  width: 7px;
+  height: 2px;
+}
+.article-flow td[data-held] .article-held-chip::after,
+.article-flow th[data-held] .article-held-chip::after {
+  top: 0;
+  right: 6px;
+  max-width: calc(100% - 12px);
+  padding: 0 5px;
+  font-size: 9px;
+  line-height: 12px;
+  transform: translateY(-50%);
+}
+.article-flow td[data-held] .article-held-chip::before,
+.article-flow th[data-held] .article-held-chip::before {
+  content: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .article-flow .article-zone,
   .article-flow .article-list-todo::before,
-  .article-flow .article-peer-caret::after {
+  .article-flow .article-peer-caret::after,
+  .article-flow [data-held] {
     transition: none;
   }
 }

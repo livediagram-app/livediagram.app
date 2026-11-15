@@ -18,6 +18,7 @@ import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useChangesetFeed } from '../useChangesetFeed';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
+import { useArticleHoldBroadcast } from '@/hooks/collab/useArticleHoldBroadcast';
 import type { EditorDocument } from './useEditorDocument';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorTools } from './useEditorTools';
@@ -364,6 +365,13 @@ export function useEditorCollaboration({
   useArticleCaretBroadcast({
     roomRef,
     live: hydrated && !!documentId && (documentShareable || !!documentTeamId),
+    activeId,
+  });
+  // The paragraph we are typing in, held for us (docs/specs/007-editor/article-pages.md "Holding a paragraph"):
+  // whenever the room is open, a personal document's included, so our own agent never writes over it.
+  useArticleHoldBroadcast({
+    roomRef,
+    live: hydrated && !!documentId && realtime.documentServerStored,
     activeId,
   });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the

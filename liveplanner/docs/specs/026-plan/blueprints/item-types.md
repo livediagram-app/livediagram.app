@@ -752,7 +752,9 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   from the room's purge). `routes/images.ts` names the plan as the upload's `document`, so the media service claims
   the picture for it (none for a This Browser upload).
 - The Card Types segment of `PlanCardsClusterStrip` (a `ClusterPopoverSegment`, from `ClusterPopoverButton.tsx`,
-  shared with Slides) opens dock panel `card-types` (`useCardTypesOpener` opens it from Edit Cards);
+  shared with Slides) opens dock panel `card-types`, its only door. The strip takes it as an optional `types`
+  prop, as it takes `trash`: `CanvasChrome` passes it only to an editor (`!readOnly`), and `useCanvasChromePanels`
+  shows the panel only then;
   `CardTypesPanel` is a `MovablePanel` popover; `ItemTypeEditor` + `ItemTypeLayoutEditor` (forms in `ItemTypeFieldForms`) the modal (`Dialog`,
   `size="lg"`, `phoneSheet`), rendered by `PlanSheetsHost`. Delete with items patches each to the chosen type
   first.
@@ -1370,17 +1372,17 @@ cards, children)` adds "{names} will keep a copy of its settings."
   in `blocked-by.perf.test.ts`.
 
 - Edit Field's count: one pass over the plan's cards per type picked, memoised per shape until the cards change,
-  each string value worked out once a pass. Measured on 2,000 cards (`ITEMS_MAX`): Text to Number 0.5 ms, Several
+  each string value worked out once a pass. Measured on 2,000 cards (`ITEMS_MAX` then; 4.8 ms for Text to Number at 5,000): Text to Number 0.5 ms, Several
   People to Person 1.1 ms, to Text 1.5 ms, Date to Date and Time 1.4 ms over 100 distinct days and 24 ms when every
   card holds a different day (time-zone math per day). The options a Choice starts with: one pass, under 0.1 ms.
-  The save's writes go in `ITEM_BULK_MAX` chunks (`postInChunks`), so a 2,000-card change is ten requests.
+  The save's writes go in `ITEM_BULK_MAX` chunks (`postInChunks`), so a full plan's change (`ITEMS_MAX`, 5,000 cards) is 25 requests.
 - Built-in names: `typeFieldLabel` is a property read; `builtInFieldLabel` walks the types in scope once per
   `types` array and field (at most 32 types), memoised in a `WeakMap`, so menus, search fields and CSV headers pay
   it once per catalogue change and a card face never does. Budget test: 10,000 lookups over 32 types inside a CPU
   budget (`built-in-field-labels.test.ts`).
 - The retype scan (`fieldRetypeImpact`, `countFieldFilters`) walks the tabs' elements once per dialog, on the first
   other tile picked, no card read; the values pass is `fieldKindChange`'s, once per shape. Measured on a 2,000-card,
-  10-tab plan (40 boards, 40 views): the scan about 0.75 ms, the values pass about 1.6 ms, held under CPU budgets of
+  10-tab plan (40 boards, 40 views): the scan about 0.75 ms, the values pass about 1.6 ms (1.1 ms and 6 ms at 5,000), held under CPU budgets of
   50 ms and 100 ms (`field-retype.perf.test.ts`). The save adds one more scan (`removeFieldFilters`) and one more
   values pass (`typeSavePatches`), once.
 - Add Field's gallery: 33 tiles (25 kinds and 8 variants), each a static sample (no data read), drawn on opening; the search's matching is

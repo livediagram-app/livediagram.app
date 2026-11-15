@@ -14,10 +14,11 @@ type Sql = {
   exec(query: string, ...bindings: unknown[]): { toArray(): Record<string, unknown>[] };
 };
 
-// The most grants one plan keeps, oldest dropped first as a new one comes. Well above ITEMS_MAX (2,000 cards) with
-// a picture or two each and their replacements; a grant is about 100 bytes, so the table stays under a megabyte.
-// Recording a grant again (the same picture uploaded again) makes it the newest.
-export const IMAGE_GRANTS_MAX = 5_000;
+// The most grants one plan keeps, oldest dropped first as a new one comes. 2.5 grants a card at ITEMS_MAX (5,000
+// cards): a picture or two each and their replacements; a grant is about 100 bytes, so the table stays near a megabyte
+// and the count each upload reads (an index scan) stays cheap. Recording a grant again (the same picture uploaded
+// again) makes it the newest.
+export const IMAGE_GRANTS_MAX = 12_500;
 
 // The longest image id a grant or a check takes: the service's ids are UUIDs, so anything longer is not one.
 export const IMAGE_ID_MAX = 200;

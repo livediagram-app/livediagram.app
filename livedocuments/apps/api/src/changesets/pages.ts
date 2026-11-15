@@ -6,6 +6,7 @@
 // editor's own edit sends. A lost race repeats once from the read.
 import {
   tabArticleOps,
+  type HeldParagraph,
   type PagesAnswer,
   type PagesRefusal,
   type PagesRequest,
@@ -21,8 +22,9 @@ import {
 } from '@livedocuments/edit-operations';
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
-import { relayPages } from '../room-client';
+import { readRoomHolds, relayPages } from '../room-client';
 import type { DocumentDTO, DocumentEnv } from '../types';
+import { heldArticleTargets, heldMessage } from './held-paragraphs';
 import { readStoredTab } from './stored-tab';
 import { SUBMIT_ATTEMPTS, withServerRules } from './submit';
 import { writeChangeset, type Author } from './write';
@@ -38,7 +40,10 @@ type PagesArgs = {
 
 type PagesResult = {
   status: number;
-  body: PagesAnswer | ({ error: string } & Omit<PagesRefusal, 'code'>);
+  body:
+    | PagesAnswer
+    | ({ error: string } & Omit<PagesRefusal, 'code'>)
+    | { error: 'paragraphs_held'; message: string; held: HeldParagraph[] };
 };
 
 const refused = (status: number, refusal: PagesRefusal): PagesResult => {
@@ -79,9 +84,12 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
   const { env, document, tabId, request } = args;
   const where = { documentId: document.id, tabId };
   for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
-    const [stored, prevRev] = await Promise.all([
+    // An agent's article write reads the room's paragraph holds beside the tab (spec "Held paragraphs"); page
+    // changes never touch the writing, and a person's own write is never held.
+    const [stored, prevRev, holds] = await Promise.all([
       readStoredTab(env, document.id, tabId),
       lastChangesetRev(env, tabId),
+      args.tokenId && 'article' in request ? readRoomHolds(env, document.id, tabId) : null,
     ]);
     if (!stored) return { status: 404, body: { error: 'not_found', message: 'No such tab.' } };
     // The page changes, or the write and which article it made or wrote.
@@ -102,6 +110,15 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       return refused(400, out.refusal);
     }
     const next = withServerRules(out.tab, stored, args.author);
+    const ops = pagesRoomOps(stored.tab, next);
+    const held = heldArticleTargets(ops, holds);
+    if (held.length > 0) {
+      console.info('[pages-agent] held', { ...where, held: held.length });
+      return {
+        status: 409,
+        body: { error: 'paragraphs_held', message: heldMessage(stored.tab, held), held },
+      };
+    }
     const elementsChanged = diffToElementOps(stored.tab.elements, next.elements).length > 0;
     let rev: number;
     let changesetId: string | null = null;
@@ -142,7 +159,6 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
         throw err;
       }
     }
-    const ops = pagesRoomOps(stored.tab, next);
     // Awaited, bounded per op by ROOM_RELAY_TIMEOUT_MS; a room that misses one is logged and never
     // fails the write.
     await relayPages(env, document.id, ops);

@@ -358,7 +358,8 @@ describe('who may import', () => {
 });
 
 describe('an import at the caps', () => {
-  it('lands 2,000 cards and 20,000 comments in one batch, under a CPU budget', async () => {
+  // A full plan (ITEMS_MAX, 5,000 cards) of ten comments each: measured about 1.2 s of CPU on an M-series Mac.
+  it('lands a full plan of cards and ten comments each in one batch, under a CPU budget', async () => {
     const creates = cards(ITEMS_MAX, { withComments: 1, comments: 10, text: 200 });
     const parts = importParts('import-caps', creates);
     expect(parts.length).toBeGreaterThan(1);
@@ -368,7 +369,7 @@ describe('an import at the caps', () => {
     expect(count('items')).toBe(ITEMS_MAX);
     expect(count('card_threads')).toBe(ITEMS_MAX);
     expect(count('item_import_parts')).toBe(0);
-    expect(ms).toBeLessThan(cpuBudgetMs(1_500));
+    expect(ms).toBeLessThan(cpuBudgetMs(2_500));
   });
 });
 
@@ -382,10 +383,12 @@ describe('the landing’s memory', { timeout: 30_000 }, () => {
   const LANDING_HEAP_BUDGET = 64 * 1024 * 1024;
 
   it('lands an import at the JSON cap under the memory budget', async () => {
-    // 2,000 cards and 20,000 comments, each card's description sized so the import sits just under the cap.
-    const base = jsonChars(cards(ITEMS_MAX, { withComments: 1, comments: 10, text: 570 }));
+    // A full plan (ITEMS_MAX cards) and 20,000 comments, each card's description sized so the import sits just under
+    // the cap. Ten comments a card no longer fit the cap at 5,000 cards, so the comments are spread four a card.
+    const comments = Math.floor(20_000 / ITEMS_MAX);
+    const base = jsonChars(cards(ITEMS_MAX, { withComments: 1, comments, text: 570 }));
     const description = Math.floor((ITEM_IMPORT_JSON_MAX * 0.995 - base) / ITEMS_MAX);
-    const creates = cards(ITEMS_MAX, { withComments: 1, comments: 10, text: 570, description });
+    const creates = cards(ITEMS_MAX, { withComments: 1, comments, text: 570, description });
     expect(jsonChars(creates)).toBeGreaterThan(ITEM_IMPORT_JSON_MAX * 0.98);
     expect(jsonChars(creates)).toBeLessThanOrEqual(ITEM_IMPORT_JSON_MAX);
     const parts = importParts('import-heap', creates);

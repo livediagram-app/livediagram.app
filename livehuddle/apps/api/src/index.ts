@@ -1,8 +1,3 @@
-import {
-  fromLegacyRequest,
-  isLegacyDocumentsPath,
-  toLegacyResponse,
-} from './legacy-documents-alias';
 import { getPersonIdentity } from './auth/accounts';
 import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
 import { handleAuth } from './routes/auth';
@@ -13,7 +8,6 @@ import { handleTokens } from './routes/tokens';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
-import { handleLegacyGuestClaim } from './routes/legacy-guest';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
 import { createTokenBearer } from '@liveworkspace/api-kit/bearer-credentials';
@@ -67,14 +61,6 @@ async function routeApiRequest(
   if (request.method === 'OPTIONS') {
     return new Response(null, { headers: CORS_HEADERS });
   }
-  // The deprecated /api/diagrams… alias: served by the /api/documents… routes, in the old shape.
-  if (isLegacyDocumentsPath(new URL(request.url).pathname)) {
-    console.warn('[legacy-documents-alias]', request.method, new URL(request.url).pathname);
-    const current = await fromLegacyRequest(request, MAX_BODY_BYTES);
-    if (!current) return payloadTooLarge();
-    return toLegacyResponse(await worker.fetch(current, env, executionCtx));
-  }
-
   const url = new URL(request.url);
   const segments = url.pathname.replace(/^\//, '').split('/');
   if (segments[0] !== 'api') return notFound();
@@ -283,9 +269,6 @@ async function routeApiRequest(
       return await handlePreferences(ctx);
     case 'participants':
       return await handleParticipants(ctx);
-    // The one-time door of the move from the old livehuddle.app (docs/migration.md step 6).
-    case 'legacy-guest':
-      return await handleLegacyGuestClaim(ctx);
   }
 
   return notFound();

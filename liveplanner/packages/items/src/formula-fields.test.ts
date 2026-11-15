@@ -22,6 +22,7 @@ import {
   isFormulaField,
 } from './formula-fields';
 import { FORMULA_MAX, FORMULA_STEPS_MAX } from './formula/limits';
+import { ITEMS_MAX } from './limits';
 import type { Item } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { ALI, SAM, item } from './test-items';
@@ -706,9 +707,9 @@ describe('where a Formula reads', () => {
     expect(typeof source.fieldOf(first!, 'Close')).toBe('number');
   });
 
-  it('works a 2,000-card board out within budget (parse once, evaluate per card)', () => {
+  it('works a full plan (ITEMS_MAX cards) out within budget (parse once, evaluate per card)', () => {
     const many: Item[] = [];
-    for (let i = 0; i < 2000; i += 1)
+    for (let i = 0; i < ITEMS_MAX; i += 1)
       many.push(
         card({
           'f-budget': i,
@@ -724,7 +725,7 @@ describe('where a Formula reads', () => {
       for (const c of many)
         for (const field of fields) if (formulaValue(field, c, deal, ctx) !== null) n += 1;
     });
-    expect(n).toBe(8000 - 1);
+    expect(n).toBe(ITEMS_MAX * 4 - 1);
     expect(spent).toBeLessThan(cpuBudgetMs(1000));
   });
 });

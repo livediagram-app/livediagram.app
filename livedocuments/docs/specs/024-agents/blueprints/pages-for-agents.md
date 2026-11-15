@@ -189,7 +189,21 @@ Answer `200`:
 ```
 
 Refusals: `400 { error, message, change? }` for every engine code and `invalid_body`, `403` gate, `404` document or
-tab, `409 tab_busy`, `413 tab_too_large`.
+tab, `409 tab_busy`, `409 paragraphs_held`, `413 tab_too_large`.
+
+Held paragraphs (spec "Held paragraphs"), for a token's article write only, after the engine and before the write:
+
+- `readRoomHolds(env, documentId, tabId)` (`apps/api/src/room-client.ts`): `GET /holds?tab=` on the room, bounded by
+  `ROOM_SELECTIONS_TIMEOUT_MS`; answers `ArticleHoldRow[]` (`{ flow, blockId, row?, col?, name, color }`), or null
+  (logged `[pages-agent] holds-unreachable`) when the room does not answer, and null counts as nothing held.
+- `heldArticleTargets(ops, holds)` (`apps/api/src/changesets/held-paragraphs.ts`, pure): the write's article frames
+  (`tabArticleOps(stored, next)`) against the holds. A `put` or `remove` of block B in flow F meets every hold on
+  (F, B), a paragraph's or any of a table's cells; a `cell` op meets the hold on its own cell (F, B, row, col), and the
+  paragraph hold on (F, B). A frame that `removed` a whole article meets every hold in it. Each hold met once.
+- Any met: `409 { error: 'paragraphs_held', message, held: HeldParagraph[] }`, nothing written, logged
+  `[pages-agent] held` (document, tab, held count), telemetry `Agent · Held` by front door. `message` names up to
+  three holders with each paragraph's opening words (`openingWords`, 40 characters, an ellipsis past them; a cell
+  says "a table cell").
 
 `PagesRefusalCode`: `invalid_body`, `invalid_value`, `tab_locked`, `tab_kind`, `page_unknown`,
 `article_by_write`, `size_not_offered`, `no_orientation`, `no_other_pages`, `layout_unknown`, `page_locked`,
@@ -224,7 +238,10 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
   naming the flags, nothing sent.
 - `article get <doc> [--tab] [--article]` → Markdown on stdout.
 - `article set <doc> <file|-> [--tab] [--article] [--new] [--append] [--size] [--orientation] [--look]
-[--accent] [--page-numbers]`.
+[--accent] [--page-numbers] [--wait-held <seconds>]`. `--wait-held` (1 to 3600) retries a `paragraphs_held` refusal
+  every `HELD_RETRY_INTERVAL_MS` (2 s) while the next try still fits in the seconds given, logging `held retry <n>`;
+  past them the refusal stands, with the hint `HELD_HINT` (`wait for them to pause with: --wait-held <seconds>`)
+  in place of the `page ls` one.
 - `page` and `article` are named-only resources in the top-level help (its 500-token budget).
 
 ## Data and persistence
@@ -292,6 +309,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 - `[pages-agent] refused` `{ documentId, tabId, code, change }`.
 - `[pages-agent] stale-retry` `{ documentId, tabId }`; `[pages-agent] busy`.
 - `[pages-agent] relay-missed` `{ documentId, tabId, op }`.
+- `[pages-agent] held` `{ documentId, tabId, held }`; `[pages-agent] holds-unreachable` `{ documentId, tabId, error }`.
 - Editor: `[article] grown for an absent writer` `{ tabId, flow, from, to }`.
 
 ## Testing
@@ -308,6 +326,9 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 | Front matter, zones, page breaks, escapes, trip | `packages/document/src/article-markdown-io.test.ts`                                     |
 | Grow for an absent writer                       | `packages/document/src/article-pages.test.ts`, `room-op-apply.test.ts` (the agent mark) |
 | Route gate, write, changeset, relay, refusals   | `apps/api/src/routes/tab-pages-route.test.ts`                                           |
+| Held paragraphs: which writes meet which holds  | `apps/api/src/changesets/held-paragraphs.test.ts`                                       |
+| Held paragraphs: refused whole, token only      | `apps/api/src/routes/tab-pages-route.test.ts` "held paragraphs"                         |
+| `article set --wait-held`                       | `packages/agent-verbs/src/verbs/pages.test.ts` "wait-held"                              |
 | The `pages` view and header                     | `packages/document-views/src/pages.test.ts`, `render-view.test.ts`                      |
 | Tools, parity, output schema                    | `apps/mcp/src/pages-tools.test.ts`, `verb-parity.test.ts`, `output-schema.test.ts`      |
 | Which tab (verbs), CLI verbs                    | `packages/agent-verbs/src/verbs/pages.test.ts`                                          |

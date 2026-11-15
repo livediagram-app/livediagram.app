@@ -59,7 +59,7 @@ writes (`403 forbidden`) whatever sends them.
   characters they are, control characters other than line breaks and tabs are dropped, and every value is cut to its
   field's limit. A link is kept only when it is an `http` or `https` address.
 - **The page stays responsive.** The file is read, and the import planned, in a Web Worker, never on the page's main
-  thread: at the caps (2,000 cards, a 7.7 MB Trello board) each takes hundreds of milliseconds, more on a phone. The
+  thread: at the caps (5,000 cards, a Trello board of many megabytes) each takes hundreds of milliseconds, more on a phone. The
   worker keeps the board it read; the page holds only the plans. Where a worker can't start, the same work runs on the
   page.
 
@@ -165,9 +165,9 @@ Choosing a file shows what the import will make, before anything is written:
 - **Left out**: a row per reason with its count (archived cards, archived lists, rows with no title, comments past the
   cap, attachments kept as links, statuses folded into Other, cards shortened to fit). None: "Nothing left out."
 - **Where to**: **New Board Tab in This Plan** (the default) or **New Plan**. The import is **never made in part**:
-  when the plan has no room for every card (a plan holds 2,000; "This plan has room for 120 more cards and this file
+  when the plan has no room for every card (a plan holds 5,000; "This plan has room for 120 more cards and this file
   has 340"), or no room for the card type, the tab choice is dimmed with that reason and New Plan is chosen. A file
-  of more than 2,000 cards is refused outright: "That file has 2,345 cards. A plan holds up to 2,000."
+  of more than 5,000 cards is refused outright: "That file has 6,500 cards. A plan holds up to 5,000."
 - The preview is headed by the dialog's **All Imports** back bar, the tool's name at its right. **Import** makes it;
   **Choose Another File** opens the picker again for the same tool, and the back bar returns to the list. The
   dialog's footer says what will happen in one line:

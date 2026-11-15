@@ -11,11 +11,11 @@ import { DROP_INLINE_MAX_BYTES, fileSizeLabel, routeImportDrop } from './import-
 const FIVE_MB = 5 * 1024 * 1024;
 
 // A Board tab's export as `tabToJsonText` writes it: the envelope, the board, then a full plan's cards (ITEMS_MAX),
-// each with a title and a long description, padded to 5 MB.
+// each with a title and a long description, padded to 5 MB (less about 200 characters of each card's own JSON).
 function fiveMbTabExport(): string {
   const description =
     'Check the quantities against the purchase order, confirm the delivery window. '.repeat(
-      Math.ceil(FIVE_MB / ITEMS_MAX / 80),
+      Math.ceil((FIVE_MB / ITEMS_MAX - 200) / 80),
     );
   const items = Array.from({ length: ITEMS_MAX }, (_, i) => ({
     id: `item-${i}`,
