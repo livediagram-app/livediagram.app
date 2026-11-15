@@ -29,7 +29,7 @@ const { api, copies, hint, identity, paint, seed, seedDeps, timing } = vi.hoiste
   seed: vi.fn(async () => null),
   seedDeps: {
     current: null as { warmFirstTab?: () => unknown; keepActiveId?: () => string | null } | null,
-  },  // Each timing started, by metric: the handle the bootstrap ends.
+  }, // Each timing started, by metric: the handle the bootstrap ends.
   timing: {
     started: [] as { metric: string; from: number | undefined; endAfterPaint: () => void }[],
   },
