@@ -78,6 +78,43 @@ export async function revokeCalendarFeed(
   return (result.meta.changes ?? 0) > 0;
 }
 
+/** The person's own feed on this plan, as Subscribe to Calendar shows it (never its hash), or null for none. */
+export async function calendarFeedFor(
+  env: PlanEnv,
+  planId: string,
+  personId: string,
+): Promise<(CalendarFeedOptions & { createdAt: number }) | null> {
+  const row = await env.PLAN_DB.prepare(
+    `SELECT board_id, mine, include_done, created_at FROM calendar_feeds
+      WHERE plan_id = ? AND person_id = ?`,
+  )
+    .bind(planId, personId)
+    .first<Omit<FeedRow, 'person_id'> & { created_at: number }>();
+  if (!row) return null;
+  return {
+    boardId: row.board_id,
+    mine: row.mine === 1,
+    includeDone: row.include_done === 1,
+    createdAt: row.created_at,
+  };
+}
+
+/** The person's feed's options changed, its token (so its link) kept; whether they had a feed. */
+export async function setCalendarFeedOptions(
+  env: PlanEnv,
+  planId: string,
+  personId: string,
+  options: CalendarFeedOptions,
+): Promise<boolean> {
+  const result = await env.PLAN_DB.prepare(
+    `UPDATE calendar_feeds SET board_id = ?, mine = ?, include_done = ?
+      WHERE plan_id = ? AND person_id = ?`,
+  )
+    .bind(options.boardId, options.mine ? 1 : 0, options.includeDone ? 1 : 0, planId, personId)
+    .run();
+  return (result.meta.changes ?? 0) > 0;
+}
+
 /** The feed a token's hash names on this plan, or null for a token it never made (or one since reset). */
 export async function calendarFeedOf(
   env: PlanEnv,

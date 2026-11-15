@@ -9,6 +9,7 @@
     "./app-auth": "./src/app-auth.ts",
     "./account-name": "./src/account-name.ts",
     "./return-path": "./src/return-path.ts",
+    "./guest-renewal": "./src/guest-renewal.ts",
     "./pkce-cookie": "./src/pkce-cookie.ts",
     "./sign-out": "./src/sign-out.ts",
     "./token-answer": "./src/token-answer.ts",

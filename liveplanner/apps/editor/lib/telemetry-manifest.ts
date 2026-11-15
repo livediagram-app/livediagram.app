@@ -148,6 +148,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Plan·Restored',
   'Plan·Revealed',
   'Plan·Selected',
+  // Subscribe to Calendar: the Google and Apple Calendar links ('Shared', types CalendarFeedGoogle, CalendarFeedApple).
+  'Plan·Shared',
   'Plan·Started',
   // Automations: Test on a Card ('Tested', type AutomationRule).
   'Plan·Tested',

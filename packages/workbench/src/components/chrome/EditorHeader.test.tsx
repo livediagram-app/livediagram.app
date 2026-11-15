@@ -190,6 +190,15 @@ describe('EditorHeader actions', () => {
     expect(screen.getByRole('button', { name: 'Private' })).toBeTruthy();
   });
 
+  it('puts the editor’s lead action first on the right edge, before Copy and Share', () => {
+    const { container } = render(
+      header({ leadAction: <button type="button">Prototype</button>, onMakeCopy: () => {} }),
+    );
+    const actions = container.querySelector('header > div:last-child')!;
+    expect(actions.firstElementChild?.textContent).toBe('Prototype');
+    expect(screen.getByRole('button', { name: 'Share' })).toBeTruthy();
+  });
+
   it('has no Present button without something to present', () => {
     render(header());
     expect(screen.queryByRole('button', { name: /Present/ })).toBeNull();

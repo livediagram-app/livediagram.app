@@ -341,9 +341,9 @@ inspect it." With one, under the element's name (its kind, and its words when it
 
 ## Clickable prototypes
 
-Status: building (Work Tracker 136). The stored links, their checks, how agents read and write them, and setting
-them in the editor (the Screen mode, the link handle and the link marker) are built; Prototype mode, its share link
-and the Flow view follow.
+Status: building (Work Tracker 136). The stored links, their checks, how agents read and write them, setting
+them in the editor (the Screen mode, the link handle and the link marker), Prototype mode and its share link are
+built; the Flow view follows.
 
 A wireframe tab's screens can be clicked through: any element on a wireframe page can link to another screen of
 the same tab, and **Prototype mode** plays the screens one at a time, a press on a linked element going to its
@@ -385,7 +385,8 @@ marker but neither way in.
   quick-connect plus. Dragging it draws a line from the handle to the pointer and outlines the screen under the
   pointer with its name; letting go on another screen links the element to it (keeping the element's transition
   when it already had a screen link), and letting go on the element's own screen, off every screen, or pressing
-  Escape changes nothing. A press without a drag (or Enter on the focused handle) opens Link Element on its Screen
+  Escape changes nothing. The screen's name pill sits above the screen's top-left corner, and is kept inside the
+  window (8 px from its edges) when that corner is off screen. A press without a drag (or Enter on the focused handle) opens Link Element on its Screen
   mode. The handle hides while the element is being edited, while a menu covers it, on a locked tab and for
   anyone who may not link it.
 - A linked element shows a small **link marker** while editing (its [element indicator](../008-canvas/element-indicators.md)):
@@ -404,24 +405,44 @@ exporting. Linking the element again, or clearing its link, mends it.
 
 ### Prototype mode
 
-- **Prototype** in the toolbar, on a wireframe tab, plays the tab: one screen at a time, inside its device frame,
-  centred and scaled to fit the window, over a plain backdrop. It starts on the screen in view (the first screen
-  when none is).
-- Pressing a linked element follows its link with its transition. A press anywhere else **flashes the hotspots**
-  on the screen, so a person can see what is clickable.
-- **Back** and **Next** controls and the arrow keys step through the screens in order; Escape (or **Close**)
-  returns to the editor on the screen last shown.
-- Nothing in Prototype mode edits: it is a player.
+- **Prototype** in the header's actions (a play glyph over the word, before Share or Copy), on a wireframe tab, for
+  every role, plays the tab: one screen at a time, inside its device frame, centred and scaled to fit the window
+  below a slim bar, over a plain backdrop. It starts on the screen in view (the first screen when none is). Its hover
+  card says "Click through this tab's screens, as the people using them would."
+- **The bar** reads **Prototype**, the screen's name and its place ("Checkout · 3 of 5"), and holds **Previous**
+  and **Next** (chevrons, disabled at the ends), **Copy Prototype Link** (where there is a link to copy) and
+  **Close** (an ×).
+- Pressing a linked element (a **hotspot**) follows its link with its transition: a screen link goes to its screen,
+  a back link to the screen shown before (nothing on the first screen shown). A broken link is no hotspot. A
+  hotspot is the element's drawn box, cut to the screen; a press on the topmost hotspot under the pointer wins. The
+  pointer is a hand over a hotspot.
+- A press anywhere else on the stage **flashes the hotspots** on the screen: each lights in the brand colour (a
+  soft fill and an outline), holds half a second and fades, so a person can see what is clickable.
+- **Transitions** take 250 ms: Slide moves the new screen in from the right over the old one, which shifts a third
+  of the way left and dims (a back link's slide runs the other way); Dissolve fades the new screen in over the old.
+  Under reduced motion (the system's setting or Reduce Motion in Settings) every change is instant.
+- **Keys**: the arrow keys (Left, Right) step through the screens in the tab's order, as Previous and Next do; Tab
+  moves between the hotspots and the bar's controls, and Enter or Space on a hotspot follows it; Escape (or
+  **Close**) returns to the editor, framing the screen last shown. While the player is open the editor's own
+  shortcuts are held off.
+- Nothing in Prototype mode edits: it is a player. It draws the screens live, so a collaborator's edit shows as it
+  lands; when the screen shown is deleted the player moves to the first screen, and when the tab stops being a
+  wireframe tab it closes.
+- A screen is drawn as an export draws it: the frame, the content cut to the screen, the system bars over it.
 
 ### Sharing a prototype
 
 - A share link with `prototype` (`/design/shared?s=<code>&prototype=1`) opens straight into Prototype mode when its
-  tab is a wireframe tab; on any other tab it is ignored. The editor reads the flag, as it reads `inspect`; the
-  link is an ordinary share link and nothing about it is stored.
-- **Copy Prototype Link** in Prototype mode copies the design's live **Viewer** link with `prototype`, as Copy
-  Inspect Link does (no Viewer link yet opens the Share dialog; a design kept in This Browser has no link).
-- On a phone the prototype fills the screen: the device frame steps aside and the screen alone fills the
-  viewport, and a tap follows a link.
+  tab is a wireframe tab; on any other tab it is ignored. The editor reads the flag once as the design opens, as it
+  reads `inspect`; the link is an ordinary share link and nothing about it is stored. Closing the player leaves the
+  visitor in the editor with the link's role.
+- **Copy Prototype Link** in the player's bar copies a link with `prototype`, as Copy Inspect Link does: a visitor the
+  link they came in on; the owner (and anyone who may share) the design's live **Viewer** link (no Viewer link yet
+  opens the Share dialog with "Make a Viewer link, then copy the Prototype link."); a design kept in This Browser has
+  no link, so no button. It says "Copied a link that opens the prototype".
+- On a phone the prototype fills the screen: the device frame steps aside and the screen alone fills the viewport
+  (letterboxed on black where its shape differs), the bar shrinks to a small floating pill at the top (Previous, the
+  place, Next, Close), and a tap follows a link.
 
 ### Flow view
 

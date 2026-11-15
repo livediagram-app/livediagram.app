@@ -667,13 +667,24 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
   ),
 );
 
+// Prototype mode (livedesign/docs/specs/007-editor/wireframe-pages.md "Prototype mode"): a wireframe tab played from
+// the header's Prototype or a prototype link.
+export const PROTOTYPES_PLAYED = chart(
+  'Canvas',
+  'Used',
+  'Prototypes Played',
+  'A wireframe tab played in Prototype mode, from the header or a prototype link.',
+  { types: ['Prototype'] },
+);
+
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
-  blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, MODE_OPTIONS],
+  blurb:
+    'Ways of working on the canvas picked from the palette (and Prototype, from the header), and the options set inside them.',
+  members: [...MODE_METRICS, PROTOTYPES_PLAYED, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
-  headline: [...MODE_METRICS],
+  headline: [...MODE_METRICS, PROTOTYPES_PLAYED],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
 };
 

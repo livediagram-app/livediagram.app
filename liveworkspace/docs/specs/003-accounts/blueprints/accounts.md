@@ -503,150 +503,155 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 
 ## Constants and configuration: named constants
 
-| Constant                            | Value                                                                    | File                 |
-| ----------------------------------- | ------------------------------------------------------------------------ | -------------------- |
-| `ACCOUNT_API_PATH`                  | `'/api/account'`                                                         | `account-api.ts`     |
-| `MAX_EMAIL_IDS`                     | `100`                                                                    | `account-apps.ts`    |
-| `AUTH_BASE_PATH`                    | `'/api/auth'`                                                            | `auth-options.ts`    |
-| `SEND_CODE_PATH`                    | `'/email-otp/send-verification-otp'`                                     | `auth-options.ts`    |
-| `SIGN_IN_CODE_PATH`                 | `'/sign-in/email-otp'`                                                   | `auth-options.ts`    |
-| `UNUSED_CODE_PATHS`                 | `(object or list, see file)`                                             | `auth-options.ts`    |
-| `NAME_MAX_LENGTH`                   | `80`                                                                     | `auth-options.ts`    |
-| `BENCH_ACCOUNTS_PATH`               | `${AUTH_BASE_PATH}/internal/bench-accounts`                              | `bench-accounts.ts`  |
-| `BENCH_ACCOUNTS_MAX`                | `200`                                                                    | `bench-accounts.ts`  |
-| `CLIENTS_PATH`                      | `${AUTH_BASE_PATH}/internal/clients`                                     | `clients.ts`         |
-| `DELETE_ACCOUNT_PATH`               | `'/delete-account'`                                                      | `delete-account.ts`  |
-| `DELETION_CODE_PATH`                | `'/delete-account/code'`                                                 | `deletion-code.ts`   |
-| `DELETION_CHECK_PATH`               | `'/delete-account/check'`                                                | `deletion-code.ts`   |
-| `DELETION_CODE_TTL_SECONDS`         | `600`                                                                    | `deletion-code.ts`   |
-| `DELETION_CODE_TRIES`               | `3`                                                                      | `deletion-code.ts`   |
-| `INK`                               | `'#0f172a'`                                                              | `email-layout.ts`    |
-| `MUTED`                             | `'#475569'`                                                              | `email-layout.ts`    |
-| `GUEST_IDLE_MS`                     | `400 * DAY_MS`                                                           | `guest-sweep.ts`     |
-| `GUEST_SWEEP_LIMIT`                 | `500`                                                                    | `guest-sweep.ts`     |
-| `GUEST_PATH`                        | `'/guest'`                                                               | `guests.ts`          |
-| `GUEST_COOKIE`                      | `'lw_guest'`                                                             | `guests.ts`          |
-| `GUEST_TOKEN_TTL_SECONDS`           | `45 * 24 * 60 * 60`                                                      | `guests.ts`          |
-| `AUTHORIZE_PATH`                    | `'/oauth2/authorize'`                                                    | `guests.ts`          |
-| `HANDOFF_PATH`                      | `'/handoff'`                                                             | `handoff.ts`         |
-| `HANDOFF_START_PATH`                | `'/handoff/start'`                                                       | `handoff.ts`         |
-| `HANDOFF_NONCE_COOKIE`              | `'lw_handoff'` (production's, `handoffNonceCookie`)                      | `handoff.ts`         |
-| `HANDOFF_BIND_PARAM`                | `'handoff'`                                                              | `handoff.ts`         |
-| `HANDOFF_TTL_SECONDS`               | `60`                                                                     | `handoff.ts`         |
-| `HANDOFF_NONCE_MAX_AGE_SECONDS`     | `900`                                                                    | `handoff.ts`         |
-| `GUEST_ID`                          | `/^guest_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/` | `ids.ts`             |
-| `USER_ID`                           | `/^user_[A-Za-z0-9]{1,64}$/`                                             | `ids.ts`             |
-| `PURGE_RETRY_CRON`                  | `'*/15 * * * *'`                                                         | `index-purge.ts`     |
-| `PURGES_PER_RUN`                    | `25`                                                                     | `index-purge.ts`     |
-| `STALE_PURGE_DAYS`                  | `30`                                                                     | `index-purge.ts`     |
-| `EVENTS_BATCH`                      | `100`                                                                    | `index-events.ts`    |
-| `EVENTS_CALLS_PER_RUN`              | `10`                                                                     | `index-events.ts`    |
-| `EVENTS_MAX_ATTEMPTS`               | `96`                                                                     | `index-events.ts`    |
-| `EVENTS_OUTBOX_MAX`                 | `5_000`                                                                  | `index-events.ts`    |
-| `LEGACY_CLAIM_HOLD_MS`              | `60_000`                                                                 | `legacy-guests.ts`   |
-| `ACTIVATION_DELAY_MS`               | `3 * DAY_MS`                                                             | `lifecycle.ts`       |
-| `WINBACK_QUIET_MS`                  | `4 * WEEK_MS`                                                            | `lifecycle.ts`       |
-| `SWEEP_LIMIT`                       | `100`                                                                    | `lifecycle.ts`       |
-| `MAX_SEND_ATTEMPTS`                 | `3`                                                                      | `lifecycle.ts`       |
-| `STAGE_ORDER`                       | `['welcome', 'activation', 'week1', 'week2', 'winback']`                 | `lifecycle.ts`       |
-| `MAX_NOTIFY_OWNERS`                 | `100`                                                                    | `notify.ts`          |
-| `MAX_NOTIFY_KEYS`                   | `8`                                                                      | `notify.ts`          |
-| `MAX_PROFILE_IDS`                   | `100`                                                                    | `profiles.ts`        |
-| `PROFILE_NAME_MAX`                  | `120`                                                                    | `profiles.ts`        |
-| `PROFILE_COLOR_MAX`                 | `64`                                                                     | `profiles.ts`        |
-| `RESOURCES`                         | `(object or list, see file)`                                             | `resources.ts`       |
-| `ADMIN_HEADER`                      | `'x-liveworkspace-admin'`                                                | `secrets.ts`         |
-| `SETTINGS_MAX_BYTES`                | `16_384`                                                                 | `settings.ts`        |
-| `SIGN_IN_OPTIONS_PATH`              | `'/sign-in-options'`                                                     | `sign-in-options.ts` |
-| `TEAM_NAME_MAX_LENGTH`              | `80`                                                                     | `teams/shared.ts`    |
-| `MAX_TEAMS_PER_ACCOUNT`             | `50`                                                                     | `teams/shared.ts`    |
-| `MAX_MEMBERS_PER_TEAM`              | `200`                                                                    | `teams/shared.ts`    |
-| `ORGANISATION_MAX_LENGTH`           | `80`                                                                     | `teams/shared.ts`    |
-| `INVITE_LINK_TTL_MS`                | `7 * 24 * 60 * 60 * 1000`                                                | `teams/shared.ts`    |
-| `REMINDER_AGES_MS`                  | `[1 * DAY_MS, 7 * DAY_MS, 21 * DAY_MS] as const`                         | `teams/shared.ts`    |
-| `INVITATION_TTL_MS`                 | `28 * DAY_MS`                                                            | `teams/shared.ts`    |
-| `EXPIRE_BATCH`                      | `500`                                                                    | `teams/shared.ts`    |
-| `REMINDER_BATCH`                    | `100`                                                                    | `teams/shared.ts`    |
-| `MAX_REMINDER_ATTEMPTS`             | `3`                                                                      | `teams/shared.ts`    |
-| `LIST_PREVIEW_MEMBERS`              | `4`                                                                      | `teams/reads.ts`     |
-| `DELETED_MEMBER_EMAIL`              | `'Deleted account'`                                                      | `teams/members.ts`   |
-| `CHANGES_PAGE_SIZE`                 | `500`                                                                    | `teams/changes.ts`   |
-| `TELEMETRY_TIMEOUT_MS`              | `2_000`                                                                  | `telemetry.ts`       |
-| `TOKEN_EXPIRY_WARNING_MS`           | `7 * DAY_MS`                                                             | `token-expiry.ts`    |
-| `TOKEN_EXPIRY_SWEEP_LIMIT`          | `100`                                                                    | `token-expiry.ts`    |
-| `API_TOKEN_PREFIX`                  | `'lwt_'`                                                                 | `tokens.ts`          |
-| `LEGACY_API_TOKEN_PREFIX`           | `'lvd_'`                                                                 | `tokens.ts`          |
-| `MAX_API_TOKENS_PER_ACCOUNT`        | `20`                                                                     | `tokens.ts`          |
-| `TOKEN_NAME_MAX_LENGTH`             | `80`                                                                     | `tokens.ts`          |
-| `LAST_USED_STAMP_WINDOW_MS`         | `60_000`                                                                 | `tokens.ts`          |
-| `MAX_LIVE_TOKEN_IDS`                | `100`                                                                    | `tokens.ts`          |
-| `WORKBENCH_TICKET_TTL_MS`           | `60_000`                                                                 | `routes.ts`          |
-| `WORKBENCH_SESSION_TTL_MS`          | `8 * 60 * 60 * 1000`                                                     | `routes.ts`          |
-| `WORKBENCH_TICKETS_PER_MINUTE`      | `30`                                                                     | `routes.ts`          |
-| `WORKBENCH_NAME_MAX_LENGTH`         | `40`                                                                     | `routes.ts`          |
-| `WORKBENCH_ORIGIN_MAX_LENGTH`       | `255`                                                                    | `routes.ts`          |
-| `WORKBENCH_POLL_INTERVAL_S`         | `5`                                                                      | `routes.ts`          |
-| `WORKBENCH_SESSION_PREFIX`          | `'lvw_'`                                                                 | `store-types.ts`     |
-| `WORKBENCH_TICKET_BYTES`            | `16`                                                                     | `store-types.ts`     |
-| `WORKBENCH_PAIRING_CODE_BYTES`      | `16`                                                                     | `store-types.ts`     |
-| `WORKBENCH_SESSION_SECRET_BYTES`    | `32`                                                                     | `store-types.ts`     |
-| `WORKBENCH_PAIRING_TTL_MS`          | `10 * 60 * 1000`                                                         | `store-types.ts`     |
-| `WORKBENCH_SESSION_GRACE_MS`        | `24 * 60 * 60 * 1000`                                                    | `store-types.ts`     |
-| `WORKBENCH_QUOTA_MAX`               | `1_000`                                                                  | `store-types.ts`     |
-| `WORKBENCH_SESSION_ROOMS_MAX`       | `500`                                                                    | `store-types.ts`     |
-| `WORKBENCH_TICKET_PATTERN`          | `/^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/`                                    | `store-types.ts`     |
-| `WORKBENCH_SESSION_PATTERN`         | `/^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/`                                | `store-types.ts`     |
-| `WORKBENCH_CODE_PATTERN`            | `/^[A-Za-z0-9_-]{22}$/`                                                  | `store-types.ts`     |
-| `WORKSPACE_TOKEN_PATH`              | `'/workspace-token'`                                                     | `workspace-token.ts` |
-| `WORKSPACE_TOKEN_TTL_SECONDS`       | `15 * 60`                                                                | `workspace-token.ts` |
-| `ACCOUNT_NAME_MAX_LENGTH`           | `64`                                                                     | `account-name.ts`    |
-| `ACCOUNT_COLOUR_MAX_LENGTH`         | `64`                                                                     | `account-name.ts`    |
-| `TOKEN_VALID_FOR_MS`                | `60_000`                                                                 | `account.ts`         |
-| `TOKEN_INVALID_FOR_MS`              | `10_000`                                                                 | `account.ts`         |
-| `MAX_LIVE_TOKEN_IDS`                | `100`                                                                    | `account.ts`         |
-| `MAX_PROFILE_IDS`                   | `100`                                                                    | `account.ts`         |
-| `MAX_EMAIL_IDS`                     | `100`                                                                    | `account.ts`         |
-| `MAX_NOTIFY_OWNERS`                 | `100`                                                                    | `account.ts`         |
-| `INVITATIONS_TTL_MS`                | `30_000`                                                                 | `invitations.ts`     |
-| `INVITATIONS_CACHE_MAX`             | `500`                                                                    | `invitations.ts`     |
-| `MILESTONE_ITEM_COUNTS`             | `[10]`                                                                   | `notify.ts`          |
-| `JOIN_NOTIFY_THROTTLE_MS`           | `15 * 60 * 1000`                                                         | `notify.ts`          |
-| `NOTIFY_EMAIL_DEDUPE_MS`            | `24 * 60 * 60 * 1000`                                                    | `notify.ts`          |
-| `NOTIFY_EMAILS_PER_SENDER_PER_HOUR` | `60`                                                                     | `notify.ts`          |
-| `NOTIFY_RATE_WINDOW_MS`             | `60 * 60 * 1000`                                                         | `notify.ts`          |
-| `GUEST_STATE_PATTERN`               | `/^[A-Za-z0-9_-]{8,200}$/`                                               | `oauth.ts`           |
-| `SILENT_SESSION_KEY`                | `'liveworkspace:silent-sign-in'`                                         | `silent.ts`          |
-| `SILENT_GUARD_MAX_AGE_SECONDS`      | `120`                                                                    | `silent.ts`          |
-| `SIGNED_OUT_MAX_AGE_SECONDS`        | `400 * 24 * 3600`                                                        | `silent.ts`          |
-| `SIGNED_OUT_VALUE`                  | `'2'`                                                                    | `silent.ts`          |
-| `SILENT_RETURN_KEY`                 | `'liveworkspace:silent-return'`                                          | `silent.ts`          |
-| `SILENT_RETURN_ATTRIBUTE`           | `'data-silent-return'`                                                   | `silent.ts`          |
-| `SILENT_RETURN_MAX_LENGTH`          | `1500`                                                                   | `silent.ts`          |
-| `SILENT_RETRY_GLOBAL`               | `'__liveworkspaceSilentSignIn'`                                          | `silent.ts`          |
-| `WORKBENCH_SESSION_VALID_FOR_MS`    | `60_000`                                                                 | `workbench.ts`       |
-| `WORKBENCH_SESSION_INVALID_FOR_MS`  | `10_000`                                                                 | `workbench.ts`       |
-| `WORKBENCH_SESSION_CACHE_MAX`       | `1_000`                                                                  | `workbench.ts`       |
-| `EMAIL_SEND_TIMEOUT_MS`             | `10_000`                                                                 | `index.ts`           |
-| `NOTIFICATION_ROWS`                 | `(object or list, see file)`                                             | `account.ts`         |
-| `IN_APP_ROWS`                       | `(object or list, see file)`                                             | `account.ts`         |
-| `PRIVACY_ROWS`                      | `(object or list, see file)`                                             | `account.ts`         |
-| `ACCESSIBILITY_ROWS`                | `(object or list, see file)`                                             | `account.ts`         |
-| `ACCOUNT_TOGGLES`                   | `(object or list, see file)`                                             | `account.ts`         |
-| `ACCOUNT_KEYS`                      | `new Set(ACCOUNT_TOGGLES.map((row) => row.key))`                         | `account.ts`         |
-| `EDITOR_ONLY_KEYS`                  | `(object or list, see file)`                                             | `account.ts`         |
-| `CATALOGUE`                         | `${JSON.stringify(catalogue, null, 2)}`                                  | `catalogue.ts`       |
-| `CATALOGUE`                         | `(object or list, see file)`                                             | `livedesign.ts`      |
-| `CATALOGUE`                         | `(object or list, see file)`                                             | `livediagram.ts`     |
-| `CATALOGUE`                         | `(object or list, see file)`                                             | `livedocuments.ts`   |
-| `CATALOGUE`                         | `(object or list, see file)`                                             | `liveplanner.ts`     |
-| `PLATFORM_PLACES`                   | `(object or list, see file)`                                             | `common.ts`          |
-| `DEVICE_PREFERENCES`                | `(object or list, see file)`                                             | `device.ts`          |
-| `COMMON_SETTING_KEYS`               | `(object or list, see file)`                                             | `index.ts`           |
-| `ALL_SETTING_KEYS`                  | `(object or list, see file)`                                             | `index.ts`           |
-| `RETIRED_ALL_SETTING_KEYS`          | `['powerUserMode', 'minimalChrome']`                                     | `index.ts`           |
-| `PRESENCE_COLOURS`                  | `(object or list, see file)`                                             | `presence.ts`        |
-| `PRESENCE_COLOUR_VALUES`            | `PRESENCE_COLOURS.map((c) => c.value)`                                   | `presence.ts`        |
-| `PROFILE_NAME_MAX`                  | `120`                                                                    | `presence.ts`        |
+| Constant                             | Value                                                                    | File                 |
+| ------------------------------------ | ------------------------------------------------------------------------ | -------------------- |
+| `ACCOUNT_API_PATH`                   | `'/api/account'`                                                         | `account-api.ts`     |
+| `MAX_EMAIL_IDS`                      | `100`                                                                    | `account-apps.ts`    |
+| `AUTH_BASE_PATH`                     | `'/api/auth'`                                                            | `auth-options.ts`    |
+| `ACCESS_TOKEN_TTL_SECONDS`           | `15 * 60`                                                                | `auth-options.ts`    |
+| `SEND_CODE_PATH`                     | `'/email-otp/send-verification-otp'`                                     | `auth-options.ts`    |
+| `SIGN_IN_CODE_PATH`                  | `'/sign-in/email-otp'`                                                   | `auth-options.ts`    |
+| `UNUSED_CODE_PATHS`                  | `(object or list, see file)`                                             | `auth-options.ts`    |
+| `NAME_MAX_LENGTH`                    | `80`                                                                     | `auth-options.ts`    |
+| `BENCH_ACCOUNTS_PATH`                | `${AUTH_BASE_PATH}/internal/bench-accounts`                              | `bench-accounts.ts`  |
+| `BENCH_ACCOUNTS_MAX`                 | `200`                                                                    | `bench-accounts.ts`  |
+| `CLIENTS_PATH`                       | `${AUTH_BASE_PATH}/internal/clients`                                     | `clients.ts`         |
+| `DELETE_ACCOUNT_PATH`                | `'/delete-account'`                                                      | `delete-account.ts`  |
+| `DELETION_CODE_PATH`                 | `'/delete-account/code'`                                                 | `deletion-code.ts`   |
+| `DELETION_CHECK_PATH`                | `'/delete-account/check'`                                                | `deletion-code.ts`   |
+| `DELETION_CODE_TTL_SECONDS`          | `600`                                                                    | `deletion-code.ts`   |
+| `DELETION_CODE_TRIES`                | `3`                                                                      | `deletion-code.ts`   |
+| `INK`                                | `'#0f172a'`                                                              | `email-layout.ts`    |
+| `MUTED`                              | `'#475569'`                                                              | `email-layout.ts`    |
+| `GUEST_IDLE_MS`                      | `400 * DAY_MS`                                                           | `guest-sweep.ts`     |
+| `GUEST_SWEEP_LIMIT`                  | `500`                                                                    | `guest-sweep.ts`     |
+| `GUEST_PATH`                         | `'/guest'`                                                               | `guests.ts`          |
+| `GUEST_COOKIE`                       | `'lw_guest'`                                                             | `guests.ts`          |
+| `GUEST_TOKEN_TTL_SECONDS`            | `45 * 24 * 60 * 60`                                                      | `guests.ts`          |
+| `GUEST_PROOF_COOKIE`                 | `'lw_guest_proof'`                                                       | `guest-proof.ts`     |
+| `GUEST_PROOF_COOKIE_MAX_AGE_SECONDS` | `120`                                                                    | `guest-proof.ts`     |
+| `GUEST_PROOF_MAX_AGE_SECONDS`        | `180 * 24 * 60 * 60`                                                     | `guest-proof.ts`     |
+| `GUEST_PROOF_CLOCK_SKEW_SECONDS`     | `60`                                                                     | `guest-proof.ts`     |
+| `AUTHORIZE_PATH`                     | `'/oauth2/authorize'`                                                    | `guests.ts`          |
+| `HANDOFF_PATH`                       | `'/handoff'`                                                             | `handoff.ts`         |
+| `HANDOFF_START_PATH`                 | `'/handoff/start'`                                                       | `handoff.ts`         |
+| `HANDOFF_NONCE_COOKIE`               | `'lw_handoff'` (production's, `handoffNonceCookie`)                      | `handoff.ts`         |
+| `HANDOFF_BIND_PARAM`                 | `'handoff'`                                                              | `handoff.ts`         |
+| `HANDOFF_TTL_SECONDS`                | `60`                                                                     | `handoff.ts`         |
+| `HANDOFF_NONCE_MAX_AGE_SECONDS`      | `900`                                                                    | `handoff.ts`         |
+| `GUEST_ID`                           | `/^guest_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/` | `ids.ts`             |
+| `USER_ID`                            | `/^user_[A-Za-z0-9]{1,64}$/`                                             | `ids.ts`             |
+| `PURGE_RETRY_CRON`                   | `'*/15 * * * *'`                                                         | `index-purge.ts`     |
+| `PURGES_PER_RUN`                     | `25`                                                                     | `index-purge.ts`     |
+| `STALE_PURGE_DAYS`                   | `30`                                                                     | `index-purge.ts`     |
+| `EVENTS_BATCH`                       | `100`                                                                    | `index-events.ts`    |
+| `EVENTS_CALLS_PER_RUN`               | `10`                                                                     | `index-events.ts`    |
+| `EVENTS_MAX_ATTEMPTS`                | `96`                                                                     | `index-events.ts`    |
+| `EVENTS_OUTBOX_MAX`                  | `5_000`                                                                  | `index-events.ts`    |
+| `LEGACY_CLAIM_HOLD_MS`               | `60_000`                                                                 | `legacy-guests.ts`   |
+| `ACTIVATION_DELAY_MS`                | `3 * DAY_MS`                                                             | `lifecycle.ts`       |
+| `WINBACK_QUIET_MS`                   | `4 * WEEK_MS`                                                            | `lifecycle.ts`       |
+| `SWEEP_LIMIT`                        | `100`                                                                    | `lifecycle.ts`       |
+| `MAX_SEND_ATTEMPTS`                  | `3`                                                                      | `lifecycle.ts`       |
+| `STAGE_ORDER`                        | `['welcome', 'activation', 'week1', 'week2', 'winback']`                 | `lifecycle.ts`       |
+| `MAX_NOTIFY_OWNERS`                  | `100`                                                                    | `notify.ts`          |
+| `MAX_NOTIFY_KEYS`                    | `8`                                                                      | `notify.ts`          |
+| `MAX_PROFILE_IDS`                    | `100`                                                                    | `profiles.ts`        |
+| `PROFILE_NAME_MAX`                   | `120`                                                                    | `profiles.ts`        |
+| `PROFILE_COLOR_MAX`                  | `64`                                                                     | `profiles.ts`        |
+| `RESOURCES`                          | `(object or list, see file)`                                             | `resources.ts`       |
+| `ADMIN_HEADER`                       | `'x-liveworkspace-admin'`                                                | `secrets.ts`         |
+| `SETTINGS_MAX_BYTES`                 | `16_384`                                                                 | `settings.ts`        |
+| `SIGN_IN_OPTIONS_PATH`               | `'/sign-in-options'`                                                     | `sign-in-options.ts` |
+| `TEAM_NAME_MAX_LENGTH`               | `80`                                                                     | `teams/shared.ts`    |
+| `MAX_TEAMS_PER_ACCOUNT`              | `50`                                                                     | `teams/shared.ts`    |
+| `MAX_MEMBERS_PER_TEAM`               | `200`                                                                    | `teams/shared.ts`    |
+| `ORGANISATION_MAX_LENGTH`            | `80`                                                                     | `teams/shared.ts`    |
+| `INVITE_LINK_TTL_MS`                 | `7 * 24 * 60 * 60 * 1000`                                                | `teams/shared.ts`    |
+| `REMINDER_AGES_MS`                   | `[1 * DAY_MS, 7 * DAY_MS, 21 * DAY_MS] as const`                         | `teams/shared.ts`    |
+| `INVITATION_TTL_MS`                  | `28 * DAY_MS`                                                            | `teams/shared.ts`    |
+| `EXPIRE_BATCH`                       | `500`                                                                    | `teams/shared.ts`    |
+| `REMINDER_BATCH`                     | `100`                                                                    | `teams/shared.ts`    |
+| `MAX_REMINDER_ATTEMPTS`              | `3`                                                                      | `teams/shared.ts`    |
+| `LIST_PREVIEW_MEMBERS`               | `4`                                                                      | `teams/reads.ts`     |
+| `DELETED_MEMBER_EMAIL`               | `'Deleted account'`                                                      | `teams/members.ts`   |
+| `CHANGES_PAGE_SIZE`                  | `500`                                                                    | `teams/changes.ts`   |
+| `TELEMETRY_TIMEOUT_MS`               | `2_000`                                                                  | `telemetry.ts`       |
+| `TOKEN_EXPIRY_WARNING_MS`            | `7 * DAY_MS`                                                             | `token-expiry.ts`    |
+| `TOKEN_EXPIRY_SWEEP_LIMIT`           | `100`                                                                    | `token-expiry.ts`    |
+| `API_TOKEN_PREFIX`                   | `'lwt_'`                                                                 | `tokens.ts`          |
+| `LEGACY_API_TOKEN_PREFIX`            | `'lvd_'`                                                                 | `tokens.ts`          |
+| `MAX_API_TOKENS_PER_ACCOUNT`         | `20`                                                                     | `tokens.ts`          |
+| `TOKEN_NAME_MAX_LENGTH`              | `80`                                                                     | `tokens.ts`          |
+| `LAST_USED_STAMP_WINDOW_MS`          | `60_000`                                                                 | `tokens.ts`          |
+| `MAX_LIVE_TOKEN_IDS`                 | `100`                                                                    | `tokens.ts`          |
+| `WORKBENCH_TICKET_TTL_MS`            | `60_000`                                                                 | `routes.ts`          |
+| `WORKBENCH_SESSION_TTL_MS`           | `8 * 60 * 60 * 1000`                                                     | `routes.ts`          |
+| `WORKBENCH_TICKETS_PER_MINUTE`       | `30`                                                                     | `routes.ts`          |
+| `WORKBENCH_NAME_MAX_LENGTH`          | `40`                                                                     | `routes.ts`          |
+| `WORKBENCH_ORIGIN_MAX_LENGTH`        | `255`                                                                    | `routes.ts`          |
+| `WORKBENCH_POLL_INTERVAL_S`          | `5`                                                                      | `routes.ts`          |
+| `WORKBENCH_SESSION_PREFIX`           | `'lvw_'`                                                                 | `store-types.ts`     |
+| `WORKBENCH_TICKET_BYTES`             | `16`                                                                     | `store-types.ts`     |
+| `WORKBENCH_PAIRING_CODE_BYTES`       | `16`                                                                     | `store-types.ts`     |
+| `WORKBENCH_SESSION_SECRET_BYTES`     | `32`                                                                     | `store-types.ts`     |
+| `WORKBENCH_PAIRING_TTL_MS`           | `10 * 60 * 1000`                                                         | `store-types.ts`     |
+| `WORKBENCH_SESSION_GRACE_MS`         | `24 * 60 * 60 * 1000`                                                    | `store-types.ts`     |
+| `WORKBENCH_QUOTA_MAX`                | `1_000`                                                                  | `store-types.ts`     |
+| `WORKBENCH_SESSION_ROOMS_MAX`        | `500`                                                                    | `store-types.ts`     |
+| `WORKBENCH_TICKET_PATTERN`           | `/^[A-Za-z0-9_-]{22}\.[0-9a-f]{64}$/`                                    | `store-types.ts`     |
+| `WORKBENCH_SESSION_PATTERN`          | `/^lvw_[A-Za-z0-9_-]{43}\.[0-9a-f]{64}$/`                                | `store-types.ts`     |
+| `WORKBENCH_CODE_PATTERN`             | `/^[A-Za-z0-9_-]{22}$/`                                                  | `store-types.ts`     |
+| `WORKSPACE_TOKEN_PATH`               | `'/workspace-token'`                                                     | `workspace-token.ts` |
+| `WORKSPACE_TOKEN_TTL_SECONDS`        | `15 * 60`                                                                | `workspace-token.ts` |
+| `ACCOUNT_NAME_MAX_LENGTH`            | `64`                                                                     | `account-name.ts`    |
+| `ACCOUNT_COLOUR_MAX_LENGTH`          | `64`                                                                     | `account-name.ts`    |
+| `TOKEN_VALID_FOR_MS`                 | `60_000`                                                                 | `account.ts`         |
+| `TOKEN_INVALID_FOR_MS`               | `10_000`                                                                 | `account.ts`         |
+| `MAX_LIVE_TOKEN_IDS`                 | `100`                                                                    | `account.ts`         |
+| `MAX_PROFILE_IDS`                    | `100`                                                                    | `account.ts`         |
+| `MAX_EMAIL_IDS`                      | `100`                                                                    | `account.ts`         |
+| `MAX_NOTIFY_OWNERS`                  | `100`                                                                    | `account.ts`         |
+| `INVITATIONS_TTL_MS`                 | `30_000`                                                                 | `invitations.ts`     |
+| `INVITATIONS_CACHE_MAX`              | `500`                                                                    | `invitations.ts`     |
+| `MILESTONE_ITEM_COUNTS`              | `[10]`                                                                   | `notify.ts`          |
+| `JOIN_NOTIFY_THROTTLE_MS`            | `15 * 60 * 1000`                                                         | `notify.ts`          |
+| `NOTIFY_EMAIL_DEDUPE_MS`             | `24 * 60 * 60 * 1000`                                                    | `notify.ts`          |
+| `NOTIFY_EMAILS_PER_SENDER_PER_HOUR`  | `60`                                                                     | `notify.ts`          |
+| `NOTIFY_RATE_WINDOW_MS`              | `60 * 60 * 1000`                                                         | `notify.ts`          |
+| `GUEST_STATE_PATTERN`                | `/^[A-Za-z0-9_-]{8,200}$/`                                               | `oauth.ts`           |
+| `SILENT_SESSION_KEY`                 | `'liveworkspace:silent-sign-in'`                                         | `silent.ts`          |
+| `SILENT_GUARD_MAX_AGE_SECONDS`       | `120`                                                                    | `silent.ts`          |
+| `SIGNED_OUT_MAX_AGE_SECONDS`         | `400 * 24 * 3600`                                                        | `silent.ts`          |
+| `SIGNED_OUT_VALUE`                   | `'2'`                                                                    | `silent.ts`          |
+| `SILENT_RETURN_KEY`                  | `'liveworkspace:silent-return'`                                          | `silent.ts`          |
+| `SILENT_RETURN_ATTRIBUTE`            | `'data-silent-return'`                                                   | `silent.ts`          |
+| `SILENT_RETURN_MAX_LENGTH`           | `1500`                                                                   | `silent.ts`          |
+| `SILENT_RETRY_GLOBAL`                | `'__liveworkspaceSilentSignIn'`                                          | `silent.ts`          |
+| `WORKBENCH_SESSION_VALID_FOR_MS`     | `60_000`                                                                 | `workbench.ts`       |
+| `WORKBENCH_SESSION_INVALID_FOR_MS`   | `10_000`                                                                 | `workbench.ts`       |
+| `WORKBENCH_SESSION_CACHE_MAX`        | `1_000`                                                                  | `workbench.ts`       |
+| `EMAIL_SEND_TIMEOUT_MS`              | `10_000`                                                                 | `index.ts`           |
+| `NOTIFICATION_ROWS`                  | `(object or list, see file)`                                             | `account.ts`         |
+| `IN_APP_ROWS`                        | `(object or list, see file)`                                             | `account.ts`         |
+| `PRIVACY_ROWS`                       | `(object or list, see file)`                                             | `account.ts`         |
+| `ACCESSIBILITY_ROWS`                 | `(object or list, see file)`                                             | `account.ts`         |
+| `ACCOUNT_TOGGLES`                    | `(object or list, see file)`                                             | `account.ts`         |
+| `ACCOUNT_KEYS`                       | `new Set(ACCOUNT_TOGGLES.map((row) => row.key))`                         | `account.ts`         |
+| `EDITOR_ONLY_KEYS`                   | `(object or list, see file)`                                             | `account.ts`         |
+| `CATALOGUE`                          | `${JSON.stringify(catalogue, null, 2)}`                                  | `catalogue.ts`       |
+| `CATALOGUE`                          | `(object or list, see file)`                                             | `livedesign.ts`      |
+| `CATALOGUE`                          | `(object or list, see file)`                                             | `livediagram.ts`     |
+| `CATALOGUE`                          | `(object or list, see file)`                                             | `livedocuments.ts`   |
+| `CATALOGUE`                          | `(object or list, see file)`                                             | `liveplanner.ts`     |
+| `PLATFORM_PLACES`                    | `(object or list, see file)`                                             | `common.ts`          |
+| `DEVICE_PREFERENCES`                 | `(object or list, see file)`                                             | `device.ts`          |
+| `COMMON_SETTING_KEYS`                | `(object or list, see file)`                                             | `index.ts`           |
+| `ALL_SETTING_KEYS`                   | `(object or list, see file)`                                             | `index.ts`           |
+| `RETIRED_ALL_SETTING_KEYS`           | `['powerUserMode', 'minimalChrome']`                                     | `index.ts`           |
+| `PRESENCE_COLOURS`                   | `(object or list, see file)`                                             | `presence.ts`        |
+| `PRESENCE_COLOUR_VALUES`             | `PRESENCE_COLOURS.map((c) => c.value)`                                   | `presence.ts`        |
+| `PROFILE_NAME_MAX`                   | `120`                                                                    | `presence.ts`        |
 
 ## Testing
 

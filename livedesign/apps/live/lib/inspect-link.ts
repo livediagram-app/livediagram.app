@@ -1,25 +1,18 @@
 // A link that opens with Inspect (docs/specs/007-editor/wireframe-pages.md "A link that opens with Inspect"): the
 // `inspect` parameter, read once as the editor opens, and the link Copy Inspect Link copies.
+import { wantsFlag, withFlag } from './link-flag';
 
 /** The URL parameter that opens a wireframe tab with Inspect on. */
 export const INSPECT_PARAM = 'inspect';
 
 /** Whether an address asks to open with Inspect (`?inspect`, `?inspect=1`; never `?inspect=0`). */
 export function wantsInspect(search: string): boolean {
-  const params = new URLSearchParams(search);
-  if (!params.has(INSPECT_PARAM)) return false;
-  const v = params.get(INSPECT_PARAM);
-  return v !== '0' && v !== 'false';
+  return wantsFlag(search, INSPECT_PARAM);
 }
 
 /** A link with the inspect parameter added (kept once if it is already there). */
 export function withInspect(href: string): string {
-  const url = new URL(href, 'https://placeholder.invalid');
-  url.searchParams.set(INSPECT_PARAM, '1');
-  // A relative href stays relative.
-  return href.startsWith('/') && !href.startsWith('//')
-    ? `${url.pathname}${url.search}${url.hash}`
-    : url.toString();
+  return withFlag(href, INSPECT_PARAM);
 }
 
 /** The fields of an index share link this reads. */

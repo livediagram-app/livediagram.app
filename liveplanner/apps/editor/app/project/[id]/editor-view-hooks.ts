@@ -15,6 +15,10 @@ import type { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { automationsScopeFor } from '@/components/automations/automations-gate';
 import { useAutomationsGate } from '@/components/automations/use-automations-gate';
+import {
+  calendarFeedScopeFor,
+  type CalendarFeedScope,
+} from '@/components/calendar-feed/calendar-feed-gate';
 import type { useEditorContext } from './EditorContext';
 
 type EditorContextValue = ReturnType<typeof useEditorContext>;
@@ -83,6 +87,22 @@ export function useCanvasPattern(
     ],
   );
   return canvasPattern;
+}
+
+// Subscribe to Calendar's scope (docs/specs/026-plan/calendar-feed.md "Where it lives"): the plan's owner or a team
+// member, signed in, on a plan saved to an account; null (no tab menu row) for everyone else.
+export function useEditorCalendarFeed(
+  ctx: EditorContextValue,
+  isOffline: boolean,
+): CalendarFeedScope | null {
+  return calendarFeedScopeFor({
+    hydrated: ctx.hydrated,
+    embed: ctx.embedMode,
+    workbench: !!ctx.workbench,
+    offline: isOffline,
+    signedIn: !!ctx.accountUserId,
+    scope: ctx.plan.context?.itemsScope ?? null,
+  });
 }
 
 export function useEditorAutomations(ctx: EditorContextValue, isOffline: boolean) {

@@ -52,6 +52,13 @@ export type ImageExportOpts = {
   // picture's preview, or the checkerboard while there is none) left out, as a Photo export draws them over the
   // photo's full-size composite. Only a photo page passes it: a device's paint holds its screen's clip.
   elementsOnly?: boolean;
+  // A picture's URL by image id, in place of `images` (the SVG alone): Prototype mode draws a screen from the canvas's
+  // own image sources rather than loading every picture's bytes (docs/specs/007-editor/wireframe-pages.md "Prototype
+  // mode").
+  imageHref?: (imageId: string) => string | undefined;
+  // Prefixes the page's gradient, pattern and clip ids (the SVG alone), so a page drawn inline beside the canvas never
+  // shares an id with it. `lvd-page` when absent.
+  idPrefix?: string;
 };
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).

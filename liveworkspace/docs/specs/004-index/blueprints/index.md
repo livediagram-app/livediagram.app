@@ -279,7 +279,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/env.ts`               |                                                                                                                                                                                                                        |
 | `liveworkspace/apps/index/src/folder-previews.ts`   | What a folder card shows of what is inside (`GET /folders/previews?ids=…`): for each of up to 60 of the person's folders, its newest few items and how many it holds, for …                                            |
 | `liveworkspace/apps/index/src/folders.ts`           | Folders (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders, favourites, defaults"): one tree per person and one per team, holding items from any app                                               |
-| `liveworkspace/apps/index/src/fresh-teams.ts`       | A team made or joined since the caller's access token was minted (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Teams"): the token's `teams` claim is up to an hour old, s…                            |
+| `liveworkspace/apps/index/src/fresh-teams.ts`       | A team made or joined since the caller's access token was minted (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Teams"): the token's `teams` claim is up to 15 minutes old, s…                         |
 | `liveworkspace/apps/index/src/grants.ts`            | Grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): ES256 JWTs saying who may open an item at what level, valid for ten minutes, signed with the index's own k…                            |
 | `liveworkspace/apps/index/src/http.ts`              | Responses and request bodies                                                                                                                                                                                           |
 | `liveworkspace/apps/index/src/inbox.ts`             | The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards assigned to or by me, unresolved threads (an element's or a car…                            |
@@ -598,7 +598,11 @@ Migrations, in order:
 ## Testing
 
 The Worker's suites run against an in-memory SQLite that refuses what D1 refuses (`compound.test.ts`). Each
-feature file names the suites that pin it; these pin the Worker as a whole:
+feature file names the suites that pin it; these pin the Worker as a whole.
+
+`corepack pnpm --filter @liveworkspace/index-service test:coverage` runs the suites with v8 coverage over `src/` and
+fails below the floor in `liveworkspace/apps/index/vitest.config.ts` (a little under what the Worker measures: 94
+statements, 91 branches, 96 functions, 97 lines), then the speed budgets. CI runs it for the workspace. Raise the floor as gaps close, never lower it:
 
 | Test                                                   | Pins                                                                                                                                                            |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

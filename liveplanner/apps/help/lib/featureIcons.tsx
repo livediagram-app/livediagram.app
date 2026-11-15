@@ -161,6 +161,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14 12.8v4.9M20 17.7v-3.2a2.5 2.5 0 00-2.5-2.5H17" />
     </Glyph>
   ),
+  // A calendar page with one day filled in, and a link's two rings at its corner: a plan's dates, linked in.
+  'calendar-feed': (
+    <Glyph>
+      <path d="M13 20H4.5A1.5 1.5 0 013 18.5v-12A1.5 1.5 0 014.5 5h13A1.5 1.5 0 0119 6.5V11" />
+      <path d="M3 9.5h16M7.5 3v3.5M14.5 3v3.5" />
+      <rect x="6" y="12.5" width="3" height="3" rx="0.5" />
+      <path d="M17 15.5h-.5a2 2 0 000 4h.5M19.5 15.5h.5a2 2 0 010 4h-.5M16.8 17.5h3" />
+    </Glyph>
+  ),
   // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
   'plan-tour': (
     <Glyph>

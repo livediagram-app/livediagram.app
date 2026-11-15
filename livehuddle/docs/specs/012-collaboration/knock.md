@@ -40,6 +40,8 @@ whether to come in, and a closed pod (its door shut while both seats are held) h
   seats are held, so with a seat free it opens for everyone, by presence, and the knocker walks in and may take the
   seat. Nobody opens a door the seats say is shut, so every machine still sees the same door.
 - Several people inside: each sees the toast; each answer reaches the knocker, who sees the first and any after it.
+- **With the mini view open** ([The mini view](../008-canvas/avatar-mode.md#the-mini-view)), the knock shows there
+  too, with the same Let In and Not Now: answering in either place answers once and clears both.
 
 ## The wire
 

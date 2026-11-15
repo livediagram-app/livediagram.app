@@ -12,6 +12,8 @@ Scope, by file:
 | File                                                                                                                     | Role                                                                                      |
 | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/accounts/src/guests.ts`                                                                              | The `lw_guest` cookie, `GET /api/auth/guest`, the guest merge on sign-in and on authorize |
+| `liveworkspace/apps/accounts/src/guest-proof.ts`                                                                         | `readGuestProof` and the `lw_guest_proof` cookie: a renewal's guest token as proof        |
+| `packages/auth-client/src/guest-renewal.ts`                                                                              | The app's side of a renewal: the `lw_guest_renewal` cookie and the page posting the token |
 | `liveworkspace/apps/accounts/src/workspace-token.ts`                                                                     | `GET /api/auth/workspace-token`: liveworkspace.app's own token                            |
 | `liveworkspace/apps/accounts/src/end-session.ts`                                                                         | `POST` and `GET /api/auth/end-session`; every app's tokens on a session, at any sign-out  |
 | `liveworkspace/apps/accounts/src/bearer.ts`                                                                              | `bearerPerson`: an app API's access or guest token, checked against this Worker's keys    |
@@ -25,14 +27,15 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term            | Identifier                                                            | Meaning                                                               |
-| --------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Guest cookie    | `lw_guest=<guest id>.<HMAC>`                                          | HMAC-SHA-256 of `lw_guest:<id>` under `BETTER_AUTH_SECRET`, base64url |
-| Guest token     | JWT `{ iss, aud: <resource>, sub: <guest>, kind: 'guest', iat, exp }` | Signed by the jwt plugin, a year                                      |
-| Workspace token | JWT `{ iss, aud: RESOURCES, azp: 'liveworkspace.app', sub, … }`       | liveworkspace.app's Explorer, 15 minutes                              |
-| Legacy guest    | `guest_<old uuid>`, `legacy_guest` row                                | Copied work of the old livediagram.app                                |
-| Seen            | `guest_seen (guest_id, seen_at)`                                      | When an id was last handed out                                        |
-| Sign-out ticket | `<base64url JSON { c: client, s: account, e: exp }>.<HMAC>`           | HMAC-SHA-256 of `end-session:<payload>`, base64url; five minutes      |
+| Term            | Identifier                                                                  | Meaning                                                                |
+| --------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Guest cookie    | `lw_guest=<guest id>.<HMAC>`                                                | HMAC-SHA-256 of `lw_guest:<id>` under `BETTER_AUTH_SECRET`, base64url  |
+| Guest token     | JWT `{ iss, aud: <resource>, sub: <guest>, kind: 'guest', iat, exp, oiat }` | Signed by the jwt plugin, 45 days; `oiat` when the cookie last vouched |
+| Guest proof     | `lw_guest_proof=<guest token>`, `Path=/api/auth/guest`, 120 s               | Set only by an Origin-checked `POST /api/auth/guest`                   |
+| Workspace token | JWT `{ iss, aud: RESOURCES, azp: 'liveworkspace.app', sub, … }`             | liveworkspace.app's Explorer, 15 minutes                               |
+| Legacy guest    | `guest_<old uuid>`, `legacy_guest` row                                      | Copied work of the old livediagram.app                                 |
+| Seen            | `guest_seen (guest_id, seen_at)`                                            | When an id was last handed out                                         |
+| Sign-out ticket | `<base64url JSON { c: client, s: account, e: exp }>.<HMAC>`                 | HMAC-SHA-256 of `end-session:<payload>`, base64url; five minutes       |
 
 ## Behaviour and state
 
@@ -86,10 +89,39 @@ account's; every other session of the account, or every one, for the last two. B
    must be one of its registered ones exactly (`400 invalid_redirect_uri`); `state` 1 to 200 characters (`400
 invalid_state`); `resource` the client's only one, or named and one of its own (`400 invalid_resource`). Every
    `400` is `no-store`.
-3. From here the browser always goes back: the cookie's guest, or a new `guest_<uuid>`; `noteGuestSeen`; a guest
-   token signed with `exp = iat + 365 days`; `302` to `<redirect_uri>#guest_token=…&state=…` with the cookie set again
-   (`Max-Age` ten years, `Path=/; HttpOnly; SameSite=Lax`, `Secure` outside development), `no-store`, `no-referrer`.
+3. From here the browser always goes back: the cookie's guest (`oiat = now`), else the `lw_guest_proof` cookie's guest
+   when `readGuestProof` passes (`oiat` carried from the proof), else a new `guest_<uuid>` (`oiat = now`);
+   `noteGuestSeen`; a guest token signed with `exp = iat + GUEST_TOKEN_TTL_SECONDS` (45 days) and `oiat`; `302` to
+   `<redirect_uri>#guest_token=…&state=…` with the cookie set again (`Max-Age` ten years, `Path=/; HttpOnly;
+SameSite=Lax`, `Secure` outside development) and, when a proof cookie came, `lw_guest_proof` cleared (`Max-Age=0`),
+   `no-store`, `no-referrer`.
 4. A failure past step 2: `302` to `<redirect_uri>#error=server_error&state=…`.
+
+### Renewing with a guest token (`POST /api/auth/guest?client_id=&redirect_uri=&state=[&resource=]`, `guestRenewal`)
+
+1. `GUEST_LIMITER` and step 2 of the hand-off (`checkHandoff`), with the same `400`s.
+2. The proof is the `application/x-www-form-urlencoded` body's `guest_token` alone; a `guest_token` in the query is
+   never read. It is taken only when `Origin` equals `redirect_uri`'s origin and `readGuestProof` passes:
+   `jwtVerify` against this Worker's own key set (`auth.api.getJwks()`), issuer `${BASE_URL}/api/auth` and its www
+   twin, audience the hand-off's `resource` and its twin; `kind === 'guest'`; `sub` matches `GUEST_ID`; `exp` in the
+   future (jose); `oiat` (else `iat`) a number, no more than 60 s ahead, and at most `GUEST_PROOF_MAX_AGE_SECONDS`
+   (180 days) ago.
+3. `303` to the request's own URL (the `GET`), `no-store`, `no-referrer`; with a proof that passed, `lw_guest_proof`
+   set to the token (`Max-Age` 120, `Path=/api/auth/guest; HttpOnly; SameSite=Lax`, `Secure` outside development,
+   host-only); otherwise no cookie, and the `GET` finds the cookie's guest or makes one. Logged `[guests] proof
+refused { reason }` (`origin`, `token`) when a token came and was not taken.
+
+The app's side. The page (`@liveworkspace/index-client/browser` `startGuestHandoff`), holding an unexpired token and
+an api on its own origin (`apiBase` a path), sets `document.cookie = guestRenewalCookie(token, apiBase +
+'/auth/guest')` (`lw_guest_renewal`, `Max-Age` 60, `Secure; SameSite=Strict`; blocked cookies are ignored) on the
+next task, then `location.replace` as before. Its api's `GET /api/auth/guest?state=` (`createAppAuth`), configured
+and with a renewal cookie shaped like a JWT (`renewalToken`: three base64url parts, each at most 2,000 characters),
+answers `guestRenewalPage(guestHandoffUrl(…), token)` instead of its `302`: `200 text/html`, a form (`method=post`,
+`action` the same address, one hidden `guest_token`) submitted by a nonced inline script as it loads (a Continue
+button under `noscript`), attribute values escaped; `Content-Security-Policy: default-src 'none'; script-src
+'nonce-…'; base-uri 'none'; frame-ancestors 'none'`, `X-Frame-Options: DENY`, `no-store`, `Referrer-Policy:
+strict-origin` (never `no-referrer`, under which the POST's `Origin` would be `null`), and the renewal cookie cleared.
+Anything else keeps the `302`.
 
 ### liveworkspace.app's own token (`GET /api/auth/workspace-token`)
 
@@ -203,20 +235,27 @@ well above the sweep's 500.
 
 ## Errors and edge cases
 
-| Case                                     | Answer                                         |
-| ---------------------------------------- | ---------------------------------------------- |
-| A forged or another site's guest cookie  | a new guest                                    |
-| A redirect URI not registered            | `400`, never a redirect                        |
-| The index down at sign-in                | signed in; the guest cookie kept for next time |
-| A cross-site workspace token request     | `403 cross_site`                               |
-| A sign-out hop to an unregistered origin | `400 invalid_redirect_uri`, never a redirect   |
-| A sign-out hop with no or a bad ticket   | back to the app; no session ended              |
-| A sign-out hop for another account       | back to the app; that session kept             |
-| Two legacy claims at once                | one merges; the other `503` or `claimed`       |
+| Case                                                                  | Answer                                           |
+| --------------------------------------------------------------------- | ------------------------------------------------ |
+| A forged or another site's guest cookie                               | a new guest                                      |
+| A guest proof with the cookie there too                               | the cookie's guest                               |
+| A guest proof from another origin                                     | no proof cookie; the cookie's guest or a new one |
+| A forged, expired, another app's, an account's or a 180-day-old proof | no proof cookie; the cookie's guest or a new one |
+| A redirect URI not registered                                         | `400`, never a redirect                          |
+| The index down at sign-in                                             | signed in; the guest cookie kept for next time   |
+| A cross-site workspace token request                                  | `403 cross_site`                                 |
+| A sign-out hop to an unregistered origin                              | `400 invalid_redirect_uri`, never a redirect     |
+| A sign-out hop with no or a bad ticket                                | back to the app; no session ended                |
+| A sign-out hop for another account                                    | back to the app; that session kept               |
+| Two legacy claims at once                                             | one merges; the other `503` or `claimed`         |
 
 ## Security and trust
 
 - A guest id is only ever believed from the HMAC-signed cookie, so nobody claims another guest's items at sign-up.
+  The renewal's proof names a guest for one hand-off only: a guest token signed here, addressed to the app presenting
+  it, from that app's own origin, never from a query string, and never over a cookie's guest. A chain of renewals by
+  token alone carries `oiat` forward and ends 180 days after the cookie last vouched, so a stolen token can't live for
+  ever; the sign-in merge still reads only the signed cookie.
 - Guest tokens are signed by the same keys as access tokens and addressed to one app's API.
 - The legacy claim checks possession before it reads the row, so a forged signature learns nothing.
 - Ending a session needs the app's client secret and a live refresh token of that client; the browser's hop ends a
@@ -225,20 +264,26 @@ well above the sweep's 500.
 
 ## Testing
 
-| Test                                                          | Pins                                                                                                                                 |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `liveworkspace/apps/accounts/src/guests.test.ts` (20)         | the guest hand-off; signing in as a guest; signing in to an app with a session already there; `prompt=none`                          |
-| `liveworkspace/apps/accounts/src/workspace-token.test.ts` (4) | the workspace token for an account, a guest, cross-site, the limit                                                                   |
-| `liveworkspace/apps/accounts/src/end-session.test.ts` (17)    | ending a session from an app, the browser's hop, liveworkspace.app and Security: every app's tokens gone, tickets, redirects refused |
-| `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (14)  | claiming a returning guest of the old livediagram.app                                                                                |
-| `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (6)     | noting a guest seen; sweeping guests who can never come back, and queueing their items' purge                                        |
-| `liveworkspace/apps/accounts/src/account-api.test.ts` (43)    | the people door and bearers among the rest, sessions, tokens                                                                         |
-| `liveworkspace/apps/accounts/src/link-google.test.ts` (10)    | connecting Google from an app: the hop, the state cookie alone, Better Auth's callback, tickets, return addresses                    |
+| Test                                                                                                 | Pins                                                                                                                                 |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `liveworkspace/apps/accounts/src/guests.test.ts` (20)                                                | the guest hand-off; signing in as a guest; signing in to an app with a session already there; `prompt=none`                          |
+| `liveworkspace/apps/accounts/src/guests.test.ts` "renewing without the cookie" (8)                   | same id without the cookie, the cookie wins, Origin, never the query, every refused proof, `oiat`, the 180-day chain                 |
+| `packages/auth-client/src/app-auth.test.ts`, `packages/index-client/src/browser/guest-token.test.ts` | the renewal cookie, the api's posting page, its headers and escaping, and the plain hand-off otherwise                               |
+| `liveworkspace/apps/accounts/src/workspace-token.test.ts` (4)                                        | the workspace token for an account, a guest, cross-site, the limit                                                                   |
+| `liveworkspace/apps/accounts/src/end-session.test.ts` (20)                                           | ending a session from an app, the browser's hop, liveworkspace.app and Security: every app's tokens gone, tickets, redirects refused |
+| `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (14)                                         | claiming a returning guest of the old livediagram.app                                                                                |
+| `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (6)                                            | noting a guest seen; sweeping guests who can never come back, and queueing their items' purge                                        |
+| `liveworkspace/apps/accounts/src/account-api.test.ts` (43)                                           | the people door and bearers among the rest, sessions, tokens                                                                         |
+| `liveworkspace/apps/accounts/src/link-google.test.ts` (10)                                           | connecting Google from an app: the hop, the state cookie alone, Better Auth's callback, tickets, return addresses                    |
 
 ## Constants and configuration
 
 `GUEST_PATH` `/guest`, `GUEST_COOKIE` `lw_guest`, `GUEST_TOKEN_TTL_SECONDS` 45 d, `COOKIE_MAX_AGE_SECONDS` 10 years,
 `STATE_MAX_LENGTH` 200, `MERGE_TIMEOUT_MS` 5 s, `AUTHORIZE_PATH` `/oauth2/authorize` (`guests.ts`);
+`GUEST_PROOF_COOKIE` `lw_guest_proof`, `GUEST_PROOF_COOKIE_MAX_AGE_SECONDS` 120, `GUEST_PROOF_MAX_AGE_SECONDS` 180 d,
+`GUEST_PROOF_CLOCK_SKEW_SECONDS` 60 (`guest-proof.ts`); `GUEST_RENEWAL_COOKIE` `lw_guest_renewal`,
+`GUEST_RENEWAL_COOKIE_PATH` `/api/auth/guest`, `GUEST_RENEWAL_COOKIE_MAX_AGE_SECONDS` 60 (`@liveworkspace/auth-client`
+`guest-renewal.ts`);
 `WORKSPACE_TOKEN_TTL_SECONDS` 900 (`workspace-token.ts`); `END_SESSION_PATH` `/end-session`, `TICKET_TTL_SECONDS` 300,
 `REDIRECT_MAX_LENGTH` 2,000, `SESSIONS_PER_STATEMENT` 40 (`end-session.ts`); `KEYS_TTL_MS` 5 min (`bearer.ts`);
 `LINK_GOOGLE_PATH` `/link-google`, `LINK_TICKET_TTL_SECONDS` 300 (`link-google.ts`); `LEGACY_CLAIM_HOLD_MS`

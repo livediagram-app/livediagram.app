@@ -37,6 +37,9 @@ Scope, by file:
 - Pages: `loginPage '/sign-in'`, `signup.page '/sign-up'` (an app's `prompt=create`), `consentPage '/consent'`.
 - `resources`: the environment's `RESOURCES`. `refreshTokenReuseInterval` 30 s: refresh tokens rotate, and a rotated
   one replays the same response within 30 s, so two tabs refreshing at once both stay signed in.
+- `accessTokenExpiresIn` `ACCESS_TOKEN_TTL_SECONDS` (900, 15 minutes): app APIs check access tokens offline with no
+  revocation list, so this bounds how long one copied before a sign-out or an account close still works; refresh
+  (30 days, the provider's default) renews it.
 - `clientPrivileges` and `resourcePrivileges`: only a request whose `x-liveworkspace-admin` header equals
   `ADMIN_TOKEN` (`sameSecret`); open dynamic registration is closed. `clientReference` is always `'liveworkspace'`, so
   deleting an account never takes a client with it.

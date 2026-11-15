@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { guestRenewalCookie } from '@liveworkspace/auth-client/guest-renewal';
 import { guestTokenFor } from '../testing';
 import {
   createGuestTokens,
@@ -137,6 +138,60 @@ describe('the handoff', () => {
     expect(w.win.localStorage.getItem(KEY)).toBe(renewed);
     expect(onNewGuest).not.toHaveBeenCalled();
     expect(guestTokenNeedsRefresh(t.readGuestToken())).toBe(false);
+  });
+
+  // Safari can clear the accounts site's lw_guest cookie (accounts.md "Renewing without the cookie"): the page leaves
+  // the token it holds for its api's guest door, which posts it on as proof, never in the address.
+  it('leaves a held token for the guest door as a minute-long cookie, never in the address', () => {
+    const DAY = 24 * 3600;
+    const cookies: string[] = [];
+    vi.stubGlobal('document', {
+      set cookie(value: string) {
+        cookies.push(value);
+      },
+    });
+    const held = guestTokenFor('guest_kept', 14 * DAY);
+    w.win.localStorage.setItem(KEY, held);
+    void tokens().ensureGuestToken();
+    expect(cookies).toEqual([]);
+    vi.runAllTimers();
+    expect(cookies).toEqual([guestRenewalCookie(held, '/api/auth/guest')]);
+    const to = w.replace.mock.calls[0]![0] as string;
+    expect(to).toMatch(/^\/api\/auth\/guest\?state=/);
+    expect(to).not.toContain(held);
+  });
+
+  it('leaves no cookie with no token held, a lapsed one, an api on another origin, or cookies blocked', () => {
+    const cookies: string[] = [];
+    vi.stubGlobal('document', {
+      set cookie(value: string) {
+        cookies.push(value);
+      },
+    });
+    void tokens().startGuestHandoff();
+    w.win.localStorage.setItem(KEY, guestTokenFor('guest_old', -10));
+    void tokens().startGuestHandoff();
+    w.win.localStorage.setItem(KEY, guestTokenFor('guest_kept'));
+    for (const apiBase of ['https://api.example', '//api.example']) {
+      void createGuestTokens({
+        storageKey: KEY,
+        sessionPrefix: 'app',
+        apiBase,
+        fallbackPath: '/home',
+      }).startGuestHandoff();
+    }
+    vi.runAllTimers();
+    expect(cookies).toEqual([]);
+    expect(w.replace).toHaveBeenCalledTimes(4);
+
+    vi.stubGlobal('document', {
+      set cookie(_value: string) {
+        throw new DOMException('Blocked', 'SecurityError');
+      },
+    });
+    void tokens().startGuestHandoff();
+    vi.runAllTimers();
+    expect(w.replace).toHaveBeenCalledTimes(5);
   });
 
   // A Community post's preview frames the app's /embed: a handoff there took the frame to /auth/guest, which refuses

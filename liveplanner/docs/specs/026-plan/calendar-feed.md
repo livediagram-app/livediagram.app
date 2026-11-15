@@ -4,8 +4,8 @@ A **calendar feed** brings a plan's card dates to the calendar people already lo
 Outlook, Apple Calendar): a private `.ics` address, subscribed to once, that the calendar app polls and shows beside
 the person's meetings. It is read-only: nothing a calendar app does changes a card.
 
-Built so far: the feed's store and its address (`GET /api/calendar/…`). Subscribe to Calendar on a plan, its options
-and Reset Link (part 2), and the cross-plan My Work feed (part 3) are next ([Work Tracker 156](#parts)).
+Built so far: the feed's store, its address (`GET /api/calendar/…`), and Subscribe to Calendar on a plan with its
+options, Reset Link and Turn Off. The cross-plan My Work feed (part 3) is next ([Work Tracker 156](#parts)).
 
 ## Domain language
 
@@ -57,6 +57,83 @@ and Reset Link (part 2), and the cross-plan My Work feed (part 3) are next ([Wor
 - **Link back**: each event's URL opens the card in the plan (`/project/<plan id>#item=<card id>`), and its
   description names the board and column it sits in, then the same link.
 - The calendar is named after the plan (`Website relaunch · liveplanner`).
+
+## Subscribe to Calendar
+
+Where a person makes, copies, resets and turns off their feed of one plan.
+
+### Where it lives
+
+- **Subscribe to Calendar…** in the **tab menu** (the tab's ⋯ and the canvas's right-click menu, which are one menu),
+  under Export: getting the plan's dates out sits beside getting its tab out. It names the whole plan, whichever tab
+  the menu opened on.
+- Shown only to someone who may have a feed: **signed in**, on a plan **saved to an account**, holding the plan as its
+  **owner or a team member** (a grant with no share link and no tab), and not in an embed or a workbench frame.
+  Everyone else sees no row: a share-link holder at any level (Editor, Participant, Viewer), a guest, a plan in This
+  Browser. The api refuses them all the same, so the row is presentation, never the rule.
+
+### The dialog
+
+A centred dialog (a bottom sheet on a phone) titled **Subscribe to Calendar**, under the dialog hero header, subtitled
+"Card dates in your own calendar." (short enough to fit beside the hero art on a phone; the Just made state names the
+calendars). It opens on the person's own feed, read
+fresh, and has three states:
+
+- **Off** (no feed yet): the options, the privacy note, and **Make Calendar Link**.
+- **Just made** (made or reset a moment ago): the link in a read-only field with **Copy Link**, then **Google
+  Calendar** and **Apple Calendar**, which hand the link to that calendar's own subscribe page (Google's add-by-address
+  page; Apple's through `webcal://`), and a line for the rest: "In Outlook, choose Add Calendar, then Subscribe from
+  Web, and paste the link." (Outlook's page differs between personal and work accounts, so it gets words, not a
+  button.) Under them: "This is the only time the link is shown. Copy it now: if you lose it, Reset Link makes a new
+  one." The link is never read back later: the plan keeps only its hash.
+- **On** (a link made earlier, not shown again): "Your calendar link is on. Made <date>." with **Reset Link** and
+  **Turn Off**, each behind a confirm that says what it does:
+  - Reset Link: "Make a new link? The old one stops working at once, so calendars using it stop updating until you
+    add the new one." Then the Just made state, with the same options.
+  - Turn Off: "Turn off your calendar link? Calendars using it stop updating." Then the Off state.
+
+While it reads, a quiet loading row; when the read fails, "Couldn't load your calendar link." with **Try Again**.
+When a write fails, the dialog stays as it was and says "Couldn't save. Try again."
+
+### The options
+
+The same three in every state, under the heading **What It Shows**:
+
+- **Board**: **All Boards**, or one of the plan's boards by its title (with its tab's name after it when two boards
+  share a title, and its tab's name alone for a board with no title). A board that went since shows as **Removed
+  Board** until another is picked, and its feed is empty meanwhile.
+- **Only My Cards**: just the cards whose notifying Person fields name me.
+- **Include Done Cards**: cards in a done column too.
+
+In the Off state they are what Make Calendar Link makes the feed with. Once a feed exists, a change saves at once and
+**keeps the link**: the calendar app shows the new set on its next fetch, so nobody re-subscribes to change a filter.
+
+### Keeping it private
+
+Every state carries the privacy note, in the dialog's warning tone: "Anyone with this link can see the titles and
+dates of the cards in this feed. Don't share it or post it anywhere. If it leaks, press Reset Link: the old link
+stops at once." The help article says the same.
+
+### Managing a feed (signed-in routes)
+
+`/api/projects/:id/calendar-feed`, answered inside the plan's room, for the person's own feed only:
+
+- `GET`: their feed's options and when it was made (never the link), or none, and the plan's boards to pick from.
+- `POST`: make the feed with the body's options, or, over an existing one, Reset Link with them; answers the link once.
+- `PUT`: change an existing feed's options, keeping its link; 404 when they have none.
+- `DELETE`: Turn Off; answers 204 whether or not there was one.
+
+Each needs a person **signed in, in person**: never an API token (read-only or not) or a workbench session, which
+could otherwise mint a lasting secret, and never a guest. And their grant on the plan must be the owner's or a team
+member's: a share link at any level, or a grant confined to one tab, is refused with 403 `calendar_feed_needs_member`.
+A board option must name one of the plan's boards (400 `calendar_feed_invalid`). Every answer is `no-store`.
+
+### Telemetry
+
+Counts only, never a plan, a board or a link: the dialog opened (UI·Opened·CalendarFeed), a link made
+(Plan·Created·CalendarFeed), reset (Plan·Changed·CalendarFeedLink), its options changed
+(Plan·Changed·CalendarFeedOptions), copied (Plan·Copied·CalendarFeed), handed to a calendar
+(Plan·Shared·CalendarFeedGoogle or CalendarFeedApple) and turned off (Plan·Ended·CalendarFeed).
 
 ## How it answers
 
