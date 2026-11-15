@@ -30,7 +30,8 @@ async function exportFile(ctx: PlanRouteContext, id: string): Promise<Response> 
   if (refused) return refused;
   const file = await exportProjectFile(ctx.env, id, null);
   if (file.status !== 'ok') return notFound();
-  console.info('[plan-file] exported', { projectId: id, bytes: byteLength(file.body) });
+  const bytes = typeof file.body === 'string' ? byteLength(file.body) : file.body.byteLength;
+  console.info('[plan-file] exported', { projectId: id, bytes });
   return new Response(file.body, {
     status: 200,
     headers: {

@@ -6,8 +6,14 @@ import { BrandMark, lucideGlyph } from '@liveplanner/ui';
 import { lucideTable } from '@liveworkspace/icons/lucide';
 import type { IntoTab } from './into-tab';
 import { ToolMark } from './tool-marks';
+import { PLAN_ROW_HINT, PLAN_ROW_LABEL } from './plan-file-copy';
 
-export type ImportRowCopy = { label: string; file: 'JSON' | 'CSV'; hint: string; icon: ReactNode };
+export type ImportRowCopy = {
+  label: string;
+  file: 'JSON' | 'CSV' | '.liveplanner';
+  hint: string;
+  icon: ReactNode;
+};
 
 export const TOOL_ROWS: readonly (ImportRowCopy & { source: TrackerSource })[] = (
   [
@@ -63,3 +69,15 @@ export function intoTabCopy(into: IntoTab): ImportRowCopy {
     ),
   };
 }
+
+// The A Whole Plan row: a plan's own file, so the prism, as the liveplanner Tab row wears.
+export const PLAN_FILE_ROW: ImportRowCopy = {
+  label: PLAN_ROW_LABEL,
+  file: '.liveplanner',
+  hint: PLAN_ROW_HINT,
+  icon: (
+    <Tile>
+      <BrandMark className="h-[18px] w-[18px]" />
+    </Tile>
+  ),
+};

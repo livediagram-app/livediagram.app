@@ -1,5 +1,6 @@
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
+import { usePlanFileImport } from '@/hooks/plan/usePlanFileImport';
 import { useTrackerImport } from '@/hooks/plan/useTrackerImport';
 import { usePublishTabRename } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { useRef } from 'react';
@@ -251,6 +252,13 @@ export function useEditorTabs(
     openProject,
     notify: (message) => toast.success(message),
   });
+  // A whole plan from its .liveplanner file (docs/specs/026-plan/plan-tabs.md "The Import dialog"): beside the tools.
+  const planFileImport = usePlanFileImport({
+    canImport: !isStructureReadOnly,
+    signedIn: !!accountUserId,
+    ownerId: selfParticipant.id,
+    openProject,
+  });
 
   // Mark the participant's name as "confirmed" — they explicitly
   // dismissed at least one modal that prompted for it. Persisted in
@@ -338,6 +346,7 @@ export function useEditorTabs(
     tick,
     toggleActiveTabLock,
     trackerImport,
+    planFileImport,
     undo,
   };
 }

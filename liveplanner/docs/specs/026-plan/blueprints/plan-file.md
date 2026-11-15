@@ -8,8 +8,8 @@ uses (`apps/api/src/plan-room/project-file.ts` `exportProjectFile`, `readProject
 ## Domain and naming
 
 - **Plan file**: the `.liveplanner` file (`APP_FILE_FORMATS.liveplanner`: kind `liveplanner.project`, mime
-  `application/vnd.liveplanner+json`). Code says `projectFile`; copy says "plan" and ".liveplanner file", never
-  "document" or "board".
+  `application/vnd.liveplanner+json`). Code says `projectFile`; copy says "plan" and ".liveplanner file", and no
+  other word for the plan (domain-language.md).
 - **Whole Plan**: the Export dialog's card (format key `plan` in `ExportFormatKey`, `plan-export-formats.ts`).
 - **liveplanner Plan**: the Import dialog's row, in the section **A Whole Plan** (`import-whole-plan`).
 - **File summary**: what the preview shows (`ProjectFileSummary`: `name`, `tabs`, `cards`, `cardTypes`, `threads`,
@@ -28,7 +28,8 @@ uses (`apps/api/src/plan-room/project-file.ts` `exportProjectFile`, `readProject
 - `summariseProjectFile(text)`: `{ ok: true, summary }` or `{ ok: false, failure }` with `failure` one of
   `parseProjectEnvelope`'s (`not_json`, `wrong_kind`, `unsupported_version`, `malformed`). Counts are of the parsed
   envelope (unknown fields already dropped); `cardTypes` counts the catalogue's types, `pictures` is true when any
-  card's fields hold an `attachments` list or an Image field value (`images` key or a value with an image id).
+  card holds a non-empty `attachments` list (`ATTACHMENTS_FIELD`) or an id in a field the file's catalogue defines as
+  an Image field (`storedImageIds`).
 - `GET /api/projects/:id/file` (`apps/api/src/routes/project-file-route.ts` `handleProjectFile`): no grant 404; a
   grant whose tab scope is set 404; a grant below edit 403; no started plan 404; else 200 with the envelope text,
   `Content-Type` the mime, `Content-Disposition: attachment; filename="<sanitised name>.liveplanner"` and
@@ -39,14 +40,17 @@ uses (`apps/api/src/plan-room/project-file.ts` `exportProjectFile`, `readProject
   `importProjectFile(env, id, { copy, name, ownerId, teamId: grant.team })` and 201 `{ project }`.
 - Editor `apiExportProjectFile(ownerId, id)` (`apps/editor/lib/api/project-file.ts`): the response's text, or throws
   `ApiError`. `apiImportProjectFile(ownerId, text, title)`: mints the id, `indexClient.createItem({ id, app:
-  'liveplanner', title, source: 'import' })`, seeds the grant, posts the text with `X-Index-Grant`; any failure after
+'liveplanner', title, source: 'import' })`, seeds the grant, posts the text with `X-Index-Grant`; any failure after
   the index made the item deletes it for good (`deleteItem(id, { permanent: true })`) and rethrows. Answers the id.
 - `PlanFileImportActions` (`apps/editor/hooks/plan/usePlanFileImport.ts`): `{ offered, blocked, importFile(text,
-  name) }`. `offered` is the tools' `canImport`; `blocked` is the guest sentence when not signed in; `importFile`
+name) }`. `offered` is the tools' `canImport`; `blocked` is the guest sentence when not signed in; `importFile`
   answers `{ ok: true }` (and opens the new plan) or `{ ok: false, error }` with the spec's sentence by the api's
   error code.
-- `ExportTabDialog` takes `wholePlan?: { projectId, ownerId }`, given by `EditorTabDialogs` only for an Editor of the
-  whole plan (`!isStructureReadOnly`) on a plan that is not This Browser's.
+- `ExportTabDialog` takes `wholePlan?: { projectId, ownerId }`, which `EditorTabDialogs` sets from
+  `wholePlanOffer({ projectId, ownerId, isOffline, isStructureReadOnly })`
+  (`apps/editor/components/dialogs/whole-plan-offer.ts`): only for an Editor of the whole plan
+  (`isStructureReadOnly` is a Participant's, a Viewer's and a tab-scoped link's) on a plan that is not This
+  Browser's.
 
 ## Behaviour and state
 
@@ -90,7 +94,7 @@ uses (`apps/api/src/plan-room/project-file.ts` `exportProjectFile`, `readProject
 ## Observability
 
 - `[plan-file] exported` (`projectId`, `bytes`), `[plan-file] refused` (`projectId`, `reason`), `[plan-file]
-  imported` (`projectId`, `tabs`, `cards`) on the api; `[plan-file] import failed` (`error`) in the editor's debug
+imported` (`projectId`, `tabs`, `cards`) on the api; `[plan-file] import failed` (`error`) in the editor's debug
   log. Telemetry `Project · Exported · Plan` and `Plan · Imported · Liveplanner`.
 
 ## Testing
@@ -100,6 +104,8 @@ uses (`apps/api/src/plan-room/project-file.ts` `exportProjectFile`, `readProject
   Participant and Viewer 403; tab-scoped 404), a malformed file, an oversized one by header and by length, a newer
   schema, unknown fields dropped, and a started plan 409.
 - `packages/project/src/project-file-summary.test.ts`: the counts and every refusal.
-- Editor: `ImportTabDialog.test.tsx` (the section for an Editor only, the guest's dimmed row, the preview and its
-  import, refusals), `import-drop.test.ts` (a plan file's route), `ExportTabDialog.plan.test.tsx` (the card only with
-  `wholePlan`, the download).
+- Editor: `ImportTabDialog.plan-file.test.tsx` (the section for an Editor only, the guest's dimmed row, the preview
+  and its import, refusals, drops), `import-drop.test.ts` (a plan file's route), `ExportTabDialog.whole-plan.test.tsx`
+  (the card on every kind only with `wholePlan`, the download, a failure), `whole-plan-offer.test.ts` (by role),
+  `usePlanFileImport.test.ts` (offered, blocked, the api's refusals as sentences) and `lib/api/project-file.test.ts`
+  (the index's item first, deleted when the write fails).

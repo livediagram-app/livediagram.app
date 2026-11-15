@@ -1,5 +1,6 @@
 // Where a file dropped on the Import dialog goes, on any step (docs/specs/026-plan/plan-tabs.md "The Import dialog"): the
-// file says what it is. A liveplanner tab's JSON to the liveplanner Tab step, another tool's export to its preview,
+// file says what it is. A liveplanner tab's JSON to the liveplanner Tab step, a whole plan's file to its preview (A
+// Whole Plan), another tool's export to its preview,
 // any other CSV into a Board or Sheet tab; anything none of them takes is said why. Each file is parsed once, by the
 // import it goes to: a tab's JSON is told by the first lines of its envelope, a tool's CSV by its header row.
 import { isTrackerCsvHead } from '@/lib/tracker-file';
@@ -26,6 +27,7 @@ export function fileSizeLabel(bytes: number): string {
 
 export type DropRoute =
   | { to: 'tab-json' }
+  | { to: 'plan' }
   | { to: 'tab-csv' }
   | { to: 'tracker'; read: Extract<TrackerRead, { board: unknown }> }
   | { to: 'error'; error: string };
@@ -33,13 +35,25 @@ export type DropRoute =
 // A tab's export starts with its envelope (`tabToJsonText`): its kind sits in the first lines.
 const TAB_KIND = /"kind"\s*:\s*"liveplanner\.tab"/;
 const isTabJson = (text: string) => TAB_KIND.test(text.slice(0, 512));
+// A plan's file starts with its envelope (`projectToEnvelopeText`) the same way.
+const PLAN_KIND = /"kind"\s*:\s*"liveplanner\.project"/;
+const isPlanJson = (text: string) => PLAN_KIND.test(text.slice(0, 512));
 const isJson = (text: string) => /^\s*[[{]/.test(text);
 
 // A tool's export is read whole by `readTool` (the Import dialog's worker); the rest is told from its first lines.
 export async function routeImportDrop(
   text: string,
   name: string,
-  { intoTab, tools }: { intoTab: IntoTab; tools: boolean },
+  {
+    intoTab,
+    tools,
+    plan = { offered: false, blocked: null },
+  }: {
+    intoTab: IntoTab;
+    tools: boolean;
+    // The A Whole Plan section: whether it is offered, and why its row is dimmed.
+    plan?: { offered: boolean; blocked: string | null };
+  },
   readTool: (text: string, name: string) => Promise<TrackerRead>,
 ): Promise<DropRoute> {
   const json = intoTab.kind === 'json';
@@ -53,6 +67,10 @@ export async function routeImportDrop(
   };
 
   if (isJson(text)) {
+    if (isPlanJson(text)) {
+      if (!plan.offered) return fail(json ? DROP_UNKNOWN : DROP_NOT_CSV);
+      return plan.blocked ? fail(plan.blocked) : { to: 'plan' };
+    }
     if (isTabJson(text)) {
       if (!json) return fail(DROP_TAB_JSON_HERE);
       return intoTab.blocked ? fail(intoTab.blocked) : { to: 'tab-json' };

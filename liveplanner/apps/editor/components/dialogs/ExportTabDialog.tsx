@@ -24,12 +24,14 @@ import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { usePlanImageExport } from './usePlanImageExport';
+import { WholePlanExportPanel } from './WholePlanExportPanel';
 import type { ExportFormatKey } from '@liveplanner/plan-art';
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
+  plan: 'Plan',
   markdown: 'Markdown',
   csv: 'CSV',
   png: 'PNG',
@@ -65,6 +67,9 @@ type ExportTabDialogProps = {
   offerHiddenLayers?: boolean;
   // The project's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export").
   projectTabs?: readonly Tab[];
+  // The plan the Whole Plan card downloads (plan-tabs.md "Whole Plan"): given only to an Editor of the whole plan on a
+  // plan saved to an account; absent, the card is not offered.
+  wholePlan?: { projectId: string; ownerId: string };
 };
 
 // The format keys (plan-export-formats.ts).
@@ -76,6 +81,8 @@ type TextFormat = 'file' | 'markdown' | 'csv';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat =>
   f === 'file' || f === 'markdown' || f === 'csv';
+// The image formats; the rest are text or the Whole Plan, which draw no preview.
+const isImageFormat = (f: Format): f is ImageFormat => f === 'png' || f === 'svg' || f === 'pdf';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -110,6 +117,12 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'pdf',
     title: 'PDF',
     description: 'A single-page PDF of this tab, ready to print or share.',
+  },
+  {
+    kind: 'plan',
+    title: 'Whole Plan',
+    description:
+      'Every tab, card, card type, comment and rule in one file, to import back as a new plan.',
   },
 ];
 
@@ -166,6 +179,7 @@ export function ExportTabDialog({
   scope = 'tab',
   offerHiddenLayers = true,
   projectTabs,
+  wholePlan,
 }: ExportTabDialogProps) {
   const titleId = useId();
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
@@ -218,8 +232,13 @@ export function ExportTabDialog({
   const [previewReady, setPreviewReady] = useState(false);
   // A Plan tab offers its own formats, CSV among them; any other tab has no cards or cells, so its CSV was an
   // empty file.
+  // The Whole Plan card is the plan's, not the tab's: offered on every tab to an Editor of the whole plan.
   const cards = CARDS.filter((c) =>
-    planImage.formats ? planImage.formats.includes(c.kind) : c.kind !== 'csv',
+    c.kind === 'plan'
+      ? !!wholePlan
+      : planImage.formats
+        ? planImage.formats.includes(c.kind)
+        : c.kind !== 'csv',
   );
 
   const isSelection = scope === 'selection';
@@ -234,13 +253,13 @@ export function ExportTabDialog({
   const [loadInputs, setLoadInputs] = useState({ active, tab });
   if (loadInputs.active !== active || loadInputs.tab !== tab) {
     setLoadInputs({ active, tab });
-    if (active && !isTextFormat(active)) setPreviewReady(false);
+    if (active && isImageFormat(active)) setPreviewReady(false);
   }
 
   // When an image format is picked, load the icon catalogues
   // so the preview (and export) renders the real glyphs, not placeholders.
   useEffect(() => {
-    if (!active || isTextFormat(active)) return;
+    if (!active || !isImageFormat(active)) return;
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
@@ -307,9 +326,11 @@ export function ExportTabDialog({
 
   const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
   const subtitle = activeCard
-    ? isTextFormat(active!)
-      ? `Copy this tab as ${activeCard.title}, or download a file.`
-      : `Set the image options for ${activeCard.title}, then download.`
+    ? active === 'plan'
+      ? 'Download the whole plan as one file.'
+      : isTextFormat(active!)
+        ? `Copy this tab as ${activeCard.title}, or download a file.`
+        : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : 'Pick a format to export the current tab.';
@@ -335,7 +356,15 @@ export function ExportTabDialog({
           onCopied={() => trackTextExport(active, tab)}
           onBack={() => setActive(null)}
         />
-      ) : active ? (
+      ) : active === 'plan' && wholePlan ? (
+        <WholePlanExportPanel
+          projectId={wholePlan.projectId}
+          ownerId={wholePlan.ownerId}
+          projectName={projectName}
+          onBack={() => setActive(null)}
+          onDone={onClose}
+        />
+      ) : active && isImageFormat(active) ? (
         <ImageExportPanel
           label={activeCard!.title}
           // A Plan tab as laid out: no canvas to tilt or pattern.

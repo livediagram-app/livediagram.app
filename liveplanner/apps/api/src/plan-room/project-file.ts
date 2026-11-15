@@ -319,7 +319,7 @@ function threadsOf(
 }
 
 // `teamId`: the team the new plan's grant names (an import from the editor into a team space), else none.
-export type ProjectFileImport = ProjectFileContent & {
+export type ProjectFileImport = Pick<ProjectFileContent, 'copy'> & {
   name: string;
   ownerId: string;
   teamId?: string | null;

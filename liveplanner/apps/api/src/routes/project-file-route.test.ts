@@ -3,6 +3,7 @@
 // the importer's own. Export then import gives the same plan; the body is untrusted, so a malformed, oversized or
 // newer file is refused with nothing made; a Participant, a Viewer and a tab-scoped link are refused.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { MAX_TAB_BYTES } from '@liveplanner/api-schema';
 import { defaultCatalogue, type AutomationRule, type Item } from '@liveplanner/items';
 import {
   PROJECT_FILE_MAX_BYTES,
@@ -32,23 +33,27 @@ const PERSON = { id: OWNER, name: 'Ada', color: '#123456' };
 
 let db: SqliteD1;
 
-const grant = (item: string, over: Partial<PlanGrant> = {}): PlanGrant =>
-  ({
-    item,
-    level: 'edit',
-    tab: null,
-    sub: OWNER,
-    team: null,
-    exp: 9_999_999_999,
-    shareCode: null,
-    token: 'signed',
-    ...over,
-  }) as PlanGrant;
+const grant = (item: string, over: Partial<PlanGrant> = {}): PlanGrant => ({
+  item,
+  level: 'edit',
+  tab: null,
+  sub: OWNER,
+  team: null,
+  exp: 9_999_999_999,
+  shareCode: null,
+  token: 'signed',
+  ...over,
+});
 
 function call(
   method: string,
   id: string,
-  opts: { grant?: PlanGrant | null; owner?: string; body?: string; headers?: Record<string, string> } = {},
+  opts: {
+    grant?: PlanGrant | null;
+    owner?: string;
+    body?: string;
+    headers?: Record<string, string>;
+  } = {},
 ) {
   return handlePlanRequest(
     makeTestRouteContext(method, `/api/projects/${id}/file`, {
@@ -169,7 +174,12 @@ beforeEach(async () => {
   await db.env.PLAN_DB.batch([
     ...insertSheetStatements(db.env, 'A', sheet, 5),
     insertThreadStatement(db.env, thread),
-    insertLinkStatement(db.env, 'A', { itemId: 'card1', threadId: 'th-scope00000000001', home: 'A', openComments: 2 }),
+    insertLinkStatement(db.env, 'A', {
+      itemId: 'card1',
+      threadId: 'th-scope00000000001',
+      home: 'A',
+      openComments: 2,
+    }),
     ...copiedRuleStatements(db.env, [rule]),
   ]);
 });
@@ -192,9 +202,7 @@ describe('GET /api/projects/:id/file', () => {
     const res = await call('GET', 'A');
     expect(res.status).toBe(200);
     expect(res.headers.get('Content-Type')).toBe(MIME);
-    expect(res.headers.get('Content-Disposition')).toBe(
-      'attachment; filename="plan.liveplanner"',
-    );
+    expect(res.headers.get('Content-Disposition')).toBe('attachment; filename="plan.liveplanner"');
     expect(res.headers.get('Cache-Control')).toBe('no-store');
     const text = await res.text();
     const { project } = envelopeOf(text);
@@ -233,7 +241,9 @@ describe('POST /api/projects/:id/file', () => {
     const file = await exported();
     const res = await call('POST', 'B', { body: file });
     expect(res.status).toBe(201);
-    const { project } = await res.json<{ project: { id: string; name: string; ownerId: string } }>();
+    const { project } = await res.json<{
+      project: { id: string; name: string; ownerId: string };
+    }>();
     expect(project).toMatchObject({ id: 'B', name: 'Roadmap', ownerId: OWNER });
 
     const before = envelopeOf(file).project;
@@ -266,7 +276,9 @@ describe('POST /api/projects/:id/file', () => {
         cards: t.cards.map((c) => [c.itemId, c.key]),
       }));
     expect(threadsOf(after.threads)).toEqual(threadsOf(before.threads));
-    expect(db.sql.prepare('SELECT plan_id FROM card_threads WHERE plan_id = ?').all('B')).toHaveLength(1);
+    expect(
+      db.sql.prepare('SELECT plan_id FROM card_threads WHERE plan_id = ?').all('B'),
+    ).toHaveLength(1);
     // Every rule, as it was but off, under a fresh id.
     const rulesOf = (rules: AutomationRule[] | undefined) =>
       (rules ?? []).map(({ name, trigger, conditions, steps }) => ({
@@ -283,7 +295,10 @@ describe('POST /api/projects/:id/file', () => {
   });
 
   it('files the new plan under the team its grant names', async () => {
-    const res = await call('POST', 'B', { body: await exported(), grant: grant('B', { team: 'team_1' }) });
+    const res = await call('POST', 'B', {
+      body: await exported(),
+      grant: grant('B', { team: 'team_1' }),
+    });
     expect(res.status).toBe(201);
     expect(db.sql.prepare('SELECT team_id FROM plan WHERE id = ?').get('B')).toEqual({
       team_id: 'team_1',
@@ -336,6 +351,16 @@ describe('POST /api/projects/:id/file', () => {
     expect(db.sql.prepare('SELECT id FROM plan WHERE id = ?').get('B')).toBeUndefined();
   });
 
+  it('refuses a tab past the tab cap inside a file under the file cap with 413 too_large', async () => {
+    const envelope = JSON.parse(await exported()) as {
+      project: { tabs: { elements: unknown[] }[] };
+    };
+    envelope.project.tabs[0]!.elements = [{ ...box('big'), label: 'x'.repeat(MAX_TAB_BYTES) }];
+    const res = await call('POST', 'B', { body: JSON.stringify(envelope) });
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: 'too_large' });
+  });
+
   it('refuses an id that already holds a plan with 409, the plan left as it was', async () => {
     const res = await call('POST', 'A', { body: await exported() });
     expect(res.status).toBe(409);
@@ -347,9 +372,9 @@ describe('POST /api/projects/:id/file', () => {
     expect(
       (await call('POST', 'B', { body: file, grant: grant('B', { level: 'participate' }) })).status,
     ).toBe(403);
-    expect((await call('POST', 'B', { body: file, grant: grant('B', { level: 'view' }) })).status).toBe(
-      403,
-    );
+    expect(
+      (await call('POST', 'B', { body: file, grant: grant('B', { level: 'view' }) })).status,
+    ).toBe(403);
     expect((await call('POST', 'B', { body: file, grant: grant('B', { tab: 't1' }) })).status).toBe(
       404,
     );

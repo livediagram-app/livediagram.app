@@ -48,7 +48,8 @@ export type ProjectEnvelope = {
 
 export type EnvelopeSheet = { id: string; tabId: string; title: string; [key: string]: unknown };
 
-export type ProjectEnvelopeFailure ='not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
+export type ProjectEnvelopeFailure =
+  'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function projectToEnvelopeText(
   liveDoc: { id: string; name: string },

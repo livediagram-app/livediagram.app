@@ -27,16 +27,17 @@ Every import goes through one dialog. Open it with **Import…** in the tab's me
   <ImportMenu />
 </Figure>
 
-The list has two parts:
+The list has up to three parts:
 
 - **Into This Tab**: what the tab you are on takes. A Board or Sheet takes a **CSV** file, and a Dashboard or Form a liveplanner tab's **JSON** export (the **liveplanner Tab** row).
 - **A Board from Another Tool**: **Trello**, **Asana**, **Jira** and **Linear**, each with a line saying which file to bring and where the tool keeps it.
+- **A Whole Plan**: the **liveplanner Plan** row, for a plan's own `.liveplanner` file from Export's [Whole Plan](/help/tabs/export-tabs/).
 
 <Figure caption="The Import dialog on a Board tab: its own CSV, then the four tools, each with the file to bring.">
   <ImportChooser />
 </Figure>
 
-You can also **drop a file** on the dialog, whichever step it shows. liveplanner works out what it is and sends it to the right place: a tab's JSON to the liveplanner Tab import, a Trello, Asana, Jira or Linear export to its preview, and any other CSV into a Board or Sheet tab. If nothing takes it, the dialog says why, and what you were looking at stays as it was.
+You can also **drop a file** on the dialog, whichever step it shows. liveplanner works out what it is and sends it to the right place: a tab's JSON to the liveplanner Tab import, a plan's `.liveplanner` file to its preview, a Trello, Asana, Jira or Linear export to its preview, and any other CSV into a Board or Sheet tab. If nothing takes it, the dialog says why, and what you were looking at stays as it was.
 
 ## A CSV onto a Board
 
@@ -93,6 +94,17 @@ The file says which tool it came from, so a Jira file chosen from the Trello row
 A file reads up to 20 MB and 5,000 cards, and an import is never made in part: when the plan has no room for every card, the tab choice is greyed out with the reason, and the board goes into a new plan instead. Into this plan, Undo takes the cards, the tab and the card type back a step at a time. It is a one-off copy: nothing links back to the other tool, and a second import makes a second board. Making a tab, columns and a card type is an Editor's, so only an Editor sees the A Board from Another Tool rows. Agents can do the same with [`import_board`](/help/account-and-data/connect-ai-mcp/).
 
 While a tab is [locked](/help/tabs/locking-tabs/), its Into This Tab row is greyed out with the reason; a board from another tool still comes in, as a new tab. The tab menu isn't offered on a view-only share link.
+
+## A Whole Plan
+
+Press **liveplanner Plan** and pick a `.liveplanner` file saved with Export's **Whole Plan** (or drop it on the dialog). Before anything is made, a preview shows the plan's name and how many tabs, cards, card types, comment threads and rules it holds. **Import as New Plan** makes a new plan in My Work with all of it, and opens it:
+
+- Every tab, in the same order and folders, with links between them pointing at the new copies.
+- Every card, with the same numbers and fields, and the card types, Sheets and comment threads.
+- The Automations rules, turned **off**: turn on the ones you want in Automations.
+- Pictures stay with the plan they came from. The file names them but carries no image bytes, so in the new plan a picture shows only to whoever uploaded it.
+
+A file reads up to 8 MB. One that isn't a plan, comes from a newer liveplanner, or is damaged is refused with the reason, and nothing is made. Like the tools, the row is an Editor's, and you need to be signed in: the new plan is made in your account.
 
 <Tip>
   Coming from a tool that isn't listed? Export its cards as a CSV with a Title column, then import

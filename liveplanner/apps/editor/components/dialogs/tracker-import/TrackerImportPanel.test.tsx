@@ -81,6 +81,7 @@ function open(t: TrackerImportActions = tracker()) {
       onImportFile={vi.fn()}
       onImportText={vi.fn()}
       tracker={t}
+      planFile={{ offered: false, blocked: null, importFile: vi.fn() }}
       onClose={onDone}
     />,
   );

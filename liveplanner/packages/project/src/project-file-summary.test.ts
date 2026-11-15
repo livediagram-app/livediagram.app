@@ -54,7 +54,7 @@ describe('summariseProjectFile', () => {
       [card('c1', 1), card('c2', 2)],
       DEFAULTS,
       [],
-      [thread as never],
+      [thread],
       [{ id: 'r1', name: 'Rule' } as never],
     );
     expect(summariseProjectFile(text)).toEqual({
