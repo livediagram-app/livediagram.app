@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, type ComponentProps } from 'react';
+import { memo, useCallback, type ComponentProps } from 'react';
 import type { Element } from '@livedocuments/document';
 import type { DragState } from '@/lib/canvas';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
@@ -52,8 +52,10 @@ export function selectedKindOf(
 }
 
 // The banner with its selection read from the store (docs/specs/008-canvas/blueprints/selection-store.md):
-// a selection change renders this, not the editor view that places it.
-export function ModifierHint({
+// a selection change renders this, not the editor view that places it. Memoised, so the editor view's own renders (a
+// typing commit among them) skip it while its props hold (docs/specs/007-editor/blueprints/flashcards.md "Performance
+// and limits").
+export const ModifierHint = memo(function ModifierHint({
   elements,
   readOnly = false,
   ...banner
@@ -68,7 +70,7 @@ export function ModifierHint({
   );
   const selectedKind = readOnly && kind === 'arrow' ? 'other' : kind;
   return <ModifierHintBanner {...banner} selectedKind={selectedKind} />;
-}
+});
 
 const KEY_CHIP =
   'rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300';

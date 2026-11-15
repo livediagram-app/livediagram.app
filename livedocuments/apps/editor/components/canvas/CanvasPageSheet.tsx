@@ -3,24 +3,14 @@
 import { pageImageBlurSigma } from '@livedocuments/document';
 import { useBlurredPageImage } from '@/hooks/canvas/useBlurredPageImage';
 import { pageImageSrc } from '@/lib/page-image-paint';
-import { memo, type CSSProperties } from 'react';
+import { memo } from 'react';
 import { FirstPageChoice } from './FirstPageChoice';
-import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
-import { PageCog, PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
 import { PageLabelCard } from '@liveworkspace/workbench/components/canvas/PageLabelCard';
-import { PageBackgroundButton } from './PageBackgroundButton';
-import { PageTabStyleButton } from './PageTabStyleButton';
-import { appearanceRows, PageAppearanceButton } from './PageAppearanceButton';
-import { openTabStyleFrom } from '@/lib/tab-style-opener';
-import { PageLayoutsButton } from './PageLayoutsButton';
 import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
 import { layoutInviteShows } from '@/lib/layout-invite';
 import { track } from '@/lib/telemetry';
 import { PageMotionLayer } from './PageMotionLayer';
-import { PageNotesButton } from './PageNotesButton';
-import { PageTidyUpButton } from './PageTidyUpButton';
-import { PageArticleButtons } from './PageArticleButtons';
-import { QuickStyleBarSlot } from './QuickStyleBarSlot';
+import { PageSheetTitleBar, steady } from './PageSheetTitleBar';
 import { useQuickStyleBarRoom } from '@/lib/quick-style-bar-slots';
 import {
   appearanceNamed,
@@ -49,19 +39,12 @@ import type { PageDeckControls, PageEdits } from '@/hooks/editor/usePagesMode';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { FlashcardFooter } from './FlashcardStack';
 import type { CardStack } from '@/lib/flashcard-stack';
-import { ArticleStyleSection } from './article/ArticleStyleSection';
 import type { ArticleStyleChange } from '@/hooks/editor/useArticles';
 import { pageBandLayout } from '@/lib/article/article-band-layout';
 import { PageBands } from './article/PageBands';
 
 // Canvas px the letterbox's black reaches past the presented sheet: past any screen at any zoom.
 const LETTERBOX_SPREAD = 100_000;
-
-// Held at one screen size whatever the zoom: counter-scaled about the given corner.
-const steady = (zoom: number, origin: string): CSSProperties => ({
-  transform: `scale(${1 / zoom})`,
-  transformOrigin: origin,
-});
 
 /** What a page's sheet does, through handles that keep their identity across the editor's renders (CanvasPages'
  *  useStableCallbacks): each runs the newest version when called, never during render. */
@@ -247,18 +230,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   // "Where it sits"), takes its room from the label too.
   const quickStyleRoom = useQuickStyleBarRoom(id);
   const labelRoom = room - fixedRoom - quickStyleRoom;
-  // An article's Style or Text sections (ArticleStyleSection), for the buttons beside an article page's cog.
-  const articleSection = (part: 'style' | 'text') =>
-    page.flow && hasArticle ? (
-      <ArticleStyleSection
-        part={part}
-        card={page.kind === 'flashcard'}
-        style={storedArticleStyle}
-        themeAccent={themeAccent}
-        onChange={(change) => act.setArticleStyle(page.flow!, change)}
-        onPreview={(style) => act.previewArticleStyle(page.flow!, style)}
-      />
-    ) : null;
   // A blurred picture paints from its blurred copy, the tone showing until it is ready (pages-mode.md "Image
   // backgrounds", Blur); a hover preview (an Openverse thumbnail) shows sharp.
   const imageFill = background?.fill?.kind === 'image' ? background.fill : undefined;
@@ -318,112 +289,35 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
         />
       </div>
       {editable ? (
-        // The page's own controls, one toolbar card in three groups (PageTitleBar): how the
-        // page looks, then tools, then the page itself at its corner. A press on them keeps an
-        // article's toolbar. The Quick Style bar's slot sits first in the row, left of it, empty until the
-        // selection is on this page; the row itself takes no presses, only the cards in it.
-        <div
-          className="pointer-events-none absolute right-0 flex items-center gap-1.5"
-          style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
-        >
-          <QuickStyleBarSlot pageId={id} named={labelled} />
-          <PageTitleBar
-            keepArticleActive
-            groups={[
-              [
-                // On a phone the looks gather under Appearance, their own controls mounted headless.
-                mobile ? (
-                  <PageAppearanceButton
-                    key="appearance"
-                    pageId={id}
-                    rows={appearanceRows(buttons)}
-                    article={articleButtons}
-                    labelled={appearanceLabelled}
-                    onPick={(choice, from) =>
-                      choice === 'style' && !articleButtons
-                        ? openTabStyleFrom(from)
-                        : act.ask(id, choice)
-                    }
-                  />
-                ) : null,
-                // Tab Style (PageTabStyleButton): the whole tab's look.
-                styleButton && !mobile ? (
-                  <PageTabStyleButton key="style" labelled={labelled} />
-                ) : null,
-                // An article page's Style (leading with Tab Style) and Text (PageArticleButtons).
-                articleButtons && page.flow ? (
-                  <PageArticleButtons
-                    key="article"
-                    tabStyle={tabStyle}
-                    labelled={labelled}
-                    headless={mobile}
-                    styleRequest={styleRequest}
-                    textRequest={textRequest}
-                    section={articleSection}
-                  />
-                ) : null,
-                // An infographic or slide page's Layouts (PageLayoutsButton).
-                pageButtons ? (
-                  <PageLayoutsButton
-                    key="layouts"
-                    page={page}
-                    labelled={labelled}
-                    headless={mobile}
-                    openRequest={layoutsRequest}
-                    onOpenChange={(isOpen) => act.layoutsOpenChange(id, isOpen)}
-                    onApply={(layout) => act.applyLayout(id, layout)}
-                    onPreview={(layout) => act.previewLayout(id, layout ?? null)}
-                  />
-                ) : null,
-                // An infographic, slide or article page's Background (PageBackgroundButton).
-                pageButtons || articleButtons ? (
-                  <PageBackgroundButton
-                    key="background"
-                    page={page}
-                    labelled={labelled}
-                    themePresets={themePresets}
-                    headless={mobile}
-                    openRequest={backgroundRequest}
-                    onBackground={(patch) => act.setBackground(id, patch)}
-                    onPreview={(patch) => act.previewBackground(id, patch ?? null)}
-                    applyToAll={{
-                      reach: applyReach,
-                      onApply: () => act.applyBackgroundToAll(id),
-                    }}
-                  />
-                ) : null,
-              ],
-              [
-                // This slide's notes once it is in the deck (PageNotesButton).
-                notesButton && deck ? (
-                  <PageNotesButton key="notes" pageId={id} deck={deck} labelled={labelled} />
-                ) : null,
-                // An infographic or slide page's Tidy, while it would change something; never on a phone.
-                tidyButton && tidyEdit && !mobile ? (
-                  <PageTidyUpButton key="tidy" pageId={id} edit={tidyEdit} labelled={labelled} />
-                ) : null,
-              ],
-              [
-                // No lock on a phone: the cog sheet holds it (PagePanel's actions).
-                mobile ? null : (
-                  <PageLockButton
-                    key="lock"
-                    locked={locked}
-                    labelled={labelled}
-                    onToggle={() => act.setLocked(id, !locked)}
-                  />
-                ),
-                <PageCog
-                  key="cog"
-                  name={`${shownName ?? (many ? `Page ${page.index + 1}` : 'Page')} settings`}
-                  open={open}
-                  onToggle={() => act.toggle(id)}
-                  cogRef={(el) => act.cogRef(id, el)}
-                />,
-              ],
-            ]}
-          />
-        </div>
+        <PageSheetTitleBar
+          page={page}
+          zoom={zoom}
+          mobile={mobile}
+          labelled={labelled}
+          appearanceLabelled={appearanceLabelled}
+          locked={locked}
+          pageButtons={pageButtons}
+          articleButtons={articleButtons}
+          styleButton={styleButton}
+          notesButton={notesButton}
+          tidyButton={tidyButton}
+          tabStyle={tabStyle}
+          hasArticle={hasArticle}
+          storedArticleStyle={storedArticleStyle}
+          themeAccent={themeAccent}
+          themePresets={themePresets}
+          deck={deck}
+          tidyEdit={tidyEdit}
+          applyReach={applyReach}
+          open={open}
+          styleRequest={styleRequest}
+          textRequest={textRequest}
+          layoutsRequest={layoutsRequest}
+          backgroundRequest={backgroundRequest}
+          shownName={shownName}
+          many={many}
+          act={act}
+        />
       ) : null}
       {pageButtons &&
       layoutInviteShows(page, {

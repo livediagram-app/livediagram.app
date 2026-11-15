@@ -5,7 +5,7 @@ import { useArticles } from '@/hooks/editor/useArticles';
 import { articleTitleName } from '@/lib/article/article-document-name';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useElementCreation } from '../useElementCreation';
-import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { EditorDocument } from './useEditorDocument';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
@@ -102,25 +102,26 @@ export function useEditorArticles({
     flushDeckSave,
     start: startDeck,
   } = slideDeck;
+  // The verbs are new on every render (a typing commit among them), so the controls call the newest through a ref and
+  // change only with the deck, the tab and the role (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+  // limits": the chrome showing the pages renders for none of those commits).
+  const deckVerbs = useLatest({
+    newPageSlide,
+    toggleSlideHidden,
+    setSlideNoteCards,
+    flushDeckSave,
+    start: startDeck,
+  });
   const pageDeck = useMemo(
     () =>
       pageDeckControls(currentDeck, activeId, !isReadOnly, {
-        newPageSlide,
-        toggleSlideHidden,
-        setSlideNoteCards,
-        flushDeckSave,
-        start: startDeck,
+        newPageSlide: (pageId) => deckVerbs.current.newPageSlide(pageId),
+        toggleSlideHidden: (slideId) => deckVerbs.current.toggleSlideHidden(slideId),
+        setSlideNoteCards: (slideId, cards) => deckVerbs.current.setSlideNoteCards(slideId, cards),
+        flushDeckSave: () => deckVerbs.current.flushDeckSave(),
+        start: (fromSlideId) => deckVerbs.current.start(fromSlideId),
       }),
-    [
-      currentDeck,
-      activeId,
-      isReadOnly,
-      newPageSlide,
-      toggleSlideHidden,
-      setSlideNoteCards,
-      flushDeckSave,
-      startDeck,
-    ],
+    [currentDeck, activeId, isReadOnly, deckVerbs],
   );
   const pagesModeView = useMemo(
     () => ({ ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck }),

@@ -1,4 +1,5 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
@@ -77,7 +78,7 @@ const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
 // corner panels, the palette strip, and the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
 // Canvas's props plus the computed ChromeExtras.
 
-export function CanvasChrome(props: CanvasChromeProps) {
+function CanvasChromeView(props: CanvasChromeProps) {
   const {
     activeDockPanel,
     canRedo,
@@ -472,3 +473,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     </>
   );
 }
+
+/** Behind a memo boundary that forwards its `on…` props (docs/specs/007-editor/blueprints/flashcards.md "Performance
+ *  and limits"): the Canvas hands it only the props it reads (pickCanvasChromeProps), the pages' view without the
+ *  writing (useChromePagesView) and the writing as a store, so a typing commit renders none of it. */
+export const CanvasChrome = withStableEventProps(CanvasChromeView);

@@ -3,13 +3,15 @@
 
 import type { MarqueeState } from '@liveworkspace/workbench/components/canvas/MarqueeRect';
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
-import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import type { CanvasChromeOwnProps } from './canvas-chrome-props';
 import { type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {
+  // The pages' writing (Contents' rows and pictures), read from its store so a typing commit never renders the chrome.
+  writing?: import('@/hooks/ui/usePageContents').WritingStore;
   // The canvas <main>'s measured size (the Map's current-view window reads it; see Minimap.tsx).
   mainSize: { width: number; height: number };
   // True when every element has scrolled out of view: show the nudge above
@@ -71,4 +73,4 @@ type ChromeExtras = {
   onResetFormatPanel?: () => void;
 };
 
-export type CanvasChromeProps = CanvasProps & ChromeExtras;
+export type CanvasChromeProps = CanvasChromeOwnProps & ChromeExtras;
