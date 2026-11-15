@@ -453,11 +453,20 @@ A grant is a JWT, ES256, signed by the index's own key; its public keys are at `
   "trashed": true,
   "link": "<code>",
   "iat": 0,
+  "iatMs": 0,
   "exp": 0,
   "jti": "…"
 }
 ```
 
+`iat` is when the index signed it in whole seconds, as JWT has it, and `iatMs` the same moment in epoch
+milliseconds (`Math.floor(iatMs / 1000) === iat`), so an app can tell a grant from an event of its own in the same
+second: liveplanner refuses a grant signed before its plan was purged, a create among them, without refusing the one
+the index signs a moment after (Sync Plan's delete then same-id upload). `@liveworkspace/index-client`
+`createGrantVerifier` passes `iatMs` on only when it is a whole number inside `iat`'s second, and drops it otherwise. A
+grant signed before the index added it, or held from then (a grant lasts ten minutes, and an app may keep one it
+was handed), has `iat` alone, so a comparison falls back to whole seconds and treats the purge's own second as the
+older rules do.
 `team` and `owner` are the item's team and owner as the index has them when it signs. `trashed` is there only for an
 item in the Trash (granted to its owner and team alone; a link reaches nothing), so the app answers it as trashed
 rather than missing (livediagram: 410 `document_trashed`); `POST /items/:id/grant` says `trashed: true` beside it.
@@ -546,7 +555,18 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   would (texts to 500 characters, `COLLAB_TEXT_MAX`; each id list to its first 100 distinct ids, `COLLAB_PEOPLE_MAX`,
   where the index refuses more), keeps the newest 500 threads and 500 actions, then keeps threads and actions
   together, newest first, while the push's JSON fits the limit, and leaves out every older row. The order is fixed
-  (time, then ids), so the same tab always pushes the same rows.
+  (time, then ids), so the same tab always pushes the same rows. A push that leaves rows out logs
+  `[outbox] collab capped` with the item, the tab and the threads and actions kept of each (`drainIndexOutbox`), so a
+  tab whose Inbox shows only its newest rows can be seen in the Worker's logs.
+- A collab push is one request, never paged (Work Tracker 870, decided 2026-11-15). Nothing in production reported a
+  capped push before the log above: the public telemetry summary has no outbox or collab-cap signal, and the index
+  logs a refused push only once it is parked. By the design the byte cap only bites a tab already at hundreds of rows:
+  with real ids (about 36 characters) and every text at its full 500 characters, a thread or action is about 1.1 KB
+  (1.5 KB for a card's, which carries its board), so a push keeps at least its newest 340 rows (about 470 on a tab's
+  own elements), and shorter texts keep more, up to the count caps of 500 threads and 500 actions, which leave older
+  rows out anyway. The 17 threads of the synthetic worst case need 100 distinct 120-character ids on every row. A paged push would have to apply its
+  pages atomically (a push replaces the tab's rows, so a half-applied set wipes part of the Inbox) and run old and new
+  apps side by side during a deploy. Until the log shows real tabs losing rows, that risk buys nothing.
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
   action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
   thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,

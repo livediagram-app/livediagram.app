@@ -209,6 +209,18 @@ Named constants in `@liveworkspace/drive` (`constants.ts`):
     Trash), and a save whose push arrives more than 5 minutes late: the next whole read, at most 10 minutes after the
     last (a move leaves an item's `updatedAt` alone, so a read of what changed cannot see it). When the last whole read
     is that old already, the change's own pass is a whole read.
+- **A whole read over several passes.** A whole read goes page by page, the three lists side by side, and reads at
+  most `drivePicturePagesPerPass` pages in one pass: a quarter of the pass's subrequest budget (200 pages, 40,000
+  rows). Each page is kept in the object's SQLite as it lands, with the lists' cursors, so a library too large for one
+  pass finishes its read over several: each such pass reads the next pages and stops there, and since it moved the
+  read on it counts as progress (Cadence, "No progress, no hurry"), so the next follows a second later. A half-read
+  picture is never used: nothing in Drive changes for an item or folder missing from one, and a whole read has no page
+  limit. Pages read over several passes are not one moment's picture, so once the last page is in, the read is
+  brought up to date by a read of what changed since it began (as above): an item made, saved, renamed, trashed or
+  restored meanwhile is not lost, and the index's lists page by a key that a move or a delete does not shift, so no
+  item that stayed is skipped. When that read can't be trusted (more than ten items left the Trash, or a folder an
+  item was in is gone), the whole read starts again. Any write the mirror makes to the index drops a read in
+  progress, so the next one starts afresh.
 - **The gate.** Each pass first asks for `changes.getStartPageToken` and reads `changes.list` only when it moved.
 - **Batches.** A pass writes at most `DRIVE_PASS_MAX_WRITES` (40) files and continues in the next alarm straight
   away, so a first mirror of thousands of items stays inside a Worker invocation's limits.
@@ -502,9 +514,10 @@ app name them from one place. The service makes these calls, and where an item o
 - **A very large library** (tens of thousands of items) spends much of the budget on a whole read of the index's
   picture, up to 3 lists × `DRIVE_LIST_PAGES_MAX` pages; a read of what changed costs a page of items plus the folders
   and the Trash. At 2,000 items, a whole read is 12 index requests and about 2,000 rows, a read of what changed 3 and
-  the rows that changed. At the extreme, the picture alone could take the whole budget and a pass
-  would make no progress; such passes slow to one per write interval (Cadence, "No progress, no hurry") rather than
-  one a second.
+  the rows that changed. A whole read takes at most a quarter of a pass's budget and continues in the next pass
+  (Cadence, "A whole read over several passes"), so even a library whose picture alone is many budgets' worth catches
+  up: 200,000 items take five passes to read, a second apart, before the mirror goes on. A read of what changed still
+  reads every folder and the whole Trash in one pass, at most `DRIVE_LIST_PAGES_MAX` (100) pages of each.
 - **Thumbnails** load the 3 MB renderer on first use in an isolate, as the share card does.
 - **No one connected costs nothing:** the index sends no signal and no object exists.
 

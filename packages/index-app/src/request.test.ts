@@ -51,7 +51,21 @@ describe('resolveItemGrant', () => {
       'I',
     );
     expect(grant).toMatchObject({ item: 'I', level: 'edit' });
+    expect(grant).not.toHaveProperty('iatMs');
     expect(calls).toHaveLength(0);
+  });
+
+  // Work Tracker 830: the signing millisecond reaches the app's grant when the index signed one.
+  it('carries the signing millisecond onto the grant', async () => {
+    const iatMs = NOW_S * 1000 + 250;
+    const grant = await resolveItemGrant(
+      service,
+      ENV,
+      req({ [ITEM_GRANT_HEADER]: grantOf({ iat: NOW_S, iatMs }) }),
+      { kind: 'bearer', token: 't' },
+      'I',
+    );
+    expect(grant).toMatchObject({ iat: NOW_S, iatMs });
   });
 
   it('takes the link from the grant, whether or not the request names it', async () => {

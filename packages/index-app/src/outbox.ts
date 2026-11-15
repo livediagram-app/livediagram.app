@@ -287,6 +287,21 @@ export function capCollabPush(
   return kept;
 }
 
+// A push that left rows out, in the Worker's logs: the evidence a paged push would need (one-explorer-contracts.md
+// "What an item pushes", Work Tracker 870). Two length checks on a push that kept everything.
+function noteCapped(itemId: string, tabId: string, rows: CollabPush, kept: CollabPush): void {
+  if (kept.threads.length === rows.threads.length && kept.actions.length === rows.actions.length)
+    return;
+  console.warn('[outbox] collab capped', {
+    itemId,
+    tabId,
+    threads: rows.threads.length,
+    threadsKept: kept.threads.length,
+    actions: rows.actions.length,
+    actionsKept: kept.actions.length,
+  });
+}
+
 const byText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 const cutText = <T>(value: T): T =>
@@ -416,7 +431,9 @@ export async function drainIndexOutbox(
   for (const row of pending) {
     if (row.kind === 'tab') {
       // One tab read at a time: a drain after a big import holds one tab in memory, never the item.
-      const body = capCollabPush(await source.collab(row.key));
+      const tab = await source.collab(row.key);
+      const body = capCollabPush(tab);
+      noteCapped(itemId, row.key, tab, body);
       push([row.id], () => client!.pushCollab(itemId, row.key, body));
     } else if (row.kind === 'summary') {
       const { summary, updatedAt, ownerId } = await source.summary();

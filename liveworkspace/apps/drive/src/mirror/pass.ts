@@ -102,14 +102,22 @@ async function inbound(state: PassState): Promise<InboundRun | 'root-gone'> {
   return run;
 }
 
-// A pass that stops short moved something on when it wrote or dropped a row, or moved the page token or the root.
-// One that didn't would repeat the same work next time (a budget the picture alone spends, say).
-function movedOn(rt: Runtime, before: Connection, state: PassState | null): boolean {
-  const after = rt.deps.store.connection();
+// A pass that stops short moved something on when it wrote or dropped a row, moved the page token or the root, or
+// moved a whole read of the picture on (picture.ts). One that didn't would repeat the same work next time (a budget
+// the gate and a read of what changed alone spend, say).
+function movedOn(
+  rt: Runtime,
+  before: Connection,
+  state: PassState | null,
+  pictureBefore: string,
+): boolean {
+  const { store } = rt.deps;
+  const after = store.connection();
   return (
     (state?.writes ?? 0) > 0 ||
     after?.pageToken !== before.pageToken ||
-    after?.rootId !== before.rootId
+    after?.rootId !== before.rootId ||
+    store.pictureReadMark() !== pictureBefore
   );
 }
 
@@ -126,6 +134,8 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
   if (!connection || connection.status === 'needs_reconnect') return { kind: 'stopped' };
   store.updateConnection({ syncing: true });
   const flush = connection.flushNext;
+  // Where a whole read of the picture stood: one moved on is progress, even with nothing else done.
+  const pictureBefore = store.pictureReadMark();
   let state: PassState | null = null;
   try {
     await rt.tokens.get();
@@ -152,7 +162,7 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
         more: true,
         used: rt.meter.used,
       });
-      return more(applied > 0 || movedOn(rt, connection, state));
+      return more(applied > 0 || movedOn(rt, connection, state, pictureBefore));
     }
     adopted += applied;
     if (adopted > 0) picture = await state.reread();
@@ -188,11 +198,16 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
       used: rt.meter.used,
     });
     const outcome: PassOutcome = { kind: 'done', more: run.more, nextDueAt: plan.nextDueAt };
-    if (run.more && run.written === 0 && applied === 0 && !movedOn(rt, connection, state))
+    if (
+      run.more &&
+      run.written === 0 &&
+      applied === 0 &&
+      !movedOn(rt, connection, state, pictureBefore)
+    )
       outcome.stalled = true;
     return outcome;
   } catch (err) {
-    return failed(rt, err, () => movedOn(rt, connection, state));
+    return failed(rt, err, () => movedOn(rt, connection, state, pictureBefore));
   }
 }
 
