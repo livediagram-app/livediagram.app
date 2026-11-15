@@ -13,7 +13,7 @@ names and holding which tiles, follows the page kind: see [Pages mode, "The pale
 kind"](../007-editor/pages-mode.md#the-palettes-kind).
 
 **There is no Tools tab.** Each group of elements is a top-level palette category of its own: Shapes, Write,
-Concepts, Components, Devices, Icons, Stickers, Media and Data. Code Block, Checklist and Timeline sit in
+Concepts, Components, Icons, Media and Data. The device frames are the **Devices** row in Components, and the stickers the **Stickers** side of Icons (owner, 2026-11-15). Code Block, Checklist and Timeline sit in
 **Components**; Table in **Data**; Image and Avatar in **Media**. **Write** holds the wordy elements: the text
 styles (Title, Subtitle, Heading, Subheading, Paragraph, Quote; [Canvas and palette](../008-canvas/canvas-and-palette.md#text-element)
 "Text styles"), then the Sticky Note and the Pointer Note. There is no
@@ -22,12 +22,12 @@ User / actor tile (see below).
 **The category bar has bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band          | Categories                                                                              |
-| ------------- | --------------------------------------------------------------------------------------- |
-| **Common**    | Shapes, Write; Media on a slide                                                         |
-| **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components, Devices |
-| **Decorate**  | Icons, Stickers, Media                                                                  |
-| **Dynamic**   | Data                                                                                    |
+| Band          | Categories                                                                     |
+| ------------- | ------------------------------------------------------------------------------ |
+| **Common**    | Shapes, Write; Media on a slide                                                |
+| **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components |
+| **Decorate**  | Icons (with the stickers), Media                                               |
+| **Dynamic**   | Data                                                                           |
 
 ## Why top-level
 

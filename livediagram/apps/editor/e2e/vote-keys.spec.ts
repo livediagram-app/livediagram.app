@@ -132,8 +132,11 @@ test('an Editor and a Participant vote by keyboard and converge; a Viewer cannot
 
   // The Participant: Tab to the first sticky, + casts a dot, and says so.
   await focusCanvas(participant);
-  // Pressed straight after Tab: the dot's words are what is heard, not the selection's.
   await participant.keyboard.press('Tab');
+  // A dot goes down the room's socket, and one cast before that socket is made reaches nobody
+  // (useEditorSessionTools emitVote): the Editor seeing the Participant's hold on the sticky says
+  // the Participant's room is open. Under a loaded runner the canvas can be up before the room.
+  await expect(editor.getByLabel(/^Locked to /)).toHaveCount(1, { timeout: 20_000 });
   await participant.keyboard.press('+');
   await expect(said(participant)).toHaveText("Dot added to 'Idea'. 1 of 2 dots left.");
   await expect(tally(editor, 'idea')).toHaveAttribute('aria-label', '1 vote');

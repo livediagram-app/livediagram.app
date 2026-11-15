@@ -80,7 +80,7 @@ at a time with `itemHistory(itemId, { limit, cursor })`.
 ## 3a. Versions
 
 History is what happened, never the content: it opens and brings back nothing. Each tab's content at earlier moments
-is its [version history](../006-document/version-history.md), opened from the editor's header (**History**) on the
+is its [version history](../006-document/version-history.md), opened from the editor's footer (**History**) on the
 document itself, where every role may look and an Editor restores or copies a version. The two stay apart: History is
 every app's and lives in the index; versions are livedocuments' alone and live in the document's own Durable Object.
 

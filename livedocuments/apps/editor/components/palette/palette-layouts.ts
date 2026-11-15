@@ -21,6 +21,9 @@ type PaletteLayoutEntry = {
   // The tiles, in order, by tile id. `DIVIDE` between two puts a fixed divider there
   // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
+  // Icons only: whether it offers the stickers too, as its Stickers side (IconsCategoryTab). A layout without them
+  // (a diagram, a logo) shows the icons alone.
+  stickers?: true;
 };
 
 // A layout's own fixed divider, between the tiles either side of it (docs/specs/007-editor/toolbar-layout.md "Fixed
@@ -31,23 +34,25 @@ type PaletteLayout = {
   categories: readonly PaletteLayoutEntry[];
 };
 
+// Icons where a layout offers the stickers too: its line under the flyout's name says so.
+const ICONS_WITH_STICKERS =
+  'Single-colour glyphs for any idea, and colour stickers to react, mark status and celebrate.';
+
 // The categories whose body is its own content rather than a list of tiles.
-export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
-  'icons',
-  'stickers',
-  'technology',
-]);
+export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['icons', 'technology']);
 
 // The concept graphics, then the Sankey (Pages mode's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
 
-// Pages mode's Components: Layout first (what a page is laid out with: the Hero, Header and Banner, and the Stack that
-// lines blocks up), then the web blocks, then Code and the Checklist; no data-model Entity.
+// Pages mode's Components: Layout first (what a page is laid out with: the Hero, Header and Banner, the Stack that
+// lines blocks up, and the Devices row, whose frames a screen design or a screenshot is set in), then the web blocks,
+// then Code and the Checklist; no data-model Entity.
 const PAGES_COMPONENTS = [
   'components:hero',
   'components:header',
   'components:banner',
   'tools:stack',
+  'components:devices',
   DIVIDE,
   'components:card',
   'components:badge',
@@ -76,9 +81,7 @@ const PAGES: PaletteLayout = {
     // beside: the Stack in Components and the Table in Data. The Timeline is in Concepts, as everywhere.
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     { id: 'components', tiles: PAGES_COMPONENTS },
-    { id: 'devices' },
-    { id: 'icons' },
-    { id: 'stickers' },
+    { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
     { id: 'media' },
     // The charts and meters, then the Table: a page reports in rows as often as in a chart.
     {
@@ -93,8 +96,8 @@ const PAGES: PaletteLayout = {
 // Every tile is in one category.
 
 // A slide (docs/specs/007-editor/pages-mode.md "The palette's kind"): what a talk is told with. Words, shapes, pictures
-// and the embeds a talk plays first (Common), then what explains a point (Structure: charts, concept graphics, ready-made
-// blocks and device frames for a screenshot), then the decorations; no website Header.
+// and the embeds a talk plays first (Common), then what explains a point (Structure: charts, concept graphics, and the
+// ready-made blocks with the device frames for a screenshot), then the decorations; no website Header.
 const PAGES_SLIDE: PaletteLayout = {
   categories: [
     { id: 'write', tiles: PAGES_WRITE },
@@ -111,9 +114,7 @@ const PAGES_SLIDE: PaletteLayout = {
       id: 'components',
       tiles: PAGES_COMPONENTS.filter((id) => id !== 'components:header'),
     },
-    { id: 'devices' },
-    { id: 'icons' },
-    { id: 'stickers' },
+    { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
   ],
 };
 
@@ -135,6 +136,8 @@ function paletteLayoutFor(pagesKind: PaletteKind = 'design'): PaletteLayout {
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
   // The tiles it holds, in order; null for a catalogue category, whose body is its own.
   tiles: PaletteTileDef[] | null;
+  // Icons: whether it offers the stickers too (its Stickers side).
+  stickers?: boolean;
 };
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
@@ -167,6 +170,7 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
     ...(entry.label ? { label: entry.label } : null),
     ...(entry.description ? { description: entry.description } : null),
     ...(entry.band !== undefined ? { group: entry.band } : null),
+    ...(entry.stickers ? { stickers: true } : null),
     tiles,
   };
 }
@@ -180,5 +184,8 @@ export function paletteCategoriesFor({
 
 /** Whether the palette offers category `id`. */
 export function paletteCategoryOffered(id: string): boolean {
+  // Stickers are the Icons category's Stickers side, where a layout offers them.
+  if (id === 'stickers')
+    return paletteLayoutFor().categories.some((e) => e.id === 'icons' && e.stickers);
   return paletteLayoutFor().categories.some((e) => e.id === id);
 }

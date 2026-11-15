@@ -85,6 +85,8 @@ type Props<T> = {
   // drilled in or searching, where it would be answering a question nobody
   // asked.
   rootLeadIn?: ReactNode;
+  // A control beside the search box: the Icons category's Icons | Stickers switch (IconsCategoryTab).
+  searchAccessory?: ReactNode;
 };
 
 export function PaletteCategoryBrowser<T>({
@@ -100,6 +102,7 @@ export function PaletteCategoryBrowser<T>({
   loading = false,
   loadingMessage = 'Loading…',
   rootLeadIn,
+  searchAccessory,
 }: Props<T>) {
   // null = the category grid. Opening the tab starts there, so you see every
   // category at once rather than one arbitrary group's contents, unless its host remembers a group (BrowseMemory).
@@ -140,11 +143,12 @@ export function PaletteCategoryBrowser<T>({
         things={things}
         loading={loading}
         loadingMessage={loadingMessage}
+        searchAccessory={searchAccessory}
       />
     );
   return (
     <div className="flex flex-col">
-      <div className="mb-2 flex items-center">
+      <div className="mb-2 flex items-center gap-2">
         <SearchInput
           value={query}
           onChange={onSearch}
@@ -153,6 +157,7 @@ export function PaletteCategoryBrowser<T>({
           clearAriaLabel={searchInput.clearAriaLabel}
           clearDescription={searchInput.clearDescription}
         />
+        {searchAccessory}
       </div>
       {loading ? (
         <p className="px-1 py-2 text-center text-[11px] text-slate-500 dark:text-slate-400">

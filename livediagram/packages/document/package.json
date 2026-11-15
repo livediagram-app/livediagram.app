@@ -7,13 +7,16 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./infra-code": "./src/infra-code/index.ts"
   },
   "dependencies": {
-    "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/element-model": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
-    "perfect-freehand": "^1.2.3"
+    "js-yaml": "^4.3.2",
+    "perfect-freehand": "^1.2.3",
+    "smol-toml": "^1.9.1"
   },
   "scripts": {
     "lint": "oxlint",
@@ -26,6 +29,7 @@
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "^5.1.0",
     "oxlint": "^1.93.0",

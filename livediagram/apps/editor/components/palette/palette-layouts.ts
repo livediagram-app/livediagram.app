@@ -23,6 +23,9 @@ type PaletteLayoutEntry = {
   // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
   // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
+  // Icons only: whether it offers the stickers too, as its Stickers side (IconsCategoryTab). A layout without them
+  // (a diagram, a logo) shows the icons alone.
+  stickers?: true;
   // Offered only on an event-storming board.
   boardOnly?: true;
 };
@@ -37,11 +40,14 @@ type PaletteLayout = {
   categories: readonly PaletteLayoutEntry[];
 };
 
+// Icons where a layout offers the stickers too: its line under the flyout's name says so.
+const ICONS_WITH_STICKERS =
+  'Single-colour glyphs for any idea, and colour stickers to react, mark status and celebrate.';
+
 // The categories whose body is its own content rather than a list of tiles.
 export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
   'my-shapes',
   'icons',
-  'stickers',
   'technology',
 ]);
 
@@ -232,8 +238,7 @@ const WORKSHOP: PaletteLayout = {
     { id: 'collab-navigate' },
     // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
     // which a session does not stop to draw.
-    { id: 'icons' },
-    { id: 'stickers' },
+    { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
     // The charts and meters: a session reads results and sets targets as often as a page reports them.
     { id: 'data' },
@@ -253,6 +258,8 @@ function paletteLayoutFor(mode: EditorMode): PaletteLayout {
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
   // The tiles it holds, in order; null for a catalogue category, whose body is its own.
   tiles: PaletteTileDef[] | null;
+  // Icons: whether it offers the stickers too (its Stickers side).
+  stickers?: boolean;
 };
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
@@ -285,6 +292,7 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
     ...(entry.label ? { label: entry.label } : null),
     ...(entry.description ? { description: entry.description } : null),
     ...(entry.band !== undefined ? { group: entry.band } : null),
+    ...(entry.stickers ? { stickers: true } : null),
     tiles,
   };
 }
@@ -302,6 +310,9 @@ export function paletteCategoriesFor(
 
 /** Whether a mode's palette offers category `id` (on an ordinary tab). */
 export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
+  // Stickers are the Icons category's Stickers side, where a layout offers them.
+  if (id === 'stickers')
+    return paletteLayoutFor(mode).categories.some((e) => e.id === 'icons' && e.stickers);
   return paletteLayoutFor(mode).categories.some((e) => e.id === id && !e.boardOnly);
 }
 

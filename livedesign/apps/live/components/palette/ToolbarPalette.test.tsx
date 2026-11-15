@@ -101,9 +101,7 @@ describe('ToolbarPalette', () => {
       'Write',
       'Concepts',
       'Components',
-      'Devices',
       'Icons',
-      'Stickers',
       'Media',
       'Data',
     ]);
@@ -180,14 +178,18 @@ describe('ToolbarPalette', () => {
   it("focuses a catalogue's search field when its flyout opens (docs/specs/007-editor/toolbar-layout.md)", () => {
     show();
     const popover = openFlyout('Icons');
-    expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search icons'));
+    expect(document.activeElement).toBe(
+      within(popover).getByPlaceholderText('Search icons and stickers'),
+    );
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
     show();
     const popover = openFlyout('Icons');
-    expect(document.activeElement).not.toBe(within(popover).getByPlaceholderText('Search icons'));
+    expect(document.activeElement).not.toBe(
+      within(popover).getByPlaceholderText('Search icons and stickers'),
+    );
   });
 
   it('switches the flyout to the category pressed next', () => {
@@ -195,7 +197,7 @@ describe('ToolbarPalette', () => {
     openFlyout('Icons');
     fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
     expect(within(flyout()!).getByRole('button', { name: 'Add Square' })).toBeTruthy();
-    expect(within(flyout()!).queryByPlaceholderText('Search icons')).toBeNull();
+    expect(within(flyout()!).queryByPlaceholderText('Search icons and stickers')).toBeNull();
   });
 
   it('closes the flyout on Escape', () => {

@@ -75,7 +75,6 @@ describe('the category bar’s categories', () => {
       'collab-ask',
       SESSION_CATEGORY_ID,
       'icons',
-      'stickers',
       'media',
       'data',
     ]);

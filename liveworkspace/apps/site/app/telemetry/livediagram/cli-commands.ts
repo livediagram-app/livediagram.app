@@ -60,6 +60,11 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'LinkInit', command: 'link init', what: 'linking a repository to livediagram' },
   { type: 'LinkStatus', command: 'link status', what: 'checking a repository link’s sync states' },
   { type: 'LinkLs', command: 'link ls', what: 'listing the documents a repository link covers' },
+  {
+    type: 'LinkFromCode',
+    command: 'link from-code',
+    what: 'drawing a diagram from wrangler.toml or Compose files',
+  },
   { type: 'Sync', command: 'sync', what: 'mirroring a link’s documents into a repository' },
   {
     type: 'SyncWatch',

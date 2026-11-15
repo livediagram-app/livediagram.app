@@ -12,13 +12,11 @@ import {
   ConceptsTabIcon,
   ComponentsTabIcon,
   DataTabIcon,
-  DevicesTabIcon,
   DrawTabIcon,
   PopularTabIcon,
   IconsTabIcon,
   MediaTabIcon,
   ShapesTabIcon,
-  StickersTabIcon,
   TechTabIcon,
   WriteTabIcon,
   ParticipateTabIcon,
@@ -135,27 +133,11 @@ export const PALETTE_CATEGORIES: {
     icon: <ComponentsTabIcon />,
   },
   {
-    id: 'devices',
-    label: 'Devices',
-    group: 1,
-    description:
-      'Wireframing device frames: browser, monitor, laptop, phone, tablet, foldable, smartwatch.',
-    icon: <DevicesTabIcon />,
-  },
-  {
     id: 'icons',
     label: 'Icons',
     group: 2,
-    description: 'Searchable catalogue of single-colour glyphs.',
+    description: 'Single-colour glyphs for any idea.',
     icon: <IconsTabIcon />,
-  },
-  {
-    id: 'stickers',
-    label: 'Stickers',
-    group: 2,
-    description:
-      'Colour emoji for reacting, showing how you feel, marking status, pointing at things, celebrating, and prettying the canvas up.',
-    icon: <StickersTabIcon />,
   },
   {
     id: 'technology',

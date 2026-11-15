@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement, Tab } from '@livediagram/document';
 import { ADD, CHAPTERS, DEMO_IDS, NOTES, STICK, stickies, WRITE } from './workshop-stickies';
+import { ICONS_SIDE_SELECTOR } from './workshop-shared';
 
 // Stickies and Stickers (docs/specs/007-editor/watch-it-built.md "The curriculum", Workshop). What every topic must
 // hold is in topics.test.ts.
@@ -51,12 +52,13 @@ describe('Stickies and Stickers', () => {
     expect(stickies.frame(1, CHAPTERS[1]!.ms, layout).selectedId).toBeNull();
   });
 
-  it('opens Stickers on Reactions for each sticker and puts both back as the carry leaves', () => {
+  it('opens Icons on its Stickers side and Reactions for each sticker, and puts all back as the carry leaves', () => {
     const open = (ms: number) => stickies.frame(2, ms, layout).open;
-    expect(open(STICK[0].open)).toEqual(['bar-stickers']);
-    expect(open(STICK[0].group)).toEqual(['bar-stickers', 'stickers-reactions']);
+    expect(open(STICK[0].open)).toEqual(['bar-icons']);
+    expect(open(STICK[0].side)).toEqual(['bar-icons', 'icons-stickers']);
+    expect(open(STICK[0].group)).toEqual(['bar-icons', 'icons-stickers', 'stickers-reactions']);
     expect(open(STICK[0].carry[0] + 300)).toEqual([]);
-    expect(open(STICK[1].group)).toEqual(['bar-stickers', 'stickers-reactions']);
+    expect(open(STICK[1].group)).toEqual(['bar-icons', 'icons-stickers', 'stickers-reactions']);
   });
 
   it('lands a thumbs up and a heart on the corners of the first and last stickies', () => {
@@ -72,13 +74,18 @@ describe('Stickies and Stickers', () => {
     expect(end.at(-1)!.id).toBe(DEMO_IDS.heart);
   });
 
-  it('presses the rail row for Reactions and the sticker tiles', () => {
+  it('presses Stickers on the Icons switch, the rail row for Reactions and the sticker tiles', () => {
     const finds = stickies
       .plan(2, layout)
-      .flatMap((w) => (w.to.kind === 'find' ? [w.to.selector] : []));
+      .flatMap((w) =>
+        w.to.kind === 'find' ? [`${w.to.selector}${w.to.text ? ` (${w.to.text})` : ''}`] : [],
+      );
+    const side = `${ICONS_SIDE_SELECTOR} (Stickers)`;
     expect(finds).toEqual([
+      side,
       'nav[aria-label="stickers groups"] > button:nth-child(2)',
       '[data-tour-id="palette-category-menu"] [aria-label="Thumbs up"]',
+      side,
       'nav[aria-label="stickers groups"] > button:nth-child(2)',
       '[data-tour-id="palette-category-menu"] [aria-label="Red heart"]',
     ]);

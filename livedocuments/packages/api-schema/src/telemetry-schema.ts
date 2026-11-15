@@ -156,8 +156,8 @@ export const TELEMETRY_CATEGORIES = [
   // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
   // against the closed list in timing-telemetry.ts. Never a raw number, never an id.
   'Timing',
-  // Version history (docs/specs/006-document/version-history.md "Observability and telemetry"): 'Opened'·'Header' when
-  // the header's History opens Version History, 'Named'·'Editor' when a person names a version, 'Undone'·'Editor' when
+  // Version history (docs/specs/006-document/version-history.md "Observability and telemetry"): 'Opened'·'Footer' when
+  // the footer's History opens Version History, 'Named'·'Editor' when a person names a version, 'Undone'·'Editor' when
   // the restorer's toast takes a restore back; 'Restored' and 'Copied' typed by the front door ('Editor' | 'Mcp' |
   // 'Cli' | 'Api'), from the api. Never a name, never content.
   'Version',

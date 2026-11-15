@@ -72,7 +72,7 @@ export type ShapeKind =
   // Frame / section: a transparent outlined container with its label in the
   // top-left, drawn around a cluster of elements. See docs/specs/008-canvas/canvas-and-palette.md.
   | 'frame'
-  // UI device frames (wireframing). See docs/specs/008-canvas/canvas-and-palette.md "Devices" accordion.
+  // UI device frames (wireframing). See docs/specs/008-canvas/canvas-and-palette.md "Devices".
   | 'browser'
   | 'monitor'
   | 'laptop'

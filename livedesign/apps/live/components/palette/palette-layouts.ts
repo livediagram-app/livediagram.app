@@ -24,6 +24,9 @@ type PaletteLayoutEntry = {
   // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
   // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
+  // Icons only: whether it offers the stickers too, as its Stickers side (IconsCategoryTab). A layout without them
+  // (a diagram, a logo) shows the icons alone.
+  stickers?: true;
 };
 
 // A layout's own fixed divider, between the tiles either side of it (docs/specs/007-editor/toolbar-layout.md "Fixed
@@ -36,12 +39,12 @@ type PaletteLayout = {
   categories: readonly PaletteLayoutEntry[];
 };
 
+// Icons where a layout offers the stickers too: its line under the flyout's name says so.
+const ICONS_WITH_STICKERS =
+  'Single-colour glyphs for any idea, and colour stickers to react, mark status and celebrate.';
+
 // The categories whose body is its own content rather than a list of tiles.
-export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
-  'icons',
-  'stickers',
-  'technology',
-]);
+export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['icons', 'technology']);
 
 /** A category's own tile ids, less the named ones: for a layout that drops a tile or two. A dropped tile that ends a
  *  group (`dividerAfter`) leaves its divider after the tile kept before it, so the group still ends there. */
@@ -57,13 +60,15 @@ function tilesExcept(categoryId: string, ...drop: string[]): readonly string[] {
 // The concept graphics, then the Sankey (Pages mode's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
 
-// Pages mode's Components: Layout first (what a page is laid out with: the Hero, Header and Banner, and the Stack that
-// lines blocks up), then the web blocks, then Code and the Checklist; no data-model Entity.
+// Pages mode's Components: Layout first (what a page is laid out with: the Hero, Header and Banner, the Stack that
+// lines blocks up, and the Devices row, whose frames a screen design is set in), then the web blocks, then Code and the
+// Checklist; no data-model Entity.
 const PAGES_COMPONENTS = [
   'components:hero',
   'components:header',
   'components:banner',
   'tools:stack',
+  'components:devices',
   DIVIDE,
   'components:card',
   'components:badge',
@@ -112,9 +117,7 @@ const PAGES: PaletteLayout = {
     // beside: the Stack in Components and the Table in Data. The Timeline is in Concepts, as everywhere.
     { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
     { id: 'components', tiles: PAGES_COMPONENTS },
-    { id: 'devices' },
-    { id: 'icons' },
-    { id: 'stickers' },
+    { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
     { id: 'media' },
     // The charts and meters, then the Table: a page reports in rows as often as in a chart.
     {
@@ -130,7 +133,7 @@ const PAGES: PaletteLayout = {
 
 // A wireframe (docs/specs/007-editor/wireframe-pages.md "The Elements palette"): Components and Elements first, in a
 // band of their own, then the rest. Elements holds the Card, the Badge and the Checklist, so Components does not; no
-// Concepts (a screen is built from its own parts) and no Devices (the page is its device already).
+// Concepts (a screen is built from its own parts) and no Devices row (the page is its device already).
 const SCREEN_BAND = 7;
 const PAGES_WIREFRAME: PaletteLayout = {
   landing: 'wireframe',
@@ -140,7 +143,13 @@ const PAGES_WIREFRAME: PaletteLayout = {
       id: 'components',
       band: SCREEN_BAND,
       tiles: PAGES_COMPONENTS.filter(
-        (id) => !['components:card', 'components:badge', 'tools:checklist'].includes(id),
+        (id) =>
+          ![
+            'components:card',
+            'components:badge',
+            'tools:checklist',
+            'components:devices',
+          ].includes(id),
       ),
     },
     {
@@ -164,8 +173,7 @@ const PAGES_WIREFRAME: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'write', tiles: PAGES_WRITE },
-    { id: 'icons' },
-    { id: 'stickers' },
+    { id: 'icons', stickers: true, description: ICONS_WITH_STICKERS },
     { id: 'media' },
     {
       id: 'data',
@@ -227,6 +235,8 @@ function paletteLayoutFor(_mode: EditorMode, pagesKind: PaletteKind = 'design'):
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
   // The tiles it holds, in order; null for a catalogue category, whose body is its own.
   tiles: PaletteTileDef[] | null;
+  // Icons: whether it offers the stickers too (its Stickers side).
+  stickers?: boolean;
 };
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
@@ -259,6 +269,7 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
     ...(entry.label ? { label: entry.label } : null),
     ...(entry.description ? { description: entry.description } : null),
     ...(entry.band !== undefined ? { group: entry.band } : null),
+    ...(entry.stickers ? { stickers: true } : null),
     tiles,
   };
 }
@@ -274,6 +285,9 @@ export function paletteCategoriesFor(
 
 /** Whether a mode's palette offers category `id`. */
 export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
+  // Stickers are the Icons category's Stickers side, where a layout offers them.
+  if (id === 'stickers')
+    return paletteLayoutFor(mode).categories.some((e) => e.id === 'icons' && e.stickers);
   return paletteLayoutFor(mode).categories.some((e) => e.id === id);
 }
 
