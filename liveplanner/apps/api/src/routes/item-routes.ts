@@ -47,6 +47,8 @@ import {
   isItemEditor,
   blockersRefused,
   rejected,
+  rejectedRead,
+  bodyValue,
   relay,
   editorOnly,
   writer,
@@ -142,7 +144,7 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const read = readCreate(body, caller.owner);
-  if (typeof read === 'string') return rejected(read);
+  if (typeof read === 'string') return rejectedRead(read, bodyValue(body, 'fields'), 'create');
   // Votes, threads and a key come back only with an Editor's undo: a Participant makes a fresh card.
   const restores = read.votes !== undefined || restoresThreads(read) || read.key !== undefined;
   if (restores && !(await isItemEditor(ctx, caller))) return forbidden();
@@ -271,7 +273,7 @@ async function patch(ctx: PlanRouteContext, projectId: string, itemId: string): 
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const input = readItemPatch(body);
-  if (typeof input === 'string') return rejected(input);
+  if (typeof input === 'string') return rejectedRead(input, body.set, 'patch');
   return writeItem(
     ctx,
     caller,
@@ -291,7 +293,7 @@ async function move(ctx: PlanRouteContext, projectId: string, itemId: string): P
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const input = readItemMove(body);
-  if (typeof input === 'string') return rejected(input);
+  if (typeof input === 'string') return rejectedRead(input, body.set, 'patch');
   // The neighbours are read on every attempt: a retry after a lost race ranks against the column as it now is.
   return writeItem(
     ctx,

@@ -28,6 +28,8 @@ import {
   itemBusy,
   itemRetryPause,
   rejected,
+  rejectedRead,
+  bodyValue,
   writer,
   type ItemCaller,
 } from './item-route-kit';
@@ -178,7 +180,7 @@ export function readBulkCreates(
   const types = typesOf(caller.doc?.itemTypes);
   for (const raw of items) {
     const read = readCreate(raw, caller.owner);
-    if (typeof read === 'string') return rejected(read);
+    if (typeof read === 'string') return rejectedRead(read, bodyValue(raw, 'fields'), 'create');
     const { restoredThreads: _threads, ...input } = read;
     reads.push(read);
     // A card put back (its number, votes or threads) holds what it held; any other gives no Calculated field a value.
@@ -205,7 +207,7 @@ export function readSeedItems(raw: unknown, owner: string): ReadCreate[] | Respo
   const creates: ReadCreate[] = [];
   for (const entry of raw) {
     const input = readCreate(entry, owner);
-    if (typeof input === 'string') return rejected(input);
+    if (typeof input === 'string') return rejectedRead(input, bodyValue(entry, 'fields'), 'create');
     creates.push(input);
   }
   return creates;
