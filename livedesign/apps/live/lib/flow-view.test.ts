@@ -15,6 +15,7 @@ import {
   FLOW_EDGE_INSET,
   FLOW_ENTRY_FRACTION,
   FLOW_ENTRY_STEP,
+  FLOW_GAP_SIDE_PX,
   FLOW_LANE_BASE_PX,
   FLOW_LANE_STEP_PX,
   FLOW_PULL_MIN_PX,
@@ -96,6 +97,45 @@ describe('flowLinks', () => {
       Math.round((target.x + FLOW_ENTRY_FRACTION * target.width) * 10) / 10,
       target.y,
     ]);
+  });
+
+  it('lifts an arc to the next free lane over screens an earlier arc already runs over', () => {
+    const laneOf = (l: FlowLink) => (l.state === 'page' ? nums(l.path)[11]! : NaN);
+    const top = Math.min(...pages.map((p) => p.rect.y));
+    // Two arcs of one length over overlapping screens, one each way: never on one lane.
+    const [right, left] = flowLinks(
+      [linked('a', 0, to('p3')), linked('b', 3, to('p2'))],
+      undefined,
+      pages,
+      1,
+    );
+    expect(laneOf(right!)).toBe(top - FLOW_LANE_BASE_PX);
+    expect(laneOf(left!)).toBe(top - FLOW_LANE_BASE_PX - FLOW_LANE_STEP_PX);
+    // A longer arc over them takes the lane above both.
+    const three = flowLinks(
+      [
+        linked('a', 0, to('p3')),
+        linked('b', 3, to('p2')),
+        linked('c', 0, to('p4'), { x: 40, y: 300 }),
+      ],
+      undefined,
+      pages,
+      1,
+    );
+    expect(laneOf(three[2]!)).toBe(top - FLOW_LANE_BASE_PX - 2 * FLOW_LANE_STEP_PX);
+  });
+
+  it('rises on its own screen’s side of a gap, apart from an arc the other way', () => {
+    const [right, left] = flowLinks(
+      [linked('a', 1, to('p4')), linked('b', 2, to('p1'))],
+      undefined,
+      pages,
+      1,
+    );
+    const gapOf = (l: FlowLink) => (l.state === 'page' ? nums(l.path)[8]! : NaN);
+    const middle = (pages[1]!.rect.x + pages[1]!.rect.width + pages[2]!.rect.x) / 2;
+    expect(gapOf(right!)).toBeCloseTo(middle - FLOW_GAP_SIDE_PX, 0);
+    expect(gapOf(left!)).toBeCloseTo(middle + FLOW_GAP_SIDE_PX, 0);
   });
 
   it('spreads the arcs landing on one screen', () => {

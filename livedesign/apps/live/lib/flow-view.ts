@@ -21,9 +21,13 @@ export const FLOW_EDGE_INSET = 24;
 // A curve's least handle (screen px), so a short hop still bends.
 export const FLOW_PULL_MIN_PX = 40;
 // An arc's lane over the row (screen px above the highest page it passes), clear of the page labels, and the step
-// higher for each further screen it passes, so arcs of different lengths never lie on one another.
+// higher for each further screen it passes and for each earlier arc over the same screens, so no two arcs lie on one
+// another.
 export const FLOW_LANE_BASE_PX = 44;
 export const FLOW_LANE_STEP_PX = 20;
+// How far (screen px) an arc rises off its gap's middle, towards its own screen, so a rightward and a leftward arc in
+// one gap never share a column.
+export const FLOW_GAP_SIDE_PX = 6;
 // Where an arc lands on its target's top edge: this share of its width in from the near side, a step further for
 // each earlier arc into the same screen, never past the cap.
 export const FLOW_ENTRY_FRACTION = 0.2;
@@ -131,6 +135,8 @@ export function flowLinks(
   if (pages.length === 0 || !elements.some((el) => isScreenLink(el.link))) return [];
   const index = buildElementIndex(elements);
   const arcsInto = new Map<string, number>();
+  // Each lane's runs of pages (index ranges) taken by an earlier arc.
+  const lanes: Array<Array<[number, number]>> = [];
   const out: FlowLink[] = [];
   for (const el of visibleLayerElements(elements, layers)) {
     const link = el.link;
@@ -168,19 +174,26 @@ export function flowLinks(
       path = adjacentPath(start, to.rect, dir, zoom);
     } else {
       const lo = Math.min(to.index, page.index);
+      const hi = lo + span;
       let rowTop = Infinity;
-      for (let i = lo; i <= lo + span; i++) rowTop = Math.min(rowTop, pages[i]!.rect.y);
-      const laneY = rowTop - (FLOW_LANE_BASE_PX + FLOW_LANE_STEP_PX * (span - 2)) / zoom;
+      for (let i = lo; i <= hi; i++) rowTop = Math.min(rowTop, pages[i]!.rect.y);
+      let lane = span - 2;
+      while (lanes[lane]?.some(([a, b]) => a < hi && lo < b)) lane++;
+      (lanes[lane] ??= []).push([lo, hi]);
+      const laneY = rowTop - (FLOW_LANE_BASE_PX + FLOW_LANE_STEP_PX * lane) / zoom;
       const slot = arcsInto.get(to.id) ?? 0;
       arcsInto.set(to.id, slot + 1);
       const share = Math.min(FLOW_ENTRY_FRACTION + FLOW_ENTRY_STEP * slot, FLOW_ENTRY_MAX);
       const near = dir > 0 ? to.rect.x : to.rect.x + to.rect.width;
-      // The middle of the gap between the element's screen and the next one towards the target.
+      // The gap between the element's screen and the next one towards the target, just off its middle on the
+      // element's side.
       const beside = pages[page.index + dir]!.rect;
-      const gapX =
+      const [gapFrom, gapTo] =
         dir > 0
-          ? (page.rect.x + page.rect.width + beside.x) / 2
-          : (beside.x + beside.width + page.rect.x) / 2;
+          ? [page.rect.x + page.rect.width, beside.x]
+          : [beside.x + beside.width, page.rect.x];
+      const side = Math.min(FLOW_GAP_SIDE_PX / zoom, Math.abs(gapTo - gapFrom) / 4);
+      const gapX = (gapFrom + gapTo) / 2 - dir * side;
       path = arcPath(
         start,
         gapX,
