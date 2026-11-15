@@ -20,8 +20,8 @@ beforeEach(() => {
   vi.stubGlobal(
     'ResizeObserver',
     class {
-      constructor(private cb: () => void) {
-        observers.push(() => this.cb());
+      constructor(cb: () => void) {
+        observers.push(cb);
       }
       observe() {}
       disconnect() {}
