@@ -95,9 +95,9 @@ describe('comment ls', () => {
     const all = await commentLs.run!(ctx, { project: DOC_A, status: 'open' });
     expect(commentLs.text!(all)).toEqual([
       'api-gw "Gateway" · open · 1 · tab "Overview"',
-      '  Sam 2026-10-01: "Retry?"',
+      '  c1 Sam 2026-10-01: "Retry?"',
       'x9 · open · 1 · tab "Details"',
-      '  Sam 2026-10-01: "Retry?"',
+      '  c1 Sam 2026-10-01: "Retry?"',
     ]);
     expect(all.threads[0]!.comments[0]).not.toHaveProperty('authorId');
     const one = await commentLs.run!(ctx, { project: DOC_A, tab: 'Details', status: 'open' });
@@ -123,6 +123,30 @@ describe('comment ls', () => {
     const out = await commentLs.run!(contextOf(api, [], []), { project: DOC_A, status: 'open' });
     expect(out.threads[0]!.comments[0]!.reactions).toEqual(reactions);
     expect(out.threads[1]!.comments[0]).not.toHaveProperty('reactions');
+  });
+
+  it('marks an agent’s comment and an edited one, and leaves the marks off the rest (Work Tracker 920)', async () => {
+    const base = thread({});
+    const listing = {
+      threads: [
+        {
+          ...base,
+          comments: [
+            { ...base.comments[0]!, id: 'c1', ai: true as const, editedAt: 7 },
+            { ...base.comments[0]!, id: 'c2' },
+          ],
+        },
+      ],
+    };
+    const api = fakeApi({ ...tabsOfA, [`/projects/${DOC_A}/comments?status=open`]: listing });
+    const out = await commentLs.run!(contextOf(api, [], []), { project: DOC_A, status: 'open' });
+    expect(out.threads[0]!.comments[0]).toMatchObject({ ai: true, edited: true });
+    expect(out.threads[0]!.comments[1]).not.toHaveProperty('ai');
+    expect(out.threads[0]!.comments[1]).not.toHaveProperty('edited');
+    expect(commentLs.text!(out).slice(1)).toEqual([
+      '  c1 Sam [AI] (edited) 2026-10-01: "Retry?"',
+      '  c2 Sam 2026-10-01: "Retry?"',
+    ]);
   });
 });
 
