@@ -25,13 +25,15 @@ const tabFlag = z
   .describe('A tab name or id prefix; the first tab when omitted');
 const LS_HINT = 'list the pages with: livedocuments page ls <doc>';
 const CHANGES_HINT = 'see the changes with: livedocuments help page set';
+// A paragraph someone is typing in (spec "Held paragraphs"): waiting is the way through, not another listing.
+const HELD_HINT = 'wait for them to pause with: --wait-held <seconds>';
 
 const refusal = (r: PagesRefused) =>
   new VerbRefusal({
     status: r.code === 'tab_needed' || r.code.endsWith('_unknown') ? 404 : 400,
     code: r.code,
     message: r.change === undefined ? r.message : `change ${r.change + 1}: ${r.message}`,
-    hint: LS_HINT,
+    hint: r.code === 'paragraphs_held' ? HELD_HINT : LS_HINT,
   });
 
 // The document, and the tab named (by name or id prefix) when one is.

@@ -107,7 +107,7 @@ function chipDom(hold: ArticlePeerHold): HTMLElement {
   const span = document.createElement('span');
   span.className = 'article-held-chip';
   span.style.setProperty('--article-held', hold.color);
-  span.dataset.name = `${hold.name} is writing`;
+  span.dataset.name = hold.name;
   span.setAttribute('aria-hidden', 'true');
   span.contentEditable = 'false';
   return span;

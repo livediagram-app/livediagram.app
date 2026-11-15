@@ -203,13 +203,15 @@ export function mountArticleView({
         p.themeAccent,
         p.ink,
       );
-      const style: CSSProperties = {
+      const style = {
         ...vars,
         left: `${frame.x}px`,
         top: `${frame.y}px`,
         width: `${frame.width}px`,
         height: `${frame.height}px`,
-      };
+        // The page's side margin, for what the writing hangs in it (a held paragraph's name chip).
+        '--article-margin': `${frame.margin}px`,
+      } as CSSProperties;
       const css = Object.entries(style)
         .map(
           ([k, v]) =>
