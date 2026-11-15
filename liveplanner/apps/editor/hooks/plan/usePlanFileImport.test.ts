@@ -2,7 +2,7 @@
 
 // Importing a whole plan from its file (docs/specs/026-plan/plan-tabs.md "The Import dialog", A Whole Plan): offered
 // to an Editor, signed in or a guest, dimmed while offline, and the api's refusal said as the spec words it.
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const { importFile, track } = vi.hoisted(() => ({ importFile: vi.fn(), track: vi.fn() }));
@@ -49,6 +49,19 @@ describe('usePlanFileImport', () => {
     expect(actions.blocked).toBe(PLAN_OFFLINE);
     expect(await actions.importFile('FILE', 'P')).toEqual({ ok: false, error: PLAN_OFFLINE });
     expect(importFile).not.toHaveBeenCalled();
+  });
+
+  it('dims the moment the browser goes offline after it rendered, and lights again when back', () => {
+    const { result } = renderHook(() =>
+      usePlanFileImport({ canImport: true, ownerId: 'user_ada', openProject: vi.fn() }),
+    );
+    expect(result.current.blocked).toBeNull();
+    const spy = goOffline();
+    act(() => void window.dispatchEvent(new Event('offline')));
+    expect(result.current.blocked).toBe(PLAN_OFFLINE);
+    spy.mockReturnValue(true);
+    act(() => void window.dispatchEvent(new Event('online')));
+    expect(result.current.blocked).toBeNull();
   });
 
   it('makes the plan, counts it and opens it', async () => {

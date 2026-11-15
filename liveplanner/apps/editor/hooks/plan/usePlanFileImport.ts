@@ -6,6 +6,7 @@
 // row is dimmed while the browser is offline. The dialog reads and previews the file; this writes it and opens the
 // new plan.
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { ApiError } from '@/lib/api/core';
 import { apiImportProjectFile } from '@/lib/api/project-file';
@@ -43,6 +44,8 @@ export function usePlanFileImport(opts: {
   openProject: (projectId: string) => void;
 }): PlanFileImportActions {
   const latest = useLatest(opts);
+  // Subscribed, so the row dims (and lights again) the moment the browser goes offline or back, dialog open or not.
+  const online = useOnline();
   const importFile = async (text: string, name: string): Promise<PlanFileImportOutcome> => {
     const o = latest.current;
     if (!o.canImport) return { ok: false, error: PLAN_FAILED };
@@ -60,7 +63,7 @@ export function usePlanFileImport(opts: {
   };
   return {
     offered: opts.canImport,
-    blocked: offline() ? PLAN_OFFLINE : null,
+    blocked: online ? null : PLAN_OFFLINE,
     importFile,
   };
 }
