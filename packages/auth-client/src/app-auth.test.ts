@@ -9,6 +9,7 @@ import {
   readCookie,
   type AppAuthEnv,
 } from './app-auth';
+import { TOKEN_REQUEST_TIMEOUT_MS } from './oauth';
 
 // The shared /api/auth routes (each product's docs/specs/014-identity/auth-and-guest-access.md "Signing in"). Each
 // product's apps/api routes/auth.test.ts drives its own binding end to end; these pin the options its copies had
@@ -166,5 +167,132 @@ describe('the route table', () => {
     expect((await call(auth, '/api/auth/sign-in', {}, limited)).status).toBe(429);
     const silent = await call(auth, '/api/auth/silent?return=/x', {}, limited);
     expect(silent.headers.get('Location')).toBe('/x');
+  });
+});
+
+describe('POST /api/auth/token when the accounts site is slow or bound (accounts.md "When the accounts site doesn\'t answer")', () => {
+  const post = { method: 'POST', headers: { Cookie: 'x_refresh=r1' } };
+  const setCookies = (res: Response) => res.headers.getSetCookie().join('\n');
+  // AbortSignal.timeout runs on the runtime's own clock, not vitest's: the test fires it, and checks its budget.
+  function stallClock() {
+    const controller = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(controller.signal);
+    return {
+      fire: () => controller.abort(new DOMException('timed out', 'TimeoutError')),
+      budget: () => timeout.mock.calls[0]?.[0],
+    };
+  }
+
+  it('answers 503 within the budget and keeps every cookie when the refresh stalls', async () => {
+    const clock = stallClock();
+    // A fetch that never answers on its own, only to its signal (the stall of 2026-11-15).
+    fetchMock.mockImplementation(
+      (_input, init) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(init.signal!.reason));
+        }),
+    );
+    const pending = call(routes(), '/api/auth/token', post);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(clock.budget()).toBe(TOKEN_REQUEST_TIMEOUT_MS);
+    expect(TOKEN_REQUEST_TIMEOUT_MS).toBeLessThanOrEqual(8_000);
+    clock.fire();
+    const res = await pending;
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'accounts_unreachable' });
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    expect(setCookies(res)).toBe('');
+  });
+
+  it('answers 503 with the cookies kept on a 5xx, a network error or a body that is not JSON', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('down', { status: 502 }));
+    const bad = await call(routes(), '/api/auth/token', post);
+    expect(bad.status).toBe(503);
+    expect(setCookies(bad)).toBe('');
+    fetchMock.mockRejectedValueOnce(new TypeError('network'));
+    const offline = await call(routes(), '/api/auth/token', post);
+    expect(offline.status).toBe(503);
+    expect(setCookies(offline)).toBe('');
+    fetchMock.mockRejectedValueOnce('not an error');
+    expect((await call(routes(), '/api/auth/token', post)).status).toBe(503);
+    fetchMock.mockResolvedValueOnce(new Response('<html>', { status: 200 }));
+    expect((await call(routes(), '/api/auth/token', post)).status).toBe(503);
+  });
+
+  it('still signs out on a 4xx from the accounts site, or an answer without a token', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('{"error":"invalid_grant"}', { status: 400 }));
+    const res = await call(routes(), '/api/auth/token', post);
+    expect(res.status).toBe(401);
+    expect(setCookies(res)).toContain('x_refresh=;');
+    expect(setCookies(res)).toContain('x_signed_in=0');
+    fetchMock.mockResolvedValueOnce(Response.json({}));
+    expect((await call(routes(), '/api/auth/token', post)).status).toBe(401);
+  });
+
+  it('goes through the ACCOUNTS binding when there is one, the public route only when it throws', async () => {
+    const id = jwt({ sub: 'u' });
+    const bound = vi.fn(async (_input: string, _init?: RequestInit) => tokenResponse(id));
+    const res = await call(routes(), '/api/auth/token', post, {
+      ...ENV,
+      ACCOUNTS: { fetch: bound },
+    });
+    expect(res.status).toBe(200);
+    expect(bound.mock.calls[0]?.[0]).toBe('https://accounts.example/api/auth/oauth2/token');
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    fetchMock.mockResolvedValueOnce(tokenResponse(id));
+    const broken = vi.fn(async (_input: string, _init?: RequestInit): Promise<Response> => {
+      throw new Error('no such service');
+    });
+    const fallback = await call(routes(), '/api/auth/token', post, {
+      ...ENV,
+      ACCOUNTS: { fetch: broken },
+    });
+    expect(fallback.status).toBe(200);
+    expect(broken).toHaveBeenCalledOnce();
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it('never falls back to the public route once the request timed out', async () => {
+    const clock = stallClock();
+    const stalled = vi.fn(
+      (_input: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(init.signal!.reason));
+        }),
+    );
+    const pending = call(routes(), '/api/auth/token', post, {
+      ...ENV,
+      ACCOUNTS: { fetch: stalled },
+    });
+    await vi.waitFor(() => expect(stalled).toHaveBeenCalled());
+    clock.fire();
+    expect((await pending).status).toBe(503);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('swaps the code and signs out through the binding too', async () => {
+    const bound = vi.fn(
+      async (_input: string, _init?: RequestInit) => new Response('{}', { status: 500 }),
+    );
+    const env = { ...ENV, ACCOUNTS: { fetch: bound } };
+    const signedOut = await call(
+      routes(),
+      '/api/auth/sign-out?return=/a',
+      { method: 'POST', headers: { Cookie: 'x_refresh=r1' } },
+      env,
+    );
+    expect(signedOut.status).toBe(200);
+    expect(bound.mock.calls[0]?.[0]).toBe('https://accounts.example/api/auth/end-session');
+    const pkce = encodeUtf8PkceCookie({ state: 's', verifier: 'v', returnTo: '/a' });
+    const back = await call(
+      routes(),
+      '/api/auth/callback?code=c&state=s',
+      { headers: { Cookie: `x_pkce=${pkce}` } },
+      env,
+    );
+    expect(back.headers.get('Location')).toBe('/sign-in?error=failed');
+    expect(bound.mock.calls[1]?.[0]).toBe('https://accounts.example/api/auth/oauth2/token');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
