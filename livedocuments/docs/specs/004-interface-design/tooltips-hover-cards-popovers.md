@@ -5,11 +5,11 @@
 Three kinds of floating content sit beside a control. Each has one name, and the name means one thing
 in code, copy and specs.
 
-| Concept        | Carries                                  | Opens                                                     | Interactive |
-| -------------- | ---------------------------------------- | --------------------------------------------------------- | ----------- |
+| Concept        | Carries                                  | Opens                                                      | Interactive |
+| -------------- | ---------------------------------------- | ---------------------------------------------------------- | ----------- |
 | **Tooltip**    | The control's name, and nothing else     | After an **800 ms** hover; **instantly** on keyboard focus | No          |
-| **Hover card** | A bold title over a one-line description | **Instantly** on hover and on keyboard focus              | No          |
-| **Popover**    | Controls: menus, pickers, forms          | On click or tap                                           | Yes         |
+| **Hover card** | A bold title over a one-line description | **Instantly** on hover and on keyboard focus               | No          |
+| **Popover**    | Controls: menus, pickers, forms          | On click or tap                                            | Yes         |
 
 Tooltips and hover cards are the two kinds of **hint**: content that appears because a control was
 hovered or focused, and that goes away when it no longer is. A popover is not a hint. It opens because
