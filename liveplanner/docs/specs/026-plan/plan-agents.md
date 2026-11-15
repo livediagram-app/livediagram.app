@@ -357,6 +357,40 @@ detailed: { header, headerEnd, underTitle, footer, bottomRight } }`, each a list
   brings its types the same way), so neither change is lost. After three tries it refuses (`item_types_stale`).
 - Only someone who may edit the whole project changes card types (a tab-scoped grant may not), as in the editor.
 
+### Card templates
+
+A type's [card templates](item-types.md#card-templates) are changed with the rest of the type, and a card can start
+from one.
+
+- **`change_card_types`**: `add` takes `templates` `[{ name, fields? }]`, and `set` takes `addTemplates` (the same),
+  `editTemplates` `[{ template, name?, fields?, clear? }]` and `removeTemplates` (templates by name or id). A
+  template's `fields` are named and written exactly as `change_items`' are ([Naming things as people
+  do](#naming-things-as-people-do)): `title`, `description` (Markdown, stored with its formatting), `checklist`,
+  `labels` and the type's custom fields by name (a Choice by its option, a person by name, a Long Text as
+  Markdown). An edit's `fields` change only the values they name, and its `clear` takes values off by field name; a
+  `name` renames it (its id never changes). A new template's id is `tp-` and a slug of its name. They apply after
+  the change's field edits, so a template can set a custom field the same change adds.
+- They are checked as the api checks them, before anything is saved, each refusal naming the type and the template:
+  a field the type lacks is `field_unknown`; a value a template never holds (a status, an assignee, dates, a
+  Calculated, Time Spent, Comments, Votes, Card or Image field's) is `type_change_invalid`, saying what a template
+  holds; a value that fails a card's check, a blank, long (over 32 characters) or clashing name, an 11th template,
+  a template over 16 KB and the plan's templates over 128 KB are `type_change_invalid` too, by name. An unknown
+  template in `editTemplates` or `removeTemplates` is `template_unknown`, listing the type's templates.
+- **`change_items`**' `add` takes `template`, a template of the card's type by name (case aside) or id: the card
+  starts from its values ([`cardTemplateFields`](item-types.md#card-templates)), and the change's own `fields` and
+  `title` win over the template's, field by field (a description given drops the template's formatting with its
+  text). With a template, `title` may be left out: the template's title is used, else the type's new-card title.
+  Without one, `title` is still required (`value_invalid`). Required fields count the template's values. A name the
+  type has no template for is `template_unknown`, listing its templates (or saying it has none, and how to add one);
+  a template another type holds says so ("Bug Report is a Bug template: give type "Bug""). `template` on a `set`
+  is refused: a template only starts a card.
+- **`list_items`** lists each type's `templates` (absent when it has none): each one's `id`, `name` and `fields`, the
+  names of the fields it sets, so an agent names a template and knows what it fills in without reading its values.
+- The CLI mirrors it: `type apply` takes the same changes from a file, `type ls` ends a type's line with its
+  templates, and `item add --template <name>` starts a card from one.
+- Roles are the api's: only someone who may edit the whole plan changes a type's templates; an Editor or a
+  Participant starts a card from one, as they add cards; a Viewer does neither.
+
 ### What a card type is made of, as facts
 
 The tool's descriptions carry what an agent needs to design a type well, as facts (never instructions,

@@ -70,6 +70,13 @@ src/card-templates.ts  CardTemplate, CARD_TEMPLATES_MAX (10), CARD_TEMPLATE_NAME
                        cardTemplateFields(type, template) (the values a new card takes: only keys templateTakes
                        allows, for fields the type offers now), newCardTemplateId(name, taken),
                        cardTemplatesBytes(types) (spec "Card templates")
+src/template-names.ts  templateOf(type, name) (a template by id or name, `statusKey`; else template_unknown with the
+                       type's templates), templateElsewhere(name, type, types) (the type holding it, for the
+                       refusal)
+src/type-change-templates.ts  TemplateInput, TemplateEdit, withTemplateChanges(type, change, naming) and
+                       templateProblem(type, reason) (spec "Card templates", plan-agents.md "Card templates")
+src/markdown-fields.ts markdownFields(fields, type, had) (a description's and each Long Text's Markdown into its plain
+                       text and `…Rich` runs; shared with agent-verbs' change_items)
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
                        @liveplanner/project's agent element ids)
 ```
@@ -1076,6 +1083,36 @@ retyped, types, items, ctx)` (`built-in-field-retype.ts`): `retypedValuePatches`
   exported for it) named "{Tab} Icon", with **Reset To Default** (`ResetIcon`) in its foot while the glyph is not
   the default. Read-only on an inherited type (a plain glyph, no button).
 
+## The Templates tab
+
+Spec "Editing a type" (Templates) and "Card templates".
+
+- `ItemTypeEditorTabs`: `TYPE_EDITOR_TABS` gains `'templates'` (label Templates), last.
+- `ItemTypeEditor`: `const [templates, setTemplates] = useState(start.templates ?? [])`; the draft carries
+  `settledTemplates(templates, startIds)` (`card-template-draft.ts`: a template not in `start.templates` takes
+  `newCardTemplateId(name, taken)` in order, so its id comes from its name at Save) when non-empty. `templatesProblem`
+  (`card-template-draft.ts`) of `{ templates, otherBytes: cardTemplatesBytes(types other than this one) }` answers the
+  first of: blank name, clashing name, a template over `ITEM_FIELDS_BYTES` (`fieldsByteSize`), the plan's over
+  `CARD_TEMPLATES_BYTES`; it comes before the catalogue check's own in `problem`, and flags `templates`. A catalogue
+  refusal whose reason holds `.templates` or is `templates` also flags `templates` ("A template’s values break a
+  card’s limits.").
+- `ItemTypeTemplates` (`components/plan/ItemTypeTemplates.tsx`): `{ type (the draft), templates, onChange, problem,
+canEdit }`; `chosen` id state (the first template's, or the one just added). `md:grid-cols-[13rem_1fr]`, one column
+  under `md`. Rows are buttons (`aria-current` on the chosen; `TemplateGlyph`, lucide `layout-template`), the name
+  `truncate` with a `Tooltip`; each ends with `FieldMenu` (Move Up, Move Down, Remove; no Move To). New Template is
+  `DashedAddButton`, disabled at `CARD_TEMPLATES_MAX` with its reason as a `Tooltip`. Empty: `CompactEmptyState`.
+  A problem shows as `role="alert"` over the editor. Read-only (`canEdit` false, from `usePlan()?.canEdit`): no add
+  row, no menu, the editor's controls disabled.
+- `CardTemplateEditor` (`components/plan/CardTemplateEditor.tsx`): Name (`TextInput`, `maxLength` 32, a note under it
+  for a blank or clashing name, focused and selected when the template was just added), Title (`DebouncedText`,
+  `wrapLines` 3, `maxLength` `ITEM_TITLE_MAX`, placeholder `type.newTitle`), then `templateFieldsOf(type)` (the type's
+  fields in order that `templateTakes`, less title): each drawn by `ItemFieldEditor` over `templateItem(type,
+template)` (a stand-in `Item` holding the template's values; never stored), `onSave` and `onPatch` folded into the
+  template with `withFieldValue` / `withPatch`. Rich-text fields (description, Long Text) and Checklist sit in
+  `ItemPanelSection`s, the rest in `ItemDetailsRow`s (`labelsItsControl` decides `htmlFor`). Labels' suggestions
+  are `labelUsage` over the plan's items, once per editor open.
+- Telemetry `Plan · Added · CardTemplate`, `Plan · Deleted · CardTemplate`.
+
 ## The Hidden tab
 
 - `ItemPanelTabs.tsx`: `HIDDEN_TAB = 'card-hidden'`, label "Hidden"; `panelTabs(tabs, details, linked, hidden)` puts it
@@ -1430,6 +1467,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Newer keys: kept through read, inheritance and the editor's save, dropped on the api's writes, capped            | `packages/items/src/tab-glyphs.test.ts`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                                |
 | Card templates: read, ids, names, values checked, dropped and kept, budgets, inherited, duplicated, start values | `packages/items/src/card-templates.test.ts`                                                                                                                                                                                                                                                                                                        |
 | Card templates through the api: stored, Editor only (Participant, Viewer, tab link refused), copy, Drive file    | `apps/api/src/routes/item-types-templates.test.ts`                                                                                                                                                                                                                                                                                                 |
+| Card templates tab: list, add, rename, move, remove, field editors, problems, read-only, ids at Save             | `apps/editor/components/plan/ItemTypeTemplates.test.tsx`, `apps/editor/components/plan/card-template-draft.test.ts`                                                                                                                                                                                                                                |
 | Card templates: kept through the type editor's save, a tab import's added types                                  | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`, `apps/editor/lib/import-tab.test.ts`                                                                                                                                                                                                                                                   |
 | Stored-shape guard: a new type, tab or field key bumps `PROJECT_FORMAT`                                          | `packages/api-schema/src/project-format.test.ts` (and the typecheck on `packages/items/src/stored-keys.ts`)                                                                                                                                                                                                                                        |
 | Sync Plan in place: the server's revision adopted, first save lands                                              | `apps/editor/hooks/plan/useItemTypes.test.ts`, `apps/editor/app/project/[id]/useSyncInPlace.test.ts`                                                                                                                                                                                                                                               |

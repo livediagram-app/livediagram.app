@@ -142,6 +142,29 @@ change, boardFields(setup, types, false))` on the reshaped set-up; each name thr
   (`withPictureRemovals`). `change_card_types` takes `multiple: true` on an `image` field (`severalable` widened to
   it).
 
+- **Card templates** (spec "Card templates"): `applyCardTypeChanges(stored, changes, statuses, items = [])` runs
+  `withTemplateChanges(type, change, naming)` (`packages/items/src/type-change-templates.ts`) last in an `add`
+  (`templates`) and a `set` (`removeTemplates`, then `editTemplates`, then `addTemplates`). Each template's `fields`
+  go through `resolveFields` against the type as the change left it (`naming` the plan's statuses and the items
+  passed in, so a person resolves as `change_items` resolves one), then `markdownFields` (`markdown-fields.ts`, the
+  Markdown conversion `change_items` uses too) into the stored description and Long Text shape, then every key must
+  pass `templateTakes`, else `type_change_invalid` ("Bug Report on Bug can't hold Due: a template holds the title,
+  description, checklist, labels and custom fields, never a Calculated, Time Spent, Comments, Votes, Card or Image
+  field's value"). An edit merges its values over the template's (a key given drops its `…Rich` sibling first) and
+  takes off `clear` (by `fieldKeyOf`, with the Rich sibling). A template is named by id or name (`statusKey`)
+  through `templateOf` (`template-names.ts`), else `template_unknown` listing the type's templates. New ids come
+  from `newCardTemplateId`. Last, `readCardTemplates(type.templates, type, label, 'refuse')` checks the type's list
+  and its refusal path is said in words (`templateProblem`): `.templates` (over 10), `.name`, `.fields` (a card's
+  check), the template itself (over 16 KB). The catalogue check's `templates` reason (over 128 KB) is said the same
+  way. `changeCardTypes` passes `state.items`.
+- `applyItemChanges`' `add` with `template`: `templateOf(type, name)` (refused `template_unknown`; a template another
+  type holds is named with that type, `templateElsewhere`), then the fields are
+  `{ ...cardTemplateFields(type, template) less any key the change gives and its Rich sibling, ...given }`, the title
+  `c.title ?? template title ?? type.newTitle`. No title and no template: `value_invalid`. A `set` has no `template`
+  key (the strict schema refuses it).
+- `listedType` adds `templates?: { id, name, fields: string[] }[]`, field names by `fieldName` (Title, Description,
+  Checklist, Labels by their built-in ids), Rich keys folded into their field; absent when the type has none.
+
 ## Interfaces and contracts
 
 - `GET /api/projects/:id/plan` → `PlanResponse { boards, statuses, types }`; read gate as the item list
@@ -151,12 +174,15 @@ change, boardFields(setup, types, false))` on the reshaped set-up; each name thr
 status? (name or names[1..32]), query? (1..200), updatedSince?, includeClosed?, includeRich?, limit? (1..1000),
 cursor? }`, its output adding `total`, `omitted?`, `nextCursor?` and a column's `closed?`;
   `change_items { projectId, changes[1..50] }`, `add_board { projectId, tabId?, preset?, title?, columns?[1..12],
-types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `widgets { add?[..27], remove?[..27] }` (every
+types? }`, `change_card_types { projectId, changes[1..32] }` (`add`'s `templates?[..10]` and `set`'s
+  `addTemplates?[..10]`, `editTemplates?[..10]` `{ template, name?, fields?, clear? }`, `removeTemplates?[..10]`),
+  `change_items`' `add` `{ title?, type, status?, fields?, template? }`, `change_board`'s `widgets { add?[..27], remove?[..27] }` (every
   widget a board can hold, `WIDGETS_CHANGE_MAX`); outputs `listItemsOutput`, `changeItemsOutput`,
   `addBoardOutput`, `changeCardTypesOutput`, every field described.
-- CLI: `item ls|add|set|move|rm` (unchanged arguments; `ls` prints a line per board), `board add <project> [--tab]
+- CLI: `item ls|add|set|move|rm` (`add` takes `--template <name>`, its title then optional; `ls` prints a line per board), `board add <project> [--tab]
 [--preset] [--title] [--columns a,b] [--types a,b]`, `board set <project> <board> [--title] [--columns] [--types]
-[--sort] [--done] [--add-widgets a,b] [--remove-widgets a,b]`, `type ls <project>`, `type apply <project> -f <file|->` (a JSON array
+[--sort] [--done] [--add-widgets a,b] [--remove-widgets a,b]`, `type ls <project>` (a type's line ends `templates:
+Bug Report, Release` when it has any), `type apply <project> -f <file|->` (a JSON array
   of `cardTypeChangeSchema`).
 
 ## Errors and edge cases
@@ -168,6 +194,10 @@ types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `
 | no board at all                                                                                      | `status_unknown`, says to use `add_board` or leave status out                                                                           |
 | card type `defaultStatus` naming no column                                                           | not refused: Default State left unset, the `applied` line says so (`DEFAULT_STATUS_PENDING`)                                            |
 | card type unknown                                                                                    | `type_unknown`, lists `Name (id)` for each type                                                                                         |
+| template unknown (change_card_types edit or remove, change_items add)                                | `template_unknown`, lists the type's templates, or says it has none and to add one with `change_card_types`                             |
+| template another type holds (change_items add)                                                       | `template_unknown`, "Bug Report is a Bug template: give type "Bug"", then the type's own                                                |
+| template value a template never holds, a value failing a card's check, a name, a cap                 | `type_change_invalid`, naming the type, the template and the rule (`templateProblem`)                                                   |
+| change_items add with neither title nor template                                                     | `value_invalid`, "A new card needs a title, or a template to take one from."                                                            |
 | field the type lacks                                                                                 | `field_unknown`, lists the type's fields                                                                                                |
 | Choice option not offered                                                                            | `choice_unknown`, lists the options                                                                                                     |
 | item ref none or several                                                                             | `item_unknown`, names the candidates when several                                                                                       |
@@ -225,6 +255,7 @@ types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `
 | outline order, statuses once, types                            | `packages/items/src/plan-outline.test.ts`                                                                                                      |
 | naming and refusals                                            | `packages/items/src/plan-names.test.ts`                                                                                                        |
 | card type changes                                              | `packages/items/src/type-changes.test.ts`                                                                                                      |
+| card templates through agents: add, edit, remove, refusals     | `packages/items/src/type-change-templates.test.ts`, `packages/agent-verbs/src/plan/card-templates-agent.test.ts`                               |
 | Blocked By: listing, set by number, loop stop, switch          | `packages/agent-verbs/src/plan/plan-engine.test.ts`, `packages/items/src/type-changes.test.ts`                                                 |
 | board placement                                                | `packages/items/src/board-place.test.ts`                                                                                                       |
 | change_board widgets: names, add, remove, refusals             | `packages/agent-verbs/src/plan/board-widget-change.test.ts`, `plan-engine.test.ts`                                                             |
