@@ -150,21 +150,37 @@ export function accountsRefused(err: unknown): boolean {
   return !(err instanceof TokenRequestError) || err.refused;
 }
 
+// What local dev (miniflare's dev registry) answers for a service binding whose Worker isn't running: a 503 with
+// `Worker "<name>" not found. Make sure it is running locally.` (or, for a mismatched dev server, `Worker "<name>" is
+// not compatible ...`), where a deployed binding would throw. The accounts Worker's own 503s are JSON.
+const MISSING_WORKER = /^Worker "[^"]+" (?:not found|is not compatible)/;
+
+/** Whether a binding's answer is local dev's "that Worker isn't running", not the Worker's own. */
+async function boundWorkerMissing(response: Response): Promise<boolean> {
+  if (response.status !== 503) return false;
+  if (response.headers.get('content-type')?.includes('json')) return false;
+  return MISSING_WORKER.test(await response.clone().text());
+}
+
 /**
  * `fetch` over a service binding to the accounts Worker (ACCOUNTS), falling back to the public route when there is
- * no binding or it throws for any reason but the request's own timeout (a local run without accounts bound). A
- * Worker's fetch to another Worker's public route can stall; a binding's does not.
+ * no binding, it throws for any reason but the request's own timeout, or local dev says its Worker isn't running
+ * (a local run without accounts started, `boundWorkerMissing`). A Worker's fetch to another Worker's public route
+ * can stall; a binding's does not.
  */
 export function accountsFetch(via?: KeysFetcher, fallback: typeof fetch = fetch): typeof fetch {
   if (!via) return fallback;
   return async (input, init) => {
     const url = input instanceof Request ? input.url : String(input);
+    let response: Response;
     try {
-      return await via.fetch(url, init);
+      response = await via.fetch(url, init);
     } catch (err) {
       if (init?.signal?.aborted) throw err;
       return fallback(input, init);
     }
+    if (await boundWorkerMissing(response)) return fallback(input, init);
+    return response;
   };
 }
 

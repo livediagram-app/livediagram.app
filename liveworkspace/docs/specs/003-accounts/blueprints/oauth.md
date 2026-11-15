@@ -88,7 +88,8 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
 - `authorizeUrl`: `response_type=code`, `scope` the four, `code_challenge` S256, `state`, optional `prompt` `create`,
   `login` or `none`; `exchangeCode` and `refreshTokens` send the client secret, so they run in the app's Worker;
   the refresh token returned replaces the one sent. Both, and the sign-out's end-session call, go through the
-  app API's `ACCOUNTS` binding when it has one (`accountsFetch`, the public route on a throw); a token request gives
+  app API's `ACCOUNTS` binding when it has one (`accountsFetch`, the public route on a throw or on
+  local dev's 503 for a bound Worker that isn't running, `boundWorkerMissing`); a token request gives
   up after `TOKEN_REQUEST_TIMEOUT_MS` (8 s) and fails with `TokenRequestError` (`status` null for no answer).
   `createAppAuth`'s `POST /api/auth/token` signs out only on a 4xx (`accountsRefused`); no answer or a 5xx is 503
   `accounts_unreachable` with the cookies kept ([accounts.md](../accounts.md#when-the-accounts-site-doesnt-answer)).

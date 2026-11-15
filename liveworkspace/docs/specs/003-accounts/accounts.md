@@ -524,8 +524,10 @@ once instead, since the answer sets the name.
 
 An app's `POST /api/auth/token` (and its callback's code swap, and its sign-out) asks the accounts Worker
 over the app API's `ACCOUNTS` service binding (`accountsFetch` in `@liveworkspace/auth-client`), the public
-route only when the binding is missing or throws. A Worker's fetch to another Worker's public route can stall:
-on 2026-11-15 every app's token answer hung with it, and every Explorer stayed on its placeholders. So:
+route only when the binding is missing, throws, or names a Worker that isn't running (a local run, where a
+binding to a Worker not started answers 503 `Worker "…" not found` rather than throwing). A Worker's fetch to
+another Worker's public route can stall: on 2026-11-15 every app's token answer hung with it, and every Explorer
+stayed on its placeholders. So:
 
 - **Bounded.** Each token request gives up after 8 s (`TOKEN_REQUEST_TIMEOUT_MS`).
 - **A stall never signs anyone out.** With no answer in time, a network error or a 5xx from the accounts site,
@@ -542,7 +544,8 @@ so none can hang a page the way the token answer did:
 
 - **The account API.** An app API's internal calls (`call` in `@liveworkspace/auth-client`: settings, profiles,
   teams, sightings, API tokens, emails, notification switches) go over its `ACCOUNTS` binding (the credentials carry
-  it), the public route only when the binding is missing or throws, as the token requests do. Each gives up after
+  it), the public route only when the binding is missing, throws or has no Worker behind it, as the token
+  requests do. Each gives up after
   10 s (`ACCOUNT_CALL_TIMEOUT_MS`), and the caller treats it as accounts being out of reach, as it already treats a
   network error. The two writes that would make something twice if repeated (minting an API token, making a team)
   wait 20 s (`ACCOUNT_WRITE_TIMEOUT_MS`), and their timeout says the outcome is unknown rather than failed
