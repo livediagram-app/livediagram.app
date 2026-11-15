@@ -58,7 +58,15 @@ export function usePrototypeHost(input: HostInput): PrototypeHost {
   useEffect(() => {
     if (ready && player.open && !wireframeTab) closePrototype();
   }, [ready, player.open, wireframeTab]);
-  useEffect(() => () => closePrototype(), []);
+  useEffect(
+    () => () => {
+      closePrototype();
+      // React's StrictMode replays the effects with the same refs (dev): read the address again then, or a share
+      // link opened with the design already loaded would close its player and never reopen it.
+      asked.current = null;
+    },
+    [],
+  );
 
   const hasLink = input.sessionShareCode !== null || (input.canShareDesign && !offline);
   const actions = useMemo(

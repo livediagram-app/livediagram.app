@@ -145,6 +145,9 @@ describe('PrototypePlayer', () => {
     fireEvent.keyDown(window, { key: 'Delete' });
     fireEvent.keyDown(document.body, { key: 'Enter' });
     expect(shownScreenId()).toBe('p3');
+    expect(fireEvent.keyDown(window, { key: 'a', metaKey: true })).toBe(false);
+    expect(fireEvent.keyDown(window, { key: 'A', ctrlKey: true })).toBe(false);
+    expect(fireEvent.keyDown(window, { key: 'a' })).toBe(true);
     expect(editorKeys).not.toHaveBeenCalled();
     document.removeEventListener('keydown', editorKeys);
   });

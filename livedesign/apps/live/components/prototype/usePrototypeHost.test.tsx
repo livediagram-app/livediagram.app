@@ -2,6 +2,7 @@
 import { act, cleanup, render, renderHook, screen, fireEvent } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livedesign/design';
+import { StrictMode } from 'react';
 
 const m = vi.hoisted(() => ({
   listShareLinks: vi.fn(),
@@ -71,6 +72,22 @@ describe('a prototype link', () => {
     act(() => view.result.current.close('p2'));
     view.rerender({ ...input, tabId: 't1' });
     expect(view.result.current.open).toBe(false);
+  });
+
+  it('opens under StrictMode with the design already loaded (a share link)', () => {
+    window.history.replaceState(null, '', '/design/shared?s=abc&prototype=1');
+    const input = {
+      wireframeTab: true,
+      ready: true,
+      tabId: 't1',
+      designId: 'd1',
+      sessionShareCode: 'abc',
+      canShareDesign: false,
+      openShare: vi.fn(),
+      focusPage: vi.fn(),
+    };
+    const view = renderHook(() => usePrototypeHost(input), { wrapper: StrictMode });
+    expect(view.result.current.open).toBe(true);
   });
 
   it('waits for the design to load', () => {

@@ -141,6 +141,9 @@ export function PrototypePlayer({
           e.preventDefault();
           now.follow(h);
         }
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'a') {
+        // With the editor's select-all held off, the browser's would select the page's text behind the player.
+        e.preventDefault();
       }
     };
     window.addEventListener('keydown', onKey, true);
