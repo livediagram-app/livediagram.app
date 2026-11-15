@@ -1367,7 +1367,8 @@ the pilot; livedocuments, livedesign and liveplanner follow as cards of their ow
     the editor wrote) or a change to the tab list (`document-meta`) schedules one `view_tab`, at most one every
     `LIVE_REDRAW_MS` (1.5 s) however busy the room; presence ops (cursors, lasers, selections, viewports, drag
     previews, reactions, follows, poll answers) and other tabs' changes draw nothing. Pan and zoom survive a
-    redraw.
+    redraw. A redraw that fails, or answers another tab than the one shown (the shown tab was deleted), keeps the
+    picture it has: the view never jumps to the document's first tab on its own.
   - **Reconnects.** The ticket is never renewed in place. Within its life, `LIVE_RENEW_BEFORE_MS` (30 s) before
     `expiresAt`, the view mints a fresh one, opens a new socket and draws the tab once. When the room closes the
     socket (its grant lapsed, 4007; access changed, 4005; full, 4008; the network), the view mints a fresh ticket and reconnects, waiting

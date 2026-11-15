@@ -61,6 +61,18 @@ Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the stick
 
 When the AI changes a canvas you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). An element someone else in the canvas has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
 
+## Interactive view
+
+In an AI tool that shows interactive results (Claude does), creating, changing or reading a canvas also opens a small view of the tab beside the answer. You can pan and zoom it, switch between the canvas's tabs, and click a box to open it in the editor. The view is read-only: nothing you do in it changes the canvas.
+
+While it is open, the view follows the canvas. When you or someone else edits the tab, it draws the tab again within a moment, and your pan and zoom stay where they were. A small mark in its header says how it is keeping up:
+
+- **Live**: it is following the canvas.
+- **Reconnecting**: the connection dropped, and it is trying again.
+- **Snapshot**: it has stopped following, for example because your access was removed, the connection kept dropping, or the canvas moved to the Trash. It keeps showing the tab as it last drew it, and its tooltip says why and when.
+
+The view uses your own connection and a short-lived pass that only lets it watch, never a share link. The picture of the tab in the chat stays too, so the answer still makes sense in tools without the view.
+
 The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. The MCP server runs no AI model of its own. New canvases an AI creates land at the root of **My Work** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
 
 ## What a connection can and can't touch

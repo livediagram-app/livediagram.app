@@ -59,7 +59,7 @@ button:focus-visible,#stage:focus-visible{outline:2px solid var(--ring);outline-
 #art{position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none;max-width:none}
 #ring{position:absolute;border:2px solid var(--ring);border-radius:6px;pointer-events:none}
 #note{position:absolute;inset:auto 0 12px;margin:auto;width:max-content;max-width:90%;padding:6px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
-@media (max-width:520px){#title{display:none}#zoom{display:none}}
+@media (max-width:520px){header{gap:6px}#title{display:none}#zoom{display:none}#live{font-size:0;gap:0;padding:0 2px}.tool{flex:none}}
 @media (prefers-reduced-motion:no-preference){#tabs button,.tool{transition:filter .15s}#live[data-state=wait]::before{animation:pulse 1.2s ease-in-out infinite}}
 @keyframes pulse{50%{opacity:.35}}
 `;

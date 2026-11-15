@@ -87,7 +87,7 @@ function frame() {
     doc.hidden = hidden;
     onDocument.visibilitychange!.forEach((f) => f({}));
   };
-  return { sent, deliver, calls, answer, flush, live, setHidden };
+  return { sent, deliver, calls, answer, flush, live, setHidden, el };
 }
 
 const TAB = {
@@ -296,5 +296,34 @@ describe('the view following a document live', () => {
     f.answer('view_tab', { isError: true });
     await f.flush();
     expect(f.live().textContent).toBe('Live');
+  });
+
+  it('keeps the old picture when the shown tab is deleted, never jumping to the first tab', async () => {
+    const f = await following();
+    const ws = FakeSocket.all[0]!;
+    ws.onopen!();
+    const art = f.el('art') as FakeEl & { src?: string };
+    const drawn = art.src;
+    expect(drawn).toContain(encodeURIComponent(TAB.svg));
+    // The tab list changes (t1 deleted): the redraw asks for t1 and gets the document's first tab back.
+    ws.frame(op({ kind: 'document-meta' }));
+    await vi.advanceTimersByTimeAsync(1_500);
+    const first = { ...TAB, tabId: 't0', name: 'First', svg: '<svg viewBox="0 0 5 5"><g/></svg>' };
+    first.tabs = [{ id: 't0', name: 'First' }];
+    f.answer('view_tab', { structuredContent: first });
+    await f.flush();
+    expect(art.src).toBe(drawn);
+    expect(f.el('title').textContent).toBe('Main');
+    // Or the server refuses the gone tab: still the old picture, still Live, and the next change asks for t1 again.
+    ws.frame(op({ kind: 'tab', tabId: 't1' }));
+    await vi.advanceTimersByTimeAsync(1_500);
+    f.answer('view_tab', { isError: true, content: [{ type: 'text', text: 'No tab "t1"' }] });
+    await f.flush();
+    expect(art.src).toBe(drawn);
+    expect(f.live().textContent).toBe('Live');
+    expect(f.calls('view_tab').at(-1)!.params!.arguments).toEqual({
+      documentId: 'd1',
+      tabId: 't1',
+    });
   });
 });
