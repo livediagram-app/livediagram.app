@@ -199,6 +199,10 @@ const TAGS = [
     description:
       "A plan's GitHub connection: liveplanner's GitHub App, the repositories it connects, and the deliveries GitHub sends.",
   },
+  {
+    name: 'Calendar',
+    description: "Calendar feeds: a plan's card dates as a private iCalendar link.",
+  },
   { name: 'Sharing', description: 'Share links, passwords, and the plans shared with you.' },
   { name: 'Folders', description: 'Organise plans into a personal or team folder tree.' },
   {

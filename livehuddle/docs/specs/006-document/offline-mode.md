@@ -62,14 +62,8 @@ have cloud documents and offline documents side by side.
 
 <!-- legacy-names -->
 
-- **Store rename (version 2).** Offline documents were kept in the `diagrams` object store until
-  the container became a document ([Document](document.md#renaming-from-diagram)). Opening
-  version 2 of `livehuddle-offline` moves every record into `documents` inside the upgrade
-  transaction, then drops the old store, logging how many moved
-  (`apps/editor/lib/offline/legacy-offline-store.ts`). A tab still running the code from before the upgrade
-  asks for version 1, which the browser refuses once another tab has opened version 2; its offline
-  documents are out of reach in that tab until it reloads.
-- **Version 3 changes nothing.** livehuddle's copy of the editor came from livediagram's, whose version 3 set
+- **Version 3 changes nothing.** livehuddle's copy of the editor came from livediagram's, whose version 2 renamed
+  the store to `documents` and whose version 3 set
   aside documents holding Pages and Plan content in a second store, `retired-parts`, and offered to move them to
   livedocuments, liveplanner and livedesign. livehuddle never held such content, so the set-aside, its offer and its
   Settings row are gone (2026-11-08). The version number stays at 3, so no browser that already opened it is asked

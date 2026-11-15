@@ -401,8 +401,9 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
   Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
   placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
 - **On a phone beside the Session strip** (a tab whose cards take votes) the strip is one **More Card Tools** button,
-  its menu holding Find a Card, Card Types and, for an editor, the Trash (the Trash's only door on a phone);
-  each opens its panel above that button ([Session tools](../012-collaboration/session-tools.md#the-session-strip)).
+  its menu holding Find a Card and, for an editor, Card Types and the Trash (the Trash's only door on a phone);
+  each opens its panel above that button. A Participant or Viewer has only Find a Card, so it shows as that one
+  button, and with no card types nothing shows ([The Card Types panel](item-types.md#the-card-types-panel)) ([Session tools](../012-collaboration/session-tools.md#the-session-strip)).
 - On a wide desktop (1440 px and up) each of its buttons is named beside its icon in one short word (**Trash**,
   **Find**, **Types**), as the cluster's other strips are ([Editor app](../007-editor/editor-app.md)); narrower,
   they are icons alone. Their accessible names and hover cards keep the fuller labels (Find a Card, Card

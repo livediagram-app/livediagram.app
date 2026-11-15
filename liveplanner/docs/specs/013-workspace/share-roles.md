@@ -53,7 +53,9 @@ A Participant changes the board's **content**, never its **shape**.
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it,
   and a mind node grows to fit the label a Participant writes on it (taller only, in the same change).
 - **Nothing offers what a session cannot do.** A Participant or Viewer sees notimer controls on a timer element; a
-  Participant sees no Sheet toolbar, row, column, merge or settings controls (cells only). Empty states describe
+  Participant sees no Sheet toolbar, row, column, merge or settings controls (cells only), and a Participant or
+  Viewer no Card Types button, folded menu row or other door into the Card Types panel (an Editor's, as card types
+  are: [The Card Types panel](../026-plan/item-types.md#the-card-types-panel)). Empty states describe
   instead of instructing: a mood meter
   asks only someone who may answer, a comment thread or card finder invites only someone who may add. No role
   gets a comment button on an element: comment threads on canvas elements are retired, and comments live on cards

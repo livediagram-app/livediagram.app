@@ -64,6 +64,6 @@ export const CARD_TYPE_TOUR_STEPS: CardTypeTourStep[] = [
     id: 'outro',
     card: 'outro',
     title: 'That Is a Card Type',
-    body: 'Change it any time from Edit Cards.',
+    body: 'Change it any time from Card Types.',
   },
 ];

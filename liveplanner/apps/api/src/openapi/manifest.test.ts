@@ -31,6 +31,9 @@ function dispatchedSegments(): Set<string> {
   // A rule email's unsubscribe door, answered ahead of identity (docs/specs/026-plan/automations.md "Typed-in addresses").
   if (/segments\[1\] === 'email-optout'\) return handleEmailOptOut\(/.test(source))
     segments.add('email-optout');
+  // A calendar feed's link, answered ahead of identity (docs/specs/026-plan/calendar-feed.md).
+  if (/segments\[1\] === 'calendar'\) return handleCalendarFeed\(/.test(source))
+    segments.add('calendar');
   // liveplanner's GitHub App doors, answered ahead of identity (docs/specs/026-plan/github-pull-requests.md).
   if (/segments\[1\] === 'github'\) return handleGithub\(/.test(source)) segments.add('github');
   return segments;

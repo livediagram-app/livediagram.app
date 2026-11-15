@@ -1449,30 +1449,4 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     },
     statuses: [204],
   },
-
-  // ---- The move from the old livehuddle.app (docs/specs/015-api/api.md "Migration") ----
-  // One-time doors for the editor's pass after the move, as the browser's own guest or account; an API token is refused (401 identity_required). First-party only.
-  {
-    method: 'POST',
-    path: '/legacy-guest/claim',
-    segment: 'legacy-guest',
-    tag: 'Migration',
-    summary:
-      "Claim what was migrated under the old site's guest id this browser kept, into the caller. 200 `{ merged: false }` for a claim that will never succeed; 503 while accounts is unavailable.",
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { legacyId: { type: 'string' }, signature: { type: ['string', 'null'] } },
-      required: ['legacyId', 'signature'],
-    },
-    responseSchema: {
-      type: 'object',
-      properties: {
-        merged: { type: 'boolean' },
-        reason: { type: 'string', enum: ['unknown', 'claimed'] },
-      },
-      required: ['merged'],
-    },
-    statuses: [200, 400, 401, 429, 503],
-  },
 ];
