@@ -870,7 +870,11 @@ room stream's own `[cli] room …` lines and each request's `[cli] request …` 
 
 Every suite runs on `fakeIo` and `fakeApi` with a fixed clock; none waits on a real timer, the network, git or the
 file system, except `git.test.ts`, which runs a real `git` in a temporary directory and is skipped when `git` is
-absent.
+absent. Every `git` it runs, and every `git` the CLI's `runTool` runs, gets an environment without the repository
+variables (`GIT_DIR`, `GIT_INDEX_FILE`, `GIT_WORK_TREE` and the rest of `gitRepoVars` in `@liveworkspace/cli-kit/git-env`)
+that a git hook exports, so a CLI or a test run inside the pre-push hook never acts on the repository being pushed; the
+test also sets `GIT_CEILING_DIRECTORIES` so git never walks up out of its temporary directory. `git.test.ts` keeps a
+regression test that runs its helper with `GIT_DIR` and `GIT_INDEX_FILE` pointed at a decoy repository.
 
 | Spec rule                                                                                                                  | Test                                                                                   |
 | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
