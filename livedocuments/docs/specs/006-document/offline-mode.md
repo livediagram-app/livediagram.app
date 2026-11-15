@@ -204,6 +204,9 @@ always did.
   disabled with the usual read-only look, and nothing is saved, the room does not connect and
   no request goes out under the placeholder, until the reader resolves and the fresh copy
   lands. A stored role never widens what the reader may do.
+- **A load that starts first still lets it paint.** A guest's sign-in answers from this browser almost
+  at once, so the load often starts before the copy is read. The copy still paints until the load
+  begins to show what it fetched (or finds someone else reading), and the load then replaces it.
 - **The ordinary load catches up** behind it, unchanged: auth, the participant, the
   document and the first tab. Its answer replaces the copy in place (the same tabs by id,
   no opening screen between, nothing typed to lose because editing waited) and its role

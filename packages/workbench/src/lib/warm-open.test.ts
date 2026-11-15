@@ -5,6 +5,7 @@ import {
   expectedReader,
   hashTabId,
   keptWarmTab,
+  markLanding,
   measureAfterPaint,
   readWarmCopy,
   type WarmOpenCopies,
@@ -181,6 +182,23 @@ describe('keptWarmTab', () => {
     expect(keptWarmTab(warm, 't2', 3)).toBeNull();
     expect(keptWarmTab(null, 't1', 3)).toBeNull();
     expect(keptWarmTab(undefined, 't1', 3)).toBeNull();
+  });
+});
+
+describe('markLanding', () => {
+  it('notes the first write to the screen, never a quiet one, and passes every call and value through', () => {
+    const onLand = vi.fn();
+    const setName = vi.fn((n: string) => n.length);
+    const setSelf = vi.fn();
+    const set = markLanding({ setName, setSelf, label: 'x' }, onLand, new Set(['setSelf']));
+    set.setSelf('me');
+    expect(onLand).not.toHaveBeenCalled();
+    expect(setSelf).toHaveBeenCalledWith('me');
+    expect(set.label).toBe('x');
+    expect(onLand).not.toHaveBeenCalled();
+    expect(set.setName('Plan')).toBe(4);
+    expect(onLand).toHaveBeenCalledOnce();
+    expect(setName).toHaveBeenCalledWith('Plan');
   });
 });
 

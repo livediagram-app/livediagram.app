@@ -19,7 +19,11 @@ import { lastSeenCopies } from '@/lib/last-seen';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import type { LiveDoc } from '@livedocuments/api-schema';
 import type { LastSeenCopy } from '@liveworkspace/workbench/lib/api/last-seen-copies';
-import { measureAfterPaint, readWarmCopy } from '@liveworkspace/workbench/lib/warm-open';
+import {
+  markLanding,
+  measureAfterPaint,
+  readWarmCopy,
+} from '@liveworkspace/workbench/lib/warm-open';
 
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
@@ -38,6 +42,14 @@ import { arrivalSetters, DOCUMENT_ARRIVAL, type BootstrapSet } from './document-
 // last-saved/loaded refs are passed as grouped bundles. Auth resolution
 // goes through the tested resolveDocumentSession kernel. Deps array stays
 // [authLoaded, passwordRetry].
+// The setters that say who is reading or prompt for a name: they change nothing a warm paint shows, so a load that has
+// called only these has not landed (markLanding).
+const QUIET_SETTERS: ReadonlySet<string> = new Set([
+  'setSelfParticipant',
+  'setNameConfirmed',
+  'setIdentityPromptOpen',
+]);
+
 export function useIdentityBootstrap(opts: {
   authLoaded: boolean;
   passwordRetry: number;
@@ -86,6 +98,10 @@ export function useIdentityBootstrap(opts: {
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
   const runRef = useRef(0);
   const warmRef = useRef<LastSeenCopy<LiveDoc, unknown> | null>(null);
+  // Whether a load has begun to write the screen (markLanding), and who it resolved as reading: until it has, a warm
+  // read that answers late still paints, for that reader only.
+  const landedRef = useRef(false);
+  const readerRef = useRef<string | null>(null);
   // The tab on screen, for the catch-up to keep (seed-fetched's keepActiveId): a person who moved off the
   // warm-painted tab stays where they went.
   const activeIdRef = useRef(activeId);
@@ -135,7 +151,13 @@ export function useIdentityBootstrap(opts: {
     const generation = ++runRef.current;
     const live = () => runRef.current === generation;
     const resetTabs = guardRun({ resetTabs: opts.resetTabs }, live).resetTabs;
-    const guarded = guardRun(set, live);
+    const guarded = markLanding(
+      guardRun(set, live),
+      () => {
+        landedRef.current = true;
+      },
+      QUIET_SETTERS,
+    );
     const {
       setDocumentId,
       setDocumentNotFound,
@@ -297,6 +319,7 @@ export function useIdentityBootstrap(opts: {
         // immediately echo the same name/color back via PUT.
         lastPersistedSelfRef.current = { name: self.name, color: self.color };
       }
+      readerRef.current = self.id;
       // The warm open painted someone else's copy (a signed-in hint that outlived its session): it leaves the screen
       // at once, and the load opens the document for whoever is reading.
       if (warmRef.current && warmRef.current.reader !== self.id) {
@@ -356,8 +379,12 @@ export function useIdentityBootstrap(opts: {
   // This Browser opens straight from this browser. Share links, embeds and workbenches always wait. A cloud document
   // this browser opened before warm-opens from its last seen copy instead ("Warm open of a cloud document").
   const earlyOpen = useRef(false);
+  const warmTried = useRef(false);
   const tryEarlyOpen = useEffectEvent(async () => {
     if (authLoaded || hydrated || embed || workbench) return;
+    // Once per mount: StrictMode runs the layout effect twice in dev, which painted and measured twice.
+    if (warmTried.current) return;
+    warmTried.current = true;
     const url = new URL(window.location.href);
     const id = documentIdFromPath(url.pathname);
     const shareCode = url.searchParams.get('s');
@@ -375,8 +402,10 @@ export function useIdentityBootstrap(opts: {
       { itemId: id, shareCode, hash: url.hash },
       { signedIn: readSignedInHint(), guestId: getGuestSelfId() },
     );
-    // Too late: the ordinary load has started, and paints what it fetches.
-    if (!copy || runRef.current !== 0) return;
+    // Too late: the ordinary load has begun to show what it fetched, or resolved someone else as reading. A load that
+    // has only started (a guest's auth settles at once) is not: the copy paints and the load replaces it.
+    if (!copy || landedRef.current) return;
+    if (readerRef.current !== null && readerRef.current !== copy.reader) return;
     paintWarm(copy, origin);
   });
   // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,

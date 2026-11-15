@@ -79,6 +79,27 @@ export function keptWarmTab<Tab>(
   return warm && warm.id === id && warm.rev === rev ? (warm.tab as Tab) : null;
 }
 
+/** The setters a load writes the screen through, each first calling `onLand`, except the `quiet` ones (who is reading,
+ *  the name prompt) that change nothing a warm paint shows. A warm read answering after `onLand` has run is too late:
+ *  the load has begun to show what it fetched, so the copy must not paint over it. Until then the read may still paint,
+ *  even once the load has started (a guest's auth settles from the local token almost at once). */
+export function markLanding<S extends object>(
+  set: S,
+  onLand: () => void,
+  quiet: ReadonlySet<string>,
+): S {
+  return new Proxy(set, {
+    get(target, key, receiver) {
+      const value: unknown = Reflect.get(target, key, receiver);
+      if (typeof value !== 'function' || (typeof key === 'string' && quiet.has(key))) return value;
+      return (...args: unknown[]) => {
+        onLand();
+        return (value as (...a: unknown[]) => unknown)(...args);
+      };
+    },
+  });
+}
+
 /** A performance measure named `name` from `from` (the load's start on the performance clock, or now) to the next
  *  frame on screen: the warm paint's and the catch-up's timing marks. */
 export function measureAfterPaint(name: string, from: number | undefined): void {

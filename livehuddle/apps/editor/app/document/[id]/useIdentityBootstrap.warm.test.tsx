@@ -86,7 +86,7 @@ const copyFor = (
 });
 
 type Props = { authLoaded: boolean; accountUserId: string | null; activeId?: string };
-function render(initial: Props) {
+function render(initial: Props, reactStrictMode = false) {
   const fns: Record<string, ReturnType<typeof vi.fn>> = {};
   const set = new Proxy(fns, { get: (t, k: string) => (t[k] ??= vi.fn()) });
   const hook = renderHook(
@@ -110,7 +110,7 @@ function render(initial: Props) {
         },
         set: set as never,
       }),
-    { initialProps: initial },
+    { initialProps: initial, reactStrictMode },
   );
   return { hook, set: fns };
 }
@@ -235,12 +235,57 @@ describe('useIdentityBootstrap warm open', () => {
     expect(set.setLoadingDocument).toBeUndefined();
   });
 
-  it('paints nothing when the ordinary load started first', async () => {
+  // A guest's auth settles from the local token almost at once, so the load often starts before the copy read answers.
+  it('paints when auth settles before the copy read answers, while the load has not landed', async () => {
     let answer: (copy: unknown) => void = () => {};
     copies.read.mockImplementation(() => new Promise((r) => (answer = r)));
-    const { hook } = render({ authLoaded: false, accountUserId: null });
+    let landed: (doc: unknown) => void = () => {};
+    api.apiLoadDocument.mockImplementation(() => new Promise((r) => (landed = r)));
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
     await flush();
     hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    answer(copies.held);
+    await flush();
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+    expect(lastRole(set)).toBe('view');
+    landed(DOC);
+    await flush();
+    expect(lastRole(set)).toBe('edit');
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+    expect(seedDeps.current?.warmFirstTab?.()).toBe(copies.held!.firstTab);
+  });
+
+  it('paints no late copy once the load resolved someone else as reading', async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    let answer: (copy: unknown) => void = () => {};
+    copies.read.mockImplementation(() => new Promise((r) => (answer = r)));
+    api.apiLoadDocument.mockImplementation(() => new Promise(() => {}));
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_b' });
+    await flush();
+    answer(copies.held);
+    await flush();
+    expect(paint).not.toHaveBeenCalled();
+  });
+
+  it('reads and paints once when the layout effect runs twice (StrictMode in dev)', async () => {
+    render({ authLoaded: false, accountUserId: null }, true);
+    await flush();
+    expect(copies.read).toHaveBeenCalledOnce();
+    expect(paint).toHaveBeenCalledOnce();
+  });
+
+  it('paints nothing when the ordinary load landed first', async () => {
+    let answer: (copy: unknown) => void = () => {};
+    copies.read.mockImplementation(() => new Promise((r) => (answer = r)));
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
     answer(copyFor());
     await flush();
     expect(paint).not.toHaveBeenCalled();

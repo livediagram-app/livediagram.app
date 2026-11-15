@@ -114,7 +114,14 @@ getGuestSelfId() })`. `expectedReader`: signed out, the guest token's id; signed
     The copy paints only when `via === shareCode` (null for the own address), `firstTab` is kept, `firstTab.id ===
 firstTabToLoad(item.tabs, access.tabScope)`, and the `#t=` fragment names no other tab of the item. Any failure
     reads as null.
-  - After the read, `runRef.current !== 0` (the ordinary load already started) drops the copy unpainted.
+  - After the read, the copy is dropped unpainted only once the ordinary load has landed: the run's setters are
+    wrapped in `markLanding` (`@liveworkspace/workbench/lib/warm-open`), which sets `landedRef` on the first setter
+    other than the quiet ones (`setSelfParticipant`, `setNameConfirmed`, `setIdentityPromptOpen`), so the seed, a
+    not-found or deleted screen, the password gate, a load error or the someone-else swap all count. A load that has
+    only started still lets the copy paint (a guest's auth settles from the local token almost at once, so it often
+    starts before the read answers), unless it has resolved a reader (`readerRef`) other than the copy's. The
+    load then replaces the copy as any catch-up does. `tryEarlyOpen` runs once per mount (`warmTried`), so
+    StrictMode's second layout effect in dev neither reads, paints nor measures again.
   - **`paintWarm(copy)`**: `makePaintLastSeen(seedDeps(set, resetTabs, false))(copy)`
     shows it as the seed shows a load (placeholder tabs from `item.tabs`, the first filled from `firstTab.tab`, the
     name, deck, active tab, shareable, team and owner fields; nothing fetched, marked loaded, seeded into the autosave
@@ -185,7 +192,7 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
 | A save or follow before the arrival kept the copy        | `current` is not that copy yet: nothing happens; the arrival's keep has the same content                                |
 | The first tab deleted or moved off first                 | `firstTab` becomes null until a save of the new first tab lands                                                         |
 | A refresh's write fails or times out                     | `remember` never rejects; the copy stays as last written and the next refresh tries again                               |
-| Auth answers before the warm read does                   | `runRef.current !== 0`: the copy is dropped unpainted; the ordinary load paints what it fetches                         |
+| Auth answers before the warm read does                   | The copy still paints while the load has not landed (`markLanding`) and resolved no other reader; else dropped          |
 | The read fails, times out or the store is missing        | `readWarmCopy` answers null; the open waits for auth as before                                                          |
 | A stale signed-in hint (signed out in another app)       | The account's copy paints; the participant resolves to someone else, so it leaves the screen for the opening screen     |
 | The `#t=` fragment names another tab                     | No warm open: the copy holds no body for that tab                                                                       |
@@ -314,6 +321,7 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
 | Editor, Viewer, Participant warm opens and roles | each `useIdentityBootstrap.warm.test.tsx` "paints an Editor's copy …", "paints a view/participate link's copy …" |
 | Lost access on catch-up forgets | each `useIdentityBootstrap.warm.test.tsx` "swaps the copy for not found …" |
 | Someone else after all, sign-out cleared, too late | each `useIdentityBootstrap.warm.test.tsx` |
+| A guest whose auth settles before the read answers | `warm-open.test.ts` "markLanding"; each `useIdentityBootstrap.warm.test.tsx` "paints when auth settles before the copy read answers …", "paints no late copy once the load resolved someone else …", "reads and paints once when the layout effect runs twice …" |
 | A link's own address warm-opens by its code, forgets by it | `last-seen-copies.test.ts` "reads the newest copy a share code kept …", "forgets every copy a share code kept …"; `warm-open.test.ts` "reads a share link's own address …"; `editor-arrival.test.ts` "forgets a link's copies by its code …"; each `useIdentityBootstrap.warm.test.tsx` "paints a link's own address …", "forgets a revoked link's copies …" |
 | Other tabs load, the chosen tab is kept | each `editor-page-helpers.test.ts` "loads a tab without a body while the warm open shows …"; each `seed-fetched-*.test.ts` "keeps the tab the person moved to …", "falls back to the first tab …"; each `useIdentityBootstrap.warm.test.tsx` "keeps the tab the person moved to …" |
 | One fit, at the paint | `useTabEntryEffects.test.tsx` "fits the warm-painted tab before hydration …", "waits for the load for a tab without a body …" |
