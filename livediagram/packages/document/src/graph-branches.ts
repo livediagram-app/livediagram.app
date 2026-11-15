@@ -75,6 +75,30 @@ export function withExactEnds(elements: Element[]): Element[] {
   return besideTrunks(merged);
 }
 
+// A flow's lines start exactly on their anchors (docs/specs/008-canvas/arrow-anchors.md "Start at Exact Anchor"), as a
+// flowchart's connectors do in the editor, except where the look keeps an end in its own place: a start that shares
+// its anchor with another end that fans (a dashed line beside a solid trunk, two exits labelled differently) keeps
+// fanning, so it never rides the other line's start. Only a start alone in its anchor's fan turns exact, which leaves
+// every line where the layout drew it; what changes is the arrow's switch, and the next arrow drawn from there.
+export function withExactStarts(elements: Element[]): Element[] {
+  const at = (end: ArrowElement['from']) =>
+    end.kind === 'pinned' ? `${end.elementId}:${end.anchor}` : null;
+  const fanning = new Map<string, number>();
+  const count = (key: string | null) => {
+    if (key) fanning.set(key, (fanning.get(key) ?? 0) + 1);
+  };
+  for (const el of elements) {
+    if (el.type !== 'arrow') continue;
+    if (el.exactStart !== true) count(at(el.from));
+    if (el.exactEnd !== true) count(at(el.to));
+  }
+  return elements.map((el) => {
+    if (el.type !== 'arrow' || el.exactStart !== undefined) return el;
+    const key = at(el.from);
+    return key && fanning.get(key) === 1 ? { ...el, exactStart: true } : el;
+  });
+}
+
 // A side's quarters, the one before its middle and the one after (left to right, top to bottom).
 const QUARTERS: Partial<Record<Anchor, readonly [Anchor, Anchor]>> = {
   n: ['nnw', 'nne'],

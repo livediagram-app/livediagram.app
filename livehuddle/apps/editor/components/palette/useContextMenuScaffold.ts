@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useFlyoutPath } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
@@ -31,19 +32,9 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
     flush: true,
   });
-  // Which side-flyout row (Style / Text / Tools) is open — at most one,
-  // SEPARATE from openSection so a flyout and an inline accordion (or a
-  // sub-accordion inside the flyout, which shares openSection's pool) can
-  // coexist. Lifted here rather than kept in MenuFlyoutSection's local
-  // state so the open flyout survives the menu retargeting to another
-  // element (conditional sibling sections can remount the flyout row,
-  // which wiped local state and collapsed the category mid-workflow).
-  const [openFlyout, setOpenFlyout] = useState<string | null>(null);
-  const flyoutProps = (id: string) => ({
-    open: openFlyout === id,
-    onToggle: () => setOpenFlyout((f) => (f === id ? null : id)),
-    flush: true,
-  });
+  // Which side-flyout rows (Style / Text / Tools) are open, one per level: the shared open path
+  // (useFlyoutPath), so a flyout nested in another keeps its parent open.
+  const flyoutProps = useFlyoutPath();
   // Which colour row's inline palette is open — at most one, toggled by
   // re-clicking the row so it never sticks open.
   const [openColor, setOpenColor] = useState<string | null>(null);

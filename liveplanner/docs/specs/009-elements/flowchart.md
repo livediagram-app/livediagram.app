@@ -66,7 +66,8 @@ branches into one step) and **loop** (an arrow back to an earlier step), which a
 
 A new step's connector is an **angled** arrow with an arrowhead at the step it enters, the
 flowchart idiom; if the chart already has connectors, it copies their look
-instead.
+instead. It **starts at the exact anchor** (`exactStart: true`, set by the shared growth planner), so a step's exits
+leave one point; connectors already stored keep what they have.
 
 **Decisions label their exits.** A connector leaving a Decision is labelled **"Yes"** if no exit of
 that Decision says Yes yet, else **"No"** if none says No; a third exit is unlabelled. The labels

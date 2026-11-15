@@ -87,6 +87,12 @@ A new step's connector is an **angled** arrow with an arrowhead at the step it e
 flowchart idiom; if the chart already has connectors, it copies their look (`paintableArrowFields`)
 instead.
 
+A new connector **starts at the exact anchor** (`exactStart`, [Arrow anchors](../008-canvas/arrow-anchors.md) "Start
+at Exact Anchor"): Add Step, a template, an agent's `connect`, and an arrow drawn from a step all make it so, and so do
+graph input's `flow` style and the Mermaid import where nothing else fans at that start. A step's exits leave one
+point, where the layout's routes are measured from. The arrow's switch turns it off; connectors already in a chart keep
+what they have, and laying the chart out again never changes it.
+
 **Decisions label their exits.** A connector leaving a Decision is labelled **"Yes"** if no exit of
 that Decision says Yes yet, else **"No"** if none says No; a third exit is unlabelled. The labels
 are ordinary arrow labels: edit them to anything. The rule applies however the exit was made: Tab,

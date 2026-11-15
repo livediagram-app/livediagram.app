@@ -84,6 +84,8 @@ export function createDragRelease({
       from: placed.from,
       to: { kind: 'free', x: cursor.x, y: cursor.y },
       ...(placed.strokeColor ? { strokeColor: placed.strokeColor } : {}),
+      // The same start as the arrow it chains from: exact off a mind node or a flowchart step, unless switched off.
+      ...(placed.exactStart !== undefined ? { exactStart: placed.exactStart } : {}),
     });
     d.commit((els) => [...els, arrow]);
     d.setSelectedId(arrow.id);

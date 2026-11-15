@@ -227,7 +227,12 @@ export function mindGrowFor<E extends ModelElement>(deps: MindGrowDeps<E>) {
     const [pa, ca] = mindConnectorAnchors(flow, parentAt, node);
     return {
       node,
-      arrow: { ...deps.createPinnedArrow(parent.id, pa, node.id, ca), id: ids.arrow },
+      // A mind connector starts at the exact anchor (exact-start.ts), so a parent's children share one start.
+      arrow: {
+        ...deps.createPinnedArrow(parent.id, pa, node.id, ca),
+        id: ids.arrow,
+        exactStart: true,
+      },
       moves,
       reanchored,
       styleFrom,
