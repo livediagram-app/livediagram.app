@@ -143,9 +143,13 @@ it has no Make a Copy.
 
 ## In the editor
 
-- **History** is a header action, first among the right edge's (the shared `EditorHeader`'s `leadAction`), for every
-  role, on a document stored on the server (not in This Browser, not in an embed or workbench frame), once the
-  document is up. Its glyph is a clock with an arrow turning back. It opens **Version History** on the open tab.
+- **History** sits in the editor's footer cluster (`ChromeControls`, [Editor app](../007-editor/editor-app.md) "Tab
+  bar") between **Search** and **Settings**, as liveplanner's Automations does, for every role, on a document stored
+  on the server (not in This Browser, not in an embed or workbench frame), once the document is up. Its glyph is a
+  clock with an arrow turning back; it is labelled **History** from `sm` up like its neighbours (unless **Button
+  Labels** is off) and icon-only on a phone (a 40 px target, its name kept as its accessible name). Its hover card
+  reads **Version History**: "Look back at earlier versions of this tab, and restore one." It opens **Version
+  History** on the open tab. The header carries no History. The Explorer's bottom bar has none.
 - **Version History** covers the editor, header included, until closed (Close, or Escape): the version's pages on
   the left, drawn as the export draws them, and the rail of versions on the right (a sheet under the pages on a
   phone). Its own bar holds Close, the title "Version History" and, when the document has more than one tab the
@@ -196,7 +200,7 @@ gate), `400 invalid_name` (a name of nothing), `409 too_many_names`, `409 tab_bu
 
 - Logs: `[versions] kept` (kind, tab, revision, bytes), `[versions] pruned` (how many), `[versions] restored` and
   `[versions] copied` (tab, version, changeset), `[versions] refused` (the reason), never content.
-- Telemetry: `Version·Opened·Header` (the panel opened), `Version·Named` (`Editor`), `Version·Restored` and
+- Telemetry: `Version·Opened·Footer` (the footer's History opened the panel), `Version·Named` (`Editor`), `Version·Restored` and
   `Version·Copied` typed by the front door (`Editor`, `Mcp`, `Cli`, `Api`), `Version·Undone·Editor` (the toast's
   Undo) ([Telemetry](../017-telemetry/telemetry.md)).
 

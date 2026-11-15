@@ -101,7 +101,9 @@ invalid_name`. Names the row for the stored revision or inserts a `manual` row; 
   <when>" with Undo, which restores `undoVersionId` the same way and reads "Restore undone".
 - **VH19 editor gate.** Name, Restore and Make a Copy render only when `can.edit` (Make a Copy also needs no tab
   scope); History renders when the document is server-stored, hydrated, not offline, not embedded and not in a
-  workbench frame, and no welcome is open.
+  workbench frame, no welcome is open and no Community visitor holds the session. It is the footer's
+  (`HistoryButton` in `ChromeControls` between Search and Settings, passed down as the tab bar's `onOpenHistory`),
+  never the header's: `EditorHeader` gets no `leadAction`.
 
 ## Errors and edge cases
 
