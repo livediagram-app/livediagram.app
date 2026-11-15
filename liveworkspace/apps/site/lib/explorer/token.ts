@@ -7,7 +7,7 @@
 
 import type { AppName } from '@liveworkspace/sites';
 import { ACCOUNT_ROUTE } from '@liveworkspace/sites/workspace-proxy';
-import { appAccount, appGuestTokens } from './app-session';
+import { appAccountAnswer, appGuestTokens, APP_TOKEN_TIMEOUT_MS } from './app-session';
 import { pageApp } from './page-app';
 
 export type WorkspaceIdentity = {
@@ -26,7 +26,9 @@ let current: WorkspaceIdentity | null = null;
 let pending: Promise<WorkspaceIdentity | null> | null = null;
 
 async function appIdentity(app: AppName): Promise<WorkspaceIdentity | null> {
-  const account = await appAccount();
+  const { account, reached } = await appAccountAnswer();
+  // The app gave no answer in time: not a guest, so no guest handoff; the Explorer says it couldn't reach the account.
+  if (!reached) return null;
   if (account) {
     return {
       token: account.token,
@@ -67,7 +69,12 @@ function subOf(token: string): string {
 function fetchIdentity(): Promise<WorkspaceIdentity | null> {
   const app = pageApp();
   if (app) return appIdentity(app);
-  return fetch(WORKSPACE_TOKEN_URL, { credentials: 'same-origin', cache: 'no-store' })
+  return fetch(WORKSPACE_TOKEN_URL, {
+    credentials: 'same-origin',
+    cache: 'no-store',
+    // Given up on as the app's own token answer is (a stalled fetch never holds the Explorer on its placeholders).
+    signal: AbortSignal.timeout(APP_TOKEN_TIMEOUT_MS),
+  })
     .then(async (res) => {
       if (!res.ok) return null;
       const body = (await res.json()) as Partial<WorkspaceIdentity>;

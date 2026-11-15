@@ -46,7 +46,7 @@ export type AppAccount = {
 
 const RENEW_BEFORE_MS = 60_000;
 let account: AppAccount | null = null;
-let accountPending: Promise<AppAccount | null> | null = null;
+let accountPending: Promise<AppAccountAnswer> | null = null;
 let answered = false;
 
 function cookie(name: string): string | null {
@@ -64,36 +64,51 @@ function nameOf(user: Record<string, unknown> | null): string {
   return text(user?.givenName) ?? text(user?.name) ?? text(user?.email) ?? 'Your account';
 }
 
-async function askToken(): Promise<AppAccount | null> {
+// The app's answer about its session: `reached` false when it gave none (no answer in APP_TOKEN_TIMEOUT_MS, a network
+// error, or a 5xx such as the API's 503 when the accounts site didn't answer it), which is not "signed out": the
+// Explorer says it couldn't reach the account rather than starting a guest's handoff.
+export type AppAccountAnswer = { account: AppAccount | null; reached: boolean };
+
+// The app's token answer, given up on after this long (a stalled fetch behind the router, 2026-11-15), so the
+// Explorer never waits on it for good.
+export const APP_TOKEN_TIMEOUT_MS = 10_000;
+
+async function askToken(): Promise<AppAccountAnswer> {
   try {
-    const res = await fetch('/api/auth/token', {
-      method: 'POST',
-      credentials: 'same-origin',
-      cache: 'no-store',
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) return null;
-    const body = (await res.json()) as {
-      signedIn?: boolean;
-      accessToken?: unknown;
-      expiresAt?: unknown;
-      user?: Record<string, unknown> | null;
-    };
-    if (!body.signedIn || typeof body.accessToken !== 'string') return null;
-    const sub = text(body.user?.id) ?? '';
-    return {
-      token: body.accessToken,
-      expiresAt: typeof body.expiresAt === 'number' ? body.expiresAt : Date.now() + 5 * 60_000,
-      sub,
-      name: nameOf(body.user ?? null),
-      fullName: body.user ? fullNameOf(body.user) : null,
-      colour: accountColourOf(body.user),
-      picture: accountPictureOf(body.user),
-      email: text(body.user?.email),
-    };
+    return { account: await askTokenOnce(), reached: true };
   } catch {
-    return null;
+    return { account: null, reached: false };
   }
+}
+
+async function askTokenOnce(): Promise<AppAccount | null> {
+  const res = await fetch('/api/auth/token', {
+    method: 'POST',
+    credentials: 'same-origin',
+    cache: 'no-store',
+    headers: { accept: 'application/json' },
+    signal: AbortSignal.timeout(APP_TOKEN_TIMEOUT_MS),
+  });
+  if (res.status >= 500) throw new Error(`the app's token answer was ${res.status}`);
+  if (!res.ok) return null;
+  const body = (await res.json()) as {
+    signedIn?: boolean;
+    accessToken?: unknown;
+    expiresAt?: unknown;
+    user?: Record<string, unknown> | null;
+  };
+  if (!body.signedIn || typeof body.accessToken !== 'string') return null;
+  const sub = text(body.user?.id) ?? '';
+  return {
+    token: body.accessToken,
+    expiresAt: typeof body.expiresAt === 'number' ? body.expiresAt : Date.now() + 5 * 60_000,
+    sub,
+    name: nameOf(body.user ?? null),
+    fullName: body.user ? fullNameOf(body.user) : null,
+    colour: accountColourOf(body.user),
+    picture: accountPictureOf(body.user),
+    email: text(body.user?.email),
+  };
 }
 
 // ---------- The e2e stack's session (test builds only) ----------------------------------------------------------
@@ -147,19 +162,28 @@ export function e2eAccount(
 /** The person signed in to the app this page is on, or null (a guest, or liveworkspace.app). Asks the app's API only
  *  when its hint cookie says there is a session to ask about. */
 export function appAccount(now = Date.now()): Promise<AppAccount | null> {
+  return appAccountAnswer(now).then((answer) => answer.account);
+}
+
+/** As appAccount, saying too whether the app answered in time (`reached`). */
+export function appAccountAnswer(now = Date.now()): Promise<AppAccountAnswer> {
   const app = pageApp();
-  if (!app) return Promise.resolve(null);
+  const answer = (found: AppAccount | null) => Promise.resolve({ account: found, reached: true });
+  if (!app) return answer(null);
   // Test builds only: the e2e stack's session stands in for the app's cookie.
   const e2e = e2eAccount(app);
-  if (e2e) return Promise.resolve(e2e);
-  if (account && account.expiresAt - RENEW_BEFORE_MS > now) return Promise.resolve(account);
+  if (e2e) return answer(e2e);
+  if (account && account.expiresAt - RENEW_BEFORE_MS > now) return answer(account);
   const hint = SIGNED_IN_HINTS[app];
   if (!hint || cookie(hint) !== '1') {
     account = null;
-    return Promise.resolve(null);
+    return answer(null);
   }
-  accountPending ??= askToken().then((found) => {
+  accountPending ??= askToken().then((asked) => {
     accountPending = null;
+    // No answer in time says nothing about the session: nothing kept, and no silent sign-in on it.
+    if (!asked.reached) return asked;
+    const found = asked.account;
     account = found;
     // The page's first answer: a hint that outlived its session (it ended in another app) lets the silent sign-in
     // ask again (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session"). Later answers
@@ -168,7 +192,7 @@ export function appAccount(now = Date.now()): Promise<AppAccount | null> {
       answered = true;
       retrySilentSignIn();
     }
-    return found;
+    return asked;
   });
   return accountPending;
 }

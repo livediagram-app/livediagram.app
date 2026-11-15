@@ -726,6 +726,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
   'Home|Loaded|Retry': 'Someone pressed "Try again" after Home failed to load.',
+  'Home|Loaded|Stalled':
+    "The Explorer couldn't learn who the person is in time (the account didn't answer) and showed Try Again instead of its placeholders.",
   'Home|Opened|Group':
     "Someone expanded a summary of several people's work on one document in Home's What Happened, to see every action.",
   'Home|Opened|Landing':

@@ -732,6 +732,69 @@ Toggled · ActivityOn`. The tab bar is `ItemPanelTabs.tsx`. `CardThreads` draws 
   the panel in a React `<ViewTransition>` that animates only on that type; `globals.css` gives the
   `item-panel-resize` group the `short` duration (200 ms), compositor-only.
 
+## Flow counts
+
+The plan's daily flow counts (spec items.md "Flow counts"): how many cards of each type stood in each status at the
+end of each UTC day, kept by triggers on `items` in the plan's own SQLite, read for a range by the flow charts (spec
+plan-views.md "Flow charts"; their read route is part 2 of Work Tracker 854).
+
+### Pure core (`packages/items/src/flow-counts.ts`)
+
+- `FLOW_DAYS_MAX` = 180, `FLOW_NO_STATUS` = `''`; `FlowCountRow = { day, type, status, cards }`; `FlowCounts = {
+fromDay, days, countedFrom: number | null, byStatus: Map<status, number[]> }`.
+- `flowDayOf(ms)`: `Math.floor(ms / DAY_MS)`, the numbering `plan-view-dates.ts` uses.
+- `flowCountsOf(rows, fromDay, toDay, types?)`: the range clamped to its newest `FLOW_DAYS_MAX` days. Rows after
+  `toDay` are ignored; each stored day's rows are summed per status over the card types in `types` (all when absent),
+  `TRASH_STATUS` left out, a negative count read as 0. Day `i` reads its own stored day, else the last stored day before
+  it (the newest stored day at or before `fromDay` seeds it). A status that is 0 on every day of the range is dropped.
+  `countedFrom` is the index of the first stored day (0 when it is before the range), null with none by `toDay`.
+  Linear in rows plus days times statuses.
+
+### Storage (plan schema step V29, `plan-room/flow-counts-schema.ts`)
+
+```sql
+CREATE TABLE IF NOT EXISTS flow_counts (
+  plan_id TEXT    NOT NULL,
+  day     INTEGER NOT NULL,                -- flow day: whole UTC days since 1970
+  type    TEXT    NOT NULL,                -- items.type
+  status  TEXT    NOT NULL,                -- fields.status, '' for none (FLOW_NO_STATUS)
+  cards   INTEGER NOT NULL,
+  PRIMARY KEY (plan_id, day, type, status)
+) WITHOUT ROWID;
+```
+
+- Today in SQL is `CAST(julianday('now') - 2440587.5 AS INTEGER)`, the same for a statement and every trigger it
+  fires. A row's status is `COALESCE(json_extract(fields, '$.status'), '')`.
+- The step seeds today's rows, `INSERT ... SELECT plan_id, today, type, status, COUNT(*) FROM items GROUP BY plan_id,
+type, status`, only for a plan holding no row yet, so it runs again harmlessly.
+- Three triggers, each first **carrying** the plan's newest stored day into today when it is before today (`INSERT
+... SELECT ... WHERE day = MAX(day) AND day < today AND cards <> 0`: a zero is not carried), then applying its
+  change with `INSERT ... ON CONFLICT (plan_id, day, type, status) DO UPDATE SET cards = cards + excluded.cards` (an
+  upsert, as `item_repeats`' triggers use, never an `OR` conflict policy, which the firing statement's would override):
+  - `flow_counts_insert` `AFTER INSERT ON items`: +1 for `NEW`.
+  - `flow_counts_update` `AFTER UPDATE OF type, fields ON items WHEN NEW.type IS NOT OLD.type OR` the status differs:
+    -1 for `OLD`, +1 for `NEW`. A rank, title, flag or archive edit does not fire it.
+  - `flow_counts_delete` `AFTER DELETE ON items` (a delete for good, Empty Trash, a cascade): -1 for `OLD`.
+- No foreign key: a plan's purge drops its whole database (`storage.deleteAll`), and a key to `plan` would make the
+  delete trigger of a cascaded card fail the plan's own delete.
+- `apps/api/src/db/flow-counts.ts`:
+  - `readFlowCounts(env, projectId, fromDay, toDay)`: `SELECT day, type, status, cards ... WHERE plan_id = ?1 AND day
+<= ?3 AND day >= COALESCE((SELECT MAX(day) ... WHERE day <= ?2), ?2) ORDER BY day`: the range's rows and its
+    baseline day's, two seeks on the primary key.
+  - `deleteOldFlowCounts(env, today)`: `DELETE ... WHERE day < (SELECT MAX(day) ... WHERE day <= today -
+FLOW_DAYS_MAX)`, so the last day before the kept range stays as the baseline. Called by the daily upkeep
+    (`plan-room-content.ts` `maintain`) after the history sweep; logs `[items] flow.retention` with the count.
+- Copies, project files and offline records never read the table; a new plan's own inserts start its counts on the
+  day it is made. This Browser plans have no plan room and keep none.
+
+### Parts still to build (Work Tracker 854)
+
+- Part 2: cycle time and throughput from card history (a new flow metrics module in `@liveplanner/items`), a plan-wide read of
+  history's moves in a range (bounded by `FLOW_DAYS_MAX`), and `GET /projects/:id/flow?types=&days=` answering all
+  three charts' data, gated `read`, with role and tab-scope tests and a 2,000-card budget.
+- Part 3: the three visualisations ([plan-views blueprint](plan-views.md#flow-charts)).
+- Part 4: the agents' doors and fold-back.
+
 ## Live: room op
 
 `packages/api-schema/src/room-messages.ts` adds
@@ -970,13 +1033,21 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 - Repeats: a plan with no repeating card does no repeat work: no alarm, and per write the triggers' `json_extract`
   reads plus one indexed `LIMIT 1` probe of an empty table (measured in `card-repeats.test.ts`). A wake handles at
   most `REPEAT_COPIES_PER_WAKE` rows of each kind; the store is listed once per wake, not per copy.
+- Flow counts: a write that changes no status or type pays the update trigger's two `json_extract` reads; one that
+  does pays one primary-key seek (the carry's `MAX(day)`) and one or two upserts. Measured on node:sqlite with every
+  schema step and the other `items` triggers (`db/flow-counts.test.ts` holds the budgets): 2,000 cards made in one
+  transaction 12.4 ms without the triggers and 23 ms with them; all 2,000 moved in one statement 5.1 ms and 14.5 ms;
+  one move 0.066 ms and 0.074 ms. Storage is a row per type and status a day holds, only on a day with a change:
+  a real plan's dozen or two pairs over 181 days is about 4,000 rows; the bound is `ITEMS_MAX` non-zero pairs a day.
+  `flowCountsOf` over that bound (360,000 rows) measures 51 ms, over a real plan's 4,300 rows 0.4 ms
+  (`flow-counts.test.ts` holds a budget at the bound).
 
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
 `items.refetch.gap`, `items.refetch.stale`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
 `comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api), `history.read`,
-`history.append.failed`, `history.retention` (api), `items.history.failed` (editor), `[repeats] made`,
+`history.append.failed`, `history.retention`, `flow.retention` (api), `items.history.failed` (editor), `[repeats] made`,
 `[repeats] settled` (a copy already there), `[repeats] items_full`, `[repeats] failed` (api). Api logs never
 include `fields` or comment text.
 
@@ -1009,6 +1080,8 @@ include `fields` or comment text.
 | History: changes, values, grouping, redaction        | `packages/items/src/item-history.test.ts`                                                                                                                                                                                                                 |
 | History: storage, bounds, cascade, no D1             | `apps/api/src/db/item-history.test.ts`, `apps/api/src/plan-room/plan-schema.test.ts`                                                                                                                                                                      |
 | History: writes tagged, roles, scope, redacted       | `apps/api/src/routes/item-history-route.test.ts`                                                                                                                                                                                                          |
+| Flow counts: carry, Trash, types, range, bound       | `packages/items/src/flow-counts.test.ts`                                                                                                                                                                                                                  |
+| Flow counts: triggers, seed, read, trim, 2,000 cards | `apps/api/src/db/flow-counts.test.ts` (step seed and rerun included)                                                                                                                                                                                      |
 | History: Activity tab, timeline, words, offline      | `apps/editor/components/plan/threads/CardActivity.test.tsx`, `apps/editor/components/plan/threads/activity-words.test.ts`, `apps/editor/components/plan/threads/activity-ai-words.test.ts`                                                                |
 | Item panel: tabs, phone order, Activity read, resize | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/threads/activity-timeline.test.ts`, `apps/editor/components/plan/item-panel-size.test.ts`                                                                             |
 | Tab export: items, catalogue, Markdown, layout       | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                                                                                            |
@@ -1049,6 +1122,8 @@ include `fields` or comment text.
 | `ITEM_HISTORY_LIST_MAX`     | 12                        | `ITEM_LABELS_MAX`                                       |
 | `ITEM_HISTORY_CHANGES_MAX`  | 16                        | Bounds one entry; a write changes a few fields          |
 | `ITEM_HISTORY_REFETCH_MS`   | 400                       | As `ITEM_REFETCH_DEBOUNCE_MS`                           |
+| `FLOW_DAYS_MAX`             | 180                       | Card 854 answer (b); `ITEM_HISTORY_MAX_AGE_MS` in days  |
+| `FLOW_NO_STATUS`            | `''`                      | The key is never null; no status a column can hold      |
 | `ACTIVITY_ENTRIES_SHOWN`    | 20                        | Spec; a tab's worth before Show More                    |
 | `REPEAT_COPIES_PER_WAKE`    | 25                        | Bounds one alarm's work; 10 to 100                      |
 | `REPEAT_MORE_MS`            | 1000                      | The next wake while rows remain; 0.5 to 10 s            |
