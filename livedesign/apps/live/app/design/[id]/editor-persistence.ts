@@ -21,12 +21,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [designName, setDesignName] = useState(UNTITLED_DESIGN_NAME);
-  // Reflect the design name in the browser tab so users with many
-  // tabs open can spot the right one. Falls back to the bare brand
-  // until hydration lands the real name.
-  useEffect(() => {
-    document.title = designName ? `${designName} | livedesign` : 'livedesign';
-  }, [designName]);
+  // The browser tab's title follows the name in editor-page.tsx (useBrowserTabTitle).
 
   // Brief error string surfaced by the Import-tab flow when the
   // picked file is malformed or its schema is newer than this

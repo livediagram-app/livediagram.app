@@ -292,6 +292,7 @@
     "./hooks/canvas/useAutoCopyParam": "./src/hooks/canvas/useAutoCopyParam.ts",
     "./hooks/canvas/useItemActions": "./src/hooks/canvas/useItemActions.ts",
     "./hooks/canvas/useVoteReviewOpener": "./src/hooks/canvas/useVoteReviewOpener.ts",
+    "./hooks/editor/useBrowserTabTitle": "./src/hooks/editor/useBrowserTabTitle.ts",
     "./hooks/editor/createEditorContext": "./src/hooks/editor/createEditorContext.ts",
     "./hooks/editor/useEditorDialogs": "./src/hooks/editor/useEditorDialogs.ts",
     "./hooks/editor/useFormatTool": "./src/hooks/editor/useFormatTool.ts",

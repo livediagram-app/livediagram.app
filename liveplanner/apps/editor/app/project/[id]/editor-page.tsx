@@ -30,7 +30,7 @@ import { projectIdFromPath, isEditorPath } from '@/lib/editor-path';
 import { planGrantRefusal } from '@/lib/api/plan-grants';
 import { archivedByIndex, archivedChangeFolderHref } from '@liveworkspace/workbench/lib/archived';
 import { useArchivedAddress } from '@liveworkspace/workbench/lib/useArchivedAddress';
-import { useBrowserTabTitle } from '@/hooks/ui/useBrowserTabTitle';
+import { useBrowserTabTitle } from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,

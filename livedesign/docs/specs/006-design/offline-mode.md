@@ -214,6 +214,13 @@ always did.
   the deleted card, the password gate) and forgets the copy; a share link's copies go by its code
   too, as its own address names no design. A load that cannot reach the
   server ends on its error screen and keeps the copy.
+- **Never a wrong not found.** A load that ends on not found after a warm paint is checked once by an
+  ordinary open: the copy is forgotten and the page reloads, cold. A session that answered late or settled
+  as a guest (so the design's owner read as someone else) gets a fresh start, and only that cold open's not
+  found ever shows. Once per design per browser tab session, so a design that really is gone costs one
+  reload, never a loop; the console says why (`[load] warm-open-fallback <reason>`).
+- **The tab title** names the design from the warm paint on, and comes back if the framework rewrites the
+  page's title after it (the static export's not-found route sets its own).
 - **Other tabs wait for the load.** The copy holds the first tab's body only: moving to
   another tab during the warm paint shows the tab loader, never a blank canvas, and the
   catch-up keeps the tab the reader moved to (when the design still has it and the link's

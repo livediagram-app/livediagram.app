@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
+import { useBrowserTabTitle } from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
 import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import {
@@ -93,10 +94,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   );
   // Tab title reflects the document: "<name> | livedocuments" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
-  useEffect(() => {
-    const name = state.documentName?.trim();
-    document.title = `${name || 'Untitled document'} | livedocuments`;
-  }, [state.documentName]);
+  useBrowserTabTitle(`${state.documentName?.trim() || 'Untitled document'} | livedocuments`);
   const {
     documentNotFound,
     loadError,
