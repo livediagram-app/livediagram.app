@@ -857,6 +857,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/calendar/{projectId}/{token}.ics',
+    segment: 'calendar',
+    tag: 'Calendar',
+    summary:
+      "A person's calendar feed of the plan's card dates, as iCalendar (RFC 5545) for Google Calendar, Outlook or Apple Calendar: each card with a Start or Due day as an all-day event linking back to it, at most 500. The feed token (lpf_…) is the whole proof; the person must still be the plan's owner or in its team, checked on every fetch. Cached five minutes, with an ETag and 304. Every unknown token, lost access or deleted plan answers the same 404; 503 when access cannot be checked.",
+    auth: 'public',
+    statuses: [200, 304, 404, 405, 429, 503],
+  },
+  {
+    method: 'GET',
     path: '/projects/{id}/github',
     segment: 'projects',
     tag: 'GitHub',

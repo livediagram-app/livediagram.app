@@ -271,6 +271,10 @@ export async function anonymisePlan(
         'UPDATE agent_changesets SET author_id = ?, author_name = ? WHERE plan_id = ? AND author_id = ?',
       )
       .bind(ANONYMISED_PERSON, ANONYMISED_NAME, planId, personId),
+    // Their calendar feed on the plan (docs/specs/026-plan/calendar-feed.md "The feed link").
+    db
+      .prepare('DELETE FROM calendar_feeds WHERE plan_id = ? AND person_id = ?')
+      .bind(planId, personId),
     db
       .prepare('UPDATE plan SET owner_id = ? WHERE id = ? AND owner_id = ?')
       .bind(ANONYMISED_PERSON, planId, personId),
