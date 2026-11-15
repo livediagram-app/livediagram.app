@@ -41,7 +41,7 @@ export interface AccountClaims {
   emailVerified: boolean;
   scopes: string[];
   // The teams the account is in, as liveworkspace minted them into the token; null from a token
-  // minted before teams were in it. Up to an hour old, so an app reads it as a sign its own copy may
+  // minted before teams were in it. Up to 15 minutes old, so an app reads it as a sign its own copy may
   // be behind, never as who may see what (liveworkspace/docs/specs/003-accounts/accounts.md "Teams").
   teams: TeamClaim[] | null;
 }
