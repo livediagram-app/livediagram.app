@@ -98,6 +98,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone switched on the Laser pointer, a trail visible to everyone that shows where they're pointing without leaving a mark.",
   'Canvas|Used|Inspect':
     'Someone switched on Inspect on a wireframe, to read an element’s size, spacing, colours and type.',
+  'Canvas|Used|Prototype':
+    'Someone played a wireframe tab in Prototype mode, from the header or a prototype link.',
   'Canvas|Used|Spotlight':
     "Someone switched on Spotlight, which dims the rest of the canvas around wherever they're pointing.",
   'Canvas|Zoomed|DoubleTap':
@@ -944,6 +946,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone copied an embed URL or an iframe snippet from the Share dialog's Embed menu.",
   'UI|Copied|LiveImage':
     "Someone copied a live-updating image URL from the Share dialog's Live Image menu.",
+  'UI|Copied|PrototypeLink': 'Someone copied a link that opens a wireframe tab in Prototype mode.',
   'UI|Copied|ShareLink': 'Someone copied a share link to the clipboard.',
   'UI|Copied|TeamInviteLink': "Someone copied a team's shareable invite link to their clipboard.",
   'UI|Ended|ShareTourCompleted': "Someone reached the end of the Share dialog's Show Me tour.",

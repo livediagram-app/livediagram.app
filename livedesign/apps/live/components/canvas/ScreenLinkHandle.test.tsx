@@ -4,7 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { layOutPages, type Page } from '@livedesign/design';
 import {
   dropTarget,
+  pillShift,
   SCREEN_LINK_DRAG_SLOP_PX,
+  SCREEN_LINK_PILL_MARGIN_PX,
   SCREEN_LINK_HANDLE_GAP_PX,
   SCREEN_LINK_HANDLE_PX,
   ScreenLinkHandle,
@@ -140,5 +142,45 @@ describe('dropTarget', () => {
     expect(dropTarget(pages, middleOf(first.rect), 'page-1')).toBeNull();
     expect(dropTarget(pages, middleOf(first.rect), undefined)?.id).toBe('page-1');
     expect(dropTarget(pages, { x: -9000, y: 0 }, 'page-1')).toBeNull();
+  });
+});
+
+// docs/specs/007-editor/wireframe-pages.md "Setting a link": the screen's name pill stays inside the window when the
+// screen's corner is off it.
+describe('the drag pill', () => {
+  const M = SCREEN_LINK_PILL_MARGIN_PX;
+
+  it('shifts a pill past any edge back inside, and leaves one inside alone', () => {
+    expect(pillShift({ left: -50, top: -30, right: 50, bottom: -10 }, 800, 600, M)).toEqual({
+      x: 58,
+      y: 38,
+    });
+    expect(pillShift({ left: 760, top: 590, right: 860, bottom: 620 }, 800, 600, M)).toEqual({
+      x: -68,
+      y: -28,
+    });
+    expect(pillShift({ left: 100, top: 100, right: 200, bottom: 120 }, 800, 600, M)).toEqual({
+      x: 0,
+      y: 0,
+    });
+  });
+
+  it('keeps the left edge of a pill wider than the window in', () => {
+    expect(pillShift({ left: 20, top: 100, right: 900, bottom: 120 }, 800, 600, M).x).toBe(-12);
+  });
+
+  it('moves the drawn pill inside the window while dragging', () => {
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ left: -40, top: -20, right: 60, bottom: 4 } as DOMRect);
+    const { handle } = mount();
+    dragTo(handle, middleOf(second.rect), false);
+    const wrap = document.querySelector<HTMLElement>('[data-screen-link-target-shift]')!;
+    expect(wrap.style.transform).toBe(`translate(${M + 40}px, ${M + 20}px)`);
+    // Measured again on the next frame of the drag, the pill already in: the shift holds.
+    rect.mockReturnValue({ left: M, top: M, right: M + 100, bottom: M + 24 } as DOMRect);
+    fireEvent.pointerMove(handle, { pointerId: 1, ...clientOf(middleOf(second.rect)) });
+    expect(wrap.style.transform).toBe(`translate(${M + 40}px, ${M + 20}px)`);
+    rect.mockRestore();
   });
 });
