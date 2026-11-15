@@ -2,8 +2,10 @@
 // The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): the call's buttons on a card of their own,
 // bottom centre, named on a desktop and glyphs alone on a phone, the Screen Share group after them while you share.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetCallSelf, setCallActions, setCallSelf, type CallSelf } from '@/lib/calls/calls-store';
+import { closeMiniView } from '@/lib/mini-view/mini-view-window';
+import { fakePipWindow, installPip, removePip } from '@/test/fake-pip-window';
 import { CallDock } from './CallDock';
 
 const mobile = vi.hoisted(() => ({ value: false }));
@@ -135,5 +137,55 @@ describe('CallDock', () => {
     expect(onContextMenu).not.toHaveBeenCalled();
     // The browser's own menu is kept away too.
     expect(menu).toBe(false);
+  });
+
+  // The mini view's Pop Out (avatar-mode.md "The mini view"): last on the dock, only where the browser can open one,
+  // for every share role, behind a divider whenever something precedes it.
+  describe('Pop Out', () => {
+    beforeEach(() => {
+      installPip(fakePipWindow());
+    });
+    afterEach(() => {
+      closeMiniView();
+      removePip();
+    });
+
+    const popOut = () => screen.getByRole('button', { name: 'Pop Out' });
+
+    it.each([
+      ['an Editor', { ...live, canShare: true }],
+      ['a Participant', { ...live, canShare: false }],
+      ['a Viewer', { phase: 'live', canSpeak: false, canShare: false }],
+    ] as const)('ends the dock for %s, after a divider', (_role, self) => {
+      render(<CallDock />);
+      show(self);
+      const button = popOut();
+      expect(card().lastElementChild?.contains(button)).toBe(true);
+      const group = screen.getByRole('group', { name: 'Call' });
+      expect(group.nextElementSibling?.hasAttribute('data-strip-divider')).toBe(true);
+    });
+
+    it('stands alone, with no divider, on a Viewer’s dock with no call and no preview', () => {
+      render(<CallDock />);
+      show({ available: false, canSpeak: false });
+      expect(card().querySelector('[data-strip-divider]')).toBeNull();
+      expect(card().childElementCount).toBeGreaterThan(0);
+      expect(popOut()).toBeTruthy();
+    });
+
+    it('follows the Screen Share group while you share', () => {
+      render(<CallDock />);
+      show({ ...live, screen: 'on' });
+      const share = screen.getByRole('group', { name: 'Screen Share' });
+      expect(share.nextElementSibling?.hasAttribute('data-strip-divider')).toBe(true);
+      expect(card().lastElementChild?.contains(popOut())).toBe(true);
+    });
+
+    it('is absent where the browser has no Document Picture-in-Picture', () => {
+      removePip();
+      render(<CallDock />);
+      show(live);
+      expect(screen.queryByRole('button', { name: 'Pop Out' })).toBeNull();
+    });
   });
 });

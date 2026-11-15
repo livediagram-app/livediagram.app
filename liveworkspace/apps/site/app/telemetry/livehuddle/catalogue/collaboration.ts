@@ -508,6 +508,14 @@ export const CALL_RENEWED = call(
   'neutral',
 );
 
+// The mini view (livehuddle docs/specs/008-canvas/avatar-mode.md "The mini view"): the Space kept in a small window on
+// top while someone works in another tab or app.
+export const CALL_MINI_VIEWS = call(
+  'SpaceMiniView',
+  'Mini View Opened',
+  'Someone popped the Space out into a small window on top, to keep its people in sight from other tabs and apps.',
+);
+
 export const CALLS: MetricStack = {
   stack: true,
   title: 'Calls',
@@ -527,6 +535,7 @@ export const CALLS: MetricStack = {
     CALL_LET_SPEAK,
     CALL_NOT_HEARD,
     CALL_RENEWED,
+    CALL_MINI_VIEWS,
   ],
   headline: [CALL_AUDIO_JOINS, CALL_LISTEN_JOINS],
 };

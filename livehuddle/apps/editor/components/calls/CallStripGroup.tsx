@@ -133,6 +133,16 @@ function CallGroup({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Whether the call group draws anything: a running call to drive, and either a call here or a local preview for
+ * someone who may speak. The Call dock reads it for the divider before Pop Out (the mini view).
+ */
+export function callGroupShows(self: CallSelf, actions: CallActions | null): boolean {
+  if (!actions) return false;
+  if (self.available) return true;
+  return self.canSpeak && (self.canPreviewMic || self.canPreviewCamera || self.canPreviewScreen);
+}
+
 export function CallStripGroup({
   doNotDisturb = false,
   onClearDoNotDisturb,
@@ -146,12 +156,10 @@ export function CallStripGroup({
 } = {}) {
   const self = useCallSelf();
   const actions = useCallActions();
-  if (!actions) return null;
+  if (!actions || !callGroupShows(self, actions)) return null;
   if (!self.available) {
     // No call here (no room, calls off): the microphone, the camera and the screen as a local preview only you see
     // (proximity-audio.md "No call here", "Local preview"), the microphone's hover card saying why nothing is sent.
-    if (!self.canSpeak || !(self.canPreviewMic || self.canPreviewCamera || self.canPreviewScreen))
-      return null;
     return (
       <>
         <CallGroup>
