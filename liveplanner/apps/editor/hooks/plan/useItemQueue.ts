@@ -15,7 +15,11 @@ import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLa
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { ItemWriteAnswer } from '@/lib/api/items';
 import { replayItemQueue } from '@/lib/offline-queue/item-replay';
-import type { PlanQueue, QueuedChange } from '@/lib/offline-queue/plan-queue';
+import {
+  subscribeHeldReview,
+  type PlanQueue,
+  type QueuedChange,
+} from '@/lib/offline-queue/plan-queue';
 import { onReconnect, retryDelayMs } from '@/lib/offline-queue/reconnect';
 
 // The waiting card changes laid over a store read from the server, so what waits stays shown (spec "What the person
@@ -54,10 +58,14 @@ export function withWritesLaid(
 
 export function useItemQueue(opts: {
   queueOf: () => PlanQueue | null;
-  send: (write: ItemWrite) => Promise<ItemWriteAnswer>;
+  send: (write: ItemWrite, opts?: { confirmRemoval?: boolean }) => Promise<ItemWriteAnswer>;
   landed: (answer: ItemWriteAnswer) => void;
   refused: (write: ItemWrite, e: unknown) => void;
   load: () => Promise<void>;
+  // Keep Cards dropped held removals of these cards: the next load takes the server's copy of them.
+  kept?: (cards: readonly string[]) => void;
+  // The titles of these cards as the store shows them, kept with a removal the replay finds held.
+  titlesOf?: (ids: readonly string[]) => string[];
   // Read again from the server (debounced), when nothing waits.
   refetch: () => void;
   // The board has loaded: what a reload kept is sent now.
@@ -78,10 +86,16 @@ export function useItemQueue(opts: {
   const flush = useCallback((): void => {
     const o = latest.current;
     const queue = o.queueOf();
-    if (flushingRef.current || !queue || queue.count('items') === 0) return;
+    if (flushingRef.current || !queue || queue.waiting('items') === 0) return;
     flushingRef.current = true;
     clearTimer();
-    void replayItemQueue({ queue, send: o.send, landed: o.landed, refused: o.refused })
+    void replayItemQueue({
+      queue,
+      send: o.send,
+      landed: o.landed,
+      refused: o.refused,
+      ...(o.titlesOf ? { titlesOf: o.titlesOf } : {}),
+    })
       .then(({ outcome, sent }) => {
         debugLog('[offline-queue] items.replay', { outcome, sent });
         flushingRef.current = false;
@@ -115,8 +129,25 @@ export function useItemQueue(opts: {
         attemptRef.current = 0;
         clearTimer();
         const queue = latest.current.queueOf();
-        if (queue && queue.count('items') > 0) flush();
+        if (queue && queue.waiting('items') > 0) flush();
         else latest.current.refetch();
+      }),
+    [flush, latest],
+  );
+
+  // The person chose for the held removals (offline-changes.md "Held for review"): Remove N Cards sends them now;
+  // Keep Cards reads the board again, so the cards come back.
+  useEffect(
+    () =>
+      subscribeHeldReview((review, cards) => {
+        if (review === 'kept') {
+          latest.current.kept?.(cards);
+          void latest.current.load();
+          return;
+        }
+        attemptRef.current = 0;
+        clearTimer();
+        flush();
       }),
     [flush, latest],
   );

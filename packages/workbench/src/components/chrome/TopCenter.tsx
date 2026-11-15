@@ -73,7 +73,10 @@ export function TopCenterStack({
     // popovers' z-toolbar) so opening a panel simply covers the banners
     // instead of them punching through it. Desktop keeps z-chrome, where the
     // stack is centred and nothing overlaps it.
+    // `data-top-center-stack`: a Plan element filling its tab starts below it while a banner shows (liveplanner's
+    // docs/specs/026-plan/plan-board.md "Maximised board").
     <div
+      data-top-center-stack=""
       className={`pointer-events-none absolute right-3 z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto ${STACK_TOP[below ?? 'none']} sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center`}
     >
       {children}
@@ -100,11 +103,18 @@ export function TopCenterRow({
   );
 }
 
+// A pill's corners: `pill` (fully round) for a one-line pill that never wraps; `card` for a banner whose line can
+// wrap (a phone) or that carries buttons, so a second line stays inside its corners rather than running out past a
+// semicircle.
+type BannerShape = 'pill' | 'card';
+const SHAPE_CLASS: Record<BannerShape, string> = { pill: 'rounded-full', card: 'rounded-2xl' };
+
 // A single pill. Visual chrome only — positioning comes from the
 // surrounding stack / row. Padding, gap and text size vary per pill and
 // are passed via `className`; tone picks the shared colour set.
 export function TopCenterBanner({
   tone = 'neutral',
+  shape = 'pill',
   className = '',
   style,
   onPointerDown,
@@ -112,6 +122,7 @@ export function TopCenterBanner({
   children,
 }: {
   tone?: BannerTone;
+  shape?: BannerShape;
   className?: string;
   // Inline styles for effects a class can't express. The countdown pill
   // uses it to paint a draining background gradient (docs/specs/012-collaboration/session-tools.md) — done as
@@ -136,7 +147,7 @@ export function TopCenterBanner({
       onPointerDown={onPointerDown}
       onContextMenu={onContextMenu}
       style={style}
-      className={`pointer-events-auto flex animate-fade-in items-center rounded-full border shadow-md ${TONE_CLASS[tone]}${className ? ` ${className}` : ''}`}
+      className={`pointer-events-auto flex animate-fade-in items-center ${SHAPE_CLASS[shape]} border shadow-md ${TONE_CLASS[tone]}${className ? ` ${className}` : ''}`}
     >
       {children}
     </div>

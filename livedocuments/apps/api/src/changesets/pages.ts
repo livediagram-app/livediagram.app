@@ -20,7 +20,7 @@ import {
   type PageChangesOutcome,
   pageSummaries,
 } from '@livedocuments/edit-operations';
-import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
+import { agentVersionStatement, isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { readRoomHolds, relayPages } from '../room-client';
 import type { DocumentDTO, DocumentEnv } from '../types';
@@ -149,6 +149,16 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       changesetId = written.kind === 'written' ? written.written.id : null;
     } else {
       try {
+        // An agent's page change starts its burst's version too (docs/specs/006-document/version-history.md), kept
+        // first as its own statement: the page write is its own batch.
+        if (args.tokenId) {
+          await agentVersionStatement(env, {
+            tabId,
+            tokenId: args.tokenId,
+            author: args.author,
+            now: Date.now(),
+          }).run();
+        }
         rev = await upsertTabAtRev(env, document.id, next, stored.orderIndex, stored.rev);
       } catch (err) {
         if (err instanceof TabTooLargeError) return tooLarge();

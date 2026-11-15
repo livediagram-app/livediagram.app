@@ -10,8 +10,9 @@ import {
 } from '@liveworkspace/index-app';
 import { DOCUMENT_TRASHED_CLOSE } from '@livedocuments/api-schema';
 import { disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
-import { CHANGESET_RETENTION_MS } from '@livedocuments/api-schema';
+import { CHANGESET_RETENTION_MS, VERSION_AUTO_MAX_AGE_MS } from '@livedocuments/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
+import { deleteOldVersions } from '../db/versions';
 import { documentShares } from './tab-shares';
 import { documentRoom } from '../document-client';
 import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
@@ -146,6 +147,9 @@ export async function maintain(room: DocumentRoom, now: number): Promise<void> {
   try {
     const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
     if (gone > 0) console.info('[changeset] retention', { documentId, deleted: gone });
+    // Automatic versions past their age on tabs nobody has edited since (docs/specs/006-document/version-history.md).
+    const pruned = await deleteOldVersions(env, now - VERSION_AUTO_MAX_AGE_MS);
+    if (pruned > 0) console.info('[versions] pruned', { documentId, deleted: pruned });
   } catch (error) {
     console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
   }

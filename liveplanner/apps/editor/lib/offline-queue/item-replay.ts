@@ -2,26 +2,38 @@
 // no"): oldest first, one request at a time, a run of field changes as one many-patch request. A request with no
 // answer stops the replay (the rest keeps waiting); a refused batch goes again one change at a time, so only the
 // change the server refuses is taken back.
-import { ITEM_BULK_MAX, type ItemPatchOf, type ItemWrite } from '@liveplanner/items';
+import {
+  ITEM_BULK_MAX,
+  itemIdsOfWrite,
+  type ItemPatchOf,
+  type ItemWrite,
+} from '@liveplanner/items';
 import type { ItemWriteAnswer } from '@/lib/api/items';
 import type { PlanQueue, QueuedChange } from './plan-queue';
 import { isConnectionFailure } from './reconnect';
+import { heldWhyOf, isRemovalHeld } from './removal-held';
 
 type ItemChange = Extract<QueuedChange, { store: 'items' }>;
 
-export type ItemBatch = { ids: string[]; write: ItemWrite; lastSeq: number };
+export type ItemBatch = { ids: string[]; write: ItemWrite; lastSeq: number; confirmed?: true };
 
 // The next request: the oldest change, or, when it is a field change newer than `splitThrough`, it and the field
 // changes straight after it with the same undo flag, up to ITEM_BULK_MAX, as one many-patch write.
 export function nextItemBatch(changes: readonly ItemChange[], splitThrough: number): ItemBatch {
   const first = changes[0]!;
-  const single = { ids: [first.id], write: first.write, lastSeq: first.seq };
-  if (first.write.kind !== 'patch' || first.seq <= splitThrough) return single;
+  const single = {
+    ids: [first.id],
+    write: first.write,
+    lastSeq: first.seq,
+    ...(first.confirmed ? { confirmed: true as const } : {}),
+  };
+  // A confirmed removal goes alone, so its confirmation reaches no other change.
+  if (first.write.kind !== 'patch' || first.seq <= splitThrough || first.confirmed) return single;
   const undo = first.write.undo === true;
   const run: ItemChange[] = [];
   for (const c of changes) {
     if (run.length === ITEM_BULK_MAX) break;
-    if (c.write.kind !== 'patch' || (c.write.undo === true) !== undo) break;
+    if (c.write.kind !== 'patch' || (c.write.undo === true) !== undo || c.confirmed) break;
     run.push(c);
   }
   if (run.length < 2) return single;
@@ -48,9 +60,11 @@ export function alreadyLanded(write: ItemWrite, e: unknown): boolean {
 
 export type ItemReplayDeps = {
   queue: PlanQueue;
-  send: (write: ItemWrite) => Promise<ItemWriteAnswer>;
+  send: (write: ItemWrite, opts?: { confirmRemoval?: boolean }) => Promise<ItemWriteAnswer>;
   // An answer to fold in (a whole one, or the part of a refused many-item write that landed).
   landed: (answer: ItemWriteAnswer) => void;
+  // The titles of these cards as the store shows them, kept with a held removal for the Needs Review banner.
+  titlesOf?: (ids: readonly string[]) => string[];
   // A change the server refused: tell the person and take it back.
   refused: (write: ItemWrite, e: unknown) => void;
 };
@@ -63,12 +77,13 @@ export async function replayItemQueue(
   let splitThrough = -1;
   let sent = 0;
   for (;;) {
-    const changes = deps.queue.changes('items') as ItemChange[];
+    // A change held for review waits for the person (offline-changes.md "Held for review"), not for the connection.
+    const changes = (deps.queue.changes('items') as ItemChange[]).filter((c) => !c.held);
     if (changes.length === 0) return { outcome: 'done', sent };
     const batch = nextItemBatch(changes, splitThrough);
     let answer: ItemWriteAnswer | null = null;
     try {
-      answer = await deps.send(batch.write);
+      answer = await deps.send(batch.write, batch.confirmed ? { confirmRemoval: true } : undefined);
     } catch (e) {
       if (isConnectionFailure(e)) return { outcome: 'stalled', sent };
       const landed = (e as { landed?: ItemWriteAnswer } | null)?.landed;
@@ -76,6 +91,15 @@ export async function replayItemQueue(
       if (batch.ids.length > 1) {
         // Field changes are values to set, so sending any of them again is safe.
         splitThrough = batch.lastSeq;
+        continue;
+      }
+      // Held as a mass removal: kept, never taken back.
+      if (isRemovalHeld(e)) {
+        const why = heldWhyOf(e);
+        deps.queue.hold(batch.ids, (c) => {
+          const titles = deps.titlesOf?.(itemIdsOfWrite(c.write));
+          return titles ? { ...why, titles } : why;
+        });
         continue;
       }
       if (!alreadyLanded(batch.write, e)) deps.refused(batch.write, e);

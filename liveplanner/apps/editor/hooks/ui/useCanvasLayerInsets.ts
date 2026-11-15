@@ -12,6 +12,7 @@ import {
   BAND_CONTROLS_SELECTOR,
   NO_LAYOUT,
   PANEL_SELECTOR,
+  TOP_BANNERS_SELECTOR,
   TOP_ROW_SELECTOR,
   measureCanvasChrome,
   sameLayout,
@@ -20,8 +21,9 @@ import {
 } from '@/lib/canvas-layer-insets';
 
 // The strip itself (its root runs the canvas width; its card changes width with the category) for the header band.
-// The covering element's controls card too: the strip stops short of it, so its width matters.
-const OBSERVED = `${TOP_ROW_SELECTOR}, ${PANEL_SELECTOR}, [data-toolbar-palette], [data-toolbar-palette] > *, ${BAND_CONTROLS_SELECTOR}`;
+// The covering element's controls card too: the strip stops short of it, so its width matters. And the top-centre
+// banners' stack: it grows from nothing as a banner shows, and the element moves below it.
+const OBSERVED = `${TOP_ROW_SELECTOR}, ${PANEL_SELECTOR}, [data-toolbar-palette], [data-toolbar-palette] > *, ${BAND_CONTROLS_SELECTOR}, ${TOP_BANNERS_SELECTOR}`;
 
 // A child-list change that adds or removes a piece of chrome (or something holding one).
 export function touchesChrome(

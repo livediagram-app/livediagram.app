@@ -27,6 +27,7 @@ import {
   COMMUNITY_MODERATION,
   COMMUNITY_PUBLISHING,
   AGENT_CHANGESETS,
+  VERSION_HISTORY,
   AGENT_VIEWED,
   ALL_VISITORS,
   API_TOKEN_ACTIVITY,
@@ -140,6 +141,8 @@ const CATEGORY_COLORS: Record<Exclude<TelemetryCategory, RetiredCategory>, strin
   Cli: '#1e293b',
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
   Agent: '#c2410c',
+  // Slate violet: looking back in time, apart from Home's indigo and Token's fuchsia.
+  Version: '#6d28d9',
   Email: '#0d9488',
   Error: '#dc2626',
   // Deep cyan: the Explorer's filters, apart from UI's lighter cyan and Search's indigo.
@@ -301,8 +304,10 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
     ],
   },
   connections: {
-    intro: 'API tokens and agent changes, beside the MCP and CLI on the Dashboard',
-    groups: [{ title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS] }],
+    intro: 'API tokens, agent changes and version history, beside the MCP and CLI on the Dashboard',
+    groups: [
+      { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS, VERSION_HISTORY] },
+    ],
   },
   pages: [{ title: 'Calls to action', metrics: [CALLS_TO_ACTION] }],
   help: {

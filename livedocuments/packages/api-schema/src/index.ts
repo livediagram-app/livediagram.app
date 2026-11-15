@@ -308,6 +308,7 @@ export * from './cta-sources';
 export * from './page-views';
 export * from './room-messages';
 export * from './changesets';
+export * from './versions';
 export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';

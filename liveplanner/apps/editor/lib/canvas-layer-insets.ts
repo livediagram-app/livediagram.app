@@ -77,6 +77,21 @@ export function layerInsets(
 // `stripEnd`: how far the strip's right edge sits from the canvas's right edge, in screen px (the strip moves there).
 export type HeaderBand = { height: number; left: number; mid: number; stripEnd: number };
 
+// The top-centre stack of banners (offline, Needs Review; workbench TopCenterStack). While it shows one, a covering
+// element starts this far below it, with no band or phone row (docs/specs/026-plan/plan-board.md "Maximised board"),
+// so a banner never covers its header or column headers.
+export const TOP_BANNERS_SELECTOR = '[data-top-center-stack]';
+export const BANNER_GAP_PX = 8;
+
+// How far down the canvas the banners reach, the gap included, in px from the canvas's top; 0 with none shown (the
+// stack is then empty, so has no height) or with the stack outside the canvas's top half.
+export function bannerInset(canvas: Box, stack: Box | null): number {
+  if (!stack || stack.bottom <= stack.top || stack.right <= stack.left) return 0;
+  const half = canvas.top + (canvas.bottom - canvas.top) / 2;
+  if (stack.bottom <= canvas.top || stack.top >= half) return 0;
+  return Math.round(stack.bottom - canvas.top + BANNER_GAP_PX);
+}
+
 // The cover's padding around the element on a desktop (CanvasCover's sm:p-3); a band is only laid out that wide.
 const COVER_PAD_PX = 12;
 // The room the header's content keeps from the menu and the strip.
@@ -245,6 +260,14 @@ export function measureCanvasChrome(
   const wasBanded = memo.banded;
   if (wasBanded && controls) memo.endWidth = measuredEnd;
   const endWidth = wasBanded || memo.endWidth === null ? measuredEnd : memo.endWidth;
+  // A banner showing: below it, with no band (its header would sit under the banner); a Dashboard's page too.
+  const banners = bannerInset(area, shown(TOP_BANNERS_SELECTOR)?.getBoundingClientRect() ?? null);
+  if (banners > 0) {
+    if (withBand) memo.banded = false;
+    const height = area.bottom - area.top;
+    const top = Math.round(Math.min(Math.max(insets.top, banners), height * MAX_INSET_SHARE));
+    return { insets: { ...insets, top }, band: null };
+  }
   if (!withBand) return { insets, band: null };
   const band = headerBand(
     area,

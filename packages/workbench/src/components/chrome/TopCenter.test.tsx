@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { TopCenterStack } from './TopCenter';
+import { TopCenterBanner, TopCenterStack } from './TopCenter';
 
 const classesOf = (below?: 'toolbar' | 'tray' | 'dock') => {
   const { container } = render(
@@ -36,5 +36,25 @@ describe('TopCenterStack', () => {
     const cls = classesOf('dock');
     expect(cls).toContain('top-[4.25rem]');
     expect(cls).not.toContain('sm:top-3');
+  });
+});
+
+describe('TopCenterBanner', () => {
+  const bannerClasses = (shape?: 'pill' | 'card') => {
+    const { container } = render(<TopCenterBanner shape={shape}>x</TopCenterBanner>);
+    return (container.firstElementChild as HTMLElement).className.split(' ');
+  };
+
+  it('is a pill by default, and a card (its lines wrapping inside its corners) when asked', () => {
+    expect(bannerClasses()).toContain('rounded-full');
+    expect(bannerClasses('card')).toContain('rounded-2xl');
+    expect(bannerClasses('card')).not.toContain('rounded-full');
+  });
+
+  it('marks the stack, which a covering Plan element starts below', () => {
+    const { container } = render(<TopCenterStack>x</TopCenterStack>);
+    expect((container.firstElementChild as HTMLElement).hasAttribute('data-top-center-stack')).toBe(
+      true,
+    );
   });
 });

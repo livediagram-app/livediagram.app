@@ -19,6 +19,7 @@ import {
   type ItemCaller,
 } from './item-route-kit';
 import { writeSource } from './automation-source';
+import { admitRemovals, trashedBy } from './item-removal-gate';
 
 // One attempt's next states by id, or a refusal. `missing`: how many wanted ids were not found on this read.
 type BuildItems<T> = (
@@ -67,12 +68,18 @@ export async function writeItemsWithRetry<T extends { id: string }>(
     );
     if (await planFullFor(ctx.env, projectId, growth))
       return withLanded(planFull(), caller, done, rev);
+    // Cards moved into the Trash are removals the room's guard judges (item-removal-gate.ts); a held batch writes
+    // nothing of this attempt.
+    const trashed = trashedBy([...nexts].map(([id, next]) => ({ before: stored.get(id)!, next })));
+    const ticket = await admitRemovals(ctx, caller, trashed);
+    if (ticket instanceof Response) return withLanded(ticket, caller, done, rev);
     const written = await updateItemsAtRev(
       ctx.env,
       projectId,
       [...nexts].map(([id, next]) => ({ next, expectedRev: stored.get(id)!.rev })),
     );
     rev = written.rev;
+    ticket.release(trashed.filter((id) => !written.landed.has(id)));
     const landed = [...nexts.values()].filter((i) => written.landed.has(i.id));
     if (landed.length) relay(ctx, projectId, landed, [], rev);
     if (landed.length && history) {

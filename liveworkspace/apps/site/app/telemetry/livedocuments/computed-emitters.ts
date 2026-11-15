@@ -259,6 +259,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       { values: AGENT_FRONT_DOORS },
     ]),
   ),
+  // Version history (docs/specs/006-document/version-history.md), typed by the same front door.
+  'apps/api/src/versions/telemetry.ts Version·Restored': { values: AGENT_FRONT_DOORS },
+  'apps/api/src/versions/telemetry.ts Version·Copied': { values: AGENT_FRONT_DOORS },
   // Agent presence (docs/specs/024-agents/agent-presence.md), typed by the same front door.
   'apps/api/src/routes/agent-presence-routes.ts Agent·Present': { values: AGENT_FRONT_DOORS },
   'apps/api/src/index.ts Error·Api': {

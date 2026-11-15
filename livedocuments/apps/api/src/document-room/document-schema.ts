@@ -19,6 +19,7 @@ import {
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import { VERSION_SCHEMA } from '../versions/version-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -289,7 +290,12 @@ const V7 = (exec: Exec) => {
   );
 };
 
-const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7];
+// Each tab's versions (docs/specs/006-document/version-history.md): the table, the idle trigger that keeps a tab as it
+// stood before the first write after a pause, and the trigger that prunes them as each is kept
+// (versions/version-schema.ts). Its own step, appended: every statement is IF NOT EXISTS.
+const V8 = VERSION_SCHEMA;
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7, V8];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

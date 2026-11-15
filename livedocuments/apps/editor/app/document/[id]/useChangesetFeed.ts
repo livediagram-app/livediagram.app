@@ -15,6 +15,7 @@ import {
   type ChangesetToast,
 } from './changeset-toast';
 import { remoteRoomOp } from './room-op-apply';
+import { isOwnVersionWrite } from '@/lib/own-version-writes';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 
 // What an editor does with a relayed changeset (docs/specs/024-agents/agent-changesets.md "In the
@@ -109,6 +110,8 @@ export function useChangesetFeed(opts: {
         until: Date.now() + CHANGESET_REVEAL_MS,
       });
       if (op.revertOf && undoingRef.current.has(op.revertOf)) return;
+      // A restore or a copy this editor's Version History made: its own toast already says so.
+      if (isOwnVersionWrite(op)) return;
       const entry = coalesceChangesetToast(toastsRef.current, op, Date.now());
       toastsRef.current.set(entry.key, entry);
       toastActionsRef.current ??= changesetToastActions({

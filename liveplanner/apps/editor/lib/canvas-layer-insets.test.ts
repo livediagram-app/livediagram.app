@@ -2,10 +2,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   BAND_HYSTERESIS_PX,
+  BANNER_GAP_PX,
   type BandMemo,
   BAND_MID_MIN_PX,
   BAND_RIGHT_MIN_PX,
   MAX_INSET_SHARE,
+  bannerInset,
   headerBand,
   layerInsets,
   PHONE_ROW_MIN_PX,
@@ -384,5 +386,47 @@ describe('phoneRow', () => {
     });
     // A Dashboard's page starts below the top row, as on a desktop.
     expect(measureCanvasChrome(main!, false).row).toBeUndefined();
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Maximised board": while a top-centre banner shows, the element starts below it
+// (Work Tracker 974: the Needs Review banner covered the board's column headers).
+describe('bannerInset', () => {
+  it('reaches below the banners with the gap', () => {
+    expect(bannerInset(canvas, box(500, 148, 940, 188))).toBe(188 - 80 + BANNER_GAP_PX);
+  });
+
+  it('is nothing with no banner (an empty stack), or a stack off the top half', () => {
+    expect(bannerInset(canvas, null)).toBe(0);
+    expect(bannerInset(canvas, box(720, 148, 720, 148))).toBe(0);
+    expect(bannerInset(canvas, box(500, 600, 940, 640))).toBe(0);
+    expect(bannerInset(canvas, box(500, 20, 940, 60))).toBe(0);
+  });
+
+  it('moves a measured element below the banners, with no band', () => {
+    document.body.innerHTML = `
+      <main data-canvas-a11y-root=""></main>
+      <div data-toolbar-menu=""></div>
+      <div data-toolbar-palette=""><div></div></div>
+      <div data-top-center-stack=""></div>`;
+    const [main, menuEl, stripEl, stackEl] = [...document.body.children] as HTMLElement[];
+    const rect = (r: { left: number; top: number; right: number; bottom: number }) => () =>
+      ({ ...r, x: r.left, y: r.top, width: r.right - r.left, height: r.bottom - r.top }) as DOMRect;
+    main!.getBoundingClientRect = rect(canvas);
+    menuEl!.getBoundingClientRect = rect(box(12, 92, 200, 138));
+    (stripEl!.firstElementChild as HTMLElement).getBoundingClientRect = rect(
+      box(500, 92, 940, 145),
+    );
+    stackEl!.getBoundingClientRect = rect(box(720, 148, 720, 148));
+    const memo: BandMemo = { banded: false, endWidth: null };
+    expect(measureCanvasChrome(main!, true, memo).band).not.toBeNull();
+    stackEl!.getBoundingClientRect = rect(box(500, 148, 940, 188));
+    expect(measureCanvasChrome(main!, true, memo)).toEqual({
+      insets: { top: 188 - 80 + BANNER_GAP_PX, right: 0, bottom: 0, left: 0 },
+      band: null,
+    });
+    expect(memo.banded).toBe(false);
+    // A Dashboard's page (no band) moves below them too.
+    expect(measureCanvasChrome(main!, false).insets.top).toBe(188 - 80 + BANNER_GAP_PX);
   });
 });

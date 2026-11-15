@@ -40,8 +40,13 @@ export function OfflineBanner({ readOnly }: { readOnly: boolean }) {
           : 'You’re offline. Changes stay in this tab and save when you reconnect.';
   return (
     <TopCenterRow>
-      <TopCenterBanner tone="neutral" className="gap-2 px-3 py-1 text-[11px] font-medium">
-        <span role="status" className="flex items-center gap-2">
+      {/* A card, not a pill: on a phone the line wraps, and stays inside the corners. */}
+      <TopCenterBanner
+        tone="neutral"
+        shape="card"
+        className="max-w-[48rem] gap-2 px-3.5 py-2 text-[11px] font-medium"
+      >
+        <span role="status" className="flex items-center gap-2 leading-snug">
           {copy}
         </span>
       </TopCenterBanner>

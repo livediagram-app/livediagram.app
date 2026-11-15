@@ -58,6 +58,7 @@ import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 import { EditorFindHost } from '@/components/find/FindHost';
+import { VersionHistoryHost } from '@/components/versions/VersionHistoryHost';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
@@ -336,6 +337,10 @@ export function EditorView() {
                         </ChangesetRevealContext.Provider>
                       </AreaErrorBoundary>
                       {PRESENTATION}
+                      {/* Version History (docs/specs/006-document/version-history.md): over the editor while open. */}
+                      <AreaErrorBoundary area="VersionHistory">
+                        <VersionHistoryHost onSelectTab={selectTab} />
+                      </AreaErrorBoundary>
                       {embedMode ? (
                         // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
                         // switcher replace the full TabBar. Same selection clears as
