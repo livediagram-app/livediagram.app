@@ -28,7 +28,8 @@ header; they are not in the palette.
     not fit; with room again (the window widened, widgets taken off, a count shrinking) every widget is back in the
     row and More is gone. Which widgets go is worked out from the widgets' own widths and the room the zone has, so the
     row never flips back and forth on the same widths, in a header band too, where the zone is only as wide as its
-    widgets up to its cap.
+    widgets up to its cap. While More shows, the zone packs to its end, so the + and Edit Widgets keep their
+    place at the header's edge however many widgets a press moves into More.
   - **The Filter** holds the zone's start while More shows, so it is always in the row however many widgets there are
     (the others keep their order after it, and drag and Alt+← / Alt+→ move them among themselves; the Filter stays
     put, its Delete and edit mode's × still taking it off). With room again it is back in its own place.

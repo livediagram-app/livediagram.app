@@ -144,6 +144,7 @@ export function BoardWidgetZone({
   const pinned = layout.pin;
   // The widgets the row holds, after the pinned Filter while it pins. A drag's slot and a nudge are in its order.
   const rowWidgets = layout.row;
+  const hidden = layout.hidden;
   // The More Widgets panel, hung from More while it is open; gone with the last widget More held.
   const [moreAt, setMoreAt] = useState<HTMLElement | null>(null);
   const [panelWidth, setPanelWidth] = useState(0);
@@ -408,14 +409,17 @@ export function BoardWidgetZone({
     );
   };
 
-  const hidden = layout.hidden;
   const label = moreLabel(hidden, pressed.map);
   return (
     <div
       ref={zone}
       data-widget-zone
       data-widget-zone-pinned={pinned ? '' : undefined}
-      className="relative flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-md"
+      // Packed to the end while some widgets are in More, so the + and Edit Widgets keep their place at the header's
+      // edge however many widgets the row holds (a press can move one into More), the slack going before the Filter.
+      className={`relative flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-md ${
+        hidden.length > 0 ? 'justify-end' : ''
+      }`}
       // The widgets, then the + and Edit Widgets, fan in as the header mounts (header-arrival.ts). It asks for every
       // widget's width, so in a header band (sized by its content, up to its cap) it is given the room it could have.
       style={{ ...headerArrivalRow, width: fit.need > 0 ? fit.need : undefined }}

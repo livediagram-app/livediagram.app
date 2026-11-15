@@ -119,7 +119,8 @@ not, and the other side has more room, it opens on the other side instead: a men
 screen (near the bottom of a 1440 x 900 window, the menu 30 rows long) opens
 above the control rather than being nudged up over it, so the control it came from stays in sight. The side is worked
 out from the control's place and the menu's own height (held to the screen, as above), so moving or growing never
-flips it back and forth; a menu that fits on neither side is held to the screen and scrolls on the roomier one.
+flips it back and forth; a menu taller than the room on its side (the roomier one when it fits on neither) is held to that room and
+scrolls inside itself, so it never covers the control either.
 
 ## Focus ring
 

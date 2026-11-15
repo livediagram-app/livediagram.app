@@ -25,7 +25,7 @@ export const PLACEMENT_TRANSFORM: Record<PortalMenuPlacement, string> = {
  * is placed. With `beside` (the card the menu belongs to), it opens beside that card instead,
  * out of its way (besideSpot), once it can measure itself, and hangs from the anchor only when
  * neither side has room. `flat` says the spot is its top-left corner, with no placement transform; `maxHeight`, set
- * only for a menu taller than the screen, is the height it is held to, scrolling inside. `placement` is the side it
+ * only for a menu taller than the room on its side (at most the screen), is the height it is held to, scrolling inside. `placement` is the side it
  * opens on: the one asked for, or the other side when the menu does not fit there and the other side has more room
  * (flipSide), so a menu opened from a control low on the screen opens above it rather than being nudged up over it.
  */
@@ -44,12 +44,23 @@ export function flipSide(
   margin: number,
 ): PortalMenuPlacement {
   const below = placement.startsWith('below');
-  const roomBelow = viewport - anchor.bottom - ANCHOR_GAP_PX - margin;
-  const roomAbove = anchor.top - ANCHOR_GAP_PX - margin;
-  const [room, other] = below ? [roomBelow, roomAbove] : [roomAbove, roomBelow];
-  if (height <= room || other <= room) return placement;
-  const start = placement.endsWith('-start') ? '-start' : '';
-  return `${below ? 'above' : 'below'}${start}` as PortalMenuPlacement;
+  const flipped =
+    `${below ? 'above' : 'below'}${placement.endsWith('-start') ? '-start' : ''}` as PortalMenuPlacement;
+  const room = sideRoom(placement, anchor, viewport, margin);
+  if (height <= room || sideRoom(flipped, anchor, viewport, margin) <= room) return placement;
+  return flipped;
+}
+
+// The height free for a menu on `side` of an anchor from `top` to `bottom`, on a screen `viewport` tall.
+export function sideRoom(
+  side: PortalMenuPlacement,
+  anchor: { top: number; bottom: number },
+  viewport: number,
+  margin: number,
+): number {
+  return side.startsWith('below')
+    ? viewport - anchor.bottom - ANCHOR_GAP_PX - margin
+    : anchor.top - ANCHOR_GAP_PX - margin;
 }
 
 export function usePortalMenuPlacement(
@@ -75,12 +86,10 @@ export function usePortalMenuPlacement(
 
   const reposition = useCallback(() => {
     if (!anchor) return;
-    if (node) {
-      // The edge inset read from @liveworkspace/ui itself (VIEWPORT_EDGE_MARGIN's source), which the products' menu
-      // tests leave unmocked when they stub clampToViewport.
-      const room = window.innerHeight - 2 * POPOVER_VIEWPORT_MARGIN;
-      setCap(node.scrollHeight > room ? room : null);
-    }
+    // The edge inset read from @liveworkspace/ui itself (VIEWPORT_EDGE_MARGIN's source), which the products' menu
+    // tests leave unmocked when they stub clampToViewport.
+    const screen = window.innerHeight - 2 * POPOVER_VIEWPORT_MARGIN;
+    if (node) setCap(node.scrollHeight > screen ? screen : null);
     if (beside && node) {
       const spot = besideSpot(
         beside.getBoundingClientRect(),
@@ -95,13 +104,19 @@ export function usePortalMenuPlacement(
       ? flipSide(
           placement,
           r,
-          Math.min(node.scrollHeight, window.innerHeight - 2 * POPOVER_VIEWPORT_MARGIN),
+          Math.min(node.scrollHeight, screen),
           window.innerHeight,
           POPOVER_VIEWPORT_MARGIN,
         )
       : placement;
     const start = side.endsWith('-start');
     const below = side.startsWith('below');
+    if (node) {
+      // Taller than the room on its side (the roomier one, flipSide): held to that room, scrolling, so the edge clamp
+      // never nudges it back over the control it opened from (menus.md "Opening on the side with room").
+      const room = Math.min(screen, sideRoom(side, r, window.innerHeight, POPOVER_VIEWPORT_MARGIN));
+      setCap(node.scrollHeight > room ? room : null);
+    }
     setPos({ left: start ? r.left : r.right, top: below ? r.bottom : r.top, side });
   }, [anchor, placement, beside, node]);
   useReposition(reposition);
