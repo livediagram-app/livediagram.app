@@ -27,7 +27,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   useSyncExternalStore,
   type CSSProperties,
@@ -72,9 +71,7 @@ import {
 } from '@/lib/explorer/host';
 import {
   accountFetch,
-  resetWorkspaceIdentity,
   teamsOfToken,
-  workspaceIdentity,
   workspaceToken,
   type WorkspaceIdentity,
 } from '@/lib/explorer/token';
@@ -112,6 +109,8 @@ import {
 import { loadSettings, useExplorerSettingsPanel } from './useExplorerSettingsPanel';
 import { useExplorerThisBrowser } from './useExplorerThisBrowser';
 import { useItemArrival } from './useItemArrival';
+import { ExplorerUnreachable } from './ExplorerUnreachable';
+import { useExplorerIdentity } from './useExplorerIdentity';
 
 // The Search panel and its entries: fetched when Search is pointed at or pressed, never with the page.
 const loadSearch = () => import('./ExplorerSearch');
@@ -175,8 +174,6 @@ export function ExplorerShell() {
   const arrived = stay?.arrived ?? NO_ARRIVAL;
   const notice = stay?.notice ?? null;
   const trashed = stay?.trashed ?? null;
-  const [identity, setIdentity] = useState<WorkspaceIdentity | null>(null);
-  const [failed, setFailed] = useState(false);
 
   // Arrival's effects: going on elsewhere, remembering the app, and dropping what the address handed over.
   useEffect(() => {
@@ -195,24 +192,13 @@ export function ExplorerShell() {
   }, [landed]);
   useEffect(() => forgetLanding, []);
 
-  // The person: asked once, before the Explorer asks the index anything, and again after signing out here.
-  const lastSession = useRef(session.state);
-  useEffect(() => {
-    if (!ready) return;
-    const signedOut = lastSession.current === 'in' && session.state === 'out';
-    lastSession.current = session.state;
-    if (identity && !signedOut) return;
-    if (signedOut) resetWorkspaceIdentity();
-    let live = true;
-    void workspaceIdentity().then((found) => {
-      if (!live) return;
-      if (found) setIdentity(found);
-      else setFailed(true);
-    });
-    return () => {
-      live = false;
-    };
-  }, [ready, session.state, identity]);
+  // The person, asked once the page knows where it is, within a bounded wait (useExplorerIdentity).
+  const {
+    identity,
+    setIdentity,
+    failed,
+    retry: retryIdentity,
+  } = useExplorerIdentity({ ready, sessionState: session.state });
 
   // In no app (liveworkspace.app reached from no app), every app's work shows; New makes the last app's kind.
   const app: AppName = arrived.app ?? stay?.lastApp ?? FALLBACK_APP;
@@ -277,7 +263,7 @@ export function ExplorerShell() {
     return () => {
       identityRenewed.delete(setIdentity);
     };
-  }, []);
+  }, [setIdentity]);
   const welcome: WelcomeOptions = useMemo(
     () => ({
       manifest: loaded?.app === app ? loaded.manifest : null,
@@ -453,15 +439,7 @@ export function ExplorerShell() {
         <>
           <ExplorerHeader app={arrived.app} search={null} settings={settingsControl} />
           {/* Until the person is known (seconds on a slow session), the Explorer's own shape rather than a blank page. */}
-          {failed ? (
-            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-16 sm:px-6">
-              <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-                The Explorer couldn’t reach your account just now. Reload the page to try again.
-              </p>
-            </main>
-          ) : (
-            <ExplorerSkeleton />
-          )}
+          {failed ? <ExplorerUnreachable onRetry={retryIdentity} /> : <ExplorerSkeleton />}
         </>
       )}
       <ExplorerBottomBar

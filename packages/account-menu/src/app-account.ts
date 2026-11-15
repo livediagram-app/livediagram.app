@@ -79,6 +79,10 @@ function snapshot(hint: string): AppAccount {
   return last.account;
 }
 
+/** How long the menu waits on the app's token answer before it reads the cookies as they are (the API stalled on the
+ *  accounts site, 2026-11-15): a stall leaves the cookies alone, so the hint still says signed in. */
+export const APP_TOKEN_ASK_TIMEOUT_MS = 10_000;
+
 // The app's token endpoint answers from its refresh cookie and sets the name cookie beside the hint (or, with the
 // session gone, clears both). Its access token is not kept: this page has nothing to send it to.
 function askOnce(): void {
@@ -88,6 +92,7 @@ function askOnce(): void {
     credentials: 'same-origin',
     cache: 'no-store',
     headers: { accept: 'application/json' },
+    signal: AbortSignal.timeout(APP_TOKEN_ASK_TIMEOUT_MS),
   })
     .then(
       () => undefined,

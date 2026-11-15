@@ -415,9 +415,9 @@ export const HOME_RETRIES = chart(
   'Home',
   'Loaded',
   'Home Retries',
-  'A failed read of Home retried.',
+  'A failed read of Home retried, or the Explorer giving up waiting for the account (Stalled).',
   {
-    types: ['Retry'],
+    types: ['Retry', 'Stalled'],
     rising: 'bad',
   },
 );

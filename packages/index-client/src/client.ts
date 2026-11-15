@@ -76,7 +76,22 @@ export type IndexClientOptions = {
   // Sent on every call besides the token: an app's server acting for a person (createIndexDelegateClient).
   headers?: Record<string, string>;
   fetch?: typeof fetch;
+  // How long a read (a GET answered as JSON) may take before it fails as a TimeoutError; 0 for no limit.
+  readTimeoutMs?: number;
 };
+
+// A read the index has not answered in this long is stalled (a router's fetch to another Worker's public route can
+// hang, 2026-11-13 and 2026-11-15): it fails, so the Explorer shows Try again rather than its placeholders for good.
+// Writes have no limit, since a write that timed out may still have landed.
+export const INDEX_READ_TIMEOUT_MS = 15_000;
+
+/** `signal`, bounded by `timeoutMs` (a TimeoutError when it runs out); `signal` alone where the browser can't. */
+export function boundedSignal(signal: AbortSignal | undefined, timeoutMs: number) {
+  if (timeoutMs <= 0 || typeof AbortSignal.timeout !== 'function') return signal;
+  const timeout = AbortSignal.timeout(timeoutMs);
+  if (!signal) return timeout;
+  return typeof AbortSignal.any === 'function' ? AbortSignal.any([signal, timeout]) : signal;
+}
 
 type CallOptions = {
   method?: string;
@@ -86,6 +101,8 @@ type CallOptions = {
   signal?: AbortSignal;
   // A grant the index signed for an item (X-Index-Grant): the connected tabs' doors take the host's.
   grant?: string;
+  // A read bounded by the client's readTimeoutMs.
+  bounded?: boolean;
 };
 
 // What a read can take besides its query: a signal, so a list superseded by a newer one (the Explorer's
@@ -97,11 +114,12 @@ export function createIndexClient({
   getToken,
   headers: fixedHeaders,
   fetch: doFetch,
+  readTimeoutMs = INDEX_READ_TIMEOUT_MS,
 }: IndexClientOptions) {
   const base = withoutTrailingSlashes(baseUrl);
 
   async function call<T>(path: string, options: CallOptions = {}): Promise<T> {
-    const res = await send(path, options);
+    const res = await send(path, { ...options, bounded: (options.method ?? 'GET') === 'GET' });
     if (res.status === 204) return undefined as T;
     const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
     if (!res.ok) throw refusal(res, parsed);
@@ -137,7 +155,7 @@ export function createIndexClient({
       method: options.method ?? 'GET',
       headers,
       body,
-      signal: options.signal,
+      signal: options.bounded ? boundedSignal(options.signal, readTimeoutMs) : options.signal,
     });
   }
 

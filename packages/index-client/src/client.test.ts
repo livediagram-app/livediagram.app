@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  boundedSignal,
   createIndexAppClient,
   createIndexClient,
+  INDEX_READ_TIMEOUT_MS,
   IndexError,
   queryString,
   retryAfterMsOf,
@@ -198,7 +200,8 @@ describe('createIndexClient reads', () => {
     await expect(
       client.listItems({ q: 'road' }, { signal: controller.signal }),
     ).rejects.toMatchObject({ name: 'AbortError' });
-    expect(signals[1]).toBe(controller.signal);
+    // The caller's signal, bounded by the read's time limit (boundedSignal).
+    expect(signals[1]?.aborted).toBe(true);
   });
 
   it("reads a team's audit log as pages and as CSV, with where the next file starts", async () => {
@@ -361,5 +364,77 @@ describe('retryAfterMsOf', () => {
   });
   it('reads a long run of digits up to its cap as a number, for the outbox to cap', () => {
     expect(retryAfterMsOf('9'.repeat(40), NOW)).toBeGreaterThan(1e40);
+  });
+});
+
+// 2026-11-15: a read that never settled kept the Explorer on its placeholders. Reads are bounded; writes are not, since
+// a write that timed out may still have landed.
+describe('bounded reads', () => {
+  function signals() {
+    const seen: (AbortSignal | null | undefined)[] = [];
+    const doFetch = (async (_input: RequestInfo | URL, init: RequestInit = {}) => {
+      seen.push(init.signal);
+      return Response.json({ items: [], nextCursor: null });
+    }) as typeof fetch;
+    return { seen, doFetch };
+  }
+
+  it('gives every read a time limit, and no write', async () => {
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
+    try {
+      const { seen, doFetch } = signals();
+      const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+      await client.listItems({ view: 'recent' });
+      expect(timeout).toHaveBeenCalledWith(INDEX_READ_TIMEOUT_MS);
+      expect(seen[0]).toBeInstanceOf(AbortSignal);
+      timeout.mockClear();
+      await client.restoreItem('i1');
+      expect(timeout).not.toHaveBeenCalled();
+      expect(seen[1]).toBeUndefined();
+    } finally {
+      timeout.mockRestore();
+    }
+  });
+
+  it("fails a stalled read as a TimeoutError, and keeps the caller's own cancel", async () => {
+    const timer = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(timer.signal);
+    try {
+      const stalled = ((_input: RequestInfo | URL, init: RequestInit = {}) =>
+        new Promise<Response>((_resolve, reject) => {
+          if (init.signal?.aborted) reject(init.signal.reason);
+          init.signal?.addEventListener('abort', () => reject(init.signal!.reason));
+        })) as typeof fetch;
+      const client = createIndexClient({ getToken: () => 'tok', fetch: stalled });
+      const read = client.listItems({ view: 'recent' });
+      await Promise.resolve();
+      await Promise.resolve();
+      timer.abort(new DOMException('timed out', 'TimeoutError'));
+      await expect(read).rejects.toMatchObject({ name: 'TimeoutError' });
+      timeout.mockRestore();
+
+      const mine = new AbortController();
+      const cancelled = client.listItems({ view: 'recent' }, { signal: mine.signal });
+      await Promise.resolve();
+      await Promise.resolve();
+      mine.abort();
+      await expect(cancelled).rejects.toMatchObject({ name: 'AbortError' });
+    } finally {
+      timeout.mockRestore();
+    }
+  });
+
+  it("leaves a read unbounded with a limit of 0, and the caller's signal alone where the runtime has no AbortSignal.any", () => {
+    const mine = new AbortController().signal;
+    expect(boundedSignal(mine, 0)).toBe(mine);
+    expect(boundedSignal(undefined, 0)).toBeUndefined();
+    const any = AbortSignal.any;
+    try {
+      // @ts-expect-error: an older runtime without it.
+      AbortSignal.any = undefined;
+      expect(boundedSignal(mine, 1000)).toBe(mine);
+    } finally {
+      AbortSignal.any = any;
+    }
   });
 });
