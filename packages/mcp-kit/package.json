@@ -6,6 +6,7 @@
   "sideEffects": false,
   "exports": {
     "./app": "./src/app.ts",
+    "./app-view": "./src/app-view.ts",
     "./created-folder": "./src/created-folder.ts",
     "./env": "./src/env.ts",
     "./listing": "./src/listing.ts",

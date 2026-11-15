@@ -5,4 +5,5 @@ export * from './output-schema';
 export * from './pages-schema';
 export * from '@liveworkspace/agent-verbs/mcp/image-schema';
 export * from './archive-tools';
+export * from './thread-tools';
 export * from '../verbs/mcp-tools';

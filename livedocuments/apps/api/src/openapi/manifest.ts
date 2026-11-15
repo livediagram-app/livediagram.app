@@ -628,10 +628,27 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}/comments/{commentId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Delete a comment you wrote.',
+    summary:
+      'Delete a comment you wrote; an API token deletes only a comment marked ai (403 not_ai_comment).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Change the text of a comment you wrote, stamping editedAt; an API token changes only a comment marked ai (403 not_ai_comment).',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: { text: { type: 'string' } },
+      required: ['text'],
+    },
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
   },
   {
     method: 'POST',

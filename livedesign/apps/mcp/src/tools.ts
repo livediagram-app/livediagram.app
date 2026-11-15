@@ -44,6 +44,7 @@ import { imageResult } from './image-result';
 import { imageIdIssue, registerImageTools } from './image-tools';
 import { registerTool } from './tool-annotations';
 import { registerArchiveTools } from './archive-tools';
+import { registerThreadTools } from './thread-tools';
 import { registerPagesTools } from './pages-tools';
 import { registerComponentsTools } from './components-tools';
 import {
@@ -355,6 +356,9 @@ export function registerTools(server: McpServer, env: Env): void {
       throw err;
     }
   });
+
+  // Comment threads (docs/specs/015-api/mcp-server.md "Comment threads"): list_threads and change_threads.
+  registerThreadTools(server, env);
 }
 
 // Why a delete was refused, by what was deleted and the status.

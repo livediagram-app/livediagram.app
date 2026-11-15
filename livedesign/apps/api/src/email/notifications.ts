@@ -46,6 +46,7 @@ export async function notifyNewComment(
   env: DesignEnv,
   liveDoc: { id: string; ownerId: string; name: string },
   commenterName: string | null,
+  ai = false,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
   const to = await emailOf(env, liveDoc.ownerId);
@@ -57,7 +58,7 @@ export async function notifyNewComment(
   if (!(await claimCommentNotify(env, liveDoc.id, now, now - COMMENT_NOTIFY_THROTTLE_MS))) return;
   await sendEmail(env, {
     to,
-    ...commentNotificationEmail(env, liveDoc.name, liveDoc.id, commenterName),
+    ...commentNotificationEmail(env, liveDoc.name, liveDoc.id, commenterName, ai),
   });
 }
 

@@ -145,16 +145,17 @@ Client state: `usePresenceState` gains `liveAgents: AgentPresence[]`, replaced o
 All `guest-or-account`; tab-scoped grants reach their own tab only; a trashed design answers 410 through
 `missingDesign`.
 
-| Method | Path                                                       | Gate                               | Success                                  |
-| ------ | ---------------------------------------------------------- | ---------------------------------- | ---------------------------------------- |
-| PUT    | `/api/designs/:id/tabs/:tabId/presence`                    | token; `gateParticipate`           | 200 `{ presence: AgentPresenceResult }`  |
-| DELETE | `/api/designs/:id/tabs/:tabId/presence`                    | token; `gateParticipate`           | 204                                      |
-| POST   | `/api/designs/:id/tabs/:tabId/comments`                    | `gateParticipate`                  | 201 `{ comment }`                        |
-| DELETE | `/api/designs/:id/tabs/:tabId/comments/:commentId`         | `gateParticipate`; author only     | 204                                      |
-| POST   | `/api/designs/:id/tabs/:tabId/comments/:commentId/reply`   | `gateParticipate`                  | 201 `{ comment }`                        |
-| POST   | `/api/designs/:id/tabs/:tabId/comments/:commentId/resolve` | `gateParticipate`                  | 204                                      |
-| POST   | `/api/designs/:id/tabs/:tabId/comments/:commentId/reopen`  | `gateParticipate`                  | 204                                      |
-| GET    | `/api/designs/:id/comments?status=open\|resolved\|all`     | `gateGrant` (any level, any token) | 200 `{ threads: DesignCommentThread[] }` |
+| Method | Path                                                       | Gate                                                       | Success                                   |
+| ------ | ---------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------- |
+| PUT    | `/api/designs/:id/tabs/:tabId/presence`                    | token; `gateParticipate`                                   | 200 `{ presence: AgentPresenceResult }`   |
+| DELETE | `/api/designs/:id/tabs/:tabId/presence`                    | token; `gateParticipate`                                   | 204                                       |
+| POST   | `/api/designs/:id/tabs/:tabId/comments`                    | `gateParticipate`                                          | 201 `{ comment }`                         |
+| DELETE | `/api/designs/:id/tabs/:tabId/comments/:commentId`         | `gateParticipate`; author only; a token only its `ai` ones | 204                                       |
+| PUT    | `/api/designs/:id/tabs/:tabId/comments/:commentId`         | `gateParticipate`; author only; a token only its `ai` ones | 200 `{ comment }`, a `comment-edit` delta |
+| POST   | `/api/designs/:id/tabs/:tabId/comments/:commentId/reply`   | `gateParticipate`                                          | 201 `{ comment }`                         |
+| POST   | `/api/designs/:id/tabs/:tabId/comments/:commentId/resolve` | `gateParticipate`                                          | 204                                       |
+| POST   | `/api/designs/:id/tabs/:tabId/comments/:commentId/reopen`  | `gateParticipate`                                          | 204                                       |
+| GET    | `/api/designs/:id/comments?status=open\|resolved\|all`     | `gateGrant` (any level, any token)                         | 200 `{ threads: DesignCommentThread[] }`  |
 
 The six writes above are gated by `gateParticipate` and belong to the participation-class routes, beside the
 participation writes share-roles owns (comments, a Participant's stickies). The choke point lets a token that

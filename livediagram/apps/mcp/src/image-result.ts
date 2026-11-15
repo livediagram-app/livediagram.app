@@ -78,15 +78,22 @@ export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string },
 ): Promise<(TextBlock | ImageBlock)[]> {
+  const { svg, leftOut } = await tabSvg(tab, auth);
+  const png = await svgToPngBase64(svg, await previewFonts(tabFontIds(tab)));
+  return previewBlocks({ type: 'image', data: png, mimeType: 'image/png' }, leftOut);
+}
+
+// The tab's SVG, its images, icons and emoji resolved as the editor draws them: the PNG's source, and what the
+// interactive view draws (view-tab.ts, docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)").
+export async function tabSvg(
+  tab: Tab,
+  auth?: { env: Env; token: string },
+): Promise<{ svg: string; leftOut: number }> {
   const art = previewResolvers(await previewEmoji(emojiGlyphsOf(tab.elements)));
   const { resolveImageHref, leftOut } = auth
     ? await buildImageResolver(auth.env, auth.token, tab)
     : NO_IMAGES;
-  const png = await svgToPngBase64(
-    renderElementsToSvg(tab, { resolveImageHref, ...art }),
-    await previewFonts(tabFontIds(tab)),
-  );
-  return previewBlocks({ type: 'image', data: png, mimeType: 'image/png' }, leftOut);
+  return { svg: renderElementsToSvg(tab, { resolveImageHref, ...art }), leftOut };
 }
 
 // The editor's font ids a tab draws in: its elements' and its own (the fonts a preview fetches beyond Inter), and

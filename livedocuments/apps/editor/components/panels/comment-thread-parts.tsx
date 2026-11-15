@@ -6,6 +6,10 @@
 // `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
 import { useRef, useState, type RefObject } from 'react';
 import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
+import {
+  AiCommentMark,
+  EditedCommentMark,
+} from '@liveworkspace/workbench/components/comments/CommentMarks';
 import { useReactionTray } from '@liveworkspace/workbench/components/comments/CommentReactions';
 import {
   ScopedAddReactionButton,
@@ -299,7 +303,10 @@ function CommentRow({
               {formatRelativeTimeCompact(now - comment.createdAt)}
             </time>
           </Tooltip>
+          {comment.editedAt ? <EditedCommentMark /> : null}
         </div>
+        {/* An agent's comment says so (docs/specs/024-agents/agent-presence.md "Comments"). */}
+        {comment.ai ? <AiCommentMark /> : null}
         <p
           className={`mt-0.5 whitespace-pre-wrap break-words text-slate-700 dark:text-slate-200 ${
             comfortable ? 'text-[13px] leading-relaxed' : 'text-xs'

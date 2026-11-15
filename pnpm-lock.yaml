@@ -6588,6 +6588,12 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@liveworkspace/element-model':
+        specifier: workspace:*
+        version: link:../element-model
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../media

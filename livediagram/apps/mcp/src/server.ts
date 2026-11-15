@@ -13,6 +13,7 @@ import {
 import { LISTING } from './listing';
 import { registerTools } from './tools';
 import { registerPrompts } from './prompts';
+import { registerViewPage } from './view-tab';
 
 export function buildServer(env: Env): McpServer {
   const server = new McpServer(serverIdentity(LISTING), { instructions: SERVER_INSTRUCTIONS });
@@ -32,6 +33,8 @@ export function buildServer(env: Env): McpServer {
     }),
   );
 
+  // The interactive view's page (docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)").
+  registerViewPage(server);
   registerTools(server, env);
   registerPrompts(server);
   return server;

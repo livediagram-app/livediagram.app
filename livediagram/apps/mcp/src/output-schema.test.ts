@@ -7,6 +7,7 @@ vi.mock('./image-result', () => ({
     content: [{ type: 'text', text: JSON.stringify(value) }],
     structuredContent: value,
   }),
+  tabSvg: async () => ({ svg: '<svg viewBox="-10 -10 120 80"></svg>', leftOut: 0 }),
 }));
 
 import { connectTestClient } from './mcp-test-client';
@@ -81,6 +82,30 @@ async function api(request: Request): Promise<Response> {
       trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
     });
   }
+  if (path.endsWith('/comments') && request.method === 'GET')
+    return json({
+      threads: [
+        {
+          tabId: 't1',
+          tabName: 'Tab 1',
+          elementId: 'e1',
+          ref: 'e1',
+          label: 'Pay',
+          resolved: false,
+          comments: [
+            {
+              id: 'c1',
+              text: 'hi',
+              createdAt: 1,
+              authorName: 'Ana',
+              authorColor: '#000',
+              ai: true,
+              editedAt: 2,
+            },
+          ],
+        },
+      ],
+    });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
@@ -154,6 +179,13 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'unarchiveDocumentOutput',
     args: { documentId: 'd1', teamId: 't1' },
   },
+  { tool: 'list_threads', output: 'listThreadsOutput', args: { documentId: 'd1', status: 'all' } },
+  {
+    tool: 'change_threads',
+    output: 'changeThreadsOutput',
+    args: { documentId: 'd1', changes: [{ op: 'resolve', ref: 'e1' }] },
+  },
+  { tool: 'view_tab', output: 'viewTabOutput', args: { documentId: 'd1' } },
 ];
 
 describe('tool output schemas', () => {
@@ -195,6 +227,9 @@ describe('tool output schemas', () => {
         const [viewText, line, ...extra] = first!.text.split('\n');
         expect([viewText, extra]).toEqual([text, []]);
         expect(JSON.parse(line!)).toEqual({ ...rest, tab: tabMeta });
+      } else if (tool === 'view_tab') {
+        // The view's own tool says one line, not its SVG (docs/specs/015-api/mcp-server.md "Interactive view").
+        expect(first!.text).toBe('Drew tab "Tab 1" for the interactive view.');
       } else {
         expect(JSON.parse(first!.text)).toEqual(structured);
       }
