@@ -33,6 +33,7 @@ import { STATUS_SINCE_FIELD } from './item';
 import { isStatusSince } from './status-since';
 import { isStampField } from './card-stamps';
 import { REPEAT_FIELD, readRepeatRule } from './repeat';
+import { isAssistantId, normaliseAssistant } from './assistant';
 
 type ItemFieldKind =
   | 'text'
@@ -179,6 +180,8 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
       if (!isObj(v)) return undefined;
       const { id, name, color } = v;
       if (typeof id !== 'string' || id.length === 0 || id.length > 64) return undefined;
+      // An AI assistant is the Assignee's alone, and checked whole there (assistant.ts): never a person of that id.
+      if (isAssistantId(id)) return undefined;
       if (typeof name !== 'string' || name.length > 80) return undefined;
       if (typeof color !== 'string' || !HEX_COLOUR.test(color)) return undefined;
       return { id, name: name.trim(), color };
@@ -227,6 +230,18 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
     case 'colour':
       return itemColourValue(v);
   }
+}
+
+// A known field's value: the Assignee may also hold an AI assistant (docs/specs/026-plan/items.md "Handing a card to
+// an AI assistant"), checked whole; every other field, and a person's Assignee, as its kind reads.
+function normaliseKnownField(
+  key: string,
+  kind: ItemFieldKind,
+  v: unknown,
+): ItemFieldValue | undefined {
+  if (key === 'assignee' && isObj(v) && typeof v['id'] === 'string' && isAssistantId(v['id']))
+    return normaliseAssistant(v);
+  return normaliseKnown(kind, v);
 }
 
 // A custom field's value: a scalar or a list of them, or the two shapes a built-in field's kind keeps that are not
@@ -317,7 +332,7 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
       fields[key] = time;
       continue;
     }
-    const value = kind ? normaliseKnown(kind, v) : normaliseUnknown(v);
+    const value = kind ? normaliseKnownField(key, kind, v) : normaliseUnknown(v);
     // `color` was a free key before it was a field: an item made from older data (offline sync, a duplicated
     // project, a seed) may hold any value there. Making one drops a value that is not a swatch rather than
     // refusing the whole item; setting one still has to be a swatch.
