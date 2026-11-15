@@ -1,0 +1,100 @@
+// The plan's calendar feeds (docs/specs/026-plan/calendar-feed.md; blueprint calendar-feed.md "Data and
+// persistence"), in its own SQLite: one row per person, tied to them, holding the SHA-256 of their feed token and
+// their feed options. The token itself is never stored. Reset Link is a new issue over the same row, so the old hash
+// is gone in the same statement.
+
+import type { PlanEnv } from '../types';
+import { feedTokenHash, newFeedToken } from './feed-token';
+
+// A plan schema step (plan-room/plan-schema.ts), append-only like every other.
+export const CALENDAR_FEEDS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS calendar_feeds (
+  plan_id      TEXT    NOT NULL REFERENCES plan (id) ON DELETE CASCADE,
+  person_id    TEXT    NOT NULL,
+  token_hash   TEXT    NOT NULL,
+  board_id     TEXT,
+  mine         INTEGER NOT NULL DEFAULT 0,
+  include_done INTEGER NOT NULL DEFAULT 0,
+  created_at   INTEGER NOT NULL,
+  PRIMARY KEY (plan_id, person_id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS calendar_feeds_token ON calendar_feeds (token_hash);
+`;
+
+// What a feed shows (calendar-feed.md "What it shows"): one board's cards or every board's (null), only the cards
+// that name the person, and done cards or not.
+export type CalendarFeedOptions = { boardId: string | null; mine: boolean; includeDone: boolean };
+
+// A feed as a fetch reads it: whose it is and what it shows. Plain data, so it crosses the room's RPC boundary.
+export type CalendarFeed = CalendarFeedOptions & { personId: string };
+
+type FeedRow = {
+  person_id: string;
+  board_id: string | null;
+  mine: number;
+  include_done: number;
+};
+
+/** A fresh token for the person's feed on this plan, made or reset (the old token stops at once). Shown once. */
+export async function issueCalendarFeed(
+  env: PlanEnv,
+  planId: string,
+  personId: string,
+  options: CalendarFeedOptions,
+  now: number,
+): Promise<string> {
+  const token = newFeedToken();
+  await env.PLAN_DB.prepare(
+    `INSERT INTO calendar_feeds (plan_id, person_id, token_hash, board_id, mine, include_done, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT (plan_id, person_id) DO UPDATE SET token_hash = excluded.token_hash,
+       board_id = excluded.board_id, mine = excluded.mine, include_done = excluded.include_done,
+       created_at = excluded.created_at`,
+  )
+    .bind(
+      planId,
+      personId,
+      await feedTokenHash(token),
+      options.boardId,
+      options.mine ? 1 : 0,
+      options.includeDone ? 1 : 0,
+      now,
+    )
+    .run();
+  return token;
+}
+
+/** The person's feed on this plan turned off; whether there was one. */
+export async function revokeCalendarFeed(
+  env: PlanEnv,
+  planId: string,
+  personId: string,
+): Promise<boolean> {
+  const result = await env.PLAN_DB.prepare(
+    'DELETE FROM calendar_feeds WHERE plan_id = ? AND person_id = ?',
+  )
+    .bind(planId, personId)
+    .run();
+  return (result.meta.changes ?? 0) > 0;
+}
+
+/** The feed a token's hash names on this plan, or null for a token it never made (or one since reset). */
+export async function calendarFeedOf(
+  env: PlanEnv,
+  planId: string,
+  tokenHash: string,
+): Promise<CalendarFeed | null> {
+  const row = await env.PLAN_DB.prepare(
+    `SELECT person_id, board_id, mine, include_done FROM calendar_feeds
+      WHERE plan_id = ? AND token_hash = ?`,
+  )
+    .bind(planId, tokenHash)
+    .first<FeedRow>();
+  if (!row) return null;
+  return {
+    personId: row.person_id,
+    boardId: row.board_id,
+    mine: row.mine === 1,
+    includeDone: row.include_done === 1,
+  };
+}

@@ -464,6 +464,7 @@
     "./lib/crc32": "./src/lib/crc32.ts",
     "./lib/cursor-hover": "./src/lib/cursor-hover.ts",
     "./lib/debug-log": "./src/lib/debug-log.ts",
+    "./lib/editor-path": "./src/lib/editor-path.ts",
     "./lib/drag-affected-arrows": "./src/lib/drag-affected-arrows.ts",
     "./lib/drag-look": "./src/lib/drag-look.ts",
     "./lib/drag-ride": "./src/lib/drag-ride.ts",

@@ -22,6 +22,24 @@ import {
 } from '@liveworkspace/workbench/components/canvas/indicator-items';
 import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
+import { useScreenLinkMarker, type ScreenLinkMarker } from './screen-link-pages';
+
+// A link indicator for a screen link (docs/specs/007-editor/wireframe-pages.md "Setting a link"): drawn with the
+// screen glyphs, a broken one in warning red.
+export type ScreenIndicatorItem = IndicatorItem & { screen?: 'linked' | 'back' | 'broken' };
+
+/** The link item for a screen link's marker: its own glyph, name and hover card, its press the marker's. */
+export function screenMarkerItem(marker: ScreenLinkMarker): ScreenIndicatorItem {
+  const broken = marker.state === 'broken';
+  return {
+    kind: 'link',
+    screen: broken ? 'broken' : marker.state === 'back' ? 'back' : 'linked',
+    label: broken ? 'Broken screen link' : 'Go to screen',
+    word: 'Screen',
+    onClick: marker.press,
+    hoverCard: { title: broken ? 'Broken link' : 'Screen link', description: marker.description },
+  };
+}
 
 type Handlers = Pick<
   BoxedElementViewProps,
@@ -35,7 +53,9 @@ export function elementIndicatorItems(
   // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md): no
   // comment indicator.
   showComments = true,
-): IndicatorItem[] {
+  // The element's screen link marker, when its link is one (useScreenLinkMarker).
+  screen: ScreenLinkMarker | null = null,
+): ScreenIndicatorItem[] {
   const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
   // A link card IS its link; an annotation's marker is its note. A done action stops showing.
   const link =
@@ -46,7 +66,7 @@ export function elementIndicatorItems(
       : undefined;
   const assignee = isOpenAction(element.action) ? element.action?.assignee : undefined;
   const assigneeName = assignee?.name?.trim() || 'a teammate';
-  return buildIndicatorItems({
+  const items: ScreenIndicatorItem[] = buildIndicatorItems({
     link: link
       ? { onFollow: () => onFollowLink(link), destination: describeLink(link, tabSummaries) }
       : undefined,
@@ -67,6 +87,8 @@ export function elementIndicatorItems(
       onOpen: () => onOpenComments(element.id),
     },
   });
+  // The screen marker stands where a link's indicator stands: first. A link card's link is its face, so it has none.
+  return screen && element.type !== 'link-card' ? [screenMarkerItem(screen), ...items] : items;
 }
 
 export function useElementIndicators(
@@ -83,8 +105,13 @@ export function useElementIndicators(
   },
   // The element's drawn corner radius.
   cornerPx: number,
-): { items: IndicatorItem[]; layout: IndicatorLayout | null; cornerPx: number } {
-  const items = elementIndicatorItems(element, handlers, useCommentBadges());
+): { items: ScreenIndicatorItem[]; layout: IndicatorLayout | null; cornerPx: number } {
+  const items = elementIndicatorItems(
+    element,
+    handlers,
+    useCommentBadges(),
+    useScreenLinkMarker(element),
+  );
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A circle or a pill is fully round however its corner preset reads.
   const indicatorCornerPx = shape === 'circle' || shape === 'stadium' ? Infinity : cornerPx;

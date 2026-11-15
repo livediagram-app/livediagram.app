@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import router, { type Env } from './index';
-import {
-  legacyEditorRedirect,
-  legacyFormRedirect,
-  legacyHelpRedirect,
-  liveplannerOrigin,
-} from './legacy-editor-route';
+import { legacyHelpRedirect } from './legacy-help-route';
 
 function envWithLive() {
   const urls: string[] = [];
@@ -25,46 +20,6 @@ function envWithLive() {
 }
 const dispatch = (path: string, env: Env) =>
   router.fetch(new Request(`https://www.livehuddle.app${path}`), env);
-
-describe('legacyEditorRedirect', () => {
-  it('permanently redirects /diagram/<id> to /document/<id>, keeping the query', () => {
-    const res = legacyEditorRedirect(new URL('https://www.livehuddle.app/diagram/abc-123?t=tab1'))!;
-    expect(res.status).toBe(308);
-    expect(res.headers.get('location')).toBe('https://www.livehuddle.app/document/abc-123?t=tab1');
-  });
-
-  it('redirects a share link and the bare segment', () => {
-    expect(
-      legacyEditorRedirect(
-        new URL('https://www.livehuddle.app/diagram/shared?s=CODE1234'),
-      )!.headers.get('location'),
-    ).toBe('https://www.livehuddle.app/document/shared?s=CODE1234');
-    expect(
-      legacyEditorRedirect(new URL('https://www.livehuddle.app/diagram'))!.headers.get('location'),
-    ).toBe('https://www.livehuddle.app/document');
-  });
-
-  it('leaves look-alike and current paths alone', () => {
-    for (const path of ['/diagrams', '/diagramx/1', '/document/abc', '/help/diagram']) {
-      expect(legacyEditorRedirect(new URL(`https://www.livehuddle.app${path}`)), path).toBeNull();
-    }
-  });
-});
-
-describe('router dispatch of the legacy editor route', () => {
-  it('redirects before any worker sees the request', async () => {
-    const { env, urls } = envWithLive();
-    const res = await dispatch('/diagram/abc-123', env);
-    expect(res.status).toBe(308);
-    expect(urls).toEqual([]);
-  });
-
-  it('still serves the current editor route from the editor worker', async () => {
-    const { env, urls } = envWithLive();
-    await dispatch('/document/abc-123', env);
-    expect(urls).toEqual(['https://www.livehuddle.app/document/abc-123']);
-  });
-});
 
 describe('legacyHelpRedirect', () => {
   it('sends every renamed help article to its new address, for good', () => {
@@ -261,48 +216,6 @@ describe('legacyHelpRedirect', () => {
     const { env, urls } = envWithLive();
     const res = await dispatch('/help/tabs/add-to-diagram/', env);
     expect(res.status).toBe(308);
-    expect(urls).toEqual([]);
-  });
-});
-
-describe('legacyFormRedirect', () => {
-  const at = (path: string) => new URL(`https://www.livehuddle.app${path}`);
-
-  it('sends an old form link to the same path on liveplanner, for good, keeping the query', () => {
-    const res = legacyFormRedirect(at('/form/AbC123?embed=1'), undefined)!;
-    expect(res.status).toBe(308);
-    expect(res.headers.get('location')).toBe('https://www.liveplanner.app/form/AbC123?embed=1');
-    expect(legacyFormRedirect(at('/form'), undefined)!.headers.get('location')).toBe(
-      'https://www.liveplanner.app/form',
-    );
-    expect(legacyFormRedirect(at('/form/'), undefined)!.headers.get('location')).toBe(
-      'https://www.liveplanner.app/form/',
-    );
-  });
-
-  it("names liveplanner's address for each deployment", () => {
-    expect(liveplannerOrigin(undefined)).toBe('https://www.liveplanner.app');
-    expect(liveplannerOrigin('staging')).toBe('https://staging.liveplanner.app');
-    expect(liveplannerOrigin('local')).toBe('http://localhost:3200');
-    expect(legacyFormRedirect(at('/form/CODE'), 'staging')!.headers.get('location')).toBe(
-      'https://staging.liveplanner.app/form/CODE',
-    );
-    expect(legacyFormRedirect(at('/form/CODE'), 'local')!.headers.get('location')).toBe(
-      'http://localhost:3200/form/CODE',
-    );
-  });
-
-  it('leaves look-alike paths alone', () => {
-    for (const path of ['/forms', '/formx/1', '/help/form', '/document/form']) {
-      expect(legacyFormRedirect(at(path), undefined), path).toBeNull();
-    }
-  });
-
-  it('redirects through the router before the editor sees it', async () => {
-    const { env, urls } = envWithLive();
-    const res = await dispatch('/form/CODE1234', env);
-    expect(res.status).toBe(308);
-    expect(res.headers.get('location')).toBe('https://www.liveplanner.app/form/CODE1234');
     expect(urls).toEqual([]);
   });
 });

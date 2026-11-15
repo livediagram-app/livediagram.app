@@ -802,9 +802,9 @@ twin on the other host, and the same for each audience. The twins are one named 
 `BARE_WWW_TRANSITION` in `@liveworkspace/sites/www`, with the date before which they must not be dropped. The key
 set is the same on both hosts, so a check fetches it from wherever its `ACCOUNTS_URL` points. Two places check tokens
 inside Better Auth, which only knows its own issuer: the account API's `vouchedPerson` and closing an account both
-introspect an app's access token, and an inactive answer for a token on the bare issuer is checked again here,
-against this Worker's own keys, the bare issuer, an app audience, the asking client (`azp`) and a live session
-(`legacy-issuer.ts`). Refresh tokens and API tokens (`lwt_`, `lvd_` and the like) are opaque rows, so they never
+introspect an app's access token. Only an access token can reach them, and those last an hour, so for the hour after
+the move one minted on the bare issuer was checked again here; that check was removed once none could still be live.
+Refresh tokens and API tokens (`lwt_`, `lvd_` and the like) are opaque rows, so they never
 named a host; CLI logins and MCP connectors, which hold those, keep working untouched.
 
 **Audiences stay as registered.** An audience is a name, not an address: each app's client is bound to its resource

@@ -40,7 +40,6 @@
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
-    "@liveworkspace/migration": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",

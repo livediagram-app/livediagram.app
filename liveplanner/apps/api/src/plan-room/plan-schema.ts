@@ -34,6 +34,7 @@ import {
   automationsV19,
 } from './automations/automation-schema';
 import { GITHUB_PULLS_SCHEMA, GITHUB_SCHEMA } from './github/github-schema';
+import { CALENDAR_FEEDS_SCHEMA } from '../calendar/feed-store';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -523,6 +524,10 @@ const V28 = AUTOMATION_ADDRESSES_SCHEMA;
 // counts"): the table, today's counts seeded from the cards, and the triggers on `items` that keep it.
 const V29 = FLOW_COUNTS_SCHEMA;
 
+// Calendar feeds (../calendar/feed-store.ts; docs/specs/026-plan/calendar-feed.md): each person's feed token hash and
+// feed options.
+const V30 = CALENDAR_FEEDS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -553,6 +558,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V27,
   V28,
   V29,
+  V30,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

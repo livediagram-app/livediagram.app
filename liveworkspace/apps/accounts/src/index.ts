@@ -216,7 +216,6 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
   if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
     return deleteAccount(request, env.AUTH_DB, {
       auth: getAuth(env),
-      issuerEnv: env,
       checkLimiter: env.CODE_IP_LIMITER,
       index: indexPurgeConfig(env),
       closeWorkbench: (userId) =>
@@ -413,7 +412,6 @@ async function step(name: string, run: () => Promise<void>): Promise<void> {
 function deletionCodeConfig(env: Env): DeletionCodeConfig {
   return {
     auth: getAuth(env),
-    issuerEnv: env,
     emailLimiter: env.CODE_EMAIL_LIMITER,
     checkLimiter: env.CODE_IP_LIMITER,
     send: (to, code, app) => sendDeletionCodeEmail(env, to, code, app),
