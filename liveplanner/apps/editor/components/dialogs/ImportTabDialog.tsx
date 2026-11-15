@@ -26,6 +26,17 @@ import { ImportError } from './import/ImportError';
 import type { HeldFile } from './import/HeldFileChip';
 import { trackerTasks } from '@/lib/tracker-worker/tracker-worker-client';
 import type { IntoTab } from './import/into-tab';
+import { PROJECT_FILE_MAX_BYTES, summariseProjectFile } from '@liveplanner/project';
+import { pickTabFile } from '@/lib/import-tab';
+import type { PlanFileImportActions } from '@/hooks/plan/usePlanFileImport';
+import { WholePlanPreview } from './import/WholePlanPreview';
+import {
+  PLAN_ROW_LABEL,
+  PLAN_TOO_BIG,
+  PROJECT_FILE_ACCEPT,
+  planFileRefusal,
+} from './import/plan-file-copy';
+import type { ProjectFileSummary } from '@liveplanner/project';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -42,6 +53,9 @@ type ImportTabDialogProps = {
   // A board from another tool (docs/specs/026-plan/tracker-import.md): an Editor's, so without `canImport` the
   // dialog has no tool section.
   tracker: TrackerImportActions;
+  // A whole plan from its .liveplanner file (plan-tabs.md "The Import dialog", A Whole Plan): an Editor's, beside the
+  // tools, made in a signed-in person's account.
+  planFile: PlanFileImportActions;
   onClose: () => void;
 };
 
@@ -52,7 +66,8 @@ const BACK = 'All Imports';
 // The one Import dialog (docs/specs/026-plan/plan-tabs.md "The Import dialog"), counterpart to ExportTabDialog:
 // every way in, as a list. Into This Tab is the tab's own import (a Board or Sheet tab's CSV through its own picker,
 // any other tab's liveplanner Tab JSON, which REPLACES the tab and so leads with a warning); A Board from Another Tool
-// is Trello, Asana, Jira and Linear, each previewed before anything is written. A file dropped on any step goes where
+// is Trello, Asana, Jira and Linear, and A Whole Plan a plan's own file, each previewed before anything is written. A
+// file dropped on any step goes where
 // it belongs, and one it can't take is said on that step, which stays as it was. A large tab JSON is held, not put in
 // the box (DROP_INLINE_MAX_BYTES). Errors render inline; on success the dialog closes, or shows what could not land.
 export function ImportTabDialog({
@@ -61,13 +76,18 @@ export function ImportTabDialog({
   onImportFile,
   onImportText,
   tracker,
+  planFile,
   onClose,
 }: ImportTabDialogProps) {
   const titleId = useId();
   const tools = tracker.canImport;
   // With nothing to choose between (the liveplanner Tab alone), the dialog opens straight at it.
-  const jsonAlone = !tools && intoTab.kind === 'json' && !intoTab.blocked;
-  const [step, setStep] = useState<'list' | 'json'>(jsonAlone ? 'json' : 'list');
+  const jsonAlone = !tools && !planFile.offered && intoTab.kind === 'json' && !intoTab.blocked;
+  const [step, setStep] = useState<'list' | 'json' | 'plan'>(jsonAlone ? 'json' : 'list');
+  // A plan's file read and summarised, previewed on the `plan` step; what the plan step is doing, and why it failed.
+  const [plan, setPlan] = useState<{ text: string; summary: ProjectFileSummary } | null>(null);
+  const [planBusy, setPlanBusy] = useState<'reading' | 'importing' | null>(null);
+  const [planError, setPlanError] = useState<string | null>(null);
   // A dropped liveplanner tab's JSON, put in the box to import with a press; past DROP_INLINE_MAX_BYTES held as the file
   // instead. `dropped` remounts the paste panel for each drop, so a second drop on the step replaces the first.
   const [jsonText, setJsonText] = useState('');
@@ -94,6 +114,44 @@ export function ImportTabDialog({
     onClose();
   };
 
+  // A plan's file read in the browser (plan-tabs.md "The Import dialog", A Whole Plan): previewed, or its refusal said
+  // on the step it came from, which stays as it was.
+  const showPlan = (text: string) => {
+    const read = summariseProjectFile(text);
+    debugLog('[plan-file] read', { ok: read.ok, bytes: text.length });
+    if (!read.ok) {
+      setDropError(planFileRefusal(read.failure));
+      return;
+    }
+    flow.back();
+    setPlanError(null);
+    setPlan({ text, summary: read.summary });
+    setStep('plan');
+  };
+
+  const pickWholePlan = async () => {
+    if (planFile.blocked || planBusy) return;
+    setDropError(null);
+    setPlanError(null);
+    setPlanBusy('reading');
+    const picked = await pickTabFile(PROJECT_FILE_ACCEPT, { maxBytes: PROJECT_FILE_MAX_BYTES });
+    setPlanBusy(null);
+    if (!picked) return;
+    if (picked.tooBig) setDropError(PLAN_TOO_BIG);
+    else showPlan(picked.text);
+  };
+
+  const importPlan = async () => {
+    if (!plan || planBusy) return;
+    setDropError(null);
+    setPlanError(null);
+    setPlanBusy('importing');
+    const outcome = await planFile.importFile(plan.text, plan.summary.name);
+    setPlanBusy(null);
+    if (outcome.ok) onClose();
+    else setPlanError(outcome.error);
+  };
+
   const pickTool = (source: TrackerSource) => {
     setDropError(null);
     void flow.pick(source);
@@ -108,7 +166,7 @@ export function ImportTabDialog({
   // A drop on any step (plan-tabs.md "The Import dialog"). A refusal is said where it was dropped, and that step stays
   // as it was: a preview and the box's text are kept.
   const dropFile = async (file: File) => {
-    if (flow.busy || importing) return;
+    if (flow.busy || importing || planBusy) return;
     setDropError(null);
     // Refused unread past the cap, as a picked file is.
     if (file.size > TRACKER_FILE_MAX_BYTES) {
@@ -116,12 +174,18 @@ export function ImportTabDialog({
       return;
     }
     const text = await file.text();
-    const route = await routeImportDrop(text, file.name, { intoTab, tools }, (t, name) =>
-      tasks.run({ kind: 'read', text: t, name }),
+    const route = await routeImportDrop(
+      text,
+      file.name,
+      { intoTab, tools, plan: planFile },
+      (t, name) => tasks.run({ kind: 'read', text: t, name }),
     );
     debugLog('[import] drop', { to: route.to, bytes: file.size, step });
     if (route.to === 'error') setDropError(route.error);
-    else if (route.to === 'tracker') {
+    else if (route.to === 'plan') {
+      if (file.size > PROJECT_FILE_MAX_BYTES) setDropError(PLAN_TOO_BIG);
+      else showPlan(text);
+    } else if (route.to === 'tracker') {
       // Its preview, on the list's step, in place of any before it.
       setStep('list');
       await flow.show(route.read);
@@ -138,7 +202,10 @@ export function ImportTabDialog({
       setStep('json');
     }
   };
-  const drop = useFileDrop((file) => void dropFile(file), flow.busy === null && !importing);
+  const drop = useFileDrop(
+    (file) => void dropFile(file),
+    flow.busy === null && !importing && planBusy === null,
+  );
   // The panel's runners, a drop's refusal going once anything else is tried.
   const importText = (text: string) => {
     setDropError(null);
@@ -151,7 +218,15 @@ export function ImportTabDialog({
 
   const preview = step === 'list' ? flow.preview : null;
   const toolName = preview ? TRACKER_SOURCE_NAMES[preview.board.source] : null;
-  const title = step === 'json' ? 'Import to Tab' : toolName ? `Import from ${toolName}` : 'Import';
+  const planShown = step === 'plan' ? plan : null;
+  const title =
+    step === 'json'
+      ? 'Import to Tab'
+      : planShown
+        ? 'Import a Plan'
+        : toolName
+          ? `Import from ${toolName}`
+          : 'Import';
   const subtitle =
     step === 'json' ? (
       report ? (
@@ -161,7 +236,7 @@ export function ImportTabDialog({
       ) : (
         'Paste your JSON, or import a file.'
       )
-    ) : toolName ? (
+    ) : toolName || planShown ? (
       'See what it will make, then import it.'
     ) : (
       <>
@@ -196,7 +271,28 @@ export function ImportTabDialog({
         className="relative flex min-h-0 flex-1 flex-col"
         {...drop.handlers}
       >
-        {preview ? (
+        {planShown ? (
+          <WholePlanPreview
+            head={
+              <BackBar
+                label={BACK}
+                current={PLAN_ROW_LABEL}
+                onClick={() => {
+                  setDropError(null);
+                  setPlanError(null);
+                  setStep('list');
+                }}
+                disabled={planBusy !== null}
+                gap="none"
+              />
+            }
+            summary={planShown.summary}
+            error={planError ?? dropError}
+            busy={planBusy}
+            onChooseAnother={() => void pickWholePlan()}
+            onImport={() => void importPlan()}
+          />
+        ) : preview ? (
           <TrackerImportPanel
             head={
               <BackBar
@@ -281,6 +377,8 @@ export function ImportTabDialog({
                 error={dropError ?? flow.error}
                 onIntoTab={pickIntoTab}
                 onTool={pickTool}
+                wholePlan={{ ...planFile, reading: planBusy === 'reading' }}
+                onWholePlan={() => void pickWholePlan()}
               />
             )}
           </div>

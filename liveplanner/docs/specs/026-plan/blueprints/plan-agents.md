@@ -27,8 +27,14 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   field widget. A board the api sent without `widgets` lists none. The CLI's `item ls` appends
   ` | Widgets: Item Count, Filter` to each board's line. The editor's `usePlanStatusNames` imports the same
   `statusColumnsOfSetups`.
-- `list_items` answers `listItemsPage(state, filter, page, { pictureLink, url })`; the CLI's `item ls` keeps
-  `planListing` (every card, formatting included). Both build boards with `listedBoards` and cards with
+- `list_items` answers `listItemsPage(state, filter, page, { pictureLink, url })`; the CLI's `item ls` lists every card
+  `keptListItems(state, filter, page)` keeps, formatting included, unpaged. `keptListItems` is the one pass both share
+  (`list-items-page.ts`): types and columns (`passesListingFilter`), `updatedSince`, `query`, then a closed card counted
+  and dropped while `closedOut` (`!includeClosed && !filter.statuses`); it answers `{ kept, closed, closedOut }`,
+  sorted by key. `item ls` reads `--type`/`--status` (repeatable lists) with `resolveListingFilter` and
+  `--query`/`--updated-since` with `resolveListItemsPage`, passing `includeClosed` as `--include-closed` or neither text
+  nor time given; `closed > 0` adds `closedLeftOut` and the last line `closedLeftOutLine(closed)`. `planListing` stays
+  as the whole-plan listing the picture tests read. Both build boards with `listedBoards` and cards with
   `itemLister(state, pictureLink, rich)` (`plan-listing.ts`; `rich` true, or `{ onLeftOut }` told of each card whose `isRichFieldKey` keys it dropped), so a card reads the same in each.
   `resolveListItemsPage(args)` reads `query` (trimmed, lower-cased; blank is none), `updatedSince` (`Date.parse`,
   else `updated_since_invalid`), `cursor` (`after-<key>`, read by `/^after-(\d{1,9})$/`, else `cursor_invalid`),

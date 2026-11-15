@@ -190,6 +190,7 @@ export * from './imported-thread';
 // The whole-project `liveplanner.project` envelope and the per-tab JSON and Markdown export (the editor and the
 // CLI's pull files).
 export * from './project-envelope';
+export * from './project-file-summary';
 export * from './export-tab-text';
 export * from './export-tab-plan';
 export * from './plan-board-layout';
