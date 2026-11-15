@@ -114,6 +114,7 @@ describe('a Dashboard’s live image at size', () => {
   });
 
   // The largest page there can be: every row of every slot a chart or metric, over the most cards a project holds.
+  // The budget is CPU time, not wall time: a loaded CI runner stretches only the wall clock past vitest's 5 s default.
   it('draws 12 rows of 4 charts and metrics over a full plan (ITEMS_MAX cards) within budget', async () => {
     const views = Array.from({ length: DASHBOARD_ROWS_MAX * DASHBOARD_SLOTS_MAX }, (_, i) => ({
       id: `v${i}`,
@@ -146,5 +147,5 @@ describe('a Dashboard’s live image at size', () => {
     expect(svg.length).toBeGreaterThan(0);
     // Measured at about 37 ms on an M-series laptop: the 48 pictures are most of it (plan-view-art.perf.test.ts).
     expect(ms).toBeLessThan(cpuBudgetMs(2000));
-  });
+  }, 30_000);
 });

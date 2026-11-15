@@ -675,6 +675,7 @@ describe('every surface', () => {
     expect(source.fieldOf({ key: t1.key }, 'Client Mail')).toBe('a@b.co');
   });
 
+  // The budget is CPU time, not wall time: a loaded CI runner stretches only the wall clock past vitest's 5 s default.
   it('works a full plan (ITEMS_MAX cards) with several rollups out within budget', () => {
     const projects: Item[] = [];
     const cards: Item[] = [];
@@ -704,7 +705,7 @@ describe('every surface', () => {
           calculatedValue(f, c, idx, isDone, { type: task, items: big, types });
     });
     expect(spent).toBeLessThan(cpuBudgetMs(1500));
-  });
+  }, 30_000);
 });
 
 describe('the catalogue and agents', () => {

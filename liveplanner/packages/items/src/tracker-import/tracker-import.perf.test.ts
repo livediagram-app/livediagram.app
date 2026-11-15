@@ -65,7 +65,8 @@ const ctx = {
   boardId: 'b',
 };
 
-describe('importing a file at the caps', () => {
+// The budget is CPU time, not wall time: a loaded CI runner stretches only the wall clock past vitest's 5 s default.
+describe('importing a file at the caps', { timeout: 30_000 }, () => {
   it('reads and plans a full Trello board (TRACKER_CARDS_MAX cards, ten comments each) in budget', () => {
     const text = bigTrello();
     let creates = 0;
