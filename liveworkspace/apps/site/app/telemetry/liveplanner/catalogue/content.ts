@@ -1161,6 +1161,14 @@ export const PLAN_VIEW_STATUSES = chart(
   { types: ['ViewStatuses'] },
 );
 
+export const PLAN_VIEW_RANGE = chart(
+  'Plan',
+  'Changed',
+  'Flow Chart Ranges Changed',
+  "A flow chart's range (Last 14, 30, 90 or 180 Days) changed from its settings cog or its View flyout (Cycle Time, Throughput, Cumulative Flow).",
+  { types: ['ViewRange'] },
+);
+
 export const PLAN_CARD_STYLES = chart(
   'Plan',
   'Changed',
@@ -1492,6 +1500,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
   PLAN_VIEW_STATUSES,
+  PLAN_VIEW_RANGE,
   PLAN_CARD_STYLES,
   PLAN_TIMERS_STARTED,
   PLAN_TIMERS_STOPPED,
@@ -1509,7 +1518,7 @@ export const PLAN_BOARDS: MetricStack = {
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
-  // Calendar moves, chart statuses, card styles and webhook secrets regenerated are slices of Boards Set Up (every
+  // Calendar moves, chart statuses, flow chart ranges, card styles and webhook secrets regenerated are slices of Boards Set Up (every
   // Plan·Changed), and time added by hand a slice of Items Added (every Plan·Added), so the head counts them once. A
   // card from a template is already one of Items Added.
   headline: PLAN_BOARDS_MEMBERS.filter(
@@ -1518,6 +1527,7 @@ export const PLAN_BOARDS: MetricStack = {
       m !== PLAN_CALENDAR_MOVES &&
       m !== PLAN_AUTOMATION_SECRETS_REGENERATED &&
       m !== PLAN_VIEW_STATUSES &&
+      m !== PLAN_VIEW_RANGE &&
       m !== PLAN_CARD_STYLES &&
       m !== PLAN_TIME_ENTRIES,
   ),

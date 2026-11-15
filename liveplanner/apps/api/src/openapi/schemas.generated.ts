@@ -11512,6 +11512,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "namesWidth": {
         "type": "number"
       },
+      "rangeDays": {
+        "enum": [
+          14,
+          30,
+          90,
+          180
+        ],
+        "type": "number"
+      },
       "rowOrder": {
         "items": {
           "type": "string"
@@ -11559,7 +11568,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "workload",
       "status-mix",
       "priority-matrix",
-      "search"
+      "search",
+      "cycle-time",
+      "throughput",
+      "cumulative-flow"
     ],
     "type": "string"
   },

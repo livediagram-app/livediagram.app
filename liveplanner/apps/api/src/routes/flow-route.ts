@@ -27,7 +27,7 @@ const refused = (error: string, status = 400) => json({ error }, { status });
 // ITEM_TYPES_MAX, every type when absent or empty). Read by splitting, never a regex.
 export function flowQueryOf(params: URLSearchParams): FlowQuery | Response {
   const rawDays = params.get('days');
-  let days = FLOW_RANGE_DEFAULT;
+  let days: number = FLOW_RANGE_DEFAULT;
   if (rawDays !== null) {
     const digits =
       rawDays.length > 0 && rawDays.length <= 3 && [...rawDays].every((c) => c >= '0' && c <= '9');

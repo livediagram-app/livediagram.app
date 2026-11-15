@@ -34,6 +34,17 @@ describe('a plan view’s picture', () => {
     expect(planViewArt(view('workload'), sized, 'light')).not.toContain('5.5');
   });
 
+  // docs/specs/026-plan/plan-views.md "Flow charts", "Images": no flow read in an export.
+  it('draws a flow chart as its frame, name and range, with where to see it', () => {
+    const svg = planViewArt(view('throughput', { rangeDays: 90 }), data, 'light');
+    expect(svg).toContain('Throughput · Last 90 Days');
+    expect(svg).toContain('Open the plan to see the flow.');
+    expect(planViewArt(view('cycle-time'), data, 'light')).toContain('Cycle Time · Last 30 Days');
+    expect(planViewArt(view('cumulative-flow', { title: 'Sprint Flow' }), data, 'light')).toContain(
+      'Sprint Flow · Last 30 Days',
+    );
+  });
+
   it('draws Priority by Status as a grid of counts', () => {
     const svg = planViewArt(view('priority-matrix'), data, 'light');
     expect(svg).toContain('Priority by Status');

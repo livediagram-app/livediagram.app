@@ -251,11 +251,58 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
     `toDay`; each `{ start, cards, running, whole }`, `running` for the one holding `toDay` (today, not over yet), `whole` when it lies
     inside the range and is not running. `average`: the whole periods' cards over their number, to one decimal, null
     with none. `flowPeriodOf(days)`: `'day'` up to `FLOW_DAILY_MAX`, else `'week'`.
-- Part 3 (visible): the three views in `apps/editor/components/plan/views/` (`CycleTimeView`, `ThroughputView`,
-  `CumulativeFlowView`), one read per tab shared by its flow charts (`usePlanFlow`, re-read when `items_rev` moves,
-  debounced), Chart Settings' **Range** section, palette tiles and Dashboard slot choices, `svgPlanView` labels, the
-  states and copy the spec gives, telemetry `Plan` · `Changed` · `ViewRange`, and the help articles
-  (plan/visualisations, plan/dashboards).
+- Part 3 (visible, shipped):
+  - Ids: `FLOW_VIEWS` (`isFlowView`) in `PLAN_VISUALISATIONS` and `PLAN_PALETTE_VISUALISATIONS`, labelled in
+    `PLAN_VISUALISATION_LABELS`; `rangeDays` validated by `isPlanViewSettings` through `isFlowRange` (any of
+    `FLOW_RANGES`, 30 accepted, never written); `flowRangeOf(settings)` reads it, else `FLOW_RANGE_DEFAULT`. No
+    `VIEW_NEEDS` row: every card type can feed a flow chart.
+  - Read: `fetchFlow(scope, days)` (`apps/editor/lib/api/flow.ts`; `'offline'` for a This Browser plan, `tabId` for a
+    tab-scoped session, no `types`: every type is read and each chart filters with its own `viewShownTypes`).
+    `createFlowStore` (`hooks/plan/plan-flow-store.ts`) keys an entry by `projectId|tabId|shareCode|days`; an entry
+    lives while a chart subscribes and is dropped with its last. `want(key, scope, days, version)` (`version`: the
+    `plan.items` map) reads at once the first time, else after `FLOW_REFETCH_MS` (2000) from the last change, one timer
+    per entry; an older read's answer is dropped (`seq`); a failed refresh keeps the last answer, a failed first read
+    is `error`. `usePlanFlow(scope, days, version)` (`useSyncExternalStore`) answers `{ status: 'none' | 'loading' |
+'ready' | 'error' | 'offline', data, retry }`.
+  - Frame (`apps/editor/components/plan/views/flow-frame.tsx`): `useFlowChart` (range, read, types), `FlowFrame` over `ViewFrame` (title
+    `flowTitle`: "Cycle Time · Last 30 Days"; `loadingText` "Loading flow…"; `empty` a `CompactEmptyState` for
+    `offline` and `error` (Try Again: `retry`), "Open the plan to see the flow." outside a plan), the summary row
+    (`FLOW_SUMMARY_PX` 30), the key row (`FLOW_KEY_PX` 22, Cumulative Flow), then the plot svg. `flowFrameState` gives
+    the state. Body = element less a 41 px header and 2 px border; `flowPlotBox` is null under `FLOW_PLOT_MIN` (200 ×
+    140), the summary then centred alone. `FlowAxes`: `niceTicks` gridlines (dashed, the baseline solid) and labels,
+    and the foot's day labels (`flowDayTicks`, at least `FLOW_DAY_LABEL_PX` 44 apart, the last day always) or given
+    labels. `FlowTip` is the hover card (flipped left past 60% of the width). `plotPoint` maps a pointer into the svg
+    whatever the zoom.
+  - Geometry (`apps/editor/components/plan/views/flow-chart-model.ts`): `niceTicks(max)` (1, 2, 5 × 10ⁿ steps, top at least 1),
+    `flowDayLabel` ("3 Nov", UTC), `flowX`, `cumulativeFlowModel(counts, phases, statusNames, surface)` (bands bottom
+    to top: phase rank done, doing, todo, then the boards' order backwards; `''` is "No status" at the top; colour
+    `mixHex(PHASE_COLOURS[phase], surface, 1 - i / (n - 1) × 0.55)` inside a phase (the phase colour's share); `tops` stacked; `inProgress` and
+    `done` on the last day), `cycleTimeSummary`, `throughputSummary`, `periodLabel`, `daysText`.
+  - `CycleTimeView`: `cycleTimesOf(data.cards, phases, fromDay, toDay, types)`; dots (r 4, In Progress blue at 85%,
+    a 1.5 px surface ring) in one memoised layer; p85 dashed and p50 solid lines in the text ink, labelled "85%" /
+    "50%" at their right ends; hover is the nearest dot within `CYCLE_HIT_PX` (12, `nearestDot`, linear), drawn
+    larger and ringed in the text ink, with a `FlowTip` (#key title, days, finish day). The plot is a focusable
+    `role="group"`: ←/→ step (`plan.announce` the dot), Enter opens; a press on a hovered dot opens its card
+    (`plan.openItem`, only while the card is in `plan.items`) and stops the canvas taking the press.
+  - `ThroughputView`: `throughputOf(cycleTimesOf(...).cards, fromDay, toDay, flowPeriodOf(days))`; a bar per
+    period (`BAR_MAX_PX` 56, `BAR_GAP_SHARE` 0.28, top corners rounded 4, `roundedTop`), the running one at 40%; its
+    count above it when the bar is at least `FLOW_BAR_LABEL_MIN_PX` (16) wide; the average dashed, "Avg 8" at its
+    right end; foot labels the periods' first days, thinned; hovering a period's column shades it and names it.
+    `role="img"` with every period spoken.
+  - `CumulativeFlowView`: `flowCountsOf(data.counts, fromDay, toDay, types)` into `cumulativeFlowModel`;
+    `bandPaths` (one path per band, its top then the band under's top back; the first and last counted days reach
+    their days' edges; days before `countedFrom` undrawn), stroked 1 px in the surface; hover a day: a 1 px line and
+    a `FlowTip` of each band's count top first (`TIP_ROWS_MAX` 8, then "and N more"). Summary "12 in progress · 30
+    done", with "Counting since 15 Nov" while `countedFrom > 0`; empty "No flow counted yet". `role="img"` speaking the
+    last day.
+  - Settings: `planViewSettingsModel` adds `flow`, `range`, `setRange(days)` (drops 30, tracks `('Plan', 'Changed',
+'ViewRange')`); `FlowRangeOptions` (an `OptionRows` single list, "Last N Days") in `PlanViewSettingsPanel`'s
+    **Range** section (open first for a flow view) and `PlanViewMenuSection`'s Range accordion.
+  - Palette tiles and Start Planning (`VISUALISATION_INFO`), slot previews (`slot-previews.tsx`), glyphs
+    (`plan-view-art.tsx`); image exports draw `flowArt` (packages/plan-art): the frame, its name and range, "Open the
+    plan to see the flow.".
+  - Telemetry: `Plan · Changed · ViewRange`, charted on the site as "Flow Chart Ranges Changed".
+  - Help: plan/visualisations "See How Work Flows" and Range, plan/dashboards.
 - Part 4 (agents): the view ids and `rangeDays` in the Dashboard spec of `create_project` / `add_tab` and the plan view
   element of `update_project`, `read_project`'s description ("Cycle Time, last 30 days"), the CLI; role tests
   end to end; fold-back.
@@ -286,27 +333,34 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
 | Slot name field: offered, save, Escape, clear, roles | apps/editor/components/plan/dashboard/SlotNameField.test.tsx                                                                                                                                               |
 | Slot name shown on a chart, metric and figures       | apps/editor/components/plan/views/PlanViewView.slot-name.test.tsx, apps/editor/components/plan/dashboard/DashboardSheetMetric.test.tsx, apps/editor/components/plan/dashboard/DashboardFormMetric.test.tsx |
 | Slot name in exports                                 | packages/plan-art/src/dashboard-export.test.ts, dashboard-card-art.test.ts, plan-view-art.test.ts                                                                                                          |
+| Flow store: share, debounce, drop, error, retry      | apps/editor/hooks/plan/plan-flow-store.test.ts                                                                                                                                                             |
+| Flow geometry, bands, summaries                      | apps/editor/components/plan/views/flow-chart-model.test.ts                                                                                                                                                 |
+| Flow charts: states, hover, keys, roles, 2,000 cards | apps/editor/components/plan/views/FlowViews.test.tsx                                                                                                                                                       |
 | Agent chart names                                    | packages/agent-verbs/src/plan/dashboard-input.test.ts, packages/templates/src/dashboard-builder.test.ts                                                                                                    |
 
 ## Constants and configuration
 
-| Constant                    | Value     | Where              | Safe range |
-| --------------------------- | --------- | ------------------ | ---------- |
-| `GANTT_PAD_DAYS`            | 7         | plan-view-gantt.ts | 0..30      |
-| `GANTT_MIN_DAYS`            | 28        | plan-view-gantt.ts | 7..90      |
-| `GANTT_WEEK_TICKS_MAX_DAYS` | 120       | plan-view-gantt.ts | 60..240    |
-| `TICK_LABEL_PX`             | 52        | GanttView.tsx      | 40..80     |
-| `GANTT_ROW_ORDER_MAX`       | 2000      | gantt-row-order.ts | 500..5000  |
-| `DRAG_SLOP_PX`              | 3         | gantt-drag.tsx     | 2..8       |
-| `CALENDAR_DRAG_SLOP_PX`     | 3         | useCalendarDrag.ts | 2..8       |
-| `GANTT_NAMES_MIN_PX`        | 120       | plan-view-gantt.ts | 80..200    |
-| `GANTT_NAMES_MAX_SHARE`     | 0.6       | plan-view-gantt.ts | 0.4..0.8   |
-| `GANTT_NAMES_STEP_PX`       | 16        | plan-view-gantt.ts | 4..40      |
-| `GANTT_PILL_MIN_COLUMN_PX`  | 160       | GanttView.tsx      | 120..240   |
-| `LANE_H`                    | 30        | GanttView.tsx      | 20..32     |
-| `PLAN_METRIC_SIZE`          | 260 × 64  | plan-views.ts      |            |
-| `PLAN_CHART_SIZE`           | 720 × 400 | plan-views.ts      |            |
-| `PLAN_GANTT_SIZE`           | 880 × 420 | plan-views.ts      |            |
+| Constant                    | Value     | Where               | Safe range |
+| --------------------------- | --------- | ------------------- | ---------- |
+| `GANTT_PAD_DAYS`            | 7         | plan-view-gantt.ts  | 0..30      |
+| `GANTT_MIN_DAYS`            | 28        | plan-view-gantt.ts  | 7..90      |
+| `GANTT_WEEK_TICKS_MAX_DAYS` | 120       | plan-view-gantt.ts  | 60..240    |
+| `TICK_LABEL_PX`             | 52        | GanttView.tsx       | 40..80     |
+| `GANTT_ROW_ORDER_MAX`       | 2000      | gantt-row-order.ts  | 500..5000  |
+| `DRAG_SLOP_PX`              | 3         | gantt-drag.tsx      | 2..8       |
+| `CALENDAR_DRAG_SLOP_PX`     | 3         | useCalendarDrag.ts  | 2..8       |
+| `GANTT_NAMES_MIN_PX`        | 120       | plan-view-gantt.ts  | 80..200    |
+| `GANTT_NAMES_MAX_SHARE`     | 0.6       | plan-view-gantt.ts  | 0.4..0.8   |
+| `GANTT_NAMES_STEP_PX`       | 16        | plan-view-gantt.ts  | 4..40      |
+| `GANTT_PILL_MIN_COLUMN_PX`  | 160       | GanttView.tsx       | 120..240   |
+| `LANE_H`                    | 30        | GanttView.tsx       | 20..32     |
+| `PLAN_METRIC_SIZE`          | 260 × 64  | plan-views.ts       |            |
+| `PLAN_CHART_SIZE`           | 720 × 400 | plan-views.ts       |            |
+| `PLAN_GANTT_SIZE`           | 880 × 420 | plan-views.ts       |            |
+| `FLOW_REFETCH_MS`           | 2000      | plan-flow-store.ts  | 500..10000 |
+| `FLOW_PLOT_MIN`             | 200 × 140 | flow-chart-model.ts |            |
+| `FLOW_DAY_LABEL_PX`         | 44        | flow-chart-model.ts | 36..80     |
+| `CYCLE_HIT_PX`              | 12        | CycleTimeView.tsx   | 8..20      |
 
 ## Defaults ledger
 

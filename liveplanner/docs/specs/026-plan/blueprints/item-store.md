@@ -828,8 +828,8 @@ FROM items i WHERE plan_id = ? AND id IN (SELECT value FROM json_each(?))` (the 
 
 ### Parts still to build (Work Tracker 854)
 
-- Part 3: the three visualisations ([plan-views blueprint](plan-views.md#flow-charts)), drawn from `FlowResponse`
-  through `flowCountsOf`, `cycleTimesOf` and `throughputOf`.
+- Part 3 (shipped): the three visualisations ([plan-views blueprint](plan-views.md#flow-charts)), drawn from
+  `FlowResponse` through `flowCountsOf`, `cycleTimesOf` and `throughputOf`; the editor reads every type (no `types`).
 - Part 4: the agents' doors and fold-back.
 
 ## Live: room op

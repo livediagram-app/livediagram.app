@@ -398,6 +398,93 @@ function Search({ palette }: P) {
   );
 }
 
+// Cycle Time: dots over a baseline, the 85th percentile dashed across them.
+function CycleTime({ palette }: P) {
+  const dots: [number, number][] = [
+    [8, 70],
+    [18, 55],
+    [26, 78],
+    [34, 40],
+    [45, 62],
+    [52, 72],
+    [61, 30],
+    [70, 58],
+    [80, 66],
+    [90, 45],
+  ];
+  return (
+    <Frame palette={palette}>
+      <ChartHead palette={palette} />
+      <svg
+        aria-hidden
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="min-h-0 w-full flex-1"
+      >
+        <line
+          x1="0"
+          x2="100"
+          y1="36"
+          y2="36"
+          stroke={palette.text}
+          strokeOpacity={0.5}
+          strokeDasharray="4 3"
+          vectorEffect="non-scaling-stroke"
+        />
+        {dots.map(([x, y]) => (
+          <ellipse key={x} cx={x} cy={y} rx="2.6" ry="5" fill={BLUE} />
+        ))}
+      </svg>
+    </Frame>
+  );
+}
+
+// Throughput: a bar a week, the last one lighter, a dashed average.
+function Throughput({ palette }: P) {
+  const bars = [45, 70, 55, 85, 60, 35];
+  return (
+    <Frame palette={palette}>
+      <ChartHead palette={palette} />
+      <div className="relative flex min-h-0 flex-1 items-end gap-1.5 px-1">
+        {bars.map((h, i) => (
+          <span
+            key={i}
+            className="flex-1 rounded-t-sm"
+            style={{
+              height: `${h}%`,
+              backgroundColor: BLUE,
+              opacity: i === bars.length - 1 ? 0.4 : 1,
+            }}
+          />
+        ))}
+        <span
+          className="absolute inset-x-0 border-t border-dashed"
+          style={{ bottom: '58%', borderColor: palette.text, opacity: 0.5 }}
+        />
+      </div>
+    </Frame>
+  );
+}
+
+// Cumulative Flow: three bands rising, done at the bottom.
+function CumulativeFlow({ palette }: P) {
+  return (
+    <Frame palette={palette}>
+      <ChartHead palette={palette} />
+      <svg
+        aria-hidden
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="min-h-0 w-full flex-1"
+      >
+        <path d="M0 40 C30 35 60 25 100 10 V100 H0Z" fill={palette.muted} opacity={0.55} />
+        <path d="M0 65 C30 58 60 48 100 35 V100 H0Z" fill={BLUE} />
+        <path d="M0 92 C30 85 60 75 100 60 V100 H0Z" fill={GREEN} />
+      </svg>
+    </Frame>
+  );
+}
+
 const VISUALISATION_PREVIEWS: Record<PlanVisualisation, (p: P) => ReactNode> = {
   gantt: Gantt,
   calendar: Calendar,
@@ -406,6 +493,9 @@ const VISUALISATION_PREVIEWS: Record<PlanVisualisation, (p: P) => ReactNode> = {
   'status-mix': StatusMix,
   'priority-matrix': PriorityMatrix,
   search: Search,
+  'cycle-time': CycleTime,
+  throughput: Throughput,
+  'cumulative-flow': CumulativeFlow,
 };
 
 export function VisualisationPreview({ view, palette }: P & { view: PlanVisualisation }) {

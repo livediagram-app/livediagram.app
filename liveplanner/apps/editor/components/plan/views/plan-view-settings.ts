@@ -18,6 +18,10 @@ import {
   viewMeasureOf,
   viewMeasureOptions,
   builtInFieldLabel,
+  FLOW_RANGE_DEFAULT,
+  flowRangeOf,
+  isFlowView,
+  type FlowRange,
   type ItemTypeDef,
   type ViewFieldOption,
   type SwimlaneBy,
@@ -79,6 +83,14 @@ export function planViewSettingsModel(
       // The built-in field is the default, dropped rather than stored.
       plan.updateView(elementId, id === BUILT_IN_DATES[role] ? rest : { ...rest, [key]: id });
       track('Plan', 'Changed', 'ViewDates');
+    },
+    // A flow chart's range ("Flow charts"): 30 days is the default, dropped rather than stored.
+    flow: isFlowView(view),
+    range: flowRangeOf(settings),
+    setRange: (days: FlowRange) => {
+      const { rangeDays: _range, ...rest } = settings;
+      plan.updateView(elementId, days === FLOW_RANGE_DEFAULT ? rest : { ...rest, rangeDays: days });
+      track('Plan', 'Changed', 'ViewRange');
     },
     measures,
     measure: viewMeasureOf(settings, plan.types)?.id ?? COUNT_CARDS,

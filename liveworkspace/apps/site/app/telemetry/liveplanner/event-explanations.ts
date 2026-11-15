@@ -907,6 +907,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Imported|Csv':
     "Someone read a CSV file into a board's cards from a Board tab's menu (each row a new card).",
   'Plan|Exported|Csv': "Someone downloaded a board's cards as a CSV file from a Board tab's menu.",
+  'Plan|Changed|ViewRange':
+    'Someone changed the range a flow chart of their Plan cards reads (Cycle Time, Throughput or Cumulative Flow), from its settings cog or its View flyout.',
   'Plan|Changed|ViewStatuses':
     'Someone chose which statuses a chart of their Plan cards counts (Cards by Field or Priority by Status), from its settings cog.',
   'Sheet|Exported|Csv': "Someone downloaded a Sheet's cells as a CSV file.",

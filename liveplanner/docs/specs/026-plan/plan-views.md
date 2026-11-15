@@ -441,32 +441,53 @@ time the charts arrive.
   the history it keeps starts at its oldest kept entry, or when it was made when that is later.
 - **Card types**: each charts only the card types it shows ([Card types for every view](#card-types-for-every-view)),
   every type by default.
+- **The frame**: each is headed by its name and range ("Cycle Time · Last 30 Days"), counting what it draws (the cards
+  finished; Cumulative Flow the cards on its last day). Under the header a summary line names the chart's answer
+  before the plot (below), and the plot fills the rest: a y axis of whole numbers at the left on light gridlines, the
+  days or weeks along the foot, labels thinned so none collide. In a slot too small for a plot (under 200 × 140 of
+  body) the summary line shows alone.
 - **Cycle Time**: x is the day each card of the range finished (its last finish in the range, once per card), y the
-  days from started to finished, to one decimal. Two lines cross it: the **50th** and **85th percentile**, named in
-  the header ("85% in 6 days or less"). Hovering a dot names its card and its days; pressing it opens the card, as any
-  view's entry does.
+  days from started to finished, to one decimal. Two lines cross it: the **50th** and **85th percentile**, each
+  labelled at its right end ("50%", "85%"), and named in the summary line ("85% in 6 days or less · 50% in 3"). A dot
+  is the In Progress blue, ringed in the surface so piled dots stay countable. Hovering a dot names its card, its
+  days and the day it finished; pressing it opens the card, as any view's entry does. **Keyboard**: the plot is one
+  stop in the Tab order; **←** and **→** step from dot to dot (announced as hovering names it), **Enter** opens the
+  card.
 - **Throughput**: a bar per Monday-started week (per day in Last 14 Days) of the cards finished in it, each card
-  counted once, in the period of its last finish; a dashed line at the average per period, named in the header
-  ("8 a week on average"). A period still running (this week) is drawn lighter.
+  counted once, in the period of its last finish; a dashed line at the average per period, named in the summary line
+  ("8 a week on average", "2.5 a day on average"; with no whole period yet, "No whole week yet"). A period still
+  running (this week) is drawn lighter. Each bar's count sits on it where there is room; hovering a bar names its
+  period and count ("Week of 3 Nov: 8 cards, still running").
 - **Cumulative Flow**: a stacked area, a band per status the chart's card types hold, ordered as the project's boards
   name them with the Done phase at the bottom and the first column on top, each in its phase's colour family. It reads
   the daily [flow counts](items.md#flow-counts): a card in the Trash is never counted, and an archived card still
   counts in its status, so the done band never drops when finished cards are archived. Before the plan's first
-  counted day the chart draws nothing and says when counting began ("Counting since 15 Nov").
+  counted day the chart draws nothing and says when counting began ("Counting since 15 Nov"). The bands sit 1 px
+  apart; a key under the summary line names each status (as a column calls it, "No status" for none) in the band
+  order. Hovering the plot drops a line on the day under the pointer and names the day and each status's count, top
+  band first. The summary line names the cards in progress on the last day ("12 in progress · 30 done").
 - **Who sees what**: every role that may read the plan sees the flow charts (a Viewer included); only an Editor
   changes a chart's Range or Card Types (Chart Settings, as every chart setting). A tab-scoped link reads every card,
   as every plan view on its tab makes it do ([On the canvas](#on-the-canvas)); a link to a tab that shows only some
   cards (a tab with no board or plan view) holds no flow chart and is refused the flow. A Community post's link is
   refused it too: the charts read the plan's history, which a Community copy never shows.
+- **Range** is set in Chart Settings' **Range** section (open first on a flow chart) and the element menu's View
+  flyout: an option list of the four ranges, ticked on the one shown. One edit, synced and undone as any element edit.
 - **One read per range**: the editor and agents read a range's flow in one request, `GET /projects/:id/flow`, with the
-  range (`days`, 1 to 180, 30 when absent) and the card types (`types`, every type when absent). It answers the range's
+  range (`days`, 1 to 180, 30 when absent) and the card types (`types`, every type when absent). The editor reads every
+  type and each chart keeps its own, so the flow charts of a range on the open plan share one read, made when the
+  first of them is drawn and again 2 seconds after the cards last changed (a burst of moves reads once). It answers the range's
   daily flow counts, and each card that moved in the range with its moves over the whole history the plan keeps (a
   start can be older than the range), its type, when it was made and its oldest kept entry: what all three charts are
   worked out from, by status, never an entry's author or values.
 - **States**: before the data arrives, **Loading flow…**; a plan with no finish in the range, **No cards finished in
   this range** (Cycle Time, Throughput); a failed read, **Couldn't Load Flow** with **Try Again**. A This Browser plan
   keeps no history or counts: **Flow Needs a Cloud Plan** and "Flow charts read the plan's history, which plans in
-  This Browser don't keep."
+  This Browser don't keep." Cumulative Flow with no counted day by its range's end: **No flow counted yet**. A
+  refresh after the first read keeps the chart on screen until the new answer arrives; a failed refresh keeps the
+  last answer.
+- **Images**: an image export has no flow read, so it draws a flow chart's frame, its name and range, and "Open the
+  plan to see the flow." in place of the plot.
 - **Agents** name the three by their view ids in a Dashboard tab (`create_project`, `add_tab`) and in a plan view
   element's `planView` (`update_project`), with `rangeDays`; `read_project` describes each by name and range
   ("Cycle Time, last 30 days").
