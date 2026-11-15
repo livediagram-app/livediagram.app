@@ -193,6 +193,9 @@ Choosing a file shows what the import will make, before anything is written:
   last arrives, writes every card with its comments in one transaction. A failure part way (a request that never
   answers, a refusal, the plan filling up) leaves **no imported card**; the parts held aside are cleared with it, or
   within the hour when the import simply stops. Into a tab the cards are one undo step, as before.
+  The plan holds at most **26 MB** of one import's cards aside (more than a 20 MB file's cards ever come to), so
+  landing it stays well inside the plan's memory; an import sent past that, which only a hand-made API request can
+  do, is refused (`import_too_large`) and nothing lands.
 - **Done**: the dialog closes and the plan says "Imported 120 cards from Trello" (and ", 3 left out" when some were).
 - **Failed**: no card is written, and the dialog stays open with the reason ("Couldn't import those cards. Try
   again."). Into a tab, a failure after the card type or the tab was made leaves them, empty, for undo; an agent's

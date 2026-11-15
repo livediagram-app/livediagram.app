@@ -158,7 +158,11 @@ as `/items/bulk`).
   `apps/api/src/plan-room/item-imports-schema.ts`; statements in `apps/api/src/db/item-imports.ts`) as one chunked
   insert, replacing a part sent again. 202 `ItemsImportStaged { staged }` (cards held for this import). A part past
   the plan's room (held + this + stored `> ITEMS_MAX`) is refused `413 items_full` and the import's parts cleared.
-- **The last part** lands the import: every part must be held (`409 import_incomplete` otherwise), the held reads and
+  A part that takes the import's held JSON past `ITEM_IMPORT_JSON_MAX` (26 MiB of characters: the held bodies'
+  `SUM(LENGTH(body))` from `heldParts`, plus this part's reads as JSON) is refused `413 import_too_large`, its parts
+  cleared: it bounds the landing's memory (below, "Performance and limits").
+- **The last part** lands the import: every part must be held (`409 import_incomplete` otherwise), the held JSON and
+  its own are checked against `ITEM_IMPORT_JSON_MAX` (`413 import_too_large`), the held reads and
   its own are checked for room (`413 items_full`) and Blocked By loops (`blockersRefused`, once over all of them),
   then made as `createMany` makes cards (`buildCreates`: free keys, one placer) and written in **one
   `PLAN_DB.batch`**: the import's held parts deleted, then for each `ITEM_BULK_MAX` of the cards a store rev raise
@@ -286,6 +290,7 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 | A card's fields over 16 KB                 | `fitFields`, counted `shortened`                                                             |
 | Item store never loads                     | nothing written; "Couldn’t import those cards. Try again."                                   |
 | A card write fails part way                | no card lands (one transaction); held parts cleared, or swept within the hour                |
+| An import's JSON past 26 MiB (API only)    | `413 import_too_large`; nothing lands, held parts cleared                                    |
 | A write fails after the type or tab landed | editor: they stay (undo takes them); agents: the tab is removed; a new plan is deleted       |
 | Comments past caps                         | newest kept, rest counted                                                                    |
 | Attachment with no http(s) link            | left out, counted `attachmentsNoLink`                                                        |
@@ -313,6 +318,19 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   transaction: rows through 1 MB JSON chunks (a statement per chunk, three parameters, no compound select), a
   thread and a link statement per card with comments. At the caps (2,000 cards, 20,000 comments) that is under
   4,100 statements in one batch, held under a CPU budget by `item-import-route.test.ts`.
+- **The landing's memory** (Work Item 377). The last part reads every held card into the plan's Durable Object (128 MB
+  limit) and answers every card, so its peak grows with the import's JSON, at about 2.2 times it (live V8 heap over
+  the heap before the last part, a forced collection at each statement, write batch and relay; node 22). Measured: a
+  450-card Trello board (0.9 MB) peaks at 3.2 MB; a 2,000-card board of 19.2 MB (the file and card caps at once) at
+  44.9 MB. That is under the 64 MB budget (half the object's limit, the rest for the room and its other requests), so
+  the landing is not rewritten. The batch's statements are let go once written (`stmts.length = 0`), before the
+  relay builds its ops, which had been the peak (46.5 MB before).
+- The api enforces the bound itself, since the file cap is the client's: `ITEM_IMPORT_JSON_MAX` caps the JSON one
+  import may hold, above the most a 20 MB file's cards come to (measured 23.3 MB, a Jira CSV with descriptions near
+  their cap and 20,000 comments; about 20 MB of content plus some 1.5 KB of shape per card and 160 bytes per
+  comment). An import at the cap peaks at 57 MB; before the cap, a hand-made 35 MB import peaked at 75 MB and nothing
+  stopped a larger one. `item-import-route.test.ts` "the landing's memory" lands an import at the cap under the
+  budget, measured as above, and refuses a held or last part past it.
 - The preview is computed once per file (state), not per render.
 - Reading and planning run in a Web Worker (`tracker-worker/`). Measured at the caps on a laptop (the 7.7 MB Trello
   board of `tracker-import.perf.test.ts`): read 71 ms and plan 69 ms, now off the main thread; what the page still
@@ -335,7 +353,8 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 - api: a bulk create with threads and no key is not tagged `undo`. `/items/import`: parts held then landed whole,
   a failure in the landing batch (and a refused or missing part) leaves no card and no held part, room and gates
   (Editor only; Participant, Viewer and a tab-scoped grant refused), a resend replacing its part, the hour's sweep,
-  and an import at the caps under a CPU budget.
+  an import at the caps under a CPU budget, and one at the JSON cap under the landing's memory budget, with a held
+  or last part past the cap refused.
 - agent-verbs (100% coverage): into a plan (type save, changeset, import parts, stale retry, a failed part removing
   the tab and writing no card), into a new plan (a failed part deleting it), preview,
   refusals (`items_full`, `source_mismatch`, `forbidden` from the api), the verb's lines, the MCP tool's parity.
@@ -356,3 +375,4 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 | `TRACKER_THREAD_BUDGET`     | 120,000 | under `THREAD_BYTES` with room for the comment shape |
 | `TRACKER_CHOICE_MAX`        | 20      | `CUSTOM_CHOICE_OPTIONS_MAX`                          |
 | `ITEM_IMPORT_HOLD_MS`       | 1 hour  | how long an import's parts wait for its last part    |
+| `ITEM_IMPORT_JSON_MAX`      | 26 MiB  | an import's held JSON; bounds the landing's memory   |

@@ -16,11 +16,14 @@ import { insertLinkStatement, insertThreadStatement } from '../db/card-threads';
 import { appendItemHistory } from '../db/item-history';
 import {
   ITEM_IMPORT_HOLD_MS,
+  ITEM_IMPORT_JSON_MAX,
   clearImportStatement,
   heldParts,
   heldReads,
   holdPartStatements,
+  jsonChars,
   sweepHeldImports,
+  type HeldPart,
 } from '../db/item-imports';
 import { bumpRevStatement, getItemStoreHead, itemRowOf, revOf } from '../db/items';
 import { insertItemRowsStatements } from '../plan-room/plan-content';
@@ -61,6 +64,15 @@ const homedHere = (reads: readonly ReadCreate[], projectId: string) =>
   reads.every((r) =>
     (r.restoredThreads ?? []).every((t) => t.home === projectId || t.home === '~here'),
   );
+
+// An import whose JSON, held and this part's, passes ITEM_IMPORT_JSON_MAX: past what its landing may read at once.
+const importTooLarge = () =>
+  json(
+    { error: 'import_too_large', message: 'an import holds at most 26 MB of cards' },
+    { status: 413 },
+  );
+const tooLarge = (held: readonly HeldPart[], reads: readonly ReadCreate[]) =>
+  held.reduce((n, p) => n + p.chars, 0) + jsonChars(reads) > ITEM_IMPORT_JSON_MAX;
 
 // The refusal, with the import's held parts cleared: it can no longer land.
 async function refuse(
@@ -103,9 +115,11 @@ async function hold(
   reads: readonly ReadCreate[],
   now: number,
 ): Promise<Response> {
-  const held = (await heldParts(ctx.env, projectId, head.importId))
-    .filter((p) => p.part !== head.part)
-    .reduce((n, p) => n + p.cards, 0);
+  const others = (await heldParts(ctx.env, projectId, head.importId)).filter(
+    (p) => p.part !== head.part,
+  );
+  if (tooLarge(others, reads)) return refuse(ctx, projectId, head.importId, importTooLarge());
+  const held = others.reduce((n, p) => n + p.cards, 0);
   const { count } = await getItemStoreHead(ctx.env, projectId);
   if (count + held + reads.length > ITEMS_MAX)
     return refuse(ctx, projectId, head.importId, itemsFull());
@@ -142,6 +156,7 @@ async function land(
   const parts = await heldParts(ctx.env, projectId, importId);
   if (parts.length !== head.parts - 1 || parts.some((p, i) => p.part !== i))
     return refuse(ctx, projectId, importId, conflict('import_incomplete'));
+  if (tooLarge(parts, last)) return refuse(ctx, projectId, importId, importTooLarge());
   const reads = [...(await heldReads<ReadCreate>(ctx.env, projectId, importId)), ...last];
   const creates = reads.map(({ restoredThreads: _threads, ...c }) => c);
   // Blocked By loops, checked once over every card of the import (docs/specs/026-plan/item-types.md "Blocked By").
@@ -189,6 +204,9 @@ async function land(
       if (attempt < ITEM_WRITE_RETRIES) await itemRetryPause(attempt);
       continue;
     }
+    // Written: the statements' bound JSON (about the import's size again) is let go before the relay builds its ops,
+    // which would otherwise be the landing's peak (blueprint tracker-import.md "Performance and limits").
+    stmts.length = 0;
     const revs = revAt.map((at) => revOf(results[at]));
     relayLanded(ctx, projectId, chunks, threads, revs);
     const putBack = creates.some((c) => c.key !== undefined || c.votes !== undefined);
