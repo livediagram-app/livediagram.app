@@ -15,6 +15,9 @@ import { isCardThread, type CardThread } from './card-threads';
 
 export const PROJECT_ENVELOPE_KIND = 'liveplanner.project';
 export const PROJECT_SCHEMA_VERSION = 1;
+// The largest plan file an import reads (docs/specs/015-api/api.md `POST /api/projects/:id/file`): the api's outer
+// bound on any write body (apps/api/src/limits.ts MAX_BODY_BYTES), so the editor refuses unread what the api would.
+export const PROJECT_FILE_MAX_BYTES = 8 * 1024 * 1024;
 
 export type EnvelopeTab = Tab & { folder?: string };
 
@@ -45,7 +48,7 @@ export type ProjectEnvelope = {
 
 export type EnvelopeSheet = { id: string; tabId: string; title: string; [key: string]: unknown };
 
-type ProjectEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
+export type ProjectEnvelopeFailure ='not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function projectToEnvelopeText(
   liveDoc: { id: string; name: string },
