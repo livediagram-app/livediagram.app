@@ -25,8 +25,13 @@ import { isLegacyEmojiIconId } from '@liveworkspace/icons';
 // drifting behind the palette again. Icon / sticker / tech tiles are excluded
 // deliberately: those catalogues are enumerated in full below, so including
 // their single "open the picker" tile would add a duplicate result.
+// A parent row (the Devices row) only opens its elements, which are tiles of their own here.
 export const SHAPE_TILES = PALETTE_TILES.filter(
-  (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
+  (t) =>
+    !t.parentOf &&
+    t.action.type === 'shape' &&
+    t.action.kind !== 'icon' &&
+    t.action.kind !== 'sticker',
 );
 
 // One shape tile as a search item. Also read by the whiteboard's More shapes

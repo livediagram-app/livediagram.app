@@ -23,6 +23,7 @@ export function PaletteCategoryRail<T>({
   things,
   loading,
   loadingMessage,
+  searchAccessory,
 }: {
   categories: BrowserCategory<T>[];
   // The open group, or null for the first.
@@ -42,6 +43,8 @@ export function PaletteCategoryRail<T>({
   things: string;
   loading: boolean;
   loadingMessage: string;
+  // A control beside the search box (the Icons category's Icons | Stickers switch).
+  searchAccessory?: ReactNode;
 }) {
   const open = categories.find((c) => c.id === openId) ?? categories[0] ?? null;
   const paneRef = useRef<HTMLDivElement>(null);
@@ -52,7 +55,7 @@ export function PaletteCategoryRail<T>({
   };
   return (
     <div className="flex flex-col">
-      <div className="flex border-b border-slate-100 px-3 py-2.5 dark:border-slate-800">
+      <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2.5 dark:border-slate-800">
         <SearchInput
           value={query}
           onChange={onQueryChange}
@@ -61,6 +64,7 @@ export function PaletteCategoryRail<T>({
           clearAriaLabel={search.clearAriaLabel}
           clearDescription={search.clearDescription}
         />
+        {searchAccessory}
       </div>
       <div className="flex h-[min(360px,calc(100dvh-20rem))] min-h-[220px]">
         <nav

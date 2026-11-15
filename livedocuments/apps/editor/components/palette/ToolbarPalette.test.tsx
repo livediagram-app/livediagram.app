@@ -90,9 +90,7 @@ describe('ToolbarPalette', () => {
       'Write',
       'Concepts',
       'Components',
-      'Devices',
       'Icons',
-      'Stickers',
       'Media',
       'Data',
     ]);
@@ -150,14 +148,32 @@ describe('ToolbarPalette', () => {
   it("focuses a catalogue's search field when its flyout opens (docs/specs/007-editor/toolbar-layout.md)", () => {
     show();
     const popover = openFlyout('Icons');
-    expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search icons'));
+    expect(document.activeElement).toBe(
+      within(popover).getByPlaceholderText('Search icons and stickers'),
+    );
+  });
+
+  // The owner's request (2026-11-15): Icons and Stickers are one category, a switch picking which it browses.
+  it('turns Icons to its Stickers side and back with the switch beside its search', () => {
+    show();
+    const popover = openFlyout('Icons');
+    const side = (name: string) =>
+      within(within(popover).getByRole('group', { name: 'Browse' })).getByRole('button', { name });
+    expect(side('Icons').getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(side('Stickers'));
+    expect(side('Stickers').getAttribute('aria-pressed')).toBe('true');
+    expect(within(popover).getByRole('navigation', { name: 'stickers groups' })).toBeTruthy();
+    fireEvent.click(side('Icons'));
+    expect(within(popover).getByRole('navigation', { name: 'icons groups' })).toBeTruthy();
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
     show();
     const popover = openFlyout('Icons');
-    expect(document.activeElement).not.toBe(within(popover).getByPlaceholderText('Search icons'));
+    expect(document.activeElement).not.toBe(
+      within(popover).getByPlaceholderText('Search icons and stickers'),
+    );
   });
 
   it('switches the flyout to the category pressed next', () => {
@@ -165,7 +181,7 @@ describe('ToolbarPalette', () => {
     openFlyout('Icons');
     fireEvent.click(screen.getByRole('button', { name: 'Shapes' }));
     expect(within(flyout()!).getByRole('button', { name: 'Add Square' })).toBeTruthy();
-    expect(within(flyout()!).queryByPlaceholderText('Search icons')).toBeNull();
+    expect(within(flyout()!).queryByPlaceholderText('Search icons and stickers')).toBeNull();
   });
 
   it('closes the flyout on Escape', () => {

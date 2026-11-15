@@ -46,7 +46,8 @@ test.describe('Toolbar strip drag', () => {
       open: openStartBlank,
     },
     {
-      category: 'Stickers',
+      // Stickers are the Icons category's Stickers side; its one search finds them too.
+      category: 'Icons',
       query: 'speech',
       tile: 'Speech balloon',
       placedAs: /^Sticker$/,

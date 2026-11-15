@@ -99,12 +99,11 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette"); the layout
   // adds the Badge, the Card and the Checklist.
   wireframe: 8,
-  devices: 7,
   icons: 0,
-  stickers: 0,
   technology: 0,
   media: 9,
-  components: 11,
+  // With the Devices row (DEVICES_ROW_TILE), which opens the seven frames.
+  components: 12,
   concepts: 8,
   data: 7,
   // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).

@@ -4,11 +4,10 @@
 // (palette-layouts) with the body it swaps in. Lifted out of the old CommandPalette, which was 562 lines with this inline as
 // its largest single expression.
 //
-// A function rather than a const because three of the fourteen are SEARCHABLE
-// catalogues (Icons, Stickers, Technology) whose bodies need that catalogue's
-// query, results and add-handler. The rest need only the shared pendingDraw +
-// tile actions, so those three arrive as their own small bundles instead of
-// nine loose parameters.
+// A function rather than a const because two are SEARCHABLE catalogues (Icons, which holds the
+// stickers too, and Technology) whose bodies need their query, results and add-handlers. The rest
+// need only the shared pendingDraw + tile actions, so those two arrive as their own small bundles
+// instead of loose parameters.
 //
 // Order IS layout: the category picker renders the dropdown straight from the layout's order,
 // grouping by `group` under the CATEGORY_BANDS headings.
@@ -16,11 +15,9 @@
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { PaletteMyShapesTab } from './PaletteMyShapesTab';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
-import { IconPickerTab } from '@/components/palette/IconPickerTab';
-import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
+import { IconsCategoryTab } from '@/components/palette/IconsCategoryTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
 import {
-  DevicePickerTab,
   PaletteCollaborateTab,
   PaletteDataTab,
   PaletteMediaTab,
@@ -41,13 +38,13 @@ import type { EsBoardControls } from '@/components/palette/EventStormingBoardRow
 // components, so the array below is verbatim from where it used to live and
 // cannot drift from what each body actually accepts.
 type IconDeps = Pick<
-  ComponentProps<typeof IconPickerTab>,
-  'addIcon' | 'iconQuery' | 'setIconQuery' | 'iconResults' | 'loading'
->;
-type StickerDeps = Pick<
-  ComponentProps<typeof StickerPickerTab>,
-  'addSticker' | 'stickerQuery' | 'setStickerQuery' | 'stickerResults'
->;
+  ComponentProps<typeof IconsCategoryTab>,
+  'addIcon' | 'addSticker' | 'iconResults' | 'stickerResults' | 'loading'
+> & {
+  // The Icons category's one query, over its icons and its stickers.
+  iconQuery: string;
+  setIconQuery: (q: string) => void;
+};
 type TechDeps = Pick<
   ComponentProps<typeof TechPickerTab>,
   'addTechIcon' | 'techQuery' | 'setTechQuery' | 'techResults'
@@ -67,7 +64,6 @@ export function paletteCategoryTabs(
     // Places a shape from My shapes (docs/specs/013-workspace/shape-libraries.md).
     insertLibraryShape: (item: ShapeLibraryItem) => void;
   } & IconDeps &
-    StickerDeps &
     TechDeps,
 ) {
   const {
@@ -82,8 +78,6 @@ export function paletteCategoryTabs(
     iconResults,
     loading: iconCatalogsLoadedInverse,
     addSticker,
-    stickerQuery,
-    setStickerQuery,
     stickerResults,
     addTechIcon,
     techQuery,
@@ -104,21 +98,14 @@ export function paletteCategoryTabs(
         return <PaletteMyShapesTab onInsert={insertLibraryShape} />;
       case 'icons':
         return (
-          <IconPickerTab
+          <IconsCategoryTab
             addIcon={addIcon}
-            iconQuery={iconQuery}
-            setIconQuery={setIconQuery}
-            iconResults={iconResults}
-            loading={!iconCatalogsLoaded}
-          />
-        );
-      case 'stickers':
-        return (
-          <StickerPickerTab
             addSticker={addSticker}
-            stickerQuery={stickerQuery}
-            setStickerQuery={setStickerQuery}
+            query={iconQuery}
+            setQuery={setIconQuery}
+            iconResults={iconResults}
             stickerResults={stickerResults}
+            stickers={!!c.stickers}
             loading={!iconCatalogsLoaded}
           />
         );
@@ -140,8 +127,6 @@ export function paletteCategoryTabs(
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'draw':
         return <PaletteDrawTab {...tab} tiles={tiles} />;
-      case 'devices':
-        return <DevicePickerTab {...tab} tiles={tiles} />;
       case 'event-storming':
         return <PaletteEventStormingTab {...tab} tiles={tiles} board={esBoardControls} />;
       case 'media':

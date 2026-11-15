@@ -155,10 +155,9 @@ export function usePaletteCatalogue({
     if (!q) return true;
     return i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q);
   });
-  // Stickers tab (docs/specs/010-palette/stickers.md): colour emoji, browsed in ten groups. Same shape
-  // as the Icons tab — a search box over a drill-in browse.
-  const [stickerQuery, setStickerQuery] = useState('');
-  const stickerResults = searchStickers(stickerQuery);
+  // The stickers (docs/specs/010-palette/stickers.md), the Icons category's Stickers side: its one search box
+  // looks through both catalogues, so the same query finds them.
+  const stickerResults = searchStickers(iconQuery);
   // Technology tab (docs/specs/010-palette/technology-icons.md): full-colour brand icons. Mirrors the Icons
   // tab — a search box over provider categories.
   const [techQuery, setTechQuery] = useState('');
@@ -179,8 +178,6 @@ export function usePaletteCatalogue({
     iconResults,
     loading: !iconCatalogsLoaded,
     addSticker,
-    stickerQuery,
-    setStickerQuery,
     stickerResults,
     addTechIcon,
     techQuery,
