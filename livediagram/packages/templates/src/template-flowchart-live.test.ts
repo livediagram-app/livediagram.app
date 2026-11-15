@@ -35,6 +35,10 @@ describe.each(CASES)('the %s template', (_, build, direction, lanes) => {
     expect(flowchartLanes(els, id!)).toHaveLength(lanes);
   });
 
+  it('starts every connector at its exact anchor (docs/specs/008-canvas/arrow-anchors.md)', () => {
+    expect(flowchartConnectors(els, id!).every((c) => c.exactStart === true)).toBe(true);
+  });
+
   it('is already laid out: laying it out again moves nothing', () => {
     const again = layoutFlowchart(els, id!);
     expect(again.steps.size + again.lanes.size + again.connectors.size).toBe(0);
