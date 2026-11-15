@@ -5,23 +5,28 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 
 ## Domain and naming
 
-| Spec term        | Identifier                                                                                                       |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------- |
-| wireframe page   | `Page` with `kind: 'wireframe'`; `PageKind` member `'wireframe'`                                                 |
-| device           | `Page.device`, `WireframeDeviceId`; `WIREFRAME_DEVICES` (label, `short`, class, portrait screen, `turns`)        |
-| device class     | `WireframeDeviceClass` (`'phone' \| 'tablet' \| 'computer' \| 'watch'`); `pageDeviceClass(page)`                 |
-| device frame     | `wireframeFrameSvg` (`wireframeFrameUnderSvg` beneath the content, `wireframeFrameOverSvg` above it)             |
-| screen           | `DeviceGeometry.screen` and `radii`; `pageScreenRect(page)`, `pageClipPathData(page)`                            |
-| system bars      | `Page.systemBars` (absent is shown); `DeviceGeometry.bars`; `deviceHasSystemBars`, `pageShowsSystemBars`         |
-| safe area        | `deviceSafeArea(geometry, systemBars)`; `pageContentBox(page)` (any kind: a wireframe page's safe area)          |
-| frame look       | `Page.frameLook`, `WireframeFrameLook` (`'theme'` absent); `WIREFRAME_FRAME_LOOKS`, `WIREFRAME_FRAME_LOOK_LABEL` |
-| frame theme      | `WireframeFrameTheme`, `wireframeFrameTheme(theme)`, `tabWireframeFrameTheme(tab)`                               |
-| wireframe layout | `WireframeLayoutId`, `WIREFRAME_LAYOUTS`, `WIREFRAME_LAYOUT_CATEGORIES`, `wireframeLayoutsFor(class)`            |
-| screen form      | `ScreenForm` (`'watch' \| 'phone' \| 'wide'`), `screenForm(box)`                                                 |
-| device memory    | `lastWireframeDevice()`, `rememberWireframeDevice(device)`                                                       |
-| Inspect          | `CanvasTool` member `'inspect'`; `can.inspect`; `PanelId` `'inspect'`; `InspectPanel`, `InspectOverlay`          |
-| measurements     | `InspectSpec` (`inspectElement`), `SpacingLine` (`neighbourSpacing`, `pairSpacing`), `InspectRect`               |
-| inspect link     | `INSPECT_PARAM` (`'inspect'`), `wantsInspect`, `withInspect`, `inspectViewLink`                                  |
+| Spec term           | Identifier                                                                                                       |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| wireframe page      | `Page` with `kind: 'wireframe'`; `PageKind` member `'wireframe'`                                                 |
+| device              | `Page.device`, `WireframeDeviceId`; `WIREFRAME_DEVICES` (label, `short`, class, portrait screen, `turns`)        |
+| device class        | `WireframeDeviceClass` (`'phone' \| 'tablet' \| 'computer' \| 'watch'`); `pageDeviceClass(page)`                 |
+| device frame        | `wireframeFrameSvg` (`wireframeFrameUnderSvg` beneath the content, `wireframeFrameOverSvg` above it)             |
+| screen              | `DeviceGeometry.screen` and `radii`; `pageScreenRect(page)`, `pageClipPathData(page)`                            |
+| system bars         | `Page.systemBars` (absent is shown); `DeviceGeometry.bars`; `deviceHasSystemBars`, `pageShowsSystemBars`         |
+| safe area           | `deviceSafeArea(geometry, systemBars)`; `pageContentBox(page)` (any kind: a wireframe page's safe area)          |
+| frame look          | `Page.frameLook`, `WireframeFrameLook` (`'theme'` absent); `WIREFRAME_FRAME_LOOKS`, `WIREFRAME_FRAME_LOOK_LABEL` |
+| frame theme         | `WireframeFrameTheme`, `wireframeFrameTheme(theme)`, `tabWireframeFrameTheme(tab)`                               |
+| wireframe layout    | `WireframeLayoutId`, `WIREFRAME_LAYOUTS`, `WIREFRAME_LAYOUT_CATEGORIES`, `wireframeLayoutsFor(class)`            |
+| screen form         | `ScreenForm` (`'watch' \| 'phone' \| 'wide'`), `screenForm(box)`                                                 |
+| device memory       | `lastWireframeDevice()`, `rememberWireframeDevice(device)`                                                       |
+| Inspect             | `CanvasTool` member `'inspect'`; `can.inspect`; `PanelId` `'inspect'`; `InspectPanel`, `InspectOverlay`          |
+| measurements        | `InspectSpec` (`inspectElement`), `SpacingLine` (`neighbourSpacing`, `pairSpacing`), `InspectRect`               |
+| inspect link        | `INSPECT_PARAM` (`'inspect'`), `wantsInspect`, `withInspect`, `inspectViewLink`                                  |
+| screen link         | `PageLink` (`ElementLink` kind `'page'`, `pageId`); `ScreenLink` (`PageLink \| BackLink`); `isScreenLink`        |
+| back link           | `BackLink` (`ElementLink` kind `'back'`)                                                                         |
+| transition          | `PageLinkTransition`, `PAGE_LINK_TRANSITIONS`, `DEFAULT_PAGE_LINK_TRANSITION`, `pageLinkTransitionOf`            |
+| broken link         | `ScreenLinkTarget` state `'broken'` (`resolveScreenLink`)                                                        |
+| screen links' roles | `can.linkScreens(el)`, `can.playPrototype`                                                                       |
 
 "Device" alone always means the page's `WireframeDeviceId`; never "mockup" or "frame" for the device itself.
 
@@ -52,6 +57,13 @@ Derived from [Wireframe pages](../wireframe-pages.md). The page machinery it ext
 | `apps/live/lib/inspect-link.ts`, `inspect-export.ts`                                  | The `inspect` parameter and the Viewer link it rides; exporting one element at a scale                              |
 | `apps/live/components/canvas/inspect/`                                                | `InspectOverlay` (outlines, lines, pills), `InspectClusterSegment`, `useInspectHost`, `InspectSessionContext`       |
 | `apps/live/components/panels/inspect/`                                                | `InspectPanel`, `InspectSpacingBox`, `inspect-panel-parts` (sections, copyable value cells, swatches)               |
+| `packages/design/src/page-link.ts` (+ test)                                           | Screen links: the stored shape, `isWellFormedLinkField`, `resolveScreenLink`, `screenName`, `describeScreenLink`    |
+| `packages/design/src/validate.ts`                                                     | The `link` field check in `COMMON_FIELD_CHECKS` (`SCREEN_LINK_RULE`)                                                |
+| `packages/design-views/src/attributes.ts`                                             | `link=page:<pageId>`, `link=back`, `transition=`, `broken` (`ViewModel.pageIds`)                                    |
+| `packages/agent-verbs/src/mcp/element-docs.ts`                                        | `SCREEN_LINKS`: the element format's screen link facts                                                              |
+| `apps/live/lib/link-label.ts`, `components/canvas/LinkCardView.tsx`                   | A screen link's hover line (`describeLink(link, tabs, pages)`) and a link card holding one                          |
+| `apps/live/hooks/canvas/useElementLinks.ts`                                           | `followLink` leaves a screen link to Prototype mode                                                                 |
+| `apps/live/lib/editor-capabilities.ts`                                                | `linkScreens`, `playPrototype`                                                                                      |
 
 ## Behaviour and state
 
@@ -131,6 +143,28 @@ Going to a wireframe page fits the whole device, with the fit's zoom capped at `
 - Copy Inspect Link: the visitor's `sessionShareCode`, else `inspectViewLink` over `indexClient.listShareLinks`;
   never creates a link. None: open the Share dialog with a toast. An offline design gets no button.
 
+### Screen links
+
+- **Stored shape.** `link?: ElementLink` on any element, with two more kinds: `{ kind: 'page', pageId, transition? }`
+  and `{ kind: 'back', transition? }`. Absent `transition` reads `DEFAULT_PAGE_LINK_TRANSITION` (`'instant'`) through
+  `pageLinkTransitionOf`; nothing writes `'instant'` back, and a stored `'instant'` is kept as given.
+- **Validation.** `COMMON_FIELD_CHECKS` runs `isWellFormedLinkField` on `link`: a `page` link needs a `pageId` string
+  of 1 to `PAGE_LINK_ID_MAX` characters, and either kind a `transition` in `PAGE_LINK_TRANSITIONS` or none; anything
+  else is refused naming `link` with `SCREEN_LINK_RULE` (`invalid_result` for edit operations, `invalid` for a
+  Participant's op, the api's design schema for a save). Every other link kind passes unchecked, as before, so no
+  stored design starts failing. Whether `pageId` is on the tab is never a validation question.
+- **Resolution.** `resolveScreenLink(link, pages)` answers `{ state: 'page', page, index }`, `{ state: 'back' }` or
+  `{ state: 'broken' }` (no page of the tab has that id); it never throws, for any `pages`. Every reader (the
+  marker, the menu, the player, the Flow view, the views) goes through it, so a broken link reads alike everywhere.
+- **Deleting a page** leaves the links to it as they are: undo restores the page and the links resolve again.
+- **Naming.** `screenName(page, index)`: the trimmed name, else `Screen <index + 1>`. `describeScreenLink`: "Goes to
+  <screen>", "Goes back to the screen before", or "Broken link: its screen was deleted".
+- **In the editor**, `followLink` does nothing for a screen link; Prototype mode follows them.
+- **Roles.** `can.linkScreens(el)`: an Editor any element; a Participant `!locked && addedBy === adderKey`; a Viewer
+  none. `can.playPrototype` is true for all three. The server rule is the participant content rule unchanged: `link`
+  is not among the fields a Participant writes on someone else's element (`PARTICIPANT_TEXT_FIELDS`, ...), and its own
+  element takes any field.
+
 ## Interfaces and contracts
 
 - `Page` fields: `kind: 'wireframe'`, `device?: WireframeDeviceId`, `orientation?: PageOrientation`,
@@ -139,12 +173,19 @@ Going to a wireframe page fits the whole device, with the fit's zoom capped at `
   `{ op: 'set', page, frameLook?, systemBars?, orientation? }`; a `set` naming a device, or a wireframe field on
   another kind of page, is refused `not_a_wireframe` (`packages/api-schema/src/pages.ts`). A page's rectangle answer
   carries the safe area beside the page's rect.
+- Screen links: `update_design` elements and edit operations' `set` take `link` as a stored field; views print
+  `link=page:<pageId>` or `link=back`, then `transition=<t>` when not instant and the `broken` flag when the page id is
+  not in `ViewModel.pageIds` ([Design views](../../024-agents/blueprints/design-views.md) `VW28`).
 
 ## Errors and edge cases
 
 - An unknown device, look or orientation reads as the default (Page model above).
 - A device without system bars (a computer) ignores `systemBars`.
 - Laying loose content out into pages never makes a wireframe page.
+- A screen link to a page not on the tab (deleted, or from a copy whose pages differ) is broken: kept, read as
+  broken, never followed, never a load, save, render or export failure.
+- A back link on the first screen shown does nothing.
+- A screen link on a page that is not a wireframe page is kept and never followed.
 
 ## Security and trust
 
@@ -174,6 +215,10 @@ Inspect: `Canvas · Used · Inspect` (`useCanvasTool`); `UI · Copied · Inspect
 | Spacing to neighbours, containers and the screen edge; between two elements                                                                 | `packages/design/src/inspect-spacing.test.ts`                                                                                                                                                                                                                                 |
 | Every role may inspect; Inspect's press selects only; the tool on wireframe tabs only                                                       | `apps/live/lib/editor-capabilities.test.ts`, `hooks/canvas/useEditorDrag.inspect-press.test.tsx`, `lib/editor-commands-tools.test.tsx`                                                                                                                                        |
 | The target, its page and lines; the link and its Viewer link; the export's name and options                                                 | `apps/live/lib/inspect-target.test.ts`, `inspect-link.test.ts`, `inspect-export.test.ts`                                                                                                                                                                                      |
+| Screen links: shape, transitions, resolution, a deleted page reading as broken, naming, the `link` check                                    | `packages/design/src/page-link.test.ts`                                                                                                                                                                                                                                       |
+| A Participant sets a screen link on its own element only; a malformed one is refused                                                        | `packages/design/src/participant-content.test.ts` ("screen links")                                                                                                                                                                                                            |
+| Agents set a screen link and are refused a malformed one; views print it; the element format names it                                       | `packages/edit-operations/src/operations/set.test.ts`, `packages/design-views/src/attributes.test.ts`, `packages/agent-verbs/src/mcp/schema.test.ts`                                                                                                                          |
+| Roles: Editor any, Participant its own, Viewer none; every role plays; the editor leaves screen links alone                                 | `apps/live/lib/editor-capabilities.test.ts`, `hooks/canvas/useElementLinks.test.ts`, `lib/link-label.test.ts`, `components/canvas/LinkCardView.test.tsx`                                                                                                                      |
 | The panel's sections, copy, export and link; the overlay; the address opening Inspect                                                       | `apps/live/components/panels/inspect/InspectPanel.test.tsx`, `components/canvas/inspect/InspectOverlay.test.tsx`, `useInspectHost.test.tsx`, `InspectClusterSegment.test.tsx`, `CanvasSelectionToolbars.test.tsx`; `lib/export-tab.test.ts`, `export-tab-canvas-draw.test.ts` |
 
 ## Constants and configuration
@@ -194,6 +239,9 @@ Inspect: `Canvas · Used · Inspect` (`useCanvasTool`); `UI · Copied · Inspect
 | `INSPECT_PARAM`                       | `'inspect'` (copied as `inspect=1`)        | `inspect-link.ts`            |
 | `INSPECT_EXPORT_SCALES`               | 1, 2, 3                                    | `inspect-export.ts`          |
 | `INSPECT_LINE_COLOUR`                 | `#e5484d`                                  | `InspectOverlay.tsx`         |
+| `PAGE_LINK_TRANSITIONS`               | `instant`, `slide`, `dissolve`             | `page-link.ts`               |
+| `DEFAULT_PAGE_LINK_TRANSITION`        | `'instant'`                                | `page-link.ts`               |
+| `PAGE_LINK_ID_MAX`                    | 64 (a page id is `page-` and 8 hex)        | `page-link.ts`               |
 
 ## Defaults ledger
 

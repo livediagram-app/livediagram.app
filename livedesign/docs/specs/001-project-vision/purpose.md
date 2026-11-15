@@ -98,6 +98,11 @@ here in the same change, with the spec that moved it.
   Markdown in and out), slide pages, infographics and the animated GIF export went with livedocuments, and presenting
   pages as a slide deck was retired ([Presentation mode](../012-collaboration/presentation-mode.md)). Photo pages came
   in from livediagram's photo editor ([Photo pages](../031-photo/photo-pages.md)).
+- **Clickable prototypes**: narrowed by [Wireframe pages](../007-editor/wireframe-pages.md) "Clickable prototypes"
+  (Work Tracker 136). Presenting stays retired, and livedesign still has no slide deck or Present button, but a
+  wireframe tab's screens can be linked and played one at a time in **Prototype mode**, and shared as a link that
+  opens into it, so a team can walk through the screens it sketched. It plays only a tab's own screens, and the
+  share link is an ordinary one with a flag the editor reads.
 
 ## Why it matters
 

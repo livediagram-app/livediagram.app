@@ -120,7 +120,11 @@ type ElementLink =
   | { kind: 'tab'; tabId: TabId }
   | { kind: 'element'; tabId: TabId; elementId: ElementId }
   | { kind: 'design'; designId: string; name: string }
-  | { kind: 'url'; url: string }; // external address, opens in a new tab
+  | { kind: 'url'; url: string } // external address, opens in a new tab
+  // A screen of this tab, or the screen shown before, played in Prototype mode
+  // (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes").
+  | { kind: 'page'; pageId: string; transition?: 'instant' | 'slide' | 'dissolve' }
+  | { kind: 'back'; transition?: 'instant' | 'slide' | 'dissolve' };
 ```
 
 Persistence shape lives in [Api](../015-api/api.md) (per-tab rows in each design's own SQLite, in its Durable Object). The `apps/live/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
