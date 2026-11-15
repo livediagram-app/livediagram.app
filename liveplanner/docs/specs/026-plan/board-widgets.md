@@ -33,6 +33,15 @@ header; they are not in the palette.
   - **The Filter** holds the zone's start while More shows, so it is always in the row however many widgets there are
     (the others keep their order after it, and drag and Alt+← / Alt+→ move them among themselves; the Filter stays
     put, its Delete and edit mode's × still taking it off). With room again it is back in its own place.
+    In a narrow room (a header band at a narrow window), each step taken only when the one before cannot fit even
+    with no other widget in the row:
+    1. **The Filter goes compact**: one header-sized button, still first, the filter glyph and, while it narrows the
+       board, a count of its words and chips on the brand outline and tint ("Filter, 2 on"). Pressing it opens a
+       panel holding the whole Filter, working as it does in the row.
+    2. **More drops its pressed name to a dot**: a small brand-coloured dot before "More", the outline and tint kept,
+       its accessible name still naming the press.
+    3. **The Filter goes into More** with the other widgets, More then naming its press (or, narrower still, its dot).
+       The row never clips and never runs over the title or chips before it.
   - **Pressing More** opens a panel under it, **More Widgets**, holding the widgets that did not fit, live and in their
     order, one to a line, each working exactly as it does in the row: a pressed value, a "+n" legend, Set Done Column,
     Show all. Escape, a press outside or More again closes it; it closes by itself once every widget fits. In edit mode
@@ -146,7 +155,8 @@ board's filter hides every card the board holds, the board says so in its column
   filter ("Card Type: Bug", its cross removing it), the words being typed ("Filter cards", or "Filter these…" with
   chips), then inside its right edge **Clear Filter** (a cross, while there are words or chips) and **Add Filter**
   (a plus). It is one row: past its room it scrolls sideways within itself. In a zone too full for its widgets it
-  holds the zone's start and never goes into More ([The header](#more)).
+  holds the zone's start, compact in a narrow room, and goes into More only when not even its compact button fits
+  ([The header](#more)).
 - **Field chips** are Find a Card's and Card Search's ([Card Search](plan-views.md#card-search)): Add Filter lists the
   fields the board's shown cards' types offer (Card Type while they hold more than one type), less those already
   filtered; picking one lists its values among the cards the board shows under the other narrowings, each with its

@@ -38,6 +38,7 @@ beforeEach(() => {
     if (this.dataset['widget']) return this.dataset['widget'] === 'filter' ? 200 : 100;
     if (this.hasAttribute('data-widget-control')) return 28;
     if (this.hasAttribute('data-widget-more-ghost')) return 70;
+    if (this.hasAttribute('data-widget-compact-ghost')) return 30;
     return 0;
   });
   return () => {
@@ -63,11 +64,14 @@ function show(
     palette: planPalette('light', {}),
     onChange,
     labelOf: (id: BoardWidgetId) => (id === 'filter' ? 'Filter' : id),
-    render: (kind: BoardWidgetId) => (
-      <button type="button" data-widget-pressed={pressed[kind]}>
-        {kind}
-      </button>
-    ),
+    render: (kind: BoardWidgetId, opts?: { compact?: boolean }) =>
+      opts?.compact ? (
+        <button type="button">compact {kind}</button>
+      ) : (
+        <button type="button" data-widget-pressed={pressed[kind]}>
+          {kind}
+        </button>
+      ),
   };
   const view = render(<BoardWidgetZone widgets={widgets} {...props} />);
   return {
@@ -199,6 +203,45 @@ describe('a widget zone too full for its widgets', () => {
       altKey: true,
     });
     expect(onChange).toHaveBeenCalledWith(['count', 'mine', 'filter', 'progress', 'people', 'due']);
+  });
+
+  // The verifier's case on PR #1842: a zone too narrow for the whole Filter beside More and the buttons.
+  it('pins the Filter compact when the room cannot hold it whole, never past the room', () => {
+    // Whole: 200 + More 70 + 56 + 3 gaps = 344 > 300. Compact (30): 174, and one 100 px widget with its gap.
+    room = 300;
+    show();
+    const pinned = screen.getByRole('group', { name: 'Filter widget' });
+    expect(pinned.textContent).toBe('compact filter');
+    expect(pinned.hasAttribute('data-widget-compact')).toBe(true);
+    expect(row()).toEqual(['count']);
+    expect(more()!.getAttribute('aria-label')).toBe('More widgets, 4 more');
+    // The whole Filter stays in the measuring layer, for its width, never in More.
+    openMore();
+    expect(inPanel()).toEqual(['progress', 'mine', 'people', 'due']);
+    resize(1000);
+    expect(row()).toEqual(WIDGETS);
+    expect(screen.getByRole('listitem', { name: 'Filter widget' }).textContent).toBe('filter');
+  });
+
+  it('marks a press in More with a dot when the room cannot hold its name', () => {
+    // Compact Filter 30 + More 70 + 56 + 3 gaps = 174; a name needs 120 more, a dot 12.
+    room = 200;
+    show(WIDGETS, true, { due: 'Overdue' });
+    expect(more()!.textContent).not.toContain('Overdue');
+    expect(document.querySelector('[data-widget-more-dot]')).toBeTruthy();
+    expect(more()!.getAttribute('aria-label')).toBe('More widgets, 5 more, pressed: Overdue');
+  });
+
+  it('puts the Filter into More when not even its button fits, More then naming its press', () => {
+    // A Viewer: compact Filter 30 + More 70 + a gap = 106 > 100; More alone 70.
+    room = 100;
+    show(WIDGETS, false, { filter: 'Severity: High' });
+    expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
+    expect(more()!.getAttribute('aria-label')).toBe(
+      'More widgets, 6 more, pressed: Severity: High',
+    );
+    openMore();
+    expect(inPanel()).toEqual(WIDGETS);
   });
 
   it('changes nothing while the zone is not laid out', () => {

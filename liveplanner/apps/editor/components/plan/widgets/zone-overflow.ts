@@ -18,24 +18,43 @@ export const ZONE_GAP_PX = 6;
 // widget More would hold has a press, so the name's own width never feeds back into which widgets fit.
 export const MORE_LABEL_MAX_PX = 120;
 
+// What a pressed More takes when the room cannot hold its name: a dot in the brand colour.
+export const MORE_DOT_PX = 12;
+
+// How the Filter sits while some widgets are in More: whole at the zone's start, as one button there (compact), or in
+// More with the rest (when not even the button fits beside More and the zone's buttons).
+export type FilterPlace = 'whole' | 'compact' | 'more';
+
 export type ZoneFit = {
   // Some widgets are in More.
   overflow: boolean;
-  // The Filter holds the zone's start.
+  // The Filter holds the zone's start (whole or compact).
   pinned: boolean;
-  // While overflowing, how many of the widgets after the pinned Filter the row holds, in order.
+  // How the Filter sits; 'whole' while nothing overflows or the board has no Filter.
+  filter: FilterPlace;
+  // While overflowing, how many of the widgets after the pinned Filter (or of all of them, the Filter in More) the
+  // row holds, in order.
   shown: number;
+  // More names the press it holds (else a dot says one is there).
+  named: boolean;
   // What every widget and the buttons take across, all in the row: the width the zone asks for, so a zone sized by its
   // content (a header band's) is given the room it could have, however many widgets are in More.
   need: number;
 };
 
-export const FITS_ALL: ZoneFit = { overflow: false, pinned: false, shown: 0, need: 0 };
+export const FITS_ALL: ZoneFit = {
+  overflow: false,
+  pinned: false,
+  filter: 'whole',
+  shown: 0,
+  named: true,
+  need: 0,
+};
 
 export type FitInput = {
   // The board's widgets, in order.
   order: readonly BoardWidgetId[];
-  // Each widget's width, as drawn.
+  // Each widget's width, as drawn (the Filter's whole).
   widths: ReadonlyMap<BoardWidgetId, number>;
   // The zone's room across.
   room: number;
@@ -43,14 +62,23 @@ export type FitInput = {
   controls: readonly number[];
   // More's width, unpressed.
   more: number;
+  // The compact Filter's width.
+  compact: number;
   // The widgets holding a press.
   pressed: ReadonlySet<BoardWidgetId>;
 };
 
-// Which widgets the row holds. Everything fits: no More. Otherwise the Filter pins (when the board has it) and the
-// rest fill in order, as many as fit beside the Filter, More and the buttons; a widget is never skipped to fill a
-// gap, so the row keeps the board's order. Linear in the widgets.
-export function fitWidgets({ order, widths, room, controls, more, pressed }: FitInput): ZoneFit {
+// Which widgets the row holds. Everything fits: no More. Otherwise, in order of preference, each step taken only when
+// the one before cannot fit even with no widget in the row beside it:
+// 1. the whole Filter pins at the zone's start and the rest fill in order beside More (naming a press it holds) and
+//    the buttons;
+// 2. the Filter pins compact (one button), More naming its press;
+// 3. the Filter pins compact, More marking its press with a dot;
+// 4. the Filter goes into More with the rest, More naming its press, then with a dot.
+// A widget is never skipped to fill a gap, so the row keeps the board's order; nothing ever clips or overlaps what is
+// before the zone, short of a room under the narrowest step (More and the buttons alone). Linear in the widgets.
+export function fitWidgets(input: FitInput): ZoneFit {
+  const { order, widths, room, controls, more, compact, pressed } = input;
   const width = (k: BoardWidgetId) => widths.get(k) ?? 0;
   const buttons = controls.reduce((s, c) => s + c, 0);
   const all =
@@ -58,24 +86,52 @@ export function fitWidgets({ order, widths, room, controls, more, pressed }: Fit
     buttons +
     ZONE_GAP_PX * Math.max(0, order.length + controls.length - 1);
   if (all <= room + 0.5) return { ...FITS_ALL, need: all };
-  const pinned = order.includes(PINNED_WIDGET);
-  const rest = pinned ? order.filter((k) => k !== PINNED_WIDGET) : order;
-  // Whether any widget from i on holds a press: More would then name it.
-  const pressedFrom = new Array<boolean>(rest.length + 1).fill(false);
-  for (let i = rest.length - 1; i >= 0; i--)
-    pressedFrom[i] = pressedFrom[i + 1]! || pressed.has(rest[i]!);
-  const fixed = (pinned ? width(PINNED_WIDGET) : 0) + buttons;
-  const fixedItems = (pinned ? 1 : 0) + 1 + controls.length;
-  let shown = 0;
-  let prefix = 0;
-  // At least one widget goes into More (with none, everything would have fit above). Each count is checked with the
-  // More it would leave, so the largest that fits is taken even past one that does not.
-  for (let k = 0; k < rest.length; k++) {
-    const moreWidth = more + (pressedFrom[k] ? MORE_LABEL_MAX_PX : 0);
-    if (fixed + moreWidth + prefix + ZONE_GAP_PX * (fixedItems + k - 1) <= room + 0.5) shown = k;
-    prefix += width(rest[k]!);
+  // The most widgets of `rest` the row holds beside a pinned Filter `pin` px wide (none: no pin), More (named or with
+  // a dot) and the buttons; -1 when not even none fit. At least one widget goes into More.
+  const best = (rest: readonly BoardWidgetId[], pin: number | null, named: boolean): number => {
+    const pressedFrom = new Array<boolean>(rest.length + 1).fill(false);
+    for (let i = rest.length - 1; i >= 0; i--)
+      pressedFrom[i] = pressedFrom[i + 1]! || pressed.has(rest[i]!);
+    const fixed = (pin ?? 0) + buttons;
+    const fixedItems = (pin === null ? 0 : 1) + 1 + controls.length;
+    let shown = -1;
+    let prefix = 0;
+    // Each count is checked with the More it would leave, so the largest that fits is taken even past one that does
+    // not.
+    for (let k = 0; k < rest.length; k++) {
+      const mark = pressedFrom[k] ? (named ? MORE_LABEL_MAX_PX : MORE_DOT_PX) : 0;
+      if (fixed + more + mark + prefix + ZONE_GAP_PX * (fixedItems + k - 1) <= room + 0.5)
+        shown = k;
+      prefix += width(rest[k]!);
+    }
+    return shown;
+  };
+  const fit = (pinned: boolean, filter: FilterPlace, shown: number, named: boolean): ZoneFit => ({
+    overflow: true,
+    pinned,
+    filter,
+    shown,
+    named,
+    need: all,
+  });
+  if (order.includes(PINNED_WIDGET)) {
+    const rest = order.filter((k) => k !== PINNED_WIDGET);
+    const steps: [FilterPlace, number, boolean][] = [
+      ['whole', width(PINNED_WIDGET), true],
+      ['compact', compact, true],
+      ['compact', compact, false],
+    ];
+    for (const [place, pin, named] of steps) {
+      const shown = best(rest, pin, named);
+      if (shown >= 0) return fit(true, place, shown, named);
+    }
   }
-  return { overflow: true, pinned, shown, need: all };
+  const filter: FilterPlace = order.includes(PINNED_WIDGET) ? 'more' : 'whole';
+  for (const named of [true, false]) {
+    const shown = best(order, null, named);
+    if (shown >= 0) return fit(false, filter, shown, named);
+  }
+  return fit(false, filter, 0, false);
 }
 
 export type ZoneLayout = {
@@ -152,6 +208,8 @@ export function moreLabel(
 const sameFit = (a: ZoneFit, b: ZoneFit) =>
   a.overflow === b.overflow &&
   a.pinned === b.pinned &&
+  a.filter === b.filter &&
+  a.named === b.named &&
   a.shown === b.shown &&
   Math.abs(a.need - b.need) < 0.5;
 
@@ -179,7 +237,10 @@ export function useZoneFit(
       const room = z.clientWidth;
       if (room <= 0) return;
       const widths = new Map<BoardWidgetId, number>();
-      for (const el of z.querySelectorAll<HTMLElement>('[data-widget]')) {
+      // Each widget's own width: the compact Filter is not the Filter's (the measuring layer holds its whole).
+      for (const el of z.querySelectorAll<HTMLElement>(
+        '[data-widget]:not([data-widget-compact])',
+      )) {
         const kind = el.dataset['widget'] as BoardWidgetId;
         if (!widths.has(kind)) widths.set(kind, el.offsetWidth);
       }
@@ -187,12 +248,14 @@ export function useZoneFit(
         (el) => el.offsetWidth,
       );
       const more = z.querySelector<HTMLElement>('[data-widget-more-ghost]')?.offsetWidth ?? 0;
+      const compact = z.querySelector<HTMLElement>('[data-widget-compact-ghost]')?.offsetWidth ?? 0;
       const next = fitWidgets({
         order: widgets,
         widths,
         room,
         controls,
         more,
+        compact,
         pressed: pressedRef.current,
       });
       if (sameFit(next, now.current)) return;
@@ -205,7 +268,7 @@ export function useZoneFit(
     const seen = new ResizeObserver(() => measureRef.current());
     seen.observe(z);
     for (const el of z.querySelectorAll<HTMLElement>(
-      '[data-widget], [data-widget-control], [data-widget-more-ghost]',
+      '[data-widget], [data-widget-control], [data-widget-more-ghost], [data-widget-compact-ghost]',
     ))
       seen.observe(el);
     return () => seen.disconnect();

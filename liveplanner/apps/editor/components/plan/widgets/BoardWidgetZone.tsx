@@ -114,7 +114,8 @@ export function BoardWidgetZone({
   offerAdd?: boolean;
   palette: PlanPalette;
   onChange: (next: BoardWidgetId[]) => void;
-  render: (kind: BoardWidgetId) => ReactNode;
+  // `compact`: the Filter as one button, for a zone too narrow for it whole (zone-overflow.ts).
+  render: (kind: BoardWidgetId, opts?: { compact?: boolean }) => ReactNode;
   // A widget's name ("Completion", "Budget Sum"): its wrapper's and its ×'s accessible names.
   labelOf: (kind: BoardWidgetId) => string;
   // The gallery's field widgets, and its For You, worked out only as it opens.
@@ -337,10 +338,13 @@ export function BoardWidgetZone({
     const atStart = place === 'pin';
     const drags = place === 'row';
     const dragged = drags && reorder?.moved && reorder.kind === kind;
+    // The pinned Filter as one button while the room cannot hold it whole.
+    const compact = atStart && fit.filter === 'compact';
     return (
       <div
         key={kind}
         data-widget={kind}
+        data-widget-compact={compact ? '' : undefined}
         data-widget-in-more={place === 'more' ? '' : undefined}
         role={atStart ? 'group' : 'listitem'}
         tabIndex={canEdit ? 0 : undefined}
@@ -385,7 +389,7 @@ export function BoardWidgetZone({
           }
         }}
       >
-        {render(kind)}
+        {compact ? render(kind, { compact: true }) : render(kind)}
         {active ? (
           <button
             type="button"
@@ -451,6 +455,7 @@ export function BoardWidgetZone({
         <ZoneMore
           count={hidden.length}
           label={label}
+          named={fit.named}
           palette={palette}
           open={moreAt}
           panelWidth={panelWidth}
@@ -458,7 +463,9 @@ export function BoardWidgetZone({
             if (moreAt) return setMoreAt(null);
             // As wide as the widest widget it holds, read from the measuring layer as it opens.
             const widths = [
-              ...(zone.current?.querySelectorAll<HTMLElement>('[data-widget-ghost]') ?? []),
+              ...(zone.current?.querySelectorAll<HTMLElement>(
+                '[data-widget-ghost]:not([data-widget-measure-only])',
+              ) ?? []),
             ].map((el) => el.offsetWidth);
             setPanelWidth(morePanelWidth(Math.max(0, ...widths)));
             setMoreAt(button);
@@ -510,6 +517,23 @@ export function BoardWidgetZone({
               {render(kind)}
             </div>
           ))}
+          {/* The Filter whole while it pins compact, so its width (and press) stay known; and compact, for its width. */}
+          {fit.filter === 'compact' && widgets.includes(PINNED_WIDGET) ? (
+            <div
+              data-widget={PINNED_WIDGET}
+              data-widget-ghost=""
+              data-widget-measure-only=""
+              className="relative flex shrink-0 items-center rounded-md"
+            >
+              {render(PINNED_WIDGET)}
+            </div>
+          ) : null}
+          {/* Only while some widgets are in More: whether the Filter goes compact is asked only then. */}
+          {fit.overflow && widgets.includes(PINNED_WIDGET) ? (
+            <div data-widget-compact-ghost="" className="flex shrink-0 items-center">
+              {render(PINNED_WIDGET, { compact: true })}
+            </div>
+          ) : null}
           <ZoneMoreGhost palette={palette} />
         </div>
       </div>

@@ -167,7 +167,7 @@ export function PlanBoardHeader({
         labelOf={fieldWidgets.labelOf}
         fields={fieldWidgets.fields}
         suggest={fieldWidgets.suggest}
-        render={(id) =>
+        render={(id, opts) =>
           isFieldWidgetKey(id) ? (
             <FieldWidgetView
               id={id}
@@ -186,7 +186,7 @@ export function PlanBoardHeader({
               }}
             />
           ) : (
-            <BoardWidgetView kind={id} ctx={ctx} />
+            <BoardWidgetView kind={id} ctx={ctx} compact={opts?.compact ?? false} />
           )
         }
       />

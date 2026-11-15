@@ -29,15 +29,26 @@ export function moreName(count: number, label: string | null): string {
 function MoreFace({
   count,
   label,
+  named = true,
   palette,
 }: {
   count: number;
   label: string | null;
+  // The room holds the press's name; else a dot says one is there (zone-overflow.ts MORE_DOT_PX).
+  named?: boolean;
   palette: PlanPalette;
 }) {
   return (
     <>
-      {label ? <span className="max-w-[120px] truncate">{label}</span> : 'More'}
+      {label && !named ? (
+        <span
+          aria-hidden
+          data-widget-more-dot=""
+          className="size-1.5 shrink-0 rounded-full"
+          style={{ backgroundColor: palette.focus }}
+        />
+      ) : null}
+      {label && named ? <span className="max-w-[120px] truncate">{label}</span> : 'More'}
       <CountBadge
         size="md"
         background={label ? `${palette.focus}26` : palette.column}
@@ -61,6 +72,7 @@ export function ZoneMoreGhost({ palette }: { palette: PlanPalette }) {
 export function ZoneMore({
   count,
   label,
+  named = true,
   palette,
   open,
   onToggle,
@@ -71,6 +83,8 @@ export function ZoneMore({
   count: number;
   // The press a widget in More holds, named; null when none does.
   label: string | null;
+  // Whether the room holds the name on the button (else a dot; the name stays in its accessible name).
+  named?: boolean;
   palette: PlanPalette;
   // The button the panel hangs from while it is open.
   open: HTMLElement | null;
@@ -103,7 +117,7 @@ export function ZoneMore({
           onToggle(e.currentTarget);
         }}
       >
-        <MoreFace count={count} label={label} palette={palette} />
+        <MoreFace count={count} label={label} named={named} palette={palette} />
       </button>
       {open ? (
         <AnchoredPopover

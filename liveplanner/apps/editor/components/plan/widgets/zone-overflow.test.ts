@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import type { BoardWidgetId } from '@liveplanner/items';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  MORE_DOT_PX,
   MORE_LABEL_MAX_PX,
+  FITS_ALL,
   fitWidgets,
   moreLabel,
   nudgeInRow,
@@ -23,6 +25,7 @@ const base = {
   widths: W,
   controls: [28, 28],
   more: 70,
+  compact: 28,
   pressed: new Set<BoardWidgetId>(),
 };
 
@@ -32,7 +35,9 @@ describe('fitWidgets', () => {
     expect(fitWidgets({ ...base, room: 586 })).toEqual({
       overflow: false,
       pinned: false,
+      filter: 'whole',
       shown: 0,
+      named: true,
       need: 586,
     });
   });
@@ -42,10 +47,17 @@ describe('fitWidgets', () => {
     expect(fitWidgets({ ...base, room: 560 })).toMatchObject({
       overflow: true,
       pinned: true,
+      filter: 'whole',
       shown: 2,
     });
-    expect(fitWidgets({ ...base, room: 450 })).toMatchObject({ shown: 1 });
-    expect(fitWidgets({ ...base, room: 300 })).toMatchObject({ shown: 0 });
+    expect(fitWidgets({ ...base, room: 450 })).toMatchObject({ filter: 'whole', shown: 1 });
+    expect(fitWidgets({ ...base, room: 344 })).toMatchObject({ filter: 'whole', shown: 0 });
+    // Not even the whole Filter, More and the buttons: the Filter goes compact (28 px), and one widget fits again.
+    expect(fitWidgets({ ...base, room: 300 })).toMatchObject({
+      pinned: true,
+      filter: 'compact',
+      shown: 1,
+    });
   });
 
   it('pins nothing on a board without the Filter, and counts no buttons for a Viewer', () => {
@@ -66,6 +78,78 @@ describe('fitWidgets', () => {
     expect(MORE_LABEL_MAX_PX).toBeGreaterThan(0);
   });
 
+  // The verifier's case on PR #1842: a header band's zone at a 650 px window is 364 px, and the whole Filter 322.
+  describe('in a narrow zone (a 650 px window)', () => {
+    const real = {
+      ...base,
+      order: ['filter', 'count', 'progress', 'mine', 'people', 'due'] as BoardWidgetId[],
+      widths: widths({ filter: 322, count: 110, progress: 130, mine: 90, people: 120, due: 110 }),
+      compact: 30,
+      more: 76,
+    };
+    const due = new Set<BoardWidgetId>(['due']);
+
+    it('keeps the Filter whole while it fits beside More and the buttons', () => {
+      expect(fitWidgets({ ...real, room: 600 })).toMatchObject({ filter: 'whole', shown: 1 });
+    });
+
+    it('turns the Filter compact at 364 and 300 px, pressed or not, never past the room', () => {
+      expect(fitWidgets({ ...real, room: 364 })).toMatchObject({
+        pinned: true,
+        filter: 'compact',
+        shown: 1,
+        named: true,
+      });
+      expect(fitWidgets({ ...real, room: 364, pressed: due })).toMatchObject({
+        filter: 'compact',
+        shown: 0,
+        named: true,
+      });
+      expect(fitWidgets({ ...real, room: 300 })).toMatchObject({ filter: 'compact', shown: 1 });
+      expect(fitWidgets({ ...real, room: 300, pressed: due })).toMatchObject({
+        filter: 'compact',
+        shown: 0,
+        named: true,
+      });
+    });
+
+    it("drops More's name to a dot when even that is too wide", () => {
+      expect(fitWidgets({ ...real, room: 250, pressed: due })).toMatchObject({
+        filter: 'compact',
+        shown: 0,
+        named: false,
+      });
+      expect(MORE_DOT_PX).toBeLessThan(MORE_LABEL_MAX_PX);
+    });
+
+    it('puts the Filter into More when not even its button fits', () => {
+      expect(fitWidgets({ ...real, controls: [], room: 100 })).toMatchObject({
+        pinned: false,
+        filter: 'more',
+        shown: 0,
+        named: true,
+      });
+      expect(fitWidgets({ ...real, controls: [], room: 100, pressed: due })).toMatchObject({
+        filter: 'more',
+        named: false,
+      });
+      expect(fitWidgets({ ...real, controls: [], room: 50 })).toMatchObject({
+        filter: 'more',
+        shown: 0,
+        named: false,
+      });
+    });
+
+    it('drops the name on a board without the Filter', () => {
+      const order: BoardWidgetId[] = ['count', 'due'];
+      expect(fitWidgets({ ...real, order, controls: [], room: 100, pressed: due })).toMatchObject({
+        filter: 'whole',
+        pinned: false,
+        named: false,
+      });
+    });
+  });
+
   it('works 1,000 widgets out within its CPU budget', () => {
     const order = Array.from({ length: 1000 }, (_, i) => `field:${i}` as BoardWidgetId);
     const many = new Map(order.map((k) => [k, 90] as const));
@@ -79,18 +163,18 @@ describe('fitWidgets', () => {
 
 describe('the zone layout', () => {
   it('splits the row from More after the pinned Filter', () => {
-    expect(zoneLayout(WIDGETS, { overflow: false, pinned: false, shown: 0, need: 0 })).toEqual({
+    expect(zoneLayout(WIDGETS, { ...FITS_ALL })).toEqual({
       pin: false,
       row: WIDGETS,
       hidden: [],
     });
-    expect(zoneLayout(WIDGETS, { overflow: true, pinned: true, shown: 1, need: 0 })).toEqual({
+    expect(zoneLayout(WIDGETS, { ...FITS_ALL, overflow: true, pinned: true, shown: 1 })).toEqual({
       pin: true,
       row: ['count'],
       hidden: ['progress', 'mine'],
     });
     expect(
-      zoneLayout(['count', 'mine'], { overflow: true, pinned: true, shown: 1, need: 0 }),
+      zoneLayout(['count', 'mine'], { ...FITS_ALL, overflow: true, pinned: true, shown: 1 }),
     ).toEqual({ pin: false, row: ['count'], hidden: ['mine'] });
   });
 
