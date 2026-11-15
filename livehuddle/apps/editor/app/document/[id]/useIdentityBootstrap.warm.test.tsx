@@ -369,7 +369,7 @@ describe('useIdentityBootstrap warm open', () => {
 
   // timing-telemetry.md "WarmPaint": the warm paint is a timing of its own, so production shows it.
   it('times the warm paint as WarmPaint from the read, and the catch-up as DocumentLoad', async () => {
-    const before = performance.now();
+    const before = performance.now(); // wall-clock: the timing origin itself is a performance clock reading
     const { hook } = render({ authLoaded: false, accountUserId: null });
     await flush();
     const warm = timing.started.filter((t) => t.metric === 'WarmPaint');
