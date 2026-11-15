@@ -1326,9 +1326,10 @@ the pilot; livedocuments, livedesign and liveplanner follow as cards of their ow
 
 - **The view resource.** The server lists `ui://livediagram/view.html` (`text/html;profile=mcp-app`), one
   self-contained page with its script and styles inline: the shared viewer (`@liveworkspace/mcp-kit/app-view`,
-  `viewerHtml(app)`, about 13 KB), its size held under `VIEWER_HTML_BUDGET_BYTES` (24 KB) by a test. The SVG is
-  drawn as an image, so nothing in it fetches: its `_meta.ui.csp` allows no network at all, and it asks for a
-  border.
+  `viewerHtml(app)`, about 19 KB with live updates), its size held under `VIEWER_HTML_BUDGET_BYTES` (24 KB) by a test. The SVG is
+  drawn as an image, so nothing in it fetches: its `_meta.ui.csp` allows one connection only, the WebSocket to
+  this deployment's own api (`connectDomains: ["wss://<editor host>"]`, from `CONSENT_BASE_URL`), no resource
+  domains, and it asks for a border.
 - **The tools that link it.** `create_document`, `add_tab`, `update_document` and `read_document` carry
   `_meta.ui.resourceUri` (and the older flat `ui/resourceUri` key) in their definitions. Their results are unchanged:
   **the PNG always stays**, since the model checks its work from it (§5) and a host without MCP Apps shows only it.
@@ -1344,11 +1345,46 @@ the pilot; livedocuments, livedesign and liveplanner follow as cards of their ow
   with MCP Apps keeps it from the model): the tab's SVG, its view box, every element's box with its ref and label
   (for the click), the document's tabs and links. Its text block is one short line, not the SVG, so a host without
   MCP Apps that shows it to the model spends few tokens on it; `read_document` stays the model's read.
-- **Authority.** The view holds no credential. It reads only through the host's own connection to this server, so
-  every `view_tab` is the user's token, through the api's ordinary read gate, and a read-only token reads as it
-  does today. No share link is minted, ever. The view is read-only for every token. Live updates through the
-  document's room, authorised by a short-lived owner ticket like the workbench embed, and in-view edits for an
-  edit-level token, are the next parts.
+- **Authority.** The view holds no lasting credential. It reads only through the host's own connection to this
+  server, so every `view_tab` is the user's token, through the api's ordinary read gate, and a read-only token
+  reads as it does today. No share link is minted, ever. The view is read-only for every token; in-view edits for
+  an edit-level token are the next part.
+- **Live updates.** Once a tab is drawn, the view follows the document through its room, as the editor's peers do,
+  and draws the tab again when it changes:
+  - **The ticket.** The view asks for it through the host (`tools/call view_live`); the server mints it for the
+    token's owner with `POST /api/documents/:id/room-ticket?cap=view` ([api.md](api.md)), the index's grant on
+    this document sealed with the cap `view` and no pairing (`rt2~…`,
+    [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "A
+    view-only ticket"). So it is short-lived (the grant's 10 minutes), names one document, admits only at `view`
+    whatever the owner's own level (an Editor, Participant or Viewer token alike), seats no owner, and is the
+    owner's access as the index has it at the mint: a person whose access was revoked gets none (the mint's 404),
+    and a removal closes the open socket (4005). It is never in a text block, the PNG, a log line or the tool's
+    telemetry, only in `view_live`'s structured content, which a host with MCP Apps hands the view alone.
+  - **The socket.** The view opens `wss://<editor host>/api/documents/:id/ws?t=<ticket>` and never sends a
+    frame, as the CLI's room stream does ([cli.md](blueprints/cli.md) "The room stream"), so it is in no one's
+    roster and draws no cursor. A relayed `op` that changes content on the shown tab (`tab`, `el`, `tab-meta`,
+    `el-delta`, `vote`, `qa`, a `changeset`), a save landing on it (`tab-saved`, after which `view_tab` reads what
+    the editor wrote) or a change to the tab list (`document-meta`) schedules one `view_tab`, at most one every
+    `LIVE_REDRAW_MS` (1.5 s) however busy the room; presence ops (cursors, lasers, selections, viewports, drag
+    previews, reactions, follows, poll answers) and other tabs' changes draw nothing. Pan and zoom survive a
+    redraw.
+  - **Reconnects.** The ticket is never renewed in place. Within its life, `LIVE_RENEW_BEFORE_MS` (30 s) before
+    `expiresAt`, the view mints a fresh one, opens a new socket and draws the tab once. When the room closes the
+    socket (its grant lapsed, 4007; access changed, 4005; full, 4008; the network), the view mints a fresh ticket and reconnects, waiting
+    `LIVE_RECONNECT_MIN_MS` (1 s), doubling to `LIVE_RECONNECT_MAX_MS` (30 s), and draws the tab once on
+    reopening, to catch up what it missed. After `LIVE_MAX_ATTEMPTS` (6) tries without an open socket it stops.
+    A frame the host hides closes its socket and opens a fresh one when shown again, so a view out of sight holds
+    nothing in the room.
+  - **Snapshot.** When `view_live` is refused (no access, the document in the Trash, the server down), the
+    attempts run out, or the document moves to the Trash (4004), the view keeps the tab it last drew and says so
+    quietly: the header's live mark reads **Snapshot**, with a title saying live updates stopped and when the tab
+    was drawn. While connected it reads **Live**, and **Reconnecting** between tries. Nothing else changes.
+  - **Cost.** A document with no open view gets no ticket and no socket: `view_live` runs only when a view asks.
+    An open view is one idle socket on the room, one mint every 10 minutes, and at most one `view_tab` per
+    `LIVE_REDRAW_MS` while people edit.
+- **`view_live`**: `{ documentId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
+  address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms, read from the grant inside). Its text
+  block is one line without the ticket.
 - **Cost.** `view_tab` renders SVG only, no resvg: the Worker CPU of a view is the SVG build and the image fetch the
   PNG path already pays, not the rasterise. Measured on the 100-element service blueprint: the SVG builds in about
   2 ms of CPU and weighs 26 KB, where the PNG takes about 214 ms; a test holds the SVG build to a CPU budget.
