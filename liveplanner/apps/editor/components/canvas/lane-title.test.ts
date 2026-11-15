@@ -2,7 +2,7 @@
 // Tracker 877): laid out in its gutter as the export lays it out.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetLabelMeasureContext } from '@liveworkspace/element-model/svg-render-primitives';
-import { standInDocument } from '@liveworkspace/element-model/testing/font-stand-in';
+import { standInBrowser } from '@liveworkspace/element-model/testing/font-stand-in';
 import { clearLaneTitleCache } from '@liveworkspace/workbench/components/canvas/lane-title-frame';
 import {
   createShape,
@@ -118,7 +118,7 @@ describe('a word too long for the gutter, measured with a real font', () => {
   });
 
   it('is cut at the same letter on the canvas and in the export', () => {
-    const stand = standInDocument();
+    const stand = standInBrowser();
     vi.stubGlobal('document', stand.document);
     vi.stubGlobal('getComputedStyle', stand.getComputedStyle);
     resetLabelMeasureContext();

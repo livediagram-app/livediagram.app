@@ -35,7 +35,7 @@ export function standInContext(): { font: string; measureText: (s: string) => { 
 
 /** A `document` whose canvases measure with the stand-in, and a `getComputedStyle` naming a family, for a test to
  *  stub onto globalThis (vi.stubGlobal) in a Node environment. */
-export function standInDocument(): {
+export function standInBrowser(): {
   document: { body: object; createElement: (tag: string) => { getContext: () => unknown } };
   getComputedStyle: () => { fontFamily: string };
 } {

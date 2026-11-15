@@ -98,7 +98,7 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
     (`export-tab-canvas-draw.ts`) all measure a plain title with `laneTitleMeasure(px, bold, italic, family)` from
     `@liveworkspace/element-model`: one shared 2D context, the font set on every call, at the canvas label's weight
     (`LANE_TITLE_WEIGHT` 500, `LANE_TITLE_BOLD_WEIGHT` 600), so each cuts an overlong word at the same letter (Work
-    Tracker 910; `lane-title-export-parity.test.ts` checks it with a real-font stand-in, `testing/font-stand-in.ts`).
+    Tracker 910; `lane-title-export-parity.test.ts` checks it with a real-font stand-in, `packages/element-model/src/testing/font-stand-in.ts`).
     With no canvas (a Worker) it falls back to `labelMeasure`'s estimate. The export uses the same padding, room,
     `wholeWordFontPx` size and `maxLines = 3`, and `fitWholeWordLines`; a formatted title's runs go through
     `clampExportRunLines`. The stored label is never shortened.

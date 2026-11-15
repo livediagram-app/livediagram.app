@@ -17,7 +17,7 @@ import {
   svgIconGlyph,
   wrapLabel,
 } from './svg-render-primitives';
-import { standInDocument, standInWidth } from './testing/font-stand-in';
+import { standInBrowser, standInWidth } from './testing/font-stand-in';
 
 // One unit a character, so a width is a character count.
 const chars = (s: string) => [...s].length;
@@ -183,7 +183,7 @@ describe('the lane-title measure', () => {
   });
 
   const withCanvas = () => {
-    vi.stubGlobal('document', standInDocument().document);
+    vi.stubGlobal('document', standInBrowser().document);
     resetLabelMeasureContext();
   };
 

@@ -112,7 +112,9 @@ describe('comment delete', () => {
   it('answers a missing thread or comment 404, and the api’s own refusal 409', async () => {
     const { client } = api();
     const run = (ref: string, c: string) =>
-      commentDelete.run!(contextOf(client), { doc: DOC_A, ref, comment: c }).catch((e: unknown) => e);
+      commentDelete.run!(contextOf(client), { doc: DOC_A, ref, comment: c }).catch(
+        (e: unknown) => e,
+      );
     expect(await run('ship', 'c2bb')).toMatchObject({ status: 404, code: 'no_thread' });
     expect(await run('pay', 'zzzz')).toMatchObject({ status: 404, code: 'comment_unknown' });
     const busy = fakeApi({
