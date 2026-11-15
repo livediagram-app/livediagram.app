@@ -1,5 +1,6 @@
 import type { LinkedActions } from '@/hooks/plan/useLinkedActionCards';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { embedOpensReadOnly, embedSessionRole } from '@liveworkspace/media/embed-read-only';
 import type { CommentMention } from '@liveplanner/project';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
@@ -35,6 +36,9 @@ export function useEditorCollaboration(
   dialogsSlice: EditorDialogsSlice,
 ) {
   const { embedMode, workbench, workbenchMode } = env;
+  // A pasted share link's embed opens read-only whatever the link's role (embeds.md "Pasting a share link"):
+  // `&readonly=1`, read once, so an edit link unfolded into a public page gives its readers no edit rights.
+  const [readOnlyEmbed] = useState(() => embedOpensReadOnly(embedMode));
   const { activeId, sessionTabScope, setEditingId, setMultiSelectedIds, setSelectedId } =
     selectionSlice;
   const { hydrated, projectId, selfParticipant, tickTabs } = projectSlice;
@@ -197,7 +201,7 @@ export function useEditorCollaboration(
   // The role pill's local read-only preview (docs/specs/007-editor/editor-app.md#role-pill).
   // A workbench session that ended leaves the editor read-only (the autosave stands down with it).
   const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
-    workbench?.ended ? 'view' : sessionRole,
+    workbench?.ended ? 'view' : embedSessionRole(sessionRole, readOnlyEmbed),
     () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());

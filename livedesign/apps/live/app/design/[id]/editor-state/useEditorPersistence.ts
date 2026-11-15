@@ -1,4 +1,6 @@
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
+import { useLastSeenFollow } from '@liveworkspace/workbench/hooks/persistence/useLastSeenFollow';
+import { lastSeenCopies } from '@/lib/last-seen';
 import { setOwnPictureShown } from '@/lib/own-picture';
 import { useTabRevisions } from '@liveworkspace/workbench/hooks/editor/useTabRevisions';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -117,8 +119,22 @@ export function useEditorPersistence({
   // the last-saved mirror refs above are seeded by the hydration effect.
   // The last revision known per tab, for the workbench's selection reference.
   const tabRevisions = useTabRevisions(realtime.changesetSeen.seen);
+  // The last seen copy follows the open design (docs/specs/006-design/offline-mode.md "Warm open of a cloud design"):
+  // its name and tab list as they change, its first tab as each save of it lands. Only a cloud design the open kept
+  // a copy of is followed; never an embed, a workbench or a This Browser design.
+  const lastSeen = useLastSeenFollow({
+    follower: lastSeenCopies,
+    reader: selfParticipant.id,
+    itemId: designId,
+    following: hydrated && realtime.designServerStored && !embedMode && !workbenchMode,
+    serverStored: realtime.designServerStored,
+    hydrated,
+    name: designName,
+    tabs,
+  });
   const { hasUnsavedChanges } = useAutosave({
     hydrated,
+    onSaveLanded: lastSeen.onSaveLanded,
     designId,
     // A Participant saves too, its own way (participant below).
     isReadOnly: autosaveReadOnly({

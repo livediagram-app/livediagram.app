@@ -1496,6 +1496,14 @@ A shape can carry an inline **text label**.
   entity fields (as a mind node already did, [Mind node](../009-elements/mind-node.md#escape-keeps-what-you-typed)).
   Undo takes the text back. An empty text box that hugs its text still goes, as on a click away. Inputs outside the
   canvas (the document title, tab renames, dialogs) keep Escape as cancel.
+- **Escape after a drop deselects, as after any other placement.** A palette drop (and an event-storming board's next
+  note) opens the new element's label editor straight away, since the drag already said what and where, so typing
+  writes its label at once. Escape out of that editor before anything is typed leaves the selection too: the open
+  editor was the drop's doing, not a layer the person stepped into, so one Escape takes them back to nothing selected
+  and the tool keys (V for Select, R, O, ...) work again instead of typing into the new label (Work Tracker 864).
+  Once something is typed, Escape keeps it and the element selected, as on every other editor; a click away leaves
+  the selection as a click always does. The category flyout the tile came from has already closed on the drop
+  ([Toolbar layout](../007-editor/toolbar-layout.md#opening-a-flyout)), so it never takes the Escape.
 - The label's size is its **Text Size** ([Fonts](../004-interface-design/fonts.md#text-size)): an exact px, seeded from the tab's default size (Small on a new document), or **Scale**. At a px the label wraps at the shape's width and keeps its size, so a label longer than the shape has room for runs past its edges and is clipped there (a word too long for one line breaks between letters). **Scale** fits it instead: the text is rendered inside an SVG whose `viewBox` is set to the text's measured bounds, with `preserveAspectRatio="xMidYMid meet"`, so it scales uniformly to fill the shape: bigger shapes get bigger text, longer labels shrink to fit.
 - During edit, selection handles and the popover are hidden so they don't get in the way.
 - **Locked** shapes can still be labelled: locking protects position, not content.

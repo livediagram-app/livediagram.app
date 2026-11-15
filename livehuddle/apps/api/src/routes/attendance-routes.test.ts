@@ -109,10 +109,13 @@ describe('reading a tab’s Attendance', () => {
       ['Ada', false, false, false],
       ['Owner', true, true, true],
     ]);
-    // A guest reader is sent no picture; no visit carries a key or an id of a person.
+    // A guest reader is sent no picture; a closed visit carries no key and no visit an id of a person.
     expect(read.visits[0]!.picture).toBeUndefined();
+    expect(read.visits[0]!.key).toBeUndefined();
     expect(JSON.stringify(read)).not.toContain(VISITOR);
     expect(JSON.stringify(read)).not.toContain(await collabKeyFor(VISITOR));
+    // An open visit carries the collab key the roster shows for that person (Work Tracker 825).
+    expect(read.visits[1]!.key).toBe(await collabKeyFor(OWNER));
   });
 
   it('sends a picture to a signed-in reader', async () => {

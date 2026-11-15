@@ -1,5 +1,5 @@
 import { useModeDefaultTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
@@ -262,7 +262,12 @@ export function useEditorCollaboration({
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
-  // indicators + TabBar avatars). See usePresenceBroadcast.
+  // indicators + TabBar avatars). See usePresenceBroadcast. An element we let go of stays held while our change to it
+  // has not landed (@liveworkspace/workbench/lib/selection-write-hold): one stable object, read when used.
+  const presenceWriting = useMemo(
+    () => ({ tabs: tabsRef, baseline: lastSavedTabsRef, writes: ownWrites }),
+    [tabsRef, lastSavedTabsRef, ownWrites],
+  );
   usePresenceBroadcast({
     hydrated,
     documentId,
@@ -270,6 +275,7 @@ export function useEditorCollaboration({
     selection: selectionStore,
     activeId,
     roomRef,
+    writing: presenceWriting,
   });
 
   // Lazy fetch the active tab's full payload on first open, plus the

@@ -67,3 +67,66 @@ describe('a read of what changed', () => {
     await expect(index.readItem('broken')).rejects.toThrow();
   });
 });
+
+// Work Tracker 425: a whole read that spans passes reads one page of one list at a time, from the cursor it kept.
+describe('a page of the picture', () => {
+  it("reads one page of each list from its cursor, filtered to the person's own work", async () => {
+    const { env, urls } = indexOf((url) => {
+      const list = url.pathname.split('/').pop();
+      if (list === 'folders')
+        return Response.json({
+          folders: [
+            { id: 'f', name: 'Work', parentId: null, teamId: null, updatedAt: 3 },
+            { id: 'tf', name: 'Team', parentId: null, teamId: 'team1', updatedAt: 3 },
+          ],
+          nextCursor: null,
+        });
+      if (list === 'trash')
+        return Response.json({
+          items: [item('t', { trashedAt: 9 }), item('x', { trashedAt: 9, app: 'other' })],
+          nextCursor: '',
+        });
+      return Response.json({
+        items: [item('a'), item('shared', { sharedVia: 'link' })],
+        nextCursor: 'next-page',
+      });
+    });
+    const index = createIndexApi(env).forPerson('user_ada');
+    const items = await index.picturePage('items', 'from-here');
+    expect(items).toEqual({
+      picture: {
+        items: [
+          {
+            id: 'a',
+            app: 'livediagram',
+            name: 'Item a',
+            folderId: null,
+            updatedAt: 2,
+            createdAt: 1,
+          },
+        ],
+        folders: [],
+        trash: [],
+      },
+      nextCursor: 'next-page',
+    });
+    expect(urls[0]!.searchParams.get('cursor')).toBe('from-here');
+    expect(urls[0]!.searchParams.get('since')).toBeNull();
+    const folders = await index.picturePage('folders', null);
+    expect(folders.picture.folders).toEqual([
+      { id: 'f', name: 'Work', parentId: null, updatedAt: 3 },
+    ]);
+    expect(folders.nextCursor).toBeNull();
+    expect(urls[1]!.searchParams.has('cursor')).toBe(false);
+    // An empty cursor ends the list, as null does.
+    const trash = await index.picturePage('trash', null);
+    expect(trash).toEqual({
+      picture: {
+        items: [],
+        folders: [],
+        trash: [{ id: 't', app: 'livediagram', name: 'Item t', trashedAt: 9 }],
+      },
+      nextCursor: null,
+    });
+  });
+});

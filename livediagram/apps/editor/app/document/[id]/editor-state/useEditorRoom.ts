@@ -310,7 +310,7 @@ export function useEditorRoom({
 
   // Broadcast local selection + active-tab focus to peers (presence
   // indicators + TabBar avatars). See usePresenceBroadcast. An element we let go of stays held while our change to it
-  // has not landed (selection-write-hold.ts): one stable object, read when used.
+  // has not landed (@liveworkspace/workbench/lib/selection-write-hold): one stable object, read when used.
   const presenceWriting = useMemo(
     () => ({ tabs: tabsRef, baseline: lastSavedTabsRef, writes: ownWrites }),
     [tabsRef, lastSavedTabsRef, ownWrites],

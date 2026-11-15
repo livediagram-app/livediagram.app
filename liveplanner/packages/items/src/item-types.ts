@@ -2,6 +2,7 @@
 // names the fields its item panel offers; any item may still carry others.
 // `glyph` is an id from the Plan glyph set (glyphs.ts). A project may replace this
 // catalogue with its own (type-catalogue.ts, docs/specs/026-plan/item-types.md).
+import type { CardTemplate } from './card-templates';
 import type { CardField, CardSize } from './board';
 import type { CardSlot } from './card-display';
 import type { PlanGlyphId } from './glyphs';
@@ -246,6 +247,8 @@ export interface ItemTypeTab {
   id: string;
   label: string;
   fields: readonly string[];
+  // Its icon (docs/specs/026-plan/item-types.md "Tab icons"); absent, its default (tab-glyphs.ts).
+  glyph?: PlanGlyphId;
 }
 
 export interface ItemTypeDef {
@@ -262,6 +265,8 @@ export interface ItemTypeDef {
   custom?: readonly CustomFieldDef[];
   // The name the panel gives Details (its side column, and the phone's first tab); absent is "Details".
   detailsLabel?: string;
+  // The icon Details wears ("Tab icons"); absent, the checklist (tab-glyphs.ts).
+  detailsGlyph?: PlanGlyphId;
   // The panel's tabs; absent is one Overview tab (tabsOf).
   tabs?: readonly ItemTypeTab[];
   // The statuses this type uses, in order (docs/specs/026-plan/item-types.md "The statuses a type uses"): a card of
@@ -290,6 +295,9 @@ export interface ItemTypeDef {
   // An inherited type's own fields, by id, in order: what it adds after its base type's. Always stored beside
   // `inherits` once resolved (empty when none); absent, every field it has that its base lacks.
   ownFields?: readonly string[];
+  // Its card templates (docs/specs/026-plan/item-types.md "Card templates"; card-templates.ts): named starting values
+  // for a new card, in order, up to CARD_TEMPLATES_MAX. The type's own: an inherited type never takes its base's.
+  templates?: readonly CardTemplate[];
 }
 
 // Parent (docs/specs/026-plan/item-types.md "Card fields"): a Card field linking to Projects, under the one custom

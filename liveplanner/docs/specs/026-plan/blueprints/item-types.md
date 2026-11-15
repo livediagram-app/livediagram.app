@@ -18,6 +18,7 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 | default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                                                                                               |
 | base type         | an `ItemTypeDef` another names in `inherits`; `inheritingTypesOf(baseId, types)`, `basesFor(typeId, types)` (`type-inheritance.ts`)                                                                                                                                                                                                         |
 | inherited type    | an `ItemTypeDef` with `inherits` (its base id) and `ownFields`; `baseOf`, `inheritedFieldIds`, `withInheritance`, `inheritFrom`, `detachType` (`type-inheritance.ts`)                                                                                                                                                                       |
+| card template     | `CardTemplate` `{ id, name, fields }` (`card-templates.ts`) on `ItemTypeDef.templates?`; `readCardTemplates`, `cardTemplateFields`, `newCardTemplateId`, `cardTemplatesBytes`                                                                                                                                                               |
 
 ## Package `@liveplanner/items`
 
@@ -59,6 +60,23 @@ src/hidden-values.ts   hiddenValuesOf(item, type, types): HiddenGroup[] ({ type:
                        Calculated, Comments, Votes or Time Spent field's
 src/newer-fields.ts    isNewerField(field), readNewerField(input, id, label), NEWER_FIELD_MAX_BYTES (spec "Fields
                        from a newer version")
+src/card-templates.ts  CardTemplate, CARD_TEMPLATES_MAX (10), CARD_TEMPLATE_NAME_MAX (32), CARD_TEMPLATE_ID_PATTERN
+                       (/^tp-[a-z0-9-]{1,29}$/), CARD_TEMPLATES_BYTES (131,072), readCardTemplates(input, type, at,
+                       mode) (the type's list read against its fields: a value for a field it no longer offers
+                       dropped; every value through validateFields' patch check; ids, names, the 16 KB a template;
+                       mode 'refuse' (the api) refuses a value a template never holds, 'keep' keeps it as stored),
+                       templateTakes(type, key) (title, description, checklist, labels and the type's custom fields,
+                       less Calculated, Time Spent, Comments, Votes, Card and Image; a Rich key with its field),
+                       cardTemplateFields(type, template) (the values a new card takes: only keys templateTakes
+                       allows, for fields the type offers now), newCardTemplateId(name, taken),
+                       cardTemplatesBytes(types) (spec "Card templates")
+src/template-names.ts  templateOf(type, name) (a template by id or name, `statusKey`; else template_unknown with the
+                       type's templates), templateElsewhere(name, type, types) (the type holding it, for the
+                       refusal)
+src/type-change-templates.ts  TemplateInput, TemplateEdit, withTemplateChanges(type, change, naming) and
+                       templateProblem(type, reason) (spec "Card templates", plan-agents.md "Card templates")
+src/markdown-fields.ts markdownFields(fields, type, had) (a description's and each Long Text's Markdown into its plain
+                       text and `…Rich` runs; shared with agent-verbs' change_items)
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
                        @liveplanner/project's agent element ids)
 ```
@@ -74,6 +92,14 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
   `PARENT_FIELD`),
   `title` and `status` put first, at most 24; `newTitle` defaults to "New <name>"; JSON at most
   `ITEM_TYPES_BYTES`. Answers `{ ok, catalogue }` (normalised) or `{ ok: false, reason }` naming the part.
+- Newer keys (spec "Settings from a newer version"; `stored-keys.ts`): `ITEM_TYPE_KEYS`, `ITEM_TYPE_TAB_KEYS` and
+  `CUSTOM_FIELD_KEYS`, each from a record typed `{ [K in keyof Required<Shape>]: true }` (so a key added to the shape
+  fails the typecheck until listed, and listing it fails `project-format.test.ts` until `PROJECT_FORMAT` is bumped).
+  `newerKeysOf(input, known)` copies the keys outside `known` (JSON round trip; none past `NEWER_KEYS_MAX_BYTES`, 4 KB,
+  or when not copyable). With `newerFields: 'keep'` `readType`, `readTabs` and `readCustom` append them after the keys
+  they read; with `'refuse'` (the api's writes) they are dropped. `resolveChild` keeps the child's own. The type
+  editor starts its draft type with `newerKeysOf(start, ITEM_TYPE_KEYS)` (its tabs and custom fields are carried as
+  objects), so an older editor's save writes them back.
 - Newer fields (spec "Fields from a newer version"; `newer-fields.ts`): `readCustom` checks `id` and `label` first,
   then a `kind` outside `CUSTOM_FIELD_KINDS`, or a `calculated` field whose `calculation` is outside `CALCULATIONS`,
   goes to `readNewerField`, which keeps a JSON copy of the stored object (its `id` and trimmed `label` written back,
@@ -257,6 +283,10 @@ now), [id]).ids)` per landed file; "N images added" announced at the end. The ca
   `setProjectItemTypes(env, id, catalogue | null, expectedRev?)`, one guarded UPDATE raising `item_types_rev` and
   returning it, or null when `expectedRev` is given and no longer stored; `copyProject` copies the column. Never in
   a meta upsert's UPDATE.
+- Card templates ride inside `plan.item_types` with their type: no column, table or migration of their own, so every
+  path that carries the column (copy, Duplicate, sync, the Drive envelope, a tab's JSON export) carries them. A
+  Community copy (`exportPlanCopy` with `community`) writes the column through `redactCatalogueForCommunity`
+  (`community-redact.ts`), which drops every person from the templates' values.
 - Offline: `OfflineProjectRecord.itemTypes?`; `offlineSaveItemTypes(id, catalogue, now)`; `recordToProject`
   reads it back. Duplicate (both paths), Sync to Cloud, Take Offline and the Drive envelope
   (`ProjectEnvelope.project.itemTypes?`, still version 1) carry it.
@@ -292,7 +322,11 @@ change)` (exactly `after` on `before`; otherwise deleted types removed, changed 
   stored revision; the answer becomes the stored catalogue. `ItemTypesStaleError` (the 409) takes the stored catalogue
   it carries and sends again, up to `ITEM_TYPES_SAVE_ATTEMPTS` (3); any other failure, or the last stale one, drops
   only that change with "Couldn’t save the card types". Each change is one undo step: undo makes
-  `inverseCatalogueChange(change)`, redo the change, each as a new pending change without a step.
+  `inverseCatalogueChange(change)`, redo the change, each as a new pending change without a step. A seed below the
+  revision held is ignored, except one marked `adopt` (`SavedItemTypes.adopt`): `useSyncInPlace` reads the project
+  (`apiLoadProject`) straight after Sync Plan and hands its `itemTypes` and `itemTypesRev` to `setProjectItemTypes`
+  with `adopt: true` (`adoptItemTypes`), so the first save names the server's revision; a failed read leaves the 409
+  path above to land it.
 - Agents (`packages/agent-verbs`): `changeCardTypes` reads the plan, applies its changes and saves naming
   `plan.itemTypesRev`; `bringBoardCardTypes` names the project's `itemTypesRev`. A stale refusal reads again and
   applies again, up to `CARD_TYPES_SAVE_ATTEMPTS` (3), then answers the `item_types_stale` refusal.
@@ -1018,6 +1052,67 @@ retyped, types, items, ctx)` (`built-in-field-retype.ts`): `retypedValuePatches`
   `newTabId('tab', ...)`), `withoutEmptyTabs`. The type editor starts from `tabsOf(type)` and saves `tabs`
   explicitly. Problems: "Give every tab a name.", "Two tabs have the same name."
 
+### Tab icons
+
+- **Shape**: `ItemTypeTab.glyph?: PlanGlyphId`, `ItemTypeDef.detailsGlyph?: PlanGlyphId`. `readTabs` and `readType`
+  keep each through `storedGlyph(value, fallback)` (`tab-glyphs.ts`): a known glyph id that differs from its default,
+  else nothing (never refused). Format 6 (`PROJECT_FORMAT`).
+- **Defaults** (`tab-glyphs.ts`, pure, a leaf over `glyphs.ts`): `OVERVIEW_TAB_GLYPH` `page`, `TAB_GLYPH_DEFAULT`
+  `kanban`, `DETAILS_GLYPH_DEFAULT` `checklist`; the panel's own `LINKED_TAB_GLYPH` `link`, `ACTIVITY_TAB_GLYPH`
+  `clock`, `HIDDEN_TAB_GLYPH` `eye-off` (a new house-style glyph in Status and Signals, after `eye`).
+  `defaultTabGlyph(tab)`, `tabGlyphOf(tab)`, `detailsGlyphOf(type)`, `withTabGlyph(tab, glyph?)`,
+  `withDetailsGlyph(type, glyph?)` (undefined or the default stores nothing).
+- **Inheritance**: tabs are copied whole (icons with them); `INHERITED_PARTS` gains `detailsGlyph`, after
+  `detailsLabel`.
+- **Agents**: `TabInput.glyph?: string | null` and `FaceInput.detailsGlyph?: string | null`, read by
+  `glyphFrom(input, kept)` (`type-change-face.ts`: undefined keeps `kept`, null the default, a glyph id lower-cased,
+  anything else "\"x\" is not a Plan glyph. Glyphs: …"). `tabsFrom` keeps a same-named tab's glyph (and its other
+  stored keys) when none is given; `withFace` applies `detailsGlyph`. `InheritedPartsInput.detailsGlyph` ("Details
+  icon") is refused on an inherited type. MCP `plan-schema.ts`: `tabsArg` items take `glyph`, `add`/`set` take
+  `detailsGlyph`; `listedType` answers each tab's `glyph` and `detailsGlyph` with defaults filled in.
+- **Card panel** (`ItemPanelTabs.tsx`): `PanelTab.glyph: PlanGlyphId`; `ItemPanel` fills it with `tabGlyphOf` for
+  the type's tabs, `detailsGlyphOf` for the phone's Details tab, and the fixed glyphs for Linked Cards, Activity and
+  Hidden. Each tab button is `inline-flex items-center gap-1.5`: a `PlanTypeGlyph` of 14 px, `aria-hidden`, then the
+  label in a `max-w-[10rem] truncate` span; the button is wrapped in the shared `Tooltip` labelled with the tab's
+  name (its accessible name stays its label, or "Linked Cards, 3 cards" with a count). The Details column's heading
+  draws `detailsGlyphOf(type)` the same way.
+- **Type editor**: `LayoutDraft` tabs carry `glyph`; `ItemTypeEditor` holds `detailsGlyph` beside `detailsLabel`
+  (reset from the base on `chooseBase`) and saves it with `withDetailsGlyph`. `TabGlyphButton`
+  (`TabGlyphButton.tsx`) leads each group header in `ItemTypeLayoutEditor`: the glyph on a tint of the type's colour
+  with a chevron, named "Icon: {Glyph}" (its tooltip the same), opening `GlyphPicker`'s popover (`GlyphGrid`
+  exported for it) named "{Tab} Icon", with **Reset To Default** (`ResetIcon`) in its foot while the glyph is not
+  the default. Read-only on an inherited type (a plain glyph, no button).
+
+## The Templates tab
+
+Spec "Editing a type" (Templates) and "Card templates".
+
+- `ItemTypeEditorTabs`: `TYPE_EDITOR_TABS` gains `'templates'` (label Templates), last.
+- `ItemTypeEditor`: `const [templates, setTemplates] = useState(start.templates ?? [])`; the draft carries
+  `settledTemplates(templates, startIds)` (`card-template-draft.ts`: a template not in `start.templates` takes
+  `newCardTemplateId(name, taken)` in order, so its id comes from its name at Save) when non-empty. `templatesProblem`
+  (`card-template-draft.ts`) of `{ templates, otherBytes: cardTemplatesBytes(types other than this one) }` answers the
+  first of: blank name, clashing name, a template over `ITEM_FIELDS_BYTES` (`fieldsByteSize`), the plan's over
+  `CARD_TEMPLATES_BYTES`; it comes before the catalogue check's own in `problem`, and flags `templates`. A catalogue
+  refusal whose reason holds `.templates` or is `templates` also flags `templates` ("A template’s values break a
+  card’s limits.").
+- `ItemTypeTemplates` (`components/plan/ItemTypeTemplates.tsx`): `{ type (the draft), templates, onChange, problem,
+canEdit }`; `chosen` id state (the first template's, or the one just added). `md:grid-cols-[13rem_1fr]`, one column
+  under `md`. Rows are buttons (`aria-current` on the chosen; `TemplateGlyph`, lucide `layout-template`), the name
+  `truncate` with a `Tooltip`; each ends with `FieldMenu` (Move Up, Move Down, Remove; no Move To). New Template is
+  `DashedAddButton`, disabled at `CARD_TEMPLATES_MAX` with its reason as a `Tooltip`. Empty: `CompactEmptyState`.
+  A problem shows as `role="alert"` over the editor. Read-only (`canEdit` false, from `usePlan()?.canEdit`): no add
+  row, no menu, the editor's controls disabled.
+- `CardTemplateEditor` (`components/plan/CardTemplateEditor.tsx`): Name (`TextInput`, `maxLength` 32, a note under it
+  for a blank or clashing name, focused and selected when the template was just added), Title (`DebouncedText`,
+  `wrapLines` 3, `maxLength` `ITEM_TITLE_MAX`, placeholder `type.newTitle`), then `templateFieldsOf(type)` (the type's
+  fields in order that `templateTakes`, less title): each drawn by `ItemFieldEditor` over `templateItem(type,
+template)` (a stand-in `Item` holding the template's values; never stored), `onSave` and `onPatch` folded into the
+  template with `withFieldValue` / `withPatch`. Rich-text fields (description, Long Text) and Checklist sit in
+  `ItemPanelSection`s, the rest in `ItemDetailsRow`s (`labelsItsControl` decides `htmlFor`). Labels' suggestions
+  are `labelUsage` over the plan's items, once per editor open.
+- Telemetry `Plan · Added · CardTemplate`, `Plan · Deleted · CardTemplate`.
+
 ## The Hidden tab
 
 - `ItemPanelTabs.tsx`: `HIDDEN_TAB = 'card-hidden'`, label "Hidden"; `panelTabs(tabs, details, linked, hidden)` puts it
@@ -1134,7 +1229,7 @@ Derived from [Item types](../item-types.md#inherited-types).
   resolved. Read by `readType` (an `inherits` that is not a type id: `types[i].inherits`; an `ownFields` that is not
   an array of strings: `types[i].ownFields`; at most `ITEM_TYPE_FIELDS_MAX`).
 - **`type-inheritance.ts`** (pure):
-  - `INHERITED_PARTS`: `tabs`, `detailsLabel`, `statuses`, `excludedStatuses`, `defaultStatus`,
+  - `INHERITED_PARTS`: `tabs`, `detailsLabel`, `detailsGlyph`, `statuses`, `excludedStatuses`, `defaultStatus`,
     `assigneeNotifies`, `colourField`: copied whole from the base (absent when the base lacks one). `display` is
     inherited as the base shows it (`inheritedDisplay`): each size the base leaves to its default written out from
     `defaultCardLayout(base.id)`, and a size equal to the inherited type's own default left out, as `readCardDisplay`
@@ -1199,31 +1294,40 @@ cards, children)` adds "{names} will keep a copy of its settings."
 
 ## Errors and edge cases
 
-| Case                                   | Handling                                                                                         |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Stored catalogue unreadable            | Built-ins (`readItemTypeCatalogue` null)                                                         |
-| Item of a type the catalogue lacks     | Drawn as `FALLBACK_ITEM_TYPE` "Item"; card tile makes a Task                                     |
-| Custom value of the wrong kind         | Shown empty; replaced by the next edit                                                           |
-| Field of a kind this build lacks       | Kept as stored, read-only (`isNewerField`); the api refuses it on a write                        |
-| Field taken off a type                 | Values kept in `fields`; shown again if it returns                                               |
-| Deleting the last type                 | Not offered (`canDelete`); `deleteType` refuses                                                  |
-| Save fails                             | That change dropped (later ones kept), toast                                                     |
-| Another change landed first (409)      | Change made again to the stored catalogue, sent again (3×)                                       |
-| 409 naming a lower revision (synced)   | Taken as stored anyway (`keepStored(next, true)`): the server's count restarted after Sync Plan  |
-| Hidden value of a deleted field/type   | Listed under Removed Fields as plain text; Remove only                                           |
-| Hidden value no field can take         | Copy To Field's menu says so; nothing written                                                    |
-| Blocks turned on over links that loop  | Cards never rewritten; both show blocked; a write adding to the loop is refused, removing is not |
-| A blocker trashed, archived or missing | Ignored by the badge, the Blocked By list and the arrows; kept on the card                       |
-| Two writes race to close a loop        | Each passes its own read; the loop shows (both blocked) until a link is removed                  |
+| Case                                   | Handling                                                                                          |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Stored catalogue unreadable            | Built-ins (`readItemTypeCatalogue` null)                                                          |
+| Item of a type the catalogue lacks     | Drawn as `FALLBACK_ITEM_TYPE` "Item"; card tile makes a Task                                      |
+| Custom value of the wrong kind         | Shown empty; replaced by the next edit                                                            |
+| Field of a kind this build lacks       | Kept as stored, read-only (`isNewerField`); the api refuses it on a write                         |
+| Field taken off a type                 | Values kept in `fields`; shown again if it returns                                                |
+| Deleting the last type                 | Not offered (`canDelete`); `deleteType` refuses                                                   |
+| Save fails                             | That change dropped (later ones kept), toast                                                      |
+| Another change landed first (409)      | Change made again to the stored catalogue, sent again (3×)                                        |
+| 409 naming a lower revision (synced)   | Taken as stored anyway (`keepStored(next, true)`): the server's count restarted after Sync Plan   |
+| Hidden value of a deleted field/type   | Listed under Removed Fields as plain text; Remove only                                            |
+| Hidden value no field can take         | Copy To Field's menu says so; nothing written                                                     |
+| Blocks turned on over links that loop  | Cards never rewritten; both show blocked; a write adding to the loop is refused, removing is not  |
+| A blocker trashed, archived or missing | Ignored by the badge, the Blocked By list and the arrows; kept on the card                        |
+| Two writes race to close a loop        | Each passes its own read; the loop shows (both blocked) until a link is removed                   |
+| Template value for a field taken off   | Dropped on the next read (`readCardTemplates`), the rest of the template kept                     |
+| Template value a template never holds  | Api write refused (`types[i].templates[j].fields`); a reader keeps it, `cardTemplateFields` skips |
+| Templates past their budget            | `types[i].templates` (over 10), `types[i].templates[j]` (over 16 KB), `templates` (over 128 KB)   |
+| Template id or name clash in a type    | Refused, `types[i].templates[j].id` / `.name`                                                     |
 
 ## Security and trust
 
 - Only whole-project editors write the catalogue; it holds names and colours, no content, so tab-scoped
-  sessions hear it. The api validates every write; the editor validates before saving (same function).
+  sessions hear it. Card templates are the type's settings, written by those same editors, not cards: they ride
+  with it to every session that hears it. A Community copy drops the people they name. The api validates every write; the editor validates before saving (same function).
 
 ## Performance and limits
 
 - 32 types × 24 fields × 12 custom fields fits `ITEM_TYPES_BYTES` (32 KB); the op carries the catalogue whole.
+- Card templates are budgeted apart: at most `CARD_TEMPLATES_BYTES` (128 KB) across the catalogue, so a stored
+  catalogue is at most 160 KB, and a catalogue without templates costs what it did (one extra pass over its types,
+  no extra encode). The check encodes each type's templates once. Measured in `card-templates.test.ts`: 50
+  validations of a catalogue holding the full 128 KB of templates inside a CPU budget.
 - Blocked By: `blockingIndexOf` is one pass over the cards and their links (at most `ITEMS_MAX` cards × 20 links a
   field), made once per items change (`planBlocking`, the SVG render once per board); a card face reads a Map. The loop
   check walks each new edge's upstream once (cards plus links), so a write of k new links costs k walks; it runs only
@@ -1339,7 +1443,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Add Field: option rows, Enter, Backspace, paste                                                                  | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                                                                                                                                                                                                                                         |
 | Edit Field: value conversions, refusals, counts, options, 2,000-card budget                                      | `packages/items/src/field-kind-change.test.ts`                                                                                                                                                                                                                                                                                                     |
 | Hidden tab: hidden values, removed fields, allow-list, copy rules, roles, undo, live                             | `packages/items/src/hidden-values.test.ts`, `apps/editor/components/plan/ItemPanel.hidden.test.tsx` , `apps/editor/e2e/hidden-values.spec.ts`                                                                                                                                                                                                      |
-| Card types save after Sync Plan (409 with a lower revision)                                                      | `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                                                                                                                                                                                                                                      |
+| Card types save after Sync Plan (re-seeded first time; 409 with a lower revision as the fallback)                | `apps/editor/hooks/plan/useItemTypes.test.ts`, `apps/editor/app/project/[id]/useSyncInPlace.test.ts`                                                                                                                                                                                                                                               |
 | REST type patch maps fields (patch, move, patches; undo not mapped)                                              | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                                                                                                                                                                          |
 | Changing a card's type: mapped by name, kinds, options, hidden values kept, every path                           | `packages/items/src/card-retype-fields.test.ts`, `packages/items/src/automation/plan-card-actions.test.ts`, `packages/items/src/automation/ai-steps.test.ts`, `packages/agent-verbs/src/plan/plan-engine.test.ts`, `apps/editor/hooks/plan/usePlanItemWrites.retype.test.ts`, `apps/api/src/plan-room/automations/automations-type-change.test.ts` |
 | Edit Field: pencil, rename, reshape, type change, loss count and confirm, disabled tiles, Editor only            | `apps/editor/components/plan/EditFieldDialog.test.tsx`                                                                                                                                                                                                                                                                                             |
@@ -1358,27 +1462,39 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Blocked By: switch, badge sizes, panel lists, picker refusal, roles                                              | `apps/editor/components/plan/BlockedBy.test.tsx`                                                                                                                                                                                                                                                                                                   |
 | Blocked By: SVG badge                                                                                            | `packages/project/src/svg-render-plan-card.test.ts`                                                                                                                                                                                                                                                                                                |
 | Blocked By: agents list, set, loop stop, switch                                                                  | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                                                                                                                                                                                                                                |
+| Tab icons: defaults, stored only when chosen, unknown read as default, inherited, agents list                    | `packages/items/src/tab-glyphs.test.ts`, `packages/items/src/type-change-face.test.ts`, `packages/agent-verbs/src/plan/plan-listing.test.ts`                                                                                                                                                                                                       |
+| Tab icons: panel tabs, Details heading, picker, Reset To Default, read-only inherited                            | `apps/editor/components/plan/ItemPanel.tabs.test.tsx`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                  |
+| Newer keys: kept through read, inheritance and the editor's save, dropped on the api's writes, capped            | `packages/items/src/tab-glyphs.test.ts`, `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                                |
+| Card templates: read, ids, names, values checked, dropped and kept, budgets, inherited, duplicated, start values | `packages/items/src/card-templates.test.ts`                                                                                                                                                                                                                                                                                                        |
+| Card templates through the api: stored, Editor only (Participant, Viewer, tab link refused), copy, Drive file    | `apps/api/src/routes/item-types-templates.test.ts`                                                                                                                                                                                                                                                                                                 |
+| Card templates tab: list, add, rename, move, remove, field editors, problems, read-only, ids at Save             | `apps/editor/components/plan/ItemTypeTemplates.test.tsx`, `apps/editor/components/plan/card-template-draft.test.ts`                                                                                                                                                                                                                                |
+| Card templates: kept through the type editor's save, a tab import's added types                                  | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`, `apps/editor/lib/import-tab.test.ts`                                                                                                                                                                                                                                                   |
+| Stored-shape guard: a new type, tab or field key bumps `PROJECT_FORMAT`                                          | `packages/api-schema/src/project-format.test.ts` (and the typecheck on `packages/items/src/stored-keys.ts`)                                                                                                                                                                                                                                        |
+| Sync Plan in place: the server's revision adopted, first save lands                                              | `apps/editor/hooks/plan/useItemTypes.test.ts`, `apps/editor/app/project/[id]/useSyncInPlace.test.ts`                                                                                                                                                                                                                                               |
 | Panel, editor, card face, palette in a browser                                                                   | checked by hand against the dev stack (screenshots)                                                                                                                                                                                                                                                                                                |
 
 ## Constants and configuration
 
-| Constant                                               | Value  | Why                                                                            |
-| ------------------------------------------------------ | ------ | ------------------------------------------------------------------------------ |
-| `ITEM_TYPES_MAX`                                       | 32     | Spec "An item type"                                                            |
-| `ITEM_TYPE_FIELDS_MAX`                                 | 24     | Spec                                                                           |
-| `ITEM_TYPE_CUSTOM_MAX`                                 | 12     | Spec                                                                           |
-| `ITEM_TYPE_LABEL_MAX`                                  | 32     | Spec                                                                           |
-| `CUSTOM_CHOICE_OPTIONS_MAX`                            | 20     | Spec                                                                           |
-| `CUSTOM_CHOICE_OPTION_MAX`                             | 100    | Spec "Custom field kinds" (was D11)                                            |
-| `ITEM_TYPES_BYTES`                                     | 32,768 | Spec "Limits and validation"                                                   |
-| `ITEM_TYPES_SAVE_ATTEMPTS`, `CARD_TYPES_SAVE_ATTEMPTS` | 3      | Spec "Storage and sync": a change made again a few times, then refused; 1 to 5 |
-| `ITEM_TYPE_STATUSES_MAX`                               | 128    | Spec "An item type": ten boards of twelve columns; keeps the catalogue small   |
-| `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Legacy types only: what an old type could leave out                            |
-| `PLAN_TYPE_COLOURS`                                    | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
-| `ADD_FIELD_POPOVER_PX`                                 | 384    | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
-| `CARD_AGE_WARN_DAYS`                                   | 7      | Spec "Card display": Age turns amber                                           |
-| `CARD_AGE_ALERT_DAYS`                                  | 14     | Spec "Card display": Age turns red, Stale Cards' `STALE_DAYS`                  |
-| `IMAGE_FIELD_PICTURES_MAX`                             | 20     | Spec "Image fields": `FIELD_VALUES_MAX`, as Holds Several and Attachments      |
+| Constant                                               | Value   | Why                                                                            |
+| ------------------------------------------------------ | ------- | ------------------------------------------------------------------------------ |
+| `ITEM_TYPES_MAX`                                       | 32      | Spec "An item type"                                                            |
+| `ITEM_TYPE_FIELDS_MAX`                                 | 24      | Spec                                                                           |
+| `ITEM_TYPE_CUSTOM_MAX`                                 | 12      | Spec                                                                           |
+| `ITEM_TYPE_LABEL_MAX`                                  | 32      | Spec                                                                           |
+| `CUSTOM_CHOICE_OPTIONS_MAX`                            | 20      | Spec                                                                           |
+| `CUSTOM_CHOICE_OPTION_MAX`                             | 100     | Spec "Custom field kinds" (was D11)                                            |
+| `ITEM_TYPES_BYTES`                                     | 32,768  | Spec "Limits and validation"                                                   |
+| `ITEM_TYPES_SAVE_ATTEMPTS`, `CARD_TYPES_SAVE_ATTEMPTS` | 3       | Spec "Storage and sync": a change made again a few times, then refused; 1 to 5 |
+| `ITEM_TYPE_STATUSES_MAX`                               | 128     | Spec "An item type": ten boards of twelve columns; keeps the catalogue small   |
+| `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64      | Legacy types only: what an old type could leave out                            |
+| `PLAN_TYPE_COLOURS`                                    | 12      | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
+| `ADD_FIELD_POPOVER_PX`                                 | 384     | Spec "Fields and Tabs" (24 rem): a kind's name and line, and step 2's controls |
+| `CARD_AGE_WARN_DAYS`                                   | 7       | Spec "Card display": Age turns amber                                           |
+| `CARD_AGE_ALERT_DAYS`                                  | 14      | Spec "Card display": Age turns red, Stale Cards' `STALE_DAYS`                  |
+| `IMAGE_FIELD_PICTURES_MAX`                             | 20      | Spec "Image fields": `FIELD_VALUES_MAX`, as Holds Several and Attachments      |
+| `CARD_TEMPLATES_MAX`                                   | 10      | Spec "Card templates"                                                          |
+| `CARD_TEMPLATE_NAME_MAX`                               | 32      | Spec "Card templates": as a type's name                                        |
+| `CARD_TEMPLATES_BYTES`                                 | 131,072 | Spec "Card templates": every template a catalogue holds, apart from its 32 KB  |
 
 ## Default and ready-made types
 

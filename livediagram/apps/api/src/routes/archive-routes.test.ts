@@ -61,7 +61,7 @@ describe('POST /api/documents/:id/archive', () => {
     const res = (await post('/api/documents/d1/archive'))!;
     expect(res.status).toBe(200);
     expect(calls.map((c) => `${c.method} ${c.path}`)).toEqual(['POST /items/d1/archive']);
-    const body = (await res.json()) as { document: { id: string; name: string } };
+    const body = await res.json<{ document: { id: string; name: string } }>();
     expect(body.document).toMatchObject({ id: 'd1', name: 'Old plan' });
   });
 
@@ -116,7 +116,7 @@ describe('GET /api/documents?archived=1', () => {
     );
     expect(res.status).toBe(200);
     expect(calls[0]!.path).toContain('view=archived');
-    const body = (await res.json()) as { documents: { id: string }[] };
+    const body = await res.json<{ documents: { id: string }[] }>();
     expect(body.documents.map((d) => d.id)).toEqual(['d1']);
   });
 });

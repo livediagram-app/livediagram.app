@@ -10,12 +10,12 @@ export function ShiftDragDuplicate() {
     <Scene w={420} h={210}>
       <Shape x={40} y={36} w={92} h={46} label="Source" />
       <Shape x={40} y={128} w={92} h={46} accent label="Step" />
-      <Arrow from={[86, 82]} to={[86, 128]} />
+      <Arrow connector from={[86, 82]} to={[86, 128]} />
       {/* The copy following the pointer, its arrow cloned in the original's style and still
           pinned to Source's bottom; the selection moves onto the copy. */}
       <g opacity={0.45}>
         <Shape x={250} y={128} w={92} h={46} accent label="Step" />
-        <Arrow from={[86, 82]} to={[296, 128]} />
+        <Arrow connector from={[86, 82]} to={[296, 128]} />
       </g>
       <SelectionBox x={250} y={128} w={92} h={46} />
       <Cursor x={300} y={160} />

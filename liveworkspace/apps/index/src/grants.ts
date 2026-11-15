@@ -84,7 +84,10 @@ export type GrantSubject = {
 export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantResponse | null> {
   const key = await signingKey(env);
   if (!key) return null;
-  const now = Math.floor(Date.now() / 1000);
+  // One moment for both claims: `iat` in whole seconds as JWT has it, `iatMs` the same instant to the millisecond, so
+  // an app can order a grant against its own events inside one second (one-explorer-contracts.md "Grants").
+  const iatMs = Date.now();
+  const now = Math.floor(iatMs / 1000);
   const exp = now + GRANT_LIFETIME_S;
   const grant = await new SignJWT({
     item: subject.itemId,
@@ -94,6 +97,7 @@ export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantR
     owner: subject.ownerId,
     ...(subject.trashed ? { trashed: true } : {}),
     ...(subject.link ? { link: subject.link } : {}),
+    iatMs,
   })
     .setProtectedHeader({ alg: GRANT_ALG, kid: key.kid, typ: 'JWT' })
     .setIssuer(grantIssuer(env))

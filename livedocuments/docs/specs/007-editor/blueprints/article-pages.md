@@ -359,6 +359,12 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   when text is selected. A menu closes with the article (`!active`).
 - **More › Article style**: flush, then `requestStylePanel(pageId)`; `CanvasPages` opens that
   page's panel on Style.
+- **More › Word Count** (`WordCountLine`, `page-toolbar-word-count.tsx`): rendered only while More is open, it
+  reads `articleCountsOf(handle.state())` (`lib/article/article-word-count.ts`): `total` is
+  `articleWordCount({ blocks: docToBlocks(doc) })`, and `selected`, with a non-empty selection, the sum over
+  `selection.ranges` of `articleWordCount({ blocks: docToBlocks(doc.cut(from, to)) })` (a cell selection counts
+  its cells only), else null. `wordCountLabel` writes "1 word", "840 words" or "12 of 840 words" (`en` digit
+  grouping). A `role="group"` line under a rule, `aria-label` "Word Count: <label>", no menu item.
 - **Insert**: blocks through `handle.insert` (divider; page break + paragraph; quote paragraph;
   code block); objects through `articles.insertObject(handle.flow, what)`, and Comment / Assign
   Action through `articles.addNote(handle.flow, kind)`: the article the toolbar shows for, worked
@@ -691,6 +697,11 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 - Page toolbar and drop carets follow by rAF while shown, writing styles directly (no React
   render per frame).
 - At most `MAX_PAGES` (100) pages; one editor per article, columns per page.
+- Word Count reads the article only while More Formatting is open (once on open, then once per render of the
+  toolbar while open): `docToBlocks` and `articleWordCount`, O(characters), about 25 ms of CPU for a 2,000-paragraph,
+  100,000-word article (budget 60 ms, `article-word-count.test.ts`). The total is kept per doc node (a `WeakMap`), so
+  a selection moving over unchanged writing counts only the selection (budget 5 ms). With the menu shut, typing never
+  reaches it.
 
 ## Presentation and UX
 
@@ -701,7 +712,7 @@ Ctrl spelled by platform via `keyLabel`); menus **Text Style**, **Lists** (with 
 indent** / **Decrease indent** while in a list), **Alignment** (**Align Left**, **Align Centre**, **Align Right**, **Justify**), **Colour** (titles **Text Colour** / **Highlight**; pickers **Text colour** / **Highlight**,
 **Default colour** / **No highlight**), **Link** (placeholder "Paste or type a link", **Apply**,
 **Remove**), **Insert**, **More Formatting** (**Strikethrough**, **Inline code**, **Superscript**,
-**Subscript**, **Clear formatting**, **Article style**); slash menu **Insert a block** with each
+**Subscript**, **Clear formatting**, **Article style**, then the **Word Count** line); slash menu **Insert a block** with each
 entry's hint; zone bar **Drag to Move**, **In Line**, **Wrap Left**, **Wrap Right**, **Float**,
 **Align Left**, **Align Centre**, **Align Right**, **Delete** (**Delete Drawing** on a drawing); grips **Drawing
 height / width / size**; placeholders "Title", "Subtitle", "Heading 1..3", "Quote", "List",
@@ -804,6 +815,7 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
 | A margin note's marker carries no badge strip                                                                                                                                                                      | `apps/editor/components/canvas/useElementIndicators.test.ts` "gives a margin note nothing at all"                             |
 | A comment and an action differ in glyph, outline and name; resolved and done show                                                                                                                                  | `apps/editor/components/canvas/article/ArticleNoteFace.test.tsx`, `apps/editor/lib/article/article-note-look.test.ts`         |
 | Present from any mode: an article page with its writing, read only                                                                                                                                                 | `apps/editor/lib/presented-pages.test.ts` "outside Pages, presents an article page with its writing, read only"               |
+| Every zone function of the intake, every branch; the hook's settle of an edit                                                                                                                                      | `packages/document/src/article-intake.zones.test.ts`; `apps/editor/hooks/editor/useArticleIntake.zones.test.ts`               |
 | Agents read and write an article as Markdown                                                                                                                                                                       | `packages/document/src/article-markdown-io.test.ts`; `packages/edit-operations/src/pages/article-write.test.ts`               |
 | `article` is a mutation op (never relayed from a view-role session)                                                                                                                                                | `apps/api/src/document-room.test.ts` "lets no document-mutating op kind into the presence set" (generic, every mutation kind) |
 
@@ -816,9 +828,7 @@ ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
   (`UNDO_SETTLE_MS`), merging a remote change under local typing.
 - "Flowing onto pages": the measure (`pagesNeeded`, headings kept with the next line, zones never
   split), the page-limit notice, page numbers drawn.
-- "Zones": `article-intake.ts` and `article-zone-plan.ts` have no unit test (`zonePlanFor`, `withZonesFitted`, `withZoneWrap`,
-  `withZoneSize`, `withZoneLanded`, `objectsDraggedOut`, `withZoneMoved`, `withZoneReleased`,
-  `withZoneRemoved`, `looseOnArticles`, `isDrawingElement`); zone drag, resize grips (pointer and
+- "Zones": `article-zone-plan.ts` has no unit test of its own beyond the plans `zonePlanFor` is asked for in `article-intake.test.ts` (`isDrawingElement`, `withElementsIntoZone`); zone drag, resize grips (pointer and
   keys), the object drop caret, Float and embed, no quick-connect pluses (`plusBlocked`).
 - "The page toolbar": placement, scale, phone bar, hover presence and off-page clearing.
 - "Article style": looks (`withArticleLook`, Notebook's ruling added and removed),

@@ -48,7 +48,7 @@ The fields the shipped types use. Each has a **field kind** that validates and d
 | `descriptionRich` | rich text   | The description's formatting: runs of text with bold, italic, underline, strikethrough, size, colour, link and heading; `description` stays its plain-text mirror                                                                                                                                                                                                                                                               |
 | `<field>Rich`     | rich text   | A Long Text custom field's formatting (`f-steps` → `f-stepsRich`), the same runs; the field's own value stays its plain-text mirror ([Item types](item-types.md#an-item-type))                                                                                                                                                                                                                                                  |
 | `status`          | status      | A status value, matched against a board's columns                                                                                                                                                                                                                                                                                                                                                                               |
-| `assignee`        | person      | `{ id, name, color }`: the person it is on, picked like an assigned action                                                                                                                                                                                                                                                                                                                                                      |
+| `assignee`        | person      | `{ id, name, color }`: the person it is on, picked like an assigned action, or an AI assistant, which adds `assistant: { client, person }` ([Handing a card to an AI assistant](#handing-a-card-to-an-ai-assistant))                                                                                                                                                                                                            |
 | `priority`        | priority    | `urgent`, `high`, `medium` or `low`                                                                                                                                                                                                                                                                                                                                                                                             |
 | `labels`          | labels      | Up to 12 short strings                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `estimate`        | number      | Story points, 0 to 999; the card panel picks it from a dropdown of None, 1, 2, 3, 5, 8, 13 and 21 (`ESTIMATE_POINTS`), keeping any other value a card holds                                                                                                                                                                                                                                                                     |
@@ -238,6 +238,12 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   own catalogue predates it adds it in the type editor, like any built-in field.
 - A bug is a card of the Bug type a Sprint or Bug Triage board brings.
 - A project can change these and add its own, with custom fields: see [Item types](item-types.md).
+- A card type can hold **card templates** ([Card templates](item-types.md#card-templates)): named sets of starting
+  values (a title, the Description, the Checklist, the Labels and custom field values) that a new card of that type
+  can start from. A card started from one is an ordinary card: it takes the values the template holds for the fields
+  its type offers, and is made, numbered, placed and checked (its required fields too) exactly as any card is.
+  Unlike an [example card](#example-cards), which is a card a Plan template made, a card template is no card: it
+  never shows on a board, counts or is searched.
 
 ## Colour
 
@@ -859,6 +865,59 @@ In the card panel, on a tab of its own, **Activity**, never mixed with the threa
   here is on a board."). The copy follows [Empty states](../004-interface-design/empty-states.md).
 - Opening it is tracked as `Plan · Opened · CardFinder`.
 
+## Handing a card to an AI assistant
+
+> **Status: part 1 of 3 built** (Work Tracker 901): the stored shape, its checks and its copies. The agents' side
+> ([Plan for agents](plan-agents.md#cards-handed-to-an-assistant), part 2) and the card and board (part 3) follow;
+> until then nothing in the editor or the agents' tools offers an assistant.
+
+Teams give work to AI agents the way they give it to a teammate. A card can be handed to an **AI assistant** as it is
+assigned to a person: the assistant becomes its Assignee, finds it, works it (its comments marked
+[Generated by AI](#generated-by-ai), its moves and edits recorded as anyone's) and hands it back to a person.
+
+- **What an assistant is**: one person's AI tool, named by the tool and its person, "Claude (Thomas)". The tool is
+  the API token's name (an AI tool's token is named after the client that connected, "Claude"; a token someone made
+  carries the name they gave it, "CI bot"), and the person is the token's account
+  ([Public API and tokens](../015-api/public-api-and-tokens.md)). Every token one person holds under the same name is
+  one assistant, so reconnecting a tool keeps its cards. Nothing else about a token is stored or shown: never its
+  secret, its id or when it lapses.
+- **Stored as the Assignee**: `{ id, name, color, assistant: { client, person } }`.
+  - `id`: `ai-`, the person's item person id (24 hex), `-`, then a slug of the client of up to 24 characters (a client
+    the slug cannot spell, "クロード", takes `c` and a hash of the name instead), so one person's tool is one id on
+    every card of every plan. At most 52 characters, inside the person kind's 64.
+  - `name`: "<client> (<the person's first name>)", up to 80 characters; `color`: the person's colour.
+  - `assistant.client`: the tool's name as the token holds it, trimmed, 1 to 40 characters. `assistant.person`: the
+    person `{ id, name, color }` the assistant works for, a liveworkspace identity (an account's hashed person id),
+    who it hands cards back to.
+  - A card stored before assistants reads unchanged: a person's Assignee holds no `assistant`, and a write that gives
+    one to a person (any id not starting `ai-`) drops it, as it drops any other key a person does not have.
+  - A write checks it whole, from the editor, the api, agents and an offline plan alike: an `ai-` Assignee whose id is
+    not the one its client and person make, whose person is not a liveworkspace identity, whose client is blank or
+    over 40 characters, or with no `assistant` at all, is refused (`field_value_invalid`). An assistant is the
+    Assignee only: a Person field given an `ai-` person is refused the same way.
+  - A value that reached the store without that check (a hand-edited `.liveplanner` file, which a Drive import keeps
+    as it is) and does not read as an assistant reads as a person of that name, and is never told anything.
+- **Never a person to notify**: an assistant has no account. Handing it a card sends no email and adds no Inbox row,
+  Only Mine never matches it (nor its person: the card is the assistant's), and an automation's Email or Mention to
+  the Assignee names nobody to send to, as for a custom assignee. Any Assignee id starting `ai-`
+  counts, read as an assistant or not.
+- **Everything that groups by person** (swimlanes, the Assignee filter, workload, the People tile) treats an assistant
+  as one: its own lane, filter option and bar.
+- **Handing back**: setting the Assignee to a person (or No one) hands the card back; it keeps no trace of the
+  assistant beyond its history and comments.
+- **Who it can be handed to** (part 3): the assistants of the plan's people: your own AI tools and tokens, each
+  assistant that has written to this plan (the plan remembers the tool's name and its person the first time a token
+  writes, never the token), and every assistant a card already holds.
+- **Who may**: handing a card to an assistant, or back, is assigning, so editing a card's fields: an Editor or a
+  Participant, a guest and a link editor included. A Viewer can't, and the api refuses their write (403).
+- **Copies** keep or drop it as they do a person:
+  - [Duplicate](#copies-and-exports), a Drive export and its import (the `.liveplanner` file), a tab's JSON export and
+    importing it, a [repeating card's](#repeating-cards) next copy, a duplicated card and an automation's Create Card
+    copying the Assignee keep it. It names the same person's tool, and an assistant reaches a card only in a plan its
+    person can open, so a copy never gives a stranger's assistant any work it can see.
+  - A [Community](../025-community/community.md) post, and a copy taken through it, drop it with every person: a
+    stranger sees and takes the plan's content, never who or what was working on it.
+
 ## Who may do what
 
 Items follow the project's access ([Auth and guest access](../014-identity/auth-and-guest-access.md)):
@@ -914,6 +973,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   thread you started, or any with edit access ([Comments](#comments)).
 - **Repeat** a card, change its rule or stop it with edit access as an Editor ([Repeating cards](#repeating-cards)).
 - An agent token acts as its person, and a read-only token reads only.
+- **Hand a card to an AI assistant**, or back, as for any assignee: an Editor or a Participant; a Viewer can't
+  ([Handing a card to an AI assistant](#handing-a-card-to-an-ai-assistant)).
 
 ## Live for everyone
 
@@ -952,7 +1013,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 - Images, thumbnails and api or MCP renders draw boards and cards from the project's items. The Export dialog's
   preview draws them too, so it shows what the download holds.
 - **A tab's JSON export** (the `liveplanner.tab` file) carries the items the tab shows (`itemIdsShownOnTab`, the
-  Trash left out) as `items`, and the project's stored type catalogue as `itemTypes` when it has one. Each item
+  Trash left out) as `items`, and the project's stored type catalogue as `itemTypes` when it has one (its types'
+  [card templates](item-types.md#card-templates) with it). Each item
   keeps its id, type, key, fields and rank, without its votes or comments: the file travels, and those name people.
   Both fields are additive and absent when the tab shows no items, so the file keeps its schema version.
 - **Importing that file** into a tab adds its items to the project. Every item whose id the project does not
@@ -964,6 +1026,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   starts loading it once the imported board lands; blueprint DEFAULTS D43). When the store never loads, or refuses the
   cards (the 2,000 cap), none are added, the tab stays imported, and the import's report says how many cards could
   not be added.
+- An Assignee that is an [AI assistant](#handing-a-card-to-an-ai-assistant) travels with every copy and export but a
+  Community post's, which drops it with every person.
 - **The Markdown export** lists each Plan board under "Plan Boards": its title, then each column with its card
   count after a middle dot (`To Do · 3`, never in brackets), then its cards as `#key Title (Type)`. A Plan card on the canvas is listed under "Plan Cards".
 

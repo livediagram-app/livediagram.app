@@ -124,7 +124,7 @@ describe('the delta path', () => {
     ];
     const res = await send(db, await deltaFor(base, next, Number(revOf(db))));
     expect(res.status).toBe(200);
-    const answer = (await res.json()) as { rev: number; digest: string };
+    const answer = await res.json<{ rev: number; digest: string }>();
     expect(answer.digest).not.toBe(await elementsDigest(next));
     expect(answer.digest).toBe(await elementsDigest(stored(db)));
     expect(JSON.stringify(stored(db))).toContain('their words');

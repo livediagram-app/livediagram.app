@@ -40,6 +40,7 @@ export type NameRefusalCode =
   | 'field_unknown'
   | 'choice_unknown'
   | 'item_unknown'
+  | 'template_unknown'
   | 'value_invalid';
 
 export interface NameRefusal {

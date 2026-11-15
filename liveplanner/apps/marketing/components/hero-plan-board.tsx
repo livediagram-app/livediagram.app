@@ -89,7 +89,11 @@ export function PlanBoard({ portrait = false }: { portrait?: boolean }) {
   const l = portrait ? PORTRAIT : LANDSCAPE;
   const w = cardW(l);
   const moving = new Set<number>(MOVES.map((m) => m.from));
-  let order = 0;
+  // The cards that stay put pop in column by column; the carried ones follow them.
+  const staying = COLUMNS.flatMap((col, c) =>
+    col.cards.filter((_, s) => !(moving.has(c) && s === col.cards.length - 1)),
+  );
+  const popOrder = new Map(staying.map((card, n) => [card, n]));
   const qx = cardX(l, QUICK_COLUMN);
   // The quick add takes the slot the carried card left.
   const qy = slotY(l, COLUMNS[QUICK_COLUMN]!.cards.length - 1);
@@ -149,7 +153,7 @@ export function PlanBoard({ portrait = false }: { portrait?: boolean }) {
       {COLUMNS.map((col, c) =>
         col.cards.map((card, s) =>
           moving.has(c) && s === col.cards.length - 1 ? null : (
-            <g key={card.title} className="hm-pop" style={at(T.cards + order++ * 0.1)}>
+            <g key={card.title} className="hm-pop" style={at(T.cards + popOrder.get(card)! * 0.1)}>
               <CardFace card={card} x={cardX(l, c)} y={slotY(l, s)} w={w} narrow={l.narrow} />
             </g>
           ),
@@ -227,7 +231,7 @@ export function PlanBoard({ portrait = false }: { portrait?: boolean }) {
             name={m.name}
             arrive={T.arrive[i]!}
             carry={T.carry[i]!}
-            appear={T.cards + (order + i) * 0.1}
+            appear={T.cards + (staying.length + i) * 0.1}
           />
         );
       })}

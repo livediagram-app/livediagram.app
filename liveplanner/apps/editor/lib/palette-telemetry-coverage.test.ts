@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { RETIRED_SHAPE_KINDS, SHAPE_KINDS } from '@liveplanner/project';
+import { SHAPE_KINDS } from '@liveplanner/project';
 import {
   ALL_PALETTE_TELEMETRY_TYPES,
   PALETTE_TELEMETRY_TYPES,
   TELEMETRY_TYPE_PATTERN,
 } from '@liveplanner/api-schema';
-import { COMPONENT_TELEMETRY, elementTelemetryType } from './element-telemetry';
+import {
+  COMPONENT_TELEMETRY,
+  TELEMETRY_RETIRED_KINDS,
+  elementTelemetryType,
+} from './element-telemetry';
 
 // Completeness guard for the palette census (docs/specs/017-telemetry/telemetry.md, issue #30).
 //
@@ -42,7 +46,7 @@ describe('palette telemetry coverage', () => {
   it('gives every shape kind a bucket in the dashboard catalogue', () => {
     // A retired kind (a tab window) is never added, so it has no bucket (docs/specs/009-elements/tab-window.md).
     const missing = [...SHAPE_KINDS]
-      .filter((kind) => !RETIRED_SHAPE_KINDS.has(kind))
+      .filter((kind) => !TELEMETRY_RETIRED_KINDS.has(kind))
       .map(tokenForShapeKind)
       .filter((token) => !ALL_PALETTE_TELEMETRY_TYPES.includes(token));
     // A failure here means the editor can emit an Element·Added type the

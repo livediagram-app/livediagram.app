@@ -26,6 +26,9 @@ const typeOut = z.object({
       })
       .passthrough(),
   ),
+  templates: z
+    .array(z.object({ id: z.string(), name: z.string(), fields: z.array(z.string()) }))
+    .optional(),
 });
 
 export const typeLs = defineVerb({
@@ -33,7 +36,7 @@ export const typeLs = defineVerb({
   summary: 'The card types of a plan',
   description:
     'Lists the card types its boards hold: id, name, built-in fields and custom fields with their ids; a ' +
-    'required custom field is marked with *.',
+    'required custom field is marked with *; then its card templates by name, when it has any.',
   behaviour: 'read',
   input: z.object({ project: projectArg }),
   output: z.object({ types: z.array(typeOut) }),
@@ -54,14 +57,18 @@ export const typeLs = defineVerb({
             (f) =>
               `${f.name}${f.required ? '*' : ''}:${f.kind}${f.calculation ? `=${f.calculation}` : ''}${f.formula ? `(${f.formula})` : ''} (${f.id})`,
           ),
-        ].join(', '),
+        ].join(', ') +
+          (t.templates?.length
+            ? ` | templates: ${t.templates.map((tp) => tp.name).join(', ')}`
+            : ''),
       ]),
     ),
   quiet: ({ types }) => types.map((t) => t.id),
   cli: {
     positionals: ['project'],
     examples: ['liveplanner type ls "Sprint 14"', 'liveplanner type ls 3f9c --json'],
-    prints: 'one type a line: id, name, fields (a required custom field marked *)',
+    prints:
+      'one type a line: id, name, fields (a required custom field marked *), then | templates: … when it has any',
   },
 });
 
@@ -78,7 +85,7 @@ export const typeApply = defineVerb({
   id: 'type.apply',
   summary: 'Change card types from a file',
   description:
-    'Applies card type changes from a JSON file (or stdin, with -f -): an array of add, set, delete and add_default_types changes, checked and saved together.',
+    'Applies card type changes from a JSON file (or stdin, with -f -): an array of add, set, delete and add_default_types changes, checked and saved together. add takes templates, and set addTemplates, editTemplates and removeTemplates, for the type’s card templates.',
   behaviour: 'destructive',
   input: z.object({
     project: projectArg,

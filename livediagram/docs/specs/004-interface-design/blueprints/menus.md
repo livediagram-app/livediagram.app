@@ -31,7 +31,7 @@ Scope, by file:
 | `../packages/workbench/src/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                                                    |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                                            |
 | `apps/editor/components/chrome/editor-mode/ModeMenuChip.tsx`                | One-of-a-set command menu (beside the menu button and on a start's rail); its own key handling deleted                      |
-| `apps/editor/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                                        |
+| `../packages/workbench/src/components/chrome/AuthControls.tsx`              | Account command menu                                                                                                        |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                                      |
 | `../packages/explorer/src/dialogs/share/CopyMenu.tsx`                       | Command menu, or control menu when it carries a header control                                                              |
 | `apps/editor/components/canvas/whiteboard/ColourPicker.tsx`                 | Custom colour command menu; its own focus and Escape deleted                                                                |

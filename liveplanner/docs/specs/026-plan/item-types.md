@@ -24,6 +24,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                | parent type, super type     |
 | **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own             | subtype, child type         |
 | **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                  | unknown field, broken field |
+| **card template**   | A named set of starting values a card type holds, so a new card of that type starts filled in                                       | preset, blueprint, default  |
 
 ## The type catalogue
 
@@ -63,17 +64,19 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a board an accent that would not read on its card (Project's black on a dark card, Idea's yellow on a light one, any accent on a coloured theme's card) is drawn leaned toward white or black until it reaches 3:1 on that card, and its words on the type chip 4.5:1 ([Plan board](plan-board.md) "Theme and style"); in the app's own chrome it is lifted toward white to 3:1 in dark mode                                                                                                                                                                                                                                                                                                                                                        |
-| `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `icon`          | A glyph from the Plan glyph set: 75 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, timeSpent?, withTime?, onCard?, required?, multiple?, blocks? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`, a Formula's `formula` and `result`, a Rollup's or Lookup's `through`, `aggregate` and `source` and its `result`, and `showAs: "percent"` when it [shows as a Percent](#percent-fields); `timeSpent: true` on a Duration field that [tracks time](#time-spent); `withTime: true` on a Date Range whose ends [have times](#date-range-fields); `required: true` for a [required field](#required-fields); `blocks: true` on a Card field whose cards [block](#blocked-by) the card) |
-| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields }`. A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `tabs`          | Its item panel's tabs, in order: `{ id, label, fields, glyph? }` (`glyph`: the tab's [icon](#tab-icons), a Plan glyph; absent, its default). A field in a tab shows on that tab; a field in no tab shows in the panel's **Details**. Absent: one tab, **Overview**, holding Description, Checklist and any Long text custom fields                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `detailsLabel`  | What the panel calls **Details** (its side column, and the phone's first tab): 1 to 24 characters. Absent: "Details"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `detailsGlyph`  | The [icon](#tab-icons) Details wears, a Plan glyph. Absent: the default (Checklist)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `statuses`      | The statuses (ids) cards of this type use, **in order**, up to 128: the order every status menu for a card of the type lists them in. A new board's statuses join only the types that board takes ([below](#the-statuses-a-type-uses)). Absent (a type stored before this list): read as below                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `defaultStatus` | The **Default State**: the status (id) a card of this type is made in when nothing else gives it one. Absent: none                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `inherits`      | The [base type](#inherited-types) it inherits from, by id: a type in the same catalogue that inherits from none. Absent: it inherits from none                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `ownFields`     | An inherited type's own fields, by id, in order: what it adds after its base type's, always stored beside `inherits` (empty when none). Absent: every field it has that its base lacks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `fieldLabels`   | The type's own names for its built-in fields ([Edit Field](#built-in-full-edit)): built-in field id to name, each 1 to 32 characters (as a custom field's), never the built-in's own name. Absent (or a field left out): the built-in's name                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `templates`     | Its [card templates](#card-templates), in order: `{ id, name, fields }`, up to 10. Absent: none                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
   Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are, unless the
@@ -1021,6 +1024,13 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
 - **Tabs**: a type has up to **6 tabs**, each with a name of 1 to 24 characters, unique in the type ignoring
   case. A field sits in at most one tab. Title is never in a tab: it heads the panel. With one tab the panel shows
   its fields without a tab bar.
+- <a id="tab-icons"></a>**Tab icons**: each tab, and Details, wears an icon from the Plan glyph set (the card types'
+  own, no other set), so a strip of three or four tabs scans at a glance. One the type hasn't chosen takes its
+  **default**: Overview the Page glyph, Details the Checklist glyph, any other tab the Kanban glyph. The panel's own
+  tabs have fixed icons: Linked Cards the Link glyph, Activity the Clock glyph and [Hidden](#the-hidden-tab) the Eye
+  Off glyph (a house-style glyph drawn for it, also in the picker's Status and Signals). A plan or template from
+  before tab icons (none stored) shows the defaults, with no migration. A glyph id this build doesn't know reads as the
+  default, never refused. Stored only when chosen and different from the default, so Reset To Default stores nothing.
 - **On the card**: a custom field goes on the card face where the type's **Display** places it, like any field:
   every custom field is in Display's **Available Fields** (its Add Field tile's icon, a variant's own such as Several
   Images' stacked pictures, and its name), fits any part of any
@@ -1028,6 +1038,69 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
   {value}" for assistive technology; with no value it is not drawn. A field ticked **Show on card** before Display
   placed custom fields starts Under the Title on Detailed cards, until the type's Detailed layout is changed; the
   tick is gone from the field's settings.
+
+## Card templates
+
+A card type can hold **card templates**: named sets of starting values, so a card of that type starts already filled
+in. Teams file the same kinds of card again and again (a bug report with its steps to reproduce, a release checklist,
+a new starter's onboarding), and a template saves retyping the same headings, checklist and labels, or copying an old
+card and cleaning it up.
+
+- **On the type, several per type.** A type's `templates` lists up to **10** (`CARD_TEMPLATES_MAX`), in the order the
+  type editor lists them. Each is `{ id, name, fields }`:
+  - `id`: `tp-` and a slug of its name, up to 32 characters, unique in its type (`tp-bug-report`, with `-2`, `-3` on a
+    clash). Made once and never changed, so agents and later changes name it whatever it is renamed to.
+  - `name`: 1 to 32 characters, unique in its type ignoring case ("Bug Report", "Release Checklist").
+  - `fields`: its starting values, by field id, each exactly as a card stores it ([Items](items.md#fields)): the
+    **title**, the **Description** (its formatting beside it, `descriptionRich`), the **Checklist**, the **Labels**,
+    and the type's **custom fields** (a Long Text's formatting beside it, `<id>Rich`; a Checklist, Labels or Person
+    field of the type's own among them). Every value is optional: a template with no title gives its card the type's
+    new-card title, as a card made without one gets.
+- **What a template never holds**: the card's status, place and number (where the card is made decides them), and the
+  values only the plan or its people make or that point into one plan: a Calculated field's (worked out), a Time
+  Spent field's (tracked), a Comments or Votes field's (people's own), a Card field's and an Image field's (cards and
+  pictures of this plan, which a copy, an export or another plan would not have). The built-in fields other than the
+  four above (Assignee, Priority, Estimate, Start, Due, Colour, Attachments) are not template values either. The api,
+  the newest build, refuses a template value of any of these on a write (`item_types_invalid`,
+  `types[i].templates[j].fields`); a reader keeps one as stored, as it keeps any key from a newer version, and never
+  puts it on a card.
+- **Checked as a card's values are.** Each value passes the same check a card's field does (a title of up to 500
+  characters, a description of up to 10,000, up to 12 labels and 50 checklist rows), refused by name when it fails
+  (`types[i].templates[j].fields`). A template's values hold at most **16 KB** (`ITEM_FIELDS_BYTES`, as a card's
+  fields), and the templates of the whole catalogue at most **128 KB** (`CARD_TEMPLATES_BYTES`), counted apart from the
+  catalogue's own 32 KB so templates never crowd out types (`types[i].templates[j]`, `templates`).
+- **A template follows its type.** A value for a field the type no longer offers (a field removed, or retyped into
+  another, or an inherited field its base type took away) is dropped when the catalogue is next read, as the type's
+  tabs drop such a field. A Choice value that is no longer an option is kept, and shows on a card as any such value
+  does ("No longer an option").
+- **The type's own.** An inherited type keeps its own templates, as it keeps its name and colour, and never takes its
+  base type's; its templates may set inherited fields. Detach keeps them, and **Duplicate** copies them with the type.
+- **Starting a card from one.** A card started from a template takes the template's values for the fields its type
+  offers at that moment (`cardTemplateFields`); its status, place and number come from where it is made, exactly as
+  without a template, and its required fields still apply. The values are only a start: the card is an ordinary card
+  from then on, editing it never changes the template, and editing or removing the template never changes a card made
+  from it. Where a card is added, the type's templates are offered (a later part of this feature builds the picker).
+- **Editing them**: the type editor's **Templates** tab ([Editing a type](#editing-a-type)) lists the type's templates
+  and edits one at a time, in place, with the very field controls the card's panel uses. They are part of the type's
+  draft: Save stores them with the rest of the type, one undo step, and Cancel drops every template edit.
+- **Share roles** ([Share roles](../013-workspace/share-roles.md)): an **Editor** adds, edits, renames, reorders and
+  removes a type's templates: they are part of the card type, which only someone who may edit the whole plan changes
+  (a tab-scoped link may not). A **Participant** starts cards from them, as it adds cards, but never changes one. A
+  **Viewer** does neither: it adds no cards, so it is offered no template.
+- **Carried with the catalogue.** Templates are part of their type, so everything that carries the catalogue carries
+  them, unchanged: Duplicate, the api's copy, Sync to Cloud, Take Offline, the Drive file (the `.liveplanner` export
+  and a plan made from one), a tab's JSON export and its import (a type the import adds comes with its templates). A
+  [Community](../025-community/community.md) copy keeps them less any person they name (a Person field's value), as
+  it takes the people off the cards.
+- **Older editors.** `templates` is a new key in a card type's stored shape, so it raised the
+  [project format number](../016-platform/new-version-prompt.md) to 7 and open editors are offered Reload. Until they
+  reload, an editor built on 6 keeps a type's templates through a save while their JSON is at most 4 KB (its
+  "Settings from a newer version" cap) and drops them past it, and reads a catalogue past 32 KB as no card types.
+- **Agents** ([Plan for agents](plan-agents.md#card-templates)) add, edit and remove templates through
+  `change_card_types` (`add`'s `templates`; `set`'s `addTemplates`, `editTemplates` and `removeTemplates`), naming
+  values by field name as `change_items` does and checked as the api checks them; start a card from one with
+  `change_items`' `add` and its `template`, by name or id, the change's own fields overriding the template's; and read
+  each type's templates (id, name and the fields each sets) in `list_items`.
 
 ## Fields from a newer version
 
@@ -1047,6 +1120,19 @@ Calculated field whose `calculation` is not) never stops the plan opening.
   Sort, Group, widgets or forms.
 - **Reload brings it to life.** The [project format number](../016-platform/new-version-prompt.md) is bumped with
   every new field kind and calculation, so an editor holding a newer field has already been offered "Reload".
+
+### Settings from a newer version
+
+A newer liveplanner may also store a **new key** on a card type, a panel tab or a custom field (a setting this build
+has no control for). Every reader keeps such a key exactly as stored, and saving the type from this build writes it
+back untouched, so an older editor's save never strips what a newer one set (the type editor carries the type's,
+its tabs' and its fields' unknown keys into the type it saves). Each type's, tab's or field's unknown keys are kept
+only while their JSON is at most 4 KB (`NEWER_KEYS_MAX_BYTES`; past it they are dropped, never refused), inside the
+catalogue's 32 KB. The api, always the newest build, drops a key it does not know from a catalogue written to it (a
+mistyped key never lands); no agent answer (`list_items`, the CLI) or form response ever carries one, as each names
+the keys it shows. Every new stored key bumps the [project format number](../016-platform/new-version-prompt.md),
+so a guard test fails until it is listed for the new format.
+
 - **The api refuses one on a write.** The api is always the newest build: a catalogue sent to it (the item-types
   route, a project create or copy) with a kind it does not know is refused (`item_types_invalid`, the field's
   `kind`), so a mistyped kind never lands as a newer field. Reading a stored catalogue (a Drive file, the room)
@@ -1060,9 +1146,9 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 - **What it takes from its base type**: the fields, in the base's order; the custom fields, with the **same ids**,
   so a card's values carry over when its type moves between the base and an inherited type, and with every
   setting each field has (options, linked card types, Required, Show on Card, Notifies, Holds Several, Blocked By
-  and the rest); the panel's tabs and the Details name; the statuses it uses and their order; the Default State;
+  and the rest); the panel's tabs with their icons, and the Details name and icon; the statuses it uses and their order; the Default State;
   what its cards show at each size (Display); the Card Colour field and the Assignee's Notifies switch.
-- **What stays its own**: its id, name, colour, glyph and new-card title. It may **add fields** of its own, built-in
+- **What stays its own**: its id, name, colour, glyph, new-card title and [card templates](#card-templates). It may **add fields** of its own, built-in
   or custom, which follow the base type's fields and show under Details. It **cannot remove or edit an inherited
   field**, nor change its tabs, statuses, Default State or Display: those are the base type's to change.
 - **A change to the base type reaches every type that inherits from it**, in the same save: a field added to Work
@@ -1128,7 +1214,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   icon, with a tooltip) and a pencil. A press anywhere on a row (or Enter on it) opens the type editor.
   **Duplicate** opens the type editor as a **new** type filled from that one: its name with " copy" (then
   " copy 2", " copy 3"... while the name is taken, shortened to fit 32 characters), and the same colour, glyph,
-  fields, custom fields, tabs and Details name. Nothing is made until **Save**; **Cancel** drops it. With the
+  fields, custom fields, tabs, Details name and [card templates](#card-templates). Nothing is made until **Save**; **Cancel** drops it. With the
   catalogue full it is disabled and its tooltip says "The project has the most card types it can hold".
   The type editor's footer offers **Duplicate** too, for a type that exists. Telemetry: `Plan` ·
   `Duplicated` · `CardType` when a duplicate is saved. **Add Type** is a dashed tile at the end, with **Add Default
@@ -1215,12 +1301,12 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 ## Editing a type
 
 - **Add Type** and a row's edit open the **type editor**, a wide modal (60 rem, as the card panel; a sheet rising
-  from the bottom on a phone) in three **tabs** under its title (one underline that slides to the chosen tab): **Configuration**, **States** and **Display** (the tab's own word for the statuses
-  a type uses; boards, cards and filters still say Status). Its title names the type as saved, "Edit {Name} Card
+  from the bottom on a phone) in four **tabs** under its title (one underline that slides to the chosen tab): **Configuration**, **States** (the tab's own word for the statuses
+  a type uses; boards, cards and filters still say Status), **Display** and **Templates**. Its title names the type as saved, "Edit {Name} Card
   Type" ("Edit Note Card Type"), or "New Card Type" for a new one. It opens
   on Configuration, new or edited alike. Arrow keys, Home and End move between the tabs. A tab holding what stops Save carries a small red
   dot (a clashing name, a tab problem or a custom field problem is Configuration's; a status list problem is
-  States'; a missing name is not flagged, since a new type starts without one), and the problem is
+  States'; a card template problem is Templates'; a missing name is not flagged, since a new type starts without one), and the problem is
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
   The title row ends with **Show Me**, **Help** (the Card Types help article) and a close cross, which acts as
   Cancel.
@@ -1258,6 +1344,41 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
     stays open) and a press outside. One radio group, each tile named "{Name} glyph", the chosen one pressed as before.
   - **Fields** (a section of Configuration, after General): a line saying "Laid out as the card's panel shows them.
     Add, move or rename to change it.", then the Fields and Tabs list below. **States**: the type's statuses (below).
+  - **Templates**: the type's [card templates](#card-templates), the list beside the chosen template's editor (on a
+    phone, the list above it). Every edit is part of the draft, as the other tabs' are.
+    - **The list**, a 13 rem column on desktop: a row per template, in order, each a template glyph and its name
+      (cut with an ellipsis, the whole name its tooltip), the chosen one tinted in the brand colour (`aria-current`),
+      hover and focus marked as the editor's other rows. Each row ends with a **⋯** menu headed by the template's
+      name, icon-left rows as a field's: **Move Up**, **Move Down** and **Remove** (no confirmation: Cancel brings it
+      back). The list ends with **New Template**, the shared dashed add row (as Add Field): it adds a template named
+      "New Template" ("New Template 2", ... on a clash) at the end, chooses it and puts the caret in its Name with
+      the name selected. At 10 templates it is disabled, saying "A card type holds up to 10 templates." A template's
+      id is made from its name when the type is saved, so "Bug Report" renamed before the first save gets
+      `tp-bug-report`; after that it never changes.
+    - **The editor** of the chosen template: **Name** (up to 32 characters; a blank or clashing name says so under
+      the field), then the card's own fields as its panel lays them out, each with the very control the card's panel
+      uses ([Items](items.md#fields)), saving into the template instead of a card: **Title** (one line that wraps,
+      its placeholder the type's new-card title: left empty, a card takes that title), then the fields of the type a
+      template may hold, in the type's order: the **Description** and each **Long Text** field as rich text, the
+      **Checklist**, then **Labels** and every other custom field a template holds as Details rows (the label beside
+      the control on desktop, above it on a phone). Under them a quiet line: "A card started from it takes its state
+      and place from where it is made." Fields a template never holds are not shown.
+    - **Empty**: a type with no templates shows the compact empty state (the template glyph, "No Templates Yet",
+      "A template fills in a new {Name} card: its title, description, checklist, labels and fields.") with
+      **New Template** as its one way forward.
+    - **What stops Save**: a template with no name ("Give every template a name."), two with one name ("Two
+      templates have the same name."), one holding more than 16 KB ("{Template} holds more than 16 KB: shorten
+      it."), or the plan's templates holding more than 128 KB ("The plan’s card templates hold more than 128 KB:
+      shorten or remove one."). Each is named beside Save and flagged on the tab, and shown in the tab itself, over
+      the editor, as an alert, so it is read where it is fixed.
+    - **Roles**: the type editor opens only for someone who may change card types (an Editor of the whole plan,
+      [Card templates](#card-templates) "Share roles"); a Participant and a Viewer never reach it. The tab also
+      reads the session's `canEdit` itself: without it, it is read-only (no New Template, no ⋯ menu, every control
+      disabled), never a control that would be refused.
+    - On an inherited type the tab is the type's own (no inherited notice), and its fields include the inherited
+      ones.
+    - Telemetry: `Plan` · `Added` · `CardTemplate` and `Plan` · `Deleted` · `CardTemplate`, as a template is added
+      to or removed from the draft.
   - **Fields and Tabs**: one list laid out as the card's panel shows the fields, in groups. On desktop (768 px and
     up) it is two columns as the card's panel: On the Card, then the tabs and Add Tab, on the left, and Details in an
     18 rem column on the right; on a phone, one column in the order below.
@@ -1269,6 +1390,14 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       × (its fields go to Details). **Overview** is renamed and moved like any tab but has no ×: it stays, even
       empty. A new tab's name field takes focus. An empty group says so, and that any tab but Overview left
       empty is dropped when the type is saved.
+    - **Icons**: each tab's header and the Details group's lead with an **icon button** before the name: the tab's
+      [icon](#tab-icons) on a tint of the type's colour with a small chevron, named "Icon: {Glyph}", its tooltip
+      the same. It opens the card type glyph picker (the same popover, search, category menu and grid as
+      the type's Glyph), headed "{Tab} Icon", the chosen icon ringed. A pick closes it and hands focus back. While
+      the icon is not the default, the picker's foot holds **Reset To Default** (an undo arrow), which puts the
+      default back and closes it. The icon is part of the draft: Save stores it as part of the type, one undo step
+      like any type edit. On an inherited type the icon shows, read-only (no chevron, no popover), as the tab
+      names do.
   - Field rows alternate white and a light grey within their group, so a long list reads row by row. Each field
     row leads with a **drag handle** (a grip), then an icon of what it holds, then its name, and a lock beside the
     name for a field the type always keeps (Title and Status, and a Project's Start and Due; its tooltip says "{Name}
@@ -1786,8 +1915,10 @@ copied across or tidied up.
   make it again to the stored catalogue and send it again (up to three tries); a save that still fails drops only
   that change, never one saved after it. A refusal is the api's word on what is stored, taken even when it names a
   lower revision than the editor holds: a plan in This Browser counts its own revisions, and once Sync Plan moves it
-  to the server (in place, with no reload) the server's count starts again, so the first card types save after a sync
-  is made again to the server's catalogue and lands. An undo makes the change's inverse to the catalogue as it then is, so it
+  to the server (in place, with no reload) the server's count starts again. So a sync in place reads the server's
+  catalogue and revision straight after it and the editor takes them in place of its own count, and the first card
+  types save after a sync names the server's revision and lands at once; should that read fail, the save is refused
+  stale once, made again to the server's catalogue, and lands. An undo makes the change's inverse to the catalogue as it then is, so it
   never takes back anyone's later change; a redo makes the change again the same way.
 - Each write reaches the project's room as an ordered system op, `item-types`, carrying the catalogue, so open
   editors redraw at once; a tab-scoped session receives it too (types hold no content).

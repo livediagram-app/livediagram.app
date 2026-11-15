@@ -13,8 +13,9 @@ import {
   changeCardTypes,
   importTrackerBoard,
   pictureLinkFor,
-  planListing,
+  listItemsPage,
   readPlanState,
+  resolveListItemsPage,
   resolveListingFilter,
   trackerImportAnswer,
   uploadForPlan,
@@ -42,9 +43,17 @@ export function registerPlanTools(server: McpServer, env: Env): void {
     // A column or card type named as change_items names them; an unknown one is refused with the names there are.
     const filter = resolveListingFilter(state, args);
     if (!filter.ok) return errorResult(filter.message);
+    // Open cards without formatting runs unless asked, a page at a time under the size budget, saying what it left
+    // out (docs/specs/026-plan/plan-agents.md "What list_items leaves out unless asked").
+    const page = resolveListItemsPage(args);
+    if (!page.ok) return errorResult(page.message);
     // Each picture listed with a link the agent's own token reads (docs/specs/015-api/mcp-server.md §4.5b).
-    const listing = planListing(state, filter, pictureLinkFor(appBase(env), args.projectId));
-    return textResult({ ...listing, url: deepLink(env, args.projectId) });
+    return textResult(
+      listItemsPage(state, filter, page, {
+        pictureLink: pictureLinkFor(appBase(env), args.projectId),
+        url: deepLink(env, args.projectId),
+      }),
+    );
   });
 
   registerTool(server, env, mcpChangeItems, async (args, extra) => {

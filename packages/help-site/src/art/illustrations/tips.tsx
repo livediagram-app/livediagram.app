@@ -37,9 +37,9 @@ export function ZenMode() {
       <Shape x={184} y={44} w={84} h={48} kind="diamond" />
       <Shape x={184} y={140} w={84} h={48} kind="rect" accent label="Ship" />
       <Shape x={314} y={84} w={84} h={48} kind="circle" label="Done" />
-      <Arrow from={[140, 108]} to={[184, 68]} kind="elbow" />
-      <Arrow from={[226, 92]} to={[226, 140]} />
-      <Arrow from={[268, 164]} to={[314, 108]} kind="curved" />
+      <Arrow connector from={[140, 108]} to={[184, 68]} kind="elbow" />
+      <Arrow connector from={[226, 92]} to={[226, 140]} />
+      <Arrow connector from={[268, 164]} to={[314, 108]} kind="curved" />
       {/* Zoom controls, bottom-right, the one chrome Zen mode keeps, with Exit zen mode at the
           right end of the same pill, behind a divider (ZoomControls). */}
       <Panel x={276} y={194} w={128} h={30}>

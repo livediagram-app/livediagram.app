@@ -18,6 +18,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   restore_design: 'design restore',
   archive_design: 'design archive',
   unarchive_design: 'design unarchive',
+  list_threads: 'comment ls',
+  change_threads: 'comment add',
   list_images: 'image ls',
   upload_image: 'image add',
   delete_image: 'image rm',

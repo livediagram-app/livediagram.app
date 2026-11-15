@@ -81,6 +81,33 @@ never told a change worked when it shows on no board.
   **Not on a board**. This is the text `board` view [Plan mode](plan-mode.md#agents) named as a later step. A filter
   by card type or column names them exactly as `change_items` does (`in-progress` reads In Progress; `Trash` the
   Trash), and a name the project does not have is refused with the names it has, never answered with no items.
+- **What `list_items` leaves out unless asked** (Work Tracker 900): a plan that has run for a while holds far more
+  finished cards than open ones, so by default `list_items` lists only the cards still in play.
+  - **Closed cards**: a card in a column that counts as done on the plan's boards ([Done columns](plan-board.md#done-columns):
+    Done, Cancelled, Won't Do...), a trashed card and an archived card are left out, unless `includeClosed` is true
+    or a column filter names their column (a column filter lists every card in the columns it names). A done
+    column's own `cards` list is emptied with them, and the column says how many it left out (`closed`).
+  - **Formatting runs**: a description's and a Long Text field's formatting (`descriptionRich`, `<field>Rich`) are
+    left out of `fields` unless `includeRich` is true; the plain text is always there under the field's name.
+  - The answer's `omitted` says what was left out and how to bring it back, in numbers (`closed`, how many closed
+    cards matched the other filters; `rich`, true when a listed card's formatting was left out) and in words
+    (`note`: "760 closed cards (Done, Cancelled, trashed, archived) left out: pass includeClosed: true to list them.").
+    Nothing is ever cut without the answer saying so. With nothing left out there is no `omitted`.
+- **Filters** (each optional, all of them together): `status` and `type` each take one name or a list of names (a
+  card in any of them), named as `change_items` names them; `query` keeps a card whose title or description holds
+  the text (case aside, at most 200 characters); `updatedSince` keeps a card changed at or after an ISO date or
+  time (`2026-11-01`, `2026-11-01T09:00:00Z`), refused (`updated_since_invalid`) when it reads as neither.
+  Filters narrow the items only: each board still lists the numbers of its open cards.
+- **Paging**: cards come by number. `limit` (1 to 1,000) caps a page, and an answer never passes about 200,000
+  characters as its text is sent (`LIST_ITEMS_BUDGET`): when cards remain, the answer stops before the card that
+  would pass it and gives `nextCursor`; the same call with `cursor` set to it answers the next page, and paging to
+  the end lists every matching card exactly once, none lost or repeated, even while cards are added. `total` is how
+  many cards match on every page together, `count` how many this page lists. Every page lists the boards and card
+  types, so any page names everything a write takes. A page lists at least one card when any remains, so paging
+  always ends (one card is bounded by the item store's limits). A cursor `list_items` did not give is refused
+  (`cursor_invalid`).
+- The CLI's `item ls` keeps listing every card, as before: its output is a line a card, not one answer an assistant
+  must take whole.
 - A card linked to pull requests the plan has a state for lists them as `pullRequests` (each its `name`, `state`,
   `checks` when an open one or a draft has them, `title`, `url`, and the `field` holding it), with exactly the
   visibility the board gives the caller ([GitHub pull requests](github-pull-requests.md#agents)).
@@ -300,16 +327,20 @@ detailed: { header, headerEnd, underTitle, footer, bottomRight } }`, each a list
       a size left out keeps its own. A `compact` size (retired) is ignored, as a stored one is. A field a size
       cannot draw (Minimal draws Number, Priority, Due and Assignee; Detailed every field) or the type lacks is
       refused naming what the size draws (`display_invalid`).
-    - `tabs`: the item panel's tabs, `[{ name, fields }]`, up to 6, fields by name (Title never, it heads the
-      panel); `detailsLabel`: what the panel calls Details. `set` replaces them whole when given.
+    - `tabs`: the item panel's tabs, `[{ name, fields, glyph? }]`, up to 6, fields by name (Title never, it heads the
+      panel); `detailsLabel`: what the panel calls Details. `set` replaces them whole when given. A tab's `glyph` is
+      its [icon](item-types.md#tab-icons), a Plan glyph id (an unknown one refused naming the glyphs); left out, a tab
+      of the same name keeps its icon and a new one takes the default; `null` puts the default back. `detailsGlyph`
+      (a glyph id, or `null` for the default) sets Details' icon. `list_items` lists each tab's `glyph` and the type's
+      `detailsGlyph`, defaults filled in.
   - `add` and `set` take `inherits`: a card type's name or id, its [base type](item-types.md#inherited-types). The
     type then takes the base type's fields, custom fields (same ids), tabs, statuses, Default State and display,
     keeping its own name, colour and glyph; its own fields follow the base's. `set` with `inherits: null` detaches
     it, keeping a copy of the base type's settings. A base type that itself inherits, or a type that others
     inherit from being given a base, is refused (`type_change_invalid`, "Work inherits from Item, and a type
     inherits only from one that inherits from none."). On an inherited type, `removeFields`, `removeCustom` or
-    `editCustom` naming an inherited field, and `statuses`, `defaultStatus`, `display`, `tabs`, `detailsLabel` or
-    `assigneeNotifies`, are refused naming the base type ("Bug takes its statuses from Work: change Work, or
+    `editCustom` naming an inherited field, and `statuses`, `defaultStatus`, `display`, `tabs`, `detailsLabel`,
+    `detailsGlyph` or `assigneeNotifies`, are refused naming the base type ("Bug takes its statuses from Work: change Work, or
     detach Bug with inherits: null."). A change to a base type reaches every type that inherits from it in the
     same save.
   - `delete` `{ type }`: as the type editor's Delete Type: the type goes and its cards (out of the Trash) move to the
@@ -325,6 +356,40 @@ detailed: { header, headerEnd, underTitle, footer, bottomRight } }`, each a list
   changed the card types in between, it reads them again and applies its changes to theirs (a board an agent adds
   brings its types the same way), so neither change is lost. After three tries it refuses (`item_types_stale`).
 - Only someone who may edit the whole project changes card types (a tab-scoped grant may not), as in the editor.
+
+### Card templates
+
+A type's [card templates](item-types.md#card-templates) are changed with the rest of the type, and a card can start
+from one.
+
+- **`change_card_types`**: `add` takes `templates` `[{ name, fields? }]`, and `set` takes `addTemplates` (the same),
+  `editTemplates` `[{ template, name?, fields?, clear? }]` and `removeTemplates` (templates by name or id). A
+  template's `fields` are named and written exactly as `change_items`' are ([Naming things as people
+  do](#naming-things-as-people-do)): `title`, `description` (Markdown, stored with its formatting), `checklist`,
+  `labels` and the type's custom fields by name (a Choice by its option, a person by name, a Long Text as
+  Markdown). An edit's `fields` change only the values they name, and its `clear` takes values off by field name; a
+  `name` renames it (its id never changes). A new template's id is `tp-` and a slug of its name. They apply after
+  the change's field edits, so a template can set a custom field the same change adds.
+- They are checked as the api checks them, before anything is saved, each refusal naming the type and the template:
+  a field the type lacks is `field_unknown`; a value a template never holds (a status, an assignee, dates, a
+  Calculated, Time Spent, Comments, Votes, Card or Image field's) is `type_change_invalid`, saying what a template
+  holds; a value that fails a card's check, a blank, long (over 32 characters) or clashing name, an 11th template,
+  a template over 16 KB and the plan's templates over 128 KB are `type_change_invalid` too, by name. An unknown
+  template in `editTemplates` or `removeTemplates` is `template_unknown`, listing the type's templates.
+- **`change_items`**' `add` takes `template`, a template of the card's type by name (case aside) or id: the card
+  starts from its values ([`cardTemplateFields`](item-types.md#card-templates)), and the change's own `fields` and
+  `title` win over the template's, field by field (a description given drops the template's formatting with its
+  text). With a template, `title` may be left out: the template's title is used, else the type's new-card title.
+  Without one, `title` is still required (`value_invalid`). Required fields count the template's values. A name the
+  type has no template for is `template_unknown`, listing its templates (or saying it has none, and how to add one);
+  a template another type holds says so ("Bug Report is a Bug template: give type "Bug""). `template` on a `set`
+  is refused: a template only starts a card.
+- **`list_items`** lists each type's `templates` (absent when it has none): each one's `id`, `name` and `fields`, the
+  names of the fields it sets, so an agent names a template and knows what it fills in without reading its values.
+- The CLI mirrors it: `type apply` takes the same changes from a file, `type ls` ends a type's line with its
+  templates, and `item add --template <name>` starts a card from one.
+- Roles are the api's: only someone who may edit the whole plan changes a type's templates; an Editor or a
+  Participant starts a card from one, as they add cards; a Viewer does neither.
 
 ### What a card type is made of, as facts
 
@@ -371,6 +436,32 @@ Title`, and a card in another plan as `#4 in Sprint 12`), the Comments field it 
   share or delete threads.
 - Mentions are not taken from agents (a comment's text may name people; it notifies nobody).
 
+## Cards handed to an assistant
+
+> **Status: Planned** (Work Tracker 901 part 2). The stored shape is built ([Items](items.md#handing-a-card-to-an-ai-assistant));
+> the tools below are not yet.
+
+A card can be handed to an AI assistant as to a person ([Items](items.md#handing-a-card-to-an-ai-assistant)); the
+assistant finds its cards here, works them with the tools above and hands each back.
+
+- **Which assistant is calling**: the token's. Its client is the token's name and its person the token's account,
+  read from `GET /api/tokens/current` (cached with the token), so a tool call sends nothing new and no token id or
+  secret reaches a card.
+- **`list_items`** takes `handedToMe: true`: only the cards whose Assignee is the calling assistant, every other filter
+  and the closed-card rule applying as usual. Any card handed to an assistant lists its Assignee by name with
+  `assistant: true` beside it, so an agent can tell an assistant from a person.
+- **`change_items`** hands cards over and back:
+  - `set` with `"assignee": "me"` takes a card: it is handed to the calling assistant.
+  - `"assignee"` naming an assistant as the board shows it ("Claude (Thomas)") hands it to that assistant, when a card
+    already holds it; naming a person hands it to them.
+  - `hand_back {item}` sets the Assignee to the person the calling assistant works for; a card not handed to the
+    calling assistant is refused (`not_handed_to_you`, naming who has it).
+- **Progress** is what the assistant already writes: its comments ([Generated by AI](items.md#generated-by-ai)) and its
+  moves; the card shows them (part 3).
+- **The CLI**: `item ls --handed-to-me`, `item set #12 --fields assignee=me`, `item hand-back #12`.
+- **Who may**: as `change_items`: a token of an Editor or a Participant hands cards over and back; a read-only token
+  only lists them; a Viewer's token is refused by the item routes (403).
+
 ## Automations
 
 Agents read and work a plan's rules with `list_rules` and `change_rules` (MCP) and the CLI's `rule` verbs, as an
@@ -387,7 +478,8 @@ Editor of the whole plan: the whole contract is in [Automations](automations.md#
 ## Cost
 
 - `list_items` and `change_items` each make at most two api reads (items and plan, in parallel) however many
-  changes a call carries, then one write per change. `change_card_types` makes those two reads and one catalogue
+  changes a call carries; `list_items` works out the fields of only the cards a page lists (and one more), so a
+  page of a large plan costs about what a small plan's whole answer did, then one write per change. `change_card_types` makes those two reads and one catalogue
   write, then one write per card of a deleted type. `add_board` makes three reads (project, plan with items, tab)
   and one changeset.
 - The plan route reads only the tabs that hold a board, in batches (as the project overview does), and returns

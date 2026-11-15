@@ -74,7 +74,9 @@ Left**), or a facing picked outright from the element menu.
   seat faces once turned: a bench turned to face right seats its two sitters one above the other, facing right. The
   occupied rings and the name pill follow the seats.
 - **Somebody sitting in it is carried round.** A piece turned (or moved) while somebody sits in it keeps them in
-  their seat: their character moves to the seat's new place and faces its new way, and stays seated.
+  their seat: their character moves to the seat's new place and faces its new way, and stays seated. A table that
+  loses seats as it changes (a Long Table made shorter, or retyped to a Meeting Table) stands up only the people on
+  the seats it lost ([A table that loses seats](chair.md#a-table-that-loses-seats)).
 - **What blocks turns with it.** A scenery piece's footprint (its base, its plinth, its cabinets) is drawn per facing,
   so the lockers turned onto a side wall block along that wall and no longer across the room.
 - **Its live face turns with it** ([Live faces](#live-faces)).

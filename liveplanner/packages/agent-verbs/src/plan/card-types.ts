@@ -42,7 +42,8 @@ export async function changeCardTypes(
   for (let attempt = 1; ; attempt += 1) {
     const state = await readPlanState(api, projectId);
     const stored = { version: ITEM_TYPE_CATALOGUE_VERSION, types: state.plan.types };
-    const result = applyCardTypeChanges(stored, changes, state.plan.statuses);
+    // The plan's cards name the people a card template's Person field may give (plan-agents.md "Card templates").
+    const result = applyCardTypeChanges(stored, changes, state.plan.statuses, state.items);
     if (!result.ok)
       return {
         applied: [],

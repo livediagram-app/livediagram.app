@@ -71,6 +71,13 @@ describe('layoutInviteShows', () => {
     expect(layoutCardShows(page(), { ...ok, zoom: 0.3 })).toBe(false);
   });
 
+  it('never shows on a photo page, which has no layouts, at any size on screen', () => {
+    for (const zoom of [0.1, 0.3, 1]) {
+      expect(layoutInviteShows(page({ kind: 'photo' }), { ...ok, zoom })).toBe(false);
+      expect(layoutCardShows(page({ kind: 'photo' }), { ...ok, zoom })).toBe(false);
+    }
+  });
+
   it('never shows beside the card, nor where the card would not be offered at all', () => {
     expect(layoutInviteShows(page(), ok)).toBe(false);
     expect(layoutInviteShows(page(), { ...ok, zoom: 0.3, contentCount: 2 })).toBe(false);

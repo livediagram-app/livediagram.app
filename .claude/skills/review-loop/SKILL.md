@@ -62,7 +62,10 @@ MCP gotchas:
 ## 1. Read the board
 
 Call `list_items` on the plan once, and `list_threads` once with `status: "all"` and no `item`. Together they
-give every card with its fields and every thread with its comments.
+give every open card with its fields and every thread with its comments. `list_items` leaves Done and Cancelled
+cards out unless asked (its `omitted` says how many): when a thread sits on a card it did not list, read that card
+with `list_items` `includeClosed: true` and `query` set to its title (see "Rules": a question on a Cancelled or Done
+card is moot).
 
 From the Work Item cards in **Under Review**, work out each card's state from its question threads:
 

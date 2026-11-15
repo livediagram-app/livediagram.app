@@ -19,7 +19,7 @@ export type MarkupProfile = 'svg' | 'svg-content' | 'document';
 
 // DOMPurify's own URL rule, plus `blob:` (a picture's bytes this page holds); a blob: URL is kept on a picture alone.
 const ALLOWED_URI =
-  /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix|blob):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i;
+  /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix|blob):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
 // The elements whose href may load something: a link, and a picture. Every other href (a gradient's, a text path's)
 // must point inside the drawing, so nothing outside it is pulled in.
 const LOADS_HREF = new Set(['a', 'image', 'img']);

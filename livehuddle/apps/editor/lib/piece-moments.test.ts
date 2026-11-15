@@ -157,13 +157,13 @@ describe('the trigger', () => {
   it('plays on arriving, from your side, and never again while you stand there', () => {
     const { trigger } = setup();
     expect(trigger.step(away, [tree])).toEqual([]);
-    expect(trigger.step(atTree, [tree])).toEqual([{ id: 't', side: -1 }]);
+    expect(trigger.step(atTree, [tree])).toEqual([{ id: 't', kind: 'tree', side: -1 }]);
     expect(trigger.step({ x: 95, y: 255 }, [tree])).toEqual([]);
   });
 
   it('says the right side when you come from the right', () => {
     const { trigger } = setup();
-    expect(trigger.step({ x: 230, y: 250 }, [tree])).toEqual([{ id: 't', side: 1 }]);
+    expect(trigger.step({ x: 230, y: 250 }, [tree])).toEqual([{ id: 't', kind: 'tree', side: 1 }]);
   });
 
   it("says your side along a window's wall, whichever way it is turned", () => {
@@ -177,14 +177,18 @@ describe('the trigger', () => {
       rotation: 90,
     });
     // Turned a quarter clockwise, its own +x runs down the canvas: above its middle is its left end.
-    expect(createMomentTrigger().step({ x: 170, y: 70 }, [w])).toEqual([{ id: 'w', side: -1 }]);
-    expect(createMomentTrigger().step({ x: 170, y: 130 }, [w])).toEqual([{ id: 'w', side: 1 }]);
+    expect(createMomentTrigger().step({ x: 170, y: 70 }, [w])).toEqual([
+      { id: 'w', kind: 'window', side: -1 },
+    ]);
+    expect(createMomentTrigger().step({ x: 170, y: 130 }, [w])).toEqual([
+      { id: 'w', kind: 'window', side: 1 },
+    ]);
   });
 
   it('plays every arrival, every time (owner 2026-11-07)', () => {
     const { arrive, tick } = setup();
     for (let i = 0; i < 6; i++) {
-      expect(arrive()).toEqual([{ id: 't', side: -1 }]);
+      expect(arrive()).toEqual([{ id: 't', kind: 'tree', side: -1 }]);
       tick(MOMENT_MS.tree);
     }
   });
@@ -196,14 +200,16 @@ describe('the trigger', () => {
     // Out and back in mid-moment: nothing restarts.
     expect(arrive()).toEqual([]);
     tick(1);
-    expect(arrive()).toEqual([{ id: 't', side: -1 }]);
+    expect(arrive()).toEqual([{ id: 't', kind: 'tree', side: -1 }]);
   });
 
   it('plays another piece straight away while one is still playing', () => {
     const { trigger, arrive } = setup();
     expect(arrive()).toHaveLength(1);
     trigger.step(away, [tree, pond]);
-    expect(trigger.step({ x: 600, y: 90 }, [tree, pond])).toEqual([{ id: 'p', side: -1 }]);
+    expect(trigger.step({ x: 600, y: 90 }, [tree, pond])).toEqual([
+      { id: 'p', kind: 'pond', side: -1 },
+    ]);
   });
 
   it('plays both pieces you reach on one step', () => {
@@ -211,8 +217,8 @@ describe('the trigger', () => {
     const { trigger } = setup();
     const both = { x: 140, y: 250 };
     expect(trigger.step(both, [tree, near])).toEqual([
-      { id: 't', side: -1 },
-      { id: 'n', side: -1 },
+      { id: 't', kind: 'tree', side: -1 },
+      { id: 'n', kind: 'tree', side: -1 },
     ]);
     expect(trigger.step(both, [tree, near])).toEqual([]);
   });

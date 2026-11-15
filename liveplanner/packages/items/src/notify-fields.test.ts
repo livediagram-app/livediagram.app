@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { quickFilterMatches } from './board';
 import type { ItemTypeDef } from './item-types';
 import { isNotified, notifiedPeople, notifyingFieldsOf } from './notify-fields';
+import { itemAssistantFor } from './assistant';
 import { item } from './test-items';
 import { FALLBACK_ITEM_TYPE } from './item-types';
 import { applyCardTypeChanges } from './type-changes';
@@ -11,6 +12,8 @@ import { applyCardTypeChanges } from './type-changes';
 const SAM = { id: 'p-sam', name: 'Sam', color: '#2563eb' };
 const ALEX = { id: 'p-alex', name: 'Alex', color: '#16a34a' };
 const NAMED = { id: 'n-jo', name: 'Jo', color: '#9333ea' };
+const THOMAS = { id: 'a1b2c3d4e5f6a1b2c3d4e5f6', name: 'Thomas', color: '#0891b2' };
+const ASSISTANT = itemAssistantFor(THOMAS, 'Claude')!;
 
 const review: ItemTypeDef = {
   id: 'review',
@@ -96,6 +99,24 @@ describe('Only Mine', () => {
 
   it('never matches a custom person', () => {
     expect(quickFilterMatches({ mine: NAMED.id }, item({ assignee: NAMED }))).toBe(false);
+  });
+
+  // docs/specs/026-plan/items.md "Handing a card to an AI assistant": the card is the assistant's, not its person's.
+  it('never matches an AI assistant, nor the person it works for', () => {
+    const card = item({ assignee: ASSISTANT });
+    expect(quickFilterMatches({ mine: ASSISTANT.id }, card)).toBe(false);
+    expect(quickFilterMatches({ mine: THOMAS.id }, card)).toBe(false);
+  });
+});
+
+describe('an AI assistant is never told', () => {
+  it('leaves an assistant out, read as one or not', () => {
+    expect(notifiedPeople(review, item({ assignee: ASSISTANT, 'f-qa': SAM }))).toEqual([
+      { fieldId: 'f-qa', person: SAM },
+    ]);
+    // One that reached the store unchecked (a hand-edited file) is still never told anything.
+    const loose = { id: ASSISTANT.id, name: ASSISTANT.name, color: ASSISTANT.color };
+    expect(notifiedPeople(review, item({ assignee: loose }))).toEqual([]);
   });
 });
 

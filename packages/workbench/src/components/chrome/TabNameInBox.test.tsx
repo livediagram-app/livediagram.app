@@ -48,7 +48,7 @@ describe('renaming the tab from the menu box', () => {
     const onRename = vi.fn();
     render(<Publish can onRename={onRename} />);
     fireEvent.click(screen.getByText('Flowchart'));
-    const field = screen.getByLabelText('Tab name') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Tab name');
     fireEvent.change(field, { target: { value: '  Checkout  ' } });
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(onRename).toHaveBeenCalledWith('tab1', 'Checkout');

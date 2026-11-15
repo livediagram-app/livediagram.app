@@ -1614,6 +1614,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Comment": {
     "additionalProperties": false,
     "properties": {
+      "ai": {
+        "const": true,
+        "type": "boolean"
+      },
       "authorColor": {
         "type": "string"
       },
@@ -1624,6 +1628,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "createdAt": {
+        "type": "number"
+      },
+      "editedAt": {
         "type": "number"
       },
       "id": {
@@ -2390,6 +2397,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "ai": {
+              "const": true,
+              "type": "boolean"
+            },
             "authorColor": {
               "type": "string"
             },
@@ -2400,6 +2411,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "type": "string"
             },
             "createdAt": {
+              "type": "number"
+            },
+            "editedAt": {
               "type": "number"
             },
             "id": {

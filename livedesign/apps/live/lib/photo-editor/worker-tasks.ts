@@ -10,11 +10,13 @@ import {
   FilterCancelled,
   quickSelect,
   refineEdge,
-  resizeRaster,
+  resizeRegion,
   selectSubject,
   type FilterContext,
   type Mask8,
   type Raster,
+  type Rect,
+  type ResizePlan,
 } from '@livedesign/photo-engine';
 
 export type PhotoTask =
@@ -44,8 +46,9 @@ export type PhotoTask =
     }
   | { kind: 'refine'; raster: Raster; mask: Mask8; radius: number }
   | { kind: 'fill'; raster: Raster; hole: Uint8Array; seed: number }
-  // A picture resampled (Bicubic) to a size: Make Sizes' layers (image-ops.ts coverSize).
-  | { kind: 'resize'; raster: Raster; width: number; height: number };
+  // One tile of a picture resampled to a size, from only the source pixels it reads (resizeSourceRect): Make Sizes'
+  // layers, a tile at a time (image-ops.ts coverSize).
+  | { kind: 'resize-region'; region: Raster; plan: ResizePlan; out: Rect };
 
 export type PhotoTaskResult =
   | { kind: 'encode'; bytes: Uint8Array }
@@ -161,11 +164,8 @@ export async function runPhotoTask(
         kind: 'fill',
         raster: contentAwareFill(task.raster, task.hole, { seed: task.seed }),
       };
-    case 'resize':
-      return {
-        kind: 'resize',
-        raster: resizeRaster(task.raster, task.width, task.height, 'bicubic'),
-      };
+    case 'resize-region':
+      return { kind: 'resize', raster: resizeRegion(task.region, task.plan, task.out) };
   }
 }
 
@@ -182,6 +182,8 @@ export function transfersOf(r: PhotoTaskResult | PhotoTask): Transferable[] {
     case 'fill':
     case 'resize':
       return [r.raster.data.buffer as ArrayBuffer];
+    case 'resize-region':
+      return [r.region.data.buffer as ArrayBuffer];
     case 'mask':
       return [r.mask.buffer as ArrayBuffer];
     default:

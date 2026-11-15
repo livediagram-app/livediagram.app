@@ -126,7 +126,7 @@ function harness(api: 'ok' | 'down' = 'down') {
   const handle = async (input: Request | string, init?: RequestInit) => {
     const request = typeof input === 'string' ? new Request(input, init) : input;
     if (new URL(request.url).pathname.endsWith('/events')) {
-      const body = (await request.json()) as { events: Emitted[] };
+      const body = await request.json<{ events: Emitted[] }>();
       emitted.push(...body.events);
       return new Response(null, { status: 204 });
     }
@@ -185,19 +185,21 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the nineteen documented tools, each with a description', () => {
+  it('registers the twenty-one documented tools, each with a description', () => {
     const { registered } = harness();
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
       'archive_design',
       'change_components',
       'change_pages',
+      'change_threads',
       'create_design',
       'delete_design',
       'delete_image',
       'find_designs',
       'list_images',
       'list_templates',
+      'list_threads',
       'list_trash',
       'read_design',
       'rename_design',
@@ -246,7 +248,8 @@ describe('registerTools', () => {
     const { registered, emitted } = harness('down');
     for (const tool of registered) {
       // These need no api, so cannot fail here.
-      if (tool.name === 'list_templates' || tool.name === 'search_icons') continue;
+      // change_threads with no changes makes no call either.
+      if (['list_templates', 'search_icons', 'change_threads'].includes(tool.name)) continue;
       await tool.handler(ARGS, AUTHED).catch(() => undefined);
     }
     await flush();
@@ -297,6 +300,9 @@ describe('registerTools', () => {
 // an annotations block, which types can't catch.
 describe('tool annotations', () => {
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
+    // docs/specs/015-api/mcp-server.md "Comment threads": change_threads deletes the agent's own comments.
+    list_threads: 'read',
+    change_threads: 'destructive',
     find_designs: 'read',
     read_design: 'read',
     list_templates: 'read',
@@ -373,6 +379,7 @@ describe('tool annotations', () => {
       'find_designs',
       'list_images',
       'list_templates',
+      'list_threads',
       'list_trash',
       'read_design',
       'search_icons',
@@ -396,6 +403,7 @@ describe('tool annotations', () => {
       'archive_design',
       'change_components',
       'change_pages',
+      'change_threads',
       'delete_design',
       'delete_image',
       'update_design',

@@ -6,7 +6,7 @@ import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/se
 import dynamic from 'next/dynamic';
 import { slideElementsOf, tagColoursOf } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
 import { canEditSankey } from '@/lib/sankey-edit';
@@ -35,9 +35,10 @@ const ReadOnlyElementMenuHost = dynamic(
 // commit), and the open menu's wiring (about 150 of the editor's values) costs a render of its own each time
 // (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits").
 export function EditorContextMenuHost() {
-  const { contextMenu, isReadOnly } = useEditorContext();
-  if (isReadOnly) return contextMenu?.mode === 'element' ? <ReadOnlyElementMenuHost /> : null;
-  if (!contextMenu || contextMenu.mode === 'canvas') return null;
+  const mode = useEditorChrome((s) => s.contextMenu?.mode ?? null);
+  const isReadOnly = useEditorChrome((s) => s.isReadOnly);
+  if (isReadOnly) return mode === 'element' ? <ReadOnlyElementMenuHost /> : null;
+  if (mode === null || mode === 'canvas') return null;
   return <OpenEditorContextMenu />;
 }
 

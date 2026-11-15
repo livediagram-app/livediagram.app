@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, type Tab } from '@livedesign/design';
-import { getTheme, themeChartPalette } from './themes';
+import {
+  createPinnedArrow,
+  createShape,
+  layOutPages,
+  newWireframePage,
+  themedForTab,
+  type Element,
+  type Tab,
+} from '@livedesign/design';
+import { buildPageLayout } from '@livedesign/templates';
+import { createStockColourProjector, plainPaper } from './stock-colour-projector';
+import { getTheme, themeChartPalette, themeViewMap } from './themes';
 import { pageThumbFor } from './page-thumb';
 import { CANVAS_PAPER } from './page-paint';
 
@@ -157,6 +167,56 @@ describe('pageThumbFor', () => {
       })!;
       expect(waiting.parts[1]!.markup).not.toContain('blob:g1');
       expect(arrived.parts[1]!.markup).toContain('href="blob:g1"');
+    });
+  });
+
+  // docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen" (Work Tracker 897): Contents is
+  // handed the canvas's own elements (EditorCanvasHost's projection, through useContentsChrome), already in the theme's
+  // dark half and inked off the slate paper, and draws them as they are: never a second walk of its own, which drifted a
+  // themed tab's fills (an Ocean card's #254752 drawn #4b6e7a).
+  describe('on the dark paper', () => {
+    const page = newWireframePage('s');
+    const [laid] = layOutPages([page]);
+    const screenTab = (elements: readonly Element[], theme?: string) =>
+      ({ id: 't', name: 'T', elements: [...elements], pages: [page], theme }) as unknown as Tab;
+    const fills = (els: readonly Element[]) =>
+      els.map((el) => (el as { fillColor?: string }).fillColor);
+    const canvasOf = (placed: Element[], theme?: string) =>
+      createStockColourProjector()(placed, 'dark', themeViewMap(theme, 'dark'), plainPaper('dark'));
+
+    // Each a screen whose fills a second walk drifted in that theme (Mono's #2b2e32 drawn #66696e).
+    const cases = [
+      ['wf-sign-in', undefined],
+      ['wf-landing-page', 'mono'],
+      ['wf-dashboard', 'ocean'],
+    ] as const;
+    for (const [layout, theme] of cases)
+      it(`draws every fill the canvas draws, as the canvas draws it (${layout}, ${theme ?? 'default'} theme)`, () => {
+        const placed = themedForTab<Element>(buildPageLayout(layout, laid!), theme, {
+          dark: false,
+        });
+        const canvas = canvasOf(placed, theme);
+        const dark = pageThumbFor('s', screenTab(canvas, theme), {
+          iconsLoaded: true,
+          surface: 'dark',
+        })!;
+        // A chart draws its series, not its own fill.
+        const drawn = fills(
+          canvas.filter((el) => !(el as { shape?: string }).shape?.endsWith('chart')),
+        ).filter((f): f is string => typeof f === 'string' && f.startsWith('#'));
+        expect(drawn.length).toBeGreaterThan(0);
+        for (const fill of drawn) expect(dark.markup).toContain(`fill="${fill}"`);
+      });
+
+    it('shows the button the canvas lifted off the slate paper', () => {
+      const placed = buildPageLayout('wf-sign-in', laid!);
+      const canvas = canvasOf(placed);
+      const lifted = fills(canvas).filter(
+        (fill, i) => fill !== fills(placed)[i] && fills(placed)[i] === CANVAS_PAPER.dark,
+      );
+      expect(lifted.length).toBeGreaterThan(0);
+      const dark = pageThumbFor('s', screenTab(canvas), { iconsLoaded: true, surface: 'dark' })!;
+      for (const fill of lifted) expect(dark.markup).toContain(`fill="${fill}"`);
     });
   });
 });

@@ -23,6 +23,7 @@ import { patchTab } from './editor-page-helpers';
 import { tablePatchChangesNothing } from '@/lib/table-patch';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { takeEscapedPlacedEdit } from '@/lib/placed-edit';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -215,6 +216,9 @@ export function useSelectionEditing(opts: {
         ? (seed.label ?? '')
         : ((target as { label?: string } | undefined)?.label ?? '');
     const edited = label !== before;
+    // Escape out of the editor a drop (or a next note) opened, before anything was typed: back to nothing selected,
+    // as Escape after any other placement, so the tool keys work again (lib/placed-edit).
+    const leavesPlacement = takeEscapedPlacedEdit(elementId) && label === '';
     const removesEmpty = !!target && hugsText(target) && label.trim() === '';
     // A mind node grows to fit its label, in the same commit (docs/specs/009-elements/mind-node.md
     // "A node grows to fit its label").
@@ -256,6 +260,7 @@ export function useSelectionEditing(opts: {
       ),
     );
     setEditingId(null);
+    if (leavesPlacement) setSelectedId(null);
     if (removesEmpty) {
       debugLog('[text-hug] removed an empty text box', elementId);
       setSelectedId(null);

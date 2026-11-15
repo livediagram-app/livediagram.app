@@ -57,6 +57,8 @@ export type ItemGrant = {
   // When the index signed it (epoch seconds): a grant signed after the item was last put away says it is back
   // (one-explorer-contracts.md "Where an item stands"). Absent from a grant built by hand.
   iat?: number;
+  // The same moment in epoch milliseconds, when the index signed one (an older grant has `iat` alone).
+  iatMs?: number;
 };
 
 // Who the app asks for: an account it checked itself (an API token's, a workbench session's owner) with the
@@ -93,6 +95,7 @@ export function itemGrantOf(
     shareCode: claims.link ?? linkCodeOf(claims.sub) ?? shareCode,
     ...(claims.trashed ? { trashed: true } : {}),
     iat: claims.iat,
+    ...(claims.iatMs === undefined ? {} : { iatMs: claims.iatMs }),
   };
 }
 

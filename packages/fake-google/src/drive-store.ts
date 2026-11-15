@@ -109,7 +109,7 @@ export class DriveStore {
       parents: input.parents.map((p) => (p === 'root' ? this.myDriveRoot(input.user) : p)),
       trashed: parentTrashed,
       explicitlyTrashed: false,
-      appProperties: { ...(input.appProperties ?? {}) },
+      appProperties: { ...input.appProperties },
       content,
       md5Checksum: isFolder ? null : md5(content),
       headRevisionId: isFolder ? null : `rev${++this.revCounter}`,
@@ -200,7 +200,8 @@ export class DriveStore {
   }
 
   emptyTrash(user: string): void {
-    for (const f of [...this.files.values()]) {
+    // A Map iterator skips entries deleted mid-walk (remove() drops a folder's children), and has() guards the rest.
+    for (const f of this.files.values()) {
       if (f.owner === user && f.explicitlyTrashed && this.files.has(f.id)) this.remove(f);
     }
   }

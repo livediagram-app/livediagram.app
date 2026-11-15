@@ -95,7 +95,7 @@ export async function writeResponseRow(
     );
     if (res.ok) {
       // Every planned cell landed, or the row is not there to see: say so rather than thank anyone for it.
-      const stored = (await res.json()) as SheetWriteResponse;
+      const stored = await res.json<SheetWriteResponse>();
       const planned = cellsOf(write).length;
       const landed = cellsOf(stored.applied).length;
       if (landed === planned) return 'written';

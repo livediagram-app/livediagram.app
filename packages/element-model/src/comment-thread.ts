@@ -44,3 +44,17 @@ export function threadResolved<T extends CommentThreadOf<{ id: string }>>(
   if (!thread || thread.resolved === resolved) return thread;
   return { ...thread, resolved };
 }
+
+// Changes the text of `commentId` and stamps when (docs/specs/024-agents/agent-presence.md "Edit and delete own"): its
+// author's edit, relayed as a `comment-edit` delta. No such comment, or the same text, is unchanged.
+export function threadWithEdit<C extends { id: string; text: string; editedAt?: number }>(
+  thread: CommentThreadOf<C> | undefined,
+  commentId: string,
+  text: string,
+  editedAt: number,
+): CommentThreadOf<C> | undefined {
+  const at = thread?.comments.findIndex((c) => c.id === commentId) ?? -1;
+  if (!thread || at < 0 || thread.comments[at]!.text === text) return thread;
+  const comments = thread.comments.map((c, i) => (i === at ? { ...c, text, editedAt } : c));
+  return { ...thread, comments };
+}

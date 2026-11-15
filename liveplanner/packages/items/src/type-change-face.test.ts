@@ -149,6 +149,52 @@ describe('tabs and detailsLabel', () => {
     expect(again.detailsLabel).toBeUndefined();
   });
 
+  // Work Tracker 858: a tab's icon and Details' icon, by Plan glyph id.
+  it('sets tab icons and the Details icon, keeping a same-named tab’s, null the default', () => {
+    const first = typeIn(
+      run([
+        {
+          ...BUG,
+          tabs: [
+            { name: 'Triage', fields: ['Severity'], glyph: 'Risk' },
+            { name: 'Notes', fields: ['description'] },
+          ],
+          detailsGlyph: 'info',
+        },
+      ]),
+      'Bug',
+    );
+    expect(first.tabs!.map((t) => t.glyph)).toEqual(['risk', undefined]);
+    expect(first.detailsGlyph).toBe('info');
+    const kept = typeIn(
+      run([
+        { ...BUG, tabs: [{ name: 'Triage', fields: ['Severity'], glyph: 'risk' }] },
+        { op: 'set', type: 'Bug', tabs: [{ name: 'Triage', fields: ['priority'] }] },
+      ]),
+      'Bug',
+    );
+    expect(kept.tabs![0]!.glyph).toBe('risk');
+    const reset = typeIn(
+      run([
+        { ...BUG, tabs: [{ name: 'Triage', fields: [], glyph: 'risk' }], detailsGlyph: 'info' },
+        {
+          op: 'set',
+          type: 'Bug',
+          tabs: [{ name: 'Triage', fields: [], glyph: null }],
+          detailsGlyph: null,
+        },
+      ]),
+      'Bug',
+    );
+    expect(reset.tabs![0]).not.toHaveProperty('glyph');
+    expect(reset).not.toHaveProperty('detailsGlyph');
+    const bad = run([{ ...BUG, tabs: [{ name: 'Triage', fields: [], glyph: 'nope' }] }]);
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.message).toContain('"nope" is not a Plan glyph');
+    const badDetails = run([{ ...BUG, detailsGlyph: 'nope' }]);
+    expect(badDetails.ok).toBe(false);
+  });
+
   it('gives each new tab an id of its own beside the tabs the type already has', () => {
     const bug = typeIn(
       run([

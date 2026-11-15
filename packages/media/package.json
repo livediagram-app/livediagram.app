@@ -5,7 +5,9 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./embed-read-only": "./src/embed-read-only.ts",
+    "./oembed": "./src/oembed.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -16,8 +18,9 @@
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {
+    "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.6",
-    "oxlint": "^1.90.0",
+    "oxlint": "^1.93.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   }

@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { pagesOf, type PageKind } from '@livedocuments/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import {
+  useEditorChrome,
+  useEditorChromeStore,
+  type EditorContextValue,
+} from '@/app/document/[id]/EditorContext';
+import { sameSlice } from '@/app/document/[id]/editor-chrome-equal';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { PAGES_TOUR_RELAUNCH_EVENT, pagesKindSeen, markPagesKindSeen } from '@/lib/pages-tour';
@@ -38,13 +43,30 @@ const EYEBROW: Record<PageKind, string> = {
   flashcard: 'Flashcards tour',
 };
 
+// What the tour reads of the editor, a slice of its chrome store (docs/specs/007-editor/blueprints/flashcards.md
+// "Performance and limits"): no writing, so a typing commit renders nothing here. Its handlers read the store when
+// they run.
+const tourSlice = (s: EditorContextValue) => ({
+  mode: s.editorMode.mode,
+  hydrated: s.hydrated,
+  anyWelcomeOpen: s.anyWelcomeOpen,
+  isReadOnly: s.isReadOnly,
+  embedMode: s.embedMode,
+  tabId: s.activeTab.id,
+  locked: s.activeTab.locked,
+  pages: s.activeTab.pages,
+  pageOrientation: s.activeTab.pageOrientation,
+  userPreferences: s.userPreferences,
+});
+
 // Orchestrates the Pages tour (docs/specs/007-editor/pages-tour.md). Mounted once in EditorView beside TourHost.
 // While the person is in Pages mode with an editor they can use, on a tab with a page whose kind is chosen, it offers
 // the tour on the footer's Start Tour button ("Start Pages Tour"); a press there, or a Settings row, starts it on the
 // page most on screen, a kind they have not taken first, its kind picking the track and its steps loading then. It
 // never starts or prompts on its own.
 export function PagesTourHost() {
-  const ctx = useEditorContext();
+  const chrome = useEditorChromeStore();
+  const ctx = useEditorChrome(tourSlice, sameSlice);
   const [subject, setSubject] = useState<TourPage>({ pageId: '', kind: 'infographic' });
   const apiRef = useLatest<PageTourApi>({ pageId: subject.pageId, ...PAGE_PANEL });
 
@@ -65,7 +87,7 @@ export function PagesTourHost() {
     setActiveTour('pages', active);
   }, [active]);
 
-  const inPages = ctx.editorMode.mode === 'pages';
+  const inPages = ctx.mode === 'pages';
   // Start Making Pages on screen holds the offer until a template is picked or the panel closed: the pages it points
   // at are hidden while it is open (docs/specs/007-editor/start-diagramming.md "The tours wait").
   const startPanelOpen = useStartPanelOpen();
@@ -75,12 +97,15 @@ export function PagesTourHost() {
     !ctx.anyWelcomeOpen &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
-    ctx.activeTab.locked !== true;
+    ctx.locked !== true;
 
   // Read through pagesOf, as the canvas reads them, so a malformed stored entry is skipped rather than throwing;
   // a tab that stores no pages has no page to tour.
-  const stored = ctx.activeTab.pages;
-  const pages = Array.isArray(stored) && stored.length > 0 ? pagesOf(ctx.activeTab) : [];
+  const stored = ctx.pages;
+  const pages =
+    Array.isArray(stored) && stored.length > 0
+      ? pagesOf({ pages: stored, pageOrientation: ctx.pageOrientation })
+      : [];
   // A page whose kind is chosen: the first page's own kind choice is no page to tour yet.
   const anyChosen = pages.some((p) => !!p.kind);
   // Taken: every kind chosen on the tab is in the synced record its Settings rows read, so the button leaves until
@@ -89,12 +114,13 @@ export function PagesTourHost() {
 
   // Records `kind` as taken, onto the freshest preferences, not this render's: the whole blob is written.
   const markTaken = (kind: PageKind) => {
+    const now = chrome.get();
     const next = rebaseUserPreferences(
-      ctx.userPreferences,
-      markPagesKindSeen(ctx.userPreferences, kind),
+      now.userPreferences,
+      markPagesKindSeen(now.userPreferences, kind),
     );
-    ctx.setUserPreferences(next);
-    ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+    now.setUserPreferences(next);
+    now.writeUserPreferences(next, now.selfParticipant?.id ?? null);
   };
 
   const endTour = (outcome: TourOutcome) => {
@@ -161,7 +187,7 @@ export function PagesTourHost() {
 
   // Ends as skipped when the tour can no longer run where it started: edit rights gone, Pages left, another tab
   // opened, or the tour page deleted or locked. Whatever a step opened is closed.
-  const activeId = ctx.activeTab.id;
+  const activeId = ctx.tabId;
   const tourPage = pages.find((p) => p.id === subject.pageId);
   const pageGone = !tourPage || tourPage.locked === true;
   const startedOnRef = useRef<string | null>(null);

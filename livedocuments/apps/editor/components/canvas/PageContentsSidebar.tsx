@@ -10,17 +10,20 @@ import {
 } from '@liveworkspace/workbench/components/canvas/PageContentsSidebar';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
-import { usePageContents } from '@/hooks/ui/usePageContents';
+import { usePageContents, type WritingStore } from '@/hooks/ui/usePageContents';
 import { ContentsAddPage } from './ContentsAddPage';
 import { contentsBadges } from './contents-badges';
 
 export function PageContentsSidebar({
   view,
   tab,
+  writing,
   ...placement
 }: {
   view: PagesModeView;
   tab: PageThumbTab;
+  // The writing, read from its store so a typing commit renders this list and not the chrome placing it.
+  writing?: WritingStore;
   // Where it starts, in screen px from the canvas's top: below the Toolbar strip.
   top: number;
   onMinimise: () => void;
@@ -29,7 +32,13 @@ export function PageContentsSidebar({
 }) {
   // Opened on the tab's first page; the sidebar then follows the page in view.
   const [here] = useState<string | undefined>(() => view.pages[0]?.id);
-  const contents = usePageContents({ view, tab, here, settleMs: CONTENTS_SIDEBAR_SETTLE_MS });
+  const contents = usePageContents({
+    view,
+    tab,
+    writing,
+    here,
+    settleMs: CONTENTS_SIDEBAR_SETTLE_MS,
+  });
   return (
     <ContentsSidebar
       contents={contents}

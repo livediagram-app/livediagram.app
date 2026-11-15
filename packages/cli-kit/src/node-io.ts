@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
+import { withoutGitRepoEnv } from './git-env';
 import type { CliIo, LoopbackRequest, LoopbackServer, RoomSocket, ToolRun } from './io';
 
 // The runtime's WebSocket (Node 22 and later), as the room stream uses it.
@@ -222,7 +223,9 @@ function openUrl(url: string): Promise<boolean> {
 // A system tool, no shell: its arguments are passed as they are, and the input travels on stdin.
 function runTool(command: string, args: readonly string[], input: string): Promise<ToolRun | null> {
   return new Promise((resolve) => {
-    const child = spawn(command, [...args], { stdio: ['pipe', 'pipe', 'ignore'] });
+    // A git hook's repository variables must not steer git away from the directory it is asked about.
+    const env = command === 'git' ? withoutGitRepoEnv(process.env) : process.env;
+    const child = spawn(command, [...args], { stdio: ['pipe', 'pipe', 'ignore'], env });
     let stdout = '';
     child.stdout.setEncoding('utf8');
     child.stdout.on('data', (chunk: string) => (stdout += chunk));

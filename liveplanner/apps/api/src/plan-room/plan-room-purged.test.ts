@@ -30,16 +30,28 @@ function roomOf(stored: Map<string, unknown>, schema = false): PurgedRoom {
 afterEach(() => vi.restoreAllMocks());
 
 describe('signedBeforePurge', () => {
-  it('counts a grant from the purge second as before it, except on a create', () => {
-    expect(signedBeforePurge(SECOND - 1, PURGE)).toBe(true);
-    expect(signedBeforePurge(SECOND, PURGE)).toBe(true);
-    expect(signedBeforePurge(SECOND + 1, PURGE)).toBe(false);
-    expect(signedBeforePurge(SECOND - 1, PURGE, true)).toBe(true);
-    expect(signedBeforePurge(SECOND, PURGE, true)).toBe(false);
+  it('with whole seconds only, counts a grant from the purge second as before it, except on a create', () => {
+    expect(signedBeforePurge({ iat: SECOND - 1 }, PURGE)).toBe(true);
+    expect(signedBeforePurge({ iat: SECOND }, PURGE)).toBe(true);
+    expect(signedBeforePurge({ iat: SECOND + 1 }, PURGE)).toBe(false);
+    expect(signedBeforePurge({ iat: SECOND - 1 }, PURGE, true)).toBe(true);
+    expect(signedBeforePurge({ iat: SECOND }, PURGE, true)).toBe(false);
+  });
+
+  // Work Tracker 830: the purge's own second split by the millisecond, a create's grant included.
+  it('to the millisecond, refuses every grant signed before the purge, inside its second too', () => {
+    expect(signedBeforePurge({ iat: SECOND, iatMs: PURGE - 1 }, PURGE)).toBe(true);
+    expect(signedBeforePurge({ iat: SECOND, iatMs: PURGE - 1 }, PURGE, true)).toBe(true);
+    expect(signedBeforePurge({ iat: SECOND, iatMs: PURGE }, PURGE)).toBe(false);
+    expect(signedBeforePurge({ iat: SECOND, iatMs: PURGE + 1 }, PURGE, true)).toBe(false);
+    // The millisecond wins over the second it sits in.
+    expect(signedBeforePurge({ iat: SECOND - 1, iatMs: SECOND * 1000 - 1 }, PURGE, true)).toBe(
+      true,
+    );
   });
 
   it('counts a grant with no iat as before', () => {
-    expect(signedBeforePurge(undefined, PURGE, true)).toBe(true);
+    expect(signedBeforePurge({}, PURGE, true)).toBe(true);
   });
 });
 
@@ -68,5 +80,15 @@ describe('admitAfterPurge', () => {
     expect(await admitAfterPurge(room, { iat: SECOND }, true)).toBe(true);
     expect(stored.has(PURGED_KEY)).toBe(false);
     expect(await admitAfterPurge(room, { iat: SECOND - 60 })).toBe(true);
+  });
+
+  it('refuses a same-second create signed before the purge, and lifts the mark for one signed after it', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const stored = new Map<string, unknown>([[PURGED_KEY, PURGE]]);
+    const room = roomOf(stored);
+    expect(await admitAfterPurge(room, { iat: SECOND, iatMs: PURGE - 200 }, true)).toBe(false);
+    expect(stored.has(PURGED_KEY)).toBe(true);
+    expect(await admitAfterPurge(room, { iat: SECOND, iatMs: PURGE + 50 }, true)).toBe(true);
+    expect(stored.has(PURGED_KEY)).toBe(false);
   });
 });

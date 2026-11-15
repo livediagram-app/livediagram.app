@@ -55,7 +55,8 @@ describe('listedType', () => {
       header: ['Type', 'Number'],
       bottomRight: ['Assignee'],
     });
-    expect(task.tabs[0]).toMatchObject({ name: 'Overview' });
+    expect(task.tabs[0]).toMatchObject({ name: 'Overview', glyph: 'page' });
+    expect(task.detailsGlyph).toBe('checklist');
   });
 
   it('lists Notifies: a notifying Person field, and an Assignee switched off', () => {
@@ -110,8 +111,9 @@ describe('listedType', () => {
           custom: [{ name: 'Severity', kind: 'choice', options: ['S1'], onCard: true }],
           defaultStatus: 'To Do',
           display: { minimal: { afterTitle: ['Severity'] } },
-          tabs: [{ name: 'Triage', fields: ['Severity'] }],
+          tabs: [{ name: 'Triage', fields: ['Severity'], glyph: 'risk' }],
           detailsLabel: 'Facts',
+          detailsGlyph: 'info',
         },
       ],
       statuses,
@@ -121,7 +123,9 @@ describe('listedType', () => {
     expect(bug).toMatchObject({
       defaultStatus: 'To Do',
       detailsLabel: 'Facts',
-      tabs: [{ name: 'Triage', fields: ['Severity'] }],
+      // Work Tracker 858: each tab's icon and Details', as change_card_types set them.
+      detailsGlyph: 'info',
+      tabs: [{ name: 'Triage', fields: ['Severity'], glyph: 'risk' }],
     });
     expect(bug.custom[0]).toMatchObject({ name: 'Severity', onCard: true });
     expect(bug.display['minimal']).toEqual({ afterTitle: ['Severity'] });

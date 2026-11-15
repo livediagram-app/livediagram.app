@@ -487,15 +487,15 @@ describe('My Shares', () => {
     const res = await mine(AUTHOR);
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('private, no-store');
-    const listed = (await res.json()) as {
+    const listed = await res.json<{
       posts: { id: string; state: string; documentId: string }[];
-    };
+    }>();
     expect(listed.posts.map((p) => [p.id, p.state, p.documentId])).toEqual([
       [post.id, 'listed', 'd1'],
     ]);
 
     await hideOnService(post.id);
-    const hidden = (await (await mine(AUTHOR)).json()) as { posts: { state: string }[] };
+    const hidden = await (await mine(AUTHOR)).json<{ posts: { state: string }[] }>();
     expect(hidden.posts.map((p) => p.state)).toEqual(['hidden']);
     expect(await (await mine('user_x')).json()).toMatchObject({ posts: [] });
   });
@@ -592,10 +592,12 @@ describe('the community link', () => {
 
   it('reads the design with nobody named, and refuses the live room', async () => {
     const res = await community('PUT', { body: { ...body, anonymous: true } });
-    const { shareCode } = ((await res.json()) as { post: { shareCode: string } }).post;
-    const resolved = (await (await share(shareCode)).json()) as {
+    const { shareCode } = (await res.json<{ post: { shareCode: string } }>()).post;
+    const resolved = await (
+      await share(shareCode)
+    ).json<{
       community: { author: { name: string } };
-    };
+    }>();
     expect(resolved.community.author.name).toBe('Anonymous');
     const read = await visitor('GET', '/api/designs/d1', shareCode);
     expect(read.status).toBe(200);

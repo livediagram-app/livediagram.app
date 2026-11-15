@@ -6,6 +6,7 @@
   "sideEffects": false,
   "exports": {
     "./app": "./src/app.ts",
+    "./app-view": "./src/app-view.ts",
     "./created-folder": "./src/created-folder.ts",
     "./env": "./src/env.ts",
     "./listing": "./src/listing.ts",
@@ -49,7 +50,7 @@
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.1.0",
-    "oxlint": "^1.90.0",
+    "oxlint": "^1.93.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   }

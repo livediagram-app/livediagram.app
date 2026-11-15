@@ -98,6 +98,13 @@ article's margins.
 | A line break inside a block                                    | A line break                                                                                                                                                                              |
 | An object or drawing zone                                      | An image of the zone as the page shows it, its size, inline or wrapped                                                                                                                    |
 
+- **Fonts are named, never embedded, and carry a safe fallback.** Every face the file names is one of the editor's
+  curated Google fonts, which most machines lack. So each is written with what an app needs to pick a close
+  stand-in: Word gets a `word/fontTable.xml` entry per face with its family (swiss, roman, modern, script), pitch
+  and an `altName` (a face every Windows and Mac Office install has: Arial, Arial Narrow, Georgia, Times New Roman,
+  Courier New or Comic Sans MS), and PowerPoint gets the face's `pitchFamily` beside its name. Code therefore falls
+  back to a fixed-width face, never a proportional one. A face the table does not know still gets its name and a
+  sans-serif or serif guess from its stack. Keynote, Pages and Google's apps read the same hints.
 - **The style travels as styles**: the article's heading and body fonts, text size, line and paragraph spacing,
   accent (headings in it when **Headings in the Accent** is on, links and the quote bar always), and **Lines Under
   Text** (a rule under the title, or every heading) are set on the styles themselves, so restyling the document in

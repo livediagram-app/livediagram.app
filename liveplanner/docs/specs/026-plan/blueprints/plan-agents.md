@@ -5,15 +5,16 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 
 ## Domain and naming
 
-| Spec term        | Identifier                                                                                                                           |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| the plan         | `PlanOutline` (`packages/items/src/plan-outline.ts`), on the wire `PlanResponse`                                                     |
-| board (outline)  | `PlanBoardOutline { tabId, tabName, elementId, title, kind, types, columns, sortBy?, widgets? }`                                     |
-| column name      | `PlanColumnOutline.name`; a project's statuses `PlanStatusName { status, name }`                                                     |
-| naming           | `resolveStatus`, `resolveType`, `resolveItem`, `fieldKeyOf`, `resolveFields`, `personNamed` (`plan-names.ts`)                        |
-| card type change | `CardTypeChange`, `applyCardTypeChanges` (`packages/items/src/type-changes.ts`)                                                      |
-| board request    | `BoardRequest`, `placeBoard` (`packages/items/src/board-place.ts`)                                                                   |
-| the Plan engine  | `packages/agent-verbs/src/plan/` (`readPlanState`, `planListing`, `applyItemChanges`, `changeCardTypes`, `addBoard`, `apiRefusalOf`) |
+| Spec term         | Identifier                                                                                                                                                                        |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the plan          | `PlanOutline` (`packages/items/src/plan-outline.ts`), on the wire `PlanResponse`                                                                                                  |
+| board (outline)   | `PlanBoardOutline { tabId, tabName, elementId, title, kind, types, columns, sortBy?, widgets? }`                                                                                  |
+| column name       | `PlanColumnOutline.name`; a project's statuses `PlanStatusName { status, name }`                                                                                                  |
+| naming            | `resolveStatus`, `resolveType`, `resolveItem`, `fieldKeyOf`, `resolveFields`, `personNamed` (`plan-names.ts`)                                                                     |
+| card type change  | `CardTypeChange`, `applyCardTypeChanges` (`packages/items/src/type-changes.ts`)                                                                                                   |
+| board request     | `BoardRequest`, `placeBoard` (`packages/items/src/board-place.ts`)                                                                                                                |
+| the Plan engine   | `packages/agent-verbs/src/plan/` (`readPlanState`, `planListing`, `applyItemChanges`, `changeCardTypes`, `addBoard`, `apiRefusalOf`)                                              |
+| a list_items page | `listItemsPage`, `resolveListItemsPage`, `omittedNote` (`packages/agent-verbs/src/plan/list-items-page.ts`), `ListItemsPage`, `ListItemsAnswer`, limits in `list-items-limits.ts` |
 
 ## Behaviour and state
 
@@ -26,6 +27,23 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   field widget. A board the api sent without `widgets` lists none. The CLI's `item ls` appends
   ` | Widgets: Item Count, Filter` to each board's line. The editor's `usePlanStatusNames` imports the same
   `statusColumnsOfSetups`.
+- `list_items` answers `listItemsPage(state, filter, page, { pictureLink, url })`; the CLI's `item ls` keeps
+  `planListing` (every card, formatting included). Both build boards with `listedBoards` and cards with
+  `itemLister(state, pictureLink, rich)` (`plan-listing.ts`; `rich` true, or `{ onLeftOut }` told of each card whose `isRichFieldKey` keys it dropped), so a card reads the same in each.
+  `resolveListItemsPage(args)` reads `query` (trimmed, lower-cased; blank is none), `updatedSince` (`Date.parse`,
+  else `updated_since_invalid`), `cursor` (`after-<key>`, read by `/^after-(\d{1,9})$/`, else `cursor_invalid`),
+  `limit`, `includeClosed`, `includeRich`. `listItemsPage`: `isDone = doneStatusesOf(plan.boards)`; a card is
+  **closed** when `isTrashed`, `isArchived` or `isDone(itemStatus)`. Cards are kept by `types`, `statuses`, `query`
+  (`itemTitle` or a string `description`, `includes`) and `updatedSince` (`updatedAt >=`); a closed one among them is
+  counted in `omitted.closed` and dropped unless `includeClosed` or `statuses` was given. The kept cards sort by
+  `key`; `total` is their count; those with `key` above the cursor's are listed in order, each built by the lister
+  only as it is reached, until `limit` or the budget: the answer's text is `JSON.stringify(answer, null, 2)`, so the
+  frame (every part but the items, measured with `count = total`, the largest `nextCursor` and the rich note) plus 4,
+  plus each listed card's `JSON.stringify(card, null, 2).length + 4 × its lines + 2` (its indent under `items` and
+  the comma) stays at or under `LIST_ITEMS_BUDGET`; the first card of a page is listed whatever its size. A card left
+  over gives `nextCursor: after-<last listed key>`. `listedBoards(…, { closedOut })` empties a done column's `cards`
+  and sets its `closed` count when closed cards are left out. `omitted` is `{ closed?, rich?, note }` when anything
+  was left out (`omittedNote` writes the words), else absent.
 - Blocked By ([item-types.md "Blocked By"](../item-types.md#blocked-by)): `listedType` lists `custom[].blocks`;
   `planListing` makes one `blockingIndexOf(state.items, plan.types, doneStatusesOf(plan.boards))` and adds `blocked`
   (open blockers, when any) and `blocks` (`ref`s of the cards it blocks, when any) to each item; `applyItemChanges`
@@ -124,19 +142,67 @@ change, boardFields(setup, types, false))` on the reshaped set-up; each name thr
   (`withPictureRemovals`). `change_card_types` takes `multiple: true` on an `image` field (`severalable` widened to
   it).
 
+- **Card templates** (spec "Card templates"): `applyCardTypeChanges(stored, changes, statuses, items = [])` runs
+  `withTemplateChanges(type, change, naming)` (`packages/items/src/type-change-templates.ts`) last in an `add`
+  (`templates`) and a `set` (`removeTemplates`, then `editTemplates`, then `addTemplates`). Each template's `fields`
+  go through `resolveFields` against the type as the change left it (`naming` the plan's statuses and the items
+  passed in, so a person resolves as `change_items` resolves one), then `markdownFields` (`markdown-fields.ts`, the
+  Markdown conversion `change_items` uses too) into the stored description and Long Text shape, then every key must
+  pass `templateTakes`, else `type_change_invalid` ("Bug Report on Bug can't hold Due: a template holds the title,
+  description, checklist, labels and custom fields, never a Calculated, Time Spent, Comments, Votes, Card or Image
+  field's value"). An edit merges its values over the template's (a key given drops its `…Rich` sibling first) and
+  takes off `clear` (by `fieldKeyOf`, with the Rich sibling). A template is named by id or name (`statusKey`)
+  through `templateOf` (`template-names.ts`), else `template_unknown` listing the type's templates. New ids come
+  from `newCardTemplateId`. Last, `readCardTemplates(type.templates, type, label, 'refuse')` checks the type's list
+  and its refusal path is said in words (`templateProblem`): `.templates` (over 10), `.name`, `.fields` (a card's
+  check), the template itself (over 16 KB). The catalogue check's `templates` reason (over 128 KB) is said the same
+  way. `changeCardTypes` passes `state.items`.
+- `applyItemChanges`' `add` with `template`: `templateOf(type, name)` (refused `template_unknown`; a template another
+  type holds is named with that type, `templateElsewhere`), then the fields are
+  `{ ...cardTemplateFields(type, template) less any key the change gives and its Rich sibling, ...given }`, the title
+  `c.title ?? template title ?? type.newTitle`. No title and no template: `value_invalid`. A `set` has no `template`
+  key (the strict schema refuses it).
+- `listedType` adds `templates?: { id, name, fields: string[] }[]`, field names by `fieldName` (Title, Description,
+  Checklist, Labels by their built-in ids), Rich keys folded into their field; absent when the type has none.
+
+### Cards handed to an assistant (planned, Work Tracker 901 part 2)
+
+Derived from [Plan for agents](../plan-agents.md#cards-handed-to-an-assistant); nothing below is built yet. The stored
+shape it writes is built (item-store.md "The AI assistant Assignee").
+
+- The calling assistant: `callerAssistant(api)` reads `GET /api/tokens/current` once per call (`{ accountName,
+tokenName }`, with the caller's person id from `itemPersonId(accountId)`) and builds
+  `itemAssistantFor(person, tokenName)`; the person's colour is the one the plan's cards already give that id, else a
+  Plan swatch as `personNamed` picks one. A session that is not a token (`not_a_token`) has no assistant: `handedToMe`
+  and `"me"` are refused (`not_an_assistant`, "only an AI tool or API token can be handed cards").
+- `list_items { handedToMe? }`: filters `itemAssistantOf(item)?.id === caller.id` before paging; the listed card's
+  `assignee` stays its name, plus `assistant: true` when `itemAssistantOf` reads one.
+- `change_items`: `"assignee": "me"` resolves to the caller's assistant; an assistant's name resolves through
+  `assignedPeople`, which already returns the stored assistant whole; `hand_back { item }` writes
+  `assistantPersonOf(itemAssistantOf(card))` and is refused `not_handed_to_you` when the card's assistant is not the
+  caller's.
+- The plan remembers its assistants (part 2): a plan room table beside `known_people`, `known_assistants (id TEXT
+PRIMARY KEY, client TEXT, person TEXT JSON, seen_at INTEGER)`, written on an API-token write, oldest past
+  `KNOWN_PEOPLE_MAX` going first, read by the part 3 picker. It never holds a token id.
+
 ## Interfaces and contracts
 
 - `GET /api/projects/:id/plan` → `PlanResponse { boards, statuses, types }`; read gate as the item list
   (`itemCaller(ctx, id, 'read')`); a tab-scoped grant passes `tabId` and gets that tab's boards; 405 for other
   methods. In the OpenAPI manifest (tag Items) and `gen-openapi-schemas.mjs` roots.
-- MCP (`packages/agent-verbs/src/mcp/plan-schema.ts`): `list_items { projectId, type?, status? }`,
+- MCP (`packages/agent-verbs/src/mcp/plan-schema.ts`): `list_items { projectId, type? (name or names[1..32]),
+status? (name or names[1..32]), query? (1..200), updatedSince?, includeClosed?, includeRich?, limit? (1..1000),
+cursor? }`, its output adding `total`, `omitted?`, `nextCursor?` and a column's `closed?`;
   `change_items { projectId, changes[1..50] }`, `add_board { projectId, tabId?, preset?, title?, columns?[1..12],
-types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `widgets { add?[..27], remove?[..27] }` (every
+types? }`, `change_card_types { projectId, changes[1..32] }` (`add`'s `templates?[..10]` and `set`'s
+  `addTemplates?[..10]`, `editTemplates?[..10]` `{ template, name?, fields?, clear? }`, `removeTemplates?[..10]`),
+  `change_items`' `add` `{ title?, type, status?, fields?, template? }`, `change_board`'s `widgets { add?[..27], remove?[..27] }` (every
   widget a board can hold, `WIDGETS_CHANGE_MAX`); outputs `listItemsOutput`, `changeItemsOutput`,
   `addBoardOutput`, `changeCardTypesOutput`, every field described.
-- CLI: `item ls|add|set|move|rm` (unchanged arguments; `ls` prints a line per board), `board add <project> [--tab]
+- CLI: `item ls|add|set|move|rm` (`add` takes `--template <name>`, its title then optional; `ls` prints a line per board), `board add <project> [--tab]
 [--preset] [--title] [--columns a,b] [--types a,b]`, `board set <project> <board> [--title] [--columns] [--types]
-[--sort] [--done] [--add-widgets a,b] [--remove-widgets a,b]`, `type ls <project>`, `type apply <project> -f <file|->` (a JSON array
+[--sort] [--done] [--add-widgets a,b] [--remove-widgets a,b]`, `type ls <project>` (a type's line ends `templates:
+Bug Report, Release` when it has any), `type apply <project> -f <file|->` (a JSON array
   of `cardTypeChangeSchema`).
 
 ## Errors and edge cases
@@ -148,6 +214,10 @@ types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `
 | no board at all                                                                                      | `status_unknown`, says to use `add_board` or leave status out                                                                           |
 | card type `defaultStatus` naming no column                                                           | not refused: Default State left unset, the `applied` line says so (`DEFAULT_STATUS_PENDING`)                                            |
 | card type unknown                                                                                    | `type_unknown`, lists `Name (id)` for each type                                                                                         |
+| template unknown (change_card_types edit or remove, change_items add)                                | `template_unknown`, lists the type's templates, or says it has none and to add one with `change_card_types`                             |
+| template another type holds (change_items add)                                                       | `template_unknown`, "Bug Report is a Bug template: give type "Bug"", then the type's own                                                |
+| template value a template never holds, a value failing a card's check, a name, a cap                 | `type_change_invalid`, naming the type, the template and the rule (`templateProblem`)                                                   |
+| change_items add with neither title nor template                                                     | `value_invalid`, "A new card needs a title, or a template to take one from."                                                            |
 | field the type lacks                                                                                 | `field_unknown`, lists the type's fields                                                                                                |
 | Choice option not offered                                                                            | `choice_unknown`, lists the options                                                                                                     |
 | item ref none or several                                                                             | `item_unknown`, names the candidates when several                                                                                       |
@@ -163,6 +233,10 @@ types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `
 | `change_board` widget name unknown, a field no widget reads, a view not offered, a 13th field widget | `board_invalid`, naming the kinds and each readable field with its views                                                                |
 | `change_board` removes a widget the board does not show, or adds one it has                          | no change to the list                                                                                                                   |
 | `list_items` / `item ls` filter naming no column or card type                                        | `resolveListingFilter` (by `resolveStatus`, `resolveType`): `status_unknown` / `type_unknown` with the names; `Trash` is `TRASH_STATUS` |
+| `list_items` `updatedSince` reading as no date                                                       | `updated_since_invalid`, with an example                                                                                                |
+| `list_items` `cursor` it did not give                                                                | `cursor_invalid`: call again without `cursor` for the first page                                                                        |
+| `list_items` one card alone past the budget                                                          | listed on its own page (a card is bounded by `ITEM_DESCRIPTION_MAX` and the field limits), so paging ends                               |
+| `list_items` cursor past the last card                                                               | no items, `total` as before, no `nextCursor`                                                                                            |
 
 ## Security and trust
 
@@ -178,6 +252,9 @@ types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `
   the plan's SQLite, as `tabIdsWithComments`), `PLAN_TAB_BATCH` (20) at a time, reduced to board set-ups; the response holds no
   elements. `planOutline` over 50 tabs of 2,000 elements and 200 boards: 11.7 ms cold, 1.5 ms warm (measured
   2026-10-08), guarded at 250 ms by `plan-outline.test.ts`.
+- `list_items` on an 833-card plan shaped like the Work Tracker (760 closed): 1,651,198 characters before,
+  81,428 by default (95% less; measured 2026-11-14 by `list-items-page.test.ts`), guarded under `LIST_ITEMS_BUDGET`; 2,000
+  cards page within a CPU-time budget (`cpuBudgetMs`). Only the listed cards' fields are worked out.
 - Measured locally end to end: `list_items` and `change_items` (one change) about 170 ms a call including
   process start; a 3-tab kanban with 6 cards lists in 5.5 KB.
 - Bundles against origin/main (measured 2026-10-08): the MCP worker +54.7 KB raw, +12.9 KB gzip (646 KB gzip in
@@ -198,23 +275,26 @@ types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `
 | outline order, statuses once, types                            | `packages/items/src/plan-outline.test.ts`                                                                                                      |
 | naming and refusals                                            | `packages/items/src/plan-names.test.ts`                                                                                                        |
 | card type changes                                              | `packages/items/src/type-changes.test.ts`                                                                                                      |
+| card templates through agents: add, edit, remove, refusals     | `packages/items/src/type-change-templates.test.ts`, `packages/agent-verbs/src/plan/card-templates-agent.test.ts`                               |
 | Blocked By: listing, set by number, loop stop, switch          | `packages/agent-verbs/src/plan/plan-engine.test.ts`, `packages/items/src/type-changes.test.ts`                                                 |
 | board placement                                                | `packages/items/src/board-place.test.ts`                                                                                                       |
 | change_board widgets: names, add, remove, refusals             | `packages/agent-verbs/src/plan/board-widget-change.test.ts`, `plan-engine.test.ts`                                                             |
 | list_items widgets: outline default set, names, gone field key | `packages/items/src/plan-outline.test.ts`, `packages/agent-verbs/src/plan/plan-listing.test.ts`, `packages/agent-verbs/src/verbs/item.test.ts` |
 | plan route gate, scope, batching                               | `apps/api/src/routes/plan-route.test.ts`                                                                                                       |
 | engine: listing, changes, types, board                         | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                                                                            |
+| list_items filters, closed and rich switches, budget, paging   | `packages/agent-verbs/src/plan/list-items-page.test.ts`                                                                                        |
 | CLI verbs                                                      | `packages/agent-verbs/src/verbs/item.test.ts`, `plan-verbs.test.ts`                                                                            |
 | MCP tools, outputs, annotations                                | `apps/mcp/src/output-schema.test.ts`, `tools.test.ts`, `verb-parity.test.ts`                                                                   |
 
 ## Constants and configuration
 
-| Constant                                             | Value    | Where                                   | Why                  |
-| ---------------------------------------------------- | -------- | --------------------------------------- | -------------------- |
-| `PLAN_TAB_BATCH`                                     | 20       | `apps/api/src/routes/plan-route.ts`     | the overview's batch |
-| `PLACED_BOARD_WIDTH`                                 | 1120     | `board-place.ts`                        | D5                   |
-| `PLAN_BOARD_HEIGHT_PX`, `PLAN_BOARD_EMPTY_HEIGHT_PX` | 640, 880 | `board-setup.ts` (`planBoardHeightFor`) | D5                   |
-| `PLACED_BOARD_GAP`                                   | 80       | `board-place.ts`                        | D31                  |
+| Constant               | Value   | Where                                                | Why                                                                                                   |
+| ---------------------- | ------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `PLAN_TAB_BATCH`       | 20      | `apps/api/src/routes/plan-route.ts`                  | the overview's batch                                                                                  |
+| `LIST_ITEMS_BUDGET`    | 200,000 | `packages/agent-verbs/src/plan/list-items-limits.ts` | Work Tracker 900: well under what chat assistants take in one tool answer; safe range 50,000..400,000 |
+| `LIST_ITEMS_LIMIT_MAX` | 1,000   | `packages/agent-verbs/src/plan/list-items-limits.ts` | a page's card cap                                                                                     |
+| `LIST_ITEMS_QUERY_MAX` | 200     | `packages/agent-verbs/src/plan/list-items-limits.ts` | a search phrase, not a whole text                                                                     |
+| `LIST_ITEMS_NAMES_MAX` | 32      | `packages/agent-verbs/src/plan/list-items-limits.ts` | card types or columns one filter names (`ITEM_TYPES_MAX`)                                             |
 
 ## Defaults ledger
 

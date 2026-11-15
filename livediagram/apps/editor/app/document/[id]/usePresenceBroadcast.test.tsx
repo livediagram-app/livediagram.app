@@ -5,7 +5,7 @@ import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
 import type { Element, Tab } from '@livediagram/document';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { createOwnElementWrites, holdOwnWrites } from './own-element-writes';
-import { WRITE_HOLD_MAX_MS } from './selection-write-hold';
+import { WRITE_HOLD_MAX_MS } from '@liveworkspace/workbench/lib/selection-write-hold';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 
 // Selection and tab focus reach every server-stored document's room, personal ones included, so

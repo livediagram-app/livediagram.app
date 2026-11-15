@@ -6,6 +6,7 @@ import {
   buildRemoteAvatarRows,
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
+  remoteSelectionOf,
   resolveOwnerBadge,
   walkerKey,
 } from './presence-rows';
@@ -303,6 +304,22 @@ describe('buildRemoteAvatarRows', () => {
 });
 
 describe('buildRemoteSelectionsByElement', () => {
+  // docs/specs/007-editor/editor-app.md "The whole selection holds" (Work Tracker 862): a marquee holds every element, and an
+  // element let go of until its change lands holds with no primary element.
+  it("holds every element of a peer's whole selection, with or without a primary element", () => {
+    const out = buildRemoteSelectionsByElement(
+      new Map([
+        ['a', remoteSelectionOf({ elementId: null, tabId: 't1', elementIds: ['x', 'y', 7] })],
+        ['b', remoteSelectionOf({ elementId: 'y', tabId: 't1' })],
+      ]),
+      byId(p('a'), p('b')),
+      'me',
+      't1',
+    );
+    expect(out.get('x')!.map((s) => s.id)).toEqual(['a']);
+    expect(out.get('y')!.map((s) => s.id)).toEqual(['a', 'b']);
+  });
+
   it('groups remote selectors per element, dropping self + deselected', () => {
     const a = p('a');
     const b = p('b');

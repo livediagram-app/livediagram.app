@@ -9,7 +9,7 @@
 // The static server strips the `/live` assetPrefix, rewrites `/document/*` to the single placeholder, forwards
 // `/api/index/*` to the index and `/api/previews/*` to media, serves liveworkspace's Explorer and Community when its
 // site is built, and proxies the rest of `/api/*` (WebSocket upgrades included) to the api worker so the app is
-// same-origin. Its ports: E2E_EDITOR_PORT (3502), E2E_API_PORT (9087), E2E_INDEX_PORT (8119), E2E_MEDIA_PORT (8120),
+// same-origin. Its ports: E2E_EDITOR_PORT (3502), E2E_API_PORT (9087), E2E_INDEX_PORT (8519), E2E_MEDIA_PORT (8520),
 // E2E_MARKETING_PORT (3513), each wrangler's inspector beside its service.
 //
 // The stack always acts as the liveworkspace accounts Worker (scripts/e2e-stack/accounts-stand-in.mjs): the api and
@@ -38,8 +38,8 @@ import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3502);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 9087);
-const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8119);
-const MEDIA_PORT = Number(process.env.E2E_MEDIA_PORT ?? 8120);
+const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8519);
+const MEDIA_PORT = Number(process.env.E2E_MEDIA_PORT ?? 8520);
 
 runE2EStack({
   product: 'livehuddle',

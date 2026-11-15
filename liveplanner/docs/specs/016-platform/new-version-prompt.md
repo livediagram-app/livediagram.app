@@ -14,10 +14,15 @@ the open editor asks, calmly, to be reloaded.
   (an older editor keeps such a field read-only, [Fields from a newer
   version](../026-plan/item-types.md#fields-from-a-newer-version), and only a reload lets it be
   edited; editors built before `3` refuse the whole card-type catalogue instead). A new optional
-  setting that old editors ignore does not bump it, so an ordinary deploy never prompts anybody.
+  setting elsewhere that old editors ignore does not bump it, so an ordinary deploy never prompts anybody. A new key
+  in a card type's stored shape (on the type, a panel tab or a custom field) does: editors built before `6` drop a key
+  they do not know when they save the type, so the reload comes first.
 - A guard test (`packages/api-schema/src/project-format.test.ts`) pairs the number with the list of
-  field kinds and calculations it reads: adding one to `CUSTOM_FIELD_KINDS` or `CALCULATIONS` fails
-  it until the number is bumped and the list moved on.
+  field kinds and calculations it reads, and with the keys a card type, a panel tab and a custom field are stored
+  with (`ITEM_TYPE_KEYS`, `ITEM_TYPE_TAB_KEYS`, `CUSTOM_FIELD_KEYS` in `@liveplanner/items`, each typed to list every
+  key of its shape): adding one to any of them fails it until the number is bumped and the list moved on. From `6` on,
+  a key a reader does not know is kept through a save ([Settings from a newer
+  version](../026-plan/item-types.md#settings-from-a-newer-version)), so the bump only offers the reload.
 - The values, each with what it brought:
   - `1`: every shape before the check (implied: those editors predate it).
   - `2`: packed stroke points.
@@ -29,6 +34,10 @@ the open editor asks, calmly, to be reloaded.
     (12 November 2026), which editors built on `3` keep read-only.
   - `5`: the [Risk](../026-plan/item-types.md#risk-fields) field (12 November 2026), which editors built
     on `4` keep read-only.
+  - `6`: card type tab icons, a tab's `glyph` and a type's `detailsGlyph` ([Tab icons](../026-plan/item-types.md#tab-icons),
+    14 November 2026), and keys from a newer version kept through a save, which editors built on `5` would drop.
+  - `7`: a card type's [card templates](../026-plan/item-types.md#card-templates) (`templates`, 15 November 2026),
+    which editors built on `6` keep through a save only while a type's templates fit their 4 KB cap for newer keys.
 
 ## How a running editor learns the server's number
 

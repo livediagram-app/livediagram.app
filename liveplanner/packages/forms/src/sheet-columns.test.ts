@@ -291,3 +291,80 @@ describe('topRowTexts', () => {
     expect([...topRowTexts(sheet([], many)).keys()]).toEqual(many.slice(0, HEADER_SCAN_ROWS));
   });
 });
+
+// Work Tracker 866: the builder's sync leaves a question still reading "Untitled Question" out; the api's row keeps it.
+describe('namedOnly', () => {
+  it('gives a blank question no column, and a named one its header', () => {
+    const blank = form(['Name', '']);
+    expect(Object.keys(sheetColumnPlan(input({ form: blank, namedOnly: true })).columns)).toEqual([
+      '#',
+      'at',
+      'q-0',
+    ]);
+    expect(sheetColumnPlan(input({ form: blank })).columns).toHaveProperty('q-1');
+  });
+});
+
+// Work Tracker 899: a question named letter by letter claimed a column with its first letters ("N"); renamed while that
+// column holds no answer, it moves to the header of its new wording, and the half-typed header is cleared.
+describe('a remembered column holding no answer', () => {
+  const loose = (over: Partial<SheetColumnsInput> = {}) =>
+    sheetColumnPlan(
+      input({
+        header: new Map([
+          ['ca', 'Name'],
+          ['cb', '#'],
+          ['cc', 'Submitted'],
+          ['ce', 'N'],
+        ]),
+        columns: { '#': 'cb', at: 'cc', 'q-0': 'ce' },
+        renamed: new Map([['q-0', 'N']]),
+        form: form(['Name']),
+        hasValue: () => false,
+        ...over,
+      }),
+    );
+
+  it('moves to the header of its new wording and clears the half-typed one', () => {
+    const plan = loose();
+    expect(plan.columns['q-0']).toBe('ca');
+    expect(plan.cells).toEqual([{ r: 'r1', c: 'ce', i: null }]);
+    expect(plan.changes).toEqual([]);
+  });
+
+  it('never moves when a cell below its header holds anything', () => {
+    const plan = loose({ hasValue: (r, c) => r === 'r2' && c === 'ce' });
+    expect(plan.columns['q-0']).toBe('ce');
+    expect(plan.cells).toEqual([{ r: 'r1', c: 'ce', i: { s: 'Name' } }]);
+  });
+
+  it('never moves when the caller cannot say what the sheet holds (the api)', () => {
+    expect(loose({ hasValue: undefined }).columns['q-0']).toBe('ce');
+  });
+
+  it('keeps its column, following the wording, when no header reads the new one', () => {
+    const plan = loose({ form: form(['Nam']) });
+    expect(plan.columns['q-0']).toBe('ce');
+    expect(plan.cells).toEqual([{ r: 'r1', c: 'ce', i: { s: 'Nam' } }]);
+  });
+
+  it('keeps its column when another question holds the header of its new wording', () => {
+    const plan = loose({
+      form: form(['Name', 'Email']),
+      columns: { '#': 'cb', at: 'cc', 'q-0': 'ce', 'q-1': 'ca' },
+    });
+    expect(plan.columns).toMatchObject({ 'q-0': 'ce', 'q-1': 'ca' });
+    expect(plan.cells).toContainEqual({ r: 'r1', c: 'ce', i: { s: 'Name' } });
+  });
+
+  it('keeps a header renamed in the sheet, empty or not', () => {
+    const plan = loose({ renamed: new Map([['q-0', 'Who']]) });
+    expect(plan.columns['q-0']).toBe('ce');
+    expect(plan.cells).toEqual([]);
+  });
+
+  it('only looks below the header row', () => {
+    const plan = loose({ hasValue: (r) => r === 'r1' });
+    expect(plan.columns['q-0']).toBe('ca');
+  });
+});

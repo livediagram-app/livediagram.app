@@ -38,6 +38,9 @@ export function layoutOfferShows(page: LaidOutPage, c: LayoutCardContext): boole
     page.startedBlank !== true &&
     // A wireframe page's screen stays clear: its layouts are the Layout button's alone.
     page.kind !== 'wireframe' &&
+    // A photo page has no layouts (docs/specs/031-photo/photo-pages.md "No layouts"): neither the card nor the
+    // Choose a Layout button, which sat over the picture just opened on a phone (Work Tracker 895).
+    page.kind !== 'photo' &&
     c.contentCount === 0 &&
     !c.offersKind &&
     !c.panelOpen &&

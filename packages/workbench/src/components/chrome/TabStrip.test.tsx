@@ -128,7 +128,7 @@ describe('TabStrip', () => {
     rerender(<TabStrip {...props} activeId="b" />);
     expect(chip().getAttribute('aria-expanded')).toBe('true');
     fireEvent.doubleClick(chip());
-    const field = screen.getByRole('textbox', { name: 'Folder name' }) as HTMLInputElement;
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Folder name' });
     field.value = 'Plans';
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(props.onRenameFolder).toHaveBeenCalledWith('Planning', 'Plans');
@@ -151,7 +151,7 @@ describe('TabStrip', () => {
   it('keeps a shut folder shut under its new name', () => {
     const { props, rerender } = strip();
     fireEvent.doubleClick(chip());
-    const field = screen.getByRole('textbox', { name: 'Folder name' }) as HTMLInputElement;
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Folder name' });
     field.value = 'Plans';
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(props.onRenameFolder).toHaveBeenCalledWith('Planning', 'Plans');

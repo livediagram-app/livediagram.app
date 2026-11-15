@@ -53,7 +53,7 @@ describe('the World Clock menu section', () => {
   it('puts a cleared label back when the field is left, never leaving it blank', () => {
     // Cleared and left, the field stayed blank while the clock kept its old label.
     const onSetZones = open(clock({ clockZones: [{ zone: 'Asia/Tokyo', label: 'Tokyo' }] }));
-    const field = screen.getByLabelText('Label for Asia/Tokyo') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Label for Asia/Tokyo');
     fireEvent.change(field, { target: { value: '   ' } });
     fireEvent.blur(field);
     expect(field.value).toBe('Tokyo');

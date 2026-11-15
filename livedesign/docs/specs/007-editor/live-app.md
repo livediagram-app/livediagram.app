@@ -105,8 +105,24 @@ To cut down on two people fighting over the same element, an element another par
 - **Shown as an outline, never a recolour.** A held element wears the holder's colour as its border (and their disc); a
   face that paints its content from the element's accent (a Card's header band and media, a banner's bar) keeps
   its own colours.
+- **The whole selection holds** (Work Tracker 862, as livediagram). A participant holding several elements (a
+  marquee, shift-clicks, Select All) holds every one of them: each wears their border and disc and is locked for
+  everyone else, read from the `select` op's `elementIds` (at most `MAX_SELECTION_IDS`). A frame from an older client
+  without it holds its single `elementId`. The same list carries the elements held until the holder's change lands
+  (below), which have no primary element. Read through `@liveworkspace/workbench/lib/remote-selection`.
 - **Self is never locked out.** Only OTHER participants' selections lock an element; your own selection never blocks you.
 - **Auto-releases.** The lock is purely a function of live presence, so it clears the moment the holder deselects, switches tabs, or leaves the room; there's no sticky server state to clean up.
+- **Held until the holder's change lands** (Work Tracker 862, as livediagram since Work Tracker 659). Letting go of
+  an element the holder has just changed (moved, resized, retyped) does not free it at once: their change is still on
+  its way (the autosave waits, writes the tab, then the room orders its element ops), and a peer who opened it in that
+  window would have their edit replaced by the holder's whole-element write, on every screen and in storage. So an
+  element the holder let go of stays in their `select` op's `elementIds` while it differs from their save baseline or
+  their save of it waits for the room, and drops out once the room confirms it. It looks exactly like the selection
+  did (the holder's border, disc and "Locked to <name>"), for about the autosave's delay plus a round trip. Bounded by
+  `WRITE_HOLD_MAX_MS` (10 s) so an element whose save keeps failing is never held for good; a tab switch ends it with
+  the rest of the selection. One shared home for every editor:
+  `@liveworkspace/workbench/lib/selection-write-hold` (the hold and the selection broadcast) and
+  `@liveworkspace/workbench/lib/own-writes` (the holds on our saves the room has not ordered yet).
 - **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, and marquee (which filters locked ids out of its hit set), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover card reads "Locked to <name>" (each disc takes the pointer so the card opens; presses still reach the element).
 - **A Viewer's selection holds nothing.** A Viewer only looks, so their selection shows its disc and border but locks nothing: the element stays selectable and editable, and the disc's hover card reads "Selected by <name>" with "They're only viewing, so you can still edit it." Every lock check reads the selector's `holds` flag (false for a Viewer).
 - The user-set element **lock** (`element.locked`, the padlock badge) is a separate, persisted feature; this concurrent-selection lock is ephemeral and presence-only.
@@ -146,7 +162,7 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 A long design name truncates with an ellipsis; it never pushes the actions: they keep their full width at every screen size, a phone included, and the name takes what is left. The visibility pill and the role pill beside the name keep their full width too, with a gap between them, at every width and UI scale: the name gives way first.
 
-The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `../packages/workbench/src/components/chrome/header-action.tsx`); Share fills brand while the design is shared. The header and its visibility pill are one copy for every editor, `EditorHeader` and `SharedBadge` (with the pill's `share-states` and `VisibilityLegend`) in `../packages/workbench/src/components/chrome/`; `apps/live/components/chrome/EditorHeader.tsx` binds it with only what differs: the logo, the design's nouns, the account control and the logo's way to the Explorer. A fix to the header lands once for all five. The header-fit sweep (`../livedocuments/apps/editor/e2e/editor-header-fit.spec.ts`) checks that the name and the pills never overlap from 320 px up.
+The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `../packages/workbench/src/components/chrome/header-action.tsx`); Share fills brand while the design is shared. The header and its visibility pill are one copy for every editor, `EditorHeader` and `SharedBadge` (with the pill's `share-states` and `VisibilityLegend`) in `../packages/workbench/src/components/chrome/`; `apps/live/components/chrome/EditorHeader.tsx` binds it with only what differs: the logo, the design's nouns, the account control and the logo's way to the Explorer. A fix to the header lands once for all five. So does the account control, `AuthControls` in the same folder (Sign in, or the account's picture and first name opening Account and Sign Out): an editor passes only where Account goes and, where it keeps its own picture store, the picture. The header-fit sweep (`../livedocuments/apps/editor/e2e/editor-header-fit.spec.ts`) checks that the name and the pills never overlap from 320 px up.
 
 The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.
 

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { useState, type ReactNode } from 'react';
+import { Profiler, useState, type ReactNode } from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ArrowElement } from '@livediagram/document';
@@ -39,6 +39,7 @@ function Harness({ children, onElementDown }: { children: ReactNode; onElementDo
 }
 
 const box = { x: 10, y: 20, width: 100, height: 50 };
+const noDrag = () => {};
 
 function chrome(onBeginDrag = vi.fn()) {
   return (
@@ -140,6 +141,41 @@ describe('SelectionGripsLayer', () => {
       </Harness>,
     );
     expect(layerOf(container).querySelector('[data-grips-for]')).toBeNull();
+  });
+
+  // Work Tracker 904: every element on a board places this layer, so one with nothing to draw must not follow the zoom
+  // (2,000 renders a zoom step on a 2,000-note board did, each drawing nothing).
+  it('never renders for a zoom step while there are no handles to show', () => {
+    const renders = { n: 0 };
+    const Counted = (p: { show: boolean }) => (
+      <Profiler id="grips" onRender={() => renders.n++}>
+        <SelectionChromeLayer
+          elementId="a"
+          box={box}
+          rotation={0}
+          showHandles={p.show}
+          showAnchors={false}
+          onBeginDrag={noDrag}
+        />
+      </Profiler>
+    );
+    // The same element each step, as the canvas's memoised element layer is: only the zoom changes.
+    const hidden = <Counted show={false} />;
+    const shown = <Counted show />;
+    const at = (zoom: number, el: ReactNode) => (
+      <CanvasZoomProvider zoom={zoom}>
+        <Harness>{el}</Harness>
+      </CanvasZoomProvider>
+    );
+    const { rerender, container } = render(at(1, hidden));
+    renders.n = 0;
+    for (const zoom of [1.1, 1.2, 1.3]) rerender(at(zoom, hidden));
+    expect(renders.n).toBe(0);
+    rerender(at(1, shown));
+    renders.n = 0;
+    rerender(at(2, shown));
+    expect(renders.n).toBeGreaterThan(0);
+    expect(layerOf(container).querySelector('[data-grips-for="a"]')).not.toBeNull();
   });
 
   it('portals box grips into the layer', () => {

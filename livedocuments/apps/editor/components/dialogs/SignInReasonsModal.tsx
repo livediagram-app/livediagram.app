@@ -22,7 +22,7 @@ import {
   ButtonContent,
   Portal,
 } from '@livedocuments/ui';
-import { SignInIcon } from '@/components/chrome/AuthControls';
+import { SignInIcon } from '@liveworkspace/workbench/components/chrome/AuthControls';
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

@@ -15,6 +15,7 @@ import { askSignOut } from '@liveworkspace/auth-client/sign-out';
 import { retrySilentSignIn } from '@liveworkspace/auth-client/silent';
 import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { lastSeenCopies } from '@/lib/last-seen';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import { setOwnPicture } from '@/lib/own-picture';
@@ -82,7 +83,8 @@ async function getToken(opts?: { skipCache?: boolean }): Promise<string | null> 
 async function endSession(returnTo = '/'): Promise<string | null> {
   current = null;
   setOwnPicture(null);
-  await forgetRecentDiagrams();
+  // The last seen copies are this account's: none outlives the session in this browser.
+  await Promise.all([forgetRecentDiagrams(), lastSeenCopies.forgetAll()]);
   return (await askSignOut(returnTo, { apiBase: API_BASE })).next;
 }
 

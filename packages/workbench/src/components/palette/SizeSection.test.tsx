@@ -21,7 +21,7 @@ function renderSection() {
       showReset={false}
     />,
   );
-  const width = screen.getByLabelText(/^Width/) as HTMLInputElement;
+  const width = screen.getByLabelText<HTMLInputElement>(/^Width/);
   width.focus();
   fireEvent.change(width, { target: { value: '400' } });
   return { onSetSize, width };

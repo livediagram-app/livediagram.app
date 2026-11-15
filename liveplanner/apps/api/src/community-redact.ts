@@ -10,6 +10,7 @@
 //   (one neutral person). A Time Spent field keeps its entries' minutes and loses who tracked them.
 // - A form's response card keeps its title (and the column it sits in) only: every answer it carries goes.
 // - A sheet: who last changed it, and a sheet a form sends its responses to keeps its heading row only.
+// - A card type's card templates: every person their values name (docs/specs/026-plan/item-types.md "Card templates").
 //
 // Pure, so the reads, the copy and the drawing apply the same rule. Never mutates what it is given.
 
@@ -18,6 +19,7 @@ import { FROM_FORM_FIELD, type FormDefinition } from '@liveplanner/forms';
 import {
   customFieldOf,
   isItemPerson,
+  readItemTypeCatalogue,
   typeIn,
   typesOf,
   type Item,
@@ -102,6 +104,36 @@ function fieldsForCommunity(item: Item, type: ItemTypeDef): ItemFields {
 // A D1 text column read off an untyped row, or the fallback when it is null or not text.
 const textOr = (value: unknown, fallback: string): string =>
   typeof value === 'string' ? value : fallback;
+
+// The catalogue as a stranger sees it: each card template less any value that is a person or holds one. The same
+// catalogue when no template names anybody.
+export function catalogueForCommunity(
+  catalogue: ItemTypeCatalogue | null | undefined,
+): ItemTypeCatalogue | null {
+  if (!catalogue) return null;
+  let changed = false;
+  const types = catalogue.types.map((type) => {
+    if (!type.templates) return type;
+    const templates = type.templates.map((t) => {
+      const people = Object.entries(t.fields).filter(([, v]) => holdsPeople(v));
+      if (!people.length) return t;
+      changed = true;
+      const fields = { ...t.fields };
+      for (const [key] of people) delete fields[key];
+      return { ...t, fields };
+    });
+    return { ...type, templates };
+  });
+  return changed ? { ...catalogue, types } : catalogue;
+}
+
+// A stored catalogue column (`plan.item_types`) as a Community copy carries it: as stored when no template names
+// anybody, else the redacted catalogue's JSON.
+export function catalogueColumnForCommunity(stored: string | null): string | null {
+  const catalogue = readItemTypeCatalogue(stored);
+  const redacted = catalogueForCommunity(catalogue);
+  return redacted === catalogue ? stored : JSON.stringify(redacted);
+}
 
 export function redactItemForCommunity(item: Item, types: readonly ItemTypeDef[]): Item {
   const { openComments: _count, ...rest } = item;

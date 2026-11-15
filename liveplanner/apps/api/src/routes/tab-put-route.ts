@@ -18,7 +18,7 @@ import {
 } from '@liveworkspace/index-app';
 import { indexAppClient } from '../index-service';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
-import { newCommentsBy, rewriteCommentAuthors } from '../comments';
+import { newCommentsBy, rewriteCommentAuthors, withoutNewElementComments } from '../comments';
 import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
 import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
@@ -161,17 +161,22 @@ export async function writeTabSave(
             createdAt: existing.createdAt,
           }
         : await getParticipant(env, owner);
+    // An element's own thread takes no new comment (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas
+    // element"): stripped before the authors are set, whoever saves.
+    const sent = withoutNewElementComments(body.elements, existingTab?.elements ?? []);
     const sanitised: Tab = writerParticipant
       ? {
           ...body,
           elements: rewriteCommentAuthors(
-            body.elements,
+            sent,
             existingTab?.elements ?? [],
             writerParticipant,
             commentAuthors,
           ),
         }
-      : body;
+      : sent === body.elements
+        ? body
+        : { ...body, elements: sent };
     const connection = connectionToKeep(sentConnection, {
       exists: existingTab !== null,
       connection: existingTab?.connection ?? null,

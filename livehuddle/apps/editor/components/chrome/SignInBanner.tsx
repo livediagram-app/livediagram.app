@@ -11,7 +11,7 @@
 
 import dynamic from 'next/dynamic';
 import { CloseIcon, SparkleIcon } from '@livehuddle/ui';
-import { SignInIcon } from '@/components/chrome/AuthControls';
+import { SignInIcon } from '@liveworkspace/workbench/components/chrome/AuthControls';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {

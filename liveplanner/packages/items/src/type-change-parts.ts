@@ -8,7 +8,14 @@ import { fieldKeyOf, type NameRefusal } from './plan-names';
 import { PLAN_TYPE_COLOURS } from './type-catalogue';
 import type { CardField } from './board';
 import type { CardLayout } from './card-display';
-import { detailsLabelFrom, displayFrom, tabsFrom, type FaceRead } from './type-change-face';
+import {
+  detailsLabelFrom,
+  displayFrom,
+  glyphFrom,
+  tabsFrom,
+  type FaceRead,
+} from './type-change-face';
+import { withDetailsGlyph } from './tab-glyphs';
 import type { FaceInput } from './type-change-inputs';
 
 function face<T>(read: FaceRead<T>, code: 'type_change_invalid' | 'display_invalid'): T {
@@ -30,6 +37,11 @@ export function withFace(type: ItemTypeDef, c: FaceInput): ItemTypeDef {
     const { detailsLabel: _old, ...rest } = next;
     next = label ? { ...rest, detailsLabel: label } : rest;
   }
+  if (c.detailsGlyph !== undefined)
+    next = withDetailsGlyph(
+      next,
+      face(glyphFrom(c.detailsGlyph, undefined), 'type_change_invalid'),
+    );
   return next;
 }
 

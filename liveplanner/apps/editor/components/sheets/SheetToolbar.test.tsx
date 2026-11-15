@@ -250,7 +250,7 @@ describe('the sheet toolbar', () => {
   it('sets the font size with − and +, or typed, 10 being the default', () => {
     show(h);
     pickCategory('Text');
-    const field = screen.getByLabelText('Font Size') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Font Size');
     expect(field.value).toBe('10');
     fireEvent.click(screen.getByRole('button', { name: 'Increase Font Size' }));
     expect(h.cell('A1')?.format?.fs).toBe(11);

@@ -3,6 +3,11 @@
 // column name, a card type's name, a custom field's name, a person's name, "#12"); the server resolves the ids.
 import { z } from 'zod';
 import { listedPullRequestSchema } from '../plan/card-pull-requests';
+import {
+  LIST_ITEMS_LIMIT_MAX,
+  LIST_ITEMS_NAMES_MAX,
+  LIST_ITEMS_QUERY_MAX,
+} from '../plan/list-items-limits';
 import { uploadImageOutput, uploadImageShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
 import {
   CALCULATIONS,
@@ -11,6 +16,8 @@ import {
   AGGREGATE_LABELS,
   BOARD_WIDGET_KINDS,
   CARD_SIZES,
+  CARD_TEMPLATE_NAME_MAX,
+  CARD_TEMPLATES_MAX,
   OFFERED_FIELD_KINDS,
   FIELD_WIDGETS_MAX,
   FORMULA_MAX,
@@ -66,14 +73,57 @@ const fieldsArg = z
 
 export const listItemsShape = {
   projectId,
-  type: typeArg
-    .optional()
-    .describe('Only items of this card type, by name or id; an unknown one is refused.'),
-  status: statusArg
+  type: z
+    .union([typeArg, z.array(typeArg).min(1).max(LIST_ITEMS_NAMES_MAX)])
     .optional()
     .describe(
-      'Only items in this column, by name or status ("Trash" for the Trash); an unknown one is refused.',
+      'Only items of this card type, or of any of these, by name or id; an unknown one is refused.',
     ),
+  status: z
+    .union([statusArg, z.array(statusArg).min(1).max(LIST_ITEMS_NAMES_MAX)])
+    .optional()
+    .describe(
+      'Only items in this column, or in any of these, by name or status ("Trash" for the Trash); an unknown one ' +
+        'is refused. A column named here lists all its cards, closed or not.',
+    ),
+  query: z
+    .string()
+    .max(LIST_ITEMS_QUERY_MAX)
+    .optional()
+    .describe('Only cards whose title or description holds this text, case aside.'),
+  updatedSince: z
+    .string()
+    .optional()
+    .describe(
+      'Only cards changed at or after this ISO date or time ("2026-11-01", "2026-11-01T09:00:00Z").',
+    ),
+  includeClosed: z
+    .boolean()
+    .optional()
+    .describe(
+      'List closed cards too: those in a done column (Done, Cancelled...), trashed or archived. Left out by ' +
+        'default; the answer’s omitted says how many.',
+    ),
+  includeRich: z
+    .boolean()
+    .optional()
+    .describe(
+      'List formatting runs too (descriptionRich, <field>Rich). Left out by default: the plain text is always ' +
+        'under the field’s name.',
+    ),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(LIST_ITEMS_LIMIT_MAX)
+    .optional()
+    .describe(
+      'The most cards one answer lists. Whatever it is, an answer stays under about 200,000 characters.',
+    ),
+  cursor: z
+    .string()
+    .optional()
+    .describe('The nextCursor of the previous answer, with the same filters, for the next page.'),
 };
 
 // Each change is strict: a key it does not take is refused, never dropped. A dropped `column` (the board's own word for
@@ -81,7 +131,13 @@ export const listItemsShape = {
 const itemChange = z.discriminatedUnion('op', [
   z.strictObject({
     op: z.literal('add'),
-    title: z.string().min(1),
+    title: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        'Its title. Required unless a template gives one (else the type’s new-card title).',
+      ),
     type: typeArg.default('task'),
     status: statusArg
       .optional()
@@ -89,6 +145,15 @@ const itemChange = z.discriminatedUnion('op', [
         'The column it starts in, at the end, by name. Left out, it waits off every board.',
       ),
     fields: fieldsArg.optional(),
+    template: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        'Start it from one of its card type’s templates, by name or id (list_items lists each type’s templates): ' +
+          'it takes the template’s title, description, checklist, labels and field values, and title and fields ' +
+          'given here win over them, field by field.',
+      ),
   }),
   z.strictObject({
     op: z.literal('set'),
@@ -490,14 +555,29 @@ const displayArg = z
       'or a custom field by name). Any size draws custom fields. A size given replaces that size; one left out keeps its own. A field ' +
       'shows on a card only when the type has it and the card has a value.',
   );
+const glyphIdArg = z.string().nullable();
 const tabsArg = z
-  .array(z.object({ name: z.string().min(1).max(24), fields: fieldList }))
+  .array(
+    z.object({
+      name: z.string().min(1).max(24),
+      fields: fieldList,
+      glyph: glyphIdArg
+        .optional()
+        .describe(
+          'The tab’s icon, a Plan glyph id (the type glyphs); left out, a tab of the same name keeps its icon ' +
+            'and a new tab takes the default; null, the default.',
+        ),
+    }),
+  )
   .max(6)
   .describe(
     'The item panel’s tabs, left to right, fields by name (never Title or Votes; each field in one tab). ' +
       'Fields in no tab show under Details. Replaces the tabs whole.',
   );
 const detailsLabelArg = z.string().describe('What the panel calls Details (1-24 characters).');
+const detailsGlyphArg = glyphIdArg.describe(
+  'The icon Details wears, a Plan glyph id; null puts the default (checklist) back.',
+);
 const customFieldEdit = z.object({
   field: z.string().describe('The custom field, by name.'),
   name: z.string().optional().describe('A new name.'),
@@ -527,6 +607,39 @@ const customFieldEdit = z.object({
   blocks: blocksArg.optional(),
 });
 
+// A card template's values, by field name as change_items' fields (docs/specs/026-plan/plan-agents.md "Card templates").
+const templateFieldsArg = z
+  .record(z.string(), z.unknown())
+  .describe(
+    'Its starting values by field name, written as change_items’ fields: title, description (Markdown), checklist, ' +
+      'labels and the type’s custom fields. Never a status, assignee, priority, estimate, dates, colour, ' +
+      'attachments, or a calculated, time spent, comments, votes, card or image field.',
+  );
+const templateName = z
+  .string()
+  .min(1)
+  .max(CARD_TEMPLATE_NAME_MAX)
+  .describe(`Its name, 1-${CARD_TEMPLATE_NAME_MAX} characters, unique in the type ("Bug Report").`);
+const templateInput = z.object({ name: templateName, fields: templateFieldsArg.optional() });
+const templateRef = z
+  .string()
+  .describe('A template of the type, by name or id ("Bug Report", "tp-bug-report").');
+const templatesArg = z
+  .array(templateInput)
+  .max(CARD_TEMPLATES_MAX)
+  .describe(
+    `Card templates (up to ${CARD_TEMPLATES_MAX} a type): named starting values a new card of the type can take ` +
+      '(change_items’ add with template). Each id is tp- and a slug of its name.',
+  );
+const templateEdit = z.object({
+  template: templateRef,
+  name: templateName.optional().describe('A new name (its id never changes).'),
+  fields: templateFieldsArg
+    .optional()
+    .describe('Values to set, by field name, over the template’s own; the rest stay.'),
+  clear: z.array(z.string()).optional().describe('Values to take off, by field name.'),
+});
+
 export const cardTypeChangeSchema = z.discriminatedUnion('op', [
   z.object({
     op: z.literal('add'),
@@ -553,6 +666,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     display: displayArg.optional(),
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
+    detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
     inherits: typeArg
       .optional()
@@ -561,6 +675,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
           'statuses, Default State and display, keeping its own name, colour and glyph; its own custom fields ' +
           'follow. The base must inherit from none.',
       ),
+    templates: templatesArg.optional(),
   }),
   z.object({
     op: z.literal('set'),
@@ -595,6 +710,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     display: displayArg.optional(),
     tabs: tabsArg.optional(),
     detailsLabel: detailsLabelArg.optional(),
+    detailsGlyph: detailsGlyphArg.optional(),
     assigneeNotifies: assigneeNotifiesArg.optional(),
     inherits: typeArg
       .nullable()
@@ -604,6 +720,17 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
           'detach, keeping a copy of the base’s settings. An inherited type’s statuses, Default State, display, ' +
           'tabs and inherited fields are its base’s to change.',
       ),
+    addTemplates: templatesArg.optional().describe('Card templates to add, after its own.'),
+    editTemplates: z
+      .array(templateEdit)
+      .max(CARD_TEMPLATES_MAX)
+      .optional()
+      .describe('Card templates changed in place: renamed, values set or cleared.'),
+    removeTemplates: z
+      .array(templateRef)
+      .max(CARD_TEMPLATES_MAX)
+      .optional()
+      .describe('Card templates to remove, by name or id. Cards made from one keep their values.'),
   }),
   z.object({
     op: z.literal('delete'),
@@ -747,10 +874,16 @@ const listedType = z.object({
       z.object({
         name: z.string().describe('The tab’s name.'),
         fields: z.array(z.string()).describe('Its fields, by name.'),
+        glyph: z.string().describe('Its icon, a Plan glyph id (its default when none was chosen).'),
       }),
     )
     .describe('Its item panel’s tabs; fields in none show under Details.'),
   detailsLabel: z.string().describe('What its panel calls Details.'),
+  detailsGlyph: z
+    .string()
+    .describe(
+      'The icon its panel’s Details wears, a Plan glyph id (its default when none was chosen).',
+    ),
   assigneeNotifies: z
     .literal(false)
     .optional()
@@ -765,6 +898,18 @@ const listedType = z.object({
     .array(z.string())
     .optional()
     .describe('An inherited type’s own fields, by name, after its base’s.'),
+  templates: z
+    .array(
+      z.object({
+        id: z.string().describe('The template’s id ("tp-bug-report").'),
+        name: z.string().describe('Its name, as change_items’ template takes it.'),
+        fields: z.array(z.string()).describe('The fields it sets, by name.'),
+      }),
+    )
+    .optional()
+    .describe(
+      'Its card templates, in order: change_items’ add with template starts a card from one. Absent: none.',
+    ),
 });
 
 const listedBoard = z.object({
@@ -797,6 +942,12 @@ const listedBoard = z.object({
         status: z.string().describe('The status id items store.'),
         wipLimit: z.number().optional().describe('The most cards the column should hold.'),
         done: z.literal(true).optional().describe('Its cards count as done.'),
+        closed: z
+          .number()
+          .optional()
+          .describe(
+            'How many closed cards this done column left out of cards (includeClosed lists them).',
+          ),
         cards: z.array(z.string()).describe('The cards in it, top to bottom ("#3").'),
       }),
     )
@@ -862,9 +1013,25 @@ const listedItem = z.object({
 export const listItemsOutput = {
   boards: z.array(listedBoard).describe('The Plan boards, in tab then canvas order.'),
   notOnBoard: z.array(z.string()).describe('Cards no board column shows.'),
-  count: z.number().describe('How many items are listed.'),
+  count: z.number().describe('How many items this answer lists.'),
+  total: z.number().describe('How many items match the filters, on every page together.'),
   items: z.array(listedItem).describe('The items, by number.'),
   types: z.array(listedType).describe('The plan’s card types.'),
+  omitted: z
+    .object({
+      closed: z
+        .number()
+        .optional()
+        .describe('Closed cards (done column, Trash, archived) the filters matched but left out.'),
+      rich: z.literal(true).optional().describe('A listed card’s formatting runs were left out.'),
+      note: z.string().describe('What was left out and how to list it.'),
+    })
+    .optional()
+    .describe('What this answer left out by default; absent when nothing was.'),
+  nextCursor: z
+    .string()
+    .optional()
+    .describe('More items match: pass this as cursor, with the same filters, for the next page.'),
   hint: z.string().optional().describe('What to do when the plan has no board.'),
   url,
 };

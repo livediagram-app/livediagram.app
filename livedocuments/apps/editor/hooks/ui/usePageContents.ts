@@ -6,6 +6,8 @@
 // card's speaking time), where a dropped page lands (an article's pages move as one), the page's place in the deck on its ⋯ menu, and the
 // pictures, each page framed as its slide.
 import { useMemo } from 'react';
+import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
+import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import {
   MAX_PAGES,
   pageKindOf,
@@ -19,6 +21,7 @@ import {
 } from '@liveworkspace/workbench/hooks/ui/usePageContents';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
+import type { ArticlesView } from '@/hooks/editor/useArticles';
 import { contentsDropUnit, contentsRows, type ContentsRow } from '@/lib/page-contents';
 import { elementsByPage } from '@/lib/elements-by-page';
 import { pageTitleOf } from '@/lib/page-title';
@@ -27,15 +30,25 @@ import { track } from '@/lib/telemetry';
 import { pageRowSlides } from '@/components/canvas/page-row-slides';
 import { requestPagePanel } from '@/lib/page-panel-request';
 
+// The writing, for a list placed by chrome that leaves it out of its props (docs/specs/007-editor/blueprints/
+// flashcards.md "Performance and limits"): read from its store here, so a typing commit renders the list, not the
+// chrome round it.
+export type WritingStore = ReadableStore<ArticlesView | null | undefined>;
+const NO_WRITING: WritingStore = { get: () => undefined, subscribe: () => () => {} };
+const whole = <T>(v: T): T => v;
+
 export function usePageContents({
   view,
-  tab,
+  tab: tabIn,
+  writing,
   here,
   settleMs = 0,
   onWent,
 }: {
   view: PagesModeView;
   tab: PageThumbTab;
+  // The writing's store, when the view and the tab come without it.
+  writing?: WritingStore | undefined;
   // The page in view as the list opens, scrolled to and marked.
   here: string | undefined;
   // How long the tab rests before the thumbnails redraw (usePageThumbnails); 0 redraws at once.
@@ -44,6 +57,12 @@ export function usePageContents({
   onWent?: () => void;
 }): PageContents {
   const { pages, deck } = view;
+  const stored = useStoreSlice(writing ?? NO_WRITING, whole);
+  const articles = writing ? stored : view.articles;
+  const tab = useMemo(
+    () => (writing ? { ...tabIn, articles: stored?.flows } : tabIn),
+    [tabIn, writing, stored],
+  );
   // Each unnamed slide's and infographic's title, read from its words as they settle (not every frame
   // of a drag or every key of a peer's typing): one pass over the tab's elements, O(n log n).
   const settled = useSettledElements(tab.elements);
@@ -69,11 +88,11 @@ export function usePageContents({
               hiddenInSlides: (id: string) => deck.slideOf(id)?.hidden === true,
             }
           : {}),
-        ...(view.articles ? { articles: view.articles.flows } : {}),
+        ...(articles ? { articles: articles.flows } : {}),
         ...(titles ? { titleOf: (id: string) => titles.get(id) } : {}),
         ...(builds ? { buildsOf: (id: string) => builds.get(id) ?? 0 } : {}),
       }),
-    [pages, deck, view.articles, titles, builds],
+    [pages, deck, articles, titles, builds],
   );
   const contents = useSharedPageContents({
     view,

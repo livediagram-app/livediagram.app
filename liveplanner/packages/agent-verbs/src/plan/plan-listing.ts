@@ -16,6 +16,8 @@ import {
   CURRENCY_DEFAULT,
   ratingScaleOf,
   detailsLabelOf,
+  detailsGlyphOf,
+  tabGlyphOf,
   isCustomCardField,
   namedDisplay,
   PARENT_FIELD_ID,
@@ -65,6 +67,7 @@ import {
   timePerson,
   type CalculatedValue,
   type CustomFieldDef,
+  isRichFieldKey,
   REPEAT_FIELD,
   itemRepeat,
   repeatNext,
@@ -89,10 +92,13 @@ interface ListedColumn {
   wipLimit?: number;
   // Its cards count as done (docs/specs/026-plan/plan-board.md "Done columns").
   done?: true;
+  // A done column's cards list_items left out (plan-agents.md "What list_items leaves out unless asked"): `cards` is
+  // then empty.
+  closed?: number;
   cards: string[];
 }
 
-interface ListedBoard {
+export interface ListedBoard {
   title: string;
   tab: string;
   tabId: string;
@@ -105,7 +111,7 @@ interface ListedBoard {
   columns: ListedColumn[];
 }
 
-interface ListedItem {
+export interface ListedItem {
   ref: string;
   id: string;
   type: string;
@@ -238,12 +244,17 @@ export interface ListedType {
   statuses: string[];
   // What its cards show per size, by place and field name, as change_card_types takes it.
   display: Record<string, Record<string, string[]>>;
-  tabs: { name: string; fields: string[] }[];
+  // Each tab's icon and Details' (item-types.md "Tab icons"), the defaults filled in.
+  tabs: { name: string; fields: string[]; glyph: string }[];
   detailsLabel: string;
+  detailsGlyph: string;
   // An inherited type's base type by name and its own fields by name (docs/specs/026-plan/item-types.md "Inherited
   // types"); every other part is the base's.
   inherits?: string;
   ownFields?: string[];
+  // Its card templates (docs/specs/026-plan/plan-agents.md "Card templates"): id, name and the fields each sets, by
+  // name. Absent when it has none.
+  templates?: { id: string; name: string; fields: string[] }[];
 }
 
 interface PlanListing {
@@ -255,18 +266,21 @@ interface PlanListing {
   hint?: string;
 }
 
-// What list_items and `item ls` narrow by, as given: a card type and a column, each by name or id.
+// What list_items and `item ls` narrow by, as given: card types and columns, each one or several, by name or id.
 interface ListingFilter {
-  type?: string;
-  status?: string;
+  type?: string | readonly string[] | undefined;
+  status?: string | readonly string[] | undefined;
 }
 
 // The same narrowing resolved to ids, by the names change_items takes (resolveType, resolveStatus), so a filter
-// reads a column or type exactly as a write does.
-interface ResolvedListingFilter {
-  type?: string;
-  status?: string;
+// reads a column or type exactly as a write does. A card in any of them is kept.
+export interface ResolvedListingFilter {
+  types?: string[];
+  statuses?: string[];
 }
+
+const namesOf = (given: string | readonly string[] | undefined): string[] =>
+  (typeof given === 'string' ? [given] : (given ?? [])).filter((n) => n);
 
 type ListingFilterRefusal = { ok: false; code: string; message: string };
 
@@ -277,25 +291,25 @@ export function resolveListingFilter(
   filter: ListingFilter,
 ): ({ ok: true } & ResolvedListingFilter) | ListingFilterRefusal {
   const out: ResolvedListingFilter = {};
-  if (filter.type) {
-    const t = resolveType(filter.type, state.plan.types);
+  for (const name of namesOf(filter.type)) {
+    const t = resolveType(name, state.plan.types);
     if (!t.ok) return { ok: false, code: t.code, message: t.message };
-    out.type = t.type.id;
+    (out.types ??= []).push(t.type.id);
   }
-  if (filter.status) {
-    if (filter.status === TRASH_STATUS || statusKey(filter.status) === statusKey('Trash'))
-      out.status = TRASH_STATUS;
-    else if (state.plan.statuses.length === 0)
+  for (const name of namesOf(filter.status)) {
+    if (name === TRASH_STATUS || statusKey(name) === statusKey('Trash')) {
+      (out.statuses ??= []).push(TRASH_STATUS);
+      continue;
+    }
+    if (state.plan.statuses.length === 0)
       return {
         ok: false,
         code: 'status_unknown',
-        message: `No column "${filter.status}": the plan has no board yet, so no card is in a column.`,
+        message: `No column "${name}": the plan has no board yet, so no card is in a column.`,
       };
-    else {
-      const s = resolveStatus(filter.status, state.plan.statuses);
-      if (!s.ok) return { ok: false, code: s.code, message: s.message };
-      out.status = s.status;
-    }
+    const s = resolveStatus(name, state.plan.statuses);
+    if (!s.ok) return { ok: false, code: s.code, message: s.message };
+    (out.statuses ??= []).push(s.status);
   }
   return { ok: true, ...out };
 }
@@ -346,19 +360,27 @@ function listedRollup(f: CustomFieldDef, t: ItemTypeDef, types: readonly ItemTyp
 // An item's fields with its custom fields under their names ("Severity"), as writes name them; a custom field its
 // type no longer has keeps its id. A card link (Parent, a Card field) reads as its card's number and title
 // ("#12 Fix login"), which writes take back. A Calculated field's value, worked out (`calculated`), is listed too.
+// Formatting runs (`descriptionRich`, `<id>Rich`) are listed when `rich` is true; else left out, and the caller told of
+// each card that had any.
 function namedFields(
   item: Item,
   types: readonly ItemTypeDef[],
   byId: ReadonlyMap<string, Item>,
   link: PictureLink,
-  calculated?: Record<string, CalculatedValue>,
+  calculated: Record<string, CalculatedValue> | undefined,
+  rich: RichFields,
 ): Record<string, unknown> {
   const custom = types.find((t) => t.id === item.type)?.custom ?? [];
   const out: Record<string, unknown> = {};
   const fields = calculated ? { ...item.fields, ...calculated } : item.fields;
+  let richLeftOut = false;
   for (const [key, value] of Object.entries(fields)) {
     // A repeat reads as its own entry (listedRepeat), in words.
     if (key === REPEAT_FIELD) continue;
+    if (rich !== true && isRichFieldKey(key)) {
+      richLeftOut = true;
+      continue;
+    }
     const field = custom.find((f) => f.id === key);
     const label = field?.label;
     // A name a built-in or another field already uses keeps the id, so nothing is overwritten.
@@ -370,8 +392,12 @@ function namedFields(
       link,
     );
   }
+  if (richLeftOut && rich !== true) rich.onLeftOut();
   return out;
 }
+
+// Whether a card's formatting runs are listed: true, or left out with a word to the caller for each card that had some.
+export type RichFields = true | { onLeftOut: () => void };
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -469,12 +495,33 @@ export function listedType(
       statuses.map((s) => s.status),
     ).flatMap((id) => statuses.filter((s) => s.status === id).map((s) => s.name)),
     display: namedDisplay(t, (size) => typeCardLayout(t, size)),
-    tabs: tabsOf(t).map((tab) => ({ name: tab.label, fields: tab.fields.map(fieldName) })),
+    tabs: tabsOf(t).map((tab) => ({
+      name: tab.label,
+      fields: tab.fields.map(fieldName),
+      glyph: tabGlyphOf(tab),
+    })),
     detailsLabel: detailsLabelOf(t),
+    detailsGlyph: detailsGlyphOf(t),
     ...(t.inherits
       ? {
           inherits: types.find((b) => b.id === t.inherits)?.label ?? t.inherits,
           ownFields: (t.ownFields ?? []).map(fieldName),
+        }
+      : {}),
+    ...(t.templates?.length
+      ? {
+          templates: t.templates.map((tp) => ({
+            id: tp.id,
+            name: tp.name,
+            // A Rich key reads as its field's name, once.
+            fields: [
+              ...new Set(
+                Object.keys(tp.fields).map((k) =>
+                  fieldName(isRichFieldKey(k) ? k.slice(0, -'Rich'.length) : k),
+                ),
+              ),
+            ],
+          })),
         }
       : {}),
   };
@@ -500,15 +547,13 @@ function listedWidgets(
 // A picture's link when the caller names none: the api's byte read by its path alone (the uploader reads it).
 const pathOnlyLink: PictureLink = (id) => `/api/images/${encodeURIComponent(id)}`;
 
-// The plan, narrowed by a filter resolveListingFilter resolved. `pictureLink` makes each picture's link
-// (pictureLinkFor the plan on its host), worked out as the fields are read, so listing pictures asks nothing more.
-export function planListing(
+// The boards' columns and the live cards no board shows, sorted as the boards draw them. With `closedOut`, a done
+// column lists none of its cards and says how many it left out (list_items' default).
+export function listedBoards(
   state: PlanState,
-  filter: ResolvedListingFilter = {},
-  pictureLink: PictureLink = pathOnlyLink,
-): PlanListing {
+  { closedOut = false }: { closedOut?: boolean } = {},
+): { boards: ListedBoard[]; notOnBoard: string[] } {
   const { plan } = state;
-  const now = Date.now();
   const live = state.items
     .filter((i) => !isTrashed(i) && !isArchived(i))
     .sort((a, b) => compareRank(a.rank, b.rank) || a.key - b.key);
@@ -543,67 +588,101 @@ export function planListing(
             )
           : [];
         for (const i of cards) onABoard.add(i.id);
+        const cut = closedOut && isDone(c.status) && cards.length > 0;
         return {
           name: c.name,
           status: c.status,
           ...(c.wipLimit ? { wipLimit: c.wipLimit } : {}),
           ...(c.done ? { done: true as const } : {}),
-          cards: cards.map(ref),
+          ...(cut ? { closed: cards.length } : {}),
+          cards: cut ? [] : cards.map(ref),
         };
       }),
     };
   });
-  // Calculated fields (docs/specs/026-plan/item-types.md "Calculated fields"), worked out from what was read, and only
-  // when a type has one.
+  return { boards, notOnBoard: live.filter((i) => !onABoard.has(i.id)).map(ref) };
+}
+
+// Each card as list_items and `item ls` list it, from one read of the plan: the lookups a card's calculated fields,
+// blockers and pull requests need are made once, and a card's fields are worked out only when it is listed.
+export function itemLister(
+  state: PlanState,
+  pictureLink: PictureLink = pathOnlyLink,
+  rich: RichFields = true,
+): (i: Item) => ListedItem {
+  const { plan } = state;
+  const now = Date.now();
+  const byId = new Map(state.items.map((i) => [i.id, i]));
+  const isDone = doneStatusesOf(plan.boards);
   // Blocked By, read once for every card, and only when a type has a Blocks field.
   const blocking = hasBlocksFields(plan.types)
     ? blockingIndexOf(state.items, plan.types, isDone)
     : null;
+  // Calculated fields (docs/specs/026-plan/item-types.md "Calculated fields"), worked out from what was read, and only
+  // when a type has one.
   const calc = hasCalculatedFields(plan.types)
     ? { index: childIndexOf(state.items, plan.types), isDone }
     : null;
   // Linked pull requests' states, as the board picks them, and only when the api answered any.
   const prsOf = pullRequestLister(state.pullRequests, plan.types);
-  const items = [...state.items]
-    .filter((i) => !filter.type || i.type === filter.type)
-    .filter((i) => !filter.status || itemStatus(i) === filter.status)
-    .sort((a, b) => a.key - b.key)
-    .map((i) => ({
-      ref: ref(i),
-      id: i.id,
-      type: i.type,
-      status: itemStatus(i) ?? null,
-      column: columnName(itemStatus(i), state),
-      title: itemTitle(i),
-      fields: namedFields(
+  return (i) => ({
+    ref: ref(i),
+    id: i.id,
+    type: i.type,
+    status: itemStatus(i) ?? null,
+    column: columnName(itemStatus(i), state),
+    title: itemTitle(i),
+    fields: namedFields(
+      i,
+      plan.types,
+      byId,
+      pictureLink,
+      calc
+        ? calculatedValuesOf(
+            i,
+            typeIn(plan.types, i.type),
+            calc.index,
+            calc.isDone,
+            byId,
+            plan.types,
+          )
+        : undefined,
+      rich,
+    ),
+    ...withTime(
+      listedTime(
         i,
-        plan.types,
-        byId,
-        pictureLink,
-        calc
-          ? calculatedValuesOf(
-              i,
-              typeIn(plan.types, i.type),
-              calc.index,
-              calc.isDone,
-              byId,
-              plan.types,
-            )
-          : undefined,
+        plan.types.find((t) => t.id === i.type),
       ),
-      ...withTime(
-        listedTime(
-          i,
-          plan.types.find((t) => t.id === i.type),
-        ),
-      ),
-      ...withRepeat(listedRepeat(i, now)),
-      ...(blocking ? listedBlocking(blocking, i.id) : {}),
-      ...withPullRequests(prsOf(i)),
-    }));
+    ),
+    ...withRepeat(listedRepeat(i, now)),
+    ...(blocking ? listedBlocking(blocking, i.id) : {}),
+    ...withPullRequests(prsOf(i)),
+  });
+}
+
+// Whether a card is of one of a resolved filter's card types and in one of its columns.
+export const passesListingFilter = (filter: ResolvedListingFilter, i: Item): boolean =>
+  (!filter.types || filter.types.includes(i.type)) &&
+  (!filter.statuses || filter.statuses.includes(itemStatus(i) ?? ''));
+
+// The plan, narrowed by a filter resolveListingFilter resolved, every card listed with its formatting (the CLI's
+// `item ls`; list_items pages it with listItemsPage). `pictureLink` makes each picture's link (pictureLinkFor the plan
+// on its host), worked out as the fields are read, so listing pictures asks nothing more.
+export function planListing(
+  state: PlanState,
+  filter: ResolvedListingFilter = {},
+  pictureLink: PictureLink = pathOnlyLink,
+): PlanListing {
+  const { plan } = state;
+  const { boards, notOnBoard } = listedBoards(state);
+  const items = state.items
+    .filter((i) => passesListingFilter(filter, i))
+    .sort((a, b) => a.key - b.key)
+    .map(itemLister(state, pictureLink));
   return {
     boards,
-    notOnBoard: live.filter((i) => !onABoard.has(i.id)).map(ref),
+    notOnBoard,
     count: items.length,
     items,
     types: listedTypes(plan.types, plan.statuses),

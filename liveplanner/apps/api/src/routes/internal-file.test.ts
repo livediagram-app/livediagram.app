@@ -74,6 +74,18 @@ const sheet: SheetJson = {
   updatedBy: PERSON,
 };
 
+// The default types, the Task holding a card template (docs/specs/026-plan/item-types.md "Card templates").
+const TEMPLATE = {
+  id: 'tp-chore',
+  name: 'Chore',
+  fields: { title: 'Chore', checklist: [{ text: 'Do it', done: false }] },
+};
+const DEFAULTS = defaultCatalogue();
+const CATALOGUE = {
+  ...DEFAULTS,
+  types: DEFAULTS.types.map((t) => (t.id === 'task' ? { ...t, templates: [TEMPLATE] } : t)),
+};
+
 async function arrange() {
   const db = sqliteD1({ INDEX_KEY: 'index-key', DRIVE_KEY });
   const send = (method: string, path: string, init: { body?: unknown; etag?: string } = {}) =>
@@ -102,7 +114,7 @@ async function arrange() {
   );
   await upsertTab(db.env, 'A', { id: 't2', name: 'Two', elements: [box('b2')] }, 1);
   db.sql.prepare("UPDATE plan_tabs SET folder = 'Later' WHERE tab_id = 't2'").run();
-  await setPlanItemTypes(db.env, 'A', defaultCatalogue());
+  await setPlanItemTypes(db.env, 'A', CATALOGUE);
   await insertItems(db.env, 'A', [card]);
   await db.env.PLAN_DB.batch(insertSheetStatements(db.env, 'A', sheet, 5));
   db.sql.prepare('UPDATE plan SET saved_at = 1234 WHERE id = ?').run('A');
@@ -128,7 +140,9 @@ describe('GET /api/internal/items/:id/export?format=file', () => {
       ['t2', 'Two', 'Later'],
     ]);
     expect(envelope.project.items?.map((i) => [i.id, i.key])).toEqual([['card1', 3]]);
-    expect(envelope.project.itemTypes).toBeTruthy();
+    expect(envelope.project.itemTypes?.types.find((t) => t.id === 'task')?.templates).toEqual([
+      TEMPLATE,
+    ]);
     expect(envelope.project.sheets?.map((s) => [s.id, s.tabId, s.title])).toEqual([
       ['sheet0001', 't2', 'Budget'],
     ]);
@@ -157,7 +171,7 @@ describe('POST /api/internal/items/import', () => {
     const { db, send, file } = await exported();
     const res = await send('POST', 'import', { body: body(file) });
     expect(res.status).toBe(201);
-    const { id } = (await res.json()) as { id: string };
+    const { id } = await res.json<{ id: string }>();
     expect(id).not.toBe('A');
     expect(made).toEqual([
       {
@@ -182,7 +196,10 @@ describe('POST /api/internal/items/import', () => {
     };
     expect(meta).toMatchObject({ name: 'Roadmap copy', owner_id: OWNER, items_next_key: 4 });
     expect(meta.created_at).toBeGreaterThan(0);
-    expect(meta.item_types).toBeTruthy();
+    // The card types came along, the Task's card template with them.
+    const types = (JSON.parse(meta.item_types!) as { types: { id: string; templates?: unknown }[] })
+      .types;
+    expect(types.find((t) => t.id === 'task')?.templates).toEqual([TEMPLATE]);
     const tabs = db.sql
       .prepare(
         `SELECT t.id, t.name, dt.folder, t.data FROM plan_tabs dt JOIN tabs t ON t.id = dt.tab_id

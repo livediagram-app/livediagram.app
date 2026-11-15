@@ -315,11 +315,11 @@ describe('a mention', () => {
 
   it('a card thread’s comment emails each teammate it mentions, once, and opens the card on it', async () => {
     const item = (
-      (await (
+      await (
         await route('POST', '/api/projects/d1/items', {
           body: { type: 'task', fields: { title: 'A' } },
         })
-      ).json()) as ItemResponse
+      ).json<ItemResponse>()
     ).item;
     const res = await route('POST', `/api/projects/d1/items/${item.id}/threads`, {
       body: {
@@ -356,12 +356,13 @@ describe('a mention', () => {
     const el = {
       id: 'e1',
       type: 'shape',
-      shape: 'square',
+      // A Sheet cell's: canvas elements take no comment (docs/specs/026-plan/plan-mode.md).
+      shape: 'plan-sheet',
       x: 0,
       y: 0,
       width: 10,
       height: 10,
-      commentThread: { comments: [comment], resolved: false },
+      cellComments: { 'row001:cola01': { comments: [comment], resolved: false } },
     } as unknown as Element;
     const put = () =>
       route('PUT', '/api/projects/d1/tabs/t1', {

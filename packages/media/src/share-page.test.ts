@@ -15,7 +15,7 @@ const { isSharePagePath, shareHead, sharePage } = createSharePage({
 
 // HTMLRewriter is a Workers runtime global. This stand-in runs every handler against one recording element per
 // selector and answers what was set, so a test reads exactly what was written into the head.
-type Edits = Record<string, { attrs: Record<string, string>; inner?: string }>;
+type Edits = Record<string, { attrs: Record<string, string>; inner?: string; appended?: string }>;
 class RecordingRewriter {
   handlers: [string, { element(el: unknown): void }][] = [];
   on(selector: string, handler: { element(el: unknown): void }) {
@@ -29,6 +29,8 @@ class RecordingRewriter {
       handler.element({
         setAttribute: (name: string, value: string) => void (edit.attrs[name] = value),
         setInnerContent: (content: string) => void (edit.inner = content),
+        append: (content: string, options: { html: boolean }) =>
+          void (edit.appended = options.html ? content : `text:${content}`),
       });
     }
     return new Response(JSON.stringify(edits), {
@@ -78,18 +80,25 @@ describe('isSharePagePath', () => {
 
 describe('shareHead', () => {
   it('names the item and points at its share card on this origin', () => {
-    expect(shareHead('Payments flow', 'Ab 12', 'https://staging.livediagram.app')).toEqual({
+    expect(
+      shareHead('Payments flow', 'Ab 12', 'https://staging.livediagram.app', '/document/shared'),
+    ).toEqual({
       title: 'Payments flow',
       description: PITCH,
       image: 'https://staging.livediagram.app/api/previews/share/Ab%2012/image.png',
       imageAlt: 'Payments flow, drawn in livediagram',
+      oembedLink:
+        '<link rel="alternate" type="application/json+oembed" href="https://staging.livediagram.app/oembed?url=' +
+        'https%3A%2F%2Fstaging.livediagram.app%2Fdocument%2Fshared%3Fs%3DAb%252012&amp;format=json" ' +
+        'title="Payments flow">',
     });
   });
 
   it('keeps a preview to one tidy line, and never blank', () => {
-    expect(shareHead('  Q3\n\n  plan  ', 'c', 'https://x').title).toBe('Q3 plan');
-    expect(shareHead('x'.repeat(500), 'c', 'https://x').title).toHaveLength(200);
-    expect(shareHead('   ', 'c', 'https://x').title).toBe('Untitled document');
+    const path = '/document/shared';
+    expect(shareHead('  Q3\n\n  plan  ', 'c', 'https://x', path).title).toBe('Q3 plan');
+    expect(shareHead('x'.repeat(500), 'c', 'https://x', path).title).toHaveLength(200);
+    expect(shareHead('   ', 'c', 'https://x', path).title).toBe('Untitled document');
   });
 });
 
@@ -113,6 +122,23 @@ describe('sharePage', () => {
     expect(edits['meta[name="twitter:title"]']!.attrs.content).toBe('Payments flow');
     expect(edits['meta[name="twitter:description"]']!.attrs.content).toBe(PITCH);
     expect(edits['meta[name="twitter:image"]']!.attrs.content).toBe(image);
+    // The oEmbed discovery tag, as HTML, naming the share link without anything else of the visited address.
+    expect(edits.head!.appended).toBe(
+      '<link rel="alternate" type="application/json+oembed" href="https://www.livediagram.app/oembed?url=' +
+        'https%3A%2F%2Fwww.livediagram.app%2Fdocument%2Fshared%3Fs%3DCODE1234&amp;format=json" ' +
+        'title="Payments flow">',
+    );
+  });
+
+  it('escapes a name in the discovery tag, and keeps the old /diagram/ address it was visited at', async () => {
+    const { doFetch } = service(() => Response.json({ name: '"><script>x</script>' }));
+    const res = await sharePage(visit('/diagram/shared?s=CODE1234&utm=x'), shell(), {
+      fetch: doFetch,
+    });
+    const tag = ((await res.json()) as Edits).head!.appended!;
+    expect(tag).toContain('title="&quot;&gt;&lt;script&gt;x&lt;/script&gt;"');
+    expect(tag).toContain('%2Fdiagram%2Fshared%3Fs%3DCODE1234&amp;format=json');
+    expect(tag).not.toContain('utm');
   });
 
   it("asks the origin named (local dev, staging), passing the visitor's address on", async () => {

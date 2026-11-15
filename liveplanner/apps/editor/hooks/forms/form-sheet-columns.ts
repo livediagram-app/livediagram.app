@@ -9,7 +9,7 @@ import {
   type FormSheetDestination,
   type SheetForm,
 } from '@liveplanner/forms';
-import type { Sheet, SheetWrite } from '@liveplanner/sheets';
+import { cellKey, type Sheet, type SheetWrite } from '@liveplanner/sheets';
 
 // How long after the form last changed its sheet is brought up to date, so typing a question's wording writes one
 // header, not one per letter. Safe range 400..2000 ms.
@@ -17,7 +17,7 @@ export const FORM_COLUMNS_SYNC_MS = 800;
 
 // Each key's header as the form words it now (what `renamed` is the next time).
 export function headersByKey(form: SheetForm): Map<string, string> {
-  return new Map(sheetHeaders(form).map((h) => [h.key, h.header]));
+  return new Map(sheetHeaders(form, { namedOnly: true }).map((h) => [h.key, h.header]));
 }
 
 // What the sheet needs: its header write (null when every header is there) and the columns the form should remember.
@@ -32,6 +32,12 @@ export function formColumnsSync(
     rowTexts: topRowTexts(sheet),
     columns: form.sheet.columns,
     renamed,
+    // A question still reading "Untitled Question" gets no column until it is named (forms.md "Columns before any
+    // response"), so its first wording matches a template's header of that name.
+    namedOnly: true,
+    // A column holding no answer may move to a header of its question's new wording, so a name typed slowly, which
+    // claimed a column with its first letters, still lands in the template's column (Work Tracker 899).
+    hasValue: (row, col) => sheet.cells.get(cellKey(row, col))?.input !== undefined,
   });
 }
 
@@ -42,7 +48,7 @@ export function formColumnsKey(form: FormDefinition | null): string | null {
   return JSON.stringify([
     form.sheet.tabId,
     form.sheet.sheetId,
-    sheetHeaders(form).map((h) => [h.key, h.header]),
+    sheetHeaders(form, { namedOnly: true }).map((h) => [h.key, h.header]),
     form.sheet.columns ?? null,
   ]);
 }

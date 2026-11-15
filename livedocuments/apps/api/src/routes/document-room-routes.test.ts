@@ -239,7 +239,7 @@ describe('POST room-ticket', () => {
         grant: null,
       }),
     );
-    const { ticket } = (await res!.json()) as { ticket: string };
+    const { ticket } = await res!.json<{ ticket: string }>();
     expect(ticket.startsWith('rt2~')).toBe(true);
     expect(ticket).not.toContain(t);
     await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);

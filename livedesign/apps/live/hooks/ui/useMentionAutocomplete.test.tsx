@@ -59,7 +59,7 @@ describe('mentions in the composer', () => {
         <CommentComposer onAddComment={onSubmit} />
       </MentionContext.Provider>,
     );
-    const field = screen.getByLabelText('Add a comment') as HTMLTextAreaElement;
+    const field = screen.getByLabelText<HTMLTextAreaElement>('Add a comment');
     // Cmd/Ctrl+Enter sends; Enter alone picks from an open list.
     const send = () => fireEvent.keyDown(field, { key: 'Enter', metaKey: true });
     // The caret rides along, at the end of what was typed.

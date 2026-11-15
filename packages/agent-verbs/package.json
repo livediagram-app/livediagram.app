@@ -19,6 +19,8 @@
     "./mcp/archive-tools": "./src/mcp/archive-tools.ts",
     "./mcp/image-schema": "./src/mcp/image-schema.ts",
     "./mcp/image-tools": "./src/mcp/image-tools.ts",
+    "./mcp/thread-run": "./src/mcp/thread-run.ts",
+    "./mcp/thread-tools": "./src/mcp/thread-tools.ts",
     "./mcp/tool": "./src/mcp/tool.ts",
     "./product": "./src/product.ts",
     "./refs": "./src/refs.ts",
@@ -39,6 +41,8 @@
   "dependencies": {
     "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/element-model": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "zod": "^4.6.7"
   },
@@ -46,7 +50,7 @@
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.1.0",
-    "oxlint": "^1.90.0",
+    "oxlint": "^1.93.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   }

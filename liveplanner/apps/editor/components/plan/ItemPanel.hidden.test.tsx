@@ -141,7 +141,7 @@ describe('the Hidden tab', () => {
     expect(onPatch).toHaveBeenLastCalledWith({ set: { 'f-criteria': 'Map by name' } });
     expect(track).toHaveBeenCalledWith('Plan', 'Copied', 'HiddenValue');
     // A Number fits no field of a Work Item; a removed field copies nowhere.
-    const size = screen.getByRole('button', { name: 'Copy Size to a field' }) as HTMLButtonElement;
+    const size = screen.getByRole<HTMLButtonElement>('button', { name: 'Copy Size to a field' });
     expect(size.disabled).toBe(true);
     expect(screen.queryByRole('button', { name: 'Copy Removed Field to a field' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Remove Removed Field' }));

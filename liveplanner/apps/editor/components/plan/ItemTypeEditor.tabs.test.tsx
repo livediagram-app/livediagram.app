@@ -29,7 +29,7 @@ describe('the type editor’s tabs', () => {
   it('opens on Configuration, with States and Display a tab away', () => {
     editor();
     const tabs = screen.getAllByRole('tab').map((t) => t.textContent);
-    expect(tabs).toEqual(['Configuration', 'States', 'Display']);
+    expect(tabs).toEqual(['Configuration', 'States', 'Display', 'Templates']);
     expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
       'true',
     );
@@ -107,13 +107,17 @@ describe('the type editor’s tabs', () => {
     fireEvent.keyDown(configuration, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: 'States' }).getAttribute('aria-selected')).toBe('true');
     fireEvent.keyDown(configuration, { key: 'End' });
-    expect(screen.getByRole('tab', { name: 'Display' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: 'Templates' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
     fireEvent.keyDown(configuration, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
       'true',
     );
     fireEvent.keyDown(configuration, { key: 'ArrowLeft' });
-    expect(screen.getByRole('tab', { name: 'Display' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: 'Templates' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
     fireEvent.keyDown(configuration, { key: 'Home' });
     expect(screen.getByRole('tab', { name: 'Configuration' }).getAttribute('aria-selected')).toBe(
       'true',
@@ -286,5 +290,143 @@ describe('the States tab saves the ordered list', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(onSave.mock.lastCall![0].statuses).toEqual(['done', 'doing']);
     expect(onSave.mock.lastCall![0].defaultStatus).toBeUndefined();
+  });
+});
+
+// Work Tracker 858: each tab's header and the Details group choose an icon from the card type glyph picker; it is
+// saved with the type, and Reset To Default stores nothing again (item-types.md "Tab icons").
+describe('tab icons in the type editor', () => {
+  function editing(type: ItemTypeDef) {
+    for (const key of Object.keys(plan)) delete plan[key];
+    Object.assign(plan, { types: [type], items: new Map(), statusNames: new Map() });
+    const onSave = vi.fn();
+    render(
+      <ItemTypeEditor
+        type={type}
+        types={[type]}
+        itemCount={0}
+        onSave={onSave}
+        onDelete={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    return onSave;
+  }
+  const save = (onSave: ReturnType<typeof vi.fn>) => {
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    return onSave.mock.lastCall![0] as ItemTypeDef;
+  };
+
+  it('shows the defaults, and saves a picked icon for a tab and for Details', () => {
+    const onSave = editing(ITEM_TYPES[1]);
+    // Details' checklist, then Overview's page.
+    const buttons = screen.getAllByRole('button', { name: /^Icon: / });
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Icon: Checklist',
+      'Icon: Page',
+    ]);
+    fireEvent.click(buttons[1]!);
+    const group = screen.getByRole('radiogroup', { name: 'Overview Icon' });
+    fireEvent.click(within(group).getByRole('radio', { name: 'Book glyph' }));
+    expect(screen.queryByRole('radiogroup', { name: 'Overview Icon' })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Icon: Book' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Icon: Checklist' }));
+    // A search covers every category.
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search glyphs' }), {
+      target: { value: 'info' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: 'Info glyph' }));
+    const saved = save(onSave);
+    expect(saved.tabs![0]!.glyph).toBe('book');
+    expect(saved.detailsGlyph).toBe('info');
+  });
+
+  it('opens the icon picker from the keyboard, and Escape closes it unchanged', () => {
+    const onSave = editing(ITEM_TYPES[1]);
+    const button = screen.getByRole('button', { name: 'Icon: Page' });
+    fireEvent.keyDown(button, { key: 'Enter' });
+    expect(screen.queryByRole('radiogroup', { name: 'Overview Icon' })).toBeNull();
+    fireEvent.keyDown(button, { key: 'ArrowDown' });
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    const group = screen.getByRole('radiogroup', { name: 'Overview Icon' });
+    fireEvent.keyDown(group, { key: 'Escape' });
+    expect(screen.queryByRole('radiogroup', { name: 'Overview Icon' })).toBeNull();
+    expect(save(onSave).tabs?.[0]).not.toHaveProperty('glyph');
+  });
+
+  it('puts the default back with Reset To Default, storing nothing', () => {
+    const type: ItemTypeDef = {
+      ...ITEM_TYPES[1],
+      detailsGlyph: 'info',
+      tabs: [{ id: 't-overview', label: 'Overview', fields: ['description'], glyph: 'book' }],
+    };
+    const onSave = editing(type);
+    // The default needs no reset.
+    fireEvent.click(screen.getByRole('button', { name: 'Icon: Book' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Reset To Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Icon: Info' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Reset To Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Icon: Checklist' }));
+    expect(screen.queryByRole('button', { name: 'Reset To Default' })).toBeNull();
+    // Picking the default stores nothing either.
+    fireEvent.click(screen.getByRole('radio', { name: 'Checklist glyph' }));
+    const saved = save(onSave);
+    expect(saved.tabs![0]).not.toHaveProperty('glyph');
+    expect(saved).not.toHaveProperty('detailsGlyph');
+  });
+
+  it('shows an inherited type’s icons as its base’s, read-only', () => {
+    const base: ItemTypeDef = {
+      ...ITEM_TYPES[1],
+      id: 'work',
+      label: 'Work',
+      tabs: [{ id: 't-overview', label: 'Overview', fields: ['description'], glyph: 'book' }],
+    };
+    const bug: ItemTypeDef = { ...base, id: 'bug', label: 'Bug', inherits: 'work', ownFields: [] };
+    for (const key of Object.keys(plan)) delete plan[key];
+    Object.assign(plan, { types: [base, bug], items: new Map(), statusNames: new Map() });
+    render(
+      <ItemTypeEditor
+        type={bug}
+        types={[base, bug]}
+        itemCount={0}
+        onSave={vi.fn()}
+        onDelete={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.queryAllByRole('button', { name: /^Icon: / })).toHaveLength(0);
+  });
+
+  it('keeps keys a newer liveplanner stored on the type, its tabs and its fields through a save', () => {
+    const type = {
+      ...ITEM_TYPES[1],
+      later: { on: true },
+      tabs: [{ id: 't-overview', label: 'Overview', fields: ['description'], later: 1 }],
+    } as unknown as ItemTypeDef;
+    const onSave = editing(type);
+    const saved = save(onSave) as ItemTypeDef & { later?: unknown };
+    expect(saved.later).toEqual({ on: true });
+    expect(saved.tabs![0]).toMatchObject({ later: 1 });
+  });
+
+  // Work Tracker 891: a type's card templates (item-types.md "Card templates") are saved back with any other change.
+  it('keeps the type’s card templates through a save, less a value for a field it no longer offers', () => {
+    const report = {
+      id: 'tp-report',
+      name: 'Report',
+      fields: { title: 'Report', description: 'What happened?', 'f-gone': 'x' },
+    };
+    const onSave = editing({ ...ITEM_TYPES[1], templates: [report] });
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Chore' } });
+    const saved = save(onSave);
+    expect(saved.label).toBe('Chore');
+    expect(saved.templates).toEqual([
+      {
+        id: 'tp-report',
+        name: 'Report',
+        fields: { title: 'Report', description: 'What happened?' },
+      },
+    ]);
   });
 });

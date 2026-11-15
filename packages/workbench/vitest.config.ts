@@ -8,7 +8,9 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // (docs/specs/007-editor/pages-mode.md "Contents" in each). The editors' door tests drive them with real pages; these
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
+  'src/components/canvas/PageContentsList.tsx',
   'src/components/canvas/PageContentsSidebar.tsx',
+  'src/components/canvas/PageRowMenu.tsx',
   'src/lib/editor-arrival.ts',
   'src/lib/guard-run.ts',
   'src/lib/room-presence.ts',
@@ -19,6 +21,11 @@ const HELD_AT_100 = [
   'src/lib/api/tab-delta-save.ts',
   'src/lib/api/tab-drafts.ts',
   'src/lib/api/tab-draft-store.ts',
+  // The last seen copy a cloud item warm-opens from (Work Tracker 890).
+  'src/lib/api/last-seen-copies.ts',
+  'src/lib/api/last-seen-store.ts',
+  'src/lib/api/last-seen-follower.ts',
+  'src/hooks/persistence/useLastSeenFollow.ts',
   'src/lib/api/tab-saved.ts',
   'src/hooks/persistence/useTabDrafts.ts',
   'src/lib/api/xhr-fetch.ts',
@@ -26,6 +33,9 @@ const HELD_AT_100 = [
   'src/lib/canvas-backgrounds.ts',
   'src/lib/tab-looks.ts',
   'src/lib/editor-viewport-defaults.ts',
+  // A lane's gutter strip (docs/specs/009-elements/lane.md), drawn by livediagram's and liveplanner's canvases.
+  'src/components/canvas/LaneGutterStrip.tsx',
+  'src/components/canvas/upright-title.ts',
   'src/components/canvas/label-align.ts',
   'src/components/dialogs/export-tab-dialog.tsx',
   'src/lib/tab-export-name.ts',
@@ -56,6 +66,15 @@ const HELD_AT_100 = [
   'src/components/chrome/VisibilityLegend.tsx',
   'src/components/dialogs/EditorSettingsDialog.tsx',
   'src/lib/preferences-local-only.ts',
+  // The account control and the Settings panel host, the last of the header's five copies.
+  'src/components/chrome/AuthControls.tsx',
+  'src/components/dialogs/settings/settings-panel-host.tsx',
+  // The selection lock held until the holder's change lands, and the holds on our saves it reads, in every editor
+  // (docs/specs/007-editor/editor-app.md "Held until the holder's change lands", Work Tracker 862).
+  'src/lib/own-writes.ts',
+  'src/lib/selection-write-hold.ts',
+  'src/lib/remote-selection.ts',
+  'src/components/comments/CommentMarks.tsx',
 ];
 
 export default defineProject({

@@ -15,6 +15,7 @@ import {
   type ShareRole,
 } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { lastSeenCopies } from '@/lib/last-seen';
 import type { Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { setLoadStep } from '@/lib/load-progress';
@@ -89,6 +90,8 @@ export const DOCUMENT_ARRIVAL: ArrivalProduct<
   grant: documentGrant,
   // No sharedAddress: a share link's address stays in the bar.
   offlineOwnerId: OFFLINE_OWNER_ID,
+  // The last seen copy a later open warm-opens from (offline-mode.md "Warm open of a cloud document").
+  lastSeen: lastSeenCopies,
 };
 
 // The bootstrap's setters under the arrival's names (each still guarded by its run).

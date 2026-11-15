@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { type Tab, TAB_SCHEMA_VERSION, type ExportedTabEnvelope } from '@liveplanner/project';
-import { defaultCatalogue } from '@liveplanner/items';
+import {
+  ITEM_TYPES,
+  defaultCatalogue,
+  itemAssistantFor,
+  planTabItemsImport,
+  validateFields,
+} from '@liveplanner/items';
 import { parseImportedTab } from './import-tab';
 
 // A minimal but valid tab payload.
@@ -143,6 +149,43 @@ describe('parseImportedTab, Plan items', () => {
       JSON.stringify(envelope({ items: [item], itemTypes: catalogue as never })),
     );
     expect(r.ok && r.plan?.itemTypes).toEqual(defaultCatalogue());
+  });
+
+  // Work Tracker 891: a type the import adds comes with its card templates (item-types.md "Card templates").
+  it('brings a type the project lacks with its card templates', () => {
+    const report = {
+      id: 'tp-report',
+      name: 'Report',
+      fields: { title: 'Bug', description: 'Steps' },
+    };
+    const bug = { ...ITEM_TYPES[1], id: 'bug', label: 'Bug', templates: [report] };
+    const r = parseImportedTab(
+      JSON.stringify(
+        envelope({
+          items: [{ ...item, type: 'bug' }],
+          itemTypes: { version: 1, types: [bug] },
+        }),
+      ),
+    );
+    if (!r.ok || !r.plan) throw new Error('no plan');
+    const { types } = planTabItemsImport(r.plan.items, r.plan.itemTypes, new Map(), ITEM_TYPES);
+    expect(types.map((t) => [t.id, t.templates])).toEqual([['bug', [report]]]);
+  });
+
+  // Work Tracker 901: a card handed to an AI assistant keeps it, as a person's keeps them (items.md "Handing a card to
+  // an AI assistant"), and the create the import sends passes the api's own check.
+  it('keeps a card’s AI assistant Assignee through the import', () => {
+    const thomas = { id: 'a1b2c3d4e5f6a1b2c3d4e5f6', name: 'Thomas', color: '#2563eb' };
+    const claude = itemAssistantFor(thomas, 'Claude')!;
+    const handed = { ...item, fields: { ...item.fields, assignee: claude } };
+    const r = parseImportedTab(JSON.stringify(envelope({ items: [handed] })));
+    if (!r.ok || !r.plan) throw new Error('no plan');
+    const { creates } = planTabItemsImport(r.plan.items, r.plan.itemTypes, new Map(), ITEM_TYPES);
+    expect(creates[0]!.fields['assignee']).toEqual(claude);
+    expect(validateFields(creates[0]!.fields, 'create')).toMatchObject({
+      ok: true,
+      fields: { assignee: claude },
+    });
   });
 
   it('has no plan for a file without items', () => {

@@ -1,8 +1,8 @@
-// The reference board (docs/specs/008-canvas/canvas-performance.md "The reference board"): one
-// synthetic board, built from a seed, so every run of the performance probe measures the same thing
-// and no user content is involved. 1,000 elements of the kinds livehuddle makes, spread over four
-// screens by three. (Its arrows, pen strokes and paths left with the element engine's part 4,
-// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine".)
+// The reference Space (docs/specs/008-canvas/canvas-performance.md "The reference board"): one synthetic office,
+// built from a seed, so every run of the performance probe measures the same thing and no user content is involved.
+// 1,000 elements laid out as a real Space is: 96 rooms on a 12 by 8 grid over four screens by three, each with its
+// door, a rug, two desks with their chairs, a sofa, a plant and a sticky note, and the first 40 named by a text label
+// (Work Tracker 649: measured on a Space of rooms and furniture rather than shapes scattered at random).
 
 import {
   createShape,
@@ -18,15 +18,19 @@ export const REFERENCE_COUNT = 1000;
 // Four 1440 px screens wide, three 900 px screens high.
 export const REFERENCE_AREA = { width: 5760, height: 2700 };
 
-// The spec's mix, as shares of the board.
-const MIX = [
-  ['shape', 0.6],
-  ['text', 0.25],
-  ['sticky', 0.15],
-] as const;
-type Kind = (typeof MIX)[number][0];
+// The office: a grid of rooms, each in its cell with a corridor's gap round it.
+export const ROOM_COLUMNS = 12;
+export const ROOM_ROWS = 8;
+const CELL = {
+  width: REFERENCE_AREA.width / ROOM_COLUMNS,
+  height: REFERENCE_AREA.height / ROOM_ROWS,
+};
+const GAP = 32;
+// The rooms named by a text label, so the board holds exactly REFERENCE_COUNT elements.
+const LABELLED_ROOMS = REFERENCE_COUNT - ROOM_COLUMNS * ROOM_ROWS * 10;
 
-const SHAPE_KINDS: ShapeKind[] = ['room', 'rug', 'desk', 'plant'];
+/** The furniture kinds the probe drags (a piece, the commonest thing moved in a Space). */
+export const FURNITURE_KINDS: readonly ShapeKind[] = ['desk', 'chair', 'sofa', 'plant'];
 
 // mulberry32: a small, well-mixed 32-bit PRNG, the same numbers on every machine.
 function prng(seed: number): () => number {
@@ -40,38 +44,62 @@ function prng(seed: number): () => number {
   };
 }
 
+/** The reference Space, or its first `count` elements (a smaller office for a unit test's seeded edits). */
 export function buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COUNT): Element[] {
   const rand = prng(seed);
-  const pick = <T>(list: readonly T[]): T => list[Math.floor(rand() * list.length)]!;
-  // Exact counts per kind, interleaved by a seeded shuffle so paint order mixes them as a board does.
-  const kinds: Kind[] = MIX.flatMap(([kind, share]) =>
-    Array.from({ length: Math.round(count * share) }, () => kind),
-  );
-  for (let i = kinds.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [kinds[i], kinds[j]] = [kinds[j]!, kinds[i]!];
-  }
-  // A top-left that keeps a box of this size inside the area.
-  const at = (w: number, h: number) => ({
-    x: Math.round(rand() * (REFERENCE_AREA.width - w)),
-    y: Math.round(rand() * (REFERENCE_AREA.height - h)),
-  });
-
-  return kinds.map((kind, i): Element => {
-    const id = `ref-${i}`;
-    switch (kind) {
-      case 'shape': {
-        const shape = createShape(pick(SHAPE_KINDS), 0, 0);
-        return { ...shape, ...at(shape.width, shape.height), id, label: `Step ${i}` };
+  const out: Element[] = [];
+  const add = (el: Element) => out.push({ ...el, id: `ref-${out.length}` });
+  // A piece of `kind` at a seeded spot inside the box (x, y, w, h), kept wholly inside it.
+  const piece = (kind: ShapeKind, x: number, y: number, w: number, h: number) => {
+    const s = createShape(kind, 0, 0);
+    add({
+      ...s,
+      x: Math.round(x + rand() * Math.max(0, w - s.width)),
+      y: Math.round(y + rand() * Math.max(0, h - s.height)),
+    });
+  };
+  for (let row = 0; row < ROOM_ROWS; row++)
+    for (let col = 0; col < ROOM_COLUMNS; col++) {
+      const n = row * ROOM_COLUMNS + col;
+      const x = Math.round(col * CELL.width + GAP / 2);
+      const y = Math.round(row * CELL.height + GAP / 2);
+      const width = Math.round(CELL.width - GAP);
+      const height = Math.round(CELL.height - GAP);
+      add({ ...createShape('room', 0, 0), x, y, width, height, label: `Room ${n + 1}` });
+      const door = createShape('door', 0, 0);
+      add({
+        ...door,
+        x: Math.round(x + width / 2 - door.width / 2),
+        y: Math.round(y + height - door.height / 2),
+      });
+      add({
+        ...createShape('rug', 0, 0),
+        x: x + 24,
+        y: y + 40,
+        width: Math.round(width / 2),
+        height: Math.round(height / 2),
+      });
+      // The work half (left) and the lounge half (right) of the room, inset from its walls.
+      const half = width / 2 - 24;
+      const inner = height - 48;
+      for (let d = 0; d < 2; d++) {
+        piece('desk', x + 16, y + 16 + (d * inner) / 2, half, inner / 2);
+        piece('chair', x + 16, y + 16 + (d * inner) / 2, half, inner / 2);
       }
-      case 'text': {
+      piece('sofa', x + width / 2, y + 16, half, inner / 2);
+      piece('plant', x + width / 2, y + 16 + inner / 2, half, inner / 2);
+      // A small note on the wall, clear of the sofa (a default sticky covers a quarter of the room).
+      const sticky = { ...createSticky(0, 0), width: 96, height: 96 };
+      add({
+        ...sticky,
+        x: Math.round(x + width - sticky.width - 16),
+        y: Math.round(y + 16),
+        label: `Idea ${n + 1}`,
+      });
+      if (n < LABELLED_ROOMS) {
         const text = createText(0, 0);
-        return { ...text, ...at(text.width, text.height), id, label: `Note ${i}` };
-      }
-      case 'sticky': {
-        const sticky = createSticky(0, 0);
-        return { ...sticky, ...at(sticky.width, sticky.height), id, label: `Idea ${i}` };
+        add({ ...text, x: x + 16, y: y + height - text.height - 16, label: `Team ${n + 1}` });
       }
     }
-  });
+  return out.slice(0, count);
 }

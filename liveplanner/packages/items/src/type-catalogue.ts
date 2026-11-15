@@ -39,6 +39,15 @@ import { statusNamed } from './status-names';
 import { REQUIRED_TYPE_FIELDS, TYPE_REQUIRED_FIELDS } from './type-required-fields';
 import { inheritanceProblem, withInheritance } from './type-inheritance';
 import { HEX_COLOUR, isObj } from './validate';
+import { CUSTOM_FIELD_KEYS, ITEM_TYPE_KEYS, ITEM_TYPE_TAB_KEYS, newerKeysOf } from './stored-keys';
+import { DETAILS_GLYPH_DEFAULT, defaultTabGlyph, storedGlyph } from './tab-glyphs';
+import {
+  CARD_TEMPLATES_BYTES,
+  cardTemplatesBytes,
+  readCardTemplates,
+  withoutTemplates,
+  type CardTemplate,
+} from './card-templates';
 
 export const ITEM_TYPES_MAX = 32;
 export const ITEM_TYPE_FIELDS_MAX = 24;
@@ -219,7 +228,17 @@ export function newTabId(label: string, taken: Iterable<string>): string {
   return uniqueSlug(`t-${slugOf(label, 30) || 'tab'}`, new Set(taken), 32);
 }
 
-function readTabs(input: unknown, fields: readonly string[], at: string): ItemTypeTab[] | string {
+// The keys a reader keeps that this build does not know (docs/specs/026-plan/item-types.md "Settings from a newer
+// version"): every reader keeps them; the api's writes, the newest build's, drop them.
+const newerOf = (input: unknown, known: readonly string[], newer: NewerFields) =>
+  newer === 'keep' ? newerKeysOf(input, known) : {};
+
+function readTabs(
+  input: unknown,
+  fields: readonly string[],
+  at: string,
+  newer: NewerFields,
+): ItemTypeTab[] | string {
   if (!Array.isArray(input) || input.length > ITEM_TYPE_TABS_MAX) return `${at}.tabs`;
   const offered = new Set(fields.filter((f) => !NEVER_IN_A_TAB.has(f)));
   const placed = new Set<string>();
@@ -249,7 +268,15 @@ function readTabs(input: unknown, fields: readonly string[], at: string): ItemTy
         tabFields.push(f);
       }
     }
-    tabs.push({ id, label, fields: tabFields });
+    // Its icon ("Tab icons"): one this build doesn't know, or the default, reads as the default and stores nothing.
+    const glyph = storedGlyph(t['glyph'], defaultTabGlyph({ id }));
+    tabs.push({
+      id,
+      label,
+      fields: tabFields,
+      ...(glyph ? { glyph } : {}),
+      ...newerOf(t, ITEM_TYPE_TAB_KEYS, newer),
+    });
   }
   return tabs;
 }
@@ -391,7 +418,7 @@ function readCustom(input: unknown, at: string, newer: NewerFields): CustomField
     field.multiple = true;
   // Kept only as true, and only on a Card field (docs/specs/026-plan/item-types.md "Blocked By").
   if (input['blocks'] === true && field.kind === 'card') field.blocks = true;
-  return field;
+  return { ...field, ...newerOf(input, CUSTOM_FIELD_KEYS, newer) };
 }
 
 function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef | string {
@@ -432,7 +459,7 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
   for (const f of TYPE_REQUIRED_FIELDS[id] ?? []) if (!fields.includes(f)) fields.push(f);
   let tabs: ItemTypeTab[] | undefined;
   if (input['tabs'] !== undefined) {
-    const read = readTabs(input['tabs'], fields, at);
+    const read = readTabs(input['tabs'], fields, at, newer);
     if (typeof read === 'string') return read;
     tabs = read;
   }
@@ -442,6 +469,7 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
     if (!d || d.length > ITEM_TYPE_TAB_LABEL_MAX) return `${at}.detailsLabel`;
     if (d !== DETAILS_LABEL_DEFAULT) detailsLabel = d;
   }
+  const detailsGlyph = storedGlyph(input['detailsGlyph'], DETAILS_GLYPH_DEFAULT);
   // The ordered list of the statuses it uses; a type stored before it (legacy) keeps what it left out, and a type
   // with the list drops any exclusions, which it replaced.
   let statuses: string[] | undefined;
@@ -492,6 +520,9 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
       return `${at}.ownFields`;
     ownFields = [...new Set(own as string[])].filter((f) => fields.includes(f));
   }
+  // Its card templates ("Card templates"), carried as given: validateItemTypeCatalogue reads them once the type is
+  // resolved, so an inherited type's templates are read against the fields its base gives it too.
+  const templates = input['templates'] as CardTemplate[] | undefined;
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -506,6 +537,7 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
     ...(custom.length ? { custom } : {}),
     ...(tabs ? { tabs } : {}),
     ...(detailsLabel ? { detailsLabel } : {}),
+    ...(detailsGlyph ? { detailsGlyph } : {}),
     ...(statuses ? { statuses } : {}),
     ...(excludedStatuses ? { excludedStatuses } : {}),
     ...(defaultStatus ? { defaultStatus } : {}),
@@ -515,6 +547,8 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
     ...(colourField ? { colourField } : {}),
     ...(inheritsIn !== undefined ? { inherits: inheritsIn } : {}),
     ...(ownFields ? { ownFields } : {}),
+    ...(templates !== undefined ? { templates } : {}),
+    ...newerOf(input, ITEM_TYPE_KEYS, newer),
   };
 }
 
@@ -644,7 +678,8 @@ export function validateItemTypeCatalogue(
   // base (a type whose base is gone detached), then held to the caps as resolved.
   const chain = inheritanceProblem(types);
   if (chain) return { ok: false, reason: chain };
-  const resolved = withInheritance(types);
+  const resolved = withTemplatesRead(withInheritance(types), newerFields);
+  if (typeof resolved === 'string') return { ok: false, reason: resolved };
   for (const [i, t] of resolved.entries()) {
     if (!t.inherits) continue;
     if (t.fields.length > ITEM_TYPE_FIELDS_MAX) return { ok: false, reason: `types[${i}].fields` };
@@ -652,9 +687,34 @@ export function validateItemTypeCatalogue(
       return { ok: false, reason: `types[${i}].custom` };
   }
   const catalogue: ItemTypeCatalogue = { version: ITEM_TYPE_CATALOGUE_VERSION, types: resolved };
-  if (new TextEncoder().encode(JSON.stringify(catalogue)).length > ITEM_TYPES_BYTES)
+  // Card templates have their own budget ("Card templates"), so the catalogue's 32 KB counts the types without them.
+  const templateBytes = cardTemplatesBytes(resolved);
+  if (templateBytes > CARD_TEMPLATES_BYTES) return { ok: false, reason: 'templates' };
+  const counted = templateBytes
+    ? { ...catalogue, types: resolved.map(withoutTemplates) }
+    : catalogue;
+  if (new TextEncoder().encode(JSON.stringify(counted)).length > ITEM_TYPES_BYTES)
     return { ok: false, reason: 'too large' };
   return { ok: true, catalogue };
+}
+
+// Each type's card templates read against the type as resolved (card-templates.ts): the types, or the reason one is
+// refused. A type left with none stores no key.
+function withTemplatesRead(
+  types: readonly ItemTypeDef[],
+  newer: NewerFields,
+): ItemTypeDef[] | string {
+  const out: ItemTypeDef[] = [];
+  for (const [i, t] of types.entries()) {
+    if (t.templates === undefined) {
+      out.push(t);
+      continue;
+    }
+    const read = readCardTemplates(t.templates, t, `types[${i}]`, newer);
+    if (typeof read === 'string') return read;
+    out.push(read.length ? { ...t, templates: read } : withoutTemplates(t));
+  }
+  return out;
 }
 
 // A stored catalogue read back (D1, an offline record, a Drive file): kept when valid, else none

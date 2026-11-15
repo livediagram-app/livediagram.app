@@ -7,7 +7,8 @@ import type { ItemResponse } from '@liveplanner/api-schema';
 import {
   assignedPeople,
   boardShowsType,
-  descriptionFromMarkdown,
+  cardTemplateFields,
+  markdownFields,
   isRichFieldKey,
   richFieldOf,
   isItemPerson,
@@ -20,6 +21,7 @@ import {
   resolveItem,
   resolveStatus,
   resolveType,
+  templateOf,
   fieldKeyOf,
   missingRequiredFields,
   requiredCleared,
@@ -29,6 +31,7 @@ import {
   blockingLoopMessage,
   withTypeChangeFields,
   type BlockingChange,
+  type CardTemplate,
   type Item,
   type ItemFields,
   type ItemTypeDef,
@@ -50,10 +53,13 @@ import type { PlanState } from './plan-state';
 export type ItemChange =
   | {
       op: 'add';
-      title: string;
+      // Optional with a template, which gives one (else its type's new-card title).
+      title?: string;
       type?: string;
       status?: string;
       fields?: Readonly<Record<string, unknown>>;
+      // A card template of its type, by name or id (docs/specs/026-plan/plan-agents.md "Card templates").
+      template?: string;
     }
   | {
       op: 'set';
@@ -168,33 +174,19 @@ function storedText(value: unknown, items: readonly Item[]): string {
   return cut(String(JSON.stringify(value)));
 }
 
-// A description, and a Long Text custom field (docs/specs/026-plan/plan-agents.md "Naming things as people do"), as
-// an agent writes it is Markdown: stored as its plain text and its formatting (`descriptionRich`, `<id>Rich`). Text
-// with nothing marked drops formatting the card had, so the panel never shows an old text over the new one.
-function richFieldsOf(type: ItemTypeDef): string[] {
-  return [
-    'description',
-    ...(type.custom ?? []).filter((f) => f.kind === 'longtext').map((f) => f.id),
-  ];
-}
-
-function withRichText(
-  fields: Record<string, unknown>,
+// A template's values a new card starts from, less those the change gives itself (and the formatting of a text it
+// gives, so a description written over the template's never keeps the template's runs).
+function startValues(
   type: ItemTypeDef,
-  had: Readonly<Record<string, unknown>> = {},
-): { set: Record<string, unknown>; clear: string[] } {
-  const set = { ...fields };
-  const clear: string[] = [];
-  for (const key of richFieldsOf(type)) {
-    const markdown = fields[key];
-    if (typeof markdown !== 'string') continue;
-    const { plain, runs } = descriptionFromMarkdown(markdown);
-    set[key] = plain;
-    const rich = richFieldOf(key);
-    if (runs) set[rich] = runs;
-    else if (rich in had) clear.push(rich);
+  template: CardTemplate,
+  given: Readonly<Record<string, unknown>>,
+): ItemFields {
+  const start = { ...cardTemplateFields(type, template) };
+  for (const key of Object.keys(given)) {
+    delete start[key];
+    if (!isRichFieldKey(key)) delete start[richFieldOf(key)];
   }
-  return { set, clear };
+  return start;
 }
 
 const cut = (text: string) =>
@@ -311,23 +303,36 @@ export async function applyItemChanges(
     for (const c of changes) {
       if (c.op === 'add') {
         const type = must(resolveType(c.type ?? 'task', types)).type;
+        const template = c.template ? must(templateOf(type, c.template, types)).template : null;
+        if (!c.title && !template)
+          throw new Stop(
+            'value_invalid',
+            'A new card needs a title, or a template to take one from.',
+          );
         const pictures = must(splitPictureFields(c.fields, type));
         // A new card has nothing to clear: an empty value leaves the field unset.
-        const fields = {
-          ...withRichText(fieldsFor(pictures.rest, type).fields, type).set,
+        const given = {
+          ...markdownFields(fieldsFor(pictures.rest, type).fields, type).set,
           ...(await placePictures(pictures.pictures, type, {})).set,
         };
+        // The template's values under the change's own, field by field (plan-agents.md "Card templates").
+        const fields = template ? { ...startValues(type, template, given), ...given } : given;
+        const title =
+          c.title ??
+          (typeof fields['title'] === 'string' && fields['title']
+            ? fields['title']
+            : type.newTitle);
         const status = c.status
           ? must(resolveStatus(c.status, state.plan.statuses)).status
           : undefined;
         const missing = missingRequiredFields(type, fields as ItemFields);
         if (missing.length) throw requiredStop(type, missing);
         loopStop(items, types, {
-          next: { id: '', type: type.id, fields: { ...fields, title: c.title } },
+          next: { id: '', type: type.id, fields: { ...fields, title } },
         });
         const { item } = await post(base, {
           type: type.id,
-          fields: { ...fields, title: c.title },
+          fields: { ...fields, title },
           ...(status ? { place: { status } } : {}),
         });
         const notes = personNote(fields, items);
@@ -340,7 +345,7 @@ export async function applyItemChanges(
         const placed = await placePictures(pictures.pictures, type, target.fields);
         const given = fieldsFor(pictures.rest, type);
         given.clear = [...given.clear, ...placed.clear];
-        const described = withRichText({ ...given.fields, ...placed.set }, type, target.fields);
+        const described = markdownFields({ ...given.fields, ...placed.set }, type, target.fields);
         let set = described.set;
         // A value a removed field left on the card is cleared by its key, though the type no longer has it.
         const named = [

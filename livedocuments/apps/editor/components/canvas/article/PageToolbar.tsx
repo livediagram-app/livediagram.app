@@ -56,6 +56,7 @@ import {
   toggleUnderline,
 } from '@/lib/article/article-commands';
 import { articleSchema } from '@/lib/article/article-schema';
+import { articleCountsOf } from '@/lib/article/article-word-count';
 import { track } from '@/lib/telemetry';
 import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
 import { insertFootnote } from '@/lib/article/article-footnotes';
@@ -472,8 +473,14 @@ export function PageToolbar({
         </ToolbarPopover>
       ) : null}
       {open === 'more' ? (
-        <ToolbarPopover anchor="more" menu onClose={close} label="More Formatting" width={220}>
-          <MorePanel selection={selection} card={card} onAction={(a) => choose(() => more(a))} />
+        <ToolbarPopover anchor="more" menu onClose={close} label="More Formatting" width={272}>
+          <MorePanel
+            selection={selection}
+            card={card}
+            // Read only while the menu is open, from the writing as typed: never on the typing path.
+            counts={articleCountsOf(handle.state())}
+            onAction={(a) => choose(() => more(a))}
+          />
         </ToolbarPopover>
       ) : null}
     </>

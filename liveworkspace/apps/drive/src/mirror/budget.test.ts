@@ -10,6 +10,7 @@ import {
   DRIVE_PASS_SUBREQUEST_BUDGET,
 } from '@liveworkspace/drive';
 import { GOOGLE_USER, harness, PERSON, type Harness } from '../test-support';
+import { DRIVE_PICTURE_FULL_MS } from './picture';
 
 // What a meter doesn't count: an access-token refresh (once an hour) per alarm.
 const UNCOUNTED = 1;
@@ -99,6 +100,51 @@ describe('the meter', () => {
     expect(Math.max(...h.meters.map((m) => m.peak))).toBeGreaterThan(0);
     expectWithinBudget(h, DRIVE_PASS_SUBREQUEST_BUDGET);
     expect(h.google.appFiles(GOOGLE_USER).length).toBeGreaterThan(100);
+  });
+});
+
+// Work Tracker 425: a library whose picture alone is more than a pass's budget. Before, every pass spent its budget
+// on the picture and threw it away, so the mirror never caught up; now each pass reads the next pages and keeps them.
+describe('a picture bigger than the budget', () => {
+  it('finishes its whole read over several passes, then mirrors what changed, binning nothing it did not see go', async () => {
+    const h = harness();
+    await mirrored(h, 300);
+    const ids = [...h.index.items.keys()];
+    // Far enough on that the next read is whole and what changed before it is outside the slack.
+    h.clock.advance(DRIVE_PICTURE_FULL_MS);
+    // 60 pages of items, a page of folders and one of the Trash: 62 requests, past a budget of 40.
+    h.index.pageSize = 5;
+    const budget = 40;
+    h.setBudget(budget);
+    const whole = h.index.wholeReads;
+    const metersBefore = h.meters.length;
+    const [renamed, binned] = ids;
+    h.index.edit(renamed!, { name: 'Renamed early' });
+    h.resetAlarmStats();
+    // One pass: a quarter of the budget of pages, kept, and nothing else.
+    h.alarm.at = h.clock.now();
+    await h.runDue(1);
+    expect(h.store.pictureRead()).not.toBeNull();
+    expect(h.fileOf(renamed!)!.name).not.toBe('Renamed early.livediagram');
+    expect(h.alarm.at! - h.clock.now()).toBeLessThanOrEqual(DRIVE_PASS_CONTINUE_MS);
+    // Meanwhile, after the read began: a new item and one put in the Trash.
+    h.clock.advance(500);
+    const made = h.index.addItem({ name: 'Made meanwhile' });
+    h.index.items.get(binned!)!.trashedAt = h.clock.now();
+    await h.runDue(200);
+    expect(h.mirror.connectionSummary(PERSON)).toMatchObject({ syncing: false, status: 'ok' });
+    expect(h.index.wholeReads).toBe(whole + 1);
+    // At least the 62 pages over a quarter of the budget each, and never a pass past the budget.
+    expect(h.alarmStats().alarms).toBeGreaterThanOrEqual(Math.ceil(62 / (budget / 4)));
+    for (const meter of h.meters.slice(metersBefore))
+      expect(meter.peak).toBeLessThanOrEqual(budget);
+    expect(h.alarmStats().peak).toBeLessThanOrEqual(budget + UNCOUNTED);
+    expect(h.fileOf(renamed!)!.name).toBe('Renamed early.livediagram');
+    expect(h.fileOf(made.id)).toMatchObject({ name: 'Made meanwhile.livediagram', trashed: false });
+    expect(h.fileOf(binned!)!.trashed).toBe(true);
+    // Every other item's file stands: a page not yet read never counted as gone.
+    for (const id of ids.slice(2)) expect(h.fileOf(id)!.trashed).toBe(false);
+    expect(h.google.requests.some((r) => r.method === 'DELETE')).toBe(false);
   });
 });
 

@@ -80,7 +80,7 @@ describe('the number stepper', () => {
     const track = container.firstElementChild as HTMLElement;
     expect(track.style.borderColor).toBe('rgb(1, 2, 3)');
     expect(track.className).not.toContain('bg-slate-100');
-    const field = screen.getByLabelText('Font Size') as HTMLInputElement;
+    const field = screen.getByLabelText<HTMLInputElement>('Font Size');
     expect(field.style.color).toBe('rgb(7, 8, 9)');
     expect(field.parentElement!.style.backgroundColor).toBe('rgb(4, 5, 6)');
     expect(screen.getByRole('button', { name: 'Increase Font Size' }).style.color).toBe(

@@ -439,3 +439,30 @@ its replay happen). An iPhone reported stutter on pan and zoom; desktop Chrome d
   (227-322 MB and 104-262 MB before; 249-295 MB and 95-300 MB with the display copies), so the
   memory win on an iPhone, which closed the tab, is not shown by a local measurement; what changed
   is the work handed to the browser: 12 URLs instead of 16, each 2048 x 1280 instead of 3200 x 2000.
+
+## The drag and pan misses after the element trim (Work Tracker 649)
+
+Measured 2026-11-14 on a local production build (the e2e stack), Chromium at 1440 x 900, five runs a row, at this
+machine's calibrated reference speed (2.97x and 3.20x on two runs) and again at a forced 3.36x, the throttle the nightly reported the
+misses at. Before: the nightly read a drag's longest task at 226-253 ms and a pan at fit at 211 ms.
+
+- **The misses are gone after #459's element trim.** On main's old reference board (1,000 boxes scattered at random
+  over four screens by three) at a forced 3.36x every pan, zoom, marquee, hover, select and drag row passes but one:
+  the general tab's drag at fit, 57 ms against 50. Its one long task is the drop: a `pointerup` of about 55 ms of
+  script (React's commit of the moved element, a forced layout of the board from the layout effects that place
+  chrome again after the gesture, of which `SnapWidth`'s measure is the largest, and the readable-ink pass over the
+  board), not any frame of the move.
+- **The reference board is now a Space.** 96 rooms, each with a door, a rug, two desks and two chairs, a sofa, a
+  plant and a small sticky note, 40 of them named: 1,000 elements laid out as a Space is, the probe dragging a piece
+  of furniture. Every row passes at the calibrated 2.97x and 3.20x and at a forced 3.36x; the drag trace holds no task over
+  35 ms, and a drag's median frame is 17 ms.
+- **Rows dropped.** livehuddle has one kind of tab and no pen, so the whiteboard series (the same tab as the general
+  one here) and the stroke row are no longer run: 17 rows instead of 38.
+- **Against livediagram after #1225.** livediagram's latest nightly (2026-11-14, its runner at 1.16x) passes every
+  drag and pan row of its diagram series and fails only its whiteboard series at fit (drag 90 ms, select 145 ms,
+  open 5.9 s). livehuddle's nightly the same day, on the old board at 2.21x, read drags of 115-134 ms: the hosted
+  runner reads a drag about twice as slow as a local run (above), and the old board's drop is the remaining cost.
+  The Space board is what the nightly measures from now on.
+- **Still open.** The drop's commit on a scattered board, if the nightly keeps reading it over budget: keep the chrome
+  placed again after a gesture from forcing the board's layout inside React's commit, and share the readable-ink
+  pass's grid across a commit.

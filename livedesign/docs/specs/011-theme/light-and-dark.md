@@ -81,8 +81,23 @@ the header (`colourIsOpaque`).
   is drawn a pale warm brown. Words on a card or a block keep the 3:1 walk against it; a quiet caption the author
   made under 4.5:1 on white stays as quiet. Nothing stored changes, and an export prints the words as made.
   `apps/live/lib/pages-template-contrast.test.ts` holds every Wireframes template, the Logo Design template
-  (Sunny Side) and the four logo explorations at 4.5:1 against the sheet or the card each word sits on, as the canvas draws them in the light
-  and the dark editor.
+  (Sunny Side) and the four logo explorations at 4.5:1 against the sheet or the card each word sits on, as the canvas
+  draws them in the light and the dark editor, under every theme picked in either half.
+- **Ink marks on the plain paper stay seen.** A filled part straight on the plain paper (a primary button, a chosen
+  chip, a progress dot, a play disc and its prev and next arrows: its own opaque fill, nothing filled under it) that
+  the dark paper sinks under 3:1 is drawn, in the dark editor, with its fill walked in lightness, hue and chroma kept,
+  until it reaches 3:1 against the slate (WCAG's non-text minimum); a stroke the part draws in its fill's colour
+  follows. So a wireframe's ink button is drawn a mid slate under its white word, not slate on slate. An icon straight
+  on the plain paper has its stroke walked as a word is, to the contrast it had on white, 3:1 at the least, so a tab
+  bar's chosen ink glyph still reads above its muted neighbours (`withPaperMarkInks`,
+  `packages/design/src/paper-label-ink.ts`). It runs before the label walks, so the words on a walked fill are read
+  against the fill as drawn. Nothing stored changes, and an export prints the marks as made. The layout picker's tiles
+  draw a plain page in the dark editor through the same walks as the canvas (`inkedOnPaper`,
+  `apps/live/lib/stock-colour-projector.ts`), so a tile matches what pressing it puts on the page. The Contents page
+  pictures and the Map walk nothing of their own: they draw the canvas's own elements, already in the viewer's theme
+  half and inked off the paper, so neither shows ink the canvas does not.
+  `apps/live/lib/pages-template-contrast.test.ts` holds those templates' paper marks at 3:1 too, under every theme,
+  picked in either half and seen in either.
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
   the page's (a light page takes the light half, a dark one the dark half), its stock colours for that surface. A

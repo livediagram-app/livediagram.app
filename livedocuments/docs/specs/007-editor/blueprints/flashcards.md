@@ -220,6 +220,60 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   over 16 ms, the machine's noise). Long tasks over 50 ms: none either way. Components rendered per typing commit:
   431 before (three root renders of about 140), 157 after. A key's own work no longer reads the 100 pages (1.3 ms of
   its 9 ms before), and the 15 to 18 ms garbage collection pauses the profiles showed mid-typing were gone after.
+- Chrome skips a typing commit (#828). EditorContext hands its readers a new view-model on every render of the page,
+  so every reader rendered on each commit, the chrome among them; the page also rebuilt the header, the tab bar and
+  every host element inside SplitViewFrame's render function, so each rendered as a child even without reading the
+  context. Now the page publishes each render's view-model to a chrome store after the commit
+  (`usePublishEditorChrome`, `app/document/[id]/EditorContext.tsx`, a layout effect), and the chrome reads it a slice
+  at a time (`useEditorChrome(select, equal)` over `useStoreSlice`), its handlers reading `useEditorChromeStore().get()`
+  when they run:
+  - `EditorViewHeader` (memo) and `EditorViewFooter` (`withStableEventProps`) in `editor-view-bars.tsx`: the header
+    and the role pill from slices; the tab bar's `tabs` compared by `sameTabsForBar` (a tab whose only change is its
+    `elements` or `articles` is the same tab to the bar).
+  - The hosts are made once at module scope in `EditorView.tsx` (`TAB_DIALOGS`, `COLLABORATORS`, `PRESENTATION`,
+    `MODALS`, `TOURS`, `START_PANELS`), so the view's render passes them over. `EditorTabDialogs`, `CollaboratorsHost`,
+    `EditorModals`, `EditorAnchoredPopovers` and `EditorElementDialogs` read only whether one of theirs is open and
+    mount their `Open…` body (which reads EditorContext) only then; `EditorContextMenuHost` reads the menu's mode and
+    `isReadOnly`; `EditorStartPanels` reads the tab's id, name, whether it has content and `templateStartShownOf`.
+  - The rest of the chrome skips a typing commit too (Work Tracker 907):
+    - `CanvasChrome` takes only the canvas props it reads (`CANVAS_CHROME_PROP_KEYS`, `pickCanvasChromeProps`,
+      `components/canvas/canvas-chrome-props.ts`; `CanvasChromeProps` is typed from the list, so reading another prop
+      fails the typecheck) behind `withStableEventProps`. Its pages view comes without the writing
+      (`useChromePagesView`: `articles` left out, the view's actions, `edit` and `arrangement` through
+      `useStableObject`), and the writing reaches Contents as a store (`useWritingStore`, a layout effect;
+      `usePageContents({ writing })`), so a typing commit renders the Contents list and not the chrome round it. The
+      Map took the pages' writing but only shows without pages, so it no longer takes either. The page deck's controls
+      (`pageDeckControls` in `useEditorArticles`) call the newest verbs through a ref and change only with the deck,
+      the tab and the role.
+    - The page sheet's title bar row is its own memoised component (`PageSheetTitleBar.tsx`), without the card's
+      writing that `CanvasPageSheet` takes for `FlashcardFooter`; its stored article style is compared by value
+      (`sameArticleValue`), as a typing commit parses the article afresh and the style comes back an equal new object.
+    - `PagesTourHost` and `ElementTourHost` read a slice of the chrome store (`useEditorChrome(slice, sameSlice)`,
+      `editor-chrome-equal.ts`), their handlers reading `useEditorChromeStore().get()`.
+    - `QuickStyleHost` and `EditorFindHost` read their `deps` from the store (`useEditorChromeLatest`), compared by
+      `sameDepsButWriting`: the same handlers by name, the same data, the active tab the same but for its writing.
+      Find, while open, renders for every change, as its matches read the writing. The hook says `'use no memo'`:
+      compiled, the React Compiler kept its first `store.get()` and the Quick Style bar never showed (the
+      `quick-style-panel` smoke specs catch it; unit tests run uncompiled).
+    - `ModifierHint` is memoised, `LandscapeBarsHandle` sits behind `withStableEventProps`, and the editor's
+      `NewVersionPrompt` is made once (`EditorNewVersionPrompt`), asking the store whether edits are unsaved.
+  - Still rendering on a typing commit, each reading the document: the canvas (`CanvasView`, its pages and each
+    `CanvasPageSheet`, `ArticleFlows`, the element layer) and the Contents list when it shows (its rows read the
+    writing; memoising its rows in the shared `ContentsList` is a follow-up).
+- Measured (#828, the #728 probe on a production `next build --profile` export, This Browser, a 100-card stack of
+  three blocks a card, 390x844 touch at 3x, CPU 4x, 60 keys 120 ms apart in bursts of ten, five runs each way
+  alternating, 30 typing commits each way, on a shared machine at a load of 6 to 11). Components rendered per typing
+  commit (function, class, memo and forwardRef fibers that did work, skipping subtrees React left untouched): 158 to
+  162 before, 107 to 111 after. React render time per typing commit (the `actualDuration` of each topmost rendered
+  component, summed): median 10.9 ms before (quartiles 8.9 and 11.8), 9.0 ms after (7.9 and 10.6). The rest of the
+  time is the page's own hooks (`useEditorState`), `SplitViewFrame`'s render function and the canvas.
+- Measured (Work Tracker 907, a dev build, This Browser, a 100-card stack of three blocks a card, 30 keys 700 ms apart
+  after one warm-up key, components counted as in #828). On a phone (390x844): 105 components per typing commit
+  before, every listed chrome component among them (`CanvasChrome` and its 19, the title bar's `PageTitleBar` and
+  buttons, both tours, `QuickStyleHost`, `FindHost`, `ModifierHint`, `NewVersionPrompt`, `LandscapeBarsHandle`) in
+  30 of 30 commits; 61 after, none of them in any. On a desktop with Contents docked: 1,109 before (its 100 rows,
+  about 1,000 components, inside each commit), 61 after; the list now renders in a commit of its own from the writing
+  store (about 1,017 components), and the thumbnails' settle render (about 1,006) follows as it did before.
 - The flip clones two nodes once per flip and animates `transform` and `opacity` only (compositor).
 
 ## Presentation and UX
@@ -260,6 +314,8 @@ SVG in the existing preview groups.
 | Templates build                               | `packages/templates` template tests                         |
 | Typing on a stack ticks no settle, linear     | `apps/editor/hooks/editor/useArticleIntake.typing.test.ts`  |
 | A save renders nothing                        | `apps/editor/app/document/[id]/editor-persistence.test.tsx` |
+| Chrome skips a typing commit                  | `apps/editor/app/document/[id]/editor-chrome.test.tsx`      |
+| The rest of the chrome skips a typing commit  | `apps/editor/app/document/[id]/editor-chrome.test.tsx`      |
 | Pages and writing read once per stored object | `packages/document/src/read-caches.test.ts`                 |
 | When the intake has work                      | `apps/editor/lib/article/intake-has-work.test.ts`           |
 | Zone-less writing fitted at once, one layout  | `packages/document/src/article-intake.test.ts`              |

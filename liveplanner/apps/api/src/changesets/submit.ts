@@ -8,7 +8,7 @@ import {
   formatResultLines,
   type ApplySuccess,
 } from '@liveplanner/edit-operations';
-import { rewriteCommentAuthors } from '../comments';
+import { rewriteCommentAuthors, withoutNewElementComments } from '../comments';
 import { lastChangesetRev } from '../db';
 import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
@@ -250,12 +250,18 @@ function rejected(
 export function withServerRules(tab: Tab, stored: StoredTab | null, author: Author): Tab {
   const migrated = migrateIncomingTab(tab) as Tab;
   const previous = stored?.tab.elements ?? [];
-  const elements = rewriteCommentAuthors(migrated.elements, previous, {
-    id: author.id,
-    name: author.name,
-    color: author.color,
-    createdAt: 0,
-  });
+  // An element's own thread takes no new comment (docs/specs/026-plan/plan-mode.md "No comment thread on any canvas
+  // element"): stripped before the authors are set.
+  const elements = rewriteCommentAuthors(
+    withoutNewElementComments(migrated.elements, previous),
+    previous,
+    {
+      id: author.id,
+      name: author.name,
+      color: author.color,
+      createdAt: 0,
+    },
+  );
   const name = stored ? stored.tab.name : capStoredName(migrated.name, null, 'tab');
   return { ...migrated, name, elements };
 }

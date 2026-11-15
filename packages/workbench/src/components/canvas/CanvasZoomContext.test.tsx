@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { act, render } from '@testing-library/react';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   CanvasZoomProvider,
   CounterScaled,
   useCanvasZoom,
   useCanvasZoomSelector,
+  useSettledZoomSelector,
   ZOOM_SETTLE_MS,
   ZoomFollowing,
 } from './CanvasZoomContext';
@@ -50,6 +51,28 @@ describe('following the zoom', () => {
     expect(outside.container.querySelector('b')!.dataset.zoom).toBe('1');
   });
 
+  // Work Tracker 904: the zoom's readers are told by the store, so a zoom step renders them and nothing between them
+  // and the provider, and React searches no subtree for them.
+  it('renders a zoom reader on every step and nothing between it and the provider', () => {
+    let between = 0;
+    const Reader = () => <b data-zoom={useCanvasZoom()} />;
+    const Between = memo(function Between() {
+      useEffect(() => {
+        between += 1;
+      });
+      return <Reader />;
+    });
+    const tree = <Between />;
+    const at = (zoom: number) => <CanvasZoomProvider zoom={zoom}>{tree}</CanvasZoomProvider>;
+    const { container, rerender } = render(at(1));
+    const before = between;
+    for (const zoom of [1.5, 2, 3]) {
+      rerender(at(zoom));
+      expect(container.querySelector('b')!.dataset.zoom).toBe(String(zoom));
+    }
+    expect(between).toBe(before);
+  });
+
   it('renders a selector’s part only when its answer changes', () => {
     let renders = 0;
     const Dot = () => {
@@ -69,6 +92,35 @@ describe('following the zoom', () => {
     expect(renders).toBe(before);
     rerender(at(0.9));
     expect(container.querySelector('i')!.dataset.small).toBe('false');
+  });
+
+  // Work Tracker 885: the parts a board carries by the thousand change shape when the zoom stops, so a zoom step asks
+  // none of them.
+  it('asks a settled selector only once the zoom stands still, and reads 1 outside a provider', () => {
+    vi.useFakeTimers();
+    const asked: number[] = [];
+    const Dot = () => {
+      const small = useSettledZoomSelector((zoom) => {
+        asked.push(zoom);
+        return zoom < 0.5;
+      });
+      return <i data-small={small} />;
+    };
+    const dot = <Dot />;
+    const at = (zoom: number) => <CanvasZoomProvider zoom={zoom}>{dot}</CanvasZoomProvider>;
+    const { container, rerender } = render(at(0.9));
+    expect(container.querySelector('i')!.dataset.small).toBe('false');
+    asked.length = 0;
+    for (const zoom of [0.7, 0.5, 0.3]) rerender(at(zoom));
+    expect(asked).toEqual([]);
+    expect(container.querySelector('i')!.dataset.small).toBe('false');
+    act(() => {
+      vi.advanceTimersByTime(ZOOM_SETTLE_MS);
+    });
+    expect(container.querySelector('i')!.dataset.small).toBe('true');
+    const outside = render(<Dot />);
+    expect(outside.container.querySelector('i')!.dataset.small).toBe('false');
+    outside.unmount();
   });
 
   it('settles a following part to its size on screen once the zoom stands still', () => {

@@ -19,6 +19,7 @@ export function FloatingToolbar({
   zoom,
   suspended = false,
   title,
+  avoid = null,
   children,
 }: {
   bounds: Rect;
@@ -27,6 +28,8 @@ export function FloatingToolbar({
   // Hidden while the selection moves: measures nothing until it ends (useEdgeAwarePlacement).
   suspended?: boolean;
   title?: string;
+  // What a fresh duplicate came from: the toolbar keeps off it (canvas-and-palette.md "Selection popover").
+  avoid?: Rect | null;
   children: ReactNode;
 }) {
   const { ref, placeAbove, style } = useEdgeAwarePlacement(
@@ -35,6 +38,7 @@ export function FloatingToolbar({
     zoom,
     GAP / zoom,
     suspended,
+    avoid,
   );
   return (
     <div
