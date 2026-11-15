@@ -485,6 +485,17 @@ Editor of the whole plan: the whole contract is in [Automations](automations.md#
 - A refusal says what was wrong, what is there, and the next call to make. It never answers with a raw api
   status.
 - A tool error is a tool result marked as an error, never a thrown protocol error, for anything the caller can fix.
+- A value refused for its length or count names the field as the card shows it (its label, "Solution", never
+  `f-solution`), how long or how many it was and the most it takes: "Solution is 12,412 characters; the most is
+  10,000", "Acceptance Criteria row 3 is 230 characters; the most is 200 a row", "Acceptance Criteria has 51 rows; the
+  most is 50". The words are the same whether the agents' own check stopped it before the write (a custom Text, a
+  checklist, labels, a title) or the api refused it (its `field` and `limit`, [Items](items.md) "Limits"); a value
+  past a limit is never quoted back. Any other refused field value still names the field, then lists the fields.
+  The same refusals reach the CLI, which shares the verbs.
+- A plan whose cards would pass the plan fields budget (`plan_full`, [Items](items.md) "Limits") says so in plain
+  words and what to do: "the plan's cards together hold the most a plan can (16 MB of fields). Shorten long
+  descriptions or Long Text fields, empty or delete cards no longer needed, or put new cards in another plan
+  (create_project). Moving cards between columns still works."
 - A call past the per-token rate limit says so and how long to wait (about a minute, the limit's window), so an
   agent makes the same call again rather than giving up or guessing at a back-off.
 

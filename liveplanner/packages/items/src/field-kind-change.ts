@@ -15,7 +15,8 @@ import {
 } from './item';
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
 import { inheritingTypesOf } from './type-inheritance';
-import { ITEM_LABELS_MAX, ITEM_LABEL_MAX, ITEM_UNKNOWN_STRING_MAX } from './limits';
+import { ITEM_LABELS_MAX, ITEM_LABEL_MAX } from './limits';
+import { textMaxOfKind } from './field-limits';
 import { richFieldOf } from './rich-text-field';
 import { RISK_OPTIONS, riskLabel, riskOf } from './risk-fields';
 import { holdsSeveral, storedCardIds, storedPeople } from './several-values';
@@ -227,7 +228,7 @@ export function changedValue(
       const text = textOf(from, value, ctx) ?? '';
       // One line on a Text field: a Long Text's lines run together.
       const line = to.kind === 'text' ? oneLine(text) : text;
-      return rewritten(line.slice(0, ITEM_UNKNOWN_STRING_MAX) || undefined);
+      return rewritten(line.slice(0, textMaxOfKind(to.kind)) || undefined);
     }
     case 'choice': {
       // The first part that is one of its options; anything else it held is lost.

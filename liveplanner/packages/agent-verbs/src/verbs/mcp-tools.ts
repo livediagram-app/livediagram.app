@@ -59,6 +59,7 @@ import {
   uploadPlanImageShape,
 } from '../mcp/plan-schema';
 import { ITEM_ATTACHMENT_BYTES_MAX } from '@liveplanner/items';
+import { FIELD_LIMITS } from '../plan/api-refusal';
 import { importBoardOutput, importBoardShape } from '../mcp/tracker-schema';
 import {
   changeThreadsOutput,
@@ -253,7 +254,10 @@ export const mcpChangeItems = mcpTool('change_items', {
     'Name things as the board shows them: a ' +
     'column by its name ("In Progress"), a card type by name ("Bug"), a custom field by name, an assignee ' +
     'by a person’s name, an item by its number ("#12"). An unknown column, type or field is refused with ' +
-    'the ones there are. Everyone with the plan open sees each change at once.',
+    'the ones there are. ' +
+    FIELD_LIMITS +
+    ' A value past one is refused naming the field, its length and the most it takes. Everyone with the plan open ' +
+    'sees each change at once.',
   inputSchema: changeItemsShape,
   outputSchema: changeItemsOutput,
 });

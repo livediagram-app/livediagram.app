@@ -36,7 +36,7 @@ import {
   type ItemFields,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { apiRefusalOf } from './api-refusal';
+import { apiRefusalOf, fieldNamer } from './api-refusal';
 import {
   addedPictureIds,
   checkPictureGrants,
@@ -234,6 +234,8 @@ export async function applyItemChanges(
     touched.set(item.id, item);
   };
   const naming = () => ({ statuses: state.plan.statuses, items });
+  // The card type of the change being made, so an api refusal names its field as that card shows it.
+  let writing: ItemTypeDef | undefined;
   const post = (path: string, body: unknown) =>
     api.json<ItemResponse>(path, { method: 'POST', body: JSON.stringify(body) });
   // A Calculated field is worked out, never given (docs/specs/026-plan/item-types.md "Calculated fields"): refused
@@ -303,6 +305,7 @@ export async function applyItemChanges(
     for (const c of changes) {
       if (c.op === 'add') {
         const type = must(resolveType(c.type ?? 'task', types)).type;
+        writing = type;
         const template = c.template ? must(templateOf(type, c.template, types)).template : null;
         if (!c.title && !template)
           throw new Stop(
@@ -341,6 +344,7 @@ export async function applyItemChanges(
       } else if (c.op === 'set') {
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
+        writing = type;
         const pictures = must(splitPictureFields(c.fields, type));
         const placed = await placePictures(pictures.pictures, type, target.fields);
         const given = fieldsFor(pictures.rest, type);
@@ -416,7 +420,12 @@ export async function applyItemChanges(
     }
   } catch (err) {
     const refusal =
-      err instanceof Stop ? { code: err.code, message: err.message } : apiRefusalOf(err);
+      err instanceof Stop
+        ? { code: err.code, message: err.message }
+        : apiRefusalOf(
+            err,
+            fieldNamer(types, () => writing),
+          );
     // An api failure after some changes landed still says which: a retry of the whole batch would
     // otherwise make them twice. Before any landed, it is thrown as ever.
     if (!refusal && applied.length === 0) throw err;

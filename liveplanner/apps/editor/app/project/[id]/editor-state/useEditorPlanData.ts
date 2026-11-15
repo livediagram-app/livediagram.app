@@ -14,6 +14,7 @@ import { type SheetsBridge, useSheetsBridge } from '@/hooks/sheets/useSheetsBrid
 import { tabNamedForSheet } from '@/lib/tab-named-plan';
 import { useEffect, useMemo, useRef } from 'react';
 import { type Element, type Tab, voteHidesCursors } from '@liveplanner/project';
+import type { ItemTypeDef } from '@liveplanner/items';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -138,6 +139,8 @@ export function useEditorPlanData(
     // An undo of a card's delete puts it back on its threads (docs/specs/026-plan/items.md "Cards coming and going").
     threadsOf: (itemId) => cardThreadsRef.current?.threadsOf(itemId) ?? [],
     onRead: (list) => pullRequestsRef.current?.read(list),
+    // A refused field is named as its card shows it (docs/specs/026-plan/items.md "Limits").
+    typesOf: () => itemTypesRef.current,
     onOwnWrite: (write, before) => {
       linkedActionsRef.current?.noteOwnWrite(write, before);
       // A card deleted, or put back, changes the threads it was on: read them again once it has landed.
@@ -147,6 +150,8 @@ export function useEditorPlanData(
   // The states of the pull requests the cards link (docs/specs/026-plan/github-pull-requests.md "Pull request state on
   // cards"), from each items read and the room.
   const pullRequestsRef = useRef<PullRequestStatusesSlice | null>(null);
+  // The card types, for a refusal's toast to name a field (set once useItemTypes below has them).
+  const itemTypesRef = useRef<readonly ItemTypeDef[]>([]);
   // The plan's card comment threads (docs/specs/026-plan/items.md "Comments"), read once its cards are.
   const cardThreadsRef = useRef<CardThreads | null>(null);
   const cardThreads = useCardThreads({
@@ -175,6 +180,7 @@ export function useEditorPlanData(
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
   });
+  useAssignRef(itemTypesRef, itemTypes.types);
   const pullRequests = usePullRequestStatuses({
     items: planItems.items,
     types: itemTypes.types,

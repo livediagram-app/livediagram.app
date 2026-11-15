@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_TITLE_MAX } from '@liveplanner/items';
-import { refusalMessage, writeFailureMessage } from './usePlanItems';
+import { PLAN_FULL_MESSAGE, refusalMessage, writeFailureMessage } from './usePlanItems';
 
 // docs/specs/026-plan/items.md "Limits": a refused change names what was wrong.
 describe('a refused change’s message', () => {
@@ -17,5 +17,28 @@ describe('a refused change’s message', () => {
     expect(writeFailureMessage({ code: 'title_too_long' })).toBe(refusalMessage('title_too_long'));
     expect(writeFailureMessage(new Error('offline'))).toBe("Couldn't save that change");
     expect(writeFailureMessage(null)).toBe("Couldn't save that change");
+  });
+
+  it('names a field refused past its limit as the card shows it, and a full plan in plain words', () => {
+    const refused = {
+      code: 'field_value_invalid',
+      field: 'f-solution',
+      limit: { unit: 'characters', max: 10_000, given: 12_412 },
+    };
+    expect(writeFailureMessage(refused, () => 'Solution')).toBe(
+      'Solution is 12,412 characters; the most is 10,000.',
+    );
+    // Without a name for it, the id; without a limit, the generic line for the code.
+    expect(writeFailureMessage(refused)).toBe(
+      'f-solution is 12,412 characters; the most is 10,000.',
+    );
+    expect(writeFailureMessage({ code: 'field_value_invalid', field: 'due' }, () => 'Due')).toBe(
+      refusalMessage('field_value_invalid'),
+    );
+    expect(writeFailureMessage({ code: 'plan_full' })).toBe(PLAN_FULL_MESSAGE);
+    expect(PLAN_FULL_MESSAGE).toBe(
+      "This plan's cards are full: they hold 16 MB together, the most a plan can. Shorten long descriptions, " +
+        'empty or delete cards, or start another plan',
+    );
   });
 });

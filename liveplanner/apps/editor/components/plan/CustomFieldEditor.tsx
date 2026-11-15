@@ -10,7 +10,7 @@ import {
   EMAIL_MAX,
   dateTimeZones,
   rangeEndOf,
-  ITEM_UNKNOWN_STRING_MAX,
+  textMaxOfKind,
   RATING_STARS_ON_CARD,
   durationMinutes,
   isEmailAddress,
@@ -57,7 +57,7 @@ export function CustomFieldEditor({
           id={id}
           multiline={field.kind === 'longtext'}
           value={text}
-          maxLength={ITEM_UNKNOWN_STRING_MAX}
+          maxLength={textMaxOfKind(field.kind)}
           placeholder={`Add ${field.label.toLowerCase()}`}
           disabled={disabled}
           onSave={onSave}
