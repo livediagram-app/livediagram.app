@@ -12,14 +12,14 @@ import { useElementLinks } from './useElementLinks';
 const linkCard: Element = { ...createLinkCard(0, 0), id: 'card' };
 const square: Element = { ...createShape('square', 0, 0), id: 'box' };
 
-function links(selected: string) {
+function links(selected: string, setActiveId: (id: string) => void = () => {}) {
   const tab: Tab = { id: 't', name: 'Tab', elements: [linkCard, square] };
   return renderHook(() =>
     useElementLinks({
       currentSelectionIds: () => new Set([selected]),
       commit: () => {},
       tabs: [tab],
-      setActiveId: () => {},
+      setActiveId,
       setSelectedId: () => {},
       setEditingId: () => {},
       setFormatSourceId: () => {},
@@ -44,5 +44,26 @@ describe('useElementLinks unfurl', () => {
   it('sends no request for a URL linked from any other element', () => {
     links('box').applyElementLink({ kind: 'url', url: 'https://example.com' });
     expect(api.apiUnfurl).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/007-editor/wireframe-pages.md "Clickable prototypes": a screen link is followed in Prototype mode, so in
+// the editor following one (a link to a deleted page included) does nothing and never throws.
+describe('useElementLinks follow', () => {
+  it('leaves a screen link and a back link alone in the editor', () => {
+    const setActiveId = vi.fn();
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const { followLink } = links('box', setActiveId);
+    followLink({ kind: 'page', pageId: 'gone', transition: 'slide' });
+    followLink({ kind: 'back' });
+    expect(setActiveId).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+
+  it('still follows a tab link', () => {
+    const setActiveId = vi.fn();
+    links('box', setActiveId).followLink({ kind: 'tab', tabId: 't' });
+    expect(setActiveId).toHaveBeenCalledWith('t');
   });
 });
