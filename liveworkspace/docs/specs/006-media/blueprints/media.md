@@ -6,28 +6,28 @@ engineering precision, read from the code. Defaults applied where the spec is si
 
 Scope, by file:
 
-| File                                                          | Role                                                                                                                                                                                                      |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/media/src/index.ts`                       | The Worker: `/api/previews*` to `handlePreviews` (404 when off); `/api/media/app*` to `handleApp`; 404 elsewhere; `scheduled` runs the sweep                                                              |
-| `liveworkspace/apps/media/src/config.ts`                      | `API_PATH`, `PREVIEWS_PATH`, `MAX_JSON_BYTES`, `UNUSED_IMAGE_AGE_MS`, `SWEEP_PAGE`, the tripwire                                                                                                          |
-| `liveworkspace/apps/media/src/env.ts`                         | `Env`, `appKey`, `keyedApps`, `mediaEnabled`, `parsePositiveCap`, `appDoor`, `indexAppOf`                                                                                                                 |
-| `liveworkspace/apps/media/src/http.ts`                        | `ok`, `notFound`, `badRequest`, `forbidden`, `unauthorized`, `unavailable`                                                                                                                                |
-| `liveworkspace/apps/media/src/routes.ts`                      | `handleApp`: images, previews purge, usage, refs, owner merge and delete; `upload`; `originalNameOf`                                                                                                      |
-| `liveworkspace/apps/media/src/images.ts`                      | `images` reads and writes: `listImages`, `getImage`, `findBySha`, `ownerTotals`, `insertImage` (atomic caps), `deleteImageRow`, `usageOf`, `mergeOwner`, `deleteOwnerRows`                                |
-| `liveworkspace/apps/media/src/refs.ts`                        | `syncRefs`, `claimRef`, `pendingApps`                                                                                                                                                                     |
-| `liveworkspace/apps/media/src/retention.ts`                   | `sweepUnusedImages`, `sweepTripped`, `reap`                                                                                                                                                               |
-| `liveworkspace/apps/media/src/jpeg-strip.ts`                  | `stripJpegMetadata`: drop every APPn and COM segment but the ICC profile and Adobe ones (between scans too) and everything after EOI, write back the Exif Orientation alone, keep the image bit-identical |
-| `liveworkspace/apps/media/src/previews/routes.ts`             | `handlePreviews`: the item preview and the three share doors                                                                                                                                              |
-| `liveworkspace/apps/media/src/previews/access.ts`             | `reachItem`, `reachLink`: the index decides who sees a preview                                                                                                                                            |
-| `liveworkspace/apps/media/src/previews/store.ts`              | Bucket keys, freshness, `drawing`, `svgText`, `deleteItemPreviews`                                                                                                                                        |
-| `liveworkspace/apps/media/src/previews/door.ts`               | `callDoor`: the app's export door, `DOOR_TIMEOUT_MS`                                                                                                                                                      |
-| `liveworkspace/apps/media/src/previews/share-card.ts`         | `shareCardSvg`: fit a drawing on the 1200 x 630 card                                                                                                                                                      |
-| `liveworkspace/apps/media/src/previews/share-card-png.ts`     | `shareCardPng`: resvg, imported on first use                                                                                                                                                              |
-| `liveworkspace/apps/media/scripts/e2e-media.mjs`              | An end-to-end run against a local Worker                                                                                                                                                                  |
-| `liveworkspace/apps/media/migrations/0001_media.sql`          | `images`, `refs`, `ref_sync`                                                                                                                                                                              |
-| `liveworkspace/apps/media/migrations/0002_image_document.sql` | `images.document`, the document an image was uploaded for                                                                                                                                                 |
-| `liveworkspace/apps/media/migrations/0003_image_source.sql`   | `images.source`, the tool that uploaded an image (`mcp` or `cli`)                                                                                                                                         |
-| `packages/media/src/*`                                        | The contract: `MEDIA_APPS`, limits, `sniffImageType`, owners, wire headers, `createMediaClient`, previews' paths and caches, `createSharePage`, gallery usage                                             |
+| File                                                          | Role                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/media/src/index.ts`                       | The Worker: `/api/previews*` to `handlePreviews` (404 when off); `/api/media/app*` to `handleApp`; 404 elsewhere; `scheduled` runs the sweep                                                                                              |
+| `liveworkspace/apps/media/src/config.ts`                      | `API_PATH`, `PREVIEWS_PATH`, `MAX_JSON_BYTES`, `UNUSED_IMAGE_AGE_MS`, `SWEEP_PAGE`, the tripwire                                                                                                                                          |
+| `liveworkspace/apps/media/src/env.ts`                         | `Env`, `appKey`, `keyedApps`, `mediaEnabled`, `parsePositiveCap`, `appDoor`, `indexAppOf`                                                                                                                                                 |
+| `liveworkspace/apps/media/src/http.ts`                        | `ok`, `notFound`, `badRequest`, `forbidden`, `unauthorized`, `unavailable`                                                                                                                                                                |
+| `liveworkspace/apps/media/src/routes.ts`                      | `handleApp`: images, previews purge, usage, refs, owner merge and delete; `upload`; `originalNameOf`                                                                                                                                      |
+| `liveworkspace/apps/media/src/images.ts`                      | `images` reads and writes: `listImages`, `getImage`, `findBySha`, `ownerTotals`, `insertImage` (atomic caps), `deleteImageRow`, `usageOf`, `mergeOwner`, `deleteOwnerRows`                                                                |
+| `liveworkspace/apps/media/src/refs.ts`                        | `syncRefs`, `claimRef`, `pendingApps`                                                                                                                                                                                                     |
+| `liveworkspace/apps/media/src/retention.ts`                   | `sweepUnusedImages`, `sweepTripped`, `reap`                                                                                                                                                                                               |
+| `liveworkspace/apps/media/src/jpeg-strip.ts`                  | `stripJpegMetadata`: drop every APPn and COM segment but the ICC profile and Adobe ones (between scans too) and everything after EOI, write back the Exif Orientation alone, keep the image bit-identical                                 |
+| `liveworkspace/apps/media/src/previews/routes.ts`             | `handlePreviews`: the item preview and the three share doors                                                                                                                                                                              |
+| `liveworkspace/apps/media/src/previews/access.ts`             | `reachItem`, `reachLink`: the index decides who sees a preview                                                                                                                                                                            |
+| `liveworkspace/apps/media/src/previews/store.ts`              | Bucket keys, freshness, `drawing`, `svgText`, `deleteItemPreviews`                                                                                                                                                                        |
+| `liveworkspace/apps/media/src/previews/door.ts`               | `callDoor`: the app's export door, `DOOR_TIMEOUT_MS`                                                                                                                                                                                      |
+| `liveworkspace/apps/media/src/previews/share-card.ts`         | `shareCardSvg`: fit a drawing on the 1200 x 630 card                                                                                                                                                                                      |
+| `liveworkspace/apps/media/src/previews/share-card-png.ts`     | `shareCardPng`: resvg, imported on first use                                                                                                                                                                                              |
+| `liveworkspace/apps/media/scripts/e2e-media.mjs`              | An end-to-end run against a local Worker                                                                                                                                                                                                  |
+| `liveworkspace/apps/media/migrations/0001_media.sql`          | `images`, `refs`, `ref_sync`                                                                                                                                                                                                              |
+| `liveworkspace/apps/media/migrations/0002_image_document.sql` | `images.document`, the document an image was uploaded for                                                                                                                                                                                 |
+| `liveworkspace/apps/media/migrations/0003_image_source.sql`   | `images.source`, the tool that uploaded an image (`mcp` or `cli`)                                                                                                                                                                         |
+| `packages/media/src/*`                                        | The contract: `MEDIA_APPS`, limits, `sniffImageType`, owners, wire headers, `createMediaClient`, previews' paths and caches, `createSharePage`, `fetchShareCard`, `createOEmbed`, `embedOpensReadOnly`, `embedSessionRole`, gallery usage |
 
 ## Domain and naming
 
@@ -178,6 +178,26 @@ SVGs carry `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inlin
 font-src https://fonts.gstatic.com; img-src data:; sandbox` and `nosniff`; the share doors add
 `Access-Control-Allow-Origin: *`. `503 { error: 'previews_unavailable' }` is `no-store`. Each app's router forwards
 `/api/previews/*` and `/api/share/<code>/image.svg|image.png|card` here (`@liveworkspace/sites/workspace-proxy`).
+
+### oEmbed (each app's router, `createOEmbed`)
+
+`GET|HEAD /oembed?url=<share link>[&maxwidth=][&maxheight=][&format=json]` on every app's origin, answered by the
+router itself (not forwarded), after its status, telemetry, old form and bare-domain redirects. It reads the card door
+through `fetchShareCard` (`PREVIEWS_ORIGIN`, `SHARE_CARD_TIMEOUT_MS`).
+
+| Answer | When                                                                                                         | Cache                 |
+| ------ | ------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `200`  | `{ version, type: 'rich', title, provider_name, provider_url, html, width, height, cache_age, thumbnail_* }` | `public, max-age=300` |
+| `400`  | no `url`, or one that is not a URL                                                                           | `no-store`            |
+| `404`  | not this app's share page on this host (or its `www.` twin), a malformed code, or the card door's `404`      | `no-store`            |
+| `405`  | not `GET` or `HEAD` (`Allow: GET, HEAD`)                                                                     | `no-store`            |
+| `501`  | `format` other than `json`                                                                                   | `no-store`            |
+| `503`  | the card door failing or unreachable                                                                         | `no-store`            |
+
+`html` is `<iframe src="<origin>/embed?s=<code>&readonly=1" width height title="<name>" style="border:0"
+allowfullscreen></iframe>`, every value HTML-escaped. Sizes: 800 x 500 scaled by `min(1, maxwidth/800, maxheight/500)`,
+rounded, at least 1. The thumbnail (1200 x 630) only when it fits both. The share page's head gains the discovery
+`<link>` from `oembedDiscoveryTag` whenever it gains a name.
 
 ### The export door (each app, `@liveworkspace/index-app`)
 
