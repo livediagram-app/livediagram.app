@@ -70,7 +70,7 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 function attributeMap(model: ViewModel, el: Element): Map<string, ViewAttribute> {
   const attributes = [
     ...stateAttributeOf(el),
-    ...attributesOf(el, { tabRefOf: model.tabRefOf, style: null }),
+    ...attributesOf(el, { tabRefOf: model.tabRefOf, style: null, pageIds: model.pageIds }),
   ].filter((a) => a.key !== 'note' && a.key !== 'comments');
   return new Map(attributes.map((a) => [a.key, a]));
 }

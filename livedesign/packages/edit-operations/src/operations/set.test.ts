@@ -48,6 +48,16 @@ describe('set', () => {
     expect(lines(outcome)).toEqual(['~ n3  note "Ask for SSO"→']);
   });
 
+  // docs/specs/007-editor/wireframe-pages.md "Collaboration and agents": agents set screen links by name.
+  it('sets a screen link, and refuses a malformed one naming link', () => {
+    const link = { kind: 'page', pageId: 'page-1a2b3c4d', transition: 'slide' };
+    const outcome = run([set('n3', { link })]);
+    expect(applied(outcome).tab.elements.find((el) => el.id === 'n3')).toMatchObject({ link });
+    const rejection = refused(run([set('n3', { link: { kind: 'back', transition: 'wipe' } })]));
+    expect(rejection).toMatchObject({ code: 'invalid_result' });
+    expect(JSON.stringify(rejection)).toContain('n3 link: a screen link');
+  });
+
   it('adds a field the element did not have', () => {
     expect(lines(run([set('n3', { note: 'Ask for SSO' })]))).toEqual(['~ n3  note →"Ask for SSO"']);
   });

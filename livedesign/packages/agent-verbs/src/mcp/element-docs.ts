@@ -11,6 +11,7 @@ import {
   ELEMENT_FIELD_VALUES,
   GREY_PEN_COLOUR,
   INK_PEN_COLOUR,
+  PAGE_LINK_TRANSITIONS,
   PEN_COLOUR_NAMES,
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
@@ -141,6 +142,14 @@ const STYLE_FIELDS =
   '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
   '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). ';
 
+// Screen links (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes"; docs/specs/015-api/mcp-server.md
+// "Screen links"): an element's link to another screen of its wireframe tab, played in Prototype mode.
+const SCREEN_LINKS =
+  'Screen links: on a wireframe tab any element may carry "link" { "kind": "page", "pageId", "transition"? } to ' +
+  'another page of the same tab (a page id read_design view "pages" prints), or { "kind": "back", "transition"? } ' +
+  `back to the screen before; "transition" is ${PAGE_LINK_TRANSITIONS.join(', ')} (default instant). Pressing ` +
+  'the element in Prototype mode follows it. A link to a page no longer on the tab is kept and reads as broken. ';
+
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
 export const ELEMENT_SCHEMA_HINT =
@@ -170,6 +179,7 @@ export const ELEMENT_SCHEMA_HINT =
   'Any element may carry "finish" ("flexible", "professional", "sketch" or "marker") to be drawn ' +
   'differently from its tab. ' +
   STYLE_FIELDS +
+  SCREEN_LINKS +
   CONTENT_KINDS;
 
 export function elementSchemaDoc(): string {
@@ -204,6 +214,9 @@ Boxed elements (shape, text, sticky, table, image, annotation) carry:
 
 ## Content-carrying kinds
 ${CONTENT_KINDS}
+
+## Screen links
+${SCREEN_LINKS}
 
 ## Arrows
 type "arrow" with "from" and "to" endpoints. PREFER pinned endpoints so arrows
