@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { CARD_TEMPLATES_MAX, type CardTemplate } from '@liveplanner/items';
 import {
   addTemplate,
@@ -139,5 +140,20 @@ describe('Save', () => {
     });
     expect(templatesProblem([A, B], 0)).toBeNull();
     expect(templatesProblem([], 131_072)).toBeNull();
+  });
+});
+
+describe('cost', () => {
+  it('checks ten full templates, as each keystroke in one does, inside a CPU budget', () => {
+    const full = Array.from({ length: CARD_TEMPLATES_MAX }, (_, i) =>
+      t(`tp-${i}`, `T${i}`, {
+        description: 'x'.repeat(10_000),
+        checklist: Array.from({ length: 25 }, () => ({ text: 'c'.repeat(200), done: false })),
+      }),
+    );
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 50; i++) templatesProblem(full, 0);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 });

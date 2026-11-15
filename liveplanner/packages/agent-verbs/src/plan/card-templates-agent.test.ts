@@ -134,6 +134,18 @@ describe('change_items: starting a card from a template', () => {
     });
   });
 
+  it('takes a description written in Markdown with its own formatting over the template’s', async () => {
+    const { fields } = await add({
+      type: 'bug',
+      template: 'Bug Report',
+      fields: { description: '*Why* it broke' },
+    });
+    expect(fields).toMatchObject({
+      description: 'Why it broke',
+      descriptionRich: [{ text: 'Why', italic: true }, { text: ' it broke' }],
+    });
+  });
+
   it('gives the type’s new-card title when the template has none', async () => {
     const { fields } = await add({ type: 'bug', template: 'Blank', fields: { Severity: 'S1' } });
     expect(fields).toMatchObject({ title: 'New bug', labels: ['x'] });

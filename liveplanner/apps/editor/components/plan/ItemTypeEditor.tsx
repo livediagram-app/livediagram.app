@@ -262,8 +262,13 @@ export function ItemTypeEditor({
     () => cardTemplatesBytes(types.filter((t) => t.id !== type?.id)),
     [types, type?.id],
   );
+  // Measured once per template edit, never per render of another tab's control (card-template-draft.test.ts).
+  const ownTemplateProblem = useMemo(
+    () => templatesProblem(templates, otherTemplateBytes),
+    [templates, otherTemplateBytes],
+  );
   const templateProblem =
-    templatesProblem(templates, otherTemplateBytes) ??
+    ownTemplateProblem ??
     (!check.ok && !heirProblem && /(^|\.)templates(\[|$)/.test(check.reason)
       ? { message: 'A template’s values break a card’s limits.' }
       : null);
