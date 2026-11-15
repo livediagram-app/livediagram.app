@@ -3,6 +3,7 @@
 // The Looks carousel (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks", "Mashup").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { lookSettings } from '@/lib/look-mashup';
 import { SEASONAL_LOOKS, seasonalLooksFor } from '@/lib/seasonal-looks';
 import {
@@ -77,6 +78,25 @@ describe('the Looks finish filter', () => {
     const sketch = TAB_LOOKS.filter((l) => l.finish === 'sketch').map((l) => l.label);
     expect(sketch.length).toBeGreaterThan(0);
     expect(cards()).toEqual(['Mashup', ...sketch]);
+  });
+});
+
+describe('opening the carousel', () => {
+  // Every look's preview is a full export: drawn up front, the first render cost ~220 ms of CPU and a machine under
+  // load (the pre-push hook) timed the Mashup tests out. Only the cards on the pages mounted are drawn.
+  it('draws only the previews of the cards on show, within a CPU budget', () => {
+    const cpu = cpuMsOf(() => {
+      render(
+        <LooksCarousel
+          settings={UNTOUCHED}
+          activeLook={undefined}
+          onPickLook={() => {}}
+          headingClass=""
+        />,
+      );
+    });
+    expect(cardsMounted().length).toBeLessThan(TAB_LOOKS.length);
+    expect(cpu).toBeLessThan(cpuBudgetMs(400));
   });
 });
 
