@@ -111,6 +111,15 @@ long list on a phone, or on a phone held sideways) is held to the screen's heigh
 the edge margin at top and bottom and scrolls inside itself, so its first item is never above the top edge and every
 item stays in reach. A menu that fits keeps its own height and never scrolls.
 
+## Opening on the side with room
+
+An anchored menu opens on the side of its control it asks for (most open below) while it fits there. When it does
+not, and the other side has more room, it opens on the other side instead: a menu opened from a control low on the
+screen (a board's Add card button near the bottom of a 1440 x 900 window, its Add a Card menu 30 rows long) opens
+above the control rather than being nudged up over it, so the control it came from stays in sight. The side is worked
+out from the control's place and the menu's own height (held to the screen, as above), so moving or growing never
+flips it back and forth; a menu that fits on neither side is held to the screen and scrolls on the roomier one.
+
 ## Focus ring
 
 Every item and control in either kind of menu shows the keyboard focus ring **inside** its own edge

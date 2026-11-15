@@ -206,3 +206,56 @@ describe('New {Type} of a type with templates', () => {
     expect(screen.queryByRole('button', { name: 'New Task' })).toBeNull();
   });
 });
+
+// Work Tracker 972 (docs/specs/004-interface-design/menus.md "Opening on the side with room"): a long Add a Card
+// menu (a type's 10 templates and 20 more types, 31 rows) on a 1440 x 900 screen, from an Add card button low on it,
+// opens above the button rather than being nudged up over it; from a button high up it opens below as before.
+describe('a long Add a Card menu on a 1440 x 900 screen', () => {
+  const ROW_PX = 36;
+  const many: ItemTypeDef[] = [
+    {
+      ...task,
+      templates: Array.from({ length: 10 }, (_, i) => ({
+        id: `tp-${i}`,
+        name: `Template ${i + 1}`,
+        fields: { title: `T${i}` },
+      })),
+    },
+    ...Array.from({ length: 20 }, (_, i) => ({ ...note, id: `note-${i}`, label: `Note ${i + 1}` })),
+  ];
+  function longMenu(anchorTop: number) {
+    vi.stubGlobal('innerWidth', 1440);
+    vi.stubGlobal('innerHeight', 900);
+    const height = vi
+      .spyOn(HTMLElement.prototype, 'scrollHeight', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.getAttribute('role') === 'menu'
+          ? this.querySelectorAll('[role="menuitem"]').length * ROW_PX
+          : 0;
+      });
+    const anchor = document.createElement('button');
+    anchor.getBoundingClientRect = () =>
+      ({ top: anchorTop, bottom: anchorTop + 28, left: 300, right: 560 }) as DOMRect;
+    document.body.appendChild(anchor);
+    render(<AddCardPopover anchor={anchor} types={many} onAdd={vi.fn()} onClose={vi.fn()} />);
+    const menuEl = screen.getByRole('menu');
+    height.mockRestore();
+    vi.unstubAllGlobals();
+    return menuEl;
+  }
+
+  it('holds 30 rows or more', () => {
+    longMenu(100);
+    expect(screen.getAllByRole('menuitem').length).toBeGreaterThanOrEqual(30);
+  });
+
+  it('opens above an Add card button low on the screen, held to the screen and scrolling', () => {
+    const menuEl = longMenu(820);
+    expect(menuEl.style.transform).toBe('translate(0px, calc(-100% - 4px))');
+    expect(menuEl.style.overflowY).toBe('auto');
+  });
+
+  it('opens below a button high on the screen', () => {
+    expect(longMenu(40).style.transform).toBe('translate(0px, 4px)');
+  });
+});
