@@ -177,6 +177,24 @@ describe('createLastSeenCopies', () => {
     await h.copies.remember(input({ itemId: 'd2' }));
     await h.copies.forgetAll();
     expect(h.rows.size).toBe(0);
+    // Nobody's copies after sign-out: the warm open expects no account.
+    expect(await h.copies.lastReader()).toBeNull();
+  });
+
+  it('answers whose copies the store holds: the reader of the newest copy', async () => {
+    const h = harness();
+    expect(await h.copies.lastReader()).toBeNull();
+    await h.copies.remember(input({ itemId: 'd1' }));
+    h.tick(10);
+    await h.copies.remember(input({ itemId: 'd2' }));
+    h.tick(10);
+    // Seen again, d1 is the newest though the store lists it first.
+    await h.copies.remember(input({ itemId: 'd1' }));
+    expect(await h.copies.lastReader()).toBe('user_a');
+    // A new reader's keep prunes the old one's copies: the store holds the newest reader's.
+    h.tick(10);
+    await h.copies.remember(input({ reader: 'guest_1', itemId: 'd3' }));
+    expect(await h.copies.lastReader()).toBe('guest_1');
   });
 
   it('reads a record that is not a copy as none, and removes it', async () => {

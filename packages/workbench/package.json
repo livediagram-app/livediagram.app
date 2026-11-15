@@ -557,6 +557,7 @@
     "./lib/tab-export-name": "./src/lib/tab-export-name.ts",
     "./lib/tab-saved": "./src/lib/tab-saved.ts",
     "./lib/tab-scope": "./src/lib/tab-scope.ts",
+    "./lib/warm-open": "./src/lib/warm-open.ts",
     "./lib/tab-style-ease": "./src/lib/tab-style-ease.ts",
     "./lib/tab-style-to-all": "./src/lib/tab-style-to-all.ts",
     "./lib/tech-icons": "./src/lib/tech-icons.ts",

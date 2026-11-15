@@ -172,6 +172,16 @@ export function createLastSeenCopies<Item, Tab>(
       };
     },
 
+    /** Whose copies the store holds: the reader of the newest seen copy, or null with none. Prune leaves one reader's
+     *  copies at most, so this is the reader the last load ran as (the warm open's expected account). */
+    async lastReader(): Promise<string | null> {
+      let newest: { reader: string; seenAt: number } | null = null;
+      for (const entry of await store.entries()) {
+        if (newest === null || entry.seenAt > newest.seenAt) newest = entry;
+      }
+      return newest?.reader ?? null;
+    },
+
     /** The reader lost the item (not found, deleted, a password now asked): its copy goes. */
     async forget(reader: string, itemId: string): Promise<void> {
       await store.remove([lastSeenKey(reader, itemId)]);

@@ -40,6 +40,7 @@ function setup() {
       written.push(c);
     }),
     read: vi.fn(async () => null),
+    lastReader: vi.fn(async () => null),
     forget: vi.fn(async () => {}),
     forgetAll: vi.fn(async () => {}),
   };
@@ -80,6 +81,8 @@ describe('createLastSeenFollower', () => {
     expect(follower.follows('user_a', 'd1')).toBe(true);
     await follower.read('user_a', 'd1');
     expect(copies.read).toHaveBeenCalledWith('user_a', 'd1');
+    await follower.lastReader();
+    expect(copies.lastReader).toHaveBeenCalledOnce();
   });
 
   it('follows the name and the tab list: a rename, a tab added, moved, deleted and put in a folder', async () => {
@@ -287,6 +290,7 @@ describe('createLastSeenFollower', () => {
       const copies = {
         remember: vi.fn(async () => {}),
         read: vi.fn(async () => null),
+        lastReader: vi.fn(async () => null),
         forget: vi.fn(async () => {}),
         forgetAll: vi.fn(async () => {}),
       };
@@ -331,6 +335,7 @@ describe('createLastSeenFollower', () => {
       const copies = {
         remember: vi.fn(async () => {}),
         read: vi.fn(async () => null),
+        lastReader: vi.fn(async () => null),
         forget: vi.fn(async () => {}),
         forgetAll: vi.fn(async () => {}),
       };

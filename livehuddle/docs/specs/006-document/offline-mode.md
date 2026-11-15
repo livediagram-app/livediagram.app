@@ -202,27 +202,44 @@ server.
   documents keep none.
 
 **The warm open.** Before auth settles, an address naming a cloud document with a copy for
-the reader this browser expects (the account the signed-in hint names, else the guest
-token's id) paints that copy under the `'self'` placeholder, read-only. A share link
-warm-opens only when its share code is the one the copy was kept under.
+the reader this browser expects paints that copy under the `'self'` placeholder, read-only.
+The reader expected is the guest token's id, or, when the signed-in hint says this browser
+is signed in, the account whose copies the store holds (it holds one reader's at most). A
+signed-out browser, or one whose guest is someone else, never reads an account's copy. A
+share link warm-opens only when its share code is the one the copy was kept under, and only
+by an address that names the document. Embeds, workbenches and This Browser documents never
+warm-open, and a copy whose first tab is not the tab this open would show first (no first
+tab kept, or the address's `#t=` names another tab) is not painted: the document opens as it
+always did.
 
-- **Edits wait for the participant.** Nothing can be changed, and nothing is saved, until
-  the reader resolves and the fresh copy lands.
+- **Edits wait for the participant.** The warm paint runs as a Viewer: every edit control is
+  disabled with the usual read-only look, and nothing is saved, the room does not connect and
+  no request goes out under the placeholder, until the reader resolves and the fresh copy
+  lands. A stored role never widens what the reader may do.
 - **The ordinary load catches up** behind it, unchanged: auth, the participant, the
   document and the first tab. Its answer replaces the copy in place (the same tabs by id,
   no opening screen between, nothing typed to lose because editing waited) and its role
   applies: a Viewer stays read-only, a Participant gets a Participant's tools, an Editor
-  can edit.
+  can edit. A first tab whose revision is the one the copy holds keeps the painted tab as it
+  is, so an unchanged canvas is not drawn again.
+- **Someone else after all.** When the reader resolves to someone other than the copy's
+  (a hint that outlived its session), the copy goes from the screen at once for the opening
+  screen, and the load opens the document for whoever is reading.
 - **Lost access on catch-up** swaps the copy for the screen the load ends on (not found,
-  the deleted card, the password gate) and forgets the copy.
-- `DocumentLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its
-  own.
+  the deleted card, the password gate) and forgets the copy. A load that cannot reach the
+  server ends on its error screen and keeps the copy.
+- **Another browser tab** of the same document warm-opens from the same copy; its room connects
+  once its own load lands, as always.
+- `DocumentLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its own, as
+  the performance measures `warm-paint` and `warm-catch-up` (from the same start as
+  `DocumentLoad`), which part 4 reads on production builds.
 
 **Built so far.** Part 1 keeps, bounds and clears the copies (`createLastSeenCopies` in
-`@liveworkspace/workbench/lib/api/last-seen-copies`), and part 2 keeps each one following
-the open document (`createLastSeenFollower`, `useLastSeenFollow`); nothing reads them yet, so opening a
-document looks as it did. The warm open itself, its catch-up and its timing follow in later
-parts ([Last seen copy blueprint](blueprints/last-seen-copy.md)).
+`@liveworkspace/workbench/lib/api/last-seen-copies`), part 2 keeps each one following the
+open document (`createLastSeenFollower`, `useLastSeenFollow`), and part 3 paints it
+(`readWarmCopy` in `@liveworkspace/workbench/lib/warm-open`, each editor's bootstrap). Part 4
+measures warm opens against cold ones on production builds
+([Last seen copy blueprint](blueprints/last-seen-copy.md)).
 
 **Measured** (headless Chromium, 25 runs each, median / p95): keeping a copy and reading it
 back cost about a millisecond against the seconds the warm open saves.

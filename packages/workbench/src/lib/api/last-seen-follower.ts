@@ -28,6 +28,7 @@ export type LastSeenLanding<Tab> = LastSeenMeta<Tab> & { revs: ReadonlyMap<strin
 type Copies<Item> = {
   remember: (copy: LastSeenInput<Item, unknown>) => Promise<void>;
   read: (reader: string, itemId: string) => Promise<LastSeenCopy<Item, unknown> | null>;
+  lastReader: () => Promise<string | null>;
   forget: (reader: string, itemId: string) => Promise<void>;
   forgetAll: () => Promise<void>;
 };
@@ -156,6 +157,7 @@ export function createLastSeenFollower<Item extends LastSeenItem>(
       await copies.remember(copy);
     },
     read: (reader: string, itemId: string) => copies.read(reader, itemId),
+    lastReader: () => copies.lastReader(),
     /** The reader lost the item: its copy goes, and stops being followed. */
     async forget(reader: string, itemId: string): Promise<void> {
       if (isCurrent(reader, itemId)) {
