@@ -149,6 +149,48 @@ describe('resolveFields', () => {
     });
   });
 
+  // docs/specs/026-plan/plan-agents.md "Errors that teach": a value past a limit names the field and the limit, never
+  // quoting the value back (Work Tracker 944).
+  it('refuses a value past its limit, naming the field as the card shows it and the limit', () => {
+    const logged: ItemTypeDef = {
+      ...bug,
+      custom: [
+        ...(bug.custom ?? []),
+        { id: 'f-ac', label: 'Acceptance Criteria', kind: 'checklist' },
+        { id: 'f-summary', label: 'Summary', kind: 'text' },
+      ],
+    };
+    const refusal = (fields: Record<string, unknown>) => {
+      const r = resolveFields(fields, logged, naming);
+      return r.ok ? null : r;
+    };
+    const rows = Array.from({ length: 7 }, (_, i) => ({
+      text: i === 4 ? 'r'.repeat(230) : 'Done when it ships',
+      done: false,
+    }));
+    expect(refusal({ 'Acceptance Criteria': rows })).toEqual({
+      ok: false,
+      code: 'value_invalid',
+      message: 'Acceptance Criteria row 5 is 230 characters; the most is 200 a row.',
+    });
+    const many = Array.from({ length: 51 }, () => ({ text: 'x', done: false }));
+    expect(refusal({ 'Acceptance Criteria': many })?.message).toBe(
+      'Acceptance Criteria has 51 rows; the most is 50.',
+    );
+    expect(refusal({ Summary: 's'.repeat(2001) })?.message).toBe(
+      'Summary is 2,001 characters; the most is 2,000.',
+    );
+    expect(refusal({ title: 't'.repeat(612) })?.message).toBe(
+      'Title is 612 characters; the most is 500.',
+    );
+    // A Long Text's Markdown is read to plain text before the api holds it to 10,000 (it names it there).
+    expect(resolveFields({ 'Repro Steps': 'r'.repeat(9000) }, logged, naming)).toEqual({
+      ok: true,
+      fields: { 'f-notes': 'r'.repeat(9000) },
+    });
+    expect(resolveFields({ Summary: 's'.repeat(2000) }, logged, naming).ok).toBe(true);
+  });
+
   it('resolves custom fields by name, Choice options and Card links', () => {
     const r = resolveFields(
       { severity: 's2', Blocks: '#40', 'repro steps': 'Click it', 'f-severity': 'S1' },

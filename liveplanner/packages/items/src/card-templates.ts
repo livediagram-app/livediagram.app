@@ -5,7 +5,6 @@
 import type { ItemFields } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 import { fieldsByteSize, validateFields } from './fields';
-import { ITEM_FIELDS_BYTES } from './limits';
 import { isNewerField } from './newer-fields';
 import { DESCRIPTION_RICH_FIELD, isRichFieldKey } from './rich-text-field';
 import { cutSlug, slugText, uniqueSlug } from './slug';
@@ -25,8 +24,11 @@ export const CARD_TEMPLATES_MAX = 10;
 export const CARD_TEMPLATE_NAME_MAX = 32;
 export const CARD_TEMPLATE_ID_PATTERN = /^tp-[a-z0-9-]{1,29}$/;
 // Every template a catalogue holds, as JSON, counted apart from the catalogue's own 32 KB so templates never crowd out
-// types. One template's values are held to ITEM_FIELDS_BYTES, as a card's are.
+// types.
 export const CARD_TEMPLATES_BYTES = 131_072;
+// One template's values: 16 KB, what a card held before its fields grew to fit a long Long Text (Work Tracker 944), so
+// ten templates still fit CARD_TEMPLATES_BYTES and a template stays a starting point.
+export const CARD_TEMPLATE_BYTES = 16_384;
 
 // What a read does with a value a template never holds (a status, a Calculated field's...): the api, the newest build,
 // refuses it; every other reader keeps it as stored (a newer build may take it), and cardTemplateFields never uses it.
@@ -121,7 +123,7 @@ export function readCardTemplates(
     if (!isObj(fieldsIn)) return `${here}.fields`;
     const fields = readValues(fieldsIn, type, mode);
     if (!fields) return `${here}.fields`;
-    if (fieldsByteSize(fields) > ITEM_FIELDS_BYTES) return here;
+    if (fieldsByteSize(fields) > CARD_TEMPLATE_BYTES) return here;
     out.push({ id, name, fields, ...(mode === 'keep' ? newerKeysOf(t, CARD_TEMPLATE_KEYS) : {}) });
   }
   return out;

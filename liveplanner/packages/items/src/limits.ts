@@ -2,10 +2,14 @@
 // safe ranges in docs/specs/026-plan/blueprints/item-store.md "Constants").
 
 export const ITEMS_MAX = 5000;
-export const ITEM_FIELDS_BYTES = 16_384;
+// Room for every built-in field at its limit beside a formatted 9,000-character Long Text, whose runs roughly double
+// it (owner 2026-11-15, Work Tracker 944; was 16 KB).
+export const ITEM_FIELDS_BYTES = 65_536;
 export const ITEM_FIELDS_MAX = 64;
 export const ITEM_TITLE_MAX = 500;
 export const ITEM_DESCRIPTION_MAX = 10_000;
+// A custom Long Text field holds what the Description holds (docs/specs/026-plan/item-types.md "Custom field kinds").
+export const ITEM_LONG_TEXT_MAX = ITEM_DESCRIPTION_MAX;
 export const ITEM_LABELS_MAX = 12;
 export const ITEM_LABEL_MAX = 32;
 export const ITEM_CHECKLIST_MAX = 50;
@@ -18,6 +22,9 @@ export const ITEM_ATTACHMENTS_MAX = 20;
 export const ITEM_ATTACHMENT_NAME_MAX = 120;
 export const ITEM_ATTACHMENT_BYTES_MAX = 10 * 1024 * 1024;
 export const ITEM_ATTACHMENT_ID_MAX = 200;
+// A custom Text field's text, and each string in a custom field's list. The store cannot tell a Text field from a Long
+// Text one, so it holds a custom field's own string to ITEM_LONG_TEXT_MAX; the doors that know the kind (the card
+// panel, the agents' naming, imports) hold a Text field to this.
 export const ITEM_UNKNOWN_STRING_MAX = 2000;
 export const ITEM_UNKNOWN_ARRAY_MAX = 50;
 // The most people or cards a field that holds several keeps (docs/specs/026-plan/item-types.md "Holds Several"): as
