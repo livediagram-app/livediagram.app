@@ -75,6 +75,49 @@ describe('MiniViewHost', () => {
     expect(names()).toEqual(['You', 'Sam', 'Ana']);
   });
 
+  it('keeps presses in the window from reaching the canvas above it', async () => {
+    const canvas = {
+      click: vi.fn(),
+      pointerDownCapture: vi.fn(),
+      pointerDown: vi.fn(),
+      pointerUp: vi.fn(),
+      keyDown: vi.fn(),
+    };
+    const focus = vi.spyOn(window, 'focus').mockImplementation(() => {});
+    render(
+      <div
+        onClick={canvas.click}
+        onPointerDownCapture={canvas.pointerDownCapture}
+        onPointerDown={canvas.pointerDown}
+        onPointerUp={canvas.pointerUp}
+        onKeyDown={canvas.keyDown}
+      >
+        <MiniViewHost rows={[row('a', 'Sam')]} self={self} tabId="t1" doNotDisturb={false} />
+      </div>,
+    );
+    await act(() => openMiniView());
+    const sam = pip.document.querySelector('li[aria-label="Sam"]')!;
+    // The window's document has no view of its own in jsdom, so the events are made here and sent there.
+    const press = (type: string) =>
+      act(() => {
+        sam.dispatchEvent(new MouseEvent(type, { bubbles: true }));
+      });
+    press('pointerdown');
+    press('pointerup');
+    press('click');
+    act(() => {
+      sam.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+    // The row still brings the Space forward; the canvas hears none of it.
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(canvas.click).not.toHaveBeenCalled();
+    expect(canvas.pointerDownCapture).not.toHaveBeenCalled();
+    expect(canvas.pointerDown).not.toHaveBeenCalled();
+    expect(canvas.pointerUp).not.toHaveBeenCalled();
+    expect(canvas.keyDown).not.toHaveBeenCalled();
+    focus.mockRestore();
+  });
+
   it('closes the window when the Space goes', async () => {
     const { unmount } = render(
       <MiniViewHost rows={[]} self={self} tabId="t1" doNotDisturb={false} />,

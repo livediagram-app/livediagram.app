@@ -12,7 +12,7 @@ stage](../../012-collaboration/meeting-rooms-and-stage.md) "Raise hand".
 | `apps/editor/lib/mini-view/mini-view-styles.ts`           | `mirrorDocumentLook`: the opener's stylesheets, `<html>` classes and theme copied into the window                         |
 | `apps/editor/lib/mini-view/mini-view-knock.ts`            | The knock on show: `showMiniKnock`, `clearMiniKnock`, `useMiniKnock`, `resetMiniKnock`                                    |
 | `apps/editor/lib/mini-view/mini-view-people.ts`           | Pure: `miniViewPeople` (the rows and groups), `miniPeopleKey` (their by-value key)                                        |
-| `apps/editor/components/calls/mini-view/MiniViewHost.tsx` | Mounted by the characters layer: portals the mini view into the window while it is open; closes it on unmount             |
+| `apps/editor/components/calls/mini-view/MiniViewHost.tsx` | Mounted by the characters layer: renders the mini view into the window (its own root) while open; closes it on unmount    |
 | `apps/editor/components/calls/mini-view/MiniView.tsx`     | The window's content: header, knock, groups                                                                               |
 | `apps/editor/components/calls/mini-view/MiniViewRow.tsx`  | One row: `MiniBust`, name, status, hand, bars                                                                             |
 | `apps/editor/test/fake-pip-window.ts`                     | The tests' stand-in window and API (`fakePipWindow`, `installPip`, `removePip`)                                           |
@@ -62,9 +62,15 @@ A module store: `win: Window | null`, with `createListeners`.
 costume and status, and whether you are on Do Not Disturb. It subscribes to `useMiniViewWindow()`; with no window it
 returns null before any work. With one, it reads who you hear on its own (`callSelf().heard` through
 `useSyncExternalStore`, so a level change does not wake it), works out the people through `keyedMiniPeople` (one per
-host, kept in `useState`: `miniViewPeople` behind `miniPeopleKey`) and portals the memoised `<MiniView>` into
-`win.document.body`. Its unmount (leaving the document) calls
+host, kept in `useState`: `miniViewPeople` behind `miniPeopleKey`) and renders the memoised `<MiniView>` into
+`win.document.body` through a root of its own (below). Its unmount (leaving the document) calls
 `closeMiniView()`. Leaving Avatar mode does not unmount it.
+
+The window gets a React root of its own (`createRoot(win.document.body)`, made when the window opens and unmounted
+after the commit that drops it), never a portal: a portal's events travel the React tree, so a press in the window
+would reach the canvas's capture handlers above the characters layer and walk your character to where the press
+landed in the window. The host renders `<MiniView>` into that root whenever the count, the groups, the tab or Do Not
+Disturb change.
 
 ### The people (`mini-view-people.ts`)
 
@@ -174,16 +180,16 @@ nothing until opened. No layout shift: Pop Out takes its place in the dock on fi
 
 ## Testing
 
-| Rule                                                             | Test                                                  |
-| ---------------------------------------------------------------- | ----------------------------------------------------- |
-| Pop Out only where the API exists                                | `PopOutSegment.test.tsx`                              |
-| Pop Out for an Editor, a Participant and a Viewer; its divider   | `CallDock.test.tsx` "Pop Out"                         |
-| Open, close, pagehide, refusal, double press, telemetry          | `mini-view-window.test.ts`                            |
-| Styles and theme mirrored                                        | `mini-view-styles.test.ts`                            |
-| Groups, order, You, key stable over a move                       | `mini-view-people.test.ts` (with the CPU budget)      |
-| Rows: speaking, hand, DND, Viewer's own row, knock answer, focus | `MiniView.test.tsx`                                   |
-| Host portals while open, closes on unmount                       | `MiniViewHost.test.tsx`                               |
-| A knock reaches the mini view; an answer clears it               | `mini-view-knock.test.ts`, `useMeetingPieces.test.ts` |
+| Rule                                                              | Test                                                  |
+| ----------------------------------------------------------------- | ----------------------------------------------------- |
+| Pop Out only where the API exists                                 | `PopOutSegment.test.tsx`                              |
+| Pop Out for an Editor, a Participant and a Viewer; its divider    | `CallDock.test.tsx` "Pop Out"                         |
+| Open, close, pagehide, refusal, double press, telemetry           | `mini-view-window.test.ts`                            |
+| Styles and theme mirrored                                         | `mini-view-styles.test.ts`                            |
+| Groups, order, You, key stable over a move                        | `mini-view-people.test.ts` (with the CPU budget)      |
+| Rows: speaking, hand, DND, Viewer's own row, knock answer, focus  | `MiniView.test.tsx`                                   |
+| Host draws while open, closes on unmount, keeps presses in window | `MiniViewHost.test.tsx`                               |
+| A knock reaches the mini view; an answer clears it                | `mini-view-knock.test.ts`, `useMeetingPieces.test.ts` |
 
 ## Constants and configuration
 
