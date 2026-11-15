@@ -18,6 +18,10 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 
 - **Pages**: a tab is a run of pages on a surround, each a logo artboard, a wireframe screen or a photo. Page sizes, backgrounds and patterns, the page panel, page layouts with a hover preview, page snapping, and page actions and reordering.
 - **Logos** ([Logo pages](../007-editor/logo-pages.md)) and **wireframes** ([Wireframe pages](../007-editor/wireframe-pages.md)): the 1024 artboard with construction guides and logo layouts; device frames for a screen.
+- **Clickable prototypes** ([Wireframe pages](../007-editor/wireframe-pages.md) "Clickable prototypes", Work
+  Tracker 136): screen links and back links, set from Link Element's Screen mode or the link handle and shown by the
+  link marker; Prototype mode and its share link play them; the Flow view draws them on the canvas; agents read and
+  write them.
 - **On a page**: text, shapes, sticky notes, images, arrows, tables, progress bars and rings, star ratings, timelines, pie / bar / line charts, concept graphics and the Sankey, syntax-highlighted code blocks, tickable checklists, embeds, a curated single-colour icon catalogue and a ~190-strong colour-emoji sticker set ([Stickers](../010-palette/stickers.md)), a click-to-place polygon tool for logos, comment threads, per-element links (including link-to-tab) and locks, and drop shadows ([Element shadows](../008-canvas/element-shadows.md)).
 - **Web components**: elements that lay themselves out (banner, callout, stat row, process, header, hero, card, badge, stack). See [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md).
 - **Multi-select**: marquee drag, plain-click, shift-click, format painter.
@@ -75,10 +79,6 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 **Status: Planned.** Not built yet; the CLI is published without it.
 
 - **The CLI's update check** ([CLI](../015-api/cli.md)): the CLI tells a person when a newer version is published.
-- **Clickable prototypes** ([Wireframe pages](../007-editor/wireframe-pages.md) "Clickable prototypes", Work
-  Tracker 136): building. Screen links and back links are stored, checked, read and written by agents, and set in
-  the editor (Link Element's Screen mode, the link handle, the link marker); Prototype mode and its share link play
-  them; the Flow view follows.
 
 ## Later
 
