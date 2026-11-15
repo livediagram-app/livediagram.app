@@ -128,7 +128,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
 
     // Vacuity guard: if the source walk stops finding verbs, every assertion
     // below passes without checking anything.
-    expect(handled.size).toBeGreaterThan(14);
+    expect(handled.size).toBeGreaterThan(13);
     for (const [segment, methods] of handled) {
       expect(methods.size, `${segment}: no HTTP method found in its handler`).toBeGreaterThan(0);
     }

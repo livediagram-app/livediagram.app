@@ -4,11 +4,7 @@
 // See docs/specs/016-platform/router-app.md.
 
 import { applyCachePolicy } from '@liveworkspace/sites/cache-policy';
-import {
-  legacyEditorRedirect,
-  legacyFormRedirect,
-  legacyHelpRedirect,
-} from './legacy-editor-route';
+import { legacyHelpRedirect } from './legacy-help-route';
 import { LIVE_ROUTE_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@livehuddle/api-schema';
 import { openExplorerRedirect } from '@liveworkspace/sites/open-explorer';
 import {
@@ -255,9 +251,6 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
     return Response.redirect(telemetryDashboardUrl(env), 301);
   }
-  // An old form link: forms are liveplanner's now (docs/specs/016-platform/router-app.md).
-  const legacyForm = legacyFormRedirect(url, env.DEPLOY_ENV);
-  if (legacyForm) return legacyForm;
   // The bare domain's pages live on www. (docs/specs/016-platform/router-app.md "The bare domain"): one 301, to
   // where this router's own redirects below would land. Only the redirects that leave the site come first. Production
   // only (no DEPLOY_ENV): `wrangler dev` hands the router its production host in request.url.
@@ -325,8 +318,6 @@ async function route(request: Request, env: Env): Promise<Response> {
     // prefix-strip as the editor app's assets.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  const legacyEditor = legacyEditorRedirect(url);
-  if (legacyEditor) return legacyEditor;
   // Clean live-app page routes (/document, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
@@ -347,7 +338,7 @@ async function route(request: Request, env: Env): Promise<Response> {
 // Where this router's own redirects send `url`'s path, or null where none would: the bare domain's one hop lands
 // there (wwwRedirect), so it is never followed by a second.
 function redirectedPath(url: URL): string | null {
-  const own = legacyHelpRedirect(url) ?? legacyEditorRedirect(url);
+  const own = legacyHelpRedirect(url);
   if (own) return new URL(own.headers.get('Location')!).pathname;
   return helpCategoryPath(url.pathname);
 }

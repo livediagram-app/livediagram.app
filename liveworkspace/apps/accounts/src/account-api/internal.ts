@@ -1,8 +1,7 @@
 // The account API's door for the apps' servers, /api/account/internal/* (account-api.ts).
 
-import { basicClientId } from '../app-caller.ts';
+import { basicClientId, type Introspected } from '../app-caller.ts';
 import { AUTH_BASE_PATH } from '../auth-options.ts';
-import { introspectWithLegacy } from '../legacy-issuer.ts';
 import { noteGuestSeen } from '../guest-sweep.ts';
 import type { Auth } from '../auth.ts';
 import type { Env } from '../env.ts';
@@ -106,34 +105,27 @@ async function verifiedClient(
 // live (the provider's introspection checks both): how an app vouches for the person it acts for.
 async function vouchedPerson(
   request: Request,
-  env: Env,
   auth: Auth,
   clientId: string,
   accessToken: unknown,
 ): Promise<string | Response> {
   if (typeof accessToken !== 'string') return error(400, 'access_token_required');
-  // A token minted under the bare issuer before the move to www. is checked again here (legacy-issuer.ts).
-  const { status, result } = await introspectWithLegacy(
-    () =>
-      auth.handler(
-        new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
-          method: 'POST',
-          headers: {
-            authorization: request.headers.get('authorization') ?? '',
-            accept: 'application/json',
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            token: accessToken,
-            token_type_hint: 'access_token',
-          }).toString(),
-        }),
-      ),
-    accessToken,
-    clientId,
-    env,
-    auth,
+  const checked = await auth.handler(
+    new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
+      method: 'POST',
+      headers: {
+        authorization: request.headers.get('authorization') ?? '',
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        token: accessToken,
+        token_type_hint: 'access_token',
+      }).toString(),
+    }),
   );
+  const status = checked.status;
+  const result = (await checked.json().catch(() => ({}))) as Introspected;
   if (
     status !== 200 ||
     result.active !== true ||
@@ -174,7 +166,7 @@ export async function handleInternal(
   // access token it holds for them, so it can only make tokens for someone signed in to it.
   if (route === 'POST tokens') {
     const body = await readBody(request);
-    const person = await vouchedPerson(request, env, auth, clientId, body.accessToken);
+    const person = await vouchedPerson(request, auth, clientId, body.accessToken);
     if (person instanceof Response) return person;
     const token = await mintApiToken(db, person, {
       name: cleanTokenName(body.name, 'MCP client'),
@@ -188,7 +180,7 @@ export async function handleInternal(
   // person becomes its admin.
   if (route === 'POST teams') {
     const body = await readBody(request);
-    const person = await vouchedPerson(request, env, auth, clientId, body.accessToken);
+    const person = await vouchedPerson(request, auth, clientId, body.accessToken);
     if (person instanceof Response) return person;
     const user = await db
       .prepare('SELECT email, emailVerified FROM "user" WHERE id = ?')

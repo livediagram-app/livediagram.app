@@ -14,13 +14,13 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
-import { LocalStorePrompts } from '@/components/dialogs/LocalStorePrompts';
+import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
-import { documentIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
+import { documentIdFromPath, isEditorPath } from '@/lib/editor-path';
 import { documentGrantRefusal } from '@/lib/api/document-grants';
 import { archivedByIndex, archivedChangeFolderHref } from '@liveworkspace/workbench/lib/archived';
 import { useArchivedAddress } from '@liveworkspace/workbench/lib/useArchivedAddress';
@@ -74,7 +74,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // read once, on mount, so an archived one never opens.
   const { id: archivedId, here: archivedHere } = useArchivedAddress(
     'livehuddle',
-    (path) => documentIdFromPath(path).id,
+    documentIdFromPath,
   );
   // Tab title reflects the document: "<name> | livehuddle" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
@@ -219,7 +219,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       {/* This browser's own store: an old livehuddle.app guest's claim and moving documents in
           This Browser after signing in (docs/specs/014-identity/auth-and-guest-access.md); never inside someone
           else's page. */}
-      {appChrome ? <LocalStorePrompts /> : null}
+      {appChrome ? <LocalMovePrompt /> : null}
       {/* A Take Offline or Sync the Explorer page handed over in the address. */}
       <ConversionHandoff />
     </EditorContext.Provider>

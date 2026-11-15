@@ -26,7 +26,6 @@ import {
   AGENT_CHANGESETS,
   AGENT_VIEWED,
   ALL_VISITORS,
-  OLD_SITE_GUESTS,
   API_TOKEN_ACTIVITY,
   ARTICLE_VIEWS,
   RECEPTIONIST,
@@ -204,7 +203,6 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
       title: 'Visitors',
       metrics: [
         ALL_VISITORS,
-        OLD_SITE_GUESTS,
         ACCOUNT_ACTIVITY,
         PAGE_VIEWS_BY_APP,
         SIGN_IN_PROMPTS,

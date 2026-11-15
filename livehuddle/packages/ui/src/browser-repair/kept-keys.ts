@@ -23,10 +23,6 @@ export const REPAIR_KEPT_KEYS: readonly string[] = [
   'livehuddle:v2:collab-key',
   'livehuddle:v2:collab-secret',
   'livehuddle:v2:community-key',
-  // The old livehuddle.app's guest, until the editor has claimed its work (apps/editor/lib/legacy-guest-claim.ts):
-  // losing them loses the only way back to it.
-  'livehuddle:v2:self-id',
-  'livehuddle:v2:self-sig',
 ];
 
 /** True when a repair clears this storage key. */

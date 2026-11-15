@@ -1,13 +1,9 @@
 import { makeSignature } from 'better-auth/crypto';
-import { exportJWK, generateKeyPair, SignJWT, type JWK } from 'jose';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { authOptions } from './auth-options.ts';
-import type { Auth } from './auth.ts';
 import { clearedCookies, cookieDomain, domainAttribute } from './cookie-scope.ts';
 import { GUEST_COOKIE, signGuestCookie } from './guests.ts';
-import { introspectWithLegacy, legacyIssuer } from './legacy-issuer.ts';
 import { withOwnCookies } from './own-cookies.ts';
-import { RESOURCES } from './resources.ts';
 
 // liveworkspace/docs/specs/003-accounts/accounts.md "The move to www.": nobody is signed out by the move.
 
@@ -171,99 +167,5 @@ describe('withOwnCookies', () => {
       });
       expect(await withOwnCookies(request, SECRET, 'production')).toBe(request);
     });
-  });
-});
-
-describe('an access token minted under the bare issuer', () => {
-  const env = { BASE_URL: 'https://www.liveworkspace.app', ENVIRONMENT: 'production' as const };
-  const BARE_ISSUER = 'https://liveworkspace.app/api/auth';
-  const AUDIENCE = RESOURCES.production[1]!;
-  let privateKey: CryptoKey;
-  let jwk: JWK;
-  let strangerKey: CryptoKey;
-  const sessions = new Map<string, { expiresAt: Date }>();
-  const auth = {
-    api: { getJwks: async () => ({ keys: [jwk] }) },
-    $context: Promise.resolve({
-      adapter: {
-        findOne: async ({ where }: { where: { value: string }[] }) =>
-          sessions.get(where[0]!.value) ?? null,
-      },
-    }),
-  } as unknown as Auth;
-
-  beforeAll(async () => {
-    const pair = await generateKeyPair('EdDSA', { extractable: true });
-    privateKey = pair.privateKey;
-    jwk = { ...(await exportJWK(pair.publicKey)), kid: 'k1', alg: 'EdDSA' };
-    strangerKey = (await generateKeyPair('EdDSA')).privateKey;
-    sessions.set('live', { expiresAt: new Date(Date.now() + 60_000) });
-    sessions.set('ended', { expiresAt: new Date(Date.now() - 60_000) });
-  });
-
-  const mint = (claims: Record<string, unknown>, key = privateKey, issuer = BARE_ISSUER) =>
-    new SignJWT({ azp: 'planner', sid: 'live', ...claims })
-      .setProtectedHeader({ alg: 'EdDSA', kid: 'k1' })
-      .setIssuer(issuer)
-      .setAudience(AUDIENCE)
-      .setSubject('user_1')
-      .setIssuedAt()
-      .setExpirationTime('1h')
-      .sign(key);
-
-  // Better Auth's own answer for any token not under its issuer.
-  const inactive = async () => Response.json({ active: false });
-  const check = (token: string, introspect = inactive, clientId = 'planner') =>
-    introspectWithLegacy(introspect, token, clientId, env, auth);
-
-  it('names the bare issuer as the legacy one, and none where there is no twin', () => {
-    expect(legacyIssuer(env)).toBe(BARE_ISSUER);
-    expect(legacyIssuer({ BASE_URL: 'https://staging.liveworkspace.app/' })).toBeNull();
-  });
-
-  it('is still vouched for after the move, as the provider would have', async () => {
-    expect(await check(await mint({}))).toEqual({
-      status: 200,
-      result: { active: true, sub: 'user_1', client_id: 'planner' },
-    });
-    expect((await check(await mint({ sid: undefined }))).result.active).toBe(true);
-  });
-
-  it('stays refused when anything else is wrong', async () => {
-    const refused = [
-      await mint({}, strangerKey),
-      await mint({}, privateKey, 'https://evil.example/api/auth'),
-      await mint({ azp: 'another-client' }),
-      await mint({ sid: 'ended' }),
-      await mint({ sid: 'gone' }),
-      'not-a-jwt',
-    ];
-    for (const token of refused) {
-      expect((await check(token)).result.active).toBe(false);
-    }
-  });
-
-  it('never second-guesses a wrong client secret, nor an active answer', async () => {
-    const token = await mint({});
-    expect(await check(token, async () => Response.json({ error: 'x' }, { status: 401 }))).toEqual({
-      status: 401,
-      result: { error: 'x' },
-    });
-    const active = { active: true, sub: 'user_2' };
-    expect(await check(token, async () => Response.json(active))).toEqual({
-      status: 200,
-      result: active,
-    });
-  });
-
-  it('is never checked on staging, which has no twin', async () => {
-    const token = await mint({});
-    const staging = {
-      BASE_URL: 'https://staging.liveworkspace.app',
-      ENVIRONMENT: 'staging' as const,
-    };
-    expect(
-      (await introspectWithLegacy(inactive, token, 'planner', staging, auth)).result.active,
-    ).toBe(false);
   });
 });

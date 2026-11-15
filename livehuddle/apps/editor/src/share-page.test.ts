@@ -66,9 +66,10 @@ afterEach(() => {
 });
 
 describe('editor worker: the share page', () => {
-  it('is the share page, with or without its slash, and its legacy address', () => {
+  it('is the share page, with or without its slash, and never the old address the router redirects', () => {
     expect(isSharePagePath('/document/shared')).toBe(true);
-    expect(isSharePagePath('/diagram/shared/')).toBe(true);
+    expect(isSharePagePath('/document/shared/')).toBe(true);
+    expect(isSharePagePath('/diagram/shared/')).toBe(false);
     expect(isSharePagePath('/document/abc')).toBe(false);
   });
 

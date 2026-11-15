@@ -13,8 +13,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'document',
   'embed',
   'explorer',
-  // A retired form link, /form/<code>: the router sends it on to liveplanner now, and the segment stays so page views
-  // recorded for it before that are still filed under the editor app. Its code is never recorded.
+  // A form link, /form/<code>, from livediagram's code this was forked from: forms are liveplanner's. The segment
+  // stays so a code typed or pasted here is never recorded; the editor answers it as an unknown address.
   'form',
   'get-started',
   // The retired /import page (livehuddle imports from no other tool, docs/specs/002-project-scope/not-in-livehuddle.md
