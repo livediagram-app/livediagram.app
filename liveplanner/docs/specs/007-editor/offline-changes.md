@@ -71,11 +71,27 @@ columns, a Dashboard's layout) are the tab autosave's and are still held in the 
 
 The server is the authority. A waiting change it refuses on replay (someone deleted the card meanwhile, a field
 became required, the plan filled up, the person lost edit rights) shows the toast it would have shown online and takes
-back that one change: the card or sheet is read again from the server. The changes behind it are still sent.
+back that one change, unless it is a removal held for review (below): the card or sheet is read again from the server. The changes behind it are still sent.
 
 - A batch that is refused is sent again one change at a time, so only the change the server refuses is taken back.
 - A card the server already has (a create whose answer was lost: `item_exists`) and a delete of a card that is
   already gone (`item_not_found`) count as landed, not refused.
+
+## Held for review
+
+One refusal is never taken back: a card delete or a move into the Trash that the server **holds** because it would
+take too many cards off a board at once (`removal_held`, [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)
+"Mass card removals"). Taking it back would drop a real edit if the server judged wrongly, so it is kept:
+
+- The change stays in the plan's queue, marked **held**, and stays shown as made. This is so whether it was refused
+  as it was made online or on replay. Held changes are skipped by the replay, so the changes behind them are still
+  sent, and they are not counted by the offline banner.
+- A **Needs Review** banner, in the top-centre stack under the offline banner, says "1 card removal is held: it would
+  take many cards off a board at once." ("3 card removals are held: they would ..."), with two buttons:
+  - **Keep Cards** drops the held changes and reads the board again, so the cards come back.
+  - **Remove Anyway** sends them again, confirmed (`?confirmRemoval=1`), which the server does not judge.
+- Held changes are kept across a reload like any waiting change, and count toward the queue's bounds.
+- Only an Editor sees the banner: a Participant or a Viewer never removes a card.
 
 ## Bounds
 

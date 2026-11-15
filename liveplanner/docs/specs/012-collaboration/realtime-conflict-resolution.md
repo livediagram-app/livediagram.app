@@ -223,6 +223,80 @@ the editor until a reload, and nothing says so. The client therefore checks its 
   for being quiet.
 - `ping` and `pong` are plain text, never JSON, so neither side's message handler reads them as ops.
 
+## Mass card removals
+
+A stale or buggy client must never be able to wipe a board (Work Tracker 950). Cards never travel as a whole board:
+each card write is one operation on one card (or a named list of cards), guarded by the card's rev. So the guard is
+a limit on how many cards one caller takes off a board in one run, held by the plan's room, where every item write
+already runs.
+
+- **What counts as a removal.** A card deleted (`DELETE /items/:id`) or moved into the Trash (a patch, a many-patch
+  or a many-move that sets its status to `trash`), by any caller: a person's editor, a share link, an API token, the
+  CLI or the MCP server. A card already in the Trash counts for no board, so emptying the Trash is never held.
+  Archiving is not a removal.
+- **A board's cards** are the cards a Board tab's board shows when the run begins: those whose status is one of its
+  columns and whose type it takes (an All Cards board shows every live card; an Archive board counts none). A card
+  on two boards counts on both.
+- **A run** is one caller's removals while they keep coming less than a minute apart
+  (`REMOVAL_GUARD_WINDOW_MS`, 60 seconds). The caller is the person (their card id, the hash cards are signed with)
+  or the API token. The boards are counted once, as the run's first removal finds them, so the limit never shrinks
+  as cards go. A run ends after a minute with no removal.
+- **The limit.** A run may take up to the smaller of 20% of a board's cards and 50 cards off it, and never less
+  than 10 (`REMOVAL_GUARD_SHARE`, `REMOVAL_GUARD_MAX`, `REMOVAL_GUARD_FLOOR`), so a tidy-up of a small board is
+  never held. A write that would take the run past the limit on any board is **quarantined**: nothing of it is
+  written, it answers `409 removal_held` with `reason: 'over-threshold'`, and it is kept in the room's log (below).
+- **Emptying a board.** A write that would take every card off a board that had three cards or more
+  (`REMOVAL_GUARD_EMPTY_MIN`) when the run began is **refused** the same way, with `reason: 'empties-board'`, whatever
+  the limit says. Clearing a board of one or two cards is never held.
+- **The answer** says which board, how many cards the run would remove from it and its limit:
+  `409 { error: 'removal_held', reason, board, count, limit, message }`. The message reads "This would remove 60 of
+  the 100 cards on Sprint Board at once, so it was held. Confirm it in liveplanner to go ahead." (for an empty board,
+  "This would remove every card on Sprint Board, so it was held. ..."), so a script or an agent can say why.
+- **Going ahead anyway.** A person's request marked `?confirmRemoval=1` is not judged, nor counted in the run: it is
+  what the editor sends once the person confirms (below and [Offline changes](../007-editor/offline-changes.md)
+  "Held for review"). An API token's never passes: a script or an agent cannot confirm its own mass removal.
+- **The quarantine log.** Each held write is kept in the room's Durable Object storage (`removal-quarantine`, never
+  a D1 table): when, who (the person's card id and name, or the token's id), the board, the reason, the count and
+  limit, and the card ids it named (up to 200). The log keeps the last 50. Each also logs
+  `[items] removal.held` with the plan, the reason, the board's card count, the run's count and the caller's kind.
+  The log is lost with the plan, and the run counts (in memory) start over when the room hibernates: a burst of
+  removals keeps the room awake, so a run in progress is never forgotten mid-burst.
+- **A refused write is kept, never lost.** The editor keeps a held change in the plan's queue under a Needs Review
+  banner, still shown as made, until the person confirms it (sent again with `confirmRemoval`) or keeps the cards
+  (the change is dropped and the board read again) ([Offline changes](../007-editor/offline-changes.md) "Held for
+  review").
+
+### Roles
+
+| Role        | Removals                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------- |
+| Editor      | Judged by the limit; may confirm a held removal from the editor                              |
+| Participant | Never removes a card (a delete or the Trash is an Editor's), so nothing of theirs is judged |
+| Viewer      | Writes nothing                                                                               |
+| API token   | Judged by the limit; can never confirm                                                       |
+
+### The sync paths, audited
+
+Every way a card or a board's content reaches the server, and why none overwrites a whole board:
+
+- **Card writes** (`routes/item-routes.ts` and its siblings): one operation per card, or a named list of at most
+  `ITEM_BULK_MAX` cards, each guarded by the card's rev. A create or bulk create (Offline Mode's sync, an import, a
+  plan's first cards) only adds cards; it never replaces the store. Deletes and moves into the Trash are judged by the
+  limit above.
+- **The offline queue** replays the person's own card writes one by one, in order ([Offline changes](../007-editor/offline-changes.md)):
+  a stale client reconnecting sends operations on the cards it knew, never its copy of the board. A card a peer added
+  meanwhile is not named by any of them, and a card a peer already deleted answers `item_not_found`, which the queue
+  counts as landed.
+- **Tab saves** (`PUT /tabs/:tabId`) write a tab's elements: a board's set-up (its columns, card types and widgets),
+  never its cards. A save that would blank a tab holding content is refused unless the editor marks it intentional
+  (`empty_tab_overwrite_blocked`, `X-Allow-Empty`). A column removed from a board sends its cards to the Trash as a
+  many-patch, which the limit judges.
+- **Room ops** change tab elements by id (`el`, `tab-meta`, a whole `tab` for a new tab). The `items` op that
+  carries card changes is a system op the room makes from a landed write; a client sending one is refused.
+- **New plans** (a copy, a Drive file, a template, a migration) write a fresh store and touch no existing board.
+- **Not yet judged**: an Automation's own writes (they run in the room, not through the item routes) and deleting a
+  Board tab, which removes the board but leaves its cards in the store. Both are later parts of Work Tracker 950.
+
 ## Locked decisions
 
 1. **Undo is local, not global.** Undo/redo affects the current user's own

@@ -16,6 +16,8 @@ Paths are under `apps/editor/` unless they say otherwise.
 | Role gate                    | `itemWriteMayWait(level, write)`, `sheetOpMayWait(rights, op, write)` (`queue-roles.ts`)            |
 | Card replay                  | `replayItemQueue(deps)`, `nextItemBatch(changes, splitThrough)`, `alreadyLanded(write, e)`          |
 | Card side in the editor      | `useItemQueue` + `withWaitingItems` (`hooks/plan/useItemQueue.ts`), wired in `usePlanItems`         |
+| A held removal               | `held: true` on an items `QueuedChange`; `isRemovalHeld(e)` (`lib/offline-queue/removal-held.ts`)  |
+| Held count, review           | `heldChangeCount()`, `confirmHeldChanges()`, `keepHeldCards()`, `subscribeHeldReview` (`plan-queue.ts`) |
 | Sheet side                   | `SheetQueueKeeper` (`components/sheets/sheet-store-queue.ts`), owned by `SheetStore`                |
 
 ## Constants and configuration
@@ -37,7 +39,8 @@ Paths are under `apps/editor/` unless they say otherwise.
 - One `localStorage` key per plan and person: `{ v: 1, changes: QueuedChange[] }`, sorted by `seq`. Written whole on
   every `add` and `remove` (an empty queue removes the key). An unreadable key, another version, or a malformed change
   reads as nothing (the change is dropped from the in-memory list only; D67).
-- A card change: `{ id: 'i<seq36>', seq, store: 'items', write: ItemWrite }`. A sheet write: `{ id: <wid>, seq, store:
+- A card change: `{ id: 'i<seq36>', seq, store: 'items', write: ItemWrite, held?: true, confirmed?: true }`. `held`:
+  the server held it as a mass removal; `confirmed`: Remove Anyway was chosen, so it is sent with `?confirmRemoval=1`. A sheet write: `{ id: <wid>, seq, store:
 'sheets', op: 'write', sheetId, write, flags }`; a new sheet: `op: 'create'` with the `SheetCreateRequest`
   (`id: 'c<seq36>'`); a sheet's delete: `op: 'delete'` (`id: 'd<seq36>'`). The sheet write's id is its `wid`, so the
   room's echo and the answer find it.
@@ -60,8 +63,18 @@ made: []`; the undo step is pushed as for a landed write.
 6. `load()` lays the queue over the fetched store: `withWaitingItems(refetchedItemStore(...), queue, by)`, applying
    each waiting write in order and skipping one that no longer applies.
 
+7. A refusal `isRemovalHeld(err)` (code `removal_held`) with a queue and a change that may wait: the change joins the
+   queue `held: true` (still applied), no toast, no load; answer `ok: true, made: []`.
+
+**Held removals** (`HeldRemovalsBanner`, `components/chrome/`): shown while `heldChangeCount() > 0` and not
+read-only. Keep Cards calls `keepHeldCards()` (every page queue drops its held changes; listeners of
+`subscribeHeldReview` get `'kept'`, and `useItemQueue` calls `load()`). Remove Anyway calls `confirmHeldChanges()`
+(held become `confirmed`; listeners get `'confirmed'`, and `useItemQueue` flushes).
+
 **Card replay** (`useItemQueue`): one replay at a time (`flushingRef`).
 
+- `replayItemQueue` reads only changes that are not `held`. A `confirmed` change always goes alone, sent with
+  `{ confirmRemoval: true }`. Refused alone with `isRemovalHeld`: `queue.hold([id])` (kept, skipped from then on).
 - `replayItemQueue`: take `nextItemBatch` (a run of `patch` changes with the same `undo` flag, newer than
   `splitThrough`, up to `ITEM_BULK_MAX`, becomes one `patches` write; anything else goes alone) and send it.
   - Answered: `landed(answer)` (the editor's `settle`), remove the batch's ids.
@@ -101,7 +114,8 @@ bridge.canShape }`):
 ## Interfaces and contracts
 
 - `PlanQueue.add(change): 'ok' | 'full'` (no-op `'ok'` for a held id); `remove(ids)`; `changes(store)`; `count(store?)`
-  (O(1)); `size()`; `has(id)`.
+  (O(1)); `heldCount()` (O(1)); `hold(ids)`; `confirmHeld()`; `dropHeld()`; `size()`; `has(id)`.
+- `writeItem(scope, write, by, { confirmRemoval? })` adds `confirmRemoval=1` to the request's query.
 - `replayItemQueue({ queue, send, landed, refused }) → { outcome: 'done' | 'stalled', sent }`.
 - `usePlanItems({ ..., level?: AccessLevel })`.
 - `SheetStoreDeps` gains `queue?: PlanQueue | null`, `rights?: SheetQueueRights`.
@@ -146,6 +160,9 @@ bridge.canShape }`):
   N changes wait in this browser and save when you reconnect."
 - Online, waiting: "Saving 1 change made without a connection." / "Saving N changes made without a connection."
 - Full: the error toast `PLAN_QUEUE_FULL_MESSAGE`.
+- Held: "1 card removal is held: it would take many cards off a board at once." / "N card removals are held: they
+  would take many cards off a board at once.", buttons Keep Cards (secondary) and Remove Anyway (primary).
+- The waiting count leaves held changes out (`waitingChangeCount()` = all changes less held ones).
 
 ## Accessibility
 
@@ -162,6 +179,8 @@ bridge.canShape }`):
 | Cards wait, replay, refusal, roles in the hook | `hooks/plan/usePlanItems.offline.test.ts`       |
 | Sheets wait, restore, refusal, full, roles     | `components/sheets/sheet-store-queue.test.ts`   |
 | The banner's copy                              | `components/chrome/OfflineBanner.test.tsx`      |
+| Held removals: kept, skipped, confirmed, kept  | `lib/offline-queue/removal-held.test.ts`        |
+| The Needs Review banner                        | `components/chrome/HeldRemovalsBanner.test.tsx` |
 | Repair keeps the queue                         | `packages/ui/src/browser-repair/repair.test.ts` |
 
 ## Defaults ledger
