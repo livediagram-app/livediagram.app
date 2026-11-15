@@ -35,7 +35,7 @@ Automatically Open Explorer setting, mirrored into the cookie by the editor and 
 | `/api/index/*`, `/api/drive/*`, `/api/previews/*` and a share link's image and card                                                                                                     | liveworkspace's index, Google Drive mirror and previews, ahead of the api row                                                                                                                                                       |
 | `/api`, `/api/*`                                                                                                                                                                        | api worker (`apps/api`)                                                                                                                                                                                                             |
 | `/telemetry`, `/telemetry/*`                                                                                                                                                            | 301 to liveworkspace's dashboard, `?app=livehuddle.app` ([Telemetry](../017-telemetry/telemetry.md))                                                                                                                                |
-| `/form`, `/form/*` (old form links)                                                                                                                                                     | 308 to the same path on liveplanner ("Old form links go to liveplanner" below)                                                                                                                                                      |
+| `/form`, `/form/*`                                                                                                                                                                      | the editor, as an unknown address ("Form links" below)                                                                                                                                                                              |
 | `/help`, `/help/*`                                                                                                                                                                      | help app (`apps/help`), stripped                                                                                                                                                                                                    |
 | `/community`, `/community/*`                                                                                                                                                            | liveworkspace.app's Community page, address bar unchanged: `routeCommunity` first (the head and sitemap, "The Community" below), then `routeToWorkspace`                                                                            |
 | `/live/*` (the editor app's `_next` assets only)                                                                                                                                        | editor app (`apps/editor`), stripped                                                                                                                                                                                                |
@@ -60,12 +60,9 @@ Centre** and **Troubleshooting**; Community: **Back to Community**), then **Help
 engines drop it. The editor answers an unknown address with its own card instead
 ([New document route](../007-editor/new-document-route.md) "Unknown addresses").
 
-**Old form links go to liveplanner.** Forms are liveplanner's now, and the migration carries every form's public
-link across with its code ([docs/migration.md](../../../../docs/migration.md), step 3). So an old form link,
-`/form/<code>` (and the bare `/form`), answers a permanent `308` to the same path on liveplanner, query string
-included, before any worker sees it: `https://www.liveplanner.app` in production, `https://staging.liveplanner.app`
-on staging and `http://localhost:3200` locally (`DEPLOY_ENV`). `form` stays in `LIVE_ROUTE_SEGMENTS` so the
-page views recorded for it before the redirect are still filed under the editor app.
+**Form links.** Forms are liveplanner's, and livehuddle never had any, so `/form` and `/form/<code>` reach the editor,
+which answers them as an unknown address. `form` stays in `LIVE_ROUTE_SEGMENTS` only so a form code typed or pasted
+here is never recorded in a page view.
 
 Two properties keep it safe. It sits **after** the live-route check, and `/explorer/*` (a segment the help centre uses too) is answered by liveworkspace's Explorer before either, which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
 
@@ -140,12 +137,9 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 <!-- legacy-names -->
 
-## Legacy editor route
+## Renamed help articles
 
-Every `/diagram/<id>` address (share links, embeds, bookmarks, `/diagram/shared?s=…`) answers a permanent `308` to the same path under `/document` ([Document](../006-document/document.md)), query string included, before any worker sees it (`apps/router/src/legacy-editor-route.ts`). A redirect is routing, not business logic, the same as the prefix-less help paths.
-
-The help articles renamed with it ([Help app, Renamed articles](../018-help/help-app.md#renamed-articles)) redirect the same way, from their old `/help/…` address. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does.
-<!-- /legacy-names -->
+The help articles renamed or retired since the code was forked ([Help app, Renamed articles](../018-help/help-app.md#renamed-articles)) answer a permanent `308` from their old `/help/…` address, before any worker sees it (`apps/router/src/legacy-help-route.ts`). A redirect is routing, not business logic, the same as the prefix-less help paths. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does. livehuddle never served `/diagram/<id>`, so there is no editor redirect.
 
 ## The Community
 

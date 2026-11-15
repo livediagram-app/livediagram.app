@@ -252,7 +252,7 @@ menu's Lock) is the one to read for them.
   its elements on read. The stored-tab migration runs it beside the other retired cleanups, and the editor runs it on
   a peer's `tab` op and `tab-meta` patch, so no data migration is needed and the tab is saved without it next time.
   The `locked` field leaves the element and tab types.
-- **Help**: the two articles go; their old addresses redirect (router `legacy-editor-route.ts`): Locking Elements to
+- **Help**: the two articles go; their old addresses redirect (router `legacy-help-route.ts`): Locking Elements to
   [Selecting Many Elements](/help/canvas/selecting-and-grouping/), Locking a Tab to
   [Tabs](/help/tabs/using-tabs/). The marketing FAQ's "Can I stop a finished tab being changed?" goes.
 - **Share roles**: nothing changes in who may do what. The rules that turned on a lock go: a locked tab no longer
@@ -796,7 +796,7 @@ livediagram's specs ([MCP server](../../../../livediagram/docs/specs/015-api/mcp
   never redeems a pairing. The room's share of the pairing contract went too (Work Tracker #583): no session
   carries a pairing, the api has no workbench-close door, and a platform close for a pairing matches nobody.
 - **Help**: the Connect an AI Tool, CLI and Workbenches articles go, and the developer articles show `curl` only. Old
-  addresses redirect (router `legacy-editor-route.ts`): the AI and MCP articles to [API Tokens](/help/account-and-data/api-tokens/),
+  addresses redirect (router `legacy-help-route.ts`): the AI and MCP articles to [API Tokens](/help/account-and-data/api-tokens/),
   the CLI and Workbench articles to the [API overview](/help/developers/api-overview/).
 - **What stays**: the REST API and API tokens (full or read-only), agent changesets, document views, agent presence
   (agent comments went with comments, [Comments, actions, links and notes](#comments-actions-links-and-notes): the
@@ -820,7 +820,7 @@ comments on it; a Viewer sees it).
 - Part 2: no route, menu, palette entry or help article offers a deck, presenting or the Page: `EditorHeader.test.tsx`
   (no Present button), `editor-commands.test.ts` (no Slide Deck command), `settings-catalogue.test.ts` (no Presenting
   settings), `palette-search.test.ts` (no Page result) and `view-transitions.test.ts` (no slide moves); the router's
-  `legacy-editor-route.test.ts` pins the help redirects.
+  `legacy-help-route.test.ts` pins the help redirects.
 - Part 3: the catalogue test pins the five templates; a link, an agent or a seed naming a leaving template is answered
   with Blank Space (`retired-templates.test.ts`); a palette test pins the meeting palette.
 - The Session strip's Timer: a stored tab with a `timer` field loads and saves without it (`retired-timer.test.ts`);
@@ -830,7 +830,7 @@ comments on it; a Viewer sees it).
   (`retired-kinds.test.ts` in `packages/document`, `RetiredElementFace.test.tsx` and the e2e
   `retired-elements.spec.ts` in the editor); the export draws the placeholder (`svg-render-retired.test.ts`); no
   palette entry, Search result or agent schema names a deleted kind; Import and Settings show no diagram
-  tool; the router's `legacy-editor-route.test.ts` pins the retired help addresses.
+  tool; the router's `legacy-help-route.test.ts` pins the retired help addresses.
 - The presenting tools: a stored Reaction Pad loads as a retired element named Reaction Pad (`retired-kinds.test.ts`),
   a stored Laser, Spotlight or Isometric button loads with no mode (`legacy-mode-buttons.test.ts`), the picker and
   the command palette name none of them (`useCanvasTool.test.ts`, `editor-commands.test.ts`), and the router pins

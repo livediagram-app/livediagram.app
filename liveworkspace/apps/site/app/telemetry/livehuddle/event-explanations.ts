@@ -845,12 +845,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A returning guest (not signed in) reopened the app on a later day, counted once per day.',
   'Participant|Returned|Authenticated':
     'A returning signed-in user reopened the app on a later day, counted once per day.',
-  'Participant|Moved|LegacyGuest':
-    'A browser that still held a guest from the old livehuddle.app came back, and what that guest made moved into the person now here. At most once per browser.',
-  'Participant|Moved|LegacyGuestClaimed':
-    'A browser still held a guest from the old livehuddle.app, but someone had already claimed it, so nothing moved. At most once per browser.',
-  'Participant|Moved|LegacyGuestUnknown':
-    'A browser still held a guest from the old livehuddle.app that was never migrated or could not be verified, so nothing moved. At most once per browser.',
   'Search|Opened|': 'The global search panel was opened.',
   'Search|Searched|':
     'A query was typed into search. Counted once per session, not on every keystroke.',

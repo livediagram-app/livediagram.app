@@ -95,7 +95,7 @@ test('the panel names the open canvas, and the Explorer opens it again', async (
 });
 
 // A canvas kept only in this browser, written to its offline store before the app loads (the app opens and
-// upgrades the store itself; legacy-offline-store.spec.ts covers the upgrade).
+// upgrades the store itself).
 async function keepInThisBrowser(page: Page, name: string): Promise<void> {
   await page.goto('/icon.svg');
   await page.evaluate(

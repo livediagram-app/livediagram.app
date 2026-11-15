@@ -224,7 +224,7 @@ export * from './tab-stats';
 export * from './wordmark';
 export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
+export { upgradeLegacyLinks } from './legacy-links';
 
 export function isBoxed(element: Element): element is BoxedElement {
   return (

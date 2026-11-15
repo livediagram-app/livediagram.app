@@ -11,7 +11,7 @@ export const SHARE_PITCH =
 
 export const { isSharePagePath, sharePage } = createSharePage({
   app: 'livehuddle',
-  pagePath: /^\/(?:document|diagram)\/shared\/?$/,
+  pagePath: /^\/document\/shared\/?$/,
   untitled: 'Untitled Space',
   pitch: SHARE_PITCH,
 });

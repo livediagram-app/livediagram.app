@@ -27,7 +27,7 @@ import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
-import { documentIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
+import { documentIdFromPath, isEditorPath } from '@/lib/editor-path';
 import { documentGrantRefusal } from '@/lib/api/document-grants';
 import { archivedByIndex, archivedChangeFolderHref } from '@liveworkspace/workbench/lib/archived';
 import { useArchivedAddress } from '@liveworkspace/workbench/lib/useArchivedAddress';
@@ -88,7 +88,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // read once, on mount, so an archived one never opens.
   const { id: archivedId, here: archivedHere } = useArchivedAddress(
     'livediagram',
-    (path) => documentIdFromPath(path).id,
+    documentIdFromPath,
   );
   // Tab title reflects the document: "<name> | livediagram" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
