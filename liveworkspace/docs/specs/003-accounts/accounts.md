@@ -537,6 +537,29 @@ on 2026-11-15 every app's token answer hung with it, and every Explorer stayed o
   ([site.md](../010-site/site.md#the-explorer)). The account menu's own ask gives up after 10 s too and reads
   the cookies as they are.
 
+Every other Worker call to the accounts site, or to liveworkspace through an app's router, is bounded the same way,
+so none can hang a page the way the token answer did:
+
+- **The account API.** An app API's internal calls (`call` in `@liveworkspace/auth-client`: settings, profiles,
+  teams, sightings, API tokens, emails, notification switches) go over its `ACCOUNTS` binding (the credentials carry
+  it), the public route only when the binding is missing or throws, as the token requests do. Each gives up after
+  10 s (`ACCOUNT_CALL_TIMEOUT_MS`), and the caller treats it as accounts being out of reach, as it already treats a
+  network error. The two writes that would make something twice if repeated (minting an API token, making a team)
+  wait 20 s (`ACCOUNT_WRITE_TIMEOUT_MS`), and their timeout says the outcome is unknown rather than failed
+  (`AccountCallTimeout`, `unconfirmed`): New Team answers **504** `{ "error": "team_create_unconfirmed" }`, never
+  the 503 that reads as safe to repeat.
+- **Closing an account.** The deletion code's send and check go over the binding too, and give up after 10 s as
+  before. Closing the account itself waits as long as it takes: an account half closed is worse than a slow answer.
+- **The index.** Its calls to accounts for a person's teams now and people's names go over the index's `ACCOUNTS`
+  binding (the public route without one: local runs and forks), and give up after 3 s; with no answer the token's
+  claim stands (a team) or nothing is named (the audit log), as before.
+- **An app's router.** What a router forwards to liveworkspace (the Explorer, the Community, signing in, the site's
+  assets, `/api/index`, Drive, previews), and an app API's workbench forward, stops waiting for the answer's headers
+  after 30 s and answers **504** (`no-store`), naming what didn't answer. Only the headers are timed: a body that is
+  still streaming, an upload (a body over 1 MB) and a WebSocket upgrade are never cut. A forward to a loopback
+  origin (a local stack, where a cold dev server can take longer than that to compile a page) is not timed. The
+  routers have no binding to liveworkspace's Workers, so these still go over the public route.
+
 ## Signing out
 
 Signing out anywhere signs the person out everywhere in that browser. Sign out in livediagram, liveplanner,
