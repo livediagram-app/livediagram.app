@@ -55,6 +55,10 @@ apps/editor/components/plan/widgets/WidgetGalleryTile.tsx    a tile's live previ
 apps/editor/components/plan/gallery/                         the frame, rail, tile and keys shared with Add Field
                                                              (item-types blueprint "Add Field")
 apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObserver per gallery (useSeenRoot, useSeen)
+apps/editor/components/plan/widgets/kept-stat.ts             keptStat: a widget's count kept per card list and key
+apps/editor/components/plan/useDrawnSetup.ts                 the set-up without its filter, one object across filter
+                                                             changes (useDrawnSetup, drawnSetupKey)
+apps/editor/components/plan/FilterEmptyHint.tsx              the hint when the filter hides every card, narrowingCount
 ```
 
 ## Behaviour and state
@@ -194,6 +198,27 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
   against the field's definition, its types, the reader, the day and the done columns, so re-renders and a field's
   several views cost nothing more. `fieldFills` reads every field in one pass for For You. Ten fields and For You
   over 2,000 cards: 12 ms CPU measured (field-widget-stats.perf.test.ts, budget 60 ms).
+- **A filter change** (a teammate's arrives as a whole new set-up off the wire): `PlanBoardView` projects, counts and
+  draws from `useDrawnSetup(setup)`, the set-up without `filter`, matched by a JSON key so it keeps one identity while
+  only the filter changes. `usePlanBoardProjection` keeps the unfiltered projection (and `shownItems`, the widgets'
+  cards) on that set-up and the items, and makes the filtered one only while a filter narrows: one projection per
+  filter change, none with no filter. The built-in widget counts go through `keptStat` (per card list, keyed by what
+  else they read: done columns, day, type order; at most `KEPT_PER_LIST` 32 per list), and field summaries already
+  key on the list, so a filter change recounts nothing. Writers (column heads, reorder, widgets) still spread the full
+  set-up, so they keep the filter.
+- **Measured** on 2,000 cards (kanban, assignee lanes, filter on priority; Node, the projection path alone): before,
+  two projections plus `boardItems` and four widget counts, 1.93 to 2.28 ms per filter change; after, the key and one
+  projection, 0.59 to 0.60 ms. The whole board in jsdom (dev build, `PlanBoardView.filter.perf.test.tsx`): before, 2
+  projections and every widget recounted per change; after, 1 projection and 0 recounts, and a change that shows the
+  same cards draws 0 card faces. What remains of a change that swaps hundreds of cards (667 here, 540 to 760 ms in
+  jsdom dev) is drawing the newly shown cards themselves, not the projection or the counts.
+- **Measured in a browser** (production build, Chromium at 4x CPU throttle, 2,000 cards over five columns, a
+  Participant's board watching the owner change the shared filter; main-thread time over the change, two runs): a
+  change that shows the same cards (the projection alone) 27 to 47 ms in all, against 56 ms for the same window with
+  no change, and no long task; hiding every card 35 to 52 ms; swapping 667 cards for another 667 160 to 174 ms, showing
+  all 2,000 from none 205 to 206 ms, both split into tasks under 50 ms. The columns draw only the cards in view (84 to
+  96 card faces of the 667 or 2,000 shown), so drawing never scales with the cards a change shows. One change crossed
+  50 ms: narrowing all 2,000 to 667 ran one 51 to 53 ms task, a follow-up rather than a fix here.
 - The gallery computes For You only on open, and draws a tile's preview only once `useSeen` reports it near view
   (`SEEN_MARGIN`); `fields` is memoised on `addTypes` and the types, so adding a widget never rebuilds sections.
 
@@ -262,10 +287,10 @@ See DEFAULTS.md D17 to D19, and D74 to D79 for field widgets and the gallery.
   `planBoard.filter` on the stored set-up as it is (never the normalised copy), so a Participant's commit passes
   `participantTabChange` untouched.
 - **State** (`components/plan/useBoardFilter.ts`): `useBoardFilter({ stored, mine, today, finished, canChange,
-write })` answers `{ quick, setQuick }`: `quick` is the stored filter resolved (memoised on its key, the viewer, the
+write })` answers `{ quick, setQuick, showAll }`: `quick` is the stored filter resolved (memoised on its key, the viewer, the
   day and the done statuses) or, while typing waits, the local draft. `setQuick(q)` does nothing without `canChange`;
   a change of the words alone waits `BOARD_FILTER_TYPING_MS` (400) after the last key, anything else writes at once
-  (flushing waiting words first); unmounting flushes. `PlanBoardView` passes `canChange = interactive &&
+  (flushing waiting words first); unmounting flushes. `showAll()` clears the filter at once (no typing pause). `PlanBoardView` passes `canChange = interactive &&
 canEditCards`, `write = plan.setBoardFilter(element.id, ·)`.
 - **Read-only** (a Viewer): `WidgetContext.canFilter` and `FilterPress.canFilter` false disable every narrowing press
   (Only Mine, People, Unassigned, Card Types, Due Soon, Priorities, field values, saved filter chips) and hide Show all;
@@ -274,11 +299,19 @@ canEditCards`, `write = plan.setBoardFilter(element.id, ·)`.
 - **Taking a widget off**: `PlanBoardHeader` hands the trimmed filter with the widgets (`onWidgets(next, kept)`), one
   set-up write, so the second write never puts back the filter the first cleared.
 - **Phone and slot**: `shownQuick` still applies none there.
+- **Hides every card** (board-widgets.md "When the filter hides every card"): `usePlanBoardProjection` answers
+  `hidesAll` (a filter narrows, the projection holds cards, and no column or lane shows one); `PlanBoardView` sets
+  `filterHidesAll` off a phone, a slot and loading; `PlanBoardGrid` draws `FilterEmptyHint` in the first open column's
+  first open lane, before its Add card row, with `onShowAll = showAll` only when `canFilter`. Built on
+  `CompactEmptyState` and `noMatchTitle` with the board palette as its ink.
 - **Testing**: `board-filter.test.ts` (checks, read, from, resolve, key), `participant-content.board-filter.test.ts`
   (a Participant's filter lands, other set-up fields stay, a bad filter is refused), `validate-shape` and
   `plan-board-patch` cases, `useBoardFilter.test.tsx` (two clients over one store converge, a remount restores, typing
-  debounced and flushed on unmount, a Viewer cannot change it), widget role tests (Viewer disabled, Participant
-  presses).
+  debounced and flushed on unmount, Show All at once, a Viewer cannot change it), widget role tests (Viewer disabled,
+  Participant presses), `PlanBoardView.filter-empty.test.tsx` (the hint for an Editor and a Participant with Show
+  All, a Viewer without it, per viewer, one card, never on an empty board, a phone or a slot),
+  `PlanBoardView.filter.perf.test.tsx` (2,000 cards: one projection, no widget recount, within the CPU budget),
+  `useDrawnSetup.test.ts`, `kept-stat.test.ts`.
 
 ## Filter field and saved filters (board-widgets.md "The Filter widget", "Saved filters")
 

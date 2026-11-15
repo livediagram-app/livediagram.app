@@ -28,6 +28,9 @@ const HELD_AT_100 = [
   'src/lib/canvas-backgrounds.ts',
   'src/lib/tab-looks.ts',
   'src/lib/editor-viewport-defaults.ts',
+  // A lane's gutter strip (docs/specs/009-elements/lane.md), drawn by livediagram's and liveplanner's canvases.
+  'src/components/canvas/LaneGutterStrip.tsx',
+  'src/components/canvas/upright-title.ts',
   'src/components/canvas/label-align.ts',
   'src/components/dialogs/export-tab-dialog.tsx',
   'src/lib/tab-export-name.ts',

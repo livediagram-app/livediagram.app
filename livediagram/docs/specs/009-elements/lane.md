@@ -136,7 +136,7 @@ wraps onto more lines inside it, rather than running on past the seam into the l
 - The full title is still the label, and dragging the seam wider gives the words their room back. A band across the
   top or bottom keeps the lane's width for its title, and an upright title wraps as below.
 
-The canvas (`lane-title-frame.ts`) and every export lay the title out alike: SVG and PNG, a plain title
+The canvas (`lane-title-frame.ts` in `@liveworkspace/workbench`, shared with liveplanner) and every export lay the title out alike: SVG and PNG, a plain title
 (`fitWholeWordLines`) and a formatted one (`clampExportRunLines`; on the canvas a CSS line clamp that keeps words
 whole).
 

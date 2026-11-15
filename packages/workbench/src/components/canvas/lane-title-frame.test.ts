@@ -1,6 +1,6 @@
 // A lane title's frame (docs/specs/009-elements/lane.md "A title wraps in its gutter", Work Tracker 444).
 import { describe, expect, it } from 'vitest';
-import { acrossTitleStrip, uprightTitleStrip } from '@livediagram/document';
+import { acrossTitleStrip, uprightTitleStrip } from '@liveworkspace/element-model/lane-gutter';
 import { clearLaneTitleCache, laneTitleFrame, laneTitleText } from './lane-title-frame';
 
 const lane = { width: 900, height: 200 };

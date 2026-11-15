@@ -43,6 +43,10 @@ import {
   type WidgetContext,
   type WidgetPill,
 } from './board-widget-parts';
+import { keptStat } from './kept-stat';
+
+// What a count that reads the board's done columns keys on, beside the cards (kept-stat.ts).
+const doneKey = (setup: WidgetContext['setup']) => finishedStatuses(setup).join('\u0000');
 
 export function wipWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { palette, projection } = ctx;
@@ -104,7 +108,11 @@ export function wipWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Eleme
 
 export function dueWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { setup } = ctx;
-  const { overdue, soon } = dueCounts(setup, ctx.items, ctx.now);
+  const { overdue, soon } = keptStat(
+    ctx.items,
+    `due|${todayNumber(ctx.now)}|${doneKey(setup)}`,
+    () => dueCounts(setup, ctx.items, ctx.now),
+  );
   if (overdue === 0 && soon === 0)
     return (
       <span className={WIDGET_PILL} style={pill}>
@@ -151,7 +159,9 @@ export function dueWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Eleme
 
 export function pointsWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { palette, setup } = ctx;
-  const { done, total, estimated } = boardPoints(setup, ctx.items);
+  const { done, total, estimated } = keptStat(ctx.items, `points|${doneKey(setup)}`, () =>
+    boardPoints(setup, ctx.items),
+  );
   if (estimated === 0)
     return (
       <span className={WIDGET_PILL} style={pill}>
@@ -189,7 +199,12 @@ export function pointsWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.El
 // Hours on the board's cards, and the timers running now (docs/specs/026-plan/board-widgets.md "Time").
 export function timeWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { palette } = ctx;
-  const { minutes, counted, running } = boardTime(ctx.items, ctx.types);
+  const { minutes, counted, running } = keptStat(
+    ctx.items,
+    'time',
+    () => boardTime(ctx.items, ctx.types),
+    ctx.types,
+  );
   if (counted === 0 && running === 0)
     return (
       <span className={WIDGET_PILL} style={pill}>
@@ -218,7 +233,7 @@ export function timeWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Elem
 
 export function prioritiesWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { palette } = ctx;
-  const counts = priorityCounts(ctx.items);
+  const counts = keptStat(ctx.items, 'priorities', () => priorityCounts(ctx.items));
   if (counts.length === 0)
     return (
       <span className={WIDGET_PILL} style={pill}>
@@ -266,7 +281,7 @@ export function prioritiesWidget(ctx: WidgetContext, pill: WidgetPill): React.JS
 
 export function unassignedWidget(ctx: WidgetContext): React.JSX.Element {
   const { palette } = ctx;
-  const n = unassignedCount(ctx.items);
+  const n = keptStat(ctx.items, 'unassigned', () => unassignedCount(ctx.items));
   const on = ctx.quick.person === UNASSIGNED;
   return (
     <button
@@ -300,7 +315,7 @@ export function unassignedWidget(ctx: WidgetContext): React.JSX.Element {
 
 export function topVotedWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { palette } = ctx;
-  const top = topVoted(ctx.items);
+  const top = keptStat(ctx.items, 'top-voted', () => topVoted(ctx.items));
   if (!top)
     return (
       <span className={WIDGET_PILL} style={pill}>
@@ -329,7 +344,9 @@ export function topVotedWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.
 
 export function staleWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Element {
   const { palette, setup } = ctx;
-  const n = staleCount(setup, ctx.items, ctx.now);
+  const n = keptStat(ctx.items, `stale|${ctx.now.getTime()}|${doneKey(setup)}`, () =>
+    staleCount(setup, ctx.items, ctx.now),
+  );
   return (
     <span
       className={WIDGET_PILL}

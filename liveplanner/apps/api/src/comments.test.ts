@@ -9,6 +9,7 @@ import {
   removeComment,
   rewriteCommentAuthors,
   threadsOfTab,
+  withoutNewElementComments,
 } from './comments';
 import type { ParticipantDTO } from './types';
 
@@ -18,6 +19,20 @@ import type { ParticipantDTO } from './types';
 // brand-new comments) or the stored values (for existing comments).
 // These tests pin the three branches and the noop edge cases so the
 // PUT-tab handler stays safe through future refactors.
+
+// A Sheet with the thread on a cell: what a new comment can still land on (docs/specs/026-plan/plan-mode.md).
+function mkCell(id: string, comments: Comment[]): Element {
+  return {
+    id,
+    type: 'shape',
+    shape: 'plan-sheet',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    cellComments: { 'row001:cola01': { comments, resolved: false } },
+  } as unknown as Element;
+}
 
 function mkShape(id: string, comments: Comment[]): ShapeElement {
   return {
@@ -278,28 +293,28 @@ describe('hasNewComments (docs/specs/014-identity/transactional-email.md #1)', (
   });
   it("is true when the writer's own comment id appears that was not in prev", () => {
     expect(
-      hasNewComments([mkShape('e1', [cm('c1'), cm('c2')])], [mkShape('e1', [cm('c1')])], 'w'),
+      hasNewComments([mkCell('e1', [cm('c1'), cm('c2')])], [mkCell('e1', [cm('c1')])], 'w'),
     ).toBe(true);
   });
   it("is false when the only new comment is a peer's that reached the writer live", () => {
     // Credited from the room: no author id until its author's own save claims it.
     const peer = cm('c2', null);
+    expect(hasNewComments([mkCell('e1', [cm('c1'), peer])], [mkCell('e1', [cm('c1')])], 'w')).toBe(
+      false,
+    );
     expect(
-      hasNewComments([mkShape('e1', [cm('c1'), peer])], [mkShape('e1', [cm('c1')])], 'w'),
-    ).toBe(false);
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1'), cm('c3', 'x')])], [mkShape('e1', [cm('c1')])], 'w'),
+      hasNewComments([mkCell('e1', [cm('c1'), cm('c3', 'x')])], [mkCell('e1', [cm('c1')])], 'w'),
     ).toBe(false);
   });
   it('is false when nothing new was added (a removal)', () => {
     expect(
-      hasNewComments([mkShape('e1', [cm('c1')])], [mkShape('e1', [cm('c1'), cm('c2')])], 'w'),
+      hasNewComments([mkCell('e1', [cm('c1')])], [mkCell('e1', [cm('c1'), cm('c2')])], 'w'),
     ).toBe(false);
   });
   it('is false on identical sets and with empty threads', () => {
-    const els = [mkShape('e1', [cm('c1')])];
+    const els = [mkCell('e1', [cm('c1')])];
     expect(hasNewComments(els, els, 'w')).toBe(false);
-    expect(hasNewComments([mkShape('e1', [])], [], 'w')).toBe(false);
+    expect(hasNewComments([mkCell('e1', [])], [], 'w')).toBe(false);
   });
 });
 
@@ -416,11 +431,14 @@ describe('newCommentsBy (docs/specs/012-collaboration/comment-mentions.md)', () 
     authorColor: '#000',
     authorId,
   });
+  it("leaves out a new comment on an element's own thread (plan-mode.md, Work Tracker 878)", () => {
+    expect(newCommentsBy([mkShape('e1', [cm('c1', 'w')])], [], 'w')).toEqual([]);
+  });
   it("lists only the writer's comments the save adds, in order", () => {
     expect(
       newCommentsBy(
-        [mkShape('e1', [cm('c1', 'w'), cm('c2', 'w'), cm('c3', 'x')])],
-        [mkShape('e1', [cm('c1', 'w')])],
+        [mkCell('e1', [cm('c1', 'w'), cm('c2', 'w'), cm('c3', 'x')])],
+        [mkCell('e1', [cm('c1', 'w')])],
         'w',
       ).map((c) => c.id),
     ).toEqual(['c2']);
@@ -455,5 +473,30 @@ describe('comment reactions', () => {
     ]);
     const bare = threadsOfTab({ ...tab, elements: [withReactions(undefined)] }, 'all', null);
     expect('reactions' in bare[0]!.comments[0]!).toBe(false);
+  });
+});
+
+// docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 878).
+describe('withoutNewElementComments', () => {
+  const cm = (id: string): Comment => mkComment(id, 'Bea', '#f00', 't', 'bea');
+  it("drops a save's new comment on an element's own thread, keeping the stored ones", () => {
+    const prev = [mkShape('a', [cm('c1')])];
+    const [kept] = withoutNewElementComments([mkShape('a', [cm('c1'), cm('c2')])], prev) as [
+      ShapeElement,
+    ];
+    expect(kept.commentThread?.comments.map((c) => c.id)).toEqual(['c1']);
+  });
+  it('drops a thread left with no comment', () => {
+    const [kept] = withoutNewElementComments([mkShape('a', [cm('c2')])], []);
+    expect(kept && 'commentThread' in kept).toBe(false);
+  });
+  it('keeps a stored comment found on another element, and a cell thread as sent', () => {
+    const prev = [mkCell('s', [cm('c1')])];
+    const next = [mkShape('a', [cm('c1')]), mkCell('s', [cm('c1'), cm('c9')])];
+    expect(withoutNewElementComments(next, prev)).toBe(next);
+  });
+  it('hands back the same array when nothing is dropped, reading nothing stored', () => {
+    const next = [mkShape('a', []), mkCell('s', [cm('c9')])];
+    expect(withoutNewElementComments(next, [])).toBe(next);
   });
 });
