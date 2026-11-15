@@ -59,20 +59,23 @@ storage. They are bounded by count, age and bytes, per tab:
 | `VERSION_AUTO_MAX_BYTES` | 16 MiB     | Eight of the largest tab (2 MB cap) or hundreds of a typical one                            |
 | `VERSION_NAMED_MAX`      | 25         | Naming is deliberate; past 25 the oldest names are worth reviewing                          |
 
-- **Automatic versions** are pruned in the same transaction as each new version: past the newest 50, older than 30
-  days (by when their content was last written), and past 16 MiB counting from the newest. The document's daily
+- **Automatic versions** are pruned in the same transaction as each new version: past the newest 50, kept more than 30
+  days ago, and past 16 MiB counting from the newest. Age counts from when a version was kept, not from when its
+  content was written: a tab untouched for two months and then edited keeps that two-month-old content as a fresh
+  version. The document's daily
   upkeep drops those past 30 days on a tab nobody edits.
 - **Named versions** are never pruned. Naming a 26th is refused (`409 too_many_names`, "This tab has 25 named
   versions. Remove a name from one first."); removing a name makes it an automatic version again, which the bounds
   then reach.
 - **A deleted tab takes its versions with it** (the foreign key), and a deleted document all of them. A document's
   copy starts with none: its history is its source's.
-- **What it costs.** Measured on node:sqlite with the stored bodies (`version-storage.test.ts`): a typical tab (a
-  12-slide deck of 10 elements a slide) is 41 KB, so a tab at the 50-version cap holds about 2 MB of versions; a
-  large tab (a 600-paragraph, 30-page article with 60 elements) is 312 KB, so the byte cap stops it at 53 versions'
-  worth and the count at 50 (16 MB). A tab at the 2 MB cap keeps 8 automatic versions. The worst case is the byte
-  cap plus 25 named versions of the largest tab: about 64 MB per tab, inside a Durable Object's 10 GB. Keeping one
-  costs SQLite copying the row: under 1 ms for a 2 MB tab, and nothing on a save that is not the first after a pause.
+- **What it costs.** Measured on node:sqlite with the stored bodies (`versions/version-storage.test.ts`): a typical tab
+  (the slide-deck template's elements over 12 slides, 10 a slide) is 27 KB, so a tab at the 50-version cap holds
+  about 1.3 MB of versions; a large tab (a 600-paragraph, 30-page article with 60 elements) is 154 KB, so 50 versions
+  hold about 7.5 MB, under the byte cap. A tab at the 2 MB cap keeps 8 automatic versions. The worst case is the byte
+  cap plus 25 named versions of the largest tab: about 64 MB per tab, inside a Durable Object's 10 GB. Keeping a
+  version of a 2 MB tab adds about 3 ms to the write that keeps it (3.7 ms against 1.1 ms for the same write without
+  a pause), and nothing to a save that is not the first after a pause.
 
 ## Opening a version
 

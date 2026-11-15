@@ -44,7 +44,7 @@ CREATE INDEX IF NOT EXISTS tab_versions_by_rev ON tab_versions (tab_id, rev);
 OLD.updated_at <= NEW.updated_at - VERSION_IDLE_MS` inserts OLD as kind `idle` unless a row for `(OLD.id,
 OLD.rev)` exists. A statement the revision trigger aborts takes the insert with it.
 - **VH2 prune trigger.** `tab_versions_prune AFTER INSERT ON tab_versions` deletes, for `NEW.tab_id`, unnamed rows
-  past the newest `VERSION_AUTO_MAX` (by `saved_at DESC, rowid DESC`), unnamed rows with `saved_at < NEW.created_at -
+  past the newest `VERSION_AUTO_MAX` (by `created_at DESC, rowid DESC`), unnamed rows with `created_at < NEW.created_at -
 VERSION_AUTO_MAX_DAYS`, and unnamed rows whose running byte total from the newest passes
   `VERSION_AUTO_MAX_BYTES` (a window `SUM`). The newest row is never pruned by bytes.
 - **VH3 one per revision.** Every insert guards `NOT EXISTS (… tab_id = ? AND rev = ?)`; no UNIQUE index, so no
@@ -55,7 +55,7 @@ VERSION_AUTO_MAX_DAYS`, and unnamed rows whose running byte total from the newes
   page-only write runs it first, as its own statement.
 - **VH5 restore capture.** The restore reads the version for the stored revision, or inserts one (kind `restore`)
   in the restore's batch with an id minted in the api; that id is `undoVersionId`.
-- **VH6 upkeep.** `maintain` deletes unnamed rows with `saved_at < now - VERSION_AUTO_MAX_DAYS` beside the
+- **VH6 upkeep.** `maintain` deletes unnamed rows with `created_at < now - VERSION_AUTO_MAX_DAYS` beside the
   changeset retention.
 - **VH7 anonymise.** `anonymiseDocument` rewrites `tab_versions.data` through `anonymiseJsonText` where
   `instr(data, person)`, and sets `author_id`/`author_name` to the anonymised person.
