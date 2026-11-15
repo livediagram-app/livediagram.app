@@ -94,4 +94,3 @@ From [Piece moments](../009-elements/piece-moments.md):
   presence op (the piece and your side), sent only when a moment plays, rate-limited a walker (moments now play on
   every arrival, so the op needs a rest of its own). Weighed and left out on 2026-11-14 (Work Tracker 626); here if
   the owner wants it later.
-- **A press to replay a moment** on a piece you stand beside.

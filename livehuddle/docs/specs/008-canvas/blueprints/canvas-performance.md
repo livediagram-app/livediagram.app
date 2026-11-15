@@ -359,13 +359,13 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 ### The reference board
 
-- `buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COUNT)`: a `mulberry32` PRNG;
-  elements by the spec's mix, made with the `@livehuddle/document` factories, placed over
-  `REFERENCE_AREA`; every element but the arrows is placed first, then each arrow is a
-  `createPinnedArrow` from a random shape to one of its `ARROW_NEIGHBOURS` (3) nearest shapes by
-  centre, as real diagrams join neighbours; paths are closed
-  with a fill on odd indexes. Ids are `ref-<n>`; the same seed yields the same board, byte for
-  byte.
+- `buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COUNT)`: a `mulberry32` PRNG; `ROOM_COLUMNS` (12) by
+  `ROOM_ROWS` (8) cells over `REFERENCE_AREA`, each holding a room inset by half of `GAP` (32), its door centred on
+  its bottom wall, a rug on its left half, two desks and two chairs at seeded spots in the left half, a sofa and a
+  plant in the right half, and a 96 px sticky note in its top-right corner; the first `REFERENCE_COUNT - 960` rooms (40) add
+  a text label. Made with the `@livehuddle/document` factories. Ids are `ref-<n>` in that order; the same seed yields
+  the same Space, byte for byte, and `count` takes its first elements (a unit test's smaller office).
+  `FURNITURE_KINDS` (desk, chair, sofa, plant) are the probe's select and drag targets.
 
 ### The probe
 
@@ -373,7 +373,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   ignored by `chromium`; `pnpm perf:canvas` runs it against the e2e stack. Its pure parts
   (`reference-board.ts`, `budget.ts`, `trace-tasks.ts`) have unit tests beside them, which the
   editor app's Vitest runs: it excludes only `e2e/**/*.spec.ts`.
-- It seeds one document per series (`whiteboard` and `diagram`, both Workshop tabs now, the series names kept for the history), each the reference board, through
+- It seeds one document, the `space` series (one Workshop tab), with the reference Space, through
   the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load.
 - **Open** (`openBoard`): `REPEATS` (5) opens per tab, each in a fresh browser context; the row is
   `medianOfRuns` of the five. The gesture rows run on the last one. Before load, an init script
@@ -388,7 +388,7 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
   the eraser). A screenshot per tab and zoom goes with the report. After an undo the probe waits
   1 s, so its commit lands outside the next gesture's window.
 - Each gesture is a step (`setup`, `act`, `reset`, so every run starts alike: a select starts
-  deselected, a drag and a stroke are undone, a pan and a zoom put the view back) and runs
+  deselected, a drag is undone, a pan and a zoom put the view back) and runs
   `REPEATS` (5) times untraced. A run's longest task comes from the page's own long-task entries
   (`timed`: entries ending after the run began), which count only the board's renderer; a drag's
   median frame from an in-page `requestAnimationFrame` recorder. `medianOfRuns` (`budget.ts`)
@@ -409,8 +409,7 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
 - For each tab and each zoom (fit, 100%), with `Emulation.setCPUThrottlingRate` at the calibrated
   rate, it runs:
   open, idle (2 s), pan (30 wheel ticks), zoom (16 Ctrl-wheel ticks), select, drag (30 moves),
-  deselect, marquee (25 moves), stroke (30 moves; the pen on the whiteboard, the pencil on the
-  diagram), hover (40 moves).
+  deselect, marquee (25 moves), hover (40 moves). It runs no stroke (`strokeKey: null`): livehuddle has no pen.
 - The probe never sends `Profiler.start`: the trace categories are `devtools.timeline` and
   `disabled-by-default-devtools.timeline` only. Starting V8's profiler makes source positions
   available for every compiled function in one main-thread task (about 1.1 s at 4× on a
@@ -505,7 +504,7 @@ export function useCanvasClientOrigin(
 // ../packages/workbench/src/lib/debug-log.ts
 export function debugScopeOn(scope: string): boolean;
 
-// ../packages/e2e-kit/src/perf/budget.ts (each editor names its tabs: Measurement<'whiteboard' | 'diagram'>)
+// ../packages/e2e-kit/src/perf/budget.ts (each editor names its tabs: livehuddle's Measurement<'space'>)
 export type Measurement<Tab extends string = string> = {
   tab: Tab; zoom: 'fit' | '100%'; gesture: Gesture;
   longestTaskMs: number; medianFrameMs?: number; idleWorkMs?: number; openMs?: number;
