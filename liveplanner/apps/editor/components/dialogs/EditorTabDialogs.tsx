@@ -113,7 +113,7 @@ export function EditorTabDialogs() {
           projectTabs={tabs}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           // The plan's own file (docs/specs/026-plan/plan-tabs.md "Whole Plan"): an Editor of the whole plan's, on a
-          // plan saved to an account (a This Browser plan has no server copy to write it from).
+          // plan saved on the server, a guest's synced plan too (a This Browser plan has no server copy to write it from).
           wholePlan={wholePlanOffer({
             projectId,
             ownerId: selfParticipant.id,

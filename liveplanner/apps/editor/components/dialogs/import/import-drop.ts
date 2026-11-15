@@ -8,7 +8,7 @@ import type { TrackerRead } from '@/lib/tracker-worker/tracker-tasks';
 import type { IntoTab } from './into-tab';
 
 export const DROP_UNKNOWN =
-  "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export.";
+  "That file isn't a liveplanner tab, a whole plan's .liveplanner file, or a Trello, Asana, Jira or Linear export.";
 export const DROP_NOT_CSV = "That file isn't a CSV or a Trello, Asana, Jira or Linear export.";
 export const DROP_TAB_JSON_HERE =
   'A liveplanner tab’s JSON imports into a Dashboard or Form tab. This tab takes a CSV.';

@@ -43,7 +43,8 @@ uses (`apps/api/src/plan-room/project-file.ts` `exportProjectFile`, `readProject
 'liveplanner', title, source: 'import' })`, seeds the grant, posts the text with `X-Index-Grant`; any failure after
   the index made the item deletes it for good (`deleteItem(id, { permanent: true })`) and rethrows. Answers the id.
 - `PlanFileImportActions` (`apps/editor/hooks/plan/usePlanFileImport.ts`): `{ offered, blocked, importFile(text,
-name) }`. `offered` is the tools' `canImport`; `blocked` is the guest sentence when not signed in; `importFile`
+name) }`. `offered` is the tools' `canImport`; `blocked` is the offline sentence while `navigator.onLine` is false, else
+  null (a guest imports as a signed-in Editor does: the api owns the new plan by the caller's guest id); `importFile`
   answers `{ ok: true }` (and opens the new plan) or `{ ok: false, error }` with the spec's sentence by the api's
   error code.
 - `ExportTabDialog` takes `wholePlan?: { projectId, ownerId }`, which `EditorTabDialogs` sets from
@@ -100,11 +101,12 @@ imported` (`projectId`, `tabs`, `cards`) on the api; `[plan-file] import failed`
 ## Testing
 
 - `apps/api/src/routes/project-file-route.test.ts`: the round trip (export, import, export again: the same tabs with
-  folders, cards with keys and fields, card types, Sheets, threads, rules off), roles (owner and Editor 200;
-  Participant and Viewer 403; tab-scoped 404), a malformed file, an oversized one by header and by length, a newer
+  folders, cards with keys and fields, card types, Sheets, threads, rules off), roles (owner, Editor and a guest Editor 200,
+  a guest's import 201 owned by their guest id; Participant and Viewer 403; tab-scoped 404), rules exported
+  without maker and editor ids, a malformed file, an oversized one by header and by length, a newer
   schema, unknown fields dropped, and a started plan 409.
 - `packages/project/src/project-file-summary.test.ts`: the counts and every refusal.
-- Editor: `ImportTabDialog.plan-file.test.tsx` (the section for an Editor only, the guest's dimmed row, the preview
+- Editor: `ImportTabDialog.plan-file.test.tsx` (the section for an Editor only, the offline dimmed row, the preview
   and its import, refusals, drops), `import-drop.test.ts` (a plan file's route), `ExportTabDialog.whole-plan.test.tsx`
   (the card on every kind only with `wholePlan`, the download, a failure), `whole-plan-offer.test.ts` (by role),
   `usePlanFileImport.test.ts` (offered, blocked, the api's refusals as sentences) and `lib/api/project-file.test.ts`

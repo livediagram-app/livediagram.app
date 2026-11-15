@@ -28,6 +28,7 @@ import { makeTestRouteContext } from './test-route-context';
 
 const OWNER = 'user_ada';
 const VISITOR = 'user_bea';
+const GUEST = 'guest_cyd';
 const MIME = 'application/vnd.liveplanner+json';
 const PERSON = { id: OWNER, name: 'Ada', color: '#123456' };
 
@@ -217,6 +218,26 @@ describe('GET /api/projects/:id/file', () => {
     expect(text).not.toContain(VISITOR);
   });
 
+  it('carries each rule’s maker and last editor by name and colour, without their account ids', async () => {
+    const { project } = envelopeOf(await (await call('GET', 'A')).text());
+    const [rule] = project.automations ?? [];
+    expect(rule?.made).toEqual({ at: 1, by: { ...PERSON, id: '' } });
+    expect(rule?.edited).toEqual({ at: 1, by: { ...PERSON, id: '' } });
+  });
+
+  it('is a guest Editor’s too: a guest session with an edit grant downloads the file', async () => {
+    const res = await handlePlanRequest(
+      makeTestRouteContext('GET', '/api/projects/A/file', {
+        env: db.env,
+        owner: GUEST,
+        accountUserId: null,
+        grant: grant('A', { sub: GUEST }),
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(envelopeOf(await res.text()).project.name).toBe('Roadmap');
+  });
+
   it('is an Editor’s of the whole plan: a Participant or Viewer 403, a tab-scoped link or no grant 404', async () => {
     const visitor = (over: Partial<PlanGrant>) => ({
       owner: VISITOR,
@@ -389,6 +410,22 @@ describe('POST /api/projects/:id/file', () => {
     );
     expect(anonymous.status).toBe(400);
     expect(db.sql.prepare('SELECT id FROM plan WHERE id = ?').get('B')).toBeUndefined();
+  });
+
+  it('makes a guest’s new plan as it does a signed-in Editor’s, owned by their guest id', async () => {
+    const res = await handlePlanRequest(
+      makeTestRouteContext('POST', '/api/projects/B/file', {
+        env: db.env,
+        owner: GUEST,
+        accountUserId: null,
+        grant: grant('B', { sub: GUEST }),
+        rawBody: await exported(),
+      }),
+    );
+    expect(res.status).toBe(201);
+    expect(await res.json()).toMatchObject({
+      project: { id: 'B', name: 'Roadmap', ownerId: GUEST },
+    });
   });
 
   it('answers 404 to any other method on the door', async () => {

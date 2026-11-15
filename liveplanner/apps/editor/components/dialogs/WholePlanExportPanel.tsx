@@ -20,7 +20,7 @@ const HOLDS = [
   'The card types and their templates',
   'The Sheets and their cells',
   'Every comment thread, without the commenters’ account ids',
-  'The Automations rules',
+  'The Automations rules, without their makers’ account ids',
 ];
 
 export function WholePlanExportPanel({

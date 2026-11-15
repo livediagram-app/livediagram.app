@@ -103,14 +103,18 @@ as every dialog's does, so no row lights up unasked.
     liveplanner. Reload the page, then try again.", over 8 MB "That plan's file is over 8 MB, the most an import reads.", and the api refusing it
     (a malformed tab, card, card type or Sheet, or past any store's cap) "Couldn't import that plan: its file is
     damaged or holds more than a plan can." Anything else: "Couldn't import that plan. Try again."
-  - A guest (not signed in) sees the row dimmed: "Sign in to import a whole plan." A guest's plans live in This
-    Browser, which keeps no comment threads or rules.
+  - A guest imports as a signed-in Editor does: the new plan is saved on liveworkspace servers under their guest id,
+    as a guest's plan is when they turn on Sync Plan to Server ([Save locations](../006-project/save-locations.md)).
+    The door asks only what making a synced plan asks (an identity, guest or account, and an Editor's grant on the
+    new plan); never signing in.
+  - While the browser is offline the row is dimmed: "You're offline. Connect to import a whole plan." The new plan
+    is made on the server, so an import needs it.
 - **Dropping a file** anywhere on the dialog, on any step (the list, the liveplanner Tab step or a tool's preview),
   reads it as what it is: a liveplanner tab's JSON goes to the liveplanner
-  Tab import (when the tab offers it, and not locked), a whole plan's file to its preview (an Editor's, signed in),
+  Tab import (when the tab offers it, and not locked), a whole plan's file to its preview (an Editor's, online),
   another tool's export to its preview (an Editor's), and any
   other CSV into a Board or Sheet tab as its CSV row would. A file none of them takes says why on the step it was dropped
-  on, which stays as it was (a preview stays, and so does what was typed in the box): "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export." (a Dashboard or
+  on, which stays as it was (a preview stays, and so does what was typed in the box): "That file isn't a liveplanner tab, a whole plan's .liveplanner file, or a Trello, Asana, Jira or Linear export." (a Dashboard or
   Form tab), "That file isn't a CSV or a Trello, Asana, Jira or Linear export." (a Board or Sheet tab), "A liveplanner
   tab's JSON imports into a Dashboard or Form tab. This tab takes a CSV.", "This tab takes a CSV, and that file is
   JSON." (no tools offered), the row's own reason when it is dimmed, or the tool reader's refusal (not JSON, no cards,
@@ -495,12 +499,14 @@ comment and rule in one file, to import back as a new plan." It is the plan's ow
 file the Drive mirror and the CLI read and write ([api.md](../015-api/api.md) "Internal"), not a format of the tab:
 cards, card types, comment threads and rules belong to the plan, never to one board.
 
-- **Who**: an Editor of the whole plan, on a plan saved to an account. A Participant, a Viewer and a visitor on a
+- **Who**: an Editor of the whole plan, on a plan saved on the server (a signed-in person's, or a guest's synced
+  plan). A Participant, a Viewer and a visitor on a
   tab-scoped link don't see the card (the file holds every tab, and the rules only an Editor sees), and the api
   refuses them; a This Browser plan has no card, since the file is written from the plan's server copy.
 - Pressing it opens a panel under the dialog's back bar: what the file holds (every tab with its folder, every card
   with its fields, the card types and their templates, the Sheets, every comment thread without the commenters'
-  account ids, and the Automations rules), the pictures line ("Pictures stay links: the file names them and carries
+  account ids, and the Automations rules, their makers and last editors by name and colour without account ids),
+  the pictures line ("Pictures stay links: the file names them and carries
   no image bytes."), and **Download .liveplanner**, which saves `<plan name>.liveplanner`. While it is prepared the
   button reads **Preparing…** and is held; a failure says "Couldn't prepare the file. Try again." under it.
 - The file reads back as a new plan from the Import dialog's [A Whole Plan](#the-import-dialog) row, or the Drive

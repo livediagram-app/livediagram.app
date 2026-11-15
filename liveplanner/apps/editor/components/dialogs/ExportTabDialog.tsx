@@ -68,7 +68,7 @@ type ExportTabDialogProps = {
   // The project's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export").
   projectTabs?: readonly Tab[];
   // The plan the Whole Plan card downloads (plan-tabs.md "Whole Plan"): given only to an Editor of the whole plan on a
-  // plan saved to an account; absent, the card is not offered.
+  // plan saved on the server (a guest's synced plan too); absent, the card is not offered.
   wholePlan?: { projectId: string; ownerId: string };
 };
 

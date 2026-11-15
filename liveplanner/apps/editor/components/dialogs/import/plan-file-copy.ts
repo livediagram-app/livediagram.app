@@ -5,7 +5,8 @@ import type { ProjectEnvelopeFailure, ProjectFileSummary } from '@liveplanner/pr
 export const PLAN_ROW_LABEL = 'liveplanner Plan';
 export const PLAN_ROW_HINT = 'A whole plan’s .liveplanner file from Export. Makes a new plan.';
 export const PLAN_SECTION = 'A Whole Plan';
-export const PLAN_GUEST_BLOCKED = 'Sign in to import a whole plan.';
+// Why the row is dimmed while the browser is offline: the new plan is made on the server.
+export const PLAN_OFFLINE = 'You’re offline. Connect to import a whole plan.';
 // What the picker asks for: the file Export saves, or the same JSON renamed.
 export const PROJECT_FILE_ACCEPT =
   '.liveplanner,application/vnd.liveplanner+json,.json,application/json';

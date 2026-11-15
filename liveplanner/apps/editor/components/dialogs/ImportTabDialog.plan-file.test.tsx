@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Import dialog's A Whole Plan section (docs/specs/026-plan/plan-tabs.md "The Import dialog"): a liveplanner Plan
-// row for an Editor beside the tools, dimmed for a guest; a plan's file picked or dropped is read and previewed in the
+// row for an Editor beside the tools (a guest's too), dimmed while offline; a plan's file picked or dropped is read and previewed in the
 // browser (its name and what it holds), and Import as New Plan makes it. A file that is not a plan, one from a newer
 // liveplanner and one past the cap are refused where they came in, the step left as it was.
 
@@ -13,7 +13,7 @@ import type { PlanFileImportActions } from '@/hooks/plan/usePlanFileImport';
 import { ImportTabDialog } from './ImportTabDialog';
 import { DROP_UNKNOWN } from './import/import-drop';
 import {
-  PLAN_GUEST_BLOCKED,
+  PLAN_OFFLINE,
   PLAN_NEWER,
   PLAN_NOT_A_PLAN,
   PLAN_PICTURES,
@@ -123,10 +123,10 @@ describe('ImportTabDialog: A Whole Plan', () => {
     expect(screen.getByRole('heading', { name: 'Import to Tab' })).toBeTruthy();
   });
 
-  it('dims the row for a guest, saying why, and never opens the picker', () => {
-    open(planFile({ blocked: PLAN_GUEST_BLOCKED }));
+  it('dims the row while offline, saying why, and never opens the picker', () => {
+    open(planFile({ blocked: PLAN_OFFLINE }));
     expect(planRow()).toHaveProperty('disabled', true);
-    expect(screen.getByText(PLAN_GUEST_BLOCKED)).toBeTruthy();
+    expect(screen.getByText(PLAN_OFFLINE)).toBeTruthy();
     fireEvent.click(planRow());
     expect(pick).not.toHaveBeenCalled();
   });
@@ -237,10 +237,10 @@ describe('ImportTabDialog: a dropped plan file', () => {
     expect(await screen.findByText(PLAN_TOO_BIG)).toBeTruthy();
   });
 
-  it('says the guest’s reason, and is no file this dialog takes without the section', async () => {
-    open(planFile({ blocked: PLAN_GUEST_BLOCKED }));
+  it('says the offline reason, and is no file this dialog takes without the section', async () => {
+    open(planFile({ blocked: PLAN_OFFLINE }));
     dropOn(new File([PLAN_FILE], 'roadmap.liveplanner'));
-    await waitFor(() => expect(screen.getAllByText(PLAN_GUEST_BLOCKED)).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByText(PLAN_OFFLINE)).toHaveLength(2));
     cleanup();
     open(planFile({ offered: false }));
     dropOn(new File([PLAN_FILE], 'roadmap.liveplanner'));

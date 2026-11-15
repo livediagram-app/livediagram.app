@@ -252,10 +252,10 @@ export function useEditorTabs(
     openProject,
     notify: (message) => toast.success(message),
   });
-  // A whole plan from its .liveplanner file (docs/specs/026-plan/plan-tabs.md "The Import dialog"): beside the tools.
+  // A whole plan from its .liveplanner file (docs/specs/026-plan/plan-tabs.md "The Import dialog"): beside the tools,
+  // signed in or a guest (a guest's new plan is synced under their guest id).
   const planFileImport = usePlanFileImport({
     canImport: !isStructureReadOnly,
-    signedIn: !!accountUserId,
     ownerId: selfParticipant.id,
     openProject,
   });

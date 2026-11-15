@@ -45,7 +45,7 @@ import { listSheets } from '../db/sheets';
 import { MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
 import type { PlanEnv } from '../types';
-import { copiedRules, rulesFromFile } from './automations/automation-copy';
+import { copiedRules, ruleForFile, rulesFromFile } from './automations/automation-copy';
 import {
   COPY_PLAN,
   copiedThreads,
@@ -97,7 +97,8 @@ export async function exportProjectFile(
     listSheets(env, planId),
     // Its cards' threads, without author ids: the file travels.
     copiedThreads(env, planId, null, null).then((all) => all.map(threadForRoom)),
-    copiedRules(env),
+    // Its rules, without who made them by account id, for the same reason.
+    copiedRules(env).then((all) => all.map(ruleForFile)),
   ]);
   // Cards in their key order, so the same store always writes the same bytes.
   items.sort((a, b) => a.key - b.key);
