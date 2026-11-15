@@ -195,6 +195,7 @@ report and the changeset's summary.
 | `link init [--folder <f>] [--doc <d>]... [--level]` | Writes `livediagram.toml`; with no folder, a picker of the person's folders          |
 | `link status`                                       | Every covered document with its state; exits 0 ([In CI](#in-ci) for `--fail-behind`) |
 | `link ls`                                           | The covered documents, as `document ls` prints them                                  |
+| `link from-code [<file>...] [--doc <d>]`            | Draws `wrangler.toml` / Compose files as a tab ([Infrastructure code import](../020-import-export/infrastructure-import.md)) |
 | `sync [--watch] [--relocate] [--dry-run] [--all]`   | One sync of the link; `--watch` keeps syncing until interrupted                      |
 | `sync --resolve <file>`                             | Planned: a mirror file git left conflicted, resolved by the driver's table           |
 | `link hooks install\|uninstall`                     | Planned: the git hooks and the merge driver ([Git](#git))                            |
