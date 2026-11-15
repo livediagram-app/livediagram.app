@@ -6,7 +6,7 @@
 export const LIST_ITEMS_BUDGET = 200_000;
 // The most cards a page lists, however small they are.
 export const LIST_ITEMS_LIMIT_MAX = 1000;
-// The longest text `query` takes: a search phrase, not a document.
+// The longest text `query` takes: a search phrase, not a whole text.
 export const LIST_ITEMS_QUERY_MAX = 200;
 // The most card types or columns one filter names.
 export const LIST_ITEMS_NAMES_MAX = 32;

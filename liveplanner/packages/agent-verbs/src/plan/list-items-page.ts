@@ -178,7 +178,7 @@ export function listItemsPage(
   }
   kept.sort((a, b) => a.key - b.key);
   // Whether the card just built had formatting left out, and whether any listed card had.
-  let cardRich = false;
+  let cardRich: boolean;
   let richLeftOut = false;
   const lister = itemLister(
     state,

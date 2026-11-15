@@ -22,7 +22,7 @@ const T0 = Date.UTC(2026, 9, 1);
 
 // The Work Tracker's shape: a Work Item type with Type, Priority, App and two Long Text fields; Backlog, In Flight and
 // Results boards, Done and Cancelled counting as done.
-const TASK = ITEM_TYPES.find((t) => t.id === 'task')!;
+const TASK = ITEM_TYPES.find((t) => t.id === 'task');
 const WORK: ItemTypeDef = {
   ...TASK,
   id: 'work',
@@ -280,7 +280,7 @@ describe('list_items filters', () => {
     card(1, 'review', { title: 'Fix the login page' }),
     card(2, 'selected', { title: 'Board sort', description: 'Sort cards by LOGIN date' }),
     card(3, 'progress', { title: 'Sheet freeze' }),
-    { ...card(4, 'progress', { title: 'No status here' }), fields: { title: 'Loose' } } as Item,
+    { ...card(4, 'progress', { title: 'No status here' }), fields: { title: 'Loose' } },
     card(9, 'review', { title: 'An idea' }),
   ]);
   const refs = (args: Parameters<typeof page>[1]) => page(state, args).items.map((i) => i.ref);
