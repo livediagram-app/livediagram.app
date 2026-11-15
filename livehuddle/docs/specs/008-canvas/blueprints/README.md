@@ -23,5 +23,6 @@ Follow the references below only as needed; never upfront.
 - ./receptionist.md - when implementing or changing the Receptionist: his day, greetings, Ask Receptionist, his bubble, topics or the footer's Ask Receptionist
 - ./opening-walking.md - when implementing or changing Avatar in the picker or search, a Space opening walking, the Walk In button's start spot (boards made before the pads), or Recommended leading the start
 - ./duplicate-placement.md - when implementing or changing where a duplicate lands: the free-spot search, a Room's shared wall, a Door or Window sliding along its wall
+- ./space-mini-view.md - when implementing or changing the mini view: Pop Out, the Picture-in-Picture window, who it shows, its knock and Back to Space
 - ./DEFAULTS.md - when a canvas blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a canvas blueprint covers

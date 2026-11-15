@@ -147,6 +147,9 @@ A stage's audience asks to speak by raising a hand, and the stage lets them.
 - With a screen reader: the badge is a button named "Sam raised a hand, Let Speak" (or "Sam is speaking, Done")
   for someone who may press it, and an image named "Sam raised a hand" for everyone else; the Call dock's count is
   read as "3 raised hands".
+- **In the mini view** ([The mini view](../008-canvas/avatar-mode.md#the-mini-view)) a raised hand shows at the end of
+  its person's row, the same amber hand (the brand's microphone once let speak), so a hand going up is seen from
+  another tab or app. Let Speak stays on the canvas.
 
 ## The stage line (part 3, built)
 

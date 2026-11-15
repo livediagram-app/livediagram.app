@@ -24,7 +24,9 @@ On top of earshot, a bubble is received only while it can be seen:
   centred where the screen's middle is, never anchored at its top-left corner (a bug until 2026-11-06 left everyone to
   your right and below you unreceived when zoomed in).
 - **A hidden tab receives none.** While the page is hidden (another browser tab, a minimised window), every video and
-  screen subscription closes; voices carry on. Coming back opens them again.
+  screen subscription closes; voices carry on. Coming back opens them again. [The mini
+  view](../008-canvas/avatar-mode.md#the-mini-view) keeps the people in sight meanwhile, without video: it changes
+  nothing here.
 - **At most 6 camera bubbles at once**, the nearest. Further cameras in earshot show their character only.
 - **At most 2 screen bubbles at once**, the nearest. A screen is about three bubbles' worth of traffic.
 - A bubble you have maximised is kept whatever the caps and the viewport say, until you restore it.

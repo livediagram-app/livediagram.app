@@ -248,6 +248,60 @@ their home moved (`components/calls/CallDock.tsx`).
   The avatar palette keeps its look: Gender, Clothes and Hair no longer leave the strip while you share.
 - The dock is the call group's, not the building strip's: a call rides Avatar mode
   ([Who is in a call](../012-collaboration/proximity-audio.md#who-is-in-a-call)).
+- **Pop Out** ends the dock (Work Tracker 908): it opens [the mini view](#the-mini-view).
+
+### The mini view
+
+People sit in a Space while they work in other tabs and apps, and the moment they leave the tab they lose it: who
+just walked over, who is speaking, who raised a hand, who is knocking. The **mini view** keeps the Space's people in
+a small window that stays on top of everything else (Work Tracker 908), as Google Meet's floating window and the
+desktop apps of Zoom, Teams and Gather do.
+
+- **Pop Out** is the Call dock's last button, after the call group (and the Screen Share group while you share), a
+  divider before it whenever anything precedes it. It is drawn as the call's buttons are: a picture-in-picture glyph,
+  named **Pop Out** on a desktop, the brand tint at rest. Its hover card: **Pop Out**, "Keep the Space's people in a
+  small window on top while you work in other tabs and apps." While the mini view is open it is pressed, the solid
+  brand, named **Popped Out**, its card **Mini View: Open**, "Press to close it."
+- **Where the browser can.** The mini view is a Document Picture-in-Picture window (Chrome and Edge since 116,
+  Firefox since 151). A browser without it (desktop Safari, every phone) shows no Pop Out, and nothing else changes.
+  A Viewer with no call and no preview sees a dock holding Pop Out alone.
+- **The window** opens 320 by 400 px (the browser may keep a size the person dragged it to), in the app's light or
+  dark theme as it was when it opened. Its title is **Mini View**. At its top: **In the Space** and how many people
+  are on the tab (you included), and **Back to Space**.
+- **Who is in it**: you first, then everyone with a character on your tab, the same people the canvas draws. While
+  you are in a call the people you hear lead under **Near You**, the rest under **In the Space**; with nobody heard
+  there is only **In the Space**. Each group runs by name (letters before case, then the presence id), so a row moves
+  only when someone walks into or out of earshot, arrives or leaves. More people than fit scroll.
+- **Each row**: the person's bust in the sprite's own pixels (their face and hair from their costume, shoulders in
+  their presence colour), their name (yours reads **You**), their status's dot and label when they wear one
+  ([Status](#status)), then at the row's end a raised hand (the same amber hand on its round badge the canvas draws,
+  or the brand's microphone once they are let speak) and, while they speak, three bars in their colour with a ring
+  round the bust. Your own row shows your level while your microphone is on. Under **Do Not Disturb** nobody else's
+  bars or ring show, as on the canvas ([Do Not
+  Disturb](../012-collaboration/meeting-rooms-and-stage.md#do-not-disturb-part-3-built)).
+- **Knocks.** A knock that reaches you ([Knock](../012-collaboration/knock.md#being-knocked)) shows at the top of the
+  mini view as well as in the toast, amber: **"Sam is knocking"**, with **Let In** and **Not Now**. Answering in
+  either place answers once and clears both; unanswered, it goes after ten seconds, as the toast does. A second knock
+  from the same person replaces the first.
+- **Back to the Space.** Pressing **Back to Space**, a row or the header brings the Space's tab to the front. Let In
+  and Not Now only answer.
+- **Live in a hidden tab.** The mini view draws from what the room connection keeps up to date, which it does in a
+  hidden tab: arrivals, the people heard, levels, hands and knocks. The hidden-tab video rule stays
+  ([Who sees what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)): no camera or screen is received
+  while the tab is hidden, and the mini view shows no video. Video tiles in it are a later step.
+- **Closing**: its own close button, pressing **Popped Out**, or leaving the Space (closing the document or the
+  browser tab). It outlives the dock: leaving Avatar mode, or the chrome hiding, keeps it open, since the people it
+  shows are drawn whether or not you walk. One mini view a tab; it is never reopened by itself.
+- **Share roles**: presence is everyone's, so an Editor, a Participant and a Viewer all have Pop Out and the same
+  mini view; a Viewer's own row shows no level (a Viewer never speaks). Let In and Not Now are everyone's, as
+  [Knock](../012-collaboration/knock.md#share-roles) gives them.
+- **With a screen reader**: the window's people are a list, each row read as its name, status, "hand raised" or
+  "speaking" (for example "Sam, Focusing, speaking"); the knock is a polite live region; Back to Space is a button.
+- **Cost**: nothing until it opens. Open, it renders only when a fact it shows changes (who is here, a name, a
+  costume, a status, who you hear, a level, a hand, a knock), never per frame; the people are worked out at most as
+  often as the canvas's coarse copy changes (ten times a second while someone walks), as one string compare when
+  nothing it shows moved.
+- Telemetry: `Canvas · Used · SpaceMiniView` when it opens. Never who is in it.
 
 ## Not over a start
 
