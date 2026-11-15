@@ -26,6 +26,11 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
   header buttons (`MovablePanelHeader`, `SettingsPopover`), the dialog close in both shapes
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
+- **The editor never pulls to refresh.** The editor app's root (`<html>` and `<body>` in `apps/live/app/layout.tsx`)
+  sets `overscroll-behavior: none` (`overscroll-none`) and the canvas takes every touch itself (`touch-none`), so a
+  drag that starts on the canvas, the strip (a logo page's Draw tools included) or beside it never reloads the
+  design. The marketing site and the help centre keep the browser's pull-to-refresh, and panels and sheets inside
+  the editor scroll as before (`overscroll-behavior` is not inherited).
 - **Every canvas toolbar pads its items.** The Palette strip carries `PHONE_TOOLBAR_ITEMS`;
   the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do a tab's name,
   the role pill (Editing / Viewing), the tour card's buttons and a page's lock and cog.
