@@ -1,8 +1,7 @@
 import { getLineArtIconCatalog } from '@/lib/icons';
-import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
 import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
 import { tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
-import { iconTileDef, stickerTileDef, techTileDef } from './palette-dynamic-tiles';
+import { iconTileDef, techTileDef } from './palette-dynamic-tiles';
 import { visibleTiles } from './PaletteTileGrid';
 
 // Which tiles the Toolbar layout's strip shows for a category (docs/specs/007-editor/toolbar-layout.md):
@@ -74,7 +73,7 @@ export { stripCrowdsCorners, type Span } from '@liveworkspace/workbench/lib/stri
 // picker. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
-const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology']);
+const ALWAYS_MORE = new Set(['icons', 'technology']);
 
 function allTilesFor(
   categoryId: string,
@@ -88,10 +87,6 @@ function allTilesFor(
       return getLineArtIconCatalog()
         .slice(0, STRIP_TILE_LIMIT + 1)
         .map(iconTileDef);
-    case 'stickers':
-      return searchStickers('')
-        .slice(0, STRIP_TILE_LIMIT + 1)
-        .map(stickerTileDef);
     case 'technology':
       return searchTechIcons('', 'all')
         .slice(0, STRIP_TILE_LIMIT + 1)

@@ -255,14 +255,15 @@ its catalogue a moment later focuses the field as soon as it appears); on a phon
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
-Icons, Stickers, Technology, Behaviour and My shapes, whose bodies carry
+Icons, Technology, Behaviour and My shapes, whose bodies carry
 more than tiles (search, group browsing, the person's libraries; My shapes has no strip tiles
 of its own, so More is its only way in). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
-**Icons, Stickers and Technology show their groups** where a strip shows their tiles (no mode's strip does since
+**Icons and Technology show their groups** where a strip shows their tiles (no mode's strip does since
 the category bar; their flyouts browse in two panes): the strip's tiles
-for one of them are its browse groups (the Icons groups, the Sticker groups, the Technology providers),
+for one of them are its browse groups (the Icons groups, the Technology providers; the stickers are the Icons
+category's Stickers side, with no strip of their own),
 each drawn as an opener rather than a tile (its first entry with a chevron, as the strip's pickers are, so it reads
 as a group to open rather than an icon to drag) with the group's name on its hover card, in the browse's own order. Pressing one
 opens a popover centred under that tile (on a phone it spans the screen, as More's does), showing **that group's
