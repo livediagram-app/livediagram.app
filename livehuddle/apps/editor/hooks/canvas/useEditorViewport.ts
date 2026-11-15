@@ -24,7 +24,11 @@ import {
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { KEYBOARD_MARGIN_PX } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
-import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
+import {
+  glideViewport,
+  VIEW_GLIDE_MS,
+  type ViewPose,
+} from '@liveworkspace/workbench/lib/viewport-glide';
 import { onMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
 import {
@@ -277,22 +281,27 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     setViewportZoom(view.zoom);
     setViewportOffset(view.offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);
+  // The glide to a fit still on its way (Walk to Edit's), and when it lands: a Map that shows meanwhile fits again.
+  const fitGlideRef = useRef<{ to: ViewPose; until: number; cancel: () => void } | null>(null);
   const glideToFit = useCallback(
-    (ms?: number) => {
+    (ms: number = VIEW_GLIDE_MS) => {
       const { activeTab } = depsRef.current;
       const view = tabFitView(canvasMainRef.current, activeTab.elements);
       if (!view) return;
       lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length };
-      glideViewport(
+      fitGlideRef.current?.cancel();
+      const cancel = glideViewport(
         { zoom: zoomRef.current, offset: viewportOffsetRef.current },
         view,
         { zoom: setViewportZoom, offset: setViewportOffset },
         ms,
       );
+      fitGlideRef.current = { to: view, until: performance.now() + ms, cancel };
     },
     [depsRef, setViewportOffset, setViewportZoom, viewportOffsetRef, zoomRef],
   );
-  // docs/specs/008-canvas/minimap.md "Fit leaves the Map clear": a template's fit runs before the Map has a box.
+  // docs/specs/008-canvas/minimap.md "Fit leaves the Map clear": a template's fit runs before the Map has a box, and
+  // so can a fit that glides in (Walk to Edit as a warm open's catch-up lands): that one glides on to the new fit.
   useEffect(
     () =>
       onMapShown(() => {
@@ -301,16 +310,15 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
           const last = lastFitRef.current;
           const { activeTab } = depsRef.current;
           const now = { zoom: zoomRef.current, offset: viewportOffsetRef.current };
-          if (
-            last &&
-            last.tabId === activeTab.id &&
-            last.count === activeTab.elements.length &&
-            sameView(last.view, now)
-          )
-            fitToScreen();
+          if (!last || last.tabId !== activeTab.id || last.count !== activeTab.elements.length)
+            return;
+          const glide = fitGlideRef.current;
+          const left = glide && sameView(glide.to, last.view) ? glide.until - performance.now() : 0;
+          if (left > 0) glideToFit(left);
+          else if (sameView(last.view, now)) fitToScreen();
         });
       }),
-    [depsRef, fitToScreen, zoomRef, viewportOffsetRef],
+    [depsRef, fitToScreen, glideToFit, zoomRef, viewportOffsetRef],
   );
 
   // Centre a canvas point at the zoom we already have (docs/specs/012-collaboration/bring-focus.md). Only

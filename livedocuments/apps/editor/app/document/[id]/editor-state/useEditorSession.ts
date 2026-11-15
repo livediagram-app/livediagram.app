@@ -214,6 +214,9 @@ export function useEditorSession({
   // would be wasteful; we only update this set after a
   // hydration / fetch lands, so the renders are bounded.
   const [loadedTabIds, setLoadedTabIds] = useState<Set<string>>(new Set());
+  // The tab the warm open painted from the last seen copy (docs/specs/006-document/offline-mode.md "Warm open of a
+  // cloud document"), the one tab with a body before hydration; null when nothing was warm-painted.
+  const [warmTabId, setWarmTabId] = useState<string | null>(null);
   // Tab ids whose lazy fetch FAILED (network / 5xx — not a 404). Drives
   // the canvas's blocking error overlay so the user can't edit a blank
   // placeholder and have the autosave wipe the real server row (docs/specs/006-document/per-tab-storage.md).
@@ -375,6 +378,8 @@ export function useEditorSession({
     followingRef,
     loadedTabIdsRef,
     loadedTabIds,
+    warmTabId,
+    setWarmTabId,
     setLoadedTabIds,
     tabLoadErrors,
     setTabLoadErrors,

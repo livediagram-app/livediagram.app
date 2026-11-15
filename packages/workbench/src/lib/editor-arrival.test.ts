@@ -327,6 +327,7 @@ describe('the last seen copy', () => {
   const doors = () => ({
     remember: vi.fn(async () => {}),
     forget: vi.fn(async () => {}),
+    forgetVia: vi.fn(async () => {}),
   });
   const firstTab = { id: 't1', rev: 3, tab: { id: 't1' } };
   const own = { id: 'i1', early: false, accountUserId: 'me' };
@@ -416,10 +417,31 @@ describe('the last seen copy', () => {
     const deleted = harness({ loadOwn: vi.fn(async () => Promise.reject(trashed)), lastSeen });
     await openOwnAddress(deleted.product, deleted.run, own);
     expect(lastSeen.forget.mock.calls).toEqual(Array(5).fill(['me', 'i1']));
+    // The link's copies go by its code too.
+    expect(lastSeen.forgetVia.mock.calls).toEqual(Array(3).fill(['me', 'code']));
     expect(lastSeen.remember).not.toHaveBeenCalled();
   });
 
-  it('keeps the copy when the server cannot be reached, and forgets nothing a link does not name', async () => {
+  // The Share dialog's links are `/<route>/shared?s=<code>`: their address names no item, so the code finds the copy.
+  it("forgets a link's copies by its code when its own address names no item", async () => {
+    const lastSeen = doors();
+    const revoked = harness({ lastSeen });
+    await openShareLink(revoked.product, revoked.run, link);
+    const gated = harness({
+      loadShared: vi.fn(async () => ({ passwordRequired: true as const, invalid: false })),
+      lastSeen,
+    });
+    await openShareLink(gated.product, gated.run, link);
+    expect(lastSeen.forget).not.toHaveBeenCalled();
+    expect(lastSeen.forgetVia.mock.calls).toEqual(Array(2).fill(['me', 'code']));
+    // Doors without forgetVia (an older binding) still arrive.
+    const plain = harness({
+      lastSeen: { remember: vi.fn(async () => {}), forget: vi.fn(async () => {}) },
+    });
+    expect(await openShareLink(plain.product, plain.run, link)).toBe(false);
+  });
+
+  it('keeps the copy when the server cannot be reached, and forgets no item a link does not name', async () => {
     const lastSeen = doors();
     const down = () => vi.fn(async () => Promise.reject(new Error('down')));
     const shared = harness({ loadShared: down(), lastSeen });
@@ -429,12 +451,15 @@ describe('the last seen copy', () => {
     const unnamed = harness({ lastSeen });
     await openShareLink(unnamed.product, unnamed.run, link);
     expect(lastSeen.forget).not.toHaveBeenCalled();
+    // The revoked link with no item in its address goes by its code alone; the unreachable one keeps its copy.
+    expect(lastSeen.forgetVia.mock.calls).toEqual([['me', 'code']]);
   });
 
   it('never holds or fails the load on the store', async () => {
     const lastSeen = {
       remember: vi.fn(() => Promise.reject(new Error('quota'))),
       forget: vi.fn(() => Promise.reject(new Error('quota'))),
+      forgetVia: vi.fn(() => Promise.reject(new Error('quota'))),
     };
     const kept = harness({ loadOwn: vi.fn(async () => ({ id: 'i1', ownerId: 'me' })), lastSeen });
     expect(await openOwnAddress(kept.product, kept.run, own)).toBe(true);

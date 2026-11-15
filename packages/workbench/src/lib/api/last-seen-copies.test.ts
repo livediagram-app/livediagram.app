@@ -26,7 +26,7 @@ function memoryStore() {
     entries: async () =>
       [...rows].flatMap(([key, value]): LastSeenEntry[] => {
         const r = value as Partial<LastSeenRecord>;
-        return [{ key, reader: String(r.reader), seenAt: Number(r.seenAt) }];
+        return [{ key, reader: String(r.reader), seenAt: Number(r.seenAt), via: r.via ?? null }];
       }),
     clear: async () => rows.clear(),
   };
@@ -171,12 +171,82 @@ describe('createLastSeenCopies', () => {
     expect(h.rows.size).toBe(0);
   });
 
+  // A link's own address (`/<route>/shared?s=<code>`) names no item: its copy is found by the code it came by.
+  it('reads the newest copy a share code kept, for its reader only', async () => {
+    const h = harness();
+    expect(await h.copies.readVia('user_a', 'CODE')).toBeNull();
+    await h.copies.remember(input({ itemId: 'd1', via: 'CODE' }));
+    h.tick(10);
+    await h.copies.remember(input({ itemId: 'd2', via: 'CODE' }));
+    await h.copies.remember(input({ itemId: 'd3' }));
+    expect((await h.copies.readVia('user_a', 'CODE'))?.itemId).toBe('d2');
+    expect(await h.copies.readVia('user_a', 'OTHER')).toBeNull();
+    expect(await h.copies.readVia('user_b', 'CODE')).toBeNull();
+    // Seen again, d1 is the newest though the store lists it first.
+    h.tick(10);
+    await h.copies.remember(input({ itemId: 'd1', via: 'CODE' }));
+    expect((await h.copies.readVia('user_a', 'CODE'))?.itemId).toBe('d1');
+  });
+
+  it('reads no copy by a code when its record is not a copy this code wrote', async () => {
+    const h = harness();
+    await h.copies.remember(input({ itemId: 'd1', via: 'CODE' }));
+    const key = lastSeenKey('user_a', 'd1');
+    h.rows.set(key, { ...(h.rows.get(key) as LastSeenRecord), body: '{' });
+    expect(await h.copies.readVia('user_a', 'CODE')).toBeNull();
+    // The bad record went: nothing is listed under the code any more.
+    expect(h.rows.size).toBe(0);
+  });
+
+  it('reads no copy by a code whose body names another way in', async () => {
+    const h = harness();
+    await h.copies.remember(input({ itemId: 'd1', via: 'CODE' }));
+    const key = lastSeenKey('user_a', 'd1');
+    const kept = h.rows.get(key) as LastSeenRecord;
+    h.rows.set(key, { ...kept, body: kept.body.replace('"via":"CODE"', '"via":null') });
+    expect(await h.copies.readVia('user_a', 'CODE')).toBeNull();
+  });
+
+  it('forgets every copy a share code kept when its reader lost what it opens', async () => {
+    const h = harness();
+    await h.copies.remember(input({ itemId: 'd1', via: 'CODE' }));
+    await h.copies.remember(input({ itemId: 'd2', via: 'OTHER' }));
+    await h.copies.remember(input({ itemId: 'd3' }));
+    await h.copies.forgetVia('user_b', 'CODE');
+    // A forget under another reader prunes this reader's copies, as forget does: keep them again.
+    await h.copies.remember(input({ itemId: 'd1', via: 'CODE' }));
+    await h.copies.remember(input({ itemId: 'd2', via: 'OTHER' }));
+    await h.copies.remember(input({ itemId: 'd3' }));
+    await h.copies.forgetVia('user_a', 'CODE');
+    expect(await h.copies.read('user_a', 'd1')).toBeNull();
+    expect(await h.copies.read('user_a', 'd2')).not.toBeNull();
+    expect(await h.copies.read('user_a', 'd3')).not.toBeNull();
+  });
+
   it('forgets every copy on sign-out', async () => {
     const h = harness();
     await h.copies.remember(input({ itemId: 'd1' }));
     await h.copies.remember(input({ itemId: 'd2' }));
     await h.copies.forgetAll();
     expect(h.rows.size).toBe(0);
+    // Nobody's copies after sign-out: the warm open expects no account.
+    expect(await h.copies.lastReader()).toBeNull();
+  });
+
+  it('answers whose copies the store holds: the reader of the newest copy', async () => {
+    const h = harness();
+    expect(await h.copies.lastReader()).toBeNull();
+    await h.copies.remember(input({ itemId: 'd1' }));
+    h.tick(10);
+    await h.copies.remember(input({ itemId: 'd2' }));
+    h.tick(10);
+    // Seen again, d1 is the newest though the store lists it first.
+    await h.copies.remember(input({ itemId: 'd1' }));
+    expect(await h.copies.lastReader()).toBe('user_a');
+    // A new reader's keep prunes the old one's copies: the store holds the newest reader's.
+    h.tick(10);
+    await h.copies.remember(input({ reader: 'guest_1', itemId: 'd3' }));
+    expect(await h.copies.lastReader()).toBe('guest_1');
   });
 
   it('reads a record that is not a copy as none, and removes it', async () => {

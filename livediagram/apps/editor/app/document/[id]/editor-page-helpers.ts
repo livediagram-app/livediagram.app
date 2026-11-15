@@ -59,9 +59,14 @@ export function deriveTabLoadState(input: {
   errored: boolean;
   elementsLength: number;
   templateChosen: boolean;
+  // Before hydration, the warm open (offline-mode.md "Warm open of a cloud document") is showing and the active tab
+  // is not the one it painted: a placeholder with no body until the load catches up.
+  warmWithoutBody?: boolean;
 }): TabLoadState {
-  // Pre-hydration / no document: the document-level loader owns the screen.
-  if (!input.hydrated || !input.hasDocument) return 'ready';
+  // Pre-hydration: the warm open's other tabs show the tab loader; otherwise the document-level loader owns the screen.
+  if (!input.hydrated) return input.warmWithoutBody ? 'loading' : 'ready';
+  // No document: the document-level loader owns the screen.
+  if (!input.hasDocument) return 'ready';
   if (input.errored) return 'error';
   if (input.loaded) return 'ready';
   // Not loaded yet. Only a tab with nothing local to paint should show

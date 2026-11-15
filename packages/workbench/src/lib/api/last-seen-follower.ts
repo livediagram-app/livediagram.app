@@ -28,7 +28,10 @@ export type LastSeenLanding<Tab> = LastSeenMeta<Tab> & { revs: ReadonlyMap<strin
 type Copies<Item> = {
   remember: (copy: LastSeenInput<Item, unknown>) => Promise<void>;
   read: (reader: string, itemId: string) => Promise<LastSeenCopy<Item, unknown> | null>;
+  readVia: (reader: string, code: string) => Promise<LastSeenCopy<Item, unknown> | null>;
+  lastReader: () => Promise<string | null>;
   forget: (reader: string, itemId: string) => Promise<void>;
+  forgetVia: (reader: string, code: string) => Promise<void>;
   forgetAll: () => Promise<void>;
 };
 
@@ -156,6 +159,8 @@ export function createLastSeenFollower<Item extends LastSeenItem>(
       await copies.remember(copy);
     },
     read: (reader: string, itemId: string) => copies.read(reader, itemId),
+    readVia: (reader: string, code: string) => copies.readVia(reader, code),
+    lastReader: () => copies.lastReader(),
     /** The reader lost the item: its copy goes, and stops being followed. */
     async forget(reader: string, itemId: string): Promise<void> {
       if (isCurrent(reader, itemId)) {
@@ -163,6 +168,14 @@ export function createLastSeenFollower<Item extends LastSeenItem>(
         current = null;
       }
       await copies.forget(reader, itemId);
+    },
+    /** The reader lost what a share code opens: its copies go, and the followed one stops if it came by that code. */
+    async forgetVia(reader: string, code: string): Promise<void> {
+      if (current !== null && current.reader === reader && current.via === code) {
+        cancel();
+        current = null;
+      }
+      await copies.forgetVia(reader, code);
     },
     /** Sign-out and account deletion: nothing waiting is written after it. */
     async forgetAll(): Promise<void> {

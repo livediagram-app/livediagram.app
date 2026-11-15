@@ -55,6 +55,9 @@ export function useEditorDocument(opts: { surface?: EditorSurface }) {
   // the API (i.e. the user is joining someone else's document, not
   // starting a fresh one). Drives the join-screen trigger.
   const [loadedExistingDocument, setLoadedExistingDocument] = useState(false);
+  // The tab the warm open painted from the last seen copy (docs/specs/006-document/offline-mode.md "Warm open of a
+  // cloud document"), the one tab with a body before hydration; null when nothing was warm-painted.
+  const [warmTabId, setWarmTabId] = useState<string | null>(null);
   // True when the URL points at a document that the API didn't return
   // (deleted, never existed, or owned by someone else). Renders the
   // NotFound surface instead of the editor + welcome modal.
@@ -175,6 +178,8 @@ export function useEditorDocument(opts: { surface?: EditorSurface }) {
     lastSavedTabsRef,
     loadError,
     loadedExistingDocument,
+    warmTabId,
+    setWarmTabId,
     loadedTabIds,
     loadedTabIdsRef,
     markTabLoaded,

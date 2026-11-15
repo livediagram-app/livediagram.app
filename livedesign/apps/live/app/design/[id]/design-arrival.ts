@@ -45,6 +45,8 @@ export type BootstrapSet = {
   setHydrated: SetState<boolean>;
   setIsOwner: SetState<boolean>;
   setLoadedExistingDesign: SetState<boolean>;
+  // The tab the warm open painted (offline-mode.md "Warm open of a cloud design"), null once it is gone.
+  setWarmTabId: SetState<string | null>;
   setLoadedTabIds: SetState<Set<string>>;
   setLoadingDesign: SetState<boolean>;
   setNameConfirmed: SetState<boolean>;

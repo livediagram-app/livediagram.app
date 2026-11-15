@@ -123,13 +123,16 @@ function keepCopy<Item>(
 ) {
   void doors?.remember(copy).catch(() => {});
 }
-// The reader lost the item the address names: its copy goes. An address that names none has no copy to forget.
+// The reader lost the item the address names: its copy goes. A share link's copies go by its code too, since its own
+// address (`/<route>/shared?s=<code>`) names no item.
 function forgetCopy<Item>(
   doors: LastSeenDoors<Item> | undefined,
   reader: string,
   id: string | null,
+  via: string | null = null,
 ) {
   if (id) void doors?.forget(reader, id).catch(() => {});
+  if (via) void doors?.forgetVia?.(reader, via).catch(() => {});
 }
 
 // A load that ended short of the item: the screen is up, the opening screen goes.
@@ -176,7 +179,7 @@ export async function openShareLink<
     // (docs/specs/013-workspace/trash.md): the visitor sees that it was deleted.
     if (product.isTrashedError(err)) {
       set.setTrashed(true);
-      forgetCopy(product.lastSeen, self.id, id);
+      forgetCopy(product.lastSeen, self.id, id, shareCodeParam);
     } else set.setLoadError(true);
     return endShort(product, set);
   }
@@ -185,7 +188,7 @@ export async function openShareLink<
     // visitor still had the link. A NotFound page, so the visitor sees an explicit error instead of a silent blank
     // canvas (which used to read as "it loaded but is empty").
     set.setNotFound(true);
-    forgetCopy(product.lastSeen, self.id, id);
+    forgetCopy(product.lastSeen, self.id, id, shareCodeParam);
     return endShort(product, set);
   }
   if ('passwordRequired' in resolution) {
@@ -200,7 +203,7 @@ export async function openShareLink<
       password.setSession(null);
     }
     // A copy never shows behind the gate.
-    forgetCopy(product.lastSeen, self.id, id);
+    forgetCopy(product.lastSeen, self.id, id, shareCodeParam);
     set.setSharePasswordGate({ invalid: resolution.invalid });
     set.setLoading(false);
     set.setNameConfirmed(product.hasConfirmedName());

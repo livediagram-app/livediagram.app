@@ -15,41 +15,45 @@ bind the same shared modules; their blueprints name only their bindings and poin
 
 ## Domain and naming
 
-| Term           | Identifier                       | Meaning                                                                                    |
-| -------------- | -------------------------------- | ------------------------------------------------------------------------------------------ |
-| Last seen copy | `LastSeenCopy<Item, Tab>`        | What one load answered for one reader and document, kept in this browser                   |
-| Reader         | `reader` (a participant id)      | The account id (`user_…`) or the guest's id (`guest_…`) the load ran as                    |
-| Copy key       | `lastSeenKey(reader, itemId)`    | `${reader}\n${itemId}`: one copy per reader and document                                   |
-| Way in         | `via`                            | The share code the address carried (`?s=`), or null for the document's own address         |
-| Access         | `LastSeenAccess`                 | `{ role, isOwner, sessionShareCode, tabScope }` as the arrival set them                    |
-| First tab      | `LastSeenFirstTab<Tab>`          | `{ id, rev, tab }`: the tab the load painted first, with the revision it was read at       |
-| Keep           | `remember(copy)`                 | Write the copy, then prune                                                                 |
-| Forget         | `forget(reader, itemId)`         | Remove one copy (lost access), then prune                                                  |
-| Clear          | `forgetAll()`                    | Empty the store (sign-out, account deletion)                                               |
-| Prune          | (inside `remember` and `forget`) | Drop other readers' copies, copies past the age limit, and the oldest past the count limit |
-| Warm open      | (part 3)                         | The early paint of a copy before auth settles                                              |
-| Follower       | `createLastSeenFollower(copies)` | The copies plus the one copy this page follows (`current`) and its waiting refresh         |
-| Follow         | `followMeta`, `followSave`       | Fold the open document's name, tab list or landed first-tab save into the followed copy    |
-| Refresh        | (the follower's timer)           | The one write a window of follows gathers into, `LAST_SEEN_REFRESH_MS` after the first     |
-| Save landed    | `onSaveLanded(landed)`           | The autosave's newest save landed: the baseline tabs and name, and each PUT's revision     |
+| Term            | Identifier                       | Meaning                                                                                    |
+| --------------- | -------------------------------- | ------------------------------------------------------------------------------------------ |
+| Last seen copy  | `LastSeenCopy<Item, Tab>`        | What one load answered for one reader and document, kept in this browser                   |
+| Reader          | `reader` (a participant id)      | The account id (`user_…`) or the guest's id (`guest_…`) the load ran as                    |
+| Copy key        | `lastSeenKey(reader, itemId)`    | `${reader}\n${itemId}`: one copy per reader and document                                   |
+| Way in          | `via`                            | The share code the address carried (`?s=`), or null for the document's own address         |
+| Access          | `LastSeenAccess`                 | `{ role, isOwner, sessionShareCode, tabScope }` as the arrival set them                    |
+| First tab       | `LastSeenFirstTab<Tab>`          | `{ id, rev, tab }`: the tab the load painted first, with the revision it was read at       |
+| Keep            | `remember(copy)`                 | Write the copy, then prune                                                                 |
+| Forget          | `forget(reader, itemId)`         | Remove one copy (lost access), then prune                                                  |
+| Clear           | `forgetAll()`                    | Empty the store (sign-out, account deletion)                                               |
+| Prune           | (inside `remember` and `forget`) | Drop other readers' copies, copies past the age limit, and the oldest past the count limit |
+| Warm open       | `readWarmCopy`, `paintWarm`      | The early paint of a copy before auth settles, read-only, until the catch-up lands         |
+| Expected reader | `expectedReader(copies, who)`    | The guest token's id, or (signed-in hint) the account `lastReader()` names                 |
+| Catch-up        | (the ordinary bootstrap load)    | The load that runs once auth settles and replaces the painted copy in place                |
+| Follower        | `createLastSeenFollower(copies)` | The copies plus the one copy this page follows (`current`) and its waiting refresh         |
+| Follow          | `followMeta`, `followSave`       | Fold the open document's name, tab list or landed first-tab save into the followed copy    |
+| Refresh         | (the follower's timer)           | The one write a window of follows gathers into, `LAST_SEEN_REFRESH_MS` after the first     |
+| Save landed     | `onSaveLanded(landed)`           | The autosave's newest save landed: the baseline tabs and name, and each PUT's revision     |
 
 "Last seen copy" is the only name: never "cache", "snapshot" or "local copy" (This Browser documents are local).
 
 ## Modules
 
-| File                                                                 | Responsibility                                                                                                                                       |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/workbench/src/lib/api/last-seen-copies.ts`              | `createLastSeenCopies(store)`: `remember`, `read`, `forget`, `forgetAll`; the limits; `lastSeenKey`; the read-side validation                        |
-| `../packages/workbench/src/lib/api/last-seen-store.ts`               | `createLastSeenStore(dbName)`: the IndexedDB store, two object stores (`copies`, `seen`), one kept connection, every call bounded and never throwing |
-| `../packages/workbench/src/lib/editor-arrival.ts`                    | `openShareLink` and `openOwnAddress` keep the copy on reaching the document and forget it on not found, the deleted card or the password gate        |
-| `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `flush`; `LAST_SEEN_REFRESH_MS`  |
-| `../packages/workbench/src/hooks/persistence/useLastSeenFollow.ts`   | Follows the open document's name and tab list, answers `onSaveLanded`, forgets a copy whose document went to This Browser                            |
-| `../packages/workbench/src/hooks/persistence/useAutosaveCore.ts`     | `onSaveLanded` (an option, read as an effect event): told once the newest save landed, with the baseline tabs, name and revisions                    |
-| `apps/editor/lib/last-seen.ts`                                       | livediagram's binding: `lastSeenCopies`, a follower over `createLastSeenCopies(createLastSeenStore(LAST_SEEN_DB))` (`livediagram-last-seen`)         |
-| `apps/editor/app/document/[id]/editor-state/useEditorPersistence.ts` | Calls `useLastSeenFollow` and hands its `onSaveLanded` to `useAutosave`                                                                              |
-| `apps/editor/app/document/[id]/document-arrival.ts`                  | `DOCUMENT_ARRIVAL.lastSeen = lastSeenCopies`                                                                                                         |
-| `apps/editor/app/document/[id]/seed-fetched-document.ts`             | The seed answers the first tab it painted (`LastSeenFirstTab`), or null when the eager fetch failed                                                  |
-| `apps/editor/components/providers/AccountsBridge.tsx`                | `endSession` (sign-out, account deletion) awaits `lastSeenCopies.forgetAll()` beside `forgetRecentDiagrams()`                                        |
+| File                                                                 | Responsibility                                                                                                                                                                                                               |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/workbench/src/lib/api/last-seen-copies.ts`              | `createLastSeenCopies(store)`: `remember`, `read`, `lastReader`, `forget`, `forgetAll`; the limits; `lastSeenKey`; the read-side validation                                                                                  |
+| `../packages/workbench/src/lib/api/last-seen-store.ts`               | `createLastSeenStore(dbName)`: the IndexedDB store, two object stores (`copies`, `seen`), one kept connection, every call bounded and never throwing                                                                         |
+| `../packages/workbench/src/lib/editor-arrival.ts`                    | `openShareLink` and `openOwnAddress` keep the copy on reaching the document and forget it on not found, the deleted card or the password gate                                                                                |
+| `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `flush`; `LAST_SEEN_REFRESH_MS`                                                                          |
+| `../packages/workbench/src/hooks/persistence/useLastSeenFollow.ts`   | Follows the open document's name and tab list, answers `onSaveLanded`, forgets a copy whose document went to This Browser                                                                                                    |
+| `../packages/workbench/src/hooks/persistence/useAutosaveCore.ts`     | `onSaveLanded` (an option, read as an effect event): told once the newest save landed, with the baseline tabs, name and revisions                                                                                            |
+| `../packages/workbench/src/lib/warm-open.ts`                         | `readWarmCopy`, `expectedReader`, `hashTabId`, `keptWarmTab`, `measureAfterPaint`: which copy may paint, and the timing marks                                                                                                |
+| `apps/editor/app/document/[id]/useIdentityBootstrap.ts`              | `tryEarlyOpen` reads the copy before auth settles, `paintWarm` paints it, the load's catch-up replaces it or takes it off the screen                                                                                         |
+| `apps/editor/lib/last-seen.ts`                                       | livediagram's binding: `lastSeenCopies`, a follower over `createLastSeenCopies(createLastSeenStore(LAST_SEEN_DB))` (`livediagram-last-seen`)                                                                                 |
+| `apps/editor/app/document/[id]/editor-state/useEditorPersistence.ts` | Calls `useLastSeenFollow` and hands its `onSaveLanded` to `useAutosave`                                                                                                                                                      |
+| `apps/editor/app/document/[id]/document-arrival.ts`                  | `DOCUMENT_ARRIVAL.lastSeen = lastSeenCopies`                                                                                                                                                                                 |
+| `apps/editor/app/document/[id]/seed-fetched-document.ts`             | The seed answers the first tab it painted (`LastSeenFirstTab`), or null when the eager fetch failed; `makePaintLastSeen` shows a copy the same way; the seed keeps the painted tab at an unchanged revision (`warmFirstTab`) |
+| `apps/editor/components/providers/AccountsBridge.tsx`                | `endSession` (sign-out, account deletion) awaits `lastSeenCopies.forgetAll()` beside `forgetRecentDiagrams()`                                                                                                                |
 
 ## Behaviour and state
 
@@ -97,14 +101,75 @@ itemId, { name, tabs })` and `followSave(reader, itemId, { name, tabs, revs })` 
     the baseline, calls `onSaveLanded({ tabs, name, revs })` with the baseline `baseline.after` answered.
 - **Clear.** `forgetAll` empties both object stores in one transaction. Sign-out awaits it (bounded by the store's
   timeout) before the hop, so no copy outlives the session in this browser.
+- **Warm open (part 3).** The bootstrap's first layout effect calls `tryEarlyOpen` (never awaited by anything; a
+  rejection is logged and the open waits for auth as before). Unless auth has answered, the editor is hydrated, or
+  it is an embed or a workbench:
+  - A path naming a This Browser document takes the early open, as before (`isOfflineId`, only without `?s=`).
+  - Otherwise `readWarmCopy(lastSeenCopies, { itemId, shareCode, hash }, { signedIn: readSignedInHint(), guestId:
+getGuestSelfId() })`. `expectedReader`: signed out, the guest token's id; signed in, `lastReader()` (the reader of
+    the newest `seen` row) when it is an account (`user_…`), else nobody. Then `read(reader, itemId)`; when that finds
+    none and the address carries `?s=<code>` (a link's own address, `/<route>/shared?s=<code>`, names no item, or
+    names `shared` where the product's path parser reads it as an id), `readVia(reader, code)`: the reader's newest
+    `seen` row whose `via` is the code, read with `read` so it is checked the same way. The address is not rewritten.
+    The copy paints only when `via === shareCode` (null for the own address), `firstTab` is kept, `firstTab.id ===
+firstTabToLoad(item.tabs, access.tabScope)`, and the `#t=` fragment names no other tab of the item. Any failure
+    reads as null.
+  - After the read, the copy is dropped unpainted only once the ordinary load has landed: the run's setters are
+    wrapped in `markLanding` (`@liveworkspace/workbench/lib/warm-open`), which sets `landedRef` on the first setter
+    other than the quiet ones (`setSelfParticipant`, `setNameConfirmed`, `setIdentityPromptOpen`), so the seed, a
+    not-found or deleted screen, the password gate, a load error or the someone-else swap all count. A load that has
+    only started still lets the copy paint (a guest's auth settles from the local token almost at once, so it often
+    starts before the read answers), unless it has resolved a reader (`readerRef`) other than the copy's. The
+    load then replaces the copy as any catch-up does. `tryEarlyOpen` runs once per mount (`warmTried`), so
+    StrictMode's second layout effect in dev neither reads, paints nor measures again.
+  - **`paintWarm(copy)`**: `makePaintLastSeen(seedDeps(set, resetTabs, false))(copy)`
+    shows it as the seed shows a load (placeholder tabs from `item.tabs`, the first filled from `firstTab.tab`, the
+    name, deck, active tab, shareable, team and owner fields; nothing fetched, marked loaded, seeded into the autosave
+    baseline or counted); then `setIsOwner(access.isOwner)`, `setSessionTabScope(access.tabScope)`,
+    `setSessionRole('view')` and `setLoadingDocument(false)`; then `warmRef.current = copy` and
+    `setWarmTabId(firstTab.id)`. `documentId` stays null and `hydrated` false, so the
+    autosave, the room, presence, follows, comments and lazy tab loads all stay off; `selfParticipant` stays `'self'`.
+  - **Other tabs.** `warmTabId` (editor state, null until a warm paint) is the one tab with a body before hydration.
+    `deriveTabLoadState` takes `warmWithoutBody: !hydrated && warmTabId !== null && activeId !== warmTabId` and
+    answers `'loading'` for it, so a tab switched to during the warm paint shows the tab loader (and blocks edits)
+    rather than a blank canvas; the lazy tab load stays off until the catch-up, which then fetches it.
+  - **The fit.** `useTabEntryEffects` takes `warmTabId`: before hydration it fits only the warm-painted tab (counted
+    as loaded) and claims it in `lastFittedTabRef`, so a catch-up that keeps its body never fits it again and the
+    view does not jump. It also takes `elements` (the active tab's array) and notes the one it fitted: when the
+    catch-up lands with another array (`keptWarmTab` answered null, the copy was older than the server's), the claim
+    is dropped and the tab is fitted again on its fresh body. A copy written before the last save landed (the
+    follower writes at most every `LAST_SEEN_REFRESH_MS`, so a reload just after a save often paints the one before)
+    would otherwise leave content the copy lacked off screen.
+    The `#t=` pin still waits for `hydrated`. livedocuments and livedesign hand Pages mode the same warm-aware
+    `tabLoaded`, so its page framing runs at the paint and not again at catch-up.
+  - **Catch-up.** The ordinary bootstrap runs once `authLoaded` flips, unchanged, with `loadingDocument` already
+    false, so no opening screen shows between. After the participant resolves, a `self.id` other than
+    `warmRef.current.reader` clears `warmRef` and sets `loadingDocument` true (the copy leaves the screen; the load
+    then opens the document for this reader) and clears `warmTabId`. `showDocument` first asks `keepActiveId()`
+    (the active tab, from a ref kept in a layout effect, while `warmRef` is set; else null) and keeps that tab when
+    the fresh tabs hold it and `isTabOutOfScope` allows it, ahead of the `#t=` pick, so the person's tab choice
+    during the warm paint survives. The seed reads `warmFirstTab()`: when the fresh first tab has the
+    copy's id and revision (`keptWarmTab`), the painted tab object is kept, so element views memoised on it skip.
+    The arrival then sets the role, owner chrome and share code; `hydrated` turns everything on.
+  - **Lost access** lands as the arrival's own screen (not found, deleted card, password gate, all ahead of the
+    canvas in the page's render order), and the arrival forgets the copy as in part 1, plus, on a share link,
+    `forgetVia(reader, code)` (the doors' optional `forgetVia`), since the link's own address names no item. A load error shows the
+    error card and keeps the copy.
+  - **Marks.** `measureAfterPaint('warm-paint', documentLoadOrigin())` after the paint, and
+    `measureAfterPaint('warm-catch-up', documentLoadOrigin())` when the catch-up reaches `done` with `warmRef` set:
+    `performance.measure` entries from the same start as `DocumentLoad`, taken after the next frame.
 
 ## Interfaces and contracts
 
 - `LastSeenStore`: `get(key) → Promise<unknown>`, `put(key, record) → Promise<boolean>`, `remove(keys) →
 Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<void>`. None rejects.
 - Stored record (`copies`): `{ v: 1, reader, itemId, seenAt, body }`, `body` the JSON of `{ item, firstTab, via, access
-}`. Index row (`seen`): `{ reader, seenAt }` under the same key.
-- `ArrivalProduct.lastSeen?: LastSeenDoors<Item>` (`remember`, `forget`); left out (liveplanner), nothing is kept.
+}`, plus `via`. Index row (`seen`): `{ reader, seenAt, via }` under the same key; a row written before `via` was
+  kept lists it as null (no warm open by code for that copy until it is kept again).
+- `readVia(reader, code)` and `forgetVia(reader, code)` on the copies and the follower; `forgetVia` stops following
+  the current copy when it came by that code.
+- `ArrivalProduct.lastSeen?: LastSeenDoors<Item>` (`remember`, `forget`, optional `forgetVia`); left out
+  (liveplanner), nothing is kept.
 - `ArrivalRun.seed` may answer `LastSeenFirstTab<unknown> | null`; a seed answering nothing keeps a copy without a
   first tab.
 
@@ -132,6 +197,14 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
 | A save or follow before the arrival kept the copy        | `current` is not that copy yet: nothing happens; the arrival's keep has the same content                                |
 | The first tab deleted or moved off first                 | `firstTab` becomes null until a save of the new first tab lands                                                         |
 | A refresh's write fails or times out                     | `remember` never rejects; the copy stays as last written and the next refresh tries again                               |
+| Auth answers before the warm read does                   | The copy still paints while the load has not landed (`markLanding`) and resolved no other reader; else dropped          |
+| The read fails, times out or the store is missing        | `readWarmCopy` answers null; the open waits for auth as before                                                          |
+| A stale signed-in hint (signed out in another app)       | The account's copy paints; the participant resolves to someone else, so it leaves the screen for the opening screen     |
+| The `#t=` fragment names another tab                     | No warm open: the copy holds no body for that tab                                                                       |
+| A link's own address (`/<route>/shared?s=<code>`)        | `readVia` finds the reader's newest copy kept by that code; the address is left as it is                                |
+| A tab switched to during the warm paint                  | Tab loader until the catch-up; the catch-up keeps that tab when it still exists and is in scope                         |
+| A second browser tab of the same document                | Warm-opens from the same copy; its room connects after its own catch-up (`hydrated`)                                    |
+| The document moved on since the copy                     | The fresh first tab (another revision) and tab list replace the painted ones in the catch-up's one seed                 |
 
 ## Security and trust
 
@@ -149,6 +222,10 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
   summaries as the load answered them.
 - A stored role is never trusted for writes: the warm open holds every edit until the participant resolves, and an
   unknown role reads as Viewer.
+- **Warm open per reader (part 3):** signed out, the read uses the guest token's id, so an account's copy never paints;
+  signed in, only an account's copies are read (`user_…`), never a guest's. The paint is `'view'` whatever the
+  stored role, runs with no `documentId` and no `hydrated`, so nothing is saved, sent or connected under the
+  placeholder; the arrival's answer sets the real role.
 
 ## Performance and limits
 
@@ -176,10 +253,48 @@ measured above (0.7 ms of stringify at 2,000 elements, the IndexedDB write off t
 | ---------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
 | `LAST_SEEN_REFRESH_MS` | 2,000 ms | Gathers a burst of saves into one write while keeping the copy seconds behind. Safe range: 500 ms to 10 s |
 
+**Warm open (part 3).** Measured (Node, CPU time, 1,000 calls, three runs, a 200-tab document): the check a cold open
+adds (`readWarmCopy` with no copy, the store answering at once) 0.5 to 0.8 µs; the paint 6 µs (it builds 200
+placeholders and never copies the elements, so 50, 500 and 2,000 elements cost the same); the catch-up's seed 7 µs
+with the painted tab kept, against 7.5 µs for a cold open's seed. The real store's read is part 1's open and read
+(0.5 ms median, 2.2 ms p95 at 480 KB), started in a layout effect and never awaited by the load, so a cold open
+waits on nothing new. The catch-up's seed is one batched commit, and a first tab at the copy's revision keeps the
+painted tab object, so the element views (memoised on their element) are not drawn again; what the role change
+reaches (read-only to editable chrome) renders once more as it does in any role change. `cpuMsOf` budgets in
+`warm-open.test.ts` and each `seed-fetched-*.test.ts` guard these.
+
+## Presentation and UX
+
+- The warm paint is the editor as a Viewer sees it: the same canvas, tab bar and header, with the role pill and the
+  disabled edit controls a view link shows. No new surface, copy or state: nothing to design beyond the editor's own
+  read-only look, which every share role already has.
+- A tab other than the painted one shows the tab loader the editor already has for a tab still loading, never a
+  blank canvas, and stays the active tab through the catch-up. The painted tab is fitted once, as it paints, and
+  again at the catch-up only when its body was replaced by a newer one.
+- The catch-up changes nothing on screen when the document did not move on but the role: the tools an Editor or a
+  Participant has appear. A document that moved on shows its fresh first tab and tab list in place.
+- Lost access shows the card the load ends on (not found, deleted, password), as a cold open does.
+
+## Accessibility
+
+- Read-only controls keep the disabled states, labels and roles a view link has. The catch-up announces nothing new;
+  the role pill's own label changes with the role, as it does today.
+
+## Web Experience
+
+- LCP: a warm open paints the canvas before auth, the participant and the tab fetch, instead of the opening screen.
+- CLS: the catch-up replaces the tabs in place (same ids, same order unless the document moved on), so the canvas
+  does not shift; the header's tools appearing with the role are the only change, as in any role change.
+- INP: nothing runs on input; the paint and the catch-up are each one commit.
+
 ## Observability
 
 - `debugLog('[last-seen] …')` on a failed write, a removed corrupt record and a copy too big to keep.
-- No telemetry in part 1: nothing visible changed. Part 3 adds the warm paint's timing beside `DocumentLoad`.
+- `debugLog('[load] warm open from the last seen copy')` on a warm paint, `'[load] no early open'` when the early or
+  warm open could not start.
+- Timing marks (part 3): `performance.measure` entries `warm-paint` and `warm-catch-up`, from the same start as
+  `DocumentLoad`, each taken after the next frame. No new telemetry metric: `DocumentLoad` keeps timing the fresh
+  copy; part 4 reads the marks on production builds and decides whether a metric is worth adding.
 
 ## Testing
 
@@ -202,7 +317,23 @@ measured above (0.7 ms of stringify at 2,000 elements, the IndexedDB write off t
 | Hook: meta effect, save landing, taken offline    | `useLastSeenFollow.test.tsx`                                                         |
 | Autosave tells the newest landing                 | `useAutosave.test.tsx` "tells the last seen copy each landed save"                   |
 
-The shared modules (the store, the copies, the follower and the hook) are held at 100% in `packages/workbench/vitest.config.ts`.
+| Whose copies the store holds | `last-seen-copies.test.ts` "answers whose copies the store holds …" |
+| Expected reader: guest id, or the account held | `warm-open.test.ts` "expectedReader" |
+| Signed-out or other reader never reads an account | `warm-open.test.ts` "never shows an account's copy …"; each `useIdentityBootstrap.warm.test.tsx` |
+| Way in, first tab and `#t=` checks | `warm-open.test.ts` "paints a share link only by …", "paints nothing …" |
+| Cold open adds next to nothing | `warm-open.test.ts` "adds next to nothing to a cold open …" (`cpuMsOfAsync`) |
+| Paint shows the copy, fetches and saves nothing | each `seed-fetched-*.test.ts` "paints the copy …" |
+| Catch-up keeps an unchanged first tab, else fresh | each `seed-fetched-*.test.ts` "keeps the painted tab …", "replaces the painted tab …" |
+| Editor, Viewer, Participant warm opens and roles | each `useIdentityBootstrap.warm.test.tsx` "paints an Editor's copy …", "paints a view/participate link's copy …" |
+| Lost access on catch-up forgets | each `useIdentityBootstrap.warm.test.tsx` "swaps the copy for not found …" |
+| Someone else after all, sign-out cleared, too late | each `useIdentityBootstrap.warm.test.tsx` |
+| A guest whose auth settles before the read answers | `warm-open.test.ts` "markLanding"; each `useIdentityBootstrap.warm.test.tsx` "paints when auth settles before the copy read answers …", "paints no late copy once the load resolved someone else …", "reads and paints once when the layout effect runs twice …" |
+| A link's own address warm-opens by its code, forgets by it | `last-seen-copies.test.ts` "reads the newest copy a share code kept …", "forgets every copy a share code kept …"; `warm-open.test.ts` "reads a share link's own address …"; `editor-arrival.test.ts` "forgets a link's copies by its code …"; each `useIdentityBootstrap.warm.test.tsx` "paints a link's own address …", "forgets a revoked link's copies …" |
+| Other tabs load, the chosen tab is kept | each `editor-page-helpers.test.ts` "loads a tab without a body while the warm open shows …"; each `seed-fetched-*.test.ts` "keeps the tab the person moved to …", "falls back to the first tab …"; each `useIdentityBootstrap.warm.test.tsx` "keeps the tab the person moved to …" |
+| One fit, at the paint | `useTabEntryEffects.test.tsx` "fits the warm-painted tab before hydration …", "waits for the load for a tab without a body …" |
+| A stale copy is fitted again on its fresh body | `useTabEntryEffects.test.tsx` "fits the warm-painted tab again when the catch-up replaced its body …" |
+
+The shared modules (the store, the copies, the follower, the hook and the warm open) are held at 100% in `packages/workbench/vitest.config.ts`.
 
 ## Defaults ledger
 

@@ -39,7 +39,7 @@ export function useEditorFollowing({
   fromComments: EditorCommentsSlice;
   fromViewport: EditorViewportSlice;
 }) {
-  const { hydrated, loadedTabIds, toast, workbenchMode } = fromDocument;
+  const { hydrated, loadedTabIds, warmTabId, toast, workbenchMode } = fromDocument;
   const { activeId, setActiveId } = fromSelection;
   const { followerIds, followingRef, livePresence, remoteViewports, roomRef, sharePasswordGate } =
     fromCollaboration;
@@ -154,7 +154,9 @@ export function useEditorFollowing({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
+    elements: activeTab.elements,
     tabLoaded: loadedTabIds.has(activeId),
+    warmTabId,
     fitToScreen: () => {
       landOnTab();
       focusLanding.afterTabFit(activeId);

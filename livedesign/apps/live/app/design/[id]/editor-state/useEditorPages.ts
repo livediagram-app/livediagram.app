@@ -44,6 +44,7 @@ export function useEditorPages({
     toast,
     followingRef,
     loadedTabIds,
+    warmTabId,
     tabLoadErrors,
     designId,
     hydrated,
@@ -70,7 +71,8 @@ export function useEditorPages({
   const pagesMode = usePagesMode({
     activeTab,
     canEdit: !isReadOnly,
-    tabLoaded: loadedTabIds.has(activeId),
+    // The warm-painted tab counts as landed, so the page is framed as it paints and not again at catch-up.
+    tabLoaded: loadedTabIds.has(activeId) || (!hydrated && activeId === warmTabId),
     commitTabs,
     canvasMainRef,
     setViewportZoom,
@@ -121,6 +123,7 @@ export function useEditorPages({
     errored: tabLoadErrors.has(activeId),
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
+    warmWithoutBody: !hydrated && warmTabId !== null && activeId !== warmTabId,
   });
   // A view-only session (a 'view' share role) is read-only in exactly
   // the same way a locked tab is: no element or tab mutation may land.

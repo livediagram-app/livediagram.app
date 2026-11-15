@@ -41,17 +41,19 @@ afterEach(async () => {
 describe('createLastSeenStore', () => {
   it('writes, reads, lists, removes and clears', async () => {
     expect(await store.put('k1', record())).toBe(true);
-    expect(await store.put('k2', record({ reader: 'guest_1', itemId: 'd2', seenAt: 9 }))).toBe(
-      true,
-    );
+    expect(
+      await store.put('k2', record({ reader: 'guest_1', itemId: 'd2', seenAt: 9, via: 'CODE' })),
+    ).toBe(true);
     expect(await store.get('k1')).toEqual(record());
     expect(await store.entries()).toEqual([
-      { key: 'k1', reader: 'user_a', seenAt: 5 },
-      { key: 'k2', reader: 'guest_1', seenAt: 9 },
+      { key: 'k1', reader: 'user_a', seenAt: 5, via: null },
+      { key: 'k2', reader: 'guest_1', seenAt: 9, via: 'CODE' },
     ]);
     await store.remove(['k1']);
     expect(await store.get('k1')).toBeUndefined();
-    expect(await store.entries()).toEqual([{ key: 'k2', reader: 'guest_1', seenAt: 9 }]);
+    expect(await store.entries()).toEqual([
+      { key: 'k2', reader: 'guest_1', seenAt: 9, via: 'CODE' },
+    ]);
     // Removing nothing asks nothing.
     await store.remove([]);
     await store.clear();

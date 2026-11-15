@@ -63,6 +63,7 @@ export function useEditorViewport({
     followerIds,
     followingRef,
     loadedTabIds,
+    warmTabId,
     documentId,
     hydrated,
     isReadOnly,
@@ -355,7 +356,9 @@ export function useEditorViewport({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
+    elements: activeTab.elements,
     tabLoaded: loadedTabIds.has(activeId),
+    warmTabId,
     fitToScreen: () => {
       (frameFirstPageRef.current ?? fitToScreen)();
     },
