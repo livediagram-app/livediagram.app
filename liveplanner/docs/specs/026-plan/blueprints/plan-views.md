@@ -192,7 +192,7 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   preview dates and lift applied; stroke `palette.muted` at 1.25 px, done at 40% opacity. The index is
   `planBlocking(plan)`. The export (`ganttArt`) draws the same pairs among the rows it fits.
 - Gantt row order: `planView.rowOrder` (card ids), validated by `isPlanViewSettings` (an array of `isValidItemId`
-  strings, none repeated, at most `GANTT_ROW_ORDER_MAX` (2000)). `ganttOrderRows(rows, order)` (gantt-row-order.ts)
+  strings, none repeated, at most `GANTT_ROW_ORDER_MAX` (5000, `ITEMS_MAX`)). `ganttOrderRows(rows, order)` (gantt-row-order.ts)
   puts named rows first in the order's sequence and the rest after in their date order (stable). `ganttReorder(
 rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of the chart's current row ids and put
   before the lane's row now at `toIndex` (after the lane's last row past its end), so it never leaves its lane; only
@@ -290,23 +290,23 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
 
 ## Constants and configuration
 
-| Constant                    | Value     | Where              | Safe range |
-| --------------------------- | --------- | ------------------ | ---------- |
-| `GANTT_PAD_DAYS`            | 7         | plan-view-gantt.ts | 0..30      |
-| `GANTT_MIN_DAYS`            | 28        | plan-view-gantt.ts | 7..90      |
-| `GANTT_WEEK_TICKS_MAX_DAYS` | 120       | plan-view-gantt.ts | 60..240    |
-| `TICK_LABEL_PX`             | 52        | GanttView.tsx      | 40..80     |
-| `GANTT_ROW_ORDER_MAX`       | 2000      | gantt-row-order.ts | 500..5000  |
-| `DRAG_SLOP_PX`              | 3         | gantt-drag.tsx     | 2..8       |
-| `CALENDAR_DRAG_SLOP_PX`     | 3         | useCalendarDrag.ts | 2..8       |
-| `GANTT_NAMES_MIN_PX`        | 120       | plan-view-gantt.ts | 80..200    |
-| `GANTT_NAMES_MAX_SHARE`     | 0.6       | plan-view-gantt.ts | 0.4..0.8   |
-| `GANTT_NAMES_STEP_PX`       | 16        | plan-view-gantt.ts | 4..40      |
-| `GANTT_PILL_MIN_COLUMN_PX`  | 160       | GanttView.tsx      | 120..240   |
-| `LANE_H`                    | 30        | GanttView.tsx      | 20..32     |
-| `PLAN_METRIC_SIZE`          | 260 × 64  | plan-views.ts      |            |
-| `PLAN_CHART_SIZE`           | 720 × 400 | plan-views.ts      |            |
-| `PLAN_GANTT_SIZE`           | 880 × 420 | plan-views.ts      |            |
+| Constant                    | Value     | Where              | Safe range    |
+| --------------------------- | --------- | ------------------ | ------------- |
+| `GANTT_PAD_DAYS`            | 7         | plan-view-gantt.ts | 0..30         |
+| `GANTT_MIN_DAYS`            | 28        | plan-view-gantt.ts | 7..90         |
+| `GANTT_WEEK_TICKS_MAX_DAYS` | 120       | plan-view-gantt.ts | 60..240       |
+| `TICK_LABEL_PX`             | 52        | GanttView.tsx      | 40..80        |
+| `GANTT_ROW_ORDER_MAX`       | 5000      | gantt-row-order.ts | = `ITEMS_MAX` |
+| `DRAG_SLOP_PX`              | 3         | gantt-drag.tsx     | 2..8          |
+| `CALENDAR_DRAG_SLOP_PX`     | 3         | useCalendarDrag.ts | 2..8          |
+| `GANTT_NAMES_MIN_PX`        | 120       | plan-view-gantt.ts | 80..200       |
+| `GANTT_NAMES_MAX_SHARE`     | 0.6       | plan-view-gantt.ts | 0.4..0.8      |
+| `GANTT_NAMES_STEP_PX`       | 16        | plan-view-gantt.ts | 4..40         |
+| `GANTT_PILL_MIN_COLUMN_PX`  | 160       | GanttView.tsx      | 120..240      |
+| `LANE_H`                    | 30        | GanttView.tsx      | 20..32        |
+| `PLAN_METRIC_SIZE`          | 260 × 64  | plan-views.ts      |               |
+| `PLAN_CHART_SIZE`           | 720 × 400 | plan-views.ts      |               |
+| `PLAN_GANTT_SIZE`           | 880 × 420 | plan-views.ts      |               |
 
 ## Defaults ledger
 

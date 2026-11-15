@@ -117,7 +117,7 @@ only when `raw` is not an object. `QUESTION_TYPE_NAMES` and `QUESTION_TYPE_TELEM
 | `RATING_SCALE_MIN/MAX/DEFAULT`                               | 3/10/5      | spec; items' `RATING_FIELD_SCALE_*` the same                 | fixed                 |
 | `MESSAGE_MAX`                                                | 500         | spec "Settings"                                              | 200..1000             |
 | `SECTIONS_MAX`, `QUESTIONS_MAX`                              | 10, 100     | spec "Abuse and limits"                                      | 5..20, 50..200        |
-| `FORM_RESPONSE_LIMIT_MAX`                                    | 2000        | = `ITEMS_MAX`                                                | = `ITEMS_MAX`         |
+| `FORM_RESPONSE_LIMIT_MAX`                                    | 5000        | = `ITEMS_MAX`                                                | = `ITEMS_MAX`         |
 | `RESPONSE_BODY_MAX`                                          | 65536       | spec                                                         | 32K..256K             |
 | `FORM_CODE_LENGTH`                                           | 22          | DEFAULTS D1                                                  | 20..32                |
 | `FORM_SUSPENSIONS_MAX`                                       | 2           | spec "Report This Form"                                      | 1..5                  |

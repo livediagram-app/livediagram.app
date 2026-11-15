@@ -330,9 +330,9 @@ binding more, as production does, so a query that passes its tests cannot fail t
 - `card_image_grants`: the pictures uploaded for the plan's [Image fields](../026-plan/item-types.md#image-fields) and
   [Attachments](../026-plan/items.md#attachments)
   (`plan-room/image-grants.ts`), one row per picture, recorded by `grantImage` on each upload (again makes it the
-  newest), at most `IMAGE_GRANTS_MAX` (5,000) with the oldest dropped. `servesImage` answers whether the plan serves
+  newest), at most `IMAGE_GRANTS_MAX` (12,500, 2.5 a card at `ITEMS_MAX`) with the oldest dropped. `servesImage` answers whether the plan serves
   a picture: the grant (a key lookup), then a card holding it (a `LIKE` prefilter on the id as its JSON string, an
-  exact `json_each` match on a field's value or an Attachments entry's `id`, `LIMIT 1`): about 2 ms on a full plan of 2,000 cards whichever card holds it, nothing
+  exact `json_each` match on a field's value or an Attachments entry's `id`, `LIMIT 1`): about 2 ms on a full plan of 5,000 cards whichever card holds it (`image-grants.test.ts`), nothing
   read without a grant. For a tab-scoped reader it takes the tab too (`servesImage(imageId, tabScope)`): the tab's
   body is read once, and a tab with a Plan board or plan view admits any holding card, otherwise the match is
   confined to the cards its Plan cards point at (`items.id IN (...)`, about 0.3 ms with 500 of them on a full plan);

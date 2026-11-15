@@ -314,7 +314,7 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
 - The event's `kind` is `time`, its `by` `automationPerson(rule.name)`, its `role` `system`, its `ruleId` the rule:
   the runner runs only that rule for it, skipping the trigger match (the scan did it) but not the conditions (a card
   changed since is checked again).
-- Worst case, timed by a perf test: 2,000 cards (ITEMS_MAX) and 50 time-trigger rules due at once, inside the
+- Worst case, timed by a perf test: a full plan (ITEMS_MAX, 5,000 cards) and 50 time-trigger rules due at once, inside the
   wake's CPU budget (the test's limit 1,500 ms, as Phase 1's).
 
 ### Runner additions
@@ -435,7 +435,7 @@ build):
 - **Test on a Card** of a time rule runs on the chosen card as at its moment, without checking its due date.
 - **Measured** (`automations.perf.test.ts`): 2,000 cards and 50 overdue rules due at once (5 hearing every card, 45
   checking a condition that never holds): the wake's CPU time is 165 to 191 ms on an M-series Mac, against the
-  1,500 ms limit.
+  1,500 ms limit; 489 ms at 5,000 cards (`ITEMS_MAX`).
 
 ### As built (Phase 2 editor)
 
