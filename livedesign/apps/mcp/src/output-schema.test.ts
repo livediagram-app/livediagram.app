@@ -113,6 +113,30 @@ async function api(request: Request): Promise<Response> {
       trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
     });
   }
+  if (path.endsWith('/comments') && request.method === 'GET')
+    return json({
+      threads: [
+        {
+          tabId: 't1',
+          tabName: 'Tab 1',
+          elementId: 'e1',
+          ref: 'e1',
+          label: 'Pay',
+          resolved: false,
+          comments: [
+            {
+              id: 'c1',
+              text: 'hi',
+              createdAt: 1,
+              authorName: 'Ana',
+              authorColor: '#000',
+              ai: true,
+              editedAt: 2,
+            },
+          ],
+        },
+      ],
+    });
   if (path.endsWith('/restore')) return json({ design: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ design: LIVE_DOC });
   if (path.endsWith('/share'))
@@ -210,6 +234,12 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     tool: 'change_components',
     output: 'changeComponentsOutput',
     args: { designId: 'd1', detach: { instance: 'i1' } },
+  },
+  { tool: 'list_threads', output: 'listThreadsOutput', args: { designId: 'd1', status: 'all' } },
+  {
+    tool: 'change_threads',
+    output: 'changeThreadsOutput',
+    args: { designId: 'd1', changes: [{ op: 'resolve', ref: 'e1' }] },
   },
 ];
 

@@ -27,6 +27,8 @@ describe('the MCP tool verbs', () => {
       'archive_document',
       'unarchive_document',
       'restore_document',
+      'list_threads',
+      'change_threads',
     ]);
     for (const v of MCP_TOOL_VERBS) {
       expect(v.id).toBe(`mcp.${v.mcp.tool}`);
@@ -54,6 +56,7 @@ describe('the MCP tool verbs', () => {
       'list_templates',
       'search_icons',
       'list_trash',
+      'list_threads',
     ]);
   });
 });
