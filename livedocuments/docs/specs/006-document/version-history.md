@@ -119,7 +119,8 @@ elements_held`); a person's is never held.
 
 **Make a Copy** adds a new tab after the document's last, holding the version's content, named "<tab name> (copy)"
 (or the name the editor sends, "<tab name> (14 Nov)"), shortened to the name cap. It is a changeset that creates a
-tab, so everyone sees the tab arrive. The current tab is untouched. A link confined to one tab cannot make a tab, so
+tab, so everyone sees the tab arrive. The copy carries the content, not the conversation: comment threads and assigned
+actions stay on the tab they were left on. The current tab is untouched. A link confined to one tab cannot make a tab, so
 it has no Make a Copy.
 
 ## Who may do what

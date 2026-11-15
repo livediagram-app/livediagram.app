@@ -23,8 +23,8 @@ function typicalTab(): string {
   const elements: Element[] = [];
   for (let slide = 0; slide < 12; slide += 1) {
     for (let i = 0; i < 10; i += 1) {
-      const base = deck[(slide * 10 + i) % deck.length]!;
-      elements.push({ ...base, id: `s${slide}-${i}`, y: base.y + slide * 1200 } as Element);
+      const base = deck[(slide * 10 + i) % deck.length] as Element & { y?: number };
+      elements.push({ ...base, id: `s${slide}-${i}`, y: (base.y ?? 0) + slide * 1200 } as Element);
     }
   }
   const pages = Array.from({ length: 12 }, (_, i) => ({ id: `p${i}`, orientation: 'landscape' }));

@@ -163,6 +163,14 @@ export function agentVersionStatement(
   );
 }
 
+// The tab's current revision, without its body; null when there is no such tab.
+export async function tabRev(env: DocumentEnv, tabId: string): Promise<number | null> {
+  const row = await env.DOCUMENT_DB.prepare('SELECT rev FROM tabs WHERE id = ?')
+    .bind(tabId)
+    .first<{ rev: number }>();
+  return row?.rev ?? null;
+}
+
 // How many of the tab's versions are named.
 export async function namedVersionCount(env: DocumentEnv, tabId: string): Promise<number> {
   const row = await env.DOCUMENT_DB.prepare(

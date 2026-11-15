@@ -8370,6 +8370,174 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "VersionCopyResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "tab": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rev": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "rev"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "tab"
+    ],
+    "type": "object"
+  },
+  "VersionKind": {
+    "enum": [
+      "idle",
+      "agent",
+      "restore",
+      "manual"
+    ],
+    "type": "string"
+  },
+  "VersionReadResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "tab": {
+        "$ref": "#/components/schemas/Tab"
+      },
+      "version": {
+        "$ref": "#/components/schemas/VersionSummary"
+      }
+    },
+    "required": [
+      "version",
+      "tab"
+    ],
+    "type": "object"
+  },
+  "VersionRestoreResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "restored": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "changesetId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rev": {
+                "type": "number"
+              },
+              "tabId": {
+                "type": "string"
+              },
+              "undoVersionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tabId",
+              "rev",
+              "changesetId",
+              "undoVersionId"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "restored"
+    ],
+    "type": "object"
+  },
+  "VersionSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "author": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "color"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "bytes": {
+        "type": "number"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "elementCount": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/VersionKind"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "rev": {
+        "type": "number"
+      },
+      "savedAt": {
+        "type": "number"
+      },
+      "tabId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "tabId",
+      "rev",
+      "kind",
+      "name",
+      "author",
+      "savedAt",
+      "createdAt",
+      "bytes",
+      "elementCount"
+    ],
+    "type": "object"
+  },
   "VideoElement": {
     "additionalProperties": false,
     "properties": {

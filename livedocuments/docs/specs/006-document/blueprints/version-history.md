@@ -94,7 +94,7 @@ invalid_name`. Names the row for the stored revision or inserts a `manual` row; 
 - **VH16 room ops.** `restoreRoomOps(before, after)`: one `tab-meta` patch of every body field other than
   `elements`, `articles`, `id`, `name`, `locked`, `folder`, `connection` that differs (`clear` for the absent ones,
   `pageSteps` when `pages` differ), then `tabArticleOps(before, after, { grow: true })`.
-- **VH17 copy.** A new tab id (`t_` + 12 hex), the version's body under it, named the request's name or `<tab name>
+- **VH17 copy.** A new tab id (`crypto.randomUUID()`), the version's body under it without `locked` or the live element fields, named the request's name or `<tab name>
 (copy)`, capped; written by `writeChangeset` with no stored tab at `nextOrderIndex(document.tabs)`.
 - **VH18 editor restore.** The panel marks the tab as its own restore (`own-restores.ts`) for the request, so the
   relayed changeset raises no changeset toast on the restorer's screen; it then shows "Restored the version from

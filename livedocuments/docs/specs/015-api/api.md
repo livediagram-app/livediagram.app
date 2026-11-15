@@ -519,7 +519,7 @@ Every tab the api receives (document create, tab save) runs the stored-tab migra
 The api has no D1 database and no SQL migrations. Its data is in two kinds of SQLite-backed Durable Object, each
 creating its schema on first use:
 
-- **Document content** (`document`, `tabs`, `document_tabs`, `tab_stats`, `image_refs`, `image_owners`, `image_grants`, `notify_claims`, `agent_changesets`, `agent_changeset_parts`, `tab_shares`, `share_outbox`, `outbox`) is in each document's Durable Object, `apps/api/src/document-room/document-schema.ts`. The document's own row holds its name, owner and deck. A tab shared with other documents is a copy in each. See [Per-tab storage](../006-document/per-tab-storage.md) for why a tab is its own row.
+- **Document content** (`document`, `tabs`, `document_tabs`, `tab_stats`, `image_refs`, `image_owners`, `image_grants`, `notify_claims`, `agent_changesets`, `agent_changeset_parts`, `tab_versions`, `tab_shares`, `share_outbox`, `outbox`) is in each document's Durable Object, `apps/api/src/document-room/document-schema.ts`. The document's own row holds its name, owner and deck. A tab shared with other documents is a copy in each. See [Per-tab storage](../006-document/per-tab-storage.md) for why a tab is its own row.
 - **A person's workbench** (pairing requests, pairings, tickets, sessions and the rooms a workspace session joined) is liveworkspace's ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)), which keeps only hashes of tickets and session secrets.
 
 API tokens are liveworkspace's alone ([Public API and API tokens](public-api-and-tokens.md)). Where a document is filed, who it is shared with and whether it is in the Trash are the index's ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)).
@@ -534,6 +534,7 @@ This is the one list of columns that hold an owner id (a guest id or an account 
 | `agent_changesets.author_id` | In each document's own store: those on someone else's document stay until the 30-day changeset retention ages them out                                  |
 | `image_owners.owner_id`      | In each document's own store, the media service's answer cached: the service deletes the account's images, and a document then serves nothing of theirs |
 | `notify_claims.sender`       | In each document's own store: dropped from each document the index names when the account closes (`anonymise`), and past the dedupe window otherwise    |
+| `tab_versions.author_id`     | In each document's own store: the name comes off each version (`anonymise`), and unnamed versions age out after 30 days                                 |
 
 **The person's images** go first, at liveworkspace's media service (`forgetOwner`, every image the account uploaded, in any app), so a failure leaves the account whole to delete again. **The person's workbench** is liveworkspace's, which ends every pairing (closing the rooms its sessions had open) when the account closes ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access").
 
