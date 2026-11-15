@@ -3928,6 +3928,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CardTemplate": {
+    "additionalProperties": false,
+    "properties": {
+      "fields": {
+        "$ref": "#/components/schemas/ItemFields"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "fields"
+    ],
+    "type": "object"
+  },
   "CardThread": {
     "additionalProperties": false,
     "properties": {
@@ -9139,6 +9159,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "tabs": {
         "items": {
           "$ref": "#/components/schemas/ItemTypeTab"
+        },
+        "type": "array"
+      },
+      "templates": {
+        "items": {
+          "$ref": "#/components/schemas/CardTemplate"
         },
         "type": "array"
       }
