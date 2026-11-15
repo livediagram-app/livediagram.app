@@ -341,8 +341,9 @@ inspect it." With one, under the element's name (its kind, and its words when it
 
 ## Clickable prototypes
 
-Status: building (Work Tracker 136). The stored links, their checks and how agents read and write them ship first;
-the link menu and handle, Prototype mode, its share link and the Flow view follow.
+Status: building (Work Tracker 136). The stored links, their checks, how agents read and write them, and setting
+them in the editor (the Screen mode, the link handle and the link marker) are built; Prototype mode, its share link
+and the Flow view follow.
 
 A wireframe tab's screens can be clicked through: any element on a wireframe page can link to another screen of
 the same tab, and **Prototype mode** plays the screens one at a time, a press on a linked element going to its
@@ -365,12 +366,34 @@ as a link.
 
 ### Setting a link
 
-- **Pick from a menu**: **Link Element** on a wireframe tab offers a **Screen** mode listing the tab's screens
-  (each by its name, or "Screen <n>"), a **Back** choice, and the transition (Instant, Slide, Dissolve).
-- **Drag the link handle**: a selected element on a wireframe page shows a small link handle; dragging it onto
-  another screen links the element to that screen, and dropping it anywhere else changes nothing.
-- A linked element shows a small **link marker** while editing (its [element indicator](../008-canvas/element-indicators.md)),
-  which names the screen it goes to on hover.
+Whoever may link the element (Share roles below) sets a screen link in either of two ways; anyone else sees the
+marker but neither way in.
+
+- **Pick from a menu**: **Link Element** on a wireframe tab opens on a **Screen** mode, first among the modes
+  (Screen, External URL, Tab, Design), when the element has no link or a screen link. It holds:
+  - the **transition**, a three-way choice (Instant, Slide, Dissolve) above the list, set to the element's own
+    transition when it has a screen link and Instant otherwise; it applies to the row pressed next;
+  - the tab's screens in order, each by its name or "Screen <n>", the screen the element sits on marked **This
+    screen** and not pressable (a link to the screen already shown goes nowhere), the linked screen marked;
+  - **Back**, "The screen shown before", below them.
+    Pressing a row links the element and closes the menu, as the Tab mode's rows do. When the element's screen link
+    is broken, a note above the list says "This link's screen was deleted. Pick another screen, or remove the link."
+    **Remove link** clears any link, as before. A Participant, whose element menu has no Link Element, reaches the
+    menu from the link handle or a broken marker on its own element, and sees the Screen mode alone.
+- **Drag the link handle**: a single selected element on a wireframe page of a tab with two or more screens shows a
+  small round **link handle** just outside its bottom-right corner, in the brand colour so it never reads as a
+  quick-connect plus. Dragging it draws a line from the handle to the pointer and outlines the screen under the
+  pointer with its name; letting go on another screen links the element to it (keeping the element's transition
+  when it already had a screen link), and letting go on the element's own screen, off every screen, or pressing
+  Escape changes nothing. A press without a drag (or Enter on the focused handle) opens Link Element on its Screen
+  mode. The handle hides while the element is being edited, while a menu covers it, on a locked tab and for
+  anyone who may not link it.
+- A linked element shows a small **link marker** while editing (its [element indicator](../008-canvas/element-indicators.md)):
+  a screen with an arrow, which names the screen on hover ("Goes to Checkout", "Goes back to the screen before").
+  Pressing it brings that screen into view on the canvas, as its label does; it never plays the prototype. A
+  **broken** link's marker is the same screen with a broken arrow, in a warning red at full strength, and reads
+  "Broken link: its screen was deleted"; pressing it opens Link Element on its Screen mode for whoever may link the
+  element, and does nothing for anyone else.
 
 ### A link to a deleted page
 

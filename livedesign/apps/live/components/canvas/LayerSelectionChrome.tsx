@@ -8,6 +8,8 @@ import type { ComponentProps } from 'react';
 import { logoPageAt, type Element, type LaidOutPage } from '@livedesign/design';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
+import { ScreenLinkHandle } from '@/components/canvas/ScreenLinkHandle';
+import { screenOfElement, showsScreenLinkHandle } from '@/lib/screen-link-choices';
 import {
   useCanvasSelectionView,
   type CanvasSelectionInput,
@@ -17,6 +19,7 @@ import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/Canvas
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 
 const singleId = (s: Selection) => s.selectedId;
+const multiSelected = (s: Selection) => s.multiSelectedIds.size > 0;
 
 type PlusesProps = ComponentProps<typeof QuickConnectPluses>;
 
@@ -35,6 +38,7 @@ export function LayerSelectionChrome({
   pluses,
   onBeginDrag,
   pages,
+  screenLink,
 }: {
   selectionInput: CanvasSelectionInput;
   // The tab the selection is on, whose drag preview the selection follows.
@@ -45,10 +49,33 @@ export function LayerSelectionChrome({
   // The pages: a selection on a logo page shows no quick-connect pluses
   // (docs/specs/007-editor/logo-pages.md "A logo page"), a mark not a diagram.
   pages?: readonly LaidOutPage[] | null;
+  // Linking screens from the handle (docs/specs/007-editor/wireframe-pages.md "Setting a link"); absent, no handle.
+  screenLink?: {
+    canLink: (el: Element) => boolean;
+    onLink: (elementId: string, pageId: string) => void;
+    onPick: (elementId: string) => void;
+  };
 }) {
   const { selectionBounds, showPlus, showUnionResize, unionResizeBounds, unionResizePrimaryId } =
     useCanvasSelectionView(selectionInput, tabId);
   const selectedId = useSelectionOf(singleId);
+  const multi = useSelectionOf(multiSelected);
+  const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
+  const linkHandle =
+    screenLink &&
+    selectionBounds &&
+    selectedElement &&
+    showsScreenLinkHandle({
+      element: selectedElement,
+      multiSelected: multi,
+      editing: selectionInput.editingId === selectedElement.id,
+      menuOpen: !!selectionInput.elementMenuOpen || !!selectionInput.canvasCovered,
+      paintMode: selectionInput.isPaintMode,
+      tabLocked: selectionInput.tabLocked,
+      canLink: screenLink.canLink,
+      pages,
+      elements,
+    });
   // Counter-scaled chrome: the zoom from the canvas's zoom context, so the layer passes none.
   const zoom = useCanvasZoom();
   return (
@@ -56,9 +83,22 @@ export function LayerSelectionChrome({
       {showPlus && selectionBounds && !onLogoPage(pages, selectionBounds) ? (
         <QuickConnectPluses
           {...pluses}
-          selectedElement={selectedId ? elements.find((e) => e.id === selectedId) : undefined}
+          selectedElement={selectedElement}
           bounds={selectionBounds}
           zoom={zoom}
+        />
+      ) : null}
+
+      {linkHandle && pages && selectionBounds && selectedElement ? (
+        <ScreenLinkHandle
+          key={selectedElement.id}
+          elementId={selectedElement.id}
+          bounds={selectionBounds}
+          zoom={zoom}
+          pages={pages}
+          ownPageId={screenOfElement(pages, selectedElement, elements)?.id}
+          onLink={screenLink.onLink}
+          onPick={screenLink.onPick}
         />
       ) : null}
 

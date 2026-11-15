@@ -49,6 +49,12 @@ export type CanvasProps = {
   canWriteText?: (el: Element) => boolean;
   // Which elements a read-only session may still resize (a Participant's); absent, none.
   canResize?: (el: Element) => boolean;
+  // Which elements may take a screen link (docs/specs/007-editor/wireframe-pages.md "Setting a link"): `can.linkScreens`,
+  // never while Inspect is on. Absent, none: no link handle, and a broken marker's press does nothing.
+  canLinkScreens?: (el: Element) => boolean;
+  // The link handle's drop on another screen, and its press without a drag (Link Element on its Screen mode).
+  onLinkScreen?: (elementId: string, pageId: string) => void;
+  onPickScreenLink?: (elementId: string) => void;
   designName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;
