@@ -613,7 +613,7 @@ export class PlanRoom extends DurableObject<Env> {
   // ---------- RPC: a calendar feed link's fetch (../calendar/; docs/specs/026-plan/calendar-feed.md) --------------
 
   // The feed a token's hash names. An id nothing has written answers null and stays empty; a stored plan's schema is
-  // brought up to date first (V29 holds the feeds).
+  // brought up to date first (V30 holds the feeds).
   async calendarFeed(planId: string, tokenHash: string): Promise<CalendarFeed | null> {
     if (!this.storedSchema()) return null;
     this.bindPlan(planId);

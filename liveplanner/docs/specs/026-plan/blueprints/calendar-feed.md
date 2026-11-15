@@ -29,7 +29,7 @@ My Work feed at liveworkspace.
   identity (`segments[1] === 'calendar'`).
 - Plan room RPCs (`plan-room.ts`, `plan-client.ts`): `calendarFeed(planId, tokenHash)` and
   `calendarFeedEvents(planId, feed, now)`; an id nothing has written answers null without making a schema.
-- `plan-schema.ts`: one step, `CALENDAR_FEEDS_SCHEMA`. `plan-anonymise.ts`: a closed account's feed rows go.
+- `plan-schema.ts`: one step, V30, `CALENDAR_FEEDS_SCHEMA`. `plan-anonymise.ts`: a closed account's feed rows go.
 
 ## Data and persistence
 
@@ -118,7 +118,7 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 - The route never takes an `Authorization` header, never sets cookies, and the token is never logged (the log names
   the reason and counts only).
 - Access is the index's and accounts', asked fresh each fetch; the feed answers nothing it did not just check.
-- Rate limit per feed (D109). An attacker guessing tokens wakes rooms, as any token door does; the plan id must also
+- Rate limit per feed (D114). An attacker guessing tokens wakes rooms, as any token door does; the plan id must also
   be known.
 
 ## Performance and limits

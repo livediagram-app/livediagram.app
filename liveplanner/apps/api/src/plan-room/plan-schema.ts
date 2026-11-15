@@ -21,6 +21,7 @@ import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
+import { FLOW_COUNTS_SCHEMA } from './flow-counts-schema';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 import { ITEM_IMPORTS_SCHEMA } from './item-imports-schema';
 import {
@@ -519,9 +520,13 @@ const V27 = (exec: Exec) => {
 // and the day's count.
 const V28 = AUTOMATION_ADDRESSES_SCHEMA;
 
+// The daily flow counts the Cumulative Flow chart draws (flow-counts-schema.ts; docs/specs/026-plan/items.md "Flow
+// counts"): the table, today's counts seeded from the cards, and the triggers on `items` that keep it.
+const V29 = FLOW_COUNTS_SCHEMA;
+
 // Calendar feeds (../calendar/feed-store.ts; docs/specs/026-plan/calendar-feed.md): each person's feed token hash and
 // feed options.
-const V29 = CALENDAR_FEEDS_SCHEMA;
+const V30 = CALENDAR_FEEDS_SCHEMA;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -553,6 +558,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V27,
   V28,
   V29,
+  V30,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
