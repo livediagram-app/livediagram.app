@@ -58,6 +58,9 @@ must land first. Leave a selected card where it is, untouched and with no thread
 **Implemented** or its Pull Request is not yet merged (`gh pr view <url> -R "$REPO" --json state -q .state` is
 `MERGED`). Work built on top of an unmerged PR would be cut from code main doesn't have. List waiting cards in the
 report as "Blocked by #N". A blocker in Development Failure or Cancelled is worth one line in the report too.
+`list_items` leaves closed cards (Done, Cancelled) out unless asked, so a blocker missing from its `items` is one of
+them: read it with `list_items` `includeClosed: true` and `query` set to its title before deciding (Done counts as
+landed, Cancelled is worth the report line).
 
 Also note every card in **In Progress** that no open PR names (`gh pr list --search "Work Tracker <n>"`). Those were left by a pass that died.
 Never touch them. List them in the report. The exception is a **Large** card between parts (step 3): it is In

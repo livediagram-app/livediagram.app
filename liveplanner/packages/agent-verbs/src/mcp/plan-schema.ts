@@ -3,6 +3,11 @@
 // column name, a card type's name, a custom field's name, a person's name, "#12"); the server resolves the ids.
 import { z } from 'zod';
 import { listedPullRequestSchema } from '../plan/card-pull-requests';
+import {
+  LIST_ITEMS_LIMIT_MAX,
+  LIST_ITEMS_NAMES_MAX,
+  LIST_ITEMS_QUERY_MAX,
+} from '../plan/list-items-limits';
 import { uploadImageOutput, uploadImageShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
 import {
   CALCULATIONS,
@@ -66,14 +71,57 @@ const fieldsArg = z
 
 export const listItemsShape = {
   projectId,
-  type: typeArg
-    .optional()
-    .describe('Only items of this card type, by name or id; an unknown one is refused.'),
-  status: statusArg
+  type: z
+    .union([typeArg, z.array(typeArg).min(1).max(LIST_ITEMS_NAMES_MAX)])
     .optional()
     .describe(
-      'Only items in this column, by name or status ("Trash" for the Trash); an unknown one is refused.',
+      'Only items of this card type, or of any of these, by name or id; an unknown one is refused.',
     ),
+  status: z
+    .union([statusArg, z.array(statusArg).min(1).max(LIST_ITEMS_NAMES_MAX)])
+    .optional()
+    .describe(
+      'Only items in this column, or in any of these, by name or status ("Trash" for the Trash); an unknown one ' +
+        'is refused. A column named here lists all its cards, closed or not.',
+    ),
+  query: z
+    .string()
+    .max(LIST_ITEMS_QUERY_MAX)
+    .optional()
+    .describe('Only cards whose title or description holds this text, case aside.'),
+  updatedSince: z
+    .string()
+    .optional()
+    .describe(
+      'Only cards changed at or after this ISO date or time ("2026-11-01", "2026-11-01T09:00:00Z").',
+    ),
+  includeClosed: z
+    .boolean()
+    .optional()
+    .describe(
+      'List closed cards too: those in a done column (Done, Cancelled...), trashed or archived. Left out by ' +
+        'default; the answer’s omitted says how many.',
+    ),
+  includeRich: z
+    .boolean()
+    .optional()
+    .describe(
+      'List formatting runs too (descriptionRich, <field>Rich). Left out by default: the plain text is always ' +
+        'under the field’s name.',
+    ),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(LIST_ITEMS_LIMIT_MAX)
+    .optional()
+    .describe(
+      'The most cards one answer lists. Whatever it is, an answer stays under about 200,000 characters.',
+    ),
+  cursor: z
+    .string()
+    .optional()
+    .describe('The nextCursor of the previous answer, with the same filters, for the next page.'),
 };
 
 // Each change is strict: a key it does not take is refused, never dropped. A dropped `column` (the board's own word for
@@ -820,6 +868,12 @@ const listedBoard = z.object({
         status: z.string().describe('The status id items store.'),
         wipLimit: z.number().optional().describe('The most cards the column should hold.'),
         done: z.literal(true).optional().describe('Its cards count as done.'),
+        closed: z
+          .number()
+          .optional()
+          .describe(
+            'How many closed cards this done column left out of cards (includeClosed lists them).',
+          ),
         cards: z.array(z.string()).describe('The cards in it, top to bottom ("#3").'),
       }),
     )
@@ -885,9 +939,25 @@ const listedItem = z.object({
 export const listItemsOutput = {
   boards: z.array(listedBoard).describe('The Plan boards, in tab then canvas order.'),
   notOnBoard: z.array(z.string()).describe('Cards no board column shows.'),
-  count: z.number().describe('How many items are listed.'),
+  count: z.number().describe('How many items this answer lists.'),
+  total: z.number().describe('How many items match the filters, on every page together.'),
   items: z.array(listedItem).describe('The items, by number.'),
   types: z.array(listedType).describe('The plan’s card types.'),
+  omitted: z
+    .object({
+      closed: z
+        .number()
+        .optional()
+        .describe('Closed cards (done column, Trash, archived) the filters matched but left out.'),
+      rich: z.literal(true).optional().describe('A listed card’s formatting runs were left out.'),
+      note: z.string().describe('What was left out and how to list it.'),
+    })
+    .optional()
+    .describe('What this answer left out by default; absent when nothing was.'),
+  nextCursor: z
+    .string()
+    .optional()
+    .describe('More items match: pass this as cursor, with the same filters, for the next page.'),
   hint: z.string().optional().describe('What to do when the plan has no board.'),
   url,
 };

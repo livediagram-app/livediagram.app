@@ -106,7 +106,9 @@ Also read the owner's `declined-ideas.md` memory if present. Everything in it is
 
 ## 1. Read the board
 
-One `list_items` call on the plan, no filters. Its output is large: save it and read it with `jq`, never whole.
+`list_items` on the plan with `includeClosed: true` (closed cards are left out by default, and the duplicate check
+needs them), following `nextCursor` until an answer has none: each answer stays under about 200,000 characters. Save
+each page and read them with `jq`, never whole.
 From it:
 
 - The **Idea** type's fields, by id from `types[].custom`. Today: `description` (built in), `priority` (built

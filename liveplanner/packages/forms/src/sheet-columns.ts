@@ -118,6 +118,9 @@ export type SheetColumnsInput = {
   columns?: Readonly<Record<string, string>> | undefined;
   // The header each key had when the builder last looked: a remembered column still reading it follows the wording.
   renamed?: ReadonlyMap<string, string> | undefined;
+  // Whether a cell holds anything (the builder reads its sheet). A remembered column with nothing below its header
+  // may move to a header of its question's new wording; without it, every column may hold answers and none moves.
+  hasValue?: ((row: string, col: string) => boolean) | undefined;
   rand?: () => number;
 } & SheetHeaderOptions;
 
@@ -166,7 +169,12 @@ export function sheetColumnPlan(input: SheetColumnsInput): SheetColumnPlan {
   const wanted = sheetHeaders(input.form, options);
   const colOf = new Map<string, string>();
   const claimed = new Set<string>();
+  // A column with nothing on any row below the header row: no answer would be split from it by a move.
+  const below = rows.slice(headerIndex + 1);
+  const holdsNothing = (c: string) =>
+    input.hasValue !== undefined && !below.some((r) => input.hasValue!(r, c));
   // 1. Remembered columns still in the sheet, each claimed once.
+  const loose: { w: SheetHeader; c: string }[] = [];
   for (const w of wanted) {
     const c = input.columns?.[w.key];
     if (!c || !inLayout.has(c) || claimed.has(c)) continue;
@@ -175,8 +183,12 @@ export function sheetColumnPlan(input: SheetColumnsInput): SheetColumnPlan {
     // Still reading the wording it had, it follows the new one; renamed in the sheet, it is kept.
     const was = input.renamed?.get(w.key);
     const now = header.get(c);
-    if (was !== undefined && now !== undefined && norm(now) === norm(was) && now !== w.header)
-      cells.push({ r: headerRow, c, i: { s: w.header } });
+    if (was === undefined || now === undefined || norm(now) !== norm(was) || now === w.header)
+      continue;
+    // Holding no answer yet and worded otherwise now, it may move to a header of the new wording (step 2); its
+    // header follows the wording only if none reads it (Work Tracker 899).
+    if (norm(now) !== norm(w.header) && holdsNothing(c)) loose.push({ w, c });
+    else cells.push({ r: headerRow, c, i: { s: w.header } });
   }
   // 2. A header that reads the same, in a column no other key has.
   const byText = new Map<string, string>();
@@ -187,6 +199,19 @@ export function sheetColumnPlan(input: SheetColumnsInput): SheetColumnPlan {
     lastHeader = i;
     if (!claimed.has(c) && !byText.has(norm(t))) byText.set(norm(t), c);
   });
+  // A loose column's key takes a header that reads its new wording, and the half-typed header it leaves is cleared.
+  for (const { w, c } of loose) {
+    const to = byText.get(norm(w.header));
+    if (!to) {
+      cells.push({ r: headerRow, c, i: { s: w.header } });
+      continue;
+    }
+    byText.delete(norm(w.header));
+    claimed.delete(c);
+    claimed.add(to);
+    colOf.set(w.key, to);
+    cells.push({ r: headerRow, c, i: null });
+  }
   const hadHeaders = lastHeader >= 0;
   for (const w of wanted) {
     if (colOf.has(w.key)) continue;

@@ -420,6 +420,21 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { projectId: 'd1', teamId: 't1' },
   },
   { tool: 'list_items', output: 'listItemsOutput', args: { projectId: 'd1' } },
+  // Work Tracker 900: several columns, text, a time, both switches and a page of one.
+  {
+    tool: 'list_items',
+    output: 'listItemsOutput',
+    args: {
+      projectId: 'd1',
+      status: ['To Do', 'Done'],
+      type: 'Task',
+      query: 'a',
+      updatedSince: '2020-01-01',
+      includeClosed: true,
+      includeRich: true,
+      limit: 1,
+    },
+  },
   {
     tool: 'change_items',
     output: 'changeItemsOutput',
@@ -596,6 +611,22 @@ describe('tool output schemas', () => {
       }
     });
   }
+
+  it('refuses a list_items page it cannot read, in words', async () => {
+    const client = await connectTestClient(api);
+    for (const args of [
+      { cursor: 'page-2' },
+      { updatedSince: 'yesterday' },
+      { status: 'Nowhere' },
+    ]) {
+      const result = await client.callTool({
+        name: 'list_items',
+        arguments: { projectId: 'd1', ...args },
+      });
+      expect(result.isError).toBe(true);
+      expect(result.structuredContent).toBeUndefined();
+    }
+  });
 
   it('sends no structuredContent on an error result', async () => {
     const client = await connectTestClient(api);

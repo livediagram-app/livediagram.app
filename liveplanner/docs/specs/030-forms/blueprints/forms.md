@@ -211,8 +211,14 @@ destination's own problem speaks). `PUBLISH_PROBLEM_TEXT` the dialog's lines. Th
 `SHEET_ID_PATTERN`; `columns` a record of header key (`#`, `at`, a question id) → column id, entries kept when the key
 matches `ID_PATTERN` (or is `#`/`at`) and the id `AXIS_ID_PATTERN`, at most `SHEET_COLUMNS_MAX` (`QUESTIONS_MAX` + 2)). `sheetHeaders(form)`
 (`#`, `Submitted`, prompts made distinct), `submittedText(at)` (UTC). `sheetColumnPlan({ form, layout, header, columns?,
-renamed?, rand? })` (`sheet-columns.ts`) resolves each key: a remembered column still in the layout (its header left
-alone unless `renamed` names the key's old header and the cell still reads it), else an unclaimed column whose header
+renamed?, hasValue?, rand? })` (`sheet-columns.ts`) resolves each key: a remembered column still in the layout (its header left
+alone unless `renamed` names the key's old header and the cell still reads it), except a **loose** one: a column
+whose header still reads the key's old wording, unlike its new one, and that `hasValue(row, col)` says holds nothing on
+any row below the header row (no `hasValue`, as the api's response plan, means every column may hold answers, so none
+is loose). Once every remembered column is claimed, a loose key whose new wording an unclaimed column's header reads
+takes that column and clears the old header cell (`i: null`; the column stays); a loose key with no such header keeps
+its column and its header follows the wording. The builder's `formColumnsSync` passes `hasValue` as the sheet store's
+copy holding an input at the cell (Work Tracker 899); else an unclaimed column whose header
 matches (case aside), else a new column after the last header (one `insertCols`, bold header); a header row inserted if
 none and `freeze rows 1` when the sheet had no headers. It answers `{ changes, cells, colOf, columns, rows }`.
 `sheetHeadersWrite(input)` → `{ write: SheetWrite | null, columns }` (the builder's sync; null when every header is in

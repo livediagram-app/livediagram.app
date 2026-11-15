@@ -3,6 +3,7 @@
 export * from './api-refusal';
 export * from './plan-state';
 export * from './plan-listing';
+export * from './list-items-page';
 export * from './item-changes';
 export * from './card-pictures';
 export * from './card-types';
