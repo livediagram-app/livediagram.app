@@ -574,7 +574,7 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
 ### Image backgrounds
 
 A wireframe page can be painted with a picture:
-`PageFill` `{ kind: 'image', imageId, tone?, overlay?, position?, credit? }`. A logo page offers no
+`PageFill` `{ kind: 'image', imageId, tone?, overlay?, position?, blur?, credit? }`. A logo page offers no
 Image category: a logo goes over other things, so its artboard stays a colour or the paper.
 
 - **The Image category**, while the page has no picture: a search field and its results (the image
@@ -584,7 +584,7 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   design embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
   the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
   one edit), its **Credit** line when it came from a search (the image element's Credit row: the
-  text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
+  text, **Source** and **Licence**), then **Overlay**, **Strength**, **Blur** and **Position**, then the
   search, Choose From My Images and Upload again under **Replace Image**.
 - **The search suits a page.** It asks Openverse only for pictures of the page's shape
   (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one,
@@ -607,6 +607,25 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   clear at the top and at its strength at the bottom). **Strength** is a slider, 0% to 90% in
   steps of 5, previewed while dragged and one edit on release; it is hidden for None. An overlay
   tile previews on hover and commits on a press.
+- **Blur**: a slider, 0% (the default, sharp) to 100% in steps of 5, previewed while dragged and one edit on
+  release, that softens the picture into a wash of its colours, so a photo becomes a backdrop a hero's words sit on.
+  Stored on the fill as `blur` (0 to 1, absent for none; a value outside is clamped, a non-number dropped). Its
+  strength is the page's: a Gaussian blur whose standard deviation is `blur` times 4% of the page's shorter side
+  (`PAGE_IMAGE_BLUR_MAX`), so a 1440 x 900 wireframe at 100% blurs by 36 px. The edges stay solid (no fade to the
+  paper at the sheet's sides). The overlay, the pattern and the ink are worked out as for a sharp picture (the tone
+  is the same). Replacing the picture keeps the blur, as it keeps the overlay. The rules and the blurred copy are
+  livedocuments' too, from one shared module (`@liveworkspace/page-background/image-blur`, and the copy's cache and
+  worker in `@liveworkspace/workbench/lib/page-image-blur`).
+  - **On the canvas** the sheet (and a device frame's screen) paints a blurred copy of the picture, made once in the
+    browser per picture and blur (the picture drawn small, a three-pass box blur with its edges held, saved as a
+    JPEG), never a CSS blur filter, so a pan or zoom never re-blurs. The copy is made off the main thread (in a
+    worker), so letting go of a stronger Blur on a large picture never pauses the editor; a browser that cannot (no
+    OffscreenCanvas) or a picture the worker cannot fetch makes it on the page instead. The last eight copies are
+    kept; the sheet shows the picture's tone until its copy is ready, never the sharp picture first. While Blur is
+    dragged the last copy keeps showing and the next is made once the slider has rested 150 ms, so a drag makes one
+    copy, not one per step. A hover preview (an Openverse thumbnail) shows sharp.
+  - **In an export** (PNG, PDF and SVG, and the previews) the picture is drawn under an SVG `feGaussianBlur` at
+    the same strength, its edges held solid.
 - **A picture is readable by default.** A new picture takes **Light 60%** on a light canvas and
   **Dark 60%** on a dark one; replacing a picture keeps the overlay in force.
 - **Tone and ink.** `tone` is the picture's average colour, sampled once when it is picked (drawn
@@ -634,7 +653,8 @@ Image category: a logo goes over other things, so its artboard stays a colour or
 - **Agents** read it on `change_pages` as `image` with its overlay ("image, light 60%") and can
   replace it with a colour, a gradient or the paper; they cannot set one (they have no way to put a
   picture in the gallery).
-- **Telemetry**: `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
+- **Telemetry**: `Tab · Changed · PageBackgroundImageBlur` when a Blur drag lands a new strength;
+  `Tab · Changed · PageBackgroundImage` when a picked or uploaded picture lands
   (beside the background's own `PageBackground`); a search counts as the picker's
   `Element · Searched · Image`, and a failed search or pick as its `ImageSearch.*` warnings.
 
@@ -896,7 +916,8 @@ in livedocuments.
   so at once, as one undo step); there is no hover preview here, since drawn over the page it
   would cover the card's own tiles. The card goes as
   soon as anything lands on the page, and **Hide** (in its corner), or Escape while anything in the card
-  has focus (its search, a chip, a tile), puts it away for that page until the tab is next opened; the title bar's Layout button still opens the layouts. It
+  has focus (its search, a chip, a tile), puts it away for that page until the tab is next opened (the keyboard
+  focus then lands on the canvas, never on the bare page); the title bar's Layout button still opens the layouts. It
   never shows while the first page offers its kind, while the page's panel is open, while a palette tile is armed
   (tap to drop or drag to draw: the page is where the element will land, so the card steps aside and comes back when
   the tool is put down with the page still empty), in zen, or when the page is too small on
