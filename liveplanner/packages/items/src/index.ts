@@ -88,6 +88,7 @@ export * from './write-checks';
 export * from './required-fields';
 export * from './newer-fields';
 export * from './notify-fields';
+export * from './assistant';
 export * from './comments-votes-fields';
 export * from './vote-count-in';
 export * from './type-catalogue-change';

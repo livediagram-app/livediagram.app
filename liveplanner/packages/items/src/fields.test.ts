@@ -127,3 +127,59 @@ describe('validateVotes', () => {
     ).toBeNull();
   });
 });
+
+// docs/specs/026-plan/items.md "Handing a card to an AI assistant": the Assignee may hold one, checked whole.
+describe('validateFields, an AI assistant Assignee', () => {
+  const THOMAS = { id: 'a1b2c3d4e5f6a1b2c3d4e5f6', name: 'Thomas', color: '#2563eb' };
+  const CLAUDE = {
+    id: `ai-${THOMAS.id}-claude`,
+    name: 'Claude (Thomas)',
+    color: '#2563eb',
+    assistant: { client: 'Claude', person: THOMAS },
+  };
+
+  it('keeps one whole, on a create and a patch', () => {
+    expect(validateFields({ title: 'Fix', assignee: CLAUDE }, 'create')).toEqual({
+      ok: true,
+      fields: { title: 'Fix', assignee: CLAUDE },
+    });
+    expect(validateFields({ assignee: CLAUDE }, 'patch')).toEqual({
+      ok: true,
+      fields: { assignee: CLAUDE },
+    });
+  });
+
+  it('reads a person’s Assignee as before, dropping an assistant it was given', () => {
+    const given = { ...THOMAS, assistant: CLAUDE.assistant };
+    expect(validateFields({ assignee: given }, 'patch')).toEqual({
+      ok: true,
+      fields: { assignee: THOMAS },
+    });
+  });
+
+  it('refuses one that does not read as an assistant', () => {
+    const forged = { ...CLAUDE, id: `ai-${THOMAS.id}-cursor` };
+    expect(validateFields({ assignee: forged }, 'patch')).toEqual({
+      ok: false,
+      error: 'field_value_invalid',
+      field: 'assignee',
+    });
+    const bare = { id: CLAUDE.id, name: CLAUDE.name, color: CLAUDE.color };
+    expect(validateFields({ assignee: bare }, 'patch')).toMatchObject({ ok: false });
+  });
+
+  it('refuses one in a Person field, alone or among several', () => {
+    expect(validateFields({ 'f-owner': CLAUDE }, 'patch')).toMatchObject({
+      ok: false,
+      error: 'field_value_invalid',
+    });
+    expect(validateFields({ 'f-owners': [THOMAS, CLAUDE] }, 'patch')).toMatchObject({
+      ok: false,
+      error: 'field_value_invalid',
+    });
+    expect(validateFields({ 'f-owners': [THOMAS] }, 'patch')).toEqual({
+      ok: true,
+      fields: { 'f-owners': [THOMAS] },
+    });
+  });
+});
