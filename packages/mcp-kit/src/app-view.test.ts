@@ -10,7 +10,7 @@ import {
   viewResourceMeta,
   viewerHtml,
 } from './app-view';
-import { VIEWER_SCRIPT } from './app-viewer-script';
+import { VIEWER_SCRIPT, viewerScript } from './app-viewer-script';
 
 // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the ui:// resource, the tool meta that links it,
 // and the viewer page with its pure parts.
@@ -27,8 +27,12 @@ type Ldv = {
     px: number,
     py: number,
   ) => { id: string } | null;
-  elementLink: (url: string, tab: string, el: string | null) => string;
+  elementLink: (url: string, tab: string, el: string | null, item?: string) => string;
   num: (v: unknown) => boolean;
+  pagerOf: (
+    pages: unknown,
+    pageId: string | null,
+  ) => { at: number; label: string; name: string; prev: string | null; next: string | null } | null;
   changeOf: (frame: unknown, tabId: string | null) => 'redraw' | 'trashed' | null;
   retryAfter: (tries: number) => number;
   stopWords: (why: string) => string;
@@ -68,7 +72,7 @@ describe('the view resource and the tool meta', () => {
     expect(meta).toMatchObject({ mimeType: VIEW_MIME_TYPE, _meta: { ui: { csp } } });
     const { contents } = await read!(new URL('ui://acme/view.html'));
     expect(contents[0]!.mimeType).toBe(VIEW_MIME_TYPE);
-    expect(contents[0]!.text).toContain("name: 'acme-view'");
+    expect(contents[0]!.text).toContain('var APP = "acme", ID_KEY = "documentId", LIVE_ON = true');
     // With none named, nothing at all.
     expect(viewResourceMeta().ui.csp).toEqual({ connectDomains: [], resourceDomains: [] });
   });
@@ -79,11 +83,42 @@ describe('the view resource and the tool meta', () => {
     expect(socketOriginOf('http://localhost:3100')).toBe('ws://localhost:3100');
   });
 
-  it('keeps the page self-contained and within its budget', () => {
-    const html = viewerHtml('livediagram');
-    expect(new TextEncoder().encode(html).length).toBeLessThan(VIEWER_HTML_BUDGET_BYTES);
-    expect(html).not.toMatch(/<script[^>]+src=|<link[^>]+href=|https?:\/\//);
-    expect(html).not.toContain('__APP__');
+  it('keeps every page self-contained and within its budget', () => {
+    const pages = [
+      viewerHtml('livediagram'),
+      viewerHtml('livedocuments', { idKey: 'documentId', live: false }),
+      viewerHtml('livedesign', { idKey: 'designId', live: false }),
+      viewerHtml('liveplanner', { idKey: 'projectId', live: false, board: true }),
+    ];
+    for (const html of pages) {
+      expect(new TextEncoder().encode(html).length).toBeLessThan(VIEWER_HTML_BUDGET_BYTES);
+      expect(html).not.toMatch(/<script[^>]+src=|<link[^>]+href=|https?:\/\//);
+    }
+    // The canvas pages carry the pager; the board page draws columns, with none of the canvas's parts.
+    expect(pages[1]).toContain('id="pager"');
+    expect(pages[2]).toContain('ID_KEY = "designId", LIVE_ON = false');
+    expect(pages[3]).toContain('id="board"');
+    expect(pages[3]).not.toContain('id="stage"');
+    expect(pages[3]).toContain('ID_KEY = "projectId"');
+  });
+
+  it('passes the viewer’s options from the resource to the page', async () => {
+    let read: ((uri: URL) => Promise<{ contents: { text: string }[] }>) | null = null;
+    const server = {
+      registerResource: (_n: string, _u: string, _m: unknown, cb: typeof read) => void (read = cb),
+    } as unknown as McpServer;
+    registerViewResource(server, {
+      uri: 'ui://p/view.html',
+      app: 'liveplanner',
+      title: 'liveplanner view',
+      viewer: { idKey: 'projectId', board: true, live: false },
+    });
+    const { contents } = await read!(new URL('ui://p/view.html'));
+    expect(contents[0]!.text).toContain('id="board"');
+  });
+
+  it('quotes the app name into the script, so a name never breaks out of its string', () => {
+    expect(viewerScript('a"b')).toContain('var APP = "a\\"b"');
   });
 });
 
@@ -134,12 +169,46 @@ describe('the viewer’s pure parts', () => {
     expect(LDV.hitTest(view, box, els, 1000, 1000)).toBeNull();
   });
 
+  it('reads designs and plans by their own id keys', () => {
+    expect(LDV.subjectOf({ structuredContent: { designId: 'g', tabId: 't' } })).toEqual({
+      documentId: 'g',
+      tabId: 't',
+    });
+    expect(LDV.subjectOf({ structuredContent: { projectId: 'p', boards: [] } })).toEqual({
+      documentId: 'p',
+      tabId: null,
+    });
+  });
+
+  it('places the shown page among the tab’s pages, and shows no pager for one page', () => {
+    const pages = [
+      { id: 'a', name: 'Cover' },
+      { id: 'b', name: 'Page 2' },
+      { id: 'c', name: 'End' },
+    ];
+    expect(LDV.pagerOf(pages, 'b')).toEqual({
+      at: 1,
+      label: '2 / 3',
+      name: 'Page 2',
+      prev: 'a',
+      next: 'c',
+    });
+    expect(LDV.pagerOf(pages, 'a')).toMatchObject({ label: '1 / 3', prev: null, next: 'b' });
+    expect(LDV.pagerOf(pages, 'c')).toMatchObject({ prev: 'b', next: null });
+    expect(LDV.pagerOf(pages, 'gone')).toMatchObject({ at: 0 });
+    expect(LDV.pagerOf(pages.slice(0, 1), 'a')).toBeNull();
+    expect(LDV.pagerOf(undefined, null)).toBeNull();
+  });
+
   it('links the editor at an element, or at the tab', () => {
     expect(LDV.elementLink('https://x.app/document/d#old', 't 1', 'e/1')).toBe(
       'https://x.app/document/d#t=t%201&el=e%2F1',
     );
     expect(LDV.elementLink('https://x.app/document/d', 't', null)).toBe(
       'https://x.app/document/d#t=t',
+    );
+    expect(LDV.elementLink('https://x.app/project/p', 't', 'board 1', 'card/2')).toBe(
+      'https://x.app/project/p#t=t&el=board%201&item=card%2F2',
     );
     expect([LDV.num(1), LDV.num(Number.NaN), LDV.num('1')]).toEqual([true, false, false]);
   });

@@ -29,3 +29,32 @@ export function previewLeftOutNote(count: number, noun: string): string {
   const pictures = count === 1 ? '1 picture is' : `${count} pictures are`;
   return `${pictures} drawn as a placeholder in this preview, which draws only so many pixels; the ${noun} holds them as placed, and the editor shows them.`;
 }
+
+// The interactive view's own, smaller picture budget (each product's mcp-server.md "Interactive view (MCP Apps)"):
+// the view's SVG crosses into the chat host's frame as text, base64 pictures and all, so it carries a page's
+// pictures only up to these, and a picture past them keeps its placeholder. Never a photo's full-size picture.
+// Any one picture: safe range 256 KB to 1 MB.
+export const VIEW_IMAGE_MAX_BYTES = 512 * 1024;
+// The pictures' bytes together: safe range 1 to 4 MB.
+export const VIEW_IMAGE_BUDGET_BYTES = 2 * 1024 * 1024;
+// The pictures' pixels together: safe range 2 to 8 million.
+export const VIEW_IMAGE_BUDGET_PIXELS = 4_000_000;
+
+/** The limits a picture embedder takes, for the PNG preview or the interactive view. */
+export type PictureLimits = {
+  maxBytesPerImage: number;
+  totalBudgetBytes: number;
+  totalBudgetPixels: number;
+};
+
+export const PREVIEW_PICTURE_LIMITS: PictureLimits = {
+  maxBytesPerImage: PREVIEW_IMAGE_MAX_BYTES,
+  totalBudgetBytes: PREVIEW_IMAGE_BUDGET_BYTES,
+  totalBudgetPixels: PREVIEW_IMAGE_BUDGET_PIXELS,
+};
+
+export const VIEW_PICTURE_LIMITS: PictureLimits = {
+  maxBytesPerImage: VIEW_IMAGE_MAX_BYTES,
+  totalBudgetBytes: VIEW_IMAGE_BUDGET_BYTES,
+  totalBudgetPixels: VIEW_IMAGE_BUDGET_PIXELS,
+};
