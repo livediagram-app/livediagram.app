@@ -12,6 +12,7 @@ import {
 } from '@livedesign/agent-verbs/mcp';
 import { LISTING } from './listing';
 import { registerTools } from './tools';
+import { registerViewPage } from './view-tab';
 import { registerShowMyPrompt } from '@liveworkspace/mcp-kit/prompts';
 
 export function buildServer(env: Env): McpServer {
@@ -32,6 +33,8 @@ export function buildServer(env: Env): McpServer {
     }),
   );
 
+  // The interactive view's page (docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)").
+  registerViewPage(server);
   registerTools(server, env);
   // The one prompt (docs/specs/015-api/mcp-server.md §4.10): show_my_design.
   registerShowMyPrompt(server, {

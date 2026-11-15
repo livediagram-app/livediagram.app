@@ -51,6 +51,8 @@ export function registerTool<
   env: Env,
   verb: McpToolVerb<InputArgs, OutputArgs>,
   handler: ToolCallback<InputArgs>,
+  // The tool's `_meta`: the interactive view it links (view-tab.ts), or that only the view calls it.
+  meta?: Record<string, unknown>,
 ): void {
   // The tool as its verb declares it (packages/agent-verbs mcp-tools.ts): name, words, behaviour and schemas.
   const name = verb.mcp.tool;
@@ -72,7 +74,11 @@ export function registerTool<
       if (!isErrorResult(result)) postTelemetry(env, 'Mcp', 'Used', pascalToken(name));
       return result;
     })) as unknown as ToolCallback<InputArgs>;
-  server.registerTool(name, { ...config, annotations: toolAnnotations(verb) }, scoped);
+  server.registerTool(
+    name,
+    { ...config, annotations: toolAnnotations(verb), ...(meta ? { _meta: meta } : {}) },
+    scoped,
+  );
 }
 
 // A fixable mistake answers as a tool error in words; anything else throws (`@liveworkspace/mcp-kit/tool-result`).

@@ -98,6 +98,7 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Change Components',
     'Making a component, changing its main, or detaching an instance.',
   ),
+  mcpTool('ViewTab', 'View Tab', 'The interactive view in a chat host drawing a page.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {
