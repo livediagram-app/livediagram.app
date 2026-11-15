@@ -4,7 +4,8 @@
 import { betterAuth } from 'better-auth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { authOptions } from './auth-options.ts';
+import { createVerifier, localKeySet } from '@liveworkspace/auth-client';
+import { ACCESS_TOKEN_TTL_SECONDS, authOptions } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import { registerClient } from './clients.ts';
 import {
@@ -18,7 +19,9 @@ import {
   TICKET_TTL_SECONDS,
 } from './end-session.ts';
 import type { Env } from './env.ts';
+import { readProfileLook } from './profiles.ts';
 import { RESOURCES } from './resources.ts';
+import { teamsClaim } from './teams.ts';
 import { testD1 } from './test-d1.ts';
 
 const BASE = 'https://liveworkspace.app';
@@ -73,6 +76,9 @@ beforeEach(async () => {
         adminToken: 'admin',
         google: null,
         sendCode: async (email, code) => void codes.set(email, code),
+        // The claims every token carries in production (auth.ts), so a refresh here costs what it costs there.
+        teamsFor: (userId) => teamsClaim(made.db, userId),
+        lookFor: (userId) => readProfileLook(made.db, userId),
       },
       made.db,
     ),
@@ -129,6 +135,13 @@ async function tokenRequest(app: App, params: Record<string, string>): Promise<R
 
 // The app's sign-in as its Worker runs it: authorize with the browser's session, then the code for tokens.
 async function signInToApp(app: App, cookie: string): Promise<string> {
+  return (await signInToAppTokens(app, cookie)).refresh_token;
+}
+
+async function signInToAppTokens(
+  app: App,
+  cookie: string,
+): Promise<{ access_token: string; refresh_token: string; expires_in: number }> {
   const verifier = 'v'.repeat(43);
   const challenge = Buffer.from(
     await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)),
@@ -158,8 +171,11 @@ async function signInToApp(app: App, cookie: string): Promise<string> {
     resource: app.resource,
   });
   expect(tokens.status).toBe(200);
-  const { refresh_token } = (await tokens.json()) as { refresh_token: string };
-  return refresh_token;
+  return (await tokens.json()) as {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+  };
 }
 
 // Whether the app's next refresh would still work (a fresh call each time, so the token is not rotated away).
@@ -265,6 +281,90 @@ describe("signing out from an app's Worker", () => {
     expect(await refreshes(diagram, diagramToken)).toBe(true);
   });
 });
+
+describe('access tokens already handed out (accounts.md "Tokens already handed out")', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // An app's API, checking the token offline against the key set as every app's does (verify.ts).
+  async function appApi(app: App) {
+    const jwks = (await auth.api.getJwks()) as Parameters<typeof localKeySet>[0];
+    return createVerifier({
+      issuer: `${BASE}/api/auth`,
+      audience: app.resource,
+      keys: localKeySet(jwks),
+    });
+  }
+
+  it('last 15 minutes, and refresh renews them', async () => {
+    const cookie = await signIn();
+    const first = await signInToAppTokens(planner, cookie);
+    expect(ACCESS_TOKEN_TTL_SECONDS).toBe(900);
+    expect(first.expires_in).toBe(ACCESS_TOKEN_TTL_SECONDS);
+    const claims = JSON.parse(
+      Buffer.from(first.access_token.split('.')[1]!, 'base64url').toString(),
+    ) as {
+      iat: number;
+      exp: number;
+    };
+    expect(claims.exp - claims.iat).toBe(ACCESS_TOKEN_TTL_SECONDS);
+
+    const renewed = await tokenRequest(planner, {
+      grant_type: 'refresh_token',
+      refresh_token: first.refresh_token,
+      resource: planner.resource,
+    });
+    expect(renewed.status).toBe(200);
+    const body = (await renewed.json()) as { access_token: string; expires_in: number };
+    expect(body.expires_in).toBe(ACCESS_TOKEN_TTL_SECONDS);
+    expect(await (await appApi(planner))(body.access_token)).not.toBeNull();
+  });
+
+  it('a token from before signing out everywhere is refused by every app API within 15 minutes', async () => {
+    const cookie = await signIn();
+    const diagramTokens = await signInToAppTokens(diagram, cookie);
+    const plannerTokens = await signInToAppTokens(planner, cookie);
+    const issuedAt = Date.now();
+    await fromApp(diagram, diagramTokens.refresh_token);
+
+    // No refresh mints another, in any app.
+    expect(await refreshes(diagram, diagramTokens.refresh_token)).toBe(false);
+    expect(await refreshes(planner, plannerTokens.refresh_token)).toBe(false);
+
+    const checks: [App, string][] = [
+      [diagram, diagramTokens.access_token],
+      [planner, plannerTokens.access_token],
+    ];
+    const apis = await Promise.all(checks.map(([app]) => appApi(app)));
+    vi.useFakeTimers({ toFake: ['Date'] });
+    // Offline checks still take a copied token until it lapses (the accepted bound, no revocation list)...
+    vi.setSystemTime(issuedAt + (ACCESS_TOKEN_TTL_SECONDS - 30) * 1000);
+    for (const [i, [, token]] of checks.entries()) expect(await apis[i]!(token)).not.toBeNull();
+    // ...and refuse it once 15 minutes are up.
+    vi.setSystemTime(issuedAt + (ACCESS_TOKEN_TTL_SECONDS + 5) * 1000);
+    for (const [i, [, token]] of checks.entries()) expect(await apis[i]!(token)).toBeNull();
+  });
+
+  it('costs a bounded number of D1 statements per refresh', async () => {
+    const cookie = await signIn();
+    let { refresh_token } = await signInToAppTokens(planner, cookie);
+    const prepare = vi.spyOn(sql, 'prepare');
+    const response = await tokenRequest(planner, {
+      grant_type: 'refresh_token',
+      refresh_token,
+      resource: planner.resource,
+    });
+    expect(response.status).toBe(200);
+    refresh_token = ((await response.json()) as { refresh_token: string }).refresh_token;
+    expect(refresh_token).toBeTruthy();
+    // Measured 2026-11-15 (accounts.md "What 15 minutes costs"); a rise means each of the extra refreshes costs more.
+    expect(prepare.mock.calls.length).toBeLessThanOrEqual(REFRESH_STATEMENTS_MAX);
+  });
+});
+
+// The D1 statements one refresh grant runs, with the teams and profile claims.
+const REFRESH_STATEMENTS_MAX = 12;
 
 describe("the browser's hop", () => {
   const BACK = 'https://livediagram.app/';

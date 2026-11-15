@@ -8,6 +8,7 @@ import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-proje
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useCallback, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { canManageWebhooks as canManageWebhooksOf } from '@liveworkspace/workbench/lib/can-manage-webhooks';
 import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 import { LockedElementMenu } from '@/components/canvas/LockedElementMenu';
@@ -34,6 +35,15 @@ import { useMenuCanvasProps, type LockedMenuState } from './editor-canvas-host/u
 import { usePanelCanvasProps } from './editor-canvas-host/usePanelCanvasProps';
 import { useInsertCanvasProps } from './editor-canvas-host/useInsertCanvasProps';
 import { useEditCanvasProps } from './editor-canvas-host/useEditCanvasProps';
+import { usePrototypeHost } from '@/components/prototype/usePrototypeHost';
+import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
+
+// Prototype mode's player (docs/specs/007-editor/wireframe-pages.md "Prototype mode"): loaded on first play, so the
+// editor's first load carries none of it.
+const PrototypePlayer = dynamic(
+  () => import('@/components/prototype/PrototypePlayer').then((m) => m.PrototypePlayer),
+  { ssr: false },
+);
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -124,6 +134,18 @@ export function EditorCanvasHost() {
     canShareDesign,
     openShare: () => setShareDialogOpen(true),
     imageContext,
+  });
+  // Prototype mode (docs/specs/007-editor/wireframe-pages.md "Prototype mode"): opened from the header or a link's
+  // `prototype`, every role's, and Close frames the screen last shown.
+  const prototype = usePrototypeHost({
+    wireframeTab: pagesMode?.pages[0]?.kind === 'wireframe',
+    ready: hydrated && loadedTabIds.has(activeTab.id),
+    tabId: activeTab.id,
+    designId,
+    sessionShareCode,
+    canShareDesign,
+    openShare: () => setShareDialogOpen(true),
+    focusPage: (pageId) => pagesMode?.focusPage(pageId),
   });
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
@@ -355,6 +377,16 @@ export function EditorCanvasHost() {
               onToggleZen={embedMode ? undefined : toggleZenMode}
             />
           </InspectSessionContext.Provider>
+          {prototype.open ? (
+            <PageImageAccessProvider access={imageContext}>
+              <PrototypePlayer
+                tab={activeTab}
+                startId={prototype.startId}
+                onClose={prototype.close}
+                copyLink={prototype.copyLink}
+              />
+            </PageImageAccessProvider>
+          ) : null}
           {lockedMenu ? (
             <LockedElementMenu
               at={lockedMenu.at}

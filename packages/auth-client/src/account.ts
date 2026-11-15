@@ -357,7 +357,7 @@ export interface TeamPerson {
 }
 
 // The teams an account is in now, as an access token would carry them minted this moment: for an app whose
-// token claim (up to an hour old) may not hold a team made or joined a moment ago.
+// token claim (up to 15 minutes old) may not hold a team made or joined a moment ago.
 export async function readAccountTeams(
   credentials: ClientCredentials,
   userId: string,

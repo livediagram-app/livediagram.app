@@ -401,6 +401,9 @@ Missing key === undefined === default behaviour. Concretely:
 - `desktopNotifications` undefined / true → a nudge in a hidden tab shows a system notification, once the browser
   has granted permission ([Nudge](../012-collaboration/nudge.md#desktop-notifications)); `false` turns it off.
   `desktopNotificationsOffered` true once the one-time offer to turn it on was answered either way.
+- The **mini view** ([The mini view](../008-canvas/avatar-mode.md#the-mini-view)), the other way to keep up with a
+  Space from another tab, keeps **no preference**: it opens from the Call dock's Pop Out each time and is never
+  reopened by itself, and only the browser may remember the window's size.
 
 Empty (or missing entirely) localStorage entry, AND no settings kept
 for this owner, is therefore the "everything on" state.

@@ -7,6 +7,7 @@
 
 import type { ReactNode } from 'react';
 import { truncateName } from '@livedesign/design';
+import { offersPrototype, PrototypeHeaderButton } from '@/components/chrome/PrototypeHeaderButton';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { addToDesignTargets } from '@/lib/add-to-design-targets';
@@ -58,8 +59,14 @@ export function editorViewHeader(
     renameDesignNonce,
     zenMode,
     sessionCommunity,
+    activeTab,
+    can,
   } = ctx;
   const { isOffline, headerCommunity, role } = view;
+  // Prototype (docs/specs/007-editor/wireframe-pages.md "Prototype mode"): on a wireframe tab, for every role.
+  const prototype = offersPrototype(can, activeTab, anyWelcomeOpen) ? (
+    <PrototypeHeaderButton />
+  ) : undefined;
   return zenMode || !appChrome ? null : (
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="Header" fallback="panel">
@@ -87,6 +94,7 @@ export function editorViewHeader(
           readOnly={isStructureReadOnly}
           renameNonce={renameDesignNonce}
           rolePill={<RolePill {...role} />}
+          leadAction={prototype}
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
             setShareDialogOpen(true);

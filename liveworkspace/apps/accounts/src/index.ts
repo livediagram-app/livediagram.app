@@ -34,6 +34,7 @@ import {
   AUTHORIZE_PATH,
   GUEST_PATH,
   guestHandoff,
+  guestRenewal,
   guestMergeConfig,
   mergeGuestOnAuthorize,
 } from './guests.ts';
@@ -182,6 +183,14 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
     flushServerEventsAfter(env, ctx);
     flushEventsAfter(env, ctx);
     return response;
+  }
+
+  // Renewing a guest with the app's guest token as proof, when Safari cleared `lw_guest` (guests.ts guestRenewal).
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
+    if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request, env)}` })).success) {
+      return Response.json({ error: 'rate_limited' }, { status: 429 });
+    }
+    return guestRenewal(request, env, getAuth(env));
   }
 
   if (request.method === 'POST' && pathname === CLIENTS_PATH) {

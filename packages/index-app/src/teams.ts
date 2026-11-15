@@ -2,7 +2,7 @@
 // Who is in which team is the accounts Worker's; every access token and API token check carries the person's
 // teams (`TeamClaim[]`), and the index decides team access from them.
 //
-// A claim can be older than a team made or joined a moment ago (an access token lives up to an hour; an API
+// A claim can be older than a team made or joined a moment ago (an access token lives up to 15 minutes; an API
 // token's answer is remembered for a minute). So when a request names a team the claim does not hold, or there is
 // no claim, `teamsOf` asks accounts for the person's teams as they are now (`POST teams/of`), and the team is
 // usable at once. Only a miss asks; a person's answer is remembered for MISS_RECHECK_MS, so a burst of misses

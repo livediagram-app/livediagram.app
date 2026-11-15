@@ -1,5 +1,5 @@
 // A team made or joined since the caller's access token was minted (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
-// "Teams"): the token's `teams` claim is up to an hour old, so when a request names a team the claim does not
+// "Teams"): the token's `teams` claim is up to 15 minutes old, so when a request names a team the claim does not
 // hold, the index asks accounts for the person's teams as they are now (`POST /api/account/index/teams`, with the
 // key the two share) and the team is usable at once. @liveworkspace/index-app's team access does the asking and
 // remembering: only a miss asks, a burst of misses is one call, and when accounts can't be reached the claim

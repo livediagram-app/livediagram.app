@@ -9,6 +9,13 @@ import {
   readCookie,
   type AppAuthEnv,
 } from './app-auth';
+import {
+  GUEST_RENEWAL_COOKIE,
+  GUEST_RENEWAL_COOKIE_MAX_AGE_SECONDS,
+  guestRenewalCookie,
+  guestRenewalPage,
+  renewalToken,
+} from './guest-renewal';
 import { TOKEN_REQUEST_TIMEOUT_MS } from './oauth';
 
 // The shared /api/auth routes (each product's docs/specs/014-identity/auth-and-guest-access.md "Signing in"). Each
@@ -167,6 +174,73 @@ describe('the route table', () => {
     expect((await call(auth, '/api/auth/sign-in', {}, limited)).status).toBe(429);
     const silent = await call(auth, '/api/auth/silent?return=/x', {}, limited);
     expect(silent.headers.get('Location')).toBe('/x');
+  });
+});
+
+describe('GET /api/auth/guest renewing a token the page holds (accounts.md "Renewing without the cookie")', () => {
+  const state = 'state-12345';
+  const token = 'aaa.bbb.ccc';
+
+  it('answers a page posting the token in a form body to the same handoff address, and clears the cookie', async () => {
+    const auth = routes();
+    const plain = await call(auth, `/api/auth/guest?state=${state}`);
+    expect(plain.status).toBe(302);
+    const action = plain.headers.get('Location')!;
+    expect(new URL(action).searchParams.has('guest_token')).toBe(false);
+
+    const page = await call(auth, `/api/auth/guest?state=${state}`, {
+      headers: { Cookie: `${GUEST_RENEWAL_COOKIE}=${token}` },
+    });
+    expect(page.status).toBe(200);
+    expect(page.headers.get('Location')).toBeNull();
+    expect(page.headers.get('Cache-Control')).toBe('no-store');
+    // Its POST must carry the app's Origin, which no-referrer would send as null.
+    expect(page.headers.get('Referrer-Policy')).toBe('strict-origin');
+    expect(page.headers.get('X-Frame-Options')).toBe('DENY');
+    const csp = page.headers.get('Content-Security-Policy')!;
+    const nonce = /'nonce-([^']+)'/.exec(csp)![1];
+    expect(csp).toContain("default-src 'none'");
+    expect(page.headers.getSetCookie()).toEqual([guestRenewalCookie(null)]);
+    const html = await page.text();
+    expect(html).toContain(`action="${action.replaceAll('&', '&amp;')}"`);
+    expect(html).toContain('method="post"');
+    expect(html).toContain(`name="guest_token" value="${token}"`);
+    expect(html).toContain(`<script nonce="${nonce}">`);
+  });
+
+  it('hands off as before with a cookie that is not a token, or on a guest-only deployment', async () => {
+    const auth = routes();
+    for (const value of ['nope', '"><script>x</script>', `${'a'.repeat(2001)}.b.c`]) {
+      const response = await call(auth, `/api/auth/guest?state=${state}`, {
+        headers: { Cookie: `${GUEST_RENEWAL_COOKIE}=${value}` },
+      });
+      expect(response.status).toBe(302);
+    }
+    const bare = await call(
+      auth,
+      `/api/auth/guest?state=${state}`,
+      { headers: { Cookie: `${GUEST_RENEWAL_COOKIE}=${token}` } },
+      {},
+    );
+    expect(bare.headers.get('Location')).toMatch(/^\/auth\/guest#error=guest_not_configured/);
+  });
+});
+
+describe('the renewal cookie and page', () => {
+  it('sets the cookie for a minute on the guest door, Strict, and clears it', () => {
+    expect(guestRenewalCookie('t.t.t')).toBe(
+      `lw_guest_renewal=t.t.t; Path=/api/auth/guest; Max-Age=${GUEST_RENEWAL_COOKIE_MAX_AGE_SECONDS}; Secure; SameSite=Strict`,
+    );
+    expect(guestRenewalCookie(null, '/x/auth/guest')).toBe(
+      'lw_guest_renewal=; Path=/x/auth/guest; Max-Age=0; Secure; SameSite=Strict',
+    );
+    expect(renewalToken(null)).toBeNull();
+    expect(renewalToken('a.b.')).toBe('a.b.');
+  });
+
+  it('escapes what it writes into the page', async () => {
+    const html = await guestRenewalPage('https://a.example/?x="<y>&z', 'a.b.c').text();
+    expect(html).toContain('action="https://a.example/?x=&quot;&lt;y&gt;&amp;z"');
   });
 });
 

@@ -910,6 +910,51 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 409, 502],
   },
   {
+    method: 'GET',
+    path: '/projects/{id}/calendar-feed',
+    segment: 'projects',
+    tag: 'Calendar',
+    summary:
+      "Your own calendar feed of the plan: its options (which board, only my cards, include done cards) and when its link was made, never the link itself; null for none. With the plan's boards the Board option may name. The plan's owner or a team member only, signed in in person: never a share link at any level, an API token or a workbench session.",
+    auth: 'clerk',
+    responseSchema: 'CalendarFeedResponse',
+    statuses: [200, 401, 403, 404, 405],
+  },
+  {
+    method: 'POST',
+    path: '/projects/{id}/calendar-feed',
+    segment: 'projects',
+    tag: 'Calendar',
+    summary:
+      "Make your calendar feed of the plan with these options, or, when you have one, Reset Link: a new link, and the old one stops at once. Answers the link's path (/api/calendar/{projectId}/lpf_….ics) this once; the plan keeps only its hash. Anyone with the link can read the feed's card titles and dates. The plan's owner or a team member only, signed in in person.",
+    auth: 'clerk',
+    requestSchema: 'CalendarFeedOptions',
+    responseSchema: 'CalendarFeedIssueResponse',
+    statuses: [201, 400, 401, 403, 404, 405],
+  },
+  {
+    method: 'PUT',
+    path: '/projects/{id}/calendar-feed',
+    segment: 'projects',
+    tag: 'Calendar',
+    summary:
+      "Change your calendar feed's options, keeping its link: calendar apps show the new set on their next fetch. 404 when you have no feed. The plan's owner or a team member only, signed in in person.",
+    auth: 'clerk',
+    requestSchema: 'CalendarFeedOptions',
+    responseSchema: 'CalendarFeedOptionsResponse',
+    statuses: [200, 400, 401, 403, 404, 405],
+  },
+  {
+    method: 'DELETE',
+    path: '/projects/{id}/calendar-feed',
+    segment: 'projects',
+    tag: 'Calendar',
+    summary:
+      "Turn off your calendar feed of the plan: its link stops answering. 204 whether or not there was one. The plan's owner or a team member only, signed in in person.",
+    auth: 'clerk',
+    statuses: [204, 401, 403, 404, 405],
+  },
+  {
     method: 'POST',
     path: '/github/webhook',
     segment: 'github',

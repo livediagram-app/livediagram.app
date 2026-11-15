@@ -17,6 +17,9 @@
 //   GET  /api/auth/guest?state=              → the accounts site's guest handoff, which comes back to
 //                                              /auth/guest#guest_token=…&state=… (liveworkspace/docs/specs/003-accounts/
 //                                              accounts.md "Guests")
+//                                              With the page's renewal cookie, a page that posts its guest token
+//                                              there instead (liveworkspace/docs/specs/003-accounts/accounts.md
+//                                              "Renewing without the cookie")
 //   POST /api/auth/sign-out?return=/path     → ends the liveworkspace session too, drops the refresh cookie,
 //                                              remembers the sign-out, and answers the hop through the accounts
 //                                              site the page takes (liveworkspace/docs/specs/003-accounts/
@@ -48,6 +51,7 @@ import {
   silentCookiesForHint,
   startSilentSignIn,
 } from './silent';
+import { GUEST_RENEWAL_COOKIE, guestRenewalPage, renewalToken } from './guest-renewal';
 import type { PkceCookie } from './pkce-cookie';
 import type { KeysFetcher } from './verify';
 
@@ -455,6 +459,15 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
   // goes to the accounts site with this app's client, which answers with a 45-day guest token in the fragment of
   // /auth/guest. Routed through here so the client id and resource live in one place; the editor makes and checks
   // `state` itself.
+  const guestUrl = (env: Env, request: Request, config: AppAuthConfigured, state: string) =>
+    guestHandoffUrl({
+      accountsUrl: config.accountsUrl,
+      clientId: config.clientId,
+      redirectUri: `${appOrigin(env, request)}/auth/guest`,
+      state,
+      resource: config.resource,
+    });
+
   function guest(request: Request, env: Env, config: AppAuthConfigured | null): Response {
     const state = new URL(request.url).searchParams.get('state');
     if (!isGuestHandoffState(state)) return json({ error: 'invalid_state' }, { status: 400 });
@@ -465,16 +478,12 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
       // own address, so without AUTH_ORIGIN an absolute URL would leave the app for the api worker (a 404 page).
       return redirect(`/auth/guest#${fragment}`, []);
     }
-    return redirect(
-      guestHandoffUrl({
-        accountsUrl: config.accountsUrl,
-        clientId: config.clientId,
-        redirectUri: `${appOrigin(env, request)}/auth/guest`,
-        state,
-        resource: config.resource,
-      }),
-      [],
-    );
+    // Renewing a token the page still holds (its renewal cookie): a page that posts the token to the same address in a
+    // form body, so the guest keeps their id when Safari has cleared the accounts site's cookie
+    // (liveworkspace/docs/specs/003-accounts/accounts.md "Renewing without the cookie").
+    const renewing = renewalToken(readCookie(request, GUEST_RENEWAL_COOKIE));
+    if (renewing) return guestRenewalPage(guestUrl(env, request, config, state), renewing);
+    return redirect(guestUrl(env, request, config, state), []);
   }
 
   async function handleAuth(

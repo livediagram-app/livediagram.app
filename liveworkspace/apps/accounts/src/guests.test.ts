@@ -8,10 +8,17 @@ import {
   GUEST_TOKEN_TTL_SECONDS,
   guestHandoff,
   guestMergeConfig,
+  guestRenewal,
   mergeGuestOnAuthorize,
   readGuestCookie,
   signGuestCookie,
 } from './guests.ts';
+import {
+  GUEST_PROOF_COOKIE,
+  GUEST_PROOF_COOKIE_MAX_AGE_SECONDS,
+  GUEST_PROOF_MAX_AGE_SECONDS,
+  readGuestProof,
+} from './guest-proof.ts';
 import { startLifecycle } from './lifecycle.ts';
 import { readProfiles, writeProfile } from './profiles.ts';
 import { readSettings, writeSettings } from './settings.ts';
@@ -271,6 +278,232 @@ describe('the guest hand-off', () => {
       resource: 'https://livediagram.app/api',
     });
     expect(await response.json()).toEqual({ error: 'invalid_resource' });
+  });
+});
+
+describe('renewing without the cookie (accounts.md "Renewing without the cookie")', () => {
+  const APP_ORIGIN = 'https://liveplanner.app';
+  const QUERY = { client_id: CLIENT_ID, redirect_uri: GUEST_RETURN, state: 's1' };
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // The app's page posting the token it holds, as its form sends it.
+  function renew(
+    token: string,
+    init: { origin?: string | null; query?: Record<string, string> } = {},
+  ) {
+    const headers: Record<string, string> = { 'content-type': 'application/x-www-form-urlencoded' };
+    const origin = init.origin === undefined ? APP_ORIGIN : init.origin;
+    if (origin) headers.origin = origin;
+    return guestRenewal(
+      new Request(`${BASE}/api/auth/guest?${new URLSearchParams(init.query ?? QUERY)}`, {
+        method: 'POST',
+        headers,
+        body: new URLSearchParams({ guest_token: token }).toString(),
+      }),
+      env,
+      auth,
+    );
+  }
+
+  const proofOf = (response: Response) =>
+    response.headers.getSetCookie().find((c) => c.startsWith(`${GUEST_PROOF_COOKIE}=`));
+
+  // The 303's GET, carrying what the browser would send: the proof cookie, and `lw_guest` when it has one.
+  async function follow(posted: Response, guestCookie?: string) {
+    expect(posted.status).toBe(303);
+    const proof = proofOf(posted)?.split(';')[0];
+    const cookie = [proof, guestCookie && `${GUEST_COOKIE}=${guestCookie}`]
+      .filter(Boolean)
+      .join('; ');
+    return guestHandoff(
+      new Request(posted.headers.get('location')!, { headers: cookie ? { cookie } : {} }),
+      env,
+      auth,
+    );
+  }
+
+  const tokenOf = (response: Response) => fragmentOf(response).params.get('guest_token')!;
+
+  async function sign(payload: Record<string, unknown>) {
+    const now = Math.floor(Date.now() / 1000);
+    return (
+      await auth.api.signJWT({
+        body: {
+          payload: {
+            iss: `${BASE}/api/auth`,
+            aud: RESOURCE,
+            iat: now,
+            exp: now + 3600,
+            ...payload,
+          },
+        },
+      })
+    ).token;
+  }
+
+  it('keeps the same guest when the cookie is gone, and sets the cookie again', async () => {
+    const first = await handoff();
+    const guestId = await readGuestCookie(cookieValueOf(setGuestCookie(first)), SECRET);
+    const firstClaims = await verified(tokenOf(first));
+    expect(firstClaims.oiat).toBe(firstClaims.iat);
+
+    const posted = await renew(tokenOf(first));
+    expect(posted.headers.get('location')).toBe(
+      `${BASE}/api/auth/guest?${new URLSearchParams(QUERY)}`,
+    );
+    expect(posted.headers.get('cache-control')).toBe('no-store');
+    expect(posted.headers.get('referrer-policy')).toBe('no-referrer');
+    const proof = proofOf(posted)!;
+    expect(proof).toMatch(/HttpOnly/);
+    expect(proof).toMatch(/Secure/);
+    expect(proof).toMatch(/SameSite=Lax/);
+    expect(proof).toMatch(/Path=\/api\/auth\/guest/);
+    expect(proof).toMatch(new RegExp(`Max-Age=${GUEST_PROOF_COOKIE_MAX_AGE_SECONDS}`));
+
+    const renewed = await follow(posted);
+    const claims = await verified(tokenOf(renewed));
+    expect(claims.sub).toBe(guestId);
+    expect(claims.oiat).toBe(firstClaims.oiat);
+    expect(await readGuestCookie(cookieValueOf(setGuestCookie(renewed)), SECRET)).toBe(guestId);
+    // The proof is spent.
+    expect(proofOf(renewed)).toMatch(/Max-Age=0/);
+  });
+
+  it("lets the cookie win when both name a guest, so one guest never takes another's id", async () => {
+    const mine = cookieValueOf(setGuestCookie(await handoff()));
+    const theirs = tokenOf(await handoff());
+    const renewed = await follow(await renew(theirs), mine);
+    const claims = await verified(tokenOf(renewed));
+    expect(claims.sub).toBe(await readGuestCookie(mine, SECRET));
+    expect(claims.sub).not.toBe((await verified(theirs)).sub);
+    // The cookie vouched, so the chain starts again.
+    expect(claims.oiat).toBe(claims.iat);
+  });
+
+  it('takes no proof from another origin, or with none, so another site cannot plant its guest', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const token = tokenOf(await handoff());
+    for (const origin of ['https://evil.example', null, 'null']) {
+      const posted = await renew(token, { origin });
+      expect(proofOf(posted)).toBeUndefined();
+      const fresh = await verified(tokenOf(await follow(posted)));
+      expect(fresh.sub).not.toBe((await verified(token)).sub);
+    }
+  });
+
+  it('never reads the token from the query string', async () => {
+    const token = tokenOf(await handoff());
+    const posted = await guestRenewal(
+      new Request(
+        `${BASE}/api/auth/guest?${new URLSearchParams({ ...QUERY, guest_token: token })}`,
+        {
+          method: 'POST',
+          headers: { origin: APP_ORIGIN },
+        },
+      ),
+      env,
+      auth,
+    );
+    expect(posted.status).toBe(303);
+    expect(proofOf(posted)).toBeUndefined();
+    const viaGet = await handoff({ ...QUERY, guest_token: token });
+    expect((await verified(tokenOf(viaGet))).sub).not.toBe((await verified(token)).sub);
+  });
+
+  it("refuses a forged, another app's, an account's, or a lapsed token", async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const guest = tokenOf(await handoff());
+    const [h, p, sig] = guest.split('.') as [string, string, string];
+    const claims = decode(p);
+    const forged = `${h}.${Buffer.from(JSON.stringify({ ...claims, sub: `guest_${crypto.randomUUID()}` })).toString('base64url')}.${sig}`;
+    const otherApp = await sign({
+      sub: claims.sub,
+      kind: 'guest',
+      aud: 'https://livediagram.app/api',
+    });
+    const account = await sign({ sub: 'user_abc' });
+    const accountAsGuest = await sign({ sub: 'user_abc', kind: 'guest' });
+    const now = Math.floor(Date.now() / 1000);
+    const lapsed = await sign({ sub: claims.sub, kind: 'guest', iat: now - 7200, exp: now - 60 });
+    for (const token of [forged, otherApp, account, accountAsGuest, lapsed, 'not-a-jwt']) {
+      expect(await readGuestProof(token, env, auth, RESOURCE)).toBeNull();
+      const posted = await renew(token);
+      expect(proofOf(posted)).toBeUndefined();
+      expect((await verified(tokenOf(await follow(posted)))).sub).not.toBe(claims.sub);
+    }
+    // The client's checks come first, with their 400s.
+    const refused = await renew(guest, {
+      query: { ...QUERY, redirect_uri: 'https://evil.example/x' },
+    });
+    expect(refused.status).toBe(400);
+  });
+
+  it('checks a proof cookie again on the GET, so a planted one names no guest', async () => {
+    const other = await sign({
+      sub: `guest_${crypto.randomUUID()}`,
+      kind: 'guest',
+      aud: 'https://livediagram.app/api',
+    });
+    const response = await guestHandoff(
+      new Request(`${BASE}/api/auth/guest?${new URLSearchParams(QUERY)}`, {
+        headers: { cookie: `${GUEST_PROOF_COOKIE}=${other}` },
+      }),
+      env,
+      auth,
+    );
+    expect((await verified(tokenOf(response))).sub).not.toBe(decode(other.split('.')[1]!).sub);
+    expect(proofOf(response)).toMatch(/Max-Age=0/);
+  });
+
+  it('counts a token minted before oiat from its own issue', async () => {
+    const guestId = `guest_${crypto.randomUUID()}`;
+    const old = await sign({ sub: guestId, kind: 'guest' });
+    expect(await readGuestProof(old, env, auth, RESOURCE)).toEqual({
+      guestId,
+      oiat: decode(old.split('.')[1]!).iat,
+    });
+    const future = await sign({
+      sub: guestId,
+      kind: 'guest',
+      oiat: Math.floor(Date.now() / 1000) + 3600,
+    });
+    expect(await readGuestProof(future, env, auth, RESOURCE)).toBeNull();
+    expect(
+      await readGuestProof(
+        await sign({ sub: guestId, kind: 'guest', oiat: 'x' }),
+        env,
+        auth,
+        RESOURCE,
+      ),
+    ).toBeNull();
+  });
+
+  it('ends a chain of renewals by token alone 180 days after the cookie last vouched', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    const start = new Date('2027-01-01T00:00:00Z').getTime();
+    vi.setSystemTime(start);
+    let token = tokenOf(await handoff());
+    const guestId = (await verified(token)).sub;
+    // A stolen token renewed every 40 days, never with the cookie: the same guest while the chain is young.
+    for (const day of [40, 80, 120, 160]) {
+      vi.setSystemTime(start + day * DAY_MS);
+      const renewed = await follow(await renew(token));
+      const claims = await verified(tokenOf(renewed));
+      expect(claims.sub).toBe(guestId);
+      expect(claims.oiat).toBe(start / 1000);
+      token = tokenOf(renewed);
+    }
+    // Past 180 days the proof is refused, even though the token itself is unexpired: a fresh guest.
+    vi.setSystemTime(start + 181 * DAY_MS);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(Date.now() / 1000 - start / 1000 > GUEST_PROOF_MAX_AGE_SECONDS).toBe(true);
+    const refused = await renew(token);
+    expect(proofOf(refused)).toBeUndefined();
+    expect((await verified(tokenOf(await follow(refused)))).sub).not.toBe(guestId);
   });
 });
 

@@ -40,8 +40,9 @@ export function barHeight(level: VoiceLevel): number {
 }
 
 // The clock levels are judged by: moved on when the oldest live level would go stale, so a lost stop clears itself
-// without a message. Until then a level is as fresh as its arrival (the store tells of every new one).
-function useStaleClock(peers: ReadonlyMap<string, CallPeer>): number {
+// without a message. Until then a level is as fresh as its arrival (the store tells of every new one). The mini view
+// reads it too (MiniView).
+export function useStaleClock(peers: ReadonlyMap<string, CallPeer>): number {
   const [clock, setClock] = useState(0);
   useEffect(() => {
     let next = Infinity;
@@ -56,7 +57,8 @@ function useStaleClock(peers: ReadonlyMap<string, CallPeer>): number {
   return clock;
 }
 
-function Bars({ level, color }: { level: VoiceLevel; color: string }) {
+/** The three bars, also drawn at the end of a mini view row (MiniViewRow). */
+export function Bars({ level, color }: { level: VoiceLevel; color: string }) {
   const height = barHeight(level);
   return (
     <span aria-hidden className="flex h-3 items-end gap-0.5">

@@ -9,7 +9,8 @@ import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
 import { useToast } from '@/hooks/ui/useToast';
 import { shareAddress } from '@/lib/explorer-host';
 import { exportInspectedElement, inspectExportName } from '@/lib/inspect-export';
-import { inspectViewLink, wantsInspect, withInspect } from '@/lib/inspect-link';
+import { wantsInspect, withInspect } from '@/lib/inspect-link';
+import { copyFlaggedViewLink } from '@/lib/copy-flagged-view-link';
 import { track } from '@/lib/telemetry';
 import type { InspectSession } from './InspectSessionContext';
 
@@ -28,15 +29,6 @@ type HostInput = {
   openShare: () => void;
   imageContext?: { ownerId: string; designId: string; shareCode: string | null };
 };
-
-async function copy(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 // Inspect's editor side (docs/specs/007-editor/wireframe-pages.md "Inspect"): opens a wireframe tab with Inspect when
 // the address asks (`?inspect`), leaves Inspect when the tab is not a wireframe tab, and builds the panel's session:
@@ -80,28 +72,20 @@ export function useInspectHost(input: HostInput): InspectSession {
       copyLink: hasLink
         ? async () => {
             const now = latest.current;
-            let code = now.sessionShareCode;
-            if (code === null && now.designId) {
-              try {
-                const { links } = await indexClient.listShareLinks(now.designId);
-                code = inspectViewLink(links, now.activeTab.id, Date.now())?.code ?? null;
-              } catch {
-                toast.error('Couldn’t read the design’s links. Try again.');
-                return;
-              }
-              if (code === null) {
-                now.openShare();
-                toast.info('Make a Viewer link, then copy the Inspect link.');
-                return;
-              }
-            }
-            if (code === null) return;
-            if (await copy(withInspect(shareAddress(code)))) {
-              toast.success('Copied a link that opens with Inspect');
-              track('UI', 'Copied', 'InspectLink');
-            } else {
-              toast.error('Couldn’t copy the link. Try again.');
-            }
+            const copied = await copyFlaggedViewLink({
+              sessionShareCode: now.sessionShareCode,
+              designId: now.designId,
+              tabId: now.activeTab.id,
+              withFlag: withInspect,
+              shareAddress,
+              listShareLinks: (id) => indexClient.listShareLinks(id),
+              writeClipboard: (text) => navigator.clipboard.writeText(text),
+              openShare: now.openShare,
+              toast,
+              copied: 'Copied a link that opens with Inspect',
+              makeFirst: 'Make a Viewer link, then copy the Inspect link.',
+            });
+            if (copied) track('UI', 'Copied', 'InspectLink');
           }
         : null,
     }),
