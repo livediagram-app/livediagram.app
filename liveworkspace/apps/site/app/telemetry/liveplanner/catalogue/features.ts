@@ -624,6 +624,14 @@ export const CALENDAR_FEED_OPENED = opened(
   (t) => t === 'CalendarFeed',
 );
 
+// Subscribe to Calendar on My Work (docs/specs/026-plan/calendar-feed.md "The My Work feed", in the liveplanner folder):
+// its dialog opened from the Inbox's header.
+export const MY_WORK_CALENDAR_FEED_OPENED = opened(
+  'My Work Calendar Opened',
+  "Subscribe to Calendar opened from the Inbox's header, to make, copy, reset or turn off a private link to the cards assigned to the person.",
+  (t) => t === 'MyWorkCalendarFeed',
+);
+
 // Describe a Plan (docs/specs/026-plan/describe-a-plan.md "Telemetry", in the liveplanner folder): its dialog opened from
 // Start Planning's rail or search. Never the words typed.
 export const PLAN_DESCRIBE_OPENED = opened(
@@ -655,6 +663,7 @@ export const PANELS_OPENED: MetricStack = {
     AUTOMATION_TEMPLATES_OPENED,
     AUTOMATION_DESCRIBE_OPENED,
     CALENDAR_FEED_OPENED,
+    MY_WORK_CALENDAR_FEED_OPENED,
     PLAN_DESCRIBE_OPENED,
     OTHER_OPENED,
   ],

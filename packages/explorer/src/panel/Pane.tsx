@@ -1,13 +1,13 @@
 'use client';
 
-import { useRef, useState, type ReactNode } from 'react';
-import { Tooltip } from '@liveworkspace/ui';
+import { useRef, useState } from 'react';
 import { useExplorer } from '../explorer/context';
 import { MyWorkMenu } from '../explorer/menus';
 import { InboxPane } from '../explorer/InboxPane';
 import { ThisBrowserArchivedGroup } from '../explorer/ArchivedThisBrowser';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { NewFolderIcon, TeamIcon } from '../ui/icons';
+import { HeaderIconButton } from '../ui/HeaderIconButton';
 import type { ExplorerView } from '../views';
 import { useTeams } from '../teams/context';
 import { siteOf, type AppFilter } from '../words';
@@ -20,29 +20,6 @@ import { TrashSection } from './TrashSection';
 import { TeamMembersDialog } from './TeamMembersDialog';
 
 // ---- The pane -------------------------------------------------------------------------------------------
-
-// The header's quiet actions: a glyph named by its label and tooltip, a wash on hover, no frame. Words would crowd
-// the section's name out of a narrow pane.
-const HEADER_ICON_BUTTON =
-  'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:size-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white [&_svg]:size-4';
-
-function HeaderIconButton({
-  label,
-  onClick,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <Tooltip label={label}>
-      <button type="button" aria-label={label} onClick={onClick} className={HEADER_ICON_BUTTON}>
-        {children}
-      </button>
-    </Tooltip>
-  );
-}
 
 export function Pane({
   section,
@@ -61,7 +38,7 @@ export function Pane({
   libraryTab: LibraryTab;
   setLibraryTab: (tab: LibraryTab) => void;
 }) {
-  const { teamName, folders } = useExplorer();
+  const { teamName, folders, inboxHost } = useExplorer();
   const canRunTeams = useTeams().canRun;
   const [members, setMembers] = useState(false);
   const title = sectionLabel(section, (id) => teamName(id));
@@ -131,6 +108,14 @@ export function Pane({
             <TeamIcon size={16} />
           </HeaderIconButton>
         ) : null}
+        {/* The app's own doors in the Inbox's header (InboxHost.headerActions), before its filter. */}
+        {section.kind === 'inbox'
+          ? inboxHost?.headerActions?.map((a) => (
+              <HeaderIconButton key={a.id} label={a.label} onClick={a.onClick} dataId={a.id}>
+                {a.icon}
+              </HeaderIconButton>
+            ))
+          : null}
         {section.kind === 'inbox' ? (
           <span
             ref={setInboxSlot}

@@ -8,6 +8,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { track } from '@/lib/telemetry';
 import { CalendarFeedDoorContext, type CalendarFeedDoor } from './CalendarFeedContext';
 import type { CalendarFeedScope } from './calendar-feed-gate';
+import type { CalendarFeedTarget } from './CalendarFeedDialog';
 
 const CalendarFeedDialog = dynamic(
   () => import('./CalendarFeedDialog').then((m) => m.CalendarFeedDialog),
@@ -28,6 +29,11 @@ export function CalendarFeedHost({
     () => (ownerId && projectId ? { ownerId, projectId } : null),
     [ownerId, projectId],
   );
+  // One target while the scope holds: the dialog reads its feed again only when it changes.
+  const target = useMemo<CalendarFeedTarget | null>(
+    () => (stable ? { kind: 'plan', scope: stable } : null),
+    [stable],
+  );
   const door = useMemo<CalendarFeedDoor | null>(
     () =>
       stable
@@ -43,7 +49,9 @@ export function CalendarFeedHost({
   return (
     <CalendarFeedDoorContext.Provider value={door}>
       {children}
-      {stable && open ? <CalendarFeedDialog scope={stable} onClose={() => setOpen(false)} /> : null}
+      {target && open ? (
+        <CalendarFeedDialog target={target} onClose={() => setOpen(false)} />
+      ) : null}
     </CalendarFeedDoorContext.Provider>
   );
 }

@@ -9,7 +9,7 @@ import {
 export const metadata = helpMetadata({
   title: 'Subscribe to Calendar',
   description:
-    "Put a plan's card dates in Google Calendar, Outlook or Apple Calendar with a private link: what it shows, its options, Reset Link and keeping it safe.",
+    "Put a plan's card dates, or every card assigned to you, in Google Calendar, Outlook or Apple Calendar by a private link: what it shows, Reset Link, privacy.",
   path: '/help/plan/calendar-feed/',
 });
 
@@ -23,6 +23,8 @@ export const metadata = helpMetadata({
 **Subscribe to Calendar** gives you a private link to a plan's card dates. Add it to Google Calendar, Outlook or Apple Calendar once, and each card with a date shows there as an all-day event, beside your meetings. Your calendar fetches it again every so often, so a date changed on the board moves in your calendar too.
 
 It is read-only: nothing you do in your calendar changes a card.
+
+There are two kinds of link: one for a plan (below), and one for [My Work](#my-work), the cards assigned to you across all your plans.
 
 ## Who Can Subscribe
 
@@ -79,14 +81,28 @@ Three options choose which cards:
 
 Change them whenever you like, from the same dialog: a change saves at once and **keeps your link**, so there's nothing to add again. Your calendar shows the new set on its next fetch.
 
+## My Work
+
+The **Subscribe to Calendar** button at the top of the **Inbox**, in the Explorer panel, makes a link to the cards assigned to you, the same cards as **Assigned to You**, across every plan you own or share with a team. One calendar for all your work, without a link per plan.
+
+1. Open the Explorer panel and find the **Inbox**.
+2. Press the calendar button in the Inbox's header.
+3. Press **Make Calendar Link**, then copy it or hand it to your calendar as above.
+
+It shows each open card assigned to you that has a Start or Due date, the same way a plan's link does, each event naming its plan. It has no options: finished cards drop out, and a card you're no longer assigned to leaves on the next fetch. Like a plan's link, it shows the 500 cards nearest today.
+
+It is yours alone, so it needs an account: a guest doesn't see the button. Each fetch checks again that you can still open each plan, so a plan you leave, or one taken out of your team, drops out. Cards in a plan someone shared with you only by a share link never show.
+
+**Reset Link**, **Turn Off** and the privacy advice below work the same for it. Closing your account ends it.
+
 ## Keep It Private
 
 Anyone with your link can see the titles and dates of the cards in your feed, without signing in. Treat it like a password:
 
 - Don't share it, post it in a chat or paste it anywhere others can read.
-- If it leaks, open **Subscribe to Calendar** and press **Reset Link**. The old link stops working at once; add the new one to your calendar.
+- If it leaks, open **Subscribe to Calendar** (the tab menu for a plan's link, the Inbox for My Work) and press **Reset Link**. The old link stops working at once; add the new one to your calendar.
 
-The link opens only your feed: it can't sign in, change anything or reach any other plan.
+The link opens only your feed: it can't sign in, change anything or reach anything else.
 
 ## Reset Link and Turn Off
 

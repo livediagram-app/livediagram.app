@@ -206,6 +206,26 @@ describe('the events', () => {
     expect(await titles({ ...ALL, boardId: 'gone' })).toEqual([]);
   });
 
+  // Work Tracker 993: the Kanban and To-do list templates share their statuses, so a card opens on the first board
+  // holding its status; the Board option still shows it on the other, under that board's title.
+  it('shows a card on every board holding its status, under the named board', async () => {
+    const { env } = await arrange();
+    const shared = {
+      ...board('b3', 'To-do list'),
+      planBoard: { title: 'To-do list', columns: [{ id: 'x', name: 'Doing', status: 'b1-todo' }] },
+    } as Element;
+    await upsertTab(env, 'P', { id: 't2', name: 'List', kind: 'board', elements: [shared] }, 1);
+    await insertItems(env, 'P', [
+      card('a', 1, { title: 'Both', status: 'b1-todo', due: iso(TODAY) }),
+      card('b', 2, { title: 'Kanban only', status: 'b1-done', due: iso(TODAY) }),
+    ]);
+    const read = await feedEventsOf(env, 'P', { ...ALL, boardId: 'b3', includeDone: true }, NOW);
+    expect(read?.events.map((e) => e.summary)).toEqual(['#1 Both']);
+    expect(read?.events[0]?.description).toBe(
+      'To-do list · Doing\nhttps://plan.test/project/P#item=a',
+    );
+  });
+
   it('cuts a long title', async () => {
     const { env } = await arrange();
     await insertItems(env, 'P', [card('a', 1, { title: 'x'.repeat(500), due: iso(TODAY) })]);

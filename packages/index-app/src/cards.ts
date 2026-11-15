@@ -72,6 +72,9 @@ export type CardsPushOptions = {
 
 export type CardsPush = { push: CollabPush; unmatched: number; people: number };
 
+// A card without its Start and Due days (one-explorer-contracts.md "Calendar feeds").
+const withoutDays = ({ start: _start, due: _due, ...card }: CollabCard): CollabCard => card;
+
 /** The cards push for the Inbox: one action per known person an open card tells, and one thread per comment
  *  thread (on the first card naming it), newest first and capped as the index caps one push. */
 export async function cardsCollabPush(
@@ -114,7 +117,8 @@ export async function cardsCollabPush(
         latestAuthorColor: latest.authorColor,
         firstAt: first.createdAt,
         latestAt: latest.createdAt,
-        card: { ...c.card, id: c.id },
+        // A thread's card carries no days: those ride the card's own actions, for the calendar feed.
+        card: { ...withoutDays(c.card), id: c.id },
       });
     }
   }

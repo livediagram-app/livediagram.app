@@ -10474,6 +10474,56 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "MyWorkCalendarFeed": {
+    "additionalProperties": false,
+    "description": "The person's My Work feed (docs/specs/026-plan/calendar-feed.md \"The My Work feed\"): when its link was made, epoch ms. It has no options.",
+    "properties": {
+      "createdAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "createdAt"
+    ],
+    "type": "object"
+  },
+  "MyWorkCalendarFeedIssueResponse": {
+    "additionalProperties": false,
+    "description": "POST /api/my-work/calendar-feed: the feed made (or its link reset), and its link's path (`/api/calendar/my-work/lpf_….ics`), answered this once.",
+    "properties": {
+      "feed": {
+        "$ref": "#/components/schemas/MyWorkCalendarFeed"
+      },
+      "path": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "feed",
+      "path"
+    ],
+    "type": "object"
+  },
+  "MyWorkCalendarFeedResponse": {
+    "additionalProperties": false,
+    "description": "GET /api/my-work/calendar-feed: the person's My Work feed, or null for none.",
+    "properties": {
+      "feed": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkCalendarFeed"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "feed"
+    ],
+    "type": "object"
+  },
   "NumOp": {
     "enum": [
       "between",

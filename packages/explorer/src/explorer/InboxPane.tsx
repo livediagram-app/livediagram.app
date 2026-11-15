@@ -36,6 +36,7 @@ import {
   type InboxFilter,
 } from './inbox/sections';
 import { PaneHeader } from './PaneHeader';
+import { HeaderIconButton } from '../ui/HeaderIconButton';
 import { useNow } from '../time';
 
 export const INBOX_FILTER_KEY = 'liveworkspace:explorer-inbox-filter';
@@ -392,7 +393,16 @@ export function InboxPane({
       {compact || paneStands ? null : (
         <PaneHeader
           title="Inbox"
-          actions={<span ref={setHeaderSlot} className="flex min-w-0 shrink-0" />}
+          actions={
+            <span className="flex min-w-0 shrink-0 items-center gap-1">
+              {inboxHost?.headerActions?.map((a) => (
+                <HeaderIconButton key={a.id} label={a.label} onClick={a.onClick} dataId={a.id}>
+                  {a.icon}
+                </HeaderIconButton>
+              ))}
+              <span ref={setHeaderSlot} className="flex min-w-0 shrink-0" />
+            </span>
+          }
         />
       )}
       {body}

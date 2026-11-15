@@ -66,6 +66,7 @@ export type {
   InboxActions,
   InboxComment,
   InboxHost,
+  InboxHeaderAction,
   InboxLocalRows,
   InboxTarget,
   InboxTelemetry,

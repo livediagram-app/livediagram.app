@@ -5,6 +5,7 @@
 // Calendar Link. Just made: the link, shown this once, to copy or hand to a calendar. On: when the link was made,
 // Reset Link and Turn Off, each behind a confirm. The options sit under every state: in Off they are what the link
 // is made with; once a feed exists a change saves at once and keeps the link. The privacy note is always there.
+// The same dialog serves the My Work feed ("The My Work feed"): the person's own cards across plans, with no options.
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type {
   CalendarFeedBoard,
@@ -22,8 +23,11 @@ import { track } from '@/lib/telemetry';
 import {
   changeCalendarFeed,
   issueCalendarFeed,
+  issueMyWorkCalendarFeed,
   readCalendarFeed,
+  readMyWorkCalendarFeed,
   turnOffCalendarFeed,
+  turnOffMyWorkCalendarFeed,
 } from './calendar-feed-client';
 import type { CalendarFeedScope } from './calendar-feed-gate';
 import { feedUrlOf } from './calendar-feed-links';
@@ -32,6 +36,12 @@ import { CalendarFeedLink } from './CalendarFeedLink';
 import { CalendarFeedOptionsSection } from './CalendarFeedOptions';
 
 const LockIcon = lucideGlyph(lucideLock, 14);
+
+// The Off state's line, per kind of feed.
+const PLAN_OFF_COPY =
+  'Make a private link and add it to your calendar once. Each card with a Start or Due date shows as an all-day event that opens the card, and your calendar keeps it up to date.';
+const MY_WORK_OFF_COPY =
+  'Make a private link and add it to your calendar once. Each open card assigned to you, in any plan you own or share with a team, shows as an all-day event on its Start or Due date, and your calendar keeps it up to date.';
 
 export const DEFAULT_FEED_OPTIONS: CalendarFeedOptions = {
   boardId: null,
@@ -45,17 +55,47 @@ const optionsOf = (feed: CalendarFeedSettings): CalendarFeedOptions => ({
   includeDone: feed.includeDone,
 });
 
+/** Which feed the dialog manages: a plan's, or the person's My Work feed. */
+export type CalendarFeedTarget =
+  { kind: 'plan'; scope: CalendarFeedScope } | { kind: 'my-work'; ownerId: string };
+
 type Loaded = { feed: CalendarFeedSettings | null; boards: CalendarFeedBoard[] };
+
+// The My Work feed as the dialog holds it: no options of its own, so the defaults stand in.
+const myWorkLoaded = (feed: { createdAt: number } | null): Loaded => ({
+  feed: feed ? { ...DEFAULT_FEED_OPTIONS, createdAt: feed.createdAt } : null,
+  boards: [],
+});
+
+async function readFeed(target: CalendarFeedTarget): Promise<Loaded> {
+  if (target.kind === 'plan') return readCalendarFeed(target.scope);
+  return myWorkLoaded((await readMyWorkCalendarFeed(target.ownerId)).feed);
+}
+
+async function issueFeed(
+  target: CalendarFeedTarget,
+  options: CalendarFeedOptions,
+): Promise<{ feed: CalendarFeedSettings; path: string }> {
+  if (target.kind === 'plan') return issueCalendarFeed(target.scope, options);
+  const made = await issueMyWorkCalendarFeed(target.ownerId);
+  return { feed: { ...DEFAULT_FEED_OPTIONS, createdAt: made.feed.createdAt }, path: made.path };
+}
+
+const turnOffFeed = (target: CalendarFeedTarget) =>
+  target.kind === 'plan'
+    ? turnOffCalendarFeed(target.scope)
+    : turnOffMyWorkCalendarFeed(target.ownerId);
 // The confirm open over Reset Link or Turn Off, anchored to the button that opened it.
 type Confirming = { kind: 'reset' | 'off'; anchor: HTMLElement } | null;
 
 export function CalendarFeedDialog({
-  scope,
+  target,
   onClose,
 }: {
-  scope: CalendarFeedScope;
+  target: CalendarFeedTarget;
   onClose: () => void;
 }) {
+  const myWork = target.kind === 'my-work';
   const titleId = useId();
   const [data, setData] = useState<Loaded | null>(null);
   const [readFailed, setReadFailed] = useState(false);
@@ -72,13 +112,13 @@ export function CalendarFeedDialog({
 
   const read = useCallback(async () => {
     try {
-      const loaded = await readCalendarFeed(scope);
+      const loaded = await readFeed(target);
       setData(loaded);
       if (loaded.feed) setOptions(optionsOf(loaded.feed));
     } catch {
       setReadFailed(true);
     }
-  }, [scope]);
+  }, [target]);
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect -- a fetch from the api: its state lands after the await, never synchronously
     void read();
@@ -99,8 +139,12 @@ export function CalendarFeedDialog({
     setBusy(true);
     setSaveFailed(false);
     try {
-      const made = await issueCalendarFeed(scope, options);
-      if (reset) track('Plan', 'Changed', 'CalendarFeedLink');
+      const made = await issueFeed(target, options);
+      // Each a literal pair and type, for the telemetry coverage tests.
+      if (myWork) {
+        if (reset) track('Plan', 'Changed', 'MyWorkCalendarFeedLink');
+        else track('Plan', 'Created', 'MyWorkCalendarFeed');
+      } else if (reset) track('Plan', 'Changed', 'CalendarFeedLink');
       else track('Plan', 'Created', 'CalendarFeed');
       focusNext.current = 'copy';
       setData((d) => (d ? { ...d, feed: made.feed } : d));
@@ -116,8 +160,9 @@ export function CalendarFeedDialog({
     setBusy(true);
     setSaveFailed(false);
     try {
-      await turnOffCalendarFeed(scope);
-      track('Plan', 'Ended', 'CalendarFeed');
+      await turnOffFeed(target);
+      if (myWork) track('Plan', 'Ended', 'MyWorkCalendarFeed');
+      else track('Plan', 'Ended', 'CalendarFeed');
       focusNext.current = 'make';
       setData((d) => (d ? { ...d, feed: null } : d));
       setMadeUrl(null);
@@ -133,9 +178,9 @@ export function CalendarFeedDialog({
     const before = options;
     setOptions(next);
     setSaveFailed(false);
-    if (!data?.feed) return;
+    if (!data?.feed || target.kind !== 'plan') return;
     try {
-      const changed = await changeCalendarFeed(scope, next);
+      const changed = await changeCalendarFeed(target.scope, next);
       track('Plan', 'Changed', 'CalendarFeedOptions');
       setData((d) => (d ? { ...d, feed: changed.feed } : d));
     } catch {
@@ -150,7 +195,7 @@ export function CalendarFeedDialog({
         art={calendarFeedHeroArt}
         titleId={titleId}
         title="Subscribe to Calendar"
-        subtitle="Card dates in your own calendar."
+        subtitle={myWork ? 'Your cards in your own calendar.' : 'Card dates in your own calendar.'}
         onClose={onClose}
       />
       <div
@@ -184,23 +229,25 @@ export function CalendarFeedDialog({
           <>
             {state === 'off' ? (
               <p className="text-sm text-slate-700 dark:text-slate-200">
-                Make a private link and add it to your calendar once. Each card with a Start or Due
-                date shows as an all-day event that opens the card, and your calendar keeps it up to
-                date.
+                {myWork ? MY_WORK_OFF_COPY : PLAN_OFF_COPY}
               </p>
             ) : null}
-            {state === 'made' && madeUrl ? <CalendarFeedLink ref={copyRef} url={madeUrl} /> : null}
+            {state === 'made' && madeUrl ? (
+              <CalendarFeedLink ref={copyRef} url={madeUrl} myWork={myWork} />
+            ) : null}
             {state === 'on' && data?.feed ? (
               <p className="text-sm text-slate-700 dark:text-slate-200">
                 Your calendar link is on. Made {MEDIUM_DATE.format(data.feed.createdAt)}.
               </p>
             ) : null}
-            <CalendarFeedOptionsSection
-              boards={data?.boards ?? []}
-              options={options}
-              disabled={busy}
-              onChange={(next) => void choose(next)}
-            />
+            {myWork ? null : (
+              <CalendarFeedOptionsSection
+                boards={data?.boards ?? []}
+                options={options}
+                disabled={busy}
+                onChange={(next) => void choose(next)}
+              />
+            )}
             <p
               className="flex gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-100 dark:ring-amber-900"
               data-calendar-feed-privacy=""

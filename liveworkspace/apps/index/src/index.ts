@@ -17,6 +17,7 @@ import { publicKeys } from './grants';
 import { warnIfLocalDatabaseStale } from './local-db-hint';
 import { fail, forbidden, json, notFound, unauthorized } from './http';
 import { handleInbox } from './inbox';
+import { handleCalendarFeed } from './calendar-feeds';
 import { createItem, handleItem, handleItemList, handleTrash } from './items';
 import { handleItemLookup } from './lookup';
 import { handleMerge } from './merge';
@@ -59,6 +60,8 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   'placement-defaults': handlePlacementDefaults,
   shared: handleShared,
   inbox: handleInbox,
+  // A person's calendar feed in the app acting for them, and its cards (calendar-feeds.ts).
+  'calendar-feed': handleCalendarFeed,
   trash: handleTrash,
   webhooks: (ctx) => handleWebhooks(ctx),
   'team-audit': (ctx) => handleTeamAudit(ctx),
@@ -134,6 +137,9 @@ const routeLabel = createApiRouteLabel(
     'placement-defaults',
     'shared',
     'inbox',
+    'calendar-feed',
+    'calendar-feeds',
+    'cards',
     'trash',
     'restore',
     'archive',

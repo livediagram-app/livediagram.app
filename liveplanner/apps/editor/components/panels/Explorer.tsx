@@ -33,6 +33,7 @@ import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-ho
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenPlan } from '@/lib/project-delete-undo';
 import { cloudSyncHost } from '@/components/dialogs/settings/settings-panel-host';
+import { useMyWorkCalendarFeed } from '@/components/calendar-feed/my-work-calendar-feed';
 import type { ExplorerProps } from './Explorer.types';
 
 // The filter's logos: this app's own, and liveworkspace's for All.
@@ -96,9 +97,12 @@ function ExplorerImpl({
       ),
     [inboxOwner, currentProjectId, inboxOpenAction],
   );
+  // Subscribe to Calendar on My Work: the Inbox header's calendar door, an account's only
+  // (docs/specs/026-plan/calendar-feed.md "The My Work feed").
+  const myWorkFeed = useMyWorkCalendarFeed(isSignedIn ? (accountUserId ?? null) : null);
   const inboxHost = useMemo(
-    () => ({ ...inboxBase, actions: inboxActions }),
-    [inboxBase, inboxActions],
+    () => ({ ...inboxBase, actions: inboxActions, headerActions: myWorkFeed.headerActions }),
+    [inboxBase, inboxActions, myWorkFeed.headerActions],
   );
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);
@@ -208,6 +212,7 @@ function ExplorerImpl({
           />
         }
       />
+      {myWorkFeed.dialog}
     </MovablePanel>
   );
 }

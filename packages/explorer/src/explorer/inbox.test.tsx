@@ -806,6 +806,18 @@ describe('reading', () => {
     );
   });
 
+  // An app's own door in the header (liveplanner's Subscribe to Calendar), whatever the list holds.
+  it('draws the host’s header doors beside the filter, even with nothing listed', async () => {
+    const onClick = vi.fn();
+    const inbox: InboxHost = {
+      headerActions: [{ id: 'calendar', label: 'Subscribe to Calendar', icon: <svg />, onClick }],
+    };
+    renderInbox(createFakeIndex(), { inbox });
+    await screen.findByText('You’re all caught up');
+    fireEvent.click(screen.getByRole('button', { name: 'Subscribe to Calendar' }));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   it('reports Opened once per visit, through the host hook it has then: not per read, filter or new host', async () => {
     const first = vi.fn();
     const index = createFakeIndex();
