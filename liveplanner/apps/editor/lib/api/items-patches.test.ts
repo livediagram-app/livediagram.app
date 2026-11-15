@@ -41,6 +41,26 @@ describe('writeItem patches', () => {
     expect(answer.upserts).toHaveLength(ITEM_BULK_MAX + 5);
     expect(answer.rev).toBe(2);
   });
+
+  // A card's fields hold up to 64 KB (items.md "Limits", Work Tracker 944): 200 full ones would pass the api's 8 MB
+  // request cap, so a batch is cut by size too.
+  it('cuts a batch of large changes under the api’s request cap', async () => {
+    const sizes: number[] = [];
+    const fetch = vi.fn(async (_url: string, init: RequestInit) => {
+      sizes.push(JSON.stringify(sentJson(init)).length);
+      const { items } = sentJson(init) as { items: { id: string }[] };
+      return Response.json({ items: items.map((i) => ({ id: i.id, rev: 2 })), rev: 1 });
+    });
+    vi.stubGlobal('fetch', fetch);
+    const patches = Array.from({ length: 150 }, (_, n) => ({
+      id: `i${n}`,
+      patch: { set: { 'f-notes': 'n'.repeat(60_000) } },
+    }));
+    const answer = await writeItem(scope, { kind: 'patches', patches }, by);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(Math.max(...sizes)).toBeLessThan(8 * 1024 * 1024);
+    expect(answer.upserts).toHaveLength(150);
+  });
 });
 
 describe('writeItem moves', () => {

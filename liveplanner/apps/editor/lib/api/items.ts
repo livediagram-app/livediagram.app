@@ -4,7 +4,6 @@
 
 import type { ItemResponse, ItemsImportStaged, ItemsResponse } from '@liveplanner/api-schema';
 import {
-  ITEM_BULK_MAX,
   createBatches,
   importParts,
   type Item,
@@ -121,8 +120,9 @@ async function landedOf(res: Response): Promise<ItemsResponse | null> {
   }
 }
 
-// Sends a change of many items, a request per ITEM_BULK_MAX of them. A failure after any of them landed (an earlier
-// request, or the failed one's partial answer) throws ItemWritePartlyLanded with what landed.
+// Sends a change of many items, a request per ITEM_BULK_MAX of them, each under the api's request cap (a card's fields
+// may hold 64 KB, so 200 full ones would pass it: createBatches cuts by size too). A failure after any of them landed
+// (an earlier request, or the failed one's partial answer) throws ItemWritePartlyLanded with what landed.
 async function postInChunks(
   scope: ItemsScope,
   path: '/patches' | '/moves' | '/tally',
@@ -133,8 +133,7 @@ async function postInChunks(
   extra: Record<string, unknown> = {},
 ): Promise<ItemWriteAnswer> {
   const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
-  for (let i = 0; i < entries.length; i += ITEM_BULK_MAX) {
-    const items = entries.slice(i, i + ITEM_BULK_MAX);
+  for (const items of createBatches(entries)) {
     const res = await apiFetch(itemsUrl(scope, path), {
       method: 'POST',
       headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),

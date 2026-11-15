@@ -6,7 +6,7 @@
 // form, a sheet or an agent) reads as its text.
 import { runsFromPlainText, type TextRun } from '@liveplanner/project';
 import {
-  ITEM_UNKNOWN_STRING_MAX,
+  ITEM_LONG_TEXT_MAX,
   richFieldOf,
   richRunsOf,
   runsAreMarked,
@@ -57,7 +57,7 @@ export function ParagraphField({
       addPrompt={`Add ${name}…`}
       emptyText="None"
       placeholder={`Write ${name}…`}
-      maxLength={ITEM_UNKNOWN_STRING_MAX}
+      maxLength={ITEM_LONG_TEXT_MAX}
       onSave={(_plain, runs) => {
         const patch = paragraphPatch(item, field.id, runs);
         if (patch) onPatch(patch);
