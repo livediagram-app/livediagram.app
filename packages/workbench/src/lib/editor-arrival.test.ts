@@ -321,6 +321,132 @@ describe('openOwnAddress', () => {
   });
 });
 
+// The last seen copy (livediagram's docs/specs/006-document/offline-mode.md "Warm open of a cloud document"): kept with
+// the role each way in gives, forgotten when the reader lost the item, and never awaited by the load.
+describe('the last seen copy', () => {
+  const doors = () => ({
+    remember: vi.fn(async () => {}),
+    forget: vi.fn(async () => {}),
+  });
+  const firstTab = { id: 't1', rev: 3, tab: { id: 't1' } };
+  const own = { id: 'i1', early: false, accountUserId: 'me' };
+
+  it('keeps the last seen copy of an Editor on its own address, with the first tab painted', async () => {
+    const lastSeen = doors();
+    const h = harness({ loadOwn: vi.fn(async () => ({ id: 'i1', ownerId: 'me' })), lastSeen });
+    h.run.seed.mockResolvedValueOnce(firstTab as never);
+    expect(await openOwnAddress(h.product, h.run, own)).toBe(true);
+    expect(lastSeen.remember).toHaveBeenCalledWith({
+      reader: 'me',
+      itemId: 'i1',
+      item: { id: 'i1', ownerId: 'me' },
+      firstTab,
+      via: null,
+      access: { role: 'edit', isOwner: true, sessionShareCode: null, tabScope: null },
+    });
+    // A team member without the grant keeps Editor access, without the owner's chrome.
+    const member = doors();
+    const m = harness({
+      loadOwn: vi.fn(async () => ({ id: 'i1', ownerId: 'them' })),
+      grant: vi.fn(async () => null),
+      lastSeen: member,
+    });
+    await openOwnAddress(m.product, m.run, own);
+    expect(member.remember).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstTab: null,
+        access: { role: 'edit', isOwner: false, sessionShareCode: null, tabScope: null },
+      }),
+    );
+  });
+
+  it('keeps the last seen copy of an Editor, a Participant and a Viewer link with their role', async () => {
+    for (const role of ['edit', 'participate', 'view'] as const) {
+      const lastSeen = doors();
+      const h = harness({
+        loadShared: vi.fn(async () => resolved({ role: role as Role, tabId: 't1' })),
+        lastSeen,
+      });
+      expect(await openShareLink(h.product, h.run, { ...link, id: 'i1' })).toBe(true);
+      expect(lastSeen.remember).toHaveBeenCalledWith({
+        reader: 'me',
+        itemId: 'i1',
+        item: { id: 'i1', ownerId: 'them' },
+        firstTab: null,
+        via: 'code',
+        access: { role, isOwner: false, sessionShareCode: 'code', tabScope: 't1' },
+      });
+    }
+  });
+
+  it('keeps none for a Community post, an embed or an item in This Browser', async () => {
+    const lastSeen = doors();
+    const post = harness({
+      loadShared: vi.fn(async () => resolved({ community: { postId: 'p1' } })),
+      lastSeen,
+    });
+    await openShareLink(post.product, post.run, link);
+    const embed = harness({ loadShared: vi.fn(async () => resolved()), lastSeen });
+    await openShareLink(embed.product, embed.run, { ...link, embed: true });
+    const local = harness({
+      loadOwn: vi.fn(async () => ({ id: 'i1', ownerId: 'offline' })),
+      lastSeen,
+    });
+    await openOwnAddress(local.product, local.run, own);
+    expect(lastSeen.remember).not.toHaveBeenCalled();
+  });
+
+  it('forgets the last seen copy when the reader lost the item the address names', async () => {
+    const lastSeen = doors();
+    const named = { ...link, id: 'i1' };
+    // A revoked link, a link to an item in the Trash, a password now asked.
+    const revoked = harness({ lastSeen });
+    await openShareLink(revoked.product, revoked.run, named);
+    const binned = harness({ loadShared: vi.fn(async () => Promise.reject(trashed)), lastSeen });
+    await openShareLink(binned.product, binned.run, named);
+    const gated = harness({
+      loadShared: vi.fn(async () => ({ passwordRequired: true as const, invalid: false })),
+      lastSeen,
+    });
+    await openShareLink(gated.product, gated.run, named);
+    // Its own address: no longer theirs, or in the Trash.
+    getItem.mockResolvedValueOnce({ item: { trashedAt: null } });
+    const gone = harness({ lastSeen });
+    await openOwnAddress(gone.product, gone.run, own);
+    const deleted = harness({ loadOwn: vi.fn(async () => Promise.reject(trashed)), lastSeen });
+    await openOwnAddress(deleted.product, deleted.run, own);
+    expect(lastSeen.forget.mock.calls).toEqual(Array(5).fill(['me', 'i1']));
+    expect(lastSeen.remember).not.toHaveBeenCalled();
+  });
+
+  it('keeps the copy when the server cannot be reached, and forgets nothing a link does not name', async () => {
+    const lastSeen = doors();
+    const down = () => vi.fn(async () => Promise.reject(new Error('down')));
+    const shared = harness({ loadShared: down(), lastSeen });
+    await openShareLink(shared.product, shared.run, { ...link, id: 'i1' });
+    const owned = harness({ loadOwn: down(), lastSeen });
+    await openOwnAddress(owned.product, owned.run, own);
+    const unnamed = harness({ lastSeen });
+    await openShareLink(unnamed.product, unnamed.run, link);
+    expect(lastSeen.forget).not.toHaveBeenCalled();
+  });
+
+  it('never holds or fails the load on the store', async () => {
+    const lastSeen = {
+      remember: vi.fn(() => Promise.reject(new Error('quota'))),
+      forget: vi.fn(() => Promise.reject(new Error('quota'))),
+    };
+    const kept = harness({ loadOwn: vi.fn(async () => ({ id: 'i1', ownerId: 'me' })), lastSeen });
+    expect(await openOwnAddress(kept.product, kept.run, own)).toBe(true);
+    const lost = harness({ lastSeen });
+    expect(await openShareLink(lost.product, lost.run, { ...link, id: 'i1' })).toBe(false);
+    // A product that keeps no copies (liveplanner) arrives as before.
+    const none = harness({ loadOwn: vi.fn(async () => ({ id: 'i1', ownerId: 'me' })) });
+    expect(await openOwnAddress(none.product, none.run, own)).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve));
+  });
+});
+
 describe('isTrashedInIndex', () => {
   it('is false when the index cannot say', async () => {
     getItem.mockRejectedValueOnce(new Error('down'));

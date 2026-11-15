@@ -80,4 +80,15 @@ describe('seedFetchedDocument and changesets', () => {
     await seed(true, noteChangesetSeen)('me', fetched, null, null);
     expect(noteChangesetSeen).toHaveBeenCalledWith('t1', 6);
   });
+
+  // The last seen copy keeps the tab it painted (offline-mode.md "Warm open of a cloud document").
+  it('answers the first tab it painted, and nothing when the fetch failed', async () => {
+    expect(await seed(true)('me', fetched, null, null)).toEqual({
+      id: 't1',
+      rev: 6,
+      tab: { id: 't1', name: 'Tab 1', elements: [] },
+    });
+    apiLoadTab.mockRejectedValueOnce(new Error('down'));
+    expect(await seed(true)('me', fetched, null, null)).toBeNull();
+  });
 });

@@ -16,6 +16,7 @@ import {
 } from '@/lib/api-client';
 import { isEditorPath } from '@/lib/editor-path';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { lastSeenCopies } from '@/lib/last-seen';
 import type { Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { setLoadStep } from '@/lib/load-progress';
@@ -89,6 +90,8 @@ export const DOCUMENT_ARRIVAL: ArrivalProduct<
   communitySession: (post, ownDocumentId) => ({ ...post, ownDocumentId }),
   grant: documentGrant,
   offlineOwnerId: OFFLINE_OWNER_ID,
+  // The last seen copy a later open warm-opens from (offline-mode.md "Warm open of a cloud document").
+  lastSeen: lastSeenCopies,
   // Only on the editor's own route: an embed's frame (/embed?s=) keeps its own address, since only /embed may be framed.
   sharedAddress: (id) =>
     isEditorPath(window.location.pathname) ? `/document/${encodeURIComponent(id)}` : null,

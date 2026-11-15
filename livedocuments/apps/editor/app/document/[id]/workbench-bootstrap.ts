@@ -36,7 +36,7 @@ type WorkbenchBootstrapDeps = {
     fetched: LiveDoc,
     shareCode: string | null,
     firstTab: string | null,
-  ) => Promise<void>;
+  ) => Promise<unknown>;
   lastPersistedSelfRef: MutableRefObject<{ name: string; color: string } | null>;
   set: {
     setSelfParticipant: SetState<Participant>;

@@ -417,6 +417,8 @@
     "./lib/api/oauth": "./src/lib/api/oauth.ts",
     "./lib/api/tab-calls": "./src/lib/api/tab-calls.ts",
     "./lib/api/tab-delta-save": "./src/lib/api/tab-delta-save.ts",
+    "./lib/api/last-seen-copies": "./src/lib/api/last-seen-copies.ts",
+    "./lib/api/last-seen-store": "./src/lib/api/last-seen-store.ts",
     "./lib/api/tab-draft-store": "./src/lib/api/tab-draft-store.ts",
     "./lib/api/tab-drafts": "./src/lib/api/tab-drafts.ts",
     "./lib/api/tab-saved": "./src/lib/api/tab-saved.ts",

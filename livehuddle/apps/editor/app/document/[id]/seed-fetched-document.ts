@@ -1,4 +1,5 @@
 import { setCommunityState } from '@/lib/community-state-store';
+import type { LastSeenFirstTab } from '@liveworkspace/workbench/lib/api/last-seen-copies';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@livehuddle/document';
 import type { LiveDoc } from '@livehuddle/api-schema';
@@ -76,6 +77,7 @@ export function makeSeedFetchedDocument(deps: {
     const placeholderTabs: Tab[] = placeholdersFromSummaries(fetched.tabs);
     const firstId = firstTabToLoad(fetched.tabs, tabScope);
     const firstIndex = placeholderTabs.findIndex((t) => t.id === firstId);
+    let painted: LastSeenFirstTab<Tab> | null = null;
     if (firstId && firstIndex >= 0) {
       const loaded = await apiLoadTabRevisioned(selfId, fetched.id, firstId, tabShareCode, {
         open: recordOpen,
@@ -91,6 +93,7 @@ export function makeSeedFetchedDocument(deps: {
       // effect after bootstrap — loaded fine.
       if (first) {
         placeholderTabs[firstIndex] = first;
+        painted = { id: firstId, rev: loaded!.rev, tab: first };
         noteChangesetSeen(firstId, loaded!.rev);
         loadedTabIdsRef.current.add(firstId);
         setLoadedTabIds((prev) => new Set(prev).add(firstId));
@@ -132,5 +135,7 @@ export function makeSeedFetchedDocument(deps: {
     // Telemetry (docs/specs/017-telemetry/telemetry.md): an existing document was opened — every open,
     // owner URL or share URL, the counterpart to Document/Created.
     track('Document', 'Loaded');
+    // The first tab as painted, for the last seen copy (offline-mode.md "Warm open of a cloud document").
+    return painted;
   };
 }
