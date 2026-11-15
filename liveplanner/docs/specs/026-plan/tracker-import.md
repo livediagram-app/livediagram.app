@@ -118,7 +118,7 @@ Each card keeps, where the source has them:
   ("QA: Test on Safari"). At most 50 items, each cut to 200 characters.
 - **Issue Type** is a Choice of the types the file names, when there are 20 or fewer; more, and it is a Text field.
 - A field the source leaves empty on every card adds nothing to the type.
-- **A card's fields fit the card's size** (16 KB): when they would not, the description is shortened first ("…"
+- **A card's fields fit the card's size** (64 KB): when they would not, the description is shortened first ("…"
   marks the cut), then checklist items go from the end; the preview counts the cards shortened.
 
 ### People

@@ -16,7 +16,10 @@ import {
   EMPTY_ITEM_STORE,
   ITEMS_MAX,
   ITEM_TITLE_MAX,
+  PLAN_FIELDS_BYTES,
   applyItemWrite,
+  fieldLimitWords,
+  fieldNamer,
   asUndoWrite,
   inverseItemWrites,
   itemPersonId,
@@ -28,10 +31,12 @@ import {
   type Item,
   type ItemPerson,
   type ItemStoreState,
+  type ItemTypeDef,
   type PullRequestStatus,
   type ItemWrite,
 } from '@liveplanner/items';
 import { fetchItems, writeItem, type ItemWriteAnswer, type ItemsScope } from '@/lib/api/items';
+import { refusedFieldOf } from '@/lib/api/refused-field';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { getOnline } from '@liveworkspace/workbench/lib/online-status';
 import {
@@ -143,11 +148,24 @@ export function refusalMessage(code: string): string {
   }
 }
 
-// What a failed or refused write says (a full plan, a named refusal, or the generic line).
-export function writeFailureMessage(err: unknown): string {
+// A write past the plan fields budget (docs/specs/026-plan/items.md "Limits").
+export const PLAN_FULL_MESSAGE =
+  `This plan's cards are full: they hold ${PLAN_FIELDS_BYTES / 1024 / 1024} MB together, the most a plan can. ` +
+  'Shorten long descriptions, empty or delete cards, or start another plan';
+
+// What a failed or refused write says (a full plan, a named refusal, or the generic line). A value refused past a
+// limit names its field as the card shows it (`nameOf`) and the limit it broke (items.md "Limits").
+export function writeFailureMessage(
+  err: unknown,
+  nameOf: (field: string) => string = (field) => field,
+): string {
   const code = (err as { code?: string } | null)?.code;
   if (code === 'items_full')
     return `This plan already holds ${ITEMS_MAX.toLocaleString('en-GB')} cards, the most it can`;
+  if (code === 'plan_full') return PLAN_FULL_MESSAGE;
+  const { field, limit } = refusedFieldOf(err);
+  if (code === 'field_value_invalid' && field && limit)
+    return fieldLimitWords(nameOf(field), limit);
   return code ? refusalMessage(code) : "Couldn't save that change";
 }
 
@@ -195,6 +213,8 @@ export function usePlanItems(opts: {
   // Each read's pull request states (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards"):
   // undefined for a plan with no GitHub connection.
   onRead?: (pullRequests: readonly PullRequestStatus[] | undefined) => void;
+  // The plan's card types as the editor holds them, read when a refusal names a field (items.md "Limits").
+  typesOf?: () => readonly ItemTypeDef[];
 }): PlanItems {
   const { projectId, ready, ownerId, name, color, shareCode, tabScope } = opts;
   // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
@@ -204,6 +224,7 @@ export function usePlanItems(opts: {
     threadsOf: opts.threadsOf,
     onOwnWrite: opts.onOwnWrite,
     onRead: opts.onRead,
+    typesOf: opts.typesOf,
   });
   const [store, setStore] = useState<ItemStoreState>(EMPTY_ITEM_STORE);
   const [status, setStatus] = useState<PlanItemsStatus>('loading');
@@ -372,6 +393,23 @@ export function usePlanItems(opts: {
 
   // The waiting changes' replay (docs/specs/007-editor/offline-changes.md "Sending them"): a refusal is told and
   // taken back, as one made online is.
+  // A refused write's toast, naming a refused field as the write's card shows it (its first card's type).
+  const failureMessage = useCallback(
+    (err: unknown, write: ItemWrite): string => {
+      const types = callbacks.current.typesOf?.() ?? [];
+      const first = itemIdsOfWrite(write)[0];
+      const typeId =
+        write.kind === 'create'
+          ? write.creates[0]?.type
+          : storeRef.current.items.find((i) => i.id === first)?.type;
+      return writeFailureMessage(
+        err,
+        fieldNamer(types, () => types.find((t) => t.id === typeId)),
+      );
+    },
+    [callbacks],
+  );
+
   const itemQueue = useItemQueue({
     queueOf,
     // A queue exists only once the scope does (queueOf).
@@ -380,7 +418,7 @@ export function usePlanItems(opts: {
     refused: (w, err) => {
       console.warn('[offline-queue] items.replay-refused', { kind: w.kind, error: String(err) });
       itemIdsOfWrite(w).forEach((id) => unconfirmedRef.current.add(id));
-      callbacks.current.onError(writeFailureMessage(err));
+      callbacks.current.onError(failureMessage(err, w));
     },
     // The cards Keep Cards brought back were laid over as removed: the reload takes the server's copy of them.
     kept: (cards) => cards.forEach((id) => unconfirmedRef.current.add(id)),
@@ -460,12 +498,12 @@ export function usePlanItems(opts: {
         itemIdsOfWrite(write)
           .filter((id) => !kept.has(id))
           .forEach((id) => unconfirmedRef.current.add(id));
-        if (!silent) callbacks.current.onError(writeFailureMessage(err));
+        if (!silent) callbacks.current.onError(failureMessage(err, write));
         void load();
         return { ok: false, made: landed?.upserts ?? [] };
       }
     },
-    [load, settle, callbacks, scopeRef, selfRef, queueOf, levelRef, itemQueue],
+    [load, settle, callbacks, scopeRef, selfRef, queueOf, levelRef, itemQueue, failureMessage],
   );
 
   const practise = useCallback(

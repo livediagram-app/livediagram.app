@@ -27,6 +27,7 @@ import {
   isItemEditor,
   blockersRefused,
   editorOnly,
+  rejectedRead,
   writer,
   mappedWrite,
 } from './item-route-kit';
@@ -48,7 +49,7 @@ function readPatches(raw: unknown): ItemPatchOf[] | Response {
       return badRequest('each item needs its id');
     const { id, ...body } = entry as Record<string, unknown> & { id: string };
     const patch = readItemPatch(body);
-    if (typeof patch === 'string') return rejectedFor(id, patch);
+    if (typeof patch === 'string') return rejectedRead(patch, body.set, 'patch', id);
     out.push({ id, patch });
   }
   return out;

@@ -33,8 +33,8 @@ import {
   ITEM_LABELS_MAX,
   ITEM_NUMBER_MAX,
   ITEM_TITLE_MAX,
-  ITEM_UNKNOWN_STRING_MAX,
 } from './limits';
+import { textMaxOfKind } from './field-limits';
 import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogue';
 import { missingRequiredFields } from './required-fields';
 import { parsePercent } from './percent-fields';
@@ -333,8 +333,9 @@ function customValue(
       return parseDateTime(text, { local: true });
     case 'daterange':
       return parseDateRange(text, isTimedRange(f), { local: true, readDay: cardDateOf });
+    // A Long Text keeps what the Description keeps; any other text the store's short string.
     default:
-      return text.slice(0, ITEM_UNKNOWN_STRING_MAX);
+      return text.slice(0, textMaxOfKind(f.kind));
   }
 }
 

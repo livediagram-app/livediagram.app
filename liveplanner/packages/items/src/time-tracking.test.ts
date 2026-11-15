@@ -425,7 +425,7 @@ describe('write checks', () => {
   });
 
   it('refuses a time write whose card grew past its fields’ size', () => {
-    const big = item({ title: 'x'.repeat(17_000) }, { type: 'work', id: 'card0001' });
+    const big = item({ title: 'x'.repeat(66_000) }, { type: 'work', id: 'card0001' });
     const write: ItemWrite = {
       kind: 'time',
       id: big.id,

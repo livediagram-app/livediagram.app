@@ -4,7 +4,7 @@
 import {
   CARD_TEMPLATES_BYTES,
   CARD_TEMPLATES_MAX,
-  ITEM_FIELDS_BYTES,
+  CARD_TEMPLATE_BYTES,
   cardTemplatesBytes,
   fieldsByteSize,
   newCardTemplateId,
@@ -160,7 +160,7 @@ export function templatesProblem(
   if (blank) return { message: 'Give every template a name.', templateId: blank.id };
   const clash = templates.find((_, i) => names.indexOf(names[i]!) !== i);
   if (clash) return { message: 'Two templates have the same name.', templateId: clash.id };
-  const big = templates.find((t) => fieldsByteSize(t.fields) > ITEM_FIELDS_BYTES);
+  const big = templates.find((t) => fieldsByteSize(t.fields) > CARD_TEMPLATE_BYTES);
   if (big)
     return { message: `${big.name.trim()} holds more than 16 KB: shorten it.`, templateId: big.id };
   if (otherBytes + cardTemplatesBytes([{ templates: [...templates] }]) > CARD_TEMPLATES_BYTES)

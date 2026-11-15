@@ -524,7 +524,11 @@ unknown name with the ones there are.
   leaves out unless asked"). A project with no board answers a hint saying how to get one.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
 status, fields, template }` (`template` starts the card from one of its type's [card templates](../026-plan/plan-agents.md#card-templates)), `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
-  `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once. Its
+  `{ item }`. A refusal answers what was applied before it. A value past a limit is refused naming the field by
+  its label, its length or count and the most it takes ("Solution is 12,412 characters; the most is 10,000"; [Plan for
+  agents](../026-plan/plan-agents.md) "Errors that teach"), and the tool's description states the limits: a title 500
+  characters, the description and a Long Text field 10,000, a Text field 2,000, a checklist 50 rows of up to 200
+  characters. Each change reaches open boards at once. Its
   description and `clear` argument say how a `set` empties a field (`"clear": ["Blocked By"]`), and that a field
   holding several also clears with `[]` or `null` in `fields`
   ([Clearing a field](../026-plan/plan-agents.md)). Its description and `fields` argument say that `flagged: true`

@@ -70,9 +70,13 @@ describe('a Long Text field’s formatting', () => {
       ok: true,
       fields: { 'f-stepsRich': runs },
     });
-    expect(validateFields({ 'f-stepsRich': [{ text: 'a'.repeat(2001) }] }, 'patch')).toMatchObject({
+    // A Long Text holds what the Description holds (item-types.md "Custom field kinds", Work Tracker 944).
+    expect(validateFields({ 'f-stepsRich': [{ text: 'a'.repeat(9000) }] }, 'patch').ok).toBe(true);
+    expect(validateFields({ 'f-stepsRich': [{ text: 'a'.repeat(10_001) }] }, 'patch')).toEqual({
       ok: false,
+      error: 'field_value_invalid',
       field: 'f-stepsRich',
+      limit: { unit: 'characters', max: 10_000, given: 10_001 },
     });
     expect(validateFields({ descriptionRich: [{ text: 'a'.repeat(2001) }] }, 'patch').ok).toBe(
       true,

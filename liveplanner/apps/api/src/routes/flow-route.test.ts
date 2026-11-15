@@ -271,7 +271,8 @@ describe('who may read it', () => {
   });
 });
 
-describe('a full plan (ITEMS_MAX cards) with 180 days of history', () => {
+// The budget is CPU time, not wall time: a loaded CI runner stretches only the wall clock past vitest's 5 s default.
+describe('a full plan (ITEMS_MAX cards) with 180 days of history', { timeout: 30_000 }, () => {
   it('answers the longest range within budget', async () => {
     const statuses = ['todo', 'doing', 'review', 'done'];
     const now = Date.now();

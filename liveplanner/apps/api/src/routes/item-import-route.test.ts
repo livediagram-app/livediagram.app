@@ -357,7 +357,8 @@ describe('who may import', () => {
   });
 });
 
-describe('an import at the caps', () => {
+// The budget is CPU time, not wall time: a loaded CI runner stretches only the wall clock past vitest's 5 s default.
+describe('an import at the caps', { timeout: 30_000 }, () => {
   // A full plan (ITEMS_MAX, 5,000 cards) of ten comments each: measured about 1.2 s of CPU on an M-series Mac.
   it('lands a full plan of cards and ten comments each in one batch, under a CPU budget', async () => {
     const creates = cards(ITEMS_MAX, { withComments: 1, comments: 10, text: 200 });

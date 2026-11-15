@@ -4,9 +4,10 @@
 
 import type { ItemResponse, ItemsImportStaged, ItemsResponse } from '@liveplanner/api-schema';
 import {
-  ITEM_BULK_MAX,
   createBatches,
   importParts,
+  readFieldLimit,
+  type FieldLimit,
   type Item,
   type ItemCreate,
   type ItemPerson,
@@ -15,6 +16,7 @@ import {
   type ItemWrite,
 } from '@liveplanner/items';
 import { isOfflineId } from '../offline/offline-store';
+import { refusedFieldOf, type RefusedField } from './refused-field';
 import { offlineFetchItems, offlineWriteItem } from '../offline/offline-items';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -36,11 +38,32 @@ export type ItemWriteAnswer = { upserts: Item[]; removed: string[]; rev: number 
 export class ItemWritePartlyLanded extends Error {
   readonly code: string | null;
   readonly landed: ItemWriteAnswer;
+  readonly field?: string;
+  readonly limit?: FieldLimit;
   constructor(landed: ItemWriteAnswer, failure: unknown) {
     super(failure instanceof Error ? failure.message : String(failure));
     this.name = 'ItemWritePartlyLanded';
     this.code = (failure as { code?: string } | null)?.code ?? null;
     this.landed = landed;
+    Object.assign(this, refusedFieldOf(failure));
+  }
+}
+
+// expectOk, with a refusal's field and limit from its body on the error it throws.
+async function expectItemsOk<T>(res: Response, action: string): Promise<T> {
+  if (res.ok) return expectOk<T>(res, action);
+  let named: RefusedField = {};
+  try {
+    const body = (await res.clone().json()) as { field?: unknown; limit?: unknown };
+    const limit = readFieldLimit(body.limit);
+    named = refusedFieldOf({ field: body.field, ...(limit ? { limit } : {}) });
+  } catch {
+    // Not JSON: the code alone, as before.
+  }
+  try {
+    return await expectOk<T>(res, action);
+  } catch (err) {
+    throw Object.assign(err as Error, named);
   }
 }
 
@@ -116,7 +139,7 @@ async function post<T>(
       await new Promise((r) => setTimeout(r, ITEM_BUSY_PAUSE_MS * attempt * (0.5 + Math.random())));
       continue;
     }
-    return expectOk<T>(res, action);
+    return expectItemsOk<T>(res, action);
   }
 }
 
@@ -132,8 +155,9 @@ async function landedOf(res: Response): Promise<ItemsResponse | null> {
   }
 }
 
-// Sends a change of many items, a request per ITEM_BULK_MAX of them. A failure after any of them landed (an earlier
-// request, or the failed one's partial answer) throws ItemWritePartlyLanded with what landed.
+// Sends a change of many items, a request per ITEM_BULK_MAX of them, each under the api's request cap (a card's fields
+// may hold 64 KB, so 200 full ones would pass it: createBatches cuts by size too). A failure after any of them landed
+// (an earlier request, or the failed one's partial answer) throws ItemWritePartlyLanded with what landed.
 async function postInChunks(
   scope: ItemsScope,
   path: '/patches' | '/moves' | '/tally',
@@ -145,8 +169,7 @@ async function postInChunks(
   confirm = false,
 ): Promise<ItemWriteAnswer> {
   const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
-  for (let i = 0; i < entries.length; i += ITEM_BULK_MAX) {
-    const items = entries.slice(i, i + ITEM_BULK_MAX);
+  for (const items of createBatches(entries)) {
     const res = await apiFetch(itemsUrl(scope, path, confirm), {
       method: 'POST',
       headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
@@ -154,7 +177,7 @@ async function postInChunks(
     });
     const partial = res.ok ? null : await landedOf(res);
     try {
-      const r = await expectOk<ItemsResponse>(res, action);
+      const r = await expectItemsOk<ItemsResponse>(res, action);
       answer.upserts.push(...r.items);
       answer.rev = r.rev;
     } catch (err) {

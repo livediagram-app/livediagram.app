@@ -16,6 +16,7 @@ import {
   type ItemRejection,
 } from './fields';
 import { ITEM_STATUS_MAX } from './limits';
+import type { FieldLimit } from './field-limits';
 import { isObj } from './validate';
 import type { ItemTypeDef } from './item-types';
 import { calculatedFieldsOf } from './calculated-fields';
@@ -42,6 +43,23 @@ export function readItemPlace(raw: unknown): ItemPlace | ItemRejection {
     place[side] = v;
   }
   return place;
+}
+
+// The field a refused read is about and the limit its value broke (docs/specs/026-plan/items.md "Limits"), for the
+// api's answer: `fields` is the body's (a create's `fields`, a patch's or move's `set`), checked again only once a read
+// is refused, so a valid write pays nothing. Empty when the refusal was not a field value's.
+export function fieldRefusalOf(
+  error: ItemRejection,
+  fields: unknown,
+  mode: 'create' | 'patch',
+): { field?: string; limit?: FieldLimit } {
+  if (fields === undefined) return {};
+  const checked = validateFields(fields, mode);
+  if (checked.ok || checked.error !== error) return {};
+  return {
+    ...(checked.field ? { field: checked.field } : {}),
+    ...(checked.limit ? { limit: checked.limit } : {}),
+  };
 }
 
 // A create as the api reads it, but for its comment thread, which the api checks itself (it keeps author ids on

@@ -101,7 +101,7 @@ A move takes a `status` and `after` or `before` (`after` wins; neither puts the 
 
 A **Calculated** field (Child Count, Children Done (%)) holds no value of its own: `GET /projects/$DOC/items?include=calculated` adds `calculated`, each card's values by card id then field id (a count, a whole percentage, or `null` with no children). Giving one a value is refused.
 
-Refusals are `400` with a code such as `title_required`, `field_value_invalid`, `type_invalid`, `place_invalid`, `status_excluded` (the card's type leaves that status out), `field_calculated` (a value given to a Calculated field) or `field_required` (a new card leaves a required custom field empty, or a change empties one; `field` names it), `404 item_not_found`, `409 item_busy` (try again) or `413 items_full`.
+Refusals are `400` with a code such as `title_required`, `title_too_long`, `field_value_invalid` (a value that is the wrong kind or too long: `field` names the field, and for a value past a limit `limit` says which, such as `{ "unit": "characters", "max": 10000, "given": 12412 }`, with `row` for one checklist row), `type_invalid`, `place_invalid`, `status_excluded` (the card's type leaves that status out), `field_calculated` (a value given to a Calculated field) or `field_required` (a new card leaves a required custom field empty, or a change empties one; `field` names it), `404 item_not_found`, `409 item_busy` (try again), `413 items_full` (the plan holds 5,000 cards) or `413 plan_full` (the plan's cards would hold more than 16 MB of fields together; a change that makes the plan smaller, and a move between columns, always lands).
 
 ### Card Types
 

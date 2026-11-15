@@ -3,7 +3,7 @@
 // editor's marks, beside the field's own value, its plain-text mirror. The run shape matches @liveplanner/project's
 // TextRun, checked here because the item store sits below that package.
 import type { ItemFields, ItemFieldValue } from './item';
-import { ITEM_DESCRIPTION_MAX, ITEM_UNKNOWN_STRING_MAX } from './limits';
+import { ITEM_DESCRIPTION_MAX, ITEM_LONG_TEXT_MAX } from './limits';
 import { HEX_COLOUR } from './validate';
 
 export const DESCRIPTION_RICH_FIELD = 'descriptionRich';
@@ -21,9 +21,9 @@ export function isRichFieldKey(key: string): boolean {
   return key === DESCRIPTION_RICH_FIELD || CUSTOM_RICH_FIELD.test(key);
 }
 
-// The most text a formatting key's runs hold: its field's own limit.
+// The most text a formatting key's runs hold: its field's own limit (a Long Text holds what the Description does).
 export function richTextMaxOf(key: string): number {
-  return key === DESCRIPTION_RICH_FIELD ? ITEM_DESCRIPTION_MAX : ITEM_UNKNOWN_STRING_MAX;
+  return key === DESCRIPTION_RICH_FIELD ? ITEM_DESCRIPTION_MAX : ITEM_LONG_TEXT_MAX;
 }
 
 // A Long Text field's formatting as it reads: its runs while their text still spells the field's value, else none
