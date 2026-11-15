@@ -147,16 +147,17 @@ Client state: `usePresenceState` gains `liveAgents: AgentPresence[]`, replaced o
 All `guest-or-clerk`; tab-scoped grants reach their own tab only; a trashed document answers 410 through
 `missingDocument`.
 
-| Method | Path                                                         | Gate                               | Success                                    |
-| ------ | ------------------------------------------------------------ | ---------------------------------- | ------------------------------------------ |
-| PUT    | `/api/documents/:id/tabs/:tabId/presence`                    | token; `gateParticipate`           | 200 `{ presence: AgentPresenceResult }`    |
-| DELETE | `/api/documents/:id/tabs/:tabId/presence`                    | token; `gateParticipate`           | 204                                        |
-| POST   | `/api/documents/:id/tabs/:tabId/comments`                    | `gateParticipate`                  | 201 `{ comment }`                          |
-| DELETE | `/api/documents/:id/tabs/:tabId/comments/:commentId`         | `gateParticipate`; author only     | 204                                        |
-| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reply`   | `gateParticipate`                  | 201 `{ comment }`                          |
-| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/resolve` | `gateParticipate`                  | 204                                        |
-| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reopen`  | `gateParticipate`                  | 204                                        |
-| GET    | `/api/documents/:id/comments?status=open\|resolved\|all`     | `gateGrant` (any level, any token) | 200 `{ threads: DocumentCommentThread[] }` |
+| Method | Path                                                         | Gate                                                       | Success                                    |
+| ------ | ------------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------------ |
+| PUT    | `/api/documents/:id/tabs/:tabId/presence`                    | token; `gateParticipate`                                   | 200 `{ presence: AgentPresenceResult }`    |
+| DELETE | `/api/documents/:id/tabs/:tabId/presence`                    | token; `gateParticipate`                                   | 204                                        |
+| POST   | `/api/documents/:id/tabs/:tabId/comments`                    | `gateParticipate`                                          | 201 `{ comment }`                          |
+| DELETE | `/api/documents/:id/tabs/:tabId/comments/:commentId`         | `gateParticipate`; author only; a token only its `ai` ones | 204                                        |
+| PUT    | `/api/documents/:id/tabs/:tabId/comments/:commentId`         | `gateParticipate`; author only; a token only its `ai` ones | 200 `{ comment }`, a `comment-edit` delta  |
+| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reply`   | `gateParticipate`                                          | 201 `{ comment }`                          |
+| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/resolve` | `gateParticipate`                                          | 204                                        |
+| POST   | `/api/documents/:id/tabs/:tabId/comments/:commentId/reopen`  | `gateParticipate`                                          | 204                                        |
+| GET    | `/api/documents/:id/comments?status=open\|resolved\|all`     | `gateGrant` (any level, any token)                         | 200 `{ threads: DocumentCommentThread[] }` |
 
 The six writes above are gated by `gateParticipate` and belong to the participation-class routes, beside the session
 tools share-roles owns (live polls, the Q&A board, dots, answers, the idea box). The choke point lets a token that
