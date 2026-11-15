@@ -4,11 +4,11 @@ import {
   createShape,
   layOutPages,
   newWireframePage,
+  themedForTab,
   type Element,
   type Tab,
 } from '@livedesign/design';
 import { buildPageLayout } from '@livedesign/templates';
-import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 import { createStockColourProjector, plainPaper } from './stock-colour-projector';
 import { getTheme, themeChartPalette, themeViewMap } from './themes';
 import { pageThumbFor } from './page-thumb';
@@ -170,68 +170,53 @@ describe('pageThumbFor', () => {
     });
   });
 
-  // docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen" (Work Tracker 897): a plain page's
-  // picture in dark chrome lifts what the slate paper sinks as the canvas does, so a sign-in screen's primary button is
-  // the canvas's mid slate, not slate on slate, and Contents never shows ink the canvas no longer shows.
+  // docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen" (Work Tracker 897): Contents is
+  // handed the canvas's own elements (EditorCanvasHost's projection, through useContentsChrome), already in the theme's
+  // dark half and inked off the slate paper, and draws them as they are: never a second walk of its own, which drifted a
+  // themed tab's fills (an Ocean card's #254752 drawn #4b6e7a).
   describe('on the dark paper', () => {
     const page = newWireframePage('s');
     const [laid] = layOutPages([page]);
-    const signIn = () => buildPageLayout('wf-sign-in', laid!);
-    const screenTab = (elements: Element[]) =>
-      ({ id: 't', name: 'T', elements, pages: [page] }) as unknown as Tab;
+    const screenTab = (elements: readonly Element[], theme?: string) =>
+      ({ id: 't', name: 'T', elements: [...elements], pages: [page], theme }) as unknown as Tab;
     const fills = (els: readonly Element[]) =>
       els.map((el) => (el as { fillColor?: string }).fillColor);
+    const canvasOf = (placed: Element[], theme?: string) =>
+      createStockColourProjector()(placed, 'dark', themeViewMap(theme, 'dark'), plainPaper('dark'));
 
-    it('inks a button as the canvas does', () => {
-      const placed = signIn();
-      const canvas = createStockColourProjector()(
-        placed,
-        'dark',
-        themeViewMap(undefined, 'dark'),
-        plainPaper('dark'),
-      );
+    // Each a screen whose fills a second walk drifted in that theme (Mono's #2b2e32 drawn #66696e).
+    const cases = [
+      ['wf-sign-in', undefined],
+      ['wf-landing-page', 'mono'],
+      ['wf-dashboard', 'ocean'],
+    ] as const;
+    for (const [layout, theme] of cases)
+      it(`draws every fill the canvas draws, as the canvas draws it (${layout}, ${theme ?? 'default'} theme)`, () => {
+        const placed = themedForTab<Element>(buildPageLayout(layout, laid!), theme, {
+          dark: false,
+        });
+        const canvas = canvasOf(placed, theme);
+        const dark = pageThumbFor('s', screenTab(canvas, theme), {
+          iconsLoaded: true,
+          surface: 'dark',
+        })!;
+        // A chart draws its series, not its own fill.
+        const drawn = fills(
+          canvas.filter((el) => !(el as { shape?: string }).shape?.endsWith('chart')),
+        ).filter((f): f is string => typeof f === 'string' && f.startsWith('#'));
+        expect(drawn.length).toBeGreaterThan(0);
+        for (const fill of drawn) expect(dark.markup).toContain(`fill="${fill}"`);
+      });
+
+    it('shows the button the canvas lifted off the slate paper', () => {
+      const placed = buildPageLayout('wf-sign-in', laid!);
+      const canvas = canvasOf(placed);
       const lifted = fills(canvas).filter(
         (fill, i) => fill !== fills(placed)[i] && fills(placed)[i] === CANVAS_PAPER.dark,
       );
       expect(lifted.length).toBeGreaterThan(0);
-      const dark = pageThumbFor('s', screenTab(placed), { iconsLoaded: true, surface: 'dark' })!;
+      const dark = pageThumbFor('s', screenTab(canvas), { iconsLoaded: true, surface: 'dark' })!;
       for (const fill of lifted) expect(dark.markup).toContain(`fill="${fill}"`);
-      // Every box is drawn exactly as the canvas's own element would be drawn.
-      const fresh = pageThumbFor('s', screenTab(structuredClone(placed)), {
-        iconsLoaded: true,
-        surface: 'dark',
-      })!;
-      expect(fresh.markup).toBe(dark.markup);
-      // In light chrome the button keeps its stored ink.
-      const light = pageThumbFor('s', screenTab(placed), { iconsLoaded: true })!;
-      expect(light.markup).not.toContain(`fill="${lifted[0]}"`);
-    });
-
-    it('leaves a page with a fill of its own as that page draws it', () => {
-      const filled = { ...page, background: { fill: { kind: 'solid', color: '#ffffff' } } };
-      const placed = signIn();
-      const tabOf = { ...screenTab(placed), pages: [filled] } as unknown as Tab;
-      const dark = pageThumbFor('s', tabOf, { iconsLoaded: true, surface: 'dark' })!;
-      const light = pageThumbFor('s', tabOf, { iconsLoaded: true })!;
-      expect(dark.markup).toBe(light.markup);
-    });
-
-    it('carries over a box the walk left alone, and redraws a page of 40 screens within budget', () => {
-      const placed = signIn();
-      const first = pageThumbFor('s', screenTab(placed), { iconsLoaded: true, surface: 'dark' })!;
-      const again = pageThumbFor('s', screenTab([...placed]), {
-        iconsLoaded: true,
-        surface: 'dark',
-      })!;
-      first.parts.forEach((part, i) => expect(again.parts[i]!.markup).toBe(part.markup));
-      // A many-page design: 40 sign-in screens, each drawn cold on the dark paper.
-      const t = cpuNowMs();
-      for (let n = 0; n < 40; n++)
-        pageThumbFor('s', screenTab(structuredClone(placed)), {
-          iconsLoaded: true,
-          surface: 'dark',
-        });
-      expect(cpuNowMs() - t).toBeLessThan(cpuBudgetMs(1000));
     });
   });
 });

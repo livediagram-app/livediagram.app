@@ -53,17 +53,12 @@ marks, `withReadableLabelInks`, `withPaperLabelInks`, so a word on a walked fill
 projector and the layout picker's tiles (`layoutRenderSvg`, a plain page in dark chrome) both call it. The projector's
 re-ink cache keeps a prior object only when its `textColor`, `fillColor` and `strokeColor` all match.
 
-The Contents page pictures (`pageThumbFor` in `apps/live/lib/page-thumb.ts`) draw a plain page in dark chrome through a
-module-level `createStockColourProjector()`, given `themeViewMap(tab.theme, 'dark')` and `plainPaper('dark')`, so a
-picture's elements are the canvas's own projection (theme half, stock colours, then `inkedOnPaper`). The projector keeps
-each drawn object while its source is unchanged, so the picture's box cache (keyed by that object) still carries an
-unchanged box over. A filled page, and any page in light chrome, draws its elements as stored, as before.
-`usePageThumbnails` redraws every picture when `tab.theme` changes. The Map needs no walk of its own: it draws the
-canvas's projected elements (`Canvas` passes `canvasElements` through to `CanvasChrome`).
-
-Cost (Work Tracker 897, `vitest` in Node, CPU time, median of 7 runs): 40 cold sign-in screens (13 elements each) draw
-in 12.4 ms in light chrome and 15.5 ms on the dark paper, about 0.08 ms more a page. `usePageThumbnails` calls
-`pageThumbFor` only for a page whose elements or page changed, so the walk runs for the pages an edit touched.
+The Contents page pictures and the Map run no walk of their own. `EditorCanvasHost` hands the canvas its projected
+elements (`canvasElements`, through `inkedOnPaper`); `Canvas` spreads them into `CanvasChrome`, `useContentsChrome`
+builds the Contents tab from those `elements` unchanged, and `pageThumbFor` draws them as they are. The Map
+(`minimapBuild`) draws the same elements. A second projection in `pageThumbFor` was tried and dropped (Work Tracker 897):
+walking the already-projected elements again with the default theme map drifted a themed tab's fills (Mono's #2b2e32
+drawn #66696e, an Ocean card's #254752 drawn #4b6e7a).
 
 ## Interfaces and contracts
 
@@ -97,8 +92,9 @@ in 12.4 ms in light chrome and 15.5 ms on the dark paper, about 0.08 ms more a p
   logo explorations at 4.5:1 in the light and the dark editor, as the canvas draws them, and at 3:1 under every theme
   picked in either half and seen in either; each paper mark on the dark paper at 3:1 (or its made contrast, if less).
 - `apps/live/components/canvas/layout-render-thumb.test.tsx`: a dark tile draws the canvas's walked button fill.
-- `apps/live/lib/page-thumb.test.ts` "on the dark paper": a dark Contents picture draws the canvas's walked button
-  fill, a filled page draws as in light chrome, unchanged boxes carry over, 40 screens in budget.
+- `apps/live/lib/page-thumb.test.ts` "on the dark paper": a dark Contents picture of the canvas's projected elements
+  draws every fill the canvas draws (the default theme, Mono and Ocean screens) and the button the canvas lifted.
+- `apps/live/components/canvas/useContentsChrome.test.tsx`: Contents is handed the canvas's `elements` array as it is.
 - `apps/live/components/canvas/Minimap.build.test.ts`: the Map built from the canvas's dark projection draws the walked
   button fill.
 

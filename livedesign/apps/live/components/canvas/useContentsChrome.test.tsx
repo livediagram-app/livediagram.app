@@ -60,6 +60,19 @@ describe('useContentsChrome', () => {
     expect(c.closeDockPanel).toHaveBeenCalled();
   });
 
+  // docs/specs/011-theme/light-and-dark.md "Ink marks on the plain paper stay seen" (Work Tracker 897): Contents pictures
+  // the canvas's own elements (EditorCanvasHost's projection, already in the viewer's theme half and inked off the
+  // paper), the same array, so its pictures never draw ink the canvas does not.
+  it('hands Contents the canvas’s elements as they are, in the sidebar and the popover', () => {
+    const elements = [{ id: 'e1', type: 'shape', fillColor: '#254752' }];
+    const docked = chrome({ elements } as never);
+    const sidebar = docked.contentsSidebarEl as ReactElement<{ tab: { elements: unknown } }>;
+    expect(sidebar.props.tab.elements).toBe(elements);
+    const popover = chrome({ elements, activeDockPanel: 'contents' } as never, { isMobile: true })
+      .contentsPopoverEl as ReactElement<{ tab: { elements: unknown } }>;
+    expect(popover.props.tab.elements).toBe(elements);
+  });
+
   it('docks from the first page: a single page has its sidebar too', () => {
     const one = { ...pagesMode, pages: layOutPages([slide('p1')]) };
     const c = chrome({ pagesMode: one } as never);
