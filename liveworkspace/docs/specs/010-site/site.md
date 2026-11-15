@@ -947,7 +947,8 @@ pressable again, and so does coming Back to a page the browser kept.
   again) and **Go to the Home Page**, and under them a quieter line, "Still not working? **Check the Status
   Page**", linking [Status](#status-status) (`/status`, which an app's address sends here). A failure in the root
   layout itself gets the same card in a page of its own, with `lang`, the stylesheet and the appearance setting,
-  so it is light or dark as the rest of the site. The card's code loads only when a page fails, so it costs no
+  so it is light or dark as the rest of the site: it keeps the light or dark the failed page was showing, without
+  loading the Appearance setting's code into every page. The card's code loads only when a page fails, so it costs no
   page its first load; when that code can't load (offline), the same title, heading, line and actions show
   without the card's styling.
 - An address the site has no page for shows the same card, drawn on the server so it needs no script: the title

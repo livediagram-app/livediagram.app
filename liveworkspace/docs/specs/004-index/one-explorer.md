@@ -759,10 +759,23 @@ editor, resolves it).
   15 seconds pass) a view brings the item back whenever a render leaves it out (at most twelve times), and every row
   or card of it that is drawn is marked and scrolled to. Once settled the ring stays on whatever is drawn and nothing
   moves the page; an item never found leaves the place open as usual.
+- **Past ten more pages** (decided on Work Tracker 852, 2026-11-14): the reveal stops at ten pages past the first, and
+  an item further down opens its folder (or view) without the ring, as an item never found does. Nothing searches
+  further: a folder that deep is rare, each page is another `GET /items` the person waits behind, and the place is
+  the point of the door, the ring only a help within it.
 - **The address.** While the item is looked up (one `GET /items/:id`, none for a This Browser item) the page shows the
-  Explorer's skeleton, then replaces its address with the place's own (`?item=` dropped), so Back returns to the
-  item in its editor, and a reload stays in the place. An item the index can't answer (gone, or not theirs to reach)
-  opens Home as before.
+  Explorer's skeleton, never Home first. The moment the place is known the Explorer opens on it, and the address is
+  replaced with the place's own (`?item=` dropped) alongside, not before: the page does not wait for the router's
+  move. So Back returns to the item in its editor, and a reload stays in the place. An item the index can't answer
+  (gone, or not theirs to reach) opens Home as before.
+- **How long it takes** (Work Tracker 852, measured 2026-11-14 on a local production build of the site under Chrome's
+  network throttling, every api answer after 60 ms, 20 runs each; staging is still to measure): from `GET /items/:id`
+  going out to the item painted in its place, p50 204 ms and p95 214 ms on Fast 4G (281 and 284 ms while the page
+  waited for the router's move), and p50 564 ms and p95 573 ms on Slow 4G (568 and 572 ms before: there the place's
+  own list is the wait). Opening the place's own address paints 117 ms (Fast 4G) and 319 ms (Slow 4G) after the
+  person is known, so the door costs about one `GET /items/:id` more. Opening Home at once and switching when the
+  item answers was not taken: Home would flash first and fetch lists nobody looks at, and the place would paint no
+  sooner.
 - **Everywhere else** (Home, the Explorer itself, a page with no item, an item's trashed card) the doors stay plain
   `/explorer` and open as they always did.
 

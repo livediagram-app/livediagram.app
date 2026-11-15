@@ -10,6 +10,7 @@ import {
   withThreadAt,
   type Comment,
   type CommentMention,
+  type CommentThread,
   type Element,
   type Tab,
 } from '@liveplanner/project';
@@ -145,6 +146,38 @@ export function rewriteCommentAuthors(
   );
 }
 
+// docs/specs/026-plan/plan-mode.md "No comment thread on any canvas element" (Work Tracker 878): the comments a save or a
+// changeset adds to an element's OWN thread, dropped, so the retired path is closed at the server whatever an older
+// editor or a hand-made body sends. The comments already stored on it stay (resolve, reopen and delete still work on
+// them), as does a resolved flag the save changed; a thread left with no comment goes, as removeComment does. A Sheet
+// cell's thread is untouched. The SAME array when nothing is dropped, so an untouched save allocates nothing.
+export function withoutNewElementComments(
+  nextElements: Element[],
+  prevElements: Element[],
+): Element[] {
+  let stored: Set<string> | null = null;
+  const storedIds = (): Set<string> => {
+    if (stored) return stored;
+    const ids = new Set<string>();
+    for (const { thread } of prevElements.flatMap(elementThreads)) {
+      for (const c of thread?.comments ?? []) ids.add(c.id);
+    }
+    stored = ids;
+    return ids;
+  };
+  let changed = false;
+  const out = nextElements.map((el) => {
+    const own = (el as { commentThread?: CommentThread }).commentThread;
+    if (!own?.comments?.length) return el;
+    const ids = storedIds();
+    const kept = own.comments.filter((c) => ids.has(c.id));
+    if (kept.length === own.comments.length) return el;
+    changed = true;
+    return withThreadAt(el, undefined, kept.length ? { ...own, comments: kept } : undefined);
+  });
+  return changed ? out : nextElements;
+}
+
 // Remove a single comment by id from whichever element's thread holds
 // it, dropping the thread entirely once its last comment goes (so the
 // element's comment badge clears, mirroring the client's deleteComment).
@@ -235,7 +268,8 @@ export function hasNewComments(
 
 // The comments `nextElements` adds over `prevElements` that `authorId` wrote, in order: what a save's
 // new-comment email and mention emails (docs/specs/012-collaboration/comment-mentions.md) are about. One pass
-// over each side's threads.
+// over each side's threads. Only a Sheet cell's: an element's own thread is retired (docs/specs/026-plan/plan-mode.md
+// "No comment thread on any canvas element"), so it notifies no one.
 export function newCommentsBy(
   nextElements: Element[],
   prevElements: Element[],
@@ -246,7 +280,8 @@ export function newCommentsBy(
     for (const c of thread?.comments ?? []) seen.add(c.id);
   }
   const out: Comment[] = [];
-  for (const { thread } of nextElements.flatMap(elementThreads)) {
+  for (const { cell, thread } of nextElements.flatMap(elementThreads)) {
+    if (cell === undefined) continue;
     for (const c of thread?.comments ?? []) {
       if (!seen.has(c.id) && c.authorId === authorId) out.push(c);
     }

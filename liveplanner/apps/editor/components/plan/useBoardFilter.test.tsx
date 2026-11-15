@@ -122,6 +122,18 @@ describe('useBoardFilter', () => {
     expect(board.writes).toHaveLength(1);
   });
 
+  it('Show All clears the board at once, words and chips, with no pause to wait for', () => {
+    const board = sharedBoard();
+    const ann = client(board, 'ann');
+    const bob = client(board, 'bob');
+    act(() => ann.result.current.setQuick({ text: 'zzz', priority: 'high' }));
+    act(() => ann.result.current.setQuick({ text: 'zzz' }));
+    board.writes.length = 0;
+    act(() => bob.result.current.showAll());
+    expect(board.writes).toEqual([undefined]);
+    expect(ann.result.current.quick).toEqual({});
+  });
+
   it("a Viewer sees the board's filter and cannot change it", () => {
     const board = sharedBoard();
     board.write({ text: 'login', mine: true });
@@ -129,6 +141,7 @@ describe('useBoardFilter', () => {
     const viewer = client(board, 'val', false);
     expect(viewer.result.current.quick).toEqual({ text: 'login', mine: 'val' });
     act(() => viewer.result.current.setQuick({}));
+    act(() => viewer.result.current.showAll());
     act(() => viewer.result.current.setQuick({ text: 'x', mine: 'val' }));
     act(() => {
       vi.advanceTimersByTime(BOARD_FILTER_TYPING_MS);

@@ -19,7 +19,10 @@ import {
   type TextSize,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
-import { laneTitleFrame, laneTitleText } from '@/components/canvas/lane-title-frame';
+import {
+  laneTitleFrame,
+  laneTitleText,
+} from '@liveworkspace/workbench/components/canvas/lane-title-frame';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';

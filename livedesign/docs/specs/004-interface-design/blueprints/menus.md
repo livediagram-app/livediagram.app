@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/live/components/chrome/TabPortalMenu.tsx`                             | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
 | `apps/live/components/canvas/LockedElementMenu.tsx`                         | Command menu, no trigger                                                                                                    |
 | `apps/live/components/chrome/ZoomMenu.tsx`                                  | Hover-open command menu with a button of its own                                                                            |
-| `apps/live/components/chrome/AuthControls.tsx`                              | Account command menu                                                                                                        |
+| `../packages/workbench/src/components/chrome/AuthControls.tsx`              | Account command menu                                                                                                        |
 | `apps/live/components/chrome/EmbedChrome.tsx`                               | Embed tab command menu                                                                                                      |
 | apps/live/components/dialogs/ShareCopyMenu.tsx (removed)                    | Command menu, or control menu when it carries a header control                                                              |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`                      | Canvas shortcuts stand down inside a menu surface                                                                           |

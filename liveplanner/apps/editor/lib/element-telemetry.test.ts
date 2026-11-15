@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { RETIRED_SHAPE_KINDS, SHAPE_KINDS, type Element } from '@liveplanner/project';
+import { SHAPE_KINDS, type Element } from '@liveplanner/project';
 import { ALL_PALETTE_TELEMETRY_TYPES } from '@liveplanner/api-schema';
 
 const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
@@ -8,7 +8,7 @@ vi.mock('@/lib/telemetry', () => ({
   titleCaseType: (v: string) => (v.length === 0 ? v : v[0]!.toUpperCase() + v.slice(1)),
 }));
 
-const { elementTelemetryType, shapeTelemetryToken, trackDuplicated } =
+const { elementTelemetryType, shapeTelemetryToken, trackDuplicated, TELEMETRY_RETIRED_KINDS } =
   await import('./element-telemetry');
 
 const box = (over: Partial<Element> = {}) =>
@@ -86,9 +86,10 @@ describe('trackDuplicated', () => {
   // The gesture token belongs on the single Duplicated event only: the
   // per-element Added events must stay comparable with the paths that
   // create an element from scratch.
-  // A stored tab window (docs/specs/009-elements/tab-window.md) is retired: its copy counts as a copy, not as a kind.
+  // A stored tab window (docs/specs/009-elements/tab-window.md) and a stored Comment panel (comment-pin.md, telemetry.md
+  // "Comment panel") are retired: a copy counts as a copy, not as a kind.
   it('counts no Added for a copy of a retired kind', () => {
-    trackDuplicated([box({ shape: 'tab-window' }), box()]);
+    trackDuplicated([box({ shape: 'tab-window' }), box({ shape: 'comment-pin' }), box()]);
     expect(trackMock.mock.calls).toEqual([
       ['Element', 'Duplicated', undefined],
       ['Element', 'Added', 'Square'],
@@ -112,7 +113,7 @@ describe('shapeTelemetryToken', () => {
   it('maps every shape kind to a token the palette catalogue knows', () => {
     const known = new Set(ALL_PALETTE_TELEMETRY_TYPES);
     const unknown = [...SHAPE_KINDS]
-      .filter((k) => !RETIRED_SHAPE_KINDS.has(k))
+      .filter((k) => !TELEMETRY_RETIRED_KINDS.has(k))
       .filter((k) => !known.has(shapeTelemetryToken(k)));
     expect(unknown).toEqual([]);
   });

@@ -92,7 +92,13 @@ The editor header (`components/chrome/EditorHeader`, with its visibility pill `S
 `share-states` and `VisibilityLegend`) is one copy for every editor: each editor's `components/chrome/EditorHeader.tsx`
 is a thin door that hands in its logo (`app`), the logo's way to the Explorer, its nouns (`words`), its account control
 (`account`) and what is its own (livediagram's and livedocuments' `present`, liveplanner's Share Form as
-`shareAction`), and re-exports `SaveStatus`. The Settings dialog's host (`components/dialogs/EditorSettingsDialog`)
+`shareAction`), and re-exports `SaveStatus`. The account control it hands in is one copy too
+(`components/chrome/AuthControls`, with the `SignInIcon` every sign-in affordance wears): an editor passes only where
+Account goes (`onOpenAccount`) and, for livedocuments and livedesign, the picture from their own-picture store
+(`picture`); Sign Out is tracked through the `track` binding. The Settings panel's host
+(`components/dialogs/settings/settings-panel-host`'s `createSettingsPanelHost`: the app's id and logos, the bearer
+request over the account API, Cloud Sync's host and the Account section's panels) is bound once by each editor's
+`components/dialogs/settings/settings-panel-host.ts` with its app name, reading the bearer through `api.currentBearer`. The Settings dialog's host (`components/dialogs/EditorSettingsDialog`)
 frames the shared Settings panel and works out the This app / All switch once for every editor (`settingsAllowAll`:
 signed in, not in a workbench, and preferences not kept only in this browser); each editor's
 `components/dialogs/SettingsDialog.tsx` binds it once at module scope (`EditorSettingsBinding`) and passes its

@@ -343,6 +343,10 @@ const DRAW_MODE_EVENTS = new Set([
 // The Tab Window (retired 2026-11-10, liveplanner docs/specs/009-elements/tab-window.md): one added, its tab chosen.
 // Opening its tab (above) and its tour (RETIRED_TOUR_TOKENS) went earlier.
 const TAB_WINDOW_EVENTS = new Set(['Element|Added|TabWindow', 'Element|Changed|TabWindowTab']);
+// The Comment panel (retired 2026-11-14, liveplanner docs/specs/017-telemetry/telemetry.md "Comment panel", Work Tracker
+// 878): no Plan surface places one, and a duplicate or paste of a stored one adds no census row. Both spellings, the
+// hyphenated one an older editor sent.
+const COMMENT_PANEL_EVENTS = new Set(['Element|Added|CommentPin', 'Element|Added|Comment-pin']);
 const isRetiredDrawModeEvent = (category: string, action: string, type: string | null) =>
   DRAW_MODE_EVENTS.has(`${category}|${action}|${type ?? ''}`) ||
   (category === 'Tab' && action === 'Changed' && (type ?? '').startsWith('OpensIn')) ||
@@ -445,6 +449,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (isElementUsedInPlace(category, action)) return true;
   if (isRetiredDrawModeEvent(category, action, type)) return true;
   if (TAB_WINDOW_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (COMMENT_PANEL_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Project' && action === 'Reverted') return true;

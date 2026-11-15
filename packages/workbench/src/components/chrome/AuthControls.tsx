@@ -1,56 +1,57 @@
 'use client';
 
-// Header sign-in / sign-out pill. Shows:
+// The header's account control, one copy for every editor (docs/specs/007-editor/editor-app.md "Header actions";
+// `live-app.md` in livedesign):
 //
-//   - signed out → "Sign in" link to /sign-in/
-//   - signed in  → account avatar (Google picture or initial) + dropdown with "Profile" + "Sign Out"
+//   - signed out → a "Sign in" action that returns here after sign-in
+//   - signed in  → the account's picture (over its initial) and first name, opening a menu with Account and Sign Out
 //
-// Mounted in EditorHeader (and any future header chrome that wants
-// auth controls). Pure presentational — it reads the deferred auth
-// context the AuthProvider in app/layout.tsx supplies, so this works
-// anywhere under the provider.
+// It reads the deferred auth context the AuthProvider supplies, so it works anywhere under the provider. While the
+// session is still loading (first paint, before the token request answers) it renders nothing, so the header doesn't
+// flash "Sign in" only to swap it for the account a tick later.
 //
-// While the session is still loading (first paint, before the token
-// request answers) we render nothing so the header doesn't flicker
-// a "Sign in" link only to swap it for the user pill a tick later.
+// Each editor passes only what is its own: where Account goes (`onOpenAccount`) and, for livedocuments and livedesign,
+// the picture from their own-picture store (`picture`). Sign Out is tracked through the workbench's `track` binding.
 
-import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useId, useRef, type ReactNode } from 'react';
 import {
-  useClickOutside,
-  SOLID_BRAND_DARK,
   Glyph,
+  PictureDisc,
+  SOLID_BRAND_DARK,
+  useClickOutside,
   useMenu,
   useMenuButton,
-  PictureDisc,
-} from '@livedocuments/ui';
-import { useOwnPicture } from '@/lib/own-picture';
-import { track } from '@/lib/telemetry';
-import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { accountInitial } from '@liveworkspace/workbench/lib/account-avatar';
+} from '@liveworkspace/ui';
+import { cutText } from '@liveworkspace/model-core/text-cut';
+import { workbench } from '../../bindings';
+import { accountInitial } from '../../lib/account-avatar';
+import { useDeferredAuth } from '../providers/deferred-auth';
+import { useAuthHrefs } from './auth-routes';
 import {
   HEADER_ACTION_BTN,
   HEADER_ACTION_TONE,
   HEADER_ICON_SLOT_PX,
   HeaderGlyph,
-} from '@liveworkspace/workbench/components/chrome/header-action';
+} from './header-action';
 
-// Account self-deletion now lives on the Explorer profile page (docs/specs/014-identity/profile-and-email-notifications.md),
-// reachable from the "Profile" item below, so the destructive action has one
-// home rather than hanging off this dropdown too.
+/** The pill's first name, cut so a very long one doesn't push the label off the action. */
+export const PILL_NAME_MAX = 16;
 
-type AuthControlsProps = {
-  // Opens this page's Settings dialog on its Account category. Both hosts
-  // (the editor and the Explorer) own a Settings dialog, so the Account item
-  // opens it in place rather than navigating away. Without one, the item
-  // falls back to the Explorer's `?settings=account` deep link.
+export type AuthControlsProps = {
+  // Opens this page's Settings dialog on its Account category, in place. Without one, the item falls back to the
+  // Explorer's `?settings=account` deep link.
   onOpenAccount?: () => void;
+  // The picture your own chrome shows you, whatever Show My Google Picture says (an editor with an own-picture store
+  // passes it). Left out, the session's `user.picture`.
+  picture?: string | null;
 };
 
-export function AuthControls({ onOpenAccount }: AuthControlsProps) {
+const MENU_ITEM =
+  'block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700';
+
+export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
-  const ownPicture = useOwnPicture().picture;
   // A menu button (docs/specs/004-interface-design/menus.md): the menu keyboard comes from the hooks.
   const {
     open: menuOpen,
@@ -65,8 +66,7 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
   // Return here after sign-in (must run before the early returns below).
   const { signInHref } = useAuthHrefs();
 
-  // Click-outside closes the menu. Listener installs only while
-  // the menu is open so an inert button doesn't pay for it.
+  // Click-outside closes the menu; the listener installs only while it is open.
   useClickOutside(menuRef, closeMenu, menuOpen);
 
   if (!authLoaded) return null;
@@ -83,16 +83,14 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
   }
 
   const displayName = user?.fullName ?? user?.username ?? user?.email ?? '';
-  // Pill label: first name only (or the username fallback). Last
-  // names get truncated in account UIs because most users don't
-  // need the full identity on screen — the avatar dot + first name
-  // is the recognisable "this is me" combo. Truncate at 16 chars
-  // so a very long first name doesn't push the chevron off-pill.
-  const pillLabel = (() => {
-    const raw = user?.firstName ?? user?.username ?? '';
-    if (!raw) return null;
-    return raw.length > 16 ? `${raw.slice(0, 15)}…` : raw;
-  })();
+  // The pill shows the first name only (or the username): the picture and first name are the recognisable "this is
+  // me", and the full name is in the menu.
+  const rawName = user?.firstName ?? user?.username ?? '';
+  const pillLabel = !rawName
+    ? null
+    : rawName.length > PILL_NAME_MAX
+      ? `${cutText(rawName, PILL_NAME_MAX - 1)}…`
+      : rawName;
 
   return (
     <div className="relative flex h-full" ref={menuRef}>
@@ -107,9 +105,10 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          {/* Your Google picture, whatever the switch says (docs/specs/014-identity/profile-picture.md §1). */}
+          {/* The Google picture when there is one, always on your own screen (liveworkspace/docs/specs/003-accounts/accounts.md
+              "Profile pictures"). */}
           <PictureDisc
-            pictureUrl={ownPicture}
+            pictureUrl={picture === undefined ? user?.picture : picture}
             name={displayName}
             size={HEADER_ICON_SLOT_PX}
             aria-hidden
@@ -137,9 +136,8 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
               ) : null}
             </div>
           ) : null}
-          {/* Account (docs/specs/007-editor/user-preferences.md): identity, email notifications and account
-              deletion all live in the Settings dialog, so this opens it on
-              its Account category, in place when the host can. */}
+          {/* Account (docs/specs/007-editor/user-preferences.md): identity, email notifications and account deletion
+              all live in the Settings dialog, so this opens it on its Account category, in place when the host can. */}
           {onOpenAccount ? (
             <button
               type="button"
@@ -149,7 +147,7 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
                 closeMenu();
                 onOpenAccount();
               }}
-              className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+              className={MENU_ITEM}
             >
               Account
             </button>
@@ -159,7 +157,7 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
               role="menuitem"
               tabIndex={-1}
               onClick={closeMenu}
-              className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+              className={MENU_ITEM}
             >
               Account
             </Link>
@@ -170,13 +168,12 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
             tabIndex={-1}
             onClick={() => {
               closeMenu();
-              track('Session', 'SignedOut');
-              // Land on the marketing landing page at `/` (router worker
-              // serves marketing there). Once you're signed out, the editor
-              // is the wrong default, the landing page is.
+              workbench.track('Session', 'SignedOut', undefined);
+              // Land on the marketing landing page at `/` (the router serves marketing there): once signed out, the
+              // editor is the wrong default.
               void signOut({ redirectUrl: '/' });
             }}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+            className={MENU_ITEM}
           >
             Sign Out
           </button>
@@ -207,11 +204,9 @@ function AccountMenu({
   );
 }
 
-// Door-with-arrow glyph — same 13px / 1.6 stroke convention as the
-// other header icons (ShareIcon in EditorHeader, etc.) so the
-// Sign-in pill reads as a peer of those buttons. Exported because the
-// Explorer's "Sign in to use teams" sidebar link (docs/specs/013-workspace/teams.md) renders
-// the same glyph so the two sign-in affordances read as one action.
+// Door-with-arrow glyph, the same 13px / 1.6 stroke as the other header icons, so the Sign in action reads as a peer
+// of them. Exported for the sign-in banner, the sign-in reasons dialog and the Explorer's "Sign in to use teams" link
+// (docs/specs/013-workspace/teams.md), so every sign-in affordance reads as one action.
 export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   return (
     <Glyph size={size} units={16}>

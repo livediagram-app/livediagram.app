@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
-import type { LabelFrame } from '@/components/canvas/lane-title-frame';
+import type { LabelFrame } from '@liveworkspace/workbench/components/canvas/lane-title-frame';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isRetiredElement } from '@livediagram/document';
 import {
   PADDING_PX,

@@ -289,6 +289,45 @@ describe('a stored element comment thread', () => {
   });
 });
 
+// Work Tracker 878: the retired path is closed at the server. A save that adds a comment to an element's own thread has it
+// dropped; the stored ones stay, and a Sheet cell's new comment lands.
+describe('a new element comment in a save', () => {
+  const comment = (id: string) => ({
+    id,
+    text: 'Why here?',
+    createdAt: 5,
+    authorName: 'Priya',
+    authorColor: '#123456',
+    authorId: 'priya',
+  });
+  it('is stripped, the stored ones and the rest of the save kept', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const before = { resolved: false, comments: [comment('c1')] };
+    const db = await projectWith([{ ...box('a'), commentThread: before }] as Element[]);
+    const sent = [
+      { ...box('a'), commentThread: { resolved: true, comments: [comment('c1'), comment('c2')] } },
+      { ...box('n'), commentThread: { resolved: false, comments: [comment('c3')] } },
+    ] as Element[];
+    expect((await save(db, sent)).status).toBe(200);
+    const kept = stored(db) as (Element & { commentThread?: unknown })[];
+    expect(kept.map((e) => e.commentThread)).toEqual([
+      { resolved: true, comments: [expect.objectContaining({ id: 'c1' })] },
+      undefined,
+    ]);
+    expect(kept.map((e) => e.id)).toEqual(['a', 'n']);
+  });
+
+  it('on a Sheet cell lands', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const db = await projectWith([{ ...box('s'), shape: 'plan-sheet' }] as Element[]);
+    const cellComments = { 'row001:cola01': { resolved: false, comments: [comment('c9')] } };
+    const sent = [{ ...box('s'), shape: 'plan-sheet', cellComments }] as Element[];
+    expect((await save(db, sent)).status).toBe(200);
+    const kept = stored(db) as (Element & { cellComments?: typeof cellComments })[];
+    expect(kept[0]?.cellComments?.['row001:cola01']?.comments.map((c) => c.id)).toEqual(['c9']);
+  });
+});
+
 describe('the tab read', () => {
   it('carries the revision in the body and as a weak ETag', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});

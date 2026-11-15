@@ -8,7 +8,7 @@ gives each notification its link. The install that iPhone and iPad need first is
 
 ## When liveplanner notifies
 
-- **A comment** in a tab save, a changeset or the REST comment routes: each new comment the writer wrote (at most 5 a
+- **A comment** in a tab save, a changeset or the REST comment routes: each new comment the writer wrote on a Sheet cell (an element's own thread takes none, [Plan mode](../026-plan/plan-mode.md#no-comment-thread-on-any-canvas-element)) (at most 5 a
   save, all sent to accounts in one request) tells the people it @mentions (a team plan, from one of its joined people), who wrote earlier in its
   thread, and the plan's owner, one notification each, the strongest kind first. Beside the comment and
   mention emails, but not behind them: a deployment without email still notifies, and the switches are the person's
@@ -27,7 +27,7 @@ Everything runs after the answer (`waitUntil`, or the changeset's after-work), a
 
 Every link is on liveplanner's own address (`APP_BASE_URL`), in the editor's deep-link grammar (`lib/collab-deep-link.ts`):
 
-- **A thread on an element** (a Sheet cell's thread opens its element's): `/project/<id>#t=<tab>&el=<element>&open=comments`.
+- **A Sheet cell's thread** (it opens on its cell): `/project/<id>#t=<tab>&el=<element>&open=comments`.
   Tag `<id>:<element>`, so a burst of replies on one thread is one notification.
 - **A card's thread**, started or replied to (`POST /api/projects/<id>/items/<card>/threads`, `POST /api/projects/<id>/threads/<thread>/comments`): `/project/<id>#item=<card>&thread=<thread>`, which opens the card on that thread whichever board shows it. Tag `<id>:<thread>`.
 - **An assigned action**: `/project/<id>#t=<tab>&el=<element>&open=action`, or `/project/<id>` from an older editor

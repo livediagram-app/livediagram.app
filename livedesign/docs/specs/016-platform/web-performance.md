@@ -46,7 +46,12 @@ Next renders the root not-found slot inside the layout, so its code is part of e
   `next/dynamic`, never a static import. A design URL already has the editor from
   `/design/placeholder`'s own import, so it pays nothing extra; the opening screen covers the one
   tick the import takes.
-- `apps/live/app/first-load-lazy.test.ts` fails if any of these become static imports again.
+- `app/global-error.tsx` (the root error boundary, [Stale builds](stale-builds.md)) ships with every route as
+  well. It imports only what the root layout already loads (the app's `Button`, the stale-chunk recovery and the
+  workbench bindings), so it adds 414 bytes gzipped per route (measured from a production build, 14 November
+  2026, against an import-free page), under the 1 KiB that would call for a lazily loaded card as the site's
+  `LazyPageError`. The app has no page-level error boundary beside it.
+- `apps/live/app/first-load-lazy.test.ts` fails if any of these become static imports again, or if `global-error.tsx` imports anything more.
 
 ### A surface that is not on screen loads when it is
 
