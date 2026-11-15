@@ -1077,13 +1077,13 @@ export const PLAN_GITHUB_RULES = chart(
 
 // Subscribe to Calendar (docs/specs/026-plan/calendar-feed.md "Telemetry", in the liveplanner folder): links made,
 // reset, copied and handed to a calendar, options changed and links turned off (its dialog opening is a Dialogs &
-// Panels chart, features.ts). Never a plan, a board or a link.
+// Panels chart, features.ts), a plan's feed and the My Work feed together. Never a plan, a board or a link.
 export const PLAN_CALENDAR_FEEDS_MADE = chart(
   'Plan',
   'Created',
   'Calendar Links Made',
-  "Make Calendar Link pressed: a private link to the plan's card dates for the person's own calendar.",
-  { types: ['CalendarFeed'] },
+  "Make Calendar Link pressed: a private link to a plan's card dates, or to the cards assigned to the person (My Work), for their own calendar.",
+  { types: ['CalendarFeed', 'MyWorkCalendarFeed'] },
 );
 
 export const PLAN_CALENDAR_FEEDS_RESET = chart(
@@ -1091,7 +1091,7 @@ export const PLAN_CALENDAR_FEEDS_RESET = chart(
   'Changed',
   'Calendar Links Reset',
   'Reset Link confirmed: a new calendar link, and the old one stopped at once.',
-  { types: ['CalendarFeedLink'], rising: 'neutral' },
+  { types: ['CalendarFeedLink', 'MyWorkCalendarFeedLink'], rising: 'neutral' },
 );
 
 export const PLAN_CALENDAR_FEED_OPTIONS = chart(
@@ -1107,7 +1107,7 @@ export const PLAN_CALENDAR_FEEDS_COPIED = chart(
   'Copied',
   'Calendar Links Copied',
   'A new calendar link copied from the field that shows it once.',
-  { types: ['CalendarFeed'] },
+  { types: ['CalendarFeed', 'MyWorkCalendarFeed'] },
 );
 
 export const PLAN_CALENDAR_FEEDS_HANDED_ON = chart(
@@ -1115,7 +1115,14 @@ export const PLAN_CALENDAR_FEEDS_HANDED_ON = chart(
   'Shared',
   'Calendar Links Added to a Calendar',
   'A new calendar link handed to Google Calendar or Apple Calendar from its button.',
-  { types: ['CalendarFeedGoogle', 'CalendarFeedApple'] },
+  {
+    types: [
+      'CalendarFeedGoogle',
+      'CalendarFeedApple',
+      'MyWorkCalendarFeedGoogle',
+      'MyWorkCalendarFeedApple',
+    ],
+  },
 );
 
 export const PLAN_CALENDAR_FEEDS_TURNED_OFF = chart(
@@ -1123,7 +1130,7 @@ export const PLAN_CALENDAR_FEEDS_TURNED_OFF = chart(
   'Ended',
   'Calendar Links Turned Off',
   'Turn Off confirmed: the calendar link stopped answering.',
-  { types: ['CalendarFeed'], rising: 'neutral' },
+  { types: ['CalendarFeed', 'MyWorkCalendarFeed'], rising: 'neutral' },
 );
 
 export const PLAN_COLUMNS_COLLAPSED = chart(

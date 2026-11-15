@@ -2,7 +2,8 @@
 
 // Subscribe to Calendar's Just made state (docs/specs/026-plan/calendar-feed.md "The dialog"): the link in a read-only
 // field with Copy Link, Google Calendar and Apple Calendar, the Outlook line, and the shown-once line. The link lives
-// only here, for as long as the dialog is open: the plan keeps its hash, never the link.
+// only here, for as long as the dialog is open: the plan (or, for the My Work feed, liveworkspace's index) keeps its
+// hash, never the link. `myWork` reports the My Work feed's telemetry types, each a literal for the coverage tests.
 import { forwardRef, useId } from 'react';
 import { Button, ButtonContent, buttonClassName, useCopiedFlash } from '@liveplanner/ui';
 import { track } from '@/lib/telemetry';
@@ -13,15 +14,16 @@ const LINK_FIELD =
 
 const CALENDAR_LINK = buttonClassName({ variant: 'secondary', size: 'xs' });
 
-export const CalendarFeedLink = forwardRef<HTMLButtonElement, { url: string }>(
-  function CalendarFeedLink({ url }, copyRef) {
+export const CalendarFeedLink = forwardRef<HTMLButtonElement, { url: string; myWork?: boolean }>(
+  function CalendarFeedLink({ url, myWork = false }, copyRef) {
     const fieldId = useId();
     const { copied, flash } = useCopiedFlash(1800);
     async function copy() {
       try {
         await navigator.clipboard.writeText(url);
         flash();
-        track('Plan', 'Copied', 'CalendarFeed');
+        if (myWork) track('Plan', 'Copied', 'MyWorkCalendarFeed');
+        else track('Plan', 'Copied', 'CalendarFeed');
       } catch {
         // No clipboard (an insecure context, a refused permission): the field is selected to copy by hand.
         const field = document.getElementById(fieldId) as HTMLInputElement | null;
@@ -55,14 +57,22 @@ export const CalendarFeedLink = forwardRef<HTMLButtonElement, { url: string }>(
             target="_blank"
             rel="noopener noreferrer"
             className={CALENDAR_LINK}
-            onClick={() => track('Plan', 'Shared', 'CalendarFeedGoogle')}
+            onClick={() =>
+              myWork
+                ? track('Plan', 'Shared', 'MyWorkCalendarFeedGoogle')
+                : track('Plan', 'Shared', 'CalendarFeedGoogle')
+            }
           >
             <ButtonContent>Google Calendar</ButtonContent>
           </a>
           <a
             href={appleCalendarUrl(url)}
             className={CALENDAR_LINK}
-            onClick={() => track('Plan', 'Shared', 'CalendarFeedApple')}
+            onClick={() =>
+              myWork
+                ? track('Plan', 'Shared', 'MyWorkCalendarFeedApple')
+                : track('Plan', 'Shared', 'CalendarFeedApple')
+            }
           >
             <ButtonContent>Apple Calendar</ButtonContent>
           </a>
