@@ -25,7 +25,7 @@ or declined), which reads "Deleted account" instead, in the members lists and th
 off every invitation it sent, which then names no inviter.
 
 **How an app and the index know someone's teams.** Neither keeps a copy. Every access token carries the
-person's teams (`teams`, up to an hour old), and so does every API token check. A team made or joined
+person's teams (`teams`, up to 15 minutes old), and so does every API token check. A team made or joined
 since then is usable at once: when a request names a team the claim doesn't hold, the app asks
 `POST /api/account/internal/teams/of {userId}`, and the index asks `POST /api/account/index/teams` (with
 the key it shares with accounts). Each gets the list a token minted now would carry. Only a miss asks,
@@ -259,6 +259,10 @@ identity it sends the browser to `GET /api/auth/guest?client_id=&redirect_uri=&s
   45 days rather than 30: apps built before this refresh at 30 days left, and a token that starts with 30 days or
   fewer would send those pages round the hand-off on every load. Once no page from before is left (a month after
   every app has deployed the 15 day refresh), it can come down to 30 days.
+- every guest token carries `oiat`, the time its guest was last vouched for by the cookie or first made (epoch
+  seconds): the hand-off's own time when the cookie (or a new guest) names the guest, and the presented token's
+  `oiat` when only a token does ([Renewing without the cookie](#renewing-without-the-cookie)). A token minted before
+  `oiat` counts its `iat` instead.
 - once the client and `redirect_uri` have checked out, never leaves the browser on an error page: if
   anything after that fails (reading or setting the cookie, the seen stamp's database, signing the
   token) it logs it and redirects to `<redirect_uri>#error=server_error&state=<state>`, with no cookie
@@ -267,6 +271,42 @@ identity it sends the browser to `GET /api/auth/guest?client_id=&redirect_uri=&s
   staying blank.
 
 It is limited to 60 a minute per IP (`GUEST_LIMITER`).
+
+### Renewing without the cookie
+
+Safari's tracking prevention can clear `lw_guest`, since people only ever reach liveworkspace.app by a redirect. A
+hand-off without the cookie would then make a new guest, and the guest would lose what they made. So an app renewing
+a guest token it still holds presents that token as proof of who the guest is:
+
+1. The page (`@liveworkspace/index-client/browser` `startGuestHandoff`), holding an unexpired guest token, leaves it
+   in a cookie on its own origin for its api's guest door (`lw_guest_renewal`, `Path=/api/auth/guest`, a minute,
+   Secure, SameSite=Strict) and hands off exactly as before (`location.replace` to `GET /api/auth/guest?state=`).
+   The api (`@liveworkspace/auth-client` `createAppAuth`), finding that cookie, clears it and answers, in place of
+   its redirect, a small page that posts the token in a form body (`guest_token=<the token>`) to the same accounts
+   address the redirect names. The form is sent while that page loads, so, like the redirect, it takes no history
+   entry. The token never travels in a query string, so it never lands in a log or a `Referer`. With no token held,
+   or an api on another origin, it hands off by `GET` as before.
+2. `POST /api/auth/guest?client_id=&redirect_uri=&state=[&resource=]` makes the same checks of the client,
+   `redirect_uri`, `state` and `resource` as the `GET`, and the same `400`s. It then takes the token as proof only
+   when the request's `Origin` is `redirect_uri`'s origin (so only the app's own page can present one: a page on
+   another site can't plant its guest in this browser) and the token is a guest token this Worker signed
+   (`kind: "guest"`), unexpired, addressed to that `resource`, with `oiat` at most 180 days ago
+   (`GUEST_PROOF_MAX_AGE_SECONDS`). Either way it answers `303` to the same address by `GET`; a proof that checked
+   out rides along as a short `lw_guest_proof` cookie (the token, `Path=/api/auth/guest`, two minutes, HttpOnly,
+   SameSite=Lax, Secure outside development), since the browser leaves `lw_guest` off a cross-site `POST`.
+3. The `GET` then picks the guest in this order: `lw_guest`'s guest (the cookie wins whenever both name a guest),
+   else the proof's guest (checked again, exactly as above), else a new guest. It clears `lw_guest_proof` whenever one
+   came, and sets `lw_guest` to the guest it picked, so every other app finds the same guest again. A token named by
+   the proof alone carries its `oiat` forward; one named by the cookie or a new guest starts it again.
+
+So a guest whose cookie was cleared keeps their id, and a stolen guest token can't be renewed for ever: a chain of
+renewals with no cookie behind it ends 180 days after the cookie last vouched for the guest, and that browser then
+starts a fresh guest. One guest can't take another's id: a token is only ever taken as proof of the guest it names,
+signed here and addressed to the app presenting it.
+
+**What it costs.** Nothing on any request but a renewal, about once a month per app while a guest keeps using it: the
+api's page in place of its redirect (under 1 KB), one more hop through liveworkspace.app (the `303`), and a read of
+the key set from D1 on each of the two checks.
 
 **Signing in keeps a guest's things.** When a session is made for a request carrying a valid
 `lw_guest` cookie (Better Auth's `session.create.after` hook), the Worker sends
@@ -554,8 +594,8 @@ again." in place of its hint, read out to a screen reader too, until the menu cl
 token shown again as a stolen one and deletes every refresh token that app holds for the account, on every device. A
 deleted one is only unknown (`invalid_grant`).
 
-**Another app's open tab.** It keeps the access token it holds, which lasts an hour from its last refresh, so it goes
-on working until then; its next refresh is refused, and the app clears its cookies and shows the person signed out. A
+**Another app's open tab.** It keeps the access token it holds, which lasts 15 minutes from its last refresh, so it
+goes on working until then; its next refresh is refused, and the app clears its cookies and shows the person signed out. A
 reload of that tab asks for a refresh at once, so it loads signed out, as a guest: its silent bounce finds no
 liveworkspace session. A second tab of the app signed out from shares its cookies, so it is the same, and the
 Explorer on liveworkspace.app gets a guest's token at its next ask (within 15 minutes, or at once on a reload).
@@ -564,10 +604,19 @@ Explorer on liveworkspace.app gets a guest's token at its next ask (within 15 mi
 afterwards the browser is the guest it was before signing in.
 
 **Tokens already handed out.** An app's API checks access and guest tokens offline against the key set, so there is
-no list of revoked tokens: a token copied before signing out keeps working until it lapses, an hour for an access
-token (the provider's default, `accessTokenExpiresIn` unset) and 45 days for a guest token. Signing out ends what can
-mint new ones (the session and the app's refresh tokens). A revocation list the apps check is a known limit, not
-built.
+no list of revoked tokens. Access tokens last 15 minutes (`ACCESS_TOKEN_TTL_SECONDS`, the provider's
+`accessTokenExpiresIn`), and refresh renews them: an app's page asks for a new one a minute before its token lapses
+(`EXPIRY_MARGIN_MS`), so a person never notices. Signing out ends what can mint new ones (the session and every app's
+refresh tokens), so an access token copied before signing out everywhere, or before the account was closed, is
+refused by every app's API within 15 minutes. A guest token lasts 45 days. A revocation list the apps check (sign-out
+taking effect within seconds) is not built: it would add a lookup to every request.
+
+**What 15 minutes costs.** An open, signed-in tab refreshes about every 14 minutes rather than every 59, so about four
+times as often, and only while it makes requests (a refresh is lazy: the next request after the margin asks for it).
+Each refresh is one `POST /api/auth/token` to the app's api and one token request over its `ACCOUNTS` binding: the
+provider's refresh grant, rotating the refresh token, and the teams and profile reads for the claims, 12 D1
+statements in all (measured in `end-session.test.ts`). Nothing changes for API tokens, AI tools or the CLI, which
+hold `lwt_` API tokens of six months rather than access tokens.
 
 **What it costs.** Only a sign-out pays: one request from the app's Worker to the accounts Worker (an introspection,
 one read and one batch of deletes in D1) and one extra full-page hop through liveworkspace.app (a read of the
@@ -586,7 +635,7 @@ Methods. API tokens and Download Your Data are the session door's own handlers o
 sign-in methods routes are the bearer's (liveworkspace.app's Settings uses Better Auth's own endpoints for those).
 
 **The trade-off, accepted.** These routes make an app's access token as strong as the liveworkspace session for them.
-Whoever holds a copied access token can, until it lapses (an hour from its last refresh), list, make and revoke API
+Whoever holds a copied access token can, until it lapses (15 minutes from its last refresh), list, make and revoke API
 tokens (and an API token lasts six months, so a stolen access token can become a six-month credential), start a data
 export, list and end the account's sessions, and start connecting Google. This was decided knowingly, so that no
 setting needs a trip to liveworkspace.app. What still holds:
@@ -745,8 +794,8 @@ transition window the old bare names keep working beside the new ones.
 **Both hosts answer.** Every API Worker (accounts, the index, media, the Community, telemetry, status, Drive) has the
 same routes on `www.liveworkspace.app` as on `liveworkspace.app`. The bare routes stay for old clients.
 
-**Tokens.** A token minted before the move names the bare issuer: access tokens for an hour, guest tokens for a year
-(they were minted for a year until 2026-11, 45 days since).
+**Tokens.** A token minted before the move names the bare issuer: guest tokens for a year (they were minted for a year
+until 2026-11, 45 days since); access tokens, an hour then and 15 minutes now, have long lapsed.
 Every check of a liveworkspace token (`@liveworkspace/auth-client` `createVerifier` and `createPersonVerifier`, in
 each app's API, the index, Drive and this Worker's own bearer check) accepts the issuer it is configured with and its
 twin on the other host, and the same for each audience. The twins are one named constant,

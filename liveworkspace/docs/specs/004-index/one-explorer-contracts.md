@@ -88,7 +88,10 @@ for a grant (`@liveworkspace/index-client/browser` `createGuestTokens`; owner, 2
 Guest token: a JWT signed with accounts' keys, `iss` the accounts issuer, `aud` the client's API
 resource, `sub: guest_<uuid>`, `kind: "guest"`, valid for 45 days (a year before 2026-11). A newer one replaces it
 silently. The app hands off again on the first page load that needs it once it has fewer than 15 days left
-(`GUEST_TOKEN_REFRESH_BEFORE_MS`), and accounts' `lw_guest` cookie names the same guest again.
+(`GUEST_TOKEN_REFRESH_BEFORE_MS`), and accounts' `lw_guest` cookie names the same guest again. Renewing a token it
+still holds, the app presents that token in a form body (never a query string), so a guest whose cookie Safari
+cleared keeps their id; the cookie wins when both name a guest, and a chain of renewals by token alone ends 180 days
+after the cookie last vouched for the guest ([accounts.md](../003-accounts/accounts.md#renewing-without-the-cookie)).
 
 **Becoming an account.** When someone signs in or signs up on liveworkspace.app with an `lw_guest`
 cookie, accounts tells the index (`POST /internal/merge`, accounts' own key), which moves the guest's
