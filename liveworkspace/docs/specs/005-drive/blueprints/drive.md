@@ -90,16 +90,22 @@ Scopes: `drive.file` and `drive.install`.
    `changes.watch` for 7 days with a fresh id and the signed channel token. A failure is logged and stamped
    `channelFailedAt`.
 5. `index.picture({ full })` (`picture.ts`, `full` on Check now or a fresh root): a whole read is every page of
-   personal items, folders and trash (`LIST_LIMIT_MAX` each, at most `DRIVE_LIST_PAGES_MAX` = 100 pages, else a
-   throw), filtered to the person's own, live, unshared items of the five apps (`isAppName`: livehuddle, still held,
-   is one of them). Otherwise, with a kept picture whose whole read is under `DRIVE_PICTURE_FULL_MS` (10 min) old and
+   personal items, folders and trash (`picturePage`, `LIST_LIMIT_MAX` a page), filtered to the person's own, live,
+   unshared items of the five apps (`isAppName`: livehuddle, still held, is one of them). It reads a round of one page
+   of each unfinished list at a time, at most `drivePicturePagesPerPass(budget)` (a quarter of the meter's budget, 200) pages a pass, each page staged at once (`drive_picture_next`, its list's cursor and done flag in
+   `drive_picture_read` with the read's `startedAt`); past that it throws `BudgetSpent`, and the next pass resumes it,
+   whatever its `full` (a read in progress always goes on first). A read finished in a later pass than it began is
+   kept with `readAt = fullAt = startedAt`, then merged with `changedSince(startedAt - DRIVE_PICTURE_SLACK_MS)` as
+   below; when that merge can't be trusted the kept picture is marked stale and the pass ends as `BudgetSpent`, so
+   the next one reads whole again. Otherwise, with a kept picture whose whole read is under `DRIVE_PICTURE_FULL_MS` (10 min) old and
    not marked stale, `changedSince(readAt - DRIVE_PICTURE_SLACK_MS)`: the live items changed since (`since`), every
    folder and the whole Trash, merged over the kept picture: items now in the Trash leave the live list, changed ones
    replace theirs, each that left the Trash is `readItem` (live again, or gone). More than
    `DRIVE_PICTURE_RECHECKS_MAX` (10) left the Trash, or a kept item's folder is gone: a whole read instead. Every
    picture read is kept (`drive_picture`, only the rows that differ written) with its `readAt` and `fullAt`
-   (`drive_picture_state`); any write the mirror makes to the index marks it stale (`fullAt` 0), so the next read, the
-   re-read in step 9 among them, is whole.
+   (`drive_picture_state`); any write the mirror makes to the index marks it stale (`fullAt` 0) and drops a whole read
+   in progress, so the next read, the re-read in step 9 among them, is whole and starts afresh. `runPass` notes the
+   read's progress (`pictureReadMark`) before it starts, so a pass that only moved a whole read on counts as moved on.
 6. A fresh root: `adoptExisting` (files tagged `lwOrigin = origin`, `planAdoption`).
 7. Inbound behind the gate: `getStartPageToken`; equal to the stored token (or none stored) is nothing new. Else
    `readChanges` page by page (`DRIVE_CHANGES_PAGE_SIZE` 1000); a `400`/`404` token restarts from now and adopts. The
@@ -213,6 +219,8 @@ The object's SQLite (`new_sqlite_classes = ["DriveMirror"]`, migration `v1`), ma
 | `drive_failures`      | `id`             | `at`                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `drive_picture`       | `id`             | `app`, `name`, `folder_id`, `updated_at`, `created_at`, `trashed_at` (null: live): the last picture read                                                                                                                                                                                                                                                                                                                                     |
 | `drive_picture_state` | `id = 1` (CHECK) | `read_at`, `full_at` (0: stale, the next read is whole)                                                                                                                                                                                                                                                                                                                                                                                      |
+| `drive_picture_read`  | `id = 1` (CHECK) | `started_at`, `items_cursor`, `items_done`, `folders_cursor`, `folders_done`, `trash_cursor`, `trash_done`: a whole read in progress (none: none)                                                                                                                                                                                                                                                                                            |
+| `drive_picture_next`  | `list`, `id`     | `row` (the row as JSON): the pages a whole read in progress has read so far, by list (`items`, `folders`, `trash`)                                                                                                                                                                                                                                                                                                                           |
 
 `putRow` first deletes any other row naming the same Drive file. The alarm is the object's one alarm. The access token
 lives only in memory. Sealed tokens are `v1.<iv>.<ciphertext>`, AES-GCM under `DRIVE_TOKEN_KEY`, a 12-byte IV, the
@@ -284,40 +292,41 @@ Every line is `drive: <step>` with ids. `driveLog`: `route <name>`, `connect`, `
 
 ## Constants and configuration
 
-| Constant                                       | Value           | Used by                                |
-| ---------------------------------------------- | --------------- | -------------------------------------- |
-| `DRIVE_STATE_TTL_MS`                           | 10 min          | consent `state`                        |
-| `DRIVE_ACCOUNT_SWITCH_TTL_MS`                  | 30 min          | a pending switch                       |
-| `DRIVE_PASS_DEBOUNCE_MS`                       | 30 s            | `signal`                               |
-| `DRIVE_ITEM_MIN_WRITE_INTERVAL_MS` / `_MAX_MS` | 5 min / 30 min  | content writes                         |
-| `DRIVE_FALLBACK_CHECK_MS`                      | 30 min          | no live channel; channel retry         |
-| `DRIVE_FALLBACK_CHECK_WATCHED_MS`              | 6 h             | a live channel                         |
-| `DRIVE_FALLBACK_CHECK_MAX_MS`                  | 6 h             | back-off ceiling                       |
-| `DRIVE_CHECK_MIN_GAP_MS`                       | 30 s            | `check`; a failed alarm's retry        |
-| `DRIVE_PASS_MAX_WRITES`                        | 40              | outbound batch                         |
-| `DRIVE_PASS_CONTINUE_MS`                       | 1 s             | the next batch                         |
-| `DRIVE_PASS_STALLS_MAX`                        | 3               | stalled passes before slowing          |
-| `DRIVE_PASS_MAX_INBOUND`                       | 200             | inbound batch                          |
-| `DRIVE_PASS_SUBREQUEST_BUDGET`                 | 800             | `SubrequestMeter`                      |
-| `DRIVE_CHANGES_PAGE_SIZE`                      | 1000            | `listChanges`                          |
-| `DRIVE_BACKOFF_CALM_MS` / `_MAX_LEVEL`         | 1 h / 5         | back-off                               |
-| `DRIVE_TOKEN_RENEW_BEFORE_MS`                  | 1 min           | `TokenSource`                          |
-| `DRIVE_CHANNEL_TTL_MS` / `_RENEW_BEFORE_MS`    | 7 d / 24 h      | the push channel                       |
-| `DRIVE_MULTIPART_MAX_BYTES`                    | 5 MiB           | uploads                                |
-| `DRIVE_IMPORT_MAX_BYTES`                       | 32 MiB          | import                                 |
-| `DRIVE_THUMBNAIL_PX` / `_MAX_BYTES`            | 440 / 2,000,000 | thumbnails                             |
-| `DRIVE_PICKER_TOKENS_PER_MINUTE`               | 10              | `pickerToken`                          |
-| `GOOGLE_CALL_TIMEOUT_MS`                       | 10 s            | Google calls                           |
-| `DRIVE_LIST_PAGES_MAX`                         | 100             | `everyPage`                            |
-| `DRIVE_PICTURE_FULL_MS` (`picture.ts`)         | 10 min          | the longest between whole reads        |
-| `DRIVE_PICTURE_SLACK_MS` (`picture.ts`)        | 5 min           | a read of what changed looks back      |
-| `DRIVE_PICTURE_RECHECKS_MAX` (`picture.ts`)    | 10              | items out of the Trash read one by one |
-| `DRIVE_NAME_MAX` / `LOCAL_NAME_MAX`            | 1024 / 200      | names                                  |
-| `DOOR_TIMEOUT_MS` (`app-doors.ts`)             | 20 s            | the apps' doors                        |
-| `MAX_BODY_BYTES` (`http.ts`)                   | 16 KiB          | `readObject`                           |
-| `OUTBOUND_OP_COST` / `INBOUND_CHANGE_COST`     | 6 / 4           | the meter's headroom                   |
-| `TOKEN_MAX` (`channel-token.ts`)               | 256             | channel tokens                         |
-| `RETURN_MAX` (`consent.ts`)                    | 2048            | `returnTo`                             |
+| Constant                                       | Value            | Used by                                |
+| ---------------------------------------------- | ---------------- | -------------------------------------- |
+| `DRIVE_STATE_TTL_MS`                           | 10 min           | consent `state`                        |
+| `DRIVE_ACCOUNT_SWITCH_TTL_MS`                  | 30 min           | a pending switch                       |
+| `DRIVE_PASS_DEBOUNCE_MS`                       | 30 s             | `signal`                               |
+| `DRIVE_ITEM_MIN_WRITE_INTERVAL_MS` / `_MAX_MS` | 5 min / 30 min   | content writes                         |
+| `DRIVE_FALLBACK_CHECK_MS`                      | 30 min           | no live channel; channel retry         |
+| `DRIVE_FALLBACK_CHECK_WATCHED_MS`              | 6 h              | a live channel                         |
+| `DRIVE_FALLBACK_CHECK_MAX_MS`                  | 6 h              | back-off ceiling                       |
+| `DRIVE_CHECK_MIN_GAP_MS`                       | 30 s             | `check`; a failed alarm's retry        |
+| `DRIVE_PASS_MAX_WRITES`                        | 40               | outbound batch                         |
+| `DRIVE_PASS_CONTINUE_MS`                       | 1 s              | the next batch                         |
+| `DRIVE_PASS_STALLS_MAX`                        | 3                | stalled passes before slowing          |
+| `DRIVE_PASS_MAX_INBOUND`                       | 200              | inbound batch                          |
+| `DRIVE_PASS_SUBREQUEST_BUDGET`                 | 800              | `SubrequestMeter`                      |
+| `DRIVE_CHANGES_PAGE_SIZE`                      | 1000             | `listChanges`                          |
+| `DRIVE_BACKOFF_CALM_MS` / `_MAX_LEVEL`         | 1 h / 5          | back-off                               |
+| `DRIVE_TOKEN_RENEW_BEFORE_MS`                  | 1 min            | `TokenSource`                          |
+| `DRIVE_CHANNEL_TTL_MS` / `_RENEW_BEFORE_MS`    | 7 d / 24 h       | the push channel                       |
+| `DRIVE_MULTIPART_MAX_BYTES`                    | 5 MiB            | uploads                                |
+| `DRIVE_IMPORT_MAX_BYTES`                       | 32 MiB           | import                                 |
+| `DRIVE_THUMBNAIL_PX` / `_MAX_BYTES`            | 440 / 2,000,000  | thumbnails                             |
+| `DRIVE_PICKER_TOKENS_PER_MINUTE`               | 10               | `pickerToken`                          |
+| `GOOGLE_CALL_TIMEOUT_MS`                       | 10 s             | Google calls                           |
+| `DRIVE_LIST_PAGES_MAX`                         | 100              | `everyPage`                            |
+| `drivePicturePagesPerPass` (`picture.ts`)      | budget / 4 (200) | pages of a whole read in one pass      |
+| `DRIVE_PICTURE_FULL_MS` (`picture.ts`)         | 10 min           | the longest between whole reads        |
+| `DRIVE_PICTURE_SLACK_MS` (`picture.ts`)        | 5 min            | a read of what changed looks back      |
+| `DRIVE_PICTURE_RECHECKS_MAX` (`picture.ts`)    | 10               | items out of the Trash read one by one |
+| `DRIVE_NAME_MAX` / `LOCAL_NAME_MAX`            | 1024 / 200       | names                                  |
+| `DOOR_TIMEOUT_MS` (`app-doors.ts`)             | 20 s             | the apps' doors                        |
+| `MAX_BODY_BYTES` (`http.ts`)                   | 16 KiB           | `readObject`                           |
+| `OUTBOUND_OP_COST` / `INBOUND_CHANGE_COST`     | 6 / 4            | the meter's headroom                   |
+| `TOKEN_MAX` (`channel-token.ts`)               | 256              | channel tokens                         |
+| `RETURN_MAX` (`consent.ts`)                    | 2048             | `returnTo`                             |
 
 | Setting            | Production                                                                                                                                                     | Staging                                |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |

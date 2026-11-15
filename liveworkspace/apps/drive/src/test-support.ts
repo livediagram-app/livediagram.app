@@ -86,6 +86,8 @@ export class FakeIndex implements IndexApi {
   // The rows those list pages and item reads carried, and how many pictures were read whole.
   rowsRead = 0;
   wholeReads = 0;
+  // Rows to a list page (the real index's LIST_LIMIT_MAX); a test makes it smaller for a picture of many pages.
+  pageSize = 200;
   private readonly clock: Clock;
   private seq = 0;
 
@@ -165,7 +167,7 @@ export class FakeIndex implements IndexApi {
     void personId;
     // A picture's three lists, each page charged as one request and each row as one read.
     const read = (picture: Picture): Picture => {
-      const pages = (n: number) => Math.max(1, Math.ceil(n / 200));
+      const pages = (n: number) => Math.max(1, Math.ceil(n / this.pageSize));
       const count =
         pages(picture.items.length) + pages(picture.folders.length) + pages(picture.trash.length);
       meter?.charge(count);
@@ -182,6 +184,34 @@ export class FakeIndex implements IndexApi {
       changedSince: async (since) => {
         const picture = this.picture();
         return read({ ...picture, items: picture.items.filter((i) => i.updatedAt >= since) });
+      },
+      // Keyset-paged as the index's lists are: items by updatedAt, the Trash by trashedAt, folders by id, newest
+      // first, ties by id; the cursor is the last row's key, so a row added or removed shifts no other.
+      picturePage: async (list, cursor) => {
+        meter?.charge();
+        this.requests += 1;
+        if (list === 'items' && cursor === null) this.wholeReads += 1;
+        const picture = this.picture();
+        const keyOf = (row: { id: string; updatedAt?: number; trashedAt?: number }) =>
+          list === 'items' ? row.updatedAt! : list === 'trash' ? row.trashedAt! : 0;
+        const rows = (picture[list] as { id: string }[])
+          .map((row) => ({ row, key: [keyOf(row), row.id] as const }))
+          .sort((a, b) => b.key[0] - a.key[0] || (a.key[1] < b.key[1] ? 1 : -1));
+        const after = cursor ? (JSON.parse(cursor) as [number, string]) : null;
+        const left = after
+          ? rows.filter(
+              ({ key }) => key[0] < after[0] || (key[0] === after[0] && key[1] < after[1]),
+            )
+          : rows;
+        const page = left.slice(0, this.pageSize);
+        this.rowsRead += page.length;
+        const out: Picture = { items: [], folders: [], trash: [] };
+        (out[list] as unknown[]) = page.map(({ row }) => row);
+        const last = page.at(-1);
+        return {
+          picture: out,
+          nextCursor: left.length > this.pageSize && last ? JSON.stringify(last.key) : null,
+        };
       },
       readItem: async (id) => {
         meter?.charge();

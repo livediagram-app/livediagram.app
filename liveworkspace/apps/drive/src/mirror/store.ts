@@ -3,7 +3,8 @@
 // pending switch, the push channel, back-off, pass progress), and `drive_items`, one row per mirrored item and folder
 // (DriveRow, plus the item's updatedAt last seen, for the Explorer's marks). `drive_failures` holds the items whose
 // last write failed. `drive_picture` and `drive_picture_state` keep the last picture read from the index, so most
-// passes read only what changed (picture.ts). Over a minimal SQL interface, so the tests run it on node:sqlite.
+// passes read only what changed (picture.ts); `drive_picture_read` and `drive_picture_next` hold a whole read that
+// spans passes, its lists' cursors and the pages read so far. Over a minimal SQL interface, so the tests run it on node:sqlite.
 //
 // A store that never held anything gets no schema from a read: reads check for the schema first, so a signal or a
 // marks request for someone not connected writes nothing.
@@ -14,9 +15,11 @@ import {
   type DriveRow,
   type DriveRowKind,
   type DriveStatus,
+  type MirrorFolder,
   type MirrorItem,
   type MirrorTrashed,
 } from '@liveworkspace/drive';
+import { PICTURE_LISTS, type Picture, type PictureList } from '../index-api';
 
 export interface SqlCursor {
   toArray(): Record<string, unknown>[];
@@ -121,6 +124,22 @@ CREATE TABLE IF NOT EXISTS drive_picture_state (
   read_at INTEGER NOT NULL,
   full_at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS drive_picture_read (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  started_at INTEGER NOT NULL,
+  items_cursor TEXT,
+  items_done INTEGER NOT NULL DEFAULT 0,
+  folders_cursor TEXT,
+  folders_done INTEGER NOT NULL DEFAULT 0,
+  trash_cursor TEXT,
+  trash_done INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS drive_picture_next (
+  list TEXT NOT NULL,
+  id TEXT NOT NULL,
+  row TEXT NOT NULL,
+  PRIMARY KEY (list, id)
+);
 `;
 
 // How many picture rows one statement writes or drops: one bound JSON array, far inside a value's size limit.
@@ -130,6 +149,11 @@ const PICTURE_ROWS_PER_STATEMENT = 500;
 export type KeptPicture = { items: Map<string, MirrorItem>; trash: Map<string, MirrorTrashed> };
 /** When it was read, and when last read whole (0: stale, the next read is whole). */
 export type PictureState = { readAt: number; fullAt: number };
+/** A whole read in progress (picture.ts): when it began, and where each list stands. */
+export type PictureRead = {
+  startedAt: number;
+  lists: Record<PictureList, { cursor: string | null; done: boolean }>;
+};
 
 // Connection fields and their columns; `backoff` and `progress` span two columns each.
 const COLUMNS = {
@@ -488,14 +512,93 @@ export class MirrorStore {
     );
   }
 
-  /** The mirror changed the index itself: the next picture is read whole. */
+  /** The mirror changed the index itself: the next picture is read whole, afresh (a read in progress is dropped). */
   stalePicture(): void {
-    this.readable()?.exec('UPDATE drive_picture_state SET full_at = 0 WHERE id = 1');
+    const sql = this.readable();
+    if (!sql) return;
+    sql.exec('UPDATE drive_picture_state SET full_at = 0 WHERE id = 1');
+    this.endPictureRead(sql);
+  }
+
+  /** The whole read in progress, or null. */
+  pictureRead(): PictureRead | null {
+    const r = this.readable()?.exec('SELECT * FROM drive_picture_read WHERE id = 1').toArray()[0];
+    if (!r) return null;
+    const list = (name: PictureList) => ({
+      cursor: str(r[`${name}_cursor`]),
+      done: Boolean(num(r[`${name}_done`])),
+    });
+    return {
+      startedAt: num(r.started_at) ?? 0,
+      lists: { items: list('items'), folders: list('folders'), trash: list('trash') },
+    };
+  }
+
+  /** Where a whole read stands, as one string (none: ''), so a pass can tell whether it moved one on. */
+  pictureReadMark(): string {
+    const read = this.pictureRead();
+    return read ? JSON.stringify(read) : '';
+  }
+
+  /** Begin a whole read at `at`, nothing read yet. */
+  startPictureRead(at: number): PictureRead {
+    const sql = this.writable();
+    this.endPictureRead(sql);
+    sql.exec('INSERT INTO drive_picture_read (id, started_at) VALUES (1, ?)', at);
+    return this.pictureRead()!;
+  }
+
+  /** One page of `list` read by the whole read that began at `startedAt`: its rows staged and its cursor moved on,
+   *  together. False (nothing written) when that read is no longer the one in progress. */
+  addPicturePage(
+    startedAt: number,
+    list: PictureList,
+    rows: readonly { id: string }[],
+    nextCursor: string | null,
+  ): boolean {
+    const sql = this.readable();
+    if (!sql || this.pictureRead()?.startedAt !== startedAt) return false;
+    for (let i = 0; i < rows.length; i += PICTURE_ROWS_PER_STATEMENT) {
+      sql.exec(
+        `INSERT INTO drive_picture_next (list, id, row)
+         SELECT ?, json_extract(value, '$.id'), value FROM json_each(?) WHERE true
+         ON CONFLICT (list, id) DO UPDATE SET row = excluded.row`,
+        list,
+        JSON.stringify(rows.slice(i, i + PICTURE_ROWS_PER_STATEMENT)),
+      );
+    }
+    sql.exec(
+      `UPDATE drive_picture_read SET ${list}_cursor = ?, ${list}_done = ? WHERE id = 1`,
+      nextCursor,
+      Number(nextCursor === null),
+    );
+    return true;
+  }
+
+  /** Every row the whole read in progress has staged, by list. */
+  stagedPicture(): Picture {
+    const picture: Picture = { items: [], folders: [], trash: [] };
+    for (const r of this.readable()?.exec('SELECT list, row FROM drive_picture_next').toArray() ??
+      []) {
+      const list = String(r.list) as PictureList;
+      if (!PICTURE_LISTS.includes(list)) continue;
+      (picture[list] as (MirrorItem | MirrorFolder | MirrorTrashed)[]).push(
+        JSON.parse(String(r.row)) as MirrorItem & MirrorFolder & MirrorTrashed,
+      );
+    }
+    return picture;
+  }
+
+  /** Forget the whole read in progress and its staged pages. */
+  endPictureRead(sql: Sql | null = this.readable()): void {
+    sql?.exec('DELETE FROM drive_picture_read');
+    sql?.exec('DELETE FROM drive_picture_next');
   }
 
   private forgetPicture(sql: Sql): void {
     sql.exec('DELETE FROM drive_picture');
     sql.exec('DELETE FROM drive_picture_state');
+    this.endPictureRead(sql);
   }
 
   /** Forget every row (a switch to another Google account): the connection stays. */
