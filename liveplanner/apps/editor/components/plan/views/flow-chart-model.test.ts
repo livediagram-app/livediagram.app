@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { DAY_MS, flowCountsOf, type FlowCountRow } from '@liveplanner/items';
 import { PHASE_COLOURS } from '@liveplanner/plan-art';
 import {
+  FLOW_DAY_LABEL_HALF_PX,
+  FLOW_DAY_LABEL_PX,
+  FLOW_KEY_LINES_MAX,
   FLOW_PLOT_MIN,
+  bandColour,
+  flowKeyLines,
+  isDarkSurface,
+  placeFootLabels,
   cumulativeFlowModel,
   cycleTimeSummary,
   daysText,
@@ -59,6 +66,57 @@ describe('flow chart geometry', () => {
     );
     expect(periodLabel(MON, 'week')).toMatch(/^Week of \d+ Nov$/);
     expect(periodLabel(MON, 'day')).toMatch(/^\d+ Nov$/);
+  });
+});
+
+describe('the foot, the key and the dark bands', () => {
+  it('keeps every label inside the plot and drops any that would collide, today kept', () => {
+    // Today's label sits at the right edge: clamped in, so the one before it is too close and goes.
+    const placed = placeFootLabels(
+      [
+        { x: 100, text: 'a' },
+        { x: 300, text: 'b' },
+        { x: 350, text: 'c' },
+        { x: 395, text: 'today' },
+      ],
+      30,
+      400,
+    );
+    expect(placed.at(-1)).toEqual({ x: 400 - FLOW_DAY_LABEL_HALF_PX, text: 'today' });
+    expect(placed.map((l) => l.text)).toEqual(['a', 'b', 'today']);
+    for (let i = 1; i < placed.length; i++)
+      expect(placed[i]!.x - placed[i - 1]!.x).toBeGreaterThanOrEqual(FLOW_DAY_LABEL_PX);
+    expect(placeFootLabels([{ x: 0 }], 30, 400)[0]!.x).toBe(30 + FLOW_DAY_LABEL_HALF_PX);
+  });
+
+  it('wraps a key that does not fit to more lines, up to its most', () => {
+    expect(flowKeyLines(['To Do', 'Doing', 'Done'], 400)).toBe(1);
+    expect(flowKeyLines(['Backlog', 'To Do', 'In Progress', 'In Review', 'Done'], 200)).toBe(3);
+    expect(
+      flowKeyLines(
+        Array.from({ length: 30 }, () => 'A long status'),
+        200,
+      ),
+    ).toBe(FLOW_KEY_LINES_MAX);
+  });
+
+  it('tells dark surfaces, and brightens work in progress there while every band stays visible', () => {
+    expect(isDarkSurface('#0f172a')).toBe(true);
+    expect(isDarkSurface('#ffffff')).toBe(false);
+    expect(isDarkSurface('white')).toBe(false);
+    const lum = (hex: string) => {
+      const n = parseInt(hex.slice(1), 16);
+      return ((n >> 16) + ((n >> 8) & 255) + (n & 255)) / 3;
+    };
+    const dark = '#0f172a';
+    const doing = bandColour('doing', 0, dark);
+    for (const t of [0, 0.5, 1]) {
+      expect(lum(bandColour('todo', t, dark))).toBeLessThan(lum(doing));
+      expect(lum(bandColour('done', t, dark))).toBeLessThan(lum(doing));
+      // Never the surface's own darkness: each band clears it clearly.
+      expect(lum(bandColour('todo', t, dark)) - lum(dark)).toBeGreaterThan(60);
+    }
+    expect(bandColour('done', 0, '#ffffff')).toBe(PHASE_COLOURS.done);
   });
 });
 

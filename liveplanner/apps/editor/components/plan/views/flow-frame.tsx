@@ -18,12 +18,13 @@ import type { PlanContextValue } from '../PlanContext';
 import type { PlanPalette } from '../plan-palette';
 import { ViewFrame } from './view-frame';
 import {
-  FLOW_KEY_PX,
+  FLOW_KEY_LINE_PX,
   FLOW_SUMMARY_PX,
   flowDayLabel,
   flowDayTicks,
   flowPlotBox,
   flowX,
+  placeFootLabels,
   type PlotBox,
 } from './flow-chart-model';
 import type { PlanViewProps } from './PlanViewView';
@@ -67,6 +68,8 @@ type FlowFrameProps = Pick<
   empty: string;
   summary: ReactNode;
   legend?: ReactNode;
+  // The lines the key wraps to (flowKeyLines).
+  legendLines?: number;
   // The plot, given its box inside an svg of `size` (null: too small, the summary shows alone).
   children: (box: PlotBox, size: { width: number; height: number }) => ReactNode;
 };
@@ -86,6 +89,7 @@ export function FlowFrame({
   empty,
   summary,
   legend,
+  legendLines = 1,
   children,
 }: FlowFrameProps) {
   const ink = { text: palette.text, muted: palette.muted };
@@ -128,7 +132,8 @@ export function FlowFrame({
     );
   const bodyWidth = width - BORDER_PX;
   const bodyHeight = height - HEADER_PX - BORDER_PX;
-  const above = FLOW_SUMMARY_PX + (legend ? FLOW_KEY_PX : 0);
+  const keyHeight = legendLines * FLOW_KEY_LINE_PX + 6;
+  const above = FLOW_SUMMARY_PX + (legend ? keyHeight : 0);
   // Kept while the size holds, so a plot's memoised layers survive a hover.
   const box = useMemo(
     () => flowPlotBox(bodyWidth, bodyHeight, above),
@@ -155,8 +160,8 @@ export function FlowFrame({
         </div>
         {box && legend ? (
           <div
-            className="flex shrink-0 items-center overflow-hidden px-3"
-            style={{ height: FLOW_KEY_PX }}
+            className="flex shrink-0 items-start overflow-hidden px-3"
+            style={{ height: keyHeight }}
           >
             {legend}
           </div>
@@ -231,34 +236,34 @@ export function FlowAxes({
           </g>
         );
       })}
-      {labels.map(({ x, text }) => {
-        // A label at an edge keeps inside the plot.
-        const anchor = x > box.x + box.width - 20 ? 'end' : x < box.x + 20 ? 'start' : 'middle';
-        return (
-          <text key={`${x}`} x={x} y={foot + 15} textAnchor={anchor}>
-            {text}
-          </text>
-        );
-      })}
+      {placeFootLabels(labels, box.x, box.x + box.width).map(({ x, text }) => (
+        <text key={`${x}`} x={x} y={foot + 15} textAnchor="middle">
+          {text}
+        </text>
+      ))}
     </g>
   );
 }
 
-// The hover card beside the pointer, flipped to its left near the plot's right edge.
+// The hover card beside the pointer, flipped to its left near the plot's right edge and upward in its lower half.
 export function FlowTip({
   x,
   y,
   width,
+  height,
   palette,
   children,
 }: {
   x: number;
   y: number;
   width: number;
+  height: number;
   palette: PlanPalette;
   children: ReactNode;
 }) {
   const flip = x > width * 0.6;
+  // In the lower part of the plot it opens upward, so it never runs past the frame or over the foot's labels.
+  const up = y > height * 0.5;
   return (
     <div
       aria-hidden
@@ -266,7 +271,8 @@ export function FlowTip({
       style={{
         left: flip ? undefined : x + 12,
         right: flip ? width - x + 12 : undefined,
-        top: Math.max(4, y - 12),
+        top: up ? undefined : Math.max(4, y - 12),
+        bottom: up ? Math.max(4, height - y + 12) : undefined,
         backgroundColor: palette.card,
         borderColor: palette.cardBorder,
         color: palette.text,
@@ -277,33 +283,27 @@ export function FlowTip({
   );
 }
 
-// A key entry: a swatch in the series' colour, its name in the text ink.
+// A key entry: a swatch in the series' colour, its name in the text ink, cut short only when longer than the row.
 export function FlowKeyEntry({
   colour,
   label,
   palette,
-  dashed = false,
 }: {
   colour: string;
   label: string;
   palette: PlanPalette;
-  dashed?: boolean;
 }) {
   return (
     <span
-      className="inline-flex shrink-0 items-center gap-1.5 text-[11px]"
+      className="inline-flex min-w-0 max-w-full shrink-0 items-center gap-1.5 text-[11px] leading-4"
       style={{ color: palette.muted }}
     >
-      {dashed ? (
-        <span
-          aria-hidden
-          className="w-3 border-t-2 border-dashed"
-          style={{ borderColor: colour }}
-        />
-      ) : (
-        <span aria-hidden className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: colour }} />
-      )}
-      {label}
+      <span
+        aria-hidden
+        className="h-2.5 w-2.5 shrink-0 rounded-sm"
+        style={{ backgroundColor: colour }}
+      />
+      <span className="truncate">{label}</span>
     </span>
   );
 }

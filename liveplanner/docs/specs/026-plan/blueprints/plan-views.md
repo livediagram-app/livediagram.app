@@ -267,20 +267,20 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
   - Frame (`apps/editor/components/plan/views/flow-frame.tsx`): `useFlowChart` (range, read, types), `FlowFrame` over `ViewFrame` (title
     `flowTitle`: "Cycle Time · Last 30 Days"; `loadingText` "Loading flow…"; `empty` a `CompactEmptyState` for
     `offline` and `error` (Try Again: `retry`), "Open the plan to see the flow." outside a plan), the summary row
-    (`FLOW_SUMMARY_PX` 30), the key row (`FLOW_KEY_PX` 22, Cumulative Flow), then the plot svg. `flowFrameState` gives
+    (`FLOW_SUMMARY_PX` 30), the key row (Cumulative Flow: `flowKeyLines` lines of `FLOW_KEY_LINE_PX` 16 plus 6, at most `FLOW_KEY_LINES_MAX` 3, wrapping, a too-long name truncated), then the plot svg. `flowFrameState` gives
     the state. Body = element less a 41 px header and 2 px border; `flowPlotBox` is null under `FLOW_PLOT_MIN` (200 ×
     140), the summary then centred alone. `FlowAxes`: `niceTicks` gridlines (dashed, the baseline solid) and labels,
     and the foot's day labels (`flowDayTicks`, at least `FLOW_DAY_LABEL_PX` 44 apart, the last day always) or given
-    labels. `FlowTip` is the hover card (flipped left past 60% of the width). `plotPoint` maps a pointer into the svg
+    labels, placed by `placeFootLabels` (clamped `FLOW_DAY_LABEL_HALF_PX` inside the plot, centred, walked back from today dropping any nearer than `FLOW_DAY_LABEL_PX` to the next). `FlowTip` is the hover card (flipped left past 60% of the width, opening upward below half the height). `plotPoint` maps a pointer into the svg
     whatever the zoom.
   - Geometry (`apps/editor/components/plan/views/flow-chart-model.ts`): `niceTicks(max)` (1, 2, 5 × 10ⁿ steps, top at least 1),
     `flowDayLabel` ("3 Nov", UTC), `flowX`, `cumulativeFlowModel(counts, phases, statusNames, surface)` (bands bottom
     to top: phase rank done, doing, todo, then the boards' order backwards; `''` is "No status" at the top; colour
-    `mixHex(PHASE_COLOURS[phase], surface, 1 - i / (n - 1) × 0.55)` inside a phase (the phase colour's share); `tops` stacked; `inProgress` and
+    `bandColour(phase, i / (n - 1), surface)` inside a phase: on a light surface `mixHex(PHASE_COLOURS[phase], surface, 1 - t × 0.55)`, on a dark one (`isDarkSurface`, luminance under 0.18) along `DARK_RAMPS` (doing `#60a5fa` to `#93c5fd`, done `#22c55e` to `#15803d`, todo `#64748b` to `#7b8aa0`), so In Progress reads strongest; `tops` stacked; `inProgress` and
     `done` on the last day), `cycleTimeSummary`, `throughputSummary`, `periodLabel`, `daysText`.
   - `CycleTimeView`: `cycleTimesOf(data.cards, phases, fromDay, toDay, types)`; dots (r 4, In Progress blue at 85%,
     a 1.5 px surface ring) in one memoised layer; p85 dashed and p50 solid lines in the text ink, labelled "85%" /
-    "50%" at their right ends; hover is the nearest dot within `CYCLE_HIT_PX` (12, `nearestDot`, linear), drawn
+    "50%" at their right ends; hover is the nearest dot within `CYCLE_HIT_PX` (12, `nearestDot`, linear), and a press or click reads its own point (a tap sends no move), drawn
     larger and ringed in the text ink, with a `FlowTip` (#key title, days, finish day). The plot is a focusable
     `role="group"`: ←/→ step (`plan.announce` the dot), Enter opens; a press on a hovered dot opens its card
     (`plan.openItem`, only while the card is in `plan.items`) and stops the canvas taking the press.

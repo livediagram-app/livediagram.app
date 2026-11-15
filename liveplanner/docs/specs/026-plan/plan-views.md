@@ -444,7 +444,7 @@ time the charts arrive.
 - **The frame**: each is headed by its name and range ("Cycle Time · Last 30 Days"), counting what it draws (the cards
   finished; Cumulative Flow the cards on its last day). Under the header a summary line names the chart's answer
   before the plot (below), and the plot fills the rest: a y axis of whole numbers at the left on light gridlines, the
-  days or weeks along the foot, labels thinned so none collide. In a slot too small for a plot (under 200 × 140 of
+  days or weeks along the foot, labels thinned so none collide (each kept whole inside the plot, today's always shown). A hover card opens beside the pointer, to its left near the right edge and upward in the plot's lower half, so it never runs past the frame. Pressing a dot works from where it is pressed, so a tap on a phone opens it. In a slot too small for a plot (under 200 × 140 of
   body) the summary line shows alone.
 - **Cycle Time**: x is the day each card of the range finished (its last finish in the range, once per card), y the
   days from started to finished, to one decimal. Two lines cross it: the **50th** and **85th percentile**, each
@@ -464,7 +464,8 @@ time the charts arrive.
   counts in its status, so the done band never drops when finished cards are archived. Before the plan's first
   counted day the chart draws nothing and says when counting began ("Counting since 15 Nov"). The bands sit 1 px
   apart; a key under the summary line names each status (as a column calls it, "No status" for none) in the band
-  order. Hovering the plot drops a line on the day under the pointer and names the day and each status's count, top
+  order, wrapping to up to three lines where the chart is narrow. On a dark surface the In Progress bands are the
+  brightest, Done a step quieter and Not Started a muted slate, every band clearing 3:1 against the surface. Hovering the plot drops a line on the day under the pointer and names the day and each status's count, top
   band first. The summary line names the cards in progress on the last day ("12 in progress · 30 done").
 - **Who sees what**: every role that may read the plan sees the flow charts (a Viewer included); only an Editor
   changes a chart's Range or Card Types (Chart Settings, as every chart setting). A tab-scoped link reads every card,

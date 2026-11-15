@@ -130,6 +130,10 @@ function CyclePlot({
     const id = cards[i]!.itemId;
     if (plan.items.has(id)) plan.openItem(id);
   };
+  const dotAt = (e: { clientX: number; clientY: number; currentTarget: Element }) => {
+    const p = plotPoint(e, size);
+    return nearestDot(dots, p.x, p.y, CYCLE_HIT_PX);
+  };
   const onKeyDown = (e: KeyboardEvent) => {
     if (cards.length === 0) return;
     let next: number;
@@ -176,17 +180,24 @@ function CyclePlot({
               : undefined
           }
           onPointerLeave={() => setActive(null)}
+          // A press reads the dot under it from its own point: a tap on a phone sends no move first.
           onPointerDown={(e) => {
-            if (interactive && active !== null) e.stopPropagation();
+            if (!interactive) return;
+            const hit = dotAt(e);
+            if (hit === null) return;
+            e.stopPropagation();
+            setActive(hit);
           }}
           onClick={(e) => {
-            if (!interactive || active === null) return;
+            if (!interactive) return;
+            const hit = dotAt(e);
+            if (hit === null) return;
             e.stopPropagation();
-            open(active);
+            open(hit);
           }}
           onDoubleClick={(e) => {
             e.stopPropagation();
-            open(active);
+            open(dotAt(e));
           }}
         >
           <FlowAxes
@@ -213,7 +224,7 @@ function CyclePlot({
         </svg>
       </div>
       {hit && activeCard ? (
-        <FlowTip x={hit.x} y={hit.y} width={size.width} palette={palette}>
+        <FlowTip x={hit.x} y={hit.y} width={size.width} height={size.height} palette={palette}>
           <div className="max-w-[200px] truncate font-semibold">
             {activeItem
               ? `#${activeItem.key} ${itemTitle(activeItem) || 'Untitled'}`

@@ -14,12 +14,21 @@ import {
 import { PHASE_COLOURS } from '@liveplanner/plan-art';
 
 // The plot's margins inside the chart body: the y labels at the left, the day labels at the foot.
-export const FLOW_PLOT_PAD = { left: 30, right: 14, top: 10, bottom: 22 } as const;
+// The top leaves room for a count over a bar that reaches the top tick, and the percentile labels.
+export const FLOW_PLOT_PAD = { left: 30, right: 14, top: 18, bottom: 22 } as const;
 // A body smaller than this shows the summary line alone (no room for a readable plot).
 export const FLOW_PLOT_MIN = { width: 200, height: 140 } as const;
 // The summary line and the key's heights, above the plot.
 export const FLOW_SUMMARY_PX = 30;
-export const FLOW_KEY_PX = 22;
+// A wrapped key's line, and the most lines it takes before the rest is left to the hover card.
+export const FLOW_KEY_LINE_PX = 16;
+export const FLOW_KEY_LINES_MAX = 3;
+// A key entry's width at 11 px: the swatch and its gap, about 6 px a letter, and the gap to the next.
+const KEY_SWATCH_PX = 16;
+const KEY_LETTER_PX = 6;
+const KEY_GAP_PX = 12;
+// Half a day label's width ("30 Nov" at 10 px), so a label is never pushed past the plot's ends.
+export const FLOW_DAY_LABEL_HALF_PX = 16;
 // The least room a day label takes along the foot ("30 Nov" at 10 px, and a gap).
 export const FLOW_DAY_LABEL_PX = 44;
 // A Throughput bar narrower than this carries no count on it.
@@ -67,6 +76,40 @@ export function flowDayTicks(fromDay: number, toDay: number, widthPx: number): n
   const out: number[] = [];
   for (let day = toDay; day >= fromDay; day -= step) out.unshift(day);
   return out;
+}
+
+// The foot's labels as drawn: each kept whole inside the plot (clamped, centred), and, walking back from the last
+// (today), any that would sit closer than FLOW_DAY_LABEL_PX to the one after it dropped, so none collide.
+export function placeFootLabels<T extends { x: number }>(
+  labels: readonly T[],
+  left: number,
+  right: number,
+): T[] {
+  const lo = left + FLOW_DAY_LABEL_HALF_PX;
+  const hi = right - FLOW_DAY_LABEL_HALF_PX;
+  const out: T[] = [];
+  let next = Infinity;
+  for (let i = labels.length - 1; i >= 0; i--) {
+    const x = Math.min(hi, Math.max(lo, labels[i]!.x));
+    if (next - x < FLOW_DAY_LABEL_PX) continue;
+    out.unshift({ ...labels[i]!, x });
+    next = x;
+  }
+  return out;
+}
+
+// How many lines a key of `labels` wraps to across `width` px (at least 1, at most FLOW_KEY_LINES_MAX).
+export function flowKeyLines(labels: readonly string[], width: number): number {
+  let lines = 1;
+  let used = 0;
+  for (const label of labels) {
+    const w = KEY_SWATCH_PX + label.length * KEY_LETTER_PX;
+    if (used > 0 && used + KEY_GAP_PX + w > width) {
+      lines++;
+      used = w;
+    } else used += (used > 0 ? KEY_GAP_PX : 0) + w;
+  }
+  return Math.min(FLOW_KEY_LINES_MAX, lines);
 }
 
 // The x of a moment (ms) on a range's plot, 0 at the start of `fromDay` and 1 at the end of `toDay`.
@@ -140,8 +183,7 @@ export function cumulativeFlowModel(
       status,
       label: status === FLOW_NO_STATUS ? 'No status' : (statusNames.get(status) ?? titleOf(status)),
       phase,
-      // mixHex takes the first colour's share.
-      colour: mixHex(PHASE_COLOURS[phase], surface, 1 - (n > 1 ? (i / (n - 1)) * 0.55 : 0)),
+      colour: bandColour(phase, n > 1 ? i / (n - 1) : 0, surface),
       values,
       tops,
     };
@@ -162,6 +204,38 @@ export function cumulativeFlowModel(
     inProgress,
     done,
   };
+}
+
+// A dark surface's ramps per phase, from the status nearest the band under it to the furthest: work in progress the
+// brightest blues, Done greens a step quieter, Not Started a muted slate that still clears 3:1 on the surface
+// (WCAG 1.4.11), so the eye goes to what is moving and every band and swatch is visible.
+const DARK_RAMPS: Record<StatusPhase, readonly [string, string]> = {
+  doing: ['#60a5fa', '#93c5fd'],
+  done: ['#22c55e', '#15803d'],
+  todo: ['#64748b', '#7b8aa0'],
+};
+
+// Whether a surface is dark (its relative luminance under a half).
+export function isDarkSurface(surface: string): boolean {
+  const m = /^#([0-9a-f]{6})$/i.exec(surface);
+  if (!m) return false;
+  const n = parseInt(m[1]!, 16);
+  const lin = (c: number) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const l = 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return l < 0.18;
+}
+
+// A band's colour: `t` (0 to 1) of the way along its phase's family. On a light surface the phase colour mixed toward
+// the surface (mixHex takes the first colour's share); on a dark one along DARK_RAMPS.
+export function bandColour(phase: StatusPhase, t: number, surface: string): string {
+  if (isDarkSurface(surface)) {
+    const [a, b] = DARK_RAMPS[phase];
+    return mixHex(b, a, t);
+  }
+  return mixHex(PHASE_COLOURS[phase], surface, 1 - t * 0.55);
 }
 
 // A status id no board names any more, read as words: "in-review" is "In review".

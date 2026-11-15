@@ -206,6 +206,7 @@ function ThroughputPlot({
           x={box.x + (active! + 0.5) * slot}
           y={foot - (hovered.cards / top) * box.height}
           width={size.width}
+          height={size.height}
           palette={palette}
         >
           <div className="font-semibold">{periodLabel(hovered.start, t.period)}</div>

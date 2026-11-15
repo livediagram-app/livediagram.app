@@ -11,6 +11,7 @@ import type { PlanPalette } from '../plan-palette';
 import { FlowAxes, FlowFrame, FlowKeyEntry, FlowTip, plotPoint, useFlowChart } from './flow-frame';
 import {
   cumulativeFlowModel,
+  flowKeyLines,
   flowDayLabel,
   niceTicks,
   type CumulativeFlowModel,
@@ -22,6 +23,8 @@ const NO_PHASES = new Map();
 const NO_NAMES = new Map<string, string>();
 // The most statuses the hover card lists before "and N more".
 const TIP_ROWS_MAX = 8;
+// The key row's side padding and the frame's border, taken from the element's width.
+const KEY_INSET_PX = 26;
 
 export function CumulativeFlowView(props: PlanViewProps) {
   const { plan, palette, fontFamily, width, height } = props;
@@ -69,9 +72,17 @@ export function CumulativeFlowView(props: PlanViewProps) {
           </>
         ) : null
       }
+      legendLines={
+        chart
+          ? flowKeyLines(
+              chart.bands.map((b) => b.label),
+              width - KEY_INSET_PX,
+            )
+          : 1
+      }
       legend={
         chart ? (
-          <span className="flex min-w-0 items-center gap-3 overflow-hidden">
+          <span className="flex min-w-0 flex-wrap items-center gap-x-3">
             {[...chart.bands].reverse().map((b) => (
               <FlowKeyEntry key={b.status} colour={b.colour} label={b.label} palette={palette} />
             ))}
@@ -170,7 +181,7 @@ function FlowPlot({
         ) : null}
       </svg>
       {hover !== null ? (
-        <FlowTip x={x} y={box.y + 8} width={size.width} palette={palette}>
+        <FlowTip x={x} y={box.y + 8} width={size.width} height={size.height} palette={palette}>
           <div className="mb-0.5 font-semibold">{flowDayLabel(fromDay + hover)}</div>
           {[...chart.bands]
             .reverse()

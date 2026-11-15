@@ -167,7 +167,10 @@ describe('flow charts', () => {
       clientY: Number(first.getAttribute('cy')),
     });
     expect(screen.getByText('#1 Card 1')).toBeTruthy();
-    fireEvent.click(svg);
+    fireEvent.click(svg, {
+      clientX: Number(first.getAttribute('cx')),
+      clientY: Number(first.getAttribute('cy')),
+    });
     expect(plan.openItem).toHaveBeenCalledWith('i1');
     fireEvent.pointerLeave(svg);
     expect(screen.queryByText('#1 Card 1')).toBeNull();
@@ -181,6 +184,22 @@ describe('flow charts', () => {
     fireEvent.keyDown(chart, { key: 'Enter' });
     expect(plan.openItem).toHaveBeenLastCalledWith('i1');
     fireEvent.keyDown(chart, { key: 'Tab' });
+  });
+
+  it('opens a dot on a tap, with no move before it (a phone)', async () => {
+    const plan = planWith();
+    draw('cycle-time', plan, { types: ['task'] });
+    const chart = await screen.findByRole('group', { name: /Cycle Time: 3 cards finished/ });
+    sizePlots();
+    const dot = chart.querySelectorAll('circle')[2]!;
+    const at = { clientX: Number(dot.getAttribute('cx')), clientY: Number(dot.getAttribute('cy')) };
+    const svg = chart.querySelector('svg')!;
+    fireEvent.pointerDown(svg, at);
+    fireEvent.click(svg, at);
+    expect(plan.openItem).toHaveBeenCalledWith('i3');
+    // A tap away from every dot opens nothing.
+    fireEvent.click(svg, { clientX: 1, clientY: 1 });
+    expect(plan.openItem).toHaveBeenCalledTimes(1);
   });
 
   it('starts the keys at the newest dot, and names a card no longer in the plan', async () => {
