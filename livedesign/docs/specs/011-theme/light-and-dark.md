@@ -93,7 +93,10 @@ the header (`colourIsOpaque`).
   `packages/design/src/paper-label-ink.ts`). It runs before the label walks, so the words on a walked fill are read
   against the fill as drawn. Nothing stored changes, and an export prints the marks as made. The layout picker's tiles
   draw a plain page in the dark editor through the same walks as the canvas (`inkedOnPaper`,
-  `apps/live/lib/stock-colour-projector.ts`), so a tile matches what pressing it puts on the page.
+  `apps/live/lib/stock-colour-projector.ts`), so a tile matches what pressing it puts on the page. So do the Contents
+  page pictures (`pageThumbFor`, a plain page in the dark editor drawn in the theme's dark half through the canvas's
+  own projector) and the Map (drawn from the canvas's projected elements), so neither shows ink the canvas no longer
+  shows.
   `apps/live/lib/pages-template-contrast.test.ts` holds those templates' paper marks at 3:1 too, under every theme,
   picked in either half and seen in either.
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
