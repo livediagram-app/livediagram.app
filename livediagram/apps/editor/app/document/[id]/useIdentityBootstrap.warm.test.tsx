@@ -7,7 +7,7 @@ import type { LastSeenCopy } from '@liveworkspace/workbench/lib/api/last-seen-co
 // paints its last seen copy before auth settles, read-only, for the reader this browser expects; the ordinary load
 // catches up behind it, replaces it in place and applies its role, or swaps it for the screen it ends on.
 
-const { api, copies, hint, identity, paint, seed, seedDeps } = vi.hoisted(() => ({
+const { api, copies, hint, identity, paint, seed, seedDeps, timing } = vi.hoisted(() => ({
   api: {
     apiLoadSelf: vi.fn(),
     apiSaveSelf: vi.fn(),
@@ -29,6 +29,9 @@ const { api, copies, hint, identity, paint, seed, seedDeps } = vi.hoisted(() => 
   seed: vi.fn(async () => null),
   seedDeps: {
     current: null as { warmFirstTab?: () => unknown; keepActiveId?: () => string | null } | null,
+  }, // Each timing started, by metric: the handle the bootstrap ends.
+  timing: {
+    started: [] as { metric: string; from: number | undefined; endAfterPaint: () => void }[],
   },
 }));
 vi.mock('@/lib/api-client', () => ({
@@ -56,6 +59,14 @@ vi.mock('@/lib/local-identity', () => ({
 }));
 vi.mock('@/lib/daily-return', () => ({ trackDailyReturn: () => {} }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+vi.mock('@/lib/timing', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/timing')>()),
+  startEditorTiming: (metric: string, opts: { from?: number } = {}) => {
+    const handle = { metric, from: opts.from, endAfterPaint: vi.fn() };
+    timing.started.push(handle);
+    return { end: vi.fn(), cancel: vi.fn(), endAfterPaint: handle.endAfterPaint };
+  },
+}));
 vi.mock('./seed-fetched-document', () => ({
   makeSeedFetchedDocument: (deps: {
     warmFirstTab?: () => unknown;
@@ -143,7 +154,10 @@ beforeEach(() => {
   }));
   api.apiSaveSelf.mockResolvedValue(undefined);
 });
-afterEach(() => vi.clearAllMocks());
+afterEach(() => {
+  vi.clearAllMocks();
+  timing.started.length = 0;
+});
 
 describe('useIdentityBootstrap warm open', () => {
   it("paints an Editor's copy read-only before auth, then catches up and lets them edit", async () => {
@@ -352,5 +366,29 @@ describe('useIdentityBootstrap warm open', () => {
     await flush();
     expect(set.setDocumentNotFound).toHaveBeenCalledWith(true);
     expect(copies.forgetVia).toHaveBeenCalledWith('guest-1', 'CODE');
+  });
+
+  // timing-telemetry.md "WarmPaint": the warm paint is a timing of its own, so production shows it.
+  it('times the warm paint as WarmPaint from the read, and the catch-up as DocumentLoad', async () => {
+    const before = performance.now(); // wall-clock: the timing origin itself is a performance clock reading
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    const warm = timing.started.filter((t) => t.metric === 'WarmPaint');
+    expect(warm).toHaveLength(1);
+    // No navigation entry names this page in the test, so it times from the read's start, never from undefined.
+    expect(warm[0]!.from).toBeGreaterThanOrEqual(before);
+    expect(warm[0]!.endAfterPaint).toHaveBeenCalledOnce();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(timing.started.map((t) => t.metric)).toEqual(['WarmPaint', 'DocumentLoad']);
+  });
+
+  it('times no WarmPaint for an open with no copy to paint', async () => {
+    copies.held = null;
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(timing.started.map((t) => t.metric)).toEqual(['DocumentLoad']);
   });
 });

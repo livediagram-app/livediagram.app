@@ -226,7 +226,8 @@ always did.
   once its own load lands, as always.
 - `DesignLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its own, as
   the performance measures `warm-paint` and `warm-catch-up` (from the same start as
-  `DesignLoad`), which part 4 reads on production builds.
+  `DesignLoad`), and in the field as the `WarmPaint` timing (from the same start, to the warm paint's
+  first frame).
 
 **Built so far.** Part 1 keeps, bounds and clears the copies (`createLastSeenCopies` in
 `@liveworkspace/workbench/lib/api/last-seen-copies`), part 2 keeps each one following the
@@ -234,6 +235,20 @@ open design (`createLastSeenFollower`, `useLastSeenFollow`), and part 3 paints i
 (`readWarmCopy` in `@liveworkspace/workbench/lib/warm-open`, each editor's bootstrap). Part 4
 measures warm opens against cold ones on production builds
 ([Last seen copy blueprint](blueprints/last-seen-copy.md)).
+
+**Measured on production builds** (part 4, livediagram's signed-in export, headless Chromium, a 200-element first
+tab, 100 ms round trip at 10 / 5 Mbps on every request, 12 cold and 12 warm opens interleaved, each a fresh
+navigation with the app's files cached, median / p90 from navigation start):
+
+| Way in                | Cold: content and editable | Warm: content | Warm: editable   |
+| --------------------- | -------------------------- | ------------- | ---------------- |
+| Signed in             | 827 / 829 ms               | 360 / 369 ms  | 1,191 / 1,209 ms |
+| A guest by share link | 835 / 843 ms               | 369 / 376 ms  | 1,190 / 1,196 ms |
+
+The content shows about 470 ms (56%) sooner. Becoming editable comes about 360 ms later than a cold open today: the
+ordinary load's first request starts later behind the warm paint's commit (see the blueprint's "Measured on production
+builds" and its follow-up). The other editors bind the same shared modules and the same bootstrap, so their shape
+is the same. `WarmPaint` (timing telemetry) now times the warm paint in the field, beside `DesignLoad`.
 
 **Measured** (headless Chromium, 25 runs each, median / p95): keeping a copy and reading it
 back cost about a millisecond against the seconds the warm open saves.
