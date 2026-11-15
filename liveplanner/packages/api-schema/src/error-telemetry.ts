@@ -40,6 +40,8 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'tokens',
   'oauth',
   'account',
+  // The person's My Work calendar feed (docs/specs/026-plan/calendar-feed.md "The My Work feed"): `/my-work/calendar-feed`.
+  'my-work',
   'trash',
   'preferences',
   'participants',
@@ -87,6 +89,7 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'item-types',
   'sheets',
   'writes',
+  'calendar-feed',
 ]);
 
 // Which endpoint a request hit, as a label with no identifiers in it (`PUT /api/<collection>/<id>/tabs/<tabId>` ->
