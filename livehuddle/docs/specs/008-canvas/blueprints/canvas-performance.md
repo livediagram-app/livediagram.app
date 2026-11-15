@@ -575,6 +575,9 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 - The floating toolbar and selection popover fade out as a move, resize or reshape engages and
   fade back in at the box's new place when it ends; the grips are
   unchanged. A click that never engages a move never hides them.
+- With the selection kept, a zoom change alone (a pinch, a zoom shortcut) re-places them as a
+  move or pan does: at the new zoom they still clear the selection and stay inside the canvas
+  area (`useEdgeAwarePlacement` depends on the zoom, one measure per zoom step, Work Tracker 898).
 - The Map keeps its last drawing through an element gesture, with the viewport rectangle live;
   on release the drawing catches up in one step.
 - No new copy, empty, loading or error states: nothing a user reads changes.
