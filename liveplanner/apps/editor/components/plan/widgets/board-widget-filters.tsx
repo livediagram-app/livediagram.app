@@ -30,6 +30,8 @@ export function mineWidget(ctx: WidgetContext): React.JSX.Element {
       type="button"
       className={`${WIDGET_PILL} transition enabled:cursor-pointer disabled:opacity-50`}
       aria-pressed={on}
+      // Named on More while it holds this widget (zone-overflow.ts pressedIn).
+      data-widget-pressed={on ? 'Only Mine' : undefined}
       disabled={!ctx.canFilterMine || filterLocked(ctx)}
       style={{
         borderColor: on ? palette.focus : palette.border,
@@ -80,6 +82,7 @@ export function peopleWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.El
               type="button"
               aria-pressed={on}
               aria-label={`Only ${p.name}'s cards`}
+              data-widget-pressed={on ? p.name : undefined}
               disabled={filterLocked(ctx)}
               className="rounded-full ring-2 transition enabled:cursor-pointer enabled:hover:z-10 enabled:hover:scale-110"
               style={{
@@ -179,6 +182,7 @@ export function typesWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Ele
             type="button"
             aria-pressed={on}
             aria-label={`Only ${c.def.label} cards, ${c.count}`}
+            data-widget-pressed={on ? c.def.label : undefined}
             disabled={filterLocked(ctx)}
             className={PRESSABLE}
             style={{

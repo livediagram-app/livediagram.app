@@ -20,15 +20,32 @@ header; they are not in the palette.
 - The header holds, left to right: the board's **title**, its **card type chips** (for someone who may add cards,
   [Plan board](plan-board.md#card-type-chips)), the **widget zone**, then the controls a board needs
   whatever its widgets are (**Reveal** on a hide-writing board, **Retry** when items failed to load).
-- The widget zone is one row. Widgets keep their order; when they do not fit, the zone scrolls sideways, and:
-  - the **Filter** widget holds the zone's start, outside the scroll, so it is always in reach however the rest are
-    scrolled (the others keep their order after it, and drag and Alt+← / Alt+→ move them among themselves; the
-    Filter stays put, its Delete and edit mode's × still taking it off). With room again (the window widened,
-    or widgets taken off, in a header band too, where the zone is only as wide as its widgets) it is back in its own
-    place, never flipping back and forth on the same widths;
-  - a soft fade at an edge with more widgets past it says the row scrolls;
-  - nothing a widget opens scrolls the row: a field widget's **+n** legend opens (and closes) with the row where the
-    person left it (Work Tracker 823).
+- <a id="more"></a>The widget zone is **one row**, never two, so the board's columns never move down for it, and it
+  never scrolls. Widgets keep their order; the ones that do not fit go into **More** at the end of the row (Work
+  Tracker 880, replacing the sideways scroll of Work Tracker 823):
+  - **More** is a header-sized button after the last widget that fits, before the **+** and Edit Widgets: "More", a
+    count of the widgets it holds and a chevron, named "More widgets, 3 more". It shows only while some widget does
+    not fit; with room again (the window widened, widgets taken off, a count shrinking) every widget is back in the
+    row and More is gone. Which widgets go is worked out from the widgets' own widths and the room the zone has, so the
+    row never flips back and forth on the same widths, in a header band too, where the zone is only as wide as its
+    widgets up to its cap.
+  - **The Filter** holds the zone's start while More shows, so it is always in the row however many widgets there are
+    (the others keep their order after it, and drag and Alt+← / Alt+→ move them among themselves; the Filter stays
+    put, its Delete and edit mode's × still taking it off). With room again it is back in its own place.
+  - **Pressing More** opens a panel under it, **More Widgets**, holding the widgets that did not fit, live and in their
+    order, one to a line, each working exactly as it does in the row: a pressed value, a "+n" legend, Set Done Column,
+    Show all. Escape, a press outside or More again closes it; it closes by itself once every widget fits. In edit mode
+    each widget there shows its × as in the row, and Delete and Alt+← / Alt+→ work on a focused one; dragging is the
+    row's alone.
+  - **A pressed value inside More shows on More**: while a widget More holds narrows the board (a pressed person,
+    type, priority, due count, Unassigned, Only Mine, or a field value, its "+n" included), More reads pressed (the
+    brand outline and tint every pressed value wears) and names it in place of "More" ("Severity: High"; "Severity:
+    High +1" when two are pressed), so a Viewer sees what narrows the board without opening anything. Its accessible
+    name adds it: "More widgets, 3 more, pressed: Severity: High".
+  - **Share roles**: everyone who sees the widgets sees More and opens it, a Viewer too, and reads the pressed values
+    there; what each widget lets a person do inside it is what it lets them do in the row (a Viewer presses nothing,
+    only an Editor sees ×).
+  - Nothing a widget opens moves the row: a field widget's **+n** legend opens and closes with the row as it was.
 - Widgets are drawn for the header: the same height (28 px), a quiet border, the board's own theme colours,
   each led by a picture of what it measures (its glyph, a ring, a split bar, column bars or pips).
 - A board with no widgets shows nothing in the zone. Only while the board is selected does it say, to someone
@@ -128,7 +145,7 @@ board's filter hides every card the board holds, the board says so in its column
   filter ("Card Type: Bug", its cross removing it), the words being typed ("Filter cards", or "Filter these…" with
   chips), then inside its right edge **Clear Filter** (a cross, while there are words or chips) and **Add Filter**
   (a plus). It is one row: past its room it scrolls sideways within itself. In a zone too full for its widgets it
-  holds the zone's start ([The header](#the-header)).
+  holds the zone's start and never goes into More ([The header](#more)).
 - **Field chips** are Find a Card's and Card Search's ([Card Search](plan-views.md#card-search)): Add Filter lists the
   fields the board's shown cards' types offer (Card Type while they hold more than one type), less those already
   filtered; picking one lists its values among the cards the board shows under the other narrowings, each with its
@@ -181,7 +198,8 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
 - **Remove**: **Edit Widgets** puts the zone in **edit mode**: every widget shows a × at its top right, on any
   pointer and on any board (selected or not, on the canvas, maximised or filling its tab), and the pencil becomes
   **Done** (a check in the brand colour, named "Done Editing Widgets", pressed). A × takes its widget off at once and
-  the zone stays in edit mode for the next; **Done**, Escape, a press anywhere outside the widget zone, or the last
+  the zone stays in edit mode for the next; **Done**, Escape, a press anywhere outside the widget zone (and its More
+  panel), or the last
   widget going ends it. Edit mode is this person's alone and never saved. Out of edit mode no widget shows a ×, so the
   header stays clean. Delete or Backspace still takes a focused widget off, in or out of edit mode.
   Once one is taken off, the keyboard focus moves on rather than dropping to the page: to the same control (its ×,
@@ -242,7 +260,8 @@ board, so each one can be a widget.
     or Person field holds one value a card, so pressing another value of it replaces the chip; Labels and Multiple
     Choice stack, and a chip on them matches a card holding the value among several, not only its first. At 8 chips an unpressed value is disabled. Like the Filter widget,
     it is **the board's filter**, shared and kept: an Editor or a Participant presses, a Viewer sees the pressed value
-    but cannot press. The counts keep reading the cards before the board's filter, so a pressed value's count does not
+    but cannot press. A widget in **More** that holds a pressed value names it on More ([The header](#more)), so the
+    value is never out of sight. The counts keep reading the cards before the board's filter, so a pressed value's count does not
     change.
   - **Ticked**: a ring filled to the share ticked, and "7/12" (a Checklist: its rows ticked of all its rows).
   - **Upcoming**: among cards not done, how many are overdue (red) and due in the next 7 days (amber), as Due Soon
