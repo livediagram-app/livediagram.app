@@ -192,26 +192,32 @@ export const itemAdd = defineVerb({
   id: 'item.add',
   summary: 'Add an item',
   description:
-    'Makes an item in a plan, at the end of its status column: a title, a type and any fields as key=value.',
+    'Makes an item in a plan, at the end of its status column: a title, a type and any fields as key=value, ' +
+    'or a card template of its type to start from (--template), whose title it takes when none is given.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,
-    title: z.string().min(1).describe('The title'),
+    title: z.string().min(1).optional().describe('The title (optional with --template)'),
     type: z
       .string()
       .default('task')
       .describe('project, task, note, idea, action, or a type the plan adds'),
     status: z.string().optional().describe('The column it starts in'),
     fields: z.array(z.string()).default([]).describe('More fields, as key=value'),
+    template: z
+      .string()
+      .optional()
+      .describe('A card template of its type to start from, by name or id (type ls lists them)'),
   }),
   output: lineOut,
   run: async (ctx, input) => {
     const item = await changeOne(ctx, input.project, {
       op: 'add',
-      title: input.title,
+      ...(input.title ? { title: input.title } : {}),
       type: input.type,
       ...(input.status ? { status: input.status } : {}),
       fields: fieldsFromPairs(input.fields),
+      ...(input.template ? { template: input.template } : {}),
     });
     return { item: outOf(item), text: `+ ${itemSummary(item)}` };
   },
@@ -221,7 +227,7 @@ export const itemAdd = defineVerb({
     positionals: ['project', 'title'],
     examples: [
       'liveplanner item add "Sprint 14" "Fix login" --type task --status todo --fields labels=bug',
-      'liveplanner item add 3f9c "Write the brief" --fields priority=high labels=docs',
+      'liveplanner item add 3f9c --type bug --template "Bug Report" --fields priority=high',
     ],
     prints: '+ #<number> [<type>] <title>',
   },

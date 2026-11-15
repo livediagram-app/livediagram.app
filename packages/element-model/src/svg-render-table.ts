@@ -52,6 +52,9 @@ export type TableRenderOptions = { comparison?: boolean };
 // in the canvas's ink, a cell's colour never coloured in or edged.
 const CELL_FILL = ' data-finish-keep=""';
 const GRID_RULE = ' data-marker-rule=""';
+// The outer frame, which a hand-drawn Marker body draws itself: svgMarkerFace drops this plain one under it, as the
+// canvas hides the grid's own border (face-finish.css).
+const BODY_FRAME = ' data-marker-body-frame=""';
 
 export function svgTableShape(
   el: TableElement,
@@ -233,7 +236,7 @@ export function svgTableShape(
       );
     }
     parts.push(
-      `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" fill="none"${lineAttrs}/>`,
+      `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" fill="none"${lineAttrs}${BODY_FRAME}/>`,
     );
   }
   // The highlighted column's frame, over the grid lines.

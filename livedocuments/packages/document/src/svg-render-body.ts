@@ -90,12 +90,12 @@ export function svgElementBody(
     return svgLineChart(el, labelColor, chartPalette, fontFamily, chartGround);
   if (isSankeyShape(el.shape))
     return svgSankey(el, labelColor, chartPalette, fontFamily, chartGround);
-  // Map (docs/specs/009-elements/map.md): land in its own fill or the paper's soft default.
+  // Map (docs/specs/009-elements/map.md): land in its own fill, else a soft tint of what it sits on.
   if (isMapShape(el.shape))
     return svgMap(
       el,
       {
-        land: mapLandColour(el.fillColor, o.surface),
+        land: mapLandColour(el.fillColor, o.surface, chartGround),
         accent: stroke,
         // What it sits on (chartPageGrounds takes maps too): its borders and inset plate follow the page.
         paper: mapPaperColour(o.surface, chartGround),

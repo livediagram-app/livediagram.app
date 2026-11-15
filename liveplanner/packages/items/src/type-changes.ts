@@ -40,10 +40,13 @@ import {
   type PendingFormulas,
 } from './type-change-fields';
 import type { CardTypeChange, TypeChangesResult } from './type-change-inputs';
+import type { Item } from './item';
+import { templateProblem, withTemplateChanges } from './type-change-templates';
 
 // The changes' shapes, the type-level parts and the custom fields live in their own modules; this entry keeps every
 // export.
 export type { CardTypeChange, CustomFieldEdit, CustomFieldInput } from './type-change-inputs';
+export type { TemplateEdit, TemplateInput } from './type-change-templates';
 
 // A new type's starting look and fields (blueprints/DEFAULTS.md D10): what the type editor's Add Type opens on.
 export const NEW_ITEM_TYPE: Omit<ItemTypeDef, 'id' | 'newTitle'> = {
@@ -96,8 +99,11 @@ export function applyCardTypeChanges(
   stored: ItemTypeCatalogue | null | undefined,
   changes: readonly CardTypeChange[],
   statuses: readonly PlanStatusName[],
+  // The plan's cards, so a person a card template names resolves as change_items resolves one.
+  items: readonly Item[] = [],
 ): TypeChangesResult {
   let types: ItemTypeDef[] = [...typesOf(stored)];
+  const naming = { statuses, items };
   const applied: string[] = [];
   const deleted: string[] = [];
   const replace = (next: ItemTypeDef) => {
@@ -156,6 +162,7 @@ export function applyCardTypeChanges(
           (type.custom ?? []).filter((f) => f.onCard).map((f) => f.id),
         );
         if (base) type = withBase(type, base, types);
+        type = withTemplateChanges(type, c, naming);
         types = [...types, type];
         const made = (type.custom ?? []).map((f) => `${f.label} (${f.id})`);
         applied.push(
@@ -245,6 +252,7 @@ export function applyCardTypeChanges(
         // The fields this change ticked Show on Card: placed on a type whose Display is its own (never an inherited
         // type's: its Display is its base's).
         type = type.inherits ? withOwnFields(type, types) : withOnCardShown(type, ticked);
+        type = withTemplateChanges(type, c, naming);
         replace(type);
         applied.push(
           `~ ${type.label} (${type.id})` +
@@ -272,13 +280,19 @@ export function applyCardTypeChanges(
     throw err;
   }
   const checked = validateItemTypeCatalogue({ version: ITEM_TYPE_CATALOGUE_VERSION, types });
-  if (!checked.ok)
+  if (!checked.ok) {
+    // A card template's rule is said in words (type-change-templates.ts), the type and template named.
+    const at = /^types\[(\d+)\]/.exec(checked.reason);
+    const words = templateProblem(at ? types[Number(at[1])] : undefined, checked.reason);
     return {
       ok: false,
       applied,
       code: 'type_change_invalid',
-      message: `The card types would break a rule (${namedReason(checked.reason, types)}); nothing was saved.`,
+      message: words
+        ? `${words} Nothing was saved.`
+        : `The card types would break a rule (${namedReason(checked.reason, types)}); nothing was saved.`,
     };
+  }
   // A project whose card types are not chosen, left with none: nothing to store.
   const none = stored == null && types.length === 0;
   return { ok: true, catalogue: none ? null : checked.catalogue, applied, deleted };

@@ -1080,6 +1080,9 @@ card and cleaning it up.
   without a template, and its required fields still apply. The values are only a start: the card is an ordinary card
   from then on, editing it never changes the template, and editing or removing the template never changes a card made
   from it. Where a card is added, the type's templates are offered (a later part of this feature builds the picker).
+- **Editing them**: the type editor's **Templates** tab ([Editing a type](#editing-a-type)) lists the type's templates
+  and edits one at a time, in place, with the very field controls the card's panel uses. They are part of the type's
+  draft: Save stores them with the rest of the type, one undo step, and Cancel drops every template edit.
 - **Share roles** ([Share roles](../013-workspace/share-roles.md)): an **Editor** adds, edits, renames, reorders and
   removes a type's templates: they are part of the card type, which only someone who may edit the whole plan changes
   (a tab-scoped link may not). A **Participant** starts cards from them, as it adds cards, but never changes one. A
@@ -1093,8 +1096,11 @@ card and cleaning it up.
   [project format number](../016-platform/new-version-prompt.md) to 7 and open editors are offered Reload. Until they
   reload, an editor built on 6 keeps a type's templates through a save while their JSON is at most 4 KB (its
   "Settings from a newer version" cap) and drops them past it, and reads a catalogue past 32 KB as no card types.
-- **Agents** edit templates through `change_card_types` and start a card from one with `change_items`' add, naming
-  it by name or id; `list_items` lists each type's template names (a later part of this feature).
+- **Agents** ([Plan for agents](plan-agents.md#card-templates)) add, edit and remove templates through
+  `change_card_types` (`add`'s `templates`; `set`'s `addTemplates`, `editTemplates` and `removeTemplates`), naming
+  values by field name as `change_items` does and checked as the api checks them; start a card from one with
+  `change_items`' `add` and its `template`, by name or id, the change's own fields overriding the template's; and read
+  each type's templates (id, name and the fields each sets) in `list_items`.
 
 ## Fields from a newer version
 
@@ -1295,12 +1301,12 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 ## Editing a type
 
 - **Add Type** and a row's edit open the **type editor**, a wide modal (60 rem, as the card panel; a sheet rising
-  from the bottom on a phone) in three **tabs** under its title (one underline that slides to the chosen tab): **Configuration**, **States** and **Display** (the tab's own word for the statuses
-  a type uses; boards, cards and filters still say Status). Its title names the type as saved, "Edit {Name} Card
+  from the bottom on a phone) in four **tabs** under its title (one underline that slides to the chosen tab): **Configuration**, **States** (the tab's own word for the statuses
+  a type uses; boards, cards and filters still say Status), **Display** and **Templates**. Its title names the type as saved, "Edit {Name} Card
   Type" ("Edit Note Card Type"), or "New Card Type" for a new one. It opens
   on Configuration, new or edited alike. Arrow keys, Home and End move between the tabs. A tab holding what stops Save carries a small red
   dot (a clashing name, a tab problem or a custom field problem is Configuration's; a status list problem is
-  States'; a missing name is not flagged, since a new type starts without one), and the problem is
+  States'; a card template problem is Templates'; a missing name is not flagged, since a new type starts without one), and the problem is
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
   The title row ends with **Show Me**, **Help** (the Card Types help article) and a close cross, which acts as
   Cancel.
@@ -1338,6 +1344,41 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
     stays open) and a press outside. One radio group, each tile named "{Name} glyph", the chosen one pressed as before.
   - **Fields** (a section of Configuration, after General): a line saying "Laid out as the card's panel shows them.
     Add, move or rename to change it.", then the Fields and Tabs list below. **States**: the type's statuses (below).
+  - **Templates**: the type's [card templates](#card-templates), the list beside the chosen template's editor (on a
+    phone, the list above it). Every edit is part of the draft, as the other tabs' are.
+    - **The list**, a 13 rem column on desktop: a row per template, in order, each a template glyph and its name
+      (cut with an ellipsis, the whole name its tooltip), the chosen one tinted in the brand colour (`aria-current`),
+      hover and focus marked as the editor's other rows. Each row ends with a **⋯** menu headed by the template's
+      name, icon-left rows as a field's: **Move Up**, **Move Down** and **Remove** (no confirmation: Cancel brings it
+      back). The list ends with **New Template**, the shared dashed add row (as Add Field): it adds a template named
+      "New Template" ("New Template 2", ... on a clash) at the end, chooses it and puts the caret in its Name with
+      the name selected. At 10 templates it is disabled, saying "A card type holds up to 10 templates." A template's
+      id is made from its name when the type is saved, so "Bug Report" renamed before the first save gets
+      `tp-bug-report`; after that it never changes.
+    - **The editor** of the chosen template: **Name** (up to 32 characters; a blank or clashing name says so under
+      the field), then the card's own fields as its panel lays them out, each with the very control the card's panel
+      uses ([Items](items.md#fields)), saving into the template instead of a card: **Title** (one line that wraps,
+      its placeholder the type's new-card title: left empty, a card takes that title), then the fields of the type a
+      template may hold, in the type's order: the **Description** and each **Long Text** field as rich text, the
+      **Checklist**, then **Labels** and every other custom field a template holds as Details rows (the label beside
+      the control on desktop, above it on a phone). Under them a quiet line: "A card started from it takes its state
+      and place from where it is made." Fields a template never holds are not shown.
+    - **Empty**: a type with no templates shows the compact empty state (the template glyph, "No Templates Yet",
+      "A template fills in a new {Name} card: its title, description, checklist, labels and fields.") with
+      **New Template** as its one way forward.
+    - **What stops Save**: a template with no name ("Give every template a name."), two with one name ("Two
+      templates have the same name."), one holding more than 16 KB ("{Template} holds more than 16 KB: shorten
+      it."), or the plan's templates holding more than 128 KB ("The plan’s card templates hold more than 128 KB:
+      shorten or remove one."). Each is named beside Save and flagged on the tab, and shown in the tab itself, over
+      the editor, as an alert, so it is read where it is fixed.
+    - **Roles**: the type editor opens only for someone who may change card types (an Editor of the whole plan,
+      [Card templates](#card-templates) "Share roles"); a Participant and a Viewer never reach it. The tab also
+      reads the session's `canEdit` itself: without it, it is read-only (no New Template, no ⋯ menu, every control
+      disabled), never a control that would be refused.
+    - On an inherited type the tab is the type's own (no inherited notice), and its fields include the inherited
+      ones.
+    - Telemetry: `Plan` · `Added` · `CardTemplate` and `Plan` · `Deleted` · `CardTemplate`, as a template is added
+      to or removed from the draft.
   - **Fields and Tabs**: one list laid out as the card's panel shows the fields, in groups. On desktop (768 px and
     up) it is two columns as the card's panel: On the Card, then the tabs and Add Tab, on the left, and Details in an
     18 rem column on the right; on a phone, one column in the order below.

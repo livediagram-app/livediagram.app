@@ -1,3 +1,4 @@
+import { contrastRatio, shade, tint } from '@liveworkspace/element-model/colour-math';
 import { describe, expect, it } from 'vitest';
 import { MAP_GEOMETRY } from './map-geometry.generated';
 import {
@@ -9,6 +10,7 @@ import {
   MAP_PLANE_HEIGHT,
   MAP_REGIONS,
   MAP_WORLD_WIDTH,
+  MAP_LAND_GROUND_MIX,
   mapLandColour,
   mapPaperColour,
   projectLonLat,
@@ -138,6 +140,30 @@ describe('map colours and the provided geometry', () => {
     );
     expect(mapPaperColour('light', ['#111111', '#222222'])).toBe('#111111');
     expect(mapPaperColour('dark', [])).toBe('#0f172a');
+  });
+
+  // map.md "What it shows": the default land is a soft tint of the page it sits on, toward its contrast side.
+  it('tints the default land from the page it sits on, never a picked land', () => {
+    // A dark coloured page (Sunset-style): lighter than the page, a shade of it, never the plain canvas's navy.
+    const sunset = mapLandColour(undefined, 'dark', ['#7c2d12']);
+    expect(sunset).toBe(tint('#7c2d12', MAP_LAND_GROUND_MIX));
+    expect(sunset).not.toBe('#334155');
+    expect(contrastRatio(sunset, '#7c2d12')).toBeGreaterThan(1.2);
+    // A light page: darker than the page; a gradient's middle tone, as the paper takes.
+    expect(mapLandColour(undefined, 'light', ['#fef3c7'])).toBe(
+      shade('#fef3c7', MAP_LAND_GROUND_MIX),
+    );
+    expect(mapLandColour(undefined, 'light', ['#ffffff', '#0f172a', '#ffffff'])).toBe(
+      tint('#0f172a', MAP_LAND_GROUND_MIX),
+    );
+    // On the plain dark paper it lands near the old slate default.
+    expect(contrastRatio(mapLandColour(undefined, 'dark', ['#0f172a']), '#334155')).toBeLessThan(
+      1.15,
+    );
+    // A picked land always wins; an unreadable ground or none keeps the surface default.
+    expect(mapLandColour('#abcdef', 'dark', ['#7c2d12'])).toBe('#abcdef');
+    expect(mapLandColour(undefined, 'dark', ['rgb(1, 2, 3)'])).toBe('#334155');
+    expect(mapLandColour(undefined, 'light', [])).toBe('#dbe3ec');
   });
 
   it('hands back what was provided', () => {

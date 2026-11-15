@@ -523,7 +523,7 @@ unknown name with the ones there are.
   answer never passes about 200,000 characters ([Plan for agents](../026-plan/plan-agents.md) "What `list_items`
   leaves out unless asked"). A project with no board answers a hint saying how to get one.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
-status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
+status, fields, template }` (`template` starts the card from one of its type's [card templates](../026-plan/plan-agents.md#card-templates)), `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
   `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once. Its
   description and `clear` argument say how a `set` empties a field (`"clear": ["Blocked By"]`), and that a field
   holding several also clears with `[]` or `null` in `fields`
@@ -539,7 +539,8 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
   new Board tab of `projectId` or a new plan, with its card type, cards and imported comments; `preview` writes
   nothing ([Importing from another tool](../026-plan/tracker-import.md#agents)).
 - **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
-  changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once.
+  changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once;
+  `add` and `set` also add, edit and remove the type's [card templates](../026-plan/plan-agents.md#card-templates).
 - **`list_threads`** (read): a plan's card comment threads, open by default, or one card's, each with its id, title,
   state, cards, Comments field (by name, on its first card) and comments, each comment with its reactions read only ([Plan for agents](../026-plan/plan-agents.md#comment-threads)).
 - **`change_threads`** (destructive, as it deletes comments): up to 50 changes in order, `start` `{ item, text, field? }`,
