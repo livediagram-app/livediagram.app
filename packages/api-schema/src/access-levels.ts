@@ -32,8 +32,9 @@ export function lowerLevel(level: AccessLevel, ceiling?: AccessLevel | null): Ac
 }
 
 // `POST .../:id/room-ticket`'s answer. A Participant's carries its own adder key, the id the room
-// stamps on what it adds, so its editor knows which stickies are its own.
-export type RoomTicketResponse = { ticket: string; adderKey?: string };
+// stamps on what it adds, so its editor knows which stickies are its own. A view-only ticket (`?cap=view`, the MCP
+// view's) says when it lapses, epoch ms, since its holder cannot read the sealed grant.
+export type RoomTicketResponse = { ticket: string; adderKey?: string; expiresAt?: number };
 
 // The anonymous-events type each level is counted under (docs/specs/017-telemetry/telemetry.md).
 export const LEVEL_TELEMETRY_TYPE: Record<AccessLevel, 'View' | 'Participate' | 'Edit'> = {
