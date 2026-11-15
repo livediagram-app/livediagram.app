@@ -71,7 +71,7 @@ Doors by level (server):
 | Room: `reaction`                                                                                            | participate                       |
 | Room: `el` `update` through the participant content rule                                                    | participate                       |
 | Room: `article` (writing in an article already on the tab) through the participant writing rule             | participate                       |
-| Room: `article-hold` (a paragraph or cell held while writing, article-pages.md "Holding a paragraph")        | participate                       |
+| Room: `article-hold` (a paragraph or cell held while writing, article-pages.md "Holding a paragraph")       | participate                       |
 | Tab PUT, tab DELETE, document PUT; room `tab`, `tab-meta`, `document-meta`, `el` `add`, `remove`, `reorder` | edit                              |
 | Room: `el-delta` `check`, `comment-*`; `drag-preview`                                                       | edit                              |
 
