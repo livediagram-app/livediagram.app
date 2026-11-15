@@ -66,6 +66,8 @@ describe('Add a Card with card templates', () => {
     expect(rows[1]!.textContent).toContain('Bug Report');
     expect(rows[1]!.textContent).toContain('Title, Description, Labels');
     expect(rows[0]!.className).not.toContain('pl-7');
+    // The wider menu, so what a template fills reads whole.
+    expect(screen.getByRole('menu').className).toContain('w-80');
   });
 
   it('adds a card filled in from the template, and counts it', () => {
@@ -103,6 +105,7 @@ describe('Add a Card with card templates', () => {
       'Task',
       'Note',
     ]);
+    expect(screen.getByRole('menu').className).toContain('w-56');
   });
 });
 

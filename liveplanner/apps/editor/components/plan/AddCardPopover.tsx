@@ -23,7 +23,13 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { CardTypeTile } from './CardTypeTile';
 import { typeSummary } from './card-type-summary';
-import { addCardChoices, newCardOf, templateSummary, type NewCard } from './card-template-start';
+import {
+  addCardChoices,
+  hasTemplates,
+  newCardOf,
+  templateSummary,
+  type NewCard,
+} from './card-template-start';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars, type PlanPalette } from './plan-palette';
 
 export type { NewCard } from './card-template-start';
@@ -115,6 +121,9 @@ export function AddCardPopover({
       <PortalMenu
         anchor={anchor}
         placement="below-start"
+        // Templates carry what they fill under their names ("Title, Description, Checklist, Labels"): the wider
+        // menu keeps that line whole. A plan without templates keeps the menu it had.
+        wide={types.some(hasTemplates)}
         onClose={onClose}
         initialFocus="first"
         {...(palette
