@@ -595,7 +595,8 @@ max-age=300` (CLI72).
 
 - `elementKindsText()` and `elementFormatText(kind)` (`@liveplanner/edit-operations`) are read off the engine itself:
   the Plan element kinds a tab holds (`PLAN_ELEMENT_KINDS`), and for each its own fields (`PLAN_KIND_FIELDS`, a closed
-  field with its values) and the common ones (`PLAN_COMMON_FIELDS`); a chart notes its `chartSource`. Any other kind
+  field with its values) and the common ones (`PLAN_COMMON_FIELDS`); a chart notes its `chartSource`, and a plan view
+  prints `PLAN_VIEW_FORMAT` (its view ids and a flow chart's `rangeDays`). Any other kind
   is `unknown_kind`, listing the six.
   Each kind is within `SCHEMA_KIND_MAX_TOKENS`. The MCP's schema resource keeps its own prose (CLI73).
 - The catalogue owns only these commands' help; their content is the api's.
