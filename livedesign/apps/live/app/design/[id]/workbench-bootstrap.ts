@@ -27,16 +27,13 @@ import { ensureCollabKey } from '@/lib/local-identity';
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
 type WorkbenchBootstrapDeps = {
-  workbench: Pick<
-    WorkbenchDesignSession,
-    'designId' | 'tabId' | 'level' | 'person' | 'shareCode'
-  >;
+  workbench: Pick<WorkbenchDesignSession, 'designId' | 'tabId' | 'level' | 'person' | 'shareCode'>;
   seed: (
     selfId: string,
     fetched: LiveDoc,
     shareCode: string | null,
     firstTab: string | null,
-  ) => Promise<void>;
+  ) => Promise<unknown>;
   lastPersistedSelfRef: MutableRefObject<{ name: string; color: string } | null>;
   set: {
     setSelfParticipant: SetState<Participant>;
