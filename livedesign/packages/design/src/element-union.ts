@@ -7,6 +7,7 @@
 import { isSelfDrawingShape } from './data-shapes';
 import type { ArrowElement } from './arrow-types';
 import type { TabId, ElementId } from '@liveworkspace/model-core/basics';
+import type { ScreenLink } from './page-link';
 import type {
   ShapeElement,
   TextElement,
@@ -33,7 +34,10 @@ export type ElementLink =
   // An external web address. Followed by opening in a new tab; stored
   // verbatim (the UI normalises a bare host to https:// on entry). Used
   // by both element links and per-cell table links (docs/specs/008-canvas/canvas-and-palette.md).
-  | { kind: 'url'; url: string };
+  | { kind: 'url'; url: string }
+  // A screen of this tab, or the screen shown before, followed in Prototype mode
+  // (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes"; ./page-link).
+  | ScreenLink;
 
 // --- Element union ---------------------------------------------------------
 

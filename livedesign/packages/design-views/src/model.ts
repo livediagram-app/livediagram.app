@@ -35,6 +35,8 @@ export type ViewModel = {
   hidden: Element[];
   refs: RefTable;
   tabRefOf: (tabId: string) => string;
+  // The tab's page ids: a screen link to one not here reads as broken.
+  pageIds: ReadonlySet<string>;
   kindOf: (el: Element) => string;
   tree: ViewTree;
   edges: Edges;
@@ -110,6 +112,7 @@ export function buildViewModel(tab: Tab, context: ViewContext = {}): ViewModel {
     hidden,
     refs,
     tabRefOf,
+    pageIds: new Set(pagesOf(tab).map((p) => p.id)),
     kindOf,
     tree,
     edges,

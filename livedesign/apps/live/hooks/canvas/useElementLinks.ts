@@ -117,6 +117,9 @@ export function useElementLinks(deps: ElementLinksDeps) {
   };
 
   const followLink = (link: ElementLink) => {
+    // A screen link is followed in Prototype mode, never in the editor
+    // (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes").
+    if (link.kind === 'page' || link.kind === 'back') return;
     if (link.kind === 'tab' || link.kind === 'element') {
       if (!tabs.some((t) => t.id === link.tabId)) return;
       setActiveId(link.tabId);

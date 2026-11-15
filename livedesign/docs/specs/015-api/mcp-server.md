@@ -544,6 +544,12 @@ heads, border style and radius, font) with its values, bold and italic, `colorPr
 `iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing a wireframe guessed `textAlign` and `textSize: "xl"`.
 
+**Screen links.** The format names an element's `link` to another screen of its wireframe tab,
+`{ "kind": "page", "pageId", "transition"? }` (a page id from the `pages` view), or back to the screen before,
+`{ "kind": "back", "transition"? }`, with the transitions `instant`, `slide` and `dissolve`
+([Wireframe pages](../007-editor/wireframe-pages.md) "Clickable prototypes"). A malformed one is refused naming
+`link`; one to a page not on the tab is kept and reads as broken.
+
 **Block kinds.** The format also names what the ready-made blocks hold:
 a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
 `pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
