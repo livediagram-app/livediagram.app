@@ -136,17 +136,3 @@ export function blurCopyPlan(
   height = Math.max(1, Math.round(height * shrink));
   return { width, height, sigma: Math.round(sigma * q * shrink * 10) / 10 };
 }
-
-/** The blurred copy of `source` on `ctx`, a canvas `plan.width` by `plan.height`: drawn small, then blurred in place.
- *  Throws when the browser will not hand the pixels over (a picture from another site). */
-export function paintBlurredCopy(
-  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-  source: CanvasImageSource,
-  plan: { width: number; height: number; sigma: number },
-): void {
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(source, 0, 0, plan.width, plan.height);
-  const pixels = ctx.getImageData(0, 0, plan.width, plan.height);
-  boxBlurRgba(pixels.data, plan.width, plan.height, plan.sigma);
-  ctx.putImageData(pixels, 0, 0);
-}

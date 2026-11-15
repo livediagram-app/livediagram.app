@@ -10,10 +10,10 @@
 import {
   BLUR_JPEG_QUALITY,
   blurCopyPlan,
-  paintBlurredCopy,
   type BlurCopyRequest,
   type BlurCopyResponse,
 } from '@liveworkspace/page-background/image-blur';
+import { paintBlurredCopy } from '@liveworkspace/page-background/image-blur-paint';
 import { workbench } from '../bindings';
 
 // How many copies are kept once no sheet shows them.

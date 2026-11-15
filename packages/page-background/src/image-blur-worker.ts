@@ -6,10 +6,10 @@
 import {
   BLUR_JPEG_QUALITY,
   blurCopyPlan,
-  paintBlurredCopy,
   type BlurCopyRequest,
   type BlurCopyResponse,
 } from './image-blur';
+import { paintBlurredCopy } from './image-blur-paint';
 
 /** One copy: the picture at `src` fetched and blurred for `page` by `sigma`, as a JPEG. */
 export async function makeBlurCopy({

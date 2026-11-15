@@ -11,6 +11,7 @@
     "./components/canvas/ImageCropBar": "./src/components/canvas/ImageCropBar.tsx",
     "./components/canvas/ImageCropOverlay": "./src/components/canvas/ImageCropOverlay.tsx",
     "./hooks/canvas/useBlurredPageImage": "./src/hooks/canvas/useBlurredPageImage.ts",
+    "./lib/image-canvas-draw": "./src/lib/image-canvas-draw.ts",
     "./lib/image-crop-math": "./src/lib/image-crop-math.ts",
     "./lib/image-crop-store": "./src/lib/image-crop-store.ts",
     "./lib/image-greyscale": "./src/lib/image-greyscale.ts",

@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/document/src/validate.ts`                                | `IMAGE_FIELD_CHECKS` rows for the three fields                                                                                                                                                                                                   |
 | `../packages/element-model/src/svg-render-image-icon.ts`           | `svgImageShape`: layout, mask clip, greyscale filter                                                                                                                                                                                             |
 | `packages/document/src/svg-render-describe.ts`                     | The image `ExportShape` carries the element's crop / mask / greyscale through                                                                                                                                                                    |
-| `apps/editor/lib/export-tab-canvas-draw.ts`                        | `drawImageElement`: the same layout and clip on a 2D canvas                                                                                                                                                                                      |
+| `../packages/workbench/src/lib/image-canvas-draw.ts`               | `drawPictureOnCanvas`: the same layout and clip on a 2D canvas, for `apps/editor/lib/export-tab-canvas-draw.ts`                                                                                                                                  |
 | `../packages/workbench/src/lib/image-greyscale.ts`                 | `canvasFilters`, `greyCopy`: the canvas filter, else a grey copy of the pixels                                                                                                                                                                   |
 | `apps/editor/components/canvas/ImageElementView.tsx`               | The canvas face: laid-out `<img>`, `clip-path`, `filter`                                                                                                                                                                                         |
 | `../packages/workbench/src/lib/image-crop-store.ts`                | The one image being cropped (`startImageCrop`, `endImageCrop`, `useIsImageCropping`)                                                                                                                                                             |
@@ -188,6 +188,7 @@ server.
 | Validation of the three fields    | `packages/document/src/image-frame-fields.test.ts`                      |
 | SVG export: clip, crop, greyscale | `packages/document/src/image-frame-fields.test.ts`                      |
 | Crop math                         | `../packages/workbench/src/lib/image-crop-math.test.ts`                 |
+| PNG / PDF painter                 | `../packages/workbench/src/lib/image-canvas-draw.test.ts`               |
 | Canvas face                       | `apps/editor/components/canvas/ImageElementView.test.tsx`               |
 | Menu controls, roles              | `apps/editor/components/palette/ImagePictureControls.test.tsx`          |
 | Crop Image tile, locked           | `apps/editor/components/palette/EditorContextMenu.image-crop.test.tsx`  |
