@@ -22,6 +22,8 @@ of a page applies to a logo page except where this spec says otherwise.
 | **combine**             | Turning two or more selected shapes into one path by a boolean operation: **Unite**, **Subtract**, **Intersect**, **Exclude**.                             |
 | **contour**             | One outline of a path. A combined path may have several closed ones (`PathElement.subpaths`): islands and holes; a merged mirrored line several open ones. |
 | **logo kit**            | The export of a logo page as one .zip: an SVG, PNGs at the standard icon sizes and a `favicon.ico`.                                                        |
+| **display face**        | One of the display library's typefaces (`DISPLAY_FONTS`), offered for text on a logo page beside the eleven faces of the font menu.                        |
+| **outlined text**       | Text drawn as the outlines of its letters (SVG paths), so it needs no font to show. The Logo Kit's `logo.svg` holds its text this way.                     |
 
 ## A logo page
 
@@ -299,6 +301,32 @@ its range is refused by the design's validation, as any malformed field is.
   (bold or a colour on part of it) yields to the element's own. Editing arched text shows it flat
   in the editor; the arc returns when editing ends.
 
+## Display faces
+
+A wordmark set at 60 px and up wants a display face, not a label face, so a text element on a logo page can
+choose from a second, curated **display library** beside the eleven faces every page offers
+([Fonts](../004-interface-design/fonts.md) "The display library"): 90 Google Fonts families, every one under the
+SIL Open Font License, in four categories, **Sans**, **Serif**, **Script** and **Decorative**.
+
+- **Where**: the **Font** section of a text element's **Text** options (its element menu) while its centre is on
+  a logo page, where the Wordmark section shows too: the eleven tiles as everywhere, then **Display Library**, a search
+  field ("Search 90 display faces"), the category chips (**All** first, each with its count) and a list of the
+  faces, each row its name set in its own face with its style beside it (`Brush script`, `Stencil`). A press on a
+  row sets the face (`Element.font`), a hover previews it, the face in use is marked, and a search that matches
+  nothing says so with a Clear Search. Other page kinds, the tab's Text style and the other products show the eleven
+  alone.
+- **Choosing**: the id is stored in `Element.font` like any face, so it syncs to collaborators, reopens unchanged and
+  undoes as one edit. Wordmark type applies as to any face. A face that has no bold draws bold text with the
+  browser's synthesised bold, in every export too.
+- **Loading**: only the families a tab's elements use are fetched, from the same Google Fonts service as the eleven,
+  once one is applied; none of the library ships in the editor's code beyond its list of names. The rows preview
+  from a few letters of each face (Google Fonts' `text=` subset), fetched only for rows scrolled into view while
+  the library is open.
+- **Agents** set a display face with the same `font` field (its id, such as `bebas-neue` or `great-vibes`); edit
+  operations and the MCP's value check accept the library's ids, and the element format lists them.
+- **Fallback**: an id in neither list (unknown, or a face later retired from the library) draws in the tab's face
+  as an unset one does, and a face that cannot load draws in its stack's system fallback.
+
 ## Combine
 
 - **Where**: when the selection is two or more **combinable** elements on the
@@ -365,7 +393,7 @@ clean, as one edit:
   only then. Its panel asks which logo page when there are several, shows it over a checkerboard,
   and downloads `<design> - <page name> - Logo Kit.zip` (the page by its name, else "Page n",
   or no page part while it is the only page), holding:
-  - `logo.svg`, the artboard as SVG;
+  - `logo.svg`, the artboard as SVG, its text **outlined** ("Outlined text" below);
   - `logo-16.png`, `logo-32.png`, `logo-48.png`, `logo-64.png`, `logo-128.png`, `logo-180.png`,
     `logo-192.png`, `logo-256.png`, `logo-512.png` and `logo-1024.png`, the artboard at each size;
   - `favicon.ico`, holding the 16, 32 and 48 px images.
@@ -375,6 +403,30 @@ clean, as one edit:
   the brand line beside it, where the lockup gets used and, on the first, how to use the template.
   Everything else on the page is in the kit as before, and the page's PNG, SVG and PDF exports keep
   the notes, as they keep everything the page shows.
+
+### Outlined text
+
+A logo SVG gets used where its fonts cannot follow: an `<img>` on a website (which loads nothing the file
+points to), a slide, an email signature, Illustrator, Inkscape or Affinity (which ignore a file's embedded
+`@font-face`), a printer. So the kit's `logo.svg` draws every piece of text as the outlines of its letters:
+it holds no `<text>`, no `@font-face` and no `@import`, and opens in the chosen face anywhere, with no network.
+
+- **Faithful to the canvas**: each letter is placed where the browser lays out the same SVG with its real face
+  (tracking, weight, case and arc included, a letter on an arc turned with it), so the outlined logo matches
+  the canvas to within half a pixel at the artboard's size. Ligatures the face draws stay ligatures; underline
+  and strikethrough are drawn where Chrome and Edge draw them. A bold or italic the face lacks is drawn as the
+  browser synthesises it (its outline thickened, or slanted by a quarter).
+- **Text with no face of its own** (neither the element nor the tab chose one) is set in **Inter** in every file
+  of the kit, its preview included: the editor's system sans has no font file to outline, and differs by
+  computer anyway.
+- **The faces are fetched** as the embedded ones of any SVG download are (the Latin sets of each face used), and
+  the outlines are read from them by a font parser that loads only when a kit is made. When a face cannot be
+  fetched, or a letter is in none of the fetched sets (a script outside Latin, an emoji), no kit is made and the
+  panel says why instead of falling back in silence: "Couldn't fetch Lobster, so the logo's text can't be
+  outlined. Check your connection and try again." or "The letters “字” aren't in Lobster's Latin set, so they
+  can't be outlined."
+- **The plain SVG export keeps live text**: the page's own SVG download keeps editable `<text>` with its faces
+  embedded, as before. Only the kit outlines.
 
 ## Collaboration and agents
 
@@ -398,7 +450,10 @@ clean, as one edit:
 
 ## Non-goals
 
-- Text converted to outlines (it needs a font parser; wordmarks stay live text).
+- Outlined text anywhere but the Logo Kit's `logo.svg`: the page's SVG export, and every other format, keeps
+  live, editable text with its faces embedded.
+- The whole Google Fonts catalogue or a person's own fonts on a logo page: the display library is a closed,
+  curated list, so validation and the agents' docs stay simple.
 - Keeping a shape's curves as curves through Combine (the result is traced; Simplify brings curves
   back on request); a mirror axis or centre anywhere but the artboard's
   centre lines and centre; Mirror Copy across any line but the vertical centre line;

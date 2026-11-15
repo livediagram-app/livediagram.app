@@ -8,7 +8,9 @@ import {
   IMAGE_MASKS,
   BADGE_LABEL_MAX,
   CARD_TAGS_MAX,
+  DISPLAY_FONTS,
   ELEMENT_FIELD_VALUES,
+  FONTS,
   GREY_PEN_COLOUR,
   INK_PEN_COLOUR,
   PAGE_LINK_TRANSITIONS,
@@ -124,7 +126,14 @@ const CONTENT_KINDS =
 const STYLE_FIELDS =
   'Style fields: ' +
   Object.entries(ELEMENT_FIELD_VALUES)
-    .map(([key, values]) => `"${key}" (${values.join(', ')})`)
+    .map(([key, values]) =>
+      // The font: the eleven faces, then the display library a logo page's text may also take
+      // (docs/specs/007-editor/logo-pages.md "Display faces").
+      key === 'font'
+        ? `"font" (${FONTS.map((f) => f.id).join(', ')}; on a logo page’s text also a display face: ` +
+          `${DISPLAY_FONTS.map((f) => f.id).join(', ')})`
+        : `"${key}" (${values.join(', ')})`,
+    )
     .join(', ') +
   '; "textBold", "textItalic" (true/false); "colorPreset" (a shape\u2019s look from the theme, its border\u2019s ' +
   'width and style included, so it outranks a "strokeStyle" given with it; ghost and outline are dashed, dotted ' +

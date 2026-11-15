@@ -22,7 +22,7 @@ import {
   defaultTextColor,
   type CanvasSurface,
 } from './colors';
-import { fontIdsUsed, resolveFontStack } from '@liveworkspace/model-core/fonts';
+import { fontIdsUsed, resolveFontStack } from './fonts';
 import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
 import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
 import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';

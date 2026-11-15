@@ -202,6 +202,7 @@
     "./components/primitives/DashedAddButton": "./src/components/primitives/DashedAddButton.tsx",
     "./components/primitives/DropCaret": "./src/components/primitives/DropCaret.tsx",
     "./components/primitives/EllipsisTriggerButton": "./src/components/primitives/EllipsisTriggerButton.tsx",
+    "./components/primitives/CategoryChips": "./src/components/primitives/CategoryChips.tsx",
     "./components/primitives/FilterSearchBox": "./src/components/primitives/FilterSearchBox.tsx",
     "./components/primitives/LongPressRing": "./src/components/primitives/LongPressRing.tsx",
     "./components/primitives/MenuFlyoutPanel": "./src/components/primitives/MenuFlyoutPanel.tsx",

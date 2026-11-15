@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { sentUrl } from '@liveworkspace/vitest-config/sent-request';
-import { embeddedFontFaceCss, latinFaceBlocks } from './export-fonts';
+import { embeddedFontFaceCss, embeddedFontFaces, latinFaceBlocks } from './export-fonts';
 
 // An export leaves the browser that made it: a font-family the reader hasn't
 // got installed paints as the fallback, and the PNG path rasterises through
@@ -78,12 +78,52 @@ describe('embeddedFontFaceCss', () => {
 
   it('downloads a face once, however many exports ask for it', async () => {
     const fetchImpl = stubFetch();
-    await embeddedFontFaceCss(['caveat'], fetchImpl);
+    await embeddedFontFaceCss(['permanent-marker'], fetchImpl);
     const callsAfterFirst = (fetchImpl as unknown as { mock: { calls: unknown[] } }).mock.calls
       .length;
-    await embeddedFontFaceCss(['caveat'], fetchImpl);
+    await embeddedFontFaceCss(['permanent-marker'], fetchImpl);
     expect((fetchImpl as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(
       callsAfterFirst,
     );
+  });
+});
+
+// docs/specs/007-editor/logo-pages.md "Outlined text": the Logo Kit needs to know which face did not come.
+describe('embeddedFontFaces', () => {
+  it('names nothing missing when every face came', async () => {
+    const faces = await embeddedFontFaces(['permanent-marker', 'unknown-id'], stubFetch());
+    expect(faces.missing).toEqual([]);
+    expect(faces.css).toContain('data:font/woff2;base64,');
+  });
+
+  it('names, by label, a face the stylesheet held no file of, and asks again next time', async () => {
+    const fetchImpl = stubFetch();
+    expect((await embeddedFontFaces(['permanent-marker', 'lobster'], fetchImpl)).missing).toEqual([
+      'Lobster',
+    ]);
+    const calls = vi.mocked(fetchImpl).mock.calls.length;
+    await embeddedFontFaces(['permanent-marker', 'lobster'], fetchImpl);
+    expect(vi.mocked(fetchImpl).mock.calls.length).toBeGreaterThan(calls);
+  });
+
+  it('names every face when the stylesheet fails or the network is down', async () => {
+    const dead = vi.fn(
+      async () => new Response('down', { status: 503 }),
+    ) as unknown as typeof fetch;
+    expect((await embeddedFontFaces(['inter', 'lobster'], dead)).missing).toEqual([
+      'Inter',
+      'Lobster',
+    ]);
+    const throws = vi.fn(async () => {
+      throw new Error('offline');
+    }) as unknown as typeof fetch;
+    expect(await embeddedFontFaces(['playfair-display'], throws)).toEqual({
+      css: '',
+      missing: ['Playfair Display'],
+    });
+  });
+
+  it('wants nothing for no faces', async () => {
+    expect(await embeddedFontFaces([])).toEqual({ css: '', missing: [] });
   });
 });
