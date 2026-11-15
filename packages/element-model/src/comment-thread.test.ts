@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   threadResolved,
   threadWithComment,
+  threadWithEdit,
   threadWithoutComment,
   type CommentThreadOf,
 } from './comment-thread';
@@ -60,5 +61,22 @@ describe('threadResolved', () => {
     const t = thread('a');
     expect(threadResolved(t, false)).toBe(t);
     expect(threadResolved(undefined, true)).toBeUndefined();
+  });
+});
+
+describe('threadWithEdit', () => {
+  it('changes one comment’s text and stamps when, keeping the rest', () => {
+    const t = { ...thread('a', 'b'), resolved: true };
+    expect(threadWithEdit<C & { editedAt?: number }>(t, 'b', 'new', 9)).toEqual({
+      comments: [c('a'), { id: 'b', text: 'new', editedAt: 9 }],
+      resolved: true,
+    });
+  });
+
+  it('hands back the same thread for no thread, an unknown comment or the same text', () => {
+    const t = thread('a');
+    expect(threadWithEdit<C>(undefined, 'a', 'x', 1)).toBeUndefined();
+    expect(threadWithEdit(t, 'zz', 'x', 1)).toBe(t);
+    expect(threadWithEdit(t, 'a', 'a', 1)).toBe(t);
   });
 });
