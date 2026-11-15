@@ -453,6 +453,28 @@ each traced drag's raster tasks and the main thread's rendering steps.
   rose from 158-164 ms to 218-225 ms; not kept. The cost is the lines being drawn, not the overlay
   coming and going.
 
+## A press, round 9
+
+Measured 2026-11-15 on the reference board's diagram tab, local, unthrottled CPU profiles of one press
+and one release mapped through the build's source maps, and a walk of React's fiber tree before and
+after each.
+
+- **On the hosted runner, with the test runner's own scripts gone (round 8), a gesture's longest task
+  is its press or its release**: a drag's `pointerdown` 45-49 ms and `pointerup` 47-53 ms, a select's
+  `pointerdown` 48-52 ms, a marquee's or stroke's `pointerup` 54-69 ms.
+- **A press re-rendered the whole editor.** Starting a drag set the drag in `useEditorDrag`'s React
+  state, at the editor root: every slice of the editor state ran again, the editor context took a new
+  value, and so did three providers with no field changed (the editor mode, the split view's
+  callbacks, the component faces' `tab`). Each wraps about 20,000 fibers, so React walked the board to
+  find their readers. Only two things read the drag: the reshaping arrow's frame and the Shift hint.
+- **What shipped:** the drag lives in a store (`createStateStore`), and those two read a slice. A press
+  on a selected shape went from 10.7 ms to 2.3 ms unthrottled, with no provider changing (four before).
+- **Left as they are:** the release still changes the board, so the editor renders for it (44 ms
+  unthrottled under the profiler: selection chrome placement 5 ms, the context walk 5 ms, arrow
+  outlines and endpoint spreading, label backdrops). A press on an unselected shape mounts the
+  selection chrome, which measures itself (`getBoundingClientRect`, 12 ms of 28 ms). Both are the next
+  levers.
+
 ## Not tried
 
 - A raster snapshot of still elements during a gesture, and fewer SVG roots. Each is weighed in the spec.

@@ -126,6 +126,14 @@ A chart's `chartSource` is `{ "sheetId", "range": { "r1", "c1", "r2", "c2" } }`:
 }
 ```
 
+A `plan-view`'s `planView` is `{ "view", … }`, where `view` is a metric tile (`metric:count`, `metric:progress`, …) or a chart: `gantt`, `calendar`, `start-calendar`, `workload`, `priority-matrix`, `search`, or a flow chart, `cycle-time`, `throughput` or `cumulative-flow`. `types` (card type ids) limits a chart to those types, and a flow chart takes `rangeDays`: 14, 30 (the default, never stored), 90 or 180. Any other range is refused with `invalid_result`, naming the four. To show the last 90 days on a Throughput chart:
+
+```text
+set 0a78 planView={"view":"throughput","rangeDays":90}
+```
+
+The outline names each flow chart with its range (`view=throughput rangeDays=90`), so a range change shows when you diff the tab.
+
 `test` is how you make sure you change what you read: put one before a `set` and the changeset is refused, with nothing applied, if someone changed that element since. Sending the revision you read as `base` (below) does the same for every element at once.
 
 ## Selectors
@@ -172,7 +180,9 @@ curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$(uuidgen)/chang
   }'
 ```
 
-The OpenAPI reference at `/api/openapi.json` lists the metric kinds and chart views a dashboard takes.
+A chart may carry `settings`, the chart's own `planView` fields without its `view`: `{ "view": "cycle-time", "settings": { "rangeDays": 90 } }`. A `rangeDays` on a chart that is not a flow chart, or outside 14, 30, 90 and 180, is refused before anything is built. The OpenAPI reference at `/api/openapi.json` lists the metric kinds and chart views a dashboard takes.
+
+Only someone who can edit the plan changes a tab: a changeset from a participant or view-only link is refused (403), and a link scoped to one tab changes only that tab.
 
 ## The Answer
 

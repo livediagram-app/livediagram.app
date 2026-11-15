@@ -8,6 +8,7 @@ import {
   PLAN_ELEMENT_ABOUT,
   PLAN_ELEMENT_KINDS,
   PLAN_KIND_FIELDS,
+  PLAN_VIEW_FORMAT,
   isPlanElementKind,
 } from './plan-elements';
 
@@ -44,6 +45,7 @@ export function elementFormatText(kind: string): string | null {
     chart
       ? 'chartSource { "sheetId", "range" } names the cells it draws; a chart needs one.'
       : null,
+    kind === 'plan-view' ? PLAN_VIEW_FORMAT : null,
     'set <selector> key=value… changes them; key= unsets one. view=show prints what it holds.',
   ]
     .filter((line) => line !== null)

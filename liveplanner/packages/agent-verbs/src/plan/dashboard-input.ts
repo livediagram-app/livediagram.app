@@ -2,6 +2,11 @@
 // builder takes: tabs by name to their ids and what each holds, a chart's card types by name to ids, its grouping by
 // name. A name the project lacks is refused naming those there are.
 import {
+  FLOW_RANGES,
+  FLOW_RANGE_DEFAULT,
+  FLOW_VIEWS,
+  isFlowRange,
+  isFlowView,
   resolveType,
   statusKey,
   viewDateOptions,
@@ -29,6 +34,8 @@ export type DashboardInput = {
     measure?: string;
     // The slot's own name (plan-tabs.md "A slot's name").
     name?: string;
+    // A flow chart's range in days (plan-views.md "Flow charts"): one of FLOW_RANGES, 30 never stored.
+    rangeDays?: number;
   }[];
   notes?: readonly { title: string; text: string }[];
 };
@@ -67,6 +74,7 @@ export function resolveDashboardInput(
       startField?: string;
       dueField?: string;
       measure?: string;
+      rangeDays?: number;
     } = {};
     if (c.types?.length) {
       settings.types = [];
@@ -97,6 +105,20 @@ export function resolveDashboardInput(
       const field = fieldNamed(c.measure, viewMeasureOptions(types), 'Number field');
       if (!field.ok) return field;
       settings.measure = field.id;
+    }
+    if (c.rangeDays !== undefined) {
+      if (!isFlowView(c.view))
+        return {
+          ok: false,
+          message: `rangeDays is a flow chart's range (${FLOW_VIEWS.join(', ')}), not ${c.view}'s.`,
+        };
+      if (!isFlowRange(c.rangeDays))
+        return {
+          ok: false,
+          message: `No range of ${c.rangeDays} days. A flow chart reads ${FLOW_RANGES.join(', ')} days.`,
+        };
+      // The default is never stored (plan-views.md "Flow charts").
+      if (c.rangeDays !== FLOW_RANGE_DEFAULT) settings.rangeDays = c.rangeDays;
     }
     const name = readSlotName(c.name);
     charts.push({

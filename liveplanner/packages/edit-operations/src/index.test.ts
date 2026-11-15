@@ -32,6 +32,17 @@ describe('the public surface', () => {
     ]);
   });
 
+  // docs/specs/026-plan/plan-agents.md "Making a dashboard": a flow chart set by its view id and range.
+  it("sets a flow chart's range, and refuses one outside the four naming them", () => {
+    const set = (planView: { view: string; rangeDays: number }) =>
+      applyEditOperations(sprintDashboard(), [{ op: 'set', target: 'w1', fields: { planView } }]);
+    const outcome = applied(set({ view: 'cumulative-flow', rangeDays: 180 }));
+    expect(formatResultLines(outcome.results)).toEqual(['~ w1  planView (changed)']);
+    const rejection = refused(set({ view: 'cycle-time', rangeDays: 7 }));
+    expect(rejection.code).toBe('invalid_result');
+    expect(rejection.details.join(' ')).toContain('rangeDays (14, 30, 90 or 180)');
+  });
+
   it('answers a refusal as text', () => {
     const rejection = refused(
       applyEditOperations(sprintDashboard(), [{ op: 'rm', target: 'm77' }]),
