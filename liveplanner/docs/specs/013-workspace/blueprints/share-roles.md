@@ -186,7 +186,7 @@ Hooks that write a tab's structure, or write without passing `commit`, take `str
 swatch overrides, the cleanup preview and library inserts.
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
 
-Gestures opened for a Participant, each beside `isReadOnly` (Plan shows no palette, so none comes from one): inline text edit (`canWriteText`); a move drag (`canMove`, never a resize); the Delete, type-to-edit and Space-to-edit keys; the quick-style panel for what `recolour` admits (`canStyle`); answering session tools (`takePart`). Plan: `canEditCards` (add, edit, move) beside `canEdit` (structure) and `canRetire` (Trash, Archive, the type editor). Sheets: `canEdit` writes cells, `canShape` (an Editor) changes rows, columns, settings and the title; the controller's `write` refuses the rest.
+Gestures opened for a Participant, each beside `isReadOnly` (Plan shows no palette, so none comes from one): inline text edit (`canWriteText`); a move drag (`canMove`, never a resize); the Delete, type-to-edit and Space-to-edit keys; the quick-style panel for what `recolour` admits (`canStyle`); answering session tools (`takePart`). Plan: `canEditCards` (add, edit, move) beside `canEdit` (structure) and `canRetire` (Trash, Archive, the type editor). The Card Types button, its folded menu row and its panel go with the Trash, on `!readOnly` in `CanvasChrome` (`PlanCardsClusterStrip`'s optional `types`) and `useCanvasChromePanels`. Sheets: `canEdit` writes cells, `canShape` (an Editor) changes rows, columns, settings and the title; the controller's `write` refuses the rest.
 
 Invariants:
 

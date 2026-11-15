@@ -24,8 +24,7 @@ const strip = () =>
     <PlanCardsClusterStrip
       finderOpen={false}
       onToggleFinder={() => {}}
-      typesOpen={false}
-      onToggleTypes={() => {}}
+      types={{ open: false, onToggle: () => {} }}
       trash={{ open: false, onToggle: () => {} }}
     />,
   );
@@ -68,8 +67,7 @@ describe('the Plan strip folded on a phone', () => {
         folded
         finderOpen={false}
         onToggleFinder={() => {}}
-        typesOpen={false}
-        onToggleTypes={types}
+        types={{ open: false, onToggle: types }}
         trash={{ open: false, onToggle: () => {} }}
       />,
     );
@@ -95,8 +93,7 @@ describe('the Plan strip folded on a phone', () => {
           folded
           finderOpen={false}
           onToggleFinder={finder}
-          typesOpen={false}
-          onToggleTypes={() => {}}
+          types={{ open: false, onToggle: () => {} }}
         />
       </div>,
     );
@@ -123,11 +120,113 @@ describe('the Plan strip without New Card', () => {
         folded
         finderOpen={false}
         onToggleFinder={() => {}}
-        typesOpen={false}
-        onToggleTypes={() => {}}
+        types={{ open: false, onToggle: () => {} }}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'More card tools' }));
     expect(screen.queryByRole('menuitem', { name: /New Card/ })).toBeNull();
+  });
+});
+
+// docs/specs/026-plan/item-types.md "The Card Types panel", Share roles: Card Types (its button, its folded row) is an
+// Editor's, as the Trash is; a Participant and a Viewer get neither (CanvasChrome passes both only to an editor,
+// on !readOnly, which is true for both), and keep Find a Card.
+describe('the Plan strip by share role', () => {
+  // What CanvasChrome hands the strip for each role.
+  const ROLES = {
+    Editor: {
+      types: { open: false, onToggle: () => {} },
+      trash: { open: false, onToggle: () => {} },
+    },
+    Participant: {},
+    Viewer: {},
+  } as const;
+  const roleStrip = (role: keyof typeof ROLES, folded = false) =>
+    render(
+      <PlanCardsClusterStrip
+        folded={folded}
+        finderOpen={false}
+        onToggleFinder={() => {}}
+        {...ROLES[role]}
+      />,
+    );
+  // Runs body on a plan with no card types and nothing in the Trash.
+  const noTypes = (body: () => void) => {
+    const was = { types: plan.types, items: plan.items };
+    plan.types = [];
+    plan.items = new Map();
+    try {
+      body();
+    } finally {
+      Object.assign(plan, was);
+    }
+  };
+
+  it('gives an Editor Trash, Find a Card and Card Types, unchanged', () => {
+    dock.names = false;
+    roleStrip('Editor');
+    expect(screen.getAllByRole('button')).toHaveLength(3);
+    expect(screen.getByRole('button', { name: 'Open Card Types' })).toBeTruthy();
+    expect(document.querySelector('[data-tour-id="card-types"]')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Open the Trash/ })).toBeTruthy();
+  });
+
+  it('folds an Editor’s strip on a phone into a menu with Card Types', () => {
+    dock.names = false;
+    roleStrip('Editor', true);
+    fireEvent.click(screen.getByRole('button', { name: 'More card tools' }));
+    expect(screen.getAllByRole('menuitem').map((r) => r.textContent)).toEqual([
+      'Find a Card',
+      'Card Types',
+      'Trash',
+    ]);
+  });
+
+  it('gives an Editor Card Types alone on a plan with no card types', () => {
+    dock.names = false;
+    noTypes(() => {
+      roleStrip('Editor');
+      expect(screen.getAllByRole('button')).toHaveLength(1);
+      expect(screen.getByRole('button', { name: 'Open Card Types' })).toBeTruthy();
+    });
+  });
+
+  it.each(['Participant', 'Viewer'] as const)(
+    'gives a %s only Find a Card, with no door into Card Types',
+    (role) => {
+      dock.names = false;
+      roleStrip(role);
+      expect(screen.getAllByRole('button')).toHaveLength(1);
+      expect(screen.getByRole('button', { name: 'Find a Card' })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Open Card Types' })).toBeNull();
+      expect(screen.queryByRole('button', { name: /Open the Trash/ })).toBeNull();
+      // Nothing for the Boards tour's Card Types track to point at.
+      expect(document.querySelector('[data-tour-id="card-types"]')).toBeNull();
+    },
+  );
+
+  it.each(['Participant', 'Viewer'] as const)(
+    'shows a %s Find a Card itself on a phone, never a More Card Tools menu',
+    (role) => {
+      dock.names = false;
+      roleStrip(role, true);
+      expect(screen.queryByRole('button', { name: 'More card tools' })).toBeNull();
+      const find = screen.getByRole('button', { name: 'Find a Card' });
+      expect(screen.getAllByRole('button')).toEqual([find]);
+      expect(screen.queryByRole('menuitem', { name: 'Card Types' })).toBeNull();
+      expect(document.querySelector('[data-tour-id="card-types"]')).toBeNull();
+    },
+  );
+
+  it.each([
+    ['Participant', false],
+    ['Viewer', false],
+    ['Participant', true],
+    ['Viewer', true],
+  ] as const)('shows a %s no strip on a plan with no card types (folded: %s)', (role, folded) => {
+    noTypes(() => {
+      const { container } = roleStrip(role, folded);
+      expect(container.innerHTML).toBe('');
+    });
   });
 });
