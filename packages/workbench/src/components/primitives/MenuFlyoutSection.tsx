@@ -2,8 +2,10 @@
 
 import {
   Children,
+  createContext,
   isValidElement,
   useCallback,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -80,6 +82,11 @@ function loneSection(children: ReactNode): ReactNode | null {
   return isValidElement(only) ? only : null;
 }
 
+// How many flyouts a flyout row sits inside: 0 in the host menu, 1 in a flyout (Tools > Mind Map), and so on.
+// The controlled onToggle is told it, so the scaffold's open path (useFlyoutPath) opens a nested flyout without
+// closing the flyout it sits in (docs/specs/008-canvas/canvas-and-palette.md "A flyout can hold a flyout").
+const FlyoutDepthContext = createContext(0);
+
 type FlyoutPos = { left: number; top: number; width?: number; minHeight?: number };
 
 export function MenuFlyoutSection(props: MenuFlyoutSectionProps) {
@@ -100,7 +107,8 @@ type MenuFlyoutSectionProps = {
   flush?: boolean;
   onOpen?: () => void;
   open?: boolean;
-  onToggle?: () => void;
+  // Told how many flyouts this row sits inside (FlyoutDepthContext).
+  onToggle?: (depth: number) => void;
   // The children are ONE custom panel (the Collaborate row's Session Studio)
   // rather than a stack of accordion sections: never promoted inline, drawn
   // wider, and scrollable when it is taller than the screen.
@@ -142,6 +150,7 @@ function Flyout({
   const kind = useMenuKind() === 'command' ? 'command' : 'control';
   const { itemProps } = useMenuItemProps();
   const [localOpen, setLocalOpen] = useState(false);
+  const depth = useContext(FlyoutDepthContext);
   const controlled = controlledOpen !== undefined;
   const open = controlled ? controlledOpen : localOpen;
   // On a phone the flyout COVERS its parent menu instead of sitting beside it
@@ -175,12 +184,12 @@ function Flyout({
   const setOpen = useCallback(
     (next: boolean) => {
       if (controlled) {
-        if (next !== open) onToggle?.();
+        if (next !== open) onToggle?.(depth);
       } else {
         setLocalOpen(next);
       }
     },
-    [controlled, open, onToggle],
+    [controlled, open, onToggle, depth],
   );
 
   // Place the flyout beside the trigger row: to the right when it fits, else
@@ -382,7 +391,7 @@ function Flyout({
             title={title}
             onClose={() => setOpen(false)}
           >
-            {children}
+            <FlyoutDepthContext.Provider value={depth + 1}>{children}</FlyoutDepthContext.Provider>
           </FlyoutPanel>
         </Portal>
       ) : null}
