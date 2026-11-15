@@ -1065,7 +1065,7 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 ## Limits
 
 - **A field never shows a value nobody kept.** A card panel's text field stops taking characters at its limit (a
-  title at 500, a custom Text or Long Text at 2,000), showing how many are left from 90% of it ("12 characters
+  title at 500, a custom Text at 2,000, a custom Long Text at 10,000 as the Description), showing how many are left from 90% of it ("12 characters
   left", then "500 characters, the most it takes"). A change refused anyway (by the store before it is sent, or
   by the api) is not kept: the field goes back to the saved value, and a toast names why ("That title is too
   long: a card title holds up to 500 characters", "That value is too long or isn't one this field takes").
@@ -1075,9 +1075,18 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   cap is set by what the editor reads and draws in good time, not by storage (blueprint
   [item-store.md](blueprints/item-store.md) "Performance and limits").
 - Up to 20 pictures in a card's Attachments ([Attachments](#attachments)), each at most 10 MB.
-- Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
+- Up to 64 KB of fields per item (measured as stored JSON, without its comment threads): room for every built-in
+  field at its limit beside a formatted 9,000-character Long Text, whose formatting rides beside it and roughly
+  doubles it (owner 2026-11-15, Work Tracker 944; was 16 KB). A write past it is refused with `fields_too_large`. 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
   card's comment threads sit outside that budget: up to 50 threads a card, 20 cards a thread, and 200 comments and
   128 KB a thread; a write past one is refused with `threads_full`, `thread_cards_full` or `comments_full`.
+- **A refused value says which field and why.** A value past a limit is refused (`field_value_invalid`, or
+  `title_too_long` for a title) with the field's id (`field`) and the limit it broke (`limit`: `{ unit, max, given }`,
+  and `row` and `entry` when one row of a checklist, one label or one value of a list broke it), so the editor, the CLI
+  and the MCP can name the field as the card shows it and the length or count it holds ("Solution is 12,412
+  characters; the most is 10,000", "Acceptance Criteria row 3 is 230 characters; the most is 200 a row", "Acceptance
+  Criteria has 51 rows; the most is 50"). The limits: a title 500 characters, the description and a custom Long Text
+  10,000, a custom Text 2,000, a checklist 50 rows of up to 200 characters, labels 12 of up to 32 characters.
 - Item writes count against the write rate limit.
 
 ## Deleting a project

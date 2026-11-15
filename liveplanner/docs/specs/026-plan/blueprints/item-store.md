@@ -102,7 +102,7 @@ interface ItemMove extends ItemPlace {
 
 ### Validation (`validateFields(fields, mode)`)
 
-Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. Rejections are a closed union:
+Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field, limit? }` (`FieldsRefusal`). Rejections are a closed union:
 `title_required`, `title_too_long`, `field_key_invalid`, `field_value_invalid`, `fields_too_many`,
 `fields_too_large`, `votes_read_only`, `comments_read_only`, `type_invalid`, `id_invalid`, `place_invalid`.
 
@@ -124,11 +124,29 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 | comments    | rejected in create/patch and clear (`comments_read_only`)                                                                                                                    |
 | timestamp   | `statusSince` only: a finite integer ms epoch ≥ 0                                                                                                                            |
 | stamps      | `createdAt`, `createdBy`, `updatedAt`, `updatedBy` (`STAMP_FIELDS`) refused as keys (`field_key_invalid`): they are the item's own stamps, never in `fields`                 |
-| unknown     | scalar, or array of ≤ 50 scalars; strings ≤ 2,000                                                                                                                            |
+| unknown     | scalar (its own string ≤ `ITEM_LONG_TEXT_MAX`, 10,000: the store cannot tell a Long Text from a Text field), or array of ≤ 50 scalars (strings ≤ 2,000)                      |
+| rich        | `descriptionRich`, `<f-id>Rich`: runs whose text ≤ `richTextMaxOf(key)` (10,000 for both)                                                                                    |
 
 - Keys match `ITEM_FIELD_KEY_PATTERN`; at most `ITEM_FIELDS_MAX` keys; serialised fields ≤ `ITEM_FIELDS_BYTES`,
   measured without `comments` (`fieldsByteSize`); the thread is measured on its own (`commentsByteSize`).
 - A type id matches `/^[a-z][a-z0-9-]{0,31}$/`.
+- **The limit a refusal broke** (`field-limits.ts`, Work Tracker 944): a refused value is read again for its limit
+  (`brokenLimitOf(shape, value, max)`, only once refused, so a valid write pays nothing), its shape the built-in's kind
+  (`title`, `long-text`, `status`, `labels`, `checklist`), `rich` for a formatting key, or a custom field's own
+  (`undefined`: its text, a checklist's rows, people, a scalar list). `FieldLimit = { unit: 'characters' | 'rows' |
+'labels' | 'values', max, given, row?, entry?: 'row' | 'label' | 'value' }`; a value of the wrong shape has none.
+  `fieldLimitWords(name, limit)` words it ("Solution is 12,412 characters; the most is 10,000", "Acceptance Criteria row
+  3 is 230 characters; the most is 200 a row", "Acceptance Criteria has 51 rows; the most is 50"), and
+  `readFieldLimit(raw)` reads one from a refusal's body. `textMaxOfKind(kind)` is a custom field's text limit by kind
+  (Long Text 10,000, any other 2,000): the card panel's inputs, a CSV import and Edit Field's kind change cut to it, and
+  the agents' naming refuses a Text past it (`plan-names.ts`).
+- **The api's refusal names it** (`write-checks.ts` `fieldRefusalOf(error, fields, mode)`, `item-route-kit.ts`
+  `rejectedRead`): a create, patch or move whose read is refused answers `{ error, id?, field?, limit? }`, the body's
+  own fields checked again only on that path. The agents read `field` and `limit` (`agent-verbs` `apiRefusalOf(err,
+nameOf)`, `fieldNamer(types, type)` naming the id as the change's card shows it). Decision: this stays in
+  liveplanner's agent verbs, not `@liveworkspace/agent-verbs`, since only liveplanner's item store refuses a value by
+  field and limit; the other products' apis refuse a whole file (`createApiRefusal`). A second product with
+  per-field limits moves `readFieldLimit` and `fieldLimitWords` there.
 
 ### The AI assistant Assignee (`assistant.ts`)
 
@@ -1052,12 +1070,32 @@ WHERE dirty = 0` and the presence of a dirty row (then now). `noteWrite()` (afte
 ## Performance and limits
 
 - **The cap** (`ITEMS_MAX`, 5,000; raised from 2,000 by the owner 2026-11-15, Work Tracker 672): storage is not the
-  limit (a plan's Durable Object SQLite holds about 10 GB; 5,000 × 16 KB is 80 MB, under 1%), the editor is: it loads
+  limit (a plan's Durable Object SQLite holds about 10 GB; 5,000 × 64 KB is 320 MB, about 3%), the editor is: it loads
   every card in one GET and keeps them all in memory, and boards, dashboards, Gantt and the plan views work over the
   whole set. Windowed loading and server-side projections are the next step past 5,000 and stay out of scope.
-- Worst case 5,000 items × 16 KB = 80 MB is refused by the GET's practical size: the GET streams one JSON array, and
-  a typical card is 0.5 to 0.75 KB. The per-item cap bounds the row; SQLite's 2 MB row limit in a Durable Object is
-  never reached.
+- **A card's 64 KB** (`ITEM_FIELDS_BYTES`, raised from 16 KB by the owner 2026-11-15, Work Tracker 944, so a custom
+  Long Text holds 10,000 characters). The per-item cap bounds the row; SQLite's 2 MB row limit is never reached. No
+  budget bounds a plan's cards together: the count (`items_full`, 413) and each card's size do. Measured GET
+  `/items` at 5,000 cards on node:sqlite (CPU time, answer size, live heap the answer raised), one-off with the
+  first-load test's cards plus each case's fields:
+  - typical (the first-load card): 66 ms, 3.4 MB (0.67 KB a card), 17 MB heap;
+  - a 2,000-character Long Text on every card: 62 ms, 13.5 MB (2.6 KB a card), 45 MB;
+  - the old worst case, every card at 16 KB: 355 ms, 80 MB, 317 MB;
+  - every card with a formatted 9,000-character Long Text beside a full formatted description: 845 to 1,008 ms,
+    209.5 MB (41 KB a card), 823 to 887 MB;
+  - every card at 64 KB: 1,313 ms, 340.5 MB, 1,412 MB.
+    A Worker or Durable Object has 128 MB, so one GET of a plan answering past about 30 MB fails, as it already did at
+    the old worst case (80 MB). At 64 KB a card that is reached by about 470 such cards (1,900 at 16 KB); a plan of
+    ordinary cards with long Long Texts (a 2,000-character one on every card) stays at 13.5 MB. Agents read a plan in
+    pages (`list_items`, about 200,000 characters a page). Windowed loading or a plan-wide fields budget kept on the
+    store's head is the fix past that, out of scope here.
+- **The 413s at the cap**: `items_full` still counts cards, not bytes; a request still holds at most 8 MB
+  (`MAX_BODY_BYTES`), and every many-card write is cut under it by size as well as by `ITEM_BULK_MAX`: creates and
+  imports by `createBatches` (`ITEM_WRITE_BYTES`, 6 MB), and now the editor's many-card patches, moves and tallies too
+  (`postInChunks`, 200 full 64 KB changes would be 13 MB). An import still holds at most `ITEM_IMPORT_JSON_MAX` (26 MB).
+  A write's validation is linear in its fields: a card with every built-in at its limit beside a formatted 9,000-character
+  Long Text is 53,268 bytes, and validating and measuring it takes 0.15 ms of CPU (`fields.test.ts`, 200 writes in 30 ms,
+  budget 200 ms).
 - **Measured at 5,000 cards** (M-series Mac, CPU time; every budget below holds with room, and each test reads
   `ITEMS_MAX`, so a change to the cap re-measures them):
   - First load: GET /items answers in 44 ms of CPU on node:sqlite, 3.4 MB (0.68 KB a card of a 260-character
@@ -1131,6 +1169,7 @@ include `fields` or comment text.
 | Rule                                                 | Test                                                                                                                                                                                                                                                      |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Validation per kind, every rejection                 | `packages/items/src/fields.test.ts`                                                                                                                                                                                                                       |
+| A refusal's field and limit, worded, every door      | `packages/items/src/field-limits.test.ts`, `fields.test.ts`, `write-checks.test.ts`, `plan-names.test.ts`, `apps/api/src/routes/item-field-refusals.test.ts`, `agent-verbs/src/plan/field-refusals.test.ts`                                               |
 | Long Text formatting: key, limit, stale runs         | `packages/items/src/rich-text-field.test.ts`, `apps/editor/components/plan/ParagraphField.test.tsx`, `apps/editor/components/plan/ItemFieldEditor.longtext.test.tsx`                                                                                      |
 | Label usage, spelling, matching, a full plan         | `packages/items/src/label-usage.test.ts`, `apps/editor/components/plan/LabelsEditor.test.tsx`                                                                                                                                                             |
 | Rank always between, stable under repeats            | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                                                                                         |
@@ -1177,10 +1216,13 @@ include `fields` or comment text.
 | `ASSISTANT_ID_PREFIX`       | `ai-`                     | Spec (items.md "Handing a card to an AI assistant")                                                                                          |
 | `ASSISTANT_CLIENT_MAX`      | 40                        | Spec; an MCP client's name fits                                                                                                              |
 | `ASSISTANT_CLIENT_SLUG_MAX` | 24                        | Spec; keeps the id at 52, inside the person kind's 64                                                                                        |
-| `ITEM_FIELDS_BYTES`         | 16384                     | Spec; 4 KB–64 KB                                                                                                                             |
+| `ITEM_FIELDS_BYTES`         | 65536                     | Spec (owner 2026-11-15, Work Tracker 944, was 16384): every built-in at its limit beside a formatted 9,000-character Long Text; 16 KB–64 KB  |
 | `ITEM_FIELDS_MAX`           | 64                        | Spec                                                                                                                                         |
 | `ITEM_TITLE_MAX`            | 500                       | Spec; raised from 200 for long card titles                                                                                                   |
 | `ITEM_DESCRIPTION_MAX`      | 10000                     | Spec                                                                                                                                         |
+| `ITEM_LONG_TEXT_MAX`        | 10000                     | Spec (Work Tracker 944, was 2000): `ITEM_DESCRIPTION_MAX`                                                                                    |
+| `ITEM_UNKNOWN_STRING_MAX`   | 2000                      | A Text field, and each string in a custom field's list                                                                                       |
+| `CARD_TEMPLATE_BYTES`       | 16384                     | One card template's values: a card's old budget, so ten fit `CARD_TEMPLATES_BYTES`                                                           |
 | `ITEM_LABELS_MAX`           | 12                        | Spec                                                                                                                                         |
 | `ITEM_CHECKLIST_MAX`        | 50                        | Spec                                                                                                                                         |
 | `ITEM_BULK_MAX`             | 200                       | A sync of a big offline doc batches                                                                                                          |

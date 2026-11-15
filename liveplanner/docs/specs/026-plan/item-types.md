@@ -154,7 +154,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     Trash is no type's status, so a type's list never refuses it.
 - A type holds up to **24 fields** and up to **12 custom fields**, Parent not counted (it was a built-in field, so a
   type already at 12 keeps reading and saving once it gains Parent). A catalogue holds up to **32 types**.
-- **Custom field kinds**: Text, Long Text (up to 2,000 characters), Number, Currency, Percent (a share from 0 to
+- **Custom field kinds**: Text (up to 2,000 characters), Long Text (up to 10,000 characters, as the Description; owner 2026-11-15, Work Tracker 944, was 2,000), Number, Currency, Percent (a share from 0 to
   100, drawn as a bar, [below](#percent-fields)), Duration (hours and minutes, "2h 30m", and the time a team
   tracks, [below](#duration-fields)), Date, Date and Time (a moment, read in each viewer's own time zone,
   [below](#date-and-time-fields)), Date Range (a start and an end, days or with times, [below](#date-range-fields)),
@@ -443,7 +443,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       - **remove**: an entry, or a running timer (its **Discard**: the time is not recorded).
       - **put**: an entry put back as it was (the undo of a remove).
     - **Limits**: a field holds up to **100** entries and running timers together on a card (`TIME_ENTRIES_MAX`), so
-      a card stays well within its 16 KB of fields. Full, Start and Add Time are disabled ("This card holds the most
+      a card stays well within its 64 KB of fields. Full, Start and Add Time are disabled ("This card holds the most
       time entries it can"); a running timer can always stop, since it already counts.
     - **In the card panel** the field's row reads, top to bottom:
       - the **total** in large tabular figures ("4h 15m"; "No time yet", muted, with none);
@@ -1066,8 +1066,8 @@ card and cleaning it up.
   puts it on a card.
 - **Checked as a card's values are.** Each value passes the same check a card's field does (a title of up to 500
   characters, a description of up to 10,000, up to 12 labels and 50 checklist rows), refused by name when it fails
-  (`types[i].templates[j].fields`). A template's values hold at most **16 KB** (`ITEM_FIELDS_BYTES`, as a card's
-  fields), and the templates of the whole catalogue at most **128 KB** (`CARD_TEMPLATES_BYTES`), counted apart from the
+  (`types[i].templates[j].fields`). A template's values hold at most **16 KB** (`CARD_TEMPLATE_BYTES`, what a card's
+  fields held before they grew to 64 KB, so a template stays a starting point), and the templates of the whole catalogue at most **128 KB** (`CARD_TEMPLATES_BYTES`), counted apart from the
   catalogue's own 32 KB so templates never crowd out types (`types[i].templates[j]`, `templates`).
 - **A template follows its type.** A value for a field the type no longer offers (a field removed, or retyped into
   another, or an inherited field its base type took away) is dropped when the catalogue is next read, as the type's
