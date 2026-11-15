@@ -36,8 +36,18 @@ export function usePortalMenuPlacement(
   const [pos, setPos] = useState<{ left: number; top: number; flat?: boolean } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
 
+  // A menu taller than the screen is held to it and scrolls inside itself (docs/specs/004-interface-design/menus.md
+  // "A menu taller than the screen"): clamped as it stood, its top went above the screen's edge, out of reach (the
+  // photo Blend modes on a 390 x 844 phone, Work Tracker 593). Read from the content's own height (`scrollHeight`),
+  // which the cap leaves as it is, so applying it never undoes it; the clamp below runs again on the capped size.
+  const [cap, setCap] = useState<number | null>(null);
+
   const reposition = useCallback(() => {
     if (!anchor) return;
+    if (node) {
+      const room = window.innerHeight - 2 * VIEWPORT_EDGE_MARGIN;
+      setCap(node.scrollHeight > room ? room : null);
+    }
     if (beside && node) {
       const spot = besideSpot(
         beside.getBoundingClientRect(),
@@ -54,24 +64,18 @@ export function usePortalMenuPlacement(
   }, [anchor, placement, beside, node]);
   useReposition(reposition);
 
-  // A menu taller than the screen is held to it and scrolls inside itself (docs/specs/004-interface-design/menus.md
-  // "A menu taller than the screen"): clamped as it stood, its top went above the screen's edge, out of reach (the
-  // photo Blend modes on a 390 x 844 phone, Work Tracker 593). Read from the content's own height (`scrollHeight`),
-  // which the cap leaves as it is, so applying it never undoes it.
-  const [cap, setCap] = useState<number | null>(null);
-
   useLayoutEffect(() => {
     if (!node || !pos) return;
-    const room = window.innerHeight - 2 * VIEWPORT_EDGE_MARGIN;
-    const nextCap = node.scrollHeight > room ? room : null;
-    // The cap first; the clamp runs again once it is drawn, on the menu's capped size.
-    if (nextCap !== cap) return setCap(nextCap);
-    // Clamped relative to the adjust already applied, so re-measuring after a nudge settles.
-    const rect = node.getBoundingClientRect();
-    setAdjust((prev) => {
-      const next = clampToViewport(rect, prev);
-      return next.x === prev.x && next.y === prev.y ? prev : next;
-    });
+    // Clamped relative to the adjust already applied, so re-measuring after a nudge settles; again once a cap is
+    // drawn, on the menu's capped size.
+    const clamp = () => {
+      const rect = node.getBoundingClientRect();
+      setAdjust((prev) => {
+        const next = clampToViewport(rect, prev);
+        return next.x === prev.x && next.y === prev.y ? prev : next;
+      });
+    };
+    clamp();
   }, [pos, node, cap]);
 
   useEffect(() => {
