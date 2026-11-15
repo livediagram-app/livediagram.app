@@ -752,7 +752,9 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   from the room's purge). `routes/images.ts` names the plan as the upload's `document`, so the media service claims
   the picture for it (none for a This Browser upload).
 - The Card Types segment of `PlanCardsClusterStrip` (a `ClusterPopoverSegment`, from `ClusterPopoverButton.tsx`,
-  shared with Slides) opens dock panel `card-types` (`useCardTypesOpener` opens it from Edit Cards);
+  shared with Slides) opens dock panel `card-types` (`useCardTypesOpener` opens it from Edit Cards). The strip
+  takes it as an optional `types` prop, as it takes `trash`: `CanvasChrome` passes it only to an editor
+  (`!readOnly`), and registers the opener only then, so `openCardTypes()` returns false for anyone else;
   `CardTypesPanel` is a `MovablePanel` popover; `ItemTypeEditor` + `ItemTypeLayoutEditor` (forms in `ItemTypeFieldForms`) the modal (`Dialog`,
   `size="lg"`, `phoneSheet`), rendered by `PlanSheetsHost`. Delete with items patches each to the chosen type
   first.

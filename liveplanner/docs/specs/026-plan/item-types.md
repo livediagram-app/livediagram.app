@@ -1225,7 +1225,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   the second of one strip with **Find a Card**.
   It opens the panel as a popover hanging above the button, as Layers does from its button; it closes on a
   press outside, a second press of the button, or leaving Plan mode.
-- **Edit Cards** opens it too: a button at the end of the Toolbar strip while Cards is chosen.
+- **Edit Cards** opens it too, for an Editor: a button at the end of the Toolbar strip while Cards is chosen.
 - The panel is 34 rem (544 px) wide on desktop, two types to a row; on a phone the screen's width less a margin,
   one to a row. It lists the
   catalogue as **one list**, in its order, with no headings: no type is marked apart from another, wherever it came
@@ -1249,7 +1249,15 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 - **With no types**, Plan's bottom-right strip shows only **Card Types**: Find a Card would surface
   nothing, so it waits for the first type. The Trash stays while it holds cards (deleting the last type sends its
   cards there), so they can be restored once a type exists.
-- Someone who may only view the project sees the list without the edit and add controls.
+- Someone who may only view the project sees the list without the edit and add controls (a stored link or an
+  embed that still reaches the panel).
+- **Share roles: the panel and every door into it are an Editor's** ([Share roles](../013-workspace/share-roles.md#what-a-participant-changes)),
+  since only an Editor changes card types. A Participant or a Viewer gets no Card Types button in the strip and no
+  Card Types row in its folded phone menu, Edit Cards and `openCardTypes()` open nothing for them, and the Boards
+  tour's Card Types track (the one that points at the button) is never offered to them. **Find a Card** stays for
+  every role. A non-editor on a plan with **no card types** has nothing left in the strip (no Find a Card, no
+  Trash), so no strip shows, never an empty one; on a phone a non-editor's strip holds at most Find a Card, so it
+  shows that button itself rather than a More Card Tools menu of one row.
 
 ## Add Card Type
 
