@@ -165,6 +165,26 @@ change, boardFields(setup, types, false))` on the reshaped set-up; each name thr
 - `listedType` adds `templates?: { id, name, fields: string[] }[]`, field names by `fieldName` (Title, Description,
   Checklist, Labels by their built-in ids), Rich keys folded into their field; absent when the type has none.
 
+### Cards handed to an assistant (planned, Work Tracker 901 part 2)
+
+Derived from [Plan for agents](../plan-agents.md#cards-handed-to-an-assistant); nothing below is built yet. The stored
+shape it writes is built (item-store.md "The AI assistant Assignee").
+
+- The calling assistant: `callerAssistant(api)` reads `GET /api/tokens/current` once per call (`{ accountName,
+tokenName }`, with the caller's person id from `itemPersonId(accountId)`) and builds
+  `itemAssistantFor(person, tokenName)`; the person's colour is the one the plan's cards already give that id, else a
+  Plan swatch as `personNamed` picks one. A session that is not a token (`not_a_token`) has no assistant: `handedToMe`
+  and `"me"` are refused (`not_an_assistant`, "only an AI tool or API token can be handed cards").
+- `list_items { handedToMe? }`: filters `itemAssistantOf(item)?.id === caller.id` before paging; the listed card's
+  `assignee` stays its name, plus `assistant: true` when `itemAssistantOf` reads one.
+- `change_items`: `"assignee": "me"` resolves to the caller's assistant; an assistant's name resolves through
+  `assignedPeople`, which already returns the stored assistant whole; `hand_back { item }` writes
+  `assistantPersonOf(itemAssistantOf(card))` and is refused `not_handed_to_you` when the card's assistant is not the
+  caller's.
+- The plan remembers its assistants (part 2): a plan room table beside `known_people`, `known_assistants (id TEXT
+PRIMARY KEY, client TEXT, person TEXT JSON, seen_at INTEGER)`, written on an API-token write, oldest past
+  `KNOWN_PEOPLE_MAX` going first, read by the part 3 picker. It never holds a token id.
+
 ## Interfaces and contracts
 
 - `GET /api/projects/:id/plan` → `PlanResponse { boards, statuses, types }`; read gate as the item list
