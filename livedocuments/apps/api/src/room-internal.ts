@@ -16,6 +16,7 @@ export type InternalRoom = {
   handleAgentPresence: (request: Request, url: URL) => Promise<Response>;
   sequenceMutation: (from: string, op: unknown) => number;
   readSelections: (tabId: string, person: string) => Promise<unknown>;
+  readHolds: (tabId: string) => unknown;
   readLedger: (tabId: string, since?: number) => Promise<unknown>;
   epoch: () => string;
 };
@@ -102,6 +103,13 @@ export async function answerInternal(
     if (!tabId) return new Response('missing tab', { status: 400 });
     const selections = await room.readSelections(tabId, url.searchParams.get('person') ?? '');
     return Response.json({ selections });
+  }
+  // Internal: every live paragraph hold on a tab, for the api's held check on an agent's article write
+  // (docs/specs/024-agents/pages-for-agents.md "Held paragraphs"). Same trust argument as /broadcast.
+  if (request.method === 'GET' && url.pathname === '/holds') {
+    const tabId = url.searchParams.get('tab');
+    if (!tabId) return new Response('missing tab', { status: 400 });
+    return Response.json({ holds: room.readHolds(tabId) });
   }
   if (request.method === 'GET' && url.pathname === '/ledger') {
     const tabId = url.searchParams.get('tab');

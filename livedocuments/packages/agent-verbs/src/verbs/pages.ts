@@ -15,6 +15,7 @@ import {
   type PagesRefused,
 } from '../pages/pages-calls';
 import { resolveTab } from '../addressing';
+import { HELD_RETRY_INTERVAL_MS, writeFlags } from '../write';
 import { documentOf, tabPath } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livedocuments URL');
@@ -328,28 +329,41 @@ export const articleSet = defineVerb({
       .describe('clean, classic, report, notebook or bold'),
     accent: z.string().optional().describe('The accent colour, a hex'),
     pageNumbers: z.boolean().optional().describe('Page numbers on'),
+    // A paragraph a person is typing in holds the write back (docs/specs/024-agents/pages-for-agents.md "Held
+    // paragraphs"): retried every HELD_RETRY_INTERVAL_MS while the next try fits in the seconds given.
+    waitHeld: writeFlags.waitHeld.describe('Retry this many seconds while people hold the paragraphs'),
   }),
   output: doneOutput.extend({ flow: z.string(), title: z.string(), created: z.boolean() }),
   run: async (ctx, input) => {
     const markdown = await ctx.readInput(input.file);
     const at = await where(ctx, input.doc, input.tab);
-    const done = await writeArticle(
-      ctx.api,
-      at.documentId,
-      {
-        ...(at.tabId ? { tabId: at.tabId } : {}),
-        markdown,
-        ...(input.article ? { article: input.article } : {}),
-        ...(input.new ? { new: true } : {}),
-        ...(input.append ? { mode: 'append' as const } : {}),
-        ...(input.size ? { size: input.size as PageSizeId } : {}),
-        ...(input.orientation ? { orientation: input.orientation } : {}),
-        ...(input.look ? { look: input.look } : {}),
-        ...(input.accent ? { accent: input.accent } : {}),
-        ...(input.pageNumbers !== undefined ? { pageNumbers: input.pageNumbers } : {}),
-      },
-      'cli',
-    );
+    const write = () =>
+      writeArticle(
+        ctx.api,
+        at.documentId,
+        {
+          ...(at.tabId ? { tabId: at.tabId } : {}),
+          markdown,
+          ...(input.article ? { article: input.article } : {}),
+          ...(input.new ? { new: true } : {}),
+          ...(input.append ? { mode: 'append' as const } : {}),
+          ...(input.size ? { size: input.size as PageSizeId } : {}),
+          ...(input.orientation ? { orientation: input.orientation } : {}),
+          ...(input.look ? { look: input.look } : {}),
+          ...(input.accent ? { accent: input.accent } : {}),
+          ...(input.pageNumbers !== undefined ? { pageNumbers: input.pageNumbers } : {}),
+        },
+        'cli',
+      );
+    const started = ctx.now();
+    let done = await write();
+    for (let attempt = 1; !done.ok && done.code === 'paragraphs_held'; attempt += 1) {
+      if (!input.waitHeld || ctx.now() - started + HELD_RETRY_INTERVAL_MS > input.waitHeld * 1000)
+        break;
+      ctx.log(`held retry ${attempt}`);
+      await ctx.sleep(HELD_RETRY_INTERVAL_MS);
+      done = await write();
+    }
     if (!done.ok) throw refusal(done);
     const article = done.article!;
     return { ...doneOf(done), flow: article.flow, title: article.title, created: article.created };
@@ -361,6 +375,7 @@ export const articleSet = defineVerb({
     examples: [
       'livedocuments article set "Project brief" brief.md',
       'cat notes.md | livedocuments article set 3f9c - --article Notes --append',
+      'livedocuments article set "Project brief" brief.md --wait-held 30',
     ],
     prints: 'what was written',
   },
