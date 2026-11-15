@@ -170,16 +170,17 @@ describe('applyMindOutline', () => {
     const out = applyMindOutline(els, 'root', parse(`${outlineOf(els)}\n  - Ferry`), dress)!;
     const ferry = byLabel(out, 'Ferry');
     expect(ferry.mindParentId).toBe('travel');
-    expect(
-      out.some(
-        (e) =>
-          e.type === 'arrow' &&
-          e.from.kind === 'pinned' &&
-          e.from.elementId === 'travel' &&
-          e.to.kind === 'pinned' &&
-          e.to.elementId === ferry.id,
-      ),
-    ).toBe(true);
+    const connector = out.find(
+      (e): e is ArrowElement =>
+        e.type === 'arrow' &&
+        e.from.kind === 'pinned' &&
+        e.from.elementId === 'travel' &&
+        e.to.kind === 'pinned' &&
+        e.to.elementId === ferry.id,
+    );
+    expect(connector).toBeDefined();
+    // A new mind connector starts at the exact anchor (docs/specs/008-canvas/arrow-anchors.md).
+    expect(connector!.exactStart).toBe(true);
   });
 
   it('joins a new node with the connector look of the sibling its own look came from', () => {

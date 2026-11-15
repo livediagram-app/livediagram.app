@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  accountsFetch,
   authorizeUrl,
   createPkcePair,
   endAccountsSession,
@@ -302,5 +303,16 @@ describe('signing out everywhere', () => {
         tokenResponse({}, 502),
       ),
     ).toBeNull();
+  });
+});
+
+describe('accountsFetch', () => {
+  it('hands the binding a Request by its URL, and is the fallback itself with no binding', async () => {
+    const via = { fetch: vi.fn(async (_input: string, _init?: RequestInit) => new Response('ok')) };
+    const fallback = vi.fn<typeof fetch>();
+    await accountsFetch(via, fallback)(new Request('https://accounts.example/x'));
+    expect(via.fetch.mock.calls[0]?.[0]).toBe('https://accounts.example/x');
+    expect(fallback).not.toHaveBeenCalled();
+    expect(accountsFetch(undefined, fallback)).toBe(fallback);
   });
 });

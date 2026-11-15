@@ -94,6 +94,10 @@ const refreshCookie = (value: string) =>
 
 (`cookie(request, name)` is whatever cookie reader the app already has.)
 
+In production, pass `accountsFetch(env.ACCOUNTS)` as the last argument of `exchangeCode` and `refreshTokens`, so
+they go over the service binding, and answer a failed refresh by `accountsRefused(err)`: signed out (401, cookie
+cleared) only when it is true; otherwise 503 with the cookie kept, since the accounts site just didn't answer.
+
 For a "Create account" button, pass `prompt: 'create'` to `authorizeUrl`. The accounts site then
 opens its registration page (first name, last name, email, code) instead of sign-in. Everything
 after that is the same.

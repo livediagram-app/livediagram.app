@@ -38,6 +38,22 @@ describe('connect', () => {
     expect((straight as { arrowStyle?: string }).arrowStyle ?? 'straight').toBe('straight');
   });
 
+  it('starts at the exact anchor from a mind node or a flowchart step, not from a plain box', () => {
+    // docs/specs/008-canvas/arrow-anchors.md "In mind maps and flowcharts it is on by default".
+    const tab = flowWith((el) =>
+      el.id === 'n3'
+        ? ({ ...el, shape: 'mind-node' } as Element)
+        : el.id === 'n7'
+          ? ({ ...el, shape: 'diamond', flowchartId: 'n7' } as Element)
+          : el,
+    );
+    const exactOf = (op: string, id: string) =>
+      (elementOf(applied(run(op, tab)).tab, id) as { exactStart?: boolean }).exactStart;
+    expect(exactOf('connect n3 -> n8 id=m', 'm')).toBe(true);
+    expect(exactOf('connect n7 -> n1 id=f', 'f')).toBe(true);
+    expect(exactOf('connect n1 -> n8 id=p', 'p')).toBeUndefined();
+  });
+
   it('mints an arrow id from the kind word, and takes a given id', () => {
     expect(lines(run('connect n7 -> n3'))).toEqual(['+ arrow  n7→n3']);
     expect(lines(run('connect n1 -> n8 id=skip'))).toEqual(['+ skip  n1→n8']);

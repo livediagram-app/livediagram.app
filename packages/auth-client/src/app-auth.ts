@@ -29,6 +29,8 @@ import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { accountNameCookies, accountNameCookieFor } from './account-name';
 import {
+  accountsFetch,
+  accountsRefused,
   authorizeUrl,
   createPkcePair,
   exchangeCode,
@@ -47,6 +49,7 @@ import {
   startSilentSignIn,
 } from './silent';
 import type { PkceCookie } from './pkce-cookie';
+import type { KeysFetcher } from './verify';
 
 const COOKIE_PATH = '/api/auth';
 // Ten minutes to type the emailed code; the accounts Worker's own code lasts as long.
@@ -81,6 +84,9 @@ export type AppAuthEnv = {
   ACCOUNTS_CLIENT_SECRET?: string;
   API_RESOURCE?: string;
   AUTH_ORIGIN?: string;
+  // The accounts Worker's service binding: the token swaps and the sign-out go through it, the public route only
+  // when it is missing or throws (a Worker's fetch to another Worker's public route can stall).
+  ACCOUNTS?: KeysFetcher;
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
 };
 
@@ -299,6 +305,7 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
       callbackUrl: callbackUrl(env, request),
       cookies: SILENT_COOKIES,
       cookiePath: COOKIE_PATH,
+      fetchImpl: accountsFetch(env.ACCOUNTS),
     });
     if (silent) {
       if (!silent.tokens?.refreshToken) return redirect(silent.returnTo, silent.cookies);
@@ -318,12 +325,16 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
     }
     let tokens: TokenSet;
     try {
-      tokens = await exchangeCode(credentials(config), {
-        code,
-        redirectUri: callbackUrl(env, request),
-        codeVerifier: pkce.verifier,
-        resource: config.resource,
-      });
+      tokens = await exchangeCode(
+        credentials(config),
+        {
+          code,
+          redirectUri: callbackUrl(env, request),
+          codeVerifier: pkce.verifier,
+          resource: config.resource,
+        },
+        accountsFetch(env.ACCOUNTS),
+      );
     } catch (err) {
       console.warn('[auth] code_exchange_failed', err instanceof Error ? err.message : 'unknown');
       return redirect(`/sign-in?error=failed`, [clearCookie(PKCE_COOKIE)]);
@@ -343,21 +354,30 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
     ]);
   }
 
-  async function token(request: Request, config: AppAuthConfigured): Promise<Response> {
+  async function token(request: Request, env: Env, config: AppAuthConfigured): Promise<Response> {
     const refreshToken = readCookie(request, REFRESH_COOKIE);
     if (!refreshToken) {
       return json({ signedIn: false }, { status: 401, headers: noStore([hintCookie(false)]) });
     }
     let tokens: TokenSet;
     try {
-      tokens = await refreshTokens(credentials(config), {
-        refreshToken,
-        resource: config.resource,
-      });
+      tokens = await refreshTokens(
+        credentials(config),
+        { refreshToken, resource: config.resource },
+        accountsFetch(env.ACCOUNTS),
+      );
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'unknown';
+      // No answer from the accounts site in time (a stall, a 5xx): not signed out. The cookies stay, so the page's
+      // next ask can still refresh, and the page says it couldn't reach the account rather than signing anyone out
+      // (liveworkspace/docs/specs/003-accounts/accounts.md "When the accounts site doesn't answer").
+      if (!accountsRefused(err)) {
+        console.warn('[auth] refresh_unreachable', message);
+        return json({ error: 'accounts_unreachable' }, { status: 503, headers: noStore() });
+      }
       // Revoked, expired, or the account was deleted: signed out. The cookie goes so the next load doesn't ask
       // again.
-      console.warn('[auth] refresh_failed', err instanceof Error ? err.message : 'unknown');
+      console.warn('[auth] refresh_failed', message);
       return json({ signedIn: false }, { status: 401, headers: noStore(signedOutCookies()) });
     }
     const user = userOf(tokens);
@@ -386,10 +406,14 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
   // session.
   async function signOut(request: Request, env: Env, config: AppAuthConfigured): Promise<Response> {
     const returnTo = safeReturnPath(new URL(request.url).searchParams.get('return'));
-    const next = await signOutEverywhere(credentials(config), {
-      refreshToken: readCookie(request, REFRESH_COOKIE),
-      postLogoutRedirectUri: `${appOrigin(env, request)}${returnTo}`,
-    });
+    const next = await signOutEverywhere(
+      credentials(config),
+      {
+        refreshToken: readCookie(request, REFRESH_COOKIE),
+        postLogoutRedirectUri: `${appOrigin(env, request)}${returnTo}`,
+      },
+      accountsFetch(env.ACCOUNTS),
+    );
     return json(
       { signedIn: false, next },
       {
@@ -480,7 +504,7 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
       case 'GET callback':
         return callback(request, env, config, waitUntil);
       case 'POST token':
-        return token(request, config);
+        return token(request, env, config);
       case 'POST sign-out':
         return signOut(request, env, config);
       default:

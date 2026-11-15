@@ -158,6 +158,9 @@ with straight lines, dashes or arrowheads keeps growing that way. With nothing
 to copy it is a **curved line with no arrowheads**: a mind map shows belonging,
 not direction, and the curve is what keeps a fanned column of children legible.
 
+A grown connector **starts at the exact anchor** (`exactStart: true`, set by the shared growth planner), so a parent's
+children leave one point on its face; connectors already stored keep what they have.
+
 The faces a connector joins are the **flow's**, not the nearest pair: a tree
 leaves the parent's east face and enters the child's west face however far down
 the column the child is. The nearest-pair chooser would pick the parent's south

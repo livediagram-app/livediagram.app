@@ -7,7 +7,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livediagram/document';
-import { buildMindMap } from './template-builders-mindmaps';
+import { buildMindMap, buildMindMapTree } from './template-builders-mindmaps';
 
 // docs/specs/009-elements/mind-node.md "Connectors": a bubble map's spokes leave each node toward the other's
 // centre and run straight, so growing a branch never routes a spoke behind a sibling (issue #970's repro:
@@ -91,5 +91,17 @@ describe('bubble mind map spokes', () => {
 
   it('clear every node on the template as built', () => {
     expect(crossings(buildMindMap(0, 0))).toEqual([]);
+  });
+});
+
+// docs/specs/008-canvas/arrow-anchors.md "In mind maps and flowcharts it is on by default".
+describe('mind map template connectors', () => {
+  it.each([
+    ['bubble', buildMindMap],
+    ['tree', buildMindMapTree],
+  ])('start at the exact anchor on the %s map', (_, build) => {
+    const arrows = build(0, 0).filter((el) => el.type === 'arrow');
+    expect(arrows.length).toBeGreaterThan(3);
+    expect(arrows.every((a) => a.type === 'arrow' && a.exactStart === true)).toBe(true);
   });
 });
