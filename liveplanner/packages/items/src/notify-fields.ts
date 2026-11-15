@@ -2,6 +2,7 @@
 // person when a card is theirs, and who a card tells. One reading for the Inbox push, emails and Only Mine.
 import type { Item, ItemPerson } from './item';
 import type { ItemTypeDef } from './item-types';
+import { isAssistantId } from './assistant';
 import { isNamedPerson } from './plan-people';
 import { fieldPeople } from './several-values';
 
@@ -26,7 +27,8 @@ export interface NotifiedPerson {
 }
 
 // The people a card of `type` tells, once each, by the first notifying field that names them (every person of a field
-// that holds several): an empty field and a custom person (an `n-` id, never an account) tell no one.
+// that holds several): an empty field, a custom person (an `n-` id, never an account) and an AI assistant (an `ai-`
+// id, items.md "Handing a card to an AI assistant") tell no one.
 export function notifiedPeople(type: NotifyingType, item: Pick<Item, 'fields'>): NotifiedPerson[] {
   const out: NotifiedPerson[] = [];
   const told = new Set<string>();
@@ -34,7 +36,7 @@ export function notifiedPeople(type: NotifyingType, item: Pick<Item, 'fields'>):
     // Each of a field's people when it holds several (item-types.md "Holds Several"); the Assignee holds one.
     const def = type.custom?.find((f) => f.id === fieldId);
     for (const person of fieldPeople(def, item.fields[fieldId])) {
-      if (isNamedPerson(person) || told.has(person.id)) continue;
+      if (isNamedPerson(person) || isAssistantId(person.id) || told.has(person.id)) continue;
       told.add(person.id);
       out.push({ fieldId, person });
     }
