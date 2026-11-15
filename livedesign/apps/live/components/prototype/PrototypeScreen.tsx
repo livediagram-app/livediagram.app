@@ -3,7 +3,9 @@
 // One screen of Prototype mode (docs/specs/007-editor/wireframe-pages.md "Prototype mode"): the page drawn as an
 // export draws it (its device frame, the content cut to the screen, the system bars over it), fitted to the space it
 // is given, with its hotspots over it. On a phone the frame steps aside and the screen alone is shown. The markup is
-// our own renderer's (user text is xmlEscaped inside it), so injecting it is safe, as the page thumbnails do.
+// our own renderer's (user text is xmlEscaped inside it), but it draws a person's design (its words, colours and
+// pictures), so it goes in through sanitizedHtml like every other sink of a design's drawing.
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useMemo } from 'react';
 import {
   elementIdsOnPage,
@@ -12,7 +14,7 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedesign/design';
-import { builtMarkup, htmlProps } from '@livedesign/ui';
+import { htmlProps } from '@livedesign/ui';
 import { useImageSources } from '@/components/canvas/page-image-access';
 import { renderTabToSvg } from '@/lib/export-tab';
 import { thumbImageHref, thumbImageIds } from '@/lib/thumb-images';
@@ -76,7 +78,7 @@ export function PrototypeScreen({
       preserveAspectRatio="xMidYMid meet"
       className="block h-full w-full"
     >
-      <g aria-hidden {...htmlProps(builtMarkup(markup))} />
+      <g aria-hidden {...htmlProps(sanitizedHtml(markup, 'svg-content'))} />
       {hotspots?.map((h) => (
         <rect
           key={h.elementId}
