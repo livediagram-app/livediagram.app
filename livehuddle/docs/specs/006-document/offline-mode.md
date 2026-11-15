@@ -235,8 +235,10 @@ always did.
   another tab during the warm paint shows the tab loader, never a blank canvas, and the
   catch-up keeps the tab the reader moved to (when the document still has it and the link's
   tab scope allows it) instead of going back to the first.
-- **The view lands once.** The painted tab is fitted as it paints, so the catch-up does not
-  fit it again and the view does not jump.
+- **The view lands once.** The painted tab is fitted as it paints, so a catch-up that keeps its
+  body does not fit it again and the view does not jump. A copy older than the server's (a save
+  that landed after the copy was last written) is replaced by the catch-up, and the tab is fitted
+  again on what it now holds, so content the copy did not have is never left off screen.
 - **Another browser tab** of the same document warm-opens from the same copy; its room connects
   once its own load lands, as always.
 - `DocumentLoad` keeps timing the fresh copy's first frame; the warm paint is timed on its own, as

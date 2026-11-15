@@ -3,6 +3,8 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSticky, type Element, type Tab } from '@livehuddle/document';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import { notifyMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
+import { tabFitView } from '@/lib/tab-fit-view';
 import { useEditorViewport } from './useEditorViewport';
 
 // On a phone, an element just added (and selected by the add) scrolls into view. The selection is read
@@ -117,5 +119,75 @@ describe('useEditorViewport revealing above the on-screen keyboard', () => {
     const r = reveal(350);
     // The caret's foot (620) lands 24 px above the keyboard's top (450).
     expect(r.after).toBeCloseTo(r.before - (620 - (450 - 24)) / r.z, 0);
+  });
+});
+
+// docs/specs/008-canvas/minimap.md "Fit leaves the Map clear": a Map that shows while a fit glides in (Walk to Edit as a
+// warm open's catch-up lands) sends the glide on to the fit clear of it.
+describe('useEditorViewport and the Map showing mid-glide', () => {
+  function desktop() {
+    window.innerWidth = 1400;
+    const selection = createSelectionStore();
+    const tab = tabOf([
+      createSticky(0, 0),
+      createSticky(800, 0),
+      createSticky(0, 600),
+      createSticky(800, 600),
+    ]);
+    const view = renderHook(() =>
+      useEditorViewport({ activeTab: tab, readSelection: selection.get }),
+    );
+    const main = document.createElement('main');
+    main.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, right: 1400, bottom: 900, width: 1400, height: 900 }) as DOMRect;
+    (view.result.current.canvasMainRef as { current: HTMLElement | null }).current = main;
+    return { view, main, tab };
+  }
+  let map: HTMLElement | null = null;
+  afterEach(() => {
+    map?.remove();
+    map = null;
+  });
+  const showMap = () => {
+    map = document.createElement('div');
+    map.setAttribute('data-tour-id', 'minimap');
+    map.getBoundingClientRect = () =>
+      ({ left: 16, top: 640, right: 272, bottom: 880, width: 256, height: 240 }) as DOMRect;
+    document.body.append(map);
+  };
+
+  it('glides on to the fit clear of a Map that shows before the glide lands', () => {
+    const { view, main, tab } = desktop();
+    const plain = tabFitView(main, tab.elements)!;
+    act(() => view.result.current.glideToFit(300));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    showMap();
+    const clear = tabFitView(main, tab.elements)!;
+    expect(clear).not.toEqual(plain);
+    act(() => notifyMapShown());
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    const now = view.result.current.viewport.get();
+    expect(now.zoom).toBeCloseTo(clear.zoom);
+    expect(now.offset.x).toBeCloseTo(clear.offset.x);
+    expect(now.offset.y).toBeCloseTo(clear.offset.y);
+  });
+
+  it('leaves a view the person moved off a landed fit', () => {
+    const { view } = desktop();
+    act(() => view.result.current.glideToFit());
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    act(() => view.result.current.setViewportOffset({ x: 999, y: 999 }));
+    showMap();
+    act(() => notifyMapShown());
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(view.result.current.viewport.get().offset).toEqual({ x: 999, y: 999 });
   });
 });

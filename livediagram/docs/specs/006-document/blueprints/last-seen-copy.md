@@ -134,7 +134,12 @@ firstTabToLoad(item.tabs, access.tabScope)`, and the `#t=` fragment names no oth
     answers `'loading'` for it, so a tab switched to during the warm paint shows the tab loader (and blocks edits)
     rather than a blank canvas; the lazy tab load stays off until the catch-up, which then fetches it.
   - **The fit.** `useTabEntryEffects` takes `warmTabId`: before hydration it fits only the warm-painted tab (counted
-    as loaded) and claims it in `lastFittedTabRef`, so the catch-up never fits it again and the view does not jump.
+    as loaded) and claims it in `lastFittedTabRef`, so a catch-up that keeps its body never fits it again and the
+    view does not jump. It also takes `elements` (the active tab's array) and notes the one it fitted: when the
+    catch-up lands with another array (`keptWarmTab` answered null, the copy was older than the server's), the claim
+    is dropped and the tab is fitted again on its fresh body. A copy written before the last save landed (the
+    follower writes at most every `LAST_SEEN_REFRESH_MS`, so a reload just after a save often paints the one before)
+    would otherwise leave content the copy lacked off screen.
     The `#t=` pin still waits for `hydrated`. livedocuments and livedesign hand Pages mode the same warm-aware
     `tabLoaded`, so its page framing runs at the paint and not again at catch-up.
   - **Catch-up.** The ordinary bootstrap runs once `authLoaded` flips, unchanged, with `loadingDocument` already
@@ -264,7 +269,8 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
   disabled edit controls a view link shows. No new surface, copy or state: nothing to design beyond the editor's own
   read-only look, which every share role already has.
 - A tab other than the painted one shows the tab loader the editor already has for a tab still loading, never a
-  blank canvas, and stays the active tab through the catch-up. The painted tab is fitted once, as it paints.
+  blank canvas, and stays the active tab through the catch-up. The painted tab is fitted once, as it paints, and
+  again at the catch-up only when its body was replaced by a newer one.
 - The catch-up changes nothing on screen when the document did not move on but the role: the tools an Editor or a
   Participant has appear. A document that moved on shows its fresh first tab and tab list in place.
 - Lost access shows the card the load ends on (not found, deleted, password), as a cold open does.
@@ -325,6 +331,7 @@ reaches (read-only to editable chrome) renders once more as it does in any role 
 | A link's own address warm-opens by its code, forgets by it | `last-seen-copies.test.ts` "reads the newest copy a share code kept …", "forgets every copy a share code kept …"; `warm-open.test.ts` "reads a share link's own address …"; `editor-arrival.test.ts` "forgets a link's copies by its code …"; each `useIdentityBootstrap.warm.test.tsx` "paints a link's own address …", "forgets a revoked link's copies …" |
 | Other tabs load, the chosen tab is kept | each `editor-page-helpers.test.ts` "loads a tab without a body while the warm open shows …"; each `seed-fetched-*.test.ts` "keeps the tab the person moved to …", "falls back to the first tab …"; each `useIdentityBootstrap.warm.test.tsx` "keeps the tab the person moved to …" |
 | One fit, at the paint | `useTabEntryEffects.test.tsx` "fits the warm-painted tab before hydration …", "waits for the load for a tab without a body …" |
+| A stale copy is fitted again on its fresh body | `useTabEntryEffects.test.tsx` "fits the warm-painted tab again when the catch-up replaced its body …" |
 
 The shared modules (the store, the copies, the follower, the hook and the warm open) are held at 100% in `packages/workbench/vitest.config.ts`.
 

@@ -78,6 +78,9 @@ opens on) never puts content under it. When the plain fit would reach under the 
 16 px to spare), the content fits instead either beside the Map or above it (below it, for a
 Map docked at the top), whichever keeps it larger; a fit that stays clear is left as it is.
 The Map is found by its `data-tour-id="minimap"`; a Map that is not showing changes nothing.
+A Map that shows after the fit (it shows from four elements on, so a template's fit runs before it) fits again
+while the view is still that fit, or still gliding to it: Walk to Edit glides to the fit, and when a warm open's
+catch-up lands that glide starts before the Map has a box, so it glides on to the fit clear of the Map.
 
 ## Geometry
 

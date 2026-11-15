@@ -154,6 +154,7 @@ export function useEditorFollowing({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
+    elements: activeTab.elements,
     tabLoaded: loadedTabIds.has(activeId),
     warmTabId,
     fitToScreen: () => {
