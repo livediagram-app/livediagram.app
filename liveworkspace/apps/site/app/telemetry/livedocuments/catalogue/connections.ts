@@ -104,6 +104,7 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Adding, changing, laying out, moving or deleting pages: slides and infographics.',
   ),
   mcpTool('WriteArticle', 'Write Article', 'Writing an article on pages from Markdown.'),
+  mcpTool('ViewTab', 'View Tab', 'The interactive view in a chat host drawing a page.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

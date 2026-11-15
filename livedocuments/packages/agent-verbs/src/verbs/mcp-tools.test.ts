@@ -31,6 +31,7 @@ describe('the MCP tool verbs', () => {
       'change_threads',
       'list_versions',
       'restore_version',
+      'view_tab',
     ]);
     for (const v of MCP_TOOL_VERBS) {
       expect(v.id).toBe(`mcp.${v.mcp.tool}`);
@@ -60,6 +61,7 @@ describe('the MCP tool verbs', () => {
       'list_trash',
       'list_threads',
       'list_versions',
+      'view_tab',
     ]);
   });
 });

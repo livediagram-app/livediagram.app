@@ -378,14 +378,14 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Developer integrations',
-        us: 'REST API, MCP server and CLI',
+        us: 'GitHub pull requests on cards and in rules, plus a REST API, MCP server and CLI',
         them: 'Deep links to code, builds and deployments',
       },
     ],
     themBest: [
       'You run scrum with sprints, backlogs, story points and velocity reporting.',
       'You need configurable workflows with transitions, permissions and audit across many projects.',
-      'You want issues linked to branches, pull requests, builds and deployments in your development tools.',
+      'You want issues linked to branches, builds and deployments across many development tools.',
     ],
     usBest: [
       'Open a board in a click, with nothing to configure and no account needed.',
@@ -424,7 +424,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveplanner link to GitHub or my CI?',
-        a: 'Not with built-in integrations. The REST API, MCP server and command-line tool let your own scripts and AI agents create and move cards, so you can connect the tools you use.',
+        a: 'GitHub, yes: connect a plan and each card shows its pull requests’ state (draft, open, checks passing or failing, merged or closed), and Automations can move, assign or comment on a card when a pull request opens, merges or its checks finish. Other CI and development tools have no built-in link, but a rule can be started from any tool by its own address, and the REST API, MCP server and command-line tool let your own scripts and AI agents create and move cards.',
       },
       {
         q: 'Is it free?',

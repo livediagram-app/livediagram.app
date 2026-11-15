@@ -449,3 +449,149 @@ export function FreeArt() {
     </ArtFrame>
   );
 }
+
+// Connected across apps: a liveplanner plan's tab bar, its own tabs beside connected files from three other apps, the
+// livediagram one open as a preview with Open.
+export function ConnectedArt() {
+  const plan = appById('liveplanner.app');
+  const tabs = [
+    { app: 'liveplanner.app', name: 'Launch board', own: true },
+    { app: 'livediagram.app', name: 'Launch flow', open: true },
+    { app: 'livedocuments.app', name: 'Brief' },
+    { app: 'livedesign.app', name: 'Screens' },
+  ];
+  const diagram = appById('livediagram.app');
+  return (
+    // contain: inline-size keeps the tab row, which runs off its edge on purpose, from widening the grid on a phone.
+    <ArtFrame className="flex flex-col gap-2.5 p-3 [contain:inline-size]">
+      <div className="flex gap-1.5 overflow-hidden">
+        {tabs.map((t) => {
+          const app = appById(t.app);
+          return (
+            <span
+              key={t.app}
+              className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-2 py-1 text-[11px] font-semibold ${
+                t.open
+                  ? 'border-[var(--lw-ink)] bg-white text-slate-900 dark:border-[var(--lw-ink-dark)] dark:bg-slate-900 dark:text-white'
+                  : 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+              }`}
+              style={ink(app)}
+            >
+              {t.own ? (
+                <span className="size-2.5 rounded-sm bg-[var(--lw-accent)]" />
+              ) : (
+                <AppMark app={app} className="size-3.5" />
+              )}
+              {t.name}
+            </span>
+          );
+        })}
+      </div>
+      <div
+        className="relative flex flex-1 items-center gap-4 overflow-hidden rounded-xl border border-slate-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-900"
+        style={ink(diagram)}
+      >
+        <div className="relative h-20 w-36 shrink-0 rounded-lg bg-slate-50 ring-1 ring-slate-200 dark:bg-slate-950/60 dark:ring-slate-800">
+          <span className="absolute top-3 left-3 h-5 w-12 rounded border-2 border-[var(--lw-ink)] bg-white dark:border-[var(--lw-ink-dark)] dark:bg-slate-900" />
+          <span className="absolute top-3 right-3 h-5 w-12 rounded border-2 border-[var(--lw-ink)] bg-white dark:border-[var(--lw-ink-dark)] dark:bg-slate-900" />
+          <span className="absolute bottom-3 left-12 h-5 w-12 rounded border-2 border-[var(--lw-ink)] bg-white dark:border-[var(--lw-ink-dark)] dark:bg-slate-900" />
+          <span className="absolute top-[30px] left-[38px] h-4 w-px bg-slate-400" />
+          <span className="absolute top-[30px] right-[38px] h-4 w-px bg-slate-400" />
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+            Launch flow
+          </p>
+          <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+            A {diagram.name} canvas in {plan.name}
+          </p>
+          <span className="mt-2 inline-flex rounded-full bg-[var(--lw-ink)] px-3 py-1 text-[11px] font-semibold text-white">
+            Open
+          </span>
+        </div>
+      </div>
+    </ArtFrame>
+  );
+}
+
+// A copy in your Google Drive: the liveworkspace folder in Drive, a file from each app in it, each synced.
+export function DriveArt() {
+  const files = [
+    { app: 'livediagram.app', name: 'Launch flow', ext: 'livediagram' },
+    { app: 'liveplanner.app', name: 'Launch plan', ext: 'liveplanner' },
+    { app: 'livedocuments.app', name: 'Launch brief', ext: 'livedocuments' },
+  ];
+  return (
+    <ArtFrame className="p-3">
+      <div className="flex items-center gap-1.5 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+        <span>My Drive</span>
+        <ChevronGlyph />
+        <span className="text-slate-900 dark:text-white">liveworkspace</span>
+      </div>
+      <div className="mt-2 flex flex-col gap-1.5">
+        {files.map((f, i) => {
+          const app = appById(f.app);
+          return (
+            <div
+              key={f.app}
+              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 dark:border-slate-700 dark:bg-slate-900"
+            >
+              <AppMark app={app} className="size-4 shrink-0" />
+              <span className="min-w-0 flex-1 truncate text-[11px] text-slate-700 dark:text-slate-200">
+                <span className="font-semibold">{f.name}</span>
+                <span className="text-slate-400 dark:text-slate-500">.{f.ext}</span>
+              </span>
+              <span
+                className="lw-rise flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                style={{ animationDelay: `${300 + i * 200}ms` }}
+              >
+                <CheckGlyph />
+                Synced
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </ArtFrame>
+  );
+}
+
+// On your phone, too: an installed app's icon on a home screen, and a notification arriving that someone mentioned you.
+export function PhoneArt() {
+  const docs = appById('livedocuments.app');
+  return (
+    <ArtFrame
+      className="flex items-end justify-center"
+      surface="bg-gradient-to-br from-slate-50 to-white ring-slate-200 dark:from-slate-900 dark:to-slate-950/50 dark:ring-slate-800"
+    >
+      <div className="relative h-40 w-44 translate-y-6 rounded-t-[1.75rem] border-[5px] border-b-0 border-slate-800 bg-slate-100 px-2.5 pt-6 dark:border-slate-600 dark:bg-slate-800">
+        <span className="absolute top-1.5 left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-slate-800 dark:bg-slate-600" />
+        <div
+          className="lw-rise flex items-start gap-2 rounded-xl bg-white/95 p-2 shadow-md ring-1 ring-slate-200 dark:bg-slate-900/95 dark:ring-slate-700"
+          style={ink(docs)}
+        >
+          <AppMark app={docs} className="size-5 shrink-0" />
+          <span className="min-w-0 text-[10px] leading-snug text-slate-600 dark:text-slate-300">
+            <span className="block font-semibold text-slate-900 dark:text-white">{docs.name}</span>
+            <span className="flex items-center gap-0.5">
+              <AtGlyph />
+              Ada mentioned you in Brief
+            </span>
+          </span>
+        </div>
+        <div className="mt-3 grid grid-cols-4 gap-2 px-1">
+          {listedApps()
+            .slice(0, 4)
+            .map((app) => (
+              <span
+                key={app.id}
+                className="flex aspect-square items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700"
+              >
+                <AppMark app={app} className="size-5" />
+              </span>
+            ))}
+        </div>
+      </div>
+    </ArtFrame>
+  );
+}

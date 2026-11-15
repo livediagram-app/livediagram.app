@@ -76,6 +76,12 @@ Your AI tool may also surface a few ready-made **prompts** ("Plan this", "Board 
 
 When the AI changes a tab you have open, you see it happen: the change arrives straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Cards, cells and forms it changes arrive live too. Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). Something someone else in the plan has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
 
+## Interactive view
+
+In an AI tool that shows interactive results (Claude does), listing a plan's cards or reading a plan also opens a small view of its board beside the answer: each column with its card count (and its WIP limit, when it has one) and the cards in the board's order. Switch between the plan's Board tabs, and click a card to open it in the editor. The view is read-only: nothing you do in it changes the plan.
+
+A big board shows the first cards of each column and a **+ N more** button that opens the board in the editor, so the view stays quick. It uses your own connection, never a share link, and shows the board as it was when it opened; ask the AI again, or open the editor, to see later changes.
+
 The AI does the thinking; liveplanner checks, saves and shows what it produces. The MCP server runs no AI model of its own. New plans an AI creates go where any new plan goes: into your default folder when you have set one (**Settings**, **Plans**, **Where New Plans Go**), otherwise at the root of **My Work**.
 
 ## What a connection can and can't touch

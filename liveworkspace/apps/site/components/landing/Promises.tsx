@@ -5,12 +5,15 @@ import type { CSSProperties, ReactNode } from 'react';
 import { listedApps } from '@/lib/apps';
 import { AppMark } from './AppLogo';
 import {
+  ConnectedArt,
   DataArt,
+  DriveArt,
   FreeArt,
   InboxArt,
   KeepArt,
   KeyArt,
   LiveArt,
+  PhoneArt,
   ShareArt,
   TeamsArt,
 } from './PromiseArt';
@@ -36,7 +39,7 @@ export function Promises() {
           Whichever one you open, this is what you get.
         </p>
 
-        {/* 15 cells over 3 columns, 12 over 2: every row full. */}
+        {/* 18 cells over 3 columns, 16 over 2: every row full. */}
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Tile
             className="sm:col-span-2 lg:row-span-2"
@@ -68,6 +71,12 @@ export function Promises() {
             body="Every diagram, plan, document, design and Space you make is in one Explorer, which every app shows. One folder can hold work from all of them."
           />
           <Tile
+            className="sm:col-span-2 lg:col-span-1"
+            art={<ConnectedArt />}
+            title="Connected across apps"
+            body="Connect a canvas, plan, document, design or Space as a tab in another app’s work, so the plan, the brief and the screens are one tap apart."
+          />
+          <Tile
             art={<InboxArt />}
             title="One Inbox"
             body="Comments, mentions and actions assigned to you, from every app, in one list. Open one and you land on the thing it is about."
@@ -81,6 +90,16 @@ export function Promises() {
             art={<KeyArt />}
             title="One key for scripts and AI"
             body="An API token works in every app, from a script, the command line or a connected AI tool. Revoke it once and it stops everywhere."
+          />
+          <Tile
+            art={<DriveArt />}
+            title="A copy in your Google Drive"
+            body="Connect Google Drive once and your work from every app is kept as files in your own Drive, in folders that match yours, synced both ways."
+          />
+          <Tile
+            art={<PhoneArt />}
+            title="On your phone, too"
+            body="Add any app to your home screen to open it like an app, and hear on your phone when someone mentions you, assigns you something or replies."
           />
           <Tile
             art={<DataArt />}

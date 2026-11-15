@@ -7,6 +7,7 @@ import { mcpChangePages, mcpWriteArticle } from '@livedocuments/agent-verbs/mcp'
 import { clientFor } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
+import { VIEW_TOOL_META } from './view-tab';
 import { deepLink, errorResult, requireToken, textResult } from './tool-helpers';
 
 // A refusal names the change it stopped at, 1 first as the agent counts them.
@@ -24,28 +25,40 @@ const answerOf = (env: Env, done: PagesDone) => ({
 });
 
 export function registerPagesTools(server: McpServer, env: Env): void {
-  registerTool(server, env, mcpChangePages, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra));
-    const done = await changePages(
-      api,
-      args.documentId,
-      { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes },
-      'mcp',
-    );
-    if (!done.ok) return errorResult(refusalText(done));
-    return textResult(answerOf(env, done));
-  });
+  registerTool(
+    server,
+    env,
+    mcpChangePages,
+    async (args, extra) => {
+      const api = clientFor(env, requireToken(extra));
+      const done = await changePages(
+        api,
+        args.documentId,
+        { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes },
+        'mcp',
+      );
+      if (!done.ok) return errorResult(refusalText(done));
+      return textResult(answerOf(env, done));
+    },
+    VIEW_TOOL_META,
+  );
 
-  registerTool(server, env, mcpWriteArticle, async (args, extra) => {
-    const api = clientFor(env, requireToken(extra));
-    const { documentId, ...given } = args;
-    // Only what was given: an absent field keeps the article's own.
-    const write = Object.fromEntries(
-      Object.entries(given).filter(([, v]) => v !== undefined),
-    ) as Parameters<typeof writeArticle>[2];
-    const done = await writeArticle(api, documentId, write, 'mcp');
-    if (!done.ok) return errorResult(refusalText(done));
-    if (!done.article) return errorResult('The article was written but could not be read back.');
-    return textResult({ ...answerOf(env, done), article: done.article });
-  });
+  registerTool(
+    server,
+    env,
+    mcpWriteArticle,
+    async (args, extra) => {
+      const api = clientFor(env, requireToken(extra));
+      const { documentId, ...given } = args;
+      // Only what was given: an absent field keeps the article's own.
+      const write = Object.fromEntries(
+        Object.entries(given).filter(([, v]) => v !== undefined),
+      ) as Parameters<typeof writeArticle>[2];
+      const done = await writeArticle(api, documentId, write, 'mcp');
+      if (!done.ok) return errorResult(refusalText(done));
+      if (!done.article) return errorResult('The article was written but could not be read back.');
+      return textResult({ ...answerOf(env, done), article: done.article });
+    },
+    VIEW_TOOL_META,
+  );
 }
