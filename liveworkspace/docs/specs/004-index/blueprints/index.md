@@ -598,7 +598,11 @@ Migrations, in order:
 ## Testing
 
 The Worker's suites run against an in-memory SQLite that refuses what D1 refuses (`compound.test.ts`). Each
-feature file names the suites that pin it; these pin the Worker as a whole:
+feature file names the suites that pin it; these pin the Worker as a whole.
+
+`corepack pnpm --filter @liveworkspace/index-service test:coverage` runs the suites with v8 coverage over `src/` and
+fails below the floor in `liveworkspace/apps/index/vitest.config.ts` (a little under what the Worker measures: 94
+statements, 91 branches, 96 functions, 97 lines), then the speed budgets. CI runs it for the workspace. Raise the floor as gaps close, never lower it:
 
 | Test                                                   | Pins                                                                                                                                                            |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
