@@ -113,8 +113,11 @@ function buildCatalogue(): WhiteboardShapeEntry[] {
       .filter((t) => !(t.action.type === 'shape' && docked.has(t.action.kind)))
       .map(tileEntry),
   ];
-  // Grouped in the palette's category order; catalogue order within a group.
-  const order = PALETTE_CATEGORIES.map((c) => c.id);
+  // Grouped in the palette's category order; catalogue order within a group. The device frames are no
+  // category of their own any more (Search only), so their group keeps the place it had, after Components.
+  const order = PALETTE_CATEGORIES.flatMap((c) =>
+    c.id === 'components' ? ['components', 'devices'] : [c.id],
+  );
   return entries
     .map((e, i) => ({ e, i }))
     .sort((a, b) => order.indexOf(a.e.group) - order.indexOf(b.e.group) || a.i - b.i)
