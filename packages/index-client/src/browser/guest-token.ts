@@ -5,9 +5,15 @@
 // account's access token is. A token with fewer than GUEST_TOKEN_REFRESH_BEFORE_MS left is replaced on the next page
 // load that needs it.
 //
+// Renewing a token it still holds, the page presents that token to the accounts site as proof of the guest, never in a
+// query string: it leaves the token in a minute-long cookie for its api's guest door, which posts it on in a form body
+// (@liveworkspace/auth-client/guest-renewal), so the guest keeps their id when Safari has cleared the accounts site's
+// `lw_guest` cookie (liveworkspace/docs/specs/003-accounts/accounts.md "Renewing without the cookie").
+//
 // Each app makes one set with createGuestTokens, naming its own storage keys, its api's base and where a handoff
 // with nowhere safe to go back to lands.
 
+import { guestRenewalCookie } from '@liveworkspace/auth-client/guest-renewal';
 import { isSameSitePath } from '@liveworkspace/auth-client/return-path';
 
 // Under the token's 45 days (liveworkspace/apps/accounts GUEST_TOKEN_TTL_SECONDS), so a fresh one is never replaced
@@ -107,6 +113,17 @@ function inFrame(): boolean {
   }
 }
 
+// Leaves the held token for the api's guest door to post on (a cookie on this origin, scoped to that door, for a
+// minute). Only for an api on this origin: a cookie can't reach another. Cookies blocked: the handoff runs without it.
+function leaveRenewalToken(apiBase: string, token: string): void {
+  if (!apiBase.startsWith('/') || apiBase.startsWith('//')) return;
+  try {
+    document.cookie = guestRenewalCookie(token, `${apiBase}/auth/guest`);
+  } catch {
+    // No cookies here: a plain handoff, as before.
+  }
+}
+
 function randomState(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(18));
   return btoa(String.fromCharCode(...bytes))
@@ -137,6 +154,7 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
       return Promise.resolve();
     }
     const state = randomState();
+    const held = readGuestToken();
     const { pathname, search, hash } = window.location;
     write(
       'sessionStorage',
@@ -148,8 +166,12 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
     // In place of this page (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"): the round trip leaves no history
     // entry, so Back from where it comes back to skips this page, which would only hand off again or, on a /new,
     // make another document. Pushed, it trapped Back on the editor.
+    // Renewing a token it holds, it leaves the token for the api's guest door, which posts it on as proof.
     const to = `${opts.apiBase}/auth/guest?state=${encodeURIComponent(state)}`;
-    setTimeout(() => window.location.replace(to), 0);
+    setTimeout(() => {
+      if (held) leaveRenewalToken(opts.apiBase, held.token);
+      window.location.replace(to);
+    }, 0);
     return new Promise(() => {});
   };
 

@@ -29,6 +29,11 @@ export const UNUSED_CODE_PATHS = [
   '/email-otp/change-email',
 ] as const;
 
+// How long an access token lasts (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"). App APIs check
+// them offline with no revocation list, so this bounds how long one copied before a sign-out or an account close
+// still works; the app's refresh renews it a minute before it lapses.
+export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
+
 // Longer names are cut to this on the way in; it keeps a name from swamping the apps' layouts.
 export const NAME_MAX_LENGTH = 80;
 
@@ -197,6 +202,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         consentPage: '/consent',
         scopes: ['openid', 'profile', 'email', 'offline_access'],
         resources: config.resources,
+        accessTokenExpiresIn: ACCESS_TOKEN_TTL_SECONDS,
         // Refresh tokens rotate on every use. Two tabs of the same app refreshing at once would
         // otherwise race, and the loser would be signed out; within this window a rotated token
         // replays the same response instead.

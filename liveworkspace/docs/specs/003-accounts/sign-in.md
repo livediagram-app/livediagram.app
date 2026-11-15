@@ -63,7 +63,7 @@ Once the account is made, the page tells the provider with `POST /oauth2/continu
 The ID token carries `name`, `given_name`, `family_name`, `email` and `email_verified`. Better
 Auth's provider normally sends these only from `/userinfo`, so `customIdTokenClaims` adds them.
 
-Access tokens last an hour and name the app's API as their audience, so a livediagram token is
+Access tokens last 15 minutes (refresh renews them) and name the app's API as their audience, so a livediagram token is
 refused by liveplanner. They carry `sub` (the account id), `email` and `email_verified`.
 
 ## Closing an account
@@ -86,7 +86,7 @@ account's email**, the same kind of code that signs in, and only the person who 
 The Worker checks the client credentials and the token through the provider's introspection on all three, so a token
 alone sends, checks and closes nothing, and an app can act only for someone signed in to it. Deleting the user removes
 its sessions, its Google link, and every app's tokens and consents; refreshing then fails in every app, and an access
-token already issued runs out within the hour.
+token already issued runs out within 15 minutes.
 
 Every app's own data for the account goes with the close: the closing app deletes its own first, and the
 index purges every app's items and tells each app what was purged ([accounts.md](accounts.md#closing-an-account)).
@@ -275,7 +275,7 @@ see [site.md](../010-site/site.md) for their weight.
 | Send code / sign in with code / token swap | 69 / 30 / 32 ms average                                                                               |
 
 There is no cost per app request: apps check tokens against cached keys, and the accounts
-Worker is only involved at sign-in and on an hourly refresh. Each sign-in writes to D1 a
+Worker is only involved at sign-in and on a refresh about every 15 minutes while a tab is in use. Each sign-in writes to D1 a
 handful of times (code, session, authorization code, tokens). The day's code count adds two small queries by
 primary key to sending a code: a read before and a write once it is sent. Checking a code, signing in with Google and
 every other door pay nothing.
