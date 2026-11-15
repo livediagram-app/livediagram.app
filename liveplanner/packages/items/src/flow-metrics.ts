@@ -9,7 +9,11 @@ import type { StatusPhase } from './plan-views';
 
 // The ranges a flow chart offers, in days, and the one it reads when none is set.
 export const FLOW_RANGES = [14, 30, 90, 180] as const;
-export const FLOW_RANGE_DEFAULT = 30;
+export const FLOW_RANGE_DEFAULT: FlowRange = 30;
+export type FlowRange = (typeof FLOW_RANGES)[number];
+export function isFlowRange(value: unknown): value is FlowRange {
+  return (FLOW_RANGES as readonly unknown[]).includes(value);
+}
 // A range this short or shorter reads Throughput per day, a longer one per week.
 export const FLOW_DAILY_MAX = 14;
 

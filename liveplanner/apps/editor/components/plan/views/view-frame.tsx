@@ -79,6 +79,7 @@ export function ViewFrame({
   fontFamily,
   state,
   empty,
+  loadingText = 'Loading cards…',
   aside,
   children,
 }: {
@@ -90,7 +91,10 @@ export function ViewFrame({
   fontFamily?: string;
   // 'loading' before the cards arrive, 'empty' when there is nothing to chart.
   state: 'loading' | 'empty' | 'ready';
-  empty: string;
+  // Words, or a whole empty state (a flow chart's Try Again).
+  empty: ReactNode;
+  // What loading says (a flow chart: "Loading flow…").
+  loadingText?: string;
   // Controls at the header's end (the calendar's month steps).
   aside?: ReactNode;
   children?: ReactNode;
@@ -187,7 +191,7 @@ export function ViewFrame({
           className="flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 text-center text-[12px]"
           style={{ color: palette.muted }}
         >
-          {state === 'loading' ? 'Loading cards…' : empty}
+          {state === 'loading' ? loadingText : empty}
         </div>
       )}
     </div>

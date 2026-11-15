@@ -49,6 +49,19 @@ export const VISUALISATION_INFO: Record<
     caption: 'Priority Matrix',
     description: 'How many cards of each priority are not started, in progress and done.',
   },
+  'cycle-time': {
+    caption: 'Cycle Time',
+    description:
+      'How long each card took from started to done, with the time most cards get done within.',
+  },
+  throughput: {
+    caption: 'Throughput',
+    description: 'How many cards were finished each week, and the average.',
+  },
+  'cumulative-flow': {
+    caption: 'Cumulative Flow',
+    description: 'How many cards stood in each status each day: where work piles up.',
+  },
 };
 
 // What each metric reads out, over every live card in the project.
