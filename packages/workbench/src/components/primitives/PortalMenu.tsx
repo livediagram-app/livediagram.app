@@ -142,7 +142,7 @@ function PortalMenuFrame({
   surfaceStyle,
   children,
 }: {
-  at: { left: number; top: number; flat: boolean } | null;
+  at: { left: number; top: number; flat: boolean; maxHeight?: number | undefined } | null;
   placement: PortalMenuPlacement;
   attach: (el: HTMLElement | null) => void;
   tree: MenuTree;
@@ -162,6 +162,10 @@ function PortalMenuFrame({
         left: at.left,
         top: at.top,
         transform: at.flat ? 'none' : PLACEMENT_TRANSFORM[placement],
+        // Taller than the screen: held to it, scrolling inside (usePortalMenuPlacement).
+        ...(at.maxHeight
+          ? { maxHeight: at.maxHeight, overflowY: 'auto', overscrollBehavior: 'contain' }
+          : null),
         ...surfaceStyle,
       }}
     >

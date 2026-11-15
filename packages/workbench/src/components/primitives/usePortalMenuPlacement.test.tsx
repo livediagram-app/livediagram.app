@@ -4,6 +4,7 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { usePortalMenuPlacement } from './usePortalMenuPlacement';
+import { VIEWPORT_EDGE_MARGIN } from '../../lib/clamp-to-viewport';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -35,5 +36,30 @@ describe('usePortalMenuPlacement outside press', () => {
     expect(onClose).not.toHaveBeenCalled();
     press(el());
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('usePortalMenuPlacement on a short screen', () => {
+  const menuOf = (height: number) => {
+    const node = el();
+    Object.defineProperty(node, 'scrollHeight', { configurable: true, value: height });
+    return node;
+  };
+
+  it('holds a menu taller than the screen to its height, less the margins, so it scrolls', () => {
+    const anchor = el();
+    const menu = menuOf(window.innerHeight + 400);
+    const onClose = vi.fn();
+    const { result } = renderHook(() => usePortalMenuPlacement(anchor, 'below', menu, onClose));
+    expect(result.current?.maxHeight).toBe(window.innerHeight - 2 * VIEWPORT_EDGE_MARGIN);
+  });
+
+  it('leaves a menu that fits at its own height', () => {
+    const anchor = el();
+    const menu = menuOf(200);
+    const onClose = vi.fn();
+    const { result } = renderHook(() => usePortalMenuPlacement(anchor, 'below', menu, onClose));
+    expect(result.current).not.toBeNull();
+    expect(result.current?.maxHeight).toBeUndefined();
   });
 });

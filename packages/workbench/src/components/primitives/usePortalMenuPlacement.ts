@@ -23,7 +23,8 @@ export const PLACEMENT_TRANSFORM: Record<PortalMenuPlacement, string> = {
  * and its anchor (the anchor's own click toggles it). `node` is the rendered menu, null until it
  * is placed. With `beside` (the card the menu belongs to), it opens beside that card instead,
  * out of its way (besideSpot), once it can measure itself, and hangs from the anchor only when
- * neither side has room. `flat` says the spot is its top-left corner, with no placement transform.
+ * neither side has room. `flat` says the spot is its top-left corner, with no placement transform; `maxHeight`, set
+ * only for a menu taller than the screen, is the height it is held to, scrolling inside.
  */
 export function usePortalMenuPlacement(
   anchor: HTMLElement | null,
@@ -53,18 +54,25 @@ export function usePortalMenuPlacement(
   }, [anchor, placement, beside, node]);
   useReposition(reposition);
 
+  // A menu taller than the screen is held to it and scrolls inside itself (docs/specs/004-interface-design/menus.md
+  // "A menu taller than the screen"): clamped as it stood, its top went above the screen's edge, out of reach (the
+  // photo Blend modes on a 390 x 844 phone, Work Tracker 593). Read from the content's own height (`scrollHeight`),
+  // which the cap leaves as it is, so applying it never undoes it.
+  const [cap, setCap] = useState<number | null>(null);
+
   useLayoutEffect(() => {
     if (!node || !pos) return;
+    const room = window.innerHeight - 2 * VIEWPORT_EDGE_MARGIN;
+    const nextCap = node.scrollHeight > room ? room : null;
+    // The cap first; the clamp runs again once it is drawn, on the menu's capped size.
+    if (nextCap !== cap) return setCap(nextCap);
     // Clamped relative to the adjust already applied, so re-measuring after a nudge settles.
-    const clamp = () => {
-      const rect = node.getBoundingClientRect();
-      setAdjust((prev) => {
-        const next = clampToViewport(rect, prev);
-        return next.x === prev.x && next.y === prev.y ? prev : next;
-      });
-    };
-    clamp();
-  }, [pos, node]);
+    const rect = node.getBoundingClientRect();
+    setAdjust((prev) => {
+      const next = clampToViewport(rect, prev);
+      return next.x === prev.x && next.y === prev.y ? prev : next;
+    });
+  }, [pos, node, cap]);
 
   useEffect(() => {
     // A pointerdown, in the capture phase: the canvas cancels its own pointerdown (which stops the browser sending
@@ -97,6 +105,11 @@ export function usePortalMenuPlacement(
   }, [onClose, anchor, node]);
 
   return pos
-    ? { left: pos.left + adjust.x, top: pos.top + adjust.y, flat: pos.flat ?? false }
+    ? {
+        left: pos.left + adjust.x,
+        top: pos.top + adjust.y,
+        flat: pos.flat ?? false,
+        maxHeight: cap ?? undefined,
+      }
     : null;
 }
