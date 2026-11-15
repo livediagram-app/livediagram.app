@@ -142,6 +142,9 @@ export function useAutosave(opts: {
   // A Participant (docs/specs/013-workspace/share-roles.md): its saves are element ops to the room, never a
   // tab PUT, a tab delete or the document's metadata.
   participant?: boolean;
+  // Told once the newest save landed: the last seen copy follows it (useLastSeenFollow, offline-mode.md "Warm open of a
+  // cloud document").
+  onSaveLanded?: (landed: { tabs: Tab[]; name: string; revs: ReadonlyMap<string, number> }) => void;
 }) {
   return useAutosaveCore<
     Tab,

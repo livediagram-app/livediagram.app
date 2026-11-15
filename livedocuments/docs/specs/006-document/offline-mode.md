@@ -175,6 +175,16 @@ server.
 - **Lost access forgets.** A load that ends on not found, on the deleted card or behind a
   share password removes that document's copy. A load that cannot reach the server keeps
   it.
+- **Follows the document.** While the document is open its copy keeps up with what the reader
+  sees: the name and the tab list each time they change (a rename, a tab added, moved or
+  deleted, by the reader or by a peer), and the first tab's body each time one of the
+  reader's own saves of it lands, with the revision that save wrote. A Viewer's or a
+  Participant's copy keeps the first tab it opened with (their changes are not tab saves);
+  the catch-up brings the rest. Refreshes are gathered into at most one write every 2
+  seconds, made off the editing path, so they never hold up a save or a keystroke; a
+  waiting one is written at once when the page is hidden or closed. Only a copy the open
+  kept is followed, for the same reader: an embed, a Community post or a This Browser document
+  never gains one, and a document taken offline to This Browser drops its copy.
 - **Bounded.** At most 20 copies, the oldest seen dropped first; a copy over 1,000,000
   characters of JSON is not kept (a bigger document opens as it does today); a copy older
   than 30 days is never read. Embeds, Community posts, workbenches and This Browser
@@ -198,7 +208,8 @@ warm-opens only when its share code is the one the copy was kept under.
   own.
 
 **Built so far.** Part 1 keeps, bounds and clears the copies (`createLastSeenCopies` in
-`@liveworkspace/workbench/lib/api/last-seen-copies`); nothing reads them yet, so opening a
+`@liveworkspace/workbench/lib/api/last-seen-copies`), and part 2 keeps each one following
+the open document (`createLastSeenFollower`, `useLastSeenFollow`); nothing reads them yet, so opening a
 document looks as it did. The warm open itself, its catch-up and its timing follow in later
 parts ([Last seen copy blueprint](blueprints/last-seen-copy.md)).
 

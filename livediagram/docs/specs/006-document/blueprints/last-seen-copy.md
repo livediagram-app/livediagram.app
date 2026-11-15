@@ -28,20 +28,28 @@ bind the same shared modules; their blueprints name only their bindings and poin
 | Clear          | `forgetAll()`                    | Empty the store (sign-out, account deletion)                                               |
 | Prune          | (inside `remember` and `forget`) | Drop other readers' copies, copies past the age limit, and the oldest past the count limit |
 | Warm open      | (part 3)                         | The early paint of a copy before auth settles                                              |
+| Follower       | `createLastSeenFollower(copies)` | The copies plus the one copy this page follows (`current`) and its waiting refresh         |
+| Follow         | `followMeta`, `followSave`       | Fold the open document's name, tab list or landed first-tab save into the followed copy    |
+| Refresh        | (the follower's timer)           | The one write a window of follows gathers into, `LAST_SEEN_REFRESH_MS` after the first     |
+| Save landed    | `onSaveLanded(landed)`           | The autosave's newest save landed: the baseline tabs and name, and each PUT's revision     |
 
 "Last seen copy" is the only name: never "cache", "snapshot" or "local copy" (This Browser documents are local).
 
 ## Modules
 
-| File                                                     | Responsibility                                                                                                                                       |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/workbench/src/lib/api/last-seen-copies.ts`  | `createLastSeenCopies(store)`: `remember`, `read`, `forget`, `forgetAll`; the limits; `lastSeenKey`; the read-side validation                        |
-| `../packages/workbench/src/lib/api/last-seen-store.ts`   | `createLastSeenStore(dbName)`: the IndexedDB store, two object stores (`copies`, `seen`), one kept connection, every call bounded and never throwing |
-| `../packages/workbench/src/lib/editor-arrival.ts`        | `openShareLink` and `openOwnAddress` keep the copy on reaching the document and forget it on not found, the deleted card or the password gate        |
-| `apps/editor/lib/last-seen.ts`                           | livediagram's binding: `lastSeenCopies` over `createLastSeenStore(LAST_SEEN_DB)` (`livediagram-last-seen`)                                           |
-| `apps/editor/app/document/[id]/document-arrival.ts`      | `DOCUMENT_ARRIVAL.lastSeen = lastSeenCopies`                                                                                                         |
-| `apps/editor/app/document/[id]/seed-fetched-document.ts` | The seed answers the first tab it painted (`LastSeenFirstTab`), or null when the eager fetch failed                                                  |
-| `apps/editor/components/providers/AccountsBridge.tsx`    | `endSession` (sign-out, account deletion) awaits `lastSeenCopies.forgetAll()` beside `forgetRecentDiagrams()`                                        |
+| File                                                                 | Responsibility                                                                                                                                       |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/workbench/src/lib/api/last-seen-copies.ts`              | `createLastSeenCopies(store)`: `remember`, `read`, `forget`, `forgetAll`; the limits; `lastSeenKey`; the read-side validation                        |
+| `../packages/workbench/src/lib/api/last-seen-store.ts`               | `createLastSeenStore(dbName)`: the IndexedDB store, two object stores (`copies`, `seen`), one kept connection, every call bounded and never throwing |
+| `../packages/workbench/src/lib/editor-arrival.ts`                    | `openShareLink` and `openOwnAddress` keep the copy on reaching the document and forget it on not found, the deleted card or the password gate        |
+| `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `flush`; `LAST_SEEN_REFRESH_MS`  |
+| `../packages/workbench/src/hooks/persistence/useLastSeenFollow.ts`   | Follows the open document's name and tab list, answers `onSaveLanded`, forgets a copy whose document went to This Browser                            |
+| `../packages/workbench/src/hooks/persistence/useAutosaveCore.ts`     | `onSaveLanded` (an option, read as an effect event): told once the newest save landed, with the baseline tabs, name and revisions                    |
+| `apps/editor/lib/last-seen.ts`                                       | livediagram's binding: `lastSeenCopies`, a follower over `createLastSeenCopies(createLastSeenStore(LAST_SEEN_DB))` (`livediagram-last-seen`)         |
+| `apps/editor/app/document/[id]/editor-state/useEditorPersistence.ts` | Calls `useLastSeenFollow` and hands its `onSaveLanded` to `useAutosave`                                                                              |
+| `apps/editor/app/document/[id]/document-arrival.ts`                  | `DOCUMENT_ARRIVAL.lastSeen = lastSeenCopies`                                                                                                         |
+| `apps/editor/app/document/[id]/seed-fetched-document.ts`             | The seed answers the first tab it painted (`LastSeenFirstTab`), or null when the eager fetch failed                                                  |
+| `apps/editor/components/providers/AccountsBridge.tsx`                | `endSession` (sign-out, account deletion) awaits `lastSeenCopies.forgetAll()` beside `forgetRecentDiagrams()`                                        |
 
 ## Behaviour and state
 
@@ -62,6 +70,31 @@ itemId: id, item: fetched, firstTab, via: null, access: { role: 'edit', isOwner,
   version, not this reader's or document's, past the age limit, or whose body does not parse to the copy's shape is
   removed and reads as null. The stored role goes through `parseStoredLevel`: a role this code does not know reads as
   Viewer, never higher.
+- **Follow (part 2).** The follower holds `current`, the copy the last `remember` kept, in memory. `followMeta(reader,
+itemId, { name, tabs })` and `followSave(reader, itemId, { name, tabs, revs })` do nothing unless `current` is that
+  reader's copy of that document, so only a copy an arrival kept is ever followed (never an embed, a Community post, a
+  workbench or a This Browser document) and never for another reader.
+  - **Meta.** When the name or the tab list (each tab's id, name and folder, in order) differs from `current.item`, the
+    item's `name` and `tabs` are rewritten: each summary keeps the fields the load answered for that tab id
+    (`documentId`, `updatedAt`, `outOfScope`, `connection`) with its `name`, `folder` and `orderIndex` (its position)
+    from the editor; a tab new since the load gets `{ id, name, orderIndex, folder }`. When the first tab to load
+    (`firstTabToLoad(tabs, access.tabScope)`) is no longer `firstTab.id`, `firstTab` becomes null (a warm open would
+    paint the wrong tab); a renamed first tab's body takes the new name.
+  - **Save.** `followSave` folds the meta as above, then, when the landing carries a revision for the first tab to
+    load that is at least `firstTab.rev`, sets `firstTab = { id, rev, tab }` from the landed baseline tab. A landing
+    without that revision (a Participant's relay, another tab's save) leaves the body as it was.
+  - **Refresh.** A follow that changed `current` arms one timer of `LAST_SEEN_REFRESH_MS` unless one is waiting;
+    further follows only update `current`, so the timer writes the newest copy (`copies.remember(current)`, which also
+    prunes): at most one write per window, the first within the window of the first change. `flush()` writes a waiting
+    refresh at once; the follower calls it on `pagehide` and on `visibilitychange` to hidden (listeners added on the
+    first refresh). A follow that changed nothing writes nothing (the arrival's own render follows an identical copy).
+  - **Hook.** `useLastSeenFollow({ follower, reader, itemId, following, serverStored, name, tabs })`, where the editor
+    passes `following = hydrated && serverStored && !embed && !workbench`: an effect keyed on the name and a signature
+    of the tab list (id, name, folder; built per `tabs` change, O(tabs), never O(elements)) calls `followMeta`;
+    `onSaveLanded` (stable) calls `followSave`; a hydrated document that is no longer server stored (Take Offline in
+    place) while `follows(reader, itemId)` is forgotten.
+  - **Save landed.** `useAutosaveCore` collects each tab PUT's revision and, in the branch where the newest save moves
+    the baseline, calls `onSaveLanded({ tabs, name, revs })` with the baseline `baseline.after` answered.
 - **Clear.** `forgetAll` empties both object stores in one transaction. Sign-out awaits it (bounded by the store's
   timeout) before the hop, so no copy outlives the session in this browser.
 
@@ -93,6 +126,12 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
 | Another tab on a newer version upgrades the database     | `onversionchange` closes the kept connection; the next call opens again                                                 |
 | Corrupt or foreign record                                | Removed on read; reads as null                                                                                          |
 | Two loads racing (auth settling twice)                   | The arrival's setters are run-guarded; a superseded keep writes the same reader's copy, which the newer keep overwrites |
+| A refresh waiting when another document is kept          | `remember` writes the waiting refresh first (it is the older document's last copy), then keeps the new one              |
+| A refresh waiting at sign-out or a forget                | `forgetAll` and a matching `forget` drop `current` and cancel the timer before the store call, so nothing comes back    |
+| Document taken offline to This Browser while open        | The hook forgets its copy; This Browser documents keep none                                                             |
+| A save or follow before the arrival kept the copy        | `current` is not that copy yet: nothing happens; the arrival's keep has the same content                                |
+| The first tab deleted or moved off first                 | `firstTab` becomes null until a save of the new first tab lands                                                         |
+| A refresh's write fails or times out                     | `remember` never rejects; the copy stays as last written and the next refresh tries again                               |
 
 ## Security and trust
 
@@ -104,6 +143,10 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
   them.
 - **Lost access:** a revoked link, a removed team member, a trashed document or a new share password forgets the copy
   on the next load; the warm open (part 3) is read-only until that load answers, so lost access never yields an edit.
+- **Follow per reader:** a follow names its reader and document and changes only `current` when both match, so a
+  page whose reader changed (a sign-in hop reloads anyway) never writes one reader's view under another's key. Only
+  what the editor shows this reader is folded in: the tab list a tab-scoped visitor sees keeps its out-of-scope
+  summaries as the load answered them.
 - A stored role is never trusted for writes: the warm open holds every edit until the participant resolves, and an
   unknown role reads as Viewer.
 
@@ -120,6 +163,18 @@ Measured (headless Chromium, 25 runs, median / p95), a 2,000-element first tab (
 0.7 / 3.4 ms, open and read 0.5 / 2.2 ms, parse 0.5 / 0.6 ms. 500 elements (120 KB): 0.2, 0.3, 0.2 and 0.1 ms medians.
 The keep runs after the load has set the editor's state and is never awaited; the stringify is the only synchronous
 cost (under 1 ms at 2,000 elements). Prune reads `seen` only (at most 20 small rows).
+
+**Following (part 2).** The follows run on React effects and the autosave's landing, never inside a keystroke handler or
+a save's request, and none writes: the write waits for the refresh. Measured (Node, CPU time, 10,000 calls, three runs,
+a 200-tab document whose first tab holds 2,000 elements): a follow of an unchanged tab list 1.7 µs, a landed first-tab
+save 2.4 µs, a rename that rewrites the 200 summaries 18 µs, and the hook's tab-list signature 8.3 µs per `tabs`
+change (one pass over the tab list, never the elements). The tests hold budgets on these (`cpuMsOf`). A refresh writes
+at most once per `LAST_SEEN_REFRESH_MS` (30 writes a minute at most while editing without pause), each the keep
+measured above (0.7 ms of stringify at 2,000 elements, the IndexedDB write off the main thread).
+
+| Constant               | Value    | Why                                                                                                       |
+| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| `LAST_SEEN_REFRESH_MS` | 2,000 ms | Gathers a burst of saves into one write while keeping the copy seconds behind. Safe range: 500 ms to 10 s |
 
 ## Observability
 
@@ -139,9 +194,16 @@ cost (under 1 ms at 2,000 elements). Prune reads `seen` only (at most 20 small r
 | Store survives no IndexedDB, errors, timeouts     | `last-seen-store.test.ts`                                                            |
 | Editor, Participant, Viewer kept with their role  | `editor-arrival.test.ts` "keeps the last seen copy …"                                |
 | Lost access forgets; an unreachable server keeps  | `editor-arrival.test.ts` "forgets the last seen copy …"                              |
+| Meta follows: rename, tab added, moved, deleted   | `last-seen-follower.test.ts` "follows the name and the tab list …"                   |
+| First tab body follows a landed save              | `last-seen-follower.test.ts` "follows the first tab's landed save …"                 |
+| One write per window, flush on hide               | `last-seen-follower.test.ts` "gathers follows into one write …", "flushes …"         |
+| Per reader, only a kept copy follows              | `last-seen-follower.test.ts` "never follows another reader's or document's copy"     |
+| Sign-out and forget cancel a waiting refresh      | `last-seen-follower.test.ts` "drops a waiting refresh …"                             |
+| Hook: meta effect, save landing, taken offline    | `useLastSeenFollow.test.tsx`                                                         |
+| Autosave tells the newest landing                 | `useAutosave.test.tsx` "tells the last seen copy each landed save"                   |
 
-Both shared modules are held at 100% in `packages/workbench/vitest.config.ts`.
+The shared modules (the store, the copies, the follower and the hook) are held at 100% in `packages/workbench/vitest.config.ts`.
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md): the four limits above.
+See [DEFAULTS.md](DEFAULTS.md): the four limits and the refresh window above.

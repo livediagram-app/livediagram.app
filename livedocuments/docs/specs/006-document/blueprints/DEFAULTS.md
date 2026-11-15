@@ -15,3 +15,4 @@ One row per default applied where a spec is silent or qualitative.
 | D9  | last-seen-copy | How large a copy may be                              | 1,000,000 characters of JSON (`LAST_SEEN_MAX_CHARS`); past it none is kept and an older one goes                                         |
 | D10 | last-seen-copy | How old a copy may be read                           | 30 days (`LAST_SEEN_MAX_AGE_MS`)                                                                                                         |
 | D11 | last-seen-copy | How long a store call may take                       | 1,000 ms (`LAST_SEEN_TIMEOUT_MS`), then it answers as if empty                                                                           |
+| D12 | last-seen-copy | How often a followed copy is written                 | At most once per 2,000 ms (`LAST_SEEN_REFRESH_MS`), the newest follow; at once when the page is hidden                                   |
