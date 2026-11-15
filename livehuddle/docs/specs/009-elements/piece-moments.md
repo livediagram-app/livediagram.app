@@ -1,7 +1,8 @@
 # Piece moments
 
 Status: **approved** (owner, Work Tracker #600, 2026-11-07; **every time, on every still piece**, owner 2026-11-07;
-**walk-up answers for six interactive pieces, still only you**, Work Tracker 626, 2026-11-14).
+**walk-up answers for six interactive pieces, still only you**, Work Tracker 626, 2026-11-14; **a press beside a
+moment piece replays it, seats keep walking you to the seat**, Work Tracker 867, 2026-11-14).
 Small surprises the still pieces of a Space play when your character walks right up to them: a tree you brush past
 rocks and drops a few leaves, a pebble plops into a pond, a kettle puffs steam, the books on a shelf shuffle. They are
 the [Office](office.md), [Social](social-pieces.md), [Amenities](office-amenities.md), [Venue](venue-pieces.md) and
@@ -112,8 +113,29 @@ and the Calendar Wall, whose live faces show at every facing and play their walk
 - **Not over itself**: a piece whose moment is still playing does not start it again. Step out and back in before it
   ends and nothing restarts; once it has ended, the next arrival plays.
 - **Every piece you reach**: arriving at two pieces on one step (a coat rack beside an umbrella stand) plays both.
-- **Only in Avatar mode**, walking. Out of it nothing plays. There is no press: walking up is the whole interaction
-  (a click on a piece while walking still walks you to it, and arriving plays its moment).
+- **Only in Avatar mode**, walking. Out of it nothing plays. Walking up is the main interaction (a click on a piece
+  you are not beside walks you to it, and arriving plays its moment); a press beside one replays it (below).
+
+## A press beside it
+
+A click on a moment piece **you already stand beside replays its moment** where you stand (owner, Work Tracker 867,
+2026-11-14). Before, the click walked you to the spot you were already on, and nothing happened.
+
+- **Which pieces**: the moment pieces whose click walks you to them: every static piece but the Podium, and the
+  Window. Seats keep walking you to the seat, every time: the Hammock, and the Podium, whose click stands you at its
+  speaker spot. The Notice Board, the World Clock, the Calendar Wall and the Suggestion Box keep their own press,
+  which opens them.
+- **Beside**: your feet within **48 px** of the piece's box, the reach a [Door](room-builder.md) swings at
+  (`DOOR_REACH`), or anywhere walking up to it plays its moment (its reach above, so a Kettle on a counter answers from
+  the floor in front of the counter and a Dartboard from the floor in front of its wall).
+- **Farther away** the click walks you to it, as before, and arriving plays its moment. A click elsewhere, on the
+  floor or on any other piece, does what it always did.
+- **From your side**, as an arrival's: a tree rocks away from you, a pebble comes from your side.
+- **Never over itself**: a press while the piece's moment still plays does nothing, and neither walks nor restarts it.
+- **The press is the click's** whatever it shows: it never walks and never selects.
+
+A press plays a moment for you alone and sends nothing, like any moment, so every role that walks gets it alike, and
+under reduced motion the press does nothing visible: no moment and no walk.
 
 ## Who sees it
 
@@ -144,8 +166,7 @@ stands in for it. The pieces' own resting loops already hold still there ([Socia
 
 ## Not in scope
 
-- Sound, shared moments and moments on a press (a press to replay a moment on a piece you stand beside): follow-ups
-  ([Future work](../005-project-roadmap/future-work.md)).
+- Sound and shared moments: follow-ups ([Future work](../005-project-roadmap/future-work.md)).
 - A pause at a piece before its moment plays: decided against (2026-11-14), so walking past plays it, every time.
 - Moments for structural pieces, and for interactive pieces other than the six above: their own answer is the feedback.
 - A moment in an export or a still image.

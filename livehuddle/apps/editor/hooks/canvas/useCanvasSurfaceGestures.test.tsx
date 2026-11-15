@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { LONG_PRESS_MS } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
+import { momentPlaying, resetPieceMoments } from '@/lib/piece-moments';
 import { useCanvasSurfaceGestures } from './useCanvasSurfaceGestures';
 
 // Only the context-menu routing is under test; every other dependency is an
@@ -380,6 +381,50 @@ describe('Avatar mode presses', () => {
     press('mouse');
     expect(onToggleDoor).toHaveBeenCalledWith('door');
     expect(walkTo).toHaveBeenCalledTimes(1);
+  });
+
+  // docs/specs/009-elements/piece-moments.md "A press beside it": a moment piece under the press point (120, 240).
+  describe('a press beside a moment piece', () => {
+    afterEach(resetPieceMoments);
+    const piece = (shape: string) => ({
+      id: 'm',
+      type: 'shape',
+      shape,
+      x: 60,
+      y: 200,
+      width: 120,
+      height: 80,
+    });
+
+    it('replays a tree you stand beside, and does not walk', () => {
+      const { press, walkTo } = avatarSetup([], {
+        elements: [piece('tree')],
+        feet: { x: 120, y: 300 },
+      });
+      press('mouse');
+      expect(walkTo).not.toHaveBeenCalled();
+      expect(momentPlaying('m')).toBe(true);
+    });
+
+    it('walks to a tree farther away, playing nothing yet', () => {
+      const { press, walkTo } = avatarSetup([], {
+        elements: [piece('tree')],
+        feet: { x: 120, y: 700 },
+      });
+      press('mouse');
+      expect(walkTo).toHaveBeenCalledTimes(1);
+      expect(momentPlaying('m')).toBe(false);
+    });
+
+    it.each(['hammock', 'podium', 'chair'])('keeps walking you to a %s beside you', (shape) => {
+      const { press, walkTo } = avatarSetup([], {
+        elements: [piece(shape)],
+        feet: { x: 120, y: 300 },
+      });
+      press('mouse');
+      expect(walkTo).toHaveBeenCalledTimes(1);
+      expect(momentPlaying('m')).toBe(false);
+    });
   });
 
   // A piece covering the press point (120, 240): the layer is pointer-inert while walking, so the press lands on
