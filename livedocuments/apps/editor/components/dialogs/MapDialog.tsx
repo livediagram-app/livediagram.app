@@ -12,6 +12,7 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import {
   cleanPinLabel,
+  inkOn,
   mapLandColour,
   mapPaperColour,
   MAP_HIGHLIGHTS_MAX,
@@ -41,7 +42,8 @@ const MODES: readonly { id: Mode; label: string }[] = [
 const PREVIEW_W = 640;
 const PREVIEW_MIN_H = 200;
 const PREVIEW_MAX_H = 420;
-// The preview is drawn on light paper in both appearances, as the Sankey's is, so one set of colours reads.
+// The preview is drawn on light paper in both appearances, as the Sankey's is, so one set of colours reads; on a page
+// with a fill of its own it sits on that page's colour instead, as the canvas map does (map.md "The Map dialog").
 const PREVIEW_INK = '#0f172a';
 
 const newPinId = () => `pin-${crypto.randomUUID().slice(0, 8)}`;
@@ -53,12 +55,16 @@ function sameDraft(a: MapPatch, b: MapPatch): boolean {
 export function MapDialog({
   element,
   accent,
+  ground,
   onCommit,
   onClose,
 }: {
   element: ShapeElement;
   // The map's resolved accent, so the preview's highlights and pins are the canvas's.
   accent: string;
+  // What the map sits on, where its page's fill makes it matter (chartPageGrounds): the preview's paper, land and pin
+  // ink follow it as the canvas's do. Absent on the plain paper.
+  ground?: readonly string[];
   onCommit: (patch: MapPatch) => void;
   onClose: () => void;
 }) {
@@ -109,15 +115,16 @@ export function MapDialog({
       Math.min(PREVIEW_MAX_H, (PREVIEW_W * element.height) / Math.max(1, element.width)),
     ),
   );
-  const colours = useMemo(
-    () => ({
-      land: mapLandColour(element.fillColor, 'light'),
+  const colours = useMemo(() => {
+    const paper = mapPaperColour('light', ground);
+    return {
+      land: mapLandColour(element.fillColor, 'light', ground),
       accent,
-      paper: mapPaperColour('light'),
-      text: PREVIEW_INK,
-    }),
-    [element.fillColor, accent],
-  );
+      paper,
+      // A pin's label reads on the page's colour: dark ink on a light page, white on a dark one.
+      text: ground ? inkOn(paper) : PREVIEW_INK,
+    };
+  }, [element.fillColor, accent, ground]);
   const viewValue = draft.mapCountry ? `country:${draft.mapCountry}` : (draft.mapRegion ?? 'world');
   const regionLabel = draft.mapCountry
     ? nameOf(draft.mapCountry)
@@ -152,7 +159,7 @@ export function MapDialog({
               role="img"
               aria-label={`Map of ${regionLabel}: ${highlights.length} highlighted, ${pins.length} pinned`}
               className="relative w-full overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700"
-              style={{ aspectRatio: `${PREVIEW_W} / ${previewH}` }}
+              style={{ aspectRatio: `${PREVIEW_W} / ${previewH}`, backgroundColor: colours.paper }}
             >
               <MapPreview
                 draft={draft}

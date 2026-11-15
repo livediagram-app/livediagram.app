@@ -208,6 +208,7 @@ way in. The mode switch is a radio group.
   its borders and plate in the page's colour; a map on the plain paper keeps the default.
 - `svg-render-map.test.ts`: export body with and without geometry.
 - `MapDialog.test.tsx`: toggle a country, place a pin, find a place, Done commits once, Cancel none.
+  Its preview follows a page ground (paper, tinted land, pin ink) and keeps light paper with none.
 - `map-edit.test.ts`: Editor yes; Participant, Viewer and a locked map no.
 
 ## Assets and external resources

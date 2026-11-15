@@ -52,7 +52,9 @@ no tiles, no zoom and no streets, and nothing is fetched from anywhere when it d
 ## The Map dialog
 
 A dialog titled **Edit Map** with a large live preview on the left and the controls on the right. On
-a phone the preview sits above the controls.
+a phone the preview sits above the controls. The preview is drawn as the map is on its page: on a page with a
+fill of its own it sits on that page's colour, with the land tinted from it and the pins in an ink that reads on it
+(dark on a light page, white on a dark one); on the plain paper it is drawn on light paper in either appearance.
 
 - **View**: the regions, then every country, in one picker; a country frames that country.
 - A two-way switch over the preview chooses what a click on it does: **Highlight Countries**
