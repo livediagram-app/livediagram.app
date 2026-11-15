@@ -16,6 +16,8 @@ import {
   AGGREGATE_LABELS,
   BOARD_WIDGET_KINDS,
   CARD_SIZES,
+  CARD_TEMPLATE_NAME_MAX,
+  CARD_TEMPLATES_MAX,
   OFFERED_FIELD_KINDS,
   FIELD_WIDGETS_MAX,
   FORMULA_MAX,
@@ -129,7 +131,13 @@ export const listItemsShape = {
 const itemChange = z.discriminatedUnion('op', [
   z.strictObject({
     op: z.literal('add'),
-    title: z.string().min(1),
+    title: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        'Its title. Required unless a template gives one (else the type’s new-card title).',
+      ),
     type: typeArg.default('task'),
     status: statusArg
       .optional()
@@ -137,6 +145,15 @@ const itemChange = z.discriminatedUnion('op', [
         'The column it starts in, at the end, by name. Left out, it waits off every board.',
       ),
     fields: fieldsArg.optional(),
+    template: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        'Start it from one of its card type’s templates, by name or id (list_items lists each type’s templates): ' +
+          'it takes the template’s title, description, checklist, labels and field values, and title and fields ' +
+          'given here win over them, field by field.',
+      ),
   }),
   z.strictObject({
     op: z.literal('set'),
@@ -590,6 +607,39 @@ const customFieldEdit = z.object({
   blocks: blocksArg.optional(),
 });
 
+// A card template's values, by field name as change_items' fields (docs/specs/026-plan/plan-agents.md "Card templates").
+const templateFieldsArg = z
+  .record(z.string(), z.unknown())
+  .describe(
+    'Its starting values by field name, written as change_items’ fields: title, description (Markdown), checklist, ' +
+      'labels and the type’s custom fields. Never a status, assignee, priority, estimate, dates, colour, ' +
+      'attachments, or a calculated, time spent, comments, votes, card or image field.',
+  );
+const templateName = z
+  .string()
+  .min(1)
+  .max(CARD_TEMPLATE_NAME_MAX)
+  .describe(`Its name, 1-${CARD_TEMPLATE_NAME_MAX} characters, unique in the type ("Bug Report").`);
+const templateInput = z.object({ name: templateName, fields: templateFieldsArg.optional() });
+const templateRef = z
+  .string()
+  .describe('A template of the type, by name or id ("Bug Report", "tp-bug-report").');
+const templatesArg = z
+  .array(templateInput)
+  .max(CARD_TEMPLATES_MAX)
+  .describe(
+    `Card templates (up to ${CARD_TEMPLATES_MAX} a type): named starting values a new card of the type can take ` +
+      '(change_items’ add with template). Each id is tp- and a slug of its name.',
+  );
+const templateEdit = z.object({
+  template: templateRef,
+  name: templateName.optional().describe('A new name (its id never changes).'),
+  fields: templateFieldsArg
+    .optional()
+    .describe('Values to set, by field name, over the template’s own; the rest stay.'),
+  clear: z.array(z.string()).optional().describe('Values to take off, by field name.'),
+});
+
 export const cardTypeChangeSchema = z.discriminatedUnion('op', [
   z.object({
     op: z.literal('add'),
@@ -625,6 +675,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
           'statuses, Default State and display, keeping its own name, colour and glyph; its own custom fields ' +
           'follow. The base must inherit from none.',
       ),
+    templates: templatesArg.optional(),
   }),
   z.object({
     op: z.literal('set'),
@@ -669,6 +720,17 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
           'detach, keeping a copy of the base’s settings. An inherited type’s statuses, Default State, display, ' +
           'tabs and inherited fields are its base’s to change.',
       ),
+    addTemplates: templatesArg.optional().describe('Card templates to add, after its own.'),
+    editTemplates: z
+      .array(templateEdit)
+      .max(CARD_TEMPLATES_MAX)
+      .optional()
+      .describe('Card templates changed in place: renamed, values set or cleared.'),
+    removeTemplates: z
+      .array(templateRef)
+      .max(CARD_TEMPLATES_MAX)
+      .optional()
+      .describe('Card templates to remove, by name or id. Cards made from one keep their values.'),
   }),
   z.object({
     op: z.literal('delete'),
@@ -836,6 +898,18 @@ const listedType = z.object({
     .array(z.string())
     .optional()
     .describe('An inherited type’s own fields, by name, after its base’s.'),
+  templates: z
+    .array(
+      z.object({
+        id: z.string().describe('The template’s id ("tp-bug-report").'),
+        name: z.string().describe('Its name, as change_items’ template takes it.'),
+        fields: z.array(z.string()).describe('The fields it sets, by name.'),
+      }),
+    )
+    .optional()
+    .describe(
+      'Its card templates, in order: change_items’ add with template starts a card from one. Absent: none.',
+    ),
 });
 
 const listedBoard = z.object({

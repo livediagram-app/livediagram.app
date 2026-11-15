@@ -61,7 +61,7 @@ The connection gives your AI tool these 25 tools.
 - **List rules** (`list_rules`) and **Change rules** (`change_rules`): read a plan's [Automations](/help/plan/automations/#agents-and-the-cli) rules and their Audit Trail, and add, change, turn on or off, copy, delete, test and run them. The AI needs you to be an Editor of the whole plan, and a read-only connection can only list them.
 - **Add a board** (`add_board`) and **Change a board** (`change_board`): put a [board](/help/plan/boards/) on a tab, from a ready-made one (Kanban, Sprint, Bug Triage...) or with the columns you name, and later rename it, change its columns, choose which card types it shows, or add and remove the [widgets](/help/plan/boards/#widgets) in its header (a field widget by its name, such as Budget Sum).
 - **Import a board** (`import_board`): bring a Trello board's JSON export, or an Asana, Jira or Linear CSV export, in as a new Board tab or a new plan, as the editor's [Import dialog](/help/tabs/import-tabs/) does. Ask for a preview first to see the columns, fields and what would be left out.
-- **Change card types** (`change_card_types`): add, edit or delete the [card types](/help/plan/card-types/) a plan's boards hold, with their own fields. Deleting a type moves its cards to the Trash, as it does in the editor.
+- **Change card types** (`change_card_types`): add, edit or delete the [card types](/help/plan/card-types/) a plan's boards hold, with their own fields and card templates. Deleting a type moves its cards to the Trash, as it does in the editor. Change items can then start a card from a template (`"template": "Bug Report"`), with any title or fields the AI gives winning over the template's.
 
 **Sheets**
 

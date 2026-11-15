@@ -3,6 +3,7 @@
 import type { TypeChangeRefusal } from './type-change-refused';
 import type { ItemTypeCatalogue } from './type-catalogue';
 import type { DisplayInput, TabInput } from './type-change-face';
+import type { TemplateEdit, TemplateInput } from './type-change-templates';
 
 export interface CustomFieldInput {
   name: string;
@@ -103,6 +104,8 @@ export type CardTypeChange =
       statuses?: readonly string[];
       // Its base type, by name or id (docs/specs/026-plan/item-types.md "Inherited types").
       inherits?: string;
+      // Its card templates (docs/specs/026-plan/plan-agents.md "Card templates").
+      templates?: readonly TemplateInput[];
     } & FaceInput &
       NotifyInput)
   | ({
@@ -123,6 +126,10 @@ export type CardTypeChange =
       // A base type to inherit from, by name or id, or null to detach (docs/specs/026-plan/item-types.md "Inherited
       // types").
       inherits?: string | null;
+      // Its card templates: removed, then edited, then added, by name or id (plan-agents.md "Card templates").
+      addTemplates?: readonly TemplateInput[];
+      editTemplates?: readonly TemplateEdit[];
+      removeTemplates?: readonly string[];
     } & FaceInput &
       NotifyInput)
   | { op: 'delete'; type: string }
