@@ -10,7 +10,7 @@ export const importBoardShape = {
     .string()
     .describe(
       'The export file’s text: a Trello board’s JSON (Menu, Print and export, Export as JSON), or an Asana project, ' +
-        'Jira issues or Linear issues CSV export. Up to 20 MB and 2,000 cards.',
+        'Jira issues or Linear issues CSV export. Up to 20 MB and 5,000 cards.',
     ),
   fileName: z
     .string()

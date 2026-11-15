@@ -3,7 +3,7 @@
 import { isValidItemId } from './fields';
 
 // The most cards a chart's order names, so the element stays small.
-export const GANTT_ROW_ORDER_MAX = 2000;
+export const GANTT_ROW_ORDER_MAX = 5000;
 
 // A saved order: card ids, none repeated, at most GANTT_ROW_ORDER_MAX.
 export function isGanttRowOrder(value: unknown): value is string[] {
@@ -32,7 +32,7 @@ export function ganttOrderRows<T extends { item: { id: string } }>(
 // out of the chart's current row ids (`rowIds`, as shown) and put before the lane's row now at `toIndex`, or after
 // the lane's last row past its end, so it never leaves its lane. Only the ids given survive (stale ones drop). A card
 // in several lanes (a Person field holding several) is one row id per lane: the order names it once, at its first, so
-// the order stays one id per card (isGanttRowOrder) and within GANTT_ROW_ORDER_MAX, the 2,000-card cap.
+// the order stays one id per card (isGanttRowOrder) and within GANTT_ROW_ORDER_MAX, the 5,000-card cap (ITEMS_MAX).
 // Null when nothing moves.
 export function ganttReorder(
   rowIds: readonly string[],

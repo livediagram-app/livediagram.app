@@ -11,7 +11,6 @@ import {
   ganttAt,
   ganttLanes,
   ganttLayout,
-  ganttModel,
   ganttOrderRows,
   ganttShownTypes,
   viewDatesOf,
@@ -23,6 +22,7 @@ import {
 } from '@liveplanner/items';
 import { accentOn } from '@liveplanner/project';
 import { xmlEscape } from '@liveworkspace/icons';
+import { keptGanttModel } from './gantt-model-memo';
 import { OVERDUE_RED } from './phase-colours';
 import { ART_PAD, box, dot, emptyBody, line, viewFrame, r2 } from './plan-art-kit';
 import type { ViewArtInput } from './plan-view-art';
@@ -37,8 +37,8 @@ const titled = (name: string, own: string | undefined) => own?.trim() || name;
 // The Gantt: a names column, the weeks along the top, a bar (or a diamond for a date alone) a row, an arrow from each
 // blocker to each row it blocks (docs/specs/026-plan/plan-views.md "Dependency arrows"), today's line.
 export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput): string {
-  const model = ganttModel(
-    items.values(),
+  const model = keptGanttModel(
+    items,
     data.statusPhases,
     data.now,
     ganttShownTypes(settings, data.types),
