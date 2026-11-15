@@ -159,9 +159,10 @@ describe('flow counts step', () => {
     sql.exec('PRAGMA foreign_keys = ON');
     const exec = nodeItemSql(sql);
     migratePlanSchema((q) => exec.exec(q));
-    // As a plan from before the step: no table, no triggers, its version one step back, with cards.
+    // As a plan from before the step (V29): no table, no triggers, its version at V28, with cards. The steps after it
+    // run again too, harmlessly (each is IF NOT EXISTS).
     sql.exec(`DROP TRIGGER flow_counts_insert; DROP TRIGGER flow_counts_update; DROP TRIGGER flow_counts_delete;
-              DROP TABLE flow_counts; UPDATE _plan_schema SET version = version - 1`);
+              DROP TABLE flow_counts; UPDATE _plan_schema SET version = 28`);
     sql.exec(`INSERT INTO plan (id, saved_at, created_at) VALUES ('P', 1, 1)`);
     const add = sql.prepare(
       `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
