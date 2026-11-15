@@ -23,6 +23,9 @@ import {
   markLanding,
   measureAfterPaint,
   readWarmCopy,
+  browserWarmOpenFallbackDeps,
+  guardNotFound,
+  warmOpenFallback,
 } from '@liveworkspace/workbench/lib/warm-open';
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
@@ -91,6 +94,8 @@ export function useIdentityBootstrap(opts: {
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
   const runRef = useRef(0);
   const warmRef = useRef<LastSeenCopy<LiveDoc, unknown> | null>(null);
+  // The copy this mount painted, kept past the someone-else swap: a not found after it is checked by a cold open.
+  const paintedRef = useRef<LastSeenCopy<LiveDoc, unknown> | null>(null);
   // Whether a load has begun to write the screen (markLanding), and who it resolved as reading: until it has, a warm
   // read that answers late still paints, for that reader only.
   const landedRef = useRef(false);
@@ -143,13 +148,26 @@ export function useIdentityBootstrap(opts: {
     const generation = ++runRef.current;
     const live = () => runRef.current === generation;
     const resetTabs = guardRun({ resetTabs: opts.resetTabs }, live).resetTabs;
-    const guarded = markLanding(
+    const landing = markLanding(
       guardRun(set, live),
       () => {
         landedRef.current = true;
       },
       QUIET_SETTERS,
     );
+    // A not found after a warm paint (offline-mode.md "Never a wrong not found") is checked once by an ordinary, cold
+    // open before it shows: the copy is forgotten and the page reloads.
+    const guarded = guardNotFound(landing, 'setDocumentNotFound', () => {
+      const painted = paintedRef.current;
+      return (
+        painted !== null &&
+        warmOpenFallback(
+          'not-found',
+          painted.itemId,
+          browserWarmOpenFallbackDeps(() => lastSeenCopies.forget(painted.reader, painted.itemId)),
+        )
+      );
+    });
     const {
       setDocumentNotFound,
       setLoadError,
@@ -331,6 +349,7 @@ export function useIdentityBootstrap(opts: {
     const s = opts.set;
     makePaintLastSeen(seedDeps(s, opts.resetTabs, false))(copy);
     warmRef.current = copy;
+    paintedRef.current = copy;
     s.setWarmTabId(copy.firstTab?.id ?? null);
     s.setIsOwner(copy.access.isOwner);
     s.setSessionTabScope(copy.access.tabScope);

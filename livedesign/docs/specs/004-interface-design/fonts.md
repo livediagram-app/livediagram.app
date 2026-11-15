@@ -1,7 +1,8 @@
 # Fonts
 
 Let users set the **typeface** of text on the canvas, per element and as
-a per-tab default, from a curated set of eleven Google Fonts.
+a per-tab default, from a curated set of eleven Google Fonts, and on a logo page from a curated display library
+besides ("The display library" below).
 
 ## The eleven fonts
 
@@ -55,6 +56,33 @@ themes alike. Three faces once in the catalogue did not, and were replaced by a 
   UI sans first.
 - **Payload** (Latin woff2, fetched only once a face is applied): Kalam 14 KB a weight (Caveat was one 75 KB
   variable file), Shantell Sans 47 KB (Permanent Marker 29 KB), Bodoni Moda 27 KB (Abril Fatface 13 KB).
+
+## The display library
+
+The eleven are tuned for labels at 12 to 14 px, which is right for wireframes and wrong for a wordmark set at 60 px,
+where a display face is the point. So logo pages add a second closed list, the **display library**
+(`DISPLAY_FONTS` in `packages/design/src/display-fonts.ts`): 90 Google Fonts families, each under the SIL Open
+Font License (OFL), none of them one of the eleven, in four categories (`sans`, `serif`, `script`, `decorative`).
+Each entry has the same shape as the eleven's (id, label, kind, CSS stack, Google family spec) plus its category;
+it loads the weights it has of 400, 500 and 700 (a one-weight face loads its one).
+
+- **Where it is offered**: a text element on a logo page ([Logo pages](../007-editor/logo-pages.md) "Display
+  faces"). Every other page kind, the tab's Text style and every other product keep the eleven alone; the other
+  products never see the library at all, since it lives in livedesign's design package.
+- **One resolver**: livedesign's `resolveFontStack`, `fontIdsUsed` and `googleFontsHref` (in
+  `packages/design/src/fonts.ts`, over the shared eleven in `../packages/model-core/src/fonts.ts`) read both lists,
+  so the canvas, every export and the previews paint a display face exactly as they paint one of the eleven, and an
+  id in neither list falls through as an unset one does. `googleFontsHref()` with no ids is still the eleven: the
+  editor's one stylesheet never lists the library.
+- **Loaded on use**: a display family's stylesheet is linked once a tab's element uses it (`loadDisplayFonts`, one
+  `<link>` per family, never twice), so a collaborator's choice arrives with the element. The picker's rows preview
+  from a `text=` subset of each face, holding only the letters of the faces' names, under a family name of its
+  own (`<id> preview`) so it never stands in for the full face; a row off screen fetches nothing
+  (`content-visibility: auto`).
+- **Licensing**: an OFL family only. Apache-licensed faces (Permanent Marker, Luckiest Guy, Satisfy, Yellowtail and
+  others) are left out, as are faces already in the eleven (Abril Fatface, Caveat).
+- **Validation**: the `font` field's closed vocabulary (`ELEMENT_FIELD_VALUES.font` in livedesign) is the eleven
+  then the library, so edit operations and the MCP accept a display id and refuse anything else.
 
 ## Two levels
 
@@ -198,6 +226,9 @@ SVG / PDF paint the same typeface the canvas does, never the UI sans.
   of the Google stylesheet for the used families only. A browser opening that
   file gets the real faces; an offline vector editor gets the stack's system
   fallback.
+- **The Logo Kit outlines instead** ([Logo pages](../007-editor/logo-pages.md) "Outlined text"): its `logo.svg`
+  draws text as letter outlines read from the same embedded faces, since vector editors ignore `@font-face`. Every
+  other SVG keeps live text.
 - Both paths emit nothing at all when no element or tab picked a font, so an
   ordinary export is byte-identical to what it was before fonts existed.
 - The PNG drawer awaits `document.fonts.ready` before painting: rasterising

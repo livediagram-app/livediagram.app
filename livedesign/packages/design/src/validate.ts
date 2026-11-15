@@ -34,6 +34,7 @@ import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends'
 import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
 import { parseStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { shapeValidationIssue } from './validate-shape';
+import { isWellFormedLinkField, SCREEN_LINK_RULE } from './page-link';
 import { MEMBER_FIELD_CHECKS } from './component-fields';
 import {
   FONT_WEIGHTS,
@@ -177,6 +178,9 @@ export function coerceShapeKind(shape: unknown): ShapeKind {
 const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
   // A label is text: every renderer reads it as a string.
   { field: 'label', valid: (v) => typeof v === 'string', rule: 'a string' },
+  // A screen link or back link (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes"); other link kinds
+  // stay unchecked, as they always were.
+  { field: 'link', valid: isWellFormedLinkField, rule: SCREEN_LINK_RULE },
   // Quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md): a slot 1-6 or absent. A junk
   // slot has no business being written into a design, though the re-derive would ignore it.
   { field: 'strokeSwatch', valid: isQuickSwatchSlot, rule: 'a quick-swatch slot 1 to 6' },

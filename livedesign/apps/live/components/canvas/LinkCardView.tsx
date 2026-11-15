@@ -34,6 +34,13 @@ function describeCard(
       return { title: meta?.title ?? hostOf(link.url), destination: link.url };
     case 'design':
       return { title: 'Design', destination: link.name };
+    // A screen link plays in Prototype mode (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes").
+    case 'page':
+    case 'back':
+      return {
+        title: 'Screen',
+        destination: link.kind === 'back' ? 'The screen before' : 'A screen on this tab',
+      };
     case 'tab':
     case 'element': {
       const name = tabs?.find((t) => t.id === link.tabId)?.name?.trim();
@@ -169,7 +176,7 @@ function LinkGlyph({ kind }: { kind: NonNullable<LinkCardElement['link']>['kind'
   const prims =
     kind === 'design'
       ? lucideFile
-      : kind === 'tab' || kind === 'element'
+      : kind === 'tab' || kind === 'element' || kind === 'page' || kind === 'back'
         ? lucidePanelsTopLeft
         : lucideLink;
   return (

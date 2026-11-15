@@ -8,6 +8,7 @@ import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDr
 import { CanvasElementList } from './CanvasElementList';
 import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
+import { useDisplayFonts } from '@/hooks/canvas/useDisplayFonts';
 import {
   elementFontId,
   resolveFontStack,
@@ -183,6 +184,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontEpoch).
   const fontEpoch = useFontEpoch();
+  // A logo page's display faces, linked as the elements take them (docs/specs/004-interface-design/fonts.md).
+  useDisplayFonts(elements);
   // What the tab's stacks hold, for the reflow glide (docs/specs/009-elements/stack.md "Animation").
   const stackedIds = useMemo(() => stackedElementIds(elements), [elements]);
   // The font an element following the tab letters in, resolved once (docs/specs/004-interface-design/fonts.md):

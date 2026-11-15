@@ -1,5 +1,5 @@
 import { bytesToBase64 } from '@livedesign/api-schema';
-import { googleFontsHref } from '@livedesign/design';
+import { DISPLAY_FONTS, FONTS, googleFontsHref } from '@livedesign/design';
 
 // Webfonts, EMBEDDED, for an image export (docs/specs/004-interface-design/fonts.md).
 //
@@ -23,9 +23,19 @@ const EMBEDDED_SUBSETS = ['latin', 'latin-ext'];
 
 // Keyed by the id list, because a second export of the same canvas should
 // not re-download a font we already hold.
-const cache = new Map<string, Promise<string>>();
+const cache = new Map<string, Promise<EmbeddedFaces>>();
 
 type FetchLike = typeof fetch;
+
+/** The embedded `@font-face` css, and the label of each wanted face it holds no file of. */
+export type EmbeddedFaces = { css: string; missing: string[] };
+
+// An id's family as Google names it in the stylesheet (its `family=` spec up to the axes), and its label.
+function familyOf(id: string): { family: string; label: string } | null {
+  const font = FONTS.find((f) => f.id === id) ?? DISPLAY_FONTS.find((f) => f.id === id);
+  if (!font) return null;
+  return { family: font.google.split(':')[0]!.replace(/\+/g, ' '), label: font.label };
+}
 
 // The @font-face blocks for the wanted subsets, with every url() swapped for
 // a data URL. Empty when nothing is wanted or anything goes wrong.
@@ -33,22 +43,44 @@ export async function embeddedFontFaceCss(
   fontIds: readonly string[],
   fetchImpl?: FetchLike,
 ): Promise<string> {
-  if (fontIds.length === 0) return '';
+  return (await embeddedFontFaces(fontIds, fetchImpl)).css;
+}
+
+/** As `embeddedFontFaceCss`, also naming each face it couldn't fetch (docs/specs/007-editor/logo-pages.md
+ *  "Outlined text": the Logo Kit can't outline a face it holds no file of). */
+export async function embeddedFontFaces(
+  fontIds: readonly string[],
+  fetchImpl?: FetchLike,
+): Promise<EmbeddedFaces> {
+  if (fontIds.length === 0) return { css: '', missing: [] };
   const key = [...fontIds].sort().join(',');
   const hit = cache.get(key);
   if (hit) return hit;
-  const pending = buildCss(fontIds, fetchImpl ?? fetch).catch(() => '');
+  const everyLabel = () => fontIds.flatMap((id) => familyOf(id)?.label ?? []);
+  const pending = buildFaces(fontIds, fetchImpl ?? fetch).catch(() => ({
+    css: '',
+    missing: everyLabel(),
+  }));
   cache.set(key, pending);
+  // A face that didn't come is asked for again next time (the connection may be back).
+  void pending.then((r) => {
+    if (r.missing.length > 0 && cache.get(key) === pending) cache.delete(key);
+  });
   return pending;
 }
 
-async function buildCss(fontIds: readonly string[], doFetch: FetchLike): Promise<string> {
+async function buildFaces(fontIds: readonly string[], doFetch: FetchLike): Promise<EmbeddedFaces> {
+  const families = fontIds.flatMap((id) => familyOf(id) ?? []);
   const res = await doFetch(googleFontsHref(fontIds));
-  if (!res.ok) return '';
-  const css = await res.text();
-  const blocks = latinFaceBlocks(css);
-  const inlined = await Promise.all(blocks.map((block) => inlineUrls(block, doFetch)));
-  return inlined.filter(Boolean).join('\n');
+  if (!res.ok) return { css: '', missing: families.map((f) => f.label) };
+  const blocks = latinFaceBlocks(await res.text());
+  const inlined = (await Promise.all(blocks.map((block) => inlineUrls(block, doFetch)))).filter(
+    Boolean,
+  );
+  const holds = (family: string) => (block: string) =>
+    block.includes(`font-family: '${family}'`) || block.includes(`font-family: "${family}"`);
+  const missing = families.filter((f) => !inlined.some(holds(f.family))).map((f) => f.label);
+  return { css: inlined.join('\n'), missing };
 }
 
 // Google's stylesheet labels each @font-face with a `/* subset */` comment.

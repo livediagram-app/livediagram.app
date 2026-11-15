@@ -8,6 +8,7 @@ import { DotsIcon, NonePaddingIcon, PaddingIcon } from './palette-icons';
 import { TextSizeControl, type PresetPx } from './TextSizeControl';
 import { FONTS, legendFontPx, resolveFontStack } from '@livedesign/design';
 import type { Padding, TextSize } from '@livedesign/design';
+import { DisplayFontLibrary } from './DisplayFontLibrary';
 
 // The typography controls — Font / Size / Padding — as three collapsible
 // accordion sections, used by the element context menus' "Text" flyouts
@@ -51,6 +52,7 @@ export function TypographySections({
   onPreviewSize,
   onPreviewPadding,
   onPreviewEnd,
+  displayFontsOffered = false,
 }: {
   currentFont: string | null;
   // null = mixed / unset (no tile highlighted), e.g. a multi-run text selection.
@@ -67,6 +69,8 @@ export function TypographySections({
   onPreviewSize?: (size: TextSize) => void;
   onPreviewPadding?: (padding: Padding) => void;
   onPreviewEnd?: () => void;
+  // A text on a logo page: the display library under the eleven (docs/specs/007-editor/logo-pages.md "Display faces").
+  displayFontsOffered?: boolean;
 }) {
   // Build the mouse-only hover handlers for a tile, or undefined when no
   // preview handler was supplied (so touch never leaves a preview stuck).
@@ -94,6 +98,14 @@ export function TypographySections({
             />
           ))}
         </MenuTileGrid>
+        {displayFontsOffered ? (
+          <DisplayFontLibrary
+            currentFont={currentFont}
+            onSetFont={onSetFont}
+            onPreviewFont={onPreviewFont}
+            onPreviewEnd={onPreviewEnd}
+          />
+        ) : null}
       </MenuAccordionSection>
       <MenuAccordionSection title="Size" icon={<DotsIcon count={2} />} {...sectionProps('size')}>
         <TextSizeControl

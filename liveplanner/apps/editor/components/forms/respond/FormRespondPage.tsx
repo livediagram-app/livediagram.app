@@ -4,7 +4,7 @@
 // canvas style, with nothing of the editor around it: no sign-in, no project, no Explorer. Loading, not found, closed
 // and the form itself are the page's four states; the form's own flow is FormFill.
 import { useEffect, useState, type CSSProperties } from 'react';
-import { useBrowserTabTitle } from '@/hooks/ui/useBrowserTabTitle';
+import { useBrowserTabTitle } from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
 import dynamic from 'next/dynamic';
 import type { PublicFormResponse } from '@liveplanner/api-schema';
 import { readPrefill } from '@liveplanner/forms';

@@ -421,6 +421,16 @@ call it after their first token answer, and never later, so a session that ends 
 never reloads it; the marketing pages still leave a visitor who started using the page alone. A guest,
 whose hint was never `1`, never bounces this way.
 
+**An answer that never came.** Only the app's API says a page is signed out: a `401` (or an ok answer)
+with `signedIn: false`. A token request that fails, takes over 10 s, or answers anything else (a `5xx`,
+a `408` or `429`, a body that isn't the answer) says nothing about the session. For the page's first
+answer, the one that decides who is reading, the editors' accounts bridge treats that as unknown and
+asks again, after 1, 2, 4 and 8 s and then every 15 s, until the API says signed in or signed out
+(`askTokenUntilKnown` in `@liveworkspace/auth-client/token-answer`); the page keeps waiting for sign-in
+meanwhile (a warm open keeps showing its last seen copy, read-only). Settling as a guest instead would
+open the person's own private items as not found. Later token requests (a save's) keep answering no
+token on a failure, and the next request asks again.
+
 **The cost.** One bounce per new tab for a person with no session in the app, and one more on a tab's
 next full page load after it comes back into view or is opened from another site, never more than once
 in two minutes: four extra requests (the

@@ -50,6 +50,27 @@ export const TEXT_SOURCES: readonly TextSource[] = [
     sha256: '7c5139e697ee315479a9240cf92f626f90b1999388f8a794196feb4d9488381a',
   },
   {
+    // brotli.js ships no licence file: its readme's MIT, then its decoder's Google header and Apache 2.0.
+    file: 'brotli-1.3.3-LICENSE.txt',
+    sources: [
+      'https://raw.githubusercontent.com/devongovett/brotli.js/v1.3.3/readme.md',
+      'https://raw.githubusercontent.com/devongovett/brotli.js/v1.3.3/dec/decode.js',
+      'https://www.apache.org/licenses/LICENSE-2.0.txt',
+    ],
+    sha256: '1188bf6a4e3fd54b83815a569eac3ccd23e67db31558933671d4c49c316ab32b',
+  },
+  {
+    // fontkit and its dfa ship no licence file; their READMEs state MIT.
+    file: 'fontkit-2.0.4-LICENSE.txt',
+    sources: ['https://raw.githubusercontent.com/foliojs/fontkit/v2.0.4/README.md'],
+    sha256: 'f07f601242577ef9d93d52c23d7aaa41db661cb0e47fd107fd7cdf2d8df2b1bd',
+  },
+  {
+    file: 'dfa-1.2.0-LICENSE.txt',
+    sources: ['https://raw.githubusercontent.com/devongovett/dfa/v1.2.0/README.md'],
+    sha256: '1c67df5e5f8984ae8e70d545a2afee51c4be1d24c6d23d349724060111177fb1',
+  },
+  {
     file: 'resvg-js-2.6.2-LICENSE.txt',
     sources: ['https://raw.githubusercontent.com/yisibl/resvg-js/v2.6.2/LICENSE'],
     sha256: '1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5',

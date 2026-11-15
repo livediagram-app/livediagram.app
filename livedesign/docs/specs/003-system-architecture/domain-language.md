@@ -39,6 +39,9 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - livedesign has no **slide** pages, article or infographic pages, and no slide deck: a stored page of a kind it
   does not have reads as a page whose kind is not chosen yet, and nothing presents
   ([Presentation mode](../012-collaboration/presentation-mode.md)).
+- A wireframe tab's screens are played in **Prototype mode**, following **screen links** (an element link of kind
+  `page`) and **back links** (kind `back`). Prototype mode is a player, never presenting, and never a mode in the
+  sense above ([Wireframe pages](../007-editor/wireframe-pages.md) "Clickable prototypes").
 
 ### Template
 
