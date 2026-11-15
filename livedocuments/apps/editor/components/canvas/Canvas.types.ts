@@ -387,7 +387,7 @@ export type CanvasProps = {
     // Done on a crop (docs/specs/009-elements/picture-crop-and-mask.md); an Editor's only.
     onCommitImageCrop?: (
       elementId: string,
-      result: import('@/lib/image-crop-math').CropResult,
+      result: import('@liveworkspace/workbench/lib/image-crop-math').CropResult,
     ) => void;
   };
   // The visitor name prompt (IdentityPrompt).

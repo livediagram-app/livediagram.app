@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { POPOVER_VIEWPORT_MARGIN } from '@liveworkspace/ui';
 import { clampToViewport, VIEWPORT_EDGE_MARGIN } from '../../lib/clamp-to-viewport';
 import { useReposition } from '../../hooks/canvas/useReposition';
 import { besideSpot } from './beside-placement';
@@ -23,7 +24,8 @@ export const PLACEMENT_TRANSFORM: Record<PortalMenuPlacement, string> = {
  * and its anchor (the anchor's own click toggles it). `node` is the rendered menu, null until it
  * is placed. With `beside` (the card the menu belongs to), it opens beside that card instead,
  * out of its way (besideSpot), once it can measure itself, and hangs from the anchor only when
- * neither side has room. `flat` says the spot is its top-left corner, with no placement transform.
+ * neither side has room. `flat` says the spot is its top-left corner, with no placement transform; `maxHeight`, set
+ * only for a menu taller than the screen, is the height it is held to, scrolling inside.
  */
 export function usePortalMenuPlacement(
   anchor: HTMLElement | null,
@@ -35,8 +37,20 @@ export function usePortalMenuPlacement(
   const [pos, setPos] = useState<{ left: number; top: number; flat?: boolean } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
 
+  // A menu taller than the screen is held to it and scrolls inside itself (docs/specs/004-interface-design/menus.md
+  // "A menu taller than the screen"): clamped as it stood, its top went above the screen's edge, out of reach (the
+  // photo Blend modes on a 390 x 844 phone, Work Tracker 593). Read from the content's own height (`scrollHeight`),
+  // which the cap leaves as it is, so applying it never undoes it; the clamp below runs again on the capped size.
+  const [cap, setCap] = useState<number | null>(null);
+
   const reposition = useCallback(() => {
     if (!anchor) return;
+    if (node) {
+      // The edge inset read from @liveworkspace/ui itself (VIEWPORT_EDGE_MARGIN's source), which the products' menu
+      // tests leave unmocked when they stub clampToViewport.
+      const room = window.innerHeight - 2 * POPOVER_VIEWPORT_MARGIN;
+      setCap(node.scrollHeight > room ? room : null);
+    }
     if (beside && node) {
       const spot = besideSpot(
         beside.getBoundingClientRect(),
@@ -55,7 +69,8 @@ export function usePortalMenuPlacement(
 
   useLayoutEffect(() => {
     if (!node || !pos) return;
-    // Clamped relative to the adjust already applied, so re-measuring after a nudge settles.
+    // Clamped relative to the adjust already applied, so re-measuring after a nudge settles; again once a cap is
+    // drawn, on the menu's capped size.
     const clamp = () => {
       const rect = node.getBoundingClientRect();
       setAdjust((prev) => {
@@ -64,7 +79,7 @@ export function usePortalMenuPlacement(
       });
     };
     clamp();
-  }, [pos, node]);
+  }, [pos, node, cap]);
 
   useEffect(() => {
     // A pointerdown, in the capture phase: the canvas cancels its own pointerdown (which stops the browser sending
@@ -97,6 +112,11 @@ export function usePortalMenuPlacement(
   }, [onClose, anchor, node]);
 
   return pos
-    ? { left: pos.left + adjust.x, top: pos.top + adjust.y, flat: pos.flat ?? false }
+    ? {
+        left: pos.left + adjust.x,
+        top: pos.top + adjust.y,
+        flat: pos.flat ?? false,
+        maxHeight: cap ?? undefined,
+      }
     : null;
 }

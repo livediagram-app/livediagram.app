@@ -249,6 +249,8 @@ describe('withPaperMarkInks', () => {
           : part(`p${i}`, SLATE, { y: Math.floor(i / 80) * 60 }, (i % 80) * 200),
       );
     const ms = cpuMsOf(() => withPaperMarkInks(els, WHITE, els, SLATE));
-    expect(ms).toBeLessThan(cpuBudgetMs(400));
+    // Measured 55 to 78 ms cold here (the first call, JIT included) once the mark lookup shared the board's backdrop
+    // grid (Work Tracker 896); the budget holds about twice that (it was 400).
+    expect(ms).toBeLessThan(cpuBudgetMs(150));
   });
 });

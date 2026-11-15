@@ -5,9 +5,11 @@
 // selected image. Crop Image sits with Change Image and Remove Image (ElementContentSections).
 import {
   IMAGE_MASKS,
+  MASK_LABEL,
   imageMaskPath,
   isImageMask,
-  type Element,
+  withImageGreyscale,
+  withImageMask,
   type ImageElement,
   type ImageMask,
 } from '@livedocuments/document';
@@ -23,33 +25,6 @@ import type { ElementStyleOps } from '@/lib/element-style-ops';
 export const CropGlyph = lucideGlyph(lucideCrop, MENU_ICON_PX);
 // A mask tile's shape: a little larger than a row icon, as the tile is the preview.
 const MASK_GLYPH_PX = 18;
-
-export const MASK_LABEL: Record<ImageMask, string> = {
-  circle: 'Circle',
-  rounded: 'Rounded',
-  arch: 'Arch',
-  hexagon: 'Hexagon',
-  diamond: 'Diamond',
-  triangle: 'Triangle',
-  star: 'Star',
-  blob: 'Blob',
-};
-
-/** The mask set on an image (or removed, `null`), every other field and kind left as it is. */
-export function withImageMask(el: Element, mask: ImageMask | null): Element {
-  if (el.type !== 'image') return el;
-  const { mask: _old, ...rest } = el;
-  void _old;
-  return mask ? { ...rest, mask } : rest;
-}
-
-/** Greyscale turned on or off on an image; other kinds left as they are. */
-export function withImageGreyscale(el: Element, on: boolean): Element {
-  if (el.type !== 'image') return el;
-  const { greyscale: _old, ...rest } = el;
-  void _old;
-  return on ? { ...rest, greyscale: true } : rest;
-}
 
 // A mask's tile: its shape on the icons' 24-unit grid, drawn as every menu glyph is; No Mask a dashed square.
 const NoMaskGlyph = lucideGlyph(lucideSquareDashed, MASK_GLYPH_PX);

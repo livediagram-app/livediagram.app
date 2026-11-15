@@ -1,8 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import type { BlurCopyRequest, BlurCopyResponse } from './page-image-blur-protocol';
+import type { BlurCopyRequest, BlurCopyResponse } from './image-blur';
+import { makeBlurCopy, serveBlurCopies } from './image-blur-worker';
 
 // docs/specs/007-editor/pages-mode.md "Image backgrounds", Blur: the worker's side. Node has no OffscreenCanvas or
-// createImageBitmap, so both are stood in for; the blur itself is page-image-blur.test.ts's.
+// createImageBitmap, so both are stood in for; the blur itself is image-blur.test.ts's.
 
 const posted: BlurCopyResponse[] = [];
 let onMessage: ((e: { data: BlurCopyRequest }) => void) | undefined;
@@ -32,20 +33,17 @@ class FakeOffscreenCanvas {
   }
 }
 
-let makeBlurCopy: typeof import('./page-image-blur.worker').makeBlurCopy;
-
-beforeAll(async () => {
-  vi.stubGlobal('self', {
+beforeAll(() => {
+  serveBlurCopies({
     postMessage: (m: BlurCopyResponse) => posted.push(m),
-    addEventListener: (_: 'message', fn: (e: { data: BlurCopyRequest }) => void) =>
-      (onMessage = fn),
+    addEventListener: (_: 'message', fn: (e: MessageEvent<BlurCopyRequest>) => void) =>
+      (onMessage = fn as (e: { data: BlurCopyRequest }) => void),
   });
   vi.stubGlobal('OffscreenCanvas', FakeOffscreenCanvas);
   vi.stubGlobal(
     'createImageBitmap',
     vi.fn(async () => ({ width: 4000, height: 3000, close })),
   );
-  ({ makeBlurCopy } = await import('./page-image-blur.worker'));
 });
 
 afterEach(() => {

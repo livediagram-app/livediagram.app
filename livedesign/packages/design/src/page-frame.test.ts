@@ -38,6 +38,18 @@ describe('a picture in an export', () => {
     expect(svg).toContain('stop-opacity="0.7"');
   });
 
+  it('blurs a soft picture inside the page, edges held, and leaves a sharp one alone', () => {
+    // Blur 0.5 of 4% of the short side (100): sigma 2.
+    const svg = pageImageSvg(fill({ blur: 0.5 }), rect, 'data:image/png;base64,AA==', 'p');
+    expect(svg).toContain('<filter id="p-blur" x="0" y="0" width="1" height="1"');
+    expect(svg).toContain('<feGaussianBlur stdDeviation="2"/>');
+    expect(svg).toContain('<feFuncA type="table" tableValues="1 1"/>');
+    expect(svg).toContain('<g filter="url(#p-blur)"><image ');
+    expect(pageImageSvg(fill(), rect, 'data:image/png;base64,AA==', 'p')).not.toContain('filter');
+    // No bytes, nothing to blur: the tone shows.
+    expect(pageImageSvg(fill({ blur: 1 }), rect, undefined, 'p')).not.toContain('filter');
+  });
+
   it('is the page frame’s background, with the bytes it is handed', () => {
     const [page] = layOutPages([
       { id: 'p1', orientation: 'portrait', background: { fill: fill(), pattern: 'grid' } },

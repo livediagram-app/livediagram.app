@@ -225,7 +225,7 @@ own and sweeps nothing. A null or `data:` id references nothing.
   `HTMLImageElement`, concurrently, with no budget (D45). A failure skips that id.
 - `describeBoxedExport`: `radius = BORDER_RADIUS_PX[borderRadius]` or 4, `objectFit ??
 'contain'`, `href = resolveImageHref?.(imageId)`; the alt-text label only when `href` is
-  absent. SVG: `svgImageShape`; PNG / PDF: `drawImageElement` in `export-tab-canvas-draw.ts`.
+  absent. SVG: `svgImageShape`; PNG / PDF: `drawPictureOnCanvas` (`../packages/workbench/src/lib/image-canvas-draw.ts`), called from `export-tab-canvas-draw.ts`.
 - Server: `loadEmbeddedImages` reads each id with `media.bytes(id)` through `embedTabImages` with
   `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, `EMBED_IMAGE_CONCURRENCY` (6)
   reads in flight, each judged in document order once those before it are, so the outcome is

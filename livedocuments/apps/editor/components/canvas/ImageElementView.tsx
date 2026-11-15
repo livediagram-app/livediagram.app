@@ -27,10 +27,11 @@ import {
 } from '@/components/canvas/image-placeholder-look';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { bodySetClass } from '@/lib/animation-classes';
+import { track } from '@/lib/telemetry';
 import { Glyph } from '@livedocuments/ui';
-import { ImageCropOverlay } from '@/components/canvas/ImageCropOverlay';
-import { endImageCrop, useIsImageCropping } from '@/lib/image-crop-store';
-import type { CropResult } from '@/lib/image-crop-math';
+import { ImageCropOverlay } from '@liveworkspace/workbench/components/canvas/ImageCropOverlay';
+import { endImageCrop, useIsImageCropping } from '@liveworkspace/workbench/lib/image-crop-store';
+import type { CropResult } from '@liveworkspace/workbench/lib/image-crop-math';
 
 // Renders the bitmap (or upload placeholder) for an ImageElement.
 // Mounted inside BoxedElementView's transformed wrapper so it picks
@@ -305,7 +306,10 @@ function ImageElementViewImpl({
           element={element}
           src={state.src}
           natural={natural}
-          onApply={(result) => onCommitCrop?.(element.id, result)}
+          onApply={(result) => {
+            onCommitCrop?.(element.id, result);
+            track('Element', 'Changed', 'ImageCrop');
+          }}
         />
       ) : null}
     </div>

@@ -4,6 +4,8 @@
 // SCHEMA_RESOURCE_URI, elementSchemaDoc and SERVER_INSTRUCTIONS.
 import {
   ANCHORS,
+  IMAGE_CROP_MIN,
+  IMAGE_MASKS,
   BADGE_LABEL_MAX,
   CARD_TAGS_MAX,
   ELEMENT_FIELD_VALUES,
@@ -55,6 +57,9 @@ const CONTENT_KINDS =
   'gallery is refused); without it the element is a placeholder the user fills in the editor. "objectFit" ' +
   'contain (default, the whole picture) or cover (fills the box, cropping); "alt" describes it. A box in the ' +
   "picture's own proportions (its width and height from list_images, scaled) shows it uncropped. " +
+  '"crop" {x, y, width, height} is the part of the picture shown, as fractions of it (0 to 1; each side at least ' +
+  `${IMAGE_CROP_MIN}); the box should share that part's proportions. "mask" clips it to a shape: ` +
+  `${IMAGE_MASKS.join(', ')}. "greyscale" true draws it in grey. ` +
   'type "table": "cells" is rows of strings (ragged rows are padded), "headerRow" / ' +
   '"headerColumn" style the first row / column, "zebra" tints alternate rows. ' +
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +

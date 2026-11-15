@@ -1,8 +1,9 @@
 'use client';
 
-// Cropping an image on the canvas (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor"): the
-// whole picture with what lies outside the frame dimmed, the frame and its handles, in the grips layer above every
-// element, turned with the element. Drags change local state only; Done commits once.
+// Cropping an image on the canvas (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor", in
+// livedocuments and livedesign): the whole picture with what lies outside the frame dimmed, the frame and its handles,
+// in the grips layer above every element, turned with the element. Drags change local state only; Done commits once,
+// through `onApply`, which the product's image face hands on and counts (`Element · Changed · ImageCrop`).
 import {
   useEffect,
   useEffectEvent,
@@ -10,11 +11,9 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import type { ImageElement } from '@livedocuments/document';
-import { BoxGripsPortal } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
-import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { endImageCrop } from '@/lib/image-crop-store';
-import { track } from '@/lib/telemetry';
+import { BoxGripsPortal } from './SelectionGripsLayer';
+import { useCanvasZoom } from './CanvasZoomContext';
+import { endImageCrop } from '../../lib/image-crop-store';
 import {
   CROP_CORNERS,
   CROP_EDGES,
@@ -27,10 +26,11 @@ import {
   panPicture,
   resetCrop,
   zoomPicture,
+  type CroppableImage,
   type CropHandle,
   type CropResult,
   type CropSession,
-} from '@/lib/image-crop-math';
+} from '../../lib/image-crop-math';
 import { ImageCropBar, cropAspectRatio, type CropAspect } from './ImageCropBar';
 
 // Screen px of the handles and the frame's line, whatever the zoom (D253).
@@ -75,7 +75,7 @@ export function ImageCropOverlay({
   natural,
   onApply,
 }: {
-  element: ImageElement;
+  element: CroppableImage & { id: string; greyscale?: true };
   src: string;
   // The picture's own size; null falls back to the box's proportions.
   natural: { width: number; height: number } | null;
@@ -93,10 +93,7 @@ export function ImageCropOverlay({
   const finish = (apply: boolean) => {
     if (apply) {
       const result = cropSessionResult(element, session);
-      if (result) {
-        onApply(result);
-        track('Element', 'Changed', 'ImageCrop');
-      }
+      if (result) onApply(result);
     }
     endImageCrop();
   };

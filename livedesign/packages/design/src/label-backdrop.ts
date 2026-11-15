@@ -8,7 +8,7 @@ import type { BoxedElement, Element } from './index';
 
 export { LABEL_BACKDROP_CONTRAST } from '@liveworkspace/model-core/label-backdrop';
 
-export const { labelBackdrops, withReadableLabelInks } = labelInks<Element>({
+export const { labelBackdrops, withReadableLabelInks, backdropBehind } = labelInks<Element>({
   canvasSurface,
   contrastRatio,
   reachContrast,

@@ -96,6 +96,8 @@ import type { Element } from './element-union';
 
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
+// Picture crop, mask and greyscale (docs/specs/009-elements/picture-crop-and-mask.md), shared with livedocuments.
+export * from '@liveworkspace/element-model/image-frame';
 export * from './accent-edge';
 export * from './card';
 export * from './chip';

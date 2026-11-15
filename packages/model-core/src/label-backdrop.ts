@@ -26,6 +26,7 @@ const LABEL_GRID_PX = 512;
 const LABEL_GRID_MAX_CELLS = 4096;
 
 const HEX = /^#[0-9a-f]{6}$/i;
+const NONE: readonly number[] = [];
 
 type Box = {
   type: string;
@@ -70,8 +71,9 @@ type Backdrop = { ink: string; behind: string };
  *  every label (4,000 sunk labels: 115 ms of walking uncached). Cleared whole when full; safe range 64..4096. */
 const READABLE_INK_CACHE_SIZE = 512;
 
-/** The label lookup bound to one product's colours: labelBackdrops (what each label is read against) and
- *  withReadableLabelInks (a redraw's labels lifted off what they sank into). Each binding keeps its own small cache of
+/** The label lookup bound to one product's colours: labelBackdrops (what each label is read against),
+ *  withReadableLabelInks (a redraw's labels lifted off what they sank into) and backdropBehind (what any box is read
+ *  against, on the same grid). Each binding keeps its own small cache of
  *  walked inks. */
 export function labelInks<E extends { id: string; type: string }>(colours: LabelInkColours<E>) {
   const { canvasSurface, contrastRatio, defaultFillColor, defaultTextColor, reachContrast } =
@@ -110,10 +112,17 @@ export function labelInks<E extends { id: string; type: string }>(colours: Label
     return out;
   }
 
-  function backdropsOf(elements: readonly E[], canvas: string): Map<number, Backdrop> {
-    const surface = canvasSurface(canvas);
+  /** Fill panels by grid cell, in paint order, for one board on one surface: what every backdrop lookup on that board
+   *  reads. Built once per board and surface and shared by every pass that asks (the label lookup, and the ink marks'
+   *  backdropBehind), so a redraw that reads the same board twice buckets it once. */
+  type Grid = { boxes: readonly Box[]; cells: Map<string, number[]>; everywhere: number[] };
+  const GRIDS = new WeakMap<readonly E[], Map<Surface, Grid>>();
+
+  function gridOf(elements: readonly E[], surface: Surface): Grid {
+    let bySurface = GRIDS.get(elements);
+    const known = bySurface?.get(surface);
+    if (known) return known;
     const boxes = elements.map(boxOf);
-    // Panels by grid cell, in paint order.
     const cells = new Map<string, number[]>();
     const everywhere: number[] = [];
     boxes.forEach((b, j) => {
@@ -134,9 +143,56 @@ export function labelInks<E extends { id: string; type: string }>(colours: Label
           else cells.set(key, [j]);
         }
     });
+    const grid = { boxes, cells, everywhere };
+    if (!bySurface) GRIDS.set(elements, (bySurface = new Map<Surface, Grid>()));
+    bySurface.set(surface, grid);
+    return grid;
+  }
 
+  /** The colour drawn under `b`'s centre by the panels painted before index `before` that are larger than it (a
+   *  translucent one mixed over what is under it), else the canvas. */
+  function behindOn(grid: Grid, surface: Surface, canvas: string, b: Box, before: number): string {
+    const { boxes, cells, everywhere } = grid;
+    const c = centreOf(b);
+    const inCell =
+      cells.get(`${Math.floor(c.x / LABEL_GRID_PX)},${Math.floor(c.y / LABEL_GRID_PX)}`) ?? NONE;
+    // Panels painted before, topmost first. Both lists are in paint order, so each is read up to `before` and no
+    // further, with no copy of either: this runs once per label and per ink mark on every redraw.
+    const under: number[] = [];
+    const take = (list: readonly number[]) => {
+      for (const j of list) {
+        if (j >= before) break;
+        const p = boxes[j]!;
+        if (
+          c.x > num(p.x) &&
+          c.x < num(p.x) + num(p.width) &&
+          c.y > num(p.y) &&
+          c.y < num(p.y) + num(p.height) &&
+          area(p) > area(b)
+        )
+          under.push(j);
+      }
+    };
+    take(inCell);
+    take(everywhere);
+    if (everywhere.length > 0) under.sort((p, q) => q - p);
+    else under.reverse();
+    const behind = (k: number): string => {
+      const j = under[k];
+      if (j === undefined) return canvas;
+      const p = boxes[j]!;
+      const fill = fillOf(p, surface)!;
+      const opacity = typeof p.opacity === 'number' ? p.opacity : 1;
+      return opacity >= 1 ? fill : mixHex(fill, behind(k + 1), opacity);
+    };
+    return behind(0);
+  }
+
+  function backdropsOf(elements: readonly E[], canvas: string): Map<number, Backdrop> {
+    const surface = canvasSurface(canvas);
+    const grid = gridOf(elements, surface);
     const out = new Map<number, Backdrop>();
-    boxes.forEach((b, i) => {
+    grid.boxes.forEach((b, i) => {
       if (!isLabel(b)) return;
       const ink = inkOf(b, surface);
       if (!ink) return;
@@ -147,35 +203,25 @@ export function labelInks<E extends { id: string; type: string }>(colours: Label
           return;
         }
       }
-      const c = centreOf(b);
-      const inCell =
-        cells.get(`${Math.floor(c.x / LABEL_GRID_PX)},${Math.floor(c.y / LABEL_GRID_PX)}`) ?? [];
-      // Panels painted before the label, topmost first.
-      const under = [...inCell, ...everywhere]
-        .filter((j) => j < i)
-        .sort((p, q) => q - p)
-        .filter((j) => {
-          const p = boxes[j]!;
-          return (
-            c.x > num(p.x) &&
-            c.x < num(p.x) + num(p.width) &&
-            c.y > num(p.y) &&
-            c.y < num(p.y) + num(p.height) &&
-            area(p) > area(b)
-          );
-        });
-      const behind = (k: number): string => {
-        const j = under[k];
-        if (j === undefined) return canvas;
-        const p = boxes[j]!;
-        const fill = fillOf(p, surface)!;
-        const opacity = typeof p.opacity === 'number' ? p.opacity : 1;
-        return opacity >= 1 ? fill : mixHex(fill, behind(k + 1), opacity);
-      };
-      const backdrop = behind(0);
+      const backdrop = behindOn(grid, surface, canvas, b, i);
       if (HEX.test(backdrop)) out.set(i, { ink, behind: backdrop });
     });
     return out;
+  }
+
+  /** What is drawn behind a box of `box`'s size at its place on `canvas`, as if it were painted straight after element
+   *  `after` of `elements` (so that element, the same size, is never its own backdrop): the topmost larger panel under
+   *  its centre, else the canvas. Null when that is not a hex colour. Reads the same grid as labelBackdrops on that
+   *  board, built once per board and surface. */
+  function backdropBehind(
+    elements: readonly E[],
+    canvas: string,
+    box: { x?: number; y?: number; width?: number; height?: number },
+    after: number,
+  ): string | null {
+    const surface = canvasSurface(canvas);
+    const backdrop = behindOn(gridOf(elements, surface), surface, canvas, box as Box, after + 1);
+    return HEX.test(backdrop) ? backdrop : null;
   }
 
   // The ink walked in lightness to the floor; where a saturated hue cannot get there, black or white, whichever reads.
@@ -254,5 +300,5 @@ export function labelInks<E extends { id: string; type: string }>(colours: Label
     return out ?? after;
   }
 
-  return { labelBackdrops, withReadableLabelInks };
+  return { labelBackdrops, withReadableLabelInks, backdropBehind };
 }

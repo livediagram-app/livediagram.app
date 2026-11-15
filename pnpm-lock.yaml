@@ -8140,6 +8140,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../model-core
+      '@liveworkspace/page-background':
+        specifier: workspace:*
+        version: link:../page-background
       '@liveworkspace/settings-ui':
         specifier: workspace:^
         version: link:../settings-ui

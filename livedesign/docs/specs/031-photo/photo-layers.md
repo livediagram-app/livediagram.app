@@ -107,7 +107,9 @@ Hovering a mode in the picker previews it on the photo.
 The Photo panel's **Layers** tab ([Photo pages](photo-pages.md) "The Photo panel"):
 
 - **Over the list**, a card for the active layer: **Blend** (a button showing the mode as a swatch the engine draws,
-  opening the modes in their families, each with its swatch; pointing at one previews it on the photo), **Opacity**
+  opening the modes in their families, each with its swatch; pointing at one previews it on the photo; on a phone,
+  where the list is taller than the screen, it is held inside the screen and scrolls, so Normal to Colour Burn stay in
+  reach), **Opacity**
   (the shared slider row: its value typed straight in, the track filled to it; the number keys 1 to 0 set 10% to
   100% while a non-painting tool is in hand), and **Lock** (a segmented group of four icon toggles: Transparency,
   Pixels, Position, All).
