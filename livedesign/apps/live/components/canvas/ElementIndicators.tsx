@@ -26,9 +26,14 @@ import {
   TOP_BACKING_PAD_PX,
   FOOTER_PAD_PX,
   FOOTER_ROW_PX,
-  type IndicatorItem,
   type IndicatorKind,
 } from '@liveworkspace/workbench/components/canvas/indicator-items';
+import type { ScreenIndicatorItem } from '@/components/canvas/useElementIndicators';
+import {
+  BackLinkGlyph,
+  BrokenScreenLinkGlyph,
+  ScreenLinkGlyph,
+} from '@/components/canvas/screen-link-glyphs';
 
 // A corner this round or rounder gets a fully round pip; sharper ones a softly squared pip.
 const ROUND_PIP_FROM_PX = 10;
@@ -50,6 +55,15 @@ const GLYPHS: Record<IndicatorKind, typeof NoteIcon> = {
   comment: CommentIcon,
 };
 
+// A screen link's marker (docs/specs/007-editor/wireframe-pages.md "Setting a link") draws the screen glyphs in place
+// of the link's chain; a broken one is warning red at full strength, so it reads at rest and never as a quiet cue.
+const SCREEN_GLYPHS: Record<NonNullable<ScreenIndicatorItem['screen']>, typeof NoteIcon> = {
+  linked: ScreenLinkGlyph,
+  back: BackLinkGlyph,
+  broken: BrokenScreenLinkGlyph,
+};
+const BROKEN_TONE = 'text-rose-600 opacity-100 dark:text-rose-400';
+
 export function ElementIndicators({
   element,
   items,
@@ -59,7 +73,7 @@ export function ElementIndicators({
   selected,
 }: {
   element: BoxedElement;
-  items: IndicatorItem[];
+  items: ScreenIndicatorItem[];
   // Where the cluster goes, from useIndicatorLayout (the content reads it too).
   placed: IndicatorLayout;
   // The element's drawn corner radius, which the outline and the pip follow.
@@ -124,11 +138,11 @@ function IndicatorButton({
   size,
   footer,
 }: {
-  item: IndicatorItem;
+  item: ScreenIndicatorItem;
   size: number;
   footer?: 'labelled' | 'compact';
 }) {
-  const Glyph = GLYPHS[item.kind];
+  const Glyph = item.screen ? SCREEN_GLYPHS[item.screen] : GLYPHS[item.kind];
   const extra = item.dataAttr ? { [item.dataAttr]: '' } : {};
   const lead =
     footer && item.assignee ? (
@@ -154,7 +168,7 @@ function IndicatorButton({
       }}
       className={`flex items-center rounded transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-current ${
         footer ? 'h-5 gap-1' : 'h-5 min-w-5 justify-center gap-0.5 px-[3px]'
-      } ${TONE}`}
+      } ${item.screen === 'broken' ? BROKEN_TONE : TONE}`}
       {...extra}
     >
       {lead}

@@ -287,3 +287,31 @@ describe('ElementIndicators', () => {
     expect(container.querySelector('[data-indicators="pip"]')!.className).toContain('rounded-md');
   });
 });
+
+// docs/specs/007-editor/wireframe-pages.md "Setting a link": a screen link's marker in its state.
+describe('ElementIndicators screen markers', () => {
+  const marker = (screen: 'linked' | 'back' | 'broken', onClick = vi.fn()) => ({
+    kind: 'link' as const,
+    screen,
+    label: screen === 'broken' ? 'Broken screen link' : 'Go to screen',
+    word: 'Screen',
+    onClick,
+    hoverCard: { title: 'Screen link', description: 'Goes to Checkout' },
+  });
+
+  it('draws a broken marker in warning red at full strength, a linked one quiet', () => {
+    const onClick = vi.fn();
+    draw(shape('square', 260, 160), {}, [marker('broken', onClick), marker('linked')]);
+    const broken = screen.getByRole('button', { name: 'Broken screen link' });
+    expect(broken.className).toContain('text-rose-600');
+    expect(broken.className).toContain('opacity-100');
+    expect(screen.getByRole('button', { name: 'Go to screen' }).className).toContain('opacity-50');
+    fireEvent.click(broken);
+    expect(onClick).toHaveBeenCalled();
+  });
+
+  it('draws a back link marker', () => {
+    draw(shape('square', 260, 160), {}, [marker('back')]);
+    expect(screen.getByRole('button', { name: 'Go to screen' }).querySelector('svg')).toBeTruthy();
+  });
+});

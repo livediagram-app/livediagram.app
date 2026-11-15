@@ -432,6 +432,15 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             }}
             onBeginDrag={onBeginDrag}
             pages={props.pagesMode?.pages}
+            screenLink={
+              props.canLinkScreens && props.onLinkScreen && props.onPickScreenLink
+                ? {
+                    canLink: props.canLinkScreens,
+                    onLink: props.onLinkScreen,
+                    onPick: props.onPickScreenLink,
+                  }
+                : undefined
+            }
           />
         </SelectionGripsLayer>
       </SelectionGripsContext.Provider>

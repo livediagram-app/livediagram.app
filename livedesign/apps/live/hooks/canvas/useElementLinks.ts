@@ -15,6 +15,7 @@
 import { useState } from 'react';
 import { type Element, type ElementLink, type Tab } from '@livedesign/design';
 import { apiUnfurl } from '@/lib/api-client';
+import { relinkToScreen } from '@/lib/screen-link-choices';
 import { isSafeFollowUrl } from '@liveworkspace/workbench/lib/url-safety';
 import { track } from '@/lib/telemetry';
 
@@ -33,6 +34,9 @@ type ElementLinksDeps = {
   // Full page-load navigation to another design (for design links).
   openDesign: (id: string) => void;
 };
+
+// The link picker's modes; `screen` is a wireframe tab's (docs/specs/007-editor/wireframe-pages.md "Setting a link").
+export type LinkPickerMode = 'url' | 'tab' | 'design' | 'screen';
 
 export function useElementLinks(deps: ElementLinksDeps) {
   const {
@@ -54,11 +58,9 @@ export function useElementLinks(deps: ElementLinksDeps) {
   // Which tab the link modal should open on (webpage / tab / design), set by
   // the context menu's split Link entries. null = let the dialog pick its own
   // default (the existing link's kind, else webpage).
-  const [linkPickerInitialMode, setLinkPickerInitialMode] = useState<
-    'url' | 'tab' | 'design' | null
-  >(null);
+  const [linkPickerInitialMode, setLinkPickerInitialMode] = useState<LinkPickerMode | null>(null);
   // Open the link picker for an element, optionally pre-selecting a mode.
-  const openLinkPicker = (elementId: string, mode?: 'url' | 'tab' | 'design') => {
+  const openLinkPicker = (elementId: string, mode?: LinkPickerMode) => {
     setLinkPickerInitialMode(mode ?? null);
     setLinkPickerOpenForId(elementId);
   };
@@ -116,6 +118,17 @@ export function useElementLinks(deps: ElementLinksDeps) {
     }
   };
 
+  // The link handle's drop (docs/specs/007-editor/wireframe-pages.md "Setting a link"): that element alone takes a
+  // link to the screen, keeping its transition when it already had a screen link. History-committed.
+  const linkElementToScreen = (elementId: string, pageId: string) => {
+    commit((els) =>
+      els.map((el) =>
+        el.id === elementId ? { ...el, link: relinkToScreen(el.link, pageId) } : el,
+      ),
+    );
+    track('Element', 'Linked', 'Screen');
+  };
+
   const followLink = (link: ElementLink) => {
     // A screen link is followed in Prototype mode, never in the editor
     // (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes").
@@ -154,6 +167,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
     linkPickerInitialMode,
     openLinkPicker,
     applyElementLink,
+    linkElementToScreen,
     followLink,
   };
 }
