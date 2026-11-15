@@ -2055,6 +2055,17 @@ export const articles: Article[] = [
     categorySlug: 'pages/wireframe-pages',
     parentSlug: 'wireframe-pages',
   },
+  {
+    slug: 'prototypes',
+    title: 'Clickable Prototypes',
+    description:
+      'Link screens together, click through them in Prototype mode, share a prototype link, and see every link in the Flow view.',
+    keywords:
+      'prototype prototypes clickable click through walk through walkthrough link links linking hotspot hotspots screen screens flow flows flow view arrows map user journey navigation transition transitions slide dissolve instant back button broken link handle play preview demo test usability share link phone mobile figma invision marvel',
+    category: 'Pages',
+    categorySlug: 'pages/wireframe-pages',
+    parentSlug: 'wireframe-pages',
+  },
 
   // ---- Sub-articles: Layout Cleanup ----
   {

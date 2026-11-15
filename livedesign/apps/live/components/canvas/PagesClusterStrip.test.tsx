@@ -25,6 +25,11 @@ describe('the pages strip', () => {
     expect(screen.queryByRole('button', { name: /Slides/ })).toBeNull();
   });
 
+  it('holds the Flow view switch alone when Contents is docked (docs/specs/007-editor/wireframe-pages.md "Flow view")', () => {
+    render(<PagesClusterStrip contents={null} flow={<button type="button">Flow View</button>} />);
+    expect(screen.getByRole('button', { name: 'Flow View' })).toBeTruthy();
+  });
+
   it('is absent with nothing to hold', () => {
     const { container } = render(<PagesClusterStrip contents={null} />);
     expect(container.innerHTML).toBe('');

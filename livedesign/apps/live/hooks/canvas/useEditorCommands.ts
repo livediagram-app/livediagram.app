@@ -24,6 +24,7 @@ import {
 } from '@/lib/editor-commands';
 import type { CommandSearchItem } from '@/lib/search';
 import { track } from '@/lib/telemetry';
+import { toggleFlowView, useFlowView } from '@/lib/flow-view-store';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // What the catalogue is built with: which commands exist, and their words, depend on the context
@@ -54,6 +55,7 @@ const INERT_HANDLERS: CommandHandlers = {
   undo: noop,
   redo: noop,
   toggleZen: noop,
+  toggleFlowView: noop,
   fitToScreen: noop,
   autoLayout: noop,
   autoAlign: noop,
@@ -157,6 +159,7 @@ export function useEditorCommands(open: boolean): {
   const tabLocked = activeTab.locked === true;
   // One kind a tab: its first page says whether it is a wireframe tab.
   const wireframeTab = pagesMode?.pages[0]?.kind === 'wireframe';
+  const flowView = useFlowView();
   const cmdCtx = useMemo<CommandContext>(
     () => ({
       isReadOnly,
@@ -183,6 +186,7 @@ export function useEditorCommands(open: boolean): {
       isMobile,
       tabLocked,
       wireframeTab,
+      flowView,
     }),
     [
       isReadOnly,
@@ -206,6 +210,7 @@ export function useEditorCommands(open: boolean): {
       isMobile,
       tabLocked,
       wireframeTab,
+      flowView,
     ],
   );
 
@@ -268,6 +273,8 @@ export function useEditorCommands(open: boolean): {
     undo,
     redo,
     toggleZen: toggleZenMode,
+    // The store tracks the flip itself (UI · Toggled · FlowViewOn / FlowViewOff).
+    toggleFlowView,
     fitToScreen,
     autoLayout: autoLayoutTab,
     autoAlign: autoAlignTab,

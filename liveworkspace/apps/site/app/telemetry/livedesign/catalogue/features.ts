@@ -725,12 +725,22 @@ export const EXPLORER_VIEW = chart(
   { typeIn: (type) => (type ?? '').startsWith('ExplorerView'), rising: 'neutral' },
 );
 
+// The Flow view on a wireframe tab (livedesign/docs/specs/007-editor/wireframe-pages.md "Flow view"): the prototype's
+// arrows drawn on the canvas, turned on or off.
+export const FLOW_VIEW = chart(
+  'UI',
+  'Toggled',
+  'Flow View',
+  'The Flow view, arrows from linked elements to their screens on a wireframe tab, turned on or off.',
+  { types: ['FlowViewOn', 'FlowViewOff'], rising: 'neutral' },
+);
+
 export const EDITOR_CHROME: MetricStack = {
   stack: true,
   title: 'Editor Chrome',
   blurb:
-    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer view.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
+    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer view, the Flow view.',
+  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW, FLOW_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.

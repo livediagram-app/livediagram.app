@@ -67,6 +67,9 @@ export type CommandContext = {
   workbench?: boolean;
   // The tab's pages are wireframe pages, so Inspect is offered (docs/specs/007-editor/wireframe-pages.md "Inspect").
   wireframeTab?: boolean;
+  // The Flow view is on, so its command reads Hide rather than Show (docs/specs/007-editor/wireframe-pages.md
+  // "Flow view").
+  flowView?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
   // (offering "Hand tool" while holding the hand does nothing).
   canvasTool: string;
@@ -108,6 +111,8 @@ export type CommandHandlers = {
   undo: () => void;
   redo: () => void;
   toggleZen: () => void;
+  // Turns the Flow view on or off (docs/specs/007-editor/wireframe-pages.md "Flow view").
+  toggleFlowView: () => void;
   fitToScreen: () => void;
   autoLayout: (choice?: AutoLayoutChoice) => void;
   autoAlign: () => void;
@@ -239,6 +244,18 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.openCollaborators,
     },
     ...toolCommands(ctx, h),
+    // Every role's, on a wireframe tab: it draws over the canvas and writes nothing.
+    ...(ctx.wireframeTab
+      ? [
+          {
+            id: 'flow-view',
+            name: ctx.flowView ? 'Hide Flow View' : 'Show Flow View',
+            keywords:
+              'flow view arrows links prototype screens map journey paths connections hotspots',
+            run: h.toggleFlowView,
+          },
+        ]
+      : []),
   ];
   if (ctx.isReadOnly) return viewSafe;
 

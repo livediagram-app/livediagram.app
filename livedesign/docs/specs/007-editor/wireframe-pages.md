@@ -341,9 +341,10 @@ inspect it." With one, under the element's name (its kind, and its words when it
 
 ## Clickable prototypes
 
-Status: building (Work Tracker 136). The stored links, their checks, how agents read and write them, setting
-them in the editor (the Screen mode, the link handle and the link marker), Prototype mode and its share link are
-built; the Flow view follows.
+Status: built (Work Tracker 136): the stored links, their checks, how agents read and write them, setting them in
+the editor (the Screen mode, the link handle and the link marker), Prototype mode and its share link, and the Flow
+view. The help centre's **Clickable Prototypes** article (under Wireframe Pages,
+`apps/help/app/pages/wireframe-pages/prototypes/page.mdx`) walks through them.
 
 A wireframe tab's screens can be clicked through: any element on a wireframe page can link to another screen of
 the same tab, and **Prototype mode** plays the screens one at a time, a press on a linked element going to its
@@ -446,9 +447,35 @@ exporting. Linking the element again, or clearing its link, mends it.
 
 ### Flow view
 
-**Flow view**, a toggle on a wireframe tab, draws an arrow from each linked element to the screen it goes to
-(a back link draws none; a broken link draws a short dashed stub marked broken). The arrows are canvas chrome,
-never elements, and are never exported or sent to anyone.
+**Flow view** draws the prototype's map on the canvas: an arrow from each linked element to the screen it goes to,
+so a team sees every path through the screens at once while it edits them.
+
+- **Turning it on**: **Flow** in the bottom-right cluster, joined after Inspect in the pages strip while the tab is a
+  wireframe tab, for every role and on a phone. It is a toggle: pressed while the view is on (its accessible name
+  **Flow View**, its hover card "Draw an arrow from each linked element to the screen it goes to."). The command
+  palette offers it too (**Show Flow View** / **Hide Flow View**). It stays on in this browser tab until turned off,
+  never remembered past a reload and never sent to anyone; on a tab that is not a wireframe tab, and in Zen, nothing
+  is drawn, and the arrows come back on returning while it is on.
+- **What it draws**: each linked element's box (cut to its screen) outlined in the brand colour over a soft fill, and:
+  - a **screen link** to the screen beside it (no screen between them): a curve from the side of the box facing that
+    screen across the gap, entering the screen's near edge at the element's height (kept 24 px inside the screen's
+    top and bottom), an arrowhead at the screen;
+  - a screen link to a screen further along: a line out of the box's facing side to the gap beside its screen, up
+    that gap (on its own screen's side of the gap's middle, so arcs leaving the two screens either side of one gap
+    never share its column), over the row of screens (clear of their labels, higher the more screens it passes, and a
+    lane higher again, up to four, where an earlier arc already runs over any of the same screens, so arcs never lie
+    on one another short of a crowd of them over one stretch) and down onto the target's top edge near its side, with rounded corners and an arrowhead pointing down
+    into it, so it never crosses a screen it passes;
+  - a **back link**: the outline and a small **Back** tag beside the box, no arrow (where it goes depends on the walk);
+  - a **broken** link: the outline dashed and in the warning red (dashed too, since the brand is a red), a short
+    dashed stub out of the box's right side and a **Broken** tag at its end, in the same red, never an arrow to
+    anywhere;
+  - a link to the screen the element is on: the outline alone (it goes nowhere).
+- The strokes are 2 px at every zoom, edged with the canvas colour so they read over busy screens, and the tags hold
+  their size. Only visible elements count (not those on a hidden layer), and only those on a screen.
+- The arrows are canvas chrome, never elements: they take no presses (everything under them works as usual), follow
+  every edit as it lands (a moved element, a renamed or deleted screen), and are never part of an export, a thumbnail
+  or what anyone else sees.
 
 ## Share roles
 
