@@ -16,6 +16,10 @@ const TEAM: readonly [string, string][] = [
   ['Chris Wong', 'Growth'],
   ['Leo Grant', 'Engineering'],
   ['Ava Brooks', 'Design'],
+  ['Noah Kim', 'Sales'],
+  ['Ella Park', 'Engineering'],
+  ['Omar Haddad', 'Finance'],
+  ['Grace Liu', 'Research'],
 ];
 
 function person(u: Ui, x: number, y: number, w: number, i: number) {

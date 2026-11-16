@@ -227,18 +227,20 @@ export const videoPlayer = responsive(
   },
 );
 
-const EPISODES: readonly [string, string][] = [
-  ['142 · Designing in the Open', '48 min'],
-  ['141 · The Quiet Launch', '52 min'],
-  ['140 · Tools We Stopped Using', '39 min'],
-  ['139 · Hiring Your First Designer', '61 min'],
-  ['138 · Saying No to Features', '44 min'],
+// Weekly episodes, newest first, each with its release date (a date written out, never worked out, so no row reads
+// "Oct -2").
+const EPISODES: readonly [string, string, string][] = [
+  ['142 · Designing in the Open', 'Oct 19', '48 min'],
+  ['141 · The Quiet Launch', 'Oct 12', '52 min'],
+  ['140 · Tools We Stopped Using', 'Oct 5', '39 min'],
+  ['139 · Hiring Your First Designer', 'Sep 28', '61 min'],
+  ['138 · Saying No to Features', 'Sep 21', '44 min'],
 ];
 
 function episodeRow(u: Ui, x: number, y: number, w: number, i: number) {
-  const [title, len] = EPISODES[i % EPISODES.length]!;
+  const [title, date, len] = EPISODES[i % EPISODES.length]!;
   u.text(x, y, w - 60, 22, title, { size: 15, bold: true, color: WF.ink });
-  u.text(x, y + 22, w - 60, 18, `Oct ${19 - i * 7} · ${len}`, { size: 12, color: WF.muted });
+  u.text(x, y + 22, w - 60, 18, `${date} · ${len}`, { size: 12, color: WF.muted });
   u.els.push(
     u.k.shape('circle', x + w - 40, y + 2, 36, 36, {
       label: '',
