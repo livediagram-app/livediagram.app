@@ -59,6 +59,10 @@ Either way, anyone who can send from an allowed address can add cards to the boa
 
 Nothing else of the message is kept: no other recipients, no headers.
 
+## Act on Email Cards with Automations
+
+Each email card starts the plan's rules once, as any new card does. To act only on cards that came in by email, make a rule on the **Email Received** trigger: pick the board, and optionally who it's from (an address or a whole domain), then label it, assign it or reply in a comment with the sender's address (**From Email**). See [Automations](/help/plan/automations/#start-a-rule-from-an-email).
+
 ## Spam and Forged Mail
 
 Every message must pass the sender's email checks (SPF, DKIM and DMARC). One that fails is dropped without a reply, so a forged sender learns nothing, and the address's line counts it as dropped.
