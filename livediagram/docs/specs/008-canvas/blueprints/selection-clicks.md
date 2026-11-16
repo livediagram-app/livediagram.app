@@ -72,6 +72,17 @@ element already selected, so nothing is settled.
 **Unchanged**: the whiteboard's Shift marquee (`useCanvasSurfaceGestures`, `useCanvasPanAndMarquee`)
 claims Shift presses in the capture phase before any element sees them.
 
+**Laser press** (`useCanvasSurfaceGestures`, `CanvasWorldLayer`, `useEditorTools`): Laser joins Spotlight and
+isometric in making the canvas layer inert (`pointer-events-none` and `data-elements-inert`), so a press on an
+element body reaches `<main>`, where `routePanOrMarquee` pans a mouse or pen drag and leaves a finger to draw the
+laser. The pieces that keep their own `pointer-events` (an arrow's `stroke` hit band, an arrow label, a Selection
+Mode chip) are claimed in the capture phase: `isLaserElementPress` (the tool is `laser`, the press lands inside the
+wrapper, not the middle button, and not a right press on a `[data-mode-button-chip]`) stops it and, for a primary
+press by anything but a finger, starts the pan (`startPan`). `onContextMenuCapture` swallows the context menu of the
+same presses, so an arrow's menu never selects it. `pickCanvasTool('laser')` clears the selection, as Spotlight does.
+The right press on a mode chip (`isModeChipRightPress`) is exempt from Spotlight's capture handlers too, so the chip's
+menu opens there instead of the light shrinking (mode-button.md).
+
 **Right-click or long-press on the empty canvas** (`useCanvasSurfaceGestures`): both open through
 `openCanvasMenu(x, y)` = `onDeselect()`, then `onCanvasContextMenu?.(x, y)`. The right-click opens on
 release through `useRightClickRelease` (Windows, macOS, X11 and the macOS Ctrl+click orders alike, the
@@ -128,6 +139,7 @@ reaches the canvas (the element stops it), so the element menu keeps its own sel
 | Non-member press drops the multi-selection     | `apps/editor/hooks/canvas/useEditorDrag.select-press.test.tsx`             |
 | Settling, arrows, paint mode, inert            | `../packages/workbench/src/hooks/canvas/useCanvasSelectHandlers.test.tsx`  |
 | Right-click and long-press on the empty canvas | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.test.tsx`               |
+| Laser presses on elements pan, never select    | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.laser.test.tsx`         |
 | End to end in a browser                        | `apps/editor/e2e/select-clicks.spec.ts`                                    |
 
 ## Constants and configuration

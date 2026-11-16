@@ -172,7 +172,9 @@ Brushes with the brush options (but colour):
 ## Text
 
 **Text** (T): a press makes a text layer at the press, its caret ready; a drag makes one with a box (wrapping at its
-width). A press on an existing text layer edits it; a drag on it moves it (one edit). Typing writes it live on the photo, in the options flyout's
+width). The caret is in the layer's field as the press ends, so the keys typed next write the text and never reach
+the tool shortcuts; the edit lives as long as its field, and only the field going (focus moved on, the tool put
+down, the page left) ends it, never the field being mounted again (React's development double mount). A press on an existing text layer edits it; a drag on it moves it (one edit). Typing writes it live on the photo, in the options flyout's
 **Font** (the font catalogue), **Size**, **Weight**, **Italic**, **Colour**, **Align**, **Line Height**, **Tracking**
 changing the whole layer. Escape or a press outside ends the edit (one edit for the whole typing); Ctrl/Cmd+Enter
 too. An empty text layer is removed as the edit ends.

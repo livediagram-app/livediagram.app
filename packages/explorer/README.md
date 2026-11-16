@@ -159,11 +159,14 @@ An item's share links, each drawn as a pass: `client`, `item` (with `teamId?`), 
 - A new pass starts as an Editor's. It can be a Participant's or a Viewer's instead, open every tab or one, and last
   forever, a week, a month or six months. Create Pass copies it at once, says so, and rings the new pass for a moment.
 - The Passes list carries a count. Each pass can be copied, moved to another tab, or revoked after a confirmation.
-  An expiring pass counts down as the dialog stays open.
+  An expiring pass counts down as the dialog stays open, in whole days (a new 1-week pass reads 7d left, never 8d:
+  a few minutes over a whole day count as that day), then in hours for its last day and minutes for its last hour.
 - Where the host serves them, a pass offers Embed (its address or an iframe) and Live image (its address, Markdown or
   HTML, of any tab). The live image is hidden while a password is set, since an image can't send one.
 - Expired passes sit apart, with Extend and Delete.
-- Password Protection guards every link at once. Spaces around it are trimmed. Passes show a Password tag.
+- Password Protection guards every link at once. Spaces around it are trimmed. Passes show a Password tag. Password Set
+  (with Replace and Remove), the new password's field and the lock's reason sit inside the Password Protection card,
+  under a hairline, lined up with its words.
 - Show Me runs a short tour over the dialog. A guest sees "Sharing as" with their name in the footer.
 - A copy the browser refuses says so. Every refusal from the index is a note.
 - A pass's changes show at once. A refused one takes back only the fields it was still the newest change to, and a
@@ -172,7 +175,9 @@ An item's share links, each drawn as a pass: `client`, `item` (with `teamId?`), 
   section below Password Protection (`appSection`).
 
 Its look is livediagram's Share dialog from before the Explorer split (`dca5eae12^`), the same in every app:
-the `lg` panel with a scrolling body between a fixed header and footer, `DialogHeader` from `@liveworkspace/ui`,
+the `lg` panel with a scrolling body between a fixed header and footer, pinned near the top of the window rather than
+centred (`placement="top"`), so unfolding the role picker or adding a pass grows it downward and never moves what sits
+above, `DialogHeader` from `@liveworkspace/ui`,
 the one-card role picker that unfolds the three levels, the sliding Valid pill, hover cards on the pass controls,
 the revoke confirmation beside the bin, Password Protection as a settings card, and a status line that leads with a
 glyph (never a coloured dot). The words are each app's own (Share This Plan, only you can open this design).

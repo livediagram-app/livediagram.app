@@ -3,6 +3,7 @@
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
+import { takeDrawDoubleClick } from '@/components/canvas/draw-double-click';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/page-guard';
 import { useFillPress } from '@liveworkspace/workbench/hooks/canvas/useFillPress';
@@ -119,7 +120,11 @@ export function useCanvasDrawTools({
     pathTool.beginPathPress(e) ||
     beginPolygonPoint(e) ||
     beginPendingDrawGesture(e);
+  // A polygon or a path being drawn finishes on a double-click wherever it lands (draw-double-click.ts).
+  const finishDrawOnDoubleClick = (e: React.MouseEvent): boolean =>
+    takeDrawDoubleClick(e, handlePolygonDoubleClick, pathTool.handlePathDrawDoubleClick);
   return {
+    finishDrawOnDoubleClick,
     drawDrag,
     penPoints,
     penStroke,

@@ -99,7 +99,9 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
     `PhotoToolsRail.tsx` (the photo tools: `placement="strip"` in the palette strip, `"row"` on a phone), `PhotoColours.tsx`, `PhotoToolOptionsBody.tsx` (with `PhotoPhoneOptions.tsx` and `PhotoTransformOptions.tsx`), `PhotoBrushPresets.tsx`,
     `PhotoGradientField.tsx`, `PhotoTitleBar.tsx`, `PhotoPanel.tsx` with `PhotoPanelParts.tsx`,
     `PhotoLayersTab.tsx`, `PhotoLayerRow.tsx` (rows restack by the shared `useRowPointerDrag`), `PhotoBlendPicker.tsx`, `PhotoAdjustTab.tsx`,
-    `AdjustmentEditor.tsx`, `CurvesEditor.tsx`, `PhotoEffectsEditor.tsx`, `PhotoTextEditor.tsx`, the dialogs
+    `AdjustmentEditor.tsx`, `CurvesEditor.tsx`, `PhotoEffectsEditor.tsx`, `PhotoTextEditor.tsx` (its edit begun once per field and ended a
+    microtask after the field unmounts, unless the same field mounts again, so React's development double mount never
+    ends and removes a new empty layer), the dialogs
     (`PhotoDialogs.tsx`, `PhotoSizeDialogs.tsx`, `PhotoEditDialogs.tsx`, `PhotoApplyDialogs.tsx`,
     `SelectAndMaskDialog.tsx`, `PlacePictureDialog.tsx`, `FilterPreview.tsx`, `MakeSizesDialog.tsx`), `PhotoExportPanel.tsx`,
     `StartPhotoCard.tsx`, `RasterThumb.tsx`, and the hooks `usePhotoShortcuts.ts`, `usePhotoHistogram.ts`,

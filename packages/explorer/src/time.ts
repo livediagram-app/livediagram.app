@@ -26,16 +26,22 @@ export function relativeSince(at: number, now: number): string {
   );
 }
 
+export const DAY_MS = 24 * 60 * 60 * 1000;
+
+// How far past a whole number of days a countdown still reads as that number. A pass just made reads a little over its
+// length: the shared clock below lags by up to a tick, and the index's clock can run ahead of this one. Without it, a
+// new 1-week pass read "8d left".
+const DAY_SLACK_MS = 10 * 60_000;
+
+/** What is left of a pass, compactly: minutes in its last hour, hours in its last day, whole days before that. */
 export function timeLeftCompact(deltaMs: number): string {
   if (deltaMs <= 0) return 'expired';
   const minutes = Math.ceil(deltaMs / 60_000);
   if (minutes < 60) return `${minutes}m left`;
   const hours = Math.ceil(minutes / 60);
   if (hours < 24) return `${hours}h left`;
-  return `${Math.ceil(hours / 24)}d left`;
+  return `${Math.max(1, Math.ceil((deltaMs - DAY_SLACK_MS) / DAY_MS))}d left`;
 }
-
-export const DAY_MS = 24 * 60 * 60 * 1000;
 
 const TICK_MS = 30_000;
 const listeners = new Set<() => void>();

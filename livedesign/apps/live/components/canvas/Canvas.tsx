@@ -223,6 +223,7 @@ function CanvasView(props: CanvasProps) {
     polygonVertices,
     polygonCursor,
     handlePolygonDoubleClick,
+    finishDrawOnDoubleClick,
     pathTool,
     formatPagePress,
     offPage,
@@ -318,8 +319,12 @@ function CanvasView(props: CanvasProps) {
               if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
               surface.onSurfaceDoubleClick(e);
             }}
-            // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
-            onDoubleClickCapture={smallElementTap.onDoubleClickCapture}
+            // A polygon or path being drawn finishes on a double-click over anything (polygon-tool.md); else a finger's
+            // double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
+            onDoubleClickCapture={(e) => {
+              finishDrawOnDoubleClick(e);
+              if (!e.isPropagationStopped()) smallElementTap.onDoubleClickCapture(e);
+            }}
             // focus-visible ring only: pointer focus stays outline-free, but a
             // keyboard user Tabbing to the canvas sees where they landed.
             // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label

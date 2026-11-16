@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import { useMemo } from 'react';
 import { imageBackingInsetAttribute } from '@livediagram/document';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { elementsInertTool } from '@/lib/canvas-chrome';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
@@ -82,6 +83,7 @@ export function CanvasWorldLayer({
   drawDrag,
 }: CanvasWorldLayerProps) {
   const { canvasTool, pendingDraw, elements } = props;
+  const elementsInert = elementsInertTool(canvasTool);
   // Mind map (docs/specs/009-elements/mind-node.md): the growers the label editor and the "+" reach.
   const { onGrowMindNode, onAbandonMindNode } = props;
   const mindGrow = useMemo(
@@ -113,21 +115,22 @@ export function CanvasWorldLayer({
       // click vs pointerdown). Clicks then fall through to <main>, where the
       // capture handler turns them into grow / shrink, and middle-mouse or
       // held-Space still pans.
+      // Laser (same spec) is non-editing too: a mouse drag that starts on an element pans instead of
+      // moving it (Work Tracker 1040). The pieces with their own pointer-events (arrow hit bands, a
+      // Selection Mode chip) are claimed in useCanvasSurfaceGestures' capture phase.
       // Isometric view (docs/specs/008-canvas/isometric-view.md): like Spotlight, the layer goes
       // pointer-events-none so NO element kind can be selected / dragged,
       // it's a read-only view tool. Clicks fall through to <main>, where a
       // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
       className={`absolute inset-0 origin-center touch-none ${
-        canvasTool === 'spotlight' || canvasTool === 'isometric' ? 'pointer-events-none' : ''
+        elementsInert ? 'pointer-events-none' : ''
       } ${pendingDraw ? '' : cursorClass}`}
       // Scopes the [data-iso] CSS (globals.css): frames settle just under
       // the base plane while the camera orbits so they can't z-fight
       // (flicker) with the coplanar contents above them.
       data-iso={canvasTool === 'isometric' ? '' : undefined}
       // The same modes, said to the element plane's children, which take presses of their own (globals.css).
-      data-elements-inert={
-        canvasTool === 'spotlight' || canvasTool === 'isometric' ? '' : undefined
-      }
+      data-elements-inert={elementsInert ? '' : undefined}
       // A whiteboard pen draws wherever it presses, so nothing under it swaps
       // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
       data-pen-in-hand={

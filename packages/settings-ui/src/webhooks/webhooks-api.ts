@@ -260,6 +260,7 @@ const MESSAGES: Record<string, string> = {
   forbidden: 'Only people who can edit all of this document can manage its webhooks.',
   webhook_url_private:
     'That address is on a private or internal network. Use one the internet can reach.',
+  webhook_url_unresolved: 'We couldn’t find that address. Check the domain.',
   webhook_limit: 'A document can have up to 10 webhooks. Delete one to add another.',
   webhook_not_found: 'That webhook is no longer there. It may have changed elsewhere.',
   webhook_paused: 'Resume it to send a test.',
@@ -268,6 +269,16 @@ const MESSAGES: Record<string, string> = {
   unauthorized: 'You’ve been signed out. Sign in again to carry on.',
   offline: 'Couldn’t connect. Check your connection and try again.',
 };
+
+// The refusals that are about the address itself, said by its field rather than at the foot of the form.
+const ADDRESS_ERRORS = new Set([
+  'webhook_url_invalid',
+  'webhook_url_private',
+  'webhook_url_unresolved',
+]);
+
+/** Whether a refusal is the address's: its shape, a private network, or a host that doesn't resolve. */
+export const isAddressError = (error: string): boolean => ADDRESS_ERRORS.has(error);
 
 export function webhookError(error: string, kind: WebhookKind = 'json'): string {
   if (error === 'webhook_url_invalid') return URL_INVALID[kind];

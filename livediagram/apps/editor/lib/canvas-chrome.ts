@@ -40,6 +40,13 @@ export function computeDockAnchor(
   return { left, top: bottomY, arrowOffset };
 }
 
+// The tools that make the canvas layer pointer-inert, so no press selects, moves or edits an element
+// (docs/specs/008-canvas/canvas-and-palette.md): Spotlight and Laser are non-editing presenter modes, and
+// isometric view is navigation only. A press then lands on the canvas surface beneath.
+export function elementsInertTool(canvasTool: string): boolean {
+  return canvasTool === 'spotlight' || canvasTool === 'laser' || canvasTool === 'isometric';
+}
+
 // The Tailwind cursor class for the canvas surface, resolved from the
 // current gesture + tool state. Order matters: an in-progress gesture
 // (draw / pan / marquee) wins over the resting tool cursor, and holding
