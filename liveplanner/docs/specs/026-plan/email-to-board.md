@@ -93,6 +93,9 @@ made by no person:
 - **From email**: the card keeps the sender's address in its `fromEmail` field, and its panel's footer says
   **From email alice@example.com** with a mail glyph, beside Created by (which names the same address). Its history
   starts "Created this card from an email in <column>".
+- **Rules**: the card starts the plan's [Automations](automations.md) once, as any new card does: **Card Created**
+  rules hear it, and so do **[Email Received](automations.md#email-received)** rules, which hear only email cards,
+  narrowed by the board and by the sender (an address or a domain), and can write the sender as `{{from}}`.
 - Nothing else of the message is kept: no other header, no recipients, no message id, no HTML.
 
 ## Which mail is taken
