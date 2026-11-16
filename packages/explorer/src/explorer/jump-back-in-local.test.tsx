@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
 import { THIS_BROWSER_DRAG_MIME } from '../drag/drag';
-import { createFakeIndex, makeItem } from '../test/fakeClient';
+import { createFakeIndex, madeLater, makeItem } from '../test/fakeClient';
 import type { ThisBrowserItem } from '../this-browser';
 import { Explorer } from './Explorer';
 import type { ThisBrowserHost } from './ThisBrowser';
@@ -54,7 +54,10 @@ function dragOnto(source: Element, target: Element) {
   return dt;
 }
 
-function home(thisBrowser: Partial<ThisBrowserHost>, index = createFakeIndex()) {
+function home(
+  thisBrowser: Partial<ThisBrowserHost>,
+  index = createFakeIndex({ items: madeLater() }),
+) {
   render(
     <Explorer
       app="liveplanner"
@@ -76,7 +79,7 @@ function home(thisBrowser: Partial<ThisBrowserHost>, index = createFakeIndex()) 
   return index;
 }
 
-// Recent's card (New above it shows the same item too, with its own line).
+// Recent's card (New above it shows the items made later, so this one is in Recent: each item shows once).
 const card = async (id = 'local-1') => {
   const selector = `[data-home-section="recent"] [data-item-card="${id}"]`;
   await waitFor(() => expect(document.querySelector(selector)).toBeTruthy());
@@ -96,7 +99,12 @@ afterEach(() => localStorage.clear());
 
 describe("a This Browser card in Home's Recent", () => {
   it('is the same card as the index’s: its frame, a thumbnail area, its name and a line with the badge', async () => {
-    home({}, createFakeIndex({ items: [makeItem(1, { lastOpenedAt: Date.now() - 120_000 })] }));
+    home(
+      {},
+      createFakeIndex({
+        items: [makeItem(1, { lastOpenedAt: Date.now() - 120_000 }), ...madeLater()],
+      }),
+    );
     const mine = await card();
     const theirs = await card('item-1');
     const link = (el: HTMLElement) => el.querySelector('a[aria-label]') as HTMLElement;
@@ -190,7 +198,7 @@ describe('dragging a This Browser card', () => {
     try {
       const index = home(
         { syncHref: (item) => `/project/${item.id}?convert=sync&item=${item.id}` },
-        createFakeIndex({ folders: [specs] }),
+        createFakeIndex({ folders: [specs], items: madeLater() }),
       );
       dragOnto(await card(), await findRow('Specs'));
       const dialog = await screen.findByRole('dialog', {
@@ -209,7 +217,7 @@ describe('dragging a This Browser card', () => {
     // Once synced it is the index's, under the same id.
     const index = createFakeIndex({
       folders: [specs],
-      items: [makeItem(9, { id: 'local-1', lastOpenedAt: null })],
+      items: [makeItem(9, { id: 'local-1', lastOpenedAt: null }), ...madeLater()],
     });
     const sync = vi.fn(() => Promise.resolve());
     home({ sync }, index);
@@ -228,7 +236,7 @@ describe('dragging a This Browser card', () => {
   });
 
   it('says to sign in and sync it first where it can’t be synced', async () => {
-    const index = home({}, createFakeIndex({ folders: [specs] }));
+    const index = home({}, createFakeIndex({ folders: [specs], items: madeLater() }));
     dragOnto(await card(), await findRow('Specs'));
     expect(
       await screen.findByText(

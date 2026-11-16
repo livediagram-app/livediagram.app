@@ -41,6 +41,16 @@ export function makeItem(i: number, over: Partial<Item> = {}): Item {
   };
 }
 
+/**
+ * Items made after every other seeded one and never opened: what Home's New shows (four, by default). A test of Most
+ * Used and Recent seeds them so its own items are not in New, which each item shows in first (one-explorer.md "Each
+ * item shows once").
+ */
+export const madeLater = (count = 4): Item[] =>
+  Array.from({ length: count }, (_, k) =>
+    makeItem(900 + k, { createdAt: 9_000_000 + k, title: `Made ${k + 1}` }),
+  );
+
 export function makeEvent(
   i: number,
   over: Partial<ItemEvent> = {},

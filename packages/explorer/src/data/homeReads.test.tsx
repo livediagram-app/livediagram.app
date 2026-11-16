@@ -67,8 +67,8 @@ describe('Home’s requests', () => {
     const items = index.calls.find((c) => c.method === 'listItems')!.args[0];
     expect(items).toEqual({
       view: 'recent',
-      limit: 16,
-      used: 8,
+      limit: 20,
+      used: 12,
       mine: LIST_LIMIT_MAX,
       any: true,
       newest: 4,

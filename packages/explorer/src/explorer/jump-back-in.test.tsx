@@ -6,7 +6,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { IndexError } from '@liveworkspace/index-client';
 import { isMostUsed, jumpBackInLine, jumpBackInSet } from '../data/viewLists';
-import { createFakeIndex, makeItem } from '../test/fakeClient';
+import { createFakeIndex, madeLater, makeItem } from '../test/fakeClient';
 import { Explorer } from './Explorer';
 
 const opened = (i: number, extra = {}) => makeItem(i, { lastOpenedAt: 5_000_000 - i, ...extra });
@@ -95,6 +95,8 @@ describe('Home', () => {
       opened(3),
       opened(4),
       makeItem(5),
+      // New's four, so none of the above is in New.
+      ...madeLater(),
     ];
     const index = createFakeIndex({ items });
     renderHome(index);
@@ -115,8 +117,9 @@ describe('Home', () => {
     await waitFor(() => expect(index.count('listItems')).toBe(1));
     expect(index.calls.find((c) => c.method === 'listItems')!.args[0]).toMatchObject({
       view: 'recent',
-      used: 8,
-      limit: 16,
+      // New's four more of each than Home shows, so both still fill once New's leave them.
+      used: 12,
+      limit: 20,
     });
   });
 
@@ -151,7 +154,9 @@ describe('Home', () => {
 
   it('leaves out Recent, heading, See More and all, when Most Used holds everything opened', async () => {
     renderHome(
-      createFakeIndex({ items: [opened(1, { useOpens: 3 }), opened(2, { useOpens: 2 })] }),
+      createFakeIndex({
+        items: [opened(1, { useOpens: 3 }), opened(2, { useOpens: 2 }), ...madeLater()],
+      }),
     );
     await screen.findByRole('heading', { name: 'Most Used' });
     expect(section('recent')).toBeNull();
@@ -159,7 +164,7 @@ describe('Home', () => {
   });
 
   it('leaves out Most Used while nothing is most used', async () => {
-    renderHome(createFakeIndex({ items: [opened(1), opened(2)] }));
+    renderHome(createFakeIndex({ items: [opened(1), opened(2), ...madeLater()] }));
     await screen.findByRole('heading', { name: 'Recent' });
     expect(section('most-used')).toBeNull();
     expect(cards(section('recent')!)).toEqual(['Item 1', 'Item 2']);

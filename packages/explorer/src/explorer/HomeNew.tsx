@@ -33,7 +33,15 @@ export function mergeMade<T extends { createdAt: number }>(
   return [...made, ...local].sort((a, b) => b.createdAt - a.createdAt).slice(0, max);
 }
 
-export function HomeNew({ wide, showApp }: { wide: boolean; showApp: boolean }) {
+/** What New shows: the index's newest and this browser's, merged. HomePane reads it so Most Used and Recent leave it out. */
+export type HomeNewState = {
+  loading: boolean;
+  error: unknown;
+  shown: (ShownItem | ThisBrowserItem)[];
+};
+
+/** New's read and merge, held by HomePane: Most Used and Recent leave out what it shows (one-explorer.md "Each item shows once"). */
+export function useHomeNew(): HomeNewState {
   const { client, app, filter, overlay, epoch } = useExplorer();
   const load = useMemo(() => newestLoader(client, app, filter), [client, app, filter]);
   const made = useItemList({
@@ -46,6 +54,19 @@ export function HomeNew({ wide, showApp }: { wide: boolean; showApp: boolean }) 
   });
   const { live: local } = useThisBrowserItems();
   const shown = useMemo(() => mergeMade(made.items, local, HOME_NEW), [made.items, local]);
+  return { loading: made.loading, error: made.error, shown };
+}
+
+export function HomeNew({
+  wide,
+  showApp,
+  made,
+}: {
+  wide: boolean;
+  showApp: boolean;
+  made: HomeNewState;
+}) {
+  const { shown } = made;
   if (!made.loading && (made.error || shown.length === 0)) return null;
   return (
     <HomeSection id="new" title={HOME_NEW_TITLE} busy={made.loading}>

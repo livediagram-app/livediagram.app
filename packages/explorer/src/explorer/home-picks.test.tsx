@@ -3,7 +3,7 @@
 // 2026 (liveworkspace/docs/specs/008-telemetry/telemetry.md "The Explorer on liveworkspace.app").
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createFakeIndex, makeItem } from '../test/fakeClient';
+import { createFakeIndex, madeLater, makeItem } from '../test/fakeClient';
 import { Explorer } from './Explorer';
 import type { HomeTelemetry } from '../types';
 
@@ -14,7 +14,7 @@ const items = () =>
   Array.from({ length: 6 }, (_, k) => opened(k + 1, k < 2 ? { useOpens: 30 - k, useDays: 1 } : {}));
 
 const renderHome = (onHome?: HomeTelemetry) => {
-  const index = createFakeIndex({ items: items() });
+  const index = createFakeIndex({ items: [...items(), ...madeLater()] });
   render(
     <Explorer
       app="liveplanner"
