@@ -30,6 +30,7 @@ import {
   type Obj,
 } from './validate-read';
 import { parseRepositoryName } from '../pull-request-fields';
+import { emailSenderFilter } from './email-trigger';
 
 const FIELD_OPS: ReadonlySet<string> = new Set<AutomationFieldOp>([
   'is',
@@ -93,6 +94,13 @@ function readRepositories(v: unknown): string[] | undefined {
   return out.length ? out : undefined;
 }
 
+// Email Received's From: absent or empty, any sender; else an address or a domain, as the rule keeps it.
+function readSender(v: unknown): string | undefined {
+  if (v === undefined || v === '') return undefined;
+  const kept = typeof v === 'string' ? emailSenderFilter(v) : null;
+  return kept ?? refuse('trigger.sender', 'trigger.sender must be an email address or a domain');
+}
+
 export function readTrigger(v: unknown): AutomationTrigger {
   const t = obj(v, 'trigger');
   const kind = t['kind'];
@@ -107,6 +115,14 @@ export function readTrigger(v: unknown): AutomationTrigger {
       return t['formTab'] === undefined
         ? { kind: 'form_response' }
         : { kind: 'form_response', formTab: id(t['formTab'], 'trigger.formTab') };
+    case 'email_received': {
+      const sender = readSender(t['sender']);
+      return {
+        kind: 'email_received',
+        ...(t['board'] !== undefined ? { board: id(t['board'], 'trigger.board') } : {}),
+        ...(sender ? { sender } : {}),
+      };
+    }
     case 'card_moved': {
       const types = optionalIds(t['types'], 'trigger.types');
       const from = optionalIds(t['from'], 'trigger.from');

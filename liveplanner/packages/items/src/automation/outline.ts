@@ -26,6 +26,9 @@ export interface AutomationOutline {
   savedFilters: readonly AutomationSavedFilter[];
   // The plan's Form tabs, by id.
   formTabs: readonly string[];
+  // The plan's Plan boards, by element id and title, where the caller read them: an Email Received rule's board that
+  // is gone needs attention. Absent, boards are not checked.
+  boards?: readonly { id: string; name: string }[];
   // The plan's cards by id, where the caller read them: a Link Cards step's chosen card that is gone needs attention.
   // Absent, chosen cards are not checked.
   cards?: ReadonlySet<string>;

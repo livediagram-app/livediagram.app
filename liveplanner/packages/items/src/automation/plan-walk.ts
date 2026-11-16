@@ -34,6 +34,8 @@ export interface PlanActionsContext extends ConditionContext {
   cardless?: boolean;
   // A GitHub run: the pull request its values read (github-triggers.ts).
   github?: PullRequestValues;
+  // An Email Received run: the sender's bare address, for `{{from}}`.
+  email?: string;
 }
 
 // The card a Create Card makes: its type, its column (absent: the type's Default State) and fields.
@@ -235,6 +237,7 @@ export const walkOf = (card: Item, run: Run, ctx: PlanActionsContext, prefix = '
     ...(ctx.webhook ? { webhook: ctx.webhook } : {}),
     ...(ctx.cardless ? { cardless: true } : {}),
     ...(ctx.github ? { github: ctx.github } : {}),
+    ...(ctx.email ? { email: ctx.email } : {}),
   };
   return { plan, ctx, type, values };
 };

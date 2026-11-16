@@ -298,3 +298,70 @@ describe('the triggers after Phase 3', () => {
     expect(TRIGGER_EVENT_KINDS.threads_resolved).toEqual(['resolved']);
   });
 });
+
+// Work Tracker 1163: Email Received hears the same created event Card Created does, and only an email's.
+describe('Email Received', () => {
+  const email = (from: string, board = 'b1') =>
+    ev({ kind: 'created', email: { from, board }, role: 'system' });
+
+  it('puts the email on a created event, never a moved one', () => {
+    const card = bug();
+    const source = {
+      role: 'system' as const,
+      email: { from: 'ana@example.com', board: 'b1' },
+    };
+    expect(eventOfWrite(null, card, [{ kind: 'created' }], source)).toMatchObject({
+      kind: 'created',
+      email: { from: 'ana@example.com', board: 'b1' },
+    });
+    const moved = after(card, { status: 'done' });
+    expect(eventOfWrite(card, moved, historyChangesOf(card, moved), source)).not.toHaveProperty(
+      'email',
+    );
+  });
+
+  it('hears an email card, on its board, from its sender', () => {
+    expect(triggerMatches({ kind: 'email_received' }, email('ana@example.com'), 'r')).toBe(true);
+    expect(
+      triggerMatches({ kind: 'email_received', board: 'b1' }, email('ana@example.com'), 'r'),
+    ).toBe(true);
+    expect(
+      triggerMatches({ kind: 'email_received', board: 'b2' }, email('ana@example.com'), 'r'),
+    ).toBe(false);
+    expect(
+      triggerMatches(
+        { kind: 'email_received', sender: '@example.com' },
+        email('Bo@Example.com'),
+        'r',
+      ),
+    ).toBe(true);
+    expect(
+      triggerMatches(
+        { kind: 'email_received', sender: 'ana@example.com' },
+        email('bo@example.com'),
+        'r',
+      ),
+    ).toBe(false);
+  });
+
+  it('never hears a form card, a card a person made or a move', () => {
+    const t = { kind: 'email_received' as const };
+    expect(triggerMatches(t, ev({ kind: 'created', form: 'f' }), 'r')).toBe(false);
+    expect(triggerMatches(t, ev({ kind: 'created' }), 'r')).toBe(false);
+    expect(
+      triggerMatches(t, ev({ kind: 'moved', email: { from: 'a@b.co', board: 'b1' } }), 'r'),
+    ).toBe(false);
+    expect(TRIGGER_EVENT_KINDS.email_received).toEqual(['created']);
+  });
+
+  it('runs one email card once in each rule: Email Received and Card Created alike', () => {
+    const rules = [
+      { id: 'mail', trigger: { kind: 'email_received' as const } },
+      { id: 'made', trigger: { kind: 'card_created' as const } },
+      { id: 'form', trigger: { kind: 'form_response' as const } },
+    ];
+    const event = email('ana@example.com');
+    const runs = rules.filter((r) => triggerMatches(r.trigger, event, r.id)).map((r) => r.id);
+    expect(runs).toEqual(['mail', 'made']);
+  });
+});

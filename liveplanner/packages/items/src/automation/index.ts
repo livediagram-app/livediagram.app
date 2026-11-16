@@ -9,6 +9,7 @@ export * from './attention';
 export * from './plan-actions';
 export * from './sentence';
 export * from './email-addresses';
+export * from './email-trigger';
 export * from './schedule';
 export * from './related';
 export * from './derived';

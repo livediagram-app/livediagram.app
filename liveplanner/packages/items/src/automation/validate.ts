@@ -439,7 +439,9 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
         ? { webhook: true }
         : isGithubTrigger(trigger)
           ? { github: true }
-          : {};
+          : trigger.kind === 'email_received'
+            ? { email: true }
+            : {};
     const steps = (r['steps'] as unknown[]).map((s, i) => readStep(s, `steps.${i}`, place));
     if (countActions(steps) > AUTOMATION_ACTIONS_MAX)
       refuse('steps', `a rule holds up to ${AUTOMATION_ACTIONS_MAX} actions`);
@@ -466,7 +468,9 @@ export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRef
           ? 'A time trigger'
           : isGithubTrigger(trigger)
             ? 'A GitHub trigger'
-            : 'An incoming webhook',
+            : trigger.kind === 'email_received'
+              ? 'Email Received'
+              : 'An incoming webhook',
       );
     return {
       body: {
