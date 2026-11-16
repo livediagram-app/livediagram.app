@@ -212,20 +212,23 @@ export function buildArchitectureDecisionRecord(cx: number, cy: number): Element
     stage(before, 'Before: calls both and waits', '#b91c1c'),
     stage(after, 'After: one event, read by both', '#15803d'),
   );
-  const rowA = stageY + 52;
-  const rowB = rowA + 130;
-  const bOrder = svc(before, rowA + 64, 'Order service');
+  // Two rows of services inside the panel, the sender midway between them.
+  const rowA = stageY + 40;
+  const rowB = rowA + 120;
+  const mid = rowA + 60;
+  const bOrder = svc(before, mid, 'Order service');
   const bKitchen = svc(before + half - nodeW, rowA, 'Kitchen service');
   const bDispatch = svc(before + half - nodeW, rowB, 'Dispatch service');
-  const aOrder = svc(after, rowA + 64, 'Order service');
-  const aTopic = svc(after + (half - nodeW) / 2 + 30, rowA + 58, 'order-events', true);
-  const aKitchen = svc(after + half - nodeW + 60, rowA - 10, 'Kitchen');
-  const aDispatch = svc(after + half - nodeW + 60, rowB + 10, 'Dispatch');
-  // The sketch stays small: the "after" side's last column narrows to fit beside the topic.
-  for (const n of [aTopic, aKitchen, aDispatch]) n.width = 130;
-  aTopic.x = after + nodeW + 40;
-  aKitchen.x = after + half - 130;
-  aDispatch.x = after + half - 130;
+  // The "after" side holds three columns in the same width: sender, topic, readers, a clear gap between each.
+  const aOrder = svc(after, mid, 'Order service');
+  const aTopic = svc(after, mid - 6, 'order-events', true);
+  const aKitchen = svc(after, rowA, 'Kitchen');
+  const aDispatch = svc(after, rowB, 'Dispatch');
+  const colW3 = Math.floor((half - 2 * 36) / 3);
+  for (const n of [aOrder, aTopic, aKitchen, aDispatch]) n.width = colW3;
+  aTopic.x = after + colW3 + 36;
+  aKitchen.x = after + half - colW3;
+  aDispatch.x = after + half - colW3;
   content.push(
     bOrder,
     bKitchen,

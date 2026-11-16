@@ -416,9 +416,13 @@ export function buildC4Container(cx: number, cy: number): Element[] {
   const flowing = { flow: 'dots' } as const;
   const angled = { arrowStyle: 'angled' } as const;
   const links: Element[] = [
-    c4Link(customer, 'ssw', web, 'n', 'Uses · HTTPS', angled),
-    c4Link(customer, 'sse', mobile, 'n', 'Uses', angled),
-    c4Link(courier, 's', courierApp, 'n', 'Uses'),
+    // Labels sit above the boundary, clear of its name.
+    c4Link(customer, 'ssw', web, 'n', 'Uses · HTTPS', {
+      ...angled,
+      labelOffset: { t: 0.3, offset: 0 },
+    }),
+    c4Link(customer, 'sse', mobile, 'n', 'Uses', { ...angled, labelOffset: { t: 0.3, offset: 0 } }),
+    c4Link(courier, 's', courierApp, 'n', 'Uses', { labelOffset: { t: 0.3, offset: 0 } }),
     c4Link(web, 's', gateway, 'w', 'JSON · HTTPS', angled),
     c4Link(mobile, 's', gateway, 'n', 'JSON · HTTPS', flowing),
     c4Link(courierApp, 's', gateway, 'e', 'JSON · HTTPS', angled),

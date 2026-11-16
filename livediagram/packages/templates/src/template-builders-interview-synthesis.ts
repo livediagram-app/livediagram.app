@@ -136,7 +136,8 @@ export function buildInterviewSynthesis(cx: number, cy: number): Element[] {
         width: railW,
         height: personH,
         cardMedia: 'initial',
-        pageTitle: `${p.id} · ${p.name}`,
+        // Name first, so the card's initial is the person's; the id the quotes cite follows it.
+        pageTitle: `${p.name} · ${p.id}`,
         pageSubtitle: p.who,
         label: '',
         fillColor: p.hue.sticky.fill,
