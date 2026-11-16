@@ -114,19 +114,21 @@ export function JoinPage() {
             A team is the same in every liveworkspace app: its work shows up for everyone in it.
           </p>
           {state.preview.signedIn ? (
-            <div className="mt-8 flex w-full flex-col gap-2 sm:w-auto sm:flex-row-reverse">
+            // The row never outgrows the card: the Join button's label (it names the team) wraps anywhere, and Not
+            // now keeps its own width beside it.
+            <div className="mt-8 flex w-full max-w-full flex-col gap-2 sm:w-auto sm:flex-row-reverse sm:items-center">
               <Button
                 variant="none"
                 autoFocus
                 busy={busy}
-                className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}
+                className={`${BUTTON.primary} relative min-w-0 touch-target-y px-6 py-2.5 wrap-anywhere`}
                 onClick={() => void join()}
               >
                 {busy ? 'Joining…' : `Join ${isolatedName(state.preview.teamName)}`}
               </Button>
               <a
                 href={INVITES_PATH}
-                className={`${BUTTON.secondary} relative touch-target-y py-2.5`}
+                className={`${BUTTON.secondary} relative shrink-0 touch-target-y py-2.5`}
               >
                 Not now
               </a>
