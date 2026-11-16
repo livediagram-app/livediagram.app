@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import { TileStage } from '@/components/tile-picker/tile-scene';
 import type { AutomationTriggerKind } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideClock, lucideWebhook } from '@liveworkspace/icons/lucide';
+import { lucideClock, lucideMail, lucideWebhook } from '@liveworkspace/icons/lucide';
 import {
   AlertGlyph,
   ArchiveGlyph,
@@ -51,6 +51,7 @@ const TRIGGER_GROUP_TONES: Readonly<Record<TriggerGroupId, SceneTone>> = {
 const ClockGlyph = lucideGlyph(lucideClock, 14);
 const SmallClock = lucideGlyph(lucideClock, 8);
 const WebhookGlyph = lucideGlyph(lucideWebhook, 10);
+const MailGlyph = lucideGlyph(lucideMail, 12);
 const SLIDE = 'translateX(calc(100% + 26px))';
 
 /** A card whose pull request pill turns from one state to the next, the bolt lighting as it does. */
@@ -311,6 +312,25 @@ const SCENES: Readonly<Record<AutomationTriggerKind, (p: { tone: ToneClasses }) 
         style={at('none', 'translateX(-24px) scale(0.6)', 260)}
       >
         <Card />
+        <Fire tone={tone} d={520} />
+      </div>
+    </>
+  ),
+  // An envelope slides into the lane and lands as a card, its sender's @ on it.
+  email_received: ({ tone }) => (
+    <>
+      <div className={`relative grid size-9 shrink-0 place-items-center ${PANEL}`}>
+        <span className={tone.label}>
+          <MailGlyph aria-hidden />
+        </span>
+      </div>
+      <div
+        className="ats-t ats-in relative w-[40%] shrink-0"
+        style={at('none', 'translateX(-24px) scale(0.6)', 260)}
+      >
+        <Card>
+          <Pill className={`-left-1 -top-2 ${tone.solid}`}>@</Pill>
+        </Card>
         <Fire tone={tone} d={520} />
       </div>
     </>

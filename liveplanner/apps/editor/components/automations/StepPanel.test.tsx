@@ -631,4 +631,47 @@ describe('StepPanel', () => {
     expect(faultWithin({ part: 'step', index: 2 }, 'steps.3')).toBeNull();
     expect(faultWithin({ part: 'step', index: 2 }, null)).toBeNull();
   });
+
+  // Work Tracker 1163: Email Received's Board and From.
+  it('narrows Email Received by its board and its From, marking a From that is neither', () => {
+    const o = outline({
+      boards: [
+        { id: 'b1', tabId: 't1', tabName: 'Support', title: 'Inbox', filters: [] },
+        { id: 'b2', tabId: 't2', tabName: 'Sales', title: 'Inbox', filters: [] },
+        { id: 'b3', tabId: 't2', tabName: 'Sales', title: 'Leads', filters: [] },
+      ],
+    });
+    render(<Panel body={body()} part={{ part: 'trigger' }} o={o} />);
+    pickStep('email_received');
+    expect(latest.trigger).toEqual({ kind: 'email_received' });
+    const board = screen.getByRole('combobox', { name: 'Board' });
+    expect([...board.querySelectorAll('option')].map((x) => x.textContent)).toEqual([
+      'Any Board',
+      'Inbox · Support',
+      'Inbox · Sales',
+      'Leads',
+    ]);
+    pick('Board', 'b2');
+    expect(latest.trigger).toEqual({ kind: 'email_received', board: 'b2' });
+    const from = screen.getByRole('textbox', { name: 'From' });
+    fireEvent.change(from, { target: { value: 'ana@' } });
+    expect(latest.trigger).toEqual({ kind: 'email_received', board: 'b2', sender: 'ana@' });
+    expect(screen.getByText('Not an email address or a domain.')).toBeTruthy();
+    fireEvent.change(from, { target: { value: '@example.com' } });
+    expect(screen.getByText(/An address, or a domain like @example.com/)).toBeTruthy();
+    fireEvent.change(from, { target: { value: ' ' } });
+    pick('Board', '');
+    expect(latest.trigger).toEqual({ kind: 'email_received' });
+    expect(screen.getByText(/Only boards with Email to Board turned on get email/)).toBeTruthy();
+  });
+
+  it('keeps a gone board listed as gone', () => {
+    render(
+      <Panel
+        body={body({ trigger: { kind: 'email_received', board: 'b9' } })}
+        part={{ part: 'trigger' }}
+      />,
+    );
+    expect(screen.getByRole('option', { name: 'A board no longer here' })).toBeTruthy();
+  });
 });

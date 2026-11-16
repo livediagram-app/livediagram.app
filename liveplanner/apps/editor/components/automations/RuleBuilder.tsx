@@ -221,7 +221,8 @@ export function RuleBuilder({
       change(next.body, next.part);
     },
     addAction: (kind, branch) => {
-      // A time trigger or an incoming webhook has nobody behind it: Assign starts on the plan's first person.
+      // A time trigger, an incoming webhook or an email has nobody of the plan behind it: Assign starts on the plan's
+      // first person.
       const step = defaultStep(kind, outline, isPersonless(body.trigger));
       const next = addAction(body, step, branch);
       change(next.body, next.part);
@@ -364,6 +365,8 @@ export function RuleBuilder({
   const cardless = isIncoming && runsWithoutCard(body);
   // A GitHub rule's text offers the pull request's values.
   const isGithub = isGithubTrigger(body.trigger);
+  // An Email Received rule's text offers the sender.
+  const isEmail = body.trigger.kind === 'email_received';
   const incoming = useMemo<IncomingRule>(
     () => ({
       incoming: isIncoming,
@@ -372,8 +375,9 @@ export function RuleBuilder({
       cardless,
       now,
       github: isGithub,
+      email: isEmail,
     }),
-    [isIncoming, rule, cardless, now, isGithub],
+    [isIncoming, rule, cardless, now, isGithub, isEmail],
   );
 
   return (

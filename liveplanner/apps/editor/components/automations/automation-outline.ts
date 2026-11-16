@@ -24,6 +24,8 @@ import { tabKindOf, type Tab } from '@liveplanner/project';
 import { usePlan } from '@/components/plan/PlanContext';
 
 export type OutlineBoard = {
+  // The board's element id (Email Received's board).
+  id: string;
   tabId: string;
   tabName: string;
   title: string;
@@ -60,6 +62,7 @@ export function tabsOutline(tabs: readonly Tab[]): {
       const setup = normaliseBoardSetup(el.planBoard);
       if (!setup) continue;
       boards.push({
+        id: el.id,
         tabId: tab.id,
         tabName: tab.name,
         title: setup.title,
@@ -131,6 +134,7 @@ export function useAutomationOutline(): AutomationOutline {
     const tabs = new Map<string, string>();
     for (const f of fromTabs.forms) tabs.set(f.id, f.name);
     for (const b of fromTabs.boards) tabs.set(b.tabId, b.tabName);
+    const boardNames = new Map(fromTabs.boards.map((b) => [b.id, b.title.trim() || 'Board']));
     return {
       types: types ?? [],
       statuses,
@@ -140,6 +144,7 @@ export function useAutomationOutline(): AutomationOutline {
       labels,
       tabs,
       filters,
+      boardNames,
       forms: fromTabs.forms,
       boards: fromTabs.boards,
       items,
