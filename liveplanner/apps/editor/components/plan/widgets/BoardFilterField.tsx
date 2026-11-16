@@ -66,7 +66,17 @@ export function BoardFilterField({
     onQuick(q);
   };
   return (
-    <span className="flex w-72 min-w-0 shrink-0 items-center">
+    <span
+      className="flex w-72 min-w-0 shrink-0 items-center"
+      // What More names while it holds the Filter (zone-overflow.ts pressedIn): its first chip, else its words.
+      data-widget-pressed={
+        chips[0]
+          ? `${chips[0].field}: ${chips[0].value}`
+          : quick.text
+            ? `“${quick.text}”`
+            : undefined
+      }
+    >
       <FilterSearchBox
         compact
         tone={{

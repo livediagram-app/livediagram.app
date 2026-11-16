@@ -106,6 +106,7 @@ describe('the catalogue', () => {
       'guide',
       'skill.print',
       'skill.install',
+      'link.review',
     ]);
   });
 

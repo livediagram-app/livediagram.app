@@ -1,4 +1,4 @@
-// The editor's side of snapshots (liveworkspace/docs/specs/013-snapshots/blueprints/snapshots.md SN19 to SN21): the
+// The editor's side of snapshots (liveworkspace/docs/specs/014-snapshots/blueprints/snapshots.md SN19 to SN21): the
 // fence's browser half, which every app binds into its api core so every request about an item names the last
 // generation it saw, the reload a revert asks for, and the calls the dialog makes.
 

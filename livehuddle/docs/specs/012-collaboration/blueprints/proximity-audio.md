@@ -15,6 +15,7 @@ Derived from [Proximity audio](../proximity-audio.md). Paths are livehuddle's; `
 | track token   | `CallTrackLocator.token`                             | Public proof a publishing session belongs to this Space       |
 | earshot       | `HEARING_RADIUS_PX`, `RELEASE_RADIUS_PX`             | Subscribe inside the first, let go outside the second         |
 | calls gate    | `callsGate(env)`                                     | The api's one decision whether calls are on, the switch last  |
+| call actions  | `watchCallMediaSession`                              | The Media Session call actions, registered while live         |
 
 ## Behaviour and state
 
@@ -87,6 +88,24 @@ later) it waits for the next `pointerdown`, `keydown` or `touchend` on the windo
 `resume()` then, on `visibilitychange` to visible, on window `focus` and `pageshow`, and on every voice attached
 (`ProximityCall` calls `wake.nudge()` from `onTrack`). It reports held or running to the store
 (`CallSelf.audioHeld`); running again drops the listeners. Event driven: nothing polls.
+
+**Outside the tab** (spec "Outside the tab", Work Tracker 992; `lib/calls/call-media-session.ts`):
+`watchCallMediaSession(session = mediaSessionOf())` is started by `useProximityCall`'s actions effect, beside
+`setCallActions`, and stopped in its cleanup. It subscribes to `onCallSelf` and works out one `CallSessionState`
+per notify, `{ mic: boolean, camera: boolean, active: boolean, cameraAction: boolean }`:
+
+- `mic` (`togglemicrophone` registered) and `active`: `phase === 'live' && available && canSpeak` with actions set.
+- `cameraAction` (`togglecamera` registered): `mic` and `callsModeAllows(mode, 'video')`.
+- `active` reported with `setMicrophoneActive(micOn(self))`, the camera with `setCameraActive(camera === 'on')`.
+
+Each handler reads `callActions()` when it fires and calls `toggleMute` or `toggleCamera`, the dock's own functions,
+so the store, telemetry and the dock follow exactly as from a press. Only a change is applied: the state is compared
+with the last applied one (a level tick changes nothing), handlers are set or cleared only when `mic`/`cameraAction`
+flip, and the active flags sent as the actions register and then only when they change. Not live clears both handlers (`setActionHandler(action,
+null)`). `hangup` is never registered. Stop clears both and unsubscribes. `mediaSessionOf(nav = globalThis.navigator)`
+returns `navigator.mediaSession` or `null`; with `null` the watch subscribes to nothing. Each `setActionHandler` and
+`set…Active` call is wrapped: a browser that throws for an action it does not know (Firefox, Safari) or lacks the
+setters is left as it is.
 
 ## Interfaces and contracts
 
@@ -252,6 +271,8 @@ token. The editor logs through `debugLog('calls', …)`.
 | A failed connection renews, within the budget                  | `apps/editor/lib/calls/proximity-call.test.ts`                                       |
 | Characters committed while the page is hidden                  | `apps/editor/app/document/[id]/presence-coalescer.test.ts`                           |
 | Click to Hear while held and someone is heard                  | `apps/editor/components/calls/CallStripGroup.test.tsx`                               |
+| Media Session: handlers toggle the dock's state, report, clear | `apps/editor/lib/calls/call-media-session.test.tsx`                                  |
+| No Media Session, unknown actions: nothing, no throw           | `apps/editor/lib/calls/call-media-session.test.tsx`                                  |
 | A voice moved less than `PLACE_EPSILON` is left; 0 and 1 land  | `apps/editor/lib/calls/audio-graph.test.ts`                                          |
 | 20 heard voices: AudioParam events a second, bounded           | `apps/editor/lib/calls/call-receiver.perf.test.ts`                                   |
 | 50 walkers: the call's scene about 10 a second                 | `apps/editor/components/canvas/CanvasCharactersLayer.perf.test.tsx`                  |

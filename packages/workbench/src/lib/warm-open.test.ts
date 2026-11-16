@@ -11,6 +11,8 @@ import {
   browserWarmOpenFallbackDeps,
   guardNotFound,
   warmOpenFallback,
+  warmPaintCodeIn,
+  WARM_PAINT_CODE_WAIT_MS,
   type WarmOpenCopies,
   type WarmOpenFallbackDeps,
 } from './warm-open';
@@ -334,5 +336,49 @@ describe('guardNotFound', () => {
     set.setName('x');
     expect(setName).toHaveBeenCalledWith('x');
     expect(set.count).toBe(1);
+  });
+});
+
+// offline-mode.md "The code it draws is in first": the warm paint waits for its panels' code, never past the cap.
+describe('warmPaintCodeIn', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('answers once every preload has, failed ones included', async () => {
+    let finish: () => void = () => {};
+    const slow = vi.fn(() => new Promise<void>((r) => (finish = r)));
+    const failing = vi.fn(() => Promise.reject(new Error('offline')));
+    const throwing = vi.fn((): Promise<void> => {
+      throw new Error('sync');
+    });
+    let done = false;
+    const wait = warmPaintCodeIn([slow, failing, throwing], 10_000).then(() => (done = true));
+    await new Promise((r) => setTimeout(r, 0));
+    expect(slow).toHaveBeenCalledOnce();
+    expect(failing).toHaveBeenCalledOnce();
+    expect(throwing).toHaveBeenCalledOnce();
+    expect(done).toBe(false);
+    finish();
+    await wait;
+    expect(done).toBe(true);
+  });
+
+  it('stops waiting at the cap, and clears its timer when the code is in first', async () => {
+    vi.useFakeTimers();
+    const wait = warmPaintCodeIn([() => new Promise(() => {})]);
+    await vi.advanceTimersByTimeAsync(WARM_PAINT_CODE_WAIT_MS - 1);
+    let done = false;
+    void wait.then(() => (done = true));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(done).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(done).toBe(true);
+    await warmPaintCodeIn([async () => {}]);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('waits on nothing when there is no code to wait for', async () => {
+    vi.useFakeTimers();
+    await warmPaintCodeIn([]);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

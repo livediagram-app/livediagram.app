@@ -132,8 +132,8 @@ export function HintSurface({
       id={id}
       role="tooltip"
       data-hint={kind}
-      {...surfaceProps}
-      className={`pointer-events-auto fixed z-[var(--z-toast)] animate-fade-in motion-reduce:animate-none ${look.surface}`}
+      {...(kind === 'tooltip' ? {} : surfaceProps)}
+      className={`${kind === 'tooltip' ? 'pointer-events-none' : 'pointer-events-auto'} fixed z-[var(--z-toast)] animate-fade-in motion-reduce:animate-none ${look.surface}`}
       style={
         layout
           ? { left: layout.left, top: layout.top }

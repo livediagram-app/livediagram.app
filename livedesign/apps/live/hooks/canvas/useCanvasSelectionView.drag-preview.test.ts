@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livedesign/design';
 import { useCanvasSelectionView } from './useCanvasSelectionView';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
+import { endImageCrop, startImageCrop } from '@liveworkspace/workbench/lib/image-crop-store';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@liveworkspace/workbench/hooks/canvas/useSelectionStore', () => ({
@@ -42,5 +43,23 @@ describe('selection chrome during a drag preview', () => {
     expect(result.current.selectionBounds?.width).toBe(600);
     act(() => resetDragPreviewForTests());
     expect(result.current.selectionBounds?.width).toBe(400);
+  });
+});
+
+// docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the editor": the chrome reads the crop store, so
+// the toolbar and the pluses stand down as a crop starts and come back as it ends, however it ends.
+describe('selection chrome while an image is cropped', () => {
+  afterEach(() => endImageCrop());
+
+  it('stands down while cropping and comes back after', () => {
+    const { result } = renderHook(() => useCanvasSelectionView(input, 't'));
+    expect(result.current.showPopover).toBe(true);
+    expect(result.current.showPlus).toBe(true);
+    act(() => startImageCrop('b'));
+    expect(result.current.showPopover).toBe(false);
+    expect(result.current.showPlus).toBe(false);
+    act(() => endImageCrop());
+    expect(result.current.showPopover).toBe(true);
+    expect(result.current.showPlus).toBe(true);
   });
 });

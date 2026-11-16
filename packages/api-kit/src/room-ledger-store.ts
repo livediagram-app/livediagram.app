@@ -171,7 +171,7 @@ export class RoomLedgerStore<E extends object, L> {
   }
 
   // Every entry and its index row gone, on the write chain after whatever was queued (a revert to a snapshot,
-  // liveworkspace/docs/specs/013-snapshots/snapshots.md "Revert"): nothing recorded on the content before it is merged
+  // liveworkspace/docs/specs/014-snapshots/snapshots.md "Revert"): nothing recorded on the content before it is merged
   // into a save after it. The floor and marks stay; an emptied ledger reads as empty whatever they say.
   clear(): Promise<void> {
     const run = this.queue.then(async () => {

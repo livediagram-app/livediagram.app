@@ -10,8 +10,8 @@ import { createShape, createText, layOutPages, newLogoPage, type Tab } from '@li
 import { embeddedFontFaces } from './export-fonts';
 import { renderTabToCanvas, renderTabToSvg } from './export-tab';
 import { exportLogoKit, LOGO_KIT_FALLBACK_FONT, logoKitTab } from './export-logo-kit';
-import { outlineSvgText } from './outline-text/outline-svg';
-import { OutlineError } from './outline-text/outline-error';
+import { outlineSvgText } from '@liveworkspace/vector-export/outline-svg';
+import { OutlineError } from '@liveworkspace/vector-export/outline-error';
 
 vi.mock('./export-tab', () => ({
   renderTabToSvg: vi.fn((tab: Tab) =>
@@ -27,7 +27,7 @@ vi.mock('./export-tab', () => ({
 vi.mock('./export-fonts', () => ({
   embeddedFontFaces: vi.fn(async () => ({ css: '@font-face{}', missing: [] })),
 }));
-vi.mock('./outline-text/outline-svg', () => ({
+vi.mock('@liveworkspace/vector-export/outline-svg', () => ({
   outlineSvgText: vi.fn(async () => '<svg><path/></svg>'),
 }));
 

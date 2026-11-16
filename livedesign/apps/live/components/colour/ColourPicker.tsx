@@ -4,9 +4,9 @@
 // surface chooses a colour with. Top to bottom: the Theme Palette (the active tab's), the standard
 // colours, and Custom colours ending in +, which opens the custom colour editor in place. Leading
 // options (no colour, a surface's named defaults) go first in the first group. One Tab stop, the
-// arrows move through every swatch, Enter or Space picks.
+// arrows move through every swatch, Enter or Space picks. On the element menu's Text row, a hint under
+// the groups says when the colour judged would be hard to read where the text sits (ContrastHint).
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
-import { Tooltip } from '@livedesign/ui';
 import { isHexColour } from '@livedesign/design';
 import {
   onMouseHover,
@@ -27,6 +27,8 @@ import {
 } from './colour-options';
 import { onColourKeys } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { useThemeColours } from './useThemeColours';
+import { ContrastHint } from './ContrastHint';
+import type { TextContrastProbe } from '@/lib/text-contrast-probe';
 
 const NOOP = () => {};
 
@@ -50,6 +52,8 @@ export type ColourPickerProps = {
   // Live preview while a swatch is hovered or focused, and its revert.
   onPreview?: (id: string) => void;
   onPreviewEnd?: () => void;
+  // The Text row's ground and size, to judge its colours on (colour-picker.md "Reading on its ground").
+  contrast?: TextContrastProbe;
 };
 
 type Group = { heading: string; options: readonly ColourOption[] };
@@ -65,8 +69,14 @@ export function ColourPicker({
   boardWarning = false,
   onPreview,
   onPreviewEnd,
+  contrast,
 }: ColourPickerProps) {
   const [editorOpen, setEditorOpen] = useState(false);
+  // The swatch the pointer or focus last rested on, judged in place of the colour in force; only
+  // kept while there is a contrast hint, so other pickers never re-render on hover.
+  const [probe, setProbe] = useState<string | null>(null);
+  const probeOn = contrast ? setProbe : undefined;
+  const endProbe = () => setProbe(null);
   // + takes focus back when the editor closes, so it never drops to the page (where Escape would reach
   // the canvas and drop the tool in hand, rather than close the surface the picker sits in).
   const plusRef = useRef<HTMLButtonElement>(null);
@@ -114,8 +124,16 @@ export function ColourPicker({
   const tabStop = pickedAt >= 0 ? pickedAt : 0;
 
   const previewEndOnLeave = (e: FocusEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget)) onPreviewEnd?.();
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    onPreviewEnd?.();
+    endProbe();
   };
+  // Setting the probe to null again is no render, so this costs a picker without a hint nothing.
+  const leave = () => {
+    onPreviewEnd?.();
+    endProbe();
+  };
+  const hover = onPreview || contrast;
 
   let index = 0;
   return (
@@ -126,8 +144,8 @@ export function ColourPicker({
       className="flex flex-col gap-2.5"
       style={{ width: COLOUR_PICKER_WIDTH }}
       onKeyDown={onColourKeys}
-      onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
-      onBlur={onPreviewEnd ? previewEndOnLeave : undefined}
+      onPointerLeave={onPreviewEnd || contrast ? onMouseHover(leave) : undefined}
+      onBlur={onPreviewEnd || contrast ? previewEndOnLeave : undefined}
     >
       {all.map((group, g) => {
         const id = `${headingId}-${g}`;
@@ -152,34 +170,52 @@ export function ColourPicker({
                     picked={optionMatches(option, value)}
                     tabIndex={at === tabStop ? 0 : -1}
                     onClick={() => onPick(option.id)}
-                    onFocus={onPreview ? () => onPreview(option.id) : undefined}
+                    onFocus={
+                      hover
+                        ? () => {
+                            onPreview?.(option.id);
+                            probeOn?.(option.id);
+                          }
+                        : undefined
+                    }
                     onPointerEnter={
-                      onPreview ? onMouseHover(() => onPreview(option.id)) : undefined
+                      hover
+                        ? onMouseHover(() => {
+                            onPreview?.(option.id);
+                            probeOn?.(option.id);
+                          })
+                        : undefined
                     }
                   />
                 );
               })}
               {yoursGroup ? (
-                <Tooltip label="Add a custom colour">
-                  <button
-                    ref={plusRef}
-                    type="button"
-                    aria-label="Add a custom colour"
-                    aria-expanded={editorOpen}
-                    data-colour-key=""
-                    tabIndex={flat.length === 0 ? 0 : -1}
-                    onClick={() => setEditorOpen((open) => !open)}
-                    className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800"
-                  >
-                    {/* More colours' four dots, as every way into more colours (colour-picker.md "Skins"). */}
-                    <MoreColoursGlyph />
-                  </button>
-                </Tooltip>
+                <button
+                  ref={plusRef}
+                  type="button"
+                  aria-label="Add a custom colour"
+                  aria-expanded={editorOpen}
+                  data-colour-key=""
+                  tabIndex={flat.length === 0 ? 0 : -1}
+                  onClick={() => setEditorOpen((open) => !open)}
+                  className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800"
+                >
+                  {/* More colours' four dots, as every way into more colours (colour-picker.md "Skins"). */}
+                  <MoreColoursGlyph />
+                </button>
               ) : null}
             </div>
           </div>
         );
       })}
+      {contrast ? (
+        <ContrastHint
+          colour={probe !== null ? contrast.colourOf(probe) : contrast.current}
+          ground={contrast.ground}
+          large={contrast.large}
+          onUse={onPick}
+        />
+      ) : null}
       {editorOpen ? (
         <CustomColourEditor
           start={inForce ?? undefined}

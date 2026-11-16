@@ -15,12 +15,12 @@ export const BASE_ALLOWED_HEADERS: readonly string[] = [
   'X-Share-Password',
   'X-Allow-Empty',
   'X-Room-Cursor',
-  // The item's generation an editor last saw (liveworkspace/docs/specs/013-snapshots, the fence).
+  // The item's generation an editor last saw (liveworkspace/docs/specs/014-snapshots, the fence).
   'X-Snapshot-Generation',
 ];
 
 // The response headers every product's api lets a page on another origin read beside its own: the item's generation
-// and the fence's mark (liveworkspace/docs/specs/013-snapshots).
+// and the fence's mark (liveworkspace/docs/specs/014-snapshots).
 export const BASE_EXPOSED_HEADERS: readonly string[] = [
   'X-Snapshot-Generation',
   'X-Snapshot-Fenced',

@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Browser code (the export runs in the editor), tested in jsdom and Node.
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "noEmit": true
+  },
+  // The Trusted Types globals parseInert is typed with, which the trusted-types package declares for its own build.
+  "include": ["src/**/*.ts", "../trusted-types/src/globals.d.ts"]
+}

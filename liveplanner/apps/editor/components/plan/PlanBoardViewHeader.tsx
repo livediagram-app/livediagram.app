@@ -119,7 +119,11 @@ export function planBoardViewHeader(v: PlanBoardViewValues) {
       end={
         // Nothing at the header's end on a Board tab an Editor configures from the cluster: no Focus or
         // Maximise (it fills its tab) and no cog (Configure), so no hairline is left standing before it.
-        interactive && !(filled && configuredFromCluster) ? (
+        // Nor on a filled tab with nothing to show there (a Viewer's: no Focus, Maximise or cog), so no hairline
+        // stands alone at the header's end.
+        interactive &&
+        !(filled && configuredFromCluster) &&
+        !(filled && !slot && !(canEdit && !configuredFromCluster)) ? (
           <>
             {/* Focus glides the view to fit the board; not while it fills the view. */}
             {maximised || filled ? null : (

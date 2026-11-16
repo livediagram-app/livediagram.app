@@ -5,7 +5,7 @@
 // against (the active cell), and the rule panels themselves (the Data Validation editor, the Conditional Formatting
 // popover, the Custom Number Format popover).
 import { lazy, Suspense, useState } from 'react';
-import { Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideGlyph } from '@liveplanner/ui';
 import { lucideChevronDown } from '@liveworkspace/icons/lucide';
 import { cellKey, displayValue, formatA1, validationRuleAt } from '@liveplanner/sheets';
 import { cellBox, mergeAt } from '../sheet-geometry';
@@ -83,25 +83,23 @@ export function SheetRuleLayer({ actions }: { actions: SheetActions }) {
       ) : null}
       {plainArrow ? (
         <SheetCellSlot r={active.r} c={active.c}>
-          <Tooltip label={`Options for ${formatA1(active.r, active.c)}`}>
-            <button
-              type="button"
-              aria-label={`Options for ${formatA1(active.r, active.c)}`}
-              aria-haspopup="listbox"
-              aria-expanded={!!open}
-              className="absolute z-[8] flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:opacity-80"
-              style={{
-                left: box.x + box.w - RULE_ARROW_PX + 1,
-                top: box.y + (box.h - 20) / 2,
-                backgroundColor: c.palette.column,
-                color: c.palette.text,
-              }}
-              onPointerDown={stop}
-              onClick={() => actions.openDropdown()}
-            >
-              <ChevronGlyph />
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            aria-label={`Options for ${formatA1(active.r, active.c)}`}
+            aria-haspopup="listbox"
+            aria-expanded={!!open}
+            className="absolute z-[8] flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:opacity-80"
+            style={{
+              left: box.x + box.w - RULE_ARROW_PX + 1,
+              top: box.y + (box.h - 20) / 2,
+              backgroundColor: c.palette.column,
+              color: c.palette.text,
+            }}
+            onPointerDown={stop}
+            onClick={() => actions.openDropdown()}
+          >
+            <ChevronGlyph />
+          </button>
         </SheetCellSlot>
       ) : null}
       {open && openRule && dropAnchor && (openRule.is === 'list' || openRule.is === 'range') ? (

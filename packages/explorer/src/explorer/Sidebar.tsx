@@ -41,7 +41,15 @@ import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
 import { ThisBrowserSpaceRow } from './this-browser-space/ThisBrowserSpaceRow';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
-import { LIBRARY, MY_WORK, rowsAbove, teamKey, type Expansion } from './sidebar/expansion';
+import {
+  LIBRARY,
+  LOCAL_ROW_KEY,
+  MY_WORK,
+  rowsAbove,
+  teamKey,
+  type Expansion,
+} from './sidebar/expansion';
+import { HeaderIconButton } from '../ui/HeaderIconButton';
 import { useDragHoverOpen } from './sidebar/useDragHoverOpen';
 import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
 import { useTreeNavigation } from './sidebar/useTreeNavigation';
@@ -93,6 +101,18 @@ export function useOpenCurrentRows(
   }, [rows, place, expansion]);
 }
 
+/** The space holding the view (My Work, a team, This Browser), kept open when another space opens; null outside one. */
+export function spaceOfView(
+  view: ExplorerView,
+  byId: Parameters<typeof rowsAbove>[1],
+): string | null {
+  if (view.kind === 'all') return MY_WORK;
+  if (view.kind === 'team') return teamKey(view.id);
+  if (view.kind === 'offline') return LOCAL_ROW_KEY;
+  if (view.kind === 'folder') return rowsAbove(view.id, byId)[0] ?? null;
+  return null;
+}
+
 const START_FOLDS: ReadonlySet<string> = new Set([MY_WORK]);
 const startFolds = () => START_FOLDS;
 
@@ -102,7 +122,12 @@ function useExpanded(view: ExplorerView) {
   const { expansion, folders } = useExplorer();
   const expanded = useSyncExternalStore(expansion.subscribe, expansion.get, startFolds);
   useOpenCurrentRows(view, folders.byId, expansion);
-  return { expanded, toggle: expansion.toggle, expand: expansion.expand };
+  // A space's chevron: folding is a plain toggle; opening folds every other space but the view's own.
+  const toggleSpace = (key: string) => {
+    if (expansion.get().has(key)) expansion.toggle(key);
+    else expansion.openSpace(key, spaceOfView(view, folders.byId));
+  };
+  return { expanded, toggle: expansion.toggle, toggleSpace, expand: expansion.expand };
 }
 
 /** A sidebar row's rename field, in place of its name: an account folder's and a local one's. */
@@ -111,10 +136,13 @@ function SidebarGroup({
   first = false,
   children,
   after,
+  action,
 }: {
   title: string;
   first?: boolean;
   children: ReactNode;
+  // At the far right of the heading: a quiet icon button (Spaces' New Team).
+  action?: ReactNode;
   // Below the group's rows, outside its tree: a tree holds only treeitems (and their groups), so a link there is
   // read as a broken tree.
   after?: ReactNode;
@@ -122,14 +150,17 @@ function SidebarGroup({
   const id = useId();
   return (
     <section>
-      <h2
-        id={id}
-        className={`box-content h-4 px-2.5 pb-2 text-[11px] font-semibold uppercase leading-4 tracking-[0.1em] text-slate-500 dark:text-slate-400 ${
-          first ? '' : 'mt-6 pt-1'
-        }`}
-      >
-        {title}
-      </h2>
+      <div className={`flex items-center pb-2 pl-2.5 pr-1 ${first ? '' : 'mt-6 pt-1'}`}>
+        <h2
+          id={id}
+          className="h-4 min-w-0 flex-1 truncate text-[11px] font-semibold uppercase leading-4 tracking-[0.1em] text-slate-500 dark:text-slate-400"
+        >
+          {title}
+        </h2>
+        {action ? (
+          <div className="-my-1.5 flex shrink-0 pointer-coarse:-my-3.5">{action}</div>
+        ) : null}
+      </div>
       <ul role="tree" aria-labelledby={id}>
         {children}
       </ul>
@@ -258,7 +289,7 @@ export function Sidebar() {
   const { view, navigate, folders, teams, inbox, hasInbox, viewerId } = useExplorer();
   const { sidebarLinks } = useHostExtras();
   const library = useLibraryHost();
-  const { expanded, toggle, expand } = useExpanded(view);
+  const { expanded, toggle, toggleSpace, expand } = useExpanded(view);
   const libraryOpen = expanded.has(LIBRARY);
   // A drag resting on the folded Library opens it, so the Trash inside is in reach.
   const libraryDrag = useDragHoverOpen(libraryOpen ? null : () => expand(LIBRARY));
@@ -320,6 +351,13 @@ export function Sidebar() {
       <SidebarGroup
         title="Spaces"
         after={!signedIn && signInHref ? <SidebarSignInNudge href={signInHref} /> : null}
+        action={
+          !signedIn && signInHref ? null : canRun ? (
+            <HeaderIconButton label={SIDEBAR_LABELS.newTeam} onClick={() => setNewTeam(true)}>
+              <PlusIcon />
+            </HeaderIconButton>
+          ) : null
+        }
       >
         <SidebarRow
           icon={<MyWorkIcon />}
@@ -331,7 +369,7 @@ export function Sidebar() {
           dropTo={MY_WORK_ROOT}
           expandable={myRoots.length > 0}
           expanded={expanded.has(MY_WORK)}
-          onToggleExpand={() => toggle(MY_WORK)}
+          onToggleExpand={() => toggleSpace(MY_WORK)}
           onContextMenu={myWorkMenu.onContextMenu}
           trailing={myWorkMenu.trailing}
         >
@@ -361,7 +399,7 @@ export function Sidebar() {
               dropTo={{ teamId: t.id, folderId: null }}
               expandable={roots.length > 0}
               expanded={expanded.has(key)}
-              onToggleExpand={() => toggle(key)}
+              onToggleExpand={() => toggleSpace(key)}
               {...teamMemberBadge(memberCounts.get(t.id))}
             >
               {roots.map((f) => (
@@ -378,7 +416,12 @@ export function Sidebar() {
           );
         })}
         {/* While this browser holds anything (one-explorer.md "This Browser, a Space"). */}
-        <ThisBrowserSpaceRow expanded={expanded} toggle={toggle} rename={rename} />
+        <ThisBrowserSpaceRow
+          expanded={expanded}
+          toggle={toggle}
+          toggleSpace={toggleSpace}
+          rename={rename}
+        />
         {/* Shown while an invitation waits, or while its view is open, so the highlight never vanishes. */}
         {signedIn && (invites > 0 || view.kind === 'invites') ? (
           <SidebarRow
@@ -391,15 +434,6 @@ export function Sidebar() {
             badge={invites || undefined}
             badgeLabel={`${invites} waiting`}
             badgeTone="brand"
-          />
-        ) : null}
-        {!signedIn && signInHref ? null : canRun ? (
-          <SidebarRow
-            icon={<PlusIcon />}
-            label={SIDEBAR_LABELS.newTeam}
-            selected={false}
-            onActivate={() => setNewTeam(true)}
-            depth={0}
           />
         ) : null}
         {newTeam ? (

@@ -243,7 +243,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 #### Row order
 
 - Someone who may edit can **drag a row to a new place**. Hovering a row's name (or focusing it) shows a six-dot
-  grip at its left edge (a grab cursor, a tooltip **Drag to Reorder**). Dragging the grip lifts the row: the name row
+  grip at its left edge (a grab cursor, named **Drag to Reorder** for screen readers, no tooltip). Dragging the grip lifts the row: the name row
   and its timeline row follow the pointer up and down, and a line marks the gap it would drop into. Letting go
   places it there as one change, synced and undone like any element edit; letting go where it started, or
   Escape, changes nothing. A press on the grip never moves the chart element, opens the card or starts a date

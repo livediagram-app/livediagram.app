@@ -1,4 +1,4 @@
-// Snapshots' numbers (liveworkspace/docs/specs/013-snapshots/blueprints/snapshots.md SN1).
+// Snapshots' numbers (liveworkspace/docs/specs/014-snapshots/blueprints/snapshots.md SN1).
 
 /** How many snapshots an item keeps, manual and automatic alike; taking one more removes the oldest. Safe range 1 to
  *  20: each is the whole item. */

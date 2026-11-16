@@ -1,6 +1,6 @@
 'use client';
 
-// The Snapshots dialog (liveworkspace/docs/specs/013-snapshots/snapshots.md "In the editor"; blueprint SN24, SN25): take
+// The Snapshots dialog (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"; blueprint SN24, SN25): take
 // one with an optional name, then the latest five, newest first, each with Revert and Delete confirmed in place in its
 // own row. A sheet on a phone. Escape inside a confirm cancels the confirm, not the dialog.
 

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Glyph, Tooltip, atLeastInset } from '@livedesign/ui';
+import { Glyph, atLeastInset } from '@livedesign/ui';
 import {
   TOOLBAR_CARD,
   TOOLBAR_CONTROL_REST,
@@ -53,19 +53,17 @@ export function LandscapeBarsHandle({ shown, onToggle }: { shown: boolean; onTog
         }}
         className={`pointer-events-auto absolute ${TOOLBAR_CARD}`}
       >
-        <Tooltip label={label}>
-          <button
-            type="button"
-            aria-label={label}
-            aria-expanded={shown}
-            onClick={onToggle}
-            className={`relative flex h-9 w-9 touch-target items-center justify-center rounded-md transition ${TOOLBAR_CONTROL_REST}`}
-          >
-            <Glyph size={18} units={20}>
-              <path d={shown ? 'M6 12.5l4-4 4 4' : 'M6 8l4 4 4-4'} />
-            </Glyph>
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label={label}
+          aria-expanded={shown}
+          onClick={onToggle}
+          className={`relative flex h-9 w-9 touch-target items-center justify-center rounded-md transition ${TOOLBAR_CONTROL_REST}`}
+        >
+          <Glyph size={18} units={20}>
+            <path d={shown ? 'M6 12.5l4-4 4 4' : 'M6 8l4 4 4-4'} />
+          </Glyph>
+        </button>
       </div>
     </div>
   );

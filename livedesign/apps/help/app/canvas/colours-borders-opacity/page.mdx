@@ -52,6 +52,8 @@ Every colour row opens the same picker, the one used everywhere in the editor. F
 
 With a mouse, hovering a swatch previews it on the element; clicking commits it and closes the picker. The keyboard works too: arrow keys move between swatches, **Enter** picks and **Escape** closes. On a text or line row, the custom colour editor warns you when a colour would be hard to read on a light or dark canvas, and offers a readable version beside the warning.
 
+The **Text** row also checks whether the words will be easy to read where they sit: on the shape's fill, the box under them or the page's background. When a colour falls short of the usual readability target (4.5:1, or 3:1 for large text), a short note under the swatches says so, and **Use** beside it applies the nearest shade of the same colour that reads. It is only a hint, so you can still pick any colour. Text on a picture isn't checked.
+
 ### Ink and Colours That Adapt
 
 **Ink** is the first strong standard colour: near-black on a light canvas, near-white on a dark one. A strong standard colour you pick for a shape's text or border, a text element, a sticky note's text, an arrow or a pen stroke is stored by its name, so it is drawn in its version for the canvas you see it on and stays readable when a tab or a reader switches between light and dark. Text with no colour of its own is drawn in Ink. Any other colour is kept exactly as picked.

@@ -1,3 +1,4 @@
+import type { Tab } from '@liveplanner/project';
 import { writeUserPreferences } from '@/lib/user-preferences';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -15,6 +16,8 @@ import type { EditorTabToolsSlice } from './useEditorTabTools';
 import type { EditorStyleSlice } from './useEditorStyle';
 import type { EditorInteractionSlice } from './useEditorInteraction';
 import type { EditorShortcutsSlice } from './useEditorShortcuts';
+
+const NO_TABS: readonly Tab[] = [];
 
 // The editor's view-model: what useEditorState returns and EditorContext carries, assembled from the slices.
 // One object per render, as it always was; each value keeps the identity its slice gives it.
@@ -263,6 +266,10 @@ export function buildEditorView(slices: {
     livePresence: collaborationSlice.livePresence,
     loadAllTabs: planDataSlice.loadAllTabs,
     loadedTabIds: projectSlice.loadedTabIds,
+    // The warm-painted tab, and the bodies of the tabs a Dashboard first tab shows as the copy kept them (offline-mode.md
+    // "Warm open of a cloud project"): its page draws before hydration, each tile from its stand-in until its tab loads.
+    warmTabId: projectSlice.warmTabId,
+    warmRefTabs: projectSlice.warmPlan?.refTabs ?? NO_TABS,
     loadingProject: projectSlice.loadingProject,
     makeCopy: tabsSlice.makeCopy,
     nameConfirmed: projectSlice.nameConfirmed,

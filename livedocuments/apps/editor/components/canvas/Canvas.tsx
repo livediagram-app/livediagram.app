@@ -1,5 +1,4 @@
 import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
-import dynamic from 'next/dynamic';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
@@ -55,14 +54,11 @@ import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
-import { loadArticleFlows, loadCanvasPages } from '@/lib/editor-deferred-code';
+// Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand
+// (lib/editor-deferred-code.ts fetches it as the editor mounts, and before a warm paint).
+import { ArticleFlows, CanvasPages } from '@/lib/editor-deferred-code';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from '@liveworkspace/workbench/components/canvas/slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
-
-// Pages mode's pages and their writing draw only on a tab that has pages, so their code loads on demand
-// (lib/editor-deferred-code.ts fetches it as the editor mounts).
-const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
-const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.

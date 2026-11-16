@@ -3,7 +3,7 @@
 Status: built (Work Tracker 948)
 
 Manual save points of the whole Space, built once for every app. The platform spec,
-[Snapshots](../../../../liveworkspace/docs/specs/013-snapshots/snapshots.md), is the source of truth for what a
+[Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md), is the source of truth for what a
 snapshot is, the five kept, Revert and its automatic snapshot, the generation fence, the roles, the dialog and the
 API. This spec says only what is livehuddle's own. (Not the previews in `006-*`, which are drawings of a Space.)
 

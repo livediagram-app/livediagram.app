@@ -5,7 +5,7 @@
 // empty, an invitation to drag something from the palette into it. Its settings sit in one cog: the cog of what it
 // shows, holding the slot's Slot section too, or the slot's own Slot Settings cog (SlotCog), on hover or focus.
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
-import { CompactEmptyState, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideGripVertical, lucideLayoutGrid } from '@liveworkspace/icons/lucide';
 import { dashboardNeighbour, moveDashboardSlot } from '@liveplanner/project';
 import { DASHBOARD_SPANS, type DashboardLayout, type DashboardSlot } from '@liveplanner/project';
@@ -125,49 +125,45 @@ export function DashboardSlotView({
     >
       {beginMove && !phone ? (
         // The grip a slot is carried by (plan-tabs.md "Moving a slot"), on its top edge's middle.
-        <Tooltip label="Move Slot">
-          <button
-            type="button"
-            aria-label="Move Slot"
-            aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"
-            onPointerDown={(e) => {
-              if (e.button !== 0) return;
-              e.preventDefault();
-              e.stopPropagation();
-              beginMove(slot.id, e);
-            }}
-            // From the keyboard: an arrow swaps this slot with its neighbour that way, and focus follows it.
-            onKeyDown={(e) => {
-              const dir = ARROW_DIRS[e.key];
-              if (!dir) return;
-              e.preventDefault();
-              e.stopPropagation();
-              const to = layout ? dashboardNeighbour(layout, slot.id, dir) : null;
-              if (!to) return;
-              // A swap that would squeeze either slot's content is not made (useFitGuard).
-              const swap = (l: DashboardLayout) =>
-                moveDashboardSlot(l, slot.id, { kind: 'slot', slotId: to }, newId);
-              if (fit && !fit.keeps(swap)) return;
-              actions.changeDashboard(
-                (l) => moveDashboardSlot(l, slot.id, { kind: 'slot', slotId: to }, newId),
-                'DashboardSlot',
-              );
-              // The slots keep their places (only what they hold swaps), so the target's grip is there now.
-              document
-                .querySelector<HTMLElement>(
-                  `[data-dashboard-slot="${to}"] [aria-label="Move Slot"]`,
-                )
-                ?.focus();
-            }}
-            // touch-none: a finger on the grip carries the slot rather than scrolling the page under it. A touch screen
-            // has no hover to reveal it: there it is always shown, quietly, with a finger's tap area, in the slot's top
-            // left corner (the cog holds the right) where nothing heads the slot, clear of what it shows in its middle;
-            // a slot with a header of its own (its title at the left) keeps it in the middle of its top edge.
-            className={`touch-target absolute left-1/2 top-1.5 z-30 flex h-5 w-9 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-slate-900/10 bg-white text-slate-500 opacity-0 shadow-sm scale-75 transition-[opacity,scale,color] duration-micro ease-out hover:text-brand-700 focus-visible:scale-100 focus-visible:opacity-100 active:cursor-grabbing group-hover/slot:scale-100 group-hover/slot:opacity-70 group-data-[tour-reveal]/slot:scale-100 group-data-[tour-reveal]/slot:opacity-100 hover:!opacity-100 motion-reduce:scale-100 motion-reduce:transition-none dark:border-white/[0.06] dark:bg-slate-800 dark:text-slate-400 dark:group-hover/slot:opacity-50 dark:hover:text-brand-300 [@media(hover:none)]:scale-100 [@media(hover:none)]:opacity-70 ${headed ? '' : GRIP_CORNER_ON_TOUCH}`}
-          >
-            <GripGlyph />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="Move Slot"
+          aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"
+          onPointerDown={(e) => {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            beginMove(slot.id, e);
+          }}
+          // From the keyboard: an arrow swaps this slot with its neighbour that way, and focus follows it.
+          onKeyDown={(e) => {
+            const dir = ARROW_DIRS[e.key];
+            if (!dir) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const to = layout ? dashboardNeighbour(layout, slot.id, dir) : null;
+            if (!to) return;
+            // A swap that would squeeze either slot's content is not made (useFitGuard).
+            const swap = (l: DashboardLayout) =>
+              moveDashboardSlot(l, slot.id, { kind: 'slot', slotId: to }, newId);
+            if (fit && !fit.keeps(swap)) return;
+            actions.changeDashboard(
+              (l) => moveDashboardSlot(l, slot.id, { kind: 'slot', slotId: to }, newId),
+              'DashboardSlot',
+            );
+            // The slots keep their places (only what they hold swaps), so the target's grip is there now.
+            document
+              .querySelector<HTMLElement>(`[data-dashboard-slot="${to}"] [aria-label="Move Slot"]`)
+              ?.focus();
+          }}
+          // touch-none: a finger on the grip carries the slot rather than scrolling the page under it. A touch screen
+          // has no hover to reveal it: there it is always shown, quietly, with a finger's tap area, in the slot's top
+          // left corner (the cog holds the right) where nothing heads the slot, clear of what it shows in its middle;
+          // a slot with a header of its own (its title at the left) keeps it in the middle of its top edge.
+          className={`touch-target absolute left-1/2 top-1.5 z-30 flex h-5 w-9 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-slate-900/10 bg-white text-slate-500 opacity-0 shadow-sm scale-75 transition-[opacity,scale,color] duration-micro ease-out hover:text-brand-700 focus-visible:scale-100 focus-visible:opacity-100 active:cursor-grabbing group-hover/slot:scale-100 group-hover/slot:opacity-70 group-data-[tour-reveal]/slot:scale-100 group-data-[tour-reveal]/slot:opacity-100 hover:!opacity-100 motion-reduce:scale-100 motion-reduce:transition-none dark:border-white/[0.06] dark:bg-slate-800 dark:text-slate-400 dark:group-hover/slot:opacity-50 dark:hover:text-brand-300 [@media(hover:none)]:scale-100 [@media(hover:none)]:opacity-70 ${headed ? '' : GRIP_CORNER_ON_TOUCH}`}
+        >
+          <GripGlyph />
+        </button>
       ) : null}
       <div
         // A translucent card over the canvas (plan-tabs.md "Look"): no backdrop blur, which every slot would recomposite

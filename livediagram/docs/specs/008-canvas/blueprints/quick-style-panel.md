@@ -383,7 +383,7 @@ label", "Icon after label"; "Clear Styles". The panel's region label: "Quick sty
 - Glyph row keys: ArrowRight / ArrowDown next, ArrowLeft / ArrowUp previous (wrapping), Home / End first /
 - Shift+F10 / the context-menu key on a slot 1-6 swatch opens its override popover (a labelled
   dialog); Escape returns focus to the swatch.
-- An overridden swatch's name and tooltip say "Custom <hue>, in place of <theme colour>"; the corner
+- An overridden swatch's name says "Custom <hue>, in place of <theme colour>"; the corner
   marker is decoration.
   last: each moves focus and chooses. Space / Enter chooses the focused option.
 - `focus-visible:ring-2 ring-brand-500 ring-offset-1` on every option.

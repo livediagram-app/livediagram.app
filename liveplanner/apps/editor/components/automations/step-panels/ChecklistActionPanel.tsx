@@ -8,7 +8,7 @@ import {
   ITEM_CHECKLIST_TEXT_MAX,
   type AutomationAction,
 } from '@liveplanner/items';
-import { Button, CloseIcon, TextInput, Tooltip } from '@liveplanner/ui';
+import { Button, CloseIcon, TextInput } from '@liveplanner/ui';
 
 export function ChecklistActionPanel({
   action,
@@ -43,18 +43,16 @@ export function ChecklistActionPanel({
               value={text}
               onChange={(e) => set(items.map((t, j) => (j === i ? e.target.value : t)))}
             />
-            <Tooltip label="Remove Item">
-              <Button
-                variant="ghost"
-                size="xs"
-                className="size-8 shrink-0 px-0"
-                aria-label={`Remove Item ${i + 1}`}
-                disabled={items.length <= 1}
-                onClick={() => set(items.filter((_, j) => j !== i))}
-              >
-                <CloseIcon size={14} aria-hidden />
-              </Button>
-            </Tooltip>
+            <Button
+              variant="ghost"
+              size="xs"
+              className="size-8 shrink-0 px-0"
+              aria-label={`Remove Item ${i + 1}`}
+              disabled={items.length <= 1}
+              onClick={() => set(items.filter((_, j) => j !== i))}
+            >
+              <CloseIcon size={14} aria-hidden />
+            </Button>
           </li>
         ))}
       </ol>

@@ -398,11 +398,14 @@ describe('New Team', () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => teamChanges.reset());
 
-  it('is the last row of Spaces: the dialog makes the team and opens it', async () => {
+  it('is the plus at the right of the Spaces heading: the dialog makes the team and opens it', async () => {
     const host = fakeHost();
     const onNavigate = page({ kind: 'all' }, host);
-    const row = await screen.findByRole('treeitem', { name: 'New Team' });
-    fireEvent.click(row.querySelector('[data-tree-activate]')!);
+    // A heading action, never a row of the tree.
+    const plus = await screen.findByRole('button', { name: 'New Team' });
+    expect(plus.closest('[role="tree"]')).toBeNull();
+    expect(screen.queryByRole('treeitem', { name: 'New Team' })).toBeNull();
+    fireEvent.click(plus);
     const form = await screen.findByRole('dialog', { name: 'New Team' });
     fireEvent.change(within(form).getByLabelText('Team name'), { target: { value: 'Ops' } });
     fireEvent.change(within(form).getByLabelText(/Organisation/), { target: { value: 'Acme' } });
@@ -425,8 +428,7 @@ describe('New Team', () => {
       create: vi.fn(async () => ({ ok: false as const, error: 'team_limit_reached' })),
     });
     page({ kind: 'all' }, host);
-    const row = await screen.findByRole('treeitem', { name: 'New Team' });
-    fireEvent.click(row.querySelector('[data-tree-activate]')!);
+    fireEvent.click(await screen.findByRole('button', { name: 'New Team' }));
     const form = await screen.findByRole('dialog', { name: 'New Team' });
     fireEvent.change(within(form).getByLabelText('Team name'), { target: { value: 'Ops' } });
     fireEvent.click(within(form).getByRole('button', { name: 'Create Team' }));
@@ -436,7 +438,7 @@ describe('New Team', () => {
   it('is not offered to a guest, nor without a TeamsHost', async () => {
     page({ kind: 'all' }, fakeHost(), { signedIn: false, signInHref: '/sign-in' });
     const nudge = await screen.findByRole('link', { name: /Sign in to access Teams/ });
-    expect(screen.queryByRole('treeitem', { name: 'New Team' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'New Team' })).toBeNull();
     // Outside the Spaces tree, which holds only treeitems (axe aria-required-children).
     expect(nudge.closest('[role="tree"]')).toBeNull();
   });

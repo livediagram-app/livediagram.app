@@ -15,12 +15,15 @@ import {
   type TeamClaim,
   type TokenAccount,
 } from './index';
+import type { KeysFetcher } from './verify';
 
 /** The api Worker's account-client vars, as far as this module reads them. */
 export type AccountsEnv = {
   ACCOUNTS_URL?: string;
   ACCOUNTS_CLIENT_ID?: string;
   ACCOUNTS_CLIENT_SECRET?: string;
+  // The accounts Worker's service binding: the account API's calls go through it when bound.
+  ACCOUNTS?: KeysFetcher;
 };
 
 // The app's client at the accounts Worker, for the account API (liveworkspace/docs/specs/003-accounts/accounts.md):
@@ -32,6 +35,7 @@ export function accountCredentials(env: AccountsEnv): ClientCredentials | null {
     accountsUrl: ACCOUNTS_URL,
     clientId: ACCOUNTS_CLIENT_ID,
     clientSecret: ACCOUNTS_CLIENT_SECRET,
+    ...(env.ACCOUNTS && { accounts: env.ACCOUNTS }),
   };
 }
 

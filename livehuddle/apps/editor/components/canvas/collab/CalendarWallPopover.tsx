@@ -11,7 +11,7 @@ import {
   NOTES_MAX,
   type ShapeElement,
 } from '@livehuddle/document';
-import { lucideGlyph, Tooltip } from '@livehuddle/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 import {
   calendarMonth,
   canStepMonth,
@@ -112,17 +112,15 @@ function CalendarNotes({
         <h2 id={titleId} className={`${g.month} mr-auto font-semibold`} aria-live="polite">
           {monthTitle(cursor)}
         </h2>
-        <Tooltip label="Previous Month">
-          <button
-            type="button"
-            aria-label="Previous month"
-            className={nav}
-            disabled={!canStepMonth(cursor, -1)}
-            onClick={() => setCursor((c) => stepMonth(c, -1))}
-          >
-            <PrevIcon />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="Previous month"
+          className={nav}
+          disabled={!canStepMonth(cursor, -1)}
+          onClick={() => setCursor((c) => stepMonth(c, -1))}
+        >
+          <PrevIcon />
+        </button>
         <button
           type="button"
           onClick={() => {
@@ -133,17 +131,15 @@ function CalendarNotes({
         >
           Today
         </button>
-        <Tooltip label="Next Month">
-          <button
-            type="button"
-            aria-label="Next month"
-            className={nav}
-            disabled={!canStepMonth(cursor, 1)}
-            onClick={() => setCursor((c) => stepMonth(c, 1))}
-          >
-            <NextIcon />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label="Next month"
+          className={nav}
+          disabled={!canStepMonth(cursor, 1)}
+          onClick={() => setCursor((c) => stepMonth(c, 1))}
+        >
+          <NextIcon />
+        </button>
       </div>
       <div role="grid" aria-labelledby={titleId} className="grid grid-cols-7 gap-0.5">
         <div role="row" className="contents">

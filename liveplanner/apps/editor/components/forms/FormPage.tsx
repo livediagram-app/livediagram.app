@@ -22,7 +22,7 @@ import {
   type FormDefinition,
   type PublishProblem,
 } from '@liveplanner/forms';
-import { lucideGlyph, Tooltip } from '@liveplanner/ui';
+import { lucideGlyph } from '@liveplanner/ui';
 import { lucideEye } from '@liveworkspace/icons/lucide';
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
@@ -251,21 +251,19 @@ export function FormPage({
     return () => setFormProblemsHost(null);
   }, [canEdit, problem, notReady, warnings, openSettings, showProblem]);
   const previewButton = (
-    <Tooltip label={preview ? 'Back to Editing (Esc)' : 'Preview the form as respondents see it'}>
-      <button
-        type="button"
-        aria-pressed={preview}
-        onClick={() => setPreview((p) => !p)}
-        className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition ${
-          preview
-            ? 'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700'
-            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-        }`}
-      >
-        <EyeIcon aria-hidden />
-        {preview ? 'Back to Editing' : 'Preview'}
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      aria-pressed={preview}
+      onClick={() => setPreview((p) => !p)}
+      className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition ${
+        preview
+          ? 'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700'
+          : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+      }`}
+    >
+      <EyeIcon aria-hidden />
+      {preview ? 'Back to Editing' : 'Preview'}
+    </button>
   );
   const phone = useIsMobileViewport();
   const shown = publicForm(form);

@@ -322,7 +322,7 @@ export function itemTabWrites<Env, Tab extends WritableTab, Stats extends { elem
     return true;
   }
 
-  // A revert to a snapshot (liveworkspace/docs/specs/013-snapshots/snapshots.md "Revert", step 3): the item's tabs
+  // A revert to a snapshot (liveworkspace/docs/specs/014-snapshots/snapshots.md "Revert", step 3): the item's tabs
   // become exactly `tabs`, in their order and folders, with their own ids. Every one is written as a save writes it, in
   // one batch, so each revision moves forward (a draft kept over an older one is never replayed) and its stats and
   // reference indexes follow; a tab the item holds that `tabs` lacks is then removed as a tab delete removes it. A

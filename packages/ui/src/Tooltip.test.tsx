@@ -24,7 +24,7 @@ afterEach(() => {
 });
 
 describe('Tooltip', () => {
-  it('names the control after a 500 ms hover, as an inverse pill', () => {
+  it('names the control after an 800 ms hover, as an inverse pill', () => {
     render(
       <Tooltip label="Zoom in">
         <button type="button" aria-label="Zoom in" />
@@ -48,6 +48,73 @@ describe('Tooltip', () => {
       ]),
     );
     expect(classes.filter((c) => /^dark:bg-slate-[1-7]00$/.test(c))).toEqual([]);
+    // It never takes a press: a click where it sits reaches the control beneath.
+    expect(classes).toContain('pointer-events-none');
+  });
+
+  it('waits 800 ms, so a pause before a click opens nothing', () => {
+    expect(TOOLTIP_OPEN_DELAY_MS).toBe(800);
+  });
+
+  it('opens nothing while a button is held (a drag across a toolbar)', () => {
+    render(
+      <Tooltip label="Zoom in">
+        <button type="button" aria-label="Zoom in" />
+      </Tooltip>,
+    );
+    fireEvent.pointerEnter(screen.getByRole('button'), { ...mouse, buttons: 1 });
+    advance(TOOLTIP_OPEN_DELAY_MS * 2);
+    expect(hint()).toBeNull();
+  });
+
+  it('stays shut on a control that already shows its name, on hover and on focus', () => {
+    const matches = Element.prototype.matches;
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (
+      this: Element,
+      selector: string,
+    ) {
+      return selector === ':focus-visible' || matches.call(this, selector);
+    });
+    render(
+      <Tooltip label="Share">
+        <button type="button">Share</button>
+      </Tooltip>,
+    );
+    const button = screen.getByRole('button');
+    fireEvent.pointerEnter(button, mouse);
+    advance(TOOLTIP_OPEN_DELAY_MS);
+    expect(hint()).toBeNull();
+    fireEvent.focus(button);
+    expect(hint()).toBeNull();
+  });
+
+  it('still opens on a control whose own name is cut short by an ellipsis', () => {
+    render(
+      <Tooltip label="Quarterly planning notes">
+        <button type="button">
+          <span className="truncate">Quarterly planning notes</span>
+        </button>
+      </Tooltip>,
+    );
+    const cut = screen.getByText('Quarterly planning notes');
+    Object.defineProperty(cut, 'clientWidth', { configurable: true, value: 80 });
+    Object.defineProperty(cut, 'scrollWidth', { configurable: true, value: 160 });
+    fireEvent.pointerEnter(screen.getByRole('button'), mouse);
+    advance(TOOLTIP_OPEN_DELAY_MS);
+    expect(hint()).toHaveProperty('textContent', 'Quarterly planning notes');
+  });
+
+  it('still opens on a control whose text says something else (a shortened caption)', () => {
+    render(
+      <Tooltip label="Rectangle with rounded corners">
+        <button type="button" aria-label="Rectangle with rounded corners">
+          Rounded
+        </button>
+      </Tooltip>,
+    );
+    fireEvent.pointerEnter(screen.getByRole('button'), mouse);
+    advance(TOOLTIP_OPEN_DELAY_MS);
+    expect(hint()).toHaveProperty('textContent', 'Rectangle with rounded corners');
   });
 
   it('follows its control when it moves without a scroll (a canvas pan)', () => {

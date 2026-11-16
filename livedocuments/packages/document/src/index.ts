@@ -150,6 +150,7 @@ export * from './article-notes';
 export * from './article-intake';
 export * from './article-markdown';
 export * from './article-markdown-io';
+export * from './article-markdown-export';
 export * from './page-paint';
 export * from './page-default-background';
 export * from './page-theme-fills';

@@ -83,6 +83,33 @@ describe('ImageCropOverlay', () => {
     expect(imageCropId()).toBeNull();
   });
 
+  it('an undo or a redo ends it, storing nothing, and is left to run', () => {
+    for (const init of [
+      { key: 'z', ctrlKey: true },
+      { key: 'Z', metaKey: true, shiftKey: true },
+      { key: 'y', ctrlKey: true },
+    ]) {
+      startImageCrop('pic');
+      const { onApply } = show();
+      const event = new KeyboardEvent('keydown', { ...init, cancelable: true });
+      act(() => {
+        window.dispatchEvent(event);
+      });
+      expect(onApply).not.toHaveBeenCalled();
+      expect(imageCropId()).toBeNull();
+      expect(event.defaultPrevented).toBe(false);
+      cleanup();
+    }
+  });
+
+  it('a plain z is not an undo and keeps cropping', () => {
+    show();
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z' }));
+    });
+    expect(imageCropId()).toBe('pic');
+  });
+
   it('a drag on an edge moves the frame; a press off the picture applies', () => {
     const { onApply, box } = show();
     const east = box.querySelector('[data-crop-handle="e"]')!;

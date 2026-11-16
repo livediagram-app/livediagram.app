@@ -10,13 +10,7 @@
 import { useRef, useState } from 'react';
 import { WEBHOOK_SIGNATURE_HEADER } from '@liveplanner/items';
 import type { AutomationHookInfo, AutomationHookSecret } from '@liveplanner/api-schema';
-import {
-  Button,
-  ConfirmPopover,
-  Tooltip,
-  formatRelativeTimeShort,
-  lucideGlyph,
-} from '@liveplanner/ui';
+import { Button, ConfirmPopover, formatRelativeTimeShort, lucideGlyph } from '@liveplanner/ui';
 import { lucideCheck, lucideCopy } from '@liveworkspace/icons/lucide';
 import { AccordionSection } from '@liveworkspace/workbench/components/primitives/AccordionSection';
 import { track } from '@/lib/telemetry';
@@ -71,16 +65,14 @@ function CopyField({
         <code ref={ref} aria-label={label} className={`min-w-0 flex-1 break-all py-0.5 ${CODE}`}>
           {value}
         </code>
-        <Tooltip label={copied === 'yes' ? 'Copied' : `Copy ${label}`}>
-          <button
-            type="button"
-            aria-label={`Copy ${label}`}
-            onClick={() => void copy()}
-            className="touch-target relative inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 motion-reduce:transition-none dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-          >
-            {copied === 'yes' ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label={`Copy ${label}`}
+          onClick={() => void copy()}
+          className="touch-target relative inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 motion-reduce:transition-none dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        >
+          {copied === 'yes' ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+        </button>
       </div>
       {copied === 'failed' ? (
         <p role="alert" className="text-[12px] text-rose-700 dark:text-rose-300">

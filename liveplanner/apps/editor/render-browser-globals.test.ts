@@ -19,7 +19,6 @@ const OUTSIDE_RENDER: Record<string, string> = {
   '../packages/ui/src/useFocusTrap.ts': 'coarsePointer, called from the open effect',
   '../packages/ui/src/useMediaQuery.ts': 'subscribe and snapshot of an external store',
   '../packages/ui/src/useVisualViewportBand.ts': 'subscribe and snapshot of an external store',
-  'apps/editor/app/project/[id]/useTabEntryEffects.ts': 'inside an effect',
   'apps/editor/app/project/[id]/useCollabDeepLink.ts': 'inside an effect',
   '../packages/workbench/src/hooks/ui/usePanelDock.ts': 'inside an effect',
   '../packages/workbench/src/hooks/canvas/useAutoCopyParam.ts': 'inside an effect',

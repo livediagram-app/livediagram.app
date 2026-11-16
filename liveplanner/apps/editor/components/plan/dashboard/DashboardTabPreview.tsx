@@ -32,18 +32,25 @@ export function DashboardTabPreview({
   // What the slot was given, so a deleted one is named and one still loading waits as it (a Board when absent).
   of?: DashboardTabOf | undefined;
 }) {
-  const { tabs, tabStatus, retryTab } = useDashboard();
+  const { tabs, tabStatus, retryTab, standIns } = useDashboard();
   const bodyRef = useRef<HTMLDivElement>(null);
   const size = useBoxSize(bodyRef);
   // The canvas's chart view, so the Sheet's charts look here as they do on its tab (sheet.md "Charts").
   const renderChart = useSheetCharts()?.renderChart;
   const dashboardTheme = useCardTheme();
   const appearance = useViewerAppearance();
-  const tab = tabs.find((t) => t.id === tabId);
+  const live = tabs.find((t) => t.id === tabId);
+  // A tab still on its way, whose load has not failed, draws the body a warm open kept of it (docs/specs/006-project/
+  // offline-mode.md "Warm open of a cloud project"): as it was seen, not worked on (inert), until the tab loads.
+  const standIn =
+    live && !live.kind && live.elements.length === 0 && tabStatus(tabId) !== 'failed'
+      ? standIns?.find((t) => t.id === tabId)
+      : undefined;
+  const tab = standIn ?? live;
   // One box, measured whatever it shows first: a tab whose content is still on its way has no kind yet, so a box only
   // drawn once it is a Board or Sheet would never be measured, and the board never drawn.
   return (
-    <div ref={bodyRef} className="relative h-full w-full">
+    <div ref={bodyRef} className="relative h-full w-full" inert={!!standIn}>
       {body()}
     </div>
   );

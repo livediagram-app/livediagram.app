@@ -12,7 +12,10 @@ import type { Env } from '../types';
 // a client registered as this app (`--app livedesign.app`) reach it.
 export const ACCOUNTS_APP: SettingsApp = 'livedesign.app';
 
-type AccountsEnv = Pick<Env, 'ACCOUNTS_URL' | 'ACCOUNTS_CLIENT_ID' | 'ACCOUNTS_CLIENT_SECRET'>;
+type AccountsEnv = Pick<
+  Env,
+  'ACCOUNTS_URL' | 'ACCOUNTS_CLIENT_ID' | 'ACCOUNTS_CLIENT_SECRET' | 'ACCOUNTS'
+>;
 
 // This app's client at the accounts Worker, or null when sign-in isn't set up.
 export function accountsClient(env: AccountsEnv): ClientCredentials | null {
@@ -22,6 +25,8 @@ export function accountsClient(env: AccountsEnv): ClientCredentials | null {
     accountsUrl: ACCOUNTS_URL,
     clientId: ACCOUNTS_CLIENT_ID,
     clientSecret: ACCOUNTS_CLIENT_SECRET,
+    // The accounts Worker's binding, when bound: every call goes through it, the public route otherwise.
+    ...(env.ACCOUNTS && { accounts: env.ACCOUNTS }),
   };
 }
 

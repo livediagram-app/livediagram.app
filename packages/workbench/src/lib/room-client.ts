@@ -51,7 +51,7 @@ export type RoomClientHandlers<Op, Participant> = {
   // A workbench session's pairing or token ended (docs/specs/013-workspace/workbench-embeds.md): the
   // room closed it with WORKBENCH_ENDED_CLOSE; the connector stops and the page turns read-only.
   onWorkbenchEnded?: () => void;
-  // A snapshot's revert replaced the item in place (liveworkspace/docs/specs/013-snapshots/snapshots.md "Every open
+  // A snapshot's revert replaced the item in place (liveworkspace/docs/specs/014-snapshots/snapshots.md "Every open
   // client"): the room closed every session with SNAPSHOT_REVERTED_CLOSE. The connector stops; the page reloads onto
   // the reverted content unless the caller handles it.
   onSnapshotReverted?: () => void;

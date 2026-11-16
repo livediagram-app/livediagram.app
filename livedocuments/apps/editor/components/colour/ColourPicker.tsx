@@ -6,7 +6,6 @@
 // options (no colour, a surface's named defaults) go first in the first group. One Tab stop, the
 // arrows move through every swatch, Enter or Space picks.
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
-import { Tooltip } from '@livedocuments/ui';
 import { isHexColour } from '@livedocuments/document';
 import {
   onMouseHover,
@@ -160,21 +159,19 @@ export function ColourPicker({
                 );
               })}
               {yoursGroup ? (
-                <Tooltip label="Add a custom colour">
-                  <button
-                    ref={plusRef}
-                    type="button"
-                    aria-label="Add a custom colour"
-                    aria-expanded={editorOpen}
-                    data-colour-key=""
-                    tabIndex={flat.length === 0 ? 0 : -1}
-                    onClick={() => setEditorOpen((open) => !open)}
-                    className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800"
-                  >
-                    {/* More colours' four dots, as every way into more colours (colour-picker.md "Skins"). */}
-                    <MoreColoursGlyph />
-                  </button>
-                </Tooltip>
+                <button
+                  ref={plusRef}
+                  type="button"
+                  aria-label="Add a custom colour"
+                  aria-expanded={editorOpen}
+                  data-colour-key=""
+                  tabIndex={flat.length === 0 ? 0 : -1}
+                  onClick={() => setEditorOpen((open) => !open)}
+                  className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800"
+                >
+                  {/* More colours' four dots, as every way into more colours (colour-picker.md "Skins"). */}
+                  <MoreColoursGlyph />
+                </button>
               ) : null}
             </div>
           </div>

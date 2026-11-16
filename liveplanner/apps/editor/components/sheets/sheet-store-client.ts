@@ -379,16 +379,22 @@ const STORES = new Map<string, SheetStore>();
 // The project's sheet store, as the sheets bridge describes it (a Sheet and a chart drawn from one share it).
 export function sheetStoreOf(bridge: SheetsBridge): SheetStore {
   const { projectId, ownerId } = bridge.scope;
-  return sheetStoreFor({
+  const made = !STORES.has(projectId);
+  const store = sheetStoreFor({
     scope: bridge.scope,
     self: () => bridge.self,
     locale: bridge.locale,
     pushUndo: bridge.pushUndo,
     toast: bridge.toast,
-    // An Offline Mode project needs no connection, so nothing of it waits.
-    queue: isOfflineIdSync(projectId) ? null : planQueue(projectId, ownerId),
+    // An Offline Mode project needs no connection, so nothing of it waits; nor does a warm open before its plan id.
+    queue: !projectId || isOfflineIdSync(projectId) ? null : planQueue(projectId, ownerId),
     rights: { cells: bridge.canEdit, shape: bridge.canShape },
+    onTabRead: bridge.onTabRead,
   });
+  // A warm open's kept sheets (offline-mode.md "Warm open of a cloud project"): shown at once in the store made for
+  // the paint, and in the plan's own store until its first load answers.
+  if (made) for (const kept of bridge.warm ?? []) store.seedWarm(kept);
+  return store;
 }
 
 export function sheetStoreFor(deps: SheetStoreDeps): SheetStore {

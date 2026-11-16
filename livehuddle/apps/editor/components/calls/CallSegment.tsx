@@ -19,6 +19,12 @@ export type SegmentTone = 'rest' | 'live' | 'warn' | 'muted' | 'hand';
 /** Whether the call group names its buttons: on a desktop, never on a phone (CallDock; owner 2026-11-07). */
 export const CallNames = createContext(false);
 
+/**
+ * Whether the buttons show their hover cards: everywhere but the mini view, whose window would have them drawn in the
+ * Space's tab (avatar-mode.md "Your microphone and camera"). Without one, each keeps its card's line for a screen reader.
+ */
+export const CallHoverCards = createContext(true);
+
 const TONE: Record<SegmentTone, string> = {
   // Say's own rest tone: the brand tint.
   rest: TOOLBAR_TRIGGER_TONE,
@@ -42,8 +48,9 @@ export function Segment(props: {
   children?: ReactNode;
 }) {
   const named = useContext(CallNames);
+  const cards = useContext(CallHoverCards);
   return (
-    <HoverCard title={props.title} description={props.description}>
+    <HoverCard title={props.title} description={props.description} disabled={!cards}>
       <button
         type="button"
         onPointerDown={(e) => e.stopPropagation()}

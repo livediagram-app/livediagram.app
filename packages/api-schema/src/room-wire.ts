@@ -44,7 +44,7 @@ export const WORKBENCH_ENDED_CLOSE = 4006;
 export const GRANT_LAPSED_CLOSE = 4007;
 
 // The close code every session ends with when someone reverts the item to a snapshot
-// (liveworkspace/docs/specs/013-snapshots/snapshots.md "Revert"): the editor does not reconnect, it reloads, so nothing
+// (liveworkspace/docs/specs/014-snapshots/snapshots.md "Revert"): the editor does not reconnect, it reloads, so nothing
 // it held from before the revert is saved over it. Beside 4008 (a full room, room-capacity.ts).
 export const SNAPSHOT_REVERTED_CLOSE = 4009;
 

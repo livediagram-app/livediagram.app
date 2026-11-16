@@ -211,39 +211,35 @@ function TimerControls({
   };
   return (
     <div className="pointer-events-none absolute left-1/2 top-[calc(100%+3px)] flex -translate-x-1/2 gap-1">
-      <Tooltip label={`${primary} ${name}`}>
+      <button
+        type="button"
+        className={PILL}
+        aria-label={`${primary} ${name}`}
+        // The piece's main action: a click anywhere on it while walking presses this (avatar-click-intent).
+        data-piece-main=""
+        {...pieceControlProps}
+        onClick={(e) => {
+          e.stopPropagation();
+          onPrimary();
+        }}
+      >
+        <span aria-hidden>{running ? '❚❚' : '▶'}</span>
+        {primary}
+      </button>
+      {phase !== 'ready' ? (
         <button
           type="button"
           className={PILL}
-          aria-label={`${primary} ${name}`}
-          // The piece's main action: a click anywhere on it while walking presses this (avatar-click-intent).
-          data-piece-main=""
+          aria-label={`Reset ${name}`}
           {...pieceControlProps}
           onClick={(e) => {
             e.stopPropagation();
-            onPrimary();
+            onReset();
           }}
         >
-          <span aria-hidden>{running ? '❚❚' : '▶'}</span>
-          {primary}
+          <span aria-hidden>↺</span>
+          Reset
         </button>
-      </Tooltip>
-      {phase !== 'ready' ? (
-        <Tooltip label={`Reset ${name}`}>
-          <button
-            type="button"
-            className={PILL}
-            aria-label={`Reset ${name}`}
-            {...pieceControlProps}
-            onClick={(e) => {
-              e.stopPropagation();
-              onReset();
-            }}
-          >
-            <span aria-hidden>↺</span>
-            Reset
-          </button>
-        </Tooltip>
       ) : null}
       {kind === 'timer' ? (
         <Tooltip label="Set Timer Length">

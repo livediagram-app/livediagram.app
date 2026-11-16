@@ -1,4 +1,4 @@
-// The snapshot store (liveworkspace/docs/specs/013-snapshots/blueprints/snapshots.md SN3 to SN9): an item's snapshots in
+// The snapshot store (liveworkspace/docs/specs/014-snapshots/blueprints/snapshots.md SN3 to SN9): an item's snapshots in
 // its own Durable Object SQLite, over the D1 surface every app's room hands its handlers (`env.<ITEM>_DB`). A body is
 // cut into chunks under the 2 MB row limit, measured before anything is written, and only the latest SNAPSHOTS_KEPT
 // stay. The item's generation lives beside them.

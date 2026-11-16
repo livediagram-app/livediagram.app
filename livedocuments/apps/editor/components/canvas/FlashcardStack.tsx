@@ -11,7 +11,7 @@ import {
   type ArticleFlow,
   type LaidOutPage,
 } from '@livedocuments/document';
-import { lucideGlyph, Tooltip } from '@livedocuments/ui';
+import { lucideGlyph } from '@livedocuments/ui';
 import { track } from '@/lib/telemetry';
 import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 import { pageSheetStyle } from '@/lib/page-paint';
@@ -137,31 +137,27 @@ export function StackNav({
       onDoubleClick={(e) => e.stopPropagation()}
       className="pointer-events-auto flex items-center gap-0.5"
     >
-      <Tooltip label={`Previous ${noun}`}>
-        <button
-          type="button"
-          aria-label={`Previous ${lower}`}
-          disabled={stack.index <= 0}
-          onClick={() => go(stack.index - 1)}
-          className={button}
-        >
-          <PrevIcon />
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        aria-label={`Previous ${lower}`}
+        disabled={stack.index <= 0}
+        onClick={() => go(stack.index - 1)}
+        className={button}
+      >
+        <PrevIcon />
+      </button>
       <span className="px-1 tabular-nums">
         {noun} {stack.index + 1} of {stack.count}
       </span>
-      <Tooltip label={`Next ${noun}`}>
-        <button
-          type="button"
-          aria-label={`Next ${lower}`}
-          disabled={stack.index >= stack.count - 1}
-          onClick={() => go(stack.index + 1)}
-          className={button}
-        >
-          <NextIcon />
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        aria-label={`Next ${lower}`}
+        disabled={stack.index >= stack.count - 1}
+        onClick={() => go(stack.index + 1)}
+        className={button}
+      >
+        <NextIcon />
+      </button>
     </div>
   );
 }

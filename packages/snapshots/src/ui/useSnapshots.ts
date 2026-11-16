@@ -1,6 +1,6 @@
 'use client';
 
-// What the Snapshots dialog reads and does (liveworkspace/docs/specs/013-snapshots/snapshots.md "In the editor";
+// What the Snapshots dialog reads and does (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor";
 // blueprint SN25): the list, fetched when the dialog opens; one action at a time, its kind and target kept so its
 // button says it is busy and the rest wait; a refusal's message. A revert ends with the page reloading (the room's
 // close reaches this editor too), so its success only says so until then. React drops a state change on an unmounted

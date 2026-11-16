@@ -92,7 +92,7 @@ const core = createApiCore({
     refusal: (url, init) => confinementRefusal(url, init),
     noteResponse: (init, res) => noteWorkbenchResponse(init, res),
   },
-  // The snapshot generation fence (liveworkspace/docs/specs/013-snapshots/snapshots.md "The generation fence"): every
+  // The snapshot generation fence (liveworkspace/docs/specs/014-snapshots/snapshots.md "The generation fence"): every
   // request names the generation this page last saw, and a write refused as from before a revert reloads the page.
   fence: createSnapshotFence('documents'),
   sharePasswordCachePrefix: SHARE_PASSWORD_CACHE_PREFIX,

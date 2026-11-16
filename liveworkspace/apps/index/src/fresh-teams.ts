@@ -6,11 +6,14 @@
 // stands. A claim is never narrowed here.
 
 import { createTeamAccess, type TeamReader } from '@liveworkspace/index-app';
-import { readTeamsClaim } from '@liveworkspace/auth-client';
+import { accountsFetch, deadlineSignal, readTeamsClaim } from '@liveworkspace/auth-client';
 import type { Person } from './auth';
 import { accountsUrl, type Env } from './env';
 
 const access = createTeamAccess();
+
+// How long a miss waits on accounts before the token's claim stands: it is on a request's path.
+export const FRESH_TEAMS_TIMEOUT_MS = 3_000;
 
 export function clearFreshTeamsForTests(): void {
   access.clearForTests();
@@ -20,11 +23,12 @@ function readerFor(env: Env): TeamReader | null {
   const key = env.MERGE_KEY?.trim();
   if (!key) return null;
   return async (userId) => {
-    const res = await fetch(`${accountsUrl(env)}/api/account/index/teams`, {
+    // Over the ACCOUNTS binding (a fetch to accounts' public route can stall), the public route without one.
+    const res = await accountsFetch(env.ACCOUNTS)(`${accountsUrl(env)}/api/account/index/teams`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId }),
-      signal: AbortSignal.timeout(3_000),
+      signal: deadlineSignal(FRESH_TEAMS_TIMEOUT_MS),
     });
     if (!res.ok) throw new Error(`accounts teams ${res.status}`);
     return readTeamsClaim(((await res.json()) as { teams?: unknown }).teams) ?? [];

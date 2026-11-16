@@ -242,7 +242,7 @@ The **Project Brief** template (kind `article`) in /new starts a tab with one ar
   field, or on closing the panel), then its **Page** section while it has a size or orientation to
   choose (the **Size** tiles, each drawn to scale, and **Orientation**, Portrait / Landscape on the
   shared segmented control), then the action row (Split Into Pages on a Fit to Content page,
-  Duplicate, Move left, Move right, Delete) as icon buttons with tooltips. No tabs: everything else
+  Duplicate, Move left, Move right, Delete) as icon buttons with tooltips, but for the move chevrons. No tabs: everything else
   a page has is a button beside the cog ("Beside the cog" below), its **Background** included on
   every kind (an infographic, slide or article page and a card), so the panel never repeats it. With
   no Page section (a card), one hairline parts the name from the actions.
@@ -1747,7 +1747,8 @@ The Export dialog exports **pages**, not the tab's content bounds.
   slide tab and **Word** for an article tab (editable `.pptx` and `.docx`:
   [PowerPoint and Word export](../020-import-export/office-export.md)), **Print** on every kind (the current
   page or the whole document, to the printer: [Print](../020-import-export/print.md)), plus **JSON** (the tab
-  itself, a backup that imports back). Markdown is not offered: a page is not an outline.
+  itself, a backup that imports back). **Markdown** is offered on an article tab only, the article's writing
+  ([Markdown export](../020-import-export/markdown-import.md)); an infographic or slide page is not an outline.
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
   page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
   the first.

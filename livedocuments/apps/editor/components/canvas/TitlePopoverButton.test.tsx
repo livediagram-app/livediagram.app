@@ -16,13 +16,32 @@ afterEach(() => {
 });
 
 describe('TitlePopoverButton', () => {
-  it('has a tooltip that is its name while on, its state in aria-pressed', () => {
+  it('has no tooltip while its name shows beside its icon', () => {
+    render(
+      <TitlePopoverButton
+        name="Notes"
+        labelled
+        className={titleButtonClass}
+        icon={<svg />}
+        width={240}
+      >
+        body
+      </TitlePopoverButton>,
+    );
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Notes' }), { pointerType: 'mouse' });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('has a tooltip that is its name while on and icon-only, its state in aria-pressed', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     render(
       <TitlePopoverButton
         name="Notes"
         on
-        labelled
+        labelled={false}
         className={titleButtonClass}
         icon={<svg />}
         width={240}

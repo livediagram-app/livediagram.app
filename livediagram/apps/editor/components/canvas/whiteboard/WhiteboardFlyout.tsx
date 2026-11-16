@@ -270,28 +270,28 @@ export function FlyoutOption({
   // The key that picks this option from anywhere on the board.
   shortcut?: string;
 }) {
-  return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        aria-label={label}
-        aria-pressed={selected}
-        aria-keyshortcuts={shortcut}
-        onClick={onPick}
-        className={`relative flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg text-sm text-slate-700 transition focus-visible:outline-2 focus-visible:outline-brand-500 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 ${wide ? 'px-3' : 'w-10'} ${selected ? 'bg-brand-50 ring-2 ring-brand-500 dark:bg-brand-500/15' : ''}`}
-      >
-        {children}
-        {shortcut ? (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 pointer-coarse:hidden dark:text-slate-400"
-          >
-            {shortcut}
-          </span>
-        ) : null}
-      </button>
-    </Tooltip>
+  const button = (
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={selected}
+      aria-keyshortcuts={shortcut}
+      onClick={onPick}
+      className={`relative flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg text-sm text-slate-700 transition focus-visible:outline-2 focus-visible:outline-brand-500 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 ${wide ? 'px-3' : 'w-10'} ${selected ? 'bg-brand-50 ring-2 ring-brand-500 dark:bg-brand-500/15' : ''}`}
+    >
+      {children}
+      {shortcut ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 pointer-coarse:hidden dark:text-slate-400"
+        >
+          {shortcut}
+        </span>
+      ) : null}
+    </button>
   );
+  // A wide option writes its name beside its glyph, so it needs no tooltip; a glyph-only one keeps it.
+  return wide ? button : <Tooltip label={label}>{button}</Tooltip>;
 }
 
 // The flyouts' small-capitals heading: a flyout's title, or a section's.

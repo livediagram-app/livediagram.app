@@ -4,7 +4,7 @@
 // and a Remove button. A pin dropped on the preview focuses its row's label, ready to name.
 
 import { useEffect, useRef } from 'react';
-import { TextInput, Tooltip } from '@livedocuments/ui';
+import { TextInput } from '@livedocuments/ui';
 import type { MapPin } from '@livedocuments/document';
 
 export function MapPinRows({
@@ -53,16 +53,14 @@ export function MapPinRows({
             }
             className="min-w-0 flex-1"
           />
-          <Tooltip label={`Remove pin ${i + 1}`}>
-            <button
-              type="button"
-              aria-label={`Remove pin ${i + 1}`}
-              onClick={() => onChange(pins.filter((p) => p.id !== pin.id))}
-              className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition dark:text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <span aria-hidden>×</span>
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            aria-label={`Remove pin ${i + 1}`}
+            onClick={() => onChange(pins.filter((p) => p.id !== pin.id))}
+            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition dark:text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <span aria-hidden>×</span>
+          </button>
         </li>
       ))}
     </ol>

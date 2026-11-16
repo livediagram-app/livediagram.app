@@ -90,6 +90,35 @@ livediagram link from-code --dry-run | livediagram graph render - --png arch.png
 
 Service bindings join Workers across files, so a monorepo's Workers draw as one system. Keys it doesn't draw, such as `vars`, are listed on stderr, never an error. `--dry-run` prints the graph without signing in. Each run draws a fresh tab: to bring a changed file into a diagram you've already arranged, run it again into a new tab. The editor's [Import](/help/tabs/import-tabs/#drawing-your-infrastructure) draws one file the same way.
 
+## Diagram Changes in Pull Requests
+
+A snapshot's text diff tells a reviewer that a diagram changed, not what it now looks like. `link review` draws it: each changed tab before and after, with the changed elements outlined (green solid for added, amber dashed for changed, red dotted for removed). It reads only git and your snapshots, so it needs no sign-in:
+
+```bash
+livediagram link review origin/main      # pictures and comment.md in livediagram-review/
+```
+
+To see the pictures on every pull request, add this workflow. It posts one comment and updates it on each push, and needs nothing but the workflow's own token, so it works on private repositories too:
+
+```yaml
+# .github/workflows/diagram-changes.yml
+name: Diagram changes
+on: pull_request
+permissions:
+  contents: write # the pictures go on a livediagram-previews branch
+  pull-requests: write # the comment
+jobs:
+  diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: livediagram-app/livediagram.app/livediagram/apps/cli/github-action@main
+```
+
+The pictures are kept on a `livediagram-previews` branch of your repository, so only people who can read the repository can see them. The comment draws up to ten tabs and lists the rest, and it has an **Open in livediagram** link for each canvas. Images on a canvas are drawn as placeholder boxes. A pull request from a fork can't comment, so its pictures are attached to the workflow run instead.
+
 ## Public Repositories
 
 Snapshots are as public as the repository they are committed to. `link init` reminds you when the repository has a remote. Choose `index` or `none` if the diagrams themselves should stay private.

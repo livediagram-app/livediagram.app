@@ -284,7 +284,8 @@ export function NoteCardList({
         ))}
         {drag.caretAfterLast ? <DropCaret /> : null}
       </div>
-      <Tooltip label={full ? `A slide holds up to ${NOTE_CARDS_MAX} cards` : 'Add Card'}>
+      {/* Add Card says what it does; a tooltip only says why it cannot, once the slide is full. */}
+      <Tooltip label={full ? `A slide holds up to ${NOTE_CARDS_MAX} cards` : ''}>
         <button
           type="button"
           data-note-card-add=""

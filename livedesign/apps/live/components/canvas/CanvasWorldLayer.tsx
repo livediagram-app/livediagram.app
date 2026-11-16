@@ -21,17 +21,16 @@ import { LogoCanvasOverlays } from '@/components/canvas/LogoCanvasOverlays';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
 import type { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import {
-  loadCanvasPages,
+  CanvasPages,
   loadPhotoCanvasOverlays,
   loadPhotoPagesLayer,
 } from '@/lib/editor-deferred-code';
 import type { useCanvasDrawTools } from './useCanvasDrawTools';
 
 // Pages mode's pages draw only on a tab that has pages, so their code loads on demand
-// (lib/editor-deferred-code.ts fetches it as the editor mounts).
+// (lib/editor-deferred-code.ts fetches it as the editor mounts; the pages, also before a warm paint).
 const PhotoPagesLayer = dynamic(loadPhotoPagesLayer, { ssr: false });
 const PhotoCanvasOverlays = dynamic(loadPhotoCanvasOverlays, { ssr: false });
-const CanvasPages = dynamic(loadCanvasPages, { ssr: false });
 
 type DrawTools = ReturnType<typeof useCanvasDrawTools>;
 type SurfaceGestures = ReturnType<typeof useCanvasSurfaceGestures>;

@@ -1,6 +1,6 @@
 'use client';
 
-// One snapshot in the dialog (liveworkspace/docs/specs/013-snapshots/snapshots.md "In the editor"; blueprint SN24): its
+// One snapshot in the dialog (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"; blueprint SN24): its
 // name or time, who took it, how long ago and its size, a `Before revert` badge on an automatic one, and Revert and
 // Delete. Each confirms in place: the row's actions give way to the question and its two buttons, focus moves to
 // Cancel, and Escape there cancels.

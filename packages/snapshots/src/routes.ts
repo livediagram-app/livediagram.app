@@ -1,4 +1,4 @@
-// Snapshots over REST, answered inside the item's Durable Object (liveworkspace/docs/specs/013-snapshots/snapshots.md
+// Snapshots over REST, answered inside the item's Durable Object (liveworkspace/docs/specs/014-snapshots/snapshots.md
 // "API", "Revert"; blueprint SN10 to SN15, SN18):
 //   GET    …/snapshots                     the list, newest first
 //   POST   …/snapshots                     Take Snapshot

@@ -20,7 +20,7 @@ import {
   type PageFill,
   type PagePattern,
 } from '@livedesign/design';
-import { CheckIcon, Tooltip } from '@livedesign/ui';
+import { CheckIcon } from '@livedesign/ui';
 import {
   backgroundCategoryOf,
   customGradientSeed,
@@ -76,23 +76,21 @@ function Swatch({
   children?: ReactNode;
 }) {
   return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={active}
-        aria-label={label}
-        onClick={onPick}
-        onPointerEnter={onPreview}
-        onFocus={onPreview}
-        className={`relative flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-          background ? '' : 'bg-white dark:bg-slate-900'
-        } ${active ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''}`}
-        style={background ? { background } : undefined}
-      >
-        <span className="text-optical-centre">{children}</span>
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      aria-label={label}
+      onClick={onPick}
+      onPointerEnter={onPreview}
+      onFocus={onPreview}
+      className={`relative flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
+        background ? '' : 'bg-white dark:bg-slate-900'
+      } ${active ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''}`}
+      style={background ? { background } : undefined}
+    >
+      <span className="text-optical-centre">{children}</span>
+    </button>
   );
 }
 

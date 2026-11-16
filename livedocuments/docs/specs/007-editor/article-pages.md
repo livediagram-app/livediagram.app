@@ -321,7 +321,7 @@ laid out with it, holding ordinary canvas elements that move with it.
   element dragged into a drawing zone joins it; one whose centre stays inside but pokes out grows
   the zone.
 - **The zone bar**: a small bar under a zone's bottom edge while the zone or one of its elements
-  is selected: a **grip** (tooltip **Drag to Move**), then **In Line**, **Wrap Left**, **Wrap
+  is selected: a **grip** (named **Drag to Move**, no tooltip), then **In Line**, **Wrap Left**, **Wrap
   Right**, **Float**, then (In Line) **Align Left**, **Align Centre**, **Align Right**, then
   **Delete** (**Delete Drawing** for a drawing zone: the zone and its elements). The grip is a
   focus stop: with it focused, the arrow keys step the zone a block up (Up / Left) or down
@@ -638,10 +638,12 @@ ink").
 - **Present**: an article page presents like any page, its writing drawn, no toolbar, no caret,
   from any mode (a page slide presenting outside Pages shows its writing too).
 - **Export**: PDF, PNG and SVG draw an article page's writing exactly as on screen (text as real
-  text in SVG output; rasterised in PNG, and in PDF, whose pages are images), with its zones'
+  text in SVG output; rasterised in PNG; in PDF, vector letters over real text that selects,
+  searches and reads aloud in reading order, its headings and paragraphs tagged,
+  [Vector PDF](../../../../liveworkspace/docs/specs/013-export/vector-pdf.md)), with its zones'
   elements, its tables (split across pages, header rows repeated), its contents with their page
   numbers, its header, footer and page number, and its ruled lines; nothing of the editing chrome.
-  A PDF's pages carry link areas over the images: each contents entry links to its heading's page,
+  A PDF's pages carry link areas over the writing: each contents entry links to its heading's page,
   each link in the text to its address. **Word** writes the article as an editable `.docx`, its
   headings as Word styles, its tables as Word tables, its contents as a Word table of contents,
   its header and footer as Word's, its footnotes as Word footnotes, and its zones as images

@@ -14,6 +14,7 @@ import {
 import { percentDone } from '@liveplanner/plan-art';
 import { BoardFilterField } from './BoardFilterField';
 import { SavedFilterChips } from './SavedFilterChips';
+import { CompactBoardFilter } from './CompactBoardFilter';
 import {
   DONE_GREEN,
   Figure,
@@ -37,7 +38,16 @@ import {
 
 export { PRESSABLE, WIDGET_PILL, type WidgetContext } from './board-widget-parts';
 
-export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: WidgetContext }) {
+export function BoardWidgetView({
+  kind,
+  ctx,
+  compact = false,
+}: {
+  kind: BoardWidgetKind;
+  ctx: WidgetContext;
+  // The Filter as one button opening the whole Filter, for a zone too narrow for it (board-widgets.md "The header").
+  compact?: boolean;
+}) {
   const { palette, projection, setup } = ctx;
   const pill = { borderColor: palette.border, color: palette.muted };
   switch (kind) {
@@ -135,9 +145,9 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
         </span>
       );
     }
-    case 'filter':
+    case 'filter': {
       // The words and field chips as one field, then the board's saved filters (board-widgets.md "The Filter widget").
-      return (
+      const whole = (
         <span className="flex shrink-0 items-center gap-1.5">
           <BoardFilterField
             projection={projection}
@@ -162,6 +172,14 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           />
         </span>
       );
+      return compact ? (
+        <CompactBoardFilter quick={ctx.quick} palette={palette}>
+          {whole}
+        </CompactBoardFilter>
+      ) : (
+        whole
+      );
+    }
     case 'mine':
       return mineWidget(ctx);
     case 'people':

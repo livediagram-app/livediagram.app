@@ -45,6 +45,9 @@ export class SheetStoreBase {
   // sheet when it loads, as its pending writes.
   protected readonly restored = new Map<string, Pending[]>();
   protected cards: CardSource | null = null;
+  // Sheets shown from the last seen copy (seedWarm) and not yet answered by a load: a load of their tab that no longer
+  // holds one drops it (docs/specs/006-project/offline-mode.md "Warm open of a cloud project").
+  protected readonly warmIds = new Set<string>();
   version = 0;
 
   constructor(deps: SheetStoreDeps) {
@@ -128,13 +131,35 @@ export class SheetStoreBase {
     return load;
   }
 
+  // The first tab's sheets as the last seen copy kept them, shown while the plan warm-opens: each sheet the store does
+  // not hold yet is laid in as confirmed, and the tab stays unloaded, so its first load still reads the server.
+  seedWarm(kept: { tabId: string; sheets: readonly SheetJson[] }): void {
+    let seeded = false;
+    for (const json of kept.sheets) {
+      if (json.tabId !== kept.tabId || this.entries.has(json.id)) continue;
+      this.adopt(json);
+      this.warmIds.add(json.id);
+      seeded = true;
+    }
+    if (seeded) this.notify();
+  }
+
   protected async fetchTab(tabId: string): Promise<void> {
     this.tabStatus.set(tabId, 'loading');
     this.notify();
+    // No plan id yet (a warm open, before its load): nothing to read; the tab is read once the store for the plan is.
+    if (!this.deps.scope.projectId) return;
     try {
       const sheets = await this.api.fetchSheets(this.deps.scope, { tabId });
       for (const json of sheets) this.adopt(json);
+      const answered = new Set(sheets.map((s) => s.id));
+      for (const id of [...this.warmIds]) {
+        if (this.entries.get(id)?.view.tabId !== tabId) continue;
+        this.warmIds.delete(id);
+        if (!answered.has(id)) this.drop(id);
+      }
       this.tabStatus.set(tabId, 'ready');
+      this.deps.onTabRead?.(tabId, sheets);
     } catch (e) {
       debugLog('[sheets] sheets.load.failed', { status: e instanceof ApiError ? e.status : 0 });
       this.tabStatus.set(tabId, 'error');

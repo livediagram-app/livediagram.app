@@ -6,7 +6,8 @@ livedesign image element carries an `imageId` that points into the owner's galle
 one browser-side path that turns those bytes into a stored image, so every caller stores images
 the same way, under the same limits, with the same named outcomes.
 
-Its caller today is [Image search](../009-elements/image-search.md): a picked Openverse result is
+Its callers today are [Image search](../009-elements/image-search.md) and [SVG import](svg-import.md)'s picture
+fallback. A picked Openverse result is
 downloaded in the browser and handed to the pipeline (`../packages/workbench/src/lib/image-search/pick.ts`). The
 session and the report below are shaped for an import that meets many images at once, so a
 future importer plugs in unchanged: it should see its images arrive, and when some cannot, see
@@ -51,7 +52,9 @@ and dedupes (hosted is free for everyone; server cost stays near zero).
 - **GIF keeps its animation when it can.** A GIF within 2048 px and within the 10 MB per-file cap
   is uploaded unchanged, so an animated GIF stays animated. A larger one is flattened to its first
   frame and re-encoded as WebP.
-- **SVG is rasterised.** The gallery refuses SVG for security, so the pipeline draws it through an
+- **SVG is rasterised.** An SVG dropped, pasted or imported comes in as editable shapes
+  ([SVG import](svg-import.md)); only one too big for that (over 2 MB or 5,000 elements) reaches the pipeline, as
+  does an SVG picked for an image element. The gallery refuses SVG for security, so the pipeline draws it through an
   `<img>` (where scripts never run and external references never load) onto a canvas, at twice the
   larger of its intrinsic size and the display hint, capped at 2048 px (1024 px when neither is
   known), and uploads the WebP. An SVG the browser refuses to draw (for instance one that taints

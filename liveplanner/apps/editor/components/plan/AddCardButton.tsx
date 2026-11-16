@@ -6,7 +6,7 @@
 // "A board in a slot is simplified").
 import { useState } from 'react';
 import type { ItemTypeDef } from '@liveplanner/items';
-import { PlusIcon, Tooltip } from '@liveplanner/ui';
+import { PlusIcon } from '@liveplanner/ui';
 import { AddCardPopover, type NewCard } from './AddCardPopover';
 import type { PlanPalette } from './plan-palette';
 
@@ -26,7 +26,7 @@ export function AddCardButton({
   open?: boolean;
   onClosed?: () => void;
   onAdd: (card: NewCard) => void;
-  // A slot board's column head (SlotColumnHeader): a 24 px + named by `label` and its tooltip, with no words.
+  // A slot board's column head (SlotColumnHeader): a 24 px + named by `label`, with no words.
   compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -45,25 +45,23 @@ export function AddCardButton({
   return (
     <>
       {compact ? (
-        <Tooltip label={label}>
-          <button
-            ref={setButton}
-            type="button"
-            data-add-card-trigger
-            aria-label={label}
-            aria-haspopup="menu"
-            aria-expanded={shown}
-            // touch-target: a 44px box to tap on a touch screen around the 24px glyph (touch-targets.md).
-            className={`touch-target relative -mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/10 ${
-              shown ? 'bg-black/5 dark:bg-white/10' : ''
-            }`}
-            style={{ color: palette.muted, outlineColor: palette.focus }}
-            onPointerDown={stop}
-            onClick={toggle}
-          >
-            <PlusIcon size={14} />
-          </button>
-        </Tooltip>
+        <button
+          ref={setButton}
+          type="button"
+          data-add-card-trigger
+          aria-label={label}
+          aria-haspopup="menu"
+          aria-expanded={shown}
+          // touch-target: a 44px box to tap on a touch screen around the 24px glyph (touch-targets.md).
+          className={`touch-target relative -mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/10 ${
+            shown ? 'bg-black/5 dark:bg-white/10' : ''
+          }`}
+          style={{ color: palette.muted, outlineColor: palette.focus }}
+          onPointerDown={stop}
+          onClick={toggle}
+        >
+          <PlusIcon size={14} />
+        </button>
       ) : (
         <button
           ref={setButton}

@@ -9,6 +9,12 @@ export const EXPANDED_KEY = 'liveworkspace:explorer-expanded';
 export const MY_WORK = 'my-work';
 export const LIBRARY = 'library';
 export const teamKey = (teamId: string) => `team:${teamId}`;
+// This Browser's space row (one-explorer.md "This Browser, a Space").
+export const LOCAL_ROW_KEY = 'this-browser';
+
+// A space's own row: My Work, a team, This Browser. Folders and the Library are not spaces.
+export const isSpaceKey = (key: string) =>
+  key === MY_WORK || key === LOCAL_ROW_KEY || key.startsWith('team:');
 
 export type Expansion = {
   subscribe: (onChange: () => void) => () => void;
@@ -16,6 +22,9 @@ export type Expansion = {
   toggle: (key: string) => void;
   /** Opens these rows; nothing changes (and nobody re-renders) when they all are. */
   expand: (...keys: string[]) => void;
+  /** Opens one space and folds every other space but `keep` (the current view's): one space open at a time
+   *  (one-explorer.md "One space open at a time"). Folders inside the folded spaces keep their own folds. */
+  openSpace: (key: string, keep: string | null) => void;
 };
 
 // As livediagram's tree starts: My Work unfolded, the Library folded.
@@ -61,6 +70,11 @@ export function createExpansion(storageKey = EXPANDED_KEY): Expansion {
       const next = new Set(get());
       if (next.has(key)) next.delete(key);
       else next.add(key);
+      set(next);
+    },
+    openSpace(key, keep) {
+      const next = new Set([...get()].filter((k) => !isSpaceKey(k) || k === keep));
+      next.add(key);
       set(next);
     },
     expand(...keys) {

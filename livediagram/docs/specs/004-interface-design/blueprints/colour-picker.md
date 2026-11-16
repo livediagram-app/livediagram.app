@@ -163,7 +163,7 @@ hued, More colours), so the panel is 258px.
 ## Accessibility
 
 - Root: `role="group"`, `aria-label={label}`. Each heading's row: `role="group"`, `aria-labelledby` its heading.
-- Swatches: `<button aria-pressed>` with `aria-label` and a `Tooltip` of the same name.
+- Swatches: `<button aria-pressed>` with `aria-label`, no `Tooltip` (the labelled group names them); the "Add a custom colour" button after Yours takes none either.
 - Focus ring: 2px brand, `focus-visible` only. Selection ring brand-500 / brand-300, at least 3:1 on the panel.
 - Reduced motion: no hover scale.
 

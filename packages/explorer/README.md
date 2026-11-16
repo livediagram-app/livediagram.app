@@ -276,8 +276,8 @@ const teamsHost = createTeamsHost({
 deleted). Each write answers `{ ok: true, value }` or `{ ok: false, error }`, the account API's code, which the
 Explorer words (`teamErrorMessage`). One client, `data/teams.ts`; no host writes its own.
 
-- **New Team.** The sidebar's Spaces group ends with New Team (signed in, with a `teamsHost`); the panel's rail has
-  the same under Spaces. It opens the team dialog (`teams/TeamFormDialog.tsx`: name, optional organisation) and,
+- **New Team.** A plain plus at the far right of the sidebar's Spaces heading (signed in, with a `teamsHost`); the
+  panel's rail has New Team under Spaces. It opens the team dialog (`teams/TeamFormDialog.tsx`: name, optional organisation) and,
   made, opens the team. The Move dialog's New Team tile is the same `create`, name only, filing the item into it.
   A guest sees the sign-in nudge in New Team's place.
 - **The team card** (`teams/TeamCard.tsx`), at the top of a team's view and in the panel's Members dialog: a header

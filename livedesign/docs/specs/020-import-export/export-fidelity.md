@@ -70,6 +70,16 @@ fails to draw (its markup throws, or the browser refuses its layer) is skipped
 and logged (`[export] arrow skipped`, with its id), and the rest of the run is
 drawn arrow by arrow, so one broken arrow never fails the whole export.
 
+**Ink past a text's box is kept.** A typeface can draw past the box its text is laid out in: a swash on a
+script face (Lobster's B on arched text), an italic's lean, a tall accent. The SVG export has no edge there, so the
+PNG and PDF must not cut one. Each text element the PNG / PDF rasterises from its SVG markup is first measured: its
+markup is drawn once at 1x with a generous margin (one font size each side, 16 px at least, 256 px at most), and
+the drawn pixels give its real ink rectangle. Its raster then grows by exactly the ink that reaches past its box
+(plus 1 px for the measure's rounding), so ordinary text, whose ink stays inside, keeps today's 2 px pad and size.
+In an export cut to its content (not a page, whose edge is the picture's edge) the export's bounds take in that ink
+rectangle too, so a swash at the top of a logo is not cut flat at the image edge. A measure the browser refuses (a
+canvas it will not read back) falls back to the box, as before; it never fails the export.
+
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a
 chart is not framed in a rectangle that is not on the canvas, and a rail does not
@@ -129,4 +139,14 @@ The pixels are checked by eye, which is what found all of this: seed a tab with
 a dense grid of one family of elements, screenshot the canvas in focus mode, and
 render the same tab's export beside it, in both light and dark paper.
 `svg-render-fidelity.test.ts` and the per-kind tests pin the marks each face
-draws.
+draws. `apps/live/lib/export-ink-bounds.test.ts` pins the ink measure: a text whose ink overhangs its box grows its
+raster pad and the export's bounds by that overhang, and one whose ink stays inside keeps the 2 px pad.
+
+## PDF
+
+A PDF is the page's SVG export drawn as vectors by the shared writer
+([Vector PDF](../../../../liveworkspace/docs/specs/013-export/vector-pdf.md)): shapes and lines are paths, letters are
+outlines in the faces the SVG embeds (text in a system stack set in Inter), and an invisible text layer lets a reader
+select, search and read the words aloud. What PDF has no form for (a shadow, a blur, a soft mask) is a picture of that
+element alone, and a page the writer can't draw falls back to the canvas render above, laid on white. Each
+page is its CSS size at 0.75 pt per px. The writer loads only when a PDF is exported.

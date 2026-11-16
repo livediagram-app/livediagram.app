@@ -1,4 +1,4 @@
-// A plan's snapshots (docs/specs/013-workspace/snapshots.md; liveworkspace/docs/specs/013-snapshots/snapshots.md): the
+// A plan's snapshots (docs/specs/013-workspace/snapshots.md; liveworkspace/docs/specs/014-snapshots/snapshots.md): the
 // thin door onto @liveworkspace/snapshots. A snapshot is the plan's own `.liveplanner` file (project-file.ts), and a
 // revert reads it back keeping every id, then writes it in place in three steps: the Sheets (so the tabs' references
 // find them), the card types and cards (a card made since goes, a card removed since comes back with its key, a card

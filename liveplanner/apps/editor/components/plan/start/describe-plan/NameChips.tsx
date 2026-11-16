@@ -6,7 +6,7 @@
 // selected, so typing replaces it.
 
 import { useEffect, useRef } from 'react';
-import { CloseIcon, PlusIcon, Tooltip } from '@liveplanner/ui';
+import { CloseIcon, PlusIcon } from '@liveplanner/ui';
 
 export function NameChips({
   names,
@@ -81,16 +81,14 @@ export function NameChips({
                   small ? 'py-0.5 text-[12px]' : 'py-1 text-[13px]'
                 } pointer-coarse:py-2`}
               />
-              <Tooltip label={`Remove ${label}`}>
-                <button
-                  type="button"
-                  aria-label={`Remove ${label}`}
-                  onClick={() => onRemove(i)}
-                  className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none pointer-coarse:size-9 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                >
-                  <CloseIcon size={12} />
-                </button>
-              </Tooltip>
+              <button
+                type="button"
+                aria-label={`Remove ${label}`}
+                onClick={() => onRemove(i)}
+                className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none pointer-coarse:size-9 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <CloseIcon size={12} />
+              </button>
             </span>
           );
         })}

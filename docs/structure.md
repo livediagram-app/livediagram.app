@@ -57,6 +57,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ trusted-types            the Trusted Types policies, boot script, header and HTML sanitiser every app's pages share
 │  ├─ ui                       the design system: buttons, fields, dialogs, menus, the back bar, hints, optical primitives, hooks,
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
+│  ├─ vector-export            the PDF writer every product's export loads on demand: SVG drawn as vectors, letters outlined, a text layer, tags
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
 ├─ scripts/                    the root's own scripts: git-hooks, ts-source-hooks.mjs (Node type stripping for every product's repo scripts), and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)

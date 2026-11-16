@@ -1,4 +1,4 @@
-// The server side of snapshots, for each app's api inside its rooms (liveworkspace/docs/specs/013-snapshots).
+// The server side of snapshots, for each app's api inside its rooms (liveworkspace/docs/specs/014-snapshots).
 export {
   answerSnapshotRoute,
   beforeRevertName,

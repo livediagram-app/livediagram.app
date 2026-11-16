@@ -159,47 +159,42 @@ export function AnimatedBackgroundChoices({
           const on = current === c.id;
           const target = motion ? fillFor(motion, c.id) : null;
           return (
-            <Tooltip key={c.id} label={c.label}>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={on}
-                aria-label={c.label}
-                onClick={() => {
-                  setChosen(c.id);
-                  setCustomOpen(false);
-                  if (target) onPick(target);
-                }}
-                onPointerEnter={() => target && onPreview(target)}
-                onFocus={() => target && onPreview(target)}
-                className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-                  on ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
-                }`}
-                style={{ background: `linear-gradient(160deg, ${from}, ${to})` }}
-              >
-                {on ? <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" /> : null}
-              </button>
-            </Tooltip>
+            <button
+              key={c.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              aria-label={c.label}
+              onClick={() => {
+                setChosen(c.id);
+                setCustomOpen(false);
+                if (target) onPick(target);
+              }}
+              onPointerEnter={() => target && onPreview(target)}
+              onFocus={() => target && onPreview(target)}
+              className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
+                on ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
+              }`}
+              style={{ background: `linear-gradient(160deg, ${from}, ${to})` }}
+            >
+              {on ? <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" /> : null}
+            </button>
           );
         })}
         {motion ? (
-          <Tooltip label="Custom Colours">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={!!custom}
-              aria-label="Custom Colours"
-              onClick={() => setCustomOpen(true)}
-              className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-                custom ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
-              }`}
-              style={{ background: custom ? fillCss(custom) : RAINBOW }}
-            >
-              {custom ? (
-                <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" />
-              ) : null}
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={!!custom}
+            aria-label="Custom Colours"
+            onClick={() => setCustomOpen(true)}
+            className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
+              custom ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
+            }`}
+            style={{ background: custom ? fillCss(custom) : RAINBOW }}
+          >
+            {custom ? <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" /> : null}
+          </button>
         ) : null}
       </div>
       {/* The two colours of the author's own, as the Gradient category's custom editor sets them;

@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react';
 import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import type { LaidOutPage } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
-import { CloseIcon, lucideGlyph, Tooltip } from '@livedocuments/ui';
+import { CloseIcon, lucideGlyph } from '@livedocuments/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
@@ -64,16 +64,14 @@ function Body({
         <div className="flex items-center gap-1">
           {/* A phone's bottom sheet closes by a swipe or an outside press: no X there. */}
           {wide ? (
-            <Tooltip label="Close">
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-              >
-                <CloseIcon size={12} />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={onClose}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <CloseIcon size={12} />
+            </button>
           ) : null}
         </div>
       </div>

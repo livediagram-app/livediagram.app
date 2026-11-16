@@ -1,6 +1,6 @@
 'use client';
 
-// The Snapshots button in the footer's tool cluster (liveworkspace/docs/specs/013-snapshots/snapshots.md "In the
+// The Snapshots button in the footer's tool cluster (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the
 // editor"; blueprint SN23): just before Settings in every app, drawn only inside a door, so only for someone who may
 // use snapshots; the Explorer's bar has none. Built on the footer's own button classes, as Automations and History are.
 

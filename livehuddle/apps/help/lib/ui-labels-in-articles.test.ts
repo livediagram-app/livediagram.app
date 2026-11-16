@@ -121,11 +121,12 @@ describe('bold control names in articles match the editor', () => {
   const pages = articles();
 
   it('reads both sides (guard against this test going blind)', () => {
-    // ~175 printed labels once aria-label is excluded. Deliberately not every
+    // ~145 printed labels once aria-label is excluded (fewer since labelled
+    // controls and close buttons lost their tooltips). Deliberately not every
     // string a user can read: tooltip titles and rendered JSX text are not
     // collected, so this proves the names it DOES know are spelled right
     // rather than proving every bold name is a real control.
-    expect(labels.size).toBeGreaterThan(150);
+    expect(labels.size).toBeGreaterThan(120);
     expect(pages.length).toBeGreaterThan(100);
   });
 

@@ -454,7 +454,7 @@ function ResolveButton({
   withComment?: boolean;
   onClick: () => void;
 }) {
-  const button = (
+  return (
     <button
       type="button"
       onClick={onClick}
@@ -467,10 +467,5 @@ function ResolveButton({
       {resolved ? <ReopenIcon aria-hidden /> : <CheckIcon size={12} />}
       {resolved ? 'Reopen' : withComment ? 'Comment and Resolve' : 'Resolve'}
     </button>
-  );
-  return withComment ? (
-    <Tooltip label="Post your reply, then resolve the thread">{button}</Tooltip>
-  ) : (
-    button
   );
 }

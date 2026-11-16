@@ -1,4 +1,4 @@
-// Snapshots' wire shapes (liveworkspace/docs/specs/013-snapshots/snapshots.md "API"; blueprint SN2): what the routes
+// Snapshots' wire shapes (liveworkspace/docs/specs/014-snapshots/snapshots.md "API"; blueprint SN2): what the routes
 // answer and the editor reads. No body ever travels in a list.
 
 export type SnapshotKind = 'manual' | 'before-revert';

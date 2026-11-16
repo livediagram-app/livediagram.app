@@ -358,7 +358,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   too) shift 1.5% toward the board's ink, easing in and out over 250 ms (at once with reduced motion). Nothing else
   changes and nothing moves. Under the Sketch finish, whose drawing is a still copy, the same wash is laid over the
   drawing. Not on a touch screen, nor on a slot board.
-- **Collapse Column**: a column's head offers **Collapse Column** (two arrows closing on a column's edge, at its right, with that tooltip, always shown,
+- **Collapse Column**: a column's head offers **Collapse Column** (two arrows closing on a column's edge, at its right, a chevron named for screen readers with no tooltip, always shown,
   a little quieter at rest and full strength on hover and focus), and for someone who may edit, its cog's toolbar too. Collapsed, the
   column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** button (the arrows opening out from the edge) at the
   top, then its name written top to bottom (no count badge; the count is in its accessible name), the whole strip
@@ -545,7 +545,7 @@ In Plan mode:
   tab), the board's name rides in the menu box and the chips lead the header straight after it, so they sit to
   the right of the name and give way to the widgets and controls rather than widening the box. With more than
   three types the chips drop their names and keep the little cards (the tooltip names each); when they do not fit,
-  the row scrolls sideways, as the widget zone does. Each chip has a hover card, **Add a Task** (its type's name)
+  the row scrolls sideways. Each chip has a hover card, **Add a Task** (its type's name)
   over "Click to add one, or drag it onto the board.", and its accessible name is "Add a Task".
   - **A click** (or Enter or Space on a focused chip) adds a card of the type at the end of the column of the type's
     starting status (its Default State, as New {Type} uses) when the board has one, else the board's first column,

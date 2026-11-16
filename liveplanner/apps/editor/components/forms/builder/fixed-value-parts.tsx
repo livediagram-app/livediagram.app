@@ -5,7 +5,7 @@
 // is typed.
 import { useState, type ReactNode } from 'react';
 import { FIXED_DAYS_MAX, type SubmittedDay } from '@liveplanner/forms';
-import { CloseIcon, Tooltip } from '@liveplanner/ui';
+import { CloseIcon } from '@liveplanner/ui';
 import { AccordionSection } from '@liveworkspace/workbench/components/primitives/AccordionSection';
 import { DraftText } from './DraftText';
 
@@ -112,17 +112,15 @@ export function Row({
         {hint ? (
           <span className="shrink-0 text-[11px] text-slate-500 dark:text-slate-400">{hint}</span>
         ) : null}
-        <Tooltip label={removeLabel}>
-          <button
-            type="button"
-            aria-label={removeLabel}
-            disabled={disabled}
-            onClick={onRemove}
-            className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:cursor-default disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          >
-            <CloseIcon />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          aria-label={removeLabel}
+          disabled={disabled}
+          onClick={onRemove}
+          className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:cursor-default disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        >
+          <CloseIcon />
+        </button>
       </div>
       {children}
     </li>

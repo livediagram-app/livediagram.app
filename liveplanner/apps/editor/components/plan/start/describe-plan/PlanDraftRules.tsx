@@ -15,7 +15,7 @@ import {
   type PlanDraft,
   type PlanDraftRule,
 } from '@liveplanner/items';
-import { Button, Switch, TextInput, Tooltip, TrashIcon } from '@liveplanner/ui';
+import { Button, Switch, TextInput, TrashIcon } from '@liveplanner/ui';
 import { SentenceChips } from '@/components/automations/SentenceChips';
 import { ProblemText } from './NameChips';
 
@@ -106,22 +106,14 @@ function RuleCard({
       }`}
     >
       <div className="flex items-center gap-2.5">
-        <Tooltip
-          label={
-            rule.on
-              ? 'Made on: it runs once the plan is made'
-              : 'Made off: turn it on in Automations'
-          }
-        >
-          <span className="flex shrink-0">
-            <Switch
-              size="sm"
-              checked={rule.on}
-              label={`Make ${name} on`}
-              onChange={(on) => onChange({ ...rule, on })}
-            />
-          </span>
-        </Tooltip>
+        <span className="flex shrink-0">
+          <Switch
+            size="sm"
+            checked={rule.on}
+            label={`Make ${name} on`}
+            onChange={(on) => onChange({ ...rule, on })}
+          />
+        </span>
         <TextInput
           compact
           aria-label={`Rule ${index + 1} name`}
@@ -133,18 +125,16 @@ function RuleCard({
           // Greyed when off: important, as TextInput's own text colour would otherwise win the cascade.
           className={`min-w-0 flex-1 font-semibold ${rule.on ? '' : 'text-slate-500! dark:text-slate-400!'}`}
         />
-        <Tooltip label={`Remove ${name}`}>
-          <Button
-            variant="ghost"
-            size="xs"
-            aria-label={`Remove ${name}`}
-            onClick={onRemove}
-            className="shrink-0"
-          >
-            <TrashIcon size={14} aria-hidden />
-            <span className="max-sm:hidden">Remove Rule</span>
-          </Button>
-        </Tooltip>
+        <Button
+          variant="ghost"
+          size="xs"
+          aria-label={`Remove ${name}`}
+          onClick={onRemove}
+          className="shrink-0"
+        >
+          <TrashIcon size={14} aria-hidden />
+          <span className="max-sm:hidden">Remove Rule</span>
+        </Button>
       </div>
       {nameProblem ? <ProblemText>{nameProblem}</ProblemText> : null}
       <SentenceChips parts={sentence} className={rule.on ? '' : 'opacity-70'} />

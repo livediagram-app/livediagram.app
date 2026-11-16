@@ -340,7 +340,10 @@ Three groups, the same in every app's Explorer and on liveworkspace.app (`explor
 
 - **Overview**: Home, Inbox and Shared With Me.
 - **Spaces**: My Work and its folders, each team and its folders, **This Browser** and its folders (while this
-  browser holds anything, [below](#this-browser-a-space)), Invites while one waits, and New Team.
+  browser holds anything, [below](#this-browser-a-space)), and Invites while one waits. New Team is a plain plus
+  at the far right of the **Spaces** heading (owner, 2026-11-15), an icon button named "New Team" whose tooltip
+  says so to a mouse or keyboard (never on touch); it shows where New Team's row did (signed in, with a
+  `teamsHost`).
 - **More**: the **Library**, an accordion folded by default, whose rows are, in order, Recent,
   Favourites, the host's Image Gallery and Shape Libraries (where it has them), **Archived** and the **Trash**; then
   the host's own rows (liveworkspace.app's This Browser link, below). The Trash keeps everything it does: its drop target (an item, a folder or a
@@ -354,6 +357,13 @@ folder down to it for a folder (that folder too, so its subfolders show), This B
 (Recent, Favourites, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
 and once per change of the rows a view needs, so a row the person folds stays folded until the view (or its place)
 changes (`rowsForView`, `useOpenCurrentRows`).
+
+**One space open at a time.** Opening a space's row with its chevron (or Right in the tree) folds every other space
+(My Work, each team, This Browser), except the space holding the current view, which stays open so something can
+be dragged out of it into the space just opened (owner, 2026-11-15: with every space open at once the sidebar was
+confusing). Folding never touches the folders inside a space, so a space opened again shows its folders as it left
+them. A drag resting on a folded space opens it without folding the others, and the current view's rows still open
+as above (`Expansion.openSpace`).
 
 **A drag opens the Library.** A drag of an item, a folder or a This Browser item resting on the folded Library row
 for half a second (`LIBRARY_HOVER_OPEN_MS`) opens it, so the Trash inside is in reach; the Library itself takes no
@@ -792,7 +802,7 @@ sends its session cookie; an app's page and its editor send the app's access tok
 
 The journeys, one way each:
 
-1. **Make a team.** Sidebar › Spaces › **New Team** (the group's last row, signed in): a dialog asks for the
+1. **Make a team.** Sidebar › Spaces › **+** (**New Team**, at the right of the Spaces heading, signed in): a dialog asks for the
    name and an optional organisation, and **Create Team** makes it with you as its admin and opens its view, where
    you invite people. In the editor's panel the same **New Team** sits under the rail's Spaces. The Move dialog
    keeps its **New Team** tile, a shortcut for filing the item being moved into a team made on the spot (name

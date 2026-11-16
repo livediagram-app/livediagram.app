@@ -12,7 +12,7 @@ import {
   type ArticleBand,
   type ArticleStyle,
 } from '@livedocuments/document';
-import { Switch, Tooltip } from '@livedocuments/ui';
+import { Switch } from '@livedocuments/ui';
 import { PanelSection } from '../page-panel-sections';
 
 type Band = 'header' | 'footer';
@@ -37,13 +37,6 @@ const sameBand = (a: ArticleBand | undefined, b: ArticleBand | undefined) =>
   (a?.left ?? '') === (b?.left ?? '') &&
   (a?.center ?? '') === (b?.center ?? '') &&
   (a?.right ?? '') === (b?.right ?? '');
-
-const FIELD_HINT: Record<string, string> = {
-  '{page}': "Put the page's number at the caret",
-  '{pages}': "Put the article's page count at the caret",
-  '{name}': "Put the document's name at the caret",
-  '{date}': "Put today's date at the caret",
-};
 
 export function ArticleBandsSection({
   style,
@@ -146,18 +139,17 @@ export function ArticleBandsSection({
       {box('footer')}
       <div role="group" aria-label="Fields" className="mt-2 flex flex-wrap gap-1">
         {ARTICLE_BAND_FIELDS.map((f) => (
-          <Tooltip key={f.token} label={FIELD_HINT[f.token] ?? f.label}>
-            <button
-              type="button"
-              data-band-token={f.token}
-              // Keeps the caret in the box last used.
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => insertField(f.token)}
-              className="cursor-pointer rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-            >
-              {f.label}
-            </button>
-          </Tooltip>
+          <button
+            key={f.token}
+            type="button"
+            data-band-token={f.token}
+            // Keeps the caret in the box last used.
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => insertField(f.token)}
+            className="cursor-pointer rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+          >
+            {f.label}
+          </button>
         ))}
       </div>
       <label className="mt-3 flex cursor-pointer items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-200">

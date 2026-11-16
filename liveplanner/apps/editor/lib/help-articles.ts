@@ -51,6 +51,7 @@ export const HELP_ARTICLES = {
   // Links / activity / comments
   // Plan mode's card types (docs/specs/026-plan/item-types.md).
   planCardTypes: 'plan/card-types',
+  planCardTemplates: 'plan/card-templates',
   planBoards: 'plan/boards',
   planCards: 'plan/cards',
   planCardActivity: 'plan/card-activity',
@@ -113,6 +114,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planCardTypes: {
     title: 'Learn about card types',
     description: 'Add your own kinds of card, with the fields each one holds.',
+  },
+  planCardTemplates: {
+    title: 'Learn about card templates',
+    description: 'Ready-made starting values for a new card, and starting one from them.',
   },
   planBoards: {
     title: 'Learn about boards',

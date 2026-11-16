@@ -15,6 +15,9 @@ vi.mock('@liveworkspace/auth-client/silent', () => ({ retrySilentSignIn }));
 import type { DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
 
 vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: vi.fn(async () => {}) }));
+// The last seen copies go with the session (docs/specs/006-project/offline-mode.md "Warm open of a cloud project").
+const lastSeen = vi.hoisted(() => ({ forgetAll: vi.fn(async () => {}) }));
+vi.mock('@/lib/last-seen', () => ({ lastSeenCopies: lastSeen }));
 
 const { AccountsBridge, namesOf, resetAccountsSessionForTests } = await import('./AccountsBridge');
 
@@ -151,6 +154,7 @@ describe('AccountsBridge', () => {
       expect.objectContaining({ method: 'POST' }),
     );
     expect(assign).toHaveBeenCalledWith('/explorer');
+    expect(lastSeen.forgetAll).toHaveBeenCalled();
     // The held token went with the session.
     fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false}', { status: 401 }));
     expect(await state.getToken()).toBeNull();

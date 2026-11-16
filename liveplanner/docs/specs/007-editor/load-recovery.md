@@ -46,6 +46,14 @@ screen. It never stays on the opening screen indefinitely.
   at most **10 seconds** per attempt. A signed-in load with no token fails
   with the existing "no session token" error, which shows the load-error
   screen.
+- **A warm open changes none of this.** A plan painted from its last seen copy
+  ([Offline Mode → Warm open of a cloud project](../006-project/offline-mode.md#warm-open-of-a-cloud-project))
+  is read-only while the ordinary load runs behind it, under the same watchdog. The load ends where it always
+  does, and its screen replaces the copy: a load error shows the load-error screen over it (the copy is kept,
+  since the server could not be reached), and the deleted card or the password gate forgets it. A not found
+  after a warm paint is checked once by a cold open first: the copy is forgotten and the page reloads, once per
+  plan per browser tab session (`[load] warm-open-fallback not-found` in the console), so only an ordinary
+  open's not found ever shows.
 
 ## Self-healing on the opening screen
 

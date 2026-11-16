@@ -1,4 +1,4 @@
-// Snapshots in the editor (liveworkspace/docs/specs/013-snapshots/snapshots.md "In the editor"): the door an app's
+// Snapshots in the editor (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"): the door an app's
 // host provides, the footer's button, and the dialog it opens.
 export {
   SnapshotsDoorProvider,

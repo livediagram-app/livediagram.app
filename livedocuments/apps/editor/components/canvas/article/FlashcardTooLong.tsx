@@ -47,9 +47,8 @@ export function FlashcardTooLong({
       >
         <span>Too long for this card</span>
         {onSplit ? (
-          <Tooltip
-            label={reason ?? 'Move the writing that does not fit onto a new card after this one'}
-          >
+          // The button says what it does; a tooltip only says why it cannot, while it cannot.
+          <Tooltip label={reason ?? ''}>
             <Button
               variant="secondary"
               size="xs"

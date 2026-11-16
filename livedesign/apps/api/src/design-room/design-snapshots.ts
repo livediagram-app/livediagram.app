@@ -1,4 +1,4 @@
-// A design's snapshots (docs/specs/013-workspace/snapshots.md; liveworkspace/docs/specs/013-snapshots/snapshots.md):
+// A design's snapshots (docs/specs/013-workspace/snapshots.md; liveworkspace/docs/specs/014-snapshots/snapshots.md):
 // the thin door onto @liveworkspace/snapshots. A snapshot is the design's own file (design-file.ts), components
 // included, and a revert reads it back keeping every tab's id, puts the component library back as it was, writes its
 // tabs in place, then tells the room, which forgets its ledger and closes every socket so each open editor reloads.

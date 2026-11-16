@@ -16,7 +16,6 @@ import {
   DialogHeader,
   lucideGlyph,
   Portal,
-  Tooltip,
   useEscape,
   useFocusTrap,
   type FocusTrapInitial,
@@ -97,9 +96,7 @@ export function ReaderShell({
         >
           {tone === 'light' ? (
             <DialogHeader title={title} subtitle={subtitle}>
-              <Tooltip label="Close">
-                <DialogCloseButton onClick={onClose} />
-              </Tooltip>
+              <DialogCloseButton onClick={onClose} />
             </DialogHeader>
           ) : (
             // Over the Screen's video: a dark bar, its Close a labelled button that reads on black.

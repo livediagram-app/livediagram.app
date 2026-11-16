@@ -1,4 +1,4 @@
-// The generation fence, the server's half (liveworkspace/docs/specs/013-snapshots/snapshots.md "No stale writes after a
+// The generation fence, the server's half (liveworkspace/docs/specs/014-snapshots/snapshots.md "No stale writes after a
 // revert"; blueprint SN16 to SN18): a write from an editor that last saw the item before its latest revert is refused
 // before any handler runs, and every answer about a reverted item says its generation.
 

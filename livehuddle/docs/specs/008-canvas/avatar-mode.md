@@ -249,6 +249,9 @@ their home moved (`components/calls/CallDock.tsx`).
 - The dock is the call group's, not the building strip's: a call rides Avatar mode
   ([Who is in a call](../012-collaboration/proximity-audio.md#who-is-in-a-call)).
 - **Pop Out** ends the dock (Work Tracker 908): it opens [the mini view](#the-mini-view).
+- **Outside the tab** (Work Tracker 992): while you are in a live call, the dock's microphone and Camera are also
+  the browser's own call controls (Media Session), and the mini view carries them too
+  ([Outside the tab](../012-collaboration/proximity-audio.md#outside-the-tab)).
 
 ### The mini view
 
@@ -283,6 +286,13 @@ desktop apps of Zoom, Teams and Gather do.
   mini view as well as in the toast, amber: **"Sam is knocking"**, with **Let In** and **Not Now**. Answering in
   either place answers once and clears both; unanswered, it goes after ten seconds, as the toast does. A second knock
   from the same person replaces the first.
+- **Your microphone and camera** (Work Tracker 992). For someone who may speak (an Editor or a Participant), a bar
+  at the foot of the window holds the Call dock's own microphone button: the same states, glyph, short name, tone and
+  level fill, and a press does what the dock's press does, the dock following. While your camera is on, the dock's
+  Camera sits beside it, so you can turn it off. They follow the dock's phases: in a live call the call's microphone;
+  with no call (This Browser, calls off, paused or failed) the local preview's **Mic: Only You**; while the call
+  connects, or for a listener, no bar. There is no hang up: leaving a call is walking away. The buttons carry no hover
+  card in the window (it would draw in the Space's tab); each keeps its name and its card's line for a screen reader.
 - **Back to the Space.** Pressing **Back to Space**, a row or the header brings the Space's tab to the front. Let In
   and Not Now only answer.
 - **Live in a hidden tab.** The mini view draws from what the room connection keeps up to date, which it does in a
@@ -293,7 +303,8 @@ desktop apps of Zoom, Teams and Gather do.
   browser tab). It outlives the dock: leaving Avatar mode, or the chrome hiding, keeps it open, since the people it
   shows are drawn whether or not you walk. One mini view a tab; it is never reopened by itself.
 - **Share roles**: presence is everyone's, so an Editor, a Participant and a Viewer all have Pop Out and the same
-  mini view; a Viewer's own row shows no level (a Viewer never speaks). Let In and Not Now are everyone's, as
+  mini view; a Viewer's own row shows no level (a Viewer never speaks). Only someone who may speak gets the microphone bar, as on the
+  dock. Let In and Not Now are everyone's, as
   [Knock](../012-collaboration/knock.md#share-roles) gives them.
 - **With a screen reader**: the window's people are a list, each row read as its name, status, "hand raised" or
   "speaking" (for example "Sam, Focusing, speaking"); the knock is a polite live region; Back to Space is a button.

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen } from '@testing-library/react';
+import { Component, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { lazyPanel } from './lazy-panel';
 
@@ -52,5 +53,28 @@ describe('lazyPanel', () => {
     expect(load).toHaveBeenCalledTimes(2);
     expect(warn).toHaveBeenCalledWith('[hello] panel code failed to load', expect.any(Error));
     warn.mockRestore();
+  });
+
+  it("throws a failed load to the boundary around it with onFail 'throw'", async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+      override state = { failed: false };
+      static getDerivedStateFromError() {
+        return { failed: true };
+      }
+      override render() {
+        return this.state.failed ? <p>Boundary caught it</p> : this.props.children;
+      }
+    }
+    const Panel = lazyPanel<{ name: string }>('hello', () => Promise.reject(new Error('offline')), {
+      onFail: 'throw',
+    });
+    render(
+      <Boundary>
+        <Panel name="Sam" />
+      </Boundary>,
+    );
+    expect(await screen.findByText('Boundary caught it')).toBeTruthy();
+    error.mockRestore();
   });
 });

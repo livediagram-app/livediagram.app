@@ -300,25 +300,27 @@ function NameField({
 function ActionButton({
   label,
   onClick,
+  plain = false,
   children,
 }: {
   label: string;
   onClick?: () => void;
+  // A universal glyph (a move chevron) that needs no tooltip (tooltips-hover-cards-popovers.md).
+  plain?: boolean;
   children: ReactNode;
 }) {
-  return (
-    <Tooltip label={label}>
-      <button
-        type="button"
-        aria-label={label}
-        disabled={!onClick}
-        onClick={onClick}
-        className={`flex h-8 flex-1 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100`}
-      >
-        {children}
-      </button>
-    </Tooltip>
+  const button = (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={!onClick}
+      onClick={onClick}
+      className={`flex h-8 flex-1 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default disabled:opacity-35 disabled:hover:bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100`}
+    >
+      {children}
+    </button>
   );
+  return plain ? button : <Tooltip label={label}>{button}</Tooltip>;
 }
 
 // Duplicate, move left, move right, delete: one row of icon buttons, each disabled where it has
@@ -375,12 +377,14 @@ function PageActions({
       </ActionButton>
       <ActionButton
         label={`Move ${noun} left`}
+        plain
         onClick={edit.canMove(page.id, -1) ? () => edit.movePage(page.id, -1) : undefined}
       >
         <ChevronLeftIcon className="h-4 w-4" />
       </ActionButton>
       <ActionButton
         label={`Move ${noun} right`}
+        plain
         onClick={edit.canMove(page.id, 1) ? () => edit.movePage(page.id, 1) : undefined}
       >
         <ChevronRightIcon className="h-4 w-4" />

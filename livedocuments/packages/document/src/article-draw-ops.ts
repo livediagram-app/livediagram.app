@@ -23,6 +23,10 @@ export type ArticleDrawOp =
       // A line in more than one style (a bold lead-in): its stretches in order, each its own weight and style, `text`
       // their whole; drawn as one text whose stretches follow each other, so the renderer spaces them.
       runs?: { text: string; weight: string; style: string }[];
+      // The block the word belongs to, for a PDF's tags (liveworkspace/docs/specs/013-export/vector-pdf.md "Tags"): its
+      // structure (H1 to H6, or P for any other block) and its place among the article's blocks, in reading order.
+      tag?: string;
+      block?: number;
     }
   | { k: 'rect'; x: number; y: number; w: number; h: number; fill: string; r?: number }
   | {
@@ -64,7 +68,7 @@ export function articleOpsToSvg(ops: readonly ArticleDrawOp[]): string {
         .filter(Boolean)
         .join(' ');
       out.push(
-        `<text x="${r2(op.x)}" y="${r2(op.y)}" font-family="${xmlEscape(op.family)}" font-size="${r2(op.size)}" font-weight="${xmlEscape(op.weight)}"${op.style !== 'normal' ? ` font-style="${xmlEscape(op.style)}"` : ''} fill="${xmlEscape(op.color)}"${deco ? ` text-decoration="${deco}"` : ''}${op.anchor && op.anchor !== 'start' ? ` text-anchor="${op.anchor}"` : ''} xml:space="preserve">${
+        `<text x="${r2(op.x)}" y="${r2(op.y)}" font-family="${xmlEscape(op.family)}" font-size="${r2(op.size)}" font-weight="${xmlEscape(op.weight)}"${op.style !== 'normal' ? ` font-style="${xmlEscape(op.style)}"` : ''} fill="${xmlEscape(op.color)}"${deco ? ` text-decoration="${deco}"` : ''}${op.anchor && op.anchor !== 'start' ? ` text-anchor="${op.anchor}"` : ''}${op.tag && op.block !== undefined ? ` data-pdf-tag="${xmlEscape(op.tag)}" data-pdf-block="${op.block}"` : ''} xml:space="preserve">${
           op.runs
             ? op.runs
                 .map(

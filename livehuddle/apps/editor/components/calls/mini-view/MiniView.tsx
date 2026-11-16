@@ -2,7 +2,7 @@
 
 // The mini view's content (docs/specs/008-canvas/avatar-mode.md "The mini view"; blueprint: space-mini-view.md
 // "Rows"): In the Space and its count with Back to Space, a knock that reached you, then you and everyone with a
-// character on your tab, the people you hear under Near You. Rendered by MiniViewHost into the Picture-in-Picture
+// character on your tab, the people you hear under Near You, and your microphone at the foot. Rendered by MiniViewHost into the Picture-in-Picture
 // window. It subscribes to the levels, the hands, your call and the knock, and re-renders only when one changes.
 import { memo } from 'react';
 import { lucideArrowUpRight } from '@liveworkspace/icons/lucide';
@@ -21,6 +21,7 @@ import { useMiniKnock, type MiniKnock } from '@/lib/mini-view/mini-view-knock';
 import type { MiniGroup, MiniPerson } from '@/lib/mini-view/mini-view-people';
 import { focusSpace } from '@/lib/mini-view/mini-view-window';
 import { useStaleClock } from '../TalkingBars';
+import { MiniViewControls } from './MiniViewControls';
 import { MiniViewRow, type MiniHand } from './MiniViewRow';
 
 const BackIcon = lucideGlyph(lucideArrowUpRight, 14);
@@ -134,6 +135,8 @@ function MiniViewBody({
           <p className="px-2 pt-2 text-xs text-slate-600 dark:text-slate-300">{ALONE_TEXT}</p>
         ) : null}
       </div>
+      {/* Your microphone, and the camera while on, the dock's own buttons (Work Tracker 992). */}
+      <MiniViewControls />
     </div>
   );
 }

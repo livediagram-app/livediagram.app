@@ -315,4 +315,59 @@ describe('accountsFetch', () => {
     expect(fallback).not.toHaveBeenCalled();
     expect(accountsFetch(undefined, fallback)).toBe(fallback);
   });
+
+  it("falls back to the public route on local dev's 503 for a bound Worker that isn't running", async () => {
+    for (const message of [
+      'Worker "liveworkspace-accounts" not found. Make sure it is running locally.',
+      'Worker "liveworkspace-accounts" is not compatible with this version of the dev server.',
+    ]) {
+      const via = { fetch: vi.fn(async () => new Response(message, { status: 503 })) };
+      const fallback = vi.fn<typeof fetch>(async () => new Response('public'));
+      const response = await accountsFetch(via, fallback)('https://accounts.example/x', {
+        method: 'POST',
+        body: '{}',
+      });
+      expect(await response.text()).toBe('public');
+      expect(fallback).toHaveBeenCalledWith('https://accounts.example/x', {
+        method: 'POST',
+        body: '{}',
+      });
+    }
+  });
+
+  it("keeps the accounts Worker's own 503 and any other answer, readable", async () => {
+    const answers = [
+      new Response(JSON.stringify({ error: 'accounts_unavailable' }), {
+        status: 503,
+        headers: { 'content-type': 'application/json' },
+      }),
+      new Response('Service Unavailable', { status: 503 }),
+      new Response('Worker "x" not found. Make sure it is running locally.', { status: 404 }),
+    ];
+    for (const answer of answers) {
+      const body = await answer.clone().text();
+      const fallback = vi.fn<typeof fetch>();
+      const response = await accountsFetch(
+        { fetch: async () => answer },
+        fallback,
+      )('https://accounts.example/x');
+      expect(response).toBe(answer);
+      expect(await response.text()).toBe(body);
+      expect(fallback).not.toHaveBeenCalled();
+    }
+  });
+
+  it("falls back when the binding throws, but not past the request's own timeout", async () => {
+    const fallback = vi.fn<typeof fetch>(async () => new Response('public'));
+    const thrower = { fetch: vi.fn(async () => Promise.reject(new Error('no binding'))) };
+    expect(await (await accountsFetch(thrower, fallback)('https://a.example/')).text()).toBe(
+      'public',
+    );
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      accountsFetch(thrower, fallback)('https://a.example/', { signal: controller.signal }),
+    ).rejects.toThrow('no binding');
+    expect(fallback).toHaveBeenCalledTimes(1);
+  });
 });

@@ -42,11 +42,15 @@ export {
   type DeletionCodeCheck,
 } from './close-account';
 export {
+  ACCOUNT_CALL_TIMEOUT_MS,
+  ACCOUNT_WRITE_TIMEOUT_MS,
+  AccountCallTimeout,
   accountEmails,
   claimLegacyGuest,
   claimMilestone,
   createTeamFor,
   createTokenChecker,
+  deadlineSignal,
   liveTokenIds,
   MAX_EMAIL_IDS,
   MAX_LIVE_TOKEN_IDS,

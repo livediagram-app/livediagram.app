@@ -3,8 +3,9 @@
 
 export type HintKind = 'tooltip' | 'hover-card' | 'preview';
 
-// A pointer resting this long on a control is asking what it is called.
-export const TOOLTIP_OPEN_DELAY_MS = 500;
+// A pointer resting this long on a control is asking what it is called. Long enough that a pause before a
+// click, or a pointer crossing a toolbar, opens nothing over the next control.
+export const TOOLTIP_OPEN_DELAY_MS = 800;
 // After a tooltip closes, the next one skips its delay for this long.
 export const TOOLTIP_WARMUP_MS = 500;
 // A pointer resting this long on a row asks to see what it opens: longer than a tooltip, as a

@@ -4,7 +4,7 @@
 // livedesign): fixed at the foot of
 // the screen while an image is cropped, the same size at any zoom and on a phone. Aspect, Zoom, then Reset,
 // Cancel and Done.
-import { Button, Portal, Tooltip, safeInset } from '@liveworkspace/ui';
+import { Button, Portal, safeInset } from '@liveworkspace/ui';
 import { SegmentedRadio } from '../primitives/SegmentedRadio';
 import { IMAGE_CROP_ZOOM_MAX } from '../../lib/image-crop-math';
 
@@ -91,21 +91,15 @@ export function ImageCropBar({
           </span>
         </label>
         <div className="flex items-center gap-1.5">
-          <Tooltip label="Reset">
-            <Button variant="ghost" size="sm" className="cursor-pointer" onClick={onReset}>
-              Reset
-            </Button>
-          </Tooltip>
-          <Tooltip label="Cancel">
-            <Button variant="secondary" size="sm" className="cursor-pointer" onClick={onCancel}>
-              Cancel
-            </Button>
-          </Tooltip>
-          <Tooltip label="Done">
-            <Button variant="primary" size="sm" className="cursor-pointer" onClick={onDone}>
-              Done
-            </Button>
-          </Tooltip>
+          <Button variant="ghost" size="sm" className="cursor-pointer" onClick={onReset}>
+            Reset
+          </Button>
+          <Button variant="secondary" size="sm" className="cursor-pointer" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" className="cursor-pointer" onClick={onDone}>
+            Done
+          </Button>
         </div>
       </div>
     </Portal>

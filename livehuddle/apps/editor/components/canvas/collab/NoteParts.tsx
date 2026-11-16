@@ -11,7 +11,6 @@ import {
   type NoteColor,
   type NoticeNote,
 } from '@livehuddle/document';
-import { Tooltip } from '@livehuddle/ui';
 import { shortDayAt } from '@/lib/calendar-month';
 
 // The parts every piece that holds notes shares (the Notice Board, docs/specs/009-elements/social-pieces.md; the
@@ -104,21 +103,20 @@ export function NoteAddForm({
       <div className="flex items-center gap-1.5">
         <div role="radiogroup" aria-label="Note colour" className="flex gap-1">
           {NOTE_COLORS.map((c) => (
-            <Tooltip key={c} label={NOTE_COLOR_LABELS[c]}>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={color === c}
-                aria-label={NOTE_COLOR_LABELS[c]}
-                onClick={() => setColor(c)}
-                className={`h-4 w-4 cursor-pointer rounded-full border ${
-                  color === c
-                    ? 'border-slate-700 ring-2 ring-sky-500 dark:border-slate-200'
-                    : 'border-slate-300 dark:border-slate-600'
-                }`}
-                style={{ background: NOTE_PAPER[c] }}
-              />
-            </Tooltip>
+            <button
+              key={c}
+              type="button"
+              role="radio"
+              aria-checked={color === c}
+              aria-label={NOTE_COLOR_LABELS[c]}
+              onClick={() => setColor(c)}
+              className={`h-4 w-4 cursor-pointer rounded-full border ${
+                color === c
+                  ? 'border-slate-700 ring-2 ring-sky-500 dark:border-slate-200'
+                  : 'border-slate-300 dark:border-slate-600'
+              }`}
+              style={{ background: NOTE_PAPER[c] }}
+            />
           ))}
         </div>
         <span className="ml-auto text-[10px] tabular-nums text-slate-500 dark:text-slate-400">

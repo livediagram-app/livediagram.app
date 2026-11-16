@@ -114,32 +114,28 @@ export function ConceptRowBar({
         transformOrigin: 'top center',
       }}
     >
-      <Tooltip label={`Move ${noun} Left`}>
-        <button
-          type="button"
-          aria-label={`Move ${lower} left`}
-          disabled={index === 0}
-          onClick={() => onMove(index - 1)}
-          className={button}
-        >
-          <Glyph size={14} units={18}>
-            <path d="M11 4 6 9l5 5" />
-          </Glyph>
-        </button>
-      </Tooltip>
-      <Tooltip label={`Move ${noun} Right`}>
-        <button
-          type="button"
-          aria-label={`Move ${lower} right`}
-          disabled={index === count - 1}
-          onClick={() => onMove(index + 1)}
-          className={button}
-        >
-          <Glyph size={14} units={18}>
-            <path d="m7 4 5 5-5 5" />
-          </Glyph>
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        aria-label={`Move ${lower} left`}
+        disabled={index === 0}
+        onClick={() => onMove(index - 1)}
+        className={button}
+      >
+        <Glyph size={14} units={18}>
+          <path d="M11 4 6 9l5 5" />
+        </Glyph>
+      </button>
+      <button
+        type="button"
+        aria-label={`Move ${lower} right`}
+        disabled={index === count - 1}
+        onClick={() => onMove(index + 1)}
+        className={button}
+      >
+        <Glyph size={14} units={18}>
+          <path d="m7 4 5 5-5 5" />
+        </Glyph>
+      </button>
       {onAddNote ? (
         <Tooltip label="Add Note">
           <button type="button" aria-label="Add note" onClick={onAddNote} className={button}>

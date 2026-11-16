@@ -39,7 +39,7 @@ export function FieldRow({
 }: {
   id: string;
   label: string;
-  // What the field holds, as an icon and its name (the icon's tooltip and accessible name).
+  // What the field holds, as an icon and its name (the icon's accessible name).
   icon: { node: React.ReactNode; name: string };
   // False for a field that never comes off (Title, Status, a type's kept fields): no Remove, and a lock.
   removable: boolean;
@@ -89,15 +89,13 @@ export function FieldRow({
           <span aria-hidden className="h-7 w-5 shrink-0" />
         )}
         <span className="flex min-w-0 flex-1 items-center gap-1.5 text-[13px] font-medium text-slate-800 dark:text-slate-100">
-          <Tooltip label={icon.name}>
-            <span
-              role="img"
-              aria-label={icon.name}
-              className="flex h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400 [&_svg]:h-full [&_svg]:w-full"
-            >
-              {icon.node}
-            </span>
-          </Tooltip>
+          <span
+            role="img"
+            aria-label={icon.name}
+            className="flex h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400 [&_svg]:h-full [&_svg]:w-full"
+          >
+            {icon.node}
+          </span>
           <span className="truncate">
             {label}
             {required ? <RequiredMark /> : null}
@@ -116,18 +114,16 @@ export function FieldRow({
           ) : null}
         </span>
         {onEdit ? (
-          <Tooltip label="Edit Field">
-            <button
-              type="button"
-              className={`${ICON_BUTTON} cursor-pointer ${editing ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300' : ''}`}
-              aria-label={`Edit ${label}`}
-              aria-haspopup="dialog"
-              aria-expanded={editing}
-              onClick={(e) => onEdit(e.currentTarget)}
-            >
-              <PencilIcon size={13} />
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            className={`${ICON_BUTTON} cursor-pointer ${editing ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300' : ''}`}
+            aria-label={`Edit ${label}`}
+            aria-haspopup="dialog"
+            aria-expanded={editing}
+            onClick={(e) => onEdit(e.currentTarget)}
+          >
+            <PencilIcon size={13} />
+          </button>
         ) : null}
         {hasMenu ? (
           <FieldMenu

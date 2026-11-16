@@ -31,7 +31,9 @@ export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
   return { ...tab, elements: remintElements(tab.elements).elements };
 }
 
-export type ImportFormat = 'json';
+// SVG adds shapes to a page rather than replacing the tab, so the editor routes it to its SVG importer
+// (docs/specs/020-import-export/svg-import.md); this hook imports JSON.
+export type ImportFormat = 'json' | 'svg';
 
 type TabImportDeps = {
   tabs: Tab[];

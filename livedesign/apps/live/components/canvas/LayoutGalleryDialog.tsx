@@ -8,7 +8,7 @@
 // (liveworkspace/docs/specs/004-index/dialog-hero-header.md), drawn as the gallery: frames tiled, one chosen.
 import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedesign/design';
 import { layoutCatalogueFor, type PageLayoutId } from '@livedesign/templates';
-import { CloseIcon, Tooltip } from '@livedesign/ui';
+import { CloseIcon } from '@livedesign/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
@@ -42,16 +42,14 @@ export function LayoutGalleryDialog({
         subtitle={`${count} layouts in your theme. Pick one, then make it yours.`}
         actions={
           // The editor's close, with its tooltip (the header's own close has none).
-          <Tooltip label="Close">
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={onClose}
-              className="touch-target relative -mr-2 flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <CloseIcon />
-            </button>
-          </Tooltip>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="touch-target relative -mr-2 flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <CloseIcon />
+          </button>
         }
         underHandle
       />

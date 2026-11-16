@@ -22,22 +22,22 @@ export function pageTabStyleRoom(labelled: boolean): number {
 }
 
 export function PageTabStyleButton({ labelled }: { labelled: boolean }) {
-  return (
-    <Tooltip label="Style">
-      <button
-        type="button"
-        aria-label="Style"
-        aria-haspopup="dialog"
-        data-tab-style-button=""
-        onClick={(e) => {
-          track('UI', 'Opened', 'ThemePicker');
-          openTabStyleFrom(e.currentTarget);
-        }}
-        className={titleButtonClass(false, labelled)}
-      >
-        <StyleIcon />
-        {labelled ? <span aria-hidden>Style</span> : null}
-      </button>
-    </Tooltip>
+  const button = (
+    <button
+      type="button"
+      aria-label="Style"
+      aria-haspopup="dialog"
+      data-tab-style-button=""
+      onClick={(e) => {
+        track('UI', 'Opened', 'ThemePicker');
+        openTabStyleFrom(e.currentTarget);
+      }}
+      className={titleButtonClass(false, labelled)}
+    >
+      <StyleIcon />
+      {labelled ? <span aria-hidden>Style</span> : null}
+    </button>
   );
+  // Named beside its icon, it needs no tooltip.
+  return labelled ? button : <Tooltip label="Style">{button}</Tooltip>;
 }

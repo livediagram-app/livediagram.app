@@ -13,14 +13,7 @@ import {
   type ArticleLookId,
   type ArticleStyle,
 } from '@livedocuments/document';
-import {
-  ACTIVE_SEGMENT,
-  CheckIcon,
-  SEGMENT_TRACK,
-  Select,
-  Switch,
-  Tooltip,
-} from '@livedocuments/ui';
+import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Select, Switch } from '@livedocuments/ui';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { PanelSection } from '../page-panel-sections';
 import { ArticleBandsSection } from './ArticleBandsSection';
@@ -227,54 +220,52 @@ function LookCard({
   const ink = '#1e293b';
   const heading = look.accentHeadings ? accent : ink;
   return (
-    <Tooltip label={look.label}>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        aria-label={look.label}
-        onClick={onPick}
-        onPointerEnter={onHover}
-        onFocus={onHover}
-        className={`relative flex flex-col items-stretch overflow-hidden rounded-md bg-white px-1.5 pb-1.5 pt-1 text-left shadow-sm ring-1 transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-brand-600 motion-reduce:hover:translate-y-0 dark:bg-slate-100 ${
-          selected ? 'ring-2 ring-brand-500' : 'ring-slate-900/10'
-        }`}
-        style={
-          look.ruled
-            ? {
-                backgroundImage:
-                  'linear-gradient(transparent calc(100% - 1px), rgb(15 23 42 / 0.12) calc(100% - 1px))',
-                backgroundSize: '100% 6px',
-              }
-            : undefined
-        }
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      aria-label={look.label}
+      onClick={onPick}
+      onPointerEnter={onHover}
+      onFocus={onHover}
+      className={`relative flex flex-col items-stretch overflow-hidden rounded-md bg-white px-1.5 pb-1.5 pt-1 text-left shadow-sm ring-1 transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-brand-600 motion-reduce:hover:translate-y-0 dark:bg-slate-100 ${
+        selected ? 'ring-2 ring-brand-500' : 'ring-slate-900/10'
+      }`}
+      style={
+        look.ruled
+          ? {
+              backgroundImage:
+                'linear-gradient(transparent calc(100% - 1px), rgb(15 23 42 / 0.12) calc(100% - 1px))',
+              backgroundSize: '100% 6px',
+            }
+          : undefined
+      }
+    >
+      <span
+        className="block truncate text-[11px] leading-tight"
+        style={{
+          fontFamily: resolveFontStack(look.headingFont),
+          fontWeight: 700,
+          color: heading,
+          borderBottom: look.rules !== 'none' ? `1px solid ${accent}` : undefined,
+        }}
       >
+        Aa
+      </span>
+      {[90, 70, 85].map((w, i) => (
         <span
-          className="block truncate text-[11px] leading-tight"
-          style={{
-            fontFamily: resolveFontStack(look.headingFont),
-            fontWeight: 700,
-            color: heading,
-            borderBottom: look.rules !== 'none' ? `1px solid ${accent}` : undefined,
-          }}
-        >
-          Aa
+          key={i}
+          className="mt-1 block h-[2px] rounded-full bg-slate-300"
+          style={{ width: `${w}%` }}
+        />
+      ))}
+      <span className="mt-1 block text-[9px] font-medium text-slate-500">{look.label}</span>
+      {selected ? (
+        <span className="absolute right-0.5 top-0.5 text-brand-700 dark:text-brand-600">
+          <CheckIcon className="h-3 w-3" />
         </span>
-        {[90, 70, 85].map((w, i) => (
-          <span
-            key={i}
-            className="mt-1 block h-[2px] rounded-full bg-slate-300"
-            style={{ width: `${w}%` }}
-          />
-        ))}
-        <span className="mt-1 block text-[9px] font-medium text-slate-500">{look.label}</span>
-        {selected ? (
-          <span className="absolute right-0.5 top-0.5 text-brand-700 dark:text-brand-600">
-            <CheckIcon className="h-3 w-3" />
-          </span>
-        ) : null}
-      </button>
-    </Tooltip>
+      ) : null}
+    </button>
   );
 }
 

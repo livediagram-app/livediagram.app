@@ -43,12 +43,12 @@ async function keyboardFocus(page: Page, target: Locator) {
 }
 
 test.describe('Tooltip on a palette tile', () => {
-  test('names the tile only after a 500 ms hover', async ({ page, pageErrors }) => {
+  test('names the tile only after an 800 ms hover', async ({ page, pageErrors }) => {
     await openEditor(page);
     await parkPointer(page);
     await squareTile(page).hover();
 
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(500);
     await expect(page.locator(TOOLTIP)).toHaveCount(0);
 
     const tooltip = page.locator(TOOLTIP);
@@ -74,18 +74,26 @@ test.describe('Tooltip on a palette tile', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('stays open while the pointer moves onto it', async ({ page, pageErrors }) => {
+  test('never takes a press: it lets the pointer through, and leaving the tile closes it', async ({
+    page,
+    pageErrors,
+  }) => {
     await openEditor(page);
     await parkPointer(page);
     await squareTile(page).hover();
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: 1_500 });
 
+    await expect(tooltip).toHaveCSS('pointer-events', 'none');
     const box = (await tooltip.boundingBox())!;
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 4 });
-    await page.waitForTimeout(400);
-    await expect(tooltip).toBeVisible();
-
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    // A press where it sits reaches what is beneath it, never the tooltip.
+    const hit = await page.evaluate(
+      ([px, py]) => document.elementFromPoint(px, py)?.closest('[data-hint="tooltip"]') ?? null,
+      [x, y] as const,
+    );
+    expect(hit).toBeNull();
     await parkPointer(page);
     await expect(tooltip).toHaveCount(0);
     expectNoPageErrors(pageErrors);

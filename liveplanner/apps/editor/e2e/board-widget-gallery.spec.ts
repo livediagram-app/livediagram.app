@@ -76,8 +76,18 @@ test('Add a Widget adds a field widget to the board header and Edit Widgets remo
   const board = page.locator('[data-plan-board]').first();
   await board.waitFor();
   const zone = board.locator('[data-widget-zone]');
-  // The Kanban preset starts with a few widgets of its own; the field widget is counted on top of them.
-  const before = await zone.locator('[data-widget]').count();
+  // The Kanban preset starts with a few widgets of its own; the field widget is counted on top of them. Each widget is
+  // in the zone once, in the row or (when the row is full) as the measuring layer's copy of one in More.
+  const kinds = () =>
+    zone
+      .first()
+      .evaluate(
+        (z) =>
+          new Set(
+            [...z.querySelectorAll('[data-widget]')].map((e) => e.getAttribute('data-widget')),
+          ).size,
+      );
+  const before = await kinds();
   await board.getByRole('button', { name: 'Add a widget' }).click();
 
   const gallery = page.getByRole('dialog', { name: 'Add a Widget' });
@@ -93,16 +103,25 @@ test('Add a Widget adds a field widget to the board header and Edit Widgets remo
   await button.click();
   await expect(button).toHaveAttribute('aria-pressed', 'true');
 
-  // It stands in the board's header once the gallery is closed.
+  // It stands in the board's header once the gallery is closed: in the row, or in More when the row is full (a header
+  // band's zone is at most 46rem, which the preset's widgets and this one can outgrow; board-widgets.md "The header").
   await gallery.getByRole('button', { name: 'Close' }).click();
   await expect(gallery).toHaveCount(0);
-  const widget = zone.locator(`[data-widget="${widgetId}"]`);
-  await expect(widget).toBeVisible();
-  await expect(zone.locator('[data-widget]')).toHaveCount(before + 1);
+  await expect.poll(kinds).toBe(before + 1);
+  const inRow = zone.locator(`[data-widget="${widgetId}"]:not([data-widget-ghost])`);
+  const more = board.getByRole('button', { name: /^More widgets/ });
+  const shown = async () => {
+    if ((await inRow.count()) === 0) await more.click();
+    const widget = page.locator(`[data-widget="${widgetId}"]:not([data-widget-ghost])`);
+    await expect(widget).toBeVisible();
+    return widget;
+  };
+  await shown();
 
-  // Edit Widgets shows a Remove on each widget; pressing it takes the widget off the header.
+  // Edit Widgets shows a Remove on each widget, in the row and in More; pressing it takes the widget off the header.
   await board.getByRole('button', { name: 'Edit Widgets' }).click();
+  const widget = await shown();
   await widget.getByRole('button', { name: /^Remove / }).click();
-  await expect(widget).toHaveCount(0);
-  await expect(zone.locator('[data-widget]')).toHaveCount(before);
+  await expect(page.locator(`[data-widget="${widgetId}"]`)).toHaveCount(0);
+  await expect.poll(kinds).toBe(before);
 });

@@ -190,15 +190,7 @@ export function CustomFieldEditor({
       );
     // A phone number as typed, and its call link (docs/specs/026-plan/item-types.md "Phone").
     case 'phone':
-      return (
-        <PhoneField
-          id={id}
-          label={field.label}
-          value={text}
-          disabled={disabled}
-          onSave={(v) => void onSave(v)}
-        />
-      );
+      return <PhoneField id={id} value={text} disabled={disabled} onSave={(v) => void onSave(v)} />;
     case 'date':
       return <DateField id={id} value={value} disabled={disabled} onSave={onSave} />;
     // A moment in the viewer's zone (docs/specs/026-plan/item-types.md "Date and Time").

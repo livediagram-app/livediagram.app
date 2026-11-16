@@ -121,8 +121,16 @@ const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 // `pressWithText`: a touch long press opens the hint even on a control that shows text. Off by default (a labelled
 // control already says what it is); a comment's reaction chip sets it, since its text is an emoji and a count and
 // the card is the only way to learn who reacted on a phone.
-export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}): HintState {
+// `quiet`: asked on every open; true keeps the hint shut (a tooltip whose control already shows its name).
+export function useHint(
+  kind: HintKind,
+  opts: { pressWithText?: boolean; quiet?: (anchor: Element) => boolean } = {},
+): HintState {
   const pressWithText = opts.pressWithText === true;
+  const quietRef = useRef(opts.quiet);
+  useEffect(() => {
+    quietRef.current = opts.quiet;
+  });
   const [source, setSource] = useState<HintOpenSource | null>(null);
   const [token] = useState<HintToken>(() => ({}));
   const machine = useRef<Machine>(newMachine());
@@ -144,6 +152,9 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
     (from: HintOpenSource) => {
       const m = machine.current;
       clearTimers(m, 'openTimer', 'closeTimer', 'lingerTimer');
+      const quiet = quietRef.current;
+      const target = machine.current.wrapper?.firstElementChild ?? machine.current.wrapper;
+      if (quiet && target && quiet(target)) return;
       m.source = from;
       if (!m.open) {
         m.open = true;
@@ -188,6 +199,8 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
   // T1: a mouse or pen arrived over the trigger.
   const enter = (e: React.PointerEvent) => {
     if (e.pointerType === 'touch' || touchedRecently(Date.now())) return;
+    // I7: a drag across a toolbar or palette (a button held) opens no tooltip on its way.
+    if (kind === 'tooltip' && e.buttons !== 0) return;
     const m = machine.current;
     m.overTrigger = true;
     clearTimers(m, 'closeTimer');
@@ -221,6 +234,8 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
       }
       m.suppressClick = false;
       clearTimers(m, 'pressTimer');
+      // I7: a tooltip never shows on touch; a long press is for a hover card's explanation.
+      if (kind === 'tooltip') return;
       const target = anchor();
       if (!target || (!pressWithText && hasVisibleText(target))) return;
       m.pressStart = { x: e.clientX, y: e.clientY };

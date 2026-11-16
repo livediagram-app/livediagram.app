@@ -1,4 +1,4 @@
-// The Snapshots dialog's words (liveworkspace/docs/specs/013-snapshots/snapshots.md "In the editor"; blueprint SN26).
+// The Snapshots dialog's words (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"; blueprint SN26).
 
 import { formatRelativeTime } from '@liveworkspace/ui/relative-time';
 import type { SnapshotSummary } from '../wire';

@@ -1256,9 +1256,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import a livedesign JSON tab export into a tab by pasting text or picking a file.',
+      'Import a livedesign JSON tab export into a tab, or bring an SVG in as editable shapes.',
     keywords:
-      'import json file files paste upload load restore backup copy clipboard replace tab export round trip',
+      'import json svg logo icon vector shapes paths editable file files paste drop upload load restore backup copy clipboard replace tab export round trip',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

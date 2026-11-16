@@ -156,6 +156,14 @@ describe('the item panel header', () => {
 
 // docs/specs/026-plan/plan-board.md "Open an item": the Details panel ends with who made and last edited it, and when
 // (docs/specs/026-plan/items.md "Created and Last Edited").
+// jsdom lays nothing out, so the footer's words never measure as cut: say they are, as a narrow footer cuts them, so
+// the tooltip carrying the whole line opens (a tooltip on uncut words stays shut, tooltips-hover-cards-popovers.md).
+function clipped(el: HTMLElement): HTMLElement {
+  Object.defineProperty(el, 'clientWidth', { configurable: true, value: 100 });
+  Object.defineProperty(el, 'scrollWidth', { configurable: true, value: 240 });
+  return el;
+}
+
 describe('the item panel’s authorship', () => {
   it('says Created by and Edited by, each with the person’s disc, in a footer at the foot of Details', () => {
     const task = {
@@ -208,7 +216,7 @@ describe('the item panel’s authorship', () => {
     expect(row().textContent).toMatch(/^Created by Card for Each Pull Request/);
     expect(row().querySelector('[data-automation-disc]')).toBeTruthy();
     rerender(<ItemMeta item={task} now={Date.now()} />);
-    fireEvent.pointerEnter(screen.getByText(/^Created by/), { pointerType: 'mouse' });
+    fireEvent.pointerEnter(clipped(screen.getByText(/^Created by/)), { pointerType: 'mouse' });
     expect((await screen.findByRole('tooltip')).textContent).toBe(
       'Created by GitHub · Card for Each Pull Request',
     );
@@ -225,7 +233,7 @@ describe('the item panel’s authorship', () => {
       },
     };
     render(<ItemMeta item={task} now={Date.now()} />);
-    const words = screen.getByText(/^Edited by/);
+    const words = clipped(screen.getByText(/^Edited by/));
     fireEvent.pointerEnter(words, { pointerType: 'mouse' });
     expect((await screen.findByRole('tooltip')).textContent).toBe(
       'Edited by GitHub · Done When the Pull Request Merges',

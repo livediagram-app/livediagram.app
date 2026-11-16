@@ -1,4 +1,4 @@
-// A document's snapshots (docs/specs/013-workspace/snapshots.md; liveworkspace/docs/specs/013-snapshots/snapshots.md):
+// A document's snapshots (docs/specs/013-workspace/snapshots.md; liveworkspace/docs/specs/014-snapshots/snapshots.md):
 // the thin door onto @liveworkspace/snapshots. A snapshot is the document's own file (document-file.ts), and a revert
 // reads it back keeping every tab's id, writes its tabs and deck in place, then tells the room, which forgets its
 // ledger and closes every socket so each open editor reloads onto the reverted document.
