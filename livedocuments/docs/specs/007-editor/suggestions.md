@@ -49,7 +49,7 @@ A suggestion is never called a "revision" or a "tracked change" in the interface
 ## Suggesting
 
 - **The mode**: for an Editor the page toolbar opens with a mode menu, its button naming the mode in force
-  (**Editing**, a pencil; **Suggesting**, a pencil with a plus, in the brand tint). The menu holds **Editing**
+  (**Editing**, a pencil; **Suggesting**, a pencil with a line, in the brand tint). The menu holds **Editing**
   ("Change the writing directly") and **Suggesting** ("Your changes become suggestions to accept or reject"), then,
   under **Review**, the article's suggestion count ("6 suggestions", "No suggestions"), **Accept All** and **Reject
   All**. The mode is the person's, for every article on the tab, for as long as the editor is open; it starts at

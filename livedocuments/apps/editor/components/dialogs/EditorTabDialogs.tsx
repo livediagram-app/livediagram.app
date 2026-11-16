@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
@@ -85,6 +85,8 @@ function OpenEditorTabDialogs() {
     sessionShareCode,
   } = useEditorContext();
   const toast = useToast();
+  // Bumped when the dialog makes, rescopes or removes a pass, so the Suggestions section lists the new links at once.
+  const [linksRev, setLinksRev] = useState(0);
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
   const exportingSelection = exportOpen && exportScope === 'selection';
@@ -168,7 +170,10 @@ function OpenEditorTabDialogs() {
           shareUrl={shareUrl}
           handOver={documentHandOver}
           helpHref={shareHelpHref}
-          onTelemetry={trackShare}
+          onTelemetry={(action, type) => {
+            trackShare(action, type);
+            if (action === 'Shared' || action === 'Removed') setLinksRev((r) => r + 1);
+          }}
           notify={(text, tone) => toast[tone](text)}
           // A guest's name is theirs to change here; an account's is the account's (auth-and-guest-access.md).
           identity={
@@ -201,6 +206,7 @@ function OpenEditorTabDialogs() {
                 documentId={documentId}
                 ownerId={selfParticipant.id}
                 shareCode={sessionShareCode}
+                linksRev={linksRev}
                 tabs={tabs}
                 onError={(text) => toast.error(text)}
               />

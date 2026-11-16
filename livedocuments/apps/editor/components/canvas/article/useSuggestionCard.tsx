@@ -110,6 +110,16 @@ export function useSuggestionCard(
       setOpen((o) => (s ? { id: s.attrs.id, via: 'caret' } : o?.via === 'caret' ? null : o));
       setTick((t) => t + 1);
     };
+    // ProseMirror reads a press's selection in its own mouseup on the document, after this one on the writing, so
+    // the caret is read on the next task (else the card shows the suggestion the caret was in before the press).
+    let pressTimer: number | null = null;
+    const pressed = () => {
+      if (pressTimer !== null) window.clearTimeout(pressTimer);
+      pressTimer = window.setTimeout(() => {
+        pressTimer = null;
+        caret();
+      }, 0);
+    };
     const key = (e: KeyboardEvent) => {
       if (e.key === 'Escape') return;
       caret();
@@ -136,7 +146,7 @@ export function useSuggestionCard(
     dom.addEventListener('mouseover', over);
     dom.addEventListener('mouseout', out);
     dom.addEventListener('keyup', key);
-    dom.addEventListener('mouseup', caret);
+    dom.addEventListener('mouseup', pressed);
     dom.addEventListener('keydown', escape, true);
     const offReview = onSuggestionReview(review);
     // A request made before this article was on screen (its tab opening from the toast).
@@ -146,7 +156,8 @@ export function useSuggestionCard(
       dom.removeEventListener('mouseover', over);
       dom.removeEventListener('mouseout', out);
       dom.removeEventListener('keyup', key);
-      dom.removeEventListener('mouseup', caret);
+      dom.removeEventListener('mouseup', pressed);
+      if (pressTimer !== null) window.clearTimeout(pressTimer);
       dom.removeEventListener('keydown', escape, true);
       offReview();
       stay();

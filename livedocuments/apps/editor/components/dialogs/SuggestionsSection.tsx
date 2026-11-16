@@ -23,6 +23,10 @@ const GROUP =
 const madeOn = (at: number) =>
   `Made ${new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`;
 
+/** The links Suggest Only can hold: Participant passes, not public ones. */
+const participantLinks = (links: ShareLink[]) =>
+  links.filter((x) => x.level === 'participate' && !x.public);
+
 function SwitchRow({
   title,
   detail,
@@ -73,12 +77,15 @@ export function SuggestionsSection({
   documentId,
   ownerId,
   shareCode,
+  linksRev = 0,
   tabs,
   onError,
 }: {
   documentId: string;
   ownerId: string;
   shareCode: string | null;
+  // Bumped when the Share dialog makes, rescopes or removes a pass: the links are listed again.
+  linksRev?: number;
   // The document's tabs, to name a link that opens one.
   tabs: readonly { id: string; name: string }[];
   onError: (text: string) => void;
@@ -95,7 +102,7 @@ export function SuggestionsSection({
       .then(([r, l]) => {
         if (!live) return;
         setReview(r);
-        setLinks(l.links.filter((x) => x.level === 'participate' && !x.public));
+        setLinks(participantLinks(l.links));
       })
       .catch(() => {
         if (live) onError('Could not read the suggestion settings.');
@@ -105,6 +112,22 @@ export function SuggestionsSection({
     };
     // oxlint-disable-next-line react/exhaustive-deps -- read once as the dialog opens
   }, [documentId]);
+
+  // A pass made, rescoped or removed above while the dialog is open: list the links again.
+  useEffect(() => {
+    if (linksRev === 0) return;
+    let live = true;
+    void indexClient
+      .listShareLinks(documentId)
+      .then((l) => {
+        if (live) setLinks(participantLinks(l.links));
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+    // oxlint-disable-next-line react/exhaustive-deps -- only a change above lists them again
+  }, [linksRev]);
 
   const save = async (next: ReviewSettings, event: string) => {
     if (!review) return;
