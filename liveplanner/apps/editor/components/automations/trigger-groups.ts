@@ -22,6 +22,7 @@ export const TRIGGER_GROUPS: readonly {
     kinds: [
       'card_created',
       'form_response',
+      'email_received',
       'card_moved',
       'field_changed',
       'card_archived',
@@ -51,6 +52,7 @@ export const TRIGGER_GROUPS: readonly {
 export const TRIGGER_LINES: Readonly<Record<AutomationTriggerKind, string>> = {
   card_created: 'A card is added: by a person, Duplicate, an import, a Repeat or an agent.',
   form_response: 'A Form response makes a card.',
+  email_received: 'An email to a board’s address makes a card. Pick the board and who it’s from.',
   card_moved: 'A card’s column changes.',
   field_changed: 'Any of the chosen fields changes value.',
   card_archived: 'A card is archived.',

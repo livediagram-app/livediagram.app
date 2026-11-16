@@ -323,3 +323,31 @@ describe('ruleWithTabIds', () => {
     expect(ruleWithTabIds({ steps: [] }, tabs)).toEqual({ steps: [] });
   });
 });
+
+// Work Tracker 1163: Email Received's board by its title, one board alone holding it, else kept as written.
+describe('Email Received board by title', () => {
+  const boards = [
+    { id: 'b1', name: 'Support' },
+    { id: 'b2', name: 'Sales' },
+    { id: 'b3', name: 'Sales' },
+  ];
+  const named = (board: string, names: RuleNames = { ...NAMES, boards }) =>
+    namedRuleBody({ trigger: { kind: 'email_received', board } }, names).trigger;
+
+  it('puts a title back to its board, and keeps an id', () => {
+    expect(named(' support ')).toEqual({ kind: 'email_received', board: 'b1' });
+    expect(named('b2')).toEqual({ kind: 'email_received', board: 'b2' });
+  });
+
+  it('keeps a title two boards share, one no board has, or any with no boards read', () => {
+    expect(named('Sales')).toEqual({ kind: 'email_received', board: 'Sales' });
+    expect(named('Ops')).toEqual({ kind: 'email_received', board: 'Ops' });
+    expect(named('Support', NAMES)).toEqual({ kind: 'email_received', board: 'Support' });
+  });
+
+  it('goes through a board map as a copy gives boards new ids', () => {
+    expect(
+      ruleWithRefs({ trigger: { kind: 'email_received', board: 'b1' } }, { board: () => 'n1' }),
+    ).toEqual({ trigger: { kind: 'email_received', board: 'n1' } });
+  });
+});

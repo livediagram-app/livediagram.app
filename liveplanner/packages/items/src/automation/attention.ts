@@ -1,6 +1,6 @@
 // Automations: what a rule names that the plan lacks (docs/specs/026-plan/automations.md "Conditions", "Copies,
-// exports and deletes"; blueprint automations.md "Files"). A card type, column, field, person, saved filter, Form tab
-// or Link Cards' chosen card gone since the rule was written (or never in a copy): the Rules list marks the rule Needs Attention with these
+// exports and deletes"; blueprint automations.md "Files"). A card type, column, field, person, saved filter, Form tab,
+// Email Received's board or Link Cards' chosen card gone since the rule was written (or never in a copy): the Rules list marks the rule Needs Attention with these
 // lines. Each thing is said once, in the order the rule names it. The plan's webhooks live in the index, not the plan:
 // a caller that has them (the builder) passes their ids, and one an outgoing action names that is gone needs
 // attention too. So does a GitHub-triggered rule on a plan not connected to GitHub, or one naming repositories none of
@@ -27,7 +27,7 @@ import {
 } from './outline';
 
 type Need = {
-  kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'webhook' | 'card';
+  kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'board' | 'webhook' | 'card';
   id: string;
 };
 
@@ -44,6 +44,7 @@ export type AutomationNeed =
 // What the kinds a run never fails on read as (the rest read as a failed step's line does, goneLine).
 const WORDS: Readonly<Record<Exclude<Need['kind'], AutomationGone['kind']>, string>> = {
   form: 'Form tab',
+  board: 'Board',
   webhook: 'Webhook',
   card: 'Card',
 };
@@ -138,6 +139,7 @@ function namesOf(rule: AutomationRuleBody, o: AutomationOutline): Need[] {
   const out: Need[] = [];
   if (t.kind === 'card_created' && t.status) out.push({ kind: 'column', id: t.status });
   if (t.kind === 'form_response' && t.formTab) out.push({ kind: 'form', id: t.formTab });
+  if (t.kind === 'email_received' && t.board) out.push({ kind: 'board', id: t.board });
   if (t.kind === 'card_moved') {
     for (const id of t.types ?? []) out.push({ kind: 'type', id });
     for (const id of [...(t.from ?? []), ...(t.to ?? [])]) out.push({ kind: 'column', id });
@@ -172,6 +174,8 @@ function present(need: Need, o: AutomationOutline, webhooks?: ReadonlySet<string
       return o.savedFilters.some((s) => `${s.tab}/${s.filter.id}` === need.id);
     case 'form':
       return o.formTabs.includes(need.id);
+    case 'board':
+      return !o.boards || o.boards.some((b) => b.id === need.id);
     case 'card':
       return !o.cards || o.cards.has(need.id);
   }
@@ -226,7 +230,10 @@ export const needLine = (need: AutomationNeed): string =>
         : `Repositories ${need.names.join(', ')} are not heard`
       : need.kind === 'unheard'
         ? `Field Changed never hears ${need.name}`
-        : need.kind === 'form' || need.kind === 'webhook' || need.kind === 'card'
+        : need.kind === 'form' ||
+            need.kind === 'board' ||
+            need.kind === 'webhook' ||
+            need.kind === 'card'
           ? `${WORDS[need.kind]} ${need.id} is gone`
           : goneLine({ kind: need.kind, id: need.id });
 

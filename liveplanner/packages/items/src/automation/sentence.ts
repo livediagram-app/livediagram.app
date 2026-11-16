@@ -40,6 +40,8 @@ export interface RuleSentenceOutline {
   people: readonly Pick<ItemPerson, 'id' | 'name'>[];
   tabs?: ReadonlyMap<string, string>;
   filters?: ReadonlyMap<string, string>;
+  // The plan's Plan boards by element id, named (Email Received's board); absent, the stored id reads.
+  boardNames?: ReadonlyMap<string, string>;
   // The plan's webhooks by id, named (the builder's list from the index); absent, a step's kept name reads.
   webhooks?: ReadonlyMap<string, string>;
   // A column, card type, field or Form tab the plan no longer has reads in words, not as its stored id (the editor's).
@@ -52,6 +54,7 @@ export const GONE_NAMES = {
   type: 'a card type no longer here',
   field: 'a field no longer here',
   form: 'a form no longer here',
+  board: 'a board no longer here',
 } as const;
 
 // What a pick never made (an empty id: a template's field the plan has none like) reads as: the pick it waits for,
@@ -61,6 +64,7 @@ export const UNPICKED_NAMES = {
   type: 'a card type',
   field: 'a field',
   form: 'a form',
+  board: 'a board',
 } as const;
 
 const gone = (outline: RuleSentenceOutline, id: string, kind: keyof typeof GONE_NAMES): string =>
@@ -75,6 +79,7 @@ export type RuleSentencePart = { word: string } | { chip: string; trigger?: true
 export const AUTOMATION_TRIGGER_NAMES: Readonly<Record<AutomationTriggerKind, string>> = {
   card_created: 'Card Created',
   form_response: 'Form Response',
+  email_received: 'Email Received',
   card_moved: 'Card Moved',
   field_changed: 'Field Changed',
   comment_added: 'Comment Added',
@@ -248,6 +253,11 @@ export function outlinePersonName(personId: string, outline: RuleSentenceOutline
 
 export function outlineTabName(tabId: string, outline: RuleSentenceOutline): string {
   return outline.tabs?.get(tabId) ?? gone(outline, tabId, 'form');
+}
+
+/** An Email Received rule's board by its title, else its id (or words). */
+export function outlineBoardName(boardId: string, outline: RuleSentenceOutline): string {
+  return outline.boardNames?.get(boardId) ?? gone(outline, boardId, 'board');
 }
 
 /** A built-in field's name as the plan's types agree on it, or a custom field's label, else the id (or words). */
@@ -432,6 +442,10 @@ export function triggerParts(
       break;
     case 'form_response':
       narrow('on', trigger.formTab ? [outlineTabName(trigger.formTab, outline)] : []);
+      break;
+    case 'email_received':
+      narrow('on', trigger.board ? [outlineBoardName(trigger.board, outline)] : []);
+      narrow('from', trigger.sender ? [trigger.sender] : []);
       break;
     case 'card_moved':
       narrow(

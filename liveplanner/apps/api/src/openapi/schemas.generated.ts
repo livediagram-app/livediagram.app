@@ -2214,6 +2214,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "person",
               "filter",
               "form",
+              "board",
               "webhook",
               "card"
             ],
@@ -2953,6 +2954,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
+          "board": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "email_received",
+            "type": "string"
+          },
+          "sender": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
           "from": {
             "items": {
               "type": "string"
@@ -3406,6 +3426,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationsListResponse": {
     "additionalProperties": false,
     "properties": {
+      "boards": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
       "filters": {
         "items": {
           "additionalProperties": false,

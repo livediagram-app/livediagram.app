@@ -131,4 +131,17 @@ describe('namedRuleBody', () => {
       steps: [{ kind: 'assign', to: { person: 'Ana Costa' } }],
     });
   });
+
+  it('names Email Received’s board by its title, from the boards list_rules lists', () => {
+    const state: RulesState = {
+      list: { ...listOf(), boards: [{ id: 'b1', name: 'Support' }] },
+      plan: PLAN,
+    };
+    expect(namedRuleBody({ trigger: { kind: 'email_received', board: 'support' } }, state)).toEqual(
+      { trigger: { kind: 'email_received', board: 'b1' } },
+    );
+    expect(namedRuleBody({ trigger: { kind: 'email_received', board: 'Support' } }, STATE)).toEqual(
+      { trigger: { kind: 'email_received', board: 'Support' } },
+    );
+  });
 });

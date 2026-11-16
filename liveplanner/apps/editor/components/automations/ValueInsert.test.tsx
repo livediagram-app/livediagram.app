@@ -212,4 +212,12 @@ describe('valueInsertGroups', () => {
     expect(filterValueGroups(groups, '  ').length).toBe(2);
     expect(filterValueGroups(groups, 'WEBHOOK')[0]!.options[0]!.kind).toBe('webhook');
   });
+
+  it('offers From Email after This Card in an Email Received rule', () => {
+    const groups = valueInsertGroups(false, [], false, false, true);
+    expect(groups.map((g) => g.label)).toEqual(['This Card', 'Email']);
+    expect(groups[1]!.options).toEqual([
+      { kind: 'value', id: 'value:from', label: 'From Email', name: 'from' },
+    ]);
+  });
 });

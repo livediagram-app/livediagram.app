@@ -9,6 +9,9 @@ export const RULE_TRIGGER_FORMAT =
   'What starts the rule, exactly one: ' +
   '{"kind":"card_created","status"?:column} (a card added, by anyone or anything, optionally landing in that column); ' +
   '{"kind":"form_response","formTab"?:Form tab} (a form response makes a card); ' +
+  '{"kind":"email_received","board"?:board,"sender"?:"ana@example.com" or a domain "@example.com"} (an email to a ' +
+  'board’s Email to Board address makes a card; board keeps it to that board, sender to that address or domain, ' +
+  'any case; its text may hold {{from}}, the sender’s address, never a recipient); ' +
   '{"kind":"card_moved","types"?:[card types],"from"?:[columns],"to"?:[columns]} (its status changes; types keeps ' +
   'it to cards of those card types, absent any type); ' +
   '{"kind":"field_changed","fields":[fields, at least one]}; ' +
@@ -41,7 +44,7 @@ export const RULE_TRIGGER_FORMAT =
   'reading its short name outside a notify message). ' +
   'A time trigger (scheduled, due_in, overdue, stuck) runs once for each card its conditions match (every card with none), ' +
   'up to 100 a moment, at the time in the rule’s timeZone, and has nobody behind it: no who condition, no ' +
-  '"trigger" assignee or recipient (nor does an incoming_webhook or a GitHub trigger).';
+  '"trigger" assignee or recipient (nor does an incoming_webhook, an email_received or a GitHub trigger).';
 
 export const RULE_CONDITIONS_FORMAT =
   `Up to ${AUTOMATION_CONDITIONS_MAX}, every one must hold (for a time trigger, they pick its cards): ` +

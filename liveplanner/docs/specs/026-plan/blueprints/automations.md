@@ -1481,3 +1481,74 @@ whole plan), so no other role sees either.
 the chosen From or To columns the plan has that no picked type uses. `TriggerPanel` offers them as chips by name
 after the types' columns, and `ChipToggles`' `note` says "The picked card types don't use Review." (several joined
 with "or"). A column the plan lacks still reads `GONE_COLUMN`.
+
+## Email Received (Work Tracker 1163)
+
+Spec [Email Received](../automations.md#email-received). The trigger copies Form Response: no new event kind, the
+created event carries what made the card.
+
+### Shapes (packages/items/src/automation)
+
+```ts
+type AutomationTrigger = … | { kind: 'email_received'; board?: string; sender?: string }; // types.ts
+interface AutomationEvent { …; email?: { from: string; board: string } }  // matches.ts, on a created event only
+type EventSource = Pick<AutomationEvent, 'role' | 'rule' | 'chain' | 'form' | 'email'>;
+interface AutomationOutline { …; boards?: readonly { id: string; name: string }[] } // outline.ts; absent: unchecked
+const AUTOMATION_EMAIL_VALUE_NAMES = ['from'] as const;            // types.ts, label 'From Email'
+```
+
+- `email-trigger.ts` (pure): `EMAIL_SENDER_MAX = 254`; `emailSenderFilter(raw)` → the kept form or null: trimmed,
+  lower case; an address passing `automationAddress` (email-addresses.ts) is kept as it is; else a domain, with or
+  without one leading `@`, kept as `@domain`: 1 to 253 characters, at least two labels split at `.`, each 1 to 63
+  of `a-z`, `0-9`, `-`, never starting or ending with `-` (a split and a per-character check, never a backtracking
+  pattern). `senderHeard(filter, sender)`: no filter hears every sender; `@domain` hears a sender whose part after its
+  last `@` equals the domain; an address hears that address; both sides trimmed and lower cased.
+- `TRIGGER_EVENT_KINDS.email_received = ['created']`, so a plan whose only rule is an email one queues created events
+  (the same single event Card Created would); `triggerMatches`: `event.kind === 'created' && event.email` and the
+  board (absent: any) and `senderHeard(trigger.sender, event.email.from)`.
+- `eventOfWrite` puts `source.email` on a created event (never a moved or changed one).
+- `isPersonless(trigger)` includes `email_received`, so validate.ts refuses Who Did It and `{ trigger: true }`
+  assignees, recipients and mentions ("Email Received has no person behind it to check"), and the builder leaves them
+  out as for an Incoming Webhook.
+- validate-conditions.ts `readTrigger`: `board` an id when present; `sender` through `emailSenderFilter`, refused at
+  `trigger.sender` ("trigger.sender must be an email address or a domain"); empty or absent leaves it out.
+- values.ts: `ValuePlace.email` makes `from` known; `ValueContext.email` (the sender) fills it; validate.ts passes
+  `{ email: true }` to every text of an email rule. plan-walk.ts `PlanActionsContext.email` carries it into the values.
+- attention.ts: Need kind `board`, checked only when the outline has `boards`; `WORDS.board = 'Board'`.
+- sentence.ts: `AUTOMATION_TRIGGER_NAMES.email_received = 'Email Received'`; "When [Email Received] on [Board] from
+  [@example.com]"; `RuleSentenceOutline.boards` (id → title), a gone one `GONE_NAMES.board` "a board no longer here".
+- named.ts: `RuleNames.boards` (optional), `board` named by title (case and spacing aside) or kept.
+- rule-format.ts: the trigger described, with `{{from}}`.
+
+### The api
+
+- `HistorySource.email`; `eventsOfWrites` passes it through. intake-delivery.ts appends with `{ role: 'system',
+email: { from: sender, board: board.id } }`: one created event per email card, one enqueue.
+- automation-runner.ts: `ctx.email = event.email.from`; trigger line "An email from <sender> made the card".
+- automation-plan.ts: `outline.boards` from the plan's tabs' Plan boards (element id, title or "Board").
+- automation-routes.ts: the list answers `boards` for agents; Test on a Card for an email rule builds a created
+  event by `EMAIL_TEST_PERSON` (`{ id: 'email', name: 'Email' }`), role `system`, no `email`, so `{{from}}` reads
+  nothing.
+- openapi: regenerated (`gen:openapi`).
+
+### Editor
+
+- trigger-groups.ts: `email_received` after `form_response` in Cards, line "An email to a board's address makes a
+  card."; TriggerScene: an envelope turning into a card.
+- TriggerPanel: **Board** (Any Board, a gone one, each Plan board as "Title" or "Title · Tab" when titles repeat) and
+  **From** (a text field kept as typed while focused, saved through `emailSenderFilter` on change, its hint "An
+  address, or a domain like @example.com. Empty: anyone."; a value that is neither shows "Not an address or a domain"
+  and the save refuses it), and the note on boards with Email to Board turned on.
+- automation-outline.ts: `OutlineBoard.id`; the sentence outline's `boards`.
+- value-insert-options.ts: an **Email** group (From Email) when the rule is an email one (incoming-rule.tsx `email`).
+- needs-words.ts: `board: ['A board', 'boards']`; refusal-words.ts: `sender: 'an address or a domain'`, `board: 'a
+board'`.
+
+### Tests
+
+- items: `email-trigger.test.ts` (address, domain both ways, case and spaces, refusals, subdomain not heard, a long
+  hostile input in a CPU budget); matches (heard, board, sender, a form card not heard, Card Created hears the same
+  event: one event, two rules, one run each); validate (who refused, trigger assign refused, `{{from}}` known only
+  here); values; sentence; attention; named; rule-format.
+- api: intake delivery queues one created event with `email`; runner fills `{{from}}` and its trigger line.
+- editor: trigger-groups, TriggerPanel, value-insert-options, needs-words.

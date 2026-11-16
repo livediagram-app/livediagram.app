@@ -208,6 +208,20 @@ describe('changing the rules', () => {
     expect(listedRuleBody(saved).trigger).toEqual(trigger);
   });
 
+  it('words an Email Received rule with its board by title', async () => {
+    const trigger: AutomationTrigger = {
+      kind: 'email_received',
+      board: 'b1',
+      sender: '@example.com',
+    };
+    const saved = listed({ trigger });
+    const state = await readRulesState(world([saved]).api, DOC_A);
+    state.list = { ...state.list, boards: [{ id: 'b1', name: 'Support' }] };
+    expect(listedRule(saved, sentenceOutlineOf(state)).sentence).toBe(
+      'When Email Received on Support from @example.com then Add Label shipped',
+    );
+  });
+
   it('says when a saved rule needs attention', async () => {
     const w = world([listed()], (_r, body) =>
       body && 'name' in body
