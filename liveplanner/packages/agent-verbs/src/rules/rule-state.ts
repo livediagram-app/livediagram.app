@@ -55,5 +55,6 @@ export function sentenceOutlineOf(state: RulesState): RuleSentenceOutline {
     people: state.list.people ?? [],
     tabs: new Map((state.plan.tabs ?? []).map((t) => [t.id, t.name])),
     filters: new Map((state.list.filters ?? []).map((f) => [savedFilterKey(f.tab, f.id), f.name])),
+    boardNames: new Map((state.list.boards ?? []).map((b) => [b.id, b.name])),
   };
 }

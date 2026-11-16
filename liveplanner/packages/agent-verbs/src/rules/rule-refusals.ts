@@ -13,7 +13,7 @@ const BODY_WORDS: Readonly<Record<string, string>> = {
   automation_value_unknown:
     'a {{value}} the rule does not know: the values are listed in change_rules’ rule format.',
   automation_condition_unsupported:
-    'a time trigger (scheduled, due_in, overdue, stuck), an incoming_webhook or a GitHub trigger has nobody behind it: leave out who conditions and the "trigger" assignee or recipient.',
+    'a time trigger (scheduled, due_in, overdue, stuck), an incoming_webhook, an email_received or a GitHub trigger has nobody of the plan behind it: leave out who conditions and the "trigger" assignee or recipient.',
   automation_step_unsupported:
     'that step cannot go there: an if or a for holds actions only (no if, for, notify, ai or wait), and a for takes no create_card or copy_card either.',
 };

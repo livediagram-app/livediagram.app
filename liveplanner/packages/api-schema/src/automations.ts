@@ -80,6 +80,8 @@ export interface AutomationsListResponse {
   people?: { id: string; name: string }[];
   // The boards' saved filters (each its board's tab, its id and name), for agents' sentences; the editor reads its own.
   filters?: { tab: string; id: string; name: string }[];
+  // The Plan boards by element id and title, which Email Received's board names, for agents.
+  boards?: { id: string; name: string }[];
 }
 
 export interface AutomationRuleResponse {
