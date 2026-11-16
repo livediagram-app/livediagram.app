@@ -263,12 +263,20 @@ function sheetRowsOf(
 
 // Read a file's text as a new plan's content: another kind, an unreadable envelope, a malformed tab, card, type
 // catalogue or Sheet is `invalid_file`; a tab past the tab cap, or a store past its own cap, `too_large`.
-export function readProjectFile(text: string, now = Date.now()): ProjectFileRead {
+// `keepIds` reads it back into the plan it came from, as a snapshot's revert does (plan-snapshots.ts): every tab keeps
+// its id, so links, Sheets and comments still point at them.
+export function readProjectFile(
+  text: string,
+  now = Date.now(),
+  opts: { keepIds?: boolean } = {},
+): ProjectFileRead {
   const parsed = parseProjectEnvelope(text);
   if (!parsed.ok) return fail('invalid_file');
   const { project } = parsed.envelope;
   // Every fresh tab id minted up front, so a link on one tab can be re-pointed at its sibling's copy.
-  const tabIdMap = new Map(project.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
+  const tabIdMap = new Map(
+    project.tabs.map((t) => [t.id, opts.keepIds ? t.id : crypto.randomUUID()] as const),
+  );
   if (tabIdMap.size !== project.tabs.length) return fail('invalid_file');
   const tabs = tabsOf(project.tabs, tabIdMap);
   if (typeof tabs === 'string') return fail(tabs);

@@ -4,6 +4,7 @@ import {
   ACCESS_CHANGED_CLOSE,
   WORKBENCH_ENDED_CLOSE,
   DESIGN_TRASHED_CLOSE,
+  SNAPSHOT_REVERTED_CLOSE,
 } from '@livedesign/api-schema';
 import type { ServerMessage } from '../types';
 import { opForScope } from '../room-scope';
@@ -197,4 +198,11 @@ export function sendTo(room: DesignRoom, ws: WebSocket, payload: ServerMessage):
   } catch {
     room.opRates.delete(ws);
   }
+}
+
+// A snapshot's revert replaced the design in place (design-snapshots.ts): the ledger's entries describe content that
+// is gone, so it is cleared, and every session is closed so each editor reloads onto the reverted design.
+export function closeAllReverted(room: DesignRoom): void {
+  void room.ledger.clear();
+  closeSockets(room, () => [SNAPSHOT_REVERTED_CLOSE, 'snapshot-reverted']);
 }

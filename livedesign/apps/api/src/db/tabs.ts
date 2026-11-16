@@ -80,6 +80,7 @@ export const {
   renameTab,
   seedTabs,
   deleteTabRow,
+  replaceTabs,
   swapTabData,
 } = itemTabWrites<DesignEnv, Tab, TabStats>({
   db,

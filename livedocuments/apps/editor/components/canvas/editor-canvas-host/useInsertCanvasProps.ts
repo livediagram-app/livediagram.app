@@ -1,4 +1,6 @@
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import type { Element } from '@livedocuments/document';
+import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
 
@@ -36,6 +38,7 @@ export function useInsertCanvasProps({
     commitPolygon,
     dropIconOnElement,
     dropPaletteItem,
+    insertLibraryItem,
     isReadOnly,
     openCellLinkPicker,
     pendingDraw,
@@ -46,6 +49,8 @@ export function useInsertCanvasProps({
     onAddIcon: addIcon,
     onAddSticker: addSticker,
     onAddTechIcon: addTechIcon,
+    onInsertLibraryItem: (item: LibraryInsertItem<unknown>) =>
+      void insertLibraryItem(item as LibraryInsertItem<Element>),
     onDropIcon: isReadOnly ? undefined : dropIconOnElement,
     onLinkCell: isReadOnly ? undefined : openCellLinkPicker,
     onAddTable: addTable,

@@ -95,10 +95,17 @@ const ROW_FIELDS = [
 
 // Read a file's text as a new canvas's content: another kind, an unreadable envelope or a malformed tab is
 // `invalid_file`; a tab past the tab cap, or a deck past its cap, `too_large` (docs/specs/015-api/api.md "Tab size").
-export function readDocumentFile(text: string): DocumentFileRead {
+// `keepIds` reads it back into the canvas it came from, as a snapshot's revert does (document-snapshots.ts): its tabs
+// keep their ids, so links, comments and history still point at them.
+export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {}): DocumentFileRead {
   const parsed = parseDocumentEnvelope(text);
   if (!parsed.ok) return { ok: false, failure: 'invalid_file' };
-  const { tabs, presentation } = copyDocumentEnvelope(parsed.envelope);
+  const { tabs, presentation } = opts.keepIds
+    ? {
+        tabs: parsed.envelope.document.tabs,
+        presentation: parsed.envelope.document.presentation ?? null,
+      }
+    : copyDocumentEnvelope(parsed.envelope);
   if (presentation !== null && presentation.length > MAX_DECK_LEN) {
     return { ok: false, failure: 'too_large' };
   }

@@ -73,7 +73,7 @@ export { stripCrowdsCorners, type Span } from '@liveworkspace/workbench/lib/stri
 // picker. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
-const ALWAYS_MORE = new Set(['icons', 'technology']);
+const ALWAYS_MORE = new Set(['icons', 'technology', 'library']);
 
 function allTilesFor(
   categoryId: string,

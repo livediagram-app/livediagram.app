@@ -46,6 +46,7 @@
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/snapshots": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",

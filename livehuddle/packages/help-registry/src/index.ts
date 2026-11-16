@@ -153,7 +153,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, calls, teams, sharing, and session tools.',
-    articleCount: 7,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -1257,6 +1257,15 @@ export const articles: Article[] = [
     title: 'Session Tools',
     description: 'A shared Timer or Stopwatch in the room, for running a meeting to time.',
     keywords: 'timer meeting facilitation countdown stopwatch timebox clock room piece',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'snapshots',
+    title: 'Snapshots',
+    description: 'Save points for the whole Space: take one, keep five, revert to one.',
+    keywords:
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

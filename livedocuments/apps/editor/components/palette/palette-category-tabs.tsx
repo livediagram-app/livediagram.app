@@ -12,6 +12,8 @@
 // Order IS layout: the category bar draws the categories in the layout's order, with a divider
 // where `group` (the band) changes.
 
+import { LibraryPaletteTab } from '@liveworkspace/workbench/components/library/LibraryPaletteTab';
+import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { IconsCategoryTab } from '@/components/palette/IconsCategoryTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
@@ -53,6 +55,8 @@ export function paletteCategoryTabs(
     categories: ResolvedPaletteCategory[];
     pendingDraw: PendingDraw | null | undefined;
     tileActions: PaletteTileActions;
+    // Places an item from the Library.
+    insertLibraryItem: (item: LibraryInsertItem<unknown>) => void;
   } & IconDeps &
     TechDeps,
 ) {
@@ -60,6 +64,7 @@ export function paletteCategoryTabs(
     categories,
     pendingDraw,
     tileActions,
+    insertLibraryItem,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -82,6 +87,9 @@ export function paletteCategoryTabs(
   const bodyFor = (c: ResolvedPaletteCategory): React.ReactNode => {
     const tiles = c.tiles ?? [];
     switch (c.id) {
+      case 'library':
+        // The Library every app shares (liveworkspace/docs/specs/006-media/libraries.md).
+        return <LibraryPaletteTab onInsert={insertLibraryItem} />;
       case 'icons':
         return (
           <IconsCategoryTab

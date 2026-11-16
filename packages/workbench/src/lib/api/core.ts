@@ -97,6 +97,12 @@ export type ApiCoreConfig = {
   ) => Promise<RequestInit | undefined>;
   // Reads the server's release signal off every response (lib/server-release.ts).
   noteResponse: (res: Response) => void;
+  // Stamps every request before it goes, a grant or not (an unload flush sends none), and reads every response after:
+  // the snapshot generation fence (@liveworkspace/snapshots/client createSnapshotFence), where the app binds one.
+  fence?: {
+    stamp: (input: string, init: RequestInit | undefined) => RequestInit | undefined;
+    note: (res: Response) => void;
+  };
   // A workbench session's confinement (lib/api/workbench-confinement.ts), where the editor has one: a request outside
   // its allow-list is refused unsent, and every response passes it.
   confinement?: {
@@ -147,7 +153,8 @@ export function createApiCore(config: ApiCoreConfig) {
     let res: Response;
     try {
       // A request about one file carries the index's grant on it, fetched once per ten minutes.
-      const sent = opts.grant === false ? init : await config.withGrant(API_BASE, input, init);
+      const granted = opts.grant === false ? init : await config.withGrant(API_BASE, input, init);
+      const sent = config.fence ? config.fence.stamp(input, granted) : granted;
       const progress = opts.uploadProgress;
       res =
         progress && typeof XMLHttpRequest === 'function'
@@ -162,6 +169,7 @@ export function createApiCore(config: ApiCoreConfig) {
     // The server release signal rides every response: the format number and the live build id
     // (docs/specs/016-platform/new-version-prompt.md, docs/specs/016-platform/stale-builds.md).
     config.noteResponse(res);
+    config.fence?.note(res);
     return res;
   }
 

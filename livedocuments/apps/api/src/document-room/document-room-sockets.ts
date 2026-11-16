@@ -4,6 +4,7 @@ import {
   ACCESS_CHANGED_CLOSE,
   WORKBENCH_ENDED_CLOSE,
   DOCUMENT_TRASHED_CLOSE,
+  SNAPSHOT_REVERTED_CLOSE,
 } from '@livedocuments/api-schema';
 import type { ServerMessage } from '../types';
 import { opForScope } from '../room-scope';
@@ -197,4 +198,11 @@ export function sendTo(room: DocumentRoom, ws: WebSocket, payload: ServerMessage
   } catch {
     room.opRates.delete(ws);
   }
+}
+
+// A snapshot's revert replaced the document in place (document-snapshots.ts): the ledger's entries describe content
+// that is gone, so it is cleared, and every session is closed so each editor reloads onto the reverted document.
+export function closeAllReverted(room: DocumentRoom): void {
+  void room.ledger.clear();
+  closeSockets(room, () => [SNAPSHOT_REVERTED_CLOSE, 'snapshot-reverted']);
 }

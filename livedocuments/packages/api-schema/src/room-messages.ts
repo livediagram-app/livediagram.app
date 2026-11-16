@@ -223,6 +223,7 @@ export {
   ROOM_GRANT_ASK_BEFORE_MS,
   ROOM_PING,
   ROOM_PONG,
+  SNAPSHOT_REVERTED_CLOSE,
   WORKBENCH_ENDED_CLOSE,
   isRoomOpRef,
   type CursorMessage,
