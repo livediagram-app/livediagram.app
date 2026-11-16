@@ -22,8 +22,12 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObjec
 //    A catch-up that replaced the body (`elements` is another array: the copy was older than the server's) fits it
 //    again, so content the copy lacked is never left off screen.
 // Each editor binds it once, at module scope in its `useTabEntryEffects.ts`, with its own editor addresses
-// (lib/legacy-editor-path's `isEditorPath`).
-export function createTabEntryEffects(isEditorPath: (pathname: string) => boolean) {
+// (lib/legacy-editor-path's `isEditorPath`) and, where it keeps one, the history entry's own state the pin must carry
+// (liveplanner's open card mark, `historyState`; `{}` when left out).
+export function createTabEntryEffects(
+  isEditorPath: (pathname: string) => boolean,
+  historyState: () => unknown = () => ({}),
+) {
   return function useTabEntryEffects({
     hydrated,
     activeId,
@@ -61,7 +65,7 @@ export function createTabEntryEffects(isEditorPath: (pathname: string) => boolea
       if (!isEditorPath(url.pathname)) return;
       if (url.hash === `#t=${activeId}`) return;
       url.hash = `t=${activeId}`;
-      window.history.replaceState({}, '', url.toString());
+      window.history.replaceState(historyState(), '', url.toString());
     }, [hydrated, activeId]);
 
     const lastFittedTabRef = useRef<string | null>(null);
