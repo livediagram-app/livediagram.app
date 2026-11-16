@@ -34,9 +34,11 @@ apps/editor/components/plan/widgets/board-widget-filters.tsx Only Mine, People, 
 apps/editor/components/plan/widgets/board-widget-measures.tsx WIP, Due, Points, Time, Priorities, Unassigned,
                                                               Top Voted, Stale
 apps/editor/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
-apps/editor/components/plan/widgets/zone-overflow.ts    a too-full zone: useZoneOverflow (pinned, start, end, measured
-                                                        by ResizeObserver and the row's scroll), PINNED_WIDGET,
-                                                        scrollingWidgets, slotInList, nudgeInRow, edgeFade (pure)
+apps/editor/components/plan/widgets/zone-overflow.ts    a too-full zone: fitWidgets (which widgets the row holds,
+                                                        pure), useZoneFit (measured by ResizeObserver), pressedIn,
+                                                        PINNED_WIDGET, rowWidgets, slotInList, nudgeInRow
+apps/editor/components/plan/widgets/ZoneMore.tsx        More and its More Widgets panel (AnchoredPopover)
+apps/editor/components/plan/widgets/CompactBoardFilter.tsx the compact Filter: one button, its panel the whole Filter
 apps/editor/components/plan/PlanBoardHeader.tsx         title, zone, Reveal / Retry, the unplaced list
 apps/editor/hooks/plan/widget-slot.ts                   widgetSlotAt (the reorder's landmark)
 apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + gallery: search, rail, sections of tiles, keys, live
@@ -144,24 +146,61 @@ apps/editor/components/plan/FilterEmptyHint.tsx              the hint when the f
 | Suggested field gone before open   | Dropped from For You (`gallerySections`)                             |
 | Completion with no done column     | "No done column"                                                     |
 | Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)                       |
-| More widgets than fit              | The row scrolls sideways; the Filter pinned at the zone's start      |
-| A +n legend opened near the edge   | `AnchoredPopover preventScroll`: the row keeps its scroll            |
+| More widgets than fit              | The rest go into More; the Filter pinned at the zone's start         |
+| Not even the Filter and More fit   | Both stay (the row clips past the zone, never wraps): `shown` is 0   |
+| A widget in More holds a press     | More reads pressed and names the value (`pressedIn`)                 |
+| Everything fits while More is open | More and its panel close (`hidden.length === 0`)                     |
+| The zone not laid out (room 0)     | No change: the last fit stays (jsdom, a hidden tab)                  |
+| A +n legend opened in the row      | `AnchoredPopover preventScroll`: nothing in the header moves         |
 
 ## Presentation and UX
 
 - Pill: `h-7 rounded-md border px-2 text-[12px] font-medium`, border `palette.border`, text `palette.muted`,
   figures `palette.text`; WIP over: `palette.warning` on `palette.warningBg`.
 - Reorder bar: 2 × 24 px, `palette.focus`.
-- A too-full zone (`useZoneOverflow`): the zone (`data-widget-zone`, no scroll) holds the pinned Filter
-  (`data-widget-pin`, `role="group"` "Filter widget", `aria-keyshortcuts="Delete"`, no drag, only while the row's
-  content needs more than the zone; it unpins once the widgets need `UNPIN_SLACK_PX` less than the zone, or, in a
-  zone sized by its content (a header band's span, which shrinks with the pinned row), once the pinned row fits with
-  nothing to scroll after the widgets came to need less than when they pinned or the window resized: a try that
-  overflows pins again and waits for the next such change) and the row (`data-widget-row`,
-  `overflow-x-auto`, the list then the + and Edit Widgets). Need is `row.scrollWidth + zone.clientWidth -
-row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FADE_PX` at an edge with more past it
-  (the mask works on any header background, a band's tint too). A drag's slot (`widgetSlotAt` over the list) and a
-  nudge are in the row's order (`slotInList`, `nudgeInRow`); a removal's refocus finds the next widget by id.
+- A too-full zone (`useZoneFit`, `fitWidgets`; Work Tracker 880): the zone (`data-widget-zone`, never scrolls, one
+  row) holds, while anything overflows, the pinned Filter (`data-widget-pin`, `role="group"` "Filter widget",
+  `aria-keyshortcuts="Delete"`, no drag), then the list (`data-widget-row`) of the widgets that fit, then More
+  (`ZoneMore`), then the + and Edit Widgets. The widgets that do not fit are drawn in a **measuring layer**
+  (`data-widget-measure`: `absolute` 0 × 0 `overflow-hidden`, `invisible`, `aria-hidden`, `inert`) at their natural
+  width, so every widget's width stays known and live wherever it is drawn; a ghost More (unpressed, two-digit count)
+  sits there too, for its width, and while anything overflows a compact Filter ghost (`data-widget-compact-ghost`),
+  plus the whole Filter (`data-widget-measure-only`, never in More) while the pinned one is compact.
+- `fitWidgets({ order, widths, room, controls, more, compact, pressed })` is pure: with every widget, its `ZONE_GAP_PX` gaps and
+  the controls within `room`, nothing overflows. Otherwise the Filter (when the board has it) pins and the rest fill
+  in order: the most `shown` such that the Filter, the first `shown` of the rest, More and the controls fit, More
+  counted at its measured width plus `MORE_LABEL_MAX_PX` when any widget it would hold has a press (so a pressed
+  value's label never feeds back into the fit). Widgets are never skipped to fill a gap: the row keeps the board's
+  order. With the widths the same, the answer is the same, so nothing flips. When not even none of the rest fit beside
+  the whole Filter, the steps go on, each tried only when the one before fits nothing: the Filter pinned at its
+  `compact` width (`filter: 'compact'`), More naming its press; compact with More's dot (`named: false`, counted at
+  `MORE_DOT_PX` in place of `MORE_LABEL_MAX_PX`); then the Filter in More with the rest (`filter: 'more'`, `pinned:
+false`), More named, then dotted. Each step is one linear pass, at most five, so the fit stays linear.
+- Room: the zone's `clientWidth`. The zone is `flex-1` (the canvas header, filling the room it has) and carries
+  `width: <every widget's need>px`, so in a header band, whose span is sized by its content up to
+  `max-w-[min(56vw,46rem)]`, the zone asks for what every widget needs and the cap gives the room, however many are
+  in More.
+- Measuring: one `ResizeObserver` on the zone, each widget wrapper (row, pinned and measuring layer), the controls
+  and the ghost More, re-observed when the fit changes; each callback reads the widths (`offsetWidth`, layout fresh
+  in the callback) and sets state only when `{ overflow, pinned, filter, shown, named }` changes. Presses are read in a layout
+  effect after every render (`pressedIn`: `[data-widget-pressed]` inside each `[data-widget]` of the zone, a
+  `querySelectorAll`, no layout read). Room 0 (not laid out) keeps the last fit.
+- `data-widget-pressed="<label>"` marks, only while on, each part of a widget that narrows the board: Only Mine
+  ("Only Mine"), a person (their name), a type (its label), a priority ("High priority"), a due count ("Overdue",
+  "Due soon"), Unassigned ("Unassigned"), a field value ("Severity: High") and a field widget's "+n" while a value it
+  leaves out is pressed (that value). More names the first in the order the widgets it holds come, with "+n" for the
+  rest.
+- More (`ZoneMore`): a 28 px `WIDGET_PILL` button, "More", a `CountBadge` of the widgets it holds (min two digits
+  wide), a chevron; pressed: `palette.focus` border and text on a 12% tint, `font-semibold`, the label (max
+  `MORE_LABEL_MAX_PX`, `truncate`) in place of "More", or, with `named` false, a 6 px `palette.focus` dot
+  (`data-widget-more-dot`) before "More". It opens an `AnchoredPopover` (`align="end"`, its width the
+  widest widget it holds plus 16 px, from `MORE_PANEL_MIN_PX` to `MORE_PANEL_MAX_PX`, `preventScroll`), named "More
+  Widgets", the panel drawn on `palette.surface` with `palette.border`, a small "More Widgets" caption, then a list
+  (`role="list"` "More widgets") of the widgets one to a line, each the zone's own wrapper (`data-widget`,
+  `data-widget-more`, ×, Delete, Alt+arrows) so the focus rules and edit mode hold there too. A press in the panel
+  is inside the zone for edit mode (`data-widget-more-panel`).
+- A drag's slot (`widgetSlotAt` over the row's list) and a nudge are in the row's order (`slotInList`, `nudgeInRow`);
+  a removal's refocus finds the next widget by id, in the row or the More panel.
 - Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Add widgets to
   this board" and its **+**; unselected, the empty zone draws nothing.
 - Edit Widgets: after the **+**, while `widgets.length > 0` and `canEdit`, a 28 px button (a pencil, `lucideGlyph(lucidePencil, 14)` drawn at 10, `Tooltip`
@@ -177,6 +216,9 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
 
 - Zone `role="list"`, `aria-label="Board widgets"`; wrapper `role="listitem"`, focusable for editors, named
   "<Label> widget", `aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight Delete"`; × named "Remove <Label>".
+- More: `aria-haspopup="dialog"`, `aria-expanded`, named "More widgets, <n> more" and, while a widget it holds has a
+  press, ", pressed: <label>"; `aria-pressed` is not used (it opens a panel, it does not toggle). The measuring
+  layer is `aria-hidden` and `inert`, so its copies are never read or reached.
 - Completion and People are `role="img"` with a spoken summary; Only Mine is `aria-pressed`.
 - A field widget is `role="img"` named "<Title>: <spoken>" ("Budget Sum, on Feature cards: £4,000 over 2 cards").
 - Gallery: the search is `autoFocus`, ArrowDown from it focuses the first tile; arrows move between tiles by layout
@@ -232,47 +274,61 @@ row.clientWidth`, the same pinned or not. The row's `mask-image` fades `EDGE_FAD
   all 37 to 56 ms and showing all 2,000 210 to 227 ms, all with no long task; the same 104, 96, 0 and 92 card faces
   drawn as before. A teammate's filter arriving takes the same path. The cost is the risk the card named: the cards
   may show the old filter for one frame after the filter bar shows the new one.
+- **The fit** (Work Tracker 880): one `ResizeObserver` per zone, no scroll or window listener, no per-frame work.
+  A callback reads each widget's `offsetWidth` inside the observer's delivery (layout already fresh, so no forced
+  layout; one forced read before paint when the widgets, the presses or the fit change, so the first paint is already
+  right) and runs `fitWidgets`, linear in the widgets (1,000 widgets × 100 fits within a 200 ms CPU budget,
+  zone-overflow.test.ts); state is set only when the fit changes. The press read after each render is a
+  `querySelectorAll` with no layout read. A widget in More is drawn twice only while the More Widgets panel is open
+  (the measuring layer's copy and the panel's); otherwise every widget is drawn once.
 - The gallery computes For You only on open, and draws a tile's preview only once `useSeen` reports it near view
   (`SEEN_MARGIN`); `fields` is memoised on `addTypes` and the types, so adding a widget never rebuilds sections.
 
 ## Testing
 
-| Rule                                                          | Test                                                           |
-| ------------------------------------------------------------- | -------------------------------------------------------------- |
-| Known kinds once, default set, place/nudge/remove             | packages/items/src/board-widgets.test.ts                       |
-| Counts behind People, Types, WIP, Due                         | packages/plan-art/src/widget-stats.test.ts                     |
-| Slot math, the + picker offering only the missing             | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx   |
-| Edit Widgets: × on every widget, Done, Escape, outside, roles | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx   |
-| A too-full zone: Filter pinned, slack, fades, keys, slots     | BoardWidgetZone.overflow.test.tsx                              |
-| +n opens and closes without scrolling its row (preventScroll) | packages/workbench AnchoredPopover.focus.test.tsx              |
-| Field shapes, views, keys, cap, boardFields, state, toggle    | packages/items/src/field-widgets.test.ts                       |
-| Each shape's summary, caching, fills, number text             | packages/plan-art/src/field-widget-stats.test.ts               |
-| A full board (ITEMS_MAX) × 10 fields within the CPU budget    | packages/plan-art/src/field-widget-stats.perf.test.ts          |
-| For You scores, reasons, cap, empty board, plural names       | packages/plan-art/src/widget-suggestions.test.ts               |
-| Pressing a value: chips, roles, toggling, cap, 500-card cost  | FieldWidgetView.test.tsx, packages/items card-search.test.ts   |
-| Every value: the "+n" popover, its rows, staying open, phone  | FieldWidgetView.test.tsx                                       |
-| Each view's pill, gone states, Remove by role                 | apps/editor/components/plan/widgets/FieldWidgetView.test.tsx   |
-| Gallery sections, rail, On Board, cap, search, keys, empty    | apps/editor/components/plan/widgets/BoardWidgetPicker.test.tsx |
-| labelOf, fields kept, Calculated reader, lazy previews        | apps/editor/components/plan/widgets/use-field-widgets.test.tsx |
+| Rule                                                            | Test                                                           |
+| --------------------------------------------------------------- | -------------------------------------------------------------- |
+| Known kinds once, default set, place/nudge/remove               | packages/items/src/board-widgets.test.ts                       |
+| Counts behind People, Types, WIP, Due                           | packages/plan-art/src/widget-stats.test.ts                     |
+| Slot math, the + picker offering only the missing               | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx   |
+| Edit Widgets: × on every widget, Done, Escape, outside, roles   | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx   |
+| A too-full zone: More, Filter pinned, keys, slots, roles        | BoardWidgetZone.overflow.test.tsx                              |
+| fitWidgets: fit, order, pressed reserve, 1,000 widgets in CPU   | zone-overflow.test.ts                                          |
+| Narrow rooms (364, 300 px): compact Filter, dot, Filter in More | zone-overflow.test.ts, BoardWidgetZone.overflow.test.tsx       |
+| The compact Filter: count, name, its panel, a Viewer            | CompactBoardFilter.test.tsx                                    |
+| +n opens and closes without scrolling its row (preventScroll)   | packages/workbench AnchoredPopover.focus.test.tsx              |
+| Field shapes, views, keys, cap, boardFields, state, toggle      | packages/items/src/field-widgets.test.ts                       |
+| Each shape's summary, caching, fills, number text               | packages/plan-art/src/field-widget-stats.test.ts               |
+| A full board (ITEMS_MAX) × 10 fields within the CPU budget      | packages/plan-art/src/field-widget-stats.perf.test.ts          |
+| For You scores, reasons, cap, empty board, plural names         | packages/plan-art/src/widget-suggestions.test.ts               |
+| Pressing a value: chips, roles, toggling, cap, 500-card cost    | FieldWidgetView.test.tsx, packages/items card-search.test.ts   |
+| Every value: the "+n" popover, its rows, staying open, phone    | FieldWidgetView.test.tsx                                       |
+| Each view's pill, gone states, Remove by role                   | apps/editor/components/plan/widgets/FieldWidgetView.test.tsx   |
+| Gallery sections, rail, On Board, cap, search, keys, empty      | apps/editor/components/plan/widgets/BoardWidgetPicker.test.tsx |
+| labelOf, fields kept, Calculated reader, lazy previews          | apps/editor/components/plan/widgets/use-field-widgets.test.tsx |
 
 ## Constants and configuration
 
-| Constant               | Value | Where                    | Safe range |
-| ---------------------- | ----- | ------------------------ | ---------- |
-| `REORDER_THRESHOLD_PX` | 4     | BoardWidgetZone.tsx      | 2..10      |
-| `UNPIN_SLACK_PX`       | 12    | zone-overflow.ts         | 4..40      |
-| `EDGE_FADE_PX`         | 20    | zone-overflow.ts         | 12..32     |
-| `PEOPLE_SHOWN`         | 5     | board-widget-parts.tsx   | 3..8       |
-| `TYPES_SHOWN`          | 3     | board-widget-parts.tsx   | 3..8       |
-| `DUE_SOON_DAYS`        | 7     | widget-stats.ts          | 1..30      |
-| `FIELD_WIDGETS_MAX`    | 12    | field-widgets.ts         | 6..20      |
-| `SPREAD_BINS`          | 8     | field-widget-stats.ts    | 5..12      |
-| `TIMELINE_WEEKS`       | 4     | field-widget-stats.ts    | 2..8       |
-| `SUGGESTIONS_MAX`      | 6     | widget-suggestions.ts    | 4..8       |
-| `FILTER_SUGGEST_CARDS` | 20    | widget-suggestions.ts    | 10..50     |
-| `BREAKDOWN_NAMED`      | 2     | FieldWidgetView.tsx      | 1..3       |
-| `GALLERY_WIDTH`        | 720   | gallery/GalleryFrame.tsx | 600..800   |
-| `SEEN_MARGIN`          | 160px | use-seen.ts              | 0..400px   |
+| Constant                  | Value | Where                      | Safe range    |
+| ------------------------- | ----- | -------------------------- | ------------- |
+| `REORDER_THRESHOLD_PX`    | 4     | BoardWidgetZone.tsx        | 2..10         |
+| `ZONE_GAP_PX`             | 6     | zone-overflow.ts (gap-1.5) | 6 (the class) |
+| `MORE_LABEL_MAX_PX`       | 120   | zone-overflow.ts           | 80..180       |
+| `MORE_DOT_PX`             | 12    | zone-overflow.ts           | 8..16         |
+| `COMPACT_FILTER_PANEL_PX` | 380   | CompactBoardFilter.tsx     | 320..480      |
+| `MORE_PANEL_MIN_PX`       | 200   | ZoneMore.tsx               | 160..240      |
+| `MORE_PANEL_MAX_PX`       | 420   | ZoneMore.tsx               | 320..520      |
+| `PEOPLE_SHOWN`            | 5     | board-widget-parts.tsx     | 3..8          |
+| `TYPES_SHOWN`             | 3     | board-widget-parts.tsx     | 3..8          |
+| `DUE_SOON_DAYS`           | 7     | widget-stats.ts            | 1..30         |
+| `FIELD_WIDGETS_MAX`       | 12    | field-widgets.ts           | 6..20         |
+| `SPREAD_BINS`             | 8     | field-widget-stats.ts      | 5..12         |
+| `TIMELINE_WEEKS`          | 4     | field-widget-stats.ts      | 2..8          |
+| `SUGGESTIONS_MAX`         | 6     | widget-suggestions.ts      | 4..8          |
+| `FILTER_SUGGEST_CARDS`    | 20    | widget-suggestions.ts      | 10..50        |
+| `BREAKDOWN_NAMED`         | 2     | FieldWidgetView.tsx        | 1..3          |
+| `GALLERY_WIDTH`           | 720   | gallery/GalleryFrame.tsx   | 600..800      |
+| `SEEN_MARGIN`             | 160px | use-seen.ts                | 0..400px      |
 
 ## Defaults ledger
 

@@ -255,4 +255,26 @@ describe('the Templates tab', () => {
     expect(screen.getByText('No Templates Yet')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'New Template' })).toBeNull();
   });
+
+  // docs/specs/018-help/contextual-help-links.md (Work Tracker 971): the Card Templates article, for every role.
+  it('links the Card Templates article for every role, beside New Template for an Editor', () => {
+    const link = () => screen.getByRole('link', { name: 'Learn about card templates' });
+    open({ ...BUG, templates: [REPORT] });
+    expect(link().getAttribute('href')).toContain('/help/plan/card-templates');
+    // Beside it: the New Template button's row holds the link.
+    const beside = () =>
+      screen
+        .getByRole('button', { name: 'New Template' })
+        .parentElement!.parentElement!.contains(link());
+    expect(beside()).toBe(true);
+    cleanup();
+    open(BUG);
+    expect(beside()).toBe(true);
+    cleanup();
+    open({ ...BUG, templates: [REPORT] }, { canEdit: false });
+    expect(link().textContent).toBe('Learn about card templates');
+    cleanup();
+    open(BUG, { canEdit: false });
+    expect(link().textContent).toBe('Learn about card templates');
+  });
 });

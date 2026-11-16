@@ -3,10 +3,11 @@
 // that is portalled elsewhere: a flyout, an anchored popover, or a ConfirmPopover.
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { usePortalMenuPlacement } from './usePortalMenuPlacement';
+import { flipSide, sideRoom, usePortalMenuPlacement } from './usePortalMenuPlacement';
 import { VIEWPORT_EDGE_MARGIN } from '../../lib/clamp-to-viewport';
 
 afterEach(() => {
+  vi.restoreAllMocks();
   document.body.innerHTML = '';
 });
 
@@ -61,5 +62,76 @@ describe('usePortalMenuPlacement on a short screen', () => {
     const { result } = renderHook(() => usePortalMenuPlacement(anchor, 'below', menu, onClose));
     expect(result.current).not.toBeNull();
     expect(result.current?.maxHeight).toBeUndefined();
+  });
+});
+
+// docs/specs/004-interface-design/menus.md "Opening on the side with room" (Work Tracker 972): a menu that does not fit
+// on its side opens on the other when that has more room, rather than being nudged over its anchor.
+describe('flipSide', () => {
+  const at = (top: number, bottom = top + 28) => ({ top, bottom });
+  it('keeps the side asked for while the menu fits there', () => {
+    expect(flipSide('below-start', at(100), 400, 900, 8)).toBe('below-start');
+    expect(flipSide('above', at(600), 400, 900, 8)).toBe('above');
+  });
+  it('flips to the side with more room when it does not fit', () => {
+    expect(flipSide('below-start', at(800), 400, 900, 8)).toBe('above-start');
+    expect(flipSide('below', at(800), 400, 900, 8)).toBe('above');
+    expect(flipSide('above-start', at(40), 400, 900, 8)).toBe('below-start');
+  });
+  it('stays put when the other side has no more room', () => {
+    expect(flipSide('below', at(430), 884, 900, 8)).toBe('below');
+  });
+});
+
+describe('usePortalMenuPlacement near the bottom of the screen', () => {
+  it('opens above an anchor low on the screen when the menu does not fit below it', () => {
+    const anchor = el();
+    anchor.getBoundingClientRect = () =>
+      ({ top: 700, bottom: 728, left: 40, right: 240 }) as DOMRect;
+    const menu = el();
+    Object.defineProperty(menu, 'scrollHeight', { configurable: true, value: 400 });
+    const { result } = renderHook(() =>
+      usePortalMenuPlacement(anchor, 'below-start', menu, vi.fn()),
+    );
+    expect(result.current?.placement).toBe('above-start');
+    // Hung from the anchor's top (jsdom's zero-size menu is then nudged by the edge clamp).
+    expect(result.current!.top - 700).toBeLessThanOrEqual(8);
+    expect(result.current?.maxHeight).toBeUndefined();
+  });
+
+  it('holds a menu taller than the room above a low anchor to that room, so it never covers the anchor', () => {
+    const anchor = el();
+    anchor.getBoundingClientRect = () =>
+      ({ top: 600, bottom: 628, left: 40, right: 240 }) as DOMRect;
+    const menu = el();
+    // 35 rows of a type with ten templates and the rest (Work Tracker 972), on a 900px screen.
+    Object.defineProperty(menu, 'scrollHeight', { configurable: true, value: 1840 });
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(900);
+    const { result } = renderHook(() =>
+      usePortalMenuPlacement(anchor, 'below-start', menu, vi.fn()),
+    );
+    expect(result.current?.placement).toBe('above-start');
+    expect(result.current?.maxHeight).toBe(600 - 4 - VIEWPORT_EDGE_MARGIN);
+  });
+
+  it('holds a menu taller than the room below a high anchor to that room, opening below', () => {
+    const anchor = el();
+    anchor.getBoundingClientRect = () =>
+      ({ top: 200, bottom: 228, left: 40, right: 240 }) as DOMRect;
+    const menu = el();
+    Object.defineProperty(menu, 'scrollHeight', { configurable: true, value: 1840 });
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(900);
+    const { result } = renderHook(() =>
+      usePortalMenuPlacement(anchor, 'below-start', menu, vi.fn()),
+    );
+    expect(result.current?.placement).toBe('below-start');
+    expect(result.current?.maxHeight).toBe(900 - 228 - 4 - VIEWPORT_EDGE_MARGIN);
+  });
+});
+
+describe('sideRoom', () => {
+  it('is the height between the anchor and the screen edge, less the gap and margin', () => {
+    expect(sideRoom('below', { top: 100, bottom: 128 }, 900, 8)).toBe(760);
+    expect(sideRoom('above-start', { top: 100, bottom: 128 }, 900, 8)).toBe(88);
   });
 });
