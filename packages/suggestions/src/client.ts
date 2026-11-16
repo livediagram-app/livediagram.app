@@ -1,4 +1,4 @@
-// The editor's calls on the suggestion routes (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "The
+// The editor's calls on the suggestion routes (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "The
 // routes"): each product hands in how it reaches its api (its base for the item, and its authorised fetch).
 import {
   parseStoredSuggestion,

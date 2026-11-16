@@ -176,7 +176,7 @@ export function receiveRoomOp(
     if (from === 'system') receiveDesignTrashed();
   } else if (op.kind === 'suggestions' || op.kind === 'review') {
     // A tab's canvas suggestions changed, or where this session stands on Suggest Only
-    // (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live"). System-only: the room refuses either
+    // (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live"). System-only: the room refuses either
     // from a client socket.
     if (from === 'system') takeSuggestionsRoomOp(op);
   }

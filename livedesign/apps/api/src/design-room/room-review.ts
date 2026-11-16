@@ -1,4 +1,4 @@
-// The design's suggestion settings in its room (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+// The design's suggestion settings in its room (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
 // "Suggest Only" and "Live"): the shared room review (@liveworkspace/suggestions/room-review) bound to this room's
 // `design.review` column and its sockets, and the word to every Participant and Editor socket that a tab's
 // suggestions changed (never a Viewer's: it sees no suggestion).

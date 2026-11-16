@@ -83,6 +83,7 @@ import {
   sendToPresence,
   broadcast,
   broadcastSystemOp,
+  closeAllReverted,
 } from './document-room-sockets';
 import { webSocketMessage } from './document-room-frames';
 import { sourceChanged } from './source-changed';
@@ -265,6 +266,7 @@ export class DocumentRoom extends DurableObject<Env> {
           DOCUMENT_DB: this.db.asD1(),
           DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
+          SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
     this.drainEnv = this.roomEnv

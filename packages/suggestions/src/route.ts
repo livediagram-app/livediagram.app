@@ -1,4 +1,4 @@
-// The suggestion routes' rule, the same in every product (liveworkspace/docs/specs/014-suggestions/
+// The suggestion routes' rule, the same in every product (liveworkspace/docs/specs/015-suggestions/
 // canvas-suggestions.md "The routes" and "Share roles"). Each product's route resolves the caller's level and author,
 // the tab and its own element rules, and how an accepted canvas is written (one changeset by the Editor); this
 // decides everything else:

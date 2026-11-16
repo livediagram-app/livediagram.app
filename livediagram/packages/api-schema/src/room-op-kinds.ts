@@ -120,7 +120,7 @@ export const SYSTEM_OP_KINDS = [
   'qa',
   'document-trashed',
   'changeset',
-  // A tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live").
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
   'suggestions',
   // The room's word on whether this session suggests (Suggest Only).
   'review',

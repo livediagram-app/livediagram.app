@@ -159,8 +159,9 @@ async function initialSession(): Promise<Session | null> {
   // A hint that outlived its session (it ended in another app): the answer cleared the hint, and the silent sign-in
   // asks again, once, in case the person has signed in elsewhere since (liveworkspace/docs/specs/003-accounts/
   // accounts.md "A hint that outlived its session"). Only here, on the page's first answer: a session ending under
-  // an open page never reloads it.
-  if (!session) retrySilentSignIn();
+  // an open page never reloads it. When it goes, the page is leaving: it settles nothing, so no guest hand-off or other
+  // navigation cuts the bounce short (Work Tracker 1007).
+  if (!session && retrySilentSignIn()) return new Promise<never>(() => {});
   return session;
 }
 

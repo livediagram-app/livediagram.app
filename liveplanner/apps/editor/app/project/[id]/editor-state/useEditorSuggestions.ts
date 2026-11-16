@@ -11,7 +11,7 @@ import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 
-// Suggestions on the canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md): this person's mode
+// Suggestions on the canvas (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md): this person's mode
 // (Editing or Suggesting), the active tab's suggestions and the review. The capture behind it lives with the history
 // (useEditorProject); this slice connects it to the api. Off where there is no room to suggest through: a plan in
 // This Browser (no collab key is ever handed over), an embed, a workbench. Board cards and Sheet cells are not

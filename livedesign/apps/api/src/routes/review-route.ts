@@ -1,5 +1,5 @@
 // GET and PUT /api/designs/<id>/review: the design's review settings
-// (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only"), the Share dialog's Suggestions
+// (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only"), the Share dialog's Suggestions
 // section. An Editor's only: a Participant or Viewer is refused, as
 // is a grant confined to one tab (the settings are the design's). A PUT keeps the people seen joining, writes the
 // rest as sent (parsed and bounded), and tells the room, which tells each Participant session where it stands.

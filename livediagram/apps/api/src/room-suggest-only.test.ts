@@ -4,7 +4,7 @@ import { sqliteD1 } from './test-sqlite-d1';
 import { getTab, upsertTab } from './db/tabs';
 import { RoomParticipantWrites } from './room-participant';
 
-// A Participant on Suggest Only in the room (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest
+// A Participant on Suggest Only in the room (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest
 // Only"): its element changes are refused with a correction, never stored, but for live fields (its comment).
 
 const ME = 'a'.repeat(32);

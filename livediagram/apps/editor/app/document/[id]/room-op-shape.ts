@@ -55,7 +55,7 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
       return isText(op.tabId) && isRecord(op.patch) && isOptionalList(op.clear);
     case 'tab-saved':
       return tabSavedIsWellFormed(op);
-    // Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live").
+    // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
     case 'suggestions':
       return isText(op.tabId);
     case 'review':

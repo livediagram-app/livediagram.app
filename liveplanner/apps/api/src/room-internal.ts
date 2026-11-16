@@ -20,7 +20,7 @@ export type InternalRoom = {
   epoch: () => string;
   // A relayed op that changed a Sheet: the items watching it are told (plan-room/sheet-watchers.ts).
   sheetChanged?: (op: unknown) => void;
-  // Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live"): a tab's changed, and
+  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live"): a tab's changed, and
   // the review settings an Editor set.
   suggestionsChanged: (tabId: string) => void;
   reviewChanged: () => void;
@@ -84,7 +84,7 @@ export async function answerInternal(
   // changeset, a tab rename (tab-meta) and a project rename (project-meta) the api applied
   // (docs/specs/024-agents/agent-changesets.md)
   // take the same path, one seq and one catch-up slot each whatever their size.
-  // Internal: a tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+  // Internal: a tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
   // "Live"); every Participant and Editor socket is told, carrying no content. Same trust argument as /broadcast.
   if (request.method === 'POST' && url.pathname === '/suggestions') {
     const tabId = ((await readBody(request)) as { tabId?: unknown } | null)?.tabId;

@@ -118,7 +118,7 @@ export async function deleteImageRow(env: Env, id: string): Promise<void> {
 export async function usageOf(env: Env, owner: string): Promise<MediaUsage> {
   const { results } = await env.MEDIA_DB.prepare(
     `SELECT r.image_id, r.app, r.document FROM refs r JOIN images i ON i.id = r.image_id
-      WHERE i.owner = ? ORDER BY r.image_id, r.app, r.document`,
+      WHERE i.owner = ? AND r.app != 'library' ORDER BY r.image_id, r.app, r.document`,
   )
     .bind(owner)
     .all<{ image_id: string; app: MediaApp; document: string }>();

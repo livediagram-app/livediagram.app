@@ -117,7 +117,7 @@ export const SYSTEM_OP_KINDS = [
   'changeset',
   // The room's word on whether this session suggests (docs/specs/007-editor/suggestions.md "Suggest Only").
   'review',
-  // A tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live").
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
   'suggestions',
 ] as const;
 
@@ -226,6 +226,7 @@ export {
   ROOM_GRANT_ASK_BEFORE_MS,
   ROOM_PING,
   ROOM_PONG,
+  SNAPSHOT_REVERTED_CLOSE,
   WORKBENCH_ENDED_CLOSE,
   isRoomOpRef,
   type CursorMessage,
@@ -458,7 +459,7 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
-  // A tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live"): from
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live"): from
   // the room ('system') to every Participant and Editor socket, never a Viewer's, carrying no content; an editor that
   // shows the tab reads them again.
   | SuggestionsRoomOp

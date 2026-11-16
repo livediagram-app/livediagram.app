@@ -1,6 +1,6 @@
 'use client';
 
-// The canvas's suggestions bar (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggesting" and
+// The canvas's suggestions bar (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting" and
 // "Reviewing"; blueprint "Presentation and UX"): a small floating bar at the canvas's top edge.
 //   - An Editor: the mode switch, Editing or Suggesting, then the tab's suggestion count, which opens the review list.
 //   - A Participant on Suggest Only: a Suggesting chip (no switch: it always suggests), then the count.

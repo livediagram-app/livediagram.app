@@ -1,4 +1,4 @@
-// Where a canvas's suggestions wait (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Stored on the
+// Where a canvas's suggestions wait (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Stored on the
 // item"): one row each in the item's own SQLite (its Durable Object), beside its tabs and never inside them, so an
 // export, a thumbnail, a copy, a version, the Community and every agent read leave them out without knowing they
 // exist. Reached through the D1-shaped surface every room hands its content code (the product's `*_DB` binding).

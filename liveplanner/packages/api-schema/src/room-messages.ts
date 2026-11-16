@@ -107,7 +107,7 @@ export const SYSTEM_OP_KINDS = [
   // `pull-requests` (docs/specs/026-plan/github-pull-requests.md "Pull request state on cards"): the states a GitHub
   // delivery brought. They change only through a verified delivery.
   'pull-requests',
-  // A tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live").
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
   'suggestions',
   // The room's word on whether this session suggests (Suggest Only).
   'review',
@@ -400,11 +400,11 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
-  // A tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live"): from
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live"): from
   // the room ('system') to every Participant and Editor socket, never a Viewer's, carrying no content; an editor that
   // shows the tab reads them again.
   | SuggestionsRoomOp
-  // Whether this Participant session suggests (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest
+  // Whether this Participant session suggests (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest
   // Only"): from the room ('system') to its socket alone, when it joins and whenever the review settings change. A
   // peer's is never believed.
   | ReviewOp
@@ -465,6 +465,9 @@ export const ACCESS_CHANGED_CLOSE = 4005;
 // The close code for a workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
 // the page turns read-only and does not reconnect.
 export const WORKBENCH_ENDED_CLOSE = 4006;
+
+// A snapshot's revert replaced the plan in place (docs/specs/013-workspace/snapshots.md): every editor reloads.
+export { SNAPSHOT_REVERTED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 
 // The close code for a session whose grant lapsed without a fresh one (GrantRenewMessage): the editor fetches a
 // new grant and reconnects.

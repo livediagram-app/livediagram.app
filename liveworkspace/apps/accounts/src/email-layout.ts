@@ -4,6 +4,7 @@
 // tables, which email clients keep. An email speaks for liveworkspace, or for the app it was sent through, in that
 // app's colours and logo.
 import { BRAND_APPS, type BrandApp } from '@liveworkspace/brand/svg';
+import { EMAIL_HEAD } from '@liveworkspace/email/layout';
 import { APP_SITES, LOCAL_PORTS, type AppSiteId, type SiteId } from '@liveworkspace/sites';
 import type { Env } from './env.ts';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
@@ -100,7 +101,7 @@ export type Frame = {
 export function frame(brand: EmailBrand, content: Frame): string {
   const { band } = brand;
   return `<!doctype html>
-<html><body style="margin:0;background:${brand.canvas};padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<html>${EMAIL_HEAD}<body style="margin:0;background:${brand.canvas};padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
   <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;max-height:0;overflow:hidden">${content.preheader}</span>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid ${RULE};border-radius:14px;overflow:hidden">

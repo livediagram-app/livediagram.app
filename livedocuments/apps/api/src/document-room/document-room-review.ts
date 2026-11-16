@@ -1,5 +1,5 @@
 // The document's review settings in its room (docs/specs/007-editor/suggestions.md "Suggest Only";
-// liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md): the shared room review
+// liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md): the shared room review
 // (@liveworkspace/suggestions/room-review) bound to the `document.review` column and this room's sockets. It reads the
 // settings (cached until an Editor changes them), notes the people who join as Participants for the Share dialog,
 // and tells each Participant session whether it suggests. The article rule itself is the document package's

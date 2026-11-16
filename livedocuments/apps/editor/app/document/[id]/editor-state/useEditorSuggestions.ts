@@ -10,7 +10,7 @@ import type { EditorDocument } from './useEditorDocument';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
 
-// Suggestions on a slide's or an infographic's canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md):
+// Suggestions on a slide's or an infographic's canvas (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
 // an Editor's mode (Editing or Suggesting), the active tab's suggestions and the review. An article's writing has its
 // own Suggesting (docs/specs/007-editor/suggestions.md); a Participant on Suggest Only suggests there, as it always
 // has, since its canvas gestures stay closed. Off where there is no room to suggest through: a document in This

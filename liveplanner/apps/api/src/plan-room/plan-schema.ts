@@ -539,7 +539,7 @@ const V31 = itemsBytesStep;
 // settings and vote cap.
 const V32 = ROADMAPS_SCHEMA;
 
-// Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Stored on the item"): their
+// Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Stored on the item"): their
 // table, beside the tabs; and the plan's review settings ("Suggest Only"), JSON or NULL, on its row. Asks before
 // the ALTER, so it is safe however far a room got.
 const V33 = (exec: Exec) => {

@@ -1,6 +1,6 @@
 'use client';
 
-// The Share dialog's Suggestions section (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest
+// The Share dialog's Suggestions section (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest
 // Only"; livedocuments/docs/specs/007-editor/suggestions.md "Suggest Only"), for an Editor, in every product: each
 // Participant link and each person who has joined through one, each with a Suggest Only switch, and (where a product
 // has assistants' writing to hold, livedocuments' articles) Assistants Suggest first. A switch saves at once and

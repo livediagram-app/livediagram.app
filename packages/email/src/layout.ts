@@ -4,6 +4,13 @@
 // brand (colours, logo, wordmark, tagline, default sign-off) and keeps its own builders and words.
 import { cutText } from '@liveworkspace/model-core/text-cut';
 
+// Every email's <head>: the charset said in the markup itself, so a message saved as a file, forwarded, previewed by
+// webmail or opened by a client that ignores the MIME part's charset still reads curly quotes and emoji as UTF-8
+// rather than Latin-1 ("Youâ€™re invited"), and the viewport, so phones lay the card out at their own width.
+// liveworkspace's accounts emails use it too (liveworkspace/apps/accounts/src/email-layout.ts).
+export const EMAIL_HEAD =
+  '<head><meta charset="utf-8"><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>';
+
 // The body text and headings: slate-900 and slate-600, the same in every app.
 const INK = '#0f172a';
 const MUTED = '#475569';
@@ -112,7 +119,7 @@ export function createEmailLayout(look: EmailBrand) {
          </table>`
         : '';
     return `<!doctype html>
-<html><body style="margin:0;background:${look.canvas};padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<html>${EMAIL_HEAD}<body style="margin:0;background:${look.canvas};padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
   ${preheader}
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden">

@@ -6,11 +6,13 @@ import {
   silentCookieNames,
   silentCookiesForHint,
   silentSignInBootScript,
+  SILENT_LEAVING_GLOBAL,
   SILENT_RETRY_GLOBAL,
   SILENT_RETURN_ATTRIBUTE,
   SILENT_RETURN_KEY,
   SILENT_SESSION_KEY,
   retrySilentSignIn,
+  silentSignInLeaving,
   startSilentSignIn,
 } from './silent';
 
@@ -151,12 +153,15 @@ function boot(page: Page = {}) {
     }
   };
   // What the page's first token answer does (retrySilentSignIn): whatever the page went to by then, or null.
+  let retried: unknown;
   const retry = () => {
     const again = window[SILENT_RETRY_GLOBAL];
-    if (typeof again === 'function') (again as () => void)();
+    if (typeof again === 'function') retried = (again as () => unknown)();
     return went[0] ?? null;
   };
   return {
+    window,
+    retried: () => retried,
     to: went[0] ?? null,
     went,
     stopped,
@@ -616,20 +621,74 @@ describe('a hint that outlived its session (retrySilentSignIn)', () => {
     expect(used.retry()).toBeNull();
   });
 
+  // Work Tracker 1007: the page settled as a guest while the bounce was out, its guest hand-off's navigation replaced
+  // the bounce's, and the person stayed a guest though signed in to liveworkspace. So the page learns it is leaving.
+  it('says the page is leaving when it goes, and marks it for the rest of the page', () => {
+    const page = boot({ cookie: 'lp_signed_in=1' });
+    expect(page.window[SILENT_LEAVING_GLOBAL]).toBeUndefined();
+    page.setCookie('lp_signed_in=0');
+    expect(page.retry()).not.toBeNull();
+    expect(page.retried()).toBe(true);
+    expect(page.window[SILENT_LEAVING_GLOBAL]).toBe(true);
+    // Used up: a second call says nothing is leaving because of it.
+    page.retry();
+    expect(page.retried()).toBeUndefined();
+    const stays = boot({ cookie: 'lp_signed_in=1' });
+    expect(stays.retry()).toBeNull();
+    expect(stays.retried()).toBeUndefined();
+    expect(stays.window[SILENT_LEAVING_GLOBAL]).toBeUndefined();
+  });
+
+  it("marks the page as leaving on the boot script's own bounce too", () => {
+    const page = boot();
+    expect(page.to).not.toBeNull();
+    expect(page.window[SILENT_LEAVING_GLOBAL]).toBe(true);
+    const marketing = boot({ afterPaint: true });
+    expect(marketing.window[SILENT_LEAVING_GLOBAL]).toBeUndefined();
+    marketing.settle();
+    expect(marketing.window[SILENT_LEAVING_GLOBAL]).toBe(true);
+  });
+
   it('calls the function the boot script left, and is a no-op on a page without one', () => {
     const global = globalThis as Record<string, unknown>;
     const again = vi.fn();
     global[SILENT_RETRY_GLOBAL] = again;
     try {
-      retrySilentSignIn();
+      expect(retrySilentSignIn()).toBe(false);
       expect(again).toHaveBeenCalledTimes(1);
+      global[SILENT_RETRY_GLOBAL] = () => true;
+      expect(retrySilentSignIn()).toBe(true);
       global[SILENT_RETRY_GLOBAL] = () => {
         throw new Error('boom');
       };
-      expect(() => retrySilentSignIn()).not.toThrow();
+      expect(retrySilentSignIn()).toBe(false);
     } finally {
       delete global[SILENT_RETRY_GLOBAL];
     }
-    expect(() => retrySilentSignIn()).not.toThrow();
+    expect(retrySilentSignIn()).toBe(false);
+  });
+
+  it('silentSignInLeaving reads the mark the boot script sets', () => {
+    const global = globalThis as Record<string, unknown>;
+    expect(silentSignInLeaving()).toBe(false);
+    global[SILENT_LEAVING_GLOBAL] = true;
+    try {
+      expect(silentSignInLeaving()).toBe(true);
+    } finally {
+      delete global[SILENT_LEAVING_GLOBAL];
+    }
+    expect(silentSignInLeaving()).toBe(false);
+    // A page whose global throws on read is not leaving.
+    Object.defineProperty(globalThis, SILENT_LEAVING_GLOBAL, {
+      configurable: true,
+      get() {
+        throw new Error('SecurityError');
+      },
+    });
+    try {
+      expect(silentSignInLeaving()).toBe(false);
+    } finally {
+      delete global[SILENT_LEAVING_GLOBAL];
+    }
   });
 });

@@ -197,7 +197,7 @@ export function receiveRoomOp(
     // the room refuses it from a client socket.
     if (from === 'system') receiveDocumentTrashed();
   } else if (op.kind === 'suggestions') {
-    // A tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live").
+    // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
     // System-only: the room refuses one from a client socket.
     if (from === 'system') takeSuggestionsRoomOp(op);
   }

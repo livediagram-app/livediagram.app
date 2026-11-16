@@ -1,4 +1,4 @@
-// The telemetry types suggestions send (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+// The telemetry types suggestions send (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
 // "Telemetry"), written down once so the products' telemetry dashboards read them from here and cannot drift.
 
 /** `Element·Changed`, from the canvas's mode switch, a suggestion made, and the review's decisions. */

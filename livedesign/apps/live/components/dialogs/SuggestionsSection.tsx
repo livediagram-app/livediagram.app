@@ -1,6 +1,6 @@
 'use client';
 
-// The Share dialog's Suggestions section (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest
+// The Share dialog's Suggestions section (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest
 // Only"), for an Editor: the shared section (@liveworkspace/suggestions), with each Participant link and each person
 // who has joined through one, each with a Suggest Only switch. Assistants Suggest is the article editor's alone.
 import type { ShareLink } from '@liveworkspace/index-client';

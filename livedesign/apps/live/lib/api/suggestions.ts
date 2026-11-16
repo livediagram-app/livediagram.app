@@ -1,4 +1,4 @@
-// Canvas suggestions from the editor (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "The api"): the
+// Canvas suggestions from the editor (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "The api"): the
 // shared client (@liveworkspace/suggestions/client) over this editor's request funnel, as the person or share link it
 // runs as.
 import { suggestionsClient, type SuggestionsClient } from '@liveworkspace/suggestions/client';

@@ -1,4 +1,4 @@
-// A suggestion on a canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md): one person's proposed
+// A suggestion on a canvas (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md): one person's proposed
 // change to one tab's elements, kept beside the canvas until an Editor accepts it (it becomes the canvas, as one
 // changeset) or rejects it (it goes). Generic over a product's element union: every product binds `E` to its own
 // `Element`. Read defensively: whatever is stored or sent is parsed and bounded here.

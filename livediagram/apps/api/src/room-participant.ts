@@ -58,7 +58,7 @@ type ParticipantSender = {
   presenceId: string;
   documentId: string | null;
   adderKey: string | null;
-  // On Suggest Only (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only"): its changes go
+  // On Suggest Only (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only"): its changes go
   // through the suggestion routes, so an element change here is refused but for live fields (a comment, a reaction).
   suggestOnly?: boolean;
 };

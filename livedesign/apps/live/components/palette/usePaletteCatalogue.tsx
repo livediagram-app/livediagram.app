@@ -1,4 +1,6 @@
 import type { PaletteTileDef } from './palette-tile-defs';
+import { useLibrary } from '@liveworkspace/workbench/components/library/LibraryProvider';
+import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { PaletteKind } from '@/lib/palette-kind';
 import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livedesign/design';
 import { useEffect, useState } from 'react';
@@ -51,6 +53,7 @@ export function usePaletteCatalogue({
   onAddIcon,
   onAddSticker,
   onAddTechIcon,
+  onInsertLibraryItem,
   onAddText,
   onAddSticky,
   onAddTable,
@@ -109,6 +112,9 @@ export function usePaletteCatalogue({
   const addIcon = (iconId: string) => armed(() => onAddIcon(iconId))();
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
+  // An item from the Library (liveworkspace/docs/specs/006-media/libraries.md) lands at once, like a paste.
+  const insertLibraryItem = (item: LibraryInsertItem<unknown>) =>
+    armed(() => onInsertLibraryItem(item))();
   const addText = (preset?: import('@livedesign/design').TextPresetId) =>
     armed(() => onAddText(preset))();
   const addSticky = armed(onAddSticky);
@@ -211,20 +217,25 @@ export function usePaletteCatalogue({
   const pages = editorMode === 'pages';
   // Logo's Draw takes this person's markers, as tiles in their colours and widths (useLogoMarkerTiles).
   const markers = useLogoMarkerTiles(pages && paletteKind === 'logo');
+  // The Library (liveworkspace/docs/specs/006-media/libraries.md) only where the editor has one.
+  const hasLibrary = useLibrary() !== null;
   const categories = participant
     ? participantPaletteCategories()
-    : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {}).map((c) =>
-        c.id === 'draw' && markers.length
-          ? {
-              ...c,
-              tiles: [
-                ...withGroupEnd(c.tiles ?? []),
-                ...(fillTile ? [...withGroupEnd(markers), fillTile] : markers),
-              ],
-            }
-          : c,
-      );
+    : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {})
+        .filter((c) => hasLibrary || c.id !== 'library')
+        .map((c) =>
+          c.id === 'draw' && markers.length
+            ? {
+                ...c,
+                tiles: [
+                  ...withGroupEnd(c.tiles ?? []),
+                  ...(fillTile ? [...withGroupEnd(markers), fillTile] : markers),
+                ],
+              }
+            : c,
+        );
   const tabs = paletteCategoryTabs({
+    insertLibraryItem,
     categories,
     pendingDraw,
     tileActions,

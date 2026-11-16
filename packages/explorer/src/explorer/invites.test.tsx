@@ -134,6 +134,61 @@ describe('Invites', () => {
     );
   });
 
+  // Work Tracker 1006: someone opening the invitation email signed out was told they had none.
+  it('signed out, says invitations wait for a sign-in and offers Sign In and Create Account back here', async () => {
+    const teams = fakeTeams([invite()]);
+    render(
+      <Explorer
+        app="livediagram"
+        client={createFakeIndex({}).client}
+        view={{ kind: 'invites' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/d/${i.id}`}
+        onCreate={vi.fn()}
+        viewerId="guest_me"
+        heroHidden
+        teamsHost={teams.host}
+        signedIn={false}
+        signInHref="/sign-in?return=%2Fexplorer%2Finvites"
+        signUpHref="/sign-up?return=%2Fexplorer%2Finvites"
+      />,
+    );
+    expect(await screen.findByText('Your invitations are waiting')).toBeTruthy();
+    expect(screen.queryByText('No pending invites')).toBeNull();
+    const card = document.querySelector('[data-invites-signed-out]')!;
+    const links = [...card.querySelectorAll('a')].map((a) => [
+      a.textContent,
+      a.getAttribute('href'),
+    ]);
+    expect(links).toEqual([
+      ['Sign In', '/sign-in?return=%2Fexplorer%2Finvites'],
+      ['Create Account', '/sign-up?return=%2Fexplorer%2Finvites'],
+    ]);
+    // Nothing of any invitation shows, and nothing is asked for one.
+    expect(screen.queryByText('Ops Crew')).toBeNull();
+    expect(teams.host.myTeams).not.toHaveBeenCalled();
+  });
+
+  it('signed out with no sign-up to offer, still offers Sign In and never says none', async () => {
+    render(
+      <Explorer
+        app="livediagram"
+        client={createFakeIndex({}).client}
+        view={{ kind: 'invites' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/d/${i.id}`}
+        onCreate={vi.fn()}
+        viewerId="guest_me"
+        heroHidden
+        signedIn={false}
+        signInHref="/sign-in"
+      />,
+    );
+    expect(await screen.findByText('Your invitations are waiting')).toBeTruthy();
+    const card = document.querySelector('[data-invites-signed-out]')!;
+    expect([...card.querySelectorAll('a')].map((a) => a.textContent)).toEqual(['Sign In']);
+  });
+
   it('opens from the sidebar row', async () => {
     const { onNavigate } = page({ kind: 'all' }, [invite()]);
     const row = await screen.findByRole('treeitem', { name: 'Invites (1 waiting)' });

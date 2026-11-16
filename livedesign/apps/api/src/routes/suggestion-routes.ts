@@ -1,4 +1,4 @@
-// Canvas suggestions over REST (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "The routes"):
+// Canvas suggestions over REST (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "The routes"):
 //   GET  /api/designs/<id>/tabs/<tabId>/suggestions          the tab's suggestions
 //   POST /api/designs/<id>/tabs/<tabId>/suggestions          suggest `{ ops }`
 //   POST /api/designs/<id>/tabs/<tabId>/suggestions/accept   `{ ids }` or `{ all: true }`: one changeset

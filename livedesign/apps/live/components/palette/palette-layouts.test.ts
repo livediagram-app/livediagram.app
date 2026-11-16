@@ -58,6 +58,7 @@ describe('palette layouts', () => {
       'concepts',
       'components',
       'icons',
+      'library',
       'media',
       'data',
     ]);
@@ -133,7 +134,15 @@ describe('palette layouts', () => {
 
   it('gives a logo page its own palette: Draw, Shapes, Write, Icons, Media (logo-pages.md)', () => {
     const logo = paletteCategoriesFor('pages', { pagesKind: 'logo' });
-    expect(logo.map((c) => c.id)).toEqual(['popular', 'draw', 'shapes', 'write', 'icons', 'media']);
+    expect(logo.map((c) => c.id)).toEqual([
+      'popular',
+      'draw',
+      'shapes',
+      'write',
+      'icons',
+      'library',
+      'media',
+    ]);
     // A logo's Icons is the glyphs alone: no Stickers side.
     expect(logo.find((c) => c.id === 'icons')!.stickers).toBeUndefined();
     const tilesOf = (id: string) => logo.find((c) => c.id === id)!.tiles!.map((t) => t.id);

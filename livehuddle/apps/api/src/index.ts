@@ -8,6 +8,7 @@ import { handleTokens } from './routes/tokens';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
+import { handleInternalShapeLibraries } from './routes/internal-shape-libraries';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
 import { createTokenBearer } from '@liveworkspace/api-kit/bearer-credentials';
@@ -73,6 +74,9 @@ async function routeApiRequest(
 
   // The One Explorer index's server-to-server doors into a document's content (routes/internal-items.ts): their
   // own key, never a person's identity, so answered before identity and the per-owner limits.
+  // The Library's read of a person's shape libraries in place (routes/internal-shape-libraries.ts), with the media key.
+  if (segments[1] === 'internal' && segments[2] === 'shape-libraries' && segments.length === 3)
+    return handleInternalShapeLibraries(request, env);
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
 

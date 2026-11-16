@@ -300,7 +300,7 @@ const V6 = outboxRetrySchema();
 // tab already there reads as not connected.
 const V7 = TAB_CONNECTION_SCHEMA;
 
-// Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Stored on the item"): their
+// Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Stored on the item"): their
 // table, beside the tabs; and the design's review settings ("Suggest Only"), JSON or NULL, on its row.
 const V8 = `${CANVAS_SUGGESTIONS_SCHEMA}
 ALTER TABLE design ADD COLUMN review TEXT NULL;

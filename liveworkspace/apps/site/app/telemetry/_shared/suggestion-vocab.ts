@@ -1,5 +1,5 @@
 // Test support for each app's computed-emitters.ts: the telemetry types canvas suggestions send, read off
-// @liveworkspace/suggestions' telemetry.ts (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+// @liveworkspace/suggestions' telemetry.ts (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
 // "Telemetry") so the declared values cannot drift from what the package sends.
 
 import { readFileSync } from 'node:fs';

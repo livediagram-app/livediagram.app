@@ -11,7 +11,7 @@ import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';
 
-// Suggestions on the canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md): this person's mode
+// Suggestions on the canvas (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md): this person's mode
 // (Editing or Suggesting), the active tab's suggestions and the review. The capture behind it lives with the history
 // (useEditorUndoState); this slice connects it to the api. Off where there is no room to suggest through: a document
 // in This Browser (no collab key is ever handed over), an embed, a workbench. A slice of useEditorState

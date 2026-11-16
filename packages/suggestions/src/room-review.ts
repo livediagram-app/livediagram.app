@@ -1,4 +1,4 @@
-// An item's review settings in its room (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest
+// An item's review settings in its room (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest
 // Only"; livedocuments/docs/specs/007-editor/suggestions.md "Suggest Only"): read from the item's own storage (cached
 // until an Editor changes them), the people who join as Participants noted for the Share dialog, and each Participant
 // session told whether it suggests. The same in every product's room; each hands in its storage and its sockets.

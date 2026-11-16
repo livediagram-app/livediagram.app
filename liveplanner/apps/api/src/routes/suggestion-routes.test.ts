@@ -9,7 +9,7 @@ import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
 
-// Canvas suggestions end to end on real SQLite (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+// Canvas suggestions end to end on real SQLite (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
 // "Share roles", "Reviewing"): who may suggest, who may accept, one changeset per accept, a stale one flagged, the
 // room told without content, and the review settings an Editor alone sets.
 

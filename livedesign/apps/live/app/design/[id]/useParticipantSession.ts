@@ -22,7 +22,7 @@ export function useParticipantSession(
 ) {
   const [roomAdderKey, setAdderKey] = useState<string | null>(null);
   const adderKey = roomAdderKey ?? previewKey;
-  // On Suggest Only (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only"), the room's word:
+  // On Suggest Only (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only"), the room's word:
   // every change it makes to the canvas is a suggestion, so its gestures open as an Editor's and its commits are
   // gathered as suggestions (useEditorSuggestions) rather than held back.
   const roomSays = useSyncExternalStore(onRoomSuggestOnly, roomSuggestOnly, () => false);

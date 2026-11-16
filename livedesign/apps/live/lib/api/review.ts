@@ -1,4 +1,4 @@
-// The design's review settings (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only"): the
+// The design's review settings (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only"): the
 // Share dialog's Suggestions section reads and sets them. An Editor's alone; the api refuses anyone else.
 import {
   parseStoredReview,

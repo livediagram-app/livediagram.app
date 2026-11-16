@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./blueprints/README.md - when implementing a collaboration spec from its blueprint
-- ./canvas-suggestions.md - when working on Canvas suggestions: Suggesting on the canvas, ghosts in the author's colour, an Editor's Accept, Reject and Accept All as one changeset, stale suggestions flagged, Suggest Only on the canvas; the rule is liveworkspace's (014-suggestions)
+- ./canvas-suggestions.md - when working on Canvas suggestions: Suggesting on the canvas, ghosts in the author's colour, an Editor's Accept, Reject and Accept All as one changeset, stale suggestions flagged, Suggest Only on the canvas; the rule is liveworkspace's (015-suggestions)
 - ./presentation-mode.md - when working on Presentation mode: Full-screen slide deck of author-picked element sets, each slide from one tab, built and run from a Slide Deck panel
 - ./workshop-tour.md - when working on the Workshop tour: the optional guided tour on the footer's Start Workshop Tour button while someone is in Workshop (the Diagram tour never runs in Workshop)
 - ./workshop-mode.md - when working on Workshop mode: The fifth editor mode, for running a session with a team; holds the Collaborate and Stickers categories and the Session strip's set-up, which leave Diagram

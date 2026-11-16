@@ -18,7 +18,7 @@ export type InternalRoom = {
   readSelections: (tabId: string, person: string) => Promise<unknown>;
   readLedger: (tabId: string, since?: number) => Promise<unknown>;
   epoch: () => string;
-  // Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live"): a tab's changed, and
+  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live"): a tab's changed, and
   // the review settings an Editor set.
   suggestionsChanged: (tabId: string) => void;
   reviewChanged: () => void;
@@ -87,7 +87,7 @@ export async function answerInternal(
   // changeset, a tab rename (tab-meta) and a design rename (design-meta) the api applied
   // (docs/specs/024-agents/agent-changesets.md)
   // take the same path, one seq and one catch-up slot each whatever their size.
-  // Internal: a tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+  // Internal: a tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
   // "Live"); every Participant and Editor socket is told, carrying no content. Same trust argument as /broadcast.
   if (request.method === 'POST' && url.pathname === '/suggestions') {
     const tabId = ((await readBody(request)) as { tabId?: unknown } | null)?.tabId;

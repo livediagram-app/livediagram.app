@@ -41,7 +41,7 @@ export async function handleDocumentSubresources(
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
-  // Canvas suggestions on slides and infographics (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md).
+  // Canvas suggestions on slides and infographics (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md).
   const suggestions = await handleSuggestionRoutes(ctx);
   if (suggestions) return suggestions;
   // Version history (docs/specs/006-document/version-history.md).

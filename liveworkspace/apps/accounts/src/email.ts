@@ -143,7 +143,9 @@ export function teamInviteEmail(
   stage = 0,
 ) {
   const who = inviterName.trim() || 'Someone';
-  const link = `${origin(baseUrl)}/explorer/invites`;
+  // The Explorer's Invites, with the invitation's own token (never the address): signed out, the page reads the
+  // invited address with it and fills it into the sign-up form (accounts.md "Invitations").
+  const link = `${origin(baseUrl)}/explorer/invites?invite=${encodeURIComponent(declineToken)}`;
   const decline = declineUrl(baseUrl, declineToken);
   const reminder = stage > 0;
   const subject = reminder

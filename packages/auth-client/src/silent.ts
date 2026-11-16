@@ -56,6 +56,9 @@ export const SILENT_RETURN_ATTRIBUTE = 'data-silent-return';
 // The function the boot script leaves on the page for retrySilentSignIn: a hint that outlived its session (the session
 // ended in another app) found out by the page's first token answer.
 export const SILENT_RETRY_GLOBAL = '__liveworkspaceSilentSignIn';
+// What the boot script sets on the page (`true`) the moment it sends the browser off on a bounce, so nothing else on
+// the page starts a navigation of its own (a guest hand-off) that would cut the bounce short (silentSignInLeaving).
+export const SILENT_LEAVING_GLOBAL = '__liveworkspaceSilentLeaving';
 // The bounce's PKCE verifier and return address, for as long as the accounts site's own codes last.
 const SILENT_PKCE_MAX_AGE_SECONDS = 600;
 // A return address longer than this isn't bounced: it rides in a cookie, and a dropped cookie would turn the
@@ -297,12 +300,14 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
   const key = JSON.stringify(SILENT_SESSION_KEY);
   const back = JSON.stringify(SILENT_RETURN_KEY);
   const retry = JSON.stringify(SILENT_RETRY_GLOBAL);
+  const leavingFlag = JSON.stringify(SILENT_LEAVING_GLOBAL);
   const afterPaint = options.afterPaint === true;
   // A session here already, signed out of this app alone, or a bounce just out.
   const settled = `has('${hint}','1')||has('${signedOut}','${SIGNED_OUT_VALUE}')||has('${guard}')`;
   // Once per browser session; no storage, no bounce (nothing to stop the next one).
   const once = `if(st.getItem(${key}))return;st.setItem(${key},'1');if(st.getItem(${key})!=='1')return;`;
-  const go = `l.replace(${api}+'/auth/silent?return='+encodeURIComponent(r));`;
+  // Marks the page as leaving first, so the page's own code starts no navigation that would cut the bounce short.
+  const go = `w[${leavingFlag}]=true;l.replace(${api}+'/auth/silent?return='+encodeURIComponent(r));`;
   const tooLong = `if(r.length>${SILENT_RETURN_MAX_LENGTH})return;`;
   // The way back from a deferred bounce, said once for the page view and Web Vitals trackers.
   const leaving = afterPaint ? `st.setItem(${back},l.pathname+l.search);` : '';
@@ -340,7 +345,7 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
     `var hinted=has('${hint}','1');` +
     `w[${retry}]=function(){try{w[${retry}]=function(){};c=d.cookie||'';` +
     `if(!hinted||${settled}${afterPaint ? '||used' : ''}||skipped(l.pathname))return;` +
-    `var r=l.pathname+l.search+l.hash;${tooLong}st.setItem(${key},'1');${leaving}${go}}catch(e){}};` +
+    `var r=l.pathname+l.search+l.hash;${tooLong}st.setItem(${key},'1');${leaving}${go}return true}catch(e){}};` +
     `if(${settled})return;` +
     (afterPaint
       ? // A prerendered page nobody is looking at yet, or a tab that already bounced, waits for nothing.
@@ -368,12 +373,27 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
  * all along, offline, the hint untouched) it does nothing. Call it after the first answer only, never a later one, so
  * a session ending under an open page never reloads it; it works once per page whoever calls it. A no-op on a page
  * without the boot script.
+ *
+ * Answers true when the page is now leaving on the bounce: the caller must then settle nothing (no guest, no guest
+ * hand-off, no redirect of its own), because a navigation it started would replace the bounce's before the accounts
+ * site is asked, and the person would stay a guest though signed in to liveworkspace (Work Tracker 1007).
  */
-export function retrySilentSignIn(): void {
+export function retrySilentSignIn(): boolean {
   try {
     const again = (globalThis as Record<string, unknown>)[SILENT_RETRY_GLOBAL];
-    if (typeof again === 'function') again();
+    return typeof again === 'function' && again() === true;
   } catch {
     // A page without the boot script, or a sealed global: nothing to retry.
+    return false;
+  }
+}
+
+/** Whether the page has gone off on a silent sign-in bounce (the boot script's own, or a retry's). While it has, any
+ *  navigation the page starts would cut the bounce short, so the guest hand-off and the apps' bridges wait instead. */
+export function silentSignInLeaving(): boolean {
+  try {
+    return (globalThis as Record<string, unknown>)[SILENT_LEAVING_GLOBAL] === true;
+  } catch {
+    return false;
   }
 }

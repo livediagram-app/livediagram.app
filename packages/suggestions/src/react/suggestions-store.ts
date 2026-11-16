@@ -1,4 +1,4 @@
-// What the canvas draws for suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Seeing a
+// What the canvas draws for suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Seeing a
 // suggestion"): the active tab's suggestions, the change this person is gathering right now, and the one the review
 // list points at. An external store the overlay reads with useSyncExternalStore, so a suggestion arriving re-renders
 // the overlay alone, never the canvas's elements.

@@ -187,6 +187,10 @@ const TAGS = [
     description: 'Deleted documents, restorable for 30 days before they are purged.',
   },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
+  {
+    name: 'Library',
+    description: 'Save shapes and components to Personal or a team, and place them in any app.',
+  },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
   {
     name: 'Workbench',

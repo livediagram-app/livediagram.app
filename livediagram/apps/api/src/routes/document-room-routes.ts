@@ -115,7 +115,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
     // opened a link as for a link visitor), never from the upgrade URL, which is the client's to change. Revoking
     // the link closes exactly its sockets, and the room holds a Suggest Only link's people to it
-    // (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only").
+    // (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only").
     const shareCode = claims.link?.slice(0, 64) || linkCode;
     if (linkCode && (await isCommunityCode(env, id, linkCode))) return forbidden('community_link');
     const forwarded = new Request(request);

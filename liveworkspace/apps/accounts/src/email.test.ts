@@ -21,6 +21,33 @@ const env = (over: Partial<Env>) =>
 
 afterEach(() => vi.unstubAllGlobals());
 
+// Work Tracker 1005: with no charset in the markup, an email saved as a file, forwarded or previewed by a client that
+// ignores the MIME part's charset read as Latin-1 ("Youâ€™re invited"). A browser reads a file's charset only from a
+// meta in its first 1024 bytes, so every kind says it there, with the viewport, before the body.
+describe('every email says its charset in its own markup', () => {
+  const brand = emailBrand(env({}), null);
+  const kinds: Record<string, string> = {
+    code: codeEmail('123456', brand).html,
+    deletionCode: deletionCodeEmail('654321', brand).html,
+    teamInvite: teamInviteEmail('https://liveworkspace.app', 'Design', 'Ada', 'tok_1').html,
+    teamInviteReminder: teamInviteEmail('https://liveworkspace.app', 'Design', 'Ada', 'tok_1', 2)
+      .html,
+    inviteResponse: inviteResponseEmail('https://liveworkspace.app', 'Design', 'Bo', true).html,
+    tokenExpiring: tokenExpiringEmail('https://liveworkspace.app', 'CI', Date.UTC(2026, 0, 2)).html,
+  };
+  for (const [kind, html] of Object.entries(kinds)) {
+    it(kind, () => {
+      const head = html.indexOf('<head><meta charset="utf-8">');
+      expect(head).toBeGreaterThan(0);
+      expect(head).toBeLessThan(html.indexOf('<body'));
+      expect(new TextEncoder().encode(html.slice(0, head)).length).toBeLessThan(1024);
+      expect(html).toContain(
+        '<meta name="viewport" content="width=device-width, initial-scale=1">',
+      );
+    });
+  }
+});
+
 describe('deletionCodeEmail', () => {
   it('says what the code does, in the asking app’s brand', () => {
     const email = deletionCodeEmail('654321', emailBrand(env({}), 'livedesign.app'));
@@ -162,7 +189,7 @@ describe('teamInviteEmail', () => {
     expectWorkspaceFrame(email.html);
     expect(email.html).toContain('>You’re invited to Design</h1>');
     expect(email.html).toContain(
-      'href="https://liveworkspace.app/explorer/invites" style="display:inline-block',
+      'href="https://liveworkspace.app/explorer/invites?invite=tok_1" style="display:inline-block',
     );
     expect(email.html).toContain('href="https://liveworkspace.app/join/decline?token=tok_1"');
     expect(email.html).toContain('An invitation nobody answers closes after 28 days.</p>');
@@ -172,7 +199,7 @@ describe('teamInviteEmail', () => {
     const email = teamInviteEmail(base, 'Design', 'Ada', 'tok_1');
     expect(email.subject).toBe('Ada invited you to Design on liveworkspace');
     expect(email.text).toContain('Ada invited you to join the team Design on liveworkspace.');
-    expect(email.text).toContain('https://liveworkspace.app/explorer/invites');
+    expect(email.text).toContain('https://liveworkspace.app/explorer/invites?invite=tok_1');
     expect(email.text).toContain('https://liveworkspace.app/join/decline?token=tok_1');
   });
 
@@ -182,6 +209,7 @@ describe('teamInviteEmail', () => {
     expect(email.html).toContain('You’re invited to &#60;b&#62;Ops&#60;/b&#62;</h1>');
     expect(email.html).toContain('Eve &#34;x&#34; &#38; co invited you');
     expect(email.html).toContain('href="https://liveworkspace.app/join/decline?token=a%26b"');
+    expect(email.html).toContain('href="https://liveworkspace.app/explorer/invites?invite=a%26b"');
   });
 
   it('names a reminder in its heading and subject, and falls back to Someone', () => {

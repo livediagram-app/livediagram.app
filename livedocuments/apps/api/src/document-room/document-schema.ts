@@ -307,7 +307,7 @@ const V9 = (exec: Exec) => {
   if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
 };
 
-// Canvas suggestions on slides and infographics (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+// Canvas suggestions on slides and infographics (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
 // "Stored on the item"): their table, beside the tabs.
 const V10 = CANVAS_SUGGESTIONS_SCHEMA;
 

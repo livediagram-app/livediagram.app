@@ -414,7 +414,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
 
           {/* What suggestions would change, each in its author's colour
-            (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Seeing a suggestion"). */}
+            (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Seeing a suggestion"). */}
           <SuggestionGhostOverlay
             elements={elements}
             tabId={props.activeTabId ?? ''}

@@ -167,7 +167,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     styleSlice,
     interactionSlice,
   );
-  // Suggestions on the canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md).
+  // Suggestions on the canvas (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md).
   const canvasSuggestions = useEditorSuggestions(
     env,
     selectionSlice,

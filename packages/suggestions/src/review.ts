@@ -1,4 +1,4 @@
-// An item's review settings (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only", and
+// An item's review settings (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only", and
 // livedocuments/docs/specs/007-editor/suggestions.md "Suggest Only"): the Participant links and people whose changes
 // are always suggestions, and whether an assistant's article writes are. Stored on the item's own row in its room
 // (a `review` column), set by an Editor from the Share dialog, read by the room on every Participant frame. Read defensively: whatever is stored or sent is parsed and bounded here.

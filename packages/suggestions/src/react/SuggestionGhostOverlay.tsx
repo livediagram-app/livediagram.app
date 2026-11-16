@@ -1,6 +1,6 @@
 'use client';
 
-// The ghosts suggestions draw over a canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Seeing a
+// The ghosts suggestions draw over a canvas (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Seeing a
 // suggestion"; blueprint "Presentation and UX"), in canvas space above the elements and below the selection chrome,
 // each in its author's colour:
 //   - an element put in: a dashed box where it would land, softly tinted, holding its words;

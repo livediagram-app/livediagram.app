@@ -40,7 +40,7 @@ const PILL_TOGGLE_TONE: Record<Role, string> = {
   view: 'cursor-pointer transition hover:ring-amber-400 dark:hover:ring-amber-400/60',
 };
 
-// A Participant on Suggest Only (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only").
+// A Participant on Suggest Only (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only").
 export const SUGGESTING_HINT = 'You suggest changes; an Editor accepts or rejects them';
 
 export function roleOwnerLabel(ownerName: string | null, isSelf: boolean): string {

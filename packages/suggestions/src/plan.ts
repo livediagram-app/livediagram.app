@@ -1,4 +1,4 @@
-// What a suggestion does to a canvas, pure (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md): the
+// What a suggestion does to a canvas, pure (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md): the
 // base it records, whether it went stale, what accepting a set of them leaves, and the ghosts the editor draws. Each
 // product hands in its own fingerprint (the element without its live multi-writer fields) and its op applier.
 import {

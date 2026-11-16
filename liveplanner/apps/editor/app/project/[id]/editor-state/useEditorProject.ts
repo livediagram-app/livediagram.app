@@ -52,7 +52,7 @@ export function useEditorProject(
     futureLength: historyFutureLength,
     clearRedo: clearHistoryRedo,
   } = useProjectHistory(initialTabs);
-  // Suggesting (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggesting"): while this person
+  // Suggesting (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting"): while this person
   // suggests, the commit and the tick gather the change as a suggestion instead of applying it; what decides it is
   // connected by useEditorSuggestions.
   const suggestCapture = useSuggestCapture<Tab, Element>(tabs, { fingerprint: elementFingerprint });

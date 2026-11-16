@@ -307,7 +307,7 @@ const V6 = (exec: Exec) => {
   );
 };
 
-// Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Stored on the item"): their
+// Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Stored on the item"): their
 // table, beside the tabs; and the document's review settings ("Suggest Only"), JSON or NULL, on its row. Asks before
 // the ALTER, so it is safe however far a room got.
 const V7 = (exec: Exec) => {

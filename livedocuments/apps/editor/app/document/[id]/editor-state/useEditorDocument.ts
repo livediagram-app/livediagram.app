@@ -68,7 +68,7 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     undo: tabUndo,
     redo: tabRedo,
   } = useDocumentHistory(initialTabs);
-  // Suggesting on the canvas (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggesting"): while
+  // Suggesting on the canvas (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting"): while
   // this person suggests, a change to a slide's or an infographic's elements is gathered as a suggestion instead of
   // applied. A change to the tab's own fields (an article's writing, which suggests in its own way) goes through.
   const suggestCapture = useSuggestCapture<Tab, Element>(tabs, {

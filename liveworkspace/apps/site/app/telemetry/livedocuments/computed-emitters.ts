@@ -243,7 +243,7 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
-  // Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Telemetry").
+  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Telemetry").
   'apps/editor/app/document/[id]/editor-state/useEditorSuggestions.ts Element·Changed': {
     values: CANVAS_SUGGESTION_TYPES,
   },

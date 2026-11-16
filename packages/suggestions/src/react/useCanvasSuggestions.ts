@@ -1,6 +1,6 @@
 'use client';
 
-// Suggestions in one editor (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md): the person's mode
+// Suggestions in one editor (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md): the person's mode
 // (Editing or Suggesting), the active tab's suggestions read from the api and read again whenever the room says they
 // changed, the change being gathered sent as a suggestion, and the review's Accept, Reject, Accept All and Reject
 // All. Each product's editor composes it in a slice of its own, handing in its client, its role and its notices.

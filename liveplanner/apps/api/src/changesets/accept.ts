@@ -10,7 +10,7 @@ import { readStoredTab } from './stored-tab';
 import { SUBMIT_ATTEMPTS, writtenFooter } from './submit';
 import { writeChangeset, type Author } from './write';
 
-// Accepting canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Reviewing"): what
+// Accepting canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Reviewing"): what
 // the Editor accepted, written to the tab as ONE changeset by them, as a revert is (revert.ts). `decide` is asked
 // again on every attempt against the tab as stored, so a lost race re-reads and re-plans.
 

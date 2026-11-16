@@ -25,7 +25,7 @@ const ImportTabDialog = dynamic(
 );
 // The shared Explorer's Share dialog (@liveworkspace/explorer), with livediagram's Community tab
 // (docs/specs/025-community/community.md "Publishing"): links are the index's, managed there.
-// The Share dialog's Suggest Only section (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md).
+// The Share dialog's Suggest Only section (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md).
 const SuggestionsSection = dynamic(
   () => import('@/components/dialogs/SuggestionsSection').then((m) => m.SuggestionsSection),
   { ssr: false },
@@ -172,7 +172,7 @@ export function EditorTabDialogs() {
           firstTabEmpty={
             !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
           }
-          // Suggest Only (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md): an Editor's.
+          // Suggest Only (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md): an Editor's.
           appSection={
             sessionRole === 'edit' ? (
               <SuggestionsSection

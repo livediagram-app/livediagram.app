@@ -1,5 +1,5 @@
 // What each product's OpenAPI manifest says about the canvas suggestion routes
-// (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "The api"): one wording for all four, so the
+// (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "The api"): one wording for all four, so the
 // products' docs never drift. Each manifest adds its own method, path, segment, tag and auth around these.
 import { SUGGESTION_MAX_OPS, SUGGESTIONS_MAX_PER_TAB } from './suggestion';
 

@@ -1,4 +1,4 @@
-// Suggesting on a canvas, in the editor (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+// Suggesting on a canvas, in the editor (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
 // "Suggesting"): while a person suggests, every change their gestures make to the active tab's elements is gathered
 // (one gesture, a drag landing or a burst of nudges, is one suggestion) and sent as a suggestion instead of landing
 // on the canvas. It wraps the editor's one history commit and tick, as the replay freeze does, so every path that

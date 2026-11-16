@@ -27,10 +27,13 @@ liveplanner keeps no per-tab activity log: nothing records each undoable commit 
   changed it), read in its panel, kept in the plan's Durable Object and bounded per card. It is not a tab or plan log,
   covers cards alone (never canvas elements, tabs or sheets), and offers no Revert. (The owner's decision,
   2026-10-30.)
+- **Snapshots are not a log**: [Snapshots](../013-workspace/snapshots.md) are manual save points of the whole plan,
+  the latest five kept, with a Revert of the whole plan to one of them. Nothing records edits one by one and there is
+  still no per-entry Revert. (The owner's direction, 2026-11-15, Work Tracker 948.)
 
 - There is no change-log table for tabs, no `/api/projects/:id/log` endpoint, and no `log` / `log-remove` room op.
 - liveplanner has no `activityPanelEnabled` preference and no revert hover preview ([User preferences](../007-editor/user-preferences.md)).
 - **Undo and Redo stay, unchanged in behaviour.** They are snapshot-based (`useProjectHistory`), personal to each editor and session, and sit in the bottom-right cluster and on Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z and Ctrl+Y. A continuous control (a background slider, an element colour or opacity picker) still takes one undo step per burst: the first tick checkpoints and ticks within 500 ms of the last stay in that step (`useBurstCheckpoint`).
 - Project-level history (made, renamed, moved, trashed, who edited) is each item's [History](../013-workspace/history.md), kept by liveworkspace's index; the [Inbox](../013-workspace/inbox.md) is unrelated, and is liveworkspace's index's too.
 - Help has no Activity Panel category.
-- ./canvas-suggestions.md - when working on Canvas suggestions: Suggesting on the canvas, ghosts in the author's colour, an Editor's Accept, Reject and Accept All as one changeset, stale suggestions flagged, Suggest Only on the canvas; the rule is liveworkspace's (014-suggestions)
+- ./canvas-suggestions.md - when working on Canvas suggestions: Suggesting on the canvas, ghosts in the author's colour, an Editor's Accept, Reject and Accept All as one changeset, stale suggestions flagged, Suggest Only on the canvas; the rule is liveworkspace's (015-suggestions)

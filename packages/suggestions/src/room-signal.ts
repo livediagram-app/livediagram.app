@@ -1,4 +1,4 @@
-// What the room tells an editor about suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+// What the room tells an editor about suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md
 // "Live"): a tab's suggestions changed (a system `suggestions` op, carrying no content, so a Viewer's socket learns
 // nothing), and whether this session is on Suggest Only (a system `review` op to its socket alone). Each product's
 // room-op receiver hands every system op here; the editor's suggestions hook listens. A small module-level bus: one

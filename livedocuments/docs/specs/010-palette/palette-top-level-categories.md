@@ -22,12 +22,12 @@ User / actor tile (see below).
 **The category bar has bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band          | Categories                                                                     |
-| ------------- | ------------------------------------------------------------------------------ |
-| **Common**    | Shapes, Write; Media on a slide                                                |
-| **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components |
-| **Decorate**  | Icons (with the stickers), Media                                               |
-| **Dynamic**   | Data                                                                           |
+| Band          | Categories                                                                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Common**    | Shapes, Write; Media on a slide                                                                                                                        |
+| **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components                                                                         |
+| **Decorate**  | Icons (with the stickers), [Library](../../../../liveworkspace/docs/specs/006-media/libraries.md) (after Icons, for an Editor with the Library), Media |
+| **Dynamic**   | Data                                                                                                                                                   |
 
 ## Why top-level
 

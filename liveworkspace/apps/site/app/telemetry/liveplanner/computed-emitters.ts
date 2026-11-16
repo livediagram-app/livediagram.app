@@ -178,7 +178,7 @@ const UI_SCALE_PARTS = [
 ].map((m) => m[1]!);
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
-  // Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Telemetry").
+  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Telemetry").
   'apps/editor/app/project/[id]/editor-state/useEditorSuggestions.ts Element·Changed': {
     values: CANVAS_SUGGESTION_TYPES,
   },

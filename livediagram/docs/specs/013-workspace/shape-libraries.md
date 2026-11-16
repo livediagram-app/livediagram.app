@@ -63,10 +63,26 @@ Named constants, checked by the api and before any upload by the client:
   to store." and named in the report.
 - Names are trimmed and at most 120 characters; titles at most 200.
 
+## The Library every app shares
+
+The **Library** ([liveworkspace/docs/specs/006-media/libraries.md](../../../../liveworkspace/docs/specs/006-media/libraries.md))
+is where people save their own shapes and components, to Personal or a team, and place them in any app. In livediagram:
+
+- **The shape libraries stay where they are.** Nothing moves, nothing is migrated in bulk: the palette's category
+  (named **Library** on the bar, as it was) shows the Library, with each shape library a **folder in Personal**,
+  drawn, searched and dragged as before. Other apps read them in place from the media service, through this api's
+  `GET /api/internal/shape-libraries?owner=` (the media key's door, accounts only).
+- **The first tidy copies.** Renaming or deleting one of those items from the Library, or renaming its folder, first
+  copies its whole shape library into Personal (the service records which), so the change lands on the copy and the
+  shape library here stays untouched. From then on the Library shows the copy; the Explorer's Shape Libraries still
+  shows the original.
+- **Save to Library** on the selection toolbar, beside Duplicate, saves a selection to Personal or a team.
+- **Without the Library** (a document kept only in this browser), the category is My shapes as below.
+
 ## Using a library: the palette
 
-- The palette gains a **My shapes** category in the Common band, after Shapes, shown when the owner
-  has at least one library holding a shape ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)).
+- The palette gains a **My shapes** category in the Common band, after Shapes (its bar name **Library**), shown when
+  the editor has the Library (above), or else when the owner has at least one library holding a shape ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)).
 - It shows **one section per library**, headed by the library's name, newest library first, each item
   a tile drawing a thumbnail of its elements with its title beneath (or "Shape n" when untitled, n
   its 1-based position). The thumbnail is the item's elements drawn by the editor's own SVG export,
@@ -82,7 +98,8 @@ Named constants, checked by the api and before any upload by the client:
   offset, as a gap), centred on its row; a run of clicks lines up left to right. A drag lands exactly
   where it is dropped.
 - Tiles are buttons in a list per section: reachable by Tab, activated by Enter or Space (placing at
-  the view's centre), named "Insert <title> from <library>" for screen readers.
+  the view's centre), named "Insert <title> from <section>" for screen readers, where the section is
+  the Library's (Personal, where shape libraries sit as folders, or a team's name).
 - The palette, and with it My shapes, is not offered on a read-only tab (a view-role share) or in
   Draw mode (its dock replaces the palette); a locked tab places nothing.
 - The list loads once per owner when the editor opens; an import or a change
@@ -155,9 +172,9 @@ pairs, new types only.
 
 ## Out of scope (for now)
 
-- Making a library from shapes on the canvas, or adding to one (only imports make libraries today).
+- Adding to a shape library from the canvas: a selection saves to the Library instead (above).
 - Timeline cards for libraries.
 - Live updates across open editors: a change shows on the next open.
-- Team-shared libraries (a `team_id`).
+- Team-shared shape libraries: a team's items are kept in the Library, never here.
 - Exporting a library back to draw.io.
 - Libraries from other tools.

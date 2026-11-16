@@ -13,7 +13,7 @@
 // grouping by `group` under the CATEGORY_BANDS headings.
 
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { PaletteMyShapesTab } from './PaletteMyShapesTab';
+import { PaletteLibraryTab } from './PaletteLibraryTab';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import { IconsCategoryTab } from '@/components/palette/IconsCategoryTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
@@ -95,7 +95,8 @@ export function paletteCategoryTabs(
     const tiles = c.tiles ?? [];
     switch (c.id) {
       case 'my-shapes':
-        return <PaletteMyShapesTab onInsert={insertLibraryShape} />;
+        // The Library (liveworkspace/docs/specs/006-media/libraries.md), My shapes within it.
+        return <PaletteLibraryTab onInsert={insertLibraryShape} />;
       case 'icons':
         return (
           <IconsCategoryTab
