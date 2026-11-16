@@ -1,6 +1,6 @@
 // A plan's Sheets as a chart source (liveworkspace/docs/specs/004-index/sheet-sources.md; docs/specs/015-api/api.md
 // "Sheet sources"): the doors on the index's key alone, the plan's Sheets, one range read as a chart reads it (A1
-// turned into ids, only the range), a range whose corner is gone, and a watch kept for the document that asked.
+// turned into ids, only the range), a range whose corner is gone, and a watch kept for the item that asked.
 import { describe, expect, it } from 'vitest';
 import { defaultCatalogue } from '@liveplanner/items';
 import { Workbook, readTypedInput, sheetFromJson, type SheetJson } from '@liveplanner/sheets';
@@ -136,7 +136,7 @@ describe('the sheet-range door', () => {
     expect((await send('B/sheet-range', { sheetId: 'sheet0001', a1: 'A1' })).status).toBe(404);
   });
 
-  it('keeps a watch for the document that asked, and none without one', async () => {
+  it('keeps a watch for the item that asked, and none without one', async () => {
     const { db, send } = await arrange();
     await send('A/sheet-range', { sheetId: 'sheet0001', a1: 'A1:B3' });
     await send('A/sheet-range', { sheetId: 'sheet0001', a1: 'A1:B3', watcher: 'doc_1' });

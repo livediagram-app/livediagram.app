@@ -18,7 +18,7 @@ export type InternalRoom = {
   readSelections: (tabId: string, person: string) => Promise<unknown>;
   readLedger: (tabId: string, since?: number) => Promise<unknown>;
   epoch: () => string;
-  // A relayed op that changed a Sheet: documents watching it are told (plan-room/sheet-watchers.ts).
+  // A relayed op that changed a Sheet: the items watching it are told (plan-room/sheet-watchers.ts).
   sheetChanged?: (op: unknown) => void;
 };
 

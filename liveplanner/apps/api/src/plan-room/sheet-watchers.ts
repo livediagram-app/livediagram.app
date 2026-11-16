@@ -1,7 +1,7 @@
-// Watches on a plan's Sheets (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping in step"): a document whose
+// Watches on a plan's Sheets (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping in step"): another app's item whose
 // chart reads a Sheet asks, with each read, to be told when that Sheet changes. The room keeps each watch for a day
 // from its last read, at most SHEET_WATCHERS_PER_SOURCE of them, and gathers the changes to watched Sheets for
-// SHEET_CHANGE_SETTLE_MS before telling the index once, which tells each document's app. Ids only, never values.
+// SHEET_CHANGE_SETTLE_MS before telling the index once, which tells each watching item's app. Ids only, never values.
 import {
   SHEET_CHANGE_SHEETS_MAX,
   SHEET_WATCHERS_MAX,
@@ -124,7 +124,7 @@ export class SheetWatches {
             );
           }
         } catch (err) {
-          // The next change, or the document's next open, catches its readers up.
+          // The next change, or the watching item's next open, catches its readers up.
           console.warn('[sheets] sheet-changed failed', { error: String(err) });
         }
       }

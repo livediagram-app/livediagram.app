@@ -235,7 +235,7 @@ export class PlanRoom extends DurableObject<Env> {
   planId: string | null = null;
   schemaReady = false;
   planRowReady = false;
-  // Documents whose charts read this plan's Sheets, told when a Sheet changes (sheet-watchers.ts).
+  // Other apps' items whose charts read this plan's Sheets, told when a Sheet changes (sheet-watchers.ts).
   readonly sheetWatches: SheetWatches;
   // When the plan was purged (plan-room-purged.ts): null when it is not, undefined until read.
   purgedAt: number | null | undefined = undefined;
@@ -427,7 +427,7 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // A chart in another app reading this plan's Sheets (liveworkspace/docs/specs/004-index/sheet-sources.md): its Sheets
-  // for a picker, and one range of one, with a watch for the document that asked (sheet-source.ts).
+  // for a picker, and one range of one, with a watch for the item that asked (sheet-source.ts).
   async listSheets(planId: string): Promise<SheetListResult> {
     if (this.holdsNothing()) return { status: 'not_found' };
     this.bindPlan(planId);

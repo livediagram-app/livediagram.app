@@ -67,9 +67,9 @@ export function handleInternalItems(
       // Object: its boards and Sheets as CSV, and every comment thread with its real authors (plan-room/plan-export.ts).
       exportTables: (id) => planRoom(env, id).exportTables(),
       exportComments: (id) => planRoom(env, id).exportComments(),
-      // A chart in a livedocuments document reading one range of a Sheet (liveworkspace/docs/specs/004-index/
+      // A chart in a livedocuments item reading one range of a Sheet (liveworkspace/docs/specs/004-index/
       // sheet-sources.md), in the plan's room where the Sheets are: the plan's Sheets, and the range's read with a
-      // watch for the document.
+      // watch for the item that asked.
       listSheets: (id) => planRoom(env, id).listSheets(),
       sheetRange: (id, ask, watcher) => planRoom(env, id).readSheetRange(ask, watcher),
       // A new plan from a Drive file, as its owner's (routes/internal-file.ts).
