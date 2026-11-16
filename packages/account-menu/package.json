@@ -18,6 +18,7 @@
   "dependencies": {
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },

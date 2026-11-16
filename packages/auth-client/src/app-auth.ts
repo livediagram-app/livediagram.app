@@ -68,8 +68,8 @@ export type AppAuthUser = {
   email: string | null;
   // The header's name first, as liveworkspace.app's (accountNameOf).
   givenName: string | null;
-  // Only where the app asks for it (`familyName: true`).
-  familyName?: string | null;
+  // The last name, beside the given name: the avatar's initials read both (account-names.ts).
+  familyName: string | null;
   name: string | null;
   // The profile's presence colour (the ID token's `presence_color`), for the avatar; null for Automatic.
   color: string | null;
@@ -116,8 +116,6 @@ export type AppAuthOptions<Env extends AppAuthEnv> = {
   // can present it, and `state` must match what came back.
   encodePkce: (value: PkceCookie) => string;
   decodePkce: (raw: string | null) => PkceCookie | null;
-  // The user carries the ID token's `family_name` (liveplanner).
-  familyName?: boolean;
   // The redirect percent-encodes a Location's characters past ASCII as UTF-8 (livedesign).
   asciiLocation?: boolean;
   // The token answer says how old the ID token is (livedesign).
@@ -244,7 +242,7 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
       id: payload.sub,
       email: text(payload.email),
       givenName: text(payload.given_name),
-      ...(options.familyName ? { familyName: text(payload.family_name) } : {}),
+      familyName: text(payload.family_name),
       name: text(payload.name),
       color: text(payload.presence_color),
       picture: profilePictureOf(payload.picture),

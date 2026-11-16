@@ -8,6 +8,7 @@
     "./silent": "./src/silent.ts",
     "./app-auth": "./src/app-auth.ts",
     "./account-name": "./src/account-name.ts",
+    "./account-names": "./src/account-names.ts",
     "./return-path": "./src/return-path.ts",
     "./guest-renewal": "./src/guest-renewal.ts",
     "./pkce-cookie": "./src/pkce-cookie.ts",
