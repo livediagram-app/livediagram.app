@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
 // A live embed's face (live-embeds.md "What a reader sees"): each state's words and controls, the snapshot under all
-// of them, the frame inert until Use the file, Open and Request Access at the item's own address, and nothing live
-// inside another frame.
-import { fireEvent, render, screen } from '@testing-library/react';
+// of them (unreadable to a reader without access), the frame inert until Use the file, Open at the item's own address
+// from controls above the element at one size on screen, and nothing live inside another frame.
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { CanvasZoomProvider } from '../canvas/CanvasZoomContext';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LiveEmbedFrame } from './useLiveEmbedFrame';
 
@@ -116,14 +117,45 @@ describe('a live embed', () => {
     expect(screen.queryByLabelText('Use the file')).toBeNull();
   });
 
-  it('shows a reader without access the snapshot and Request Access, never the file', () => {
+  it('shows a reader without access an unreadable snapshot and Open in its app, never the file', () => {
     frame = { state: 'no-access' };
     const { container } = view();
     expect(screen.getByText("You don't have access to Roadmap.")).toBeTruthy();
-    expect(screen.getByText('Request Access').getAttribute('href')).toBe(HREF);
+    expect(screen.getByText('Ask its owner to share it with you.')).toBeTruthy();
+    expect(screen.getByText('Open in liveplanner').getAttribute('href')).toBe(HREF);
+    expect(screen.queryByText('Request Access')).toBeNull();
+    const snapshot = container.querySelector('img')!;
+    expect(snapshot.dataset.snapshot).toBe('obscured');
+    expect(snapshot.className).toContain('blur-xl');
+    expect(snapshot.className).not.toContain('blur-[1.5px]');
     expect(container.querySelector('iframe')).toBeNull();
     // The place goes back: nothing more is asked.
     expect(slotWanted.at(-1)).toBe(false);
+  });
+
+  it('only dims, never obscures, a snapshot for a reader who can open the file', () => {
+    expect(view().container.querySelector('img')!.dataset.snapshot).toBe('clear');
+    cleanup();
+    frame = { state: 'failed' };
+    expect(view().container.querySelector('img')!.dataset.snapshot).toBe('dim');
+  });
+
+  it('puts its controls above the element, counter-scaled to one size on screen', () => {
+    const { container } = render(
+      <CanvasZoomProvider zoom={0.5}>
+        <LiveEmbedView
+          liveItem={ITEM}
+          liveName="Roadmap"
+          livePoster={POSTER}
+          hostName="h"
+          canChoose
+        />
+      </CanvasZoomProvider>,
+    );
+    const controls = container.querySelector<HTMLElement>('[data-live-embed-controls]')!;
+    expect(controls.className).toContain('bottom-full');
+    expect(controls.style.transform).toBe('scale(2)');
+    expect(controls.contains(screen.getByLabelText('Open in liveplanner'))).toBe(true);
   });
 
   it('says a file is gone, offering an Editor another', () => {
@@ -176,7 +208,7 @@ describe('a live embed', () => {
     expect(onPointerDown).not.toHaveBeenCalled();
   });
 
-  it('keeps a click and a double-click on Open and Request Access from the canvas', () => {
+  it('keeps a click and a double-click on either Open from the canvas', () => {
     frame = { state: 'no-access' };
     const onClick = vi.fn();
     const onDoubleClick = vi.fn();
@@ -192,7 +224,7 @@ describe('a live embed', () => {
       </div>,
     );
     for (const control of [
-      screen.getByText('Request Access'),
+      screen.getByText('Open in liveplanner'),
       screen.getByLabelText('Open in liveplanner'),
     ]) {
       fireEvent.click(control);

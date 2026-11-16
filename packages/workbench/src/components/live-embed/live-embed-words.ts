@@ -12,8 +12,7 @@ export const liveEmbedWords = {
     canChoose ? 'Double-click to choose a file' : 'No file chosen yet',
   emptyLine: 'A canvas, plan, page or design from our apps, live and read-only.',
   noAccess: (name: string) => `You don't have access to ${name}.`,
-  noAccessLine: 'Ask its owner to share it with you, or sign in with the account that has it.',
-  requestAccess: 'Request Access',
+  noAccessLine: 'Ask its owner to share it with you.',
   gone: 'This file is no longer there.',
   goneLine: (canChoose: boolean) =>
     canChoose ? 'Double-click to choose another.' : 'It was deleted or moved to the Trash.',

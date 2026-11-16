@@ -26,8 +26,8 @@ app serves is its [workbench embed](../011-workbench/workbench.md), opened at th
 
 Owner decision (Work Tracker 930, the same answer as [sheet sources](sheet-sources.md)): a live embed opens with **each
 reader's own access to the target**, never a pass. A person who can open the target (its owner, a joined member of its
-team, or someone who opened a live link to it) sees it live; anyone else sees the snapshot and **Request Access**, and
-never the target's content.
+team, or someone who opened a live link to it) sees it live; anyone else sees the snapshot made unreadable, "Ask its owner to share it
+with you" and **Open in <App>**, and never the target's content.
 
 - The ticket is minted with the reader's own token, on the host app's address, and the workbench service asks the index
   for the reader's own grant on the target (the access rule), as it does for any workbench ticket. A share code the
@@ -55,19 +55,28 @@ Picking a file writes the link and a fresh snapshot (the target's name and its p
 
 ## What a reader sees
 
-| The reader                                          | Shown                                                                         |
-| --------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Can open the target, the element on screen          | The target live, read-only, in its app's frame                                |
-| Can open it, the element off screen or over the cap | The snapshot, with the target's app logo and name                             |
-| The page is itself framed                           | The snapshot, with the name and Open ([The frame](#the-frame))                |
-| Cannot open it (no access, or signed out)           | The snapshot, "You don't have access to <name>.", **Request Access**          |
-| The target is in the Trash, or gone                 | "This file is no longer there." (an Editor: "Double-click to choose another") |
-| Offline, or the ticket could not be had             | The snapshot, "<name> could not be shown just now.", **Try Again**            |
-| A Community copy, or a Community visitor            | The snapshot alone, with no app or item named and no way to open it           |
+| The reader                                          | Shown                                                                          |
+| --------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Can open the target, the element on screen          | The target live, read-only, in its app's frame                                 |
+| Can open it, the element off screen or over the cap | The snapshot, with the target's app logo and name                              |
+| The page is itself framed                           | The snapshot, with the name and Open ([The frame](#the-frame))                 |
+| Cannot open it (no access, or signed out)           | The snapshot unreadable, "You don't have access to <name>.", **Open in <App>** |
+| The target is in the Trash, or gone                 | "This file is no longer there." (an Editor: "Double-click to choose another")  |
+| Offline, or the ticket could not be had             | The snapshot, "<name> could not be shown just now.", **Try Again**             |
+| A Community copy, or a Community visitor            | The snapshot alone, with no app or item named and no way to open it            |
 
-**Open** opens the target at its own address in its own app, in a new browser tab, at whatever the reader's own
-access gives there. **Request Access** opens the same address in a new browser tab, where the reader can sign in with
-the account that has access, or ask the file's owner from there. The host sends the owner nothing itself.
+**Open** (and **Open in <App>** on the no-access card) opens the target at its own address in its own app, in a new
+browser tab, at whatever the reader's own access gives there: signed out, its sign-in; signed in without access, the
+app's not-found page. No app has a way to ask for access yet, so the card says what to do ("Ask its owner to share it
+with you") rather than offering a request it cannot make. The host sends the owner nothing.
+
+For a reader without access the snapshot is unreadable, not just dimmed: drawn with a 24 px blur (wider than any letter
+of a poster at most 480 px wide), so no title or card on it can be read. Readers who can open the target, while the
+frame is loading or after a failure, see it clear or lightly dimmed.
+
+**Use the file** and **Open** sit in a row just above the element's top left, outside the target's own content, shown
+on hover or focus, and counter-scaled like the canvas's other on-element chrome so they are one size on screen (28 px)
+at any zoom.
 
 ## Loading only on screen
 

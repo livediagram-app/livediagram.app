@@ -29,6 +29,7 @@ import { storedThreadField, type ItemPerson } from '@liveplanner/items';
 import { fetchThreads, writeThread, type ThreadAction } from '@/lib/api/card-threads';
 import type { ItemsScope } from '@/lib/api/items';
 import { track } from '@/lib/telemetry';
+import { WorkbenchConfinedError } from '@/lib/api/workbench-confinement';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { createThreadStore, type ThreadStore } from './thread-store';
 
@@ -211,7 +212,9 @@ export function useCardThreads(opts: {
       set(new Map(fetched.map((t) => [t.id, keepOwnThreadAuthors(held.get(t.id), t)])));
       setStatus('ready');
     } catch (err) {
-      console.warn('[threads] threads.load-failed', { error: String(err) });
+      // A confined workbench session (a live embed's read-only frame) refuses threads on purpose, and says so once.
+      if (!(err instanceof WorkbenchConfinedError))
+        console.warn('[threads] threads.load-failed', { error: String(err) });
       setStatus((prev) => (prev === 'ready' ? prev : 'error'));
     }
   }, [scopeRef, set]);

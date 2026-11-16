@@ -3,6 +3,7 @@ import {
   LOCAL_PORTS,
   PLATFORM_SITE,
   SITES,
+  parseLocalOrigins,
   possessive,
   siteUrl,
   workspaceOriginFor,
@@ -43,6 +44,42 @@ describe('sites', () => {
     );
     // One port block of a hundred per site, in the list's order.
     expect(SITES.map((s) => LOCAL_PORTS[s.id])).toEqual([3000, 3100, 3200, 3300, 3400, 3500]);
+  });
+
+  it("links to a stack's own routers when it runs in another port block", () => {
+    const origins = parseLocalOrigins(
+      ' liveplanner.app=http://localhost:3650/ ,livedocuments.app=http://127.0.0.1:3645',
+    );
+    expect(origins).toEqual({
+      'liveplanner.app': 'http://localhost:3650',
+      'livedocuments.app': 'http://127.0.0.1:3645',
+    });
+    expect(siteUrl('liveplanner.app', 'https://www.liveplanner.app', true, origins)).toBe(
+      'http://localhost:3650',
+    );
+    // A site it doesn't name keeps its block's port; a build keeps the live address.
+    expect(siteUrl('livediagram.app', 'https://www.livediagram.app', true, origins)).toBe(
+      'http://localhost:3100',
+    );
+    expect(siteUrl('liveplanner.app', 'https://www.liveplanner.app', false, origins)).toBe(
+      'https://www.liveplanner.app',
+    );
+  });
+
+  it('ignores anything but a known site at a loopback http origin', () => {
+    expect(parseLocalOrigins(undefined)).toEqual({});
+    expect(
+      parseLocalOrigins(
+        [
+          'liveplanner.app',
+          'evil.app=http://localhost:1',
+          'livediagram.app=https://localhost:3105',
+          'livedesign.app=http://example.com:3400',
+          'livehuddle.app=not a url',
+          'toString=http://localhost:1',
+        ].join(','),
+      ),
+    ).toEqual({});
   });
 });
 

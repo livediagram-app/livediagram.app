@@ -1,6 +1,6 @@
 // Where a live embed's item lives (liveworkspace/docs/specs/004-index/live-embeds.md "The frame", "Making one"): the
 // item's app's origin as this page sees it (a staging page's staging app, a dev server's local port), the item's own
-// address for Open and Request Access, and the item a pasted share link names. Pure, so each is tested alone.
+// address for Open, and the item a pasted share link names. Pure, so each is tested alone.
 import {
   APP_ITEMS,
   appOfAnyOrigin,
@@ -17,7 +17,7 @@ export function liveEmbedOrigin(app: LiveEmbedApp, host: string): string {
   return new URL(siteHrefFrom(site, site.url, host)).origin;
 }
 
-/** The item's own address in its own app: Open and Request Access both go there. */
+/** The item's own address in its own app: both Opens go there. */
 export function liveEmbedItemHref(app: LiveEmbedApp, itemId: string, host: string): string {
   return `${liveEmbedOrigin(app, host)}${APP_ITEMS[app].itemPath}${encodeURIComponent(itemId)}`;
 }

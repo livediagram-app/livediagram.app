@@ -281,8 +281,9 @@ export function describeVariant(
     case 'video': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
-        // Square and flat under Professional, no shadow under Marker (docs/specs/008-canvas/finish.md "Faces").
-        className: `overflow-hidden ${finishFaceShadows(finish) ? 'shadow-sm ' : ''}${ring}`,
+        // Square and flat under Professional, no shadow under Marker (docs/specs/008-canvas/finish.md "Faces"). A live
+        // embed clips its own face, so its controls can sit just above it (live-embeds.md "The frame").
+        className: `${element.type === 'video' && element.embedProvider === 'live' ? '' : 'overflow-hidden '}${finishFaceShadows(finish) ? 'shadow-sm ' : ''}${ring}`,
         style: {
           ...boxShadow,
           borderRadius: `${finishFaceCornerPx(10, finish)}px`,
