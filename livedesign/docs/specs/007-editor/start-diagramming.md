@@ -29,7 +29,8 @@ are, the panel draws them.
   was added beside) rather than the template's built-in ones. The tab's backdrop is left as it is.
 - **Search:** the catalogue's own search (`templateMatchesQuery`, as the marketing gallery's), across the Pages
   templates; matches are grouped under their group, each once, in rail order. Escape clears a search first; with
-  nothing to clear it closes the start, as its × does.
+  nothing to clear it closes the start, as its × does, wherever the focus is in the panel and from the canvas just
+  after it opens (the panel's Escape comes before the canvas's while it shows).
 - **A title match leads.** A template whose name begins with what was typed (case, punctuation and hyphens ignored,
   as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
   longer one, then in the order the groups list them. With no name beginning so, there is no Best Match and the

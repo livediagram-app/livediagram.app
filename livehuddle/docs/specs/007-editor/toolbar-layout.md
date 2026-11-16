@@ -485,7 +485,9 @@ its bottom-row button. What changes to fit the width:
   - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
     menu button). Off a phone, a strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
     8 px inside the window, so a message is never cut to its first letter. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
-    after a resize (the category bar dropping its names left the tray off-centre until it watched that box).
+    after a resize (the category bar dropping its names left the tray off-centre until it watched that box). It also follows a move with no resize at all (the strip re-centring as the tab-name pill beside it changes
+    width on a tab switch, a delete or a reload, or going crowded and back): one IntersectionObserver whose margin is
+    the card's own box (`watchMove`, shared) hears a move of a pixel or more and costs nothing while the strip is still.
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
     its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries. On a
     phone (below `sm`) a message too long for the row wraps to a second line instead of cutting off, so "Tap to

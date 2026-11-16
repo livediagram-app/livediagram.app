@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
-import { overlapsChrome, useEdgeAwarePlacement } from './useEdgeAwarePlacement';
+import { noteToolbarObstacle } from './toolbar-obstacle';
+import { overlapsChrome, sidewaysClear, useEdgeAwarePlacement } from './useEdgeAwarePlacement';
 
 // Each editor's docs/specs/008-canvas/canvas-performance.md: a gesture frame never reads layout. While the selection
 // moves the box is suspended: it measures nothing, then places once when it resumes.
@@ -212,6 +213,96 @@ describe('useEdgeAwarePlacement and the floating chrome', () => {
     r = rect(400, 710, 500, 750);
     h.rerender({ x: 405 });
     expect(h.result.current.placeAbove).toBe(true);
+  });
+});
+
+// Work Tracker 1032: an element at the canvas's left edge, beside livediagram's Quick Style panel (taller than the room
+// above and below the element), had its toolbar drawn over the panel's controls.
+describe('useEdgeAwarePlacement sliding off the chrome', () => {
+  const quickStyle = (r: DOMRect) => {
+    const panel = document.createElement('div');
+    panel.setAttribute('data-toolbar-obstacle', '');
+    panel.getBoundingClientRect = () => r;
+    document.body.append(panel);
+  };
+
+  it('slides sideways off a panel both sides cover, leaving the two boxes apart', () => {
+    const panelRect = rect(8, 200, 260, 600);
+    quickStyle(panelRect);
+    const h = setup(() => rect(100, 300, 400, 340), { initial: { x: 100 } });
+    // Both sides cover it: one flip, then the slide past the panel's right edge.
+    expect(h.result.current.placeAbove).toBe(false);
+    const dx = 260 + EDGE - 100;
+    expect(h.result.current.style.left).toBe(150 + dx);
+    const toolbar = rect(100 + dx, 300, 400 + dx, 340);
+    expect(toolbar.left >= panelRect.right || toolbar.right <= panelRect.left).toBe(true);
+  });
+
+  // The verifier's order: the toolbar places for a fresh selection, then the Quick Style panel mounts under it.
+  it('places again when an obstacle arrives after it placed, but not while suspended', () => {
+    // The box as drawn: it carries its sideways nudge, as a real one does.
+    let h: ReturnType<typeof setup> | null = null;
+    const drawn = () => {
+      const dx = ((h?.result.current.style.left as number | undefined) ?? 150) - 150;
+      return rect(100 + dx, 300, 400 + dx, 340);
+    };
+    h = setup(drawn, { initial: { x: 100 } });
+    expect(h.result.current.placeAbove).toBe(true);
+    expect(h.result.current.style.left).toBe(150);
+    // Mounted hidden at the corner first: no obstacle yet.
+    const panel = document.createElement('div');
+    panel.setAttribute('data-toolbar-obstacle', '');
+    panel.getBoundingClientRect = () => rect(8, 200, 260, 600);
+    (panel as unknown as { checkVisibility: () => boolean }).checkVisibility = () => false;
+    document.body.append(panel);
+    act(() => noteToolbarObstacle());
+    expect(h.result.current.style.left).toBe(150);
+    // Then at its spot: suspended for a drag, nothing; resumed, the toolbar flips and slides off it.
+    (panel as unknown as { checkVisibility: () => boolean }).checkVisibility = () => true;
+    h.rerender({ x: 100, suspended: true });
+    const before = h.measures();
+    act(() => noteToolbarObstacle());
+    expect(h.measures()).toBe(before);
+    expect(h.result.current.style.left).toBe(150);
+    // Resumed with the selection where it was (no geometry change): only the note places it again. Both sides
+    // cover the panel here, so it slides past the panel's right edge.
+    act(() => noteToolbarObstacle());
+    expect(h.measures()).toBe(before);
+    h.rerender({ x: 100, suspended: false });
+    act(() => noteToolbarObstacle());
+    expect(h.measures()).toBeGreaterThan(before);
+    expect(h.result.current.style.left).toBe(150 + 260 + EDGE - 100);
+  });
+
+  it('stays put beside chrome it does not cover', () => {
+    quickStyle(rect(8, 200, 260, 600));
+    const h = setup(() => rect(400, 300, 500, 340));
+    expect(h.result.current.placeAbove).toBe(true);
+    expect(h.result.current.style.left).toBe(450);
+  });
+});
+
+describe('sidewaysClear', () => {
+  const area = { left: 0, right: 1000 };
+  const box = { left: 100, right: 300, top: 300, bottom: 340 };
+
+  it('is 0 off the chrome', () => {
+    expect(sidewaysClear(box, [{ left: 400, right: 500, top: 0, bottom: 800 }], area)).toBe(0);
+  });
+
+  it('takes the shorter way past an obstacle, where it fits the area', () => {
+    const ob = { left: 220, right: 240, top: 0, bottom: 800 };
+    expect(sidewaysClear({ ...box, left: 180 }, [ob], area)).toBe(240 + EDGE - 180);
+    // Past the area's right edge it goes left instead.
+    const nearRight = { left: 860, right: 990, top: 300, bottom: 340 };
+    const ob2 = { left: 900, right: 995, top: 0, bottom: 800 };
+    expect(sidewaysClear(nearRight, [ob2], area)).toBe(900 - EDGE - 990);
+  });
+
+  it('skips a slide onto other chrome, and gives up when none clears', () => {
+    const a = { left: 50, right: 250, top: 0, bottom: 800 };
+    const b = { left: 250 + EDGE, right: 900, top: 0, bottom: 800 };
+    expect(sidewaysClear(box, [a, b], area)).toBe(0);
   });
 });
 

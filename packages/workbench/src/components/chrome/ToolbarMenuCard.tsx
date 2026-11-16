@@ -1,6 +1,8 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import { MenuCardFormContext } from '@liveworkspace/workbench/components/chrome/menu-card-form';
+import { useMenuCardFit } from '@liveworkspace/workbench/components/chrome/useMenuCardRoom';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import {
@@ -42,15 +44,23 @@ export function ToolbarMenuCard({
   // strip, which is scaled already.
   const scale = useUiScale('toolbar');
   const scaled = !inline && scale !== 1;
+  // Never under the strip: a long tab name truncates short of it (useMenuCardRoom, toolbar-layout.md "The tab's
+  // name"). Only the name gives way: the button and the mode switch keep their size (shrink-0 below), the switch
+  // dropping to its icon and then the name hiding where the room runs short (`form`, menu-card-form.ts). Not inline,
+  // where the strip's row holds the card, nor joined, where it spans the sidebar.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { maxWidth: room, form } = useMenuCardFit(cardRef, !inline && joinedWidth === undefined);
   const joined = !inline && joinedWidth !== undefined;
   return (
     <div
+      ref={cardRef}
       data-dock-button={dockButton ? '' : undefined}
       // Chrome, not canvas: the canvas's capture-phase gestures skip a press inside a floating
       // panel. Without it, a press here with a Draw pen in hand started a stroke instead.
       data-floating-panel=""
       data-tour-id={tourId}
       data-toolbar-menu=""
+      data-menu-form={form}
       data-region={region}
       data-menu-joined={joined ? '' : undefined}
       style={{
@@ -58,11 +68,12 @@ export function ToolbarMenuCard({
           ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
           : undefined),
         ...(joined ? { width: joinedMenuCardWidth(joinedWidth, scale) } : undefined),
+        ...(room !== null ? { maxWidth: toSurfacePx(room, scale) } : undefined),
       }}
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
+          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0 ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
@@ -70,7 +81,7 @@ export function ToolbarMenuCard({
         e.stopPropagation();
       }}
     >
-      {children}
+      <MenuCardFormContext.Provider value={form}>{children}</MenuCardFormContext.Provider>
     </div>
   );
 }

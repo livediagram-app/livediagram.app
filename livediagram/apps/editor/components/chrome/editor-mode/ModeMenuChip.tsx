@@ -5,6 +5,7 @@ import {
   useClickOutside,
   useMenuButton,
   EDITOR_MODE_ICONS,
+  Tooltip,
 } from '@livediagram/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import { cssZoomOf } from '@liveworkspace/workbench/lib/ui-scale';
@@ -33,7 +34,8 @@ export function ModeMenuChip({
   onChange,
   compact = false,
   iconOnly = false,
-}: EditorModeSwitchProps & { compact?: boolean; iconOnly?: boolean }) {
+  named = false,
+}: EditorModeSwitchProps & { compact?: boolean; iconOnly?: boolean; named?: boolean }) {
   const {
     open,
     close,
@@ -60,44 +62,49 @@ export function ModeMenuChip({
   // The top chrome's menu is portalled out of `root`; a press on it is still inside.
   useClickOutside(root, close, open, '[data-mode-menu]');
 
+  // The rail's is named for the tab it sets; the top chrome's for the editor.
+  const name = `${compact ? 'Editor' : 'Tab'} mode: ${label}`;
+  // No hover card: it would sit over the menu the chip opens. The menu itself names the modes and shows Shift+D, and
+  // the chip keeps its accessible name. Only `named` (its name dropped in a menu box short of room) does a tooltip
+  // name it, as any icon-only control's.
+  const trigger = (
+    <button
+      ref={setTrigger}
+      type="button"
+      aria-haspopup="menu"
+      aria-expanded={open}
+      aria-label={name}
+      aria-keyshortcuts={EDITOR_MODE_KEYSHORTCUT}
+      onClick={() => {
+        readZoom();
+        toggle();
+      }}
+      onKeyDown={(event) => {
+        if (!open) readZoom();
+        onTriggerKeyDown(event);
+      }}
+      // Compact: a toolbar-height chip in the menu card, in the strip's dropdown tint. Else a start panel's rail
+      // switch: a field on its own paper, bordered and lifted like the header's search, so it stands apart from the
+      // tinted band above it (start-diagramming.md "Changing mode").
+      className={`flex w-full items-center transition-colors ${
+        compact
+          ? `h-9 justify-start gap-1.5 rounded-md px-2 text-[13px] font-medium ${MODE_SWITCH_FOCUS} ${TOOLBAR_TRIGGER_TONE}`
+          : `h-10 cursor-pointer justify-start gap-2.5 rounded-xl border border-brand-200 bg-white px-3 text-[13px] font-semibold text-brand-700 shadow-sm hover:border-brand-300 hover:bg-brand-50 dark:border-brand-400/30 dark:bg-white/5 dark:text-brand-200 dark:hover:bg-brand-500/15 ${MODE_SWITCH_FOCUS}`
+      }`}
+    >
+      <Icon aria-hidden />
+      {iconOnly ? null : <span className="text-optical-line flex-1 text-left">{label}</span>}
+      <ChevronDownIcon
+        aria-hidden
+        className={`transition-transform duration-micro motion-reduce:transition-none ${
+          open ? 'rotate-180' : ''
+        }`}
+      />
+    </button>
+  );
   return (
     <div ref={root} className="relative w-full">
-      {/* No hover card: it would sit over the menu the chip opens. The menu itself names the
-          modes and shows Shift+D, and the chip keeps its accessible name. */}
-      <button
-        ref={setTrigger}
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        // The rail's is named for the tab it sets; the top chrome's for the editor.
-        aria-label={`${compact ? 'Editor' : 'Tab'} mode: ${label}`}
-        aria-keyshortcuts={EDITOR_MODE_KEYSHORTCUT}
-        onClick={() => {
-          readZoom();
-          toggle();
-        }}
-        onKeyDown={(event) => {
-          if (!open) readZoom();
-          onTriggerKeyDown(event);
-        }}
-        // Compact: a toolbar-height chip in the menu card, in the strip's dropdown tint. Else a start panel's rail
-        // switch: a field on its own paper, bordered and lifted like the header's search, so it stands apart from the
-        // tinted band above it (start-diagramming.md "Changing mode").
-        className={`flex w-full items-center transition-colors ${
-          compact
-            ? `h-9 justify-start gap-1.5 rounded-md px-2 text-[13px] font-medium ${MODE_SWITCH_FOCUS} ${TOOLBAR_TRIGGER_TONE}`
-            : `h-10 cursor-pointer justify-start gap-2.5 rounded-xl border border-brand-200 bg-white px-3 text-[13px] font-semibold text-brand-700 shadow-sm hover:border-brand-300 hover:bg-brand-50 dark:border-brand-400/30 dark:bg-white/5 dark:text-brand-200 dark:hover:bg-brand-500/15 ${MODE_SWITCH_FOCUS}`
-        }`}
-      >
-        <Icon aria-hidden />
-        {iconOnly ? null : <span className="text-optical-line flex-1 text-left">{label}</span>}
-        <ChevronDownIcon
-          aria-hidden
-          className={`transition-transform duration-micro motion-reduce:transition-none ${
-            open ? 'rotate-180' : ''
-          }`}
-        />
-      </button>
+      {named ? <Tooltip label={name}>{trigger}</Tooltip> : trigger}
       {open ? (
         <ModeMenu
           mode={mode}

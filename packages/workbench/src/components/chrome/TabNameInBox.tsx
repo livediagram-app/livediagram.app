@@ -11,6 +11,7 @@ import {
   useActiveTabRename,
   type TabRename,
 } from '../../hooks/editor/active-tab-name-store';
+import { useMenuCardForm } from './menu-card-form';
 
 // The name's look: the chrome's text at regular weight (never bold), a little smaller than a header's, truncating.
 export const IN_BOX_TITLE_CLASS =
@@ -30,7 +31,11 @@ export function TabNameInBox({
 }) {
   const name = useActiveTabName();
   const rename = useActiveTabRename();
+  // A menu box beside a crowded strip with no readable slot left hides the name and its hairline, never a sliver
+  // (menu-card-form.ts); it stays in the tab strip and the window title.
+  const bare = useMenuCardForm() === 'bare';
   if (!name) return null;
+  const extra = [className, bare ? 'hidden' : ''].filter(Boolean).join(' ');
   // Keyed by the tab it renames: another tab opening drops a draft begun on this one.
   return (
     <TabName
@@ -38,7 +43,7 @@ export function TabNameInBox({
       name={name}
       rename={rename}
       maxLength={maxLength}
-      frame={className ? `${FRAME} ${className}` : FRAME}
+      frame={extra ? `${FRAME} ${extra}` : FRAME}
     />
   );
 }

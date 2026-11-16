@@ -90,6 +90,7 @@
     "./components/chrome/NewVersionPrompt": "./src/components/chrome/NewVersionPrompt.tsx",
     "./components/chrome/NotFound": "./src/components/chrome/NotFound.tsx",
     "./components/chrome/PaletteTray": "./src/components/chrome/PaletteTray.tsx",
+    "./components/chrome/useMenuCardRoom": "./src/components/chrome/useMenuCardRoom.ts",
     "./components/chrome/TabFolderGroup": "./src/components/chrome/TabFolderGroup.tsx",
     "./components/chrome/ConnectedTab": "./src/components/chrome/ConnectedTab.tsx",
     "./components/chrome/TabFrame": "./src/components/chrome/TabFrame.tsx",
@@ -701,7 +702,11 @@
     "./lib/library/library-api": "./src/lib/library/library-api.ts",
     "./lib/library/library-groups": "./src/lib/library/library-groups.ts",
     "./components/library/SaveToLibraryButton": "./src/components/library/SaveToLibraryButton.tsx",
-    "./lib/library/library-draft": "./src/lib/library/library-draft.ts"
+    "./lib/library/library-draft": "./src/lib/library/library-draft.ts",
+    "./components/start/useStartEscape": "./src/components/start/useStartEscape.ts",
+    "./lib/watch-move": "./src/lib/watch-move.ts",
+    "./hooks/canvas/toolbar-obstacle": "./src/hooks/canvas/toolbar-obstacle.ts",
+    "./components/chrome/menu-card-form": "./src/components/chrome/menu-card-form.ts"
   },
   "scripts": {
     "lint": "oxlint",

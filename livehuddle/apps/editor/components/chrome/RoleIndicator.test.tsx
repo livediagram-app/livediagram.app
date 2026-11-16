@@ -16,6 +16,14 @@ describe('roleOwnerLabel', () => {
     expect(roleOwnerLabel('Ada', true)).toBe('Owned by you');
     expect(roleOwnerLabel(null, false)).toBe('');
   });
+
+  // A team owns a team canvas: every member holds the owner's chrome on it.
+  it('names the team on a team canvas, for self and others alike', () => {
+    expect(roleOwnerLabel('Ada', true, { name: 'Design' })).toBe('Owned by Design');
+    expect(roleOwnerLabel('Ada', false, { name: 'Design' })).toBe('Owned by Design');
+    expect(roleOwnerLabel(null, false, { name: null })).toBe('Owned by a team');
+    expect(roleOwnerLabel('Ada', true, null)).toBe('Owned by you');
+  });
 });
 
 describe('RolePill', () => {

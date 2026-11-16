@@ -3,6 +3,7 @@
 // following a rename, and renamed in place by a click for someone who may change the tabs.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MenuCardFormContext } from './menu-card-form';
 import { TabNameInBox } from './TabNameInBox';
 import {
   setActiveTabName,
@@ -29,6 +30,27 @@ describe('the tab’s name in the menu box', () => {
     expect(container.querySelector('[data-tab-name-in-box]')?.textContent).toBe('Q4 Roadmap');
     editor.unmount();
     expect(container.innerHTML).toBe('');
+  });
+
+  // Work Tracker 1038: a menu box with no readable slot left hides the name and its hairline, never a sliver.
+  it('hides in a bare menu box, and shows in an icon one', () => {
+    render(<Editor name="Roadmap" />);
+    const bare = render(
+      <MenuCardFormContext.Provider value="bare">
+        <TabNameInBox maxLength={60} className="extra" />
+      </MenuCardFormContext.Provider>,
+    );
+    const hidden = bare.container.querySelector('[data-tab-name-in-box]')!;
+    expect(hidden.className).toContain('hidden');
+    expect(hidden.className).toContain('extra');
+    const icon = render(
+      <MenuCardFormContext.Provider value="icon">
+        <TabNameInBox maxLength={60} />
+      </MenuCardFormContext.Provider>,
+    );
+    expect(icon.container.querySelector('[data-tab-name-in-box]')!.className).not.toMatch(
+      /\bhidden\b/,
+    );
   });
 
   it('shows nothing without a tab', () => {
