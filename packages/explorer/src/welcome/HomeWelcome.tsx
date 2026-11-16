@@ -9,6 +9,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { FOCUS_RING, MUTED, SECTION_LINK } from '../ui/classes';
 import { PlusIcon, SearchIcon } from '../ui/icons';
 import { useExplorer } from '../explorer/context';
+import { kindWords } from '../words';
 import { useFirstRun } from './context';
 import { useLibraryHost } from '../library/context';
 import { ImportToolbar } from '../library/ImportToolbar';
@@ -131,7 +132,9 @@ function StartSkeleton({ count, tall }: { count: number; tall: boolean }) {
 
 export function HomeWelcome({ withSearch = false }: { withSearch?: boolean }) {
   const { welcome } = useFirstRun();
-  const { kind, words } = useExplorer();
+  const { app, words } = useExplorer();
+  // An import makes the app's own kind, whatever the list mixes.
+  const kind = kindWords(app);
   const { imports } = useLibraryHost();
   const onOpened = welcome?.onOpened;
   useEffect(() => {

@@ -241,12 +241,17 @@ export function PlacementBrowser({
   return (
     <div className="flex flex-col gap-1">
       {/* The back bar (docs/specs/004-interface-design/back-bar.md): where Back goes, and the level open as its
-          chip. With nowhere to go back to, it stands as the space's heading. */}
+          chip. With nowhere to go back to, it stands as the space's heading: the space's own name, never "Choose a
+          Space" when there is none to choose. */}
       <BackBar
         label={
-          trail.length > 1 ? trail[trail.length - 2]!.name : open ? spaceName : 'Choose a Space'
+          trail.length > 1
+            ? trail[trail.length - 2]!.name
+            : open || !hasOverview
+              ? spaceName
+              : 'Choose a Space'
         }
-        current={open ? open.name : spaceName}
+        current={open ? open.name : hasOverview ? spaceName : undefined}
         onClick={back}
         gap="tight"
       />

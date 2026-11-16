@@ -35,7 +35,7 @@ import { ThisBrowserArchivedGroup, useThisBrowserArchived } from './ArchivedThis
 import { useArchivedAsk } from './useArchivedAsk';
 import { ListView } from './ListView';
 import { SharedList } from './SharedList';
-import { TeamPage } from './TeamPane';
+import { TeamNotFound, TeamPage } from './TeamPane';
 import { NotFoundCard } from './NotFoundCard';
 import { PaneHeader, type Crumb } from './PaneHeader';
 import { viewTitle } from './view-title';
@@ -108,17 +108,19 @@ export function ItemsPane({ view }: { view: ItemsView }) {
     [filter, showFolder, showOwner],
   );
 
+  // A team the person is not in (gone, left, never joined): its not-found card stands alone, with no filters, layout
+  // toggle or Create, since nothing can be made or found there.
+  const teamGone = view.kind === 'team' && !ctx.teams.some((t) => t.id === view.id);
   const createFolder =
-    place && FOLDER_VIEWS.has(view.kind)
+    place && FOLDER_VIEWS.has(view.kind) && !teamGone
       ? () => {
           void folders
             .create({ name: 'New Folder', parentId: place.folderId, teamId: place.teamId })
             .then((made) => made && ctx.setRenamingId(made.id));
         }
       : undefined;
-  const createItem = place
-    ? (app?: App) => (app ? onCreate(place, app) : onCreate(place))
-    : undefined;
+  const createItem =
+    place && !teamGone ? (app?: App) => (app ? onCreate(place, app) : onCreate(place)) : undefined;
   // The empty states' one button makes the host app's kind.
   const createOwn = createItem ? () => createItem() : undefined;
 
@@ -160,54 +162,60 @@ export function ItemsPane({ view }: { view: ItemsView }) {
     onLoadMore: state.loadMore,
   };
 
-  const body =
-    state.error && state.missing && view.kind === 'folder' ? (
-      // A folder deleted or moved out of reach (a stale link, another tab): no retry brings it back.
-      <NotFoundCard title="Folder not found">
-        {`This folder was deleted, or it is somewhere you can’t reach. Head back to your own ${words.lowerMany}.`}
-      </NotFoundCard>
-    ) : state.error ? (
-      <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-        Couldn’t load this list.{' '}
-        <button type="button" className="font-semibold underline" onClick={state.retry}>
-          Try again
-        </button>
-      </div>
-    ) : state.loading && folderRows.length === 0 ? (
-      <SkeletonRows />
-    ) : archivedView && state.items.length === 0 && !empty ? null : view.kind === 'trash' ? (
-      <TrashPane
-        items={state.items}
-        hasMore={state.hasMore && !state.moreFailed}
-        loadingMore={state.loadingMore}
-        onLoadMore={state.loadMore}
-      />
-    ) : empty && lensOn ? (
-      <FilteredEmpty
-        issues={parsed.issues}
-        words={words}
-        onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
-      />
-    ) : empty && others ? (
-      <OtherAppsHere view={view} others={others} onCreate={createOwn} />
-    ) : empty ? (
-      <EmptyPane
-        view={view}
-        words={words}
-        onCreate={createItem}
-        createLabel={`New ${ctx.kind.one}`}
-      />
-    ) : view.kind === 'shared' ? (
-      <SharedList {...sharedProps} resetKey={list?.key ?? ''} />
-    ) : !layouts ? (
-      <ListView {...sharedProps} resetKey={list?.key ?? ''} />
-    ) : mode === 'card' ? (
-      <CardView {...sharedProps} resetKey={list?.key ?? ''} />
-    ) : mode === 'details' ? (
-      <DetailsView {...sharedProps} resetKey={list?.key ?? ''} />
-    ) : (
-      <ListView {...sharedProps} resetKey={list?.key ?? ''} />
-    );
+  // Inside a folder: New makes a subfolder too, and the empty folder, which asks for one, offers it beside New.
+  const inFolder = view.kind === 'folder' || (view.kind === 'team' && Boolean(view.folderId));
+  const folderLabel = inFolder ? 'New Subfolder' : 'New Folder';
+  const body = teamGone ? (
+    <TeamNotFound />
+  ) : state.error && state.missing && view.kind === 'folder' ? (
+    // A folder deleted or moved out of reach (a stale link, another tab): no retry brings it back.
+    <NotFoundCard title="Folder not found">
+      {`This folder was deleted, or it is somewhere you can’t reach. Head back to your own ${words.lowerMany}.`}
+    </NotFoundCard>
+  ) : state.error ? (
+    <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+      Couldn’t load this list.{' '}
+      <button type="button" className="font-semibold underline" onClick={state.retry}>
+        Try again
+      </button>
+    </div>
+  ) : state.loading && folderRows.length === 0 ? (
+    <SkeletonRows />
+  ) : archivedView && state.items.length === 0 && !empty ? null : view.kind === 'trash' ? (
+    <TrashPane
+      items={state.items}
+      hasMore={state.hasMore && !state.moreFailed}
+      loadingMore={state.loadingMore}
+      onLoadMore={state.loadMore}
+    />
+  ) : empty && lensOn ? (
+    <FilteredEmpty
+      issues={parsed.issues}
+      words={words}
+      onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
+    />
+  ) : empty && others ? (
+    <OtherAppsHere view={view} others={others} onCreate={createOwn} />
+  ) : empty ? (
+    <EmptyPane
+      view={view}
+      words={words}
+      onCreate={createItem}
+      createLabel={`New ${ctx.kind.one}`}
+      onCreateFolder={inFolder ? createFolder : undefined}
+      folderLabel={folderLabel}
+    />
+  ) : view.kind === 'shared' ? (
+    <SharedList {...sharedProps} resetKey={list?.key ?? ''} />
+  ) : !layouts ? (
+    <ListView {...sharedProps} resetKey={list?.key ?? ''} />
+  ) : mode === 'card' ? (
+    <CardView {...sharedProps} resetKey={list?.key ?? ''} />
+  ) : mode === 'details' ? (
+    <DetailsView {...sharedProps} resetKey={list?.key ?? ''} />
+  ) : (
+    <ListView {...sharedProps} resetKey={list?.key ?? ''} />
+  );
 
   return (
     <div data-explorer-view={view.kind}>
@@ -218,16 +226,15 @@ export function ItemsPane({ view }: { view: ItemsView }) {
         onCreateFolder={createFolder}
         // Imports land where New files an item, so they sit beside it: in the person's own space, as livediagram's.
         actions={place && place.teamId === null ? <ImportToolbar placement={place} /> : undefined}
-        folderLabel={
-          view.kind === 'folder' || (view.kind === 'team' && view.folderId)
-            ? 'New Subfolder'
-            : 'New Folder'
-        }
-        viewMode={layouts ? mode : undefined}
-        onSetViewMode={layouts ? setMode : undefined}
+        folderLabel={folderLabel}
+        viewMode={layouts && !teamGone ? mode : undefined}
+        onSetViewMode={layouts && !teamGone ? setMode : undefined}
+        showFilter={!teamGone}
       />
-      {lensKind !== null ? <LensBar parsed={parsed} showIssues={!(empty && lensOn)} /> : null}
-      {lensKind !== null ? (
+      {lensKind !== null && !teamGone ? (
+        <LensBar parsed={parsed} showIssues={!(empty && lensOn)} />
+      ) : null}
+      {lensKind !== null && !teamGone ? (
         <LensAnnouncer
           lens={q}
           loading={state.loading}

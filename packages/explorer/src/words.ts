@@ -40,7 +40,8 @@ export function kindWords(app: App): Words {
   return words(w.one, w.many);
 }
 
-const FILE_WORDS = words('File', 'Files');
+/** The words for a list that mixes every app's items. */
+export const FILE_WORDS = words('File', 'Files');
 
 /** The words a list uses: the app's kind, or "file" while it shows every app ("12 files" sums them all). */
 export function listWords(app: App, filter: AppFilter): Words {
