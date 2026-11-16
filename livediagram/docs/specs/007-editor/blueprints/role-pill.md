@@ -42,7 +42,7 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
 
 - `team` is set on a team canvas (`documentTeamId` non-null): `{ name }` from the signed-in person's teams
   (`ctx.teams`, the one with that id), `name: null` when the session has no such team (a link visitor outside it).
-  `useRoleIndicator` resolves it through `createUseRoleIndicator`'s optional `resolveOwnerTeam`; `isSelf` and
+  `useRoleIndicator` resolves it through `createUseRoleIndicator`'s optional `resolveOwnerTeam` (the shared one in `@liveworkspace/workbench/hooks/editor/useRoleIndicator`); `isSelf` and
   `onToggle` are read as before, so the team case changes no one's toggle.
 - Tooltip label (`roleOwnerLabel(ownerName, isSelf, team)`): on a team canvas `Owned by ${team.name}`, or
   `Owned by a team` with no name; otherwise `isSelf ? 'Owned by you' : ownerName ? \`Owned by ${ownerName}\` : ''`.
@@ -81,13 +81,13 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
 
 ## Testing
 
-| Rule                                               | Test                                                                                     |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Toggle for owner and edit link, none for view link | `app/document/[id]/useViewPreview.test.tsx` (jsdom)                                      |
-| Role pill: toggle vs static, names, Tooltip label  | `components/chrome/RoleIndicator.test.tsx` (jsdom)                                       |
-| Team canvas: the team named, member and visitor    | `components/chrome/RoleIndicator.test.tsx`, `app/document/[id]/useRoleIndicator.test.ts` |
-| Role pill toggles view preview for the owner       | `e2e/role-pill.spec.ts`                                                                  |
-| A blob with the retired power user keys loads      | `e2e/role-pill.spec.ts`, `lib/user-preferences.test.ts`                                  |
+| Rule                                               | Test                                                                                                           |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Toggle for owner and edit link, none for view link | `app/document/[id]/useViewPreview.test.tsx` (jsdom)                                                            |
+| Role pill: toggle vs static, names, Tooltip label  | `components/chrome/RoleIndicator.test.tsx` (jsdom)                                                             |
+| Team canvas: the team named, member and visitor    | `components/chrome/RoleIndicator.test.tsx`, `@liveworkspace/workbench` `hooks/editor/useRoleIndicator.test.ts` |
+| Role pill toggles view preview for the owner       | `e2e/role-pill.spec.ts`                                                                                        |
+| A blob with the retired power user keys loads      | `e2e/role-pill.spec.ts`, `lib/user-preferences.test.ts`                                                        |
 
 ## Defaults ledger
 

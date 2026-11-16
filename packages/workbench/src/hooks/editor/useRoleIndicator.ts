@@ -37,3 +37,13 @@ export function createUseRoleIndicator<Role, Ctx extends RoleContext<Role>>(deps
     };
   };
 }
+
+// The team that owns a team canvas (docs/specs/007-editor/editor-app.md "Role pill" in livediagram and livehuddle): its name from the person's own teams, or none known
+// (a link visitor outside the team); null on a personal document.
+export function resolveOwnerTeam(ctx: {
+  documentTeamId: string | null;
+  teams: readonly { id: string; name: string }[];
+}): { name: string | null } | null {
+  if (!ctx.documentTeamId) return null;
+  return { name: ctx.teams.find((t) => t.id === ctx.documentTeamId)?.name ?? null };
+}
