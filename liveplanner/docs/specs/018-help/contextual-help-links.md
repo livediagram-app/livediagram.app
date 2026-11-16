@@ -112,6 +112,11 @@ in-panel settings (the Settings dialog's rows), **empty-state messages** and too
 - A card's Activity tab, while it has nothing to list (**No Activity Yet**, **No Activity in This Browser**) ->
   `card-activity` (`planCardActivity`), a **Learn more** text link as the empty state's action
 
+- A card type editor's **Templates** tab -> `card-templates` (`planCardTemplates`, Work Tracker 971), for every
+  role: an Editor sees a `?` beside **New Template** (under the list, and beside the empty state's New Template); a
+  Participant or a Viewer, who has no New Template, sees **Learn about card templates** as a text link in its place.
+  Not inside **Add a Card**: a `?` in its `role="menu"` would break walking it with the arrow keys.
+
 **Toolbars that appear on demand**
 
 - A board's selection bar (several cards selected) -> `select-cards` (`planSelectCards`): a `?` icon after its

@@ -167,7 +167,7 @@ export function PlanBoardHeader({
         labelOf={fieldWidgets.labelOf}
         fields={fieldWidgets.fields}
         suggest={fieldWidgets.suggest}
-        render={(id) =>
+        render={(id, opts) =>
           isFieldWidgetKey(id) ? (
             <FieldWidgetView
               id={id}
@@ -186,7 +186,7 @@ export function PlanBoardHeader({
               }}
             />
           ) : (
-            <BoardWidgetView kind={id} ctx={ctx} />
+            <BoardWidgetView kind={id} ctx={ctx} compact={opts?.compact ?? false} />
           )
         }
       />
@@ -282,7 +282,7 @@ export function PlanBoardHeader({
       {/* In a header band, a card like the menu box (band-controls.ts). */}
       <div
         {...bandControlsProps()}
-        className={`ml-auto flex shrink-0 items-center gap-3 ${BAND_CONTROLS_CLASS}`}
+        className={`ml-auto flex min-w-0 shrink items-center gap-3 ${BAND_CONTROLS_CLASS}`}
       >
         {inBox && showWidgets && (widgets.length > 0 || canEdit) ? (
           // In a header band the widgets ride here, before the cog, behind a hairline: the top row's right is one card.

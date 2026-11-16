@@ -1,208 +1,253 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BoardWidgetId } from '@liveplanner/items';
 import { planPalette } from '../plan-palette';
 import { BoardWidgetZone } from './BoardWidgetZone';
-import { EDGE_FADE_PX, edgeFade, nudgeInRow, scrollingWidgets, slotInList } from './zone-overflow';
 
-// Work Tracker 823 (docs/specs/026-plan/board-widgets.md "The header"): a zone too full for its widgets scrolls
-// sideways, the Filter holding its start outside the scroll so nothing scrolls it out of reach, with a fade at an
-// edge that has more past it; with room again every widget is back in its own order.
+// Work Tracker 880 (docs/specs/026-plan/board-widgets.md "The header"): a zone too full for its widgets stays one row
+// that never scrolls; the widgets that do not fit go into More at its end, the Filter holding the zone's start, and a
+// press inside More shows on More. With room again every widget is back in its own order.
 afterEach(cleanup);
 
-// The widths jsdom has no layout for: the zone's room, and the row's content (12 widgets of 90 px, at most 1440 px
-// header widths), its own width the room the pinned Filter leaves.
+// The widths jsdom has no layout for: the zone's room, each widget 100 px (the Filter 200), the + and Edit Widgets
+// 28 px each, More 70 px.
 let room = 1000;
-let content = 1100;
-let pinWidth = 0;
-// A zone sized by its widgets up to `room` (a header band's), rather than filling it (the canvas header's).
-let sized = false;
+let observers: (() => void)[] = [];
 beforeEach(() => {
   room = 1000;
-  content = 1100;
-  pinWidth = 0;
-  sized = false;
-  const zoneWidth = () => (sized ? Math.min(content, room) : room);
-  const width = (el: HTMLElement) =>
-    el.hasAttribute('data-widget-zone')
-      ? zoneWidth()
-      : el.hasAttribute('data-widget-row')
-        ? zoneWidth() - (el.parentElement?.querySelector('[data-widget-pin]') ? pinWidth : 0)
-        : 0;
+  observers = [];
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      constructor(cb: () => void) {
+        observers.push(cb);
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
     this: HTMLElement,
   ) {
-    return width(this);
+    return this.hasAttribute('data-widget-zone') ? room : 0;
   });
-  vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (
+  vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
     this: HTMLElement,
   ) {
-    if (!this.hasAttribute('data-widget-row')) return width(this);
-    return this.parentElement?.querySelector('[data-widget-pin]') ? content - pinWidth : content;
+    if (this.dataset['widget']) return this.dataset['widget'] === 'filter' ? 200 : 100;
+    if (this.hasAttribute('data-widget-control')) return 28;
+    if (this.hasAttribute('data-widget-more-ghost')) return 70;
+    if (this.hasAttribute('data-widget-compact-ghost')) return 30;
+    return 0;
   });
-  return () => vi.restoreAllMocks();
+  return () => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  };
 });
+const resize = (next: number) => {
+  room = next;
+  act(() => observers.forEach((o) => o()));
+};
 
-const WIDGETS: BoardWidgetId[] = ['count', 'progress', 'filter', 'mine'];
+const WIDGETS: BoardWidgetId[] = ['count', 'progress', 'filter', 'mine', 'people', 'due'];
 
-function show(widgets: BoardWidgetId[] = WIDGETS, canEdit = true) {
+function show(
+  widgets: BoardWidgetId[] = WIDGETS,
+  canEdit = true,
+  pressed: Partial<Record<BoardWidgetId, string>> = {},
+) {
   const onChange = vi.fn();
   const props = {
     canEdit,
     palette: planPalette('light', {}),
     onChange,
     labelOf: (id: BoardWidgetId) => (id === 'filter' ? 'Filter' : id),
-    render: (kind: BoardWidgetId) => <span>{kind}</span>,
+    render: (kind: BoardWidgetId, opts?: { compact?: boolean }) =>
+      opts?.compact ? (
+        <button type="button">compact {kind}</button>
+      ) : (
+        <button type="button" data-widget-pressed={pressed[kind]}>
+          {kind}
+        </button>
+      ),
   };
   const view = render(<BoardWidgetZone widgets={widgets} {...props} />);
   return {
     onChange,
-    rerender: () => view.rerender(<BoardWidgetZone widgets={widgets} {...props} />),
+    rerender: (next: BoardWidgetId[]) =>
+      view.rerender(<BoardWidgetZone widgets={next} {...props} />),
   };
 }
-const zone = () => document.querySelector<HTMLElement>('[data-widget-zone]')!;
-const row = () => document.querySelector<HTMLElement>('[data-widget-row]')!;
-const listed = () => screen.getAllByRole('listitem').map((el) => el.dataset['widget']);
+const row = () =>
+  within(screen.getByRole('list', { name: 'Board widgets' }))
+    .queryAllByRole('listitem')
+    .map((el) => el.dataset['widget']);
+const more = () => screen.queryByRole('button', { name: /^More widgets/ });
+const openMore = () => fireEvent.click(more()!);
+const panel = () => screen.getByRole('dialog', { name: 'More Widgets' });
+const inPanel = () =>
+  within(panel())
+    .getAllByRole('listitem')
+    .map((el) => el.dataset['widget']);
 
 describe('a widget zone too full for its widgets', () => {
-  it('pins the Filter at its start, outside the scrolling row, the rest in their order', () => {
+  it('keeps every widget in its own order while they fit, with no More', () => {
+    room = 2000;
     show();
+    expect(more()).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
+    expect(row()).toEqual(WIDGETS);
+    expect(document.querySelector<HTMLElement>('[data-widget-zone]')!.style.width).toBe('798px');
+  });
+
+  it('pins the Filter, keeps the widgets that fit in order and puts the rest in More', () => {
+    // 1000: Filter 200 + More 70 + two buttons 56 + 4 gaps 24 leaves 650: 5 widgets of 100 and their gaps fit 5.
+    room = 600;
+    show();
+    expect(
+      screen.getByRole('group', { name: 'Filter widget' }).getAttribute('aria-keyshortcuts'),
+    ).toBe('Delete');
+    expect(row()).toEqual(['count', 'progress']);
+    expect(more()!.getAttribute('aria-label')).toBe('More widgets, 3 more');
+    expect(more()!.textContent).toContain('More');
+    openMore();
+    expect(inPanel()).toEqual(['mine', 'people', 'due']);
+    // The measuring layer is never read or reached.
+    const layer = document.querySelector<HTMLElement>('[data-widget-measure]')!;
+    expect(layer.getAttribute('aria-hidden')).toBe('true');
+    expect(layer.hasAttribute('inert')).toBe(true);
+  });
+
+  it('brings every widget back, and closes More, once they fit again', () => {
+    room = 600;
+    show();
+    openMore();
+    resize(2000);
+    expect(more()).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'More Widgets' })).toBeNull();
+    expect(row()).toEqual(WIDGETS);
+  });
+
+  it('names a press inside More on More, and reserves room for it', () => {
+    room = 600;
+    show(WIDGETS, true, { people: 'Ana', progress: 'Only Mine' });
+    // The reserve for the name takes one more widget into More.
+    expect(row()).toEqual(['count']);
+    expect(more()!.textContent).toContain('Only Mine +1');
+    expect(more()!.getAttribute('aria-label')).toBe('More widgets, 4 more, pressed: Only Mine +1');
+  });
+
+  it('names nothing while the pressed widget is in the row', () => {
+    room = 600;
+    show(WIDGETS, true, { count: 'Overdue' });
+    expect(more()!.getAttribute('aria-label')).toBe('More widgets, 3 more');
+  });
+
+  it('lets a Viewer open More and read its widgets, with nothing to move or remove', () => {
+    room = 600;
+    show(WIDGETS, false, { due: 'Overdue' });
+    expect(more()!.getAttribute('aria-label')).toBe('More widgets, 4 more, pressed: Overdue');
+    openMore();
+    expect(inPanel()).toEqual(['progress', 'mine', 'people', 'due']);
     const pinned = screen.getByRole('group', { name: 'Filter widget' });
-    expect(zone().firstElementChild!.contains(pinned)).toBe(true);
-    expect(row().contains(pinned)).toBe(false);
-    expect(listed()).toEqual(['count', 'progress', 'mine']);
-    expect(pinned.getAttribute('aria-keyshortcuts')).toBe('Delete');
+    expect(pinned.hasAttribute('tabindex')).toBe(false);
+    expect(within(panel()).queryByRole('button', { name: /^Remove / })).toBeNull();
   });
 
-  it('leaves every widget in its own order while they fit, and without a Filter', () => {
-    content = 900;
-    show();
-    expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
-    expect(listed()).toEqual(WIDGETS);
-    cleanup();
-    content = 1100;
-    show(['count', 'progress', 'mine']);
-    expect(listed()).toEqual(['count', 'progress', 'mine']);
+  it('shows the × in More in edit mode, and a press in More keeps edit mode', () => {
+    room = 600;
+    const { onChange } = show();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Widgets' }));
+    openMore();
+    fireEvent.pointerDown(within(panel()).getByText('people'));
+    expect(screen.getByRole('button', { name: 'Done Editing Widgets' })).toBeTruthy();
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Remove people' }));
+    expect(onChange).toHaveBeenCalledWith(['count', 'progress', 'filter', 'mine', 'due']);
   });
 
-  it('keeps the Filter pinned while the widgets still overflow, and returns it once they fit', () => {
-    pinWidth = 200;
-    const { rerender } = show();
-    expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
-    content = 1050;
-    rerender();
-    act(() => void row().dispatchEvent(new Event('scroll')));
-    expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
-    content = 995;
-    act(() => void row().dispatchEvent(new Event('scroll')));
-    expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
-    expect(listed()).toEqual(WIDGETS);
-  });
-
-  // The verifier's case on PR #1750: in a header band the zone is sized by its widgets, so its width shrinks with the
-  // pinned row and never showed the room it has again.
-  describe('in a zone sized by its widgets (a header band)', () => {
-    beforeEach(() => {
-      sized = true;
-      pinWidth = 200;
-      content = 900;
-      room = 1440;
-    });
-
-    it('pins when the window narrows and unpins when it widens again', () => {
-      show();
-      expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
-      room = 800;
-      act(() => void window.dispatchEvent(new Event('resize')));
-      expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
-      // Still too narrow: a resize brings nothing back while the row overflows.
-      room = 820;
-      act(() => void window.dispatchEvent(new Event('resize')));
-      expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
-      room = 1440;
-      act(() => void window.dispatchEvent(new Event('resize')));
-      expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
-      expect(listed()).toEqual(WIDGETS);
-    });
-
-    it('unpins once enough widgets are taken off', () => {
-      room = 800;
-      show();
-      expect(screen.getByRole('group', { name: 'Filter widget' })).toBeTruthy();
-      content = 700;
-      act(() => void row().dispatchEvent(new Event('scroll')));
-      expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
-      expect(listed()).toEqual(WIDGETS);
-    });
-  });
-
-  it('fades an edge with more past it as the row scrolls', () => {
-    show();
-    expect(row().style.maskImage).toMatch(/^linear-gradient\(to right, rgb\(0, 0, 0\) 0px,/);
-    expect(row().style.maskImage).toContain('transparent 100%');
-    row().scrollLeft = 40;
-    act(() => void row().dispatchEvent(new Event('scroll')));
-    expect(row().style.maskImage).toContain('transparent 0px,');
+  it('takes a widget in More off with Delete, and moves it with Alt+arrows', () => {
+    room = 600;
+    const { onChange } = show();
+    openMore();
+    const people = within(panel()).getByRole('listitem', { name: 'people widget' });
+    fireEvent.keyDown(people, { key: 'ArrowLeft', altKey: true });
+    expect(onChange).toHaveBeenLastCalledWith([
+      'count',
+      'progress',
+      'filter',
+      'people',
+      'mine',
+      'due',
+    ]);
+    fireEvent.keyDown(people, { key: 'Delete' });
+    expect(onChange).toHaveBeenLastCalledWith(['count', 'progress', 'filter', 'mine', 'due']);
   });
 
   it('takes the pinned Filter off with Delete, and never moves it with Alt+arrows', () => {
+    room = 600;
     const { onChange } = show();
     const pinned = screen.getByRole('group', { name: 'Filter widget' });
     fireEvent.keyDown(pinned, { key: 'ArrowLeft', altKey: true });
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.keyDown(pinned, { key: 'Delete' });
-    expect(onChange).toHaveBeenCalledWith(['count', 'progress', 'mine']);
+    expect(onChange).toHaveBeenCalledWith(['count', 'progress', 'mine', 'people', 'due']);
   });
 
-  it('moves a row widget past its visible neighbour, the Filter keeping its place in the list', () => {
+  it('moves a row widget past its neighbour, the Filter keeping its place in the list', () => {
+    room = 600;
     const { onChange } = show();
     fireEvent.keyDown(screen.getByRole('listitem', { name: 'progress widget' }), {
       key: 'ArrowRight',
       altKey: true,
     });
-    expect(onChange).toHaveBeenCalledWith(['count', 'mine', 'filter', 'progress']);
+    expect(onChange).toHaveBeenCalledWith(['count', 'mine', 'filter', 'progress', 'people', 'due']);
   });
 
-  it('labels the pinned Filter for a Viewer too, with no keys to move or remove it', () => {
-    show(WIDGETS, false);
+  // The verifier's case on PR #1842: a zone too narrow for the whole Filter beside More and the buttons.
+  it('pins the Filter compact when the room cannot hold it whole, never past the room', () => {
+    // Whole: 200 + More 70 + 56 + 3 gaps = 344 > 300. Compact (30): 174, and one 100 px widget with its gap.
+    room = 300;
+    show();
     const pinned = screen.getByRole('group', { name: 'Filter widget' });
-    expect(pinned.hasAttribute('tabindex')).toBe(false);
-    expect(pinned.hasAttribute('aria-keyshortcuts')).toBe(false);
-  });
-});
-
-describe('zone-overflow', () => {
-  it('lists the row without the Filter only while it is pinned', () => {
-    expect(scrollingWidgets(WIDGETS, false)).toBe(WIDGETS);
-    expect(scrollingWidgets(WIDGETS, true)).toEqual(['count', 'progress', 'mine']);
-  });
-
-  it("puts a row slot back into the board's list", () => {
-    const rowList = scrollingWidgets(WIDGETS, true);
-    expect(slotInList(WIDGETS, rowList, 0)).toBe(0);
-    expect(slotInList(WIDGETS, rowList, 2)).toBe(3);
-    expect(slotInList(WIDGETS, rowList, 3)).toBe(4);
+    expect(pinned.textContent).toBe('compact filter');
+    expect(pinned.hasAttribute('data-widget-compact')).toBe(true);
+    expect(row()).toEqual(['count']);
+    expect(more()!.getAttribute('aria-label')).toBe('More widgets, 4 more');
+    // The whole Filter stays in the measuring layer, for its width, never in More.
+    openMore();
+    expect(inPanel()).toEqual(['progress', 'mine', 'people', 'due']);
+    resize(1000);
+    expect(row()).toEqual(WIDGETS);
+    expect(screen.getByRole('listitem', { name: 'Filter widget' }).textContent).toBe('filter');
   });
 
-  it('nudges as before when nothing is pinned, or the board has no Filter', () => {
-    expect(nudgeInRow(WIDGETS, 'progress', 1, false)).toEqual([
-      'count',
-      'filter',
-      'progress',
-      'mine',
-    ]);
-    expect(nudgeInRow(['count', 'mine'], 'count', 1, true)).toEqual(['mine', 'count']);
-    expect(nudgeInRow(WIDGETS, 'count', -1, true)).toEqual(WIDGETS);
+  it('marks a press in More with a dot when the room cannot hold its name', () => {
+    // Compact Filter 30 + More 70 + 56 + 3 gaps = 174; a name needs 120 more, a dot 12.
+    room = 200;
+    show(WIDGETS, true, { due: 'Overdue' });
+    expect(more()!.textContent).not.toContain('Overdue');
+    expect(document.querySelector('[data-widget-more-dot]')).toBeTruthy();
+    expect(more()!.getAttribute('aria-label')).toBe('More widgets, 5 more, pressed: Overdue');
   });
 
-  it('fades only an edge with more past it', () => {
-    expect(edgeFade(false, false)).toBeUndefined();
-    expect(edgeFade(false, true)?.maskImage).toBe(
-      `linear-gradient(to right, #000 0, #000 0px, #000 calc(100% - ${EDGE_FADE_PX}px), transparent 100%)`,
+  it('puts the Filter into More when not even its button fits, More then naming its press', () => {
+    // A Viewer: compact Filter 30 + More 70 + a gap = 106 > 100; More alone 70.
+    room = 100;
+    show(WIDGETS, false, { filter: 'Severity: High' });
+    expect(screen.queryByRole('group', { name: 'Filter widget' })).toBeNull();
+    expect(more()!.getAttribute('aria-label')).toBe(
+      'More widgets, 6 more, pressed: Severity: High',
     );
-    expect(edgeFade(true, false)?.WebkitMaskImage).toContain(
-      `transparent 0, #000 ${EDGE_FADE_PX}px`,
-    );
+    openMore();
+    expect(inPanel()).toEqual(WIDGETS);
+  });
+
+  it('changes nothing while the zone is not laid out', () => {
+    room = 0;
+    show();
+    expect(more()).toBeNull();
+    expect(row()).toEqual(WIDGETS);
   });
 });

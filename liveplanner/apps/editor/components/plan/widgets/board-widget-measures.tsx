@@ -131,6 +131,8 @@ export function dueWidget(ctx: WidgetContext, pill: WidgetPill): React.JSX.Eleme
       <button
         type="button"
         aria-pressed={on}
+        // Named on More while it holds this widget (zone-overflow.ts pressedIn): "Overdue", "Due soon".
+        data-widget-pressed={on ? label.charAt(0).toUpperCase() + label.slice(1) : undefined}
         disabled={filterLocked(ctx)}
         className={PRESSABLE}
         style={{ backgroundColor: on ? `${color}1f` : undefined }}
@@ -257,6 +259,7 @@ export function prioritiesWidget(ctx: WidgetContext, pill: WidgetPill): React.JS
             type="button"
             aria-pressed={on}
             aria-label={`Only ${PRIORITY_LABELS[priority]} priority, ${count}`}
+            data-widget-pressed={on ? `${PRIORITY_LABELS[priority]} priority` : undefined}
             disabled={filterLocked(ctx)}
             className={PRESSABLE}
             style={{
@@ -287,6 +290,7 @@ export function unassignedWidget(ctx: WidgetContext): React.JSX.Element {
     <button
       type="button"
       aria-pressed={on}
+      data-widget-pressed={on ? 'Unassigned' : undefined}
       disabled={(n === 0 && !on) || filterLocked(ctx)}
       className={`${WIDGET_PILL} transition enabled:cursor-pointer enabled:hover:bg-black/5 dark:enabled:hover:bg-white/10`}
       style={{

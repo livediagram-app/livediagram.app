@@ -47,7 +47,14 @@ function valuePress(field: BoardField, value: Value, filter: FilterPress) {
     else delete q.filters;
     filter.onQuick(q);
   };
-  return { on, full, press, name: `Only ${field.def.label}: ${value.label}` };
+  return {
+    on,
+    full,
+    press,
+    name: `Only ${field.def.label}: ${value.label}`,
+    // What More names while it holds this widget (zone-overflow.ts pressedIn).
+    short: `${field.def.label}: ${value.label}`,
+  };
 }
 
 // A value of a category field that narrows the board when pressed: a field chip of the Filter widget, pressed while
@@ -71,6 +78,7 @@ export function ValueButton({
       type="button"
       aria-pressed={v.on}
       aria-label={v.name}
+      data-widget-pressed={v.on ? v.short : undefined}
       disabled={v.full}
       className={`${PRESSABLE} -mx-1 ${v.on ? 'font-semibold' : ''}`}
       style={{
@@ -104,9 +112,11 @@ export function MoreValues({
   const name = `${field.def.label} values`;
   // How many of the values the pill leaves out are pressed: "+n" then wears the pressed outline, so a filter set
   // from the popover never hides behind it.
-  const hiddenOn = values
+  const hiddenPressed = values
     .slice(values.length - rest)
-    .filter((v) => valuePress(field, v, filter).on).length;
+    .map((v) => valuePress(field, v, filter))
+    .filter((v) => v.on);
+  const hiddenOn = hiddenPressed.length;
   return (
     <>
       <button
@@ -114,6 +124,8 @@ export function MoreValues({
         aria-haspopup="dialog"
         aria-expanded={anchor !== null}
         aria-label={hiddenOn ? `More ${name}, ${hiddenOn} pressed` : `More ${name}`}
+        // The values it leaves out that are pressed, named on the zone's More while it holds this widget.
+        data-widget-pressed={hiddenOn ? hiddenPressed.map((v) => v.short).join(', ') : undefined}
         className={`${PRESSABLE} -mx-1 tabular-nums ${hiddenOn ? 'font-semibold' : ''}`}
         style={{
           color: palette.muted,
