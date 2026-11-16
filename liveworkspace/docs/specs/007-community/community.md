@@ -534,9 +534,9 @@ Community page is the site's (http://localhost:3000/community, and each app's ro
 service through the site's own `/api/community`. Development accepts writes from any
 `localhost` page and skips the edge cache.
 
-Locally the `AI` binding has no Cloudflare login, so the Forum's check can't answer and every post waits Pending.
-`FORUM_CHECK_LOCAL=pass` in `.dev.vars` lists them as if they passed, and is read only when `ENVIRONMENT` is
-`development`; a deployed service never skips the check. The Forum's account check reads the local site's keys
+A local run never spends real Workers AI checks: with `ENVIRONMENT` `development` the Forum lists posts as if the
+check passed, whether or not `wrangler dev` is logged in. `FORUM_CHECK_LOCAL=ai` in `.dev.vars` asks the real check
+instead. Neither is read outside development: a deployed service never skips the check. The Forum's account check reads the local site's keys
 (`ACCOUNTS_URL=http://localhost:3000`, `INDEX_AUDIENCES=http://localhost/api`, as the Drive service's `.dev.vars`).
 
 ## Deploys

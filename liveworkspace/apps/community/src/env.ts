@@ -40,8 +40,9 @@ export interface Env {
   ACCOUNTS?: { fetch: (input: string, init?: RequestInit) => Promise<Response> };
   // Workers AI, the Forum's check. Optional: without it every new Forum post waits as Pending.
   AI?: ForumAi;
-  // Development only: `pass` lists Forum posts as if the check passed (a local run has no Workers AI login). Read only
-  // when ENVIRONMENT is `development`.
+  // Development only: a local run never spends real Workers AI checks, so its Forum posts list as if the check passed;
+  // `ai` asks the real check instead (a logged-in `wrangler dev` reaches Workers AI). Read only when ENVIRONMENT is
+  // `development`.
   FORUM_CHECK_LOCAL?: string;
 }
 
@@ -100,9 +101,9 @@ export function audiences(env: Pick<Env, 'INDEX_AUDIENCES'>): string[] {
     .filter(Boolean);
 }
 
-/** Whether a local run lists Forum posts without asking the check: development, and asked for. */
+/** Whether a local run lists Forum posts without asking the check: always in development, unless `ai` asks for it. */
 export function forumCheckSkippedLocally(
   env: Pick<Env, 'ENVIRONMENT' | 'FORUM_CHECK_LOCAL'>,
 ): boolean {
-  return env.ENVIRONMENT === 'development' && env.FORUM_CHECK_LOCAL?.trim() === 'pass';
+  return env.ENVIRONMENT === 'development' && env.FORUM_CHECK_LOCAL?.trim() !== 'ai';
 }

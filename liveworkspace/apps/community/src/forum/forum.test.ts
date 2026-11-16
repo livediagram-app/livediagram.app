@@ -401,17 +401,32 @@ describe('a new topic', () => {
     expect(await checkForumText(env, 'text', now + DAY_MS)).toBe('pass');
   });
 
-  it('lists without asking only in development with the local pass', async () => {
-    const local = { ...env, AI: undefined, FORUM_CHECK_LOCAL: 'pass' };
+  it('lists without asking only in development, unless a local run asks for the real check', async () => {
+    const local = { ...env, AI: undefined };
     expect((await ask(ada, {}, { ...local, ENVIRONMENT: 'development' })).topic!.state).toBe(
       'listed',
     );
-    expect((await ask(ada, {}, local)).topic!.state).toBe('pending');
+    // Deployed, never: production here, whatever the variable says.
+    expect((await ask(ada, {}, { ...local, FORUM_CHECK_LOCAL: 'pass' })).topic!.state).toBe(
+      'pending',
+    );
+    // `ai` asks the real check locally: it spends one, and lists on its answer.
+    const ai = safe();
+    const asked = await ask(
+      ada,
+      {},
+      { ...env, AI: ai, ENVIRONMENT: 'development', FORUM_CHECK_LOCAL: 'ai' },
+    );
+    expect(asked.topic!.state).toBe('listed');
+    expect(ai.run).toHaveBeenCalledTimes(1);
+    const unasked = safe();
+    await ask(ada, {}, { ...env, AI: unasked, ENVIRONMENT: 'development' });
+    expect(unasked.run).not.toHaveBeenCalled();
     await retryForumChecks(
       { ...local, ENVIRONMENT: 'development' },
       Date.now() + FORUM_RETRY_EVERY_MS,
     );
-    expect((await list()).body.topics).toHaveLength(2);
+    expect((await list()).body.topics).toHaveLength(4);
   });
 
   it('counts each account’s writes by the hour', async () => {

@@ -17,6 +17,6 @@ APP_ORIGIN_LIVEHUDDLE=
 # the local apps' API resource (API_RESOURCE in each api's .dev.vars), as the Drive service's .dev.vars has them.
 ACCOUNTS_URL=http://localhost:3000
 INDEX_AUDIENCES=http://localhost/api
-# A local run has no Workers AI login, so the Forum's check can't answer and posts wait as Pending. `pass` lists them as
-# if checked; it is read only in development.
-FORUM_CHECK_LOCAL=pass
+# A local run never spends real Workers AI checks: in development the Forum lists posts as if checked. Set `ai` to
+# ask the real check from a logged-in `wrangler dev`.
+# FORUM_CHECK_LOCAL=ai

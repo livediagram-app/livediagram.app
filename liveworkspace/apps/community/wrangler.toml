@@ -62,8 +62,8 @@ service = "liveworkspace-accounts"
 
 # Workers AI for the Forum's check (community.md "The Forum", "The check"): no key, no secret, the binding is the
 # credential, billed in Neurons on this account (10,000 a day free), at most FORUM_CHECKS_PER_DAY checks a day
-# (src/config.ts). Optional: without it every new Forum post waits as Pending. It sets no `remote`, so `wrangler dev`
-# needs no login: a local check can't answer (FORUM_CHECK_LOCAL=pass in .dev.vars lists posts locally).
+# (src/config.ts). Optional: without it every new Forum post waits as Pending. A local run (ENVIRONMENT development)
+# never asks it: posts list as if checked, unless FORUM_CHECK_LOCAL=ai in .dev.vars asks the real check.
 [ai]
 binding = "AI"
 
