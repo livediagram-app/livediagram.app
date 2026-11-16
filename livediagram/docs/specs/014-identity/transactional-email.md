@@ -38,7 +38,14 @@ once a minute a document, `reportOwnerActivity` from `@liveworkspace/index-app`)
    **immediately** (no cron). Never includes the comment text. On the tab save
    it counts only the saver's own new comments: a save can carry a peer's
    comment that reached the saver live first, and that is not the saver
-   commenting.
+   commenting. **One comment, one email:** when every new comment @-mentions
+   the owner, the canvas is a team's and the owner's `notifyMentions` is on,
+   the mention email (5, which quotes it) is the owner's one email and this
+   one is not sent. With `notifyMentions` off this one still goes. And when the
+   mention email to the owner is then refused (a duplicate claim, or the
+   author over the hourly cap), the mention route sends this one in its place,
+   so the owner is never left with neither
+   ([Comment mentions](../012-collaboration/comment-mentions.md) "The email").
 4. **Action assigned** (opt-out `notifyActionAssigned`): a teammate assigned
    the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
 5. **Mentioned** (opt-out `notifyMentions`): a teammate @-mentioned the
