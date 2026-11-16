@@ -165,6 +165,33 @@ export function browserWarmOpenFallbackDeps(forget: () => Promise<unknown>): War
   };
 }
 
+/** How long the warm paint waits for the code it draws before it paints without it. On a returning open that code comes
+ *  from the HTTP cache in a few milliseconds; a browser that lost it pays a fetch, and past this the paint goes ahead
+ *  as it did before the wait, its panels drawing once their code lands. */
+export const WARM_PAINT_CODE_WAIT_MS = 200;
+
+/** Waits for the code the warm paint draws at once (each editor's WARM_PAINT_CODE: the panels it mounts with the
+ *  canvas), for at most `waitMs`. With it in, the paint's commit leaves no panel waiting on code: React holds back
+ *  revealing waiting content for 300 ms after any is revealed, and a paint that left panels waiting held back the auth
+ *  bridge, and so the ordinary load, behind those reveals (offline-mode.md "The code it draws is in first"). Never
+ *  rejects: a load that fails leaves its panel to load as it is drawn. */
+export async function warmPaintCodeIn(
+  preloads: readonly (() => Promise<unknown>)[],
+  waitMs: number = WARM_PAINT_CODE_WAIT_MS,
+): Promise<void> {
+  if (preloads.length === 0) return;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<void>((resolve) => {
+    timer = setTimeout(resolve, waitMs);
+  });
+  const loaded = Promise.allSettled(preloads.map((preload) => Promise.resolve().then(preload)));
+  try {
+    await Promise.race([loaded, late]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** A performance measure named `name` from `from` (the load's start on the performance clock, or now) to the next
  *  frame on screen: the warm paint's and the catch-up's timing marks. */
 export function measureAfterPaint(name: string, from: number | undefined): void {
