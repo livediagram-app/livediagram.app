@@ -125,6 +125,7 @@ export async function inviteMember(
       expired: false,
       createdAt: now,
       picture: null,
+      color: null,
     },
     teamName: me.teamName,
     declineToken: decline.token,

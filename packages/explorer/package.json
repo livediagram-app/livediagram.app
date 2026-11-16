@@ -28,11 +28,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/settings": "workspace:^",
     "@liveworkspace/settings-ui": "workspace:^",
     "@liveworkspace/sites": "workspace:*",

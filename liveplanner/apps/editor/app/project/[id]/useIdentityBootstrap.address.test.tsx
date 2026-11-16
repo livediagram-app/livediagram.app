@@ -13,7 +13,11 @@ const { api, identity, seed } = vi.hoisted(() => ({
     apiLoadProject: vi.fn(),
     apiLoadShared: vi.fn(),
   },
-  identity: { ensureCollabKey: vi.fn(() => 'collab'), hasConfirmedName: vi.fn(() => true) },
+  identity: {
+    ensureCollabKey: vi.fn(() => 'collab'),
+    hasConfirmedName: vi.fn(() => true),
+    getGuestSelfId: vi.fn(() => null),
+  },
   seed: vi.fn(async () => {}),
 }));
 

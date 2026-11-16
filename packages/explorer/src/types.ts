@@ -182,6 +182,8 @@ export type ShareHost = {
   loadTabs?: (item: Item) => Promise<{ id: string; name: string }[]>;
   handOver?: (item: Item) => ShareHandOver | undefined;
   helpHref?: ShareHelpHref;
+  // The item's own app's help, where the list mixes every app's items: it wins over `helpHref` for that item.
+  helpHrefFor?: (item: Item) => ShareHelpHref | undefined;
   onTelemetry?: ShareHostTelemetry;
   // The Community tab for an item whose app has a Community (liveworkspace/docs/specs/007-community/community.md "The
   // Share dialog's Community tab"); undefined, the plain Share dialog.

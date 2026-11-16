@@ -40,6 +40,7 @@ import {
 } from '../views';
 import {
   heroWords as heroWordsFor,
+  FILE_WORDS,
   kindWords,
   listWords,
   type AppFilter,
@@ -422,13 +423,16 @@ export function ExplorerProvider({
     [teamNames],
   );
 
+  // New offers every app's kind while the list mixes them (liveworkspace.app in no app): the Explorer then speaks of
+  // files, not of the one app New would make by default.
+  const createChoices = filter === 'all' && newApps && newApps.length > 1 ? newApps : null;
   const value = useMemo<ExplorerContextValue>(
     () => ({
       app,
       client,
       filter,
       setFilter,
-      kind: kindWords(app),
+      kind: createChoices ? FILE_WORDS : kindWords(app),
       words: listWords(app, filter),
       overlay,
       epoch,
@@ -457,7 +461,7 @@ export function ExplorerProvider({
       shareHost,
       inboxHost,
       onCreate,
-      createChoices: filter === 'all' && newApps && newApps.length > 1 ? newApps : null,
+      createChoices,
       renamingId,
       setRenamingId,
       dialog,
@@ -504,7 +508,7 @@ export function ExplorerProvider({
       shareHost,
       inboxHost,
       onCreate,
-      newApps,
+      createChoices,
       renamingId,
       dialog,
       helpHref,

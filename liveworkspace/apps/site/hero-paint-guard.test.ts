@@ -35,4 +35,21 @@ describe('hero paint', () => {
     expect(legal).toMatch(/data-hero-glow/);
     expect(legal).toMatch(/radial-gradient\(closest-side, \$\{app\.accent\}, transparent\)/);
   });
+
+  it('fades the closing banner’s glows out inside the card, on a surface of its own on the dark page', () => {
+    const page = read('app/page.tsx');
+    // Each glow reaches transparent at its own box's nearest side, and the boxes sit within the card.
+    expect(page).toMatch(/const CLOSING_GLOW = '[^']*\binset-y-0\b[^']*'/);
+    expect(page).toMatch(
+      /const CLOSING_SKY =\s*'bg-\[radial-gradient\(closest-side_at_[^']*,transparent\)\]'/,
+    );
+    expect(page).toMatch(
+      /const CLOSING_VIOLET =\s*'bg-\[radial-gradient\(closest-side_at_[^']*,transparent\)\]'/,
+    );
+    // The dark page is slate-950, so the card lifts to slate-900 with a hairline there, and the headline balances.
+    const banner = /data-closing-banner=""\s*className="([^"]*)"/.exec(page)?.[1] ?? '';
+    expect(banner).toMatch(/\bdark:bg-slate-900\b/);
+    expect(banner).toMatch(/\bring-white\/10\b/);
+    expect(page).toMatch(/<h2 className="[^"]*\btext-balance\b[^"]*">\s*One account\. Every app\./);
+  });
 });

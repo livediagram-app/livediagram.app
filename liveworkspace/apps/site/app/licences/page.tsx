@@ -1,4 +1,4 @@
-import { loadLicencesManifest } from '@liveworkspace/marketing-site/lib/licences-manifest';
+import { loadLicencesManifestForPage } from '@liveworkspace/marketing-site/lib/licences-manifest';
 import { LicencesView } from '@liveworkspace/marketing-site/components/licences/LicencesView';
 import type { Metadata } from 'next';
 import { Footer } from '@/components/Footer';
@@ -32,7 +32,7 @@ const apps = listedApps();
 // Third-party licences (liveworkspace/docs/specs/010-site/site.md "Licences"): every product's page body, from
 // @liveworkspace/marketing-site, for the platform's own website and services.
 export default function LicencesPage() {
-  const manifest = loadLicencesManifest();
+  const manifest = loadLicencesManifestForPage();
   return (
     <>
       <Header />

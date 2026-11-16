@@ -49,17 +49,34 @@ export function copyName(name: string): string {
   return `${cutName(name, NAME_MAX_LENGTH - COPY_SUFFIX.length)}${COPY_SUFFIX}`;
 }
 
-// Up to two characters for a person's avatar. Single-word names use the first
-// two letters; multi-word names use the first letter of the first and last
-// word ("Curious Falcon" -> "CF"). Here rather than in the editor so the
-// headless export draws the same initials the canvas does (a Roll call's
-// people, docs/specs/020-import-export/export-fidelity.md). Letters are code
-// points, so a name that starts with an emoji or an astral letter keeps it
-// whole rather than showing half of it as a replacement character.
-export function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  const first = (word: string, n = 1) => Array.from(word).slice(0, n).join('');
-  if (parts.length === 1) return first(parts[0]!, 2).toUpperCase();
-  return (first(parts[0]!) + first(parts[parts.length - 1]!)).toUpperCase();
+// A letter or a number in any script (Latin, Cyrillic, Arabic, Hebrew, CJK, an astral letter), one code point.
+const LETTER = /^[\p{L}\p{N}]$/u;
+
+// The letters and numbers of each word, punctuation and symbols (emoji among them) dropped, words with none left out.
+// An email (`ada.lovelace@…`) is read as the words of its local part.
+function letterWords(text: string): string[][] {
+  const trimmed = text.trim();
+  const email = trimmed.includes('@') && !/\s/.test(trimmed);
+  const words = email
+    ? trimmed.slice(0, trimmed.indexOf('@')).split(/[._+-]/)
+    : trimmed.split(/\s+/);
+  return words
+    .map((word) => Array.from(word).filter((ch) => LETTER.test(ch)))
+    .filter((letters) => letters.length > 0);
+}
+
+// Up to two characters for a person's avatar, the one rule every app's avatars, presence stacks and cursors share
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): the first letter of the first and last
+// words ("Curious Falcon" -> "CF"), or a single word's first two ("owl" -> "OW"). Only letters and numbers count, so
+// "<Oscar>" reads "OS", never "<O". A name with none (only emoji or punctuation) takes `fallback`'s, an email's
+// local part, else "?". Here rather than in the editor so the headless export draws the same initials the canvas
+// does (a Roll call's people, docs/specs/020-import-export/export-fidelity.md). Letters are code points, so an
+// astral letter stays whole rather than showing half of it as a replacement character.
+export function initialsOf(name: string, fallback?: string | null): string {
+  let words = letterWords(name);
+  if (words.length === 0 && fallback) words = letterWords(fallback);
+  if (words.length === 0) return '?';
+  const picked =
+    words.length === 1 ? words[0]!.slice(0, 2) : [words[0]![0]!, words[words.length - 1]![0]!];
+  return picked.join('').toUpperCase();
 }

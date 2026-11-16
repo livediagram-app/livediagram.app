@@ -76,6 +76,27 @@ describe('the sidebar’s menus and rename', () => {
     expect(await screen.findByRole('menuitem', { name: 'Move Folder' })).toBeTruthy();
   });
 
+  it('says a folder moves within its space when teams exist, heading the list with the space', async () => {
+    const index = createFakeIndex({ folders: [folder('f1', 'Projects')] });
+    page(index, { kind: 'all' }, [{ id: 't1', name: 'Design' }]);
+    fireEvent.contextMenu(await findRow('Projects'));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Move Folder' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Move to folder' });
+    expect(dialog.textContent).toContain(
+      'Folders move within their space. Pick where in My Work it should live.',
+    );
+    expect(within(dialog).queryByText('Choose a Space')).toBeNull();
+  });
+
+  it('keeps the plain line when there are no teams', async () => {
+    const index = createFakeIndex({ folders: [folder('f1', 'Projects')] });
+    page(index);
+    fireEvent.contextMenu(await findRow('Projects'));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Move Folder' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Move to folder' });
+    expect(dialog.textContent).toContain('Pick the folder it should live inside.');
+  });
+
   it('renames a folder in its own row', async () => {
     const index = createFakeIndex({ folders: [folder('f1', 'Projects')] });
     page(index);
@@ -99,6 +120,25 @@ describe('the sidebar’s menus and rename', () => {
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(await findRow('Q3')).toBeTruthy();
     expect(JSON.parse(localStorage.getItem(EXPANDED_KEY) ?? '[]')).toContain('f1');
+  });
+
+  it('offers New Subfolder from an empty folder’s New, as its copy promises', async () => {
+    const index = createFakeIndex({ folders: [folder('f1', 'Projects')] });
+    page(index, { kind: 'folder', id: 'f1' });
+    expect(await screen.findByText('This folder is empty')).toBeTruthy();
+    const pane = document.querySelector('[data-explorer-view="folder"]')!;
+    const newButton = within(pane as HTMLElement).getByRole('button', { name: 'New' });
+    expect(newButton.getAttribute('aria-haspopup')).toBe('menu');
+    fireEvent.click(newButton);
+    const menu = await screen.findByRole('menu', { name: 'New' });
+    expect(within(menu).getByRole('menuitem', { name: 'New Plan' })).toBeTruthy();
+    fireEvent.click(within(menu).getByRole('menuitem', { name: 'New Subfolder' }));
+    await waitFor(() =>
+      expect(index.calls.find((c) => c.method === 'createFolder')?.args[0]).toMatchObject({
+        parentId: 'f1',
+        teamId: null,
+      }),
+    );
   });
 
   it('gives My Work a menu: Open, and New Folder at its root', async () => {

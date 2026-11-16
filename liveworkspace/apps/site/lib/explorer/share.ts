@@ -161,6 +161,8 @@ export function shareHostFor(
     loadTabs: (item) => loadTabsOf(item),
     handOver: (item) => (isAppName(item.app) ? handOverFor(item.app) : undefined),
     helpHref: shareHelpHrefFor(app),
+    // An item's sharing help is its own app's, whichever app's address the page is on.
+    helpHrefFor: (item) => (isAppName(item.app) ? shareHelpHrefFor(item.app) : undefined),
     onTelemetry: trackShare,
   };
 }

@@ -6644,6 +6644,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
@@ -7305,6 +7308,9 @@ importers:
 
   packages/explorer:
     dependencies:
+      '@liveworkspace/account-menu':
+        specifier: workspace:*
+        version: link:../account-menu
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../api-schema
@@ -7320,6 +7326,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../index-client
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
       '@liveworkspace/settings':
         specifier: workspace:^
         version: link:../settings
