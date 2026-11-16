@@ -128,9 +128,11 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const role: AccessLevel = roomTicketLevel(opened);
     const linkCode = linkCodeOf(claims.sub);
     const person = linkCode ? null : claims.sub;
-    // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
-    // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
-    const shareCode = linkCode ?? (url.searchParams.get('s')?.slice(0, 64) || null);
+    // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
+    // opened a link as for a link visitor), never from the upgrade URL, which is the client's to change. Revoking
+    // the link closes exactly its sockets, and the room holds a Suggest Only link's people to it
+    // (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only").
+    const shareCode = claims.link?.slice(0, 64) || linkCode;
     if (linkCode && (await isCommunityCode(env, id, linkCode))) return forbidden('community_link');
     const forwarded = new Request(request);
     // Every trust header is stamped UNCONDITIONALLY: `new Request` copies the client's own headers, and the room

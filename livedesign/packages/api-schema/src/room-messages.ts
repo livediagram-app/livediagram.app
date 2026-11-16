@@ -1,3 +1,5 @@
+import type { SuggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
+import type { ReviewOp } from '@liveworkspace/suggestions/review';
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
@@ -115,6 +117,10 @@ export const SYSTEM_OP_KINDS = [
   'design-trashed',
   'changeset',
   'component',
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
+  'suggestions',
+  // The room's word on whether this session suggests (Suggest Only).
+  'review',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -419,6 +425,14 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
+  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live"): from
+  // the room ('system') to every Participant and Editor socket, never a Viewer's, carrying no content; an editor that
+  // shows the tab reads them again.
+  | SuggestionsRoomOp
+  // Whether this Participant session suggests (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest
+  // Only"): from the room ('system') to its socket alone, when it joins and whenever the review settings change. A
+  // peer's is never believed.
+  | ReviewOp
   // One main of the component library as stored (docs/specs/009-elements/components.md), with the tabs whose
   // instances use it: a tab-scoped session receives it only when its tab is one of them. Worker-originated
   // through /mutation.

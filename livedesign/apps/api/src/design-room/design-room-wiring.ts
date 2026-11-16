@@ -3,6 +3,8 @@
 // on. Each takes the room.
 import { createItemHeadSync, type ItemHeadSync } from '@liveworkspace/index-app';
 import { RoomParticipantWrites } from '../room-participant';
+import { suggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
+import { roomReview, suggestionsChanged } from './room-review';
 import { type InternalRoom } from '../room-internal';
 import type { DesignRoom } from './design-room';
 import { ensureSchema, noteWrite } from './design-room-content';
@@ -91,5 +93,7 @@ export function roomInternal(room: DesignRoom): InternalRoom {
     readSelections: (tabId, person) => room.selections.read(tabId, liveSessions(room), person),
     readLedger: (tabId, since) => room.ledger.read(tabId, since),
     epoch: () => room.epoch,
+    suggestionsChanged: (tabId) => suggestionsChanged(room, suggestionsRoomOp(tabId)),
+    reviewChanged: () => roomReview(room).changed(),
   };
 }

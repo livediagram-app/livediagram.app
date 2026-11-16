@@ -161,6 +161,8 @@ their cursor shows) like any comment.
 ## Non-goals
 
 - Suggesting a block's style, alignment, a table's shape, zones, footnotes or the article's style.
-- Suggestions on slides, infographics and canvas elements (an assistant's changes to those keep Show and Undo,
-  [Agent changesets](../024-agents/agent-changesets.md#in-the-editor)).
+- Text suggestions on slides, infographics and canvas elements: changes to those are
+  [Canvas suggestions](../012-collaboration/canvas-suggestions.md), whole elements put in, changed or taken out, and
+  the same Suggest Only covers them. An assistant's changes to those keep Show and Undo
+  ([Agent changesets](../024-agents/agent-changesets.md#in-the-editor)).
 - A list of every suggestion in a side panel, and replies on a suggestion itself (a margin note carries the talk).

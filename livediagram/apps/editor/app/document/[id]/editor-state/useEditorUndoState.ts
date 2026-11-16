@@ -1,7 +1,14 @@
 'use client';
 
 import { useCallback, useMemo, useRef } from 'react';
-import { stampTabKind, stampNewElementLayers, type Tab } from '@livediagram/document';
+import {
+  elementFingerprint,
+  stampTabKind,
+  stampNewElementLayers,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
+import { useSuggestCapture } from '@liveworkspace/suggestions/react/useSuggestCapture';
 import { settleFlowcharts } from '@livediagram/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { lockedElementIds } from '@/lib/tab-cleanup';
@@ -47,14 +54,26 @@ export function useEditorUndoState({ fromDocument }: { fromDocument: EditorDocum
     undo: historyUndo,
     redo: historyRedo,
   });
+  // Suggesting (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting"): while this person
+  // suggests, the commit and the tick gather the change as a suggestion instead of applying it. Inside the replay
+  // freeze, so a frozen write is never a suggestion either; what decides it is connected by useEditorSuggestions.
+  const suggestCapture = useSuggestCapture<Tab, Element>(tabs, { fingerprint: elementFingerprint });
+  const commitGathered = useMemo(
+    () => suggestCapture.capture.wrap(rawCommitTabs),
+    [suggestCapture, rawCommitTabs],
+  );
+  const tickGathered = useMemo(
+    () => suggestCapture.capture.wrap(rawTickTabs),
+    [suggestCapture, rawTickTabs],
+  );
   const canHistoryUndo = canTabUndo;
   const canHistoryRedo = canTabRedo;
 
   // A tick (a drag landing, a nudge, a resize, a slider) settles chips as a commit does.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
-    (mapTabs: (ts: Tab[]) => Tab[]) => rawTickTabs((ts) => settleChipsInTabs(ts, mapTabs(ts))),
-    [rawTickTabs],
+    (mapTabs: (ts: Tab[]) => Tab[]) => tickGathered((ts) => settleChipsInTabs(ts, mapTabs(ts))),
+    [tickGathered],
   );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
@@ -63,7 +82,7 @@ export function useEditorUndoState({ fromDocument }: { fromDocument: EditorDocum
     // import) carries layer logic. stampNewElementLayers no-ops on tabs
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
-    rawCommitTabs((ts) => {
+    commitGathered((ts) => {
       // Tab kind (docs/specs/021-event-storming/event-storming.md): a committed tab says what KIND of board it
       // is, rather than leaving a reader to know that absence means
       // 'diagram'. Same choke point as the layer stamp below, and
@@ -170,6 +189,7 @@ export function useEditorUndoState({ fromDocument }: { fromDocument: EditorDocum
     photoDraftOpenRef,
     redoHistory,
     resetTabs,
+    suggestCapture,
     tabs,
     tickTabs,
     undoHistory,

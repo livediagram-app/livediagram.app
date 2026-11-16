@@ -42,6 +42,7 @@
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/snapshots": "workspace:*",
+    "@liveworkspace/suggestions": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

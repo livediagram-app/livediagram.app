@@ -25,6 +25,7 @@ import { useEditorStyle } from './editor-state/useEditorStyle';
 import { useEditorInteraction } from './editor-state/useEditorInteraction';
 import { useEditorKeyboard } from './editor-state/useEditorKeyboard';
 import { useEditorWorkbench } from './editor-state/useEditorWorkbench';
+import { useEditorSuggestions } from './editor-state/useEditorSuggestions';
 
 // The editor's state, composed from the slices in editor-state/
 // (docs/specs/003-system-architecture/blueprints/editor-state.md).
@@ -240,6 +241,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromPersistence,
     fromRoom,
   });
+  const fromSuggestions = useEditorSuggestions({
+    fromDocument,
+    fromHistory,
+    fromSelection,
+    fromCollaboration,
+  });
   return {
     ...fromDocument.view,
     ...fromHistory.view,
@@ -265,5 +272,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ...fromInteraction.view,
     ...fromKeyboard.view,
     ...fromWorkbench.view,
+    ...fromSuggestions.view,
   };
 }

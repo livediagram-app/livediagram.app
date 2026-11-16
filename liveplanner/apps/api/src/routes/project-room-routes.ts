@@ -75,10 +75,12 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     const { claims, workbench } = opened;
     const role: AccessLevel = roomTicketLevel(opened);
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
-    // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
-    // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
+    // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
+    // opened a link as for a link visitor), never from the upgrade URL, which is the client's to change. Revoking
+    // the link closes exactly its sockets, and the room holds a Suggest Only link's people to it
+    // (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only").
     const linkCode = linkCodeOf(claims.sub);
-    const shareCode = linkCode ?? (url.searchParams.get('s')?.slice(0, 64) || null);
+    const shareCode = claims.link?.slice(0, 64) || linkCode;
     // The grant's own `link` claim names the code for a signed-in person who opened the link too.
     if (await isCommunityCode(env, id, claims.link ?? linkCode)) return forbidden('community_link');
     const forwarded = new Request(request);

@@ -24,6 +24,7 @@
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/community": "workspace:^",
+    "@liveworkspace/suggestions": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

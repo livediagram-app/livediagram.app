@@ -1,6 +1,13 @@
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useCallback, useMemo, useState, useRef } from 'react';
-import { type Tab, stampTabKind, stampNewElementLayers } from '@liveplanner/project';
+import {
+  elementFingerprint,
+  type Element,
+  type Tab,
+  stampTabKind,
+  stampNewElementLayers,
+} from '@liveplanner/project';
+import { useSuggestCapture } from '@liveworkspace/suggestions/react/useSuggestCapture';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import type { WarmPlan } from '@/lib/last-seen-plan';
 import { useProjectHistory } from '@/hooks/canvas/useProjectHistory';
@@ -45,6 +52,18 @@ export function useEditorProject(
     futureLength: historyFutureLength,
     clearRedo: clearHistoryRedo,
   } = useProjectHistory(initialTabs);
+  // Suggesting (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting"): while this person
+  // suggests, the commit and the tick gather the change as a suggestion instead of applying it; what decides it is
+  // connected by useEditorSuggestions.
+  const suggestCapture = useSuggestCapture<Tab, Element>(tabs, { fingerprint: elementFingerprint });
+  const commitGathered = useMemo(
+    () => suggestCapture.capture.wrap(rawCommitTabs),
+    [suggestCapture, rawCommitTabs],
+  );
+  const tickGathered = useMemo(
+    () => suggestCapture.capture.wrap(rawTickTabs),
+    [suggestCapture, rawTickTabs],
+  );
   // Item changes take their turn in the same undo timeline (docs/specs/026-plan/items.md "Undo").
   const itemUndo = useItemUndo({
     depth: historyDepth,
@@ -66,8 +85,8 @@ export function useEditorProject(
   // A tick (a drag landing, a nudge, a resize, a slider) settles chips as a commit does.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
-    (mapTabs: (ts: Tab[]) => Tab[]) => rawTickTabs((ts) => settleChipsInTabs(ts, mapTabs(ts))),
-    [rawTickTabs],
+    (mapTabs: (ts: Tab[]) => Tab[]) => tickGathered((ts) => settleChipsInTabs(ts, mapTabs(ts))),
+    [tickGathered],
   );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     // Layer stamping (docs/specs/006-project/layers.md): elements APPEARING in this commit without
@@ -76,7 +95,7 @@ export function useEditorProject(
     // import) carries layer logic. stampNewElementLayers no-ops on tabs
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
-    rawCommitTabs((ts) => {
+    commitGathered((ts) => {
       // Tab kind: a committed tab says what KIND of board it
       // is, rather than leaving a reader to know that absence means
       // 'diagram'. Same choke point as the layer stamp below, and
@@ -291,6 +310,7 @@ export function useEditorProject(
     redoHistory,
     remoteOpJournalRef,
     resetTabs,
+    suggestCapture,
     retryActiveTabLoad,
     selfParticipant,
     setHydrated,

@@ -414,3 +414,4 @@ export * from '@liveworkspace/api-schema/participants';
 
 // Preference keys whose feature is gone, dropped as a stored blob is read (./legacy-preferences.ts).
 export { upgradeLegacyPreferences } from './legacy-preferences';
+export * from './review';

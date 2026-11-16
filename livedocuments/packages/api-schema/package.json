@@ -21,6 +21,7 @@
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/community": "workspace:^",
     "@liveworkspace/model-core": "workspace:*",
+    "@liveworkspace/suggestions": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

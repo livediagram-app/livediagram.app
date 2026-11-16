@@ -27,6 +27,11 @@ import {
 import { countedVerbs } from '@livedocuments/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedocuments/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
+import {
+  ASSISTANTS_SUGGEST_SHARE_TYPES,
+  CANVAS_SUGGESTION_TYPES,
+  SUGGEST_ONLY_SHARE_TYPES,
+} from '../_shared/suggestion-vocab';
 
 type ComputedValues = {
   values: readonly (string | null)[];
@@ -238,6 +243,13 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Telemetry").
+  'apps/editor/app/document/[id]/editor-state/useEditorSuggestions.ts Element·Changed': {
+    values: CANVAS_SUGGESTION_TYPES,
+  },
+  'apps/editor/components/dialogs/SuggestionsSection.tsx Document·Shared': {
+    values: [...SUGGEST_ONLY_SHARE_TYPES, ...ASSISTANTS_SUGGEST_SHARE_TYPES],
+  },
   // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
   ...platformComputedEmitters(isValidTelemetryEvent),
   // The api worker.
