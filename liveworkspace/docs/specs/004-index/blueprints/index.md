@@ -541,7 +541,7 @@ Migrations, in order:
 | `EMPTY_ITEM_STALE_MS`           | `30 * 24 * 60 * 60 * 1000`                                                             | `constants.ts`                        |
 | `OPEN_DEBOUNCE_MS`              | `60 * 1000`                                                                            | `constants.ts`                        |
 | `USE_WINDOW_DAYS`               | `90`                                                                                   | `constants.ts`                        |
-| `MOST_USED_MAX`                 | `8`                                                                                    | `constants.ts`                        |
+| `MOST_USED_MAX`                 | `12`                                                                                   | `constants.ts`                        |
 | `ITEM_EVENT_TYPES`              | `(object or list, see file)`                                                           | `constants.ts`                        |
 | `ACCOUNT_EVENT_TYPES`           | `(object or list, see file)`                                                           | `constants.ts`                        |
 | `EVENT_TYPES`                   | `(object or list, see file)`                                                           | `constants.ts`                        |

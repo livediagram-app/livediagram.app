@@ -166,7 +166,7 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | roots; the Explorer has no Unsorted view), `search`: every live item the               |
 |                                |                     | person can open, links and their own Archived included), `folder`                      |
 |                                |                     | (`deep=1`: its subfolders too), `team` and the lens's (below). Sorted by               |
-|                                |                     | `updatedAt`, or by `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent`             |
+|                                |                     | `updatedAt`, or by `lastOpenedAt` for `recent`. `used=N` (1 to 12, `recent`            |
 |                                |                     | only, first page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by |
 |                                |                     | how many times (ties: opened last first), each with `useOpens` (and                    |
 |                                |                     | `useDays`), in the same response (Most Used on Home). On any first page,               |
@@ -179,6 +179,10 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | Trash or Archived), the most recently made first (`createdAt`, then id),               |
 |                                |                     | Home's New. Each scope walks `items_new_app` (`items_new` without `app`)               |
 |                                |                     | and stops at N, the scopes going in as one `json_each` parameter.                      |
+|                                |                     | Home asks `used=12` and `limit=20` beside `newest=4`: four more most used              |
+|                                |                     | and four more recent rows than it shows, so Most Used and Recent still fill            |
+|                                |                     | once New's items leave them (each item shows once). The cost is those eight            |
+|                                |                     | rows, in the same batch; each statement still stops at its `LIMIT`.                    |
 | `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201                       |
 |                                |                     | `{item, grant}`. The index makes the id unless the client names the one it             |
 |                                |                     | minted (409 `item_exists` when taken); the item's Durable Object                       |

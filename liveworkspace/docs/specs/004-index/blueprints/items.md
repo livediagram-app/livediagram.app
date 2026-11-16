@@ -245,7 +245,7 @@ A folder preview is two statements for up to 60 folders; a lookup is one read an
 
 `LIST_LIMIT_DEFAULT` 50, `LIST_LIMIT_MAX` 200, `TITLE_MAX` 500, `FOLDER_NAME_MAX` 500, `SEARCH_MAX` 200,
 `SEARCH_WORDS_MAX` 16, `FILTER_VALUES_MAX` 8, `INTENT_WORD` `/^[a-z0-9-]{1,32}$/`, `OPEN_DEBOUNCE_MS` 60 s,
-`USE_WINDOW_DAYS` 14, `MOST_USED_MAX` 8, `NEWEST_MAX` 8, `FOLDER_PREVIEW_IDS_MAX` 60, `FOLDER_PREVIEW_ITEMS` 4,
+`USE_WINDOW_DAYS` 14, `MOST_USED_MAX` 12, `NEWEST_MAX` 8, `FOLDER_PREVIEW_IDS_MAX` 60, `FOLDER_PREVIEW_ITEMS` 4,
 `FOLDER_PREVIEW_COUNT_CAP` 1000 (`packages/index-client/src/constants.ts`); `INTENT_MAX` 100, `ID_MAX` 128,
 `OPEN_MEMORY_MAX` 5,000 (`liveworkspace/apps/index/src/config.ts`); `DEFAULT_TITLE` `'Untitled'` (`items/shared.ts`).
 
