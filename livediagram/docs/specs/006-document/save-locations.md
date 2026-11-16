@@ -82,7 +82,7 @@ person (livediagram).
   start's own chunk, so the start screen's first paint makes no request for it.
 
 **In the wizard, before the create.** `/new`'s mode wizard shows the same row under its modes
-(`apps/editor/app/new/NewSaveSwitch.tsx`, the shared `SaveSwitchRow`). Nothing exists yet, so it moves nothing: it
+(`apps/editor/components/start/StartSaveSwitch.tsx`, the shared `SaveSwitchRow`). Nothing exists yet, so it moves nothing: it
 starts at the default for who is creating (the settled sign-in, or the hint until it answers) and the create goes
 where it says (`resolveSaveLocation`'s `chosen`, null until the person flips it, so a sign-in that answers late still
 sets the default). It is drawn once the page runs in the browser, never in the prerender, and is absent when a

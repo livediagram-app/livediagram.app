@@ -65,7 +65,7 @@ under the pointer as a category is switched.
 
   Media is not a category of its own in either mode: its Image and Avatar close Layout, as a **Pictures** group
   after its Containers and Parts (owner, 2026-11-16). The Library is not on the bar either: it is the icon button
-  beside Search ([Libraries](../../../liveworkspace/docs/specs/006-media/libraries.md)).
+  beside Search ([Libraries](../../../../liveworkspace/docs/specs/006-media/libraries.md)).
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone

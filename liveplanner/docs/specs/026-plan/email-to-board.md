@@ -45,7 +45,7 @@ this subdomain on the card (2026-11-15, option (a)).
 ### Where it lives
 
 **Email to Board** in the footer's **Tools** menu, in its Automate group under Automations
-([Footer Tools menu](../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md); moved out of the tab menu, owner
+([Footer Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md); moved out of the tab menu, owner
 2026-11-16), on a tab holding at least one Plan board, for someone who may manage an address. Signed out, it is still
 there, badged **Sign In**; on a plan in This Browser, badged **Sync Plan**; a press opens that gate first, then the
 dialog. It opens the Email to
