@@ -10,3 +10,4 @@ export * from './standing';
 export * from './connections';
 export * from './webhooks';
 export * from './sheet-sources';
+export * from './approvals';

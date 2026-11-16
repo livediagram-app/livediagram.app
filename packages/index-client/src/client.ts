@@ -51,6 +51,12 @@ import type {
 import type { CreateWebhookInput, UpdateWebhookInput, Webhook, WebhookDelivery } from './webhooks';
 import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from './connections';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
+import type {
+  Approval,
+  ApprovalCandidate,
+  ApprovalDecisionInput,
+  ApprovalRequestInput,
+} from './approvals';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { enc, queryString, refusal, type Query } from './index-error';
 
@@ -327,6 +333,31 @@ export function createIndexClient({
     // by default, at most HISTORY_LIMIT_MAX). Its owner's and its team's only; anyone else is 404.
     itemHistory: (itemId: string, query: HistoryQuery = {}, options: RequestOptions = {}) =>
       call<HistoryPage>(`/items/${enc(itemId)}/history`, { query, signal: options.signal }),
+
+    // Approvals (approvals.md): the item's approval for anyone who reaches it; asking, cancelling and the candidates
+    // for an Editor of the whole item; deciding for a named approver. `share`: the link the person reaches it through,
+    // when it is not one they opened before.
+    getApproval: (itemId: string, share?: ShareAccess | null, options: RequestOptions = {}) =>
+      call<{ approval: Approval | null }>(`/items/${enc(itemId)}/approval`, {
+        share,
+        signal: options.signal,
+      }),
+    requestApproval: (itemId: string, input: ApprovalRequestInput, share?: ShareAccess | null) =>
+      call<{ approval: Approval }>(`/items/${enc(itemId)}/approval`, {
+        method: 'POST',
+        body: input,
+        share,
+      }),
+    decideApproval: (itemId: string, input: ApprovalDecisionInput, share?: ShareAccess | null) =>
+      call<{ approval: Approval }>(`/items/${enc(itemId)}/approval/decision`, {
+        method: 'POST',
+        body: input,
+        share,
+      }),
+    cancelApproval: (itemId: string, share?: ShareAccess | null) =>
+      call<void>(`/items/${enc(itemId)}/approval`, { method: 'DELETE', share }),
+    approvalPeople: (itemId: string, share?: ShareAccess | null) =>
+      call<{ people: ApprovalCandidate[] }>(`/items/${enc(itemId)}/approval/people`, { share }),
 
     // Webhooks (webhooks.md): one document's, for someone who can edit all of it. `share`: the link the person
     // reaches it through, when it is not one they opened before (the index also finds those under Shared).
