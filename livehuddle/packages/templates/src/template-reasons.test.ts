@@ -35,6 +35,8 @@ const PINNED: TemplateKind[] = [
   'interview-suite',
   'classroom',
   'hackathon-hall',
+  'expo-hall',
+  'music-hall',
 ];
 
 const SPACES = TEMPLATES.filter((t) => t.kind !== 'blank-session').map((t) => t.kind);

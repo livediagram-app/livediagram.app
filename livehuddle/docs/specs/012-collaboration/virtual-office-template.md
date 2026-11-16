@@ -312,7 +312,8 @@ A template's Notice Board can come with notes pinned (`template-notes.ts`): real
 [Notice Board notes](../009-elements/social-pieces.md#notice-board), each a title, a body and a colour, pinned by
 **livehuddle** when the Space is made and signed by no person, so a Participant cannot unpin them and an Editor can.
 They say how the Space works, in the Space's own words. The Virtual Office's Lounge, the Coworking Space, the Startup
-HQ's Studio, the Arcade Lounge, the Interview Suite, the Classroom and the Hackathon Hall pin theirs.
+HQ's Studio, the Arcade Lounge, the Expo Hall (the day's talks and the floor plan), the Music Hall's Merch Stand
+(tonight's line-up), the Interview Suite, the Classroom and the Hackathon Hall pin theirs.
 
 ### Interview Suite and Client Lounge
 
