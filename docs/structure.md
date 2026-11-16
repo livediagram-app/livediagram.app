@@ -46,6 +46,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
 │  ├─ settings-ui              the one Settings panel (this app or All) every app's Settings and liveworkspace.app open
+│  ├─ snapshots                manual save points in every app: the store in each item's object, the five kept, revert and its fence, the footer button and dialog
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher, and the one profile picture URL rule (`/picture`)
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards

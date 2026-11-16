@@ -7,6 +7,7 @@
 
 import type { DesignRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
 import { handleDesignRequest } from '../routes/designs';
+import { serveDesignSnapshots } from './design-snapshots';
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { DesignGrant } from '../index-service';
 import type { DesignEnv } from '../types';
@@ -74,6 +75,7 @@ export async function answerDesignRequest(
     community,
     waitUntil,
   };
-  // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).
-  return handleDesignRequest(ctx);
+  // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts). Snapshots answer
+  // their own routes and fence a write from before a revert (design-snapshots.ts).
+  return serveDesignSnapshots(ctx, () => handleDesignRequest(ctx));
 }

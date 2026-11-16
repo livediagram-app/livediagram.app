@@ -1,6 +1,10 @@
 // Fanning frames out to the room's sockets (plan-room.ts): one socket, one presence, or all of them (redacted per
 // tab scope), the ordered mutation stream, and closing the sessions a change ends. Each takes the room.
-import { ACCESS_CHANGED_CLOSE, WORKBENCH_ENDED_CLOSE } from '@liveplanner/api-schema';
+import {
+  ACCESS_CHANGED_CLOSE,
+  SNAPSHOT_REVERTED_CLOSE,
+  WORKBENCH_ENDED_CLOSE,
+} from '@liveplanner/api-schema';
 import type { ServerMessage } from '../types';
 import { opForScope } from '../room-scope';
 import {
@@ -167,4 +171,11 @@ export function sendTo(room: PlanRoom, ws: WebSocket, payload: ServerMessage): v
 // separate `cursor` frame to send back either.
 export function broadcastOrderedSystemOp(room: PlanRoom, op: unknown): void {
   sequenceMutation(room, 'system', op);
+}
+
+// A snapshot's revert replaced the plan in place (plan-snapshots.ts): the ledger's entries describe content that is
+// gone, so it is cleared, and every session is closed so each editor reloads onto the reverted plan.
+export function closeAllReverted(room: PlanRoom): void {
+  void room.ledger.clear();
+  closeSockets(room, () => [SNAPSHOT_REVERTED_CLOSE, 'snapshot-reverted']);
 }

@@ -35,6 +35,7 @@
     "@liveworkspace/migration": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/snapshots": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.17"
   },

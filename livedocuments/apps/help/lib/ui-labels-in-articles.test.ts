@@ -35,6 +35,8 @@ const COMMUNITY_UI_PACKAGE = `${ROOT}/../packages/community-ui/src`;
 // The shared editor chrome (@liveworkspace/workbench): the comment thread's reactions, the Collaborators modal's
 // footer and the rest every editor renders as its own.
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
+// The Snapshots button and dialog (@liveworkspace/snapshots), drawn in every editor's footer.
+const SNAPSHOTS_PACKAGE = `${ROOT}/../packages/snapshots/src`;
 
 // Every printed spelling per lowercase key: two surfaces can print one name
 // in different case (a dialog's title and its own aria-label, say), and an article matching either is right.
@@ -109,6 +111,7 @@ function editorSource(): string {
   walk(ICONS_PACKAGE);
   walk(COMMUNITY_UI_PACKAGE);
   walk(WORKBENCH_PACKAGE);
+  walk(SNAPSHOTS_PACKAGE);
   return all.toLowerCase();
 }
 

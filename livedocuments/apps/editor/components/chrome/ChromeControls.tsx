@@ -8,6 +8,7 @@ import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOf
 import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, HoverCard } from '@livedocuments/ui';
 import { HistoryButton } from '@/components/versions/HistoryButton';
+import { SnapshotsButton } from '@liveworkspace/snapshots/ui';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, History (the editor's, on a stored
@@ -88,6 +89,9 @@ export function ChromeControls({
           </span>
         </>
       ) : null}
+      {/* Snapshots, just before Settings in every app (docs/specs/013-workspace/snapshots.md "In the editor"):
+          drawn only inside the editor's door, so only for an Editor of the whole item. */}
+      <SnapshotsButton labelled={labelled} />
       {onOpenSettings ? (
         <HoverCard title={settingsLabel} description={settingsDescription}>
           <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>

@@ -11,6 +11,7 @@ import {
   isMutationOpKind,
   ROOM_PING,
   ROOM_PONG,
+  SNAPSHOT_REVERTED_CLOSE,
   ROOM_FULL_CLOSE,
   ROOM_FULL_RETRY_MS,
   WORKBENCH_ENDED_CLOSE,
@@ -20,6 +21,7 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@liveplanner/api-schema';
+import { reloadAfterRevert } from '@liveworkspace/snapshots/client';
 import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { opForTheWire } from '@liveplanner/project';
 import { splitPresenceFrame } from '../agent-presence-rows';
@@ -365,6 +367,14 @@ export function connectRoom(
         closed = true;
         settleTimings(false);
         handlers.onAccessChanged?.();
+        return;
+      }
+      // A snapshot's revert replaced the content in place (docs/specs/013-workspace/snapshots.md): stop, and reload
+      // onto the reverted content.
+      if (event?.code === SNAPSHOT_REVERTED_CLOSE) {
+        closed = true;
+        settleTimings(false);
+        reloadAfterRevert();
         return;
       }
       if (event?.code === WORKBENCH_ENDED_CLOSE) {

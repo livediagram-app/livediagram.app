@@ -161,7 +161,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams and sharing.',
-    articleCount: 5,
+    articleCount: 6,
     kind: 'feature',
   },
   {
@@ -1477,6 +1477,15 @@ export const articles: Article[] = [
       'Share links at Viewer, Participant or Editor level, a password, lifetimes, embeds and live images.',
     keywords:
       'share link collaborate invite embed read only publish url send viewer participant editor create and copy link turn off',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'snapshots',
+    title: 'Snapshots',
+    description: 'Save points for the whole design: take one, keep five, revert to one.',
+    keywords:
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

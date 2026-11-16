@@ -160,4 +160,10 @@ export type Env = {
 // the worker reaches content through the design's Durable Object instead.
 // `ROOM_PEOPLE`: the person tags of the sessions in the design's room right now, so a phone notification skips
 // someone already looking at it (docs/specs/014-identity/phone-notifications.md).
-export type DesignEnv = Env & { DESIGN_DB: D1Database; ROOM_PEOPLE?: () => ReadonlySet<string> };
+// `SNAPSHOT_REVERTED`: a snapshot's revert landed (docs/specs/013-workspace/snapshots.md), so the room forgets its
+// ledger and closes every socket with SNAPSHOT_REVERTED_CLOSE.
+export type DesignEnv = Env & {
+  DESIGN_DB: D1Database;
+  ROOM_PEOPLE?: () => ReadonlySet<string>;
+  SNAPSHOT_REVERTED?: (generation: number) => void;
+};
