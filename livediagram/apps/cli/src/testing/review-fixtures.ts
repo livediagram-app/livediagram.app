@@ -5,29 +5,31 @@ import type { Element, Tab } from '@livediagram/document';
 import { mirrorFileText } from '../link/mirror-file';
 import type { PullFile } from '../sync/pull-file';
 
-export const box = (id: string, label: string, x: number, extra: object = {}): Element =>
-  ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    label,
-    x,
-    y: 0,
-    width: 160,
-    height: 60,
-    ...extra,
-  });
+export const box = (id: string, label: string, x: number, extra: object = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  label,
+  x,
+  y: 0,
+  width: 160,
+  height: 60,
+  ...extra,
+});
 
-export const arrow = (id: string, from: string, to: string): Element =>
-  ({
-    id,
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: from, anchor: 'e' },
-    to: { kind: 'pinned', elementId: to, anchor: 'w' },
-  });
+export const arrow = (id: string, from: string, to: string): Element => ({
+  id,
+  type: 'arrow',
+  from: { kind: 'pinned', elementId: from, anchor: 'e' },
+  to: { kind: 'pinned', elementId: to, anchor: 'w' },
+});
 
-export const tab = (id: string, name: string, elements: Element[], extra: object = {}): Tab =>
-  ({ id, name, elements, ...extra });
+export const tab = (id: string, name: string, elements: Element[], extra: object = {}): Tab => ({
+  id,
+  name,
+  elements,
+  ...extra,
+});
 
 export function pullFileOf(
   id: string,
