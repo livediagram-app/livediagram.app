@@ -60,7 +60,7 @@ describe('EditorHeader stack row', () => {
     const disc = slot.firstElementChild as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
     expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
-    expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');
+    expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('WE');
   });
 });
 
