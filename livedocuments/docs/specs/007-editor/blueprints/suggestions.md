@@ -66,7 +66,10 @@ writing's model is [Article pages](article-pages.md); share roles are
 - `applyContentOp` passes `{ marginComment: true }` for such a session: `applyParticipantOp` then takes an `add` of an
   `article-note` element whose `articleNote` is `comment`, `ARTICLE_NOTE_SIZE` square, and nothing else new.
 - On a Participant's `hello` the room records `{ key, name }` in `seen` (only when new or renamed) and sends that
-  socket `{ kind: 'review', suggestOnly }`. `PUT /review` sends every Participant socket its own frame again.
+  socket a system op `{ kind: 'op', from: 'system', op: { kind: 'review', suggestOnly } }` (never sequenced or
+  relayed; `review` is in `SYSTEM_OP_KINDS`, so the gate drops one from a client socket). `PUT /review` sends every
+  Participant socket its own op again. A system op rather than a new server message kind, so the shared room client
+  (`packages/workbench`) carries it unchanged.
 
 ### The routes
 
@@ -91,11 +94,17 @@ writing's model is [Article pages](article-pages.md); share roles are
 
 ### The editor
 
-- `dispatchTransaction` (`article-view-mount.ts`): when `suggestAuthorNow(flow)` is set and the transaction is local
+- `article-suggest-store.ts` holds the mode (`editing` / `suggesting`), `suggestOnly` (from the room's `review` op)
+  and the author (`useRoomConnection` sets the pinned collab key, name and colour); `suggestAuthorNow()` is the author
+  while suggesting. `useParticipantSession` passes `{ suggestBy, marginComment: true }` to `participantTabChange` on
+  Suggest Only, and `resolveEditorCapabilities(level, { suggestOnly })` drops element text and Replace.
+- `dispatchTransaction` (`article-view-mount.ts`): when `suggestAuthorNow()` is set and the transaction is local
   (`!article-remote`) and changes the doc, it is replaced by `suggestTransaction(...)`; a refusal announces the notice
   and applies nothing.
 - `suggestTransaction` walks the transaction's steps, mapping each through the steps before it
-  (`step.getMap().invert()` then the mapping so far then the out transaction's own maps):
+  (each earlier step map inverted in turn, since `Mapping.invert` ignores a slice's bounds, then the out
+  transaction's own maps); steps are told apart by `toJSON().stepType`, as the editor reaches prosemirror-transform
+  only through prosemirror-state:
   - `ReplaceStep(from, to, slice)`: text in the range that is the author's own insertion is deleted; anyone else's
     insertion, struck text and atoms are left; other text gets a `del` mark; each block start crossed gets
     `sg: del` (unless it is the author's own `ins` break, which is removed by joining). The slice, its suggestion marks
@@ -103,19 +112,32 @@ writing's model is [Article pages](article-pages.md); share roles are
     starting inside the inserted range gets `sg: ins` and a fresh id from `blockIdsPlugin`.
   - `AddMarkStep` / `RemoveMarkStep` of a format mark: on the author's own insertion, applied as is; on struck text,
     nothing; else applied, with a `fmt` mark keeping the first `was`, dropped when the format is back to `was`.
-  - Any other step (`ReplaceAroundStep`, `AttrStep`, a node's markup, a non-format mark such as `note` is applied as
-    is), or a slice holding non-inline content other than a split, refuses with `block`.
+  - A `note` or `suggestion` mark step is applied as is; an `AttrStep` of `id` or `sg` is applied as is. Any other
+    step (`ReplaceAroundStep`, another `AttrStep`, a node's markup), or a slice holding a footnote or a block other
+    than a paragraph or list item, refuses (`structure`). An undo or redo (`history$`), a collaborator's change
+    (`article-remote`) and a decision (`article-suggest-pass`) pass as they are.
 - `resolveSuggestionsTr`: from the end of the doc to its start, text with a decided mark: accept `ins` / reject `del` /
   accept `fmt` removes the mark; reject `ins` / accept `del` deletes the text; reject `fmt` puts `was` back. Blocks
   with a decided break: clears `sg`, or joins onto the text block before it (`tr.join`), or deletes an empty one.
   Suggestions in a block another person holds are left and counted in `waiting`.
-- Decorations (`suggestDecorationsPlugin`): a `¶` widget at the start of a block with `sg`, classed
-  `article-sg-break-ins` / `-del` in the author's colour (`--sg-color`), and `article-sg-active` on the suggestion the
-  caret is in.
+- Decorations (`suggestBreaksPlugin`): a `¶` widget at the start of a block with `sg`, classed
+  `article-sg-pilcrow-ins` / `-del` in the author's colour (`--sg-c`), carrying `data-sg-id` for the card.
+- `blockIdsPlugin` also clears a duplicate break id: a split copies `sg` to the new half, and the break stays the
+  first half's.
+- The card (`useSuggestionCard`) opens on hover of `[data-sg-id]` or when a key or press leaves the caret in a
+  suggestion (`suggestionAt`); its Accept / Reject / Accept All dispatch `resolveSuggestionsTr`. The mode menu
+  (`page-toolbar-suggest.tsx`) reads the count only while open. `SuggestCommentButton` is a Suggest Only
+  Participant's Comment (the toolbar is an Editor's); `useArticles.addNote` lets it through for `comment`.
+- Viewer and presenting: `html[data-suggestions-hidden]` (set by `useParticipantSession` for `view`) and
+  `html[data-presenting]` hide insertions and pilcrows and un-strike deletions (`article-pages.css`); a break
+  suggestion keeps its two paragraphs on screen. Exports: `tabAsSeen` applies `withArticlesRejected`, and
+  `pageWriting` sets an article whose writing shows suggestions from the headless estimate of the rejected tab.
+- The toast (`useSuggestedToast`): an article op carrying `suggested` announces it; Review reveals the tab and
+  `requestSuggestionReview(flow, g)`, kept until that article's card hook takes it.
 
 ## Interfaces and contracts
 
-- Room message `{ kind: 'review'; suggestOnly: boolean }` (server to one socket).
+- System room op `{ kind: 'review'; suggestOnly: boolean }` (server to one socket, `from: 'system'`).
 - Article room op gains `suggested?: { n: string; count: number; g: string }`.
 - `ArticleWrite.as?: 'suggestions' | 'direct'`; MCP `write_article` and `update_document` take `as`; CLI
   `article set --as <suggestions|direct>`.

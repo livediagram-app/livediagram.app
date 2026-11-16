@@ -138,7 +138,7 @@ once a document is open.
   the room checks each article frame against the suggestion rule (the rejected view unchanged, only its own
   suggestions added, everyone else's left as they were) and refuses the frame whole otherwise
   ([Suggestions](../007-editor/suggestions.md#the-server-is-the-rule)). Its one element change is adding a margin
-  note's comment marker. The room tells each Participant session whether it suggests (`review` frame) when it joins
+  note's comment marker. The room tells each Participant session whether it suggests (a system `review` op) when it joins
   and whenever the setting changes.
 - **A link to one tab stays on it**: writing for any other tab is dropped.
 - **Placing images is an Editor's.** An image someone else owns is granted to a document only when its owner is a

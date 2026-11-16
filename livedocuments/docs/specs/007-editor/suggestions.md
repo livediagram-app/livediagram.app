@@ -118,7 +118,7 @@ the selection (⌘⌥M too). A Participant's margin note is a comment, never an 
 - **Exports** (PDF, PNG, SVG, Word, Markdown, the MCP's preview images) show the rejected view: an article holding
   suggestions is set for the file from its rejected writing, not read off the screen.
 - **Presenting** shows the rejected view's words: insertions are hidden, deletions read as plain text, and the marks,
-  ¶s and cards are gone. A format change keeps its new formatting while presenting (the screen draws the writing as
+  ¶s and cards are gone (a suggested paragraph break keeps its two paragraphs on screen). A format change keeps its new formatting while presenting (the screen draws the writing as
   it is laid out); an export sets the old.
 - **A Viewer** reads the rejected view the same way: no suggestion shows.
 - **Thumbnails and the Map** draw the writing as soft lines and show no text, so they read the screen as it is.

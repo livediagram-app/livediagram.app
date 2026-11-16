@@ -117,6 +117,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone generated a Participant share link: people take part and write without reshaping the board.',
   'Document|Shared|PasswordCleared': "Someone removed the password from a document's share link.",
   'Document|Shared|PasswordSet': "Someone set a password on a document's share link.",
+  'Document|Shared|AssistantsSuggestOn':
+    "Someone switched Assistants Suggest on in a document's Share dialog: an assistant's article edits arrive as suggestions.",
+  'Document|Shared|AssistantsSuggestOff':
+    "Someone switched Assistants Suggest off in a document's Share dialog.",
+  'Document|Shared|SuggestOnlyLinkOn':
+    "Someone put a Participant link on Suggest Only in a document's Share dialog: whoever opens it suggests.",
+  'Document|Shared|SuggestOnlyLinkOff': 'Someone took a Participant link off Suggest Only.',
+  'Document|Shared|SuggestOnlyPersonOn':
+    "Someone put a person on Suggest Only in a document's Share dialog: they suggest through any Participant link.",
+  'Document|Shared|SuggestOnlyPersonOff': 'Someone took a person off Suggest Only.',
   'Document|Shared|View': 'Someone generated a view-role share link for a document.',
   'Document|Undone|': 'Someone hit Undo on a document edit.',
   'Document|Used|Multiplayer':
@@ -484,6 +494,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Changed',
     (label) => `Someone saved changes to their Community post, now listed under ${label}.`,
   ),
+  'Agent|Opened|SuggestionsToast':
+    "Somebody pressed Review on the toast an assistant's article suggestions raise, to see them.",
   'Community|Removed|Post':
     'Someone took their own post down from the Community, with Remove From Community in the Share dialog.',
   'Community|Opened|Post': "Someone opened a post's own page in the Community.",
@@ -609,6 +621,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pasted Markdown into an article, and it became headings, lists and formatting.',
   'Element|Changed|ArticleTableShape':
     "Someone reshaped a table in an article's writing: a row or column added or removed, the header row, or a column's width.",
+  'Element|Changed|SuggestionAccepted':
+    "Someone accepted one suggestion in an article's writing, from its card.",
+  'Element|Changed|SuggestionRejected':
+    "Someone rejected one suggestion in an article's writing, from its card.",
+  'Element|Changed|SuggestionChangeAccepted':
+    "Someone accepted every suggestion of one assistant's change at once, from a suggestion's card (Accept All).",
+  'Element|Changed|SuggestionsAcceptedAll':
+    "Someone accepted every suggestion in an article, from the page toolbar's mode menu.",
+  'Element|Changed|SuggestionsRejectedAll':
+    "Someone rejected every suggestion in an article, from the page toolbar's mode menu.",
   'Element|Changed|ArticleTablePaste':
     'Someone pasted a table (from a spreadsheet, a web page or a document) into an article, and it became a table block.',
   'Element|Changed|ArticleZoneWrap':
@@ -778,6 +800,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone toggled which style properties the format painter copies (fill, border, text, effects, or size), in the Format panel.',
   'UI|Changed|FormatMode':
     'Someone changed whether the format painter keeps applying after each use or turns off after one copy, in the Format panel.',
+  'UI|Changed|SuggestingMode':
+    "Someone switched an article's page toolbar to Suggesting: their changes to the writing become suggestions.",
+  'UI|Changed|EditingMode': "Someone switched an article's page toolbar back to Editing.",
   'UI|Changed|LaserColour': "Someone changed the laser pointer's colour, in the Laser panel.",
   'UI|Changed|LaserEffect': "Someone changed the laser pointer's trail effect, in the Laser panel.",
   'UI|Changed|LaserTrail':
