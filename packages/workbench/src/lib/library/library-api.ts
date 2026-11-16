@@ -99,3 +99,20 @@ export function libraryErrorMessage(error: unknown): string {
       return 'Couldn’t reach your library. Try again.';
   }
 }
+
+// The editor's calls on its app's `/api/library`, with the caller's identity headers like every other call (the access
+// token when signed in, else the guest token). Each editor hands in its own api core.
+export function libraryApiOver(core: {
+  // `${API_BASE}/library`.
+  base: string;
+  fetch: (url: string, init: RequestInit) => Promise<Response>;
+  headers: (opts: { body: boolean }) => Promise<HeadersInit>;
+}): LibraryApi {
+  return createLibraryApi(async (path, init) =>
+    core.fetch(`${core.base}${path}`, {
+      method: init.method,
+      headers: await core.headers({ body: init.body !== undefined }),
+      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    }),
+  );
+}

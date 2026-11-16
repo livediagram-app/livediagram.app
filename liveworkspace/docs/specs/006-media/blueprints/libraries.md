@@ -19,7 +19,7 @@ packages/workbench/src/components/library/              LibraryProvider, SaveToL
 packages/workbench/src/lib/library/                     library-api (the editor's calls), library-groups, library-draft
 packages/workbench/src/hooks/canvas/useLibraryItemInsert.ts   placing an item, shared with livediagram's shape libraries
 <app>/apps/api/src/routes/library.ts                    each app's door: kinds, clean (migrate + isValidElement), preview
-<app editor>/lib/api/library.ts, lib/library-draft.ts   the editor's bindings
+<app editor>/lib/library-draft.ts                       the editor's binding of libraryDraft (libraryApiOver takes its api core)
 <app editor>/components/primitives/EditorLibraryProvider.tsx
 ```
 

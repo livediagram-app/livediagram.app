@@ -5,7 +5,8 @@
 
 import { useMemo } from 'react';
 import { LibraryProvider } from '@liveworkspace/workbench/components/library/LibraryProvider';
-import { libraryApiFor } from '@/lib/api/library';
+import { libraryApiOver } from '@liveworkspace/workbench/lib/library/library-api';
+import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
 
 export function EditorLibraryProvider({
   ownerId,
@@ -14,6 +15,16 @@ export function EditorLibraryProvider({
   ownerId: string | null;
   children: React.ReactNode;
 }) {
-  const api = useMemo(() => (ownerId ? libraryApiFor(ownerId) : null), [ownerId]);
+  const api = useMemo(
+    () =>
+      ownerId
+        ? libraryApiOver({
+            base: `${API_BASE}/library`,
+            fetch: apiFetch,
+            headers: (opts) => apiHeaders(ownerId, opts),
+          })
+        : null,
+    [ownerId],
+  );
   return <LibraryProvider api={api}>{children}</LibraryProvider>;
 }

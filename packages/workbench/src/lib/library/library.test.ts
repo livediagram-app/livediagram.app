@@ -2,7 +2,7 @@
 // who may tidy what, the editor's calls and their refusals in words, and a selection made into an item.
 import type { LibraryItemSummary } from '@liveworkspace/media';
 import { describe, expect, it, vi } from 'vitest';
-import { createLibraryApi, LibraryError, libraryErrorMessage } from './library-api';
+import { createLibraryApi, LibraryError, libraryApiOver, libraryErrorMessage } from './library-api';
 import { libraryDraft, suggestedLibraryTitle } from './library-draft';
 import { canTidy, folderNames, libraryGroups, previewSrc } from './library-groups';
 
@@ -137,6 +137,24 @@ describe('createLibraryApi', () => {
       expect(libraryErrorMessage(new LibraryError(code, 400))).not.toMatch(/Try again/);
     }
     expect(libraryErrorMessage(new Error('x'))).toBe('Couldn’t reach your library. Try again.');
+  });
+});
+
+describe('libraryApiOver', () => {
+  it('calls the app’s door with its identity headers, and a JSON body only when there is one', async () => {
+    const fetch = vi.fn(async () => Response.json({ items: [], renamed: 1 }));
+    const headers = vi.fn(async (opts: { body: boolean }) => ({ 'X-Body': String(opts.body) }));
+    const api = libraryApiOver({ base: 'https://api.test/api/library', fetch, headers });
+    await api.list();
+    await api.renameFolder({ scope: 'personal', teamId: null, from: 'a', to: 'b' });
+    expect(fetch.mock.calls.map((c) => (c as unknown[])[0])).toEqual([
+      'https://api.test/api/library',
+      'https://api.test/api/library/folders',
+    ]);
+    expect(headers.mock.calls.map(([o]) => o.body)).toEqual([false, true]);
+    expect(((fetch.mock.calls[1] as unknown[])[1] as RequestInit).body).toBe(
+      JSON.stringify({ scope: 'personal', teamId: null, from: 'a', to: 'b' }),
+    );
   });
 });
 

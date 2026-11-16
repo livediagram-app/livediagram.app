@@ -11,7 +11,8 @@ import {
   type LocalLibraryItem,
 } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
-import { libraryApiFor } from '@/lib/api/library';
+import { libraryApiOver } from '@liveworkspace/workbench/lib/library/library-api';
+import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
 
 // This app, as the media service names it: its shape libraries' ids in the Library carry it.
 const MEDIA_APP_NAME = 'livediagram.app' as const;
@@ -23,7 +24,17 @@ export function EditorLibraryProvider({
   ownerId: string | null;
   children: React.ReactNode;
 }) {
-  const api = useMemo(() => (ownerId ? libraryApiFor(ownerId) : null), [ownerId]);
+  const api = useMemo(
+    () =>
+      ownerId
+        ? libraryApiOver({
+            base: `${API_BASE}/library`,
+            fetch: apiFetch,
+            headers: (opts) => apiHeaders(ownerId, opts),
+          })
+        : null,
+    [ownerId],
+  );
   const { libraries } = useShapeLibraries();
   const localItems = useMemo<LocalLibraryItem[]>(
     () =>
