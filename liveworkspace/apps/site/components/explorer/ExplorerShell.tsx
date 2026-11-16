@@ -51,11 +51,11 @@ import { createIndexClient } from '@liveworkspace/index-client';
 import { useSearchShortcut } from '@liveworkspace/explorer/search-shortcut';
 import { BrandMark } from '@livediagram/ui';
 import { APP_NAMES, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
-import { signInHref } from '@/lib/accounts';
+import { signInHref, signUpHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
 import { pageApp } from '@/lib/explorer/page-app';
 import { explorerDrive } from '@/lib/drive/client';
-import { appSignInHref } from '@/lib/explorer/app-session';
+import { appSignInHref, appSignUpHref } from '@/lib/explorer/app-session';
 import {
   ENDED_PARAM,
   helpHrefFor,
@@ -111,6 +111,7 @@ import { useExplorerThisBrowser } from './useExplorerThisBrowser';
 import { useItemArrival } from './useItemArrival';
 import { ExplorerUnreachable } from './ExplorerUnreachable';
 import { useExplorerIdentity } from './useExplorerIdentity';
+import { takeInviteFromAddress } from '@/lib/invited-address';
 
 // The Search panel and its entries: fetched when Search is pointed at or pressed, never with the page.
 const loadSearch = () => import('./ExplorerSearch');
@@ -215,6 +216,11 @@ export function ExplorerShell() {
   useEffect(() => {
     if (identityKind) trackExplorerDailyReturn(identityKind === 'account');
   }, [identityKind]);
+  // Opened from an invitation email (`?invite=`): the token leaves the address bar, and someone signed out has the
+  // invited address kept for the sign-up form (lib/invited-address.ts). Once the person is known.
+  useEffect(() => {
+    if (identityKind) void takeInviteFromAddress(identityKind !== 'account');
+  }, [identityKind]);
 
   const view: ExplorerView = useMemo(
     () => viewFromLocation(pathname, searchParams.toString()),
@@ -257,6 +263,10 @@ export function ExplorerShell() {
   const explorerSignInHref = host
     ? appSignInHref(pathname || '/explorer')
     : signInHref(pathname || '/explorer');
+  // Making an account comes back here the same way (Invites offers it beside Sign In).
+  const explorerSignUpHref = host
+    ? appSignUpHref(pathname || '/explorer')
+    : signUpHref(pathname || '/explorer');
   // After a change to the person's teams the renewed token lists them as they now are.
   useEffect(() => {
     identityRenewed.add(setIdentity);
@@ -418,6 +428,7 @@ export function ExplorerShell() {
           accounts={accounts}
           signedIn={signedIn}
           signInHref={explorerSignInHref}
+          signUpHref={explorerSignUpHref}
           signInBanner={signInBanner}
           arrivalNotice={notice}
           inbox={inbox}

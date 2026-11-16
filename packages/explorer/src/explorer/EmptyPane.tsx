@@ -111,7 +111,8 @@ export function emptyCopy(
     case 'invites':
       return {
         icon: <MailIcon />,
-        title: 'No pending invites',
+        // Only shown before anyone is signed in here, so it never says there are none.
+        title: 'Your invitations are waiting',
         description: 'Sign in to see the team invitations waiting for you.',
         cta: false,
       };
