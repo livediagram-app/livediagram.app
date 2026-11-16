@@ -149,9 +149,7 @@ function StripEdge({ side, onPress }: { side: 'start' | 'end'; onPress: () => vo
     <div
       data-strip-edge={side}
       className={`pointer-events-none absolute inset-y-0 flex w-11 items-center ${
-        end
-          ? 'right-0 justify-end bg-gradient-to-l'
-          : 'left-0 justify-start bg-gradient-to-r'
+        end ? 'right-0 justify-end bg-gradient-to-l' : 'left-0 justify-start bg-gradient-to-r'
       } from-white from-50% to-transparent dark:from-slate-900`}
     >
       <Tooltip label={name}>
