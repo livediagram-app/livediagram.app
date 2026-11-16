@@ -539,6 +539,12 @@ and the menu turns to Guest, and the page then asks the accounts site once
 ([A hint that outlived its session](#signing-in-without-a-click)), so someone signed in elsewhere since is signed in here. A session from before the name cookie existed (the hint without the name) asks at
 once instead, since the answer sets the name.
 
+The token answer's `user` carries the ID token's `given_name` and `family_name` as `givenName` and `familyName`, in
+every app (`@liveworkspace/auth-client/app-auth`). Each editor's session bridge reads its first and last name from
+them, one shared rule (`@liveworkspace/auth-client/account-names`, `namesOf`): the given and family names, else the
+whole name split at its first space, else the email's local part. The editor's account button shows the same two
+initials as liveworkspace.app's for the same account (`@liveworkspace/workbench` `accountInitials`).
+
 ### When the accounts site doesn't answer
 
 An app's `POST /api/auth/token` (and its callback's code swap, and its sign-out) asks the accounts Worker
@@ -1135,7 +1141,8 @@ accounts (`b964b391d`, `46ae449b1`, `ff9a2d834`, `ff2ef0123`), since the account
     off), from `POST /api/account/internal/profiles/read` (an app's server, which passes it on only to signed-in
     viewers) and on each of `GET /api/account/people`'s answers, for an account's session or bearer only (a guest's
     answer has names alone). Both read the account's row by primary key in the same query as the name.
-  - **Team members**: `picture` on each joined member of a team's members list, read in the same query.
+  - **Team members**: `picture` on each joined member of a team's members list, read in the same query, beside
+    `color`, their presence colour (null for Automatic and for an invitation), from the same profile row.
   - **Realtime rooms**: each app's room carries `picture` in a participant's presence, as it did before: the editor
     sends its own (when not hidden) in `hello`, the room keeps it only from a session a signed-in account holds and
     only when it passes `isProfilePictureUrl`, and sends it only to sessions that are themselves accounts.
@@ -1145,6 +1152,11 @@ accounts (`b964b391d`, `46ae449b1`, `ff9a2d834`, `ff2ef0123`), since the account
   requests that carry a referrer, and it never learns which page is open) and the person's name as its `alt`. It
   asks Google for the size it paints (`=s<px>-c`, a 1x and a 2x source, 16 to 1024 px, 96 when the size is no number), shows only once loaded, and on an error
   falls back to the initials for the rest of that URL's life on the page. So a picture never moves anything.
+- **The initials.** One rule for every person's avatar, presence stack and cursor in every app and on
+  liveworkspace.app (`@liveworkspace/model-core/names` `initialsOf`): the first letter of the first and last words,
+  or a single word's first two, counting only letters and numbers in any script (punctuation and symbols, emoji
+  among them, are skipped, so "<Oscar>" reads "OS"). A name with none takes the email's local part's letters, else
+  "?". A team's disc keeps its own rule, which keeps an emoji its name starts with.
 - **The Content-Security-Policy.** Every app's and liveworkspace.app's pages send Trusted Types only, with no
   `img-src` or `default-src`, so Google's image host is allowed. A test keeps it that way: should an `img-src`
   arrive, it must name `https://lh3.googleusercontent.com`
