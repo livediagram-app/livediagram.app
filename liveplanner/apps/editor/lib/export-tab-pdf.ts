@@ -1,4 +1,5 @@
-// PDF export (docs/specs/013-workspace/folders.md export menu; docs/specs/020-import-export/pdf-export.md): the tab's
+// PDF export (docs/specs/013-workspace/folders.md export menu;
+// docs/specs/020-import-export/export-fidelity.md "PDF"): the tab's
 // SVG export drawn into the PDF as vectors, with real text, by the shared writer (@liveworkspace/vector-export),
 // loaded only when a PDF is made. A tab the writer can't draw falls back to the canvas render, as every PDF was drawn
 // before.
