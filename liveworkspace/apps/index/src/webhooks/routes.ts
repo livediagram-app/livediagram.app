@@ -370,7 +370,7 @@ async function createWebhook(
   if (!parsed.ok) return badRequest(parsed.error);
   const resolved = await resolvesPublic(parsed.host, deps.resolve);
   if (resolved === 'private') return badRequest('webhook_url_private');
-  if (resolved === 'unresolved') return badRequest('webhook_url_invalid');
+  if (resolved === 'unresolved') return badRequest('webhook_url_unresolved');
   const count = await env.INDEX_DB.prepare('SELECT COUNT(*) AS n FROM webhooks WHERE item_id = ?')
     .bind(item.id)
     .first<{ n: number }>();

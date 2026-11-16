@@ -50,6 +50,27 @@ describe('Dialog resizeTransition', () => {
   });
 });
 
+// A panel whose content grows (the Share dialog's role list, its passes) pins near the top from sm up, so it grows
+// downward and nothing above moves; centred is the default.
+describe('Dialog placement', () => {
+  it('centres by default', () => {
+    const { backdrop } = open();
+    expect(backdrop.className).toContain('items-center');
+    expect(backdrop.className).not.toContain('sm:items-start');
+  });
+
+  it('pins the panel near the top from sm up when asked', () => {
+    render(
+      <Dialog open onClose={vi.fn()} ariaLabel="Share" placement="top">
+        <p>Body</p>
+      </Dialog>,
+    );
+    const backdrop = screen.getByRole('dialog', { name: 'Share' }).parentElement!;
+    expect(backdrop.className).toContain('sm:items-start');
+    expect(backdrop.className).toContain('sm:pt-[clamp(1rem,10vh,5rem)]');
+  });
+});
+
 // docs/specs/007-editor/editor-app.md "Escape closes the dialog on top alone".
 describe('Dialog Escape', () => {
   it('closes an open dialog', () => {

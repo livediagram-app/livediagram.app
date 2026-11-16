@@ -295,7 +295,7 @@ describe('what an add checks', () => {
     ).toEqual({ error: 'webhook_url_private' });
     expect(
       await body(await post(ada.auth, item.id, { url: 'https://gone.example.com/x' })),
-    ).toEqual({ error: 'webhook_url_invalid' });
+    ).toEqual({ error: 'webhook_url_unresolved' });
     expect(
       (await call(`/items/${item.id}/webhooks`, { method: 'POST', auth: ada.auth, body: [] }))
         .status,

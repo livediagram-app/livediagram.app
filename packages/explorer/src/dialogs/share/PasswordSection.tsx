@@ -13,8 +13,12 @@ import { LockIcon } from '../../ui/icons';
 import { HelpLink } from './HelpLink';
 import type { ShareHelpHref } from './types';
 
+// The card's lower part, under a hairline and lined up with its words (px-4): why it is locked, Password Set with
+// Replace and Remove, or the field for a new one. Inside the card, so it reads as the setting's own detail.
 const DETAIL =
-  'ml-3.5 flex animate-fade-in items-center gap-2 border-l-2 border-slate-200 py-0.5 pl-3 dark:border-slate-700';
+  'flex animate-fade-in flex-col gap-2 border-t border-slate-100 px-4 py-3 dark:border-slate-700/70';
+const DETAIL_ROW = 'flex min-w-0 items-center gap-2';
+const NOTE = 'text-xs leading-relaxed text-slate-500 dark:text-slate-400';
 
 /** What a typed password saves as: trimmed, or nothing for spaces alone. */
 export function passwordToSave(typed: string): string | null {
@@ -82,18 +86,23 @@ export function PasswordSection({
   const next = passwordToSave(typed);
   const tooShort = next !== null && next.length < SHARE_PASSWORD_MIN;
   const canSave = !busy && next !== null && !tooShort;
+  const editing = on && !showSet && !locked;
+  const detail = locked || (on && showSet) || editing;
 
   return (
     <section
       aria-label="Password"
       data-tour-id="share-password"
-      className="flex flex-col gap-2 border-t border-slate-100 pt-4 dark:border-slate-800"
+      className="border-t border-slate-100 pt-4 dark:border-slate-800"
     >
       {/* The Settings dialog's own row, as a card: the words, Learn more, and the switch, which a press anywhere on
-          the card flips (its hit area covers the card; Learn more sits above it and keeps its own click). */}
+          the row flips (its hit area covers the row; Learn more sits above it and keeps its own click). Below it, in
+          the card, the detail. */}
       <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
         <div
-          className={`relative flex items-center gap-4 rounded-[inherit] px-4 py-3 ${
+          className={`relative flex items-center gap-4 px-4 py-3 ${
+            detail ? 'rounded-t-[inherit]' : 'rounded-[inherit]'
+          } ${
             locked
               ? ''
               : 'transition-colors duration-micro hover:bg-slate-50 dark:hover:bg-slate-700/40'
@@ -135,107 +144,106 @@ export function PasswordSection({
             className="ml-auto"
           />
         </div>
-      </div>
-      {/* While the host locks it (a listed Community post), why, on the detail's guide rule. */}
-      {locked ? (
-        <p className="ml-3.5 border-l-2 border-slate-200 pl-3 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          {lockedReason}
-        </p>
-      ) : null}
-      {on && showSet ? (
-        <div className={DETAIL}>
-          <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-            <span className="shrink-0 text-slate-400">
-              <LockIcon />
-            </span>
-            {saved ? 'Password Saved' : 'Password Set'}
-          </p>
-          <Button
-            variant="secondary"
-            size="xs"
-            disabled={busy}
-            onClick={() => {
-              setReplacing(true);
-              focusField();
-            }}
-          >
-            Replace
-          </Button>
-          <Button variant="secondary" size="xs" busy={busy} onClick={() => void remove()}>
-            Remove
-          </Button>
-        </div>
-      ) : null}
-      {on && !showSet && !locked ? (
-        <>
-          <form
-            className={DETAIL}
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (canSave) void save();
-            }}
-          >
-            <div className="relative min-w-0 flex-1">
-              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
-                <LockIcon />
-              </span>
-              <input
-                ref={field}
-                type="text"
-                value={typed}
-                maxLength={SHARE_PASSWORD_MAX}
-                onChange={(e) => setTyped(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape' && replacing) {
-                    // Escape here backs out of Replace, and leaves the dialog open.
-                    e.stopPropagation();
-                    e.nativeEvent.stopImmediatePropagation();
-                    setReplacing(false);
-                    setTyped('');
-                  }
-                }}
-                placeholder={replacing ? 'Choose a new password' : 'Choose a password'}
-                aria-label="Share password"
-                aria-describedby={tooShort ? 'share-password-hint' : undefined}
-                autoComplete="off"
-                spellCheck={false}
-                className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-2 font-mono text-sm text-slate-800 outline-none transition duration-micro placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              />
-            </div>
-            <Button
-              type="submit"
-              size="xs"
-              // Busy, not disabled, while it saves (busy-buttons.md); disabled only while the password is not ready.
-              disabled={next === null || tooShort}
-              busy={busy}
-              className="shadow-sm"
-            >
-              Save
-            </Button>
-            {replacing ? (
+        {/* While the host locks it (a listed Community post), why. */}
+        {locked ? (
+          <div className={DETAIL}>
+            <p className={NOTE}>{lockedReason}</p>
+          </div>
+        ) : null}
+        {on && showSet ? (
+          <div className={DETAIL}>
+            <div className={DETAIL_ROW}>
+              <p className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                <span className="shrink-0 text-slate-400">
+                  <LockIcon />
+                </span>
+                {saved ? 'Password Saved' : 'Password Set'}
+              </p>
               <Button
                 variant="secondary"
                 size="xs"
                 disabled={busy}
                 onClick={() => {
-                  setReplacing(false);
-                  setTyped('');
+                  setReplacing(true);
+                  focusField();
                 }}
               >
-                Cancel
+                Replace
               </Button>
-            ) : null}
-          </form>
-          {tooShort ? (
-            <p
-              id="share-password-hint"
-              className="ml-3.5 border-l-2 border-slate-200 pl-3 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400"
+              <Button variant="secondary" size="xs" busy={busy} onClick={() => void remove()}>
+                Remove
+              </Button>
+            </div>
+          </div>
+        ) : null}
+        {editing ? (
+          <div className={DETAIL}>
+            <form
+              className={DETAIL_ROW}
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (canSave) void save();
+              }}
             >
-              At least {SHARE_PASSWORD_MIN} characters.
-            </p>
-          ) : null}
-        </>
-      ) : null}
+              <div className="relative min-w-0 flex-1">
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <LockIcon />
+                </span>
+                <input
+                  ref={field}
+                  type="text"
+                  value={typed}
+                  maxLength={SHARE_PASSWORD_MAX}
+                  onChange={(e) => setTyped(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape' && replacing) {
+                      // Escape here backs out of Replace, and leaves the dialog open.
+                      e.stopPropagation();
+                      e.nativeEvent.stopImmediatePropagation();
+                      setReplacing(false);
+                      setTyped('');
+                    }
+                  }}
+                  placeholder={replacing ? 'Choose a new password' : 'Choose a password'}
+                  aria-label="Share password"
+                  aria-describedby={tooShort ? 'share-password-hint' : undefined}
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-2 font-mono text-sm text-slate-800 outline-none transition duration-micro placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                />
+              </div>
+              <Button
+                type="submit"
+                size="xs"
+                // Busy, not disabled, while it saves (busy-buttons.md); disabled only while the password is not ready.
+                disabled={next === null || tooShort}
+                busy={busy}
+                className="shadow-sm"
+              >
+                Save
+              </Button>
+              {replacing ? (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  disabled={busy}
+                  onClick={() => {
+                    setReplacing(false);
+                    setTyped('');
+                  }}
+                >
+                  Cancel
+                </Button>
+              ) : null}
+            </form>
+            {tooShort ? (
+              <p id="share-password-hint" className={NOTE}>
+                At least {SHARE_PASSWORD_MIN} characters.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }
