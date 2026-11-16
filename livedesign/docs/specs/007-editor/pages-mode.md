@@ -1259,7 +1259,8 @@ The Export dialog exports **pages**, not the tab's content bounds.
 
 ## Import
 
-The Import dialog offers **JSON** (a livedesign tab, which may carry pages).
+The Import dialog offers **JSON** (a livedesign tab, which may carry pages) and **SVG**, which adds editable shapes
+to the page someone is on ([SVG import](../020-import-export/svg-import.md)).
 
 ## Telemetry
 
