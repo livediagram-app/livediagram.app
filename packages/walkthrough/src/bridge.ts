@@ -75,11 +75,16 @@ export function hiddenCss(ids: Iterable<string>, look: HiddenLook): string {
     (id) => `${CONTENT_SELECTOR} [${ELEMENT_ATTR}="${quoteAttr(id)}"]`,
   );
   if (selectors.length === 0) return '';
-  const body =
-    look === 'viewer'
-      ? 'visibility:hidden !important;pointer-events:none !important;'
-      : 'opacity:.35 !important;outline:1.5px dashed rgb(225 29 72 / .7);outline-offset:2px;';
-  return `${selectors.join(',')}{${body}}`;
+  if (look === 'viewer') {
+    return `${selectors.join(',')}{visibility:hidden !important;pointer-events:none !important;}`;
+  }
+  // The element's own drawing fades (its children: the element's wrapper paints nothing itself), and the dashed
+  // outline sits on the wrapper, outside the fade, so it shows at full strength over any canvas.
+  const faded = selectors.map((s) => `${s} > *`).join(',');
+  return (
+    `${faded}{opacity:.35 !important;}` +
+    `${selectors.join(',')}{outline:2px dashed rgb(225 29 72) !important;outline-offset:3px;}`
+  );
 }
 
 /** Puts a hiding rule on the page until the answer is called. One style element per caller; an empty rule adds none. */

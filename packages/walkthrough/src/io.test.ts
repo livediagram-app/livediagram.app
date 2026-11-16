@@ -183,7 +183,11 @@ describe('the bridge', () => {
     expect(hiddenCss(['a', 'b\u0001"'], 'viewer')).toBe(
       '[data-canvas-content] [data-element-id="a"],[data-canvas-content] [data-element-id="b\\""]{visibility:hidden !important;pointer-events:none !important;}',
     );
-    expect(hiddenCss(['a'], 'presenter')).toContain('opacity:.35');
+    // The drawing fades, the outline on the wrapper does not.
+    expect(hiddenCss(['a'], 'presenter')).toBe(
+      '[data-canvas-content] [data-element-id="a"] > *{opacity:.35 !important;}' +
+        '[data-canvas-content] [data-element-id="a"]{outline:2px dashed rgb(225 29 72) !important;outline-offset:3px;}',
+    );
     const off = applyHidden(document, ['a'], 'viewer');
     expect(document.head.querySelector('[data-walkthrough-hidden="viewer"]')).not.toBeNull();
     off();

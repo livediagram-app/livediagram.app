@@ -6,7 +6,9 @@
 
 import type { LevelMeter } from '@liveworkspace/capture';
 import type { WalkthroughCorner } from '@liveworkspace/media/walkthrough';
-import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import { CONTENTS_SIDEBAR_SELECTOR } from '@liveworkspace/workbench/lib/contents-sidebar';
+import { MAP_PANEL_SELECTOR } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 
 export const BUBBLE_PX = 132;
 
@@ -18,12 +20,86 @@ const CORNER_CLASS: Record<WalkthroughCorner, string> = {
   'top-right': 'top-4 right-4',
 };
 
+// What the bubble keeps clear of, read by the same marks @liveworkspace/workbench measures them by. The Map (livediagram,
+// livedocuments, livedesign) is a small panel in any corner that can be moved, so the bubble goes up or down past it.
+// Contents docked as a sidebar (Pages mode) runs the canvas's whole left side, so the bubble goes across past it.
+const CLEARANCE_PX = 12;
+// How often they are looked for again while a bubble shows: either can be moved, opened or closed meanwhile.
+const CHECK_MS = 500;
+// The corner's inset in px, as CORNER_CLASS places it (bottom-16 is 64, the rest 16).
+const INSET = { side: 16, top: 16, bottom: 64 };
+
+type Box = { left: number; top: number; right: number; bottom: number };
+
+/** How far the bubble moves from its corner (screen px) to stay clear of the Map and a docked Contents sidebar. */
+export function shiftClearOf(
+  corner: WalkthroughCorner,
+  frame: Box,
+  around: { map: Box | null; sidebar: Box | null },
+): { x: number; y: number } {
+  const bottom = corner.startsWith('bottom');
+  const leftSide = corner.endsWith('left');
+  // Across first: the sidebar is always down the left, so a left corner moves out past its right edge.
+  let x = 0;
+  const { sidebar, map } = around;
+  if (sidebar && leftSide && sidebar.right > frame.left + INSET.side) {
+    x = sidebar.right + CLEARANCE_PX - (frame.left + INSET.side);
+  }
+  const left = (leftSide ? frame.left + INSET.side : frame.right - INSET.side - BUBBLE_PX) + x;
+  const top = bottom ? frame.bottom - INSET.bottom - BUBBLE_PX : frame.top + INSET.top;
+  let y = 0;
+  if (
+    map &&
+    left < map.right &&
+    left + BUBBLE_PX > map.left &&
+    top < map.bottom &&
+    top + BUBBLE_PX > map.top
+  ) {
+    y = bottom ? map.top - CLEARANCE_PX - (top + BUBBLE_PX) : map.bottom + CLEARANCE_PX - top;
+  }
+  return { x, y };
+}
+
+const NO_SHIFT = { x: 0, y: 0 };
+const boxOf = (selector: string): Box | null =>
+  document.querySelector(selector)?.getBoundingClientRect() ?? null;
+
+function useClearShift(frame: RefObject<HTMLDivElement | null>, corner: WalkthroughCorner) {
+  const [shift, setShift] = useState(NO_SHIFT);
+  useEffect(() => {
+    const measure = () => {
+      const parent = frame.current?.offsetParent;
+      if (!parent) return;
+      const next = shiftClearOf(corner, parent.getBoundingClientRect(), {
+        map: boxOf(MAP_PANEL_SELECTOR),
+        sidebar: boxOf(CONTENTS_SIDEBAR_SELECTOR),
+      });
+      setShift((prev) => (prev.x === next.x && prev.y === next.y ? prev : next));
+    };
+    measure();
+    const timer = setInterval(measure, CHECK_MS);
+    window.addEventListener('resize', measure);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('resize', measure);
+    };
+  }, [frame, corner]);
+  return shift;
+}
+
 function BubbleFrame({ corner, children }: { corner: WalkthroughCorner; children: ReactNode }) {
+  const frame = useRef<HTMLDivElement>(null);
+  const shift = useClearShift(frame, corner);
   return (
     <div
+      ref={frame}
       data-walkthrough-bubble={corner}
-      style={{ width: BUBBLE_PX, height: BUBBLE_PX }}
-      className={`pointer-events-none absolute z-40 overflow-hidden rounded-full bg-slate-900 shadow-xl shadow-slate-900/25 ring-[3px] ring-white transition-[top,left,right,bottom] duration-300 dark:ring-slate-800 ${CORNER_CLASS[corner]}`}
+      style={{
+        width: BUBBLE_PX,
+        height: BUBBLE_PX,
+        transform: shift.x || shift.y ? `translate(${shift.x}px, ${shift.y}px)` : undefined,
+      }}
+      className={`pointer-events-none absolute z-40 overflow-hidden rounded-full bg-slate-900 shadow-xl shadow-slate-900/25 ring-[3px] ring-white transition-[top,left,right,bottom,transform] duration-300 dark:ring-slate-800 ${CORNER_CLASS[corner]}`}
     >
       {children}
     </div>

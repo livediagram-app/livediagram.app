@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WalkthroughHost } from './host';
 import type { CanvasView } from './timeline';
+import { shiftClearOf } from './ui/Bubble';
 import { WalkthroughsButton } from './ui/WalkthroughsButton';
 import { WalkthroughsLayer } from './ui/WalkthroughsLayer';
 import { useWalkthroughs } from './useWalkthroughs';
@@ -316,5 +317,43 @@ describe('recording', () => {
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('region', { name: 'Record a Walkthrough' })).toBeNull();
+  });
+});
+
+describe('the bubble', () => {
+  const frame = { left: 0, top: 0, right: 1000, bottom: 800 };
+  const none = { map: null, sidebar: null };
+  it('stays clear of the Map and a docked Contents sidebar', () => {
+    expect(shiftClearOf('bottom-left', frame, none)).toEqual({ x: 0, y: 0 });
+    // A Map in another corner leaves it put.
+    const farMap = { left: 740, top: 560, right: 996, bottom: 796 };
+    expect(shiftClearOf('bottom-left', frame, { map: farMap, sidebar: null })).toEqual({
+      x: 0,
+      y: 0,
+    });
+    // The Map in its corner: up above it, with room between.
+    const map = { left: 4, top: 560, right: 260, bottom: 796 };
+    expect(shiftClearOf('bottom-left', frame, { map, sidebar: null })).toEqual({
+      x: 0,
+      y: -(800 - 64 - 560 + 12),
+    });
+    // A Map in a top corner: down below it.
+    const topMap = { left: 740, top: 4, right: 996, bottom: 200 };
+    expect(shiftClearOf('top-right', frame, { map: topMap, sidebar: null })).toEqual({
+      x: 0,
+      y: 200 + 12 - 16,
+    });
+    // A sidebar down the left: across past it, and then clear of a Map beside it too.
+    const sidebar = { left: 0, top: 0, right: 236, bottom: 800 };
+    expect(shiftClearOf('bottom-left', frame, { map: null, sidebar })).toEqual({
+      x: 236 + 12 - 16,
+      y: 0,
+    });
+    const besideMap = { left: 252, top: 600, right: 508, bottom: 796 };
+    expect(shiftClearOf('bottom-left', frame, { map: besideMap, sidebar }).y).toBe(
+      600 - 12 - (800 - 64),
+    );
+    // A right corner ignores a left sidebar.
+    expect(shiftClearOf('bottom-right', frame, { map: null, sidebar })).toEqual({ x: 0, y: 0 });
   });
 });
