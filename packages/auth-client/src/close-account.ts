@@ -5,10 +5,12 @@
 //
 // The apps' own routes answer the same in every app, so the answers are made here too (`requestDeletionCode`,
 // `confirmDeletionCode`): an app's route only wraps them in its own JSON response.
-import { accountsRoute, basicAuthorization, type ClientCredentials } from './oauth';
+import { deadlineSignal } from './account-call';
+import { accountsFetch, accountsRoute, basicAuthorization, type ClientCredentials } from './oauth';
 
-// How long an app waits on the accounts Worker to send or check a code before giving up.
-const CODE_TIMEOUT_MS = 10_000;
+// How long an app waits on the accounts Worker to send or check a code before giving up. Both are safe to repeat
+// (a second code replaces the first; a check spends nothing), and the person sees "try again" either way.
+export const CODE_TIMEOUT_MS = 10_000;
 
 export type DeletionCodeCheck = 'ok' | 'invalid_code' | 'too_many_attempts' | 'rate_limited';
 
@@ -28,16 +30,20 @@ function post(
   fetchImpl: typeof fetch,
   timeout = true,
 ): Promise<Response> {
-  return fetchImpl(accountsRoute(credentials.accountsUrl, route), {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      accept: 'application/json',
-      authorization: basicAuthorization(credentials),
+  // Over the app API's ACCOUNTS binding when the credentials carry it, the public route otherwise.
+  return accountsFetch(credentials.accounts, fetchImpl)(
+    accountsRoute(credentials.accountsUrl, route).toString(),
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        accept: 'application/json',
+        authorization: basicAuthorization(credentials),
+      },
+      body: JSON.stringify(body),
+      ...(timeout && { signal: deadlineSignal(CODE_TIMEOUT_MS) }),
     },
-    body: JSON.stringify(body),
-    ...(timeout && { signal: AbortSignal.timeout(CODE_TIMEOUT_MS) }),
-  });
+  );
 }
 
 async function failure(what: string, response: Response): Promise<Error> {

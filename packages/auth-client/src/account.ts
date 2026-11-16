@@ -5,7 +5,7 @@
 // sign-ups and milestones, accounts' emails, and reporting activity for the onboarding series. These send the client secret, so they run
 // in the app's Worker only.
 import { type ClientCredentials } from './oauth';
-import { call } from './account-call';
+import { ACCOUNT_WRITE_TIMEOUT_MS, call } from './account-call';
 import type { SettingsApp } from './account-settings';
 export {
   type SettingsApp,
@@ -22,7 +22,13 @@ export {
   readProfiles,
   writeProfile,
 } from './account-settings';
-export { call } from './account-call';
+export {
+  ACCOUNT_CALL_TIMEOUT_MS,
+  ACCOUNT_WRITE_TIMEOUT_MS,
+  AccountCallTimeout,
+  call,
+  deadlineSignal,
+} from './account-call';
 
 export type TeamRole = 'admin' | 'member';
 
@@ -140,7 +146,13 @@ export async function mintAccountToken(
   request: { accessToken: string; name: string; readOnly: boolean },
   fetcher: typeof fetch = fetch,
 ): Promise<MintedToken | null> {
-  const response = await call(credentials, '/tokens', { method: 'POST', body: request }, fetcher);
+  // Not safe to repeat (a second token): the longer wait, and a timeout says it may have gone through.
+  const response = await call(
+    credentials,
+    '/tokens',
+    { method: 'POST', body: request, timeoutMs: ACCOUNT_WRITE_TIMEOUT_MS, notRepeatable: true },
+    fetcher,
+  );
   if (response.status === 409) return null;
   if (!response.ok) throw new Error(`token mint failed: ${response.status}`);
   return (await response.json()) as MintedToken;
@@ -178,7 +190,13 @@ export async function createTeamFor(
   request: { accessToken: string; name: string; organisation?: string | null },
   fetcher: typeof fetch = fetch,
 ): Promise<CreatedTeam> {
-  const response = await call(credentials, '/teams', { method: 'POST', body: request }, fetcher);
+  // Not safe to repeat (a second team): the longer wait, and a timeout says it may have gone through.
+  const response = await call(
+    credentials,
+    '/teams',
+    { method: 'POST', body: request, timeoutMs: ACCOUNT_WRITE_TIMEOUT_MS, notRepeatable: true },
+    fetcher,
+  );
   if (response.status === 400 || response.status === 401 || response.status === 409) {
     const { error } = (await response.json().catch(() => ({}))) as { error?: string };
     throw new TeamError(response.status, error ?? 'invalid_request');
