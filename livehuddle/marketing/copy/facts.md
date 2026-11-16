@@ -33,8 +33,9 @@ The unit of value is the group in the room.
 
 ## What it does
 
-- Spaces: 27 templates (Blank Space, offices such as the Virtual Office, Team
-  Pod and All-Hands Hall, the Campus templates (Company Campus, Startup HQ,
+- Spaces: 31 templates (Blank Space, offices such as the Virtual Office, Team
+  Pod, Interview Suite and Client Lounge, events such as the All-Hands Hall,
+  Classroom and Hackathon Hall, the Campus templates (Company Campus, Startup HQ,
   School Quad, Co-working Tower), the Venues (Conference Venue, Hotel and
   Suites, Music Hall, Festival Field), the Games Rooms (Arcade Lounge, Games Night Den, Sports
   Bar), the Homes (Family House, City Townhouse, Country Cottage), Expo Hall,

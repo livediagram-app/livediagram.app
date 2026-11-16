@@ -32,7 +32,7 @@ export const FIRE = 'rgb(249 115 22)';
 export const UMBRELLA = 'rgb(248 113 113)';
 
 // A building's floor: its colour, inside an outline open at the entrance in the bottom wall.
-function Floor({ s, fill, door }: { s: Site; fill: string; door?: number }) {
+export function Floor({ s, fill, door }: { s: Site; fill: string; door?: number }) {
   const [l, t, r, b] = [s.X(0), s.Y(0), s.X(s.width), s.Y(s.height)];
   return (
     <>
