@@ -52,6 +52,7 @@
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",
     "@liveworkspace/ui": "workspace:*",
+    "@liveworkspace/vector-export": "workspace:*",
     "@liveworkspace/workbench": "workspace:*",
     "@tensorflow/tfjs-backend-wasm": "4.22.0",
     "@tensorflow/tfjs-backend-webgpu": "4.22.0",

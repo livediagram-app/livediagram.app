@@ -13,15 +13,19 @@ const onDisk = readdirSync(TEXTS_DIR).toSorted();
 // read here as text because this package cannot depend on them. Each product's own test checks that
 // every file its tables name is in the pool.
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
-// liveworkspace.app keeps its tables beside its site (liveworkspace/apps/site/lib/licences).
-const tables = readdirSync(repo).flatMap((product) =>
-  ['overrides.ts', 'embedded-works.ts']
-    .flatMap((file) => [
-      join(repo, product, 'packages/licences/src', file),
-      join(repo, product, 'apps/site/lib/licences', file),
-    ])
-    .filter((path) => existsSync(path)),
-);
+// liveworkspace.app keeps its tables beside its site (liveworkspace/apps/site/lib/licences). Overrides every product
+// shares (VECTOR_EXPORT_OVERRIDES) live in this package's own tables.ts, spread into each product's.
+const tables = [
+  ...readdirSync(repo).flatMap((product) =>
+    ['overrides.ts', 'embedded-works.ts']
+      .flatMap((file) => [
+        join(repo, product, 'packages/licences/src', file),
+        join(repo, product, 'apps/site/lib/licences', file),
+      ])
+      .filter((path) => existsSync(path)),
+  ),
+  fileURLToPath(new URL('./tables.ts', import.meta.url)),
+];
 const tableFiles = tables.flatMap((path) =>
   [...readFileSync(path, 'utf8').matchAll(/(?:file:\s*|text\(\s*)'([\w.-]+\.txt)'/g)].map(
     (m) => m[1]!,

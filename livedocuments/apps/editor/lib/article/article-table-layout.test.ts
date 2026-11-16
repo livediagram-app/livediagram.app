@@ -17,7 +17,8 @@ import { tsvGrid, tsvSlice } from './article-table-paste';
 import { hasToc, tocKey, tocPlugin, type TocLine } from './article-toc-view';
 import { pageBandLayout } from './article-band-layout';
 import { bandOps } from './article-export';
-import { linkAnnotation, pdfLinksOn, pdfString } from '../export-pdf-links';
+import { linkAnnotation, pdfString } from '@liveworkspace/vector-export/pdf-links';
+import { pdfLinksOn } from '../export-pdf-links';
 
 // docs/specs/007-editor/article-pages.md "Tables", "Table of contents", "Headers and footers".
 

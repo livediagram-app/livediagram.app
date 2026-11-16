@@ -42,3 +42,29 @@ export type LicencesProduct = {
   overrides: readonly Override[];
   embedded: readonly EmbeddedWork[];
 };
+
+// fontkit, its dfa and its WOFF2 decoder, which ship no licence file: in every editor's PDF export and livedesign's
+// Logo Kit, through @liveworkspace/vector-export (liveworkspace/docs/specs/013-export/vector-pdf.md). Each product
+// spreads these into its overrides.
+export const VECTOR_EXPORT_OVERRIDES: readonly Override[] = [
+  {
+    package: 'fontkit',
+    version: '2.0.4',
+    texts: [{ label: 'LICENSE (fontkit 2.0.4 README)', file: 'fontkit-2.0.4-LICENSE.txt' }],
+  },
+  {
+    package: 'dfa',
+    version: '1.2.0',
+    texts: [{ label: 'LICENSE (dfa 1.2.0 README)', file: 'dfa-1.2.0-LICENSE.txt' }],
+  },
+  {
+    package: 'brotli',
+    version: '1.3.3',
+    texts: [
+      {
+        label: 'LICENSE (brotli.js 1.3.3 readme, dec/ header and Apache 2.0)',
+        file: 'brotli-1.3.3-LICENSE.txt',
+      },
+    ],
+  },
+];

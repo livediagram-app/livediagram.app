@@ -14,7 +14,7 @@ import { sanitizeFilename } from '@liveworkspace/model-core/file-name';
 import { expandForExport } from './component-registry';
 import { embeddedFontFaces } from './export-fonts';
 import { encodeIco } from './ico-writer';
-import { OutlineError } from './outline-text/outline-error';
+import { OutlineError } from '@liveworkspace/vector-export/outline-error';
 import { renderTabToCanvas, renderTabToSvg, type ImageExportOpts } from './export-tab';
 import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 
@@ -103,7 +103,7 @@ export async function exportLogoKit(
   }
   // The outliner loads here, at the press, never with the editor (fontkit only when there is text). A logo of
   // shapes alone goes through it too, to lose the faces it embeds and doesn't draw with.
-  const { outlineSvgText } = await import('./outline-text/outline-svg');
+  const { outlineSvgText } = await import('@liveworkspace/vector-export/outline-svg');
   const outlined = await outlineSvgText(drawn, faces.css);
   const svg = new TextEncoder().encode(outlined);
   const full = await renderTabToCanvas(logo, {

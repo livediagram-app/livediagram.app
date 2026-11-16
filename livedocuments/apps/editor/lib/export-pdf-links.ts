@@ -1,18 +1,11 @@
-// A PDF's link areas (docs/specs/007-editor/article-pages.md "Everywhere a page goes"): a Pages tab's PDF
-// is a picture of each page, so its links are areas laid over the pictures, read off the articles' writing
-// as laid out (ArticleEditorHandle.links): each contents entry to its heading's page, each link in the text
-// to its address. Pure but for that one read, so the PDF writer (export-tab-pdf.ts) stays a container.
+// A PDF's link areas (docs/specs/007-editor/article-pages.md "Everywhere a page goes"): areas laid over each
+// page, read off the articles' writing as laid out (ArticleEditorHandle.links): each contents entry to its
+// heading's page, each link in the text to its address. Pure but for that one read; the shared PDF writer
+// (@liveworkspace/vector-export, liveworkspace/docs/specs/013-export/vector-pdf.md) writes them.
 import { isSafeArticleHref, type LaidOutPage } from '@livedocuments/document';
+import type { PdfLink } from '@liveworkspace/vector-export/pdf-links';
+import { PT_PER_PX } from '@liveworkspace/vector-export/pdf-page-size';
 import { articleHandleOf, type ArticleLinkArea } from './article/article-editor-store';
-
-// CSS px to PDF points, as the page's own size.
-const PT_PER_PX = 0.75;
-
-/** A link area on a PDF page, in points from the page's bottom-left corner: to another page of the PDF
- *  (by its index among the PDF's pages) or to an address. */
-export type PdfLink = { x: number; y: number; w: number; h: number } & (
-  { page: number } | { uri: string }
-);
 
 const round = (n: number) => Math.round(n * 100) / 100;
 
@@ -69,21 +62,4 @@ export function pdfLinksFor(
     const own = allPages.filter((p) => p.flow === page.flow);
     return pdfLinksOn(page, areas, own, pdfIndexOf);
   });
-}
-
-/** A PDF string literal: backslash and parentheses escaped, anything past ASCII percent-encoded (an address
- *  is ASCII in a PDF). */
-export function pdfString(s: string): string {
-  const ascii = s.replace(/[^\x20-\x7e]/g, (c) => encodeURIComponent(c));
-  return `(${ascii.replace(/[\\()]/g, (c) => `\\${c}`)})`;
-}
-
-/** A link's annotation dictionary: `pageRef` the object reference of each PDF page. */
-export function linkAnnotation(link: PdfLink, pageRef: (index: number) => string): string {
-  const rect = `[${link.x} ${link.y} ${round(link.x + link.w)} ${round(link.y + link.h)}]`;
-  const action =
-    'uri' in link
-      ? `/A << /S /URI /URI ${pdfString(link.uri)} >>`
-      : `/Dest [${pageRef(link.page)} /Fit]`;
-  return `<< /Type /Annot /Subtype /Link /Rect ${rect} /Border [0 0 0] ${action} >>`;
 }
