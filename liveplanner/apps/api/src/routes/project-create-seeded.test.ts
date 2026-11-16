@@ -189,7 +189,12 @@ describe('compileSeededTabs', () => {
       { name: 'C', template: 'kanban' },
       'not a tab',
     ];
-    expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null, templateElements: [] });
+    expect(compileSeededTabs(tabs, 'd1')).toEqual({
+      tabs,
+      intent: null,
+      templateElements: [],
+      template: null,
+    });
   });
 
   it("keeps a compiled tab's other fields, and themes it", () => {

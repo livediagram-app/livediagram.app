@@ -11,6 +11,7 @@
     ".": "./src/index.ts",
     "./template-sheets": "./src/template-sheets.ts",
     "./plan-template-seeds": "./src/plan-template-seeds.ts",
+    "./template-starter-rules": "./src/template-starter-rules.ts",
     "./welcome.json": "./welcome.json"
   },
   "scripts": {

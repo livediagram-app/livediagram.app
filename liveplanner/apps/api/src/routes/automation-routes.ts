@@ -71,7 +71,7 @@ const notFoundRule = () => refuse(404, 'automation_not_found');
 
 // Who may come through (spec "Who may do what"): a signed-in person, or an API token of one (its account verified),
 // never a workbench session, a guest or a link visitor with no account.
-function signedInCaller(ctx: PlanRouteContext): boolean {
+export function signedInCaller(ctx: PlanRouteContext): boolean {
   if (ctx.workbench) return false;
   return ctx.token ? !!ctx.verifiedUserId : !!ctx.accountUserId;
 }

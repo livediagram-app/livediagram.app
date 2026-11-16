@@ -23,6 +23,7 @@ import {
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
 import { ProjectTrashedError } from '../project-trashed';
+import type { StarterRulesAsk } from '../api/starter-rules-ask';
 import {
   offlineBackend,
   setOfflineBackend,
@@ -84,6 +85,10 @@ export type OfflineProjectRecord = {
   // and on this plan's cards alone. Optional: a record without them has none, or (written before threads) holds each
   // card's old single thread in its `fields.comments`, read as its first thread (offline-threads.ts).
   threads?: CardThread[];
+  // The Plan template whose starter rules the plan starts with once it is saved to the cloud
+  // (docs/specs/026-plan/plan-templates.md "Starter rules"): set when it is made from one, or Start Planning puts one
+  // on its first tab, and sent with the sync's create. Optional: a record without it gets none.
+  starterRules?: StarterRulesAsk;
 };
 
 // A local project's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md
@@ -268,6 +273,7 @@ export async function offlineCreateProject(
     tabs?: Tab[];
     itemTypes?: ItemTypeCatalogue | null;
     sheets?: SheetJson[];
+    starterRules?: StarterRulesAsk | undefined;
   },
   now: number,
   extra: {
@@ -285,6 +291,7 @@ export async function offlineCreateProject(
     tabs: d.tabs ?? [],
     ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     ...(d.sheets?.length ? { sheets: d.sheets } : {}),
+    ...(d.starterRules ? { starterRules: d.starterRules } : {}),
     opens: { days: [utcDay(now)], lastOpenedAt: now },
   };
   return store.createRecord(rec);
@@ -306,6 +313,15 @@ export async function offlineSaveItemTypes(
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => ({ ...rec, itemTypes, savedAt: now }));
+}
+
+// The template whose starter rules a plan in This Browser starts with once it is saved to the cloud
+// (docs/specs/026-plan/plan-templates.md "Starter rules"): Start Planning's on its first tab.
+export async function offlineSaveStarterRules(
+  id: string,
+  starterRules: StarterRulesAsk,
+): Promise<void> {
+  await writeLive(id, (rec) => ({ ...rec, starterRules }));
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {

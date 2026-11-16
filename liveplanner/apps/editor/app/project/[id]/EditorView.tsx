@@ -49,6 +49,7 @@ import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { SnapshotsDoorProvider } from '@liveworkspace/snapshots/ui';
 import { AutomationsHost } from '@/components/automations/AutomationsHost';
+import { PendingStarterRules } from '@/components/automations/PendingStarterRules';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
@@ -222,6 +223,8 @@ export function EditorView() {
       planName={projectName}
       signedIn={!!accountUserId}
     >
+      {/* A template's starter rules, once the plan it made can hold them (plan-templates.md "Starter rules"). */}
+      <PendingStarterRules tabId={tabs[0]?.id} projectId={ctx.projectId} offline={isOffline} />
       <SnapshotsDoorProvider door={snapshotsDoor}>
         <CalendarFeedHost scope={calendarFeedScope}>
           <RoadmapHost scope={roadmapScope} boardIds={roadmapBoards}>

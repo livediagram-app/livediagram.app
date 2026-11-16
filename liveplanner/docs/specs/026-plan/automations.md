@@ -1343,8 +1343,12 @@ part at fault, the words, and the command to run next).
 
 ## Copies, exports and deletes
 
-- A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty. A plan made from
-  a template has none.
+- A **duplicated** plan keeps its rules, each as it was (on or off), its Audit Trail and counts empty.
+- A plan made from a template with a board starts with that template's **starter rules**
+  ([Plan templates](plan-templates.md#starter-rules)): Templates gallery rules filled from its columns and types, on
+  when they need nothing picked, off until people are picked. None sends an email or calls a webhook. They are made
+  for a signed-in person's cloud plan, and for a plan in This Browser the moment it is saved to the cloud; a guest's
+  plan starts with none.
 - An **export** of a plan (its file) carries its rules (who made and last changed each by name and colour, without account ids); an import of that file brings them back off, each checked as
   a save checks it against the file's card types: a rule a save would refuse (one that does not read, a name an
   earlier one holds, a Field Changed on a field it never hears, a Checkbox set to anything but Yes or No) is left

@@ -212,11 +212,66 @@ working, not described:
   Planner, Content Calendar, Event Planner, Study Planner, Client Onboarding, Editorial Pipeline and Trip Planner say
   so.
 - **WIP limits, votes, hand-offs, rows by a field** and the rest, each where the work needs it (the tables below).
-- **Automations rules are not made by a template.** A rule acts for a signed-in Editor and runs on the plan's
-  server-side alarm, so a plan made by a guest or in This Browser could hold none, and a template's rule would have
-  no one to be **Made by** ([Automations](automations.md#copies-exports-and-deletes): "A plan made from a template
-  has none"). The Automations screen's Templates gallery fills its rules from the plan's own columns and types, so a
-  template's plan is ready for them.
+- **Starter rules** on every template with a board, made in the plan's Automations (below).
+
+### Starter rules
+
+Every template with a board starts with [Automations](automations.md) rules picked for its work, so its board already
+does the dull bits and the Automations screen opens on rules that fit the plan rather than an empty list. A Sheet
+template and a blank plan have no cards for a rule to act on, and start with none.
+
+- **What they are.** Each is the Templates gallery's own rule (Automations "The Automations screen": Templates),
+  filled from the columns and card types the template makes, under its gallery name, named free among the plan's rules
+  so making them again never doubles a name.
+- **On or off.** A rule ships on only when it moves, sets a field, flags, assigns or comments and has nothing left to
+  pick. **Triage New Bugs**, **Route Reviews** and **Share Out Form Responses** ship off
+  without their Assign in Turn step, which a save refuses until it names 2 to 10 people: whoever turns one on adds the
+  step with the people on the plan.
+- **Never outgoing.** No starter rule sends an email, calls a webhook, mentions anyone, makes or copies a card,
+  archives or asks the AI; a test holds every template's starter rules to moves, fields, labels, flags, assignees and
+  comments, and every template with a board to at least one rule that is on.
+- **Who gets them.** A rule acts for a signed-in Editor and runs on the plan's server, so the rules are made where the
+  plan is saved to an account by a signed-in person:
+  - **A cloud plan** made from the editor's wizard (/new, the workspace's New): its create names the template
+    (`starterRules` on `POST /api/projects`, [API](../015-api/api.md)) and the server makes them as it makes the plan.
+  - **The API's create** with a seeded template tab (the MCP's `create_project`, the CLI's `--template`) makes them the
+    same way, for a signed-in person or their API token.
+  - **Start Planning** on a cloud plan's first tab: the editor makes them, as Make Plan makes its own, once it knows the
+    person may.
+  - **A plan in This Browser** keeps its template with the plan (made from the wizard, or Start Planning on its first
+    tab), and its rules are made, on or off as they ship, the moment it is saved to the cloud: Sync Plan's create names
+    the template as the wizard's does.
+  - A guest's cloud plan gets none (a guest can hold no rule; Automations "Who may do what"), nor does a template on a
+    later tab, a copy (it keeps its plan's rules) or an import.
+- **Their time zone** is the person's (the browser's), for a rule that reads one; the API's seeded create uses UTC.
+- **Completed On.** Stamp the Finish Date sets a date field named like Completed On, which the delivery templates'
+  work types carry (their card types below). A card of a type without it is skipped, never failed.
+
+| Template           | On                                                                                 | Off                                                      |
+| ------------------ | ---------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Project Planner    | Stamp the Finish Date, Close the Parent, Assign on Start, Flag Blocked Cards       | Route Reviews                                            |
+| Kanban Board       | Assign on Start, Flag Blocked Cards, Close the Parent                              | Route Reviews, Share Out Form Responses                  |
+| Bug Tracker        | Stamp the Finish Date, Reopen on New Comment, Flag Blocked Cards, Close the Parent | Triage New Bugs, Route Reviews, Share Out Form Responses |
+| Team Retro         | Assign on Start, Give It a Due Date                                                |                                                          |
+| Weekly Planner     | Flag Blocked Cards, Close the Parent                                               |                                                          |
+| Content Calendar   | Assign on Start, Flag Blocked Cards                                                | Route Reviews                                            |
+| Hiring Pipeline    | Assign on Start, Flag Blocked Cards                                                | Share Out Form Responses                                 |
+| OKRs               | Flag Blocked Cards, Close the Parent                                               |                                                          |
+| Product Launch     | Assign on Start, Flag Blocked Cards, Close the Parent                              |                                                          |
+| Feedback Board     | Assign on Start, Flag Blocked Cards                                                | Share Out Form Responses                                 |
+| Event Planner      | Give It a Due Date, Flag Blocked Cards, Close the Parent                           |                                                          |
+| Sales CRM          | Assign on Start, Flag Blocked Cards                                                |                                                          |
+| Help Desk          | Reopen on New Comment, Assign on Start                                             | Route Reviews                                            |
+| Meeting Agenda     | Assign on Start, Give It a Due Date                                                |                                                          |
+| Personal Goals     | Flag Blocked Cards, Close the Parent                                               |                                                          |
+| Study Planner      | Give It a Due Date, Flag Blocked Cards                                             |                                                          |
+| Sprint Board       | Stamp the Finish Date, Close the Parent, Assign on Start, Flag Blocked Cards       | Triage New Bugs, Route Reviews                           |
+| Client Onboarding  | Assign on Start, Flag Blocked Cards, Close the Parent                              |                                                          |
+| Editorial Pipeline | Assign on Start, Give It a Due Date, Flag Blocked Cards                            |                                                          |
+| Trip Planner       | Flag Blocked Cards                                                                 |                                                          |
+
+The rules are built from the template's own boards (a few milliseconds), in the server's create or, for Start
+Planning, in a chunk the editor loads only then; each Start Planning rule is one Automations request.
 
 ### Forms a template holds
 

@@ -8,7 +8,7 @@ import {
   untitledNameForTemplate,
   type TemplateKind,
 } from '@liveplanner/templates';
-import { apiCreateProject } from '@/lib/api-client';
+import { apiCreateProject, starterRulesAskOf } from '@/lib/api-client';
 import { NEW_PROJECT_THEME_ID, newProjectContent } from '@/lib/new-project-content';
 import { newProjectKind } from '@/lib/new-project-params';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
@@ -63,6 +63,8 @@ export async function createProjectInPlace(
     teamId: request.teamId,
     folderId: request.folderId,
     intent: creationIntentOf(tab, templateFamilyOf(templateKind)),
+    // Its template's starter rules, made by the create (docs/specs/026-plan/plan-templates.md "Starter rules").
+    starterRules: starterRulesAskOf(templateKind),
   });
   return projectId;
 }

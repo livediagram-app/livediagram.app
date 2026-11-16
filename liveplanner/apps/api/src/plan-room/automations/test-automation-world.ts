@@ -55,7 +55,7 @@ const WORKBENCH = {
   expiresAt: 9e15,
 } as never;
 
-function identityOf(planId: string, who: Caller): RouteIdentity {
+export function identityOf(planId: string, who: Caller): RouteIdentity {
   const account = who === 'guest' || who === 'link_visitor' ? null : USER;
   const owner = who === 'link_visitor' ? null : (account ?? 'guest_owner');
   return {
