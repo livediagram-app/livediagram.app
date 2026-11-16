@@ -35,6 +35,14 @@ describe('node-isolated', () => {
     ).toEqual([]);
   });
 
+  it('skips a marker on a card: a badge, a step number, a sticker or an icon is part of what it marks', () => {
+    const graph = [box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b')];
+    for (const shape of ['badge', 'step', 'sticker', 'icon']) {
+      const mark = box('mark', -12, -12, { shape, width: 24, height: 24, label: 'F' });
+      expect(of(lint(tabOf(...graph, mark)), 'node-isolated'), shape).toEqual([]);
+    }
+  });
+
   it("skips the hub of a ring of connected boxes: a cycle's theme at its centre", () => {
     const ring = [box('n', 200, 0), box('e', 400, 200), box('s', 200, 400), box('w', 0, 200)];
     const loop = [

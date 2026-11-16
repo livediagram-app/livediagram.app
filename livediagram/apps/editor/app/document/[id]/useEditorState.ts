@@ -152,6 +152,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromViewport,
     fromFollowing,
     fromEditing,
+    fromPresentation,
   });
   const fromSessionTools = useEditorSessionTools({
     fromDocument,

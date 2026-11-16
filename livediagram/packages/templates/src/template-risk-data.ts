@@ -34,7 +34,7 @@ export const RISK_BANDS: { band: RiskBand; range: string; max: number; bg: strin
     { band: 'Low', range: '1 to 4', max: 4, bg: '#bbf7d0', ink: '#14532d' },
     { band: 'Medium', range: '5 to 9', max: 9, bg: '#fde68a', ink: '#713f12' },
     { band: 'High', range: '10 to 16', max: 16, bg: '#fdba74', ink: '#7c2d12' },
-    { band: 'Critical', range: '20 to 25', max: 25, bg: '#f87171', ink: '#450a0a' },
+    { band: 'Critical', range: '20+', max: 25, bg: '#f87171', ink: '#450a0a' },
   ];
 
 // Each score's own shade, so the grid runs smoothly from green through

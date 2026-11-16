@@ -301,6 +301,8 @@ function movements(components: Map<string, ShapeElement>, at: At): Element[] {
     out.push(ghost, {
       ...createPinnedArrow(chip.id, 'e', ghost.id, 'w'),
       label: c.heading.caption,
+      // A caption a value-chain line would strike sits further along its own arrow.
+      ...(c.heading.at !== undefined ? { labelOffset: { t: c.heading.at, offset: 0 } } : {}),
       strokeColor: MOVE,
       arrowheadColor: MOVE,
       strokeWidth: 2.5,

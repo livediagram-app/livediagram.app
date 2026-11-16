@@ -88,14 +88,22 @@ import { buildValueStreamMap } from './template-builders-value-stream';
 import { buildBoardGrid } from './template-builders-board-grid';
 import { buildConceptMap } from './template-builders-concept-map';
 import { buildNetworkDiagram } from './template-builders-network';
+import { withTemplateNote } from './template-session-kit';
+import { buildC4Container, buildC4Context } from './template-builders-c4';
+import { buildArchitectureDecisionRecord } from './template-builders-adr';
+import { buildSprintPlanning } from './template-builders-sprint-planning';
+import { buildInterviewSynthesis } from './template-builders-interview-synthesis';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
 // The output lands settled (docs/specs/009-elements/blueprints/badge.md "Settling"): a builder sizes a step
 // after making it, so its number is set to half the disc here, as a stored board reads back, and a
-// preview or an agent's create shows what the editor will.
+// preview or an agent's create shows what the editor will. Every template then carries its note, and a Workshop
+// board missing them its session kit (docs/specs/008-canvas/canvas-and-palette.md "What a template shows").
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
-  return settleChips([], buildUnsettled(kind, cx, cy), { attachLoose: false });
+  return settleChips([], withTemplateNote(kind, buildUnsettled(kind, cx, cy)), {
+    attachLoose: false,
+  });
 }
 
 function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
@@ -268,6 +276,16 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildConceptMap(cx, cy);
     case 'network-diagram':
       return buildNetworkDiagram(cx, cy);
+    case 'c4-context':
+      return buildC4Context(cx, cy);
+    case 'c4-container':
+      return buildC4Container(cx, cy);
+    case 'architecture-decision-record':
+      return buildArchitectureDecisionRecord(cx, cy);
+    case 'sprint-planning':
+      return buildSprintPlanning(cx, cy);
+    case 'interview-synthesis':
+      return buildInterviewSynthesis(cx, cy);
   }
 }
 

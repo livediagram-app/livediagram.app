@@ -251,10 +251,12 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
     to: Node,
     toA: Anchor,
     label: string,
-    style: { async?: boolean; angled?: boolean; inLane?: number } = {},
+    style: { async?: boolean; angled?: boolean; inLane?: number; path?: boolean } = {},
   ): Element => ({
     ...createPinnedArrow(from.id, fromA, to.id, toA),
     label,
+    // One order's path, customer to courier: moving dots trace it, never dashes a reader would take for an event line.
+    ...(style.path ? { flow: 'dots' as const } : {}),
     ...(style.async ? { strokeStyle: 'dashed' as const } : {}),
     ...(style.angled ? { arrowStyle: 'angled' as const } : {}),
     // A label inside a lane sits on a plate of the lane's own tint, in the
@@ -271,18 +273,18 @@ export function buildSystemArchitecture(cx: number, cy: number): Element[] {
     curvePoints: rake(gatewayExit, { x: auth.x + nodeW / 2, y: auth.y }),
   } as Element;
   const arrows: Element[] = [
-    edge(customerApp, 's', cdn, 'n', 'HTTPS'),
-    edge(cdn, 'e', gateway, 'w', '/api', { inLane: 1 }),
+    edge(customerApp, 's', cdn, 'n', 'HTTPS', { path: true }),
+    edge(cdn, 'e', gateway, 'w', '/api', { inLane: 1, path: true }),
     edge(webShop, 's', gateway, 'n', 'HTTPS'),
     // The kitchen holds a socket open for new orders: down into the empty
     // edge cell beside the gateway, then in through its east face.
     edge(kitchen, 's', gateway, 'e', 'WebSocket', { angled: true, inLane: 1 }),
     toAuth,
-    edge(gateway, 's', orders, 'n', 'gRPC'),
-    edge(orders, 'e', events, 'w', 'publish', { async: true, inLane: 2 }),
-    edge(events, 'e', dispatch, 'w', 'consume', { async: true, inLane: 2 }),
-    edge(dispatch, 'n', push, 's', 'job offer', { async: true }),
-    edge(push, 'n', courierApp, 's', 'notify', { async: true }),
+    edge(gateway, 's', orders, 'n', 'gRPC', { path: true }),
+    edge(orders, 'e', events, 'w', 'publish', { async: true, inLane: 2, path: true }),
+    edge(events, 'e', dispatch, 'w', 'consume', { async: true, inLane: 2, path: true }),
+    edge(dispatch, 'n', push, 's', 'job offer', { async: true, path: true }),
+    edge(push, 'n', courierApp, 's', 'notify', { async: true, path: true }),
     edge(auth, 's', usersDb, 'n', 'SQL'),
     edge(orders, 's', ordersDb, 'n', 'SQL'),
     edge(events, 's', analytics, 'n', 'stream', { async: true }),

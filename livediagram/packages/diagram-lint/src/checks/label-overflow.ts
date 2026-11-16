@@ -12,7 +12,9 @@ import {
   fontSizeFor,
   LABEL_LINE_HEIGHT,
   labelRoom,
+  runFontPx,
   wrapLabel,
+  type TextRun,
 } from '@livediagram/document';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
@@ -31,6 +33,30 @@ function cardCuts(card: ShapeElement): { line: 'title' | 'subtitle'; width: numb
     // The slot widens with the card, so the card grows by what the slot lacks.
     return [{ line, width: Math.ceil(card.width + text.length * px * 0.56 - rect.width) + 1 }];
   });
+}
+
+// A rich label's paragraphs, each with the px it draws at: a run carries its own size (a bold title over small
+// detail lines), and a paragraph sets at its largest run, as the render does. A plain label is one block at `px`.
+export function labelParagraphs(
+  label: string,
+  runs: unknown,
+  px: number,
+  multiline: boolean,
+): { text: string; px: number }[] {
+  if (!Array.isArray(runs) || !runs.some((r: TextRun) => r.size)) return [{ text: label, px }];
+  const out = [{ text: '', px: 0 }];
+  for (const run of runs as TextRun[]) {
+    const runPx = run.size ? runFontPx(run.size, multiline) : px;
+    run.text.split('\n').forEach((part, i) => {
+      if (i > 0) out.push({ text: '', px: 0 });
+      const at = out[out.length - 1]!;
+      at.text += part;
+      // Only the words a run puts on a line size it: the break that starts a run belongs to the line after it.
+      if (part !== '') at.px = Math.max(at.px, runPx);
+    });
+  }
+  // A blank line (two breaks in a row) keeps the label's own size.
+  return out.map((p) => (p.px === 0 ? { ...p, px } : p));
 }
 
 export const labelOverflow: Check = (ctx) =>
@@ -53,10 +79,17 @@ export const labelOverflow: Check = (ctx) =>
     const label: unknown = Reflect.get(box, 'label');
     if (typeof label !== 'string' || label.trim() === '') return [];
     if (box.textSize === 'scale' || !drawsStandardLabel(box)) return [];
-    const px = fontSizeFor(box.textSize, box.type === 'sticky');
+    const multiline = box.type === 'sticky';
+    const px = fontSizeFor(box.textSize, multiline);
     const room = labelRoom(box);
-    const lines = wrapLabel(label, room.width, estimatedLabelMeasure(px), true).length;
-    const holds = Math.max(1, Math.floor(room.height / (px * LABEL_LINE_HEIGHT)));
+    // Each paragraph wraps at its own size; the label holds the lines whose heights fit the room, in order.
+    const sized = labelParagraphs(label, Reflect.get(box, 'richText'), px, multiline).flatMap((p) =>
+      wrapLabel(p.text, room.width, estimatedLabelMeasure(p.px), true).map(() => p.px),
+    );
+    const lines = sized.length;
+    let used = 0;
+    const fitting = sized.filter((linePx) => (used += linePx * LABEL_LINE_HEIGHT) <= room.height);
+    const holds = Math.max(1, fitting.length);
     if (lines <= holds) return [];
     const ref = refOf(ctx, box.id);
     // Bigger than Small (a preset or an exact px), so dropping to Small is a fix worth offering.

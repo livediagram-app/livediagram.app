@@ -244,7 +244,7 @@ export function buildComicStrip(cx: number, cy: number): Element[] {
       );
     }
     out.push(
-      note(px + 10, py + 10, 210, 44, panel.caption, 'yellow', { textSize: 'lg', rotation: -1.5 }),
+      note(px + 10, py + 10, 300, 44, panel.caption, 'yellow', { textSize: 'lg', rotation: -1.5 }),
       letter(px + PANEL_W - 40, py + 8, 30, 30, `${i + 1}`, {
         textBold: true,
         textAlignX: 'center',

@@ -40,7 +40,7 @@ For directory cards and "short pitch" fields.
 
 > livediagram is a real-time, multiplayer diagram and mindmap editor that works
 > without signing in. Open a link and start drawing with your team: live
-> cursors, comments, 82 templates, and undo that never touches anyone else's
+> cursors, comments, 89 templates, and undo that never touches anyone else's
 > work. MIT-licensed and free forever. [46 words]
 
 ---
@@ -82,7 +82,7 @@ For longer listing bodies and "about this project" sections.
 > handles, configurable thickness and arrowheads, and optional labels. A
 > Freehand pen sketches, and a Shape Pen snaps your scribbles into clean
 > rectangles, circles, and diamonds. Multi-select, groups, and a format painter
-> keep large diagrams manageable. Start from 82 templates, recolor the whole
+> keep large diagrams manageable. Start from 89 templates, recolor the whole
 > canvas with 31 themes, and organize work into tabs, nested folders and team
 > spaces.
 >
@@ -130,7 +130,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > #### Start fast, stay organized
 >
-> Open one of 82 templates (mind map, flowchart, Gantt, SWOT, retrospective,
+> Open one of 89 templates (mind map, flowchart, Gantt, SWOT, retrospective,
 > org chart, timeline, fishbone, user journey, and more) or start
 > blank. Recolor an entire diagram, every shape and arrow, with one of 31 themes
 > in a single click. Group related work into tabs within a document, link across

@@ -86,7 +86,8 @@ export function buildStateMachine(cx: number, cy: number): Element[] {
   const accepted = state('Accepted', 2);
   const preparing = state('Preparing', 3);
   const ready = state('Ready', 4);
-  const onTheWay = state('Out for delivery', 5);
+  // The one long name: a wider pill keeps it on one line.
+  const onTheWay = state('Out for delivery', 5, 0, { x: colX(5) - 104, width: 208 });
   const delivered = state('Delivered', 6, 0, { colorPreset: 'bold' });
   const rejected = state('Rejected', 1, -rowGap, { colorPreset: 'outline' });
   const cancelled = state('Cancelled', 1, rowGap, { colorPreset: 'outline' });
@@ -141,7 +142,7 @@ export function buildStateMachine(cx: number, cy: number): Element[] {
     go(accepted, 'e', preparing, 'w', 'start cooking'),
     go(preparing, 'e', ready, 'w', 'food packed'),
     // Leaves the kitchen box, so its label sits past the border.
-    go(ready, 'e', onTheWay, 'w', 'pickup [PIN ok]', { labelOffset: { t: 0.62, offset: 0 } }),
+    go(ready, 'e', onTheWay, 'w', 'pickup [PIN ok]', { labelOffset: { t: 0.5, offset: 0 } }),
     go(onTheWay, 'e', delivered, 'w', 'handed over'),
     go(delivered, 'e', doneFinal, 'w'),
     // Vertical labels wrap narrow, so they break where UML's syntax does.

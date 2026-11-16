@@ -304,9 +304,9 @@ export function buildCrazyEights(cx: number, cy: number): Element[] {
     },
   );
 
-  // A pencil tossed on the corner of the paper.
+  // A pencil tossed on the corner of the paper, inside its edge so it moves with the sheet.
   out.push({
-    ...createShape('sticker', sx + SHEET_W - 58, top - 26),
+    ...createShape('sticker', sx + SHEET_W - 90, top + 8),
     width: 76,
     height: 76,
     stickerId: 'emoji-pencil',

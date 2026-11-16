@@ -31,6 +31,7 @@ async function land(tab: Tab): Promise<Tab> {
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
       putToolDown: vi.fn(),
+      appendSlides: vi.fn(),
     }),
   );
   await act(async () => {

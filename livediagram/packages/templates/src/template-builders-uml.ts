@@ -138,8 +138,8 @@ const CLASSES: Klass[] = [
   },
 ];
 
-// [from, anchor, to, anchor, head at `to`, label]
-const LINKS: [string, Anchor, string, Anchor, ArrowheadShape, string?][] = [
+// [from, anchor, to, anchor, head at `to`, label, dashed]
+const LINKS: [string, Anchor, string, Anchor, ArrowheadShape, string?, boolean?][] = [
   ['Customer', 's', 'Order', 'n', 'line', 'places · 1 : 0..*'],
   ['Order', 'w', '«abstract» Payment', 'e', 'line', 'paid by · 1 : 1..*'],
   ['Order', 'e', 'Restaurant', 'w', 'line', 'received by · 0..* : 1'],
@@ -148,14 +148,17 @@ const LINKS: [string, Anchor, string, Anchor, ArrowheadShape, string?][] = [
   ['OrderLine', 'e', 'MenuItem', 'w', 'line', 'of · 0..* : 1'],
   ['CardPayment', 'n', '«abstract» Payment', 's', 'triangle-hollow'],
   ['WalletPayment', 'n', '«abstract» Payment', 's', 'triangle-hollow'],
+  // A dependency (dashed, open head): an Order's status is one of OrderStatus's literals.
+  ['Order', 'ne', '«enumeration» OrderStatus', 'w', 'line', '«use» status', true],
 ];
 
 // The key: one short line per relationship kind, head on the right.
-const KEY: [ArrowheadShape, string][] = [
+const KEY: [ArrowheadShape, string, boolean?][] = [
   ['triangle-hollow', 'is a kind of (inherits)'],
   ['diamond', 'is made of (composition)'],
   ['diamond-hollow', 'has (aggregation)'],
   ['line', 'knows about (association)'],
+  ['line', 'uses (dependency)', true],
 ];
 
 export function buildUmlClass(cx: number, cy: number): Element[] {
@@ -206,12 +209,13 @@ export function buildUmlClass(cx: number, cy: number): Element[] {
     elements.push(box);
   }
 
-  for (const [from, fromA, to, toA, head, label] of LINKS) {
+  for (const [from, fromA, to, toA, head, label, dashed] of LINKS) {
     elements.push({
       ...createPinnedArrow(idByName.get(from)!, fromA, idByName.get(to)!, toA),
       arrowheadShape: head,
       arrowheadSize: 'large',
       ...(label ? { label } : {}),
+      ...(dashed ? { strokeStyle: 'dashed' as const } : {}),
     });
   }
 
@@ -227,13 +231,14 @@ export function buildUmlClass(cx: number, cy: number): Element[] {
     textBold: true,
     textAlignX: 'left',
   });
-  KEY.forEach(([head, meaning], i) => {
+  KEY.forEach(([head, meaning, dashed], i) => {
     const y = keyTop + 44 + i * 30;
     elements.push(
       {
         ...createArrow(keyX, y, keyX + 52, y),
         arrowheadShape: head,
         arrowheadSize: 'large',
+        ...(dashed ? { strokeStyle: 'dashed' as const } : {}),
       },
       {
         ...createText(keyX + 66, y - 12),
