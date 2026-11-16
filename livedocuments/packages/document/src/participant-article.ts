@@ -8,13 +8,19 @@
 import { articlesOf, sameArticleValue, type ArticleBlock, type ArticleFlow } from './article-flow';
 import { applyArticleOps, diffArticleFlow, type ArticleOp } from './article-flow-ops';
 import { withArticleFlow } from './article-pages';
+import { suggestionRuleHolds } from './article-suggestions';
 import type { Tab } from './index';
 import { pagesOf } from './page';
 
 // The blocks that are writing: an allow-list, so a new kind of block is an Editor's until someone decides otherwise.
 const WRITING_BLOCKS: ReadonlySet<ArticleBlock['type']> = new Set(['paragraph', 'list', 'code']);
 
-export type ParticipantArticleRefusal = 'tab-locked' | 'missing' | 'locked' | 'not-writing';
+export type ParticipantArticleRefusal =
+  'tab-locked' | 'missing' | 'locked' | 'not-writing' | 'not-suggestion';
+
+/** How the rule reads a Participant: `suggestBy` (its collab key) when it is on Suggest Only, so its writing must be
+ *  suggestions of its own (docs/specs/007-editor/suggestions.md "The server is the rule"). */
+export type ParticipantArticleOptions = { suggestBy?: string | null };
 
 export type ParticipantArticleResult =
   // `changed` is false when the stored article already said it, so nothing needs writing or relaying.
@@ -46,6 +52,7 @@ export function applyParticipantArticleOps(
   tab: Tab,
   flow: string,
   ops: readonly ArticleOp[],
+  options: ParticipantArticleOptions = {},
 ): ParticipantArticleResult {
   if (tab.locked === true) return refuse('tab-locked');
   const stored = articlesOf(tab)[flow];
@@ -57,12 +64,18 @@ export function applyParticipantArticleOps(
     next = applyArticleOps(next, [op]);
   }
   const changed = !sameArticleValue(stored, next);
+  if (changed && options.suggestBy && !suggestionRuleHolds(stored, next, options.suggestBy))
+    return refuse('not-suggestion');
   return { result: 'applied', tab: changed ? withArticleFlow(tab, flow, next) : tab, changed };
 }
 
 /** The editor's side: whether a change to a tab's articles, `before` to `after`, is writing the room would take
  *  whole. No article added or removed, and every changed article's ops pass the rule. */
-export function participantArticlesChange(before: Tab, after: Tab): boolean {
+export function participantArticlesChange(
+  before: Tab,
+  after: Tab,
+  options: ParticipantArticleOptions = {},
+): boolean {
   const was = articlesOf(before);
   const now = articlesOf(after);
   const flows = new Set([...Object.keys(was), ...Object.keys(now)]);
@@ -71,7 +84,7 @@ export function participantArticlesChange(before: Tab, after: Tab): boolean {
     const b = now[flow];
     if (!a || !b) return false;
     if (a === b || sameArticleValue(a, b)) continue;
-    const outcome = applyParticipantArticleOps(before, flow, diffArticleFlow(a, b));
+    const outcome = applyParticipantArticleOps(before, flow, diffArticleFlow(a, b), options);
     if (outcome.result === 'refused') return false;
   }
   return true;

@@ -12,6 +12,7 @@ import {
   type ArticleFlow,
   type ArticleRun,
 } from './article-flow';
+import { rejectedArticleFlow } from './article-suggestions';
 import {
   closesFence,
   escapeClosingHashes,
@@ -299,8 +300,10 @@ function textLength(line: string): number {
   return line.length - refs * (SPACE_REF.length - 1);
 }
 
-/** An article's writing as Markdown, in the form articleFromMarkdown reads. */
-export function articleToMarkdown(flow: ArticleFlow): string {
+/** An article's writing as Markdown, in the form articleFromMarkdown reads: its rejected view, so unaccepted
+ *  suggestions never leave the editor as text (docs/specs/007-editor/suggestions.md "The server is the rule"). */
+export function articleToMarkdown(written: ArticleFlow): string {
+  const flow = rejectedArticleFlow(written);
   const blocks = [...flow.blocks];
   const front: string[] = [];
   // The footnotes' texts, numbered as their references are written, the notes after the last block.
@@ -397,8 +400,9 @@ export function articleToMarkdown(flow: ArticleFlow): string {
   return lines.join('\n') + (lines.length ? '\n' : '');
 }
 
-/** The words of an article's writing (its runs and code), as the answers count them. */
-export function articleWordCount(flow: ArticleFlow): number {
+/** The words of an article's writing (its runs and code), as the answers count them: its rejected view. */
+export function articleWordCount(written: ArticleFlow): number {
+  const flow = rejectedArticleFlow(written);
   let words = 0;
   for (const b of flow.blocks) {
     // A footnote's reference is no word; its note's words count.
@@ -416,7 +420,8 @@ export function articleWordCount(flow: ArticleFlow): number {
 }
 
 /** An article's title: its first title block's text, else its first heading's, else "Untitled". */
-export function articleTitleOf(flow: ArticleFlow): string {
+export function articleTitleOf(written: ArticleFlow): string {
+  const flow = rejectedArticleFlow(written);
   const textOf = (b: ArticleBlock | undefined) =>
     b && 'runs' in b ? articleRunsText(b.runs).trim() : '';
   const title = textOf(flow.blocks.find((b) => b.type === 'paragraph' && b.style === 'title'));

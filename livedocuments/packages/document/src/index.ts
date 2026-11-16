@@ -147,6 +147,7 @@ export * from './flashcard-guard';
 export * from './article-style';
 export * from './article-zones';
 export * from './article-notes';
+export * from './article-suggestions';
 export * from './article-intake';
 export * from './article-markdown';
 export * from './article-markdown-io';
