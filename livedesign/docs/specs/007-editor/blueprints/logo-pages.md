@@ -6,75 +6,75 @@ changes.
 
 ## Domain and naming
 
-| Spec term            | Identifier                                                                                               |
-| -------------------- | -------------------------------------------------------------------------------------------------------- |
-| logo page            | `Page` with `kind: 'logo'`; `PageKind` member `'logo'`                                                   |
-| artboard             | `PageSizeId` `'logo'`; `LOGO_SIDE` (1024)                                                                |
-| safe area            | `pageMargin(page)` for the `'logo'` size (`LOGO_SAFE_FRACTION`)                                          |
-| construction guides  | `LogoGuides` (geometry, `logoGuides(rect)`); views `LogoGuidesSvg`, `LogoPageGuides`                     |
-| guide part, strength | `LogoGuidePart`, `LogoGuideStrength` (`apps/live/lib/logo-guide-prefs.ts`)                               |
-| keyline              | `LogoGuides.keylineCircle`, `.innerCircle`, `.keylineSquare`                                             |
-| mirror               | `LogoToolsView.mirrorOn(pageId)`, `mirrorSettings(pageId)`; `MirrorSettings`; `withMirrorTwins`          |
-| twin                 | what `twinFor(el, pages, use)` returns                                                                   |
-| Mirror Copy          | command id `mirror-copy`; `mirrorCopies`; `LogoToolsView.mirrorCopy`                                     |
-| wordmark type        | `TextElement.letterSpacing`, `.fontWeight`, `.textCase`, `.textArc`; `hasWordmarkType(el)`               |
-| template's note      | `TextElement.templateNote` (`true`); `logoKitTab(tab)` leaves it out                                     |
-| combine              | `CombineOp` (`'unite' \| 'subtract' \| 'intersect' \| 'exclude'`); `combineElements`; `useCombineShapes` |
-| combinable           | `isCombinable(el)`; `combinableSelection(...)`                                                           |
-| contour              | `PathElement.nodes` (the first) and each of `PathElement.subpaths`; `pathContours(el)`                   |
-| logo kit             | `exportLogoKit`; `LOGO_KIT_PNG_SIZES`; `encodeIco`; Export dialog format `'logo-kit'` (`LogoKitPanel`)   |
-| display face         | `DisplayFont` in `DISPLAY_FONTS` (`packages/design/src/display-fonts.ts`); `isDisplayFont(id)`           |
-| display library      | `DisplayFontLibrary` (`apps/live/components/palette/`), offered while `displayFontsOffered`              |
-| outlined text        | `outlineSvgText(svg, fontCss)` (`apps/live/lib/outline-text/outline-svg.ts`); `OutlineError`             |
-| guide preferences    | `UserPreferences.logoGuides` (absent is on), `.logoGuidesHidden`, `.logoGuideStrength`                   |
-| Show Me (logo)       | `usePageTour`, `PageShowMeButton`, `PageTourStage`; `logoTourSteps`; `PageTourApi`                       |
+| Spec term            | Identifier                                                                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| logo page            | `Page` with `kind: 'logo'`; `PageKind` member `'logo'`                                                    |
+| artboard             | `PageSizeId` `'logo'`; `LOGO_SIDE` (1024)                                                                 |
+| safe area            | `pageMargin(page)` for the `'logo'` size (`LOGO_SAFE_FRACTION`)                                           |
+| construction guides  | `LogoGuides` (geometry, `logoGuides(rect)`); views `LogoGuidesSvg`, `LogoPageGuides`                      |
+| guide part, strength | `LogoGuidePart`, `LogoGuideStrength` (`apps/live/lib/logo-guide-prefs.ts`)                                |
+| keyline              | `LogoGuides.keylineCircle`, `.innerCircle`, `.keylineSquare`                                              |
+| mirror               | `LogoToolsView.mirrorOn(pageId)`, `mirrorSettings(pageId)`; `MirrorSettings`; `withMirrorTwins`           |
+| twin                 | what `twinFor(el, pages, use)` returns                                                                    |
+| Mirror Copy          | command id `mirror-copy`; `mirrorCopies`; `LogoToolsView.mirrorCopy`                                      |
+| wordmark type        | `TextElement.letterSpacing`, `.fontWeight`, `.textCase`, `.textArc`; `hasWordmarkType(el)`                |
+| template's note      | `TextElement.templateNote` (`true`); `logoKitTab(tab)` leaves it out                                      |
+| combine              | `CombineOp` (`'unite' \| 'subtract' \| 'intersect' \| 'exclude'`); `combineElements`; `useCombineShapes`  |
+| combinable           | `isCombinable(el)`; `combinableSelection(...)`                                                            |
+| contour              | `PathElement.nodes` (the first) and each of `PathElement.subpaths`; `pathContours(el)`                    |
+| logo kit             | `exportLogoKit`; `LOGO_KIT_PNG_SIZES`; `encodeIco`; Export dialog format `'logo-kit'` (`LogoKitPanel`)    |
+| display face         | `DisplayFont` in `DISPLAY_FONTS` (`packages/design/src/display-fonts.ts`); `isDisplayFont(id)`            |
+| display library      | `DisplayFontLibrary` (`apps/live/components/palette/`), offered while `displayFontsOffered`               |
+| outlined text        | `outlineSvgText(svg, fontCss)` (`packages/vector-export/src/outline-text/outline-svg.ts`); `OutlineError` |
+| guide preferences    | `UserPreferences.logoGuides` (absent is on), `.logoGuidesHidden`, `.logoGuideStrength`                    |
+| Show Me (logo)       | `usePageTour`, `PageShowMeButton`, `PageTourStage`; `logoTourSteps`; `PageTourApi`                        |
 
 No synonyms: the UI says **Logo**, **Guides**, **Mirror**, **Combine** (Unite, Subtract, Intersect,
 Exclude), **Wordmark**, **Logo Kit**.
 
 ## Constants and configuration
 
-| Constant                                   | Value                                         | Where                                             | Provenance / safe range                                          |
-| ------------------------------------------ | --------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------- |
-| `LOGO_SIDE`                                | 1024                                          | `packages/design/src/page.ts`                     | The largest common app-icon master; 512 to 2048                  |
-| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/design/src/page.ts`                     | Spec; 0.05 to 0.15                                               |
-| `LOGO_KEYLINE_CIRCLE`                      | 0.8 (diameter / side)                         | `packages/design/src/logo-page.ts`                | Inscribed in the safe area                                       |
-| `LOGO_INNER_CIRCLE`                        | 0.5                                           | `packages/design/src/logo-page.ts`                | Spec                                                             |
-| `LOGO_KEYLINE_SQUARE`                      | 0.64                                          | `packages/design/src/logo-page.ts`                | Spec (Material's 18/24 of the 20/24 live area, rounded)          |
-| `LOGO_GRID_DIVISIONS`                      | 8                                             | `packages/design/src/logo-page.ts`                | Spec                                                             |
-| `LOGO_GUIDE_ALPHA`                         | faint .2/.08, medium .35/.15, strong .6/.3    | `apps/live/lib/logo-guide-prefs.ts`               | Guides / grid opacity per strength                               |
-| `MIRROR_AXIS_TOLERANCE`                    | 0.01 (of the artboard's width)                | `packages/design/src/element-mirror.ts`           | Spec; 0.005 to 0.03                                              |
-| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `packages/design/src/wordmark.ts`                 | Spec                                                             |
-| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `packages/design/src/wordmark.ts`                 | Spec                                                             |
-| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `packages/design/src/wordmark.ts`                 | The weights `fonts.ts` loads for every catalogue font            |
-| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `packages/design/src/wordmark.ts`                 | Room kept for glyphs above / below the arc's baseline            |
-| `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                | Spec ("a quarter of a pixel")                                    |
-| `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`               | Collinear merge distance; well under a device pixel              |
-| `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                | Refused above as Too detailed; measured runs stay under 4 ms     |
-| `SIMPLIFY_TOLERANCE_PX`                    | 0.5                                           | `apps/live/lib/path-simplify.ts`                  | Spec ("never moving the outline more than half a pixel")         |
-| `SIMPLIFY_MIN_NODES`                       | 12                                            | `apps/live/lib/path-simplify.ts`                  | Spec ("12 or more plain corners")                                |
-| `SHARP_TURN_DEGREES`                       | 50                                            | `apps/live/lib/path-simplify.ts`                  | A traced curve turns well under it a point; 30 to 70             |
-| `FIRST_CUT_SHARE` / `MAX_PASSES`           | 0.01 (of the contour's size) / 12             | `apps/live/lib/path-simplify.ts`                  | First cut before refinement; passes before giving up             |
-| `MAX_PATH_NODES`                           | 5,000 (across all contours)                   | `packages/design/src/validate.ts`                 | Existing                                                         |
-| `LOGO_KIT_PNG_SIZES`                       | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
-| `LOGO_ICO_SIZES`                           | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
-| `BUTTON_ROOM` / `LABELLED_ROOM`            | 28 px / 72 px                                 | `apps/live/components/canvas/LogoTitleBar.tsx`    | Title-bar room a control takes, icon-only / named                |
-| `SNAP_POINTS_NEAR_PX`                      | 64 px                                         | `apps/live/components/canvas/GuideSnapPoints.tsx` | Screen px round the pointer within which a guide crossing shows  |
-| `LOGO_GUIDE_SNAP_PX`                       | 8 px                                          | `apps/live/lib/logo-guide-snapping.ts`            | Spec ("within 8 screen px")                                      |
-| `TIDY_GUIDE_PX`                            | 16 px                                         | `apps/live/lib/logo-guide-snapping.ts`            | Spec ("within 16 screen px")                                     |
-| `TIDY_TOLERANCE` / `TIDY_MIN_TOLERANCE_PX` | 0.05 (of the diagonal) / 2 px                 | `apps/live/lib/stroke-tidy.ts`                    | Spec ("5% of the element's size, 2 px at least")                 |
-| `TIDY_SQUARE_DEGREES`                      | 12                                            | `apps/live/lib/stroke-tidy.ts`                    | Spec ("within 12 degrees of level or upright")                   |
-| `LOGO_PAGE_GUIDES_MAX`                     | 200                                           | `apps/live/lib/logo-page-guides.ts`               | Spec ("the latest 200 pages"); about 10 KB of local storage      |
-| `LOGO_PALETTE_OPEN_RETRY_MS`               | 400 ms                                        | `apps/live/hooks/canvas/useLogoPaletteSwitch.ts`  | Second ask on opening, for a palette that mounts after the pages |
-| `RADIAL_COPIES`                            | 3, 4, 5, 6, 8                                 | `packages/design/src/element-symmetry.ts`         | A radial mirror's choices of copies                              |
-| `DEFAULT_MIRROR`                           | Vertical, 6 copies, merge on                  | `packages/design/src/element-symmetry.ts`         | Mirror settings before any are chosen                            |
-| `THUMB_W`                                  | 120 px                                        | `apps/live/components/canvas/layout-thumb.tsx`    | Two layout tiles to a row (user request, every kind)             |
-| `DISPLAY_FONTS.length`                     | 90                                            | `packages/design/src/display-fonts.ts`            | Spec ("about 50 to 100"); a closed list, OFL only                |
-| `SYNTHETIC_ITALIC_SKEW`                    | 0.25 (tan of the slant)                       | `apps/live/lib/outline-text/glyph-paths.ts`       | Chromium and Skia's fake italic                                  |
-| `SYNTHETIC_BOLD_RATIO`                     | 1/24 at 9 px to 1/32 at 36 px and up          | `apps/live/lib/outline-text/glyph-paths.ts`       | Skia's fake-bold stroke, interpolated by size                    |
-| `OUTLINE_PRECISION`                        | 2 (decimals)                                  | `apps/live/lib/outline-text/glyph-paths.ts`       | 0.01 px, well inside the 0.5 px fidelity                         |
-| `LOGO_KIT_FALLBACK_FONT`                   | `inter`                                       | `apps/live/lib/export-logo-kit.ts`                | Spec ("set in Inter")                                            |
-| `DISPLAY_LIBRARY_LIST_MAX_PX`              | 240 px                                        | `apps/live/components/palette/DisplayFontLibrary` | About six rows in view inside a menu flyout                      |
+| Constant                                   | Value                                         | Where                                                    | Provenance / safe range                                          |
+| ------------------------------------------ | --------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
+| `LOGO_SIDE`                                | 1024                                          | `packages/design/src/page.ts`                            | The largest common app-icon master; 512 to 2048                  |
+| `LOGO_SAFE_FRACTION`                       | 0.1                                           | `packages/design/src/page.ts`                            | Spec; 0.05 to 0.15                                               |
+| `LOGO_KEYLINE_CIRCLE`                      | 0.8 (diameter / side)                         | `packages/design/src/logo-page.ts`                       | Inscribed in the safe area                                       |
+| `LOGO_INNER_CIRCLE`                        | 0.5                                           | `packages/design/src/logo-page.ts`                       | Spec                                                             |
+| `LOGO_KEYLINE_SQUARE`                      | 0.64                                          | `packages/design/src/logo-page.ts`                       | Spec (Material's 18/24 of the 20/24 live area, rounded)          |
+| `LOGO_GRID_DIVISIONS`                      | 8                                             | `packages/design/src/logo-page.ts`                       | Spec                                                             |
+| `LOGO_GUIDE_ALPHA`                         | faint .2/.08, medium .35/.15, strong .6/.3    | `apps/live/lib/logo-guide-prefs.ts`                      | Guides / grid opacity per strength                               |
+| `MIRROR_AXIS_TOLERANCE`                    | 0.01 (of the artboard's width)                | `packages/design/src/element-mirror.ts`                  | Spec; 0.005 to 0.03                                              |
+| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `packages/design/src/wordmark.ts`                        | Spec                                                             |
+| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `packages/design/src/wordmark.ts`                        | Spec                                                             |
+| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `packages/design/src/wordmark.ts`                        | The weights `fonts.ts` loads for every catalogue font            |
+| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `packages/design/src/wordmark.ts`                        | Room kept for glyphs above / below the arc's baseline            |
+| `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                       | Spec ("a quarter of a pixel")                                    |
+| `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`                      | Collinear merge distance; well under a device pixel              |
+| `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                       | Refused above as Too detailed; measured runs stay under 4 ms     |
+| `SIMPLIFY_TOLERANCE_PX`                    | 0.5                                           | `apps/live/lib/path-simplify.ts`                         | Spec ("never moving the outline more than half a pixel")         |
+| `SIMPLIFY_MIN_NODES`                       | 12                                            | `apps/live/lib/path-simplify.ts`                         | Spec ("12 or more plain corners")                                |
+| `SHARP_TURN_DEGREES`                       | 50                                            | `apps/live/lib/path-simplify.ts`                         | A traced curve turns well under it a point; 30 to 70             |
+| `FIRST_CUT_SHARE` / `MAX_PASSES`           | 0.01 (of the contour's size) / 12             | `apps/live/lib/path-simplify.ts`                         | First cut before refinement; passes before giving up             |
+| `MAX_PATH_NODES`                           | 5,000 (across all contours)                   | `packages/design/src/validate.ts`                        | Existing                                                         |
+| `LOGO_KIT_PNG_SIZES`                       | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                       | Spec                                                             |
+| `LOGO_ICO_SIZES`                           | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                       | Spec                                                             |
+| `BUTTON_ROOM` / `LABELLED_ROOM`            | 28 px / 72 px                                 | `apps/live/components/canvas/LogoTitleBar.tsx`           | Title-bar room a control takes, icon-only / named                |
+| `SNAP_POINTS_NEAR_PX`                      | 64 px                                         | `apps/live/components/canvas/GuideSnapPoints.tsx`        | Screen px round the pointer within which a guide crossing shows  |
+| `LOGO_GUIDE_SNAP_PX`                       | 8 px                                          | `apps/live/lib/logo-guide-snapping.ts`                   | Spec ("within 8 screen px")                                      |
+| `TIDY_GUIDE_PX`                            | 16 px                                         | `apps/live/lib/logo-guide-snapping.ts`                   | Spec ("within 16 screen px")                                     |
+| `TIDY_TOLERANCE` / `TIDY_MIN_TOLERANCE_PX` | 0.05 (of the diagonal) / 2 px                 | `apps/live/lib/stroke-tidy.ts`                           | Spec ("5% of the element's size, 2 px at least")                 |
+| `TIDY_SQUARE_DEGREES`                      | 12                                            | `apps/live/lib/stroke-tidy.ts`                           | Spec ("within 12 degrees of level or upright")                   |
+| `LOGO_PAGE_GUIDES_MAX`                     | 200                                           | `apps/live/lib/logo-page-guides.ts`                      | Spec ("the latest 200 pages"); about 10 KB of local storage      |
+| `LOGO_PALETTE_OPEN_RETRY_MS`               | 400 ms                                        | `apps/live/hooks/canvas/useLogoPaletteSwitch.ts`         | Second ask on opening, for a palette that mounts after the pages |
+| `RADIAL_COPIES`                            | 3, 4, 5, 6, 8                                 | `packages/design/src/element-symmetry.ts`                | A radial mirror's choices of copies                              |
+| `DEFAULT_MIRROR`                           | Vertical, 6 copies, merge on                  | `packages/design/src/element-symmetry.ts`                | Mirror settings before any are chosen                            |
+| `THUMB_W`                                  | 120 px                                        | `apps/live/components/canvas/layout-thumb.tsx`           | Two layout tiles to a row (user request, every kind)             |
+| `DISPLAY_FONTS.length`                     | 90                                            | `packages/design/src/display-fonts.ts`                   | Spec ("about 50 to 100"); a closed list, OFL only                |
+| `SYNTHETIC_ITALIC_SKEW`                    | 0.25 (tan of the slant)                       | `packages/vector-export/src/outline-text/glyph-paths.ts` | Chromium and Skia's fake italic                                  |
+| `SYNTHETIC_BOLD_RATIO`                     | 1/24 at 9 px to 1/32 at 36 px and up          | `packages/vector-export/src/outline-text/glyph-paths.ts` | Skia's fake-bold stroke, interpolated by size                    |
+| `OUTLINE_PRECISION`                        | 2 (decimals)                                  | `packages/vector-export/src/outline-text/glyph-paths.ts` | 0.01 px, well inside the 0.5 px fidelity                         |
+| `LOGO_KIT_FALLBACK_FONT`                   | `inter`                                       | `apps/live/lib/export-logo-kit.ts`                       | Spec ("set in Inter")                                            |
+| `DISPLAY_LIBRARY_LIST_MAX_PX`              | 240 px                                        | `apps/live/components/palette/DisplayFontLibrary`        | About six rows in view inside a menu flyout                      |
 
 ## Data and persistence
 
@@ -554,7 +554,7 @@ page, count)`. Both the kit and `LogoKitPanel`'s preview draw `logoKitTab(tab)`:
 - `CategoryChips` (`packages/workbench/src/components/primitives/CategoryChips.tsx`): the chip row the layout gallery
   drew inline, now shared by it and the library.
 
-### Outlined text (`apps/live/lib/outline-text/`, `export-logo-kit.ts`)
+### Outlined text (`packages/vector-export/src/outline-text/`, `export-logo-kit.ts`)
 
 - `logoKitTab(tab)` also gives a tab with no `font` the face `LOGO_KIT_FALLBACK_FONT`, so text with no face of its
   own letters in Inter in every file of the kit and its preview.
@@ -764,7 +764,7 @@ Measured (vitest on this branch):
 | Display library list, resolver, validation        | `packages/design/src/display-fonts.test.ts`                                                                                                                                                                                                        |
 | Display faces load on use, previews               | `apps/live/lib/display-fonts-loader.test.ts`                                                                                                                                                                                                       |
 | Display library picker                            | `apps/live/components/palette/DisplayFontLibrary.test.tsx`                                                                                                                                                                                         |
-| Outlined text: faces, matching, glyphs, mount     | `apps/live/lib/outline-text/*.test.ts`                                                                                                                                                                                                             |
+| Outlined text: faces, matching, glyphs, mount     | `packages/vector-export/src/outline-text/*.test.ts`                                                                                                                                                                                                |
 | Kit outlines, refuses a missing face              | `apps/live/lib/export-logo-kit.test.ts`                                                                                                                                                                                                            |
 
 ## Assets and external resources
@@ -772,7 +772,7 @@ Measured (vitest on this branch):
 - `polygon-clipping@0.15.7` (MIT), from npm, a dependency of `apps/live`, listed on /licences by the
   build-time collector.
 - Icons in layouts come from the existing line-art catalogue; no new images or fonts.
-- `fontkit` (MIT), from npm, a dependency of `apps/live` loaded only by `outline-text/`; listed on /licences by the
+- `fontkit` (MIT), from npm, a dependency of `@liveworkspace/vector-export` loaded only by its `outline-text/`; listed on /licences by the
   build-time collector.
 - The display library's faces: Google Fonts, each under the SIL Open Font License 1.1 (checked against the
   google/fonts repository's `ofl/` folder on 15 November 2026), fetched from fonts.googleapis.com as the eleven

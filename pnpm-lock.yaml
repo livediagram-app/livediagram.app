@@ -421,12 +421,12 @@ importers:
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@liveworkspace/vector-export':
+        specifier: workspace:*
+        version: link:../../../packages/vector-export
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
-      fontkit:
-        specifier: 2.0.4
-        version: 2.0.4
       next:
         specifier: ^16.4.6
         version: 16.4.6(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1519,6 +1519,9 @@ importers:
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@liveworkspace/vector-export':
+        specifier: workspace:*
+        version: link:../../../packages/vector-export
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -2707,6 +2710,9 @@ importers:
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@liveworkspace/vector-export':
+        specifier: workspace:*
+        version: link:../../../packages/vector-export
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -3802,6 +3808,9 @@ importers:
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@liveworkspace/vector-export':
+        specifier: workspace:*
+        version: link:../../../packages/vector-export
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -4851,6 +4860,9 @@ importers:
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@liveworkspace/vector-export':
+        specifier: workspace:*
+        version: link:../../../packages/vector-export
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -8106,6 +8118,40 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/vector-export:
+    dependencies:
+      '@liveworkspace/trusted-types':
+        specifier: workspace:*
+        version: link:../trusted-types
+      fontkit:
+        specifier: 2.0.4
+        version: 2.0.4
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@vitest/coverage-v8':
+        specifier: ^5.1.0
+        version: 5.1.0(vitest@5.1.0)
+      jsdom:
+        specifier: ^31.0.0
+        version: 31.0.0(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.93.0
+        version: 1.93.0(oxlint-tsgolint@7.0.2007)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2

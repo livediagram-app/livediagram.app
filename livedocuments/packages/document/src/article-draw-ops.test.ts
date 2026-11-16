@@ -69,6 +69,27 @@ describe('the writing as SVG', () => {
     );
   });
 
+  // liveworkspace/docs/specs/013-export/vector-pdf.md "Tags": a word carries its block's tag and place for the PDF.
+  it('marks a word with its block’s tag and number, only when it has both', () => {
+    const word = {
+      k: 'text' as const,
+      x: 0,
+      y: 10,
+      family: 'Inter',
+      size: 16,
+      weight: '400',
+      style: 'normal',
+      color: '#111',
+    };
+    const svg = articleOpsToSvg([
+      { ...word, text: 'Heading', tag: 'H2', block: 0 },
+      { ...word, text: 'untagged' },
+      { ...word, text: 'half', tag: 'P' },
+    ]);
+    expect(svg).toContain('data-pdf-tag="H2" data-pdf-block="0" xml:space="preserve">Heading');
+    expect(svg.match(/data-pdf-tag/g)).toHaveLength(1);
+  });
+
   it('dots a line marked as a dash, its gaps twice its width', () => {
     const svg = articleOpsToSvg([
       { k: 'line', x1: 0, y1: 1, x2: 9, y2: 1, stroke: '#000', width: 1.5, dash: true },

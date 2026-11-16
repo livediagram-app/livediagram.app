@@ -53,6 +53,7 @@
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*",
     "@liveworkspace/ui": "workspace:*",
+    "@liveworkspace/vector-export": "workspace:*",
     "@liveworkspace/workbench": "workspace:*",
     "next": "^16.4.6",
     "react": "^19.3.1",

@@ -28,6 +28,7 @@ Paths in these specs are relative to `liveworkspace/` (`apps/accounts/…`), exc
 - ./010-site/README.md - when working on liveworkspace.app's pages: the front door, the Explorer page, the Settings panel, the sign-in pages, the site switcher
 - ./011-workbench/README.md - when working on workbench pairings, tickets and sessions
 - ./012-migrate/README.md - when working on the move from the historical livediagram.app, or on what is left of Clerk
+- ./013-export/README.md - when working on an export every product shares: the PDF writer (`@liveworkspace/vector-export`)
 
 ## Workflow
 

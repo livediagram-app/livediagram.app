@@ -32,7 +32,6 @@ import { headingPages, measureTocPages, tocKey } from './article-toc-view';
 import { linkAreas } from '@/components/canvas/article/article-editor-handle';
 import { registerArticleHandle, type ArticleEditorHandle } from './article-editor-store';
 import { pdfLinksFor } from '../export-pdf-links';
-import { assemblePdf } from '../export-tab-pdf';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -654,22 +653,5 @@ describe('a PDF’s link areas', () => {
     expect(links[2]).toEqual([]);
     // An article with no editor laid out: no areas.
     expect(pdfLinksFor([page('a', 0, 'g')] as never, [page('a', 0, 'g')])).toEqual([[]]);
-  });
-
-  it('writes the annotations after the pages, each page listing its own', async () => {
-    const img = { width: 1, height: 1, bytes: new Uint8Array([0]), mediaW: 600, mediaH: 750 };
-    const blob = assemblePdf([
-      { ...img, links: [{ x: 0, y: 0, w: 1, h: 1, page: 1 }] },
-      { ...img, links: [{ x: 0, y: 0, w: 1, h: 1, uri: 'https://x.y' }] },
-      img,
-    ]);
-    const text = new TextDecoder('latin1').decode(new Uint8Array(await blob.arrayBuffer()));
-    expect(text).toContain('/Contents 4 0 R /Annots [12 0 R] >>');
-    expect(text).toContain('/Contents 7 0 R /Annots [13 0 R] >>');
-    expect(text).toContain('/Contents 10 0 R >>');
-    expect(text).toContain(
-      '12 0 obj\n<< /Type /Annot /Subtype /Link /Rect [0 0 1 1] /Border [0 0 0] /Dest [6 0 R /Fit] >>',
-    );
-    expect(text).toContain('/Size 14');
   });
 });

@@ -32,7 +32,7 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
 | Toolbar menu               | `TablePanel` (`components/canvas/article/page-toolbar-table.tsx`), shown while `selection.inTable`                                                                                                                                                                                                                                       |
 | Bands on the page          | `PageBands` (`components/canvas/article/PageBands.tsx`), from `CanvasPages`; places from `pageBandLayout` (`lib/article/article-band-layout.ts`, with `setBandDocumentName` / `useBandDocumentName` for `{name}`)                                                                                                                        |
 | Bands in the Style popover | `ArticleBandsSection` (`components/canvas/article/ArticleBandsSection.tsx`)                                                                                                                                                                                                                                                              |
-| PDF link areas             | `ArticleLinkArea` (`{ x, y, w, h, href?, target? }`), handle `links()` and `headingPages()`; `pdfLinksFor`, `pdfLinksOn`, `linkAnnotation` (`lib/export-pdf-links.ts`); `assemblePdf` writes them                                                                                                                                        |
+| PDF link areas             | `ArticleLinkArea` (`{ x, y, w, h, href?, target? }`), handle `links()` and `headingPages()`; `pdfLinksFor`, `pdfLinksOn` (`lib/export-pdf-links.ts`); `linkAnnotation` (`@liveworkspace/vector-export/pdf-links`); `svgPagesToPdf` writes them                                                                                           |
 
 "Table" alone in the writing's code is the table block; the canvas's own is "table element" (`TableElement`).
 "Contents" is the interface's word for the table of contents and `toc` the block type.
@@ -188,8 +188,8 @@ article-toc" data-block-id aria-label="Contents">`.
 - `ArticleOp` gains `cell`; the room relays it inside `article` frames unchanged (frames are op lists).
 - `ArticleEditorHandle.links()` → `ArticleLink[]` in canvas px: contents entries (`target` the heading id) and
   `a.article-link` rects (`href`), from the live DOM.
-- The PDF export adds `/Annots` to each page from `pdfLinksFor` (`assemblePdf` writes the link objects after
-  the pages): a `target` resolves to the page holding the heading (`/Dest [page /Fit]`); an `href` to a `/URI`
+- The PDF export adds `/Annots` to each page from `pdfLinksFor` (`svgPagesToPdf` in `@liveworkspace/vector-export`
+  writes each page's link objects with it): a `target` resolves to the page holding the heading (`/Dest [page /Fit]`); an `href` to a `/URI`
   action.
 - OpenAPI: `ArticleTableBlock`, `ArticleTocBlock`, `ArticleBand` generated from `@livedocuments/api-schema`.
 - Markdown (agents, import): a pipe table ↔ a table block; `[TOC]` / `[TOC 1]` / `[TOC 2]` ↔ a contents block
