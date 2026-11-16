@@ -335,7 +335,8 @@ so a new page load starts on the mode's landing.
   (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). The menu
   button and the mode switch keep their size at every width, never capped or cut; only the name truncates. Shorter
   still, the box steps down (`useMenuCardFit`, `menu-card-form.ts`):
-  - **Whole** while the button, the named mode switch and a readable name slot (4rem) fit.
+  - **Whole** while the button, the named mode switch and a readable name slot (4rem) fit, or the whole box does (a
+    short name needs no more than its own width), so the box is whole wherever the strip stays centred beside it.
   - **Icon** below that: the mode switch drops to its icon alone, as a phone draws it, its name in its tooltip and
     accessible name, so the tab's name keeps its slot.
   - **Bare** where even then no readable slot is left: the name and its hairline hide (the name stays in the tab

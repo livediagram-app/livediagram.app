@@ -42,14 +42,18 @@ export function useMenuCardRoom(
 /** The narrowest readable slot for the tab's name, in screen px: below it the name is hidden, never a sliver. */
 export const NAME_SLOT_MIN_PX = 64;
 
-/** What the box needs beside the name, in screen px, in each form (null until measured in that form). */
-export type MenuCardFixed = { full: number | null; icon: number | null };
+/** What the box needs beside the name, in screen px, in each form (null until measured in that form), and `whole`,
+ *  the box's own width whole (its `data-menu-natural-width`, the width the strip goes by), when known. */
+export type MenuCardFixed = { full: number | null; icon: number | null; whole?: number | null };
 
 /** The form that fits `room` (null: nothing caps the box): whole while the button, the named mode switch and a
- *  readable name slot fit, then the mode switch's icon alone, then no name. A form not measured yet is tried. */
+ *  readable name slot fit, or the whole box does (a name shorter than the slot), then the mode switch's icon alone,
+ *  then no name. A form not measured yet is tried. Whole wherever the box fits whole: the strip stays centred there
+ *  (it goes by the same width), so a short name never cost the switch its label beside a strip that never moved. */
 export function menuCardFormFor(room: number | null, fixed: MenuCardFixed): MenuCardForm {
   if (room === null) return 'full';
   if (fixed.full === null || room >= fixed.full + NAME_SLOT_MIN_PX) return 'full';
+  if (typeof fixed.whole === 'number' && room >= fixed.whole) return 'full';
   if (fixed.icon === null || room >= fixed.icon + NAME_SLOT_MIN_PX) return 'icon';
   return 'bare';
 }
@@ -63,7 +67,7 @@ export function useMenuCardFit(
   enabled: boolean,
 ): { maxWidth: number | null; form: MenuCardForm } {
   const room = useMenuCardRoom(card, enabled);
-  const [fixed, setFixed] = useState<MenuCardFixed>({ full: null, icon: null });
+  const [fixed, setFixed] = useState<MenuCardFixed>({ full: null, icon: null, whole: null });
   const form = enabled ? menuCardFormFor(room, fixed) : 'full';
   // What the drawn form needs beside the name, measured as it lands and again as the box's parts resize (a mode's
   // name changing the switch's width).
@@ -86,14 +90,15 @@ export function useMenuCardFit(
           ? name.getBoundingClientRect().left - box.left + end
           : box.width,
       );
-      if (form === 'full') {
-        el.setAttribute(
-          'data-menu-natural-width',
-          String(Math.ceil(menuNaturalRight(el) - box.left)),
-        );
-      }
+      // Whole, also the box's own width as the strip goes by it; compact forms keep the last one.
+      const whole = form === 'full' ? Math.ceil(menuNaturalRight(el) - box.left) : undefined;
+      if (whole !== undefined) el.setAttribute('data-menu-natural-width', String(whole));
       const slot = form;
-      setFixed((prev) => (prev[slot] === need ? prev : { ...prev, [slot]: need }));
+      setFixed((prev) =>
+        prev[slot] === need && (whole === undefined || prev.whole === whole)
+          ? prev
+          : { ...prev, [slot]: need, ...(whole === undefined ? {} : { whole }) },
+      );
     };
     measure();
     if (typeof ResizeObserver === 'undefined') return;

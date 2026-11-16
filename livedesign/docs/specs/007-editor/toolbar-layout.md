@@ -238,7 +238,8 @@ so a new page load starts on the page kind's landing.
   ends a strip's gap (8px) short of the strip and the name gives way first, cut short with its ellipsis sooner
   (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). The menu button keeps its size at every width, never capped or cut; only the name truncates. Shorter
   still, the box steps down (`useMenuCardFit`, `menu-card-form.ts`):
-  - **Whole** while the button and a readable name slot (4rem) fit.
+  - **Whole** while the button and a readable name slot (4rem) fit, or the whole box does (a short name needs no
+    more than its own width).
   - **Icon** below that, in an editor with a mode switch (livediagram): the switch drops to its icon alone. This
     editor has none, so its box goes straight from whole to bare.
   - **Bare** where even then no readable slot is left: the name and its hairline hide (the name stays in the tab

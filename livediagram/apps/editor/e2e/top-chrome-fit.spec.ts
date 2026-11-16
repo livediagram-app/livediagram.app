@@ -16,13 +16,17 @@ for (const width of [640, 700, 768, 900, 1024, 1440]) {
       width < 695,
       'the category bar is wider than the room beside the menu button and mode switch',
     );
-    await page.setViewportSize({ width, height: 900 });
+    // Named at a wide window, where the box shows the name to click, then narrowed: a bare box hides it, and the
+    // box follows the window down (watchMove re-cuts on a resize, Work Tracker 1027).
+    await page.setViewportSize({ width: 1440, height: 900 });
     await startBlankDocument(page);
     const name = page.locator('[data-toolbar-menu] [data-tab-name-in-box]');
     await name.click();
     const field = page.getByRole('textbox', { name: 'Tab name' });
     await field.fill(LONG_NAME);
     await field.press('Enter');
+    await expect(name).toHaveText(LONG_NAME);
+    await page.setViewportSize({ width, height: 900 });
     const strip = page.locator('[data-toolbar-palette] [data-tour-id="palette"]');
     const menu = page.locator('[data-toolbar-menu]').first();
     // The strip settles (crowded to the right, or centred) and the box takes the room left of it.

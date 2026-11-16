@@ -94,6 +94,13 @@ describe('menuCardFormFor', () => {
     expect(menuCardFormFor(10, { full: null, icon: null })).toBe('full');
   });
 
+  it('stays whole where the whole box fits, a name shorter than the slot included', () => {
+    // A short name: the box is 150 whole, short of the 120 + 64 a slot would ask, and the strip stays centred.
+    expect(menuCardFormFor(150, { ...fixed, whole: 150 })).toBe('full');
+    expect(menuCardFormFor(149, { ...fixed, whole: 150 })).toBe('icon');
+    expect(menuCardFormFor(149, { ...fixed, whole: null })).toBe('icon');
+  });
+
   it('drops the switch to its icon, then hides the name', () => {
     expect(menuCardFormFor(120 + NAME_SLOT_MIN_PX - 1, fixed)).toBe('icon');
     expect(menuCardFormFor(60 + NAME_SLOT_MIN_PX, fixed)).toBe('icon');
