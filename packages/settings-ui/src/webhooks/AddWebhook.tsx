@@ -17,9 +17,10 @@ import { useDocumentWebhooks } from './host';
 import { attempt, eventsOfApp, isAddressError, ITEM, KINDS, webhookError } from './webhooks-api';
 
 const LABEL = 'block text-sm font-medium text-slate-700 dark:text-slate-300';
-// The address field refused: a rose edge and ring, as a field that needs fixing reads everywhere.
+// The address field refused: a rose edge and ring, as a field that needs fixing reads everywhere. Marked important so
+// they beat INPUT's own focus edge (slate, white in dark), since a refusal moves the keyboard into this field.
 const INVALID =
-  'border-rose-400 focus:border-rose-500 focus:ring-rose-100 dark:border-rose-500/70 dark:focus:ring-rose-500/20';
+  'border-rose-400! focus:border-rose-500! focus:ring-rose-100! dark:border-rose-500/70! dark:focus:border-rose-400! dark:focus:ring-rose-500/20!';
 
 // Adding a webhook to the document (webhooks.md "Who adds one", "Managing them"), in the order a person thinks of it:
 // where it posts, its address (with how to get one), a name, what it sends (the document's app's events, none chosen
