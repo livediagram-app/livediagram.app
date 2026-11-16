@@ -90,12 +90,18 @@ export function useSheetLinkedCharts({
     readRef.current = read;
   });
 
-  const readKey = useCallback((key: string, source: ChartSheetSource) => {
-    if (reading.current.has(key)) return;
+  // Asked again while a read was on its way (a second change landing mid-read): read once more after it.
+  const again = useRef(new Set<string>());
+  const readKey = useCallback(function readKeyNow(key: string, source: ChartSheetSource) {
+    if (reading.current.has(key)) {
+      again.current.add(key);
+      return;
+    }
     reading.current.add(key);
     void readRef.current(source).then((status) => {
       reading.current.delete(key);
       setStatuses((prev) => new Map(prev).set(key, status));
+      if (again.current.delete(key)) readKeyNow(key, source);
     });
   }, []);
 

@@ -213,7 +213,7 @@ sheet. The platform's side (the range read, the door, the change signal) is
 - **Exports and copies.** An export (SVG, PNG, PDF, the document's file) draws the saved values and carries no source,
   as does a copy made through a Community link and a Community visitor's read. A duplicate, a copy-paste or a tab
   copied within livedocuments keeps the source.
-- **Who may.** Link to Sheet, Update and Unlink are an Editor's (`can.editContent`). A Participant and a Viewer see
+- **Who may.** Link to Sheet, Update and Unlink are an Editor's (`can.level === 'edit'`). A Participant and a Viewer see
   the line and the live values on the terms above; they never write.
 - **Telemetry.** `Element·Changed·ChartSheetLink` on Link, `Element·Changed·ChartSheetUnlink` on Unlink.
 
