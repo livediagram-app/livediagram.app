@@ -8,8 +8,8 @@ beforeEach(() => sessionStorage.clear());
 
 describe('access-ended notes', () => {
   it('gives the reason once, then nothing', () => {
-    noteAccessEnded('doc-1', 'revoked');
-    expect(takeAccessEnded()).toBe('revoked');
+    noteAccessEnded('doc-1', 'changed');
+    expect(takeAccessEnded()).toBe('changed');
     expect(takeAccessEnded()).toBeNull();
   });
 
@@ -21,12 +21,20 @@ describe('access-ended notes', () => {
   });
 
   it('forgets a stale note, so a later visit is never told about an old eject', () => {
-    noteAccessEnded('doc-1', 'revoked');
+    noteAccessEnded('doc-1', 'changed');
     expect(takeAccessEnded(undefined, Date.now() + ACCESS_NOTICE_TTL_MS + 1)).toBeNull();
   });
 
   it('ignores a note it cannot read', () => {
     sessionStorage.setItem('livehuddle:access-ended:v1', '{nope');
+    expect(takeAccessEnded()).toBeNull();
+  });
+
+  it('ignores a revoked note an older build left: a revoked pass is told on the Explorer', () => {
+    sessionStorage.setItem(
+      'livehuddle:access-ended:v1',
+      JSON.stringify({ reason: 'revoked', at: Date.now() }),
+    );
     expect(takeAccessEnded()).toBeNull();
   });
 });

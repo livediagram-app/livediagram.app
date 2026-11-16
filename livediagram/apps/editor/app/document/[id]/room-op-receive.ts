@@ -1,6 +1,6 @@
 import { setRemoteBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import { takeSuggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
-import { noteAccessEnded } from '@/lib/access-notice';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import type { RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
 import type { PresenceCoalescer } from '@liveworkspace/workbench/lib/presence-coalescer';
@@ -31,7 +31,6 @@ export function receiveRoomOp(
   nameByPresence: ReadonlyMap<string, string>,
 ): void {
   const {
-    documentId,
     markSeen,
     saveBaseline,
     ownWrites,
@@ -203,9 +202,10 @@ export function receiveRoomOp(
     // closes its socket either way. Everyone else keeps their session.
     const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
     if (effect === 'leave') {
-      // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
-      noteAccessEnded(documentId, 'revoked');
-      window.location.assign('/explorer');
+      // The Explorer says why we arrived, rather than landing without a word. The note rides in the address: the
+      // Explorer is liveworkspace's page (liveworkspace/docs/specs/010-site/site.md "Addresses handed over"), which never
+      // read a note left in this app's storage.
+      window.location.assign(explorerHref('', '?ended=revoked'));
     } else if (effect === 'reload') window.location.reload();
   } else if (op.kind === 'changeset') {
     // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
