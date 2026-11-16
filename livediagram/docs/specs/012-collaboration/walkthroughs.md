@@ -46,7 +46,7 @@ at the bottom centre of the canvas, in place: the canvas stays where it is and s
    (`1:24 / 10:00`, amber in the last minute with "1 minute left"), the level meter, Hide From Recording, **Finish**
    and **Discard**. At ten minutes it finishes on its own and says so.
 4. **Save.** The dock shows the length and a **Title** field (it starts as "Walkthrough of <tab name>"), with
-   **Save** and **Discard**. Save uploads it, with its progress; when it is stored the Walkthroughs menu lists it.
+   **Save** and **Discard**. Save uploads it, showing that it is uploading; when it is stored the Walkthroughs menu lists it.
    A refusal says why in the dock ("This walkthrough is over 40 MB", "You have 50 walkthroughs already. Delete one to
    save another.") and keeps the recording so you can **Download a Copy** rather than lose it.
 
@@ -62,7 +62,7 @@ name you shouldn't show.
   press is hidden from the recording (press it again to show it). Presses do nothing else while the mode is on.
   **Hide Selection** hides what is already selected. The button's badge counts what is hidden, and **Done** (or
   `Esc`) leaves the mode.
-- **You still see them**, faded with a diagonal hatch, so you know what the recording leaves out. Viewers of the
+- **You still see them**, faded inside a dashed outline, so you know what the recording leaves out. Viewers of the
   walkthrough never see them: the player hides them for as long as it is open.
 - **They stay out of what is stored**, not only out of the player: a press on a hidden element is not recorded, and
   your pointer over one is recorded as off the canvas, so the stored events cannot trace one. The stored list of
@@ -78,7 +78,7 @@ Pressing a walkthrough in the Walkthroughs menu plays it.
   same region), the slide steps and the presenter's pointer, a soft dot with a ring for each press. The hidden
   elements are hidden.
 - **The presenter's bubble** sits in the corner they recorded it in, playing their camera, or, recorded with no
-  camera, a round mark with their initial that pulses while they speak.
+  camera, a round mark with their initial that pulses while the walkthrough plays.
 - **The player bar** at the bottom centre: play and pause, a scrubber you can drag or click (with a mark at each tab
   change and slide step), the time (`1:02 / 3:24`), the speed (1x, 1.5x, 2x), and close. `Space` plays and
   pauses, `←` and `→` skip five seconds, `Esc` closes.

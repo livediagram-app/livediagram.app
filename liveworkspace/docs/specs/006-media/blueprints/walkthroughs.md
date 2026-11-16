@@ -92,7 +92,7 @@ latest `view`, `tab`, `slide` and `cursor` at or before it (binary search). `vie
 
 Hidden elements are hidden by one `<style>` element: `[data-canvas-content] [data-element-id="<id>"] { visibility:
 hidden !important }` per id, through `CSS.escape`; while recording, the presenter's own view draws them at 0.35
-opacity with a hatch (`hidden-for-recording` style).
+opacity inside a dashed rose outline (`hiddenCss(ids, "presenter")`).
 
 ## Interfaces and contracts
 
