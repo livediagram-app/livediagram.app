@@ -66,7 +66,7 @@ export function EmailIntakeSenders({
                 aria-hidden
                 className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md ${
                   on
-                    ? 'bg-brand-500 text-white dark:bg-brand-400 dark:text-slate-950'
+                    ? 'bg-brand-700 text-white dark:bg-brand-600'
                     : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                 }`}
               >
