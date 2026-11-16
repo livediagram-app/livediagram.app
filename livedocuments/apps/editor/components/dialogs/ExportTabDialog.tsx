@@ -7,7 +7,14 @@ import {
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from '@liveworkspace/workbench/components/dialogs/TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
-import { type Deck, type LaidOutPage, type Tab, tabWindowNames } from '@livedocuments/document';
+import {
+  articleLeftOutNote,
+  articleTabMarkdown,
+  type Deck,
+  type LaidOutPage,
+  type Tab,
+  tabWindowNames,
+} from '@livedocuments/document';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -33,6 +40,7 @@ import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import {
+  ARTICLE_MARKDOWN_BLURB,
   CARDS,
   isOfficeFormat,
   isTextFormat,
@@ -158,7 +166,10 @@ export function ExportTabDialog({
       // PowerPoint for a deck and Word for an article, neither for any other kind.
       PAGES_FORMATS.filter(
         (kind) =>
-          (kind !== 'gif' || pages.length > 0) && (!isOfficeFormat(kind) || kind === officeFormat),
+          (kind !== 'gif' || pages.length > 0) &&
+          (!isOfficeFormat(kind) || kind === officeFormat) &&
+          // Markdown is an article's writing (docs/specs/020-import-export/markdown-import.md "Markdown export").
+          (kind !== 'markdown' || officeFormat === 'docx'),
       ).map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
@@ -187,9 +198,20 @@ export function ExportTabDialog({
 
   // The open text format's text, built once per format and tab change rather than on every render.
   // The panel reads it only as its starting text.
+  // An article tab's Markdown is its writing, with a note naming what it leaves out; any other text is the outline or JSON.
+  const articleMarkdown = useMemo(
+    () =>
+      active === 'markdown' && pages && officeFormat === 'docx' ? articleTabMarkdown(tab) : null,
+    [active, pages, officeFormat, tab],
+  );
   const activeText = useMemo(
-    () => (active && isTextFormat(active) ? TEXT_PANELS[active].getText(tab) : ''),
-    [active, tab],
+    () =>
+      articleMarkdown
+        ? articleMarkdown.markdown
+        : active && isTextFormat(active)
+          ? TEXT_PANELS[active].getText(tab)
+          : '',
+    [active, tab, articleMarkdown],
   );
 
   // Build the preview SVG for the current options — the same SVG the .svg
@@ -359,7 +381,8 @@ export function ExportTabDialog({
         <TextExportPanel
           formatTitle={CARDS.find((c) => c.kind === active)?.title ?? ''}
           initialText={activeText}
-          blurb={TEXT_PANELS[active].blurb}
+          blurb={articleMarkdown ? ARTICLE_MARKDOWN_BLURB : TEXT_PANELS[active].blurb}
+          note={articleMarkdown ? articleLeftOutNote(articleMarkdown.leftOut) : ''}
           downloadLabel={TEXT_PANELS[active].downloadLabel}
           onDownload={(text) => {
             const cfg = TEXT_PANELS[active];

@@ -15,6 +15,7 @@ export const PAGES_FORMATS: readonly Format[] = [
   'gif',
   'pptx',
   'docx',
+  'markdown',
   'file',
 ];
 // The page formats' card copy in Pages mode, which speaks of pages rather than the tab.
@@ -22,7 +23,14 @@ export const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
   pdf: 'Every page in one PDF, or a single page, ready to print or share.',
   png: 'A high-resolution image of a page, or a .zip with one per page.',
   svg: 'A scalable vector image of a page, or a .zip with one per page.',
+  // An article tab's only (docs/specs/020-import-export/markdown-import.md "Markdown export").
+  markdown:
+    "The article's writing as Markdown, for a README, a wiki or a chat. Copy it or save a .md.",
 };
+
+// The article's Markdown panel's blurb: it is the writing, in the form Import reads back.
+export const ARTICLE_MARKDOWN_BLURB =
+  "This article as Markdown, in the form Import reads back. Edit it here to copy a variant; your edits don't change the article.";
 
 // The format keys ('file' is the livedocuments .json).
 export type Format = 'markdown' | 'pdf' | 'print' | 'png' | 'svg' | 'gif' | OfficeFormat | 'file';

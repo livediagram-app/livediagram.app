@@ -26,4 +26,20 @@ describe('TextExportPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Download .json' }));
     expect(onDownload).toHaveBeenCalledWith('{"a":2}');
   });
+
+  it('names what the text leaves out under the box, and says nothing without a note', () => {
+    const props = {
+      formatTitle: 'Markdown',
+      initialText: '# A',
+      blurb: 'This article as Markdown.',
+      downloadLabel: 'Download .md',
+      onDownload: () => {},
+      onCopied: () => {},
+      onBack: () => {},
+    };
+    const { rerender } = render(<TextExportPanel {...props} />);
+    expect(screen.queryByRole('note')).toBeNull();
+    rerender(<TextExportPanel {...props} note="2 pictures are left out." />);
+    expect(screen.getByRole('note').textContent).toBe('2 pictures are left out.');
+  });
 });
