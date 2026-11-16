@@ -3,7 +3,7 @@ import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { CollabKeyMessage } from '@liveworkspace/api-schema/collab-key';
-import type { ReviewMessage } from './review';
+import type { ReviewOp } from './review';
 import type { IdListStep } from '@liveworkspace/model-core/id-list-steps';
 import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@livedocuments/document';
 import type { ParticipantPresence } from './index';
@@ -114,6 +114,8 @@ export const SYSTEM_OP_KINDS = [
   'share-rescoped',
   'document-trashed',
   'changeset',
+  // The room's word on whether this session suggests (docs/specs/007-editor/suggestions.md "Suggest Only").
+  'review',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -191,9 +193,6 @@ export type ServerMessage =
   // every other peer's lock clears through the ordinary path and the room needs
   // to tell nobody else anything.
   | { kind: 'selection-released'; elementId: string; by: string }
-  // Whether this Participant session suggests (docs/specs/007-editor/suggestions.md "Suggest Only"), to its socket
-  // alone, when it joins and whenever the document's review settings change.
-  | ReviewMessage
   // Who is following you (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): their presence
   // ids, sent to YOUR SOCKET ALONE whenever the list changes, the same addressing as `selection-released`. It is
   // how a client counts its followers and refuses to follow one of them back.
@@ -261,6 +260,10 @@ export type ClientMessage =
 // kinds grow this union (and matching handlers in the editor) —
 // nothing in the api worker changes.
 export type RoomOp =
+  // Whether this Participant session suggests (docs/specs/007-editor/suggestions.md "Suggest Only"): from the room
+  // ('system') to its socket alone, when it joins and whenever the document's review settings change. A peer's is
+  // never believed.
+  | ReviewOp
   // The sender just switched to (or initially focused) a tab. Drives
   // the per-tab avatar dots in the TabBar so collaborators can see at
   // a glance which tab each peer is working on.

@@ -97,8 +97,8 @@ describe('the room’s review settings', () => {
       { key: 'key-A', name: 'A', at: expect.any(Number) },
     ]);
     expect(log).toEqual([
-      { kind: 'review', suggestOnly: true },
-      { kind: 'review', suggestOnly: true },
+      { kind: 'op', from: 'system', op: { kind: 'review', suggestOnly: true } },
+      { kind: 'op', from: 'system', op: { kind: 'review', suggestOnly: true } },
     ]);
     const viewer = { presence: { id: 'V', name: 'V', color: '#abc', role: 'view' } };
     const v = join(viewer);
@@ -108,7 +108,9 @@ describe('the room’s review settings', () => {
     const k = join(keyless);
     participantJoined(room, k.ws, keyless as never, keyless.presence as never);
     expect(writes).toHaveLength(1);
-    expect(k.log).toEqual([{ kind: 'review', suggestOnly: false }]);
+    expect(k.log).toEqual([
+      { kind: 'op', from: 'system', op: { kind: 'review', suggestOnly: false } },
+    ]);
   });
 
   it('writes nothing where there is no schema yet', () => {
@@ -127,7 +129,9 @@ describe('the room’s review settings', () => {
     expect(readRoomReview(room).links).toEqual([]);
     setStored(JSON.stringify({ links: ['C1'] }));
     reviewChanged(room);
-    expect(a.log).toEqual([{ kind: 'review', suggestOnly: true }]);
+    expect(a.log).toEqual([
+      { kind: 'op', from: 'system', op: { kind: 'review', suggestOnly: true } },
+    ]);
     expect(e.log).toEqual([]);
   });
 });

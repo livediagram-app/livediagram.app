@@ -100,8 +100,9 @@ export function suggestOnlyFor(
   return Boolean(session.collabKey && review.people.some((p) => p.key === session.collabKey));
 }
 
-/** The room's word to one Participant session on whether it suggests (sent when it joins and on every change). */
-export type ReviewMessage = { kind: 'review'; suggestOnly: boolean };
+/** The room's word to one Participant session on whether it suggests: a system op to its socket alone, sent when it
+ *  joins and on every change. */
+export type ReviewOp = { kind: 'review'; suggestOnly: boolean };
 
 /** `GET` and `PUT /api/documents/:id/review`'s answer. */
 export type ReviewResponse = { review: StoredReview };

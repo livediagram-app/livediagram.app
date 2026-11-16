@@ -45,6 +45,10 @@ export function suggestByOf(room: DocumentRoom, session: SessionAttachment): str
   return key ?? '\u0000';
 }
 
+// The room's word to one socket, as a system op (never relayed, never sequenced).
+const tellSuggestOnly = (room: DocumentRoom, ws: WebSocket, suggestOnly: boolean) =>
+  sendTo(room, ws, { kind: 'op', from: 'system', op: { kind: 'review', suggestOnly } });
+
 /** A Participant said hello: noted for the Share dialog's list (one write when it is new or renamed), and told
  *  whether it suggests. */
 export function participantJoined(
@@ -63,10 +67,7 @@ export function participantJoined(
       cache.set(room, next);
     }
   }
-  sendTo(room, ws, {
-    kind: 'review',
-    suggestOnly: suggestByOf(room, { ...session, presence }) !== null,
-  });
+  tellSuggestOnly(room, ws, suggestByOf(room, { ...session, presence }) !== null);
 }
 
 /** An Editor changed the settings (the review route wrote them): read again, and every Participant session told
@@ -76,6 +77,6 @@ export function reviewChanged(room: DocumentRoom): void {
   for (const ws of room.state.getWebSockets()) {
     const session = room.readSession(ws);
     if (session?.presence?.role !== 'participate') continue;
-    sendTo(room, ws, { kind: 'review', suggestOnly: suggestByOf(room, session) !== null });
+    tellSuggestOnly(room, ws, suggestByOf(room, session) !== null);
   }
 }
