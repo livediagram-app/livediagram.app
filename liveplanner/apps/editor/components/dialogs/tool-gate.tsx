@@ -59,11 +59,8 @@ export function toolSignInHref(
 /** Whether this page was opened asking for the tool (`?<param>=1`, a sign-in coming back), the ask then dropped from
  *  the address so a refresh doesn't reopen it. */
 export function useAskedOpen(param: string): boolean {
-  const [asked] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      new URL(window.location.href).searchParams.get(param) === '1',
-  );
+  // Read as AutomationsHost reads its own ask: the editor renders only in the browser.
+  const [asked] = useState(() => new URL(window.location.href).searchParams.get(param) === '1');
   useEffect(() => {
     if (!asked) return;
     const url = new URL(window.location.href);
