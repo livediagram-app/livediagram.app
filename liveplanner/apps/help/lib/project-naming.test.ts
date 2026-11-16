@@ -87,9 +87,19 @@ const misnames = (line: string, file = '') =>
   !GOOGLE_DOCS_PATH.test(line) &&
   !RULE.test(line);
 
+const GIT_ENV = Object.fromEntries(
+  Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+) as NodeJS.ProcessEnv;
+
 function scannedFiles(): string[] {
   return (
-    execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+    // Without the hook's GIT_* variables (a pre-push run would list the whole monorepo), and room for its list.
+    execFileSync('git', ['ls-files'], {
+      cwd: ROOT,
+      env: GIT_ENV,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    })
       .split('\n')
       // A file deleted in the working tree but not yet staged is still listed; it is not part of the change.
       .filter(
