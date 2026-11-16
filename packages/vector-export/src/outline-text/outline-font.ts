@@ -1,4 +1,4 @@
-// A face's file opened for outlining (docs/specs/007-editor/logo-pages.md "Outlined text"), with fontkit, which reads
+// A face's file opened for outlining (livedesign/docs/specs/007-editor/logo-pages.md "Outlined text"), with fontkit, which reads
 // the WOFF2 files Google Fonts serves a browser. A variable face is set to the weight the browser drew it at and to
 // the font size on its optical-size axis (browsers size optically by default); every other axis stays at its default.
 //

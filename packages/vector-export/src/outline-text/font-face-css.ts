@@ -1,4 +1,4 @@
-// The faces an embedded stylesheet declares (docs/specs/007-editor/logo-pages.md "Outlined text"): each
+// The faces an embedded stylesheet declares (livedesign/docs/specs/007-editor/logo-pages.md "Outlined text"): each
 // `@font-face` of the css an SVG download carries (export-fonts.ts), read into what matching and outlining need.
 // Read by a scan of the blocks and their declarations, never a backtracking regex over the whole stylesheet.
 

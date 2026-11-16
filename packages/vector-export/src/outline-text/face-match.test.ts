@@ -1,4 +1,4 @@
-// docs/specs/007-editor/logo-pages.md "Outlined text": the face CSS font matching picks, and the synthesis the
+// livedesign/docs/specs/007-editor/logo-pages.md "Outlined text": the face CSS font matching picks, and the synthesis the
 // browser adds when a face lacks the bold or italic asked of it.
 import { describe, expect, it } from 'vitest';
 import { matchFace } from './face-match';

@@ -1,4 +1,4 @@
-// A run of text as letter outlines (docs/specs/007-editor/logo-pages.md "Outlined text"): the face lays the run out
+// A run of text as letter outlines (livedesign/docs/specs/007-editor/logo-pages.md "Outlined text"): the face lays the run out
 // into glyphs (its ligatures and substitutions), and each glyph is put where the browser placed its first character,
 // turned as that character was turned (text on an arc), so the outline sits exactly over what the canvas painted.
 // The transform is baked into absolute path data, which every vector editor reads.
@@ -12,6 +12,8 @@ export type OutlineFont = {
 };
 
 export type OutlineGlyph = {
+  // The glyph's index in the face: a PDF draws each glyph once and places it again wherever it is used.
+  id?: number;
   codePoints: readonly number[];
   path: { commands: readonly { command: string; args: readonly number[] }[] };
 };
@@ -84,14 +86,69 @@ function pathData(glyph: OutlineGlyph, m: Mat): string {
 
 const unitsOf = (cp: number) => (cp > 0xffff ? 2 : 1);
 
+/** Where each glyph's characters start in `text` (UTF-16 index). One glyph per character maps straight across; else
+ *  each glyph covers the characters it says it stands for, at least one. A glyph's code points can't be trusted alone:
+ *  fontkit caches a glyph by id, and one first made by a substitution keeps none (a full stop between figures in
+ *  Inter came back empty, shifting every letter after it onto its neighbour's place). */
+export function glyphStarts(glyphs: readonly OutlineGlyph[], text: string): number[] {
+  const chars = Array.from(text);
+  const starts: number[] = [];
+  let index = 0;
+  if (glyphs.length === chars.length) {
+    for (const ch of chars) {
+      starts.push(index);
+      index += ch.length;
+    }
+    return starts;
+  }
+  for (const glyph of glyphs) {
+    starts.push(index);
+    let units = 0;
+    for (const cp of glyph.codePoints) units += unitsOf(cp);
+    index += units || unitsOf(text.codePointAt(index) ?? 0);
+  }
+  return starts;
+}
+
+/** One glyph where it is drawn: its outline in font units (y up) and the matrix putting it in the text's user space,
+ *  as [a b c d e f] (x' = a x + c y + e, y' = b x + d y + f). */
+export type PlacedGlyph = {
+  id: number;
+  commands: OutlineGlyph['path']['commands'];
+  matrix: readonly [number, number, number, number, number, number];
+};
+
+/** The run's glyphs, each with the matrix glyphRunPath bakes into its points: the same outline, kept in font units so
+ *  a repeated glyph is written once. Glyphs without an id are left out (the caller then draws `glyphRunPath`). */
+export function glyphRunPlacements(font: OutlineFont, run: GlyphRun): PlacedGlyph[] | null {
+  const { glyphs } = font.layout(run.text, run.tracked ? LIGATURES_OFF : undefined);
+  const out: PlacedGlyph[] = [];
+  const s = run.size / font.unitsPerEm;
+  const skew = run.syntheticItalic ? SYNTHETIC_ITALIC_SKEW : 0;
+  const starts = glyphStarts(glyphs, run.text);
+  for (const [g, glyph] of glyphs.entries()) {
+    const place = run.places[starts[g]!];
+    if (!place || glyph.path.commands.length === 0) continue;
+    if (glyph.id === undefined) return null;
+    const rad = (place.rotate * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    out.push({
+      id: glyph.id,
+      commands: glyph.path.commands,
+      matrix: [s * cos, s * sin, s * (skew * cos + sin), s * (skew * sin - cos), place.x, place.y],
+    });
+  }
+  return out;
+}
+
 /** The run's glyphs as one path's data; empty when nothing is drawn. */
 export function glyphRunPath(font: OutlineFont, run: GlyphRun): string {
   const { glyphs } = font.layout(run.text, run.tracked ? LIGATURES_OFF : undefined);
   const parts: string[] = [];
-  let index = 0;
-  for (const glyph of glyphs) {
-    const place = run.places[index];
-    for (const cp of glyph.codePoints) index += unitsOf(cp);
+  const starts = glyphStarts(glyphs, run.text);
+  for (const [g, glyph] of glyphs.entries()) {
+    const place = run.places[starts[g]!];
     if (!place || glyph.path.commands.length === 0) continue;
     parts.push(pathData(glyph, glyphMatrix(place, run.size, font.unitsPerEm, run.syntheticItalic)));
   }

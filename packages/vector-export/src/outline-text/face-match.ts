@@ -1,4 +1,4 @@
-// Which face draws a letter (docs/specs/007-editor/logo-pages.md "Outlined text"): CSS font matching (CSS Fonts 4
+// Which face draws a letter (livedesign/docs/specs/007-editor/logo-pages.md "Outlined text"): CSS font matching (CSS Fonts 4
 // §5.2) over the faces an export embeds, so an outline uses the very face the browser painted, and whether the
 // browser synthesised a bold or an italic the face lacks.
 import type { FaceSource } from './font-face-css';

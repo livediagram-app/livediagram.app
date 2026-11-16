@@ -1,9 +1,11 @@
-// docs/specs/007-editor/logo-pages.md "Outlined text": each glyph sits where the browser put its first character,
+// livedesign/docs/specs/007-editor/logo-pages.md "Outlined text": each glyph sits where the browser put its first character,
 // turned and slanted as it was drawn, in absolute path data; decorations where Chromium draws them.
 import { describe, expect, it, vi } from 'vitest';
 import {
   decorationPath,
   glyphRunPath,
+  glyphRunPlacements,
+  glyphStarts,
   syntheticBoldWidth,
   type CharPlace,
   type GlyphRun,
@@ -95,6 +97,52 @@ describe('glyphRunPath', () => {
 
   it('is empty when nothing draws', () => {
     expect(glyphRunPath(fakeFont(), run(' ', [at(0)]))).toBe('');
+  });
+});
+
+// fontkit caches a glyph by id: one first made by a substitution comes back with no code points, so the places are
+// mapped one to one when the counts match, and an empty glyph otherwise counts as one character.
+describe('glyphStarts', () => {
+  const g = (codePoints: number[]): OutlineGlyph => ({ codePoints, path: square });
+  it('maps glyphs to characters one to one when the counts match, whatever their code points say', () => {
+    expect(glyphStarts([g([0x31]), g([]), g([0x31]), g([])], '1.1.')).toEqual([0, 1, 2, 3]);
+    expect(glyphStarts([g([0x1f600]), g([0x61])], '😀a')).toEqual([0, 2]);
+  });
+
+  it('steps by a ligature’s characters, and an empty glyph by one', () => {
+    expect(glyphStarts([g([0x66, 0x69]), g([]), g([0x61])], 'fi.a')).toEqual([0, 2, 3]);
+  });
+});
+
+describe('glyphRunPlacements', () => {
+  const withIds = (font: OutlineFont): OutlineFont => ({
+    ...font,
+    layout: (text, features) => {
+      const { glyphs } = font.layout(text, features);
+      return { glyphs: glyphs.map((gl, i) => ({ ...gl, id: i + 1 })) };
+    },
+  });
+
+  it('places each drawn glyph by a matrix from font units, flipped, turned and slanted', () => {
+    const placed = glyphRunPlacements(
+      withIds(fakeFont()),
+      run('A b', [at(5), at(15), at(25, 50, 90)]),
+    )!;
+    expect(placed.map((p) => p.id)).toEqual([1, 3]);
+    expect(placed[0]!.matrix).toEqual([0.01, 0, 0, -0.01, 5, 100]);
+    expect(placed[1]!.matrix.map((n) => Math.round(n * 1000) / 1000 + 0)).toEqual([
+      0, 0.01, 0.01, 0, 25, 50,
+    ]);
+    const slanted = glyphRunPlacements(
+      withIds(fakeFont()),
+      run('A', [at(0, 0)], { syntheticItalic: true }),
+    )!;
+    expect(slanted[0]!.matrix).toEqual([0.01, 0, 0.0025, -0.01, 0, 0]);
+  });
+
+  it('is null when the face gives no glyph ids, so the caller draws the outlines inline', () => {
+    expect(glyphRunPlacements(fakeFont(), run('A', [at(0)]))).toBeNull();
+    expect(glyphRunPlacements(fakeFont(), run(' ', [at(0)]))).toEqual([]);
   });
 });
 

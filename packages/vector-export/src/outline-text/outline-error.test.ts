@@ -1,4 +1,4 @@
-// docs/specs/007-editor/logo-pages.md "Outlined text": the sentences the Logo Kit shows when it can't outline.
+// livedesign/docs/specs/007-editor/logo-pages.md "Outlined text": the sentences the Logo Kit shows when it can't outline.
 import { describe, expect, it } from 'vitest';
 import { OutlineError } from './outline-error';
 

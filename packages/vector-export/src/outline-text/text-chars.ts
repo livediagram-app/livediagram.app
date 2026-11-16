@@ -1,4 +1,4 @@
-// The characters of an SVG `<text>` as the browser addresses them (docs/specs/007-editor/logo-pages.md "Outlined
+// The characters of an SVG `<text>` as the browser addresses them (livedesign/docs/specs/007-editor/logo-pages.md "Outlined
 // text"): `getStartPositionOfChar(i)` counts the characters left once white space collapses (xml:space default:
 // newlines dropped, tabs as spaces, a run of spaces as one, the ends trimmed), so each typed character is mapped to
 // its index there, or to none.

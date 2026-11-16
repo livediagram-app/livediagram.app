@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// docs/specs/007-editor/logo-pages.md "Outlined text": the kit's SVG with every <text> drawn as outlines in the
+// livedesign/docs/specs/007-editor/logo-pages.md "Outlined text": the kit's SVG with every <text> drawn as outlines in the
 // faces it embeds, and no font left in the file. jsdom lays nothing out, so the SVG text positions, computed styles
 // and FontFace are stood in for here; the real layout is checked in a browser (see the PR's Verify notes).
 import { parseInert } from '@liveworkspace/trusted-types';
@@ -169,7 +169,7 @@ describe('outlineSvgText', () => {
     t.setAttribute('dominant-baseline', 'central');
     t.style.setProperty('dominant-baseline', 'central');
     t.textContent = 'ab';
-    const { baselineShifts } = await import('./outline-svg');
+    const { baselineShifts } = await import('./outline-element');
     expect(baselineShifts(t as unknown as SVGTextContentElement, 2)).toEqual([
       [0, CENTRAL_DROP],
       [0, CENTRAL_DROP],

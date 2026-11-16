@@ -1,4 +1,4 @@
-// docs/specs/007-editor/logo-pages.md "Outlined text": the faces an embedded stylesheet declares, read by a scan.
+// livedesign/docs/specs/007-editor/logo-pages.md "Outlined text": the faces an embedded stylesheet declares, read by a scan.
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { parseFontFaces, parseUnicodeRange } from './font-face-css';

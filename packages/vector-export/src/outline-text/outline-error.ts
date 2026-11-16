@@ -1,4 +1,4 @@
-// Why the Logo Kit could not outline its text (docs/specs/007-editor/logo-pages.md "Outlined text"): the panel shows
+// Why the Logo Kit could not outline its text (livedesign/docs/specs/007-editor/logo-pages.md "Outlined text"): the panel shows
 // the message, so it names the face and, for missing letters, the letters. Never the logo's text in a log.
 
 export type OutlineErrorKind = 'font' | 'letters' | 'layout';

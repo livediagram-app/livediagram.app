@@ -1,42 +1,25 @@
-// The Logo Kit's text as letter outlines (docs/specs/007-editor/logo-pages.md "Outlined text"). The SVG is mounted
-// off screen with its embedded faces registered, so the browser lays its text out exactly as it paints it; each
-// character's place is read back from the SVG DOM and the face's glyph drawn there as a path. The file that comes
-// out holds no <text>, no @font-face and no @import. Loaded only when a kit is made, with fontkit.
-import { parseInert } from '@liveworkspace/trusted-types';
+// One laid-out SVG `<text>` as letter outlines (livedesign/docs/specs/007-editor/logo-pages.md "Outlined text", and
+// every product's PDF export): each character's place is read back from the mounted SVG DOM and the face's glyph drawn
+// there as path data in the text's own user space. Shared by the Logo Kit's outlined SVG (outline-svg.ts) and the PDF
+// writer (../pdf/svg-text.ts), which draw those paths in their own formats.
 import { matchFace, type FaceMatch } from './face-match';
-import { parseFontFaces, type FaceSource } from './font-face-css';
+import type { FaceSource } from './font-face-css';
 import {
   decorationPath,
   glyphRunPath,
+  glyphRunPlacements,
   syntheticBoldWidth,
   type CharPlace,
   type Decoration,
   type OutlineFont,
+  type PlacedGlyph,
 } from './glyph-paths';
 import { OutlineError } from './outline-error';
 import { openFace, type Fontkit } from './outline-font';
 import { addressableChars, drawsNothing, type TextChar } from './text-chars';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
-// What a <text> carries over to the group of outlines that replaces it.
-const KEPT_ATTRS = ['transform', 'opacity', 'filter', 'clip-path', 'mask'];
-// Text that names no face the kit embeds (a system stack) is set in this one, as the kit tab letters it.
-const FALLBACK_FAMILY = 'Inter';
-
-export type OutlineDeps = { loadFontkit?: () => Promise<Fontkit> };
-
-async function defaultFontkit(): Promise<Fontkit> {
-  const mod = (await import('fontkit')) as unknown as Fontkit & { default?: Fontkit };
-  return typeof mod.create === 'function' ? mod : mod.default!;
-}
-
-function bytesOf(url: string): Uint8Array<ArrayBuffer> {
-  const comma = url.indexOf(',');
-  const bin = atob(url.slice(comma + 1));
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
+// Text that names no face the export embeds (a system stack) is set in this one, as the Logo Kit letters it.
+export const FALLBACK_FAMILY = 'Inter';
 
 // The families of a computed font-family stack, unquoted, in order.
 export function stackFamilies(stack: string): string[] {
@@ -86,7 +69,7 @@ function styleOf(holder: Element, text: Element): Style {
   };
 }
 
-function textNodesOf(text: Element): Text[] {
+export function textNodesOf(text: Element): Text[] {
   const nodes: Text[] = [];
   const walker = text.ownerDocument.createTreeWalker(text, NodeFilter.SHOW_TEXT);
   for (let n = walker.nextNode(); n; n = walker.nextNode()) nodes.push(n as Text);
@@ -136,7 +119,12 @@ export function baselineShifts(text: SVGTextContentElement, count: number): Shif
   });
 }
 
-function placeOf(text: SVGTextContentElement, index: number, [dx, dy]: Shift): CharPlace | null {
+/** Where the browser laid out character `index`, moved by its baseline shift; null where it is not laid out. */
+export function placeOf(
+  text: SVGTextContentElement,
+  index: number,
+  [dx, dy]: Shift = NO_SHIFT,
+): CharPlace | null {
   try {
     const start = text.getStartPositionOfChar(index);
     const end = text.getEndPositionOfChar(index);
@@ -147,6 +135,21 @@ function placeOf(text: SVGTextContentElement, index: number, [dx, dy]: Shift): C
     // A character past the end of an arc's path is not laid out.
     return null;
   }
+}
+
+/** Each character of a laid-out `<text>` with its place (null where nothing is laid out), or null when the
+ *  browser's count of characters does not match the text's. */
+export function placedChars(
+  t: SVGTextContentElement,
+): { chars: TextChar[]; places: (CharPlace | null)[] } | null {
+  const count = t.getNumberOfChars();
+  const chars = addressableChars(textNodesOf(t), count);
+  if (!chars) return null;
+  const shifts = baselineShifts(t, count);
+  return {
+    chars,
+    places: chars.map((c) => (c.index >= 0 ? placeOf(t, c.index, shifts[c.index]) : null)),
+  };
 }
 
 type Run = { match: FaceMatch; style: Style; chars: { ch: string; place: CharPlace | null }[] };
@@ -163,21 +166,21 @@ const sameRun = (run: Run | undefined, match: FaceMatch, style: Style) =>
 function runsOf(
   text: SVGTextContentElement,
   chars: TextChar[],
+  places: readonly (CharPlace | null)[],
   faces: readonly FaceSource[],
-  shifts: readonly Shift[],
 ): Run[] {
   const runs: Run[] = [];
   const styles = new Map<Element, Style>();
   const missing = new Map<string, Set<string>>();
-  for (const c of chars) {
+  chars.forEach((c, i) => {
     let style = styles.get(c.holder);
     if (!style) styles.set(c.holder, (style = styleOf(c.holder, text)));
-    const place = c.index >= 0 ? placeOf(text, c.index, shifts[c.index] ?? NO_SHIFT) : null;
+    const place = places[i] ?? null;
     const last = runs[runs.length - 1];
     if (drawsNothing(c.ch)) {
       // Kept with its place: it draws no glyph, but an underline runs under it.
       if (last && last.style === style) last.chars.push({ ch: c.ch, place });
-      continue;
+      return;
     }
     const cp = c.ch.codePointAt(0)!;
     let match: FaceMatch | null = null;
@@ -189,11 +192,11 @@ function runsOf(
       const face = style.families[0] ?? FALLBACK_FAMILY;
       const set = missing.get(face) ?? new Set<string>();
       missing.set(face, set.add(c.ch));
-      continue;
+      return;
     }
     if (sameRun(last, match, style)) last!.chars.push({ ch: c.ch, place });
     else runs.push({ match, style, chars: [{ ch: c.ch, place }] });
-  }
+  });
   const [face, letters] = [...missing.entries()][0] ?? [];
   if (face && letters) {
     console.warn('[outline] letters not in the embedded face', { face, count: letters.size });
@@ -220,121 +223,80 @@ function glyphRun(run: Run) {
   };
 }
 
-function pathEl(doc: Document, d: string, run: Run, withStroke: boolean): Element {
-  const p = doc.createElementNS(SVG_NS, 'path');
-  p.setAttribute('d', d);
+/** One outlined path: its data in the text's user space and the paint the text was drawn with. */
+export type OutlinedPath = {
+  d: string;
+  fill: string;
+  fillOpacity?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  strokeOpacity?: string;
+  // The synthetic bold's stroke joins.
+  miterJoin?: true;
+  // The same letters glyph by glyph (`face` names the face at its size): what a PDF writes once and reuses.
+  glyphs?: { face: string; placed: PlacedGlyph[] };
+};
+
+function outlinedPath(d: string, run: Run, withStroke: boolean): OutlinedPath {
   const { style } = run;
-  p.setAttribute('fill', style.fill);
-  if (style.fillOpacity && style.fillOpacity !== '1')
-    p.setAttribute('fill-opacity', style.fillOpacity);
+  const p: OutlinedPath = { d, fill: style.fill };
+  if (style.fillOpacity && style.fillOpacity !== '1') p.fillOpacity = style.fillOpacity;
   if (withStroke && style.stroke && style.stroke !== 'none') {
-    p.setAttribute('stroke', style.stroke);
-    p.setAttribute('stroke-width', String(parseFloat(style.strokeWidth) || 1));
-    if (style.strokeOpacity && style.strokeOpacity !== '1')
-      p.setAttribute('stroke-opacity', style.strokeOpacity);
+    p.stroke = style.stroke;
+    p.strokeWidth = parseFloat(style.strokeWidth) || 1;
+    if (style.strokeOpacity && style.strokeOpacity !== '1') p.strokeOpacity = style.strokeOpacity;
   } else if (withStroke && run.match.syntheticBold && style.fill !== 'none') {
     // The browser's own bold for a face that has none: the outline thickened by a stroke of its fill.
-    p.setAttribute('stroke', style.fill);
-    p.setAttribute('stroke-width', String(Math.round(syntheticBoldWidth(style.size) * 100) / 100));
-    p.setAttribute('stroke-linejoin', 'miter');
-    p.setAttribute('stroke-miterlimit', '4');
-    if (style.fillOpacity && style.fillOpacity !== '1')
-      p.setAttribute('stroke-opacity', style.fillOpacity);
+    p.stroke = style.fill;
+    p.strokeWidth = Math.round(syntheticBoldWidth(style.size) * 100) / 100;
+    p.miterJoin = true;
+    if (style.fillOpacity && style.fillOpacity !== '1') p.strokeOpacity = style.fillOpacity;
   }
   return p;
 }
 
-/** `svg` with every `<text>` drawn as outlines in the faces `fontCss` embeds. Throws `OutlineError`. */
-export async function outlineSvgText(
-  svg: string,
-  fontCss: string,
-  deps: OutlineDeps = {},
-): Promise<string> {
-  const parsed = parseInert(svg, 'image/svg+xml').documentElement;
-  // The embedded faces go whether or not there is text: a logo of shapes alone needs none.
-  let stripped = false;
-  for (const style of [...parsed.querySelectorAll('style')]) {
-    if (!style.textContent?.includes('@font-face')) continue;
-    const defs = style.parentElement;
-    style.remove();
-    stripped = true;
-    if (defs?.localName === 'defs' && defs.childElementCount === 0) defs.remove();
-  }
-  if (!parsed.querySelector('text')) {
-    return stripped ? new XMLSerializer().serializeToString(parsed) : svg;
-  }
-  const faces = parseFontFaces(fontCss);
-  const fontkit = await (deps.loadFontkit ?? defaultFontkit)();
-  const root = document.importNode(parsed, true) as unknown as SVGSVGElement;
-  const host = document.createElement('div');
-  host.setAttribute('aria-hidden', 'true');
-  host.style.cssText =
-    'position:fixed;left:0;top:0;width:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none';
-  host.appendChild(root);
-  const registered: FontFace[] = [];
-  try {
-    for (const f of faces) {
-      const face = new FontFace(f.family, bytesOf(f.url), {
-        weight: `${f.weight[0]} ${f.weight[1]}`,
-        style: f.style,
-        unicodeRange: f.ranges
-          .map(([lo, hi]) => `U+${lo.toString(16)}-${hi.toString(16)}`)
-          .join(','),
-      });
-      await face.load();
-      document.fonts.add(face);
-      registered.push(face);
+/** Opens each face at each size once, for every text of one export. */
+export function faceOpener(fontkit: Fontkit, bytesOf: (url: string) => Uint8Array) {
+  const fonts = new Map<string, OutlineFont>();
+  return (match: FaceMatch, size: number): OutlineFont => {
+    const key = `${match.face.url}|${match.weight}|${size}`;
+    let font = fonts.get(key);
+    if (!font) {
+      font = openFace(fontkit, bytesOf(match.face.url), { weight: match.weight, size });
+      fonts.set(key, font);
     }
-    document.body.appendChild(host);
-    const families = new Set(faces.map((f) => f.family.toLowerCase()));
-    const texts = [...root.querySelectorAll('text')] as SVGTextContentElement[];
-    // A text in a stack the kit embeds no face of is set in the fallback face before it is measured.
-    for (const t of texts) {
-      for (const el of [t, ...t.querySelectorAll('*')]) {
-        const stack = stackFamilies(getComputedStyle(el).fontFamily);
-        if (!stack.some((f) => families.has(f.toLowerCase())))
-          (el as SVGElement).style.fontFamily = FALLBACK_FAMILY;
-      }
+    return font;
+  };
+}
+
+/** The mounted `<text>` as outlined paths in its own user space, in the faces `faces` declare. Throws
+ *  `OutlineError` when it is not laid out as typed, or a letter is in none of them. */
+export function outlineTextElement(
+  t: SVGTextContentElement,
+  faces: readonly FaceSource[],
+  open: ReturnType<typeof faceOpener>,
+): OutlinedPath[] {
+  const placed = placedChars(t);
+  if (!placed) throw new OutlineError('layout', FALLBACK_FAMILY);
+  const out: OutlinedPath[] = [];
+  for (const run of runsOf(t, placed.chars, placed.places, faces)) {
+    const font = open(run.match, run.style.size);
+    const gr = glyphRun(run);
+    const d = glyphRunPath(font, gr);
+    if (d) {
+      const path = outlinedPath(d, run, true);
+      const placed = glyphRunPlacements(font, gr);
+      if (placed)
+        path.glyphs = {
+          face: `${run.match.face.url}|${run.match.weight}|${run.style.size}`,
+          placed,
+        };
+      out.push(path);
     }
-    await document.fonts.ready;
-    const fonts = new Map<string, OutlineFont>();
-    const fontFor = (run: Run): OutlineFont => {
-      const key = `${run.match.face.url}|${run.match.weight}|${run.style.size}`;
-      let font = fonts.get(key);
-      if (!font) {
-        font = openFace(fontkit, bytesOf(run.match.face.url), {
-          weight: run.match.weight,
-          size: run.style.size,
-        });
-        fonts.set(key, font);
-      }
-      return font;
-    };
-    for (const t of texts) {
-      const chars = addressableChars(textNodesOf(t), t.getNumberOfChars());
-      if (!chars) throw new OutlineError('layout', FALLBACK_FAMILY);
-      const g = document.createElementNS(SVG_NS, 'g');
-      for (const name of KEPT_ATTRS) {
-        const v = t.getAttribute(name);
-        if (v !== null) g.setAttribute(name, v);
-      }
-      const shifts = baselineShifts(t, t.getNumberOfChars());
-      for (const run of runsOf(t, chars, faces, shifts)) {
-        const font = fontFor(run);
-        const gr = glyphRun(run);
-        const d = glyphRunPath(font, gr);
-        if (d) g.appendChild(pathEl(document, d, run, true));
-        for (const deco of run.style.decorations) {
-          const dd = decorationPath(font, gr, deco);
-          if (dd) g.appendChild(pathEl(document, dd, run, false));
-        }
-      }
-      t.replaceWith(g);
+    for (const deco of run.style.decorations) {
+      const dd = decorationPath(font, gr, deco);
+      if (dd) out.push(outlinedPath(dd, run, false));
     }
-    root.remove();
-    return new XMLSerializer().serializeToString(root);
-  } finally {
-    host.remove();
-    for (const face of registered) document.fonts.delete(face);
   }
+  return out;
 }

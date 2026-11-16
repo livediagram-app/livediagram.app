@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// docs/specs/007-editor/logo-pages.md "Outlined text": typed characters mapped to the indices the SVG DOM
+// livedesign/docs/specs/007-editor/logo-pages.md "Outlined text": typed characters mapped to the indices the SVG DOM
 // addresses once white space collapses.
 import { describe, expect, it } from 'vitest';
 import { addressableChars, drawsNothing } from './text-chars';

@@ -1,17 +1,19 @@
-// docs/specs/007-editor/logo-pages.md "Outlined text": a face opened at the weight and optical size the browser
+// livedesign/docs/specs/007-editor/logo-pages.md "Outlined text": a face opened at the weight and optical size the browser
 // drew it at. Real fontkit reads the repo's own font files; a stand-in checks the variable WOFF2 path, which the
 // browser check covers end to end (outlines over Chromium's own drawing of Inter and Fraunces at 500 to 700).
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import * as fontkit from 'fontkit';
+import * as fontkit from '#fontkit';
 import { describe, expect, it, vi } from 'vitest';
 import { glyphRunPath } from './glyph-paths';
 import { axisCoords, openFace, type Fontkit, type FontkitFont } from './outline-font';
 
 const fixture = (rel: string) =>
   new Uint8Array(readFileSync(fileURLToPath(new URL(rel, import.meta.url))));
-const INTER_TTF = fixture('../../../../../packages/render-png/fonts/Inter-Regular.ttf');
-const CAVEAT_WOFF2 = fixture('../../../marketing/public/fonts/caveat-hero.woff2');
+const INTER_TTF = fixture('../../../render-png/fonts/Inter-Regular.ttf');
+const CAVEAT_WOFF2 = fixture(
+  '../../../../livedesign/apps/marketing/public/fonts/caveat-hero.woff2',
+);
 
 const wght = { axisTag: 'wght', minValue: 100, defaultValue: 400, maxValue: 900 };
 const opsz = { axisTag: 'opsz', minValue: 8, defaultValue: 14, maxValue: 144 };
