@@ -24,20 +24,33 @@ export function PhotoTextEditor({
 }) {
   'use no memo'; // It reads the mutable photo session as it renders (PhotoSession).
   // Begun once mounted (it marks the undo checkpoint), ended with the field: focus moved on, the
-  // tool put down, the page left.
-  const typing = useRef<TextEdit | null>(null);
+  // tool put down, the page left. The end waits a microtask: React mounts a field twice in development
+  // (StrictMode), and ending at the first unmount removed a new, still empty layer before the caret
+  // ever reached it, so the press seemed to do nothing. A field mounted again for the same edit keeps it.
+  const typing = useRef<{ edit: TextEdit | null; session: PhotoSession; ending: boolean } | null>(
+    null,
+  );
   const ref = useRef<HTMLTextAreaElement>(null);
   const [value, setValue] = useState(() => {
     const l = session.layer(edit.layerId);
     return l?.layerKind === 'text' ? l.text.text : '';
   });
   useEffect(() => {
-    const t = beginTextEdit(session, edit.layerId, edit.isNew);
-    typing.current = t;
+    const held = typing.current;
+    const live =
+      held && held.session === session
+        ? held
+        : { edit: beginTextEdit(session, edit.layerId, edit.isNew), session, ending: false };
+    live.ending = false;
+    typing.current = live;
     ref.current?.focus();
     return () => {
-      t?.end();
-      typing.current = null;
+      live.ending = true;
+      queueMicrotask(() => {
+        if (!live.ending) return;
+        live.edit?.end();
+        if (typing.current === live) typing.current = null;
+      });
     };
   }, [session, edit.layerId, edit.isNew]);
   const layer = session.layer(edit.layerId);
@@ -46,7 +59,7 @@ export function PhotoTextEditor({
   const box = textBox(layer);
   const k = page.width / session.photo.width;
   const end = () => {
-    typing.current?.end();
+    typing.current?.edit?.end();
     onEnd();
   };
   return (
@@ -58,7 +71,7 @@ export function PhotoTextEditor({
       spellCheck={false}
       onChange={(e) => {
         setValue(e.target.value);
-        typing.current?.change({ text: e.target.value });
+        typing.current?.edit?.change({ text: e.target.value });
       }}
       onKeyDown={(e) => {
         e.stopPropagation();
