@@ -203,7 +203,8 @@ export function useEditorPlanData(
   // the lazily loaded sheet chunk through it, once a Sheet is drawn.
   const sheetsCommitRef = useRef<((map: (els: Element[]) => Element[]) => void) | null>(null);
   const sheetsPlaceRef = useRef<SheetsBridge['placeElement'] | null>(null);
-  // The last seen copy keeps the cards and the first tab's sheets (offline-mode.md "Warm open of a cloud project").
+  // The last seen copy keeps the cards, the first tab's sheets and a Dashboard's shown tabs (offline-mode.md "Warm open
+  // of a cloud project").
   const planCopy = usePlanCopyFollow({
     reader: selfParticipant.id,
     projectId,
@@ -213,6 +214,7 @@ export function useEditorPlanData(
     store: planItems.store,
     practiceCount: planItems.practiceIds.size,
     tabs,
+    loadedTabIds,
     tabScope: sessionTabScope,
   });
   const sheets = useSheetsBridge({

@@ -184,7 +184,7 @@ describe('useIdentityBootstrap warm open', () => {
     expect(lastRole(set)).toBe('view');
     expect(set.setIsOwner).toHaveBeenCalledWith(true);
     expect(set.setWarmTabId).toHaveBeenCalledWith('t1');
-    expect(set.setWarmPlan).toHaveBeenCalledWith({ cards: CARDS, sheets: null });
+    expect(set.setWarmPlan).toHaveBeenCalledWith({ cards: CARDS, sheets: [], refTabs: [] });
     expect(set.setLoadingProject).toHaveBeenCalledWith(false);
     // Nothing waits on the server, and nothing is saved or connected: those need `hydrated` and a project id.
     expect(api.apiLoadProject).not.toHaveBeenCalled();
@@ -203,14 +203,14 @@ describe('useIdentityBootstrap warm open', () => {
   });
 
   it.each([
-    ['dashboard', { cards: CARDS }],
-    ['sheet', { sheets: SHEETS }],
-  ])('paints a %s first tab from what the copy kept', async (kind, item) => {
+    ['dashboard', { cards: CARDS }, { cards: CARDS }],
+    ['sheet', { sheets: SHEETS }, { sheets: [SHEETS] }],
+  ])('paints a %s first tab from what the copy kept', async (kind, item, warm) => {
     copies.held = copyFor(kind, {}, item);
     const { set } = render({ authLoaded: false, accountUserId: null });
     await flush();
     expect(paint).toHaveBeenCalledOnce();
-    expect(set.setWarmPlan).toHaveBeenCalledWith(expect.objectContaining(item));
+    expect(set.setWarmPlan).toHaveBeenCalledWith(expect.objectContaining(warm));
   });
 
   it.each([

@@ -15,3 +15,5 @@ One row per default applied where a spec is silent or qualitative.
 | D9  | last-seen-copy | How many sheet cells a copy keeps                    | Up to 10,000 across the first tab's sheets (`PLAN_COPY_MAX_CELLS`); past it none                                                        |
 | D10 | last-seen-copy | When the kept sheets refresh                         | On each read of the first tab's sheets (open, resync, refetch), not on each cell write                                                  |
 | D11 | last-seen-copy | What a warm paint may do                             | Everything a Viewer may: the paint runs as `view` whatever role the copy holds, until the catch-up                                      |
+| D12 | last-seen-copy | What a Dashboard tile draws before its tab loads     | The kept body, `inert`, until its tab loads or its load fails (then Retry)                                                              |
+| D13 | last-seen-copy | How many cells a Dashboard's shown Sheets keep       | Up to 10,000 across them (`PLAN_COPY_MAX_CELLS`); past it no shown tabs, and the Dashboard opens as always                              |

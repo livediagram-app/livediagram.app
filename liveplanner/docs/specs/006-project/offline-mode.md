@@ -161,6 +161,10 @@ tab a tab-scoped link opens). It also keeps what the first tab draws from:
 - **The first tab's sheets**, when it is a Sheet tab, as its last read of them answered, so a Sheet first tab
   paints its cells. Sheets holding more than **10,000 cells** together keep none, and the tab opens as it always
   did.
+- **The tabs a Dashboard shows**, when the first tab is a Dashboard: the body of each tab its tiles draw, once
+  each has loaded, and each such Sheet tab's sheets as their last read answered, so the Dashboard's tiles paint
+  their boards and cells rather than an empty page. Their cells together have the same **10,000 cell** cap; past
+  it, or before every shown tab has loaded once, none are kept and the Dashboard opens as it always did.
 
 It lives in its own IndexedDB database (`liveplanner-last-seen`), never on the server, under the same rules as
 every editor's copy:
@@ -174,7 +178,8 @@ every editor's copy:
 - **Follows the plan.** While the plan is open its copy keeps up with what the reader sees: the name and the tab
   list each time they change, the first tab's body each time one of the reader's own saves of it lands, and the
   cards each time the board's store changes (a card added, moved or edited, by the reader, a teammate or a rule).
-  The first tab's sheets follow each read of them (the open's, a reconnect's); a cell typed since shows its older
+  The first tab's sheets, and a Dashboard's shown tabs, follow each read of them (the open's, a reconnect's, a
+  shown tab's load); a cell typed since shows its older
   value for a moment at the next warm open, until the catch-up. Refreshes are gathered into at most one write
   every 2 seconds, off the editing path, and a waiting one is written when the page is hidden or closed. While the
   Plan tour's practice cards are on the board the cards are not followed (they are never anyone's real cards).
@@ -195,10 +200,17 @@ What the first tab is decides whether the copy paints:
 | First tab | Paints from the copy                                                                                    |
 | --------- | ------------------------------------------------------------------------------------------------------- |
 | Board     | Its body and the cards kept; no cards kept (past the cap, or before they first loaded): opens as always |
-| Dashboard | Its body and the cards kept; a chart drawn from a sheet's cells keeps it waiting: opens as always       |
+| Dashboard | Its body, the cards kept and the tabs its tiles show (below); otherwise opens as always                 |
 | Sheet     | Its body and its sheets kept; no sheets kept for this tab: opens as always                              |
 | Form      | Never: a form's link, its state and its responses are the server's, so a Form tab waits for the load    |
-| Any other | Its body, with what it draws as a Board or a Sheet would (a board or card needs cards, a Sheet sheets)  |
+
+A Dashboard first tab paints only when every slot can draw from the copy: each Board or Sheet tab a tile shows is
+kept (a Sheet with its sheets), and no slot reads what the copy never holds. A tile naming a Form tab, a figure or
+chart from a sheet (Sheet Metrics, a chart from a Sheet's cells) or a figure from a form (Form Metrics) keeps it
+waiting, and so does a shown tab not kept (it had not loaded, or its cells were past the cap). A tile whose tab was
+deleted paints as it says so. Until a shown tab's own load answers, its tile draws the kept body as it was seen,
+not worked on, and then the tab as loaded.
+| Any other | Its body, with what it draws as a Board or a Sheet would (a board or card needs cards, a Sheet sheets) |
 
 - **Edits wait for the participant.** The warm paint runs as a Viewer: every edit control is disabled with the
   usual read-only look, card moves and edits, the board's shared filter (its words, chips, Only Mine and saved

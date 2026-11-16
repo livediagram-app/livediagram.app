@@ -66,9 +66,10 @@ export type SheetsBridge = {
   sheetRetitled: (sheetId: string, title: string) => void;
   // The sheet chunk attaches its handlers; the returned function detaches them.
   attach: (handlers: SheetsHandlers) => () => void;
-  // The first tab's sheets a warm open painted from the last seen copy (docs/specs/006-project/offline-mode.md "Warm
-  // open of a cloud project"), seeded into a store as it is made; null when there are none.
-  warm?: KeptSheets | null;
+  // The sheets a warm open painted from the last seen copy, the first tab's and each tab a Dashboard first tab shows
+  // (docs/specs/006-project/offline-mode.md "Warm open of a cloud project"), each seeded into a store as it is made;
+  // null or empty when there are none.
+  warm?: readonly KeptSheets[] | null;
   // Told each tab's sheets as a load read them (the last seen copy keeps the first tab's).
   onTabRead?: (tabId: string, sheets: readonly SheetJson[]) => void;
 };
@@ -99,7 +100,7 @@ export function useSheetsBridge(opts: {
   tickElements: (map: (els: Element[]) => Element[]) => void;
   selectElement: (id: string) => void;
   sheetRetitled: (sheetId: string, title: string) => void;
-  warm?: KeptSheets | null;
+  warm?: readonly KeptSheets[] | null;
   onTabRead?: (tabId: string, sheets: readonly SheetJson[]) => void;
 }) {
   const handlers = useRef<SheetsHandlers | null>(null);

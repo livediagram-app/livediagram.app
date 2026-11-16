@@ -49,7 +49,7 @@ const bridgeFor = (projectId: string, over: Partial<SheetsBridge> = {}) =>
     toast: () => {},
     canEdit: false,
     canShape: false,
-    warm: KEPT,
+    warm: [KEPT],
     ...over,
   }) as unknown as SheetsBridge;
 const flush = () => new Promise((res) => setTimeout(res, 0));
@@ -73,6 +73,13 @@ describe('the sheet store, warm', () => {
     const version = store.getVersion();
     sheetStoreOf(bridgeFor(''));
     expect(store.getVersion()).toBe(version);
+  });
+
+  it("seeds each kept tab's sheets, the first tab's and a Dashboard's shown Sheet's", () => {
+    const shown = { tabId: 't9', sheets: [sheet('sX', 't9', 'Other')] };
+    const store = sheetStoreOf(bridgeFor('', { warm: [KEPT, shown] }));
+    expect(store.sheet('s1')?.title).toBe('Budget');
+    expect(store.sheet('sX')?.title).toBe('Other');
   });
 
   it("shows them in the plan's store until its first read, which drops what the server no longer holds", async () => {

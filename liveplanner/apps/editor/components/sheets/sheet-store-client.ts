@@ -393,7 +393,7 @@ export function sheetStoreOf(bridge: SheetsBridge): SheetStore {
   });
   // A warm open's kept sheets (offline-mode.md "Warm open of a cloud project"): shown at once in the store made for
   // the paint, and in the plan's own store until its first load answers.
-  if (made && bridge.warm) store.seedWarm(bridge.warm);
+  if (made) for (const kept of bridge.warm ?? []) store.seedWarm(kept);
   return store;
 }
 
