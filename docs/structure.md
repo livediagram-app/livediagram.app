@@ -13,6 +13,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
 │  ├─ brand                    every app's logo drawn once: the Living Prism and wordmark, as React and as SVG strings
+│  ├─ capture                  a browser's microphone and camera: the constraints, the device list and picker, the level meter, for livehuddle's calls and the walkthroughs
 │  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures; each product binds its names
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
 │  ├─ help-site                every help centre's pages, components, styles, SEO and catalogue checks; each product binds its own
@@ -59,6 +60,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ ui                       the design system: buttons, fields, dialogs, menus, the back bar, hints, optical primitives, hooks,
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vector-export            the PDF writer every product's export loads on demand: SVG drawn as vectors, letters outlined, a text layer, tags
+│  ├─ walkthrough              recorded narrations in the four canvas apps: the recorder, the event timeline, the player, the header menu, the dock and the bubble
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
 ├─ scripts/                    the root's own scripts: git-hooks, ts-source-hooks.mjs (Node type stripping for every product's repo scripts), and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)

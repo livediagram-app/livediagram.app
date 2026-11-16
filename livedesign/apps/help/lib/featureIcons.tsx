@@ -296,6 +296,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z" />
     </Glyph>
   ),
+  // A play mark inside a round bubble: a recorded narration played back. Not a camera (snapshots') and not a
+  // screen (presenting's).
+  walkthroughs: (
+    <Glyph>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M10.2 8.8v6.4l5-3.2z" />
+    </Glyph>
+  ),
   // A camera: a save point taken of the whole item. Not a clock (history's) and not a page (export's).
   snapshots: (
     <Glyph>

@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Walkthroughs',
+  description:
+    'Record yourself talking someone through the plan, camera bubble and all, and let them play it back over the plan, pausing to look around.',
+  path: '/help/collaboration/walkthroughs/',
+});
+
+<ArticleLayout
+  title="Walkthroughs"
+  description="A recorded tour of the plan: your voice, your camera and where you went, played back over the plan as it is now."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('walkthroughs')}
+>
+
+A walkthrough is a recording of you talking someone through the plan. It keeps your voice, your camera if you leave it on (shown as a round bubble in a corner), your pointer, and every pan, zoom and tab change you make. Whoever plays it watches it over the plan itself, not in a video, so they can pause, look around and resume.
+
+## Recording a walkthrough
+
+<Step n={1}>
+  Press **Walkthroughs** in the header, left of Present, then **Record Walkthrough**. The recording
+  dock opens at the bottom of the plan.
+</Step>
+
+<Step n={2}>
+  Pick your **Microphone** and **Camera** (or **No Camera** for sound alone). The level meter shows
+  the microphone hears you, and your camera shows live in its bubble. The browser asks for the
+  microphone and camera the first time.
+</Step>
+
+<Step n={3}>
+  Press **Start Recording**. After a 3, 2, 1 countdown, talk and move around the plan as you would
+  with someone beside you. Press **Finish** when you are done.
+</Step>
+
+<Step n={4}>
+  Give it a **Title** and press **Save**. It is listed in the Walkthroughs menu for everyone who can
+  open the plan.
+</Step>
+
+A walkthrough can run for up to ten minutes; the bar turns amber with a minute left and finishes on its own at ten. If saving is refused (it is too large, or you have reached your limit), the dock says why and offers **Download a Copy** so the recording isn't lost.
+
+## Hiding elements from the recording
+
+Press **Hide From Recording** in the dock, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. You still see hidden elements, faded inside a dashed outline; people playing the walkthrough never do, and presses and pointer moves over them are left out of what is stored. They stay on the plan itself for anyone who opens it.
+
+## Playing a walkthrough
+
+Open **Walkthroughs** in the header and press one to play it. The view follows the recording, fitted to your screen, with the presenter's pointer and their bubble in the corner.
+
+- **Pause, look around, resume.** Pan, zoom or press on the plan and it pauses, leaving the view with you. **Resume** puts the view back where the recording is and plays on.
+- **Keys.** `Space` plays and pauses, `←` and `→` skip five seconds, `Esc` closes. The bar also has a scrubber and a speed of 1x, 1.5x or 2x.
+- **Edited since recording.** If the plan has changed since, a line says so and it still plays over the plan as it is now.
+
+Closing puts you back where you were.
+
+## Who can record and delete
+
+Editors record walkthroughs and can delete any of them. Everyone who can open the plan can play them, and anyone can delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a plan kept in **This Browser**, or through a link to one tab.
+
+## Privacy
+
+Calls are never recorded. A walkthrough is only made when you press Start Recording, and it is stored with the plan for the people who can open it. Deleting a walkthrough, purging its plan from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
+
+</ArticleLayout>

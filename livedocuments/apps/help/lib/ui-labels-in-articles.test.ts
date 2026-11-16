@@ -40,6 +40,12 @@ const COMMUNITY_SITE = `${ROOT}/../liveworkspace/apps/site/components/community`
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
 // The Snapshots button and dialog (@liveworkspace/snapshots), drawn in every editor's footer.
 const SNAPSHOTS_PACKAGE = `${ROOT}/../packages/snapshots/src`;
+// The Walkthroughs menu, recording dock and player (@liveworkspace/walkthrough), with its device picker
+// (@liveworkspace/capture), drawn over every canvas editor.
+const WALKTHROUGH_PACKAGES = [
+  `${ROOT}/../packages/walkthrough/src`,
+  `${ROOT}/../packages/capture/src`,
+];
 
 // Every printed spelling per lowercase key: two surfaces can print one name
 // in different case (a dialog's title and its own aria-label, say), and an article matching either is right.
@@ -116,6 +122,7 @@ function editorSource(): string {
   walk(COMMUNITY_SITE);
   walk(WORKBENCH_PACKAGE);
   walk(SNAPSHOTS_PACKAGE);
+  for (const dir of WALKTHROUGH_PACKAGES) walk(dir);
   return all.toLowerCase();
 }
 
