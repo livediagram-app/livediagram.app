@@ -75,7 +75,14 @@ under the pointer as a category is switched.
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
-  icon; an edge with nothing beyond it stays sharp.
+  icon; an edge with nothing beyond it stays sharp. The category bar's row (`StripScroller`,
+  `@liveworkspace/workbench/components/palette/StripScroller`) also lays a fade in the card's own colour over each
+  edge with more beyond it (44px), covering the button the edge cuts so no label shows cut mid-word, with a small
+  round chevron button in it (**Scroll Left**, **Scroll Right**, a Tooltip each): a press brings the first item the
+  far edge cut whole into view past the fade (smoothly, or at once under reduced motion). The buttons serve a mouse,
+  which has no swipe; they keep the focus where it was and stay out of the Tab order, since the arrow keys walk the
+  bar and the browser scrolls a focused button into view. They show at every width the bar swipes (a phone, or a
+  narrow window).
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
 
 ### Opening a flyout
