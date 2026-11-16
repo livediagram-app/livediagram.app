@@ -46,6 +46,8 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'trash',
   'preferences',
   'participants',
+  // The item's recorded walkthroughs (liveworkspace/docs/specs/006-media/walkthroughs.md "Each app's door").
+  'walkthroughs',
   // The one-time doors of the move from the old livediagram.app.
   'legacy-guest',
   'migration',

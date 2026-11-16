@@ -33,6 +33,22 @@ export type WalkthroughCall = (
   search?: Record<string, string>,
 ) => Promise<Response>;
 
+type FixedLengthStreamClass = new (length: number) => TransformStream<Uint8Array, Uint8Array>;
+
+/**
+ * A stream body as a Worker sends it with its length: the runtime drops a Content-Length header set by hand and sends
+ * a stream chunked, which the service refuses (it holds the upload to the declared length). Workers have
+ * FixedLengthStream for this; elsewhere (tests, Node) the body goes as it is.
+ */
+export function fixedLength(
+  body: ReadableStream<Uint8Array> | ArrayBuffer,
+  length: number,
+): ReadableStream<Uint8Array> | ArrayBuffer {
+  const Fixed = (globalThis as { FixedLengthStream?: FixedLengthStreamClass }).FixedLengthStream;
+  if (!Fixed || body instanceof ArrayBuffer) return body;
+  return body.pipeThrough(new Fixed(length));
+}
+
 export function walkthroughCalls(call: WalkthroughCall) {
   const json = async <T>(res: Response): Promise<WalkthroughResult<T>> => {
     const body = (await res.json().catch(() => ({ error: 'invalid_body' }))) as never;
@@ -70,7 +86,7 @@ export function walkthroughCalls(call: WalkthroughCall) {
           {
             method: 'PUT',
             headers: { 'Content-Type': media.type, 'Content-Length': String(media.length) },
-            body: media.body,
+            body: fixedLength(media.body, media.length),
             duplex: 'half',
           } as RequestInit,
           { owner },
