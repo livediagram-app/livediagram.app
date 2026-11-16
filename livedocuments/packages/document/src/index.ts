@@ -232,6 +232,7 @@ export * from './chart-palettes';
 export * from './chart-frame';
 export * from './chart-ink';
 export * from './chart-types';
+export * from './chart-sheet-source';
 export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';

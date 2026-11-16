@@ -8,7 +8,9 @@
 //   member ids, names, and an assigner id that can be a guest's owner credential);
 // - the collaboration cards keep their tallies but not their people: answers (`responses`) and Q&A
 //   voters get neutral per-card ids, a Q&A note loses its author, a roll call's names become "Participant n";
-// - the tab's dot vote keeps its counts per element with neutral voter ids, and loses who started it.
+// - the tab's dot vote keeps its counts per element with neutral voter ids, and loses who started it;
+// - a chart linked to a sheet in another item (`chartSheetSource`, livedocuments pie-chart.md "Charts linked to a
+//   liveplanner sheet") keeps its last values and loses the link, so a stranger is told of no other item.
 //
 // The placeholders are per card, so a count, an average or a "3 people voted" reads the same, and
 // nothing ties one card's "p1" to another's.
@@ -42,6 +44,7 @@ type PeopleFields = {
   responses?: { participantId: string }[];
   qaNotes?: { author?: unknown; voters?: string[] }[];
   rollCall?: { name: string }[];
+  chartSheetSource?: unknown;
 };
 
 function hasPeople(e: PeopleFields): boolean {
@@ -52,7 +55,8 @@ function hasPeople(e: PeopleFields): boolean {
     Array.isArray(e.actions) ||
     Array.isArray(e.responses) ||
     Array.isArray(e.qaNotes) ||
-    Array.isArray(e.rollCall),
+    Array.isArray(e.rollCall) ||
+    e.chartSheetSource !== undefined,
   );
 }
 
@@ -60,7 +64,7 @@ export function redactElementsForCommunity<E extends object>(elements: E[]): E[]
   return elements.map((el) => {
     const e = el as E & PeopleFields;
     if (!hasPeople(e)) return el;
-    const { commentThread: _thread, cellComments: _cells, ...rest } = e;
+    const { commentThread: _thread, cellComments: _cells, chartSheetSource: _source, ...rest } = e;
     const out = { ...rest } as E & PeopleFields;
     if (e.action) out.action = anonymiseAction(e.action);
     if (Array.isArray(e.actions)) out.actions = e.actions.map(anonymiseAction);

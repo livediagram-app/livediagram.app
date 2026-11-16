@@ -67,6 +67,9 @@ export function handleInternalItems(
               documentRoom(env, id).joined(notice.personId),
               reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
             ]),
+      // A Sheet a chart in the document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md): the
+      // room tells every open session, which reads it again with its own access.
+      sourceChanged: (id, change) => documentRoom(env, id).sourceChanged(change),
       // A closed account, wherever it was closed: what livedocuments keeps for them beside their documents (their
       // images), and their name off each document of someone else's that names them.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),

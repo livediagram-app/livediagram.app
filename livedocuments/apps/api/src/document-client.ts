@@ -5,6 +5,7 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
+import type { SourceChange } from '@liveworkspace/index-client';
 import type { CommunityShareInfo } from '@livedocuments/api-schema';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { DocumentFileImport } from './document-room/document-file';
@@ -71,6 +72,8 @@ export type DocumentRoomClient = {
   // Someone opened the document through a share link for the first time (the index's notice): the owner's
   // "someone joined" email, sent from the room, which keeps its once-per-window claim.
   joined(personId: string): Promise<void>;
+  // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
+  sourceChanged(change: SourceChange): Promise<void>;
   // A closed account's name off the document (document-anonymise.ts): answers the rows changed.
   anonymise(personId: string): Promise<number>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the join
@@ -107,6 +110,7 @@ export function documentRoom(
     communityPostTitle: (code) => room.communityPostTitle(documentId, code),
     communityListing: (code) => room.communityListing(documentId, code),
     joined: (personId) => room.joined(documentId, personId),
+    sourceChanged: (change) => room.sourceChanged(documentId, change),
     anonymise: (personId) => room.anonymise(documentId, personId),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
@@ -142,6 +146,7 @@ export type DocumentRoomRpc = {
   communityPostTitle(documentId: string, code: string): Promise<string | null>;
   communityListing(documentId: string, code: string): Promise<CommunityListing | null>;
   joined(documentId: string, personId: string): Promise<void>;
+  sourceChanged(documentId: string, change: SourceChange): Promise<void>;
   anonymise(documentId: string, personId: string): Promise<number>;
   sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(
