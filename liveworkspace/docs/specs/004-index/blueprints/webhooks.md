@@ -134,16 +134,16 @@ null, text}`, `occurred_at` the send's `at`, `next_at` as `cardMovesStatement`'s
 
 ### Routes (`routes.ts`)
 
-| Route                                  | Body / answer                                               | Refusals                                                                                                                              |
-| -------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /items/:id/webhooks`              | `{webhooks}`: the item's, oldest first                      | `403 webhooks_need_editor`; `404 not_found`                                                                                           |
-| `POST /items/:id/webhooks`             | `{name, kind, url, events, who?}` → 201 `{webhook, secret}` | `400 invalid_webhook`, `webhook_url_invalid`, `webhook_url_private`; `403 webhooks_need_editor`; `404 not_found`; `409 webhook_limit` |
-| `PATCH /webhooks/:id`                  | `{name?, events?, who?, paused?}` → `{webhook}`             | `400 invalid_webhook`                                                                                                                 |
-| `DELETE /webhooks/:id`                 | 204 (deliveries cascade)                                    |                                                                                                                                       |
-| `POST /webhooks/:id/test`              | 202 `{queued: true}`                                        | `409 webhook_paused`                                                                                                                  |
-| `GET /webhooks/:id/deliveries`         | `{deliveries}`, newest 40                                   |                                                                                                                                       |
-| `PUT /app/items/:id/card-moves`        | `{moves}` (≤ `CARD_MOVES_MAX` 100) → 204                    | `400 invalid_moves`; `403 wrong_app`                                                                                                  |
-| `POST /app/items/:id/automation-sends` | `{sends}` (≤ `AUTOMATION_SENDS_MAX` 5) → 200 `{results}`    | `400 invalid_sends`; `403 wrong_app`                                                                                                  |
+| Route                                  | Body / answer                                               | Refusals                                                                                                                                                        |
+| -------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /items/:id/webhooks`              | `{webhooks}`: the item's, oldest first                      | `403 webhooks_need_editor`; `404 not_found`                                                                                                                     |
+| `POST /items/:id/webhooks`             | `{name, kind, url, events, who?}` → 201 `{webhook, secret}` | `400 invalid_webhook`, `webhook_url_invalid`, `webhook_url_private`, `webhook_url_unresolved`; `403 webhooks_need_editor`; `404 not_found`; `409 webhook_limit` |
+| `PATCH /webhooks/:id`                  | `{name?, events?, who?, paused?}` → `{webhook}`             | `400 invalid_webhook`                                                                                                                                           |
+| `DELETE /webhooks/:id`                 | 204 (deliveries cascade)                                    |                                                                                                                                                                 |
+| `POST /webhooks/:id/test`              | 202 `{queued: true}`                                        | `409 webhook_paused`                                                                                                                                            |
+| `GET /webhooks/:id/deliveries`         | `{deliveries}`, newest 40                                   |                                                                                                                                                                 |
+| `PUT /app/items/:id/card-moves`        | `{moves}` (≤ `CARD_MOVES_MAX` 100) → 204                    | `400 invalid_moves`; `403 wrong_app`                                                                                                                            |
+| `POST /app/items/:id/automation-sends` | `{sends}` (≤ `AUTOMATION_SENDS_MAX` 5) → 200 `{results}`    | `400 invalid_sends`; `403 wrong_app`                                                                                                                            |
 
 Every person route takes the page's share link as the item routes do (`X-Share-Code`, and its password), and checks
 on every call (`editableItem`): `403 webhooks_need_account` for a guest, an app's delegate, the Drive mirror or the
@@ -234,7 +234,9 @@ on its personal items and on the items of the teams closed with it are deleted, 
 - `AddWebhook`, four numbered steps: Where Should It Post? (three destination cards), Connect It (`ConnectPanel`'s
   numbered guide around the address, then Name), What Should It Send? (the document's app's events in groups, in
   its words, as rows in one card, none chosen at first, with "n of m", Select All and Clear; no app header or
-  logos), Who Did It? (Anyone, the default, or Only Me). Edit Events opens the same two pickers in the row.
+  logos), Who Did It? (Anyone, the default, or Only Me). Edit Events opens the same two pickers in the row. An
+  address refusal (`isAddressError`) shows under the field (`aria-invalid`, `aria-describedby`) and focuses it; any
+  other shows in the actions row, which sticks to the foot of the dialog's scroll.
 
 ## Observability
 

@@ -250,8 +250,11 @@ export function ShareDialog({
       // While Show Me runs, Escape is the tour's.
       closeOnEscape={!tour.active}
       size="lg"
-      // The body scrolls between a fixed header and footer.
-      className="max-h-[calc(100%-2rem)]"
+      // Pinned near the top, so the role picker unfolding or a pass coming or going grows the panel downward and
+      // nothing above it moves under the pointer (the centred panel jumped by half of each change).
+      placement="top"
+      // The body scrolls between a fixed header and footer, the panel filling at most the room below the gap.
+      className="max-h-[calc(100%-2rem)] sm:max-h-full"
     >
       {/* The dialog hero header (dialog-hero-header.md): sharing drawn as a connection, the status its one line. */}
       <HeroDialogHeader
