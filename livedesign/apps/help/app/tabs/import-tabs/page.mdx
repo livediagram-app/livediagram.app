@@ -41,13 +41,13 @@ You can skip the dialog too: **drop** an `.svg` file on a page, or **paste** one
 
 Dropping a `.json` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
 
-## Import replaces the tab
+## A JSON import replaces the tab
 
-Importing **replaces the active tab's contents** with what comes in, it does not merge. Because that is destructive, the dialog leads with an amber warning naming the tab about to be overwritten, so you can back out before committing. If you change your mind afterwards, undo (`Cmd` / `Ctrl` + `Z`) brings the previous pages back. To keep the current tab as it is, add a new tab first and import into that.
+A JSON import **replaces the active tab's contents** with what comes in, it does not merge (an SVG adds to the page instead, above). Because that is destructive, the dialog leads with an amber warning, worded for JSON, naming the tab about to be overwritten, so you can back out before committing. If you change your mind afterwards, undo (`Cmd` / `Ctrl` + `Z`) brings the previous pages back. To keep the current tab as it is, add a new tab first and import into that.
 
 **Import** is greyed out while a tab is [locked](/help/tabs/locking-tabs/), since a locked tab is protected from edits, and the tab menu isn't offered on a view-only share link.
 
-<Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the paste box.">
+<Figure caption="Because a JSON import overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
   <ImportWarning />
 </Figure>
 

@@ -14,8 +14,9 @@ Only a file too big to bring in as shapes is still placed as a **picture**, thro
 Three routes, one importer:
 
 - **Import to Tab**: the dialog offers **SVG** beside JSON. Its panel takes pasted markup or a picked `.svg` file.
-  Unlike JSON, an SVG **adds** to the tab rather than replacing it, so the dialog's warning gives way to a calm note:
-  _The shapes land on the page you are on, fitted to it._ When the import leaves something out, the dialog shows the
+  Unlike JSON, an SVG **adds** to the tab rather than replacing it. The format grid's amber warning speaks for JSON
+  only (_A JSON import replaces everything on <tab> with the imported content._), and the SVG panel swaps it for a calm
+  note: _The shapes land on the page you are on, fitted to it._ When the import leaves something out, the dialog shows the
   import report (below) in place of closing.
 - **Drop** an `.svg` file (or any file the browser types `image/svg+xml`) on the canvas.
 - **Paste** an SVG file, or SVG markup copied as text (a design tool's "Copy as SVG", a code editor), onto the

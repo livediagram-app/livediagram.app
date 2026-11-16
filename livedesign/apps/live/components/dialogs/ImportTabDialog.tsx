@@ -152,13 +152,14 @@ function ImportChooser({
           The shapes land on the page you are on, fitted to it.
         </p>
       ) : (
-        // Destructive-action warning: a JSON import overwrites the tab.
+        // Destructive-action warning: a JSON import overwrites the tab. Named for JSON, so it never reads as if the
+        // SVG card beside it replaced the tab too (svg-import.md).
         <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
           <span className="mt-0.5 shrink-0">
             <WarningIcon />
           </span>
           <span>
-            This replaces everything on{' '}
+            A JSON import replaces everything on{' '}
             <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
             content. Undo
             {/* The keys only where there is a keyboard to press them. */}

@@ -45,6 +45,10 @@ describe('ImportTabDialog', () => {
       />,
     );
     expect(screen.getByText('Pick a format to import into the current tab.')).toBeTruthy();
+    // The grid's warning speaks for JSON only, so it never reads as if SVG replaced the tab too.
+    expect(screen.getByText(/A JSON import replaces everything on/).textContent).toContain(
+      'Poster',
+    );
     pick('SVG');
     expect(screen.getByText('Paste your SVG, or import a file.')).toBeTruthy();
     expect(screen.getByRole('button', { name: /All formats/ })).toBeTruthy();
@@ -79,7 +83,7 @@ describe('ImportTabDialog', () => {
     expect(screen.getByTestId('import-adds-note').textContent).toBe(
       'The shapes land on the page you are on, fitted to it.',
     );
-    expect(screen.queryByText(/This replaces everything/)).toBeNull();
+    expect(screen.queryByText(/replaces everything/)).toBeNull();
     fireEvent.change(screen.getByRole('textbox', { name: 'SVG to import' }), {
       target: { value: '<svg/>' },
     });
@@ -102,7 +106,7 @@ describe('ImportTabDialog', () => {
       "2 cards couldn't be added",
     );
     expect(screen.getByText("Here's how your import came across.")).toBeTruthy();
-    expect(screen.queryByText(/This replaces everything/)).toBeNull();
+    expect(screen.queryByText(/replaces everything/)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onClose).toHaveBeenCalledOnce();
