@@ -150,14 +150,21 @@ describe('WebSocket upgrade', () => {
     expect(seen[0]!.headers.get('X-Verified-Account')).toBe('0');
   });
 
-  it('takes the share code a signed-in link opener names on ?s=', async () => {
+  it("takes the share code from the grant's link claim, never ?s=", async () => {
     const { env, seen } = roomEnv();
-    const t = grantFor({ item: 'p1', sub: 'guest_g', level: 'participate' });
-    await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(t)}&s=code1`);
+    const t = grantFor({ item: 'p1', sub: 'guest_g', level: 'participate', link: 'code1' });
+    await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(t)}&s=other`);
     const h = seen[0]!.headers;
     expect(h.get('X-Verified-Share-Code')).toBe('code1');
     expect(h.get('X-Verified-Role')).toBe('participate');
     expect(h.get('X-Verified-Adder')).toBe(await adderKeyFor('p1', 'guest_g'));
+  });
+
+  it('names no share code for a grant without a link, whatever ?s= says', async () => {
+    const { env, seen } = roomEnv();
+    const t = grantFor({ item: 'p1', sub: 'guest_g', level: 'participate' });
+    await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(t)}&s=code1`);
+    expect(seen[0]!.headers.get('X-Verified-Share-Code')).toBe('');
   });
 
   it('caps a workbench ticket at its sealed level and stamps its pairing', async () => {

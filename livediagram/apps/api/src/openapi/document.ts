@@ -175,6 +175,11 @@ const TAGS = [
     description:
       'How scripts and agents change a tab: atomic, live for everyone with it open, credited and revertable.',
   },
+  {
+    name: 'Suggestions',
+    description:
+      'Changes proposed on a canvas for an Editor to accept or reject, and who must suggest (Suggest Only).',
+  },
   { name: 'Sharing', description: 'Share links, passwords, and the documents shared with you.' },
   { name: 'Folders', description: 'Organise documents into a personal or team folder tree.' },
   {

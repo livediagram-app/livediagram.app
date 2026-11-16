@@ -20,6 +20,10 @@ export type InternalRoom = {
   epoch: () => string;
   // A relayed op that changed a Sheet: the items watching it are told (plan-room/sheet-watchers.ts).
   sheetChanged?: (op: unknown) => void;
+  // Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Live"): a tab's changed, and
+  // the review settings an Editor set.
+  suggestionsChanged: (tabId: string) => void;
+  reviewChanged: () => void;
 };
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
@@ -80,6 +84,20 @@ export async function answerInternal(
   // changeset, a tab rename (tab-meta) and a project rename (project-meta) the api applied
   // (docs/specs/024-agents/agent-changesets.md)
   // take the same path, one seq and one catch-up slot each whatever their size.
+  // Internal: a tab's canvas suggestions changed (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md
+  // "Live"); every Participant and Editor socket is told, carrying no content. Same trust argument as /broadcast.
+  if (request.method === 'POST' && url.pathname === '/suggestions') {
+    const tabId = ((await readBody(request)) as { tabId?: unknown } | null)?.tabId;
+    if (typeof tabId !== 'string' || !tabId) return new Response('missing tab', { status: 400 });
+    room.suggestionsChanged(tabId);
+    return new Response(null, { status: 204 });
+  }
+  // Internal: the review route wrote the review settings ("Suggest Only"); the room reads them again and tells each
+  // Participant session where it stands. Same trust argument.
+  if (request.method === 'POST' && url.pathname === '/review') {
+    room.reviewChanged();
+    return new Response(null, { status: 204 });
+  }
   if (request.method === 'POST' && url.pathname === '/mutation') {
     const op = (await readBody(request))?.op;
     const kind = (op as { kind?: unknown } | undefined)?.kind;

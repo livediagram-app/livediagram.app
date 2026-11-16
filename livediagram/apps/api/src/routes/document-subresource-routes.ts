@@ -15,6 +15,8 @@ import { handleTabDelta } from './tab-delta-route';
 import { TAB_DELTA_SEGMENT } from '@liveworkspace/api-schema/tab-delta';
 import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
+import { handleSuggestionRoutes } from './suggestion-routes';
+import { handleReviewRoute } from './review-route';
 import { handleCommentRoutes } from './comment-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
@@ -43,6 +45,14 @@ export async function handleDocumentSubresources(
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
+  // Canvas suggestions (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md).
+  const suggestions = await handleSuggestionRoutes(ctx);
+  if (suggestions) return suggestions;
+  // Review settings (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only").
+  if (segments.length === 4 && segments[3] === 'review') {
+    const review = await handleReviewRoute(ctx, segments[2]!);
+    if (review) return review;
+  }
   // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
   const qa = await handleQaBoardRoute(ctx);
   if (qa) return qa;

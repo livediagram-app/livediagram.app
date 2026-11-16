@@ -16,6 +16,7 @@ import { handleTabPages } from './tab-pages-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleVersionRoutes } from './versions';
 import { handleReviewRoute } from './review-route';
+import { handleSuggestionRoutes } from './suggestion-routes';
 import { handleCommentRoutes } from './comment-routes';
 import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
@@ -40,6 +41,9 @@ export async function handleDocumentSubresources(
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
+  // Canvas suggestions on slides and infographics (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md).
+  const suggestions = await handleSuggestionRoutes(ctx);
+  if (suggestions) return suggestions;
   // Version history (docs/specs/006-document/version-history.md).
   const versions = await handleVersionRoutes(ctx);
   if (versions) return versions;

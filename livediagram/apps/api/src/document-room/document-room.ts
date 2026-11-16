@@ -1,6 +1,8 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livediagram/api-schema';
+import { roomReview, suggestionsChanged } from './room-review';
+import { suggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import {
@@ -341,6 +343,8 @@ export class DocumentRoom extends DurableObject<Env> {
       readLedger: (tabId, since) => this.ledger.read(tabId, since),
       readLedgerEntries: (tabId, want) => this.ledger.readKeys(tabId, ledgerEntryKeys(tabId, want)),
       epoch: () => this.epoch,
+      suggestionsChanged: (tabId) => suggestionsChanged(this, suggestionsRoomOp(tabId)),
+      reviewChanged: () => roomReview(this).changed(),
     };
     this.baton = new RoomFacilitator({
       storage: state.storage,

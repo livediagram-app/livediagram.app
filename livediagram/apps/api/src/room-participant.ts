@@ -15,8 +15,19 @@
 // writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab for a burst.
 
 import { isRoomOpRef, type ServerMessage } from '@livediagram/api-schema';
-import type { ElementOp, ParticipantOpResult, TabLedger } from '@livediagram/document';
-import { TabChangeQueue, type TabSwapResult } from '@liveworkspace/api-kit/tab-swap';
+import {
+  elementFingerprint,
+  type ElementOp,
+  type ParticipantOpResult,
+  type Tab,
+  type TabLedger,
+} from '@livediagram/document';
+import {
+  TabChangeQueue,
+  type TabChange,
+  type TabSwapResult,
+} from '@liveworkspace/api-kit/tab-swap';
+import { liveOnlyChange, restoreOp } from '@liveworkspace/suggestions';
 import {
   participantOpChange,
   participantTabStore,
@@ -47,7 +58,36 @@ type ParticipantSender = {
   presenceId: string;
   documentId: string | null;
   adderKey: string | null;
+  // On Suggest Only (liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md "Suggest Only"): its changes go
+  // through the suggestion routes, so an element change here is refused but for live fields (a comment, a reaction).
+  suggestOnly?: boolean;
 };
+
+const targetOf = (op: ElementOp): string | null =>
+  op.kind === 'remove' ? op.id : op.kind === 'reorder' ? null : op.element.id;
+
+// The participant content rule, held to Suggest Only: what it applied stands only when it changed live fields alone.
+function suggestOnlyChange(
+  change: TabChange<Tab, ParticipantOpResult>,
+  op: ElementOp,
+): TabChange<Tab, ParticipantOpResult> {
+  return (tab) => {
+    const out = change(tab);
+    const answer = out.answer;
+    if (answer.result !== 'applied' || !answer.changed) return out;
+    if (liveOnlyChange(tab.elements, answer.tab.elements, elementFingerprint)) return out;
+    const id = targetOf(op);
+    console.info('[review] refused', { tabId: tab.id, kind: op.kind });
+    return {
+      next: null,
+      answer: {
+        result: 'refused',
+        reason: 'locked',
+        correction: id ? (restoreOp(tab.elements, answer.tab.elements, id) as ElementOp) : null,
+      },
+    };
+  };
+}
 
 type ElFrame = { kind: 'el'; tabId: string; op: ElementOp };
 
@@ -98,7 +138,9 @@ export class RoomParticipantWrites {
       result = await this.contentOps.submit(
         `${documentId}\u0000${tabId}`,
         () => participantTabStore(env, documentId, tabId),
-        participantOpChange(op, sender.adderKey),
+        sender.suggestOnly
+          ? suggestOnlyChange(participantOpChange(op, sender.adderKey), op)
+          : participantOpChange(op, sender.adderKey),
       );
     } catch (error) {
       console.error('[participant-write] failed', { documentId, tabId, error: String(error) });
