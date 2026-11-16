@@ -16,5 +16,6 @@ Follow the references below only as needed; never upfront.
 - ./describe-a-plan.md - when implementing Describe a Plan: the ask and the reply's reader, the api route and its per-account count, the editor's entry, dialog and preview
 - ./github-pull-requests.md - when implementing GitHub pull requests: the Pull Request field's reading module, card mentions, every consumer of the kind, and the parts still to build (webhook receiver, connection, state, rules)
 - ./calendar-feed.md - when implementing the calendar feed: the plan's feed table, the token, the access check, the .ics writer and the route, and the My Work feed through the index
+- ./public-roadmap.md - when implementing the public roadmap: the roadmaps table, the managing routes, the allowlisted public read and the vote, Votes as a sort field, the Publish as Roadmap dialog and the public page
 - ./DEFAULTS.md - when a Plan blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a Plan blueprint covers

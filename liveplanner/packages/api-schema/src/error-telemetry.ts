@@ -34,6 +34,8 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'community',
   // A form link's public doors (docs/specs/030-forms/forms.md).
   'forms',
+  // A public roadmap's read and vote (docs/specs/026-plan/public-roadmap.md): `/roadmaps/<plan>/<code>`.
+  'roadmaps',
   'projects',
   'folders',
   'teams',
@@ -90,6 +92,8 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'sheets',
   'writes',
   'calendar-feed',
+  'roadmaps',
+  'votes',
 ]);
 
 // Which endpoint a request hit, as a label with no identifiers in it (`PUT /api/<collection>/<id>/tabs/<tabId>` ->

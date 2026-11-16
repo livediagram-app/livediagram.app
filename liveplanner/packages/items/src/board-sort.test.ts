@@ -319,6 +319,9 @@ describe('the menu’s picks', () => {
       by(['due', 'desc']),
     );
     expect(withBoardSortPick(by(['due', 'asc']), 0, { field: 'f-x' })).toEqual(by(['f-x', 'asc']));
+    expect(withBoardSortPick(undefined, 0, { field: 'votes', kind: 'number' })).toEqual(
+      by(['votes', 'desc']),
+    );
   });
 
   it('adds, changes and drops Then By, and None at Sort By turns it all off', () => {
@@ -412,5 +415,49 @@ describe('a sorted board', () => {
     // Measured 1.0 ms sorted against 0.35 ms in rank order on an M-series laptop (2026-10-27); the budget allows a
     // loaded CI runner.
     expect(took).toBeLessThan(cpuBudgetMs(100));
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Sort Cards": Votes, the card's total (a public roadmap's upvotes among them).
+describe('sorting by votes', () => {
+  const idea = ITEM_TYPES.find((t) => t.id === 'idea')!;
+  const poll: ItemTypeDef = {
+    ...deal,
+    id: 'poll',
+    label: 'Poll',
+    fields: ['title', 'status', 'f-love'],
+    custom: [{ id: 'f-love', label: 'Love', kind: 'votes' }],
+  };
+
+  it('offers Votes when a type has it, and each custom Votes field, as numbers', () => {
+    expect(boardSortFieldsOf([idea]).find((f) => f.id === 'votes')).toEqual({
+      id: 'votes',
+      label: 'Votes',
+      kind: 'number',
+    });
+    expect(boardSortFieldsOf([deal]).some((f) => f.id === 'votes')).toBe(false);
+    expect(boardSortFieldsOf([poll]).find((f) => f.id === 'f-love')?.kind).toBe('number');
+    expect(boardSortFieldOf('f-love', [poll])?.kind).toBe('number');
+    expect(boardSortNamed([{ field: 'Votes', direction: 'descending' }], [idea])).toEqual({
+      ok: true,
+      sortBy: [{ field: 'votes', dir: 'desc' }],
+    });
+  });
+
+  it('orders by the vote total, a card with none counting 0', () => {
+    const a = item({ title: 'a', votes: { 'p-sam': 2, 'rv:x': 1 } }, { type: 'idea' });
+    const b = item({ title: 'b' }, { type: 'idea' });
+    const c = item({ title: 'c', votes: { 'rv:y': 1 } }, { type: 'idea' });
+    const desc = sortCards([b, c, a], [{ field: 'votes', dir: 'desc' }], [idea]);
+    expect(desc.map((i) => i.fields['title'])).toEqual(['a', 'c', 'b']);
+    const asc = sortCards([a, c, b], [{ field: 'votes', dir: 'asc' }], [idea]);
+    expect(asc.map((i) => i.fields['title'])).toEqual(['b', 'c', 'a']);
+  });
+
+  it('orders a custom Votes field by its own total', () => {
+    const a = item({ title: 'a', 'f-love': { p: 3 } }, { type: 'poll' });
+    const b = item({ title: 'b', 'f-love': { p: 1, q: 1 } }, { type: 'poll' });
+    const sorted = sortCards([b, a], [{ field: 'f-love', dir: 'desc' }], [poll]);
+    expect(sorted.map((i) => i.fields['title'])).toEqual(['a', 'b']);
   });
 });

@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 18,
+    articleCount: 19,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -759,6 +759,17 @@ export const articles: Article[] = [
       'A private link that puts a plan’s card dates in Google Calendar, Outlook or Apple Calendar, kept up to date.',
     keywords:
       'calendar feed subscribe ics ical icalendar webcal google calendar outlook apple calendar sync export dates due date start date deadlines events link private reset link turn off my cards done cards',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
+    slug: 'public-roadmap',
+    title: 'Publish as Roadmap',
+    description:
+      'Publish a board as a public roadmap anyone can open: chosen columns and fields, upvotes and suggestions.',
+    keywords:
+      'public roadmap publish roadmap portal feedback board feature requests ideas vote votes upvote voting customers changelog suggest an idea suggestions unpublish share public link',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',

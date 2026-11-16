@@ -632,6 +632,14 @@ export const MY_WORK_CALENDAR_FEED_OPENED = opened(
   (t) => t === 'MyWorkCalendarFeed',
 );
 
+// Publish as Roadmap (docs/specs/026-plan/public-roadmap.md "Telemetry", in the liveplanner folder): its dialog
+// opened from the tab menu.
+export const ROADMAP_OPENED = opened(
+  'Publish as Roadmap Opened',
+  'Publish as Roadmap opened from the tab menu, to publish a board as a public roadmap, change it or unpublish it.',
+  (t) => t === 'Roadmap',
+);
+
 // Describe a Plan (docs/specs/026-plan/describe-a-plan.md "Telemetry", in the liveplanner folder): its dialog opened from
 // Start Planning's rail or search. Never the words typed.
 export const PLAN_DESCRIBE_OPENED = opened(
@@ -664,6 +672,7 @@ export const PANELS_OPENED: MetricStack = {
     AUTOMATION_DESCRIBE_OPENED,
     CALENDAR_FEED_OPENED,
     MY_WORK_CALENDAR_FEED_OPENED,
+    ROADMAP_OPENED,
     PLAN_DESCRIBE_OPENED,
     OTHER_OPENED,
   ],

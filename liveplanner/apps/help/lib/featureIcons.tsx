@@ -170,6 +170,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17 15.5h-.5a2 2 0 000 4h.5M19.5 15.5h.5a2 2 0 010 4h-.5M16.8 17.5h3" />
     </Glyph>
   ),
+  // Three columns of a board with an upvote chevron lifting off the middle one: a roadmap people vote on.
+  'public-roadmap': (
+    <Glyph>
+      <rect x="3" y="9" width="5" height="11" rx="1" />
+      <rect x="9.5" y="12" width="5" height="8" rx="1" />
+      <rect x="16" y="9" width="5" height="11" rx="1" />
+      <path d="M9 6.5l3-3 3 3M12 3.5v5.5" />
+    </Glyph>
+  ),
   // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
   'plan-tour': (
     <Glyph>

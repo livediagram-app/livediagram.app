@@ -877,6 +877,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/roadmaps/{projectId}/{code}',
+    segment: 'roadmaps',
+    tag: 'Roadmaps',
+    summary:
+      "A published board as a public roadmap: its chosen columns in the board's order, each card with only the allowlisted fields its owner chose (title always; description, number, card type, labels, start and due when chosen; its vote total when voting is on). Never people, comments, custom fields or other columns. ?browser=<key> marks that browser's own votes. Never cached; every unknown, unpublished, trashed or deleted roadmap answers the same 404. Limited per network.",
+    auth: 'public',
+    statuses: [200, 404, 405, 429],
+  },
+  {
+    method: 'POST',
+    path: '/roadmaps/{projectId}/{code}/votes',
+    segment: 'roadmaps',
+    tag: 'Roadmaps',
+    summary:
+      "Give ({ card, browser, up: true }) or take back an upvote on a card of a public roadmap: one per browser key per card, kept in the card's Votes. Answers the card's count and whether this browser votes for it. 404 for a card not on the roadmap or with voting off; 409 when the card holds the most voters; 429 past 500 votes an hour to the roadmap or the per-network limit.",
+    auth: 'public',
+    statuses: [200, 201, 400, 404, 405, 409, 429],
+  },
+  {
+    method: 'GET',
     path: '/my-work/calendar-feed',
     segment: 'my-work',
     tag: 'Calendar',
@@ -950,6 +970,36 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'GithubRepositoriesRequest',
     responseSchema: 'GithubConnectionResponse',
     statuses: [200, 400, 401, 403, 404, 405, 409, 502],
+  },
+  {
+    method: 'GET',
+    path: '/projects/{id}/roadmaps',
+    segment: 'projects',
+    tag: 'Roadmaps',
+    summary:
+      "The plan's published roadmaps (one per board, with its link), the boards that may be published with their columns and card types, and the forms that may take suggestions. The plan's owner or a team member only, in person: never a share link at any level, an API token or a workbench session.",
+    auth: 'clerk',
+    statuses: [200, 401, 403, 404, 405],
+  },
+  {
+    method: 'PUT',
+    path: '/projects/{id}/roadmaps/{boardId}',
+    segment: 'projects',
+    tag: 'Roadmaps',
+    summary:
+      "Publish a board as a public roadmap (201, a new link) or change a published one's settings, keeping its link (200): its title, columns (statuses), card types, allowlisted fields, voting and suggestion form. A suggestion form whose cards would land in a shown column is refused. The plan's owner or a team member only, in person.",
+    auth: 'clerk',
+    statuses: [200, 201, 400, 401, 403, 404, 405],
+  },
+  {
+    method: 'DELETE',
+    path: '/projects/{id}/roadmaps/{boardId}',
+    segment: 'projects',
+    tag: 'Roadmaps',
+    summary:
+      "Unpublish a board's roadmap: its link stops answering at once; publishing again makes a new one. 204 whether or not it was published. The plan's owner or a team member only, in person.",
+    auth: 'clerk',
+    statuses: [204, 400, 401, 403, 404, 405],
   },
   {
     method: 'GET',

@@ -104,6 +104,18 @@ export default {
         { frameable: true },
       );
     }
+    // A public roadmap's page (docs/specs/026-plan/public-roadmap.md "What a visitor sees"): one placeholder file backs
+    // every /roadmap/<plan>/<code>, as a form link's page is. Not frameable: embedding is not offered yet.
+    if (isRoadmapPath(url.pathname)) {
+      if (url.pathname === ROADMAP_PLACEHOLDER_PATH) {
+        return withSecurityHeaders(await env.ASSETS.fetch(request));
+      }
+      const rewritten = new URL(request.url);
+      rewritten.pathname = ROADMAP_PLACEHOLDER_PATH;
+      return withSecurityHeaders(
+        await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
+      );
+    }
     // The workspace frame (docs/specs/013-workspace/workbench-embeds.md "Two scopes"): one static page backs every
     // place inside it, rewritten rather than redirected so the frame keeps its address. Under /embed: frameable.
     if (isWorkspaceFramePath(url.pathname)) {
@@ -119,5 +131,6 @@ export default {
 };
 import { isEditorPath } from '../lib/editor-path';
 import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
+import { ROADMAP_PLACEHOLDER_PATH, isRoadmapPath } from '../lib/roadmap-path';
 import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
 import { isSharePagePath, sharePage } from './share-page';
