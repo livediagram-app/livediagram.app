@@ -13,14 +13,7 @@ import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveplanner/api-schema'
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomScopedStructure, cachedStoredTab } from '../room-scoped-structure';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
-import {
-  ledgerKey,
-  ledgerPrefix,
-  recordInLedger,
-  tabLedgerFrom,
-  ledgerEntryAccumulates,
-  type TabLedger,
-} from '@liveplanner/project';
+import { LEDGER_RULES, type LedgerEntry, type TabLedger } from './plan-room-ledger';
 import { RoomSelectionStore } from '../room-selections';
 import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
 import { armRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
@@ -114,11 +107,13 @@ import { purgedAt } from './plan-room-purged';
 import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import { notFound } from '../responses';
-import { indexAppClient } from '../index-service';
-import { SheetWatches } from './sheet-watchers';
-import { listPlanSheets, readPlanSheetRange } from './sheet-source';
-import type { SheetListResult, SheetRangeResult } from '@liveworkspace/index-app';
-import type { SheetRangeAsk } from '@liveworkspace/index-client';
+import type { SheetWatches } from './sheet-watchers';
+import {
+  listSheets,
+  readSheetRange,
+  roomSheetWatches,
+  type SheetRangeAsk,
+} from './plan-room-doors';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -163,17 +158,6 @@ import type { SheetRangeAsk } from '@liveworkspace/index-client';
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 export { MAINTENANCE_EVERY_MS } from './plan-room-content';
-
-// The collaboration ledger: this product's pure module (collab-ledger.ts) on the shared store
-// (liveworkspace/docs/specs/002-architecture/architecture.md "A room's collaboration ledger").
-type LedgerEntry = NonNullable<Parameters<typeof recordInLedger>[0]>;
-const LEDGER_RULES = {
-  ledgerKey,
-  ledgerPrefix,
-  recordInLedger,
-  tabLedgerFrom,
-  ledgerEntryAccumulates,
-};
 
 export class PlanRoom extends DurableObject<Env> {
   // What the sibling modules (plan-room-*.ts) act on is public to them; nothing outside this folder reaches in.
@@ -318,9 +302,7 @@ export class PlanRoom extends DurableObject<Env> {
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
-    this.sheetWatches = new SheetWatches(state.storage.sql, () =>
-      this.roomEnv ? indexAppClient(this.roomEnv) : null,
-    );
+    this.sheetWatches = roomSheetWatches(this);
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);
     this.scopedStructure = new RoomScopedStructure(cachedStoredTab(this.roomEnv));
@@ -428,22 +410,12 @@ export class PlanRoom extends DurableObject<Env> {
 
   // A chart in another app reading this plan's Sheets (liveworkspace/docs/specs/004-index/sheet-sources.md): its Sheets
   // for a picker, and one range of one, with a watch for the item that asked (sheet-source.ts).
-  async listSheets(planId: string): Promise<SheetListResult> {
-    if (this.holdsNothing()) return { status: 'not_found' };
-    this.bindPlan(planId);
-    return listPlanSheets(this.requireEnv(), planId);
+  listSheets(planId: string) {
+    return listSheets(this, planId);
   }
 
-  async readSheetRange(
-    planId: string,
-    ask: SheetRangeAsk,
-    watcher: string | null,
-  ): Promise<SheetRangeResult> {
-    if (this.holdsNothing()) return { status: 'not_found' };
-    this.bindPlan(planId);
-    const result = await readPlanSheetRange(this.requireEnv(), planId, ask);
-    if (result.status === 'ok' && watcher) this.sheetWatches.watch(planId, ask.sheetId, watcher);
-    return result;
+  readSheetRange(planId: string, ask: SheetRangeAsk, watcher: string | null) {
+    return readSheetRange(this, planId, ask, watcher);
   }
 
   // A new plan from a Drive file (routes/internal-file.ts read it): its content lands as a copy's does, and it
