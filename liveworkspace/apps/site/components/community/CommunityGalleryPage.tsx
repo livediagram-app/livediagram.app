@@ -1,6 +1,7 @@
 'use client';
 
 // One client boundary for the whole page (the hero reads the app's binding too), so the page loads one client entry.
+import { CommunityTabs } from './CommunityTabs';
 import { CommunityHero } from './gallery/CommunityHero';
 import { GalleryView } from './gallery/GalleryView';
 
@@ -12,7 +13,10 @@ export function CommunityGalleryPage() {
     <div className="community-hero">
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 pt-12 sm:px-6 sm:pt-16 md:px-8">
         <CommunityHero />
-        <GalleryView />
+        <div className="flex flex-col gap-6">
+          <CommunityTabs current="gallery" />
+          <GalleryView />
+        </div>
       </div>
     </div>
   );

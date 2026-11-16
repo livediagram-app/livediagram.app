@@ -23,6 +23,9 @@ export type ImageExportOpts = {
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
   fontCss?: string;
+  // The SVG is drawn inside a page that already links the faces (the Prototype player): no `@import` of the Google
+  // stylesheet, which would request it a second time. Ignored when `fontCss` is given.
+  fontsFromPage?: boolean;
   // One page to export (docs/specs/007-editor/pages-mode.md "Export"): the
   // frame becomes exactly its sheet, painted with its background; the tab's own
   // backdrop does not apply.

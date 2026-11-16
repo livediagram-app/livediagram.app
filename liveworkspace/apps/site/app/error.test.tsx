@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LazyPageError } from '@/components/LazyPageError';
 import { PAGE_ERROR_TITLE } from '@/components/page-error-title';
+import { PLATFORM_APPEARANCE_KEY } from '@/lib/appearance/appearance-keys';
 import PageErrorBoundary from './error';
 
 // liveworkspace/docs/specs/010-site/site.md "Behaviour": a page that throws shows the site's card inside the layout.
@@ -43,5 +44,44 @@ describe('the error page', () => {
     const retry = [...main.querySelectorAll('button')].find((b) => b.textContent === 'Try Again')!;
     act(() => retry.click());
     expect(reset).toHaveBeenCalledTimes(1);
+  });
+
+  // Like the 404 page, it follows the chosen appearance, even where its <html> came back without the pre-paint
+  // script's class (a development server renders the failed page's layout again on the client).
+  it.each([
+    ['dark', true],
+    ['light', false],
+  ])('paints the chosen appearance (%s) on <html>', async (choice, dark) => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await LazyPageError.preload();
+    localStorage.setItem(PLATFORM_APPEARANCE_KEY, choice);
+    document.documentElement.classList.remove('dark');
+    act(() => root.render(<PageErrorBoundary error={new Error('boom')} reset={() => {}} />));
+    expect(document.documentElement.classList.contains('dark')).toBe(dark);
+    localStorage.removeItem(PLATFORM_APPEARANCE_KEY);
+    document.documentElement.classList.remove('dark');
+  });
+
+  it('follows the device with no choice of its own', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('matchMedia', () => ({ matches: true }));
+    await LazyPageError.preload();
+    document.documentElement.classList.remove('dark');
+    act(() => root.render(<PageErrorBoundary error={new Error('boom')} reset={() => {}} />));
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    vi.unstubAllGlobals();
+    document.documentElement.classList.remove('dark');
+  });
+
+  it('leaves the page as it is when storage is denied', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('denied');
+    });
+    await LazyPageError.preload();
+    document.documentElement.classList.add('dark');
+    act(() => root.render(<PageErrorBoundary error={new Error('boom')} reset={() => {}} />));
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    document.documentElement.classList.remove('dark');
   });
 });

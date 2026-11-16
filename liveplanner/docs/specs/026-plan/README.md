@@ -18,4 +18,5 @@ Follow the references below only as needed; never upfront.
 - ./describe-a-plan.md - when working on Describe a Plan: a board's columns and card types drafted by AI from someone's words on Start Planning, the preview, who may and the per-account cap
 - ./calendar-feed.md - when working on the calendar feed: a plan's card dates, or the cards assigned to you across plans (My Work), as a private .ics link for Google Calendar, Outlook or Apple Calendar, who may have one, its token, what it shows and how it answers
 - ./public-roadmap.md - when working on the public roadmap: a board published as a live public page of chosen columns, card types and allowlisted fields, its upvotes, Suggest an Idea through a form, who may publish and Unpublish
+- ./email-to-board.md - when working on Email to Board: a board's secret address on in.liveplanner.app, who may manage it, Who Can Send, what a message makes, which mail is taken and the limits
 - ./blueprints/README.md - when implementing Plan mode, the Plan board or the item store: file-level contracts, constants, defaults and tests

@@ -97,11 +97,12 @@ export function JoinPage() {
           <p className="mt-6 text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
             You’re invited to join
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight break-words text-slate-900 dark:text-white">
+          <h1 className="mt-2 max-w-full text-3xl font-semibold tracking-tight wrap-anywhere text-slate-900 dark:text-white">
             <bdi>{state.preview.teamName}</bdi>
           </h1>
-          {/* The organisation is someone's typing, isolated so its direction never turns the count around. */}
-          <p className="mt-2 text-slate-600 dark:text-slate-400">
+          {/* The organisation is someone's typing, isolated so its direction never turns the count around, and
+              broken anywhere so a long name with no spaces wraps inside the card. */}
+          <p className="mt-2 max-w-full text-slate-600 wrap-anywhere dark:text-slate-400">
             {state.preview.organisation ? (
               <>
                 <bdi>{state.preview.organisation}</bdi> ·{' '}
@@ -113,19 +114,21 @@ export function JoinPage() {
             A team is the same in every liveworkspace app: its work shows up for everyone in it.
           </p>
           {state.preview.signedIn ? (
-            <div className="mt-8 flex w-full flex-col gap-2 sm:w-auto sm:flex-row-reverse">
+            // The row never outgrows the card: the Join button's label (it names the team) wraps anywhere, and Not
+            // now keeps its own width beside it.
+            <div className="mt-8 flex w-full max-w-full flex-col gap-2 sm:w-auto sm:flex-row-reverse sm:items-center">
               <Button
                 variant="none"
                 autoFocus
                 busy={busy}
-                className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}
+                className={`${BUTTON.primary} relative min-w-0 touch-target-y px-6 py-2.5 wrap-anywhere`}
                 onClick={() => void join()}
               >
                 {busy ? 'Joining…' : `Join ${isolatedName(state.preview.teamName)}`}
               </Button>
               <a
                 href={INVITES_PATH}
-                className={`${BUTTON.secondary} relative touch-target-y py-2.5`}
+                className={`${BUTTON.secondary} relative shrink-0 touch-target-y py-2.5`}
               >
                 Not now
               </a>

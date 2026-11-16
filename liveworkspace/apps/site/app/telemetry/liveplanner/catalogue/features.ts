@@ -640,6 +640,14 @@ export const ROADMAP_OPENED = opened(
   (t) => t === 'Roadmap',
 );
 
+// Email to Board (docs/specs/026-plan/email-to-board.md "Telemetry", in the liveplanner folder): its dialog opened from
+// the tab menu.
+export const EMAIL_INTAKE_OPENED = opened(
+  'Email to Board Opened',
+  "Email to Board opened from the tab menu, to turn a board's address on, copy it, change who can send, replace it or turn it off.",
+  (t) => t === 'EmailIntake',
+);
+
 // Describe a Plan (docs/specs/026-plan/describe-a-plan.md "Telemetry", in the liveplanner folder): its dialog opened from
 // Start Planning's rail or search. Never the words typed.
 export const PLAN_DESCRIBE_OPENED = opened(
@@ -673,6 +681,7 @@ export const PANELS_OPENED: MetricStack = {
     CALENDAR_FEED_OPENED,
     MY_WORK_CALENDAR_FEED_OPENED,
     ROADMAP_OPENED,
+    EMAIL_INTAKE_OPENED,
     PLAN_DESCRIBE_OPENED,
     OTHER_OPENED,
   ],

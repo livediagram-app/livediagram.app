@@ -22,16 +22,19 @@ const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
   { slug: 'getting-started/guest-vs-account', label: 'Guest or Account' },
 ];
 
-export function searchEntries(app: AppName, signedIn: boolean): SearchEntry[] {
-  const site = siteOfApp(app);
-  const help: SearchEntry[] = HELP_ARTICLES.map(({ slug, label }) => ({
-    id: slug,
-    group: 'help',
-    label,
-    hint: `${site.name} Help`,
-    href: `${appOrigin(app)}/help/${slug}/`,
-    newTab: true,
-  }));
+/** Search's entries: the app's help articles (none in no app, where liveworkspace.app has no Explorer articles of
+ *  its own), and the Settings sections for an account. */
+export function searchEntries(app: AppName | null, signedIn: boolean): SearchEntry[] {
+  const help: SearchEntry[] = app
+    ? HELP_ARTICLES.map(({ slug, label }) => ({
+        id: slug,
+        group: 'help',
+        label,
+        hint: `${siteOfApp(app).name} Help`,
+        href: `${appOrigin(app)}/help/${slug}/`,
+        newTab: true,
+      }))
+    : [];
   if (!signedIn) return help;
   // Each opens the Settings panel here, in place, on its section (`?settings=`): every one is edited on an app's
   // address as on liveworkspace.app.

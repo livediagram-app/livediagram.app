@@ -4,10 +4,11 @@
 // its top, a main-column section under its heading, a Details row (label beside its control), and the
 // quiet created and edited lines at the foot of Details. ItemPanel arranges them; the field controls are
 // ItemFieldEditor's.
+import { FROM_EMAIL_FIELD, readFromEmail } from '@liveplanner/items';
 import { FROM_FORM_FIELD, readFromForm } from '@liveplanner/forms';
 import type { ReactNode } from 'react';
 import { Tooltip, lucideGlyph, relativeSince } from '@liveplanner/ui';
-import { lucideClipboardList } from '@liveworkspace/icons/lucide';
+import { lucideClipboardList, lucideMail } from '@liveworkspace/icons/lucide';
 import {
   AUTOMATION_PERSON_ID,
   GITHUB_PERSON,
@@ -132,11 +133,12 @@ export function ItemDetailsRow({
 // rule with GitHub's mark, read from the card itself, so never the bolt first (automations.md "On cards").
 export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const response = readFromForm(item.fields[FROM_FORM_FIELD]);
+  const fromEmail = readFromEmail(item.fields[FROM_EMAIL_FIELD]);
   const maker = itemStampPerson(item, 'createdBy');
   const made = itemStampTime(item, 'createdAt');
   const editor = itemStampPerson(item, 'updatedBy');
   const edited = itemStampTime(item, 'updatedAt');
-  if (!maker && !response && !editor) return null;
+  if (!maker && !response && !fromEmail && !editor) return null;
   const github = isGithubStamp(editor);
   const madeByGithub = isGithubStamp(maker);
   return (
@@ -177,11 +179,22 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
             Form response <span className={META_NAME}>#{response.number}</span>
           </MetaRow>
         ) : null}
+        {fromEmail ? (
+          // A card an email made (docs/specs/026-plan/email-to-board.md "What a message makes"): who sent it, and when.
+          <MetaRow
+            lead={<MailGlyph aria-hidden />}
+            at={made}
+            when={made !== undefined ? stampDayLabel(made) : ''}
+            full={`From email ${fromEmail}`}
+          >
+            From email <span className={META_NAME}>{fromEmail}</span>
+          </MetaRow>
+        ) : null}
         {maker ? (
           <MetaRow
             lead={<PersonDisc person={madeByGithub ? GITHUB_PERSON : maker} />}
-            // A form's response says when on its own row.
-            at={response ? undefined : made}
+            // A form's response, or an email's card, says when on its own row.
+            at={response || fromEmail ? undefined : made}
             when={made !== undefined ? stampDayLabel(made) : ''}
             full={
               maker.id === AUTOMATION_PERSON_ID
@@ -206,6 +219,7 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
 
 const META_NAME = 'font-medium text-slate-700 dark:text-slate-200';
 const FormGlyph = lucideGlyph(lucideClipboardList, 14);
+const MailGlyph = lucideGlyph(lucideMail, 14);
 
 // One footer row: a disc (or a glyph), the words, and when at the row's end, the exact moment on hover. `full`: the
 // words whole, in a tooltip, for a row whose name may be cut (a rule's).

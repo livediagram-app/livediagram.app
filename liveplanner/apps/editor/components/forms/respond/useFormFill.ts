@@ -78,6 +78,8 @@ export function useFormFill(
   const [errors, setErrors] = useState<Record<string, AnswerError>>({});
   // The questions an error summary is showing for (set on Next or Submit; cleared as they are fixed).
   const [summary, setSummary] = useState<string[]>([]);
+  // How many times Next or Submit has been refused: the error summary takes focus on each, never as people fix answers.
+  const [refusals, setRefusals] = useState(0);
   const [status, setStatus] = useState<'filling' | 'sending' | 'sent' | 'closed'>('filling');
   const [failure, setFailure] = useState<string | null>(null);
   // Set the moment Submit is pressed: a second press before the button disables sends nothing more.
@@ -171,6 +173,7 @@ export function useFormFill(
     if (r.ok) return true;
     setErrors((e) => ({ ...e, ...r.errors }));
     setSummary(current.questions.filter((q) => r.errors[q.id]).map((q) => q.id));
+    setRefusals((n) => n + 1);
     return false;
   };
 
@@ -212,6 +215,7 @@ export function useFormFill(
         .filter((q) => outcome.errors[q.id])
         .map((q) => q.id);
       setSummary(ids);
+      if (ids.length > 0) setRefusals((n) => n + 1);
       if (ids.length === 0)
         setFailure('Some answers could not be accepted. Check them and try again.');
       return;
@@ -238,6 +242,7 @@ export function useFormFill(
     count: order.length,
     errors,
     summary: summary.filter((id) => errors[id]),
+    refusals,
     status,
     failure,
     setAnswer,

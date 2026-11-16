@@ -188,6 +188,20 @@ describe('exportTabAsSvg', () => {
     expect(svg).not.toContain('@import');
   });
 
+  // The Prototype player draws SVG inside the editor's page, which already links the stylesheet: an @import would
+  // request it a second time (Work Tracker 991).
+  it('declares no font stylesheet when the page has the faces already', () => {
+    const t = tab({ elements: [shape('s', { label: 'Hi', font: 'caveat' })] });
+    expect(renderTabToSvg(t)).toContain('@import');
+    const inPage = renderTabToSvg(t, { fontsFromPage: true });
+    expect(inPage).not.toContain('@import');
+    expect(inPage).not.toContain('<style');
+    // The bytes a download carries still win.
+    expect(renderTabToSvg(t, { fontsFromPage: true, fontCss: '@font-face{}' })).toContain(
+      '<style type="text/css">@font-face{}',
+    );
+  });
+
   it('says nothing about fonts when the tab uses none', async () => {
     const svg = await text(exportTabAsSvg(tab({ elements: [shape('s', { label: 'Hi' })] })));
     expect(svg).not.toContain('<style');

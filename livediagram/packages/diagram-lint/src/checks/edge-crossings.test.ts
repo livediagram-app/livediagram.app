@@ -106,3 +106,18 @@ function arrowStyleBefore(tab: { elements: Element[] }, selector: string): strin
   ) as { arrowStyle?: string } | undefined;
   return el?.arrowStyle ?? 'straight';
 }
+
+describe('rules', () => {
+  it('are not counted: a free-ended line with no heads crosses by design', () => {
+    const rule = (id: string, x: number, ends: string) =>
+      ({
+        ...arrow(id, 'a', 'b'),
+        from: { kind: 'free', x, y: -50 },
+        to: { kind: 'free', x, y: 500 },
+        arrowEnds: ends,
+      }) as never;
+    const base = [box('a', 0, 0), box('b', 600, 0), arrow('m', 'a', 'b')];
+    expect(lint(tabOf(...base, rule('r1', 300, 'none'))).measures.crossings).toBe(0);
+    expect(lint(tabOf(...base, rule('r2', 300, 'end'))).measures.crossings).toBe(1);
+  });
+});

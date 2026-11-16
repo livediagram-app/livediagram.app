@@ -59,11 +59,44 @@ describe('initialsOf', () => {
     expect(initialsOf('   ')).toBe('?');
   });
 
-  it('keeps an emoji or astral letter whole, never half a surrogate pair', () => {
-    expect(initialsOf('\u{1F680} Launch')).toBe('\u{1F680}L');
-    expect(initialsOf('Team \u{1F680}')).toBe('T\u{1F680}');
-    expect(initialsOf('\u{1F680}')).toBe('\u{1F680}');
+  it('keeps an astral letter whole, never half a surrogate pair', () => {
     expect(initialsOf('\u{1D49C}da Byron')).toBe('\u{1D49C}B');
+  });
+
+  it('skips punctuation and symbols, taking only letters and numbers', () => {
+    expect(initialsOf('<Oscar>')).toBe('OS');
+    expect(initialsOf('"Ada" (Lovelace)')).toBe('AL');
+    expect(initialsOf("O'Brien")).toBe('OB');
+    expect(initialsOf('Ada - Lovelace')).toBe('AL');
+    expect(initialsOf('3D Studio')).toBe('3S');
+  });
+
+  it('skips emoji, as words or inside them', () => {
+    expect(initialsOf('\u{1F680} Launch')).toBe('LA');
+    expect(initialsOf('Team \u{1F680}')).toBe('TE');
+    expect(initialsOf('\u{1F680}Ada Lovelace\u{2728}')).toBe('AL');
+  });
+
+  it('reads right-to-left and CJK names by their own letters', () => {
+    expect(initialsOf('محمد علي')).toBe('مع');
+    expect(initialsOf('דוד לוי')).toBe('דל');
+    expect(initialsOf('山田 太郎')).toBe('山太');
+    expect(initialsOf('山田太郎')).toBe('山田');
+    expect(initialsOf('Алексей Иванов')).toBe('АИ');
+  });
+
+  it('falls back to the email for a name with no letters, else a question mark', () => {
+    expect(initialsOf('\u{1F680}', 'ada.lovelace@example.com')).toBe('AL');
+    expect(initialsOf('<>', 'wendy@example.com')).toBe('WE');
+    expect(initialsOf('\u{1F680}')).toBe('?');
+    expect(initialsOf('', '')).toBe('?');
+    expect(initialsOf('Ada', 'zed@example.com')).toBe('AD');
+  });
+
+  it('reads an email as the words of its local part', () => {
+    expect(initialsOf('ada.lovelace@example.com')).toBe('AL');
+    expect(initialsOf('ada_lovelace@example.com')).toBe('AL');
+    expect(initialsOf('wendy@example.com')).toBe('WE');
   });
 });
 

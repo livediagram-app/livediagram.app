@@ -13,7 +13,7 @@ export default function ExplorerSearch({
   helpApp,
   signedIn,
   ...props
-}: Omit<SearchPanelProps, 'entries'> & { helpApp: AppName; signedIn: boolean }) {
+}: Omit<SearchPanelProps, 'entries'> & { helpApp: AppName | null; signedIn: boolean }) {
   const entries = useMemo(() => searchEntries(helpApp, signedIn), [helpApp, signedIn]);
   return <SearchPanel {...props} entries={entries} />;
 }

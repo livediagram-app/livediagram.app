@@ -5,6 +5,7 @@
 // `localNamespace`), so code shared by the worker and the room (getProject's outline, the room relays) costs no
 // hop there.
 
+import type { IntakeDelivery, IntakeOutcome } from './email-intake/intake-delivery';
 import type { Item } from '@liveplanner/items';
 import type { CardThread } from '@liveplanner/project';
 import type { ThreadOp, ThreadsRelay, ThreadWriteResult } from './plan-room/card-thread-store';
@@ -123,6 +124,9 @@ export type PlanRoomClient = {
   // A public roadmap's read or vote (docs/specs/026-plan/public-roadmap.md "How it answers"), answered as no one. An
   // id nothing has written, or a plan archived or in the Trash, answers 404 and stays empty.
   roadmap(request: Request): Promise<Response>;
+  // One message to one of the plan's board addresses (docs/specs/026-plan/email-to-board.md), or the news that one
+  // was dropped. An id nothing has written answers `gone` and stays empty.
+  emailIntake(delivery: IntakeDelivery): Promise<IntakeOutcome>;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -172,6 +176,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     calendarFeedEvents: (feed, now) =>
       room.calendarFeed(planId, { kind: 'events', feed, now }) as Promise<FeedRead | null>,
     roadmap: (request) => room.roadmap(planId, request),
+    emailIntake: (delivery) => room.emailIntake(planId, delivery),
   };
 }
 
@@ -232,5 +237,6 @@ export type PlanRoomRpc = {
   github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer>;
   calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer>;
   roadmap(planId: string, request: Request): Promise<Response>;
+  emailIntake(planId: string, delivery: IntakeDelivery): Promise<IntakeOutcome>;
   fetch(request: Request): Promise<Response>;
 };

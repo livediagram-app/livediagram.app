@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 19,
+    articleCount: 20,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -770,6 +770,17 @@ export const articles: Article[] = [
       'Publish a board as a public roadmap anyone can open: chosen columns and fields, upvotes and suggestions.',
     keywords:
       'public roadmap publish roadmap portal feedback board feature requests ideas vote votes upvote voting customers changelog suggest an idea suggestions unpublish share public link',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
+    slug: 'email-to-board',
+    title: 'Email to Board',
+    description:
+      'Give a board its own secret email address: forwarded mail becomes a card, pictures attached.',
+    keywords:
+      'email to board email in inbound email forward mail address intake inbox send email create card from email mail to board who can send plan members anyone new address turn off spam dmarc dkim spf attachments pictures from email trello asana linear',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',

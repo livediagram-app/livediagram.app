@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { Element } from '@livediagram/document';
 import { arrow, box, lint, of, tabOf } from '../fixtures/build';
 
 describe('arrow-behind-box', () => {
@@ -77,5 +78,56 @@ describe('arrow-behind-box', () => {
     expect(
       of(lint(tabOf(box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'))), 'arrow-behind-box'),
     ).toEqual([]);
+  });
+
+  // Work Tracker 1033: shipped templates draw these correctly, so the lint says nothing of them.
+  describe('what a line passes under by design', () => {
+    const behind = (...els: Element[]) =>
+      of(
+        lint(tabOf(box('a', 0, 0), box('b', 600, 0), arrow('x', 'a', 'b'), ...els)),
+        'arrow-behind-box',
+      );
+    const onTheLine = (id: string, extra: Record<string, unknown> = {}, y = 0) =>
+      box(id, 300, y, extra);
+
+    it('fires on a box over the line, for contrast', () => {
+      expect(behind(onTheLine('m'))).toHaveLength(1);
+    });
+
+    it('passes a mark on the line: a step, a badge, a sticker or an icon', () => {
+      for (const shape of ['step', 'badge', 'sticker', 'icon'])
+        expect(behind(onTheLine('m', { shape, width: 30, height: 30 }))).toEqual([]);
+    });
+
+    it('passes a thin unlabelled bar (a lifeline or an activation), but not a labelled one', () => {
+      expect(behind(onTheLine('m', { label: '', width: 14, height: 400 }))).toEqual([]);
+      expect(behind(onTheLine('m', { label: '', width: 100, height: 12 }, 24))).toEqual([]);
+      expect(behind(onTheLine('m', { label: 'Bar', width: 14, height: 400 }))).toHaveLength(1);
+      expect(behind(onTheLine('m', { label: '', width: 100, height: 40 }))).toHaveLength(1);
+    });
+
+    it('passes a group’s unlabelled backdrop panel, which holds a member wholly', () => {
+      const panel = box('panel', 250, -100, { label: '', width: 300, height: 260 });
+      const member = box('member', 300, 120, { width: 80, height: 30 });
+      expect(behind(panel, member)).toEqual([]);
+      // Nothing inside it: an empty box on the line is still behind.
+      expect(behind(onTheLine('m', { label: '', width: 100, height: 40 }))).toHaveLength(1);
+      // A labelled box holding another is content, not a backdrop.
+      const labelled = box('panel', 250, -100, { label: 'Team', width: 300, height: 260 });
+      expect(behind(labelled, member).map((f) => f.refs)).toEqual([['x', 'panel']]);
+    });
+
+    it('says nothing of a rule: a line with free ends and no heads', () => {
+      const rule = {
+        ...arrow('r', 'a', 'b'),
+        from: { kind: 'free', x: 350, y: -200 },
+        to: { kind: 'free', x: 350, y: 200 },
+        arrowEnds: 'none',
+      } as never;
+      expect(of(lint(tabOf(box('m', 300, 0), rule)), 'arrow-behind-box')).toEqual([]);
+      // With a head it is an arrow, and passes behind.
+      const headed = { ...(rule as object), arrowEnds: 'end' } as never;
+      expect(of(lint(tabOf(box('m', 300, 0), headed)), 'arrow-behind-box')).toHaveLength(1);
+    });
   });
 });

@@ -11,26 +11,27 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 
 ## Domain language
 
-| Term                | Means                                                                                                                               | Never called                |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                                    | kind, category, template    |
-| **type catalogue**  | A project's item types, in the order the interface lists them                                                                       | schema, config, type list   |
-| **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                     | property, attribute, column |
-| **field kind**      | What a field holds (Text, Date, Person, Image...): the one list Add Field offers, built-in and custom fields alike                  | field type, data type       |
-| **built-in field**  | A field liveplanner knows by its own id (`assignee`, `due`, `labels`...), which the features using that role read; one per type     | ready-made field, preset    |
-| **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards           | (no other name)             |
-| **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a project made before card types started empty reads as | built-in types              |
-| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the thirteen more a template uses             | preset type, built-in type  |
-| **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                | parent type, super type     |
-| **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own             | subtype, child type         |
-| **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                  | unknown field, broken field |
-| **card template**   | A named set of starting values a card type holds, so a new card of that type starts filled in                                       | preset, blueprint, default  |
+| Term                | Means                                                                                                                                            | Never called                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| **item type**       | What an item is: an id, a name, a colour, a glyph and its fields                                                                                 | kind, category, template    |
+| **type catalogue**  | A project's item types, in the order the interface lists them                                                                                    | schema, config, type list   |
+| **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                                  | property, attribute, column |
+| **field kind**      | What a field holds (Text, Date, Person, Image...): the one list Add Field offers, built-in and custom fields alike                               | field type, data type       |
+| **built-in field**  | A field liveplanner knows by its own id (`assignee`, `due`, `labels`...), which the features using that role read; one per type                  | ready-made field, preset    |
+| **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards                        | (no other name)             |
+| **default types**   | Project, Task, Note, Idea and Action: what a project made before card types started empty reads as, and what an agent's `add_default_types` adds | built-in types              |
+| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the thirteen more a template uses                          | preset type, built-in type  |
+| **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                             | parent type, super type     |
+| **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own                          | subtype, child type         |
+| **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                               | unknown field, broken field |
+| **card template**   | A named set of starting values a card type holds, so a new card of that type starts filled in                                                    | preset, blueprint, default  |
 
 ## The type catalogue
 
 - Every project has one. **A project starts with no card types**: until its card types are chosen it stores
-  nothing and reads as none. The default types never arrive on their own; they come only when someone asks, with
-  **Add Default Types** (or an agent's `add_default_types`).
+  nothing and reads as none. The default types never arrive on their own; they come only when someone asks an
+  agent for them (`add_default_types`). In the editor, a Blank plan gets types by making its own or by adding a board that
+  brings its types: there is no Add Default Types button.
 - **Boards bring the types they name.** A board made in a project (a template's tabs, a board from Start Planning
   or the palette, an agent's) adds each [ready-made type](plan-templates.md#ready-made-card-types) it brings that
   the project lacks (by id), after the ones it has, in the order the boards name them. So in a fresh project the
@@ -46,14 +47,6 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   (`legacyCatalogue`).
 - Any change (a board choosing them, a type added, edited or deleted) stores the **whole catalogue** with the
   project. From then on the stored catalogue is the project's, whole; later releases do not change it.
-- **Add Default Types** adds any of the five default types the project lacks, as they are defined, after its
-  types, as one change (one undo step): it never changes or removes a type the project has. A default whose name
-  a type already has is not added, and only as many as fit under the cap are: the popover names exactly those. It
-  shows only while the project lacks one it can add. Pressing it first asks, in a confirmation popover beside the button (as the type
-  editor's Delete does), naming the types it will add: "Add Project, Note and Idea to this project's card types?
-  They go after the ones you have, and nothing you have changes." (the list joined with commas and "and", "Add
-  Project to..." for one), with **Add Types** and **Cancel**. Enter confirms and Escape cancels, returning focus to
-  the button; the Card Types panel stays open behind it.
 - The catalogue is part of the project: copies, duplicates, offline projects, Sync to Cloud, Take Offline and
   the Drive file carry it, as they carry the items.
 
@@ -1241,12 +1234,11 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   fields, custom fields, tabs, Details name and [card templates](#card-templates). Nothing is made until **Save**; **Cancel** drops it. With the
   catalogue full it is disabled and its tooltip says "The project has the most card types it can hold".
   The type editor's footer offers **Duplicate** too, for a type that exists. Telemetry: `Plan` ·
-  `Duplicated` · `CardType` when a duplicate is saved. **Add Type** is a dashed tile at the end, with **Add Default
-  Types** under it while the project lacks any of the five. The panel does not reorder types: the catalogue keeps
+  `Duplicated` · `CardType` when a duplicate is saved. **Add Type** is a dashed tile at the end; the panel offers no way to add the five default types in one press. The panel does not reorder types: the catalogue keeps
   its order (the order boards brought them in, then added types in the order they were added).
 - **With no types**, the list's place holds an empty state (the Cards glyph): **No Card Types Yet**, and "Add a card
-  type of your own, or add the default types: Project, Task, Note, Idea and Action." for someone who may edit, "This
-  project has no card types yet." for anyone else. Add Type and Add Default Types sit under it as always.
+  type of your own, or add a board that brings its types." for someone who may edit, "This
+  project has no card types yet." for anyone else. Add Type sits under it as always.
 - **With no types**, Plan's bottom-right strip shows only **Card Types**: Find a Card would surface
   nothing, so it waits for the first type. The Trash stays while it holds cards (deleting the last type sends its
   cards there), so they can be restored once a type exists.

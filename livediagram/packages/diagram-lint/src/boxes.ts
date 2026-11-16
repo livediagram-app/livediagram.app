@@ -11,7 +11,7 @@ import {
   type Rect,
   rotatePoint,
 } from '@livediagram/document';
-import { LINT_OVERLAP_TOLERANCE_PX } from './constants';
+import { LINT_BAR_MAX_PX, LINT_OVERLAP_TOLERANCE_PX } from './constants';
 
 const NOT_BOXES: ReadonlySet<string> = new Set(['text', 'annotation', 'freehand', 'path']);
 
@@ -88,4 +88,28 @@ export function holdsWholly(a: BoxedElement, b: BoxedElement): boolean {
   const inside = (outer: BoxedElement, inner: BoxedElement) =>
     boxCorners(inner).every((p) => holdsPoint(outer, p, LINT_OVERLAP_TOLERANCE_PX));
   return inside(a, b) || inside(b, a);
+}
+
+// An unlabelled shape thin enough that a line crossing it hides nothing: a sequence diagram's lifeline or activation
+// bar (LN8, LN13).
+export function isThinBar(box: BoxedElement): boolean {
+  if (box.type !== 'shape' || (box.label ?? '').trim() !== '') return false;
+  return Math.min(box.width, box.height) <= LINT_BAR_MAX_PX;
+}
+
+// Shapes that mark a spot on a line or a card (a numbered step, a badge, a sticker, an icon) rather than hold content:
+// a line passes under them by design (LN8).
+const MARKER_SHAPES: ReadonlySet<string> = new Set(['step', 'badge', 'sticker', 'icon']);
+
+export const isMarker = (box: BoxedElement) => box.type === 'shape' && MARKER_SHAPES.has(box.shape);
+
+// An unlabelled shape that wholly holds another box: a group's panel behind its members, which every line to a member
+// crosses (LN8).
+export function isBackdrop(box: BoxedElement, near: readonly Element[]): boolean {
+  if (box.type !== 'shape' || (box.label ?? '').trim() !== '') return false;
+  return near
+    .filter(isLintBox)
+    .some(
+      (o) => o.id !== box.id && o.width * o.height < box.width * box.height && holdsWholly(box, o),
+    );
 }

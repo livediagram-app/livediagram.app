@@ -270,6 +270,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 10h8M8 13h8M8 16h5" />
     </Glyph>
   ),
+  // One frame drawn three times over, large to small: the same picture in several sizes.
+  'make-sizes': (
+    <Glyph>
+      <rect x="3" y="4" width="11" height="14" rx="2" />
+      <rect x="15" y="4" width="6" height="8" rx="1.5" />
+      <rect x="15" y="14" width="6" height="4" rx="1.2" />
+    </Glyph>
+  ),
   // Two pages, the front one heading out: every page as its own sheet.
   'exporting-pages': (
     <Glyph>
@@ -393,6 +401,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="15.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
       <path d="M19 12h.01" />
       <path d="M12 5.5V4a2.5 2.5 0 015 0v1.5" />
+    </Glyph>
+  ),
+  // A page with a tick on it: the sheet being signed off.
+  'request-approval': (
+    <Glyph>
+      <path d="M13.5 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8.5z" />
+      <path d="M13.5 3v5.5H19" />
+      <path d="M8.8 14.2l2.3 2.3 4.2-4.6" />
     </Glyph>
   ),
   // A gallery wall: three framed designs, one with a heart on it.

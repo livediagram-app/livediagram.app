@@ -55,3 +55,19 @@ export function loadLicencesManifest(appDir: string = process.cwd()): LicencesMa
   }
   return parseLicencesManifest(raw);
 }
+
+/** The page's manifest, or null in development when it was never generated: `next dev` doesn't run the generator, so
+ *  a fresh checkout's /licences says so calmly rather than crashing. A build always generates it first, so in
+ *  production a missing (or broken) manifest still throws and fails the build. */
+export function loadLicencesManifestForPage(
+  appDir: string = process.cwd(),
+  production: boolean = process.env.NODE_ENV === 'production',
+): LicencesManifest | null {
+  try {
+    return loadLicencesManifest(appDir);
+  } catch (error) {
+    if (!production && error instanceof Error && error.name === 'LicencesManifestMissing')
+      return null;
+    throw error;
+  }
+}

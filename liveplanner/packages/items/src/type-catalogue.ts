@@ -131,7 +131,7 @@ const BUILT_IN_FIELDS = new Set<string>(BUILT_IN_FIELD_IDS);
 const NO_TYPES: readonly ItemTypeDef[] = [];
 
 // The types a project's stored catalogue holds; none while its card types are not chosen (docs/specs/026-plan/
-// item-types.md "The type catalogue": the default types arrive only through Add Default Types).
+// item-types.md "The type catalogue": the default types arrive only when an agent adds them).
 export function typesOf(stored: ItemTypeCatalogue | null | undefined): readonly ItemTypeDef[] {
   return stored?.types ?? NO_TYPES;
 }

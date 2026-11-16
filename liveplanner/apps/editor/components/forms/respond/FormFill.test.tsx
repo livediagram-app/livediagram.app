@@ -136,6 +136,81 @@ describe('a form of two sections', () => {
   });
 });
 
+describe('the error summary and focus', () => {
+  const TWO: PublicForm = {
+    heading: 'Bug',
+    description: '',
+    confirmation: 'Thanks',
+    sections: [
+      {
+        id: 's-1',
+        title: '',
+        questions: [
+          { id: 'q-a', type: 'short', prompt: 'Summary', required: true },
+          { id: 'q-b', type: 'paragraph', prompt: 'What happened', required: true },
+        ],
+      },
+    ],
+  };
+  const submitTwo = async () => {
+    render(
+      <FormFill
+        form={TWO}
+        submit={async () => ({ kind: 'sent' })}
+        draftKey={null}
+        footer={<p>Footer</p>}
+      />,
+    );
+    return () => act(async () => fireEvent.click(screen.getByRole('button', { name: 'Submit' })));
+  };
+
+  it('keeps every character typed into a field after a refused Submit, and focus in it', async () => {
+    const press = await submitTwo();
+    await press();
+    expect(document.activeElement).toBe(screen.getByRole('alert'));
+    const field = screen.getByLabelText<HTMLInputElement>(/^Summary/);
+    field.focus();
+    let typed = '';
+    for (const ch of 'abcdef') {
+      typed += ch;
+      fireEvent.change(field, { target: { value: typed } });
+      expect(document.activeElement).toBe(field);
+    }
+    expect(field.value).toBe('abcdef');
+    const area = screen.getByLabelText<HTMLTextAreaElement>(/^What happened/);
+    area.focus();
+    fireEvent.change(area, { target: { value: 'x' } });
+    expect(document.activeElement).toBe(area);
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('takes focus again on a second refused Submit', async () => {
+    const press = await submitTwo();
+    await press();
+    const field = screen.getByLabelText<HTMLInputElement>(/^Summary/);
+    field.focus();
+    fireEvent.change(field, { target: { value: 'a' } });
+    fireEvent.change(field, { target: { value: '' } });
+    await press();
+    expect(document.activeElement).toBe(screen.getByRole('alert'));
+  });
+
+  it('takes focus when the server turns an answer away', async () => {
+    const field = (
+      <FormFill
+        form={TWO}
+        submit={async () => ({ kind: 'invalid', errors: { 'q-a': 'required' } })}
+        draftKey={null}
+      />
+    );
+    render(field);
+    fireEvent.change(screen.getByLabelText(/^Summary/), { target: { value: 'x' } });
+    fireEvent.change(screen.getByLabelText(/^What happened/), { target: { value: 'y' } });
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Submit' })));
+    expect(document.activeElement).toBe(screen.getByRole('alert'));
+  });
+});
+
 describe('what Submit can be told', () => {
   it('sends once for a double press', async () => {
     let finish: (o: SubmitOutcome) => void = () => {};

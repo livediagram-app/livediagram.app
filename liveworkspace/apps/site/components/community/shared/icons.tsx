@@ -1,6 +1,16 @@
 import {
   lucideArrowLeft,
   lucideArrowUpDown,
+  lucideCircleAlert,
+  lucideCircleCheck,
+  lucideClock,
+  lucideMessageSquare,
+  lucideMessagesSquare,
+  lucidePartyPopper,
+  lucidePencil,
+  lucidePlus,
+  lucideThumbsUp,
+  lucideTrash2,
   lucideEyeOff,
   lucideFlag,
   lucideHash,
@@ -29,3 +39,16 @@ export const PeopleIcon = lucideGlyph(lucideUsers, 16);
 export const AlertIcon = lucideGlyph(lucideTriangleAlert, 16);
 export const MineIcon = lucideGlyph(lucideUser, 15);
 export const HiddenIcon = lucideGlyph(lucideEyeOff, 12);
+
+// The Forum's (liveworkspace/docs/specs/007-community/community.md "The Forum").
+export const ForumIcon = lucideGlyph(lucideMessagesSquare, 16);
+export const GalleryIcon = lucideGlyph(lucideLayoutGrid, 16);
+export const ReplyIcon = lucideGlyph(lucideMessageSquare, 15);
+export const HelpfulIcon = lucideGlyph(lucideThumbsUp, 14);
+export const CelebrateIcon = lucideGlyph(lucidePartyPopper, 14);
+export const AnswerIcon = lucideGlyph(lucideCircleCheck, 14);
+export const PendingIcon = lucideGlyph(lucideClock, 14);
+export const RefusedIcon = lucideGlyph(lucideCircleAlert, 14);
+export const EditIcon = lucideGlyph(lucidePencil, 14);
+export const DeleteIcon = lucideGlyph(lucideTrash2, 14);
+export const AskIcon = lucideGlyph(lucidePlus, 16);

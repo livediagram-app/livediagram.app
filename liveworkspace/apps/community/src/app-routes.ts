@@ -25,6 +25,7 @@ import {
 import { MAX_BODY_BYTES } from './config';
 import { forgetCopier, mergeCopier, recordCopy } from './engagement';
 import { appKey, type Env } from './env';
+import { forgetForumAuthor } from './forum/store';
 import { badRequest, conflict, json, noContent, notFound } from './http';
 import { networkHash } from './network';
 import {
@@ -146,9 +147,11 @@ export async function handleApp(
       if (!body || !isId(body.copier)) return badRequest('invalid_copier');
       if (body.owner !== undefined && !isId(body.owner)) return badRequest('invalid_owner');
       await forgetCopier(env, app, body.copier);
-      // An account closed: its posts go with it ("What lives where").
+      // An account closed: its posts go with it ("What lives where"), and everything it wrote in the Forum, which is
+      // every app's, keyed by the same account id ("The Forum").
       if (body.owner !== undefined) {
         await deleteOwnerPosts(env, app, body.owner);
+        await forgetForumAuthor(env, body.owner);
         console.info('[community] owner forgotten', { app });
       }
       return noContent();

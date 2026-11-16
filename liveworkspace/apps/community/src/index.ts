@@ -7,6 +7,8 @@ import { API_PATH } from './config';
 import { handleApp } from './app-routes';
 import { communityEnabled, type Env } from './env';
 import { json, notFound, preflight, withCors } from './http';
+import { handleForum } from './forum/routes';
+import { retryForumChecks } from './forum/check';
 import { handlePublic } from './public-routes';
 import { sweepCommunity } from './sweep';
 import { under } from '@liveworkspace/index-app/worker-http';
@@ -32,6 +34,11 @@ const routeLabel = createApiRouteLabel(
     'merge',
     'sync',
     'sitemap',
+    'forum',
+    'topics',
+    'replies',
+    'answer',
+    'reactions',
   ]),
 );
 
@@ -50,6 +57,14 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
   if (request.method === 'OPTIONS') return preflight(request, env);
   // Switched off, there is no Community to answer for.
   if (!communityEnabled(env)) return withCors(request, env, notFound());
+  // The Forum, one for every app (community.md "The Forum"): it names no app.
+  if (under(path, '/forum')) {
+    return withCors(
+      request,
+      env,
+      await handleForum(request, env, path.slice('/forum'.length), url),
+    );
+  }
   return withCors(request, env, await handlePublic(request, env, ctx, url, path));
 }
 
@@ -68,11 +83,16 @@ const worker = {
       }),
     );
   },
-  // The cron (every five minutes): the sweep checks each app's posts against the index (community.md "The sweep").
-  // Switched off, there is nothing to keep in step.
+  // The cron (every five minutes): the sweep checks each app's posts against the index (community.md "The sweep"),
+  // and the Forum's posts waiting for the check are asked again ("The Forum"). Switched off, there is nothing to do.
   scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): void {
     if (!communityEnabled(env)) return;
     ctx.waitUntil(sweepCommunity(env));
+    ctx.waitUntil(
+      retryForumChecks(env).catch((error: unknown) =>
+        console.error('[forum] retry failed', { error: String(error) }),
+      ),
+    );
   },
 };
 

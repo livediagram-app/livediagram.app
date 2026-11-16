@@ -222,6 +222,24 @@ describe('the item panel’s authorship', () => {
     );
   });
 
+  // Work Tracker 874 (docs/specs/026-plan/email-to-board.md "What a message makes"): a card an email made says who
+  // sent it, on a mail glyph, and the day on its own row; Created by names the same address.
+  it('says From email with the sender for a card an email made', () => {
+    const made = new Date(2026, 9, 3, 14, 2).getTime();
+    const task = {
+      ...item('t', 1, 'task'),
+      fields: { ...item('t', 1, 'task').fields, fromEmail: 'ada@example.com' },
+      createdAt: made,
+      createdBy: { id: 'email:abc', name: 'ada@example.com', color: '#0f766e' },
+    };
+    render(<ItemMeta item={task} now={Date.now()} />);
+    const from = screen.getByText(/^From email/).closest('[data-item-meta-row]')!;
+    expect(from.textContent).toMatch(/^From email ada@example\.com/);
+    expect(from.querySelector('svg')).toBeTruthy();
+    const created = screen.getByText(/^Created by/).closest('[data-item-meta-row]')!;
+    expect(created.textContent).toMatch(/Created by ada@example\.com$/);
+  });
+
   it('shows a rule’s whole name on hover, where the footer cuts it', async () => {
     const task = {
       ...item('t', 1, 'task'),

@@ -19,6 +19,8 @@ import { Card, DockRow, RowLabel, SEG_H, type Seg, Strip, TalkingBars } from './
 
 // The camera and screen bubbles live in calls-bubbles.tsx.
 export { CallBubbles, MaximisedBubble, SharingAndVideoPaused } from './calls-bubbles';
+// The Mini View Pop Out opens lives in calls-mini-view.tsx.
+export { MiniView } from './calls-mini-view';
 
 /** The Call dock at the bottom centre: the microphone muted when you walk in, then unmuted, with Camera and Share. No
  *  Join, no Leave. */

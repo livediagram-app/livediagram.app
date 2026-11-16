@@ -46,8 +46,6 @@ const auth = createAppAuth<Env, AuthUser & AppAuthUser>({
   safeReturnPath,
   encodePkce: encodePkceCookie,
   decodePkce: decodePkceCookie,
-  // The user carries the ID token's `family_name`.
-  familyName: true,
   json: (body, init) => json(body, init),
   notFound: () => notFound(),
   rateLimited: () => rateLimited(),
