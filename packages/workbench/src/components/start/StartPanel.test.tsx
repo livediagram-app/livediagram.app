@@ -322,7 +322,11 @@ describe('the start panel', () => {
       // Another key, a composing Escape and one already handled are left alone.
       fireEvent.keyDown(canvas, { key: 'a' });
       fireEvent.keyDown(canvas, { key: 'Escape', isComposing: true });
-      const handled = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+      const handled = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      });
       handled.preventDefault();
       canvas.dispatchEvent(handled);
       expect(onClose).toHaveBeenCalledTimes(2);

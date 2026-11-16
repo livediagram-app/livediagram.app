@@ -52,7 +52,9 @@ describe('RolePill', () => {
 
   it('names the team on a team canvas, keeping the toggle where the role allows it', () => {
     const onToggle = vi.fn();
-    render(<RolePill role="edit" ownerName="Ada" isSelf team={{ name: 'Design' }} onToggle={onToggle} />);
+    render(
+      <RolePill role="edit" ownerName="Ada" isSelf team={{ name: 'Design' }} onToggle={onToggle} />,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Editing. Owned by Design' }));
     expect(onToggle).toHaveBeenCalledTimes(1);
     cleanup();

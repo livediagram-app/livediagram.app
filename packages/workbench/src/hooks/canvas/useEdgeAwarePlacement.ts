@@ -44,7 +44,11 @@ export function overlapsChrome(r: DOMRect, self: Element): boolean {
  *  shorter way past an obstacle it sits on, or 0 when it sits on none, or no slide clears them all. Used once the
  *  above/below flip has had its turn and the box still covers chrome (an element under a panel at the canvas's left
  *  edge, the panel taller than the room above and below it). */
-export function sidewaysClear(r: Box, chrome: readonly Box[], area: { left: number; right: number }): number {
+export function sidewaysClear(
+  r: Box,
+  chrome: readonly Box[],
+  area: { left: number; right: number },
+): number {
   const hit = chrome.filter((b) => overlaps(r, b));
   if (hit.length === 0) return 0;
   const moves = hit

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { useRef } from 'react';
 import { useMenuCardRoom } from './useMenuCardRoom';
 
@@ -57,6 +57,17 @@ describe('useMenuCardRoom', () => {
     mountStrip(new DOMRect(331, 12, 425, 46));
     render(<Probe enabled={false} />);
     expect(screen.getByTestId('card').textContent).toBe('none');
+  });
+
+  it('follows the strip as it moves, the card staying put', () => {
+    mountStrip(new DOMRect(331, 12, 425, 46));
+    render(<Probe />);
+    const strip = document.querySelector<HTMLElement>('[data-tour-id="palette"]')!;
+    vi.spyOn(strip, 'getBoundingClientRect').mockReturnValue(new DOMRect(500, 12, 425, 46));
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(screen.getByTestId('card').textContent).toBe(String(500 - 8 - 12));
   });
 
   it('is never negative', () => {

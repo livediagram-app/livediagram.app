@@ -117,7 +117,8 @@ describe('the palette tray', () => {
       root.append(card);
       document.body.append(root);
       render(<Banner onAction={() => {}} />);
-      const slot = () => (document.querySelector('[data-palette-tray]') as HTMLElement).parentElement!;
+      const slot = () =>
+        (document.querySelector('[data-palette-tray]') as HTMLElement).parentElement!;
       expect(slot().style.left).toBe('300px');
       act(() => moved([{ intersectionRatio: 1 }]));
       rect.mockReturnValue(new DOMRect(560, 12, 600, 46));

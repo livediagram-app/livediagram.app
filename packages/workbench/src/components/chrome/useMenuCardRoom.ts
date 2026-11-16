@@ -18,14 +18,19 @@ export function useMenuCardRoom(
   // Follows the strip as it resizes or moves (watchMove), the crowded flip included.
   const strip = usePaletteStripBox(enabled);
   const [cardBox, setCardBox] = useState<{ left: number; bottom: number } | null>(null);
+  // Where the card stands, measured again whenever the strip does (a split moving the editor moves both).
   useLayoutEffect(() => {
-    if (!enabled || !card.current) return;
-    const r = card.current.getBoundingClientRect();
-    setCardBox((prev) =>
-      prev && prev.left === r.left && prev.bottom === r.bottom
-        ? prev
-        : { left: r.left, bottom: r.bottom },
-    );
+    const el = card.current;
+    if (!enabled || !el) return;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      setCardBox((prev) =>
+        prev && prev.left === r.left && prev.bottom === r.bottom
+          ? prev
+          : { left: r.left, bottom: r.bottom },
+      );
+    };
+    measure();
   }, [enabled, card, strip]);
   if (!enabled || !strip || !cardBox) return null;
   // Only a strip in the card's row: one lower down never meets it.

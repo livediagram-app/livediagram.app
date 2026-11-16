@@ -8,10 +8,11 @@ class FakeObserver {
   static all: FakeObserver[] = [];
   disconnected = false;
   observed: Element[] = [];
-  constructor(
-    readonly callback: (entries: { intersectionRatio: number }[]) => void,
-    readonly options: Options,
-  ) {
+  readonly callback: (entries: { intersectionRatio: number }[]) => void;
+  readonly options: Options;
+  constructor(callback: (entries: { intersectionRatio: number }[]) => void, options: Options) {
+    this.callback = callback;
+    this.options = options;
     FakeObserver.all.push(this);
   }
   observe(el: Element) {

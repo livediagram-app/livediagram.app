@@ -81,13 +81,13 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
 
 ## Testing
 
-| Rule                                               | Test                                                    |
-| -------------------------------------------------- | ------------------------------------------------------- |
-| Toggle for owner and edit link, none for view link | `app/document/[id]/useViewPreview.test.tsx` (jsdom)     |
-| Role pill: toggle vs static, names, Tooltip label  | `components/chrome/RoleIndicator.test.tsx` (jsdom)      |
+| Rule                                               | Test                                                                                     |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Toggle for owner and edit link, none for view link | `app/document/[id]/useViewPreview.test.tsx` (jsdom)                                      |
+| Role pill: toggle vs static, names, Tooltip label  | `components/chrome/RoleIndicator.test.tsx` (jsdom)                                       |
 | Team canvas: the team named, member and visitor    | `components/chrome/RoleIndicator.test.tsx`, `app/document/[id]/useRoleIndicator.test.ts` |
-| Role pill toggles view preview for the owner       | `e2e/role-pill.spec.ts`                                 |
-| A blob with the retired power user keys loads      | `e2e/role-pill.spec.ts`, `lib/user-preferences.test.ts` |
+| Role pill toggles view preview for the owner       | `e2e/role-pill.spec.ts`                                                                  |
+| A blob with the retired power user keys loads      | `e2e/role-pill.spec.ts`, `lib/user-preferences.test.ts`                                  |
 
 ## Defaults ledger
 
