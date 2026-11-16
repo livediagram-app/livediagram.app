@@ -34,6 +34,10 @@ export const PLAN_TEMPLATE_KINDS = [
   'meeting-agenda',
   'personal-goals',
   'study-planner',
+  'sprint-board',
+  'client-onboarding',
+  'editorial-pipeline',
+  'trip-planner',
 ] as const;
 export type PlanTemplateKind = (typeof PLAN_TEMPLATE_KINDS)[number];
 

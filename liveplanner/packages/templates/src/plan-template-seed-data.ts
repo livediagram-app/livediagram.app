@@ -8,6 +8,7 @@
 import type { Priority } from '@liveplanner/items';
 import type { PlanTemplateKind } from './plan-template-catalogue';
 import { USE_CASE_SEEDS } from './plan-template-seed-data-use-cases';
+import { WORKFLOW_SEEDS } from './plan-template-seed-data-workflows';
 
 // The example team every template's cards are shared out among (assignees, swimlane rows, voters).
 export const SEED_PEOPLE = {
@@ -1232,4 +1233,5 @@ export const PLAN_TEMPLATE_SEEDS: Readonly<Partial<Record<PlanTemplateKind, read
     ],
     // The templates added with the use-case categories, in a file of their own.
     ...USE_CASE_SEEDS,
+    ...WORKFLOW_SEEDS,
   };

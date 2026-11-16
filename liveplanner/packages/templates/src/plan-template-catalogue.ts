@@ -46,10 +46,13 @@ export type SheetSpec = { start: TemplateStartId; width: number; height: number;
 // template's tab named `to` (cards on its board, as its first card type, in its first column; or rows in its Sheet).
 // `fields` names a starter field after the field of the target's card type that takes it instead, so the template
 // brings no field of its own (Contact's Requested By is a Ticket's Customer).
+// `leaveOut` names starter fields (by label) whose questions the form leaves out: one the target's type has no field
+// for and the work does not need (Bug Report's Severity; plan-templates.md "Forms a template holds").
 export type FormSpec = {
   starter: StarterId;
   to: string;
   fields?: Readonly<Record<string, string>>;
+  leaveOut?: readonly string[];
 };
 
 export type PlanTabSpec = {
@@ -110,6 +113,13 @@ function datedBoard(
 const steps = (title: string, lines: readonly string[]) =>
   [title, ...lines.map((line, i) => `${i + 1}. ${line}`)].join('\n');
 
+// The last line of a date-heavy template's How this works (plan-templates.md "What a template shows off").
+const CALENDAR_FEED =
+  'Subscribe to Calendar from the tab menu to see these dates in your own calendar';
+
+// What a delivery template's Dashboard reads its flow from (plan-templates.md "What a template shows off").
+const FLOW: readonly PlanVisualisation[] = ['cumulative-flow', 'cycle-time', 'throughput'];
+
 // The sprint's statuses, shared by Project Planner's Backlog, Sprint and Daily Standup boards.
 const SPRINT = col('sprint', 'This Sprint');
 const DOING = col('doing', 'In Progress', { wipLimit: 3 });
@@ -148,6 +158,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             'Break it into Stories, Tasks and Bugs on Backlog, each under its project',
             'Move what the team takes on to This Sprint',
             'Walk Daily Standup each morning',
+            CALENDAR_FEED,
           ]),
         },
       ],
@@ -182,7 +193,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           addTypes: SPRINT_TYPES,
         },
       },
-      charts: ['workload', 'priority-matrix'],
+      charts: ['workload', 'priority-matrix', ...FLOW],
     },
     {
       name: 'Daily Standup',
@@ -263,7 +274,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         {
           kind: 'sticky',
           text: steps('How this works', [
-            'Add each request in New',
+            'Publish Request Form and share its link: requests land in New',
+            'Add your own there too, or start a Feature Request from its template',
             'Ask in Needs Info when it is unclear',
             'Accept a request by moving it to Backlog: it lands on the Board tab',
             'Say why in a comment when you decline',
@@ -271,10 +283,12 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         },
       ],
     },
+    // Requests from anyone with the link, each a Request in New (forms.md "In a plan template").
+    { name: 'Request Form', form: { starter: 'contact', to: 'Requests' }, figures: ['responses'] },
     {
       name: 'Flow',
       metrics: ['count', 'progress', 'stale', 'unassigned'],
-      charts: ['workload', 'priority-matrix', 'calendar'],
+      charts: [...FLOW, 'workload'],
     },
   ],
 
@@ -296,6 +310,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             col('wont-fix', 'Won’t Fix'),
             col('duplicate', 'Duplicate'),
           ],
+          // Named, as its preset's are, so Bug Report knows what its reports are made as.
+          addTypes: ['bug'],
         },
       },
       rail: [
@@ -303,6 +319,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           kind: 'sticky',
           text: [
             'How we triage',
+            'Publish Bug Report and share its link: reports land in New',
+            'Log your own from Crash, Visual Glitch or Slow Screen',
             'Urgent: broken for everyone, fix now',
             'High: blocks someone',
             'Medium: there is a workaround',
@@ -311,6 +329,12 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           ].join('\n'),
         },
       ],
+    },
+    // Reports from anyone with the link, each a Bug in New; the team sets its priority, not the reporter.
+    {
+      name: 'Bug Report',
+      form: { starter: 'bug-report', to: 'Triage', leaveOut: ['Severity'] },
+      figures: ['responses'],
     },
     {
       name: 'Fixing',
@@ -338,7 +362,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
     {
       name: 'Health',
       metrics: ['count', 'priorities', 'stale', 'unassigned'],
-      charts: ['priority-matrix', 'workload', 'calendar'],
+      charts: ['priority-matrix', 'workload', 'cycle-time', 'throughput', 'calendar'],
     },
   ],
 
@@ -448,6 +472,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             'Capture everything in Inbox',
             'Each Monday, give the week’s cards a day on This Week',
             'What waits on someone else goes in Waiting On',
+            CALENDAR_FEED,
           ]),
         },
       ],
@@ -502,6 +527,17 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           widgets: ['progress', 'due', 'filter'],
         },
       },
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Start each piece from its template: Blog Post, Newsletter or Social Post',
+            'Work down its checklist as it is written and reviewed',
+            'Set Due to the publish date',
+            CALENDAR_FEED,
+          ]),
+        },
+      ],
     },
     { name: 'Calendar', metrics: ['due', 'progress', 'people'], charts: ['calendar', 'workload'] },
   ],
@@ -548,6 +584,26 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           widgets: ['count', 'stale', 'filter'],
         },
       },
+      metrics: ['count', 'stale', 'unassigned'],
+      charts: ['cycle-time'],
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How it fits', [
+            'Add each open Role on Roles, with its dates',
+            'Publish Application and share its link: applicants land in Applied',
+            'Each Candidate names their Role, so Pipeline has a row per role',
+            'Start a candidate from Interview Loop or Referral',
+            'Once hired, give them Onboarding Tasks on Onboarding',
+          ]),
+        },
+      ],
+    },
+    // Applications from anyone with the link, each a Candidate in Applied; their experience is in their answer.
+    {
+      name: 'Application',
+      form: { starter: 'job-application', to: 'Pipeline', leaveOut: ['Years of Experience'] },
+      figures: ['responses'],
     },
     {
       name: 'Onboarding',
@@ -729,7 +785,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         {
           kind: 'sticky',
           text: steps('How this works', [
-            'Add each request as a Request',
+            'Publish Request Form and share its link: requests land in New',
+            'Add your own as a Request, or start one from Feature Request',
             'Press Vote, and vote on what matters',
             'Review the top voted each week',
             'Planned moves it to Delivery',
@@ -738,6 +795,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         { kind: 'vote', dots: 3 },
       ],
     },
+    // Requests from anyone with the link, each a Request in New, to vote on.
+    { name: 'Request Form', form: { starter: 'contact', to: 'Feedback' }, figures: ['responses'] },
     {
       name: 'Delivery',
       board: {
@@ -758,6 +817,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           widgets: ['progress', 'filter'],
         },
       },
+      charts: ['cycle-time', 'throughput'],
     },
   ],
 
@@ -812,6 +872,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             'Publish RSVP and share its link: each reply is a row on RSVP Responses',
             'Keep the Guest List as replies come in',
             'Watch what is due on Overview',
+            CALENDAR_FEED,
           ]),
         },
       ],
@@ -899,13 +960,14 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         },
       },
       metrics: ['count', 'priorities', 'stale', 'unassigned'],
-      charts: ['priority-matrix', 'workload'],
+      charts: ['priority-matrix', 'workload', 'cycle-time', 'throughput'],
       rail: [
         {
           kind: 'sticky',
           text: steps('How we work the queue', [
             'Publish the Contact Form and share its link: messages arrive as tickets in New',
             'Every new ticket gets an owner and a priority',
+            'Log your own from Something’s Broken, Billing Question or Refund Request',
             'Urgent first, then the oldest',
             'Waiting on Customer while you need their reply',
             'Resolved once they confirm, Closed a week later',
@@ -1112,11 +1174,280 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
             'Break big ones into steps on its checklist',
             'Add a card per exam topic on Revision',
             'Move a topic to Confident once you can explain it without notes',
+            CALENDAR_FEED,
           ]),
         },
       ],
     },
     { name: 'Calendar', metrics: ['due', 'progress', 'count'], charts: ['calendar'] },
+  ],
+
+  // Added with Work Tracker 1073 (plan-templates.md "Sprint Board", "Client Onboarding", "Editorial Pipeline",
+  // "Trip Planner"): each a way of working that shows off the features that fit it.
+  'sprint-board': [
+    {
+      name: 'Sprint',
+      board: {
+        preset: 'blank',
+        title: 'Sprint',
+        width: W5,
+        height: 720,
+        setup: {
+          columns: [
+            // ⇄ Backlog's To Do.
+            col('sb-todo', 'To Do'),
+            col('sb-doing', 'In Progress', { wipLimit: 3 }),
+            col('sb-review', 'In Review', { wipLimit: 2 }),
+            col('sb-blocked', 'Blocked', { color: RED }),
+            col('sb-done', 'Done'),
+          ],
+          doneColumnId: 'sb-done',
+          swimlaneBy: 'assignee',
+          cardFields: ['key', 'type', 'priority', 'estimate', 'labels'],
+          addTypes: SPRINT_TYPES,
+          widgets: ['progress', 'wip', 'filter'],
+        },
+      },
+    },
+    {
+      name: 'Backlog',
+      board: {
+        preset: 'blank',
+        title: 'Backlog',
+        width: W3,
+        height: 720,
+        setup: {
+          columns: [
+            col('sb-backlog', 'Backlog'),
+            col('sb-ready', 'Ready', { color: GREEN }),
+            col('sb-todo', 'To Do'),
+          ],
+          swimlaneBy: 'none',
+          cardFields: ['key', 'type', 'assignee', 'priority', 'estimate', 'labels'],
+          addTypes: SPRINT_TYPES,
+          widgets: ['count', 'priorities', 'filter'],
+        },
+      },
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Write each piece of work as a Story, Task or Bug: start from User Story or Spike',
+            'Estimate it, and move it to Ready once the team understands it',
+            'At planning, move what fits to To Do: it lands on Sprint',
+            'Keep In Progress under its limit: finish before you start',
+            'Name what holds a card up in Blocked By, and move it to Blocked',
+            'Read Flow at the retro',
+          ]),
+        },
+      ],
+    },
+    {
+      name: 'Flow',
+      metrics: ['count', 'progress', 'stale', 'unassigned'],
+      charts: [...FLOW, 'workload'],
+    },
+  ],
+
+  'client-onboarding': [
+    {
+      name: 'Clients',
+      board: datedBoard(
+        'Clients',
+        [
+          col('co-signed', 'Signed'),
+          col('co-kickoff', 'Kickoff'),
+          col('co-setup', 'Setup'),
+          col('co-training', 'Training'),
+          col('co-live', 'Live', { color: GREEN }),
+        ],
+        'co-live',
+      ),
+      charts: ['gantt'],
+    },
+    {
+      name: 'Tasks',
+      board: {
+        preset: 'blank',
+        title: 'Tasks',
+        width: W4,
+        height: 720,
+        setup: {
+          columns: [
+            col('co-todo', 'To Do'),
+            col('co-doing', 'Doing'),
+            col('co-waiting', 'Waiting on Client', { color: AMBER }),
+            col('co-done', 'Done'),
+          ],
+          doneColumnId: 'co-done',
+          // Tasks, each under its client (Parent), a row each.
+          swimlaneBy: 'field',
+          swimlaneField: 'parent',
+          cardFields: ['assignee', 'priority', 'labels', 'checklist', 'due'],
+          addTypes: ['task'],
+          widgets: ['progress', 'due', 'unassigned'],
+        },
+      },
+      metrics: ['due', 'progress', 'unassigned'],
+      charts: ['calendar'],
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Add a Client card for each new customer, with their start and go-live dates',
+            'Break the onboarding into Tasks under each client: kickoff call, data import, admin training',
+            'Waiting on Client while they owe you something',
+            'Move the client along as each stage finishes: Live once they use it every day',
+            CALENDAR_FEED,
+          ]),
+        },
+      ],
+    },
+  ],
+
+  'editorial-pipeline': [
+    {
+      name: 'Pitches',
+      board: {
+        preset: 'blank',
+        title: 'Pitches',
+        width: W4,
+        height: 640,
+        setup: {
+          columns: [
+            col('ed-pitched', 'Pitched'),
+            col('ed-shortlisted', 'Shortlisted'),
+            // ⇄ Production's first column.
+            col('ed-commissioned', 'Commissioned', { color: GREEN }),
+            col('ed-declined', 'Declined'),
+          ],
+          swimlaneBy: 'none',
+          cardFields: ['assignee', 'labels', 'votes'],
+          addTypes: ['content'],
+          widgets: ['top-voted', 'count'],
+        },
+      },
+      rail: [{ kind: 'vote', dots: 3 }],
+    },
+    {
+      name: 'Production',
+      board: {
+        preset: 'blank',
+        title: 'Production',
+        width: W6,
+        height: 700,
+        setup: {
+          columns: [
+            col('ed-commissioned', 'Commissioned', { color: GREEN }),
+            col('ed-drafting', 'Drafting', { wipLimit: 4 }),
+            col('ed-editing', 'Editing', { wipLimit: 2 }),
+            col('ed-fact-check', 'Fact Check'),
+            col('ed-scheduled', 'Scheduled'),
+            col('ed-published', 'Published'),
+          ],
+          doneColumnId: 'ed-published',
+          swimlaneBy: 'none',
+          cardFields: ['key', 'type', 'assignee', 'labels', 'due'],
+          addTypes: ['content', 'task'],
+          widgets: ['progress', 'wip', 'due'],
+        },
+      },
+      metrics: ['due', 'progress', 'stale'],
+      charts: [...FLOW, 'calendar'],
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Pitch a piece on Pitches, and vote on the ones worth writing',
+            'Commission it: it lands in Production',
+            'Start it from its template: Blog Post, Newsletter or Social Post',
+            'Keep Editing under its limit, so drafts never pile up',
+            'Set Due to the publish date',
+            CALENDAR_FEED,
+          ]),
+        },
+      ],
+    },
+  ],
+
+  'trip-planner': [
+    {
+      name: 'Itinerary',
+      board: {
+        preset: 'blank',
+        title: 'Itinerary',
+        width: W5,
+        height: 680,
+        setup: {
+          // No done column: a day is planned, not finished.
+          columns: [
+            col('tr-ideas', 'Ideas'),
+            col('tr-day-1', 'Day 1'),
+            col('tr-day-2', 'Day 2'),
+            col('tr-day-3', 'Day 3'),
+            col('tr-day-4', 'Day 4'),
+          ],
+          swimlaneBy: 'none',
+          cardFields: ['type', 'assignee', 'labels', 'votes'],
+          addTypes: ['idea', 'note'],
+          widgets: ['top-voted', 'filter'],
+        },
+      },
+      rail: [{ kind: 'vote', dots: 3 }],
+    },
+    {
+      name: 'Bookings',
+      board: {
+        preset: 'blank',
+        title: 'Bookings',
+        width: W3,
+        height: 640,
+        setup: {
+          columns: [
+            col('tr-to-book', 'To Book'),
+            col('tr-booked', 'Booked', { color: TEAL }),
+            col('tr-paid', 'Paid', { color: GREEN }),
+          ],
+          doneColumnId: 'tr-paid',
+          swimlaneBy: 'none',
+          cardFields: ['assignee', 'labels', 'checklist', 'due'],
+          addTypes: ['task'],
+          widgets: ['progress', 'due', 'filter'],
+        },
+      },
+      metrics: ['due', 'progress'],
+      charts: ['calendar'],
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Add each idea to Itinerary’s Ideas, and vote on the ones you want',
+            'Move the winners onto a day',
+            'Add every flight, stay and ticket to Bookings, due when it must be booked',
+            'Booked once it is confirmed, Paid once it is settled',
+            'Share out the packing on Packing',
+            CALENDAR_FEED,
+          ]),
+        },
+      ],
+    },
+    {
+      name: 'Packing',
+      board: {
+        preset: 'blank',
+        title: 'Packing',
+        width: W3 - 200,
+        height: 600,
+        setup: {
+          columns: [col('tr-to-pack', 'To Pack'), col('tr-packed', 'Packed')],
+          doneColumnId: 'tr-packed',
+          swimlaneBy: 'assignee',
+          cardFields: ['assignee', 'checklist'],
+          addTypes: ['task'],
+          widgets: ['progress'],
+        },
+      },
+    },
   ],
 
   // Spreadsheet templates (plan-templates.md "Spreadsheet templates"): a Sheet each, filling its tab when the sheet is

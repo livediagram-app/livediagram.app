@@ -50,15 +50,15 @@ describe('plan templates', () => {
       'blank-plan': ['Board'],
       'blank-spreadsheet': ['Sheet'],
       'project-planner': ['Roadmap', 'Backlog', 'Sprint', 'Daily Standup'],
-      kanban: ['Board', 'Requests', 'Flow'],
-      'bug-triage': ['Triage', 'Fixing', 'Health'],
+      kanban: ['Board', 'Requests', 'Request Form', 'Flow'],
+      'bug-triage': ['Triage', 'Bug Report', 'Fixing', 'Health'],
       'team-retro': ['Retro', 'Actions', 'Archive'],
       'weekly-planner': ['This Week', 'Inbox', 'Calendar'],
       'content-calendar': ['Ideas', 'Production', 'Calendar'],
-      'hiring-pipeline': ['Roles', 'Pipeline', 'Onboarding'],
+      'hiring-pipeline': ['Roles', 'Pipeline', 'Application', 'Onboarding'],
       okrs: ['Objectives', 'Key Results'],
       'product-launch': ['Timeline', 'Checklist', 'Launch Day'],
-      'feedback-board': ['Feedback', 'Delivery'],
+      'feedback-board': ['Feedback', 'Request Form', 'Delivery'],
       'budget-planner': ['Budget'],
       timesheet: ['Timesheet'],
       'contact-list': ['Contacts'],
@@ -77,6 +77,10 @@ describe('plan templates', () => {
       'meeting-agenda': ['Agenda', 'Actions', 'Archive'],
       'personal-goals': ['Goals', 'Milestones', 'Habits'],
       'study-planner': ['Assignments', 'Revision', 'Calendar'],
+      'sprint-board': ['Sprint', 'Backlog', 'Flow'],
+      'client-onboarding': ['Clients', 'Tasks'],
+      'editorial-pipeline': ['Pitches', 'Production'],
+      'trip-planner': ['Itinerary', 'Bookings', 'Packing'],
     });
   });
 
@@ -287,6 +291,13 @@ describe('plan templates', () => {
     expect(takes('meeting-agenda')).toEqual([['note'], ['action'], undefined]);
     expect(takes('personal-goals')).toEqual([['objective'], ['milestone']]);
     expect(takes('study-planner')).toEqual([['task'], ['note']]);
+    expect(takes('sprint-board')).toEqual([
+      ['story', 'task', 'bug'],
+      ['story', 'task', 'bug'],
+    ]);
+    expect(takes('client-onboarding')).toEqual([['project'], ['task']]);
+    expect(takes('editorial-pipeline')).toEqual([['content'], ['content', 'task']]);
+    expect(takes('trip-planner')).toEqual([['idea', 'note'], ['task'], ['task']]);
   });
 
   // docs/specs/026-plan/plan-tabs.md "Templates": a Board tab per board, a Sheet tab per Sheet, and a Dashboard.
@@ -321,10 +332,14 @@ describe('plan templates', () => {
   });
 
   // plan-tabs.md "Form Metrics": a template's form brings its Responses figure to the Overview.
-  it('puts Help Desk’s and Event Planner’s form Responses figure on their Overview, naming the form tab', () => {
+  it('puts every template form’s Responses figure on its Dashboard, naming the form tab', () => {
     for (const [kind, form] of [
       ['help-desk', 'Contact Form'],
       ['event-planner', 'RSVP'],
+      ['kanban', 'Request Form'],
+      ['bug-triage', 'Bug Report'],
+      ['hiring-pipeline', 'Application'],
+      ['feedback-board', 'Request Form'],
     ] as const) {
       const defs = planTemplateTabs(kind);
       const ids = defs.map((_, i) => `id${i}`);
@@ -339,6 +354,41 @@ describe('plan templates', () => {
         },
       ]);
     }
+  });
+
+  // docs/specs/026-plan/plan-templates.md "What a template shows off".
+  it('shows flow charts on every delivery template’s Dashboard', () => {
+    const delivery = PLAN_TEMPLATE_KINDS.filter((kind) =>
+      ['cumulative-flow', 'cycle-time', 'throughput'].every((v) =>
+        viewsOf(kind).some((el) => el.type === 'shape' && el.planView?.view === v),
+      ),
+    );
+    expect(delivery).toEqual(['project-planner', 'kanban', 'sprint-board', 'editorial-pipeline']);
+    // Bug Tracker, Feedback Board and Help Desk read how fast work finishes, without the cumulative flow.
+    for (const kind of ['bug-triage', 'feedback-board', 'help-desk'] as const)
+      for (const v of ['cycle-time', 'throughput'])
+        expect(
+          viewsOf(kind).some((el) => el.type === 'shape' && el.planView?.view === v),
+          `${kind} ${v}`,
+        ).toBe(true);
+  });
+
+  it('tells every date-heavy template’s reader about the calendar feed', () => {
+    const says = PLAN_TEMPLATE_KINDS.filter((kind) =>
+      PLAN_TEMPLATE_TABS[kind].some((t) =>
+        (t.rail ?? []).some((r) => r.kind === 'sticky' && /Subscribe to Calendar/.test(r.text)),
+      ),
+    );
+    expect(says).toEqual([
+      'project-planner',
+      'weekly-planner',
+      'content-calendar',
+      'event-planner',
+      'study-planner',
+      'client-onboarding',
+      'editorial-pipeline',
+      'trip-planner',
+    ]);
   });
 
   it('gathers every view and note on the Dashboard, which shows each Board and Sheet tab', () => {
