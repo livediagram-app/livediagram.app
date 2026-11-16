@@ -592,12 +592,13 @@ The catalogue (`packages/templates/src/templates.ts`, pinned by `template-catalo
 
 Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships the tab's `pages` (ids `page-1`, `page-2`, ..., each already of its kind so the first-page kind choice is not offered, each named); `buildTemplate(kind)` builds the elements in page coordinates on exactly those pages, ignoring the centre it is given, with the page layouts' kit at page scale. The pages are declared once per template (`packages/templates/src/template-pages.ts`), so every application path lands the pages and the elements together:
 
-| Template          | Pages                                                                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Logo design       | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                                                         |
-| Logo explorations | Logo pages, one per logo layout of a family (wordmarks, emblems, marks, lockups), each named for its layout ([Logo pages](../007-editor/logo-pages.md)).      |
-| Wireframe flows   | One wireframe page per screen of the flow, at its device's size, each laid out from a wireframe layout ([Wireframe pages](../007-editor/wireframe-pages.md)). |
-| Photo edit        | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                                                        |
+| Template          | Pages                                                                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Logo design       | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                                                                 |
+| Brand board       | Logo pages: Logo, Mark and Icons, Colours, Type, and On Dark (on the brand's dark colour) ([Logo pages](../007-editor/logo-pages.md)).                                |
+| Logo explorations | Logo pages, one per logo layout of a family (wordmarks, emblems, marks, lockups), each named for its layout ([Logo pages](../007-editor/logo-pages.md)).              |
+| Wireframe flows   | One wireframe page per screen of the flow, at its device's size, each laid out from a wireframe layout, linked ([Wireframe pages](../007-editor/wireframe-pages.md)). |
+| Photo edit        | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                                                                |
 
 ### Template categories
 
@@ -607,18 +608,18 @@ job sit together. Every template but the blanks has one primary category and may
 would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it
 has a home). Every picker shows them alphabetically by label.
 
-| Category               | Holds                                                                                            | Also lists             |
-| ---------------------- | ------------------------------------------------------------------------------------------------ | ---------------------- |
-| Branding               | Logo Design, Wordmark Explorations, Emblems and Badges, Marks and App Icons, Lockup Explorations |                        |
-| Health and Fitness     | Watch App Wireframe, Fitness Watch Wireframe                                                     |                        |
-| Music and Video        | Music App Wireframe, Video App Wireframe, Watch Music Wireframe                                  |                        |
-| Photos                 | Photo Edit                                                                                       |                        |
-| Shopping               | Mobile App Wireframe (a shopping app), Delivery App Wireframe                                    | Online Store Wireframe |
-| Sign Up and Onboarding | App Sign Up Wireframe                                                                            | Mobile App Wireframe   |
-| Social and Messaging   | Social App Wireframe, Tablet App Wireframe                                                       | Team Inbox Wireframe   |
-| Travel and Transport   | Travel App Wireframe, Ride App Wireframe                                                         |                        |
-| Websites               | Website Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe                |                        |
-| Work and Productivity  | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                  |                        |
+| Category               | Holds                                                                                                         | Also lists                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Branding               | Logo Design, Brand Board, Wordmark Explorations, Emblems and Badges, Marks and App Icons, Lockup Explorations |                                             |
+| Health and Fitness     | Watch App Wireframe, Fitness Watch Wireframe, Class Booking Wireframe                                         |                                             |
+| Music and Video        | Music App Wireframe, Video App Wireframe, Watch Music Wireframe                                               |                                             |
+| Photos                 | Photo Edit                                                                                                    |                                             |
+| Shopping               | Mobile App Wireframe (a shopping app), Delivery App Wireframe                                                 | Online Store Wireframe                      |
+| Sign Up and Onboarding | App Sign Up Wireframe                                                                                         | Mobile App Wireframe, Launch Site Wireframe |
+| Social and Messaging   | Social App Wireframe, Tablet App Wireframe, Account Settings Wireframe                                        | Team Inbox Wireframe                        |
+| Travel and Transport   | Travel App Wireframe, Ride App Wireframe                                                                      |                                             |
+| Websites               | Website Wireframe, Launch Site Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe      |                                             |
+| Work and Productivity  | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                               |                                             |
 
 The blanks (Blank Logo and the five blank wireframes) are in no category: they lead Popular, the
 landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the

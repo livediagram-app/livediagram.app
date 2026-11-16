@@ -3,6 +3,8 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livedesign/design';
 import type { TemplateKind } from '@livedesign/templates';
+import { photoEditSampleAsked } from '@/lib/photo-template/photo-edit-sample-apply';
+import { newDesignContent } from '@/lib/new-design-content';
 import { useTemplateFlow } from './useTemplateFlow';
 
 // A tab with content opens on Select. A template that lands content makes the tab one, so the tool picked up for the
@@ -45,5 +47,23 @@ describe('chooseTemplate and the tool in hand', () => {
 
   it('leaves the tool in hand on Blank, which lands nothing', async () => {
     expect(await pick('blank')).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/031-photo/photo-pages.md "The Photo Edit template": picking Photo Edit, on a start or by /new, asks
+// the editor for its sample on the tab it made, and no other template does.
+describe('the Photo Edit sample asked for', () => {
+  it('by a start pick of Photo Edit, for its tab alone', async () => {
+    await pick('logo-design');
+    expect(photoEditSampleAsked('t1')).toBe(false);
+    await pick('photo-edit');
+    expect(photoEditSampleAsked('t1')).toBe(true);
+  });
+
+  it('by /new for Photo Edit, for the tab it makes', async () => {
+    await newDesignContent({ templateKind: 'blank-logo', themeId: 'brand', tabId: 'n1' });
+    expect(photoEditSampleAsked('n1')).toBe(false);
+    await newDesignContent({ templateKind: 'photo-edit', themeId: 'brand', tabId: 'n2' });
+    expect(photoEditSampleAsked('n2')).toBe(true);
   });
 });

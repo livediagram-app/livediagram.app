@@ -120,6 +120,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'logo-wordmarks': 'branding',
   'logo-emblems': 'branding',
   'logo-marks': 'branding',
+  'logo-brand-board': 'branding',
   // Photos: a picture to edit (docs/specs/031-photo/photo-pages.md "Making a photo page").
   'photo-edit': 'photos',
   // Shopping: buying something, from browsing to paying or tracking it.
@@ -130,6 +131,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'wireframe-online-store': 'websites',
   'wireframe-blog': 'websites',
   'wireframe-company-site': 'websites',
+  'wireframe-launch-site': 'websites',
   // Work and Productivity: the screens a team works in.
   'wireframe-dashboard': 'work',
   'wireframe-project-tool': 'work',
@@ -137,9 +139,12 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   // Social and Messaging: people and what they share.
   'wireframe-social-app': 'social',
   'wireframe-tablet-app': 'social',
-  // Health and Fitness: activity on the wrist (the Watch App's glance is an activity ring).
+  // An account's profile and settings, as a social app shows them.
+  'wireframe-account-settings': 'social',
+  // Health and Fitness: activity on the wrist (the Watch App's glance is an activity ring), and booking a class.
   'wireframe-watch-app': 'health',
   'wireframe-fitness-watch': 'health',
+  'wireframe-class-booking': 'health',
   // Travel and Transport: getting somewhere.
   'wireframe-travel-app': 'travel',
   'wireframe-ride-app': 'travel',
@@ -162,6 +167,8 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'wireframe-mobile-app': ['onboarding'],
   // A team inbox is messaging as much as work.
   'wireframe-team-inbox': ['social'],
+  // A launch site's sign up is a web app's first run.
+  'wireframe-launch-site': ['onboarding'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */

@@ -413,7 +413,9 @@ function commentList(u: Ui, x: number, y: number, w: number, bottom: number) {
 export const postDetail = responsive(
   (u) => {
     const { W, H } = u;
-    postHeader(u, 0, 0, W);
+    // Back to wherever the post was opened from.
+    u.icon(0, 8, 24, 'arrow-left', WF.ink);
+    postHeader(u, 36, 0, W - 36);
     const pic = Math.min(W, H * 0.42);
     u.picture(-16, 56, W + 32, pic, 'none');
     let y = 56 + pic + 14;

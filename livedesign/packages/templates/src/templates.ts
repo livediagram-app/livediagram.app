@@ -45,7 +45,12 @@ export type TemplateKind =
   | 'wireframe-team-inbox'
   | 'wireframe-video-app'
   | 'wireframe-fitness-watch'
-  | 'wireframe-watch-music';
+  | 'wireframe-watch-music'
+  | 'wireframe-launch-site'
+  | 'wireframe-account-settings'
+  | 'wireframe-class-booking'
+  // A brand worked up as the sheet it is handed over on (docs/specs/007-editor/logo-pages.md "Branding templates").
+  | 'logo-brand-board';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -79,7 +84,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'photo-edit',
     title: 'Photo Edit',
     description:
-      'One photo page to start: open a picture or make a blank one, then edit it with layers, brushes, adjustments and filters.',
+      'A sample photo, already edited: a warm-up, a vignette through a layer mask, and a crop into an Instagram Post with Make Sizes.',
     extra: true,
   },
   {
@@ -271,6 +276,34 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'wireframe-watch-music',
     title: 'Watch Music Wireframe',
     description: 'Two watch faces of a music app: what is playing and what is up next.',
+    extra: true,
+  },
+  {
+    kind: 'logo-brand-board',
+    title: 'Brand Board',
+    description:
+      'A brand on five Logo pages, ready to hand over: the logo, the mark and its icons, the colours, the type and the logo on dark.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-launch-site',
+    title: 'Launch Site Wireframe',
+    description:
+      'Five browser pages of a product launch, linked to click through: the landing page, pricing, sign up, a code to verify and the first screen.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-account-settings',
+    title: 'Account Settings Wireframe',
+    description:
+      'Four iPhone screens of an account, linked to click through: the profile, editing it, the settings and help.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-class-booking',
+    title: 'Class Booking Wireframe',
+    description:
+      'Four iPhone screens of booking a fitness class, linked to click through: the studios near you, a class, paying and the booking.',
     extra: true,
   },
 ];

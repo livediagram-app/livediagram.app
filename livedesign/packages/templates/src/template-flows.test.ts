@@ -26,6 +26,13 @@ describe('wireframe flows', () => {
   });
 });
 
+describe('the flows gathered from their data files', () => {
+  it('hold every wireframe template but the blanks', () => {
+    for (const t of TEMPLATES)
+      if (t.kind.startsWith('wireframe-')) expect(isWireframeFlowKind(t.kind), t.kind).toBe(true);
+  });
+});
+
 describe('logo explorations', () => {
   it('cover every logo layout once, across the four families', () => {
     const all = Object.values(LOGO_EXPLORATIONS).flat();

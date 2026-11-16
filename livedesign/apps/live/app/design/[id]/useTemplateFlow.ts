@@ -5,6 +5,7 @@ import { getTheme, recolourElementsForTheme } from '@/lib/themes';
 import type { TemplateKind } from '@livedesign/templates';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
+import { askForPhotoEditSample } from '@/lib/photo-template/photo-edit-sample-apply';
 import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
@@ -78,12 +79,8 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing design never download it.
-    const {
-      templateTabs,
-      templateCanvasOverrides,
-      isDefaultDesignName,
-      untitledNameForTemplate,
-    } = await import('@/lib/template-builders');
+    const { templateTabs, templateCanvasOverrides, isDefaultDesignName, untitledNameForTemplate } =
+      await import('@/lib/template-builders');
     // The first tab's template names a design still on a default name ("Untitled Flowchart"); a
     // name someone gave it stays.
     if (tabs[0]?.id === activeId && isDefaultDesignName(designName)) {
@@ -135,6 +132,8 @@ export function useTemplateFlow(opts: {
       }),
     );
     for (const f of followers) markTabLoaded(f.id);
+    // Photo Edit opens on its sample, set once its files are stored (usePhotoEditSample).
+    if (kind === 'photo-edit') askForPhotoEditSample(activeId);
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     // It also turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
     // put down, so its style panel doesn't sit over the board and the first click selects.
