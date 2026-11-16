@@ -33,6 +33,7 @@ import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
 import { handleTeamAudit } from './team-audit-read';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 import { handleSpacePreviews } from './space-previews';
+import { handleSheetList, handleSheetRange } from './sheet-sources';
 import { under } from '@liveworkspace/index-app/worker-http';
 import { guardRequest } from '@liveworkspace/api-kit/request-failure';
 import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
@@ -99,6 +100,9 @@ async function route(ctx: RouteContext): Promise<Response> {
     if (segments[2] === 'connections') {
       return segments.length === 3 ? makeConnection(ctx, id) : notFound();
     }
+    // A chart's range read on the person's own access, and the plan's Sheets for its picker (sheet-sources.ts).
+    if (segments[2] === 'sheets' && segments.length === 3) return handleSheetList(ctx, id);
+    if (segments[2] === 'sheet-range' && segments.length === 3) return handleSheetRange(ctx, id);
     // The document's own webhooks (webhooks/routes.ts): an account's session only.
     if (segments[2] === 'webhooks') {
       const person = ctx.caller.person;
@@ -171,6 +175,9 @@ const routeLabel = createApiRouteLabel(
     'card-moves',
     'automation-sends',
     'connections',
+    'sheets',
+    'sheet-range',
+    'sheet-changed',
   ]),
 );
 

@@ -339,6 +339,10 @@ export const INDEX_ERRORS = [
   'invalid_form',
   'invalid_form_seen',
   'invalid_events',
+  // Sheet sources (sheet-sources.md): a malformed range ask, a corner of the range gone, the sheet app unreachable.
+  'invalid_range',
+  'range_gone',
+  'source_unavailable',
   // Webhooks (webhooks.md): a malformed body, an address refused, a document full, no key set, a caller who isn't an
   // account, card moves malformed.
   'invalid_webhook',
