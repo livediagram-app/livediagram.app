@@ -115,6 +115,20 @@ describe('menuNaturalRight', () => {
     expect(menuNaturalRight(capped(0, 0))).toBe(312);
   });
 
+  it('compact, goes by the whole width the box kept from its last whole form', () => {
+    const box = capped(120, 119);
+    box.dataset.menuNaturalWidth = '500';
+    box.dataset.menuForm = 'icon';
+    expect(menuNaturalRight(box)).toBe(12 + 500);
+    // Whole, the box measures itself as it stands.
+    box.dataset.menuForm = 'full';
+    expect(menuNaturalRight(box)).toBe(312);
+    // Nothing kept: its drawn edge.
+    box.dataset.menuForm = 'bare';
+    delete box.dataset.menuNaturalWidth;
+    expect(menuNaturalRight(box)).toBe(312);
+  });
+
   it('measures the strip’s room from the uncapped edge', () => {
     expect(stripRoomBesideMenu(1000, 0, capped(120, 199))).toBe(
       1000 - 2 * (392 + STRIP_MENU_GAP_PX),

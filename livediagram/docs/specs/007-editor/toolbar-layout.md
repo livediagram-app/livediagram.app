@@ -332,11 +332,19 @@ so a new page load starts on the mode's landing.
 - **Never under the strip.** Where the strip in the same row leaves the box less room than it wants (a tablet or a
   narrow window, 640 to 1024px, where even the crowded strip at the right reached back over a long name), the box
   ends a strip's gap (8px) short of the strip and the name gives way first, cut short with its ellipsis sooner
-  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). Only the name
-  gives way: the menu button and the mode switch keep their size. The strip still decides where it goes from the
-  box as it would stand uncapped (`menuNaturalRight`), so capping the box never un-crowds the strip and pulls it back
-  over the box; a wide window still moves a crowded strip right and shows a long name whole. With room to spare, as
-  usual, nothing changes.
+  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). The menu
+  button and the mode switch keep their size at every width, never capped or cut; only the name truncates. Shorter
+  still, the box steps down (`useMenuCardFit`, `menu-card-form.ts`):
+  - **Whole** while the button, the named mode switch and a readable name slot (4rem) fit.
+  - **Icon** below that: the mode switch drops to its icon alone, as a phone draws it, its name in its tooltip and
+    accessible name, so the tab's name keeps its slot.
+  - **Bare** where even then no readable slot is left: the name and its hairline hide (the name stays in the tab
+    strip and the window title), never a sliver, and nothing is capped.
+
+  The strip still decides where it goes from the box as it would stand whole (`menuNaturalRight`, kept while the box
+  is compact), so neither the cap nor a compact form un-crowds the strip and pulls it back over the box; a wide
+  window still moves a crowded strip right and shows a long name. With room to spare, as usual, nothing changes.
+
 - A click (a tap) on it renames the tab in place, for someone who may change the
   document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.

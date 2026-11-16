@@ -236,11 +236,18 @@ so a new page load starts on the page kind's landing.
 - **Never under the strip.** Where the strip in the same row leaves the box less room than it wants (a tablet or a
   narrow window, 640 to 1024px, where even the crowded strip at the right reached back over a long name), the box
   ends a strip's gap (8px) short of the strip and the name gives way first, cut short with its ellipsis sooner
-  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). Only the name
-  gives way: the menu button and the mode switch keep their size. The strip still decides where it goes from the
-  box as it would stand uncapped (`menuNaturalRight`), so capping the box never un-crowds the strip and pulls it back
-  over the box; a wide window still moves a crowded strip right and shows a long name whole. With room to spare, as
-  usual, nothing changes.
+  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). The menu button keeps its size at every width, never capped or cut; only the name truncates. Shorter
+  still, the box steps down (`useMenuCardFit`, `menu-card-form.ts`):
+  - **Whole** while the button and a readable name slot (4rem) fit.
+  - **Icon** below that, in an editor with a mode switch (livediagram): the switch drops to its icon alone. This
+    editor has none, so its box goes straight from whole to bare.
+  - **Bare** where even then no readable slot is left: the name and its hairline hide (the name stays in the tab
+    strip and the window title), never a sliver, and nothing is capped.
+
+  The strip still decides where it goes from the box as it would stand whole (`menuNaturalRight`, kept while the box
+  is compact), so neither the cap nor a compact form un-crowds the strip and pulls it back over the box; a wide
+  window still moves a crowded strip right and shows a long name. With room to spare, as usual, nothing changes.
+
 - A click (a tap) on it renames the tab in place, for someone who may change the
   design's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.

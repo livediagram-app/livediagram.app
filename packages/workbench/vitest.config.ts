@@ -72,6 +72,7 @@ const HELD_AT_100 = [
   'src/hooks/canvas/toolbar-obstacle.ts',
   // The menu box's uncapped edge (Work Tracker 1038).
   'src/components/canvas/menu-join.tsx',
+  'src/components/chrome/menu-card-form.ts',
   // The dot-vote overlay livediagram and liveplanner both mount (docs/specs/012-collaboration/session-tools.md).
   'src/components/canvas/ElementVoteOverlay.tsx',
   'src/components/canvas/VoteStepper.tsx',

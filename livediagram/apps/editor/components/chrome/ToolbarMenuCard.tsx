@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
-import { useMenuCardRoom } from '@liveworkspace/workbench/components/chrome/useMenuCardRoom';
+import { MenuCardFormContext } from '@liveworkspace/workbench/components/chrome/menu-card-form';
+import { useMenuCardFit } from '@liveworkspace/workbench/components/chrome/useMenuCardRoom';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
@@ -33,10 +34,11 @@ export function ToolbarMenuCard({
   const scale = useUiScale('toolbar');
   const scaled = !inline && scale !== 1;
   // Never under the strip: a long tab name truncates short of it (useMenuCardRoom, toolbar-layout.md "The tab's
-  // name"). Only the name gives way: the button and the mode switch keep their size (shrink-0 below). Not inline,
+  // name"). Only the name gives way: the button and the mode switch keep their size (shrink-0 below), the switch
+  // dropping to its icon and then the name hiding where the room runs short (`form`, menu-card-form.ts). Not inline,
   // where the strip's row holds the card, nor joined, where it spans the sidebar.
   const cardRef = useRef<HTMLDivElement>(null);
-  const room = useMenuCardRoom(cardRef, !inline);
+  const { maxWidth: room, form } = useMenuCardFit(cardRef, !inline);
   return (
     <div
       ref={cardRef}
@@ -46,6 +48,7 @@ export function ToolbarMenuCard({
       data-floating-panel=""
       data-tour-id={tourId}
       data-toolbar-menu=""
+      data-menu-form={form}
       data-region={region}
       style={{
         ...(scaled
@@ -64,7 +67,7 @@ export function ToolbarMenuCard({
         e.stopPropagation();
       }}
     >
-      {children}
+      <MenuCardFormContext.Provider value={form}>{children}</MenuCardFormContext.Provider>
     </div>
   );
 }

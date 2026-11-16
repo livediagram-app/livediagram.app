@@ -32,8 +32,16 @@ export function joinedMenuCardWidth(sidebarPx: number, toolbarScale: number): nu
  *  cutting the mode switch and hiding the name (Work Tracker 1038). Joined, the box's width is the sidebar's, never
  *  capped. */
 export function menuNaturalRight(menu: HTMLElement): number {
-  const right = menu.getBoundingClientRect().right;
+  const box = menu.getBoundingClientRect();
+  const right = box.right;
   if (menu.hasAttribute('data-menu-joined')) return right;
+  // Compact (`data-menu-form` icon or bare: the mode switch down to its icon, the name hidden, useMenuCardFit), the
+  // box is narrower than it stands whole, and the strip goes by the width it kept from its last whole form
+  // (`data-menu-natural-width`, screen px): measured from the compact box, the strip un-crowded and came back.
+  const kept = Number(menu.dataset.menuNaturalWidth);
+  if (menu.dataset.menuForm && menu.dataset.menuForm !== 'full' && kept > 0) {
+    return Math.max(right, box.left + kept);
+  }
   const name = menu.querySelector<HTMLElement>(':scope > [data-tab-name-in-box]');
   if (!name || name.offsetWidth === 0) return right;
   // Its border-box width with nothing hidden, no wider than its own max-width (border-box, as Tailwind's base sets).
