@@ -18,6 +18,9 @@ export type DashboardContextValue = {
   // Where a shown tab's content is (arrived, failed, on its way), and a fetch again for one that failed.
   tabStatus: (tabId: string) => 'loaded' | 'failed' | 'loading';
   retryTab: (tabId: string) => void;
+  // The bodies a warm open kept of the tabs the slots show (docs/specs/006-project/offline-mode.md "Warm open of a
+  // cloud project"): a slot whose tab has not loaded yet draws its own, not worked on.
+  standIns?: readonly Tab[] | undefined;
   // Fetch every tab's content not yet here (a figure from a Sheet choosing among all the project's Sheets); the
   // tabs that fail are marked failed (tabStatus), so calling it again is the Retry.
   loadAllTabs?: (() => void) | undefined;

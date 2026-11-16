@@ -16,6 +16,8 @@ import {
   type ShareRole,
 } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { lastSeenCopies } from '@/lib/last-seen';
+import type { WarmPlan } from '@/lib/last-seen-plan';
 import type { Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { setLoadStep } from '@/lib/load-progress';
@@ -47,6 +49,10 @@ export type BootstrapSetters = {
   setIsOwner: SetState<boolean>;
   setLoadedExistingProject: SetState<boolean>;
   setLoadedTabIds: SetState<Set<string>>;
+  // The tab the warm open painted (docs/specs/006-project/offline-mode.md "Warm open of a cloud project"), and the
+  // cards and sheets it painted with; null once it is gone.
+  setWarmTabId: SetState<string | null>;
+  setWarmPlan: SetState<WarmPlan | null>;
   setLoadingProject: SetState<boolean>;
   setNameConfirmed: SetState<boolean>;
   setSelfParticipant: SetState<Participant>;
@@ -89,6 +95,8 @@ export const PLAN_ARRIVAL: ArrivalProduct<
   communitySession: (post, ownProjectId) => ({ ...post, ownProjectId }),
   grant: planGrant,
   offlineOwnerId: OFFLINE_OWNER_ID,
+  // The last seen copy a later open warm-opens from (offline-mode.md "Warm open of a cloud project").
+  lastSeen: lastSeenCopies,
   sharedAddress: (id) => `/project/${encodeURIComponent(id)}`,
 };
 

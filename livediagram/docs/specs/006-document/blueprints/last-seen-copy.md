@@ -1,8 +1,8 @@
 # Last seen copy blueprint
 
 Derived from [Offline Mode → Warm open of a cloud document](../offline-mode.md#warm-open-of-a-cloud-document)
-(Work Tracker 890). Engineering precision only; design lives in the spec. livedocuments, livedesign and livehuddle
-bind the same shared modules; their blueprints name only their bindings and point here.
+(Work Tracker 890). Engineering precision only; design lives in the spec. livedocuments, livedesign, livehuddle and
+liveplanner (Work Tracker 927) bind the same shared modules; their blueprints name only their bindings and point here.
 
 ## Build plan
 
@@ -44,7 +44,7 @@ bind the same shared modules; their blueprints name only their bindings and poin
 | `../packages/workbench/src/lib/api/last-seen-copies.ts`              | `createLastSeenCopies(store)`: `remember`, `read`, `lastReader`, `forget`, `forgetAll`; the limits; `lastSeenKey`; the read-side validation                                                                                  |
 | `../packages/workbench/src/lib/api/last-seen-store.ts`               | `createLastSeenStore(dbName)`: the IndexedDB store, two object stores (`copies`, `seen`), one kept connection, every call bounded and never throwing                                                                         |
 | `../packages/workbench/src/lib/editor-arrival.ts`                    | `openShareLink` and `openOwnAddress` keep the copy on reaching the document and forget it on not found, the deleted card or the password gate                                                                                |
-| `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `flush`; `LAST_SEEN_REFRESH_MS`                                                                          |
+| `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `followItem`, `flush`; `LAST_SEEN_REFRESH_MS`                                                            |
 | `../packages/workbench/src/hooks/persistence/useLastSeenFollow.ts`   | Follows the open document's name and tab list, answers `onSaveLanded`, forgets a copy whose document went to This Browser                                                                                                    |
 | `../packages/workbench/src/hooks/persistence/useAutosaveCore.ts`     | `onSaveLanded` (an option, read as an effect event): told once the newest save landed, with the baseline tabs, name and revisions                                                                                            |
 | `../packages/workbench/src/lib/warm-open.ts`                         | `readWarmCopy`, `expectedReader`, `hashTabId`, `keptWarmTab`, `measureAfterPaint`: which copy may paint, and the timing marks; `guardNotFound`, `warmOpenFallback`: a warm-painted not found checked once cold               |
@@ -189,8 +189,13 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
   kept lists it as null (no warm open by code for that copy until it is kept again).
 - `readVia(reader, code)` and `forgetVia(reader, code)` on the copies and the follower; `forgetVia` stops following
   the current copy when it came by that code.
-- `ArrivalProduct.lastSeen?: LastSeenDoors<Item>` (`remember`, `forget`, optional `forgetVia`); left out
-  (liveplanner), nothing is kept.
+- `ArrivalProduct.lastSeen?: LastSeenDoors<Item>` (`remember`, `forget`, optional `forgetVia`); left out, nothing is
+  kept. Every editor binds it, liveplanner too since Work Tracker 927 (its
+  [blueprint](../../../../../liveplanner/docs/specs/006-project/blueprints/last-seen-copy.md): the copy's item adds the
+  cards and the first tab's sheets, and a Form first tab never paints).
+- `followItem(reader, itemId, fields)` on the follower: shallow-merges `fields` into the followed copy's item when
+  any value differs by identity (never `name` or `tabs`, which `followMeta` owns), then schedules a refresh. Nothing
+  for another reader or item. liveplanner follows its cards and first tab's sheets through it.
 - `ArrivalRun.seed` may answer `LastSeenFirstTab<unknown> | null`; a seed answering nothing keeps a copy without a
   first tab.
 

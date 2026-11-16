@@ -72,6 +72,11 @@ product. Every timing is also skipped when it ends in failure; failures are alre
   load when the person arrived in-app (from the Explorer). Once per load. Not recorded for a password
   retry, whose time is a person typing. A load that finishes after its watchdog still records
   (`Over30000ms`), because that wait was real.
+- **`WarmPaint`**: a plan this browser opened before showing its last seen copy
+  ([Offline Mode, Warm open of a cloud project](../006-project/offline-mode.md)), from the same start as
+  `ProjectLoad` to the first frame painted with the copy. Once per warm open; an open with no copy to paint (none
+  kept, or a first tab the copy cannot paint, such as a Form) records none. Its gap to `ProjectLoad` is how long the
+  person looked at the copy before the fresh one replaced it.
 - **`TabLoad`**: switching to a tab whose content has not been fetched yet, from the fetch starting to
   the first frame painted with the content in place. The same loads that count `Tab·Loaded`: never the
   search panel's background sweep or the side by side pane's fetch.

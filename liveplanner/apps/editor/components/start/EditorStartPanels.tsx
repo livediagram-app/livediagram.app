@@ -85,7 +85,11 @@ export function EditorStartPanels() {
         : activeTab.elements.length === 0);
   // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md), for everyone who opens it; one with no rows left shows
   // Start Planning again, a new choice replacing it.
-  const showDashboard = hydrated && activeTab.kind === 'dashboard' && dashboardHasRows;
+  // A warm open paints it before hydration too, its tiles drawn from what the last seen copy kept (offline-mode.md
+  // "Warm open of a cloud project").
+  const warmShown = !hydrated && ctx.warmTabId === activeTab.id;
+  const showDashboard =
+    (hydrated || warmShown) && activeTab.kind === 'dashboard' && dashboardHasRows;
   // A Form tab's page (docs/specs/030-forms/forms.md), for everyone who opens it.
   const showForm = hydrated && activeTab.kind === 'form' && !!activeTab.form;
   return (
@@ -105,6 +109,7 @@ export function EditorStartPanels() {
           deleteTab={deleteTab}
           releaseSheets={ctx.releaseSheets}
           renameTab={renameTab}
+          standIns={ctx.warmRefTabs}
         />
       ) : null}
       {showForm ? (
