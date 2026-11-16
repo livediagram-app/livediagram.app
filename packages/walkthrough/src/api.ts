@@ -1,0 +1,127 @@
+// The editor's calls to its own api's walkthrough door (liveworkspace/docs/specs/006-media/walkthroughs.md "Each app's
+// door"), through the app's own fetch so the item's grant and the caller's identity ride along as on every other
+// call. Saving is two steps: the events start the walkthrough, then its media follows as a stream of its own.
+
+import {
+  walkthroughRefusalMessage,
+  type WalkthroughEvents,
+  type WalkthroughSummary,
+} from '@liveworkspace/media/walkthrough';
+
+export type WalkthroughApiDeps = {
+  // The api's base (`/api` or the api's origin and `/api`).
+  base: string;
+  // The app's fetch: adds the item's grant and the caller's bearer.
+  fetch: (url: string, init?: RequestInit) => Promise<Response>;
+};
+
+export type WalkthroughList = { walkthroughs: WalkthroughSummary[]; canRecord: boolean };
+
+export type SaveInput = {
+  title: string;
+  author: string | null;
+  media: Blob;
+  mediaType: string;
+  events: WalkthroughEvents;
+};
+
+export type SaveResult =
+  { ok: true; walkthrough: WalkthroughSummary } | { ok: false; message: string };
+
+export type WalkthroughApi = {
+  /** The item's walkthroughs, or null where there are none to have (no service, no access). */
+  list: () => Promise<WalkthroughList | null>;
+  save: (input: SaveInput, onStage?: (stage: 'events' | 'media') => void) => Promise<SaveResult>;
+  read: (
+    id: string,
+  ) => Promise<{ walkthrough: WalkthroughSummary; events: WalkthroughEvents } | null>;
+  media: (id: string) => Promise<Blob | null>;
+  remove: (id: string) => Promise<boolean>;
+};
+
+const bodyOf = async (res: Response): Promise<Record<string, unknown>> => {
+  const body: unknown = await res.json().catch(() => null);
+  return typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
+};
+
+export function walkthroughApi(
+  { base, fetch }: WalkthroughApiDeps,
+  itemId: string,
+): WalkthroughApi {
+  const d = `d=${encodeURIComponent(itemId)}`;
+  const at = (path = '') => `${base}/walkthroughs${path}?${d}`;
+  const of = (id: string, rest = '') => at(`/${encodeURIComponent(id)}${rest}`);
+  const failed = async (res: Response) => ({
+    ok: false as const,
+    message: walkthroughRefusalMessage(await bodyOf(res)),
+  });
+  const safely = async <T>(work: () => Promise<T>, fallback: T): Promise<T> => {
+    try {
+      return await work();
+    } catch (err) {
+      console.warn('[walkthroughs] request failed', err);
+      return fallback;
+    }
+  };
+
+  return {
+    list: () =>
+      safely(async () => {
+        const res = await fetch(at());
+        return res.ok ? ((await res.json()) as WalkthroughList) : null;
+      }, null),
+
+    save: async (input, onStage) => {
+      try {
+        onStage?.('events');
+        const started = await fetch(at(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: input.title,
+            author: input.author,
+            mediaType: input.mediaType,
+            mediaBytes: input.media.size,
+            events: input.events,
+          }),
+        });
+        if (!started.ok) return await failed(started);
+        const { walkthrough } = (await started.json()) as { walkthrough: WalkthroughSummary };
+        onStage?.('media');
+        const put = await fetch(of(walkthrough.id, '/media'), {
+          method: 'PUT',
+          headers: { 'Content-Type': input.mediaType },
+          body: input.media,
+        });
+        if (!put.ok) {
+          // The started one would wait for the daily sweep; deleting it now frees its place at once.
+          void fetch(of(walkthrough.id), { method: 'DELETE' }).catch(() => undefined);
+          return await failed(put);
+        }
+        return {
+          ok: true,
+          walkthrough: ((await put.json()) as { walkthrough: WalkthroughSummary }).walkthrough,
+        };
+      } catch (err) {
+        console.warn('[walkthroughs] save failed', err);
+        return { ok: false, message: walkthroughRefusalMessage({}) };
+      }
+    },
+
+    read: (id) =>
+      safely(async () => {
+        const res = await fetch(of(id));
+        return res.ok
+          ? ((await res.json()) as { walkthrough: WalkthroughSummary; events: WalkthroughEvents })
+          : null;
+      }, null),
+
+    media: (id) =>
+      safely(async () => {
+        const res = await fetch(of(id, '/media'));
+        return res.ok ? await res.blob() : null;
+      }, null),
+
+    remove: (id) => safely(async () => (await fetch(of(id), { method: 'DELETE' })).ok, false),
+  };
+}
