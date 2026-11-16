@@ -2,7 +2,7 @@
 // pairings and unpairing.
 import { appOfRequest, dialectOf, scopeOfWire, wireScope } from './apps.ts';
 import { closeRooms } from './index-access.ts';
-import { pairingCovers, workbenchStoreOf } from './store.ts';
+import { EMBED_TOKEN_ID, pairingCovers, workbenchStoreOf } from './store.ts';
 import {
   WORKBENCH_POLL_INTERVAL_S,
   type WorkbenchContext,
@@ -163,7 +163,8 @@ export async function listPairings(ctx: WorkbenchContext): Promise<Response> {
   if (!userId) return signInRequired();
   const app = appOfRequest(ctx.request);
   const store = workbenchStoreOf(ctx.env.WORKBENCH!, userId);
-  const pairings = await store.listPairings(app);
+  // A live embed's pairing is no API token's: never listed, never cleaned up as a dead token's.
+  const pairings = (await store.listPairings(app)).filter((p) => p.tokenId !== EMBED_TOKEN_ID);
   const tokenIds = [...new Set(pairings.map((p) => p.tokenId))];
   const live = await liveTokenIdsOf(ctx.env.AUTH_DB, userId, tokenIds, ctx.now);
   const dead = tokenIds.filter((id) => !live.has(id));
