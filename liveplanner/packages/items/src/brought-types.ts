@@ -21,6 +21,7 @@ import {
 import { normaliseBoardSetup } from './board';
 import { boardTypeStatuses } from './type-statuses';
 import { READY_MADE_CARD_TEMPLATES as CARD_TEMPLATES } from './ready-made-card-templates';
+import { TEMPLATE_CARD_TYPES } from './template-card-types';
 
 const WORK = [
   'title',
@@ -344,6 +345,17 @@ const MORE_CARD_TYPES: readonly ItemTypeDef[] = BROUGHT.map((t) => ({
 // types, then the thirteen the templates and presets add. None is set apart from a type a person makes.
 export const READY_MADE_CARD_TYPES: readonly ItemTypeDef[] = [...ITEM_TYPES, ...MORE_CARD_TYPES];
 
+// Every type a board can bring by id: the ready-made types, then the Plan templates' own (template-card-types/), each
+// made for its one template (docs/specs/026-plan/plan-templates.md "Card types a template makes").
+export const BOARD_CARD_TYPES: readonly ItemTypeDef[] = [
+  ...READY_MADE_CARD_TYPES,
+  ...TEMPLATE_CARD_TYPES,
+];
+
+/** The type a board brings by `id`, ready-made or a template's own. */
+export const boardCardType = (id: string): ItemTypeDef | undefined =>
+  BOARD_CARD_TYPES.find((t) => t.id === id);
+
 const DEFAULT_TYPE_IDS: readonly string[] = ITEM_TYPES.map((t) => t.id);
 
 // The ready-made types named (ids, in order) that the project lacks, each once. One whose name a type of the
@@ -356,7 +368,7 @@ export function broughtTypesToAdd(
   const labels = new Set(types.map((t) => t.label.toLowerCase()));
   const out: ItemTypeDef[] = [];
   for (const id of named ?? []) {
-    const t = READY_MADE_CARD_TYPES.find((b) => b.id === id);
+    const t = boardCardType(id);
     if (!t || have.has(id) || labels.has(t.label.toLowerCase())) continue;
     have.add(id);
     labels.add(t.label.toLowerCase());

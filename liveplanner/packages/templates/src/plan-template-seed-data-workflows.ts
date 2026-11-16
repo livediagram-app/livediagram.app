@@ -14,7 +14,7 @@ export const WORKFLOW_SEEDS: Readonly<
   // Tandem's web team, a week into a two-week sprint on shared lists.
   'sprint-board': [
     {
-      type: 'story',
+      type: 'sb-story',
       status: 'sb-backlog',
       title: 'Export a list as CSV',
       description:
@@ -24,7 +24,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Lists'],
     },
     {
-      type: 'bug',
+      type: 'sb-bug',
       status: 'sb-backlog',
       title: 'Emoji in a list name breaks the share preview',
       priority: 'medium',
@@ -32,7 +32,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Sharing'],
     },
     {
-      type: 'story',
+      type: 'sb-story',
       status: 'sb-ready',
       title: 'Reorder items by dragging on a phone',
       priority: 'medium',
@@ -45,7 +45,7 @@ export const WORKFLOW_SEEDS: Readonly<
       ],
     },
     {
-      type: 'task',
+      type: 'sb-task',
       status: 'sb-todo',
       title: 'Add the list activity feed endpoint',
       assignee: 'leo',
@@ -54,7 +54,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Activity'],
     },
     {
-      type: 'story',
+      type: 'sb-story',
       status: 'sb-todo',
       title: 'Mention someone in a list comment',
       assignee: 'priya',
@@ -63,7 +63,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Comments'],
     },
     {
-      type: 'story',
+      type: 'sb-story',
       status: 'sb-doing',
       title: 'Show who changed an item, and when',
       assignee: 'sam',
@@ -72,7 +72,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Activity'],
     },
     {
-      type: 'task',
+      type: 'sb-task',
       status: 'sb-doing',
       title: 'Cache list previews for the share page',
       assignee: 'leo',
@@ -81,7 +81,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Sharing'],
     },
     {
-      type: 'story',
+      type: 'sb-story',
       status: 'sb-review',
       title: 'Invite by link with an expiry date',
       assignee: 'maya',
@@ -90,7 +90,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Sharing'],
     },
     {
-      type: 'bug',
+      type: 'sb-bug',
       status: 'sb-blocked',
       title: 'Push notifications arrive twice on Android 15',
       description: 'Waiting on the notification provider to confirm the duplicate delivery.',
@@ -100,7 +100,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Mobile'],
     },
     {
-      type: 'story',
+      type: 'sb-story',
       status: 'sb-done',
       title: 'Undo deleting an item',
       assignee: 'priya',
@@ -109,7 +109,7 @@ export const WORKFLOW_SEEDS: Readonly<
       labels: ['Lists'],
     },
     {
-      type: 'task',
+      type: 'sb-task',
       status: 'sb-done',
       title: 'Turn on error tracking for the web app',
       assignee: 'sam',
@@ -123,7 +123,7 @@ export const WORKFLOW_SEEDS: Readonly<
   'client-onboarding': [
     {
       ref: 'harbour',
-      type: 'project',
+      type: 'co-client',
       status: 'co-training',
       title: 'Harbour Dental Group',
       description: '14 practices, rolling out region by region. Champion: Dr Mensah.',
@@ -135,7 +135,7 @@ export const WORKFLOW_SEEDS: Readonly<
     },
     {
       ref: 'fernwood',
-      type: 'project',
+      type: 'co-client',
       status: 'co-setup',
       title: 'Fernwood Studios',
       assignee: 'sam',
@@ -146,7 +146,7 @@ export const WORKFLOW_SEEDS: Readonly<
     },
     {
       ref: 'northline',
-      type: 'project',
+      type: 'co-client',
       status: 'co-kickoff',
       title: 'Northline Logistics',
       description: 'Moving from spreadsheets; wants the data import done first.',
@@ -157,7 +157,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 33,
     },
     {
-      type: 'project',
+      type: 'co-client',
       status: 'co-signed',
       title: 'Brightside Tutors',
       assignee: 'leo',
@@ -167,7 +167,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 35,
     },
     {
-      type: 'project',
+      type: 'co-client',
       status: 'co-live',
       title: 'Copperleaf Bakery',
       assignee: 'ana',
@@ -177,7 +177,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: -12,
     },
     {
-      type: 'task',
+      type: 'co-task',
       status: 'co-done',
       title: 'Admin training for the head office',
       parent: 'harbour',
@@ -186,7 +186,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: -3,
     },
     {
-      type: 'task',
+      type: 'co-task',
       status: 'co-doing',
       title: 'Train the northern practices',
       parent: 'harbour',
@@ -200,7 +200,7 @@ export const WORKFLOW_SEEDS: Readonly<
       ],
     },
     {
-      type: 'task',
+      type: 'co-task',
       status: 'co-waiting',
       title: 'Single sign-on details from their IT team',
       description: 'Asked on Monday; chase on Thursday if nothing comes.',
@@ -210,7 +210,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 2,
     },
     {
-      type: 'task',
+      type: 'co-task',
       status: 'co-todo',
       title: 'Set up their project templates',
       parent: 'fernwood',
@@ -219,7 +219,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 9,
     },
     {
-      type: 'task',
+      type: 'co-task',
       status: 'co-doing',
       title: 'Import 4,000 shipments from their spreadsheet',
       parent: 'northline',
@@ -234,7 +234,7 @@ export const WORKFLOW_SEEDS: Readonly<
       ],
     },
     {
-      type: 'task',
+      type: 'co-task',
       status: 'co-todo',
       title: 'Kickoff call and success plan',
       parent: 'northline',
@@ -247,7 +247,7 @@ export const WORKFLOW_SEEDS: Readonly<
   // A small online magazine: pitches from the team, and the pieces under way to publication.
   'editorial-pipeline': [
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-pitched',
       title: 'Why every city should have a tool library',
       assignee: 'leo',
@@ -256,7 +256,7 @@ export const WORKFLOW_SEEDS: Readonly<
       votes: 2,
     },
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-pitched',
       title: 'A week of eating only what we grew',
       assignee: 'ana',
@@ -265,7 +265,7 @@ export const WORKFLOW_SEEDS: Readonly<
       votes: 4,
     },
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-shortlisted',
       title: 'The repair cafés keeping old radios alive',
       assignee: 'priya',
@@ -274,7 +274,7 @@ export const WORKFLOW_SEEDS: Readonly<
       votes: 6,
     },
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-declined',
       title: 'Ten productivity apps we tried',
       description: 'Covered last spring; we would rather run a reader survey.',
@@ -284,7 +284,7 @@ export const WORKFLOW_SEEDS: Readonly<
       votes: 1,
     },
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-commissioned',
       title: 'Interview: the last lighthouse keeper on the coast',
       assignee: 'maya',
@@ -293,7 +293,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 24,
     },
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-drafting',
       title: 'How the river clean-up turned one stretch blue again',
       assignee: 'priya',
@@ -309,7 +309,7 @@ export const WORKFLOW_SEEDS: Readonly<
       ],
     },
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-editing',
       title: 'Winter reading list',
       assignee: 'ana',
@@ -324,7 +324,7 @@ export const WORKFLOW_SEEDS: Readonly<
       ],
     },
     {
-      type: 'task',
+      type: 'ed-task',
       status: 'ed-fact-check',
       title: 'Check the figures in the energy prices piece',
       assignee: 'sam',
@@ -332,7 +332,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 3,
     },
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-scheduled',
       title: 'Five walks you can reach by train',
       assignee: 'leo',
@@ -341,7 +341,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 2,
     },
     {
-      type: 'content',
+      type: 'ed-article',
       status: 'ed-published',
       title: 'Inside the town’s new seed bank',
       assignee: 'maya',
@@ -354,7 +354,7 @@ export const WORKFLOW_SEEDS: Readonly<
   // Four friends, four days in Lisbon, a month away.
   'trip-planner': [
     {
-      type: 'idea',
+      type: 'tr-idea',
       status: 'tr-ideas',
       title: 'Day trip to Sintra',
       description: 'Train from Rossio, 40 minutes. Pena Palace opens at 9:30.',
@@ -363,7 +363,7 @@ export const WORKFLOW_SEEDS: Readonly<
       votes: 4,
     },
     {
-      type: 'idea',
+      type: 'tr-idea',
       status: 'tr-ideas',
       title: 'Fado night in Alfama',
       assignee: 'sam',
@@ -371,7 +371,7 @@ export const WORKFLOW_SEEDS: Readonly<
       votes: 3,
     },
     {
-      type: 'idea',
+      type: 'tr-idea',
       status: 'tr-ideas',
       title: 'Surf lesson in Cascais',
       assignee: 'leo',
@@ -379,42 +379,42 @@ export const WORKFLOW_SEEDS: Readonly<
       votes: 1,
     },
     {
-      type: 'note',
+      type: 'tr-note',
       status: 'tr-day-1',
       title: 'Land at 11:40, check in, lunch at Time Out Market',
       assignee: 'maya',
       labels: ['Travel'],
     },
     {
-      type: 'note',
+      type: 'tr-note',
       status: 'tr-day-1',
       title: 'Tram 28 up to the castle for sunset',
       assignee: 'ana',
       labels: ['Activities'],
     },
     {
-      type: 'note',
+      type: 'tr-note',
       status: 'tr-day-2',
       title: 'Belém: the tower, the monastery and pastéis de nata',
       assignee: 'priya',
       labels: ['Activities'],
     },
     {
-      type: 'note',
+      type: 'tr-note',
       status: 'tr-day-3',
       title: 'Lazy morning, then the LX Factory market',
       assignee: 'sam',
       labels: ['Food'],
     },
     {
-      type: 'note',
+      type: 'tr-note',
       status: 'tr-day-4',
       title: 'Check out by 11, flight home at 16:05',
       assignee: 'maya',
       labels: ['Travel'],
     },
     {
-      type: 'task',
+      type: 'tr-booking',
       status: 'tr-paid',
       title: 'Flights for four',
       assignee: 'maya',
@@ -422,7 +422,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: -10,
     },
     {
-      type: 'task',
+      type: 'tr-booking',
       status: 'tr-booked',
       title: 'Apartment in Príncipe Real',
       description: 'Deposit paid; the rest is due at check-in.',
@@ -431,7 +431,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 25,
     },
     {
-      type: 'task',
+      type: 'tr-booking',
       status: 'tr-to-book',
       title: 'Pena Palace tickets',
       assignee: 'priya',
@@ -439,7 +439,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 14,
     },
     {
-      type: 'task',
+      type: 'tr-booking',
       status: 'tr-to-book',
       title: 'Dinner for four on Saturday',
       assignee: 'sam',
@@ -447,7 +447,7 @@ export const WORKFLOW_SEEDS: Readonly<
       due: 21,
     },
     {
-      type: 'task',
+      type: 'tr-item',
       status: 'tr-to-pack',
       title: 'Shared bag',
       assignee: 'maya',
@@ -458,13 +458,13 @@ export const WORKFLOW_SEEDS: Readonly<
       ],
     },
     {
-      type: 'task',
+      type: 'tr-item',
       status: 'tr-to-pack',
       title: 'Walking shoes and a light jacket',
       assignee: 'leo',
     },
     {
-      type: 'task',
+      type: 'tr-item',
       status: 'tr-packed',
       title: 'Passports and boarding passes',
       assignee: 'ana',

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { itemTitle, readItemCreate, type PlanBoardSetup } from '@liveplanner/items';
+import {
+  TEMPLATE_CARD_TYPES,
+  itemTitle,
+  readItemCreate,
+  type PlanBoardSetup,
+} from '@liveplanner/items';
 import { planTemplateSeedItems, seedDate, seedToday } from './plan-template-seeds';
 import { PLAN_TEMPLATE_SEEDS } from './plan-template-seed-data';
 import {
@@ -88,6 +93,29 @@ describe('Plan template example cards', () => {
           if (field === 'f-objective' || field === 'f-workstream') {
             expect(madeIds.has(value as string), `${kind} ${field}`).toBe(true);
           }
+        }
+      }
+    }
+  });
+
+  // plan-templates.md "Card types a template makes": every example fills only its own type's fields, a choice with
+  // one of its options, and a card field links a card of the type it names.
+  it('fill only the fields their template’s own type offers', () => {
+    for (const kind of PLAN_TEMPLATE_KINDS) {
+      const made = planTemplateSeedItems(kind, TODAY, ids);
+      const typeOf = new Map(made.map((c) => [c.id, c.type]));
+      for (const create of made) {
+        const type = TEMPLATE_CARD_TYPES.find((t) => t.id === create.type);
+        expect(type, `${kind} ${create.type}`).toBeDefined();
+        for (const [field, value] of Object.entries(create.fields)) {
+          // An example's own marks, not a field.
+          if (field === 'example' || field === 'archived') continue;
+          const label = `${kind} ${create.type} ${field}`;
+          expect(type!.fields, label).toContain(field);
+          const custom = type!.custom?.find((f) => f.id === field);
+          if (custom?.kind === 'choice') expect(custom.options, label).toContain(value);
+          if (custom?.kind === 'card')
+            expect(typeOf.get(value as string), label).toBe(custom.linkType);
         }
       }
     }

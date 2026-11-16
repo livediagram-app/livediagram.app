@@ -1538,10 +1538,15 @@ cards, children)` adds "{names} will keep a copy of its settings."
 `action` (#dc2626). `READY_MADE_CARD_TYPES` (`packages/items/src/brought-types.ts`, pure data, the table in
 [Plan templates](../plan-templates.md#ready-made-card-types)) is those five then the thirteen more. Presets set the types
 a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug Triage: Bugs, Roadmap: Projects).
+`TEMPLATE_CARD_TYPES` (`packages/items/src/template-card-types/`: `kit.ts` field makers, then `delivery.ts`,
+`personal.ts` and `business.ts`, pure data, run through `withComments`) are the Plan templates' own types, each id
+prefixed by its template ([Plan templates](../plan-templates.md#card-types-a-template-makes)); no template names a
+ready-made id. `BOARD_CARD_TYPES` is both catalogues and `boardCardType(id)` finds one, which `broughtTypesToAdd` and a
+template form's target use.
 
 - `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`; nothing for one that names none (Blank), Archive or
   All Cards.
-- `broughtTypesToAdd(named, types)`: the ready-made types named that `types` lacks, each once, in order;
+- `broughtTypesToAdd(named, types)`: the types named (`boardCardType`) that `types` lacks, each once, in order;
   `boardTypesToAdd(elements, types)` the same off the elements; `defaultTypesToAdd(types)` the missing defaults.
 - `catalogueWithBoardTypes(stored, elements)`: `typesOf(stored)` (empty for null) with the missing ones after,
   each with `statuses` from the boards among `elements` that take it, capped at `ITEM_TYPES_MAX`; null when

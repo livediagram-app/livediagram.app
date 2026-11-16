@@ -146,3 +146,4 @@ export * from './built-in-field-retype';
 export * from './field-filter-removal';
 export * from './field-retype-impact';
 export * from './automation';
+export { TEMPLATE_CARD_TYPES, COMPLETED_ON } from './template-card-types';

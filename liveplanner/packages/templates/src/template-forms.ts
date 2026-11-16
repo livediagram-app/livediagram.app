@@ -10,7 +10,7 @@ import {
   type FormDefinition,
   type FormStarter,
 } from '@liveplanner/forms';
-import { READY_MADE_CARD_TYPES } from '@liveplanner/items';
+import { boardCardType } from '@liveplanner/items';
 import type { BoardSpec, FormSpec, PlanTabSpec } from './plan-template-catalogue';
 
 // The tab a template form's responses go to: a board's tab (its spec) or a Sheet's (its sheet's id).
@@ -75,7 +75,7 @@ export function starterWithout(
 // The ready-made card type a template board's responses are made as: the first it takes.
 export function boardResponseType(board: BoardSpec) {
   const id = board.setup?.addTypes?.[0];
-  return id ? READY_MADE_CARD_TYPES.find((t) => t.id === id) : undefined;
+  return id ? boardCardType(id) : undefined;
 }
 
 export function templateForm(

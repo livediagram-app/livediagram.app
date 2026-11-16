@@ -317,7 +317,7 @@ fields?: Record<string, string>; leaveOut?: readonly string[] }`. `to` is a tab 
   (not per `build`), so the Sheet a form names is the one its tab holds.
 - `templateForm`: `starterWithFields(starterWithout(formStarter(spec.starter), spec.leaveOut), spec.fields)` (questions
   left out, labels swapped, nothing else), then
-  `buildStarter` with, for a board, the ready-made type of the board's first `addTypes` id (`READY_MADE_CARD_TYPES`)
+  `buildStarter` with, for a board, the type of the board's first `addTypes` id (`boardCardType`: the template's own, `TEMPLATE_CARD_TYPES`)
   and `destination: { tabId, typeId, status: columns[0].status }`; for a Sheet, `starterBaseType(starter, [], ...)`
   and `sheet: { tabId, sheetId }` (no `columns` yet: `materialiseTemplateSheets` fills them, below). `heading` is the tab
   name. No `closesAt`, `limit` or link: unpublished.
@@ -329,10 +329,10 @@ fields?: Record<string, string>; leaveOut?: readonly string[] }`. `to` is a tab 
 - A form spec's `figures` (`FormMetricKind[]`, both catalogue forms: `['responses']`) become `form-metric` slots on the
   template's Overview: `planTemplateTabs` passes `forms: { formTabId: ids[i], metric }` to `dashboardLayoutOf`, which
   places them after the metric tiles in the same rows (four a row).
-- Invariant (tested for every template): a board form's `buildStarter` returns the ready-made type unchanged, every
+- Invariant (tested for every template): a board form's `buildStarter` returns the template's own type unchanged, every
   question's mapping resolves on it and `publishProblems` and `destinationProblem` find nothing, so the template
   brings no field of its own and the form can be published as made.
-- A `to` naming no tab of the template, a tab with neither a board nor a Sheet, or a board taking no ready-made type
+- A `to` naming no tab of the template, a tab with neither a board nor a Sheet, or a board taking no type `boardCardType` knows
   is a catalogue error: the test fails; at run time the form is made with no destination (the connect box asks).
 
 ## 8. Destination and the public form (`destination.ts`, `public.ts`)

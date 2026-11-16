@@ -7,7 +7,7 @@ import {
   readForm,
   type FormDefinition,
 } from '@liveplanner/forms';
-import { READY_MADE_CARD_TYPES } from '@liveplanner/items';
+import { TEMPLATE_CARD_TYPES } from '@liveplanner/items';
 import type { Tab } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { PLAN_TEMPLATE_KINDS, PLAN_TEMPLATE_TABS, type BoardSpec } from './plan-template-catalogue';
@@ -48,14 +48,14 @@ const boardsOn = (tab: { elements: Tab['elements'] } | undefined) =>
     el.type === 'shape' && el.shape === 'plan-board' && el.planBoard ? [el.planBoard] : [],
   );
 
-const ticket = READY_MADE_CARD_TYPES.find((t) => t.id === 'ticket')!;
+const ticket = TEMPLATE_CARD_TYPES.find((t) => t.id === 'hd-ticket')!;
 
 describe('Help Desk’s Contact Form', () => {
   it('sends each message to Tickets as a Ticket, in New', () => {
     const tabs = made('help-desk');
     const form = formOf('help-desk', 'Contact Form');
     const tickets = tabs.find((t) => t.name === 'Tickets')!;
-    expect(form.destination).toEqual({ tabId: tickets.id, typeId: 'ticket', status: 'hd-new' });
+    expect(form.destination).toEqual({ tabId: tickets.id, typeId: 'hd-ticket', status: 'hd-new' });
     expect(form.sheet).toBeUndefined();
     expect(destinationProblem(form.destination, boardsOn(tickets), [ticket])).toBeNull();
   });
@@ -242,11 +242,11 @@ describe('starterWithout', () => {
     expect(left.id).toBe('bug-report');
   });
 
-  it('makes Bug Tracker’s and Hiring Pipeline’s forms without the questions they leave out', () => {
+  it('makes Bug Tracker’s and Hiring Pipeline’s forms whole, their own types holding every answer', () => {
     const prompts = (kind: 'bug-triage' | 'hiring-pipeline', name: string) =>
       formOf(kind, name).sections.flatMap((s) => s.questions.map((q) => q.prompt));
-    expect(prompts('bug-triage', 'Bug Report')).not.toContain('Severity');
-    expect(prompts('hiring-pipeline', 'Application')).not.toContain('Years of experience');
+    expect(prompts('bug-triage', 'Bug Report')).toContain('Severity');
+    expect(prompts('hiring-pipeline', 'Application')).toContain('Years of experience');
     expect(prompts('hiring-pipeline', 'Application')).toContain('Portfolio or LinkedIn');
   });
 });

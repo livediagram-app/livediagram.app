@@ -73,7 +73,7 @@ describe('templateStarterRules', () => {
       expect(by[off]!.on).toBe(false);
       expect(kindsOf(by[off]!.body.steps)).not.toContain('assign');
     }
-    expect(by['Triage New Bugs']!.body.conditions).toEqual([{ kind: 'type', types: ['bug'] }]);
+    expect(by['Triage New Bugs']!.body.conditions).toEqual([{ kind: 'type', types: ['sb-bug'] }]);
     expect(by['Route Reviews']!.body.trigger).toEqual({ kind: 'card_moved', to: ['sb-review'] });
   });
 
