@@ -17,51 +17,51 @@ room gate, its editor wiring).
 
 ## Files
 
-| File (`packages/suggestions/src/`) | Holds                                                                                                |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `suggestion.ts`                    | types, limits, `mintSuggestionId`, `parseSuggestionOps`, `parseStoredSuggestion`, `parseDecision`     |
+| File (`packages/suggestions/src/`) | Holds                                                                                                           |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `suggestion.ts`                    | types, limits, `mintSuggestionId`, `parseSuggestionOps`, `parseStoredSuggestion`, `parseDecision`               |
 | `plan.ts`                          | `baseOf`, `opsMismatch`, `staleTargets`, `planAccept`, `ghostsOf`, `describeSuggestion`, `suggestionOpsBetween` |
-| `store.ts`                         | `CANVAS_SUGGESTIONS_SCHEMA`, `suggestionStore(db)` over the room's D1-shaped `*_DB` binding           |
-| `route.ts`                         | `answerSuggestions(action, body, door)`: the role rule, submit, accept, reject                       |
-| `review.ts`                        | Suggest Only settings (moved from `@livedocuments/api-schema`, which re-exports it)                  |
-| `room-review.ts`                   | `createRoomReview`: cached settings, `suggestByOf`, `joined`, `changed`                               |
-| `room-signal.ts`                   | the editor's bus for the room's `suggestions` and `review` system ops                                |
-| `telemetry.ts`                     | the closed telemetry types, read by the telemetry dashboards' emitter checks                         |
-| `client.ts`                        | `suggestionsClient(request)`: list, submit, accept, reject                                           |
-| `capture.ts`                       | `createSuggestCapture`: wraps the editor's history commit and tick; gathers a gesture                |
-| `react/useSuggestCapture.ts`       | the capture made once per editor, pointer tracking, the bridge                                       |
-| `react/useCanvasSuggestions.ts`    | mode, list, refetch on the room's word, submit, accept, reject, notices, telemetry                   |
-| `react/suggestions-store.ts`       | the overlay's external store and context                                                             |
-| `react/SuggestionGhostOverlay.tsx` | the ghosts, in canvas space                                                                          |
-| `react/SuggestionsBar.tsx`         | the bar, the mode switch, the review list                                                            |
-| `react/SuggestOnlySection.tsx`     | the Share dialog's Suggestions section                                                               |
+| `store.ts`                         | `CANVAS_SUGGESTIONS_SCHEMA`, `suggestionStore(db)` over the room's D1-shaped `*_DB` binding                     |
+| `route.ts`                         | `answerSuggestions(action, body, door)`: the role rule, submit, accept, reject                                  |
+| `review.ts`                        | Suggest Only settings (moved from `@livedocuments/api-schema`, which re-exports it)                             |
+| `room-review.ts`                   | `createRoomReview`: cached settings, `suggestByOf`, `joined`, `changed`                                         |
+| `room-signal.ts`                   | the editor's bus for the room's `suggestions` and `review` system ops                                           |
+| `telemetry.ts`                     | the closed telemetry types, read by the telemetry dashboards' emitter checks                                    |
+| `client.ts`                        | `suggestionsClient(request)`: list, submit, accept, reject                                                      |
+| `capture.ts`                       | `createSuggestCapture`: wraps the editor's history commit and tick; gathers a gesture                           |
+| `react/useSuggestCapture.ts`       | the capture made once per editor, pointer tracking, the bridge                                                  |
+| `react/useCanvasSuggestions.ts`    | mode, list, refetch on the room's word, submit, accept, reject, notices, telemetry                              |
+| `react/suggestions-store.ts`       | the overlay's external store and context                                                                        |
+| `react/SuggestionGhostOverlay.tsx` | the ghosts, in canvas space                                                                                     |
+| `react/SuggestionsBar.tsx`         | the bar, the mode switch, the review list                                                                       |
+| `react/SuggestOnlySection.tsx`     | the Share dialog's Suggestions section                                                                          |
 
 Per product (`<api>` is each product's `apps/api/src`):
 
-| Where                                        | What                                                                                   |
-| -------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `<api>/<room>/…-schema.ts`                   | a step running `CANVAS_SUGGESTIONS_SCHEMA`; a `review` column on the item row (but livedocuments, which has it) |
-| `<api>/routes/suggestion-routes.ts`          | the four routes: gates, author, the door                                               |
-| `<api>/changesets/accept.ts`                 | `acceptSuggestions`: one changeset through `writeChangeset`, retried like `revert.ts`  |
-| `<api>/routes/review-route.ts`               | `GET`/`PUT …/review` (livedocuments' already)                                          |
-| `<api>/<room>/…-room-review.ts`              | the room's `createRoomReview`                                                          |
-| room message gate                            | refuses a Suggest Only Participant's element ops unless live-only                      |
-| editor `useEditorUndoState.ts`               | commit and tick through `capture.wrap`                                                 |
-| editor `editor-state/useEditorSuggestions.ts`| the slice composing `useCanvasSuggestions`                                             |
-| editor canvas layer and view                 | `SuggestionGhostOverlay` and `SuggestionsBar` mounted; the store provided              |
-| editor room-op receive                       | `takeSuggestionsRoomOp` first                                                          |
+| Where                                         | What                                                                                                            |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `<api>/<room>/…-schema.ts`                    | a step running `CANVAS_SUGGESTIONS_SCHEMA`; a `review` column on the item row (but livedocuments, which has it) |
+| `<api>/routes/suggestion-routes.ts`           | the four routes: gates, author, the door                                                                        |
+| `<api>/changesets/accept.ts`                  | `acceptSuggestions`: one changeset through `writeChangeset`, retried like `revert.ts`                           |
+| `<api>/routes/review-route.ts`                | `GET`/`PUT …/review` (livedocuments' already)                                                                   |
+| `<api>/<room>/…-room-review.ts`               | the room's `createRoomReview`                                                                                   |
+| room message gate                             | refuses a Suggest Only Participant's element ops unless live-only                                               |
+| editor `useEditorUndoState.ts`                | commit and tick through `capture.wrap`                                                                          |
+| editor `editor-state/useEditorSuggestions.ts` | the slice composing `useCanvasSuggestions`                                                                      |
+| editor canvas layer and view                  | `SuggestionGhostOverlay` and `SuggestionsBar` mounted; the store provided                                       |
+| editor room-op receive                        | `takeSuggestionsRoomOp` first                                                                                   |
 
 ## Interfaces and contracts
 
 `<items>` is `documents` (livediagram, livedocuments), `designs` (livedesign), `projects` (liveplanner).
 
-| Route                                                      | Who                                   | Answer                                                       |
-| ---------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------ |
-| `GET /api/<items>/:id/tabs/:tabId/suggestions`             | Participant, Editor                   | 200 `{ suggestions }`                                        |
-| `POST /api/<items>/:id/tabs/:tabId/suggestions`            | Participant, Editor; body `{ ops }`   | 201 `{ suggestion }`                                         |
-| `POST /api/<items>/:id/tabs/:tabId/suggestions/accept`     | Editor; `{ ids }` or `{ all: true }`  | 200 `{ accepted, conflicts, changeset }`; 409 `suggestion_conflict` with `conflicts` when none applied |
-| `POST /api/<items>/:id/tabs/:tabId/suggestions/reject`     | Editor; a Participant its own         | 200 `{ rejected }`                                           |
-| `GET`/`PUT /api/<items>/:id/review`                        | Editor                                | `{ review }` (livedocuments' contract)                       |
+| Route                                                  | Who                                  | Answer                                                                                                 |
+| ------------------------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `GET /api/<items>/:id/tabs/:tabId/suggestions`         | Participant, Editor                  | 200 `{ suggestions }`                                                                                  |
+| `POST /api/<items>/:id/tabs/:tabId/suggestions`        | Participant, Editor; body `{ ops }`  | 201 `{ suggestion }`                                                                                   |
+| `POST /api/<items>/:id/tabs/:tabId/suggestions/accept` | Editor; `{ ids }` or `{ all: true }` | 200 `{ accepted, conflicts, changeset }`; 409 `suggestion_conflict` with `conflicts` when none applied |
+| `POST /api/<items>/:id/tabs/:tabId/suggestions/reject` | Editor; a Participant its own        | 200 `{ rejected }`                                                                                     |
+| `GET`/`PUT /api/<items>/:id/review`                    | Editor                               | `{ review }` (livedocuments' contract)                                                                 |
 
 Refusals: 403 `viewer_cannot_suggest`, 403 `editor_only`, 403 `no_collab_key`, 400 `no_ops` `too_many_ops` `bad_op`
 `bad_element` `repeated_target` `invalid_decision`, 404 `not_found`, 409 `missing_target` `id_taken`

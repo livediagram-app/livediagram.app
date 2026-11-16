@@ -84,12 +84,12 @@ articles.
 
 ## Share roles
 
-| Role                           | Suggestions                                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------------------------------- |
-| **Editor**                     | Edits or suggests (the switch), sees every suggestion, accepts and rejects each or all, sets Suggest Only. |
+| Role                           | Suggestions                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| **Editor**                     | Edits or suggests (the switch), sees every suggestion, accepts and rejects each or all, sets Suggest Only.             |
 | **Participant (Suggest Only)** | Suggests any change to the active tab's elements, sees every suggestion, takes back its own; never writes straight in. |
-| **Participant**                | Writes as a Participant does, sees every suggestion, takes back its own (made while it was on Suggest Only). |
-| **Viewer**                     | Sees no suggestion and makes none; the routes refuse it (403 `viewer_cannot_suggest`).              |
+| **Participant**                | Writes as a Participant does, sees every suggestion, takes back its own (made while it was on Suggest Only).           |
+| **Viewer**                     | Sees no suggestion and makes none; the routes refuse it (403 `viewer_cannot_suggest`).                                 |
 
 A tab-scoped link reaches its own tab's suggestions only. An API token reaches the routes at its grant's level; an
 assistant's own edits keep [agent changesets](../../../livediagram/docs/specs/024-agents/agent-changesets.md).
