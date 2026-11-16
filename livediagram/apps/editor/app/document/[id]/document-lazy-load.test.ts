@@ -18,6 +18,8 @@ describe('the document page’s first load', () => {
     ['components/chrome/EditorPhotoImport.tsx', '@/components/chrome/PhotoReviewOverlay'],
     ['components/chrome/EditorPhotoImport.tsx', '@/lib/photo-detect'],
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
+    ['lib/editor-deferred-code.ts', '@/components/tour/ElementTourHost'],
+    ['lib/editor-deferred-code.ts', '@/components/canvas/QuickStylePanel'],
     ['app/document/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/LayersPanel'],

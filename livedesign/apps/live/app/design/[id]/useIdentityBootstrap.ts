@@ -26,7 +26,9 @@ import {
   browserWarmOpenFallbackDeps,
   guardNotFound,
   warmOpenFallback,
+  warmPaintCodeIn,
 } from '@liveworkspace/workbench/lib/warm-open';
+import { WARM_PAINT_CODE } from '@/lib/editor-deferred-code';
 
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
@@ -430,9 +432,13 @@ export function useIdentityBootstrap(opts: {
       { itemId: id, shareCode, hash: url.hash },
       { signedIn: readSignedInHint(), guestId: getGuestSelfId() },
     );
+    if (!copy) return;
+    // The code of what the paint mounts first (offline-mode.md "The code it draws is in first"), bounded: anything
+    // left waiting on its code draws a beat late, behind React's reveal throttle.
+    await warmPaintCodeIn(WARM_PAINT_CODE);
     // Too late: the ordinary load has begun to show what it fetched, or resolved someone else as reading. A load that
     // has only started (a guest's auth settles at once) is not: the copy paints and the load replaces it.
-    if (!copy || landedRef.current) return;
+    if (landedRef.current) return;
     if (readerRef.current !== null && readerRef.current !== copy.reader) return;
     paintWarm(copy, origin);
   });

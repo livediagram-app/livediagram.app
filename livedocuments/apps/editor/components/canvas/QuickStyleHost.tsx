@@ -7,9 +7,8 @@
 // (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits").
 
 import { memo, useMemo, type ComponentProps } from 'react';
-import dynamic from 'next/dynamic';
 import type { QuickStyleBar as QuickStyleBarComponent } from '@/components/canvas/QuickStyleBar';
-import { loadQuickStyleBar } from '@/lib/editor-deferred-code';
+import { QuickStyleBar } from '@/lib/editor-deferred-code';
 import { quickStyleBarPage } from '@/lib/quick-style-bar';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useQuickStyle } from '@/hooks/canvas/useQuickStyle';
@@ -21,8 +20,8 @@ import {
   type Selection,
 } from '@liveworkspace/workbench/lib/selection-store';
 
-// Shown once something is selected; its code is fetched once the editor is idle (lib/editor-deferred-code.ts).
-const QuickStyleBar = dynamic(loadQuickStyleBar, { ssr: false });
+// Shown once something is selected; its code is fetched once the editor is idle, or before a warm paint
+// (lib/editor-deferred-code.ts).
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 
