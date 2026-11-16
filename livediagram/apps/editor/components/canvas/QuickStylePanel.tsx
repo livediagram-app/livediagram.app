@@ -199,6 +199,9 @@ export function QuickStylePanel({
       role="region"
       aria-label="Quick style"
       data-quick-style-panel=""
+      // A selection's toolbar keeps off it, flipping or sliding aside (useEdgeAwarePlacement), so an element at the
+      // left edge never has its toolbar drawn over these controls (quick-style-panel.md "Collisions").
+      data-toolbar-obstacle=""
       data-testid="quick-style-panel"
       // A panel, so the panel-opacity preference (docs/specs/007-editor/user-preferences.md) applies to it.
       data-panel-translucent=""

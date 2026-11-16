@@ -1026,7 +1026,7 @@ Popping every element in on open would start a thousand animations at once on th
 
 When a shape is selected, a small **popover menu** appears next to it with action buttons (icon-only).
 
-- **Position:** above the shape if there is room between the shape and the canvas top edge, and it would not sit on the floating chrome over the canvas (the palette toolbar, a panel: any `data-floating-panel`); otherwise below it, as at the header. Horizontally centred on the shape.
+- **Position:** above the shape if there is room between the shape and the canvas top edge, and it would not sit on the floating chrome over the canvas (the palette toolbar, a panel: any `data-floating-panel`, and the Quick Style panel, `data-toolbar-obstacle`); otherwise below it, as at the header. Horizontally centred on the shape. When both sides would sit on the chrome (an element at the left edge beside the Quick Style panel), it slides sideways off it, the shorter way that stays inside the canvas, so it never covers a panel's controls ([Quick Style panel](quick-style-panel.md#collisions)).
 - **Layout:** small rounded panel with the same styling language as the palette (border, shadow).
 - **Overflow:** the buttons sit in a strip at most **95vw** wide. When they outgrow it (a flowchart step's full set
   on a phone) the strip scrolls sideways under a finger or trackpad, with no visible scrollbar, and the card and its
