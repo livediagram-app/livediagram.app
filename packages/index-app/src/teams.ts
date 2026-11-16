@@ -12,6 +12,7 @@
 // is never narrowed here.
 
 import {
+  AccountCallTimeout,
   createTeamFor,
   readAccountTeams,
   TeamError,
@@ -125,7 +126,8 @@ export type MakeTeamAnswer =
 
 /** Makes the team `body` names for the person whose `accessToken` it is, and answers the route's status and body:
  *  201 `{ team }`, 400 for a missing name, liveworkspace's own refusal (400, 401, 409) passed on, and 503 when
- *  sign-in is not configured or liveworkspace is out of reach. */
+ *  sign-in is not configured or liveworkspace is out of reach, and 504 `team_create_unconfirmed` when it didn't answer
+ *  in time (the team may have been made). */
 export async function makeTeamFor(
   credentials: ClientCredentials | null,
   accessToken: string,
@@ -163,6 +165,12 @@ export async function makeTeamFor(
     if (err instanceof TeamError) {
       console.warn('[teams] create_refused', { status: err.status, code: err.code });
       return { status: err.status, body: { error: err.code } };
+    }
+    // No answer in time from a write that isn't safe to repeat: the team may exist, so the answer says so (504)
+    // rather than the 503 that reads as safe to try again.
+    if (err instanceof AccountCallTimeout && err.unconfirmed) {
+      console.warn('[teams] create_unconfirmed');
+      return { status: 504, body: { error: 'team_create_unconfirmed' } };
     }
     console.error('[teams] create_failed', String(err));
     return { status: 503, body: { error: 'teams_unavailable' } };

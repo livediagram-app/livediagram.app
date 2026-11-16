@@ -99,6 +99,8 @@ export type AppAuthConfigured = {
   clientId: string;
   clientSecret: string;
   resource: string;
+  // The ACCOUNTS binding, when bound: the deletion code's calls and the account API's go through it.
+  accounts?: KeysFetcher;
 };
 
 // What a product's binding hands in. Where the products' copies had drifted, the difference is an option here.
@@ -147,6 +149,7 @@ export function configured(env: AppAuthEnv): AppAuthConfigured | null {
     clientId: ACCOUNTS_CLIENT_ID,
     clientSecret: ACCOUNTS_CLIENT_SECRET,
     resource: API_RESOURCE,
+    ...(env.ACCOUNTS && { accounts: env.ACCOUNTS }),
   };
 }
 
