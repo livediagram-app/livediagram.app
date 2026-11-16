@@ -165,18 +165,14 @@ export class PlanRoom extends DurableObject<Env> {
   // What the sibling modules (plan-room-*.ts) act on is public to them; nothing outside this folder reaches in.
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
   state: DurableObjectState;
-  // Per-session op-rate window (sliding 1s) so one connected peer can't
-  // flood the room. Legit cursor / edit ops are client-throttled
-  // well under the cap; over-cap ops are silently dropped, not a
-  // disconnect, so a brief burst just thins rather than kicking the peer.
+  // Per-session op-rate window (sliding 1s) so one connected peer can't flood the room. Legit cursor / edit ops are
+  // client-throttled well under the cap; over-cap ops are silently dropped, not a disconnect, so a brief burst just
+  // thins rather than kicking the peer.
   //
-  // Deliberately in-memory (NOT in the attachment): hibernation resets it,
-  // which merely re-opens a fresh 1s window on wake — the cap is a flood
-  // gate, not an accounting ledger, and a flood keeps the DO awake anyway
-  // so the window never resets mid-flood. Persisting it would add an
-  // attachment write per frame for nothing. Entries are cleaned on
-  // close / error / dead-send so the map can't leak across a long-lived
-  // in-memory period.
+  // Deliberately in-memory (NOT in the attachment): hibernation resets it, which merely re-opens a fresh 1s window on
+  // wake: the cap is a flood gate, not an accounting ledger, and a flood keeps the DO awake anyway so the window never
+  // resets mid-flood. Persisting it would add an attachment write per frame for nothing. Entries are cleaned on close /
+  // error / dead-send so the map can't leak across a long-lived in-memory period.
   opRates: Map<WebSocket, { count: number; windowStart: number }> = new Map();
 
   // Ordering state for reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
@@ -645,9 +641,8 @@ export class PlanRoom extends DurableObject<Env> {
       if (v.head) await this.takeHead(v.head);
     }
     const pair = new WebSocketPair();
-    // WebSocketPair is a 2-property record keyed `0`/`1`. The "client"
-    // side is returned to the connecting peer; the "server" side is
-    // owned by this Durable Object.
+    // WebSocketPair is a 2-property record keyed `0`/`1`. The "client" side is returned to the connecting peer; the
+    // "server" side is owned by this Durable Object.
     const client = pair[0];
     const server = pair[1];
     const tabShowsAll = await scopedTabShowsAll(this, v.projectId, v.tabScope);
