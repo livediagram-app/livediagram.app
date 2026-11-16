@@ -39,6 +39,7 @@ import { handleOpenapi } from './routes/openapi';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleProjects } from './routes/projects';
 import { handleForms } from './routes/forms';
+import { handleRoadmaps } from './routes/roadmap-public-route';
 import { handleParticipants } from './routes/participants';
 import { handlePreferences } from './routes/preferences';
 import { handleFolders } from './routes/folders';
@@ -229,13 +230,23 @@ async function routeApiRequest(
   // A form link's doors (docs/specs/030-forms/forms.md "Abuse and limits"): respondents are anonymous, so reads and
   // responses are limited per network, each on its own key, apart from everyone's project writes.
   const isFormRequest = segments[1] === 'forms';
-  if (isFormRequest && env.FORM_RATE_LIMITER) {
+  // A public roadmap's doors (docs/specs/026-plan/public-roadmap.md "Upvotes"): visitors are anonymous too, so its
+  // reads and votes are limited per network as a form's are, each on its own key.
+  const isRoadmapRequest = segments[1] === 'roadmaps';
+  if ((isFormRequest || isRoadmapRequest) && env.FORM_RATE_LIMITER) {
+    const door = isRoadmapRequest ? 'roadmap' : 'form';
     const ok = await env.FORM_RATE_LIMITER.limit({
-      key: `${isWrite ? 'form' : 'form-read'}:${clientNetwork(clientIp(request))}`,
+      key: `${isWrite ? door : `${door}-read`}:${clientNetwork(clientIp(request))}`,
     });
     if (!ok.success) return rateLimited();
   }
-  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint && !isFormRequest) {
+  if (
+    isWrite &&
+    url.pathname !== '/api/events' &&
+    !isRoomTicketMint &&
+    !isFormRequest &&
+    !isRoadmapRequest
+  ) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
@@ -318,6 +329,9 @@ async function routeApiRequest(
     // A form link's public doors (docs/specs/030-forms/forms.md "Filling in a form").
     case 'forms':
       return await handleForms(ctx);
+    // A public roadmap's read and vote (docs/specs/026-plan/public-roadmap.md "How it answers").
+    case 'roadmaps':
+      return await handleRoadmaps(ctx);
     case 'teams':
       return await handleTeams(ctx);
     case 'tokens':

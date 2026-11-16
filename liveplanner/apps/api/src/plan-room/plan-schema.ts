@@ -36,6 +36,7 @@ import {
 } from './automations/automation-schema';
 import { GITHUB_PULLS_SCHEMA, GITHUB_SCHEMA } from './github/github-schema';
 import { CALENDAR_FEEDS_SCHEMA } from '../calendar/feed-store';
+import { ROADMAPS_SCHEMA } from '../roadmap/roadmap-store';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -533,6 +534,10 @@ const V30 = CALENDAR_FEEDS_SCHEMA;
 // `plan.items_bytes`, seeded from the cards, and the triggers on `items` that keep it. Asks first, as V10 does.
 const V31 = itemsBytesStep;
 
+// Public roadmaps (../roadmap/roadmap-store.ts; docs/specs/026-plan/public-roadmap.md): each published board's code,
+// settings and vote cap.
+const V32 = ROADMAPS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -565,6 +570,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V29,
   V30,
   V31,
+  V32,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

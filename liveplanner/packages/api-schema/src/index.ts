@@ -332,6 +332,8 @@ export * from './plan-drafts';
 export * from './form-drafts';
 export * from './github';
 export * from './calendar-feed';
+// The public roadmap (docs/specs/026-plan/public-roadmap.md).
+export * from './roadmap';
 export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';

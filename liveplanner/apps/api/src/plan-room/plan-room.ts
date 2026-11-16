@@ -58,7 +58,8 @@ import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-client';
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
-import { type RouteIdentity } from './plan-route';
+import { ANONYMOUS, answerPlanRequest, type RouteIdentity } from './plan-route';
+import { roadmapMissed } from '../roadmap/roadmap-answer';
 import {
   MAINTENANCE_KEY,
   restoreContentState,
@@ -608,6 +609,19 @@ export class PlanRoom extends DurableObject<Env> {
   // null and stays empty; a stored plan's schema is brought up to date first (V30 holds the feeds).
   async calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer> {
     return bindStoredPlan(this, planId) ? answerFeedCall(this.requireEnv(), planId, call) : null;
+  }
+
+  // ---------- RPC: a public roadmap (../roadmap/roadmap-public.ts; docs/specs/026-plan/public-roadmap.md) ---------
+
+  // A visitor's read or vote, answered as no one. An id nothing has written, or a plan archived or in the Trash,
+  // answers the same 404 as an unknown code and stays empty; a vote that may have written tells the outbox.
+  async roadmap(planId: string, request: Request): Promise<Response> {
+    if (!bindStoredPlan(this, planId) || this.standing.putAway) return roadmapMissed('no_plan');
+    const response = await answerPlanRequest(this.requireEnv(), request, ANONYMOUS, (p) =>
+      this.state.waitUntil(p),
+    );
+    if (request.method === 'POST' && response.ok) noteWrite(this);
+    return response;
   }
 
   // ---------- RPC: Describe a Plan's count (plan-draft-count.ts) -------------------------------------------------

@@ -115,6 +115,9 @@ export type PlanRoomClient = {
   // calendar once the worker has checked the person's access. An id nothing has written answers null.
   calendarFeed(tokenHash: string): Promise<CalendarFeed | null>;
   calendarFeedEvents(feed: CalendarFeed, now: number): Promise<FeedRead | null>;
+  // A public roadmap's read or vote (docs/specs/026-plan/public-roadmap.md "How it answers"), answered as no one. An
+  // id nothing has written, or a plan archived or in the Trash, answers 404 and stays empty.
+  roadmap(request: Request): Promise<Response>;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -161,6 +164,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
       room.calendarFeed(planId, { kind: 'feed', tokenHash }) as Promise<CalendarFeed | null>,
     calendarFeedEvents: (feed, now) =>
       room.calendarFeed(planId, { kind: 'events', feed, now }) as Promise<FeedRead | null>,
+    roadmap: (request) => room.roadmap(planId, request),
   };
 }
 
@@ -214,5 +218,6 @@ export type PlanRoomRpc = {
   emailOptOut(planId: string, token: string): Promise<boolean>;
   github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer>;
   calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer>;
+  roadmap(planId: string, request: Request): Promise<Response>;
   fetch(request: Request): Promise<Response>;
 };
