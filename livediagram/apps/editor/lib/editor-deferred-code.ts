@@ -1,3 +1,4 @@
+import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
 import type { PresentationOverlay as PresentationOverlayComponent } from '@/components/canvas/PresentationOverlay';
 
 // The editor's code that loads on demand (docs/specs/016-platform/web-performance.md), in one place so each
@@ -22,6 +23,12 @@ export const loadLayersPanel = () =>
   import('@/components/panels/LayersPanel').then((m) => m.LayersPanel);
 export const loadQuickStylePanel = () =>
   import('@/components/canvas/QuickStylePanel').then((m) => m.QuickStylePanel);
+// The panels the editor mounts with the canvas, drawn as lazy panels (@liveworkspace/ui/lazy-panel) so the warm paint
+// can have their code in before it paints (WARM_PAINT_CODE below): then they draw in the paint's own commit.
+export const QuickStylePanel = lazyPanel('QuickStylePanel', loadQuickStylePanel);
+export const ElementTourHost = lazyPanel('ElementTourHost', () =>
+  import('@/components/tour/ElementTourHost').then((m) => m.ElementTourHost),
+);
 // The presentation overlay holds the deck's keys (the arrows, Escape), so a deck must not start before it
 // can listen: starting one waits for this load (useSlideDeck), and the host draws the loaded component
 // directly (loadedPresentationOverlay) rather than through a lazy wrapper that would miss the first frame.
@@ -45,8 +52,13 @@ export const EDITOR_SURFACE_CODE = [
   loadExplorerPanel,
   loadEditorSearchPanel,
   loadLayersPanel,
-  loadQuickStylePanel,
+  QuickStylePanel.preload,
   loadPresentationOverlay,
   loadToolPanels,
   loadSessionElementSettings,
 ] as const;
+
+// What the warm paint (docs/specs/006-document/offline-mode.md "The code it draws is in first") waits for before it
+// paints, at most WARM_PAINT_CODE_WAIT_MS: the panels it mounts with the canvas (measured with
+// e2e/perf/warm-open.perf.ts, Work Tracker 960). A panel left waiting on its code holds back the ordinary load.
+export const WARM_PAINT_CODE = [QuickStylePanel.preload, ElementTourHost.preload] as const;

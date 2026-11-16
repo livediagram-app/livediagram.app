@@ -200,6 +200,17 @@ export function createLastSeenFollower<Item extends LastSeenItem>(
       const landed = rev !== undefined && tab && !older ? { id: firstId!, rev, tab } : null;
       if (fold(landing, landed)) schedule();
     },
+    /** Fields of the item other than its name and tab list (a product's own, such as liveplanner's cards): merged into
+     *  the followed copy when any differs by identity. `followMeta` owns the name and the tab list. */
+    followItem(reader: string, itemId: string, fields: Partial<Omit<Item, 'name' | 'tabs'>>): void {
+      if (!isCurrent(reader, itemId)) return;
+      const copy = current!;
+      const item = copy.item as Record<string, unknown>;
+      const changed = Object.entries(fields).some(([key, value]) => item[key] !== value);
+      if (!changed) return;
+      current = { ...copy, item: { ...copy.item, ...fields } };
+      schedule();
+    },
     flush,
   };
 }

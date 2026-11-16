@@ -105,6 +105,28 @@ inside, and walls block sound fully. Inside a room, as on the open floor, the ru
   on mobile do not"). On a phone it is the glyph alone, square. The hover card names it and its state in words ("Mic:
   Live", "Mic: Muted") either way.
 
+## Outside the tab
+
+People sit in a call while they work in other tabs and apps, and mute or unmute about once for every call they join
+(Work Tracker 992). Two places let them do it without going back to the Space:
+
+- **The browser's own call controls.** While you are in a live call and may speak, the Space registers the W3C Media
+  Session's call actions: **togglemicrophone** does exactly what the Call dock's microphone does (mute, unmute, or ask
+  the browser again while Mic Blocked), and **togglecamera** what its Camera does, unless video is paused (Video
+  Paused registers no camera action). Chromium browsers show them as buttons in their media controls and in their own
+  picture-in-picture windows. The state is reported back on every change, wherever it was made (the dock, the mini
+  view or the browser): the microphone is active while it is open and unmuted, the camera while it is on.
+- **Hang up is not registered.** In a Space you leave a call by walking away, so there is nothing for the browser's
+  hang-up button to do.
+- **They go when the call does.** Leaving Avatar mode, the room or the tab, a failed call, the kill switch ending it and leaving
+  the Space all clear the actions at once, so a stale button never acts on no call. A listener (a Viewer, or a link
+  that lets you listen) registers none, nor does a local preview, which has no call. A browser without Media Session,
+  or without these actions, shows nothing new and nothing breaks.
+- **The mini view** carries your microphone, and your camera while it is on
+  ([The mini view](../008-canvas/avatar-mode.md#the-mini-view)).
+- Telemetry is the dock's own: a press from either place is the same `UI · Changed · AudioMute` or
+  `Canvas · Used · CameraOn`.
+
 ## No call here
 
 While walking somewhere calls cannot reach (a space kept in This Browser, which has no server room to call through, a

@@ -43,6 +43,7 @@ export function DashboardPage({
   deleteTab,
   releaseSheets,
   renameTab,
+  standIns,
 }: {
   tab: Tab;
   tabs: readonly Tab[];
@@ -58,6 +59,9 @@ export function DashboardPage({
   releaseSheets?: (sheetIds: readonly string[]) => boolean;
   // The tab renamed from its name in the menu box (DashboardMenuName).
   renameTab?: (tabId: string, name: string) => void;
+  // The shown tabs' bodies a warm open kept, each drawn until its tab loads (offline-mode.md "Warm open of a cloud
+  // project").
+  standIns?: readonly Tab[];
 }) {
   // The canvas `main` the page covers: mounted beside the canvas, not in it, so found by its marker.
   const [canvas, setCanvas] = useState<HTMLElement | null>(null);
@@ -162,6 +166,7 @@ export function DashboardPage({
       openTab,
       tabStatus,
       retryTab,
+      standIns,
       loadAllTabs: loadTabs ? loadAllTabs : undefined,
       ...(deleteTab ? { deleteTab } : {}),
       ...(releaseSheets ? { releaseSheets } : {}),
@@ -178,6 +183,7 @@ export function DashboardPage({
       openTab,
       tabStatus,
       retryTab,
+      standIns,
       loadTabs,
       loadAllTabs,
       deleteTab,

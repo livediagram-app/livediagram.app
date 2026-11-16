@@ -8,14 +8,8 @@ import {
   setCallSelf,
   type CallSelf,
 } from '@/lib/calls/calls-store';
-import {
-  AUDIO_HELD_TEXT,
-  CALLS_PAUSED_ANNOUNCEMENT,
-  CallStripGroup,
-  MicMeter,
-  PREVIEW_TEXT,
-  micIndicator,
-} from './CallStripGroup';
+import { AUDIO_HELD_TEXT, CALLS_PAUSED_ANNOUNCEMENT, CallStripGroup } from './CallStripGroup';
+import { MicMeter, PREVIEW_TEXT, micIndicator } from './MicAndCameraSegments';
 import { CallNames, Segment } from './CallSegment';
 import { ScreenShareStripGroup } from './ScreenShareStripGroup';
 

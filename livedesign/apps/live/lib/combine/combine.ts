@@ -43,6 +43,12 @@ function loadEngine(): Promise<Clipping> {
   return engine;
 }
 
+/** The boolean engine, loaded on first use: SVG import resolves nonzero fills with it
+ *  (docs/specs/020-import-export/svg-import.md "Geometry"). */
+export function loadCombineEngine(): Promise<Clipping> {
+  return loadEngine();
+}
+
 /** Starts loading the engine ahead of need (Mirror While Drawing merges on release, in the draw's
  *  own commit, so it must already be there). */
 export function preloadCombineEngine(): void {

@@ -14,6 +14,7 @@ import { designHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-
 import { randomName } from '@/lib/identity';
 import { firstPageLooksEmpty } from '@/lib/community-first-page';
 import { useToast } from '@/hooks/ui/useToast';
+import { svgAwareImporters } from '@/lib/svg-import/dialog-runners';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -55,6 +56,7 @@ export function EditorTabDialogs() {
     importOpen,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importSvgText,
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
@@ -83,6 +85,13 @@ export function EditorTabDialogs() {
   // in place ("Syncing in place"), and then shows the share options. Never as the 'self' placeholder an
   // early open runs under: the gate waits for the reader (`syncReady`).
   const isOffline = useIsOfflineDesign(designId);
+  // JSON replaces the tab; SVG adds editable shapes to the page (docs/specs/020-import-export/svg-import.md).
+  const importers = svgAwareImporters({
+    importText: importTextIntoActiveTab,
+    importFile: importIntoActiveTab,
+    importSvg: importSvgText,
+    locked: activeTab.locked === true,
+  });
   const readerKnown = selfParticipant.id !== 'self';
 
   return (
@@ -114,8 +123,8 @@ export function EditorTabDialogs() {
       {importOpen ? (
         <ImportTabDialog
           tabName={activeTab.name}
-          onImportFile={importIntoActiveTab}
-          onImportText={importTextIntoActiveTab}
+          onImportFile={importers.onImportFile}
+          onImportText={importers.onImportText}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

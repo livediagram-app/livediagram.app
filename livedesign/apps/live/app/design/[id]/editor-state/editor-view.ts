@@ -244,6 +244,7 @@ export function editorView({
     imagePickerOpenFor: elementsSlice.imagePickerOpenFor,
     importIntoActiveTab: tabsSlice.importIntoActiveTab,
     importTextIntoActiveTab: tabsSlice.importTextIntoActiveTab,
+    importSvgText: inputSlice.importSvgText,
     isPinchingRef: viewportSlice.isPinchingRef,
     isReadOnly: sessionSlice.isReadOnly,
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.

@@ -60,6 +60,9 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
 import { DROP_NOT_AN_IMAGE, dropImportHint } from '@/lib/drop-import-hint';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { isSvgFile, looksLikeSvgText } from '@/lib/svg-import/detect';
+import { SVG_IMPORT_MAX_BYTES } from '@/lib/svg-import/constants';
+import type { SvgImportOptions } from '@/hooks/canvas/useSvgImport';
 
 // Whether a paste carries something for the canvas rather than words: a file, or elements copied here (their JSON or
 // the in-app copy's id).
@@ -67,7 +70,9 @@ function pasteHoldsCanvasContent(data: DataTransfer | null): boolean {
   if (!data) return false;
   if (data.files.length > 0) return true;
   const text = data.getData('text/plain');
-  return parseElementsPayload(text) !== null || inAppCopyIdOf(text) !== null;
+  return (
+    parseElementsPayload(text) !== null || inAppCopyIdOf(text) !== null || looksLikeSvgText(text)
+  );
 }
 
 type ImageDescriptor = {
@@ -118,6 +123,9 @@ type ClipboardDeps = {
   // Adds the mains a pasted copy carries that the design's library lacks (docs/specs/009-elements/components.md
   // "Clipboard"). Read through a ref, so the paste listener never holds a stale one.
   addMissingComponents?: (components: readonly DesignComponent[]) => void;
+  // Brings an SVG in as editable shapes (docs/specs/020-import-export/svg-import.md): a dropped or pasted SVG file,
+  // or SVG markup pasted as text. Read through a ref, like the other paste functions.
+  importSvg?: (text: string, route: 'drop' | 'paste', opts: SvgImportOptions) => Promise<unknown>;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
@@ -141,6 +149,7 @@ export function useClipboard(deps: ClipboardDeps) {
     getViewportCanvasRect,
   } = deps;
   const addMissingRef = useLatest(deps.addMissingComponents);
+  const importSvgRef = useLatest(deps.importSvg);
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
   // True (after explaining) when nothing may be created right now. Every
@@ -303,11 +312,31 @@ export function useClipboard(deps: ClipboardDeps) {
   // does; a file Import reads is pointed at Import; anything else is not something the canvas takes, and says so.
   const dropBoardFile = (file: File, at: { x: number; y: number }) => {
     if (isReadOnly) return;
+    // An SVG comes in as editable shapes (svg-import.md), placed as a picture only when too big for them.
+    if (isSvgFile(file) && deps.importSvg) return void importSvgFile(file, 'drop', at);
     // A Markdown file or a JSON export replaces the tab through Import, and is told so.
     const importHint = dropImportHint(file);
     if (importHint) return toast.info(importHint);
     if (file.type.startsWith('image/')) return void pasteImageFile(file, at);
     toast.info(DROP_NOT_AN_IMAGE);
+  };
+
+  // An SVG file's text through the SVG importer, the paste's image upload standing by for a file too big for shapes.
+  const importSvgFile = async (
+    file: File,
+    route: 'drop' | 'paste',
+    at?: { x: number; y: number },
+  ) => {
+    let text = '';
+    // A file past the size cap is placed as a picture without being read (useSvgImport).
+    if (file.size <= SVG_IMPORT_MAX_BYTES) {
+      try {
+        text = await file.text();
+      } catch {
+        return void toast.error('Could not read the SVG.');
+      }
+    }
+    await importSvgRef.current?.(text, route, { at, file, placePicture: pasteImageFile });
   };
 
   // Single mutable ref holding the latest paste functions. The paste
@@ -325,6 +354,7 @@ export function useClipboard(deps: ClipboardDeps) {
     pasteFromClipboard,
     pasteInAppCopy,
     pasteImageFile,
+    importSvgFile,
   });
 
   // A middle-button release pastes the Linux primary selection. It is never a
@@ -400,7 +430,9 @@ export function useClipboard(deps: ClipboardDeps) {
         if (!chosen) chosen = files[0] ?? null;
         if (chosen) {
           e.preventDefault();
-          void pasteRef.current.pasteImageFile(chosen);
+          if (isSvgFile(chosen) && importSvgRef.current)
+            void pasteRef.current.importSvgFile(chosen, 'paste');
+          else void pasteRef.current.pasteImageFile(chosen);
           return;
         }
       }
@@ -430,6 +462,12 @@ export function useClipboard(deps: ClipboardDeps) {
       // the paste cannot land a frame later than the preventDefault that
       // claimed it.
       const text = e.clipboardData?.getData('text/plain') ?? '';
+      // SVG markup copied as text (a design tool's Copy as SVG) comes in as shapes (svg-import.md).
+      if (importSvgRef.current && looksLikeSvgText(text)) {
+        e.preventDefault();
+        void importSvgRef.current(text, 'paste', { placePicture: pasteRef.current.pasteImageFile });
+        return;
+      }
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
         e.preventDefault();
@@ -461,7 +499,7 @@ export function useClipboard(deps: ClipboardDeps) {
     };
     document.addEventListener('paste', onPaste);
     return () => document.removeEventListener('paste', onPaste);
-  }, [isReadOnly, editingId, pasteRef, addMissingRef]);
+  }, [isReadOnly, editingId, pasteRef, addMissingRef, importSvgRef]);
 
   // Copied ELEMENTS pasted while a label on the canvas is open for typing. The
   // clipboard carries them as JSON text, and every label editor pastes plain
@@ -503,6 +541,8 @@ export function useClipboard(deps: ClipboardDeps) {
     copySelection,
     pasteFromClipboard,
     dropBoardFile,
+    // The paste's image upload, which an SVG too big for shapes falls back to from the Import dialog too.
+    placePictureFile: pasteImageFile,
     hasClipboard: (clipboard?.length ?? 0) > 0,
   };
 }

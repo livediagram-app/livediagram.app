@@ -5,9 +5,8 @@
 // renders this and the panel, never the editor root that hands it everything else.
 
 import { useEffect, useLayoutEffect, useRef, type ComponentProps } from 'react';
-import dynamic from 'next/dynamic';
 import type { QuickStylePanel as QuickStylePanelComponent } from '@/components/canvas/QuickStylePanel';
-import { loadQuickStylePanel } from '@/lib/editor-deferred-code';
+import { QuickStylePanel } from '@/lib/editor-deferred-code';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useQuickStyle, type QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import {
@@ -17,8 +16,8 @@ import {
 } from '@liveworkspace/workbench/lib/selection-store';
 import { publishClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 
-// Shown once something is selected; its code is fetched once the editor is idle (lib/editor-deferred-code.ts).
-const QuickStylePanel = dynamic(loadQuickStylePanel, { ssr: false });
+// Shown once something is selected; its code is fetched once the editor is idle, or before a warm paint
+// (lib/editor-deferred-code.ts).
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 

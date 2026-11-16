@@ -79,11 +79,14 @@ export function ImportWarning() {
   const H = 210;
   const dx = 20;
   const dy = 10;
-  const cards: [string, string][] = [['JSON', 'json']];
+  const cards: [string, string][] = [
+    ['JSON', 'json'],
+    ['SVG', 'svg'],
+  ];
   return (
     <Scene w={W} h={H}>
       <Dialog x={dx} y={dy} w={380} h={190} title="Import to Tab" sceneW={W} sceneH={H}>
-        {/* The amber warning banner */}
+        {/* The amber warning banner, speaking for JSON (an SVG adds to the page) */}
         <rect
           x={dx + 16}
           y={dy + 46}
@@ -108,9 +111,9 @@ export function ImportWarning() {
           />
         </g>
         <Label x={dx + 44} y={dy + 60} size={10} className="fill-slate-700">
-          This replaces everything on
+          A JSON import replaces everything on
         </Label>
-        <Label x={dx + 185} y={dy + 60} size={10} weight={700} className="fill-slate-800">
+        <Label x={dx + 234} y={dy + 60} size={10} weight={700} className="fill-slate-800">
           Draft
         </Label>
         <Label x={dx + 44} y={dy + 76} size={10} className="fill-slate-700">

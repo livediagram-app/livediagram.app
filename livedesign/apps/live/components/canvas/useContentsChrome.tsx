@@ -18,14 +18,12 @@ import { track } from '@/lib/telemetry';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { CanvasChromeProps } from './CanvasChrome';
+import { PageContentsSidebar } from '@/lib/editor-deferred-code';
 
-// Both load with Pages mode, not with the editor: a design without pages pays nothing.
+// Both load with Pages mode, not with the editor: a design without pages pays nothing. The sidebar's code is also in
+// before a warm paint (lib/editor-deferred-code.ts).
 const PageContentsPanel = dynamic(
   () => import('./PageContentsPanel').then((m) => m.PageContentsPanel),
-  { ssr: false },
-);
-const PageContentsSidebar = dynamic(
-  () => import('./PageContentsSidebar').then((m) => m.PageContentsSidebar),
   { ssr: false },
 );
 

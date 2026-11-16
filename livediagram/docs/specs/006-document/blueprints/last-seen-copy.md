@@ -1,8 +1,8 @@
 # Last seen copy blueprint
 
 Derived from [Offline Mode → Warm open of a cloud document](../offline-mode.md#warm-open-of-a-cloud-document)
-(Work Tracker 890). Engineering precision only; design lives in the spec. livedocuments, livedesign and livehuddle
-bind the same shared modules; their blueprints name only their bindings and point here.
+(Work Tracker 890). Engineering precision only; design lives in the spec. livedocuments, livedesign, livehuddle and
+liveplanner (Work Tracker 927) bind the same shared modules; their blueprints name only their bindings and point here.
 
 ## Build plan
 
@@ -44,7 +44,7 @@ bind the same shared modules; their blueprints name only their bindings and poin
 | `../packages/workbench/src/lib/api/last-seen-copies.ts`              | `createLastSeenCopies(store)`: `remember`, `read`, `lastReader`, `forget`, `forgetAll`; the limits; `lastSeenKey`; the read-side validation                                                                                  |
 | `../packages/workbench/src/lib/api/last-seen-store.ts`               | `createLastSeenStore(dbName)`: the IndexedDB store, two object stores (`copies`, `seen`), one kept connection, every call bounded and never throwing                                                                         |
 | `../packages/workbench/src/lib/editor-arrival.ts`                    | `openShareLink` and `openOwnAddress` keep the copy on reaching the document and forget it on not found, the deleted card or the password gate                                                                                |
-| `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `flush`; `LAST_SEEN_REFRESH_MS`                                                                          |
+| `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `followItem`, `flush`; `LAST_SEEN_REFRESH_MS`                                                            |
 | `../packages/workbench/src/hooks/persistence/useLastSeenFollow.ts`   | Follows the open document's name and tab list, answers `onSaveLanded`, forgets a copy whose document went to This Browser                                                                                                    |
 | `../packages/workbench/src/hooks/persistence/useAutosaveCore.ts`     | `onSaveLanded` (an option, read as an effect event): told once the newest save landed, with the baseline tabs, name and revisions                                                                                            |
 | `../packages/workbench/src/lib/warm-open.ts`                         | `readWarmCopy`, `expectedReader`, `hashTabId`, `keptWarmTab`, `measureAfterPaint`: which copy may paint, and the timing marks; `guardNotFound`, `warmOpenFallback`: a warm-painted not found checked once cold               |
@@ -116,6 +116,16 @@ getGuestSelfId() })`. `expectedReader`: signed out, the guest token's id; signed
     The copy paints only when `via === shareCode` (null for the own address), `firstTab` is kept, `firstTab.id ===
 firstTabToLoad(item.tabs, access.tabScope)`, and the `#t=` fragment names no other tab of the item. Any failure
     reads as null.
+  - **The code it draws first.** A copy found, `tryEarlyOpen` awaits `warmPaintCodeIn(WARM_PAINT_CODE)`
+    (`@liveworkspace/workbench/lib/warm-open`) before the checks below: every preload in the editor's
+    `WARM_PAINT_CODE` (`apps/editor/lib/editor-deferred-code.ts`: `QuickStylePanel.preload`,
+    `ElementTourHost.preload`, each a `lazyPanel` from `@liveworkspace/ui/lazy-panel`), settled or failed, or
+    `WARM_PAINT_CODE_WAIT_MS` (200 ms), whichever comes first. With the code in, a lazy panel mounts its loaded
+    component directly, so the paint's commit shows no Suspense fallback and reveals nothing later. No copy, no wait:
+    a cold open asks for nothing new. The sign-in bridge mounts by a state update as its code lands
+    (`createAuthProvider` in `@liveworkspace/workbench/components/providers/auth-provider`), never by a Suspense
+    reveal, so React's 300 ms reveal throttle (`FALLBACK_THROTTLE_MS`), which any reveal on the page restarts, never
+    holds auth or the load behind the paint.
   - After the read, the copy is dropped unpainted only once the ordinary load has landed: the run's setters are
     wrapped in `markLanding` (`@liveworkspace/workbench/lib/warm-open`), which sets `landedRef` on the first setter
     other than the quiet ones (`setSelfParticipant`, `setNameConfirmed`, `setIdentityPromptOpen`), so the seed, a
@@ -179,8 +189,13 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
   kept lists it as null (no warm open by code for that copy until it is kept again).
 - `readVia(reader, code)` and `forgetVia(reader, code)` on the copies and the follower; `forgetVia` stops following
   the current copy when it came by that code.
-- `ArrivalProduct.lastSeen?: LastSeenDoors<Item>` (`remember`, `forget`, optional `forgetVia`); left out
-  (liveplanner), nothing is kept.
+- `ArrivalProduct.lastSeen?: LastSeenDoors<Item>` (`remember`, `forget`, optional `forgetVia`); left out, nothing is
+  kept. Every editor binds it, liveplanner too since Work Tracker 927 (its
+  [blueprint](../../../../../liveplanner/docs/specs/006-project/blueprints/last-seen-copy.md): the copy's item adds the
+  cards and the first tab's sheets, and a Form first tab never paints).
+- `followItem(reader, itemId, fields)` on the follower: shallow-merges `fields` into the followed copy's item when
+  any value differs by identity (never `name` or `tabs`, which `followMeta` owns), then schedules a refresh. Nothing
+  for another reader or item. liveplanner follows its cards and first tab's sheets through it.
 - `ArrivalRun.seed` may answer `LastSeenFirstTab<unknown> | null`; a seed answering nothing keeps a copy without a
   first tab.
 
@@ -291,13 +306,27 @@ frame after the load's `done` step. Medians / p90 from navigation start:
 | Signed in, the document's own address | 827 / 829 ms               | 360 / 369 ms  | 1,191 / 1,209 ms |
 | A guest by an edit link's own address | 835 / 843 ms               | 369 / 376 ms  | 1,190 / 1,196 ms |
 
-The warm paint shows the content about 470 ms (56%) sooner. The catch-up makes it editable about 360 ms later than a
-cold open: in warm opens the ordinary load's first request (the participant) starts about 400 ms later, with the main
-thread idle in between (no task over 40 ms), behind two 290 ms timers and a 47 ms one. That fits React's 300 ms
-throttle on revealing suspended content, which the warm paint's commit of the editor's lazy chunks starts, holding
-back the commit that runs the load's effect. It is a follow-up (start the ordinary load without waiting on that
-commit, or preload the chunks the paint suspends on), not a part 4 change; the measure reports both numbers so the
-fix shows.
+The warm paint shows the content about 470 ms (56%) sooner. The catch-up made it editable about 360 ms later than a
+cold open: in warm opens the ordinary load's first request (the participant) started about 400 ms later, with the main
+thread idle in between, behind two 290 ms timers and a 47 ms one: React's 300 ms throttle on revealing suspended
+content. The warm paint's commit left the Quick Style panel and the element tours waiting on their code, and their
+reveal restarted the throttle, so the sign-in bridge (itself revealed from a Suspense boundary) mounted, and auth
+answered, about 400 ms late.
+
+**After Work Tracker 960** (the paint waits for its code, the bridge mounts as its code lands; the same measure, which
+now also reports when auth answered, the e2e bridge's read of the test's session, and how long after it the participant
+request went out):
+
+| Way in                                | Cold: content and editable | Warm: content | Warm: editable | Auth answers, cold / warm | Participant after auth |
+| ------------------------------------- | -------------------------- | ------------- | -------------- | ------------------------- | ---------------------- |
+| Signed in, the document's own address | 828 / 841 ms               | 382 / 389 ms  | 787 / 801 ms   | 285 / 284 ms              | 3 / 4 ms               |
+| A guest by an edit link's own address | 843 / 853 ms               | 389 / 398 ms  | 798 / 803 ms   | 291 / 290 ms              | 3 / 5 ms               |
+
+Warm editable is now about 40 ms ahead of cold (its catch-up keeps the painted tab rather than drawing the editor for
+the first time). The paint waits a few milliseconds for its code (warm content 382 against 360 to 383 ms in the before
+runs). The race is timing-dependent: on the same build, before runs gave a warm editable median of 1,208, 803 and 801
+ms (p90 1,217, 1,204 and 809), as the paint's update landed before or after the bridge's throttled reveal; after,
+every run lands at 784 to 798 ms with a p90 within 15 ms of the median.
 
 **Field timing.** `WarmPaint` joins `EDITOR_TIMING_METRICS` (`@liveworkspace/api-schema` and livedesign's copy): the
 paint calls `startEditorTiming('WarmPaint', { from: documentLoadOrigin() ?? performance.now() }).endAfterPaint()`,

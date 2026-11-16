@@ -1,5 +1,7 @@
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { useTabRevisions } from '@liveworkspace/workbench/hooks/editor/useTabRevisions';
+import { useLastSeenFollow } from '@liveworkspace/workbench/hooks/persistence/useLastSeenFollow';
+import { lastSeenCopies } from '@/lib/last-seen';
 import { useRef, useLayoutEffect, useEffect } from 'react';
 import { apiSaveSelf } from '@/lib/api-client';
 import { autosaveReadOnly } from '../editor-page-helpers';
@@ -60,6 +62,8 @@ export function useEditorPersistence(
     setProjectNotFound,
     setSelfParticipant,
     setTabLoadErrors,
+    setWarmPlan,
+    setWarmTabId,
     tabs,
   } = projectSlice;
   const {
@@ -105,8 +109,23 @@ export function useEditorPersistence(
   // the last-saved mirror refs above are seeded by the hydration effect.
   // The last revision known per tab, for the workbench's selection reference.
   const tabRevisions = useTabRevisions(realtime.changesetSeen.seen);
+  // The last seen copy follows the open plan (docs/specs/006-project/offline-mode.md "Warm open of a cloud project"):
+  // its name and tab list as they change, its first tab as each save of it lands (the cards and the first tab's sheets
+  // follow in useEditorPlanData). Only a cloud plan the open kept a copy of is followed; never an embed, a workbench
+  // or a This Browser plan.
+  const lastSeen = useLastSeenFollow({
+    follower: lastSeenCopies,
+    reader: selfParticipant.id,
+    itemId: projectId,
+    following: hydrated && realtime.projectServerStored && !embedMode && !workbenchMode,
+    serverStored: realtime.projectServerStored,
+    hydrated,
+    name: projectName,
+    tabs,
+  });
   const { hasUnsavedChanges } = useAutosave({
     hydrated,
+    onSaveLanded: lastSeen.onSaveLanded,
     projectId,
     // A Participant saves too, its own way (participant below).
     isReadOnly: autosaveReadOnly({
@@ -199,6 +218,8 @@ export function useEditorPersistence(
       setIsOwner,
       setLoadedExistingProject,
       setLoadedTabIds,
+      setWarmTabId,
+      setWarmPlan,
       setLoadingProject,
       setNameConfirmed,
       setSelfParticipant,

@@ -2,6 +2,7 @@ import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useCallback, useMemo, useState, useRef } from 'react';
 import { type Tab, stampTabKind, stampNewElementLayers } from '@liveplanner/project';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
+import type { WarmPlan } from '@/lib/last-seen-plan';
 import { useProjectHistory } from '@/hooks/canvas/useProjectHistory';
 import { type Participant, participantKey } from '@/lib/identity';
 import { type RemoteOpJournal, createRemoteOpJournal } from '../save-baseline';
@@ -197,6 +198,11 @@ export function useEditorProject(
   // would be wasteful; we only update this set after a
   // hydration / fetch lands, so the renders are bounded.
   const [loadedTabIds, setLoadedTabIds] = useState<Set<string>>(new Set());
+  // The tab the warm open painted from the last seen copy (docs/specs/006-project/offline-mode.md "Warm open of a cloud
+  // project"), the one tab with a body before hydration, and the cards and sheets it painted with; null when nothing
+  // was warm-painted.
+  const [warmTabId, setWarmTabId] = useState<string | null>(null);
+  const [warmPlan, setWarmPlan] = useState<WarmPlan | null>(null);
   // Tab ids whose lazy fetch FAILED (network / 5xx — not a 404). Drives
   // the canvas's blocking error overlay so the user can't edit a blank
   // placeholder and have the autosave wipe the real server row (docs/specs/006-project/per-tab-storage.md).
@@ -297,6 +303,8 @@ export function useEditorProject(
     setProjectNotFound,
     setSelfParticipant,
     setTabLoadErrors,
+    setWarmPlan,
+    setWarmTabId,
     tabLoadErrors,
     tabLoadRetryNonce,
     tabSummaries,
@@ -304,6 +312,8 @@ export function useEditorProject(
     tickTabs,
     undoHistory,
     voteSelfId,
+    warmPlan,
+    warmTabId,
   };
 }
 
