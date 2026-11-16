@@ -19,7 +19,23 @@ import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 // The route words a failure is logged under (`Get.Media.App.Images.Bytes`), never an id.
 const routeLabel = createApiRouteLabel(
   new Set(['media', 'previews']),
-  new Set(['app', 'images', 'bytes', 'previews', 'usage', 'refs', 'owners', 'merge']),
+  new Set([
+    'app',
+    'images',
+    'bytes',
+    'previews',
+    'usage',
+    'refs',
+    'owners',
+    'merge',
+    'library',
+    'list',
+    'save',
+    'place',
+    'rename',
+    'rename-folder',
+    'delete',
+  ]),
 );
 
 async function serve(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
