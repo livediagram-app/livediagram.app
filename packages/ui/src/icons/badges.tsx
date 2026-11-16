@@ -4,6 +4,7 @@ import {
   lucideListTree,
   lucideMessageSquare,
   lucideStickyNote,
+  lucideTable,
   lucideWandSparkles,
 } from '@liveworkspace/icons/lucide';
 
@@ -11,6 +12,8 @@ import { lucideGlyph } from './lucide-glyph';
 
 // Element badges: link, note, action, comment, and a mind map's outline. Lucide geometry.
 export const LinkIcon = /* @__PURE__ */ lucideGlyph(lucideLink, 14);
+// A chart linked to a sheet in another item (livedocuments pie-chart.md "Charts linked to a liveplanner sheet").
+export const SheetLinkIcon = /* @__PURE__ */ lucideGlyph(lucideTable, 14);
 export const NoteIcon = /* @__PURE__ */ lucideGlyph(lucideStickyNote, 12);
 export const ActionIcon = /* @__PURE__ */ lucideGlyph(lucideClipboardCheck, 12);
 export const CommentIcon = /* @__PURE__ */ lucideGlyph(lucideMessageSquare, 16);

@@ -13,6 +13,9 @@
 //                                                            index-client); 200 and nothing done without a handler
 //   POST   /api/internal/items/:id/connected-tabs {name, connection}  the index's reverse write of a connected tab
 //                                                            (connected-tabs.ts): one tab at the end, `{ tabId }`
+//   GET    /api/internal/items/:id/sheets              a source app's sheets; POST …/sheet-range one range's read; POST
+//                                                            …/source-changed a watched sheet changed (sheet-source-doors.ts,
+//                                                            liveworkspace/docs/specs/004-index/sheet-sources.md)
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?, title?}  copy an item's content (or one
 //                                                            tab) into a new item, for `by` (who copies) through link
 //                                                            `code` (if any), from address `ip` (if known), named
@@ -61,6 +64,7 @@ import {
   type IndexAppClient,
 } from '@liveworkspace/index-client';
 import { answerDataExport, isDataExportFormat } from './data-export-door';
+import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { bearerMatches } from './timing-safe';
 import {
@@ -246,6 +250,8 @@ export async function handleInternalItems(
   if (importing) return handlers.import ? importItem(request, handlers.import) : notFound();
   if (migrating)
     return handlers.migrate ? migrateItem(request, id, app, handlers.migrate) : notFound();
+
+  if (isSheetSourceDoor(rest)) return answerSheetSourceDoor(request, id, rest[1]!, handlers);
 
   if (rest.length === 1 && request.method === 'DELETE') {
     await handlers.purge(id);

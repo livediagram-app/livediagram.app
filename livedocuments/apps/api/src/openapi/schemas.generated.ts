@@ -1548,6 +1548,74 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ChartSheetSource": {
+    "additionalProperties": false,
+    "properties": {
+      "a1": {
+        "type": "string"
+      },
+      "app": {
+        "const": "liveplanner",
+        "type": "string"
+      },
+      "cols": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "range": {
+        "additionalProperties": false,
+        "properties": {
+          "c1": {
+            "type": "string"
+          },
+          "c2": {
+            "type": "string"
+          },
+          "r1": {
+            "type": "string"
+          },
+          "r2": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "r1",
+          "c1",
+          "r2",
+          "c2"
+        ],
+        "type": "object"
+      },
+      "readAt": {
+        "type": "number"
+      },
+      "sheetId": {
+        "type": "string"
+      },
+      "sheetName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "sheetId",
+      "range",
+      "itemName",
+      "sheetName",
+      "a1",
+      "readAt"
+    ],
+    "type": "object"
+  },
   "ChartVariant": {
     "enum": [
       "horizontal",
@@ -6268,6 +6336,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "chartPalette": {
         "$ref": "#/components/schemas/ChartPaletteId"
+      },
+      "chartSheetSource": {
+        "$ref": "#/components/schemas/ChartSheetSource"
       },
       "chartValues": {
         "type": "boolean"

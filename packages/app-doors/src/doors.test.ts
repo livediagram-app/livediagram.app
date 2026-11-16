@@ -194,3 +194,74 @@ describe('the default fetch and timeout', () => {
     timeout.mockRestore();
   });
 });
+
+describe('sheet sources', () => {
+  const RANGE = { r1: 'r0001', c1: 'c0001', r2: 'r0009', c2: 'c0004' };
+  const READ = {
+    sheetName: 'Budget',
+    tabId: 'tab1',
+    range: RANGE,
+    a1: 'A1:D9',
+    table: { categories: ['Q1'], series: [{ name: 'Sales', values: [3] }] },
+  };
+  const SHEETS = [{ id: 's1', name: 'Budget', tabId: 'tab1', a1: 'A1:D9' }];
+
+  it("lists a source's sheets on the caller's key", async () => {
+    const { doors, calls } = doorsAnswering({
+      status: 200,
+      body: JSON.stringify({ sheets: SHEETS }),
+    });
+    expect(await doors.listSheets('liveplanner', 'P 1')).toEqual(SHEETS);
+    expect(calls[0]!.url).toBe('https://liveplanner.test/api/internal/items/P%201/sheets');
+    expect(authOf(calls[0]!.init)).toBe('Bearer liveplanner-key');
+  });
+
+  it('throws the status of a refused or malformed list', async () => {
+    await expect(
+      doorsAnswering({ status: 404, body: '{}' }).doors.listSheets('liveplanner', 'P'),
+    ).rejects.toMatchObject({ status: 404 });
+    await expect(
+      doorsAnswering({
+        status: 200,
+        body: JSON.stringify({ sheets: [{ id: 's1' }] }),
+      }).doors.listSheets('liveplanner', 'P'),
+    ).rejects.toMatchObject({ status: 200 });
+  });
+
+  it('reads one range, sending a watcher only when there is one', async () => {
+    const { doors, calls } = doorsAnswering({ status: 200, body: JSON.stringify(READ) });
+    expect(
+      await doors.readSheetRange('liveplanner', 'P1', {
+        sheetId: 's1',
+        a1: 'A1:D9',
+        watcher: 'D1',
+      }),
+    ).toEqual(READ);
+    await doors.readSheetRange('liveplanner', 'P1', { sheetId: 's1', range: RANGE, watcher: null });
+    expect(calls[0]!.url).toBe('https://liveplanner.test/api/internal/items/P1/sheet-range');
+    expect(calls[0]!.init?.method).toBe('POST');
+    expect(JSON.parse(calls[0]!.init?.body as string)).toEqual({
+      sheetId: 's1',
+      a1: 'A1:D9',
+      watcher: 'D1',
+    });
+    expect(JSON.parse(calls[1]!.init?.body as string)).toEqual({ sheetId: 's1', range: RANGE });
+  });
+
+  it("throws a read's refusal or a malformed answer", async () => {
+    const ask = { sheetId: 's1', a1: 'A1' };
+    await expect(
+      doorsAnswering({ status: 409, body: '{"error":"range_gone"}' }).doors.readSheetRange(
+        'liveplanner',
+        'P',
+        ask,
+      ),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      doorsAnswering({ status: 200, body: 'nope' }).doors.readSheetRange('liveplanner', 'P', ask),
+    ).rejects.toMatchObject({ status: 200 });
+    await expect(
+      doorsAnswering({ status: 200, body: '{}' }).doors.readSheetRange('livedesign', 'P', ask),
+    ).rejects.toMatchObject({ status: 0 });
+  });
+});

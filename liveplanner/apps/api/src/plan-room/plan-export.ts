@@ -34,7 +34,7 @@ import type {
 } from '@liveworkspace/index-app';
 import { listHomeThreads } from '../db/card-threads';
 import { listItems } from '../db/items';
-import { listSheets } from '../db/sheets';
+import { listSheets, readSheetHead } from '../db/sheets';
 import type { PlanEnv } from '../types';
 import { readContentTabRows, readPlanHead } from './plan-content';
 
@@ -127,6 +127,30 @@ function workbooksOf(
     out.set(tabId, wb);
   }
   return out;
+}
+
+// The workbook one Sheet is worked out in, as its tab's export would work it out (the tab's Sheets, with the plan's
+// cards when a formula reads them), for a chart in another app reading one range of it (sheet-source.ts). Null for no
+// plan, `no_sheet` for a plan without that Sheet.
+export async function sheetWorkbook(
+  env: PlanEnv,
+  planId: string,
+  sheetId: string,
+): Promise<{ wb: Workbook; sheet: Sheet } | 'no_sheet' | null> {
+  const { meta, itemTypes } = await readPlanHead(env, planId);
+  if (!meta) return null;
+  const head = await readSheetHead(env, planId, sheetId);
+  if (!head) return 'no_sheet';
+  const sheets = (await listSheets(env, planId, { tabId: head.tabId })).map(sheetFromJson);
+  const sheet = sheets.find((s) => s.id === sheetId)!;
+  const wb = new Workbook({ sheets, locale: EXPORT_LOCALE });
+  if (wb.usesCards()) {
+    const r = await planReads(env, planId, itemTypes, await readTabs(env, planId));
+    wb.setCards(
+      cardSourceOf(r.items.values(), r.types, { statusNames: r.statusNames, isDone: r.isDone }),
+    );
+  }
+  return { wb, sheet };
 }
 
 // Every Board tab's board and every Sheet a tab draws, in tab order, then canvas order; `not_found` for no plan. A

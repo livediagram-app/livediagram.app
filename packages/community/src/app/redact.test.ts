@@ -44,6 +44,17 @@ describe('redactElementsForCommunity', () => {
     expect(JSON.stringify(out)).not.toContain('secret');
   });
 
+  it("drops a chart's sheet link and keeps its last values", () => {
+    const chart = {
+      id: 'chart',
+      type: 'shape',
+      pieSlices: [{ label: 'Q1', value: 4 }],
+      chartSheetSource: { app: 'liveplanner', itemId: 'plan_secret', itemName: 'Payroll' },
+    };
+    const [frozen] = redactElementsForCommunity([chart]);
+    expect(frozen).toEqual({ id: 'chart', type: 'shape', pieSlices: [{ label: 'Q1', value: 4 }] });
+  });
+
   it('keeps an action but not the people on it', () => {
     expect(out[1]!.action).toEqual({
       ...action,

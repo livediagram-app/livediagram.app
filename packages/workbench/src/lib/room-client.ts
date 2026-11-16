@@ -38,6 +38,9 @@ export type RoomClientHandlers<Op, Participant> = {
   // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id. Sent to
   // this socket alone, on every change; emptied when a new socket opens, since nobody follows its new id yet.
   onFollowers?: (ids: string[]) => void;
+  // A Sheet a linked chart in the item reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping
+  // in step"): ids only; the editor reads the range again with this person's own access.
+  onSourceChanged?: (msg: { app: string; itemId: string; sheetIds: string[] }) => void;
   // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
   // sent to this socket alone after each hello: our answers and reactions are recorded under it.
   onCollabKey?: (key: string) => void;
@@ -129,6 +132,7 @@ type RoomClientIncoming<Op, Participant> =
     }
   | { kind: 'selection-released'; elementId: string; by: string }
   | { kind: 'followers'; ids: string[] }
+  | { kind: 'source-changed'; app: string; itemId: string; sheetIds: string[] }
   | { kind: 'cursor'; epoch: string; seq: number; ref?: number }
   | { kind: 'format'; format: number; build?: string }
   | { kind: 'grant-renew'; expiresAt: number }
@@ -369,6 +373,9 @@ export function connectRoomClient<
           handlers.onPresence(frame.participants, frame.agents);
         } else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
+        else if (msg.kind === 'source-changed') {
+          handlers.onSourceChanged?.({ app: msg.app, itemId: msg.itemId, sheetIds: msg.sheetIds });
+        }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {
           wire.noteServerFormat(msg.format);
