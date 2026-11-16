@@ -67,6 +67,14 @@ describe('articleTabMarkdown', () => {
     expect(shape(readBack(out.markdown))).toEqual(shape([sample[3]!]));
   });
 
+  it('counts a spot holding a picture once, as the picture', () => {
+    const zone = { id: 'z', type: 'zone', zone: 'object', width: 10, height: 10 } as ArticleBlock;
+    const out = articleTabMarkdown(
+      tabOf({ f: { blocks: [sample[3]!, zone] } }, [{ id: 'i1', type: 'image' }]),
+    );
+    expect(out.leftOut).toEqual({ pictures: 1, other: 0, zones: 0 });
+  });
+
   it('counts pictures and other items beside the writing', () => {
     const out = articleTabMarkdown(
       tabOf({ f: { blocks: [sample[3]!] } }, [

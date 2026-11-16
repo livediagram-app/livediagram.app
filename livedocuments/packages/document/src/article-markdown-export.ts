@@ -41,7 +41,12 @@ export function articleTabMarkdown(tab: Tab): ArticleTabMarkdown {
   return {
     markdown: texts.join('\n\\pagebreak\n\n'),
     articles: flows.length,
-    leftOut: { pictures, other: tab.elements.length - pictures, zones },
+    // A spot holding a picture or chart is counted once, as that item; only the spots with nothing in them are named.
+    leftOut: {
+      pictures,
+      other: tab.elements.length - pictures,
+      zones: Math.max(0, zones - tab.elements.length),
+    },
   };
 }
 

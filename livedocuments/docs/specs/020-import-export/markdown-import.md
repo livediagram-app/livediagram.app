@@ -102,8 +102,8 @@ the panel's box never change the article.
 - A tab holding several articles writes them in page order, a `\pagebreak` line between, the later ones' title and
   subtitle written as `#` and `##` headings (front matter belongs only at the top).
 - **What it leaves out is named, never dropped silently.** Under the text the panel says how many pictures and how
-  many other items (charts, shapes, drawings) sit beside the writing and are not in the file, and how many drawing
-  spots in the text (zones) were left out, since `[zone id]` names a drawing only the article it came from has. It says
+  many other items (charts, shapes, drawings) sit beside the writing and are not in the file, and how many empty drawing
+  spots in the text (zones, not counting one that holds a counted item) were left out, since `[zone id]` names a drawing only the article it came from has. It says
   nothing when nothing was left out. Page look, header and footer are not Markdown either; the JSON export keeps them.
 - **Round trip:** importing the file back (this page's "What it reads") gives the same blocks: types, styles, lists,
   levels, checkboxes, marks, links, tables and footnotes (`[^1]` with the notes at the end).
