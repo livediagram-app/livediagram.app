@@ -16,7 +16,7 @@ import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import { LEDGER_RULES, type LedgerEntry, type TabLedger } from './plan-room-ledger';
 import { RoomSelectionStore } from '../room-selections';
 import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
-import { armRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
+import { armPlanAlarm, wakePlanRoom } from './plan-room-alarm';
 import type { Env, PlanEnv, ServerMessage } from '../types';
 import { type LoggedOp } from '../project-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
@@ -45,7 +45,7 @@ import type { Copier } from '@liveworkspace/index-app';
 import { RepeatSchedule } from './card-repeats';
 import { PlanStanding, STANDING_KEY, takeGrantStanding, takeStanding } from './plan-standing';
 import { PlanAutomations } from './automations/automation-queue';
-import { automationDeps, runAutomations } from './automations/plan-room-automations';
+import { automationDeps } from './automations/plan-room-automations';
 import { importProjectFile, type ProjectFileImport } from './project-file';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-client';
@@ -54,10 +54,10 @@ import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/m
 import { type RouteIdentity } from './plan-route';
 import { answerRoomRoadmap } from '../roadmap/roadmap-room';
 import {
-  deliverIntake,
+  answerRoomIntake,
   type IntakeDelivery,
   type IntakeOutcome,
-} from '../email-intake/intake-delivery';
+} from '../email-intake/intake-room';
 import {
   readDirectoryEntry,
   writeDirectoryEntry,
@@ -70,12 +70,7 @@ import {
   bindStoredPlan,
   noteWrite,
   drain,
-  drainShares,
-  drainIndex,
-  maintain,
-  checkCommunity,
   purge,
-  runRepeats,
 } from './plan-room-content';
 import {
   route,
@@ -95,13 +90,7 @@ import {
   receiveShares,
   exportTables,
 } from './plan-room-doors';
-import {
-  nextGrantDue,
-  checkGrants,
-  renewGrant,
-  acceptSession,
-  scopedTabShowsAll,
-} from './plan-room-grants';
+import { renewGrant, acceptSession, scopedTabShowsAll } from './plan-room-grants';
 import {
   ORDER_STATE_KEY,
   broadcast,
@@ -620,32 +609,14 @@ export class PlanRoom extends DurableObject<Env> {
     return answerRoomRoadmap(this, planId, request);
   }
 
-  // One message to a board's address (../email-intake/intake-delivery.ts). An id nothing has written answers `gone`
-  // and stays empty.
-  async emailIntake(planId: string, delivery: IntakeDelivery): Promise<IntakeOutcome> {
-    if (!bindStoredPlan(this, planId)) return 'gone';
-    const sql = this.state.storage.sql;
-    return deliverIntake(
-      {
-        env: this.requireEnv(),
-        putAway: this.standing.putAway,
-        grant: (imageId) => recordImageGrant(sql, planId, imageId, Date.now()),
-        wrote: () => noteWrite(this),
-        waitUntil: (p) => this.state.waitUntil(p),
-      },
-      planId,
-      delivery,
-      Date.now(),
-    );
+  // Email to Board (../email-intake/intake-room.ts): a message to one of the plan's board addresses; and, only on a
+  // code's `~mail:` instance (never a plan's, no schema made or read), the code's directory entry.
+  emailIntake(planId: string, delivery: IntakeDelivery): Promise<IntakeOutcome> {
+    return answerRoomIntake(this, planId, delivery);
   }
-
-  // ---------- RPC: Email to Board's directory (../email-intake/intake-directory.ts) --------------------------------
-
-  // Only on a code's `~mail:` instance, never a plan's: one storage key, no plan schema made or read.
   intakeEntry(): Promise<IntakeEntry | null> {
     return readDirectoryEntry(this.state.storage);
   }
-
   setIntakeEntry(entry: IntakeEntry | null): Promise<void> {
     return writeDirectoryEntry(this.state.storage, entry);
   }
@@ -779,45 +750,13 @@ export class PlanRoom extends DurableObject<Env> {
     webSocketMessage(this, ws, message);
   }
 
-  // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
-  // next push, the Community post's next check, the plan's next upkeep, a repeating card's next copy. None when
-  // nothing is due.
+  // The room's one alarm, and what a wake runs (plan-room-alarm.ts).
   armAlarm(): void {
-    const due = [
-      this.agents.nextExpiry(),
-      this.flushAt,
-      this.shares.at,
-      this.communityAt,
-      this.maintenanceAt,
-      this.repeats.at,
-      this.automations.schedule.wakeAt,
-      nextGrantDue(this),
-    ];
-    // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
-    armRoomAlarm(this.state.storage, due, Date.now());
+    armPlanAlarm(this);
   }
 
-  /** Agent entries past their expiry go; the outbox pushes and the upkeep runs when due. Safe to call early. */
   override async alarm(): Promise<void> {
-    const expired = await this.agents.sweep();
-    for (const r of expired) agentPresenceLog('expired', r);
-    if (expired.length > 0) this.broadcastPresence();
-    const now = Date.now();
-    checkGrants(this, now);
-    // Put away while a wake was running: what it asked for is dropped, so the alarm stops asking.
-    if (this.standing.putAway) {
-      this.repeats.clear();
-      this.automations.schedule.clear();
-    }
-    if (this.repeats.due(now)) await runRepeats(this, now);
-    if (this.automations.schedule.due(now)) await runAutomations(this, now);
-    if (this.flushAt !== null && this.flushAt <= now) await drainIndex(this);
-    // A shared tab written while the push was in flight (its write armed nothing then).
-    this.shares.noteWrite();
-    if (this.shares.due(now)) await drainShares(this);
-    if (this.communityAt !== null && this.communityAt <= now) await checkCommunity(this, now);
-    if (this.maintenanceAt !== null && this.maintenanceAt <= now) await maintain(this, now);
-    this.armAlarm();
+    await wakePlanRoom(this);
   }
 
   // Hibernation event handlers for a session ending. The runtime removes
