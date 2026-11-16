@@ -30,6 +30,21 @@ function metricsOf(cs: CSSStyleDeclaration, text: string): { ascent: number; des
 }
 const ascentOf = (cs: CSSStyleDeclaration, text: string) => metricsOf(cs, text).ascent;
 
+// The blocks a word can belong to, for a PDF's tags (liveworkspace/docs/specs/013-export/vector-pdf.md "Tags").
+const BLOCKS = 'h1, h2, h3, h4, h5, h6, p, li, blockquote, pre, td, th';
+
+/** Each block's tag (H1 to H6, else P) and its place in reading order, numbered as first met. */
+export function blockTagger(): (el: Element | null) => { tag: string; block: number } | null {
+  const seen = new Map<Element, number>();
+  return (el) => {
+    const block = el?.closest(BLOCKS);
+    if (!block) return null;
+    let n = seen.get(block);
+    if (n === undefined) seen.set(block, (n = seen.size));
+    return { tag: /^H[1-6]$/.test(block.tagName) ? block.tagName : 'P', block: n };
+  };
+}
+
 // A split row's own rules, its side rules (drawn as backgrounds on screen) on each part as cut, and a closing rule
 // where a part ends early; a split header row's tint (its outline colour carries it, resolved) likewise.
 function splitRowOps(
@@ -89,6 +104,7 @@ export function snapshotWriting(
   const ops: ArticleDrawOp[] = [];
   const text: ArticleDrawOp[] = [];
   const s = (n: number) => n / scale;
+  const blockOf = blockTagger();
   const elements = root.querySelectorAll<HTMLElement>('*');
   // Backgrounds and borders first, under the words.
   for (const el of Array.from(elements)) {
@@ -206,7 +222,7 @@ export function snapshotWriting(
       }
     }
     // A list item's marker (a number, a bullet) or a to-do's box, from its ::before.
-    if (el.classList.contains('article-list')) markerOps(el, toCanvas, s, ops);
+    if (el.classList.contains('article-list')) markerOps(el, toCanvas, s, ops, blockOf(el));
   }
   // Then every word, where it landed.
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -226,6 +242,7 @@ export function snapshotWriting(
       if (line.includes('line-through')) strike = true;
     }
     const ascent = ascentOf(cs, content);
+    const tagged = blockOf(parent);
     const flushWord = (word: string, first: DOMRect | null) => {
       if (!word.trim() || !first) return;
       const p = toCanvas(first.left, first.top);
@@ -241,6 +258,7 @@ export function snapshotWriting(
         color: cs.color,
         ...(underline ? { underline: true } : {}),
         ...(strike ? { strike: true } : {}),
+        ...(tagged ?? {}),
       });
     };
     // Word by word, each where the browser put it: a justified line's spaces, a wrapped line's
@@ -279,6 +297,7 @@ function markerOps(
   toCanvas: (x: number, y: number) => { x: number; y: number },
   s: (n: number) => number,
   ops: ArticleDrawOp[],
+  tagged: { tag: string; block: number } | null,
 ): void {
   const before = getComputedStyle(li, '::before');
   const box = li.getBoundingClientRect();
@@ -318,6 +337,7 @@ function markerOps(
     style: 'normal',
     color: before.color || cs.color,
     anchor: 'end',
+    ...(tagged ?? {}),
   });
 }
 

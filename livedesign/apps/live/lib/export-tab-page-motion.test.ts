@@ -13,6 +13,11 @@ vi.mock('./page-motion-canvas', () => ({
   motionFrameHref: vi.fn(() => FRAME),
 }));
 
+// The shared PDF writer, stood in for: what it is handed is checked here, its drawing in its own package.
+vi.mock('@liveworkspace/vector-export/pdf', () => ({
+  svgPagesToPdf: vi.fn(async () => new Blob(['%PDF'], { type: 'application/pdf' })),
+}));
+const { svgPagesToPdf } = await import('@liveworkspace/vector-export/pdf');
 const { paintMotionFrame, motionFrameHref } = await import('./page-motion-canvas');
 const { renderTabToCanvas, renderTabToSvg } = await import('./export-tab');
 const { exportPagesAsPdf } = await import('./export-tab-pdf');
@@ -90,9 +95,16 @@ describe('PNG and PDF', () => {
     expect(paintMotionFrame).not.toHaveBeenCalled();
   });
 
-  it('share one set of painted frames across a whole PDF', async () => {
+  it('give a PDF each slide’s frame, and its canvas fallbacks one set of painted frames', async () => {
     const { tab, laid } = deck();
     await exportPagesAsPdf(tab, laid, { fontCss: '' });
+    // The vector PDF draws each page's SVG, which embeds the frame (stored once in the file by the writer).
+    const pages = vi.mocked(svgPagesToPdf).mock.calls[0]![0];
+    expect(pages).toHaveLength(3);
+    for (const p of pages) expect(p.svg).toContain(FRAME);
+    expect(paintMotionFrame).not.toHaveBeenCalled();
+    // A page the writer can't draw falls back to the canvas, every page sharing one cache of painted frames.
+    for (const p of pages) await p.raster!();
     const caches = vi.mocked(paintMotionFrame).mock.calls.map((c) => c[4]);
     expect(caches).toHaveLength(3);
     expect(caches[0]).toBeInstanceOf(Map);
