@@ -178,7 +178,9 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
   `.lan`, `.home.arpa` and single-label names are refused, and the host is resolved (DNS over HTTPS, A and AAAA)
   when the webhook is added and again right before every delivery is sent: an answer in a private, loopback,
   link-local, carrier NAT, multicast, documentation or reserved range refuses it (400 `webhook_url_private` when
-  adding; a failed delivery after, and the rest of that run's deliveries for it too). Redirects are never followed, so
+  adding; a failed delivery after, and the rest of that run's deliveries for it too). A host that resolves to nothing
+  (a mistyped domain) is 400 `webhook_url_unresolved` when adding ("We couldn't find that address. Check the domain."),
+  never the shape refusal `webhook_url_invalid`. Redirects are never followed, so
   an endpoint can't bounce a delivery inward.
 - **DNS rebinding: narrowed, and the rest accepted.** A host can answer public to the check and private to the send
   that follows it. Pinning the checked address for the send isn't possible on Workers: `fetch()` takes only URLs,
@@ -225,7 +227,10 @@ this <kind> only". In it: the document's webhooks, each with Send Test, Pause or
 Deliveries, and **Add Webhook**: where it posts (Slack, Microsoft Teams, Your Own Service), the address with how to
 get it, a name, **What Should It Send?** (the document's app's events in groups, none chosen at first, with Select
 All and Clear) and **Who Did It** (Anyone or Only Me). A plain webhook's signing secret shows once. Edit Events'
-Save waits for a change: the same events in another order is none. Settings has no
+Save waits for a change: the same events in another order is none. A refusal of the address (`webhook_url_invalid`,
+`webhook_url_private`, `webhook_url_unresolved`) shows under the address field, marks it invalid and moves the
+keyboard there; any other refusal shows above Cancel and Add Webhook, which stay in reach at the foot of the
+dialog's scroll while the form is open. Settings has no
 Webhooks category ([../010-site/site.md "Settings"](../010-site/site.md#settings)).
 
 The routes, under `/api/index`, for a signed-in account who can edit the whole document (checked as above on every
