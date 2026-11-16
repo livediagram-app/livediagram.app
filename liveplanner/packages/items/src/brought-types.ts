@@ -20,6 +20,7 @@ import {
 } from './type-catalogue';
 import { normaliseBoardSetup } from './board';
 import { boardTypeStatuses } from './type-statuses';
+import { READY_MADE_CARD_TEMPLATES as CARD_TEMPLATES } from './ready-made-card-templates';
 
 const WORK = [
   'title',
@@ -48,6 +49,9 @@ const choice = (id: string, label: string, options: readonly string[]): CustomFi
   kind: 'choice',
   options,
 });
+// Who to reply to: where a template's form puts the sender's address (docs/specs/026-plan/plan-templates.md "Forms a
+// template holds"), the same field a Ticket has.
+const email: CustomFieldDef = { id: 'f-email', label: 'Email', kind: 'email' };
 
 // A Detailed card as a board drew one before layouts existed, with `body` (the type's own fields) Under the Title.
 function detailedWith(body: readonly CardField[], foot: readonly CardField[]) {
@@ -69,12 +73,14 @@ const BROUGHT = [
     newTitle: 'New bug',
     glyph: 'bug',
     color: '#dc2626',
-    fields: [...WORK, 'f-steps-to-reproduce', 'f-environment'],
+    fields: [...WORK, 'f-steps-to-reproduce', 'f-environment', 'f-email'],
     custom: [
       PARENT_FIELD,
       { id: 'f-steps-to-reproduce', label: 'Steps to Reproduce', kind: 'longtext' },
       text('f-environment', 'Environment'),
+      email,
     ],
+    templates: CARD_TEMPLATES.bug,
   },
   {
     id: 'story',
@@ -84,6 +90,7 @@ const BROUGHT = [
     color: '#7c3aed',
     fields: WORK,
     custom: [PARENT_FIELD],
+    templates: CARD_TEMPLATES.story,
   },
   // An ask from someone outside the team (Kanban's Requests, Feedback Board's Feedback).
   {
@@ -99,11 +106,13 @@ const BROUGHT = [
       'assignee',
       'priority',
       'f-requested-by',
+      'f-email',
       'votes',
       'labels',
     ],
-    custom: [text('f-requested-by', 'Requested By')],
+    custom: [text('f-requested-by', 'Requested By'), email],
     display: detailedWith(['f-requested-by'], ['due']),
+    templates: CARD_TEMPLATES.request,
   },
   // A piece of content, from idea to published (Content Calendar).
   {
@@ -129,6 +138,7 @@ const BROUGHT = [
       { id: 'f-link', label: 'Link', kind: 'link' },
     ],
     display: detailedWith(['f-channel'], ['due']),
+    templates: CARD_TEMPLATES.content,
   },
   // An open role (Hiring Pipeline): dated, so the Gantt chart draws it.
   {
@@ -173,6 +183,7 @@ const BROUGHT = [
       'f-role',
       'f-source',
       'f-profile',
+      'f-email',
       'due',
       'checklist',
       'labels',
@@ -181,7 +192,9 @@ const BROUGHT = [
       card('f-role', 'Role', 'role'),
       choice('f-source', 'Source', ['Referral', 'Job Board', 'Inbound', 'Agency', 'Sourced']),
       { id: 'f-profile', label: 'Profile', kind: 'link' },
+      email,
     ],
+    templates: CARD_TEMPLATES.candidate,
   },
   // A step in a new starter's first month (Hiring Pipeline): a row per New Starter.
   {
@@ -192,6 +205,7 @@ const BROUGHT = [
     color: '#16a34a',
     fields: ['title', 'description', 'status', 'assignee', 'f-new-starter', 'due', 'checklist'],
     custom: [card('f-new-starter', 'New Starter', 'candidate')],
+    templates: CARD_TEMPLATES['onboarding-task'],
   },
   // An objective for the period (OKRs): dated, so the Gantt chart draws it.
   {
@@ -288,6 +302,7 @@ const BROUGHT = [
       choice('f-source', 'Source', ['Inbound', 'Referral', 'Outbound', 'Event', 'Partner']),
     ],
     display: detailedWith(['f-company', 'f-value'], ['due']),
+    templates: CARD_TEMPLATES.deal,
   },
   // A customer's question or problem (Help Desk): who asked and how, Due when it is promised by.
   {
@@ -315,6 +330,7 @@ const BROUGHT = [
       choice('f-channel', 'Channel', ['Email', 'Chat', 'Phone', 'Form']),
     ],
     display: detailedWith(['f-customer'], ['due']),
+    templates: CARD_TEMPLATES.ticket,
   },
 ] as const satisfies readonly ItemTypeDef[];
 

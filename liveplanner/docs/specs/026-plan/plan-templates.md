@@ -185,12 +185,12 @@ title, so its card takes the type's new-card title.
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Bug             | **Crash** (label crash; Steps to Reproduce laid out; checks: reproduced on the latest build, crash log attached, versions affected), **Visual Glitch** (label ui; a screenshot, light and dark, a phone), **Slow Screen** (label performance; how long, how much data, against the last release) |
 | Story           | **User Story** (As a, I want, So that; checks: acceptance criteria agreed, designs linked, estimated), **Spike** (label spike; the question and its time box; options written up, recommendation shared)                                                                                         |
-| Request         | **Feature Request** (label feature; what they want to do and why; checks: how they do it today, similar requests linked), **Access Request** (label access; which tool and what level; approved, granted, told)                                                                                  |
+| Request         | **Feature Request** (label feature; what they want to do, why it matters and how they do it today), **Access Request** (label access; which tool, what level and who approved it); a Request has no checklist                                                                                    |
 | Content         | **Blog Post** (Channel Blog; outline, draft, edit, images with alt text, search title), **Newsletter** (Channel Newsletter; lead story, links checked, test send, scheduled), **Social Post** (Channel Social; copy, image or video, alt text, scheduled)                                        |
 | Candidate       | **Interview Loop** (screen, skills, team, references, decision), **Referral** (Source Referral; who referred them and why; thank the referrer, screen call)                                                                                                                                      |
 | Onboarding Task | **Laptop and Accounts** (order the laptop, email and calendar, chat, password manager, tools), **First Week Plan** (meet the team, coffee with a buddy, a first small task, end-of-week check-in)                                                                                                |
 | Deal            | **Inbound Lead** (Source Inbound; qualify budget, decision maker and timeline, book a demo), **Renewal** (label renewal; usage review, pricing agreed, contract sent, signed)                                                                                                                    |
-| Ticket          | **Something's Broken** (label bug; steps, a screenshot, passed to engineering), **Billing Question** (label billing; find the invoice, explain the charge, refund if due), **Refund Request** (label refund; order found, within the window, refunded, customer told)                            |
+| Ticket          | **Something’s Broken** (label bug; steps, a screenshot, passed to engineering), **Billing Question** (label billing; find the invoice, explain the charge, refund if due), **Refund Request** (label refund; order found, within the window, refunded, customer told)                            |
 
 - A test holds every card template to what a type's templates accept (`readCardTemplates`, refusing): only fields the
   type offers, of kinds a template sets.
@@ -439,7 +439,7 @@ articles they lead to.
 | Overview       | Dashboard: Item Count, Priorities, Stale Cards, Unassigned, Contact Form's Responses; Priority by Status, Cards by Field, Cycle Time and Throughput, beside each tab |
 
 - How we work the queue: publish the Contact Form and share its link, so messages arrive as tickets in New; every new
-  ticket gets an owner and a priority (one you log yourself can start from Something's Broken, Billing Question or
+  ticket gets an owner and a priority (one you log yourself can start from Something’s Broken, Billing Question or
   Refund Request); urgent first, then the oldest; Waiting on
   Customer while you need their reply; Resolved once they confirm, Closed a week later; a question asked twice
   becomes an article on Knowledge Base.
