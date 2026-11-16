@@ -29,6 +29,7 @@ vi.mock('@/lib/offline/offline-store', () => ({ ...offline, OFFLINE_OWNER_ID: '_
 vi.mock('@/lib/local-identity', () => ({
   ensureCollabKey: () => 'collab',
   hasConfirmedName: () => false,
+  getGuestSelfId: () => null,
 }));
 vi.mock('@/lib/daily-return', () => ({ trackDailyReturn: () => {} }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
