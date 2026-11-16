@@ -160,7 +160,7 @@ function StripEdge({ side, onPress }: { side: 'start' | 'end'; onPress: () => vo
           // Pressed with the pointer only: keep the focus where it was (on the canvas, or a bar button).
           onPointerDown={(e) => e.preventDefault()}
           onClick={onPress}
-          className="pointer-events-auto flex h-7 w-7 touch-target items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
+          className="pointer-events-auto relative flex h-7 w-7 touch-target items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
         >
           {end ? <ChevronRightIcon size={14} /> : <ChevronLeftIcon size={14} />}
         </button>
