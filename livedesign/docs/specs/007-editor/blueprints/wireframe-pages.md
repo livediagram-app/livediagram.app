@@ -138,7 +138,9 @@ to the canvas.
 
 ### Flow templates
 
-- **Data** (`packages/templates/src/wireframe-flow-data.ts`, pure, type-only imports): `WireframeFlow = { device,
+- **Data** (`packages/templates/src/wireframe-flow-data.ts`, gathering `wireframe-flows-apps.ts` (phone, tablet,
+  watch) and `wireframe-flows-web.ts` (browser, laptop), written with `wireframe-flow-kit.ts`'s types and helpers;
+  pure data, no builder imported): `WireframeFlow = { device,
 brand?, copy?, links?, screens }`, each screen `{ name, layout, copy?, links? }`.
   - `brand`: the product's name, put in place of the substring `Your App` in every label of the flow.
   - `copy`: `Record<label, string | readonly string[]>`, keyed by a layout's own label (before any copy): a string
