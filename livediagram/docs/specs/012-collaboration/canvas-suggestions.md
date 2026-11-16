@@ -3,7 +3,7 @@
 Status: built (Work Tracker 931)
 
 Suggesting changes on the canvas for an Editor to accept, as every product does it:
-[Canvas suggestions](../../../liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md) is the rule, the words and
+[Canvas suggestions](../../../../liveworkspace/docs/specs/014-suggestions/canvas-suggestions.md) is the rule, the words and
 the look. This page holds what is livediagram's own.
 
 - **Where**: every tab of a diagram.
