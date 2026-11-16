@@ -59,6 +59,12 @@ const ALL_KINDS = [
   'status-report',
   'cover-letter',
   'class-lesson',
+  'product-one-pager',
+  'research-report',
+  'newsletter',
+  'case-study',
+  'onboarding-handbook',
+  'board-update',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -106,6 +112,7 @@ const PAGED_KINDS = [
   'floor-plan',
   'storyboard',
   'class-lesson',
+  'board-update',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
@@ -133,6 +140,7 @@ describe('templates on pages', () => {
     'team-welcome',
     'workshop-kickoff',
     'class-lesson',
+    'board-update',
   ]);
   // Every template that opens on infographic or slide pages of its own is in the list, so a new one is checked as it
   // lands (Class Lesson was not). The blanks hold no content, and articles and flashcards are written, not placed.
