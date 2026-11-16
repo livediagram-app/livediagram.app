@@ -29,6 +29,10 @@ const EDITOR_COPY: Record<EditorTimingMetric, [title: string, blurb: string]> = 
     'Project Load',
     'Opening a project: from the page being asked for (including downloading the app on a fresh page) to the first frame with the project on screen.',
   ],
+  WarmPaint: [
+    'Warm Paint',
+    'Opening a plan this browser opened before: from the same start as Project Load to the first frame with its last seen copy on screen, read-only, while the load catches up.',
+  ],
   TabLoad: [
     'Tab Switch',
     'Switching to a tab whose content was not loaded yet: from fetching it to the first frame with it on screen.',
