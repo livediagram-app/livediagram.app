@@ -41,7 +41,8 @@ header; they are not in the palette.
     2. **More drops its pressed name to a dot**: a small brand-coloured dot before "More", the outline and tint kept,
        its accessible name still naming the press.
     3. **The Filter goes into More** with the other widgets, More then naming its press (or, narrower still, its dot).
-       The row never clips and never runs over the title or chips before it.
+       The row never clips and never runs over the title or chips before it: the band's controls give way to a long
+       title, so the zone's room is what the header has left, not its cap.
   - **Pressing More** opens a panel under it, **More Widgets**, holding the widgets that did not fit, live and in their
     order, one to a line, each working exactly as it does in the row: a pressed value, a "+n" legend, Set Done Column,
     Show all. Escape, a press outside or More again closes it; it closes by itself once every widget fits. In edit mode
