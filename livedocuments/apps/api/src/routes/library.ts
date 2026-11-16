@@ -34,12 +34,20 @@ export const libraryKit = libraryKitOf({
 });
 
 export async function handleLibrary(ctx: RouteContext): Promise<Response> {
+  // The door's verbs (handleLibraryDoor): GET the list, POST save and place, PUT rename, DELETE.
+  const method = ctx.request.method;
+  if (method !== 'GET' && method !== 'POST' && method !== 'PUT' && method !== 'DELETE') {
+    return json({ error: 'not_found' }, { status: 404 });
+  }
   const owner = ctx.resolveOwner();
   if (!owner || ctx.token || ctx.workbench) return missingAuth();
   const actor = libraryActorOf(await mediaOwner(owner), ctx.teams);
   return handleLibraryDoor({
-    method: ctx.request.method,
-    path: ctx.segments.slice(2),
+    method,
+    // Read by literal index, so the route parity probe can follow it.
+    path: [ctx.segments[2], ctx.segments[3], ctx.segments[4]].filter(
+      (s): s is string => s !== undefined,
+    ),
     actor,
     library: mediaClient(ctx.env)?.library ?? null,
     kit: libraryKit,
