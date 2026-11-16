@@ -11,6 +11,7 @@ import type { ThreadOp, ThreadsRelay, ThreadWriteResult } from './plan-room/card
 import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { CommunityShareInfo } from '@liveplanner/api-schema';
 import type { Copier } from '@liveworkspace/index-app';
+import type { SheetRangeAsk } from '@liveworkspace/index-client';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { CalendarFeed } from './calendar/feed-store';
 import type { FeedRead } from './calendar/feed-events';
@@ -20,6 +21,8 @@ import type { GithubRoomAnswer, GithubRoomCall } from './plan-room/github/github
 import type { ProjectFileImport } from './plan-room/project-file';
 import type {
   ExportCommentsResult,
+  SheetListResult,
+  SheetRangeResult,
   ExportQuery,
   ExportResult,
   ExportTablesResult,
@@ -57,6 +60,8 @@ export type PlanRoomClient = {
   // its boards and Sheets as CSV, and every comment thread with its real authors.
   exportTables(): Promise<ExportTablesResult>;
   exportComments(): Promise<ExportCommentsResult>;
+  listSheets(): Promise<SheetListResult>;
+  readSheetRange(ask: SheetRangeAsk, watcher: string | null): Promise<SheetRangeResult>;
   // Whether the plan holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // The index's reverse write of a connected tab (plan-room/connected-tab.ts).
@@ -115,6 +120,9 @@ export type PlanRoomClient = {
   // calendar once the worker has checked the person's access. An id nothing has written answers null.
   calendarFeed(tokenHash: string): Promise<CalendarFeed | null>;
   calendarFeedEvents(feed: CalendarFeed, now: number): Promise<FeedRead | null>;
+  // A public roadmap's read or vote (docs/specs/026-plan/public-roadmap.md "How it answers"), answered as no one. An
+  // id nothing has written, or a plan archived or in the Trash, answers 404 and stays empty.
+  roadmap(request: Request): Promise<Response>;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -130,6 +138,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     importFile: (file) => room.importFile(planId, file),
     exportTables: () => room.exportTables(planId),
     exportComments: () => room.exportComments(planId),
+    listSheets: () => room.listSheets(planId),
+    readSheetRange: (ask, watcher) => room.readSheetRange(planId, ask, watcher),
     hasTab: (tabId) => room.hasTab(planId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(planId, write),
     item: (itemId) => room.item(planId, itemId),
@@ -161,6 +171,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
       room.calendarFeed(planId, { kind: 'feed', tokenHash }) as Promise<CalendarFeed | null>,
     calendarFeedEvents: (feed, now) =>
       room.calendarFeed(planId, { kind: 'events', feed, now }) as Promise<FeedRead | null>,
+    roadmap: (request) => room.roadmap(planId, request),
   };
 }
 
@@ -173,6 +184,12 @@ export type PlanRoomRpc = {
   importFile(planId: string, file: ProjectFileImport): Promise<void>;
   exportTables(planId: string): Promise<ExportTablesResult>;
   exportComments(planId: string): Promise<ExportCommentsResult>;
+  listSheets(planId: string): Promise<SheetListResult>;
+  readSheetRange(
+    planId: string,
+    ask: SheetRangeAsk,
+    watcher: string | null,
+  ): Promise<SheetRangeResult>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
   addConnectedTab(planId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   item(planId: string, itemId: string): Promise<Item | null>;
@@ -214,5 +231,6 @@ export type PlanRoomRpc = {
   emailOptOut(planId: string, token: string): Promise<boolean>;
   github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer>;
   calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer>;
+  roadmap(planId: string, request: Request): Promise<Response>;
   fetch(request: Request): Promise<Response>;
 };

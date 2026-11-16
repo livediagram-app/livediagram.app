@@ -1142,6 +1142,41 @@ export const PLAN_CALENDAR_FEEDS_TURNED_OFF = chart(
   { types: ['CalendarFeed', 'MyWorkCalendarFeed'], rising: 'neutral' },
 );
 
+// Publish as Roadmap (docs/specs/026-plan/public-roadmap.md "Telemetry", in the liveplanner folder): roadmaps
+// published, their settings changed, their links copied and roadmaps unpublished (its dialog opening is a Dialogs &
+// Panels chart, features.ts). Never a plan, a board, a column or a link.
+export const PLAN_ROADMAPS_PUBLISHED = chart(
+  'Plan',
+  'Created',
+  'Roadmaps Published',
+  'Publish Roadmap pressed: a board published as a public page of its chosen columns, card types and fields.',
+  { types: ['Roadmap'] },
+);
+
+export const PLAN_ROADMAPS_CHANGED = chart(
+  'Plan',
+  'Changed',
+  'Roadmap Settings Changed',
+  "A published roadmap's settings changed (its title, columns, card types, fields, voting or suggestion form), the link kept.",
+  { types: ['Roadmap'], rising: 'neutral' },
+);
+
+export const PLAN_ROADMAPS_COPIED = chart(
+  'Plan',
+  'Copied',
+  'Roadmap Links Copied',
+  "A published roadmap's link copied from Publish as Roadmap.",
+  { types: ['Roadmap'] },
+);
+
+export const PLAN_ROADMAPS_UNPUBLISHED = chart(
+  'Plan',
+  'Ended',
+  'Roadmaps Unpublished',
+  'Unpublish confirmed: the roadmap link stopped answering at once.',
+  { types: ['Roadmap'], rising: 'neutral' },
+);
+
 export const PLAN_COLUMNS_COLLAPSED = chart(
   'Plan',
   'Toggled',
@@ -1569,6 +1604,10 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_CALENDAR_FEEDS_COPIED,
   PLAN_CALENDAR_FEEDS_HANDED_ON,
   PLAN_CALENDAR_FEEDS_TURNED_OFF,
+  PLAN_ROADMAPS_PUBLISHED,
+  PLAN_ROADMAPS_CHANGED,
+  PLAN_ROADMAPS_COPIED,
+  PLAN_ROADMAPS_UNPUBLISHED,
   PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
@@ -1591,8 +1630,8 @@ export const PLAN_BOARDS: MetricStack = {
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
-  // Calendar moves, chart statuses, flow chart ranges, card styles, webhook secrets regenerated and calendar links reset or
-  // changed are slices of Boards Set Up (every
+  // Calendar moves, chart statuses, flow chart ranges, card styles, webhook secrets regenerated, calendar links reset or
+  // changed and roadmap settings changed are slices of Boards Set Up (every
   // Plan·Changed), and time added by hand a slice of Items Added (every Plan·Added), so the head counts them once. A
   // card from a template is already one of Items Added.
   headline: PLAN_BOARDS_MEMBERS.filter(
@@ -1602,6 +1641,7 @@ export const PLAN_BOARDS: MetricStack = {
       m !== PLAN_AUTOMATION_SECRETS_REGENERATED &&
       m !== PLAN_CALENDAR_FEEDS_RESET &&
       m !== PLAN_CALENDAR_FEED_OPTIONS &&
+      m !== PLAN_ROADMAPS_CHANGED &&
       m !== PLAN_VIEW_STATUSES &&
       m !== PLAN_VIEW_RANGE &&
       m !== PLAN_CARD_STYLES &&

@@ -86,6 +86,8 @@ import {
   closeAllReverted,
 } from './document-room-sockets';
 import { webSocketMessage } from './document-room-frames';
+import { sourceChanged } from './source-changed';
+import type { SourceChange } from '@liveworkspace/index-client';
 import {
   localNamespace,
   roomHead,
@@ -416,6 +418,11 @@ export class DocumentRoom extends DurableObject<Env> {
     reason: 'revoked' | 'rescoped' = 'revoked',
   ): Promise<number> {
     return revokeCodes(this, documentId, codes, reason);
+  }
+
+  // A Sheet a linked chart reads changed (source-changed.ts): every open session reads it again.
+  async sourceChanged(documentId: string, change: SourceChange): Promise<void> {
+    sourceChanged(this, documentId, change);
   }
 
   joined(documentId: string, personId: string): Promise<void> {

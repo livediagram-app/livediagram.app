@@ -6108,6 +6108,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/app-doors':
+        specifier: workspace:*
+        version: link:../../../packages/app-doors
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client

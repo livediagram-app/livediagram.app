@@ -13,20 +13,7 @@ import {
   type FormReportReason,
 } from '@liveplanner/api-schema';
 import { reportForm } from '@/lib/api/forms-public';
-
-const BROWSER_KEY = 'liveplanner:form-browser';
-
-function browserId(): string {
-  try {
-    const known = localStorage.getItem(BROWSER_KEY);
-    if (known) return known;
-    const id = crypto.randomUUID();
-    localStorage.setItem(BROWSER_KEY, id);
-    return id;
-  } catch {
-    return crypto.randomUUID();
-  }
-}
+import { publicBrowserId } from '@/lib/public-browser-id';
 
 export function FormFooter({ code }: { code: string }) {
   const [open, setOpen] = useState(false);
@@ -110,9 +97,11 @@ export function FormFooter({ code }: { code: string }) {
                   onClick={() => {
                     if (!reason) return;
                     setState('sending');
-                    void reportForm(code, { reason, note: note.trim(), browser: browserId() }).then(
-                      (ok) => setState(ok ? 'sent' : 'failed'),
-                    );
+                    void reportForm(code, {
+                      reason,
+                      note: note.trim(),
+                      browser: publicBrowserId(),
+                    }).then((ok) => setState(ok ? 'sent' : 'failed'));
                   }}
                   className="h-9 cursor-pointer rounded-lg bg-red-600 px-4 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >

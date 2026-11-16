@@ -12,6 +12,10 @@ const ALLOWED = new Set([
   'chrome/AuthStage.tsx',
   'start/StartPanel.tsx',
   'plan/ItemTypeLayoutEditor.tsx',
+  // A public roadmap is a page of its own, outside the editor: its header is that page's one banner, and each
+  // column's header sits inside the column's own <section>.
+  'roadmap/public/RoadmapPage.tsx',
+  'roadmap/public/RoadmapColumn.tsx',
 ]);
 
 const root = fileURLToPath(new URL('.', import.meta.url));

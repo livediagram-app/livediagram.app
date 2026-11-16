@@ -203,6 +203,11 @@ const TAGS = [
     name: 'Calendar',
     description: "Calendar feeds: a plan's card dates as a private iCalendar link.",
   },
+  {
+    name: 'Roadmaps',
+    description:
+      'Public roadmaps: a board published as a live public page of chosen columns, card types and allowlisted fields, with upvotes.',
+  },
   { name: 'Sharing', description: 'Share links, passwords, and the plans shared with you.' },
   { name: 'Folders', description: 'Organise plans into a personal or team folder tree.' },
   {

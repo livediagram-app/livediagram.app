@@ -153,6 +153,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
       'plan-drafts',
       'preferences',
       'projects',
+      'roadmaps',
       'share',
       'teams',
       'tokens',

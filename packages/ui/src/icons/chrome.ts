@@ -43,6 +43,7 @@ export {
 } from './status';
 export {
   LinkIcon,
+  SheetLinkIcon,
   NoteIcon,
   ActionIcon,
   CommentIcon,

@@ -7,6 +7,7 @@ import { callerApp } from './auth';
 import { handleCommunityStates } from './community-states';
 import { calendarFeedByToken } from './calendar-feeds';
 import { handleAppConnection } from './connection-doors';
+import { handleSheetChanged } from './sheet-sources';
 import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
 import { isId, isPartId } from './codec';
 import { handleDriveFlag, sendDriveSignals } from './drive';
@@ -70,6 +71,10 @@ export async function handleApp(
   // /app/items/:id/connections/:connectionId?tab=: a connected tab in its host, or gone from it (connection-doors.ts).
   if (segments.length === 5 && segments[3] === 'connections') {
     return handleAppConnection(request, env, app, segments[2], segments[4]!, waitUntil);
+  }
+  // /app/items/:id/sheet-changed: watched sheets changed, told to each watcher's app (sheet-sources.ts).
+  if (segments.length === 4 && segments[3] === 'sheet-changed') {
+    return handleSheetChanged(request, env, app, segments[2]);
   }
   if (request.method !== 'PUT' && !seenRead && !automationSends) return notFound();
   const itemId = segments[2];

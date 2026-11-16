@@ -17,6 +17,7 @@ import type {
   MigrationRoomPayload,
 } from '@liveworkspace/migration';
 import type { DataExportHandlers } from './data-export-door';
+import type { SheetSourceHandlers } from './sheet-source-doors';
 
 export const JOINED_TELEMETRY_TYPE: Record<Level, 'View' | 'Participate' | 'Edit'> = {
   view: 'View',
@@ -143,7 +144,8 @@ export type InternalItemHandlers = {
   // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
   // Community's sweep. An app without it answers 404.
   communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;
-} & DataExportHandlers;
+} & DataExportHandlers &
+  SheetSourceHandlers;
 
 // The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
 // never a guest), the folder of theirs it goes in (null: the top), its name, and the file's text.

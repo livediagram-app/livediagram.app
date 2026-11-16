@@ -29,6 +29,7 @@ apps/index/src/merge.ts       a guest becoming an account (and the migration's l
 apps/index/src/migration-handoff.ts  the migration's handoff of a browser's Local only parts to another app
 apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cron
 apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
+apps/index/src/sheet-sources.ts  a chart's range read on the person's own access, and the sheet change signal
 apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (a Durable Object) and the messages
 ```
 
@@ -60,6 +61,9 @@ apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (
   another app for the person `X-Index-Person` names (a guest allowed on this route alone) and calls that app's
   `${APP_ORIGIN_<APP>}/api/internal/items/:id/migration` with the app's key
   ([one-explorer-contracts.md](one-explorer-contracts.md#the-migrations-handoff)).
+- **A sheet source's app** (liveplanner), with its key, at `POST /app/items/:id/sheet-changed`, and the index calls it
+  back at `…/sheets` and `…/sheet-range` through `@liveworkspace/app-doors` for a person's range read, and calls a
+  reader app (livedocuments) at `…/source-changed` ([sheet-sources.md](sheet-sources.md)).
 - **The media service's previews**, reading an item as the person asking (`GET /items/:id`, side-effect free) or a
   link anonymously (`GET /share/:code`), through its service binding: the index's answer is who may see a preview
   ([previews.md](../006-media/previews.md)).

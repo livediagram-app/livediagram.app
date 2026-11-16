@@ -33,6 +33,13 @@ import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportPlanComments, exportPlanTables } from './plan-export';
 import { answerPlanRequest, isPlanCreate, type RouteIdentity } from './plan-route';
 import type { PlanRoom } from './plan-room';
+import type { SheetListResult, SheetRangeResult } from '@liveworkspace/index-app';
+import type { SheetRangeAsk } from '@liveworkspace/index-client';
+import { indexAppClient } from '../index-service';
+import { SheetWatches } from './sheet-watchers';
+import { listPlanSheets, readPlanSheetRange } from './sheet-source';
+
+export type { SheetRangeAsk };
 import { ensureSchema, noteWrite } from './plan-room-content';
 import { closeSessionsOfChangedLink } from './plan-room-sockets';
 import { clearAgentsFor } from './plan-room-presence';
@@ -340,4 +347,31 @@ export async function exportTables(room: PlanRoom, planId: string): Promise<Expo
   if (room.holdsNothing()) return { status: 'not_found' };
   room.bindPlan(planId);
   return exportPlanTables(room.requireEnv(), planId);
+}
+
+// A chart in another app reading this plan's Sheets (liveworkspace/docs/specs/004-index/sheet-sources.md): its Sheets
+// for a picker, and one range of one, with a watch for the item that asked (sheet-source.ts, sheet-watchers.ts).
+export function roomSheetWatches(room: PlanRoom): SheetWatches {
+  return new SheetWatches(room.state.storage.sql, () =>
+    room.roomEnv ? indexAppClient(room.roomEnv) : null,
+  );
+}
+
+export async function listSheets(room: PlanRoom, planId: string): Promise<SheetListResult> {
+  if (room.holdsNothing()) return { status: 'not_found' };
+  room.bindPlan(planId);
+  return listPlanSheets(room.requireEnv(), planId);
+}
+
+export async function readSheetRange(
+  room: PlanRoom,
+  planId: string,
+  ask: SheetRangeAsk,
+  watcher: string | null,
+): Promise<SheetRangeResult> {
+  if (room.holdsNothing()) return { status: 'not_found' };
+  room.bindPlan(planId);
+  const result = await readPlanSheetRange(room.requireEnv(), planId, ask);
+  if (result.status === 'ok' && watcher) room.sheetWatches.watch(planId, ask.sheetId, watcher);
+  return result;
 }

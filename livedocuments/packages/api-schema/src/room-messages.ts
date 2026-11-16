@@ -194,6 +194,9 @@ export type ServerMessage =
   // ids, sent to YOUR SOCKET ALONE whenever the list changes, the same addressing as `selection-released`. It is
   // how a client counts its followers and refuses to follow one of them back.
   | { kind: 'followers'; ids: string[] }
+  // A Sheet a chart in this document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping in
+  // step"): ids only, never values. Each session reads the range again with its own access.
+  | { kind: 'source-changed'; app: 'liveplanner'; itemId: string; sheetIds: string[] }
   // The ordering cursor this session has reached (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1), sent on
   // `hello` and to the SENDER of each ordered op, which the relay skips. Without
   // it a client only learned seqs from other people's ops, so a reconnect

@@ -14,6 +14,7 @@ import {
   migrateIncomingTab,
   migrateStoredTab,
   parseDocumentEnvelope,
+  withoutSheetSources,
   type EnvelopeTab,
   type Tab,
 } from '@livedocuments/document';
@@ -43,6 +44,9 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
     'id' | 'name'
   > & { folder?: unknown };
   const { folder: _stale, ...rest } = body;
+  // A chart linked to a liveplanner sheet travels with its last values and no link (docs/specs/009-elements/
+  // pie-chart.md "Charts linked to a liveplanner sheet"): the file freezes them, and names no plan.
+  if (Array.isArray(rest.elements)) rest.elements = withoutSheetSources(rest.elements);
   // A connected tab's connection travels as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry nothing").
   const connection = storedTabConnection(row.connection);
   return {

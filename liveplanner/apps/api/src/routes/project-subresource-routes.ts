@@ -27,6 +27,7 @@ import { handlePlanRoute } from './plan-route';
 import { handleAutomationRoutes } from './automation-routes';
 import { handleGithubRoutes } from './github-routes';
 import { handleCalendarFeedRoutes } from './calendar-feed-routes';
+import { handleRoadmapRoutes } from './roadmap-routes';
 import {
   COMMUNITY_CONTENT,
   deniedEdit,
@@ -227,6 +228,9 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   // The person's own calendar feed of the plan (docs/specs/026-plan/calendar-feed.md "Managing a feed").
   const calendarFeed = await handleCalendarFeedRoutes(ctx);
   if (calendarFeed) return calendarFeed;
+  // The plan's public roadmaps (docs/specs/026-plan/public-roadmap.md "Managing a roadmap").
+  const roadmaps = await handleRoadmapRoutes(ctx);
+  if (roadmaps) return roadmaps;
 
   // /api/projects/<id>/tabs/<tabId>/link — share a tab from another of the caller's plans into this one.
   const linked = await handleTabLink(ctx);

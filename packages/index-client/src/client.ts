@@ -50,6 +50,7 @@ import type {
 } from './types';
 import type { CreateWebhookInput, UpdateWebhookInput, Webhook, WebhookDelivery } from './webhooks';
 import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from './connections';
+import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { enc, queryString, refusal, type Query } from './index-error';
 
@@ -305,6 +306,22 @@ export function createIndexClient({
       call<ConnectionOpen>(`/connections/${enc(id)}`, { grant, signal: options.signal }),
     takeBackConnection: (id: string, grant: string) =>
       call<void>(`/connections/${enc(id)}`, { method: 'DELETE', grant }),
+
+    // Sheet sources (sheet-sources.md), on the person's own access: a plan's Sheets, and what one range holds now.
+    // `watch` names the reader item (with its grant) the plan should tell when the sheet changes.
+    listSheets: (itemId: string, options: RequestOptions = {}) =>
+      call<SheetList>(`/items/${enc(itemId)}/sheets`, { signal: options.signal }),
+    readSheetRange: (
+      itemId: string,
+      ask: SheetRangeAsk,
+      options: RequestOptions & { grant?: string | null; watch?: string | null } = {},
+    ) =>
+      call<SheetRangeRead>(`/items/${enc(itemId)}/sheet-range`, {
+        method: 'POST',
+        body: options.watch ? { ...ask, watch: { itemId: options.watch } } : ask,
+        ...(options.grant ? { grant: options.grant } : {}),
+        signal: options.signal,
+      }),
 
     // One item's History: its events of the last EVENT_RETENTION_MS, newest first, a page at a time (HISTORY_PAGE
     // by default, at most HISTORY_LIMIT_MAX). Its owner's and its team's only; anyone else is 404.

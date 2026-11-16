@@ -6,6 +6,7 @@
 
 import type { PlanRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
 import { handleForms } from '../routes/forms';
+import { answerRoadmap } from '../roadmap/roadmap-public';
 import { handlePlanRequest } from '../routes/projects';
 import { servePlanSnapshots } from './plan-snapshots';
 import type { TeamClaim } from '@liveworkspace/auth-client';
@@ -25,6 +26,19 @@ export type RouteIdentity = {
   bearer: string | null;
   // The index's grant on this plan, checked by the worker (routes/plan-grant.ts).
   grant: PlanGrant | null;
+};
+
+// No one: a public roadmap's visitor (docs/specs/026-plan/public-roadmap.md), who holds no grant and no identity.
+export const ANONYMOUS: RouteIdentity = {
+  accountUserId: null,
+  verifiedUserId: null,
+  accountEmail: null,
+  owner: null,
+  token: null,
+  workbench: null,
+  teams: null,
+  bearer: null,
+  grant: null,
 };
 
 export function identityOf(ctx: RouteContext): RouteIdentity {
@@ -78,5 +92,7 @@ export async function answerPlanRequest(
   // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts). Snapshots answer
   // their own routes and fence a write from before a revert (plan-snapshots.ts).
   if (ctx.segments[1] === 'forms') return handleForms(ctx);
+  // A public roadmap's read or vote, reached only through the room's `roadmap` RPC, which answers as no one.
+  if (ctx.segments[1] === 'roadmaps') return answerRoadmap(ctx);
   return servePlanSnapshots(ctx, () => handlePlanRequest(ctx));
 }

@@ -13,14 +13,7 @@ import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveplanner/api-schema'
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomScopedStructure, cachedStoredTab } from '../room-scoped-structure';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
-import {
-  ledgerKey,
-  ledgerPrefix,
-  recordInLedger,
-  tabLedgerFrom,
-  ledgerEntryAccumulates,
-  type TabLedger,
-} from '@liveplanner/project';
+import { LEDGER_RULES, type LedgerEntry, type TabLedger } from './plan-room-ledger';
 import { RoomSelectionStore } from '../room-selections';
 import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
 import { armRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
@@ -59,6 +52,7 @@ import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-clien
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { type RouteIdentity } from './plan-route';
+import { answerRoomRoadmap } from '../roadmap/roadmap-room';
 import {
   MAINTENANCE_KEY,
   restoreContentState,
@@ -115,6 +109,13 @@ import { purgedAt } from './plan-room-purged';
 import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import { notFound } from '../responses';
+import type { SheetWatches } from './sheet-watchers';
+import {
+  listSheets,
+  readSheetRange,
+  roomSheetWatches,
+  type SheetRangeAsk,
+} from './plan-room-doors';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -159,17 +160,6 @@ import { notFound } from '../responses';
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 export { MAINTENANCE_EVERY_MS } from './plan-room-content';
-
-// The collaboration ledger: this product's pure module (collab-ledger.ts) on the shared store
-// (liveworkspace/docs/specs/002-architecture/architecture.md "A room's collaboration ledger").
-type LedgerEntry = NonNullable<Parameters<typeof recordInLedger>[0]>;
-const LEDGER_RULES = {
-  ledgerKey,
-  ledgerPrefix,
-  recordInLedger,
-  tabLedgerFrom,
-  ledgerEntryAccumulates,
-};
 
 export class PlanRoom extends DurableObject<Env> {
   // What the sibling modules (plan-room-*.ts) act on is public to them; nothing outside this folder reaches in.
@@ -231,6 +221,8 @@ export class PlanRoom extends DurableObject<Env> {
   planId: string | null = null;
   schemaReady = false;
   planRowReady = false;
+  // Other apps' items whose charts read this plan's Sheets, told when a Sheet changes (sheet-watchers.ts).
+  readonly sheetWatches: SheetWatches;
   // When the plan was purged (plan-room-purged.ts): null when it is not, undefined until read.
   purgedAt: number | null | undefined = undefined;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
@@ -313,6 +305,7 @@ export class PlanRoom extends DurableObject<Env> {
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
+    this.sheetWatches = roomSheetWatches(this);
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);
     this.scopedStructure = new RoomScopedStructure(cachedStoredTab(this.roomEnv));
@@ -416,6 +409,16 @@ export class PlanRoom extends DurableObject<Env> {
 
   exportComments(planId: string): Promise<ExportCommentsResult> {
     return exportComments(this, planId);
+  }
+
+  // A chart in another app reading this plan's Sheets (liveworkspace/docs/specs/004-index/sheet-sources.md): its Sheets
+  // for a picker, and one range of one, with a watch for the item that asked (sheet-source.ts).
+  listSheets(planId: string) {
+    return listSheets(this, planId);
+  }
+
+  readSheetRange(planId: string, ask: SheetRangeAsk, watcher: string | null) {
+    return readSheetRange(this, planId, ask, watcher);
   }
 
   // A new plan from a Drive file (routes/internal-file.ts read it): its content lands as a copy's does, and it
@@ -572,7 +575,7 @@ export class PlanRoom extends DurableObject<Env> {
     return threadsRelayed(this.requireEnv(), planId, relay);
   }
 
-  // ---------- RPC: an Incoming Webhook call (automations/automation-incoming.ts) --------------------------------
+  // ---------- RPC: token doors (automation-incoming, automation-addresses, github-room, feed-room, roadmap-room) ---
 
   // One call to a rule's address. An id nothing has written answers 401 and stays empty; a stored plan's schema is
   // brought up to date first (V20 holds the secrets).
@@ -587,8 +590,6 @@ export class PlanRoom extends DurableObject<Env> {
     );
   }
 
-  // ---------- RPC: a rule email's unsubscribe (automations/automation-addresses.ts) ------------------------------
-
   // One typed-in address's unsubscribe, by the token its email carried. An id nothing has written answers false and
   // stays empty; a stored plan's schema is brought up to date first (V28 holds the tokens).
   async emailOptOut(planId: string, token: string): Promise<boolean> {
@@ -596,20 +597,21 @@ export class PlanRoom extends DurableObject<Env> {
     return optOutAddress(this.state.storage.sql, token, Date.now());
   }
 
-  // ---------- RPC: GitHub (github/github-room.ts) -------------------------------------------------------------------
-
   // A connect's callback or a verified delivery. An id nothing has written answers without making a schema.
   async github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer> {
     const schema = bindStoredPlan(this, planId);
     return answerGithubCall({ env: this.requireEnv(), planId, schema }, call, Date.now());
   }
 
-  // ---------- RPC: a calendar feed link's fetch (../calendar/feed-room.ts; docs/specs/026-plan/calendar-feed.md) ---
-
   // The feed a token's hash names, or its calendar once the worker checked access. An id nothing has written answers
   // null and stays empty; a stored plan's schema is brought up to date first (V30 holds the feeds).
   async calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer> {
     return bindStoredPlan(this, planId) ? answerFeedCall(this.requireEnv(), planId, call) : null;
+  }
+
+  // A visitor's public roadmap read or vote, as no one (../roadmap/roadmap-room.ts).
+  async roadmap(planId: string, request: Request): Promise<Response> {
+    return answerRoomRoadmap(this, planId, request);
   }
 
   // ---------- RPC: Describe a Plan's count (plan-draft-count.ts) -------------------------------------------------
