@@ -233,19 +233,21 @@ export function buildMilestoneTimeline(cx: number, cy: number): Element[] {
         routeBehind: false,
       },
       disc,
-      {
-        ...createShape('stadium', x - chipW / 2, edge + dir * chipOffset - chipH / 2),
-        width: chipW,
-        height: chipH,
-        label: m.date,
-        textSize: 'sm',
-        textBold: true,
-        fillColor: '#ffffff',
-        strokeColor: phase.deep,
-        textColor: phase.deep,
-      },
       card,
     );
+    // The date chip marks the milestone's place on the time axis, so it rides with the spine (scaffold) rather than
+    // reading as a node of its own.
+    scaffold.push({
+      ...createShape('stadium', x - chipW / 2, edge + dir * chipOffset - chipH / 2),
+      width: chipW,
+      height: chipH,
+      label: m.date,
+      textSize: 'sm',
+      textBold: true,
+      fillColor: '#ffffff',
+      strokeColor: phase.deep,
+      textColor: phase.deep,
+    });
     if (m.hero) {
       content.push(
         {

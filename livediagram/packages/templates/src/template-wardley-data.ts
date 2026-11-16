@@ -34,7 +34,7 @@ type WardleyComponent = {
   evolution: number;
   visibility: number;
   // Where it is heading, and why (a movement), if anywhere.
-  heading?: { evolution: number; caption: string };
+  heading?: { evolution: number; caption: string; at?: number };
   // A play's number marker on it (1 to 3).
   play?: number;
   // A bar of inertia in front of it, and what causes it.
@@ -52,7 +52,7 @@ export const WARDLEY_COMPONENTS: readonly WardleyComponent[] = [
     label: 'Delivery scheduling',
     evolution: 0.28,
     visibility: 0.47,
-    heading: { evolution: 0.5, caption: 'Buy, don’t build' },
+    heading: { evolution: 0.5, caption: 'Buy, don’t build', at: 0.67 },
   },
   { id: 'payments', label: 'Payments', evolution: 0.84, visibility: 0.42 },
   { id: 'forecasting', label: 'Demand forecasting', evolution: 0.1, visibility: 0.33, play: 1 },
