@@ -196,7 +196,7 @@ writing's model is [Article pages](article-pages.md); share roles are
 | Agent write as suggestions                            | `packages/edit-operations/src/pages/article-suggest.test.ts`, `apps/api/src/routes/tab-pages-route.test.ts` |
 | Markdown is the rejected view                         | `packages/document/src/article-markdown.test.ts`                                                            |
 | Suggesting transactions                               | `apps/editor/lib/article/article-suggest.test.ts`                                                           |
-| Accept and reject in the editor                       | `apps/editor/lib/article/article-suggest-resolve.test.ts`                                                   |
+| Accept and reject in the editor                       | `apps/editor/lib/article/article-suggest.test.ts` "deciding suggestions"                                    |
 
 ## Constants and configuration
 

@@ -29,7 +29,8 @@ import {
   SUGGEST_ONLY_REFUSED_NOTICE,
   SUGGEST_REFUSED_NOTICE,
 } from './article-suggest-store';
-import { breakDecorations } from './article-suggest-plugin';
+import { breakDecorations, suggestBreaksPlugin, withinTextblocks } from './article-suggest-plugin';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // A suggestion's card copy, the suggest store and the ¶ widget (docs/specs/007-editor/suggestions.md).
 afterEach(() => {
@@ -142,5 +143,33 @@ describe('the ¶ of a suggested break', () => {
     next.doc.forEach((n) => sgs.push(n.attrs.sg));
     expect(sgs.filter(Boolean)).toHaveLength(1);
     expect(next.doc.child(1).attrs.sg).toMatchObject({ id: 's1' });
+  });
+
+  it('maps the pilcrows while typing inside a paragraph, and redraws them when blocks change', () => {
+    const sg = { id: 's1', k: 'ins', by: 'k', n: 'Sam', at: 1 };
+    const blocks = Array.from({ length: 2000 }, (_, i) => ({
+      id: `b${i}`,
+      type: 'paragraph' as const,
+      runs: [{ text: 'The quick brown fox jumps over the lazy dog.' }],
+      ...(i % 10 === 0 ? { sg: { ...sg, id: `s${i}` } } : {}),
+    }));
+    const state = EditorState.create({
+      schema: articleSchema,
+      doc: blocksToDoc(blocks as never),
+      plugins: [blockIdsPlugin, suggestBreaksPlugin],
+    });
+    const typing = state.tr.insertText('x', 5);
+    expect(withinTextblocks(typing)).toBe(true);
+    expect(withinTextblocks(state.tr.split(5))).toBe(false);
+    expect(withinTextblocks(state.tr.setNodeAttribute(0, 'sg', null))).toBe(false);
+    expect(withinTextblocks(state.tr.addMark(1, 4, articleSchema.marks.bold.create()))).toBe(true);
+    // 100 keystrokes well under 50 ms of CPU: each maps the pilcrows, never walks the article.
+    expect(
+      cpuMsOf(() => {
+        for (let i = 0; i < 100; i++) state.apply(state.tr.insertText('x', 5));
+      }),
+    ).toBeLessThan(cpuBudgetMs(50));
+    const split = state.apply(state.tr.split(5));
+    expect(suggestBreaksPlugin.getState(split)?.find()).toHaveLength(200);
   });
 });
