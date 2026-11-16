@@ -91,7 +91,7 @@ export const STATE_LOOK: Record<ServiceState, StateLook> = {
   },
   down: {
     word: 'Down',
-    meaning: 'No answer in 10 seconds, or an answer it shouldn’t give.',
+    meaning: 'No answer in time, or an answer it shouldn’t give.',
     icon: lucideGlyph(lucideCircleX, 14),
     badge:
       'bg-rose-50 text-rose-800 ring-rose-600/20 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/25',

@@ -298,8 +298,9 @@ guest's credential is a secret on the status Worker alone; the page never has it
 the anonymous check, and the row's last check, bars and incidents are the signed-in one's.
 
 Each service shows its state as an icon and a word, never colour alone: **Operational** (answered as expected),
-**Slow** (answered, after more than 1.5 s), **Down** (no answer in 10 s, a network error, or an answer it shouldn't
-give), **Checking**, and **Reached** for the pages above. Beside it: how long the answer took, what it was
+**Slow** (answered, after more than 1.5 s), **Down** (no answer in time, a network error, or an answer it shouldn't
+give; in time is 10 s, or 5 s for the hourly history's signed-in Explorer check, so the legend and incidents say
+"in time"), **Checking**, and **Reached** for the pages above. Beside it: how long the answer took, what it was
 (`HTTP 200`, `Reached`, `Through the API`; where a bare code would mislead, what it means instead: Media's expected
 404 reads "Answers; storage not checked", Telemetry's 204 "Answers; database not checked"). The browser checks once a visit, so there is no strip of past
 checks: the hourly history below is the record.
@@ -353,7 +354,7 @@ livediagram's Community pages; 29 in all),
 every one a `HEAD`, an `OPTIONS` or a small JSON `GET` with `cache: no-store`, and only while someone has the page
 open and visible. The history is one more request on load and one every 5 minutes, cached for 2 minutes: 7.4 KB, under 1 KB
 gzipped, for every service over 90 days ([status.md](../009-status/status.md#performance)). The strips and cards are memoised,
-so the "last checked" line's one-second tick doesn't redraw 35 strips of 90 bars. The uptimes come worked out in the
+so the "last checked" line's one-second tick doesn't redraw 41 strips of 90 bars. The uptimes come worked out in the
 history answer, so the page does no sums over the days for them. The catalogue is
 `@liveworkspace/status`; the browser's checks `lib/status/probe.ts`, the stored history's reader
 `lib/status/history.ts`.

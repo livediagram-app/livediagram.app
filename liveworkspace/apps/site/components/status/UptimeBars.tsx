@@ -34,7 +34,7 @@ const HEIGHT: Record<string, string> = {
 
 const NO_DATA_SWATCH = 'bg-slate-200 dark:bg-slate-700/70';
 
-// Memoised: the board ticks every second for its countdown, and 35 strips of 90 bars needn't follow it.
+// Memoised: the board ticks every second for its countdown, and 41 strips of 90 bars needn't follow it.
 export const UptimeBars = memo(function UptimeBars({
   history,
   serviceId,

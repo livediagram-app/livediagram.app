@@ -45,7 +45,8 @@ Scope, by file:
 
 ### The services (production)
 
-35 services, 27 probed per run (`services.test.ts` pins 27):
+41 services, 31 probed per round (`services.test.ts` pins 31); the Worker's round is 33 requests in production, the
+signed-in check making three in place of one:
 
 | Group         | Service           | Check                                                                                                                                               |
 | ------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -246,10 +247,10 @@ minute per network, both environments) applies only to cache misses. `global_fet
 
 ## Performance and limits
 
-Measured in [status.md "Performance"](../status.md#performance): 27 subrequests a run (under the 50 a Worker may make),
+Measured in [status.md "Performance"](../status.md#performance): 33 subrequests a run in production (under the 50 a Worker may make),
 six at a time; two D1 batches; about 3,861 rows read and 72 to 110 written a run with 90 days stored; one row per read,
 then the edge for 120 s. The worst case (every service down two days in three) keeps `/history` under 24 KB, 4 KB
-gzipped (`api.test.ts`); `rollup.test.ts` rolls a worst-case day (24 checks for 35 services) a thousand times quickly.
+gzipped (`api.test.ts`); `rollup.test.ts` rolls a worst-case day (24 checks for 41 services) a thousand times quickly.
 
 ## Observability
 
@@ -277,7 +278,7 @@ them apart.
 | `apps/status/src/signed-in-run.test.ts` | skipped without the secret; the 2026-11-13 incident opened on the second stalled check, extended, closed; one slow fetch no incident; the day row and both snapshots patched, `at` kept; no snapshot before an hourly run; midnight; probing itself; unreadable snapshots left; others' incidents kept; the crons in `wrangler.toml`                                                                                                                                         |
 | `apps/status/src/rollup.test.ts`        | counts, percentiles, worst; empty days; nearest rank; the worst-case speed; `addToDay`; incidents open, extend (first error kept), close on slow or up, untouched when unchecked, closed once unlisted, opened only on a confirmed second down                                                                                                                                                                                                                               |
 | `packages/status/src/judge.test.ts`     | expected codes and JSON; reach on the server; down, slow, up; state order; derived rooms and router; router down only when nothing answered                                                                                                                                                                                                                                                                                                                                  |
-| `packages/status/src/services.test.ts`  | group order; each app's seven services; unique ids, derived on real checks; read only own origin or CORS routes; addresses per environment; path resolution; 27 requests a round                                                                                                                                                                                                                                                                                             |
+| `packages/status/src/services.test.ts`  | group order; each app's seven services; unique ids, derived on real checks; read only own origin or CORS routes; addresses per environment; path resolution; 31 requests a round                                                                                                                                                                                                                                                                                             |
 | `packages/status/src/wire.test.ts`      | day uptime; UTC days; the uptime rounding (never a rounded-up 100, null without checks); pooled group and page uptime; slicing (never widening, at least a day, null uptime without checks, group uptime recomputed); the parser's accept, reject and a bad `uptime` dropped; the empty window                                                                                                                                                                               |
 
 ## Constants and configuration

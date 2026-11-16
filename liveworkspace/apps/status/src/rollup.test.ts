@@ -37,10 +37,10 @@ describe('rollupDay', () => {
     expect(percentile([], 0.5)).toBeNull();
   });
 
-  it('rolls up a worst-case day quickly: 24 checks for 35 services, a thousand times', () => {
+  it('rolls up a worst-case day quickly: 24 checks for 41 services, a thousand times', () => {
     const checks = Array.from({ length: 24 }, (_, i) => ({ state: 'up' as const, ms: 50 + i }));
     const started = cpuNowMs();
-    for (let i = 0; i < 1000; i++) for (let s = 0; s < 35; s++) rollupDay(checks);
+    for (let i = 0; i < 1000; i++) for (let s = 0; s < 41; s++) rollupDay(checks);
     expect(cpuNowMs() - started).toBeLessThan(cpuBudgetMs(1000));
   });
 });

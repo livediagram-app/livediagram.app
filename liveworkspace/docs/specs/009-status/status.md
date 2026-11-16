@@ -215,15 +215,18 @@ page within the hour; before it, the page shows its live checks alone.
 
 ## Performance
 
-Measured locally (`wrangler dev`, D1's own `rows_read` and `rows_written`, October 2026):
+Measured locally (`wrangler dev`, D1's own `rows_read` and `rows_written`, October 2026, when the page had 35
+services; it has 41 now, 31 of them probed):
 
-- **A run**: 27 subrequests, at most six at a time. Two D1 batches: one read (today's checks so far, the open
-  incidents, the window's 89 earlier days of `daily` and its closed incidents) and one write (35 checks, 35 days, the
-  incidents that changed, three prunes, two snapshots). With 90 days stored a run read 3,861 rows and wrote 72;
-  most of the reads are the 3,115 `daily` rows the snapshot is built from. In production each run also prunes the
-  hour's 35 checks from 90 days before, and once a day 35 days, so about 110 rows written a run. That is about
-  93,000 rows read and 2,600 written a day per environment, well inside D1's free allowance.
-- **Rows**: 35 checks an hour, 840 a day, about 75,600 kept; 35 `daily` rows a day, 3,150 kept.
+- **A run**: 33 subrequests in production (31 probes, the signed-in check's three in place of one), at most six at
+  a time. Two D1 batches: one read (today's checks so far, the open incidents, the window's 89 earlier days of
+  `daily`, its closed incidents and the signed-in check's previous one) and one write (41 checks, 41 days, the
+  incidents that changed, three prunes, two snapshots; `run.test.ts` pins 87 statements). With 35 services and 90
+  days stored a run read 3,861 rows and wrote 72; most of the reads are the `daily` rows the snapshot is built from,
+  which at 41 services are 3,649 (89 days of 41). In production each run also prunes the hour's checks from 90 days
+  before, and once a day that day's rows, so about 130 rows written a run.
+- **Rows**: 52 checks an hour (41 services, and the Explorer's 11 more), 1,248 a day, 112,320 kept; 41 `daily` rows
+  a day, 3,690 kept.
 - **Uptime**: each group's and the page's are summed from the same `daily` rows the snapshot already reads, in the
   same pass, so they add no query, no row read and no index; about 200 bytes to the stored answer (seven numbers).
 - **A read**: one row by primary key, then the edge cache for 2 minutes. `/api/status/history` for every service
