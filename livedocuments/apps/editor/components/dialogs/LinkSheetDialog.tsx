@@ -265,7 +265,7 @@ export function LinkSheetDialog({
           >
             <SheetLinkIcon size={16} className="shrink-0 text-slate-500 dark:text-slate-400" />
             <span className="min-w-0 flex-1 truncate">{s.name || 'Sheet'}</span>
-            <span className="shrink-0 font-mono text-[11px] text-slate-400 dark:text-slate-500">
+            <span className="shrink-0 font-mono text-[11px] text-slate-500 dark:text-slate-400">
               {s.a1}
             </span>
           </button>
@@ -356,7 +356,7 @@ export function LinkSheetDialog({
 
 function ListSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="flex flex-col gap-1.5 px-1 py-1" aria-busy="true" aria-label="Loading">
+    <div className="flex flex-col gap-1.5 px-1 py-1" role="status" aria-busy="true" aria-label="Loading">
       {Array.from({ length: rows }, (_, i) => (
         <div
           key={i}
