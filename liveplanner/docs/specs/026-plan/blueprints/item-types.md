@@ -1547,7 +1547,7 @@ load holds none of them. The subpath also exports `BOARD_CARD_TYPES` (both catal
 `broughtTypesToAdd` and a template form's target use; `templateCardTypesProvided()` says whether that has happened.
 Each path that makes a template's tabs imports the subpath and calls `provideTemplateCardTypes(TEMPLATE_CARD_TYPES)`
 at module level: the editor's `lib/template-builders.ts`, the api's `project-create.ts`, `project-seed.ts` and
-`internal-template.ts`, the MCP's `tools.ts` and `tab-tools.ts`, agent-verbs' `plan/brought-types.ts` and
+`internal-template.ts`, the MCP's `tools.ts` and `tab-tools.ts`, agent-verbs' `liveplanner/packages/agent-verbs/src/plan/brought-types.ts` and
 `template-starter-rules.ts` (the templates package's tests, through a setup file). The editor's `usePresetCardTypes`
 imports it before bringing a board that names an id neither the plan nor the lookup knows, and builds on the
 catalogue it last saved until a render hands it back (`saved`), so two brings in one tick never save over each

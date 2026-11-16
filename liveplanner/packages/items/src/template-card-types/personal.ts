@@ -490,7 +490,7 @@ const TR: ItemTypeDef[] = [
     custom: [choice('f-bag', 'Bag', ['Carry-On', 'Checked', 'Day Bag'])],
     display: detailed(['f-bag']),
     templates: [
-      template('tp-documents', 'Documents', {
+      template('tp-papers', 'Travel Papers', {
         'f-bag': 'Carry-On',
         checklist: checklist([
           ['Passports'],
