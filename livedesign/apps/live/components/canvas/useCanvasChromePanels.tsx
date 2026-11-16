@@ -178,7 +178,7 @@ export function useCanvasChromePanels({
   const explorerEl = (
     <>
       <ItemToolsHost
-        currentDocumentId={currentDesignId}
+        currentDesignId={currentDesignId}
         currentShareCode={currentShareCode ?? null}
         onWebhooks={explorerMenu?.onWebhooks}
       />

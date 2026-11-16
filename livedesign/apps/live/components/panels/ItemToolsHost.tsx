@@ -13,22 +13,22 @@ import { itemHref, useTokenTeams } from '@/lib/explorer-host';
 // mounted with the editor so they are there before the Explorer panel ever opens. Signed out, both show and ask for a
 // sign-in; signed in, History for an item not opened by a share link, Webhooks for one who may manage them.
 export function ItemToolsHost({
-  currentDocumentId,
+  currentDesignId,
   currentShareCode,
   onWebhooks,
 }: {
-  currentDocumentId: string | null | undefined;
+  currentDesignId: string | null | undefined;
   currentShareCode: string | null | undefined;
   onWebhooks?: () => void;
 }) {
   const { isSignedIn, accountUserId } = useAccountBootstrap();
   // In This Browser, both rows ask for a sync first (footer-tools-menu.md "Always there"), with Share's Sync move.
   const { syncToCloud, selfParticipant } = useEditorContext();
-  const isOffline = useIsOfflineDesign(currentDocumentId ?? null);
+  const isOffline = useIsOfflineDesign(currentDesignId ?? null);
   const ready = selfParticipant.id !== 'self';
   const offline = useMemo(
-    () => (currentDocumentId && isOffline ? { sync: syncToCloud, ready } : null),
-    [currentDocumentId, isOffline, syncToCloud, ready],
+    () => (currentDesignId && isOffline ? { sync: syncToCloud, ready } : null),
+    [currentDesignId, isOffline, syncToCloud, ready],
   );
   return useItemToolsRows({
     app: 'livedesign',
@@ -36,13 +36,13 @@ export function ItemToolsHost({
     offline,
     onWebhooks,
     history:
-      currentDocumentId && !currentShareCode
+      currentDesignId && !currentShareCode
         ? {
             app: 'livedesign',
             client: indexClient,
             itemHref,
             viewerId: accountUserId ?? null,
-            itemId: currentDocumentId,
+            itemId: currentDesignId,
             shareCode: null,
             sharePassword: getSessionSharePassword,
             useTeams: useTokenTeams,
