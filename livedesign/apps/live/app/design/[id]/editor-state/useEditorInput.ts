@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { currentPageIdNow } from '@/lib/current-page-kind';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
+import { useSvgImport } from '@/hooks/canvas/useSvgImport';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { MAKE_COMPONENT_REFUSAL } from '../useComponentActions';
@@ -275,26 +276,44 @@ export function useEditorInput({
   // otherwise. Written by the canvas host on every pointer move; read by paste
   //.
   const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
-  const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
-    addMissingComponents: componentLibrary.addMissing,
+  // An SVG dropped, pasted or imported comes in as editable shapes (docs/specs/020-import-export/svg-import.md).
+  const { importSvg } = useSvgImport({
+    refuseCreate: () => {
+      if (!createBlocked) return false;
+      layersState.explainCreateBlocked?.();
+      return true;
+    },
     isReadOnly,
-    createBlocked,
-    explainCreateBlocked: layersState.explainCreateBlocked,
-    embedMode,
-    readSelection,
-    editingId,
-    setEditingId,
-    activeTab,
-    layerLockedIds,
+    elementCount: activeTab.elements.length,
+    pages: pagesMode.pages,
+    getViewportCanvasRect,
     commit,
     setSelectedId,
     setMultiSelectedIds,
-    addImageFromGallery,
-    ownerId: selfParticipant.id,
-    designId,
     toast,
-    getViewportCanvasRect,
   });
+  const { copySelection, pasteFromClipboard, dropBoardFile, placePictureFile, hasClipboard } =
+    useClipboard({
+      importSvg,
+      addMissingComponents: componentLibrary.addMissing,
+      isReadOnly,
+      createBlocked,
+      explainCreateBlocked: layersState.explainCreateBlocked,
+      embedMode,
+      readSelection,
+      editingId,
+      setEditingId,
+      activeTab,
+      layerLockedIds,
+      commit,
+      setSelectedId,
+      setMultiSelectedIds,
+      addImageFromGallery,
+      ownerId: selfParticipant.id,
+      designId,
+      toast,
+      getViewportCanvasRect,
+    });
 
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). Flips the chrome-hidden flag and emits
   // the toggle telemetry BEFORE the state change (matches the dark-mode /
@@ -436,6 +455,9 @@ export function useEditorInput({
     copySelection,
     pasteFromClipboard,
     dropBoardFile,
+    // The Import dialog's SVG panel (svg-import.md): the same importer, the picture fallback beside it.
+    importSvgText: (text: string, file?: File) =>
+      importSvg(text, 'dialog', { placePicture: placePictureFile, file }),
     hasClipboard,
     toggleZenMode,
   };

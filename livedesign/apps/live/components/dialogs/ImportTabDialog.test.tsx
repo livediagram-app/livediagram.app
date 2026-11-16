@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
 // The Import dialog's routing: a clean import closes, an import that left something
-// out shows the report (docs/specs/020-import-export/README.md).
+// out shows the report (docs/specs/020-import-export/README.md). JSON replaces the tab; SVG adds shapes to the page
+// (docs/specs/020-import-export/svg-import.md), so its panel carries a note rather than the warning.
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -11,6 +12,10 @@ import { ImportTabDialog } from './ImportTabDialog';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const JSON_TEXT = '{"schemaVersion":1}';
+
+// Picks a format from the grid.
+const pick = (title: string) =>
+  fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${title}`) }));
 
 function open(outcome: ImportOutcome) {
   const onClose = vi.fn();
@@ -23,13 +28,14 @@ function open(outcome: ImportOutcome) {
       onClose={onClose}
     />,
   );
+  pick('JSON');
   fireEvent.change(screen.getByRole('textbox'), { target: { value: JSON_TEXT } });
   fireEvent.click(screen.getByRole('button', { name: 'Import' }));
   return { onClose, onImportText };
 }
 
 describe('ImportTabDialog', () => {
-  it('opens straight at JSON, its one format, with no way back to a list', () => {
+  it('opens at the format grid, JSON and SVG, and a single offered format straight at its panel', () => {
     render(
       <ImportTabDialog
         tabName="Poster"
@@ -38,8 +44,51 @@ describe('ImportTabDialog', () => {
         onClose={vi.fn()}
       />,
     );
+    expect(screen.getByText('Pick a format to import into the current tab.')).toBeTruthy();
+    // The grid's warning speaks for JSON only, so it never reads as if SVG replaced the tab too.
+    expect(screen.getByText(/A JSON import replaces everything on/).textContent).toContain(
+      'Poster',
+    );
+    pick('SVG');
+    expect(screen.getByText('Paste your SVG, or import a file.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /All formats/ })).toBeTruthy();
+  });
+
+  it('opens straight at JSON when it is the one format offered, with no way back to a list', () => {
+    render(
+      <ImportTabDialog
+        tabName="Poster"
+        formats={['json']}
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
     expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+  });
+
+  it('passes pasted SVG on as SVG, under a note that it adds to the page instead of the warning', async () => {
+    const onImportText = vi.fn(async (): Promise<ImportOutcome> => ({ status: 'done' }));
+    const onImportFile = vi.fn(async (): Promise<ImportOutcome> => ({ status: 'cancelled' }));
+    render(
+      <ImportTabDialog
+        tabName="Logo"
+        onImportFile={onImportFile}
+        onImportText={onImportText}
+        onClose={vi.fn()}
+      />,
+    );
+    pick('SVG');
+    expect(screen.getByTestId('import-adds-note').textContent).toBe(
+      'The shapes land on the page you are on, fitted to it.',
+    );
+    expect(screen.queryByText(/replaces everything/)).toBeNull();
+    fireEvent.change(screen.getByRole('textbox', { name: 'SVG to import' }), {
+      target: { value: '<svg/>' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onImportText).toHaveBeenCalledWith('svg', '<svg/>'));
   });
 
   it('passes the pasted JSON on and closes on a clean import', async () => {
@@ -57,7 +106,7 @@ describe('ImportTabDialog', () => {
       "2 cards couldn't be added",
     );
     expect(screen.getByText("Here's how your import came across.")).toBeTruthy();
-    expect(screen.queryByText(/This replaces everything/)).toBeNull();
+    expect(screen.queryByText(/replaces everything/)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onClose).toHaveBeenCalledOnce();

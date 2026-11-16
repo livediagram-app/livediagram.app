@@ -42,7 +42,18 @@ const FORMATS: {
       'A livedesign tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
     placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livedesign.tab",\n  "tab": { … }\n}',
   },
+  {
+    key: 'svg',
+    title: 'SVG',
+    description:
+      'A logo, icon or mark (.svg). Arrives as shapes you can recolour and reshape. Paste it or pick a file.',
+    placeholder:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">\n  <path d="…" />\n</svg>',
+  },
 ];
+
+// A format that adds to the page rather than replacing the tab (docs/specs/020-import-export/svg-import.md).
+const ADDS_TO_PAGE: ReadonlySet<Format> = new Set<Format>(['svg']);
 
 // Counterpart to ExportTabDialog: pick a format to import INTO the current
 // tab. Importing REPLACES the tab's contents (docs/specs/020-import-export/README.md), so the dialog leads
@@ -132,19 +143,30 @@ function ImportChooser({
 }) {
   return (
     <>
-      {/* Destructive-action warning — this overwrites the tab. */}
-      <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-        <span className="mt-0.5 shrink-0">
-          <WarningIcon />
-        </span>
-        <span>
-          This replaces everything on{' '}
-          <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-          content. Undo
-          {/* The keys only where there is a keyboard to press them. */}
-          <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
-        </span>
-      </div>
+      {activeFormat && ADDS_TO_PAGE.has(activeFormat.key) ? (
+        // An SVG adds to the page (svg-import.md): no warning, only where the shapes land.
+        <p
+          data-testid="import-adds-note"
+          className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs leading-relaxed text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+        >
+          The shapes land on the page you are on, fitted to it.
+        </p>
+      ) : (
+        // Destructive-action warning: a JSON import overwrites the tab. Named for JSON, so it never reads as if the
+        // SVG card beside it replaced the tab too (svg-import.md).
+        <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <span className="mt-0.5 shrink-0">
+            <WarningIcon />
+          </span>
+          <span>
+            A JSON import replaces everything on{' '}
+            <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
+            content. Undo
+            {/* The keys only where there is a keyboard to press them. */}
+            <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
+          </span>
+        </div>
+      )}
       {activeFormat ? (
         <TextImportPanel
           formatTitle={activeFormat.title}
