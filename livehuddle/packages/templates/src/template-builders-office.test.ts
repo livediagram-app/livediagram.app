@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   doorOnRoom,
   isFloorShape,
+  meetingPieceRoom,
+  notesNewestFirst,
   roomDoorSpan,
   roomWalls,
+  roomZones,
   type Element,
 } from '@livehuddle/document';
 import { buildTemplate } from './build-template';
@@ -72,10 +75,11 @@ describe('the Virtual Office template', () => {
   it('puts every piece inside a room, clear of its walls', () => {
     const rooms = shapes('room');
     for (const e of els) {
-      // A Door and a Window stand in the wall itself (docs/specs/009-elements/room-builder.md "Window").
+      // A Door and a Window stand in the wall itself (docs/specs/009-elements/room-builder.md "Window"); a Room Sign
+      // stands beside its room's door (the test below).
       if (
         e.type !== 'shape' ||
-        ['room', 'door', 'window', 'avatar-pad', 'sticker'].includes(e.shape)
+        ['room', 'door', 'window', 'avatar-pad', 'sticker', 'room-sign'].includes(e.shape)
       )
         continue;
       const room = rooms.find(
@@ -97,6 +101,55 @@ describe('the Virtual Office template', () => {
 
 // Walking in through a doorway reaches the room: seating that catches a character the moment its feet enter it sat
 // anyone who came in when it stood just inside the door.
+// Work Tracker 1076: every room has a reason to walk to it, and the rooms people meet in have a sign to knock at.
+describe('the Virtual Office rooms', () => {
+  const els = buildTemplate('virtual-office', 0, 0);
+  const all = els.filter((e): e is Extract<Element, { type: 'shape' }> => e.type === 'shape');
+  const room = (label: string) => all.find((e) => e.shape === 'room' && e.label === label)!;
+  const inRoom = (label: string) => {
+    const r = room(label);
+    return all
+      .filter(
+        (e) =>
+          e.shape !== 'room' &&
+          e.x >= r.x &&
+          e.y >= r.y &&
+          e.x + e.width <= r.x + r.width &&
+          e.y + e.height <= r.y + r.height,
+      )
+      .map((e) => e.shape);
+  };
+
+  it.each([
+    ['Reception', ['reception-desk', 'world-clock']],
+    ['Desks', ['desk', 'printer']],
+    ['Meeting Room', ['meeting-table', 'screen']],
+    ['Kitchen', ['coffee-machine', 'suggestion-box']],
+    ['Lounge', ['notice-board', 'jukebox', 'pet-bed']],
+    ['Focus Room', ['nap-pod', 'phone-booth']],
+  ])('gives the %s its reasons to walk there', (label, kinds) => {
+    expect(inRoom(label)).toEqual(expect.arrayContaining(kinds));
+  });
+
+  it('signs the Meeting Room and the Focus Room, each sign reading its room', () => {
+    const zones = roomZones(els);
+    const read = all.filter((e) => e.shape === 'room-sign').map((s) => meetingPieceRoom(s, zones));
+    expect(read.sort()).toEqual([room('Meeting Room').id, room('Focus Room').id].sort());
+  });
+
+  it('pins the Lounge board with notes on how the office works, signed by no person', () => {
+    const board = all.find((e) => e.shape === 'notice-board')!;
+    // The face reads them newest first, in the order the template wrote them.
+    expect(notesNewestFirst(board.noticeNotes).map((n) => n.title)).toEqual([
+      'Welcome to the office',
+      'Knock before you go in',
+      'Ideas welcome',
+      'Make it yours',
+    ]);
+    for (const n of board.noticeNotes ?? []) expect(n.by).toBe('template');
+  });
+});
+
 describe('the Virtual Office layout', () => {
   const els = buildTemplate('virtual-office', 0, 0);
   type Box = Element & { x: number; y: number; width: number; height: number };
@@ -200,11 +253,16 @@ describe('the space templates', () => {
     }
   });
 
-  it('gives the coworking space eight desks and two single-seat booths (each a Phone Booth)', () => {
+  it('gives the coworking space eight desks, two single-seat booths (each a Phone Booth) and a meeting room', () => {
     const els = build('coworking-space');
     expect(count(els, 'desk')).toBe(8);
+    expect(count(els, 'phone-booth')).toBe(2);
     const rooms = els.filter((e) => e.type === 'shape' && e.shape === 'room').map((e) => e.label);
-    expect(rooms).toEqual(['Coworking', 'Booth 1', 'Booth 2']);
+    expect(rooms).toEqual(['Coworking', 'Booth 1', 'Booth 2', 'Meeting Room']);
+    // Work Tracker 1076: the meeting room has its Screen and a sign to knock at, the floor a members' board.
+    expect(count(els, 'screen')).toBe(1);
+    expect(count(els, 'room-sign')).toBe(1);
+    expect(count(els, 'notice-board')).toBe(1);
   });
 
   it('gives the team pod four desks, a table and a board of four stickies', () => {
@@ -221,6 +279,10 @@ describe('the space templates', () => {
     expect(count(els, 'desk')).toBe(4);
     expect(count(els, 'meeting-table')).toBe(1);
     expect(els.filter((e) => e.type === 'sticky')).toHaveLength(4);
+    // Work Tracker 1076: a booth for a call away from the team, the team's clock and the stand-up's timer.
+    expect(count(els, 'phone-booth')).toBe(1);
+    expect(count(els, 'world-clock')).toBe(1);
+    expect(count(els, 'timer')).toBe(1);
   });
 
   it('seats thirty-two facing the stage in the all-hands hall, with Bring Focus', () => {
