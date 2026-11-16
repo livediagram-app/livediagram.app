@@ -64,7 +64,12 @@ export function PrototypeScreen({
   const markup = useMemo(
     () =>
       svgInner(
-        renderTabToSvg(tab, { page, imageHref: thumbImageHref(source), idPrefix: ID_PREFIX }),
+        renderTabToSvg(tab, {
+          page,
+          imageHref: thumbImageHref(source),
+          idPrefix: ID_PREFIX,
+          fontsFromPage: true,
+        }),
       ),
     [tab, page, source],
   );
