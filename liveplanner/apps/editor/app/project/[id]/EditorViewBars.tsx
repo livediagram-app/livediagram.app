@@ -36,11 +36,14 @@ export function renderEditorHeader(
     headerCommunity,
     role,
     barsShown,
+    walkthroughs,
   }: {
     isOffline: boolean;
     headerCommunity: boolean;
     role: ReturnType<typeof useRoleIndicator>;
     barsShown: boolean;
+    // The header's Walkthroughs button (docs/specs/012-collaboration/walkthroughs.md).
+    walkthroughs: ReactNode;
   },
 ): ReactNode {
   const {
@@ -92,6 +95,7 @@ export function renderEditorHeader(
           // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
           // in the title bar at every width, so the canvas's toolbars never cover it.
           leadAction={<SuggestionsHeaderAction suggestions={ctx.canvasSuggestions} />}
+          walkthroughs={anyWelcomeOpen ? null : walkthroughs}
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
             setShareDialogOpen(true);

@@ -50,6 +50,11 @@ import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { editorViewFooter, editorViewHeader } from './editor-view-bars';
+import {
+  useEditorWalkthroughs,
+  WalkthroughsButton,
+  WalkthroughsLayer,
+} from '@liveworkspace/walkthrough';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
@@ -69,9 +74,9 @@ import {
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { apiTeamMembers } from '@/lib/api/team-people';
 import {
-  API_BASE as SNAPSHOTS_API_BASE,
-  apiFetch as snapshotsFetch,
-  apiHeaders as snapshotsHeaders,
+  API_BASE as ITEM_API_BASE,
+  apiFetch as itemApiFetch,
+  apiHeaders as itemApiHeaders,
 } from '@/lib/api/core';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
@@ -104,11 +109,11 @@ export function EditorView() {
     itemId: ctx.designId,
     selfId: ctx.selfParticipant?.id ?? null,
     shareCode: ctx.sessionShareCode,
-    apiBase: SNAPSHOTS_API_BASE,
+    apiBase: ITEM_API_BASE,
     collection: 'designs',
     noun: 'design',
-    apiFetch: snapshotsFetch,
-    apiHeaders: snapshotsHeaders,
+    apiFetch: itemApiFetch,
+    apiHeaders: itemApiHeaders,
   });
   // Approvals (docs/specs/013-workspace/approvals.md): the header's badge, the approver's banner and the Share dialog's
   // Approval tab, for a signed-in account; asking and cancelling for an Editor of the whole design.
@@ -190,7 +195,7 @@ export function EditorView() {
     communitySession: sessionCommunity !== null,
   });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
-  const { uiScales } = useEditorUiScales(userPreferences);
+  const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
   const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
@@ -250,11 +255,32 @@ export function EditorView() {
 
   // The site header and the tab bar (editor-view-bars.tsx). Side by side (docs/specs/007-editor/split-view.md)
   // lays them across both panes.
+  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): the header's button and the layer over the canvas.
+  const walkthroughs = useEditorWalkthroughs({
+    itemId: ctx.designId,
+    hydrated: ctx.hydrated,
+    embedMode: ctx.embedMode,
+    workbench: ctx.workbench,
+    offline: isOffline,
+    phone: isMobileViewport,
+    tabScope: ctx.sessionTabScope,
+    apiBase: ITEM_API_BASE,
+    apiFetch: itemApiFetch,
+    apiHeaders: itemApiHeaders,
+    self: ctx.selfParticipant,
+    shareCode: ctx.sessionShareCode,
+    viewport: ctx.viewport,
+    tabs: ctx.tabs,
+    activeTab: ctx.activeId,
+    selectTab,
+    selectionStore: ctx.selectionStore,
+  });
   const header = editorViewHeader(ctx, {
     isOffline,
     headerCommunity,
     role,
     landscapeShown: landscapeBars.shown,
+    walkthroughs: <WalkthroughsButton menu={walkthroughs.menu} />,
   });
   const footer = editorViewFooter(ctx, {
     isOffline,
@@ -466,6 +492,7 @@ export function EditorView() {
                 </CanvasFinishProvider>
               </CanvasPatternContext.Provider>
             </CanvasSurfaceProvider>
+            <WalkthroughsLayer walkthroughs={walkthroughs} />
           </ViewportStoreProvider>
         </SelectionStoreProvider>
       </ApprovalDoorProvider>

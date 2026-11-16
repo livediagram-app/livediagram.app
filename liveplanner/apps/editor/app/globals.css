@@ -59,6 +59,8 @@
 @source '../../../../packages/settings-ui/src';
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
 @source '../../../../packages/workbench/src';
+@source '../../../../packages/capture/src';
+@source '../../../../packages/walkthrough/src';
 /* The Community's cards, bar and Share tab, every app's (@liveworkspace/community-ui). */
 @source '../../../../packages/community-ui/src';
 @source '../../../../packages/suggestions/src';

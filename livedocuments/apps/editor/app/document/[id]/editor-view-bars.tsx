@@ -4,6 +4,7 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
+import { WalkthroughsButton, type WalkthroughsMenu } from '@liveworkspace/walkthrough';
 import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { memo } from 'react';
 import { truncateName, type Tab } from '@livedocuments/document';
@@ -41,6 +42,9 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   headerCommunity: ReturnType<typeof documentIsPublic>;
   isMobileViewport: boolean;
   landscapeShown: boolean;
+  // The header's Walkthroughs menu (docs/specs/012-collaboration/walkthroughs.md): one value that changes only with
+  // its list, so this header still renders only when its own slices do.
+  walkthroughs?: WalkthroughsMenu;
 }) {
   const chrome = useEditorChromeStore();
   const hidden = useEditorChrome((s) => s.zenMode || !s.appChrome);
@@ -118,6 +122,11 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
                   },
                 }
               : undefined
+          }
+          walkthroughs={
+            view.walkthroughs && !anyWelcomeOpen ? (
+              <WalkthroughsButton menu={view.walkthroughs} />
+            ) : null
           }
           onOpenAccount={() => chrome.get().openSettingsOn('account')}
           onOpenShare={() => {

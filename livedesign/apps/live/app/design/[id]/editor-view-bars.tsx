@@ -41,6 +41,8 @@ export function editorViewHeader(
     headerCommunity: ReturnType<typeof designIsPublic>;
     role: ReturnType<typeof useRoleIndicator>;
     landscapeShown: boolean;
+    // The header's Walkthroughs button (docs/specs/012-collaboration/walkthroughs.md).
+    walkthroughs: ReactNode;
   },
 ): ReactNode {
   const {
@@ -109,6 +111,7 @@ export function editorViewHeader(
               {prototype}
             </>
           }
+          walkthroughs={anyWelcomeOpen ? null : view.walkthroughs}
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
             setShareDialogOpen(true);

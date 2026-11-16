@@ -50,6 +50,7 @@ import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { EditorViewFooter, EditorViewHeader } from './editor-view-bars';
+import { useEditorWalkthroughs, WalkthroughsLayer } from '@liveworkspace/walkthrough';
 import { useSelectTab } from './useSelectTab';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
@@ -70,9 +71,9 @@ import {
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { apiTeamMembers } from '@/lib/api/team-people';
 import {
-  API_BASE as SNAPSHOTS_API_BASE,
-  apiFetch as snapshotsFetch,
-  apiHeaders as snapshotsHeaders,
+  API_BASE as ITEM_API_BASE,
+  apiFetch as itemApiFetch,
+  apiHeaders as itemApiHeaders,
 } from '@/lib/api/core';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
@@ -154,11 +155,11 @@ export function EditorView() {
     itemId: ctx.documentId,
     selfId: ctx.selfParticipant?.id ?? null,
     shareCode: ctx.sessionShareCode,
-    apiBase: SNAPSHOTS_API_BASE,
+    apiBase: ITEM_API_BASE,
     collection: 'documents',
     noun: 'document',
-    apiFetch: snapshotsFetch,
-    apiHeaders: snapshotsHeaders,
+    apiFetch: itemApiFetch,
+    apiHeaders: itemApiHeaders,
   });
   // Approvals (docs/specs/013-workspace/approvals.md): the header's badge, the approver's banner and the Share dialog's
   // Approval tab, for a signed-in account; asking and cancelling for an Editor of the whole document.
@@ -282,6 +283,27 @@ export function EditorView() {
   // lays them across both panes.
   // Each is its own memoised component over the chrome store (editor-view-bars.tsx), so a typing commit renders
   // neither; null where its bar is hidden.
+  // Walkthroughs (docs/specs/012-collaboration/walkthroughs.md): the header's button and the layer over the canvas.
+  const walkthroughs = useEditorWalkthroughs({
+    itemId: ctx.documentId,
+    hydrated: ctx.hydrated,
+    embedMode: ctx.embedMode,
+    workbench: ctx.workbench,
+    offline: isOffline,
+    phone: isMobileViewport,
+    tabScope: ctx.sessionTabScope,
+    apiBase: ITEM_API_BASE,
+    apiFetch: itemApiFetch,
+    apiHeaders: itemApiHeaders,
+    self: ctx.selfParticipant,
+    shareCode: ctx.sessionShareCode,
+    viewport: ctx.viewport,
+    tabs: ctx.tabs,
+    activeTab: ctx.activeId,
+    selectTab,
+    selectionStore: ctx.selectionStore,
+    deck: ctx.slideDeck,
+  });
   const header =
     zenMode || !appChrome ? null : (
       <EditorViewHeader
@@ -289,6 +311,7 @@ export function EditorView() {
         headerCommunity={headerCommunity}
         isMobileViewport={isMobileViewport}
         landscapeShown={landscapeBars.shown}
+        walkthroughs={walkthroughs.menu}
       />
     );
   const footer =
@@ -496,6 +519,7 @@ export function EditorView() {
                   </UiScaleProvider>
                 </CanvasFinishProvider>
               </CanvasSurfaceProvider>
+              <WalkthroughsLayer walkthroughs={walkthroughs} />
             </ViewportStoreProvider>
           </SheetLinksHost>
         </SelectionStoreProvider>

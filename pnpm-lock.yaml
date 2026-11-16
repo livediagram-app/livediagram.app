@@ -385,6 +385,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui
@@ -436,6 +439,9 @@ importers:
       '@liveworkspace/vector-export':
         specifier: workspace:*
         version: link:../../../packages/vector-export
+      '@liveworkspace/walkthrough':
+        specifier: workspace:*
+        version: link:../../../packages/walkthrough
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -1498,6 +1504,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui
@@ -1549,6 +1558,9 @@ importers:
       '@liveworkspace/vector-export':
         specifier: workspace:*
         version: link:../../../packages/vector-export
+      '@liveworkspace/walkthrough':
+        specifier: workspace:*
+        version: link:../../../packages/walkthrough
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -2704,6 +2716,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:^
         version: link:../../../packages/community-ui
@@ -2755,6 +2770,9 @@ importers:
       '@liveworkspace/vector-export':
         specifier: workspace:*
         version: link:../../../packages/vector-export
+      '@liveworkspace/walkthrough':
+        specifier: workspace:*
+        version: link:../../../packages/walkthrough
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
@@ -4878,6 +4896,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/capture':
+        specifier: workspace:*
+        version: link:../../../packages/capture
       '@liveworkspace/community-ui':
         specifier: workspace:^
         version: link:../../../packages/community-ui
@@ -4929,6 +4950,9 @@ importers:
       '@liveworkspace/vector-export':
         specifier: workspace:*
         version: link:../../../packages/vector-export
+      '@liveworkspace/walkthrough':
+        specifier: workspace:*
+        version: link:../../../packages/walkthrough
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench

@@ -4,6 +4,11 @@
 export { walkthroughApi, type WalkthroughApi, type WalkthroughApiDeps } from './api';
 export type { WalkthroughHost, WalkthroughSlides, WalkthroughViewport } from './host';
 export { fingerprintOf } from './timeline';
+export {
+  useEditorWalkthroughs,
+  walkthroughsFit,
+  type EditorWalkthroughsInput,
+} from './useEditorWalkthroughs';
 export { useWalkthroughs, type Walkthroughs, type WalkthroughsMenu } from './useWalkthroughs';
 export {
   slidesOfDeck,
