@@ -9,7 +9,12 @@ import { useRef } from 'react';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { fixtureTab, rowsOf } from '@/test/find-fixture';
 import { FIND_DEBOUNCE_MS, type FindDoor } from '@/hooks/editor/useFindReplace';
-import { FindHost } from './FindHost';
+import { EditorFindHost, FindHost } from './FindHost';
+import {
+  createEditorChromeStore,
+  EditorChromeContext,
+  type EditorContextValue,
+} from '@/app/document/[id]/EditorContext';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/text-hug', () => ({ hugsText: () => false, hugTextSize: () => ({}) }));
@@ -75,5 +80,42 @@ describe('FindHost', () => {
     });
     expect(field.value).toBe('plan');
     expect(editor.renders).toBe(0);
+  });
+
+  // Work Tracker 1051: the writing committed while the bar was shut (a typing commit renders nothing here) is the
+  // writing it searches as it opens, not the tab as the bar last rendered.
+  it('searches the writing as it is when the bar opens', async () => {
+    const base = fixtureTab();
+    const withText = (runs: { text: string }[]): typeof base => ({
+      ...base,
+      articles: { f1: { blocks: [{ id: 'a', type: 'paragraph' as const, runs }] } },
+    });
+    const empty = withText([]);
+    const typed = withText([{ text: 'teh teh' }]);
+    const depsOf = (activeTab: typeof base, mainRef: { current: HTMLElement | null }) => ({
+      activeTab,
+      pages,
+      can,
+      standsAside: false,
+      canvasMainRef: mainRef,
+      getView: () => ({ zoom: 1, offset: { x: 0, y: 0 } }),
+      focusPage: () => {},
+      scrollIntoView: () => {},
+      commitActiveTab: () => {},
+      notify: () => {},
+    });
+    const mainRef: { current: HTMLElement | null } = { current: document.createElement('main') };
+    const store = createEditorChromeStore({
+      findDeps: depsOf(empty, mainRef),
+    } as unknown as EditorContextValue);
+    render(
+      <EditorChromeContext.Provider value={store}>
+        <EditorFindHost openerRef={openerRef} canvasMainRef={mainRef} />
+      </EditorChromeContext.Provider>,
+    );
+    act(() => store.set({ findDeps: depsOf(typed, mainRef) } as unknown as EditorContextValue));
+    act(() => openerRef.current(false));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Find' }), { target: { value: 'teh' } });
+    expect(await screen.findByText('1 of 2')).toBeTruthy();
   });
 });

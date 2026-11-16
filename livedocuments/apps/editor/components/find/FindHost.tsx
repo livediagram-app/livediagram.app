@@ -11,6 +11,7 @@ import {
   memo,
   Suspense,
   useLayoutEffect,
+  useReducer,
   useRef,
   useState,
   type CSSProperties,
@@ -43,11 +44,15 @@ type FindHostProps = {
 // every commit does, so the matches follow the writing.
 export const EditorFindHost = memo(function EditorFindHost(props: FindHostProps) {
   const openRef = useRef(false);
+  // The bar opening re-renders this host once, so `deps` is the newest as it opens: while it was shut, the commits
+  // that wrote the article went unrendered here, and the bar's own state re-renders only FindHost, which would
+  // search the writing as it was when the bar last rendered (Work Tracker 1051).
+  const [, refresh] = useReducer((n: number) => n + 1, 0);
   const deps = useEditorChromeLatest(
     (s) => s.findDeps,
     (a, b) => !openRef.current && sameDepsButWriting(a, b),
   );
-  return <FindHost {...props} deps={deps} openRef={openRef} />;
+  return <FindHost {...props} deps={deps} openRef={openRef} onOpenChange={refresh} />;
 });
 
 export function FindHost({
@@ -55,10 +60,13 @@ export function FindHost({
   openerRef,
   canvasMainRef,
   openRef,
+  onOpenChange,
 }: FindHostProps & {
   deps: FindDeps;
   // Told whether the bar is open, after each render.
   openRef?: RefObject<boolean>;
+  // Told when the bar opens or closes, so the host that owns `deps` can hand it the newest.
+  onOpenChange?: () => void;
 }) {
   const find = useFindReplace(deps);
   useAssignRef(openerRef, find.openBar);
@@ -68,6 +76,9 @@ export function FindHost({
   useLayoutEffect(() => {
     if (openRef) openRef.current = open;
   });
+  useLayoutEffect(() => {
+    onOpenChange?.();
+  }, [open, onOpenChange]);
   useLayoutEffect(() => {
     const main = canvasMainRef.current;
     if (!open || !main) return;
