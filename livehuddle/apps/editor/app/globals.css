@@ -72,6 +72,7 @@
 @source '../../../../packages/settings-ui/src';
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
 @source '../../../../packages/workbench/src';
+@source '../../../../packages/capture/src';
 /* So does Avatar mode's code (@livehuddle/avatar). */
 @source '../../../packages/avatar/src';
 
