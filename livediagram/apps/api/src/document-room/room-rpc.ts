@@ -27,6 +27,7 @@ import { hasDocumentSchema } from './document-schema';
 import { documentShares, type ShareAnswer, type ShareMessage } from './tab-shares';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
 import { communityOf } from './room-community';
+import { closeAllIfTrashed } from './room-sockets';
 import type { DocumentRoom } from './document-room';
 
 // The bodies of what the worker asks of a document (document-room.ts "RPC", document-client.ts): the class keeps
@@ -205,6 +206,21 @@ export async function revokeCodes(
     await room.clearAgentsFor(op);
     closed += before - openRoomSockets(room.state.getWebSockets()).length;
   }
+  return closed;
+}
+
+// The canvas went to the Trash at the index (its standing door, internal-items.ts), wherever it was trashed: the
+// Explorer, the api, MCP's delete_document or another editor. Every session hears `document-trashed` and closes with
+// 4004 (docs/specs/013-workspace/trash.md), so an open editor shows the deleted card and an MCP view says the canvas
+// moved to the Trash at once, rather than at its next grant renewal. Nothing is stored: a restore needs nothing undone,
+// since every join is gated on its grant. Answers how many sockets closed.
+export async function closeTrashed(room: DocumentRoom, documentId: string): Promise<number> {
+  room.bindDocument(documentId);
+  const op = { kind: 'document-trashed' };
+  room.broadcastSystemOp(op);
+  const closed = closeAllIfTrashed(room, op);
+  await room.clearAgentsFor(op);
+  console.info('[room] trashed', { closed });
   return closed;
 }
 

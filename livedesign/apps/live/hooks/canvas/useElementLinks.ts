@@ -18,6 +18,10 @@ import { apiUnfurl } from '@/lib/api-client';
 import { relinkToScreen } from '@/lib/screen-link-choices';
 import { isSafeFollowUrl } from '@liveworkspace/workbench/lib/url-safety';
 import { track } from '@/lib/telemetry';
+import {
+  withLiveEmbedChoice,
+  type LiveEmbedChoice,
+} from '@liveworkspace/workbench/components/live-embed/choose-live-embed';
 
 type ElementLinksDeps = {
   // The active selection resolved to ids. The link writers no-op on an
@@ -129,6 +133,18 @@ export function useElementLinks(deps: ElementLinksDeps) {
     track('Element', 'Linked', 'Screen');
   };
 
+  // A live embed's chosen file (liveworkspace/docs/specs/004-index/live-embeds.md "Making one") on the selected
+  // embeds: its link and snapshot, history-committed.
+  const applyLiveEmbed = (choice: LiveEmbedChoice) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'video' ? withLiveEmbedChoice(el, choice) : el,
+      ),
+    );
+  };
+
   const followLink = (link: ElementLink) => {
     // A screen link is followed in Prototype mode, never in the editor
     // (docs/specs/007-editor/wireframe-pages.md "Clickable prototypes").
@@ -167,6 +183,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
     linkPickerInitialMode,
     openLinkPicker,
     applyElementLink,
+    applyLiveEmbed,
     linkElementToScreen,
     followLink,
   };

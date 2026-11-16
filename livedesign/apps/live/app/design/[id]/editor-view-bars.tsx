@@ -5,6 +5,7 @@
 // (docs/specs/007-editor/split-view.md). Plain functions over the editor context, not components, so the
 // view's tree is what it always was; each is null where its bar is hidden.
 
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import type { ReactNode } from 'react';
 import { truncateName } from '@livedesign/design';
 import { offersPrototype, PrototypeHeaderButton } from '@/components/chrome/PrototypeHeaderButton';
@@ -17,6 +18,7 @@ import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { RolePill } from '@/components/chrome/RoleIndicator';
+import { SuggestionsHeaderAction } from '@liveworkspace/suggestions/react/SuggestionsBar';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
 import type { useRoleIndicator } from './useRoleIndicator';
@@ -93,8 +95,20 @@ export function editorViewHeader(
           copying={copying}
           readOnly={isStructureReadOnly}
           renameNonce={renameDesignNonce}
-          rolePill={<RolePill {...role} />}
-          leadAction={prototype}
+          rolePill={
+            <>
+              <RolePill {...role} />
+              <ApprovalBadge />
+            </>
+          }
+          // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
+          // in the title bar at every width, so the canvas's toolbars never cover it.
+          leadAction={
+            <>
+              <SuggestionsHeaderAction suggestions={ctx.canvasSuggestions} />
+              {prototype}
+            </>
+          }
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
             setShareDialogOpen(true);

@@ -276,6 +276,15 @@ describe('useTabEntryEffects tab pin', () => {
     expect(window.location.hash).toBe('#t=t1');
   });
 
+  // A canvas that isn't found keeps its placeholder tab, never loaded: its random id stays off the address.
+  it('pins no tab until its content has loaded, then pins it', () => {
+    window.history.replaceState(null, '', '/document/missing');
+    const { rerender } = setup({ activeId: 't1', elementCount: 0, tabLoaded: false });
+    expect(window.location.href).toBe(`${window.location.origin}/document/missing`);
+    rerender({ activeId: 't1', elementCount: 0, tabLoaded: true });
+    expect(window.location.hash).toBe('#t=t1');
+  });
+
   it('leaves an address that names no document alone', () => {
     window.history.replaceState(null, '', '/explorer/mine');
     setup({ activeId: 't1', elementCount: 0, tabLoaded: true });

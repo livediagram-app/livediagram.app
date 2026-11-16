@@ -9,6 +9,7 @@ import { addClient, addUser, testD1 } from '../test-d1.ts';
 import { mintApiToken } from '../tokens.ts';
 import { closeAccountWorkbench } from './revoke.ts';
 import { WORKBENCH_SESSION_GRACE_MS } from './store.ts';
+import { WORKBENCH_TOKEN_ROOM_GRACE_MS } from './store-types.ts';
 import { memoryWorkbench, type MemoryWorkbench } from './test-store.ts';
 
 const BASE = 'https://liveworkspace.app';
@@ -539,6 +540,55 @@ describe('ending access', () => {
     expect(await ns.entryOf('user_ada').core.listPairings(null)).toEqual([]);
   });
 
+  // public-api-and-tokens.md "Revoking a token": the rooms a token's own room tickets opened (an MCP view) close too.
+  it("closes the rooms a revoked token's room tickets opened, and no other token's", async () => {
+    const a = await token();
+    const b = await token();
+    const note = (tokenId: string, itemId: string, basic = DIAGRAM, until = Date.now() + 600_000) =>
+      call('/internal/workbench/token-rooms', {
+        method: 'POST',
+        basic,
+        app: null,
+        body: { ownerId: 'user_ada', tokenId, itemId, until },
+      });
+    expect((await note(a.id, 'canvas1')).status).toBe(204);
+    expect((await note(a.id, 'canvas1')).status).toBe(204);
+    expect((await note(a.id, 'plan9', PLANNER)).status).toBe(204);
+    expect((await note(b.id, 'canvas2')).status).toBe(204);
+    // Only a live token of that owner, and an `until` within a ticket's life.
+    expect((await note('nope', 'canvas1')).status).toBe(404);
+    expect((await note(a.id, 'canvas1', DIAGRAM, Date.now() + 3_600_000)).status).toBe(400);
+    expect((await note(a.id, 'canvas1', DIAGRAM, Date.now() - 1)).status).toBe(400);
+
+    expect((await call(`/tokens/${a.id}`, { method: 'DELETE', app: null })).status).toBe(200);
+    await settle();
+    const closes = indexCalls
+      .filter((c) => c.url === '/api/index/internal/workbench-close')
+      .map((c) => c.body);
+    expect(closes).toEqual(
+      expect.arrayContaining([
+        { app: 'livediagram', tokenId: a.id, itemIds: ['canvas1'] },
+        { app: 'liveplanner', tokenId: a.id, itemIds: ['plan9'] },
+      ]),
+    );
+    expect(JSON.stringify(closes)).not.toContain(b.id);
+  });
+
+  it("keeps a token's room note only until its ticket lapses", async () => {
+    const t = await token();
+    const until = Date.now() + 600_000;
+    await call('/internal/workbench/token-rooms', {
+      method: 'POST',
+      basic: DIAGRAM,
+      app: null,
+      body: { ownerId: 'user_ada', tokenId: t.id, itemId: 'canvas1', until },
+    });
+    const { storage, core } = ns.entryOf('user_ada');
+    expect(storage.alarmAt).toBe(until + WORKBENCH_TOKEN_ROOM_GRACE_MS);
+    await core.alarm(storage.alarmAt!);
+    expect(storage.dropped).toBe(1);
+  });
+
   it('drops a pairing whose token stopped working when the list is read', async () => {
     const t = await token();
     await pair(t.secret);
@@ -676,5 +726,146 @@ describe('round trips', () => {
     expect(mintCost).toEqual({ store: ['findPairing', 'mintTicket'], index: 1 });
     expect(redeemCost).toEqual({ store: ['consumeTicket', 'openSession'], index: 1 });
     expect(checkCost).toEqual({ store: ['readSession'], index: 0 });
+  });
+});
+
+// liveworkspace/docs/specs/011-workbench/workbench.md "Live embed tickets".
+describe('live embed tickets', () => {
+  const HOST = 'https://www.livedocuments.app';
+
+  beforeEach(() => {
+    __setBearerVerifier(() => async (bearer) => {
+      if (bearer === 'at-ada')
+        return {
+          kind: 'account',
+          userId: 'user_ada',
+          email: 'ada@example.com',
+          emailVerified: true,
+          scopes: [],
+          teams: [],
+        };
+      if (bearer === 'gt-guest') return { kind: 'guest', guestId: 'guest_g1' };
+      return null;
+    });
+  });
+
+  const embed = (body: Record<string, unknown>, bearer: string | null = 'at-ada') =>
+    call('/workbench/embed-tickets', {
+      method: 'POST',
+      bearer: bearer ?? undefined,
+      app: 'livedocuments',
+      origin: HOST,
+      body: { target: 'liveplanner', itemId: 'plan1', origin: HOST, ...body },
+    });
+
+  it("mints a view ticket on the reader's own access, redeemed by the target app for a short view session", async () => {
+    ns.calls.length = 0;
+    const res = await embed({});
+    expect(res.status).toBe(201);
+    const minted = (await res.json()) as { ticket: string; path: string; expiresAt: number };
+    expect(minted.path).toBe('/embed/workbench?d=plan1');
+    // The reader's own grant on the target, in one index call; two store calls.
+    expect(indexCalls.filter((c) => c.url.includes('/items/plan1/grant'))).toHaveLength(1);
+    expect(ns.calls).toEqual(['embedPairing', 'mintTicket']);
+    // Another app's address finds the ticket unknown.
+    expect((await redeem(minted.ticket, 'livediagram')).status).toBe(401);
+    const before = Date.now();
+    const redeemed = await redeem(minted.ticket);
+    expect(redeemed.status).toBe(201);
+    const session = (await redeemed.json()) as {
+      session: string;
+      role: string;
+      origin: string;
+      expiresAt: number;
+    };
+    // Always view, however much the reader may do; bound to the host's origin; thirty minutes.
+    expect(session.role).toBe('view');
+    expect(session.origin).toBe(HOST);
+    expect(session.expiresAt - before).toBeLessThanOrEqual(30 * 60_000 + 1000);
+    expect(session.expiresAt - before).toBeGreaterThan(29 * 60_000);
+    const checked = (await (await check(session.session)).json()) as {
+      level: string;
+      expiresAt: number;
+    };
+    expect(checked).toMatchObject({ level: 'view', expiresAt: session.expiresAt });
+  });
+
+  it('works for a guest reader too', async () => {
+    const res = await embed({}, 'gt-guest');
+    expect(res.status).toBe(201);
+    const { ticket } = (await res.json()) as { ticket: string };
+    expect(((await (await redeem(ticket)).json()) as { role: string }).role).toBe('view');
+  });
+
+  it('refuses a reader without access, a trashed item, and an index that cannot answer', async () => {
+    grantAnswer = () => Response.json({ error: 'not_found' }, { status: 404 });
+    expect(await (await embed({})).json()).toEqual({ error: 'not_found' });
+    grantAnswer = () =>
+      Response.json({ grant: 'g', level: 'view', tabId: null, expiresAt: 1, trashed: true });
+    expect((await embed({})).status).toBe(410);
+    grantAnswer = () => new Response(null, { status: 500 });
+    expect((await embed({})).status).toBe(503);
+  });
+
+  it('takes only the reader’s own token, never an API token, a session or nothing', async () => {
+    expect((await embed({}, null)).status).toBe(401);
+    expect((await embed({}, 'forged')).status).toBe(401);
+    const t = await token();
+    expect((await embed({}, t.secret)).status).toBe(403);
+    expect((await embed({}, `lvw_${'a'.repeat(43)}.${'0'.repeat(64)}`)).status).toBe(403);
+  });
+
+  it('takes only an app origin of this environment, a target with a workbench frame and an item id', async () => {
+    expect((await embed({ origin: 'https://evil.example' })).status).toBe(400);
+    expect((await embed({ origin: 'http://localhost:3300' })).status).toBe(400);
+    expect((await embed({ origin: 'https://liveworkspace.app' })).status).toBe(400);
+    expect((await embed({ target: 'livehuddle' })).status).toBe(400);
+    expect((await embed({ target: 'nope' })).status).toBe(400);
+    expect((await embed({ itemId: '' })).status).toBe(400);
+    expect((await embed({ origin: 'https://livedesign.app' })).status).toBe(201);
+    env = { ...env, ENVIRONMENT: 'development' } as Env;
+    expect((await embed({ origin: 'http://localhost:3301' })).status).toBe(201);
+    expect((await embed({ origin: 'https://evil.example' })).status).toBe(400);
+  });
+
+  it('refuses a body that is not a JSON object, and any method but POST', async () => {
+    const raw = (body: string) =>
+      handleAccountApi(
+        new Request(`${BASE}/api/account/workbench/embed-tickets`, {
+          method: 'POST',
+          headers: { authorization: 'Bearer at-ada', 'x-liveworkspace-proxy': 'livedocuments' },
+          body,
+        }),
+        env,
+        auth,
+        () => {},
+      );
+    expect((await raw('[1]')).status).toBe(400);
+    expect((await raw('{')).status).toBe(400);
+    expect((await call('/workbench/embed-tickets', { bearer: 'at-ada' })).status).toBe(405);
+  });
+
+  it('limits tickets per person', async () => {
+    let left = 1;
+    env.WORKBENCH_LIMITER = { limit: async () => ({ success: left-- > 0 }) } as RateLimit;
+    expect((await embed({})).status).toBe(201);
+    expect((await embed({})).status).toBe(429);
+  });
+
+  it('keeps its pairing out of Settings and the dead-token clean-up, and lets it go with its sessions', async () => {
+    const { ticket } = (await (await embed({})).json()) as { ticket: string };
+    const { session } = (await (await redeem(ticket)).json()) as { session: string };
+    const listed = (await (
+      await call('/workbench/pairings', { bearer: 'at-ada', app: null })
+    ).json()) as { pairings: unknown[] };
+    expect(listed.pairings).toEqual([]);
+    await settle();
+    const { core, storage } = ns.entryOf('user_ada');
+    // Still standing: the session works.
+    expect(((await (await check(session)).json()) as { level: string }).level).toBe('view');
+    // Once the ticket and the session have lapsed, the pairing goes, and the store with it.
+    await core.alarm(Date.now() + 31 * 60_000 + WORKBENCH_SESSION_GRACE_MS);
+    expect(await core.listPairings(null)).toEqual([]);
+    expect(storage.dropped).toBe(1);
   });
 });

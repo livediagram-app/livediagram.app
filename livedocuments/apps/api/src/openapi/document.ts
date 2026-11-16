@@ -178,6 +178,11 @@ const TAGS = [
       'How scripts and agents change a tab: atomic, live for everyone with it open, credited and revertable.',
   },
   {
+    name: 'Suggestions',
+    description:
+      'Changes proposed on a canvas for an Editor to accept or reject, and who must suggest (Suggest Only).',
+  },
+  {
     name: 'Versions',
     description:
       "A tab's earlier versions: list and open them, name one, restore one as a changeset, or copy one to a new tab.",

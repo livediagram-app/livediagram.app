@@ -411,6 +411,7 @@ function testDocumentRooms(
       }
     },
     revokeCodes: async () => 0,
+    trashed: async () => 0,
   }));
 }
 

@@ -223,7 +223,9 @@ export {
   ROOM_FULL_REASON,
   ROOM_FULL_RETRY_MS,
   ROOM_MAX_CONNECTIONS,
+  ROOM_MAX_VIEW_ONLY,
   roomIsFull,
+  viewOnlyRoomIsFull,
 } from '@liveworkspace/api-schema/room-capacity';
 
 // How a busy room paces its sample streams (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"),

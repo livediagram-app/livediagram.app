@@ -2,11 +2,14 @@ import { useWorkbenchDesignSession } from '@/components/providers/workbench-sess
 import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  elementFingerprint,
   stampSessionMembers,
   stampTabKind,
   stampNewElementLayers,
+  type Element,
   type Tab,
 } from '@livedesign/design';
+import { useSuggestCapture } from '@liveworkspace/suggestions/react/useSuggestCapture';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useDesignHistory } from '@/hooks/canvas/useDesignHistory';
@@ -58,6 +61,18 @@ export function useEditorDesign(opts: { surface?: EditorSurface } = {}) {
     depth: historyDepth,
     branch: historyBranch,
   } = useDesignHistory(initialTabs);
+  // Suggesting (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggesting"): while this person
+  // suggests, the commit and the tick gather the change as a suggestion instead of applying it; what decides it is
+  // connected by useEditorSuggestions.
+  const suggestCapture = useSuggestCapture<Tab, Element>(tabs, { fingerprint: elementFingerprint });
+  const commitGathered = useMemo(
+    () => suggestCapture.capture.wrap(rawCommitTabs),
+    [suggestCapture, rawCommitTabs],
+  );
+  const tickGathered = useMemo(
+    () => suggestCapture.capture.wrap(rawTickTabs),
+    [suggestCapture, rawTickTabs],
+  );
   const canHistoryUndo = canTabUndo;
   const canHistoryRedo = canTabRedo;
   const undoHistory = tabUndo;
@@ -75,10 +90,10 @@ export function useEditorDesign(opts: { surface?: EditorSurface } = {}) {
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
     (mapTabs: (ts: Tab[]) => Tab[]) =>
-      rawTickTabs((ts) =>
+      tickGathered((ts) =>
         guardLockedPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
       ),
-    [rawTickTabs],
+    [tickGathered],
   );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
     // Layer stamping (docs/specs/006-design/layers.md): elements APPEARING in this commit without
@@ -86,7 +101,7 @@ export function useEditorDesign(opts: { surface?: EditorSurface } = {}) {
     // individual creation path (draw, paste, template) carries layer logic. stampNewElementLayers no-ops on tabs
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
-    rawCommitTabs((ts) => {
+    commitGathered((ts) => {
       // Tab kind: a committed tab says what KIND of board it
       // is, rather than leaving a reader to know that absence means
       // 'diagram'. Same choke point as the layer stamp below, and
@@ -214,6 +229,7 @@ export function useEditorDesign(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
     markCheckpoint,
     resetTabs,
+    suggestCapture,
     cancelToCheckpoint,
     tabSummaries,
     nameConfirmed,

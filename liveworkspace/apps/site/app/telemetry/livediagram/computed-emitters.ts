@@ -28,6 +28,7 @@ import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 import { EXPLORER_TELEMETRY_EVENTS, HOME_FRAME_PICKS } from '@liveworkspace/telemetry';
+import { CANVAS_SUGGESTION_TYPES, SUGGEST_ONLY_SHARE_TYPES } from '../_shared/suggestion-vocab';
 
 type ComputedValues = {
   values: readonly (string | null)[];
@@ -259,6 +260,13 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Telemetry").
+  'apps/editor/app/document/[id]/editor-state/useEditorSuggestions.ts Element·Changed': {
+    values: CANVAS_SUGGESTION_TYPES,
+  },
+  'apps/editor/components/dialogs/SuggestionsSection.tsx Document·Shared': {
+    values: SUGGEST_ONLY_SHARE_TYPES,
+  },
   // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
   ...platformComputedEmitters(isValidTelemetryEvent),
   // Someone's first time in through a link, by its level (@liveworkspace/index-app JOINED_TELEMETRY_TYPE, the

@@ -30,6 +30,9 @@ export class WorkbenchStore extends DurableObject<Env> implements WorkbenchStore
   findPairing(...a: Parameters<Core['findPairing']>) {
     return this.core.findPairing(...a);
   }
+  embedPairing(...a: Parameters<Core['embedPairing']>) {
+    return this.core.embedPairing(...a);
+  }
   readPairing(...a: Parameters<Core['readPairing']>) {
     return this.core.readPairing(...a);
   }
@@ -53,6 +56,9 @@ export class WorkbenchStore extends DurableObject<Env> implements WorkbenchStore
   }
   noteSessionRoom(...a: Parameters<Core['noteSessionRoom']>) {
     return this.core.noteSessionRoom(...a);
+  }
+  noteTokenRoom(...a: Parameters<Core['noteTokenRoom']>) {
+    return this.core.noteTokenRoom(...a);
   }
   endAccess(...a: Parameters<Core['endAccess']>) {
     return this.core.endAccess(...a);

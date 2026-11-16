@@ -52,12 +52,12 @@ import { eventStatements } from './events';
 
 // An app acting for a person (an API token's, the Drive mirror, the data export): agents read connected tabs, never
 // make or open them.
-const isDelegate = (person: Person | null): boolean =>
+export const isDelegate = (person: Person | null): boolean =>
   Boolean(person?.app || person?.drive || person?.export);
 
 // A pass: an ordinary share link on the target, never expiring, not public, every tab. Inserted only while the target
 // has room for another link and the host for another connection.
-function insertPass(
+export function insertPass(
   db: D1Database,
   pass: { code: string; itemId: string; level: Level; hostId: string; at: number },
   only?: { sql: string; args: unknown[] },
@@ -82,7 +82,7 @@ function insertPass(
     );
 }
 
-function insertConnection(
+export function insertConnection(
   db: D1Database,
   row: {
     id: string;
@@ -102,7 +102,7 @@ function insertConnection(
     .bind(row.id, row.hostId, row.tabId, row.targetId, row.code, row.pairId, row.at, row.code);
 }
 
-const sharedEvent = (
+export const sharedEvent = (
   db: D1Database,
   itemId: string,
   actorId: string,

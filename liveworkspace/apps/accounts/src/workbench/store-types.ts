@@ -15,6 +15,14 @@ export const WORKBENCH_SESSION_GRACE_MS = 24 * 60 * 60 * 1000;
 export const WORKBENCH_QUOTA_MAX = 1_000;
 // The most rooms one session notes: more is a runaway frame, and one close call to the index carries this many.
 export const WORKBENCH_SESSION_ROOMS_MAX = 500;
+// The rooms one API token's room tickets may be noted in at once (its live views, liveworkspace/docs/specs/011-workbench/
+// workbench.md "A token's rooms"); a note past it is dropped, and that room's sockets lapse with their ticket instead.
+export const WORKBENCH_TOKEN_ROOMS_MAX = 500;
+// How long a token's room stays noted after its ticket's grant lapses: the room drops a lapsed socket only once it
+// has asked for a fresh grant and waited, so the note outlives the lapse by a margin.
+export const WORKBENCH_TOKEN_ROOM_GRACE_MS = 2 * 60 * 1000;
+// How far ahead a token room's `until` may be: a ticket's grant lives ten minutes.
+export const WORKBENCH_TOKEN_ROOM_AHEAD_MAX_MS = 15 * 60 * 1000;
 
 // A store's id as `DurableObjectId.toString()` gives it, after the secret's dot.
 const ROUTE_SUFFIX = /\.([0-9a-f]{64})$/;
@@ -119,7 +127,10 @@ export type WorkbenchEndTarget = { pairingId: string } | { tokenId: string };
 export type WorkbenchEndReason = 'unpaired' | 'revoked' | 'closed';
 
 // A pairing's rooms to close once its rows are gone: each item a session of it had open.
-export type RoomsToClose = { app: string; pairingId: string; itemIds: string[] };
+export type RoomsToClose =
+  | { app: string; pairingId: string; itemIds: string[] }
+  // A revoked token's rooms: each item one of its room tickets opened (an MCP server's live view).
+  | { app: string; tokenId: string; itemIds: string[] };
 
 export type EndedAccess = { pairings: number; sessions: number; rooms: RoomsToClose[] };
 
@@ -134,3 +145,9 @@ export type WorkbenchStorage = {
   deleteAlarm(): Promise<void>;
   deleteAll(): Promise<void>;
 };
+
+// A live embed's pairing (liveworkspace/docs/specs/011-workbench/workbench.md "Live embed tickets"): its token id, which
+// no API token's id can be, and its name. Made on a reader's first embed ticket for an app and host origin, never
+// listed, and gone with its last ticket and session.
+export const EMBED_TOKEN_ID = 'embed';
+export const EMBED_PAIRING_NAME = 'Live embeds';

@@ -22,6 +22,21 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
   );
 
 export const EXACT: Readonly<Record<string, string>> = {
+  'Element|Changed|CanvasSuggesting':
+    'Someone switched the canvas to Suggesting, so their changes become suggestions for an Editor to accept or reject.',
+  'Element|Changed|CanvasEditing': 'Someone switched the canvas back from Suggesting to Editing.',
+  'Element|Changed|CanvasSuggestionMade':
+    'Someone suggested a change on the canvas, shown to the others in their colour until an Editor decides.',
+  'Element|Changed|CanvasSuggestionSuggestOnly':
+    'Someone on a Suggest Only link suggested a change on the canvas.',
+  'Element|Changed|CanvasSuggestionAccepted':
+    'Someone accepted one suggestion on the canvas, applying it as one change.',
+  'Element|Changed|CanvasSuggestionsAcceptedAll':
+    'Someone accepted every suggestion on a canvas at once (Accept All), as one change.',
+  'Element|Changed|CanvasSuggestionRejected':
+    'Someone rejected, or took back, one suggestion on the canvas.',
+  'Element|Changed|CanvasSuggestionsRejectedAll':
+    'Someone rejected every suggestion on a canvas at once (Reject All).',
   'Action|Changed|Edited':
     "Someone edited the details of an action assigned to an element, without changing who it's assigned to.",
   'Action|Changed|Reassigned':

@@ -1,6 +1,8 @@
 // /api/projects/<id>/... inside the plan's Durable Object: per-tab content, comments, cards, sheets, the type
 // catalogue, forms, agent presence and changesets.
 
+import { handleSuggestionRoutes } from './suggestion-routes';
+import { handleReviewRoute } from './review-route';
 import { redactCommentAuthorIds } from '../comments';
 import { redactPlanTabForCommunity } from '../community-redact';
 import { deleteFormLinksForTab, deleteTabRow, getProject, getProjectForSave, getTab } from '../db';
@@ -51,6 +53,14 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
+  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md).
+  const suggestions = await handleSuggestionRoutes(ctx);
+  if (suggestions) return suggestions;
+  // Review settings (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only").
+  if (segments.length === 4 && segments[3] === 'review') {
+    const review = await handleReviewRoute(ctx, segments[2]!);
+    if (review) return review;
+  }
   // /api/projects/<id>/tabs/<tabId>/form-link and form-seen (docs/specs/030-forms/forms.md).
   const formLink = await handleFormLinkRoutes(ctx);
   if (formLink) return formLink;

@@ -67,11 +67,11 @@ on `/document/<uuid>`; nothing about the URL needs to lie.
 A genuinely unknown address (a mistyped page, or a page another build had) reaches the editor through the same slot. It names no
 document (`documentIdFromPath` reads no id off anything but
 `/document/<id>`) and carries no share link, so the editor shows the in-app
-`<NotFound>` card at once, titled **Page not found**
+`<NotFound>` card at once, titled **Page Not Found**
 ("There is no page at this address. Open a document from the Explorer or
 start fresh.") with its **Open Explorer** and **New Document** buttons, and asks
 the API for nothing. A document that is missing or not yours gets the same card
-titled **Document not found**. The card stands alone under the app header, with
+titled **Document Not Found**. The card stands alone under the app header, with
 no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
 `/explorer`, New Document to `/new`). An embed shows the card with New Document
 only, opening the app in a new tab. Only the editor's own empty route (`/document`,
@@ -81,13 +81,19 @@ only, opening the app in a new tab. Only the editor's own empty route (`/documen
 
 A document its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Document not found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-document/offline-mode.md#archived-in-this-browser)).
+**Document Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-document/offline-mode.md#archived-in-this-browser)).
 Either way the editor shows the same card in place of the document, titled **Document Archived** ("This document is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
 it; **Open Explorer** goes to `/explorer`. An embed or a workbench frame shows the card with Open Explorer only (a step
 back, in a workspace frame), since nothing inside a frame moves it out. The code is
 `@liveworkspace/workbench/lib/archived` and the card's `archived` variant.
+
+The owner opening an archived document's address directly gets this card, never the load-error screen: the api relays the index's refusal as `409 archived`, which the arrival (`openOwnAddress`, `@liveworkspace/workbench/lib/editor-arrival`) takes as the archived answer (`isArchivedLoadError`), not a failed load. Only that exact answer: any other failure keeps its error screen.
+
+### The tab title
+
+The browser tab names what the page shows. An open document names it ("<name> | livedocuments"); a status screen in its place names the screen instead, in Title Case: **Document Not Found**, **Page Not Found**, **Document Archived**, **Document Deleted**, **Couldn’t Load Document**, **Password Required** ("Document Not Found | livedocuments"), so a missing document's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
 
 ### A failed load is not a missing document
 
@@ -151,7 +157,7 @@ knowing about when adding another.
 2. An Editor sees Start Making Pages in the middle of the canvas ([Template start](start-diagramming.md));
    a Participant or Viewer sees the empty page ([The empty-canvas hint](#the-empty-canvas-hint)).
 
-### Document not found
+### Document Not Found
 
 1. URL is `/document/<id>` but the API returns 404.
 2. The NotFound card renders; its **New Document** button navigates to `/new`.

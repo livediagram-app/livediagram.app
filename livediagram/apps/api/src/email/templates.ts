@@ -12,6 +12,7 @@ import {
   subjectText,
   type EmailSection,
 } from '@liveworkspace/email/layout';
+import type { ApprovalEmailInput } from '@liveworkspace/index-app';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
@@ -48,6 +49,7 @@ export type EmailKind =
   | 'DocumentJoined'
   | 'CommentNotification'
   | 'ActionAssigned'
+  | 'ApprovalRequested'
   | 'Mentioned'
   | 'FormResponse'
   | 'FormSuspended'
@@ -181,6 +183,50 @@ export function actionAssignedEmail(
 // docs/specs/012-collaboration/comment-mentions.md: a teammate @-mentioned the recipient in a comment. The
 // author and document name come from server state (the notify-mention route);
 // the quote is the author's own words, escaped and cut at a word.
+// Someone asked the recipient to approve a canvas (liveworkspace/docs/specs/004-index/approvals.md "The email"):
+// who asked, the document, the day hoped for and their note. Opt-out with assigned actions (notifyActionAssigned).
+export function approvalRequestedEmail(env: Env, input: ApprovalEmailInput): RenderedEmail {
+  const base = appBaseUrl(env);
+  const name = input.requesterName?.trim();
+  const who = name ? escapeHtml(name) : 'A teammate';
+  const whoText = name ? escapeText(name) : 'A teammate';
+  const title = input.item.name.trim();
+  const item = title ? escapeHtml(title) : 'a shared canvas';
+  const itemText = title ? escapeText(title) : 'a canvas';
+  const due = input.due ? APPROVAL_DUE.format(new Date(`${input.due}T00:00:00Z`)) : null;
+  const note = input.note?.trim()
+    ? escapeHtml(
+        input.note.trim().length > ACTION_DESCRIPTION_PREVIEW_CHARS
+          ? `${input.note.trim().slice(0, ACTION_DESCRIPTION_PREVIEW_CHARS)}…`
+          : input.note.trim(),
+      )
+    : null;
+  return {
+    kind: 'ApprovalRequested',
+    subject: `${whoText} asked you to approve ${itemText}`,
+    html: shell(env, {
+      heading: 'Your approval is requested',
+      intro: `<strong>${who}</strong> asked you to approve <strong>${item}</strong>${due ? ` by <strong>${due}</strong>` : ''}. Open it to approve it or request changes.`,
+      ...(note ? { outro: note } : {}),
+      ctaText: 'Review the canvas',
+      ctaHref: `${base}/document/${encodeURIComponent(input.item.id)}`,
+      footer: manageNotificationsFooter(
+        env,
+        'You’re receiving this because a teammate asked you to approve their work.',
+      ),
+    }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+// A due day as the email says it ("20 November 2026"), read as the calendar day it names.
+const APPROVAL_DUE = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
 export function mentionedEmail(
   env: Env,
   authorName: string | null,

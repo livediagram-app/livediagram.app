@@ -12,6 +12,13 @@ const { notifyFirstShare, notifyDocumentJoin, reportServerEvent, countCommunityC
     countCommunityCopy: vi.fn(async () => {}),
   }),
 );
+const { tellTrashed } = vi.hoisted(() => ({
+  tellTrashed: vi.fn(async (_env: unknown, _id: string, _kind: string) => true),
+}));
+vi.mock('../room-access-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../room-access-client')>()),
+  tellTrashed,
+}));
 vi.mock('../email/notifications', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../email/notifications')>()),
   notifyFirstShare,
@@ -374,5 +381,28 @@ describe('PUT /api/internal/people/:id/migration', () => {
       shapeLibraries: [],
     });
     expect(res.status).toBe(404);
+  });
+});
+
+// docs/specs/013-workspace/trash.md "Open editors": the index pushes where an item stands after every trash (the api,
+// MCP or the Explorer alike), and a trashed document's room tells its editors and closes.
+describe('POST /api/internal/items/:id/standing', () => {
+  it("tells a trashed document's room, and never an archived or restored one's", async () => {
+    tellTrashed.mockClear();
+    const stand = (id: string, archived: boolean, trashed: boolean) =>
+      handleInternalItems(
+        new Request(`https://api.test/api/internal/items/${id}/standing`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ archived, trashed, at: 1 }),
+        }),
+        arrange().env,
+      );
+    expect((await stand('A', false, true))?.status).toBe(200);
+    expect((await stand('B', true, false))?.status).toBe(200);
+    expect((await stand('C', false, false))?.status).toBe(200);
+    expect(tellTrashed.mock.calls.map(([, id, op]) => [id, op])).toEqual([
+      ['A', 'document-trashed'],
+    ]);
   });
 });

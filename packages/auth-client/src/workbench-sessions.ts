@@ -7,6 +7,7 @@
 import type { TeamClaim } from './account';
 import type { ClientCredentials } from './oauth';
 import {
+  createTokenRoomNoter,
   createWorkbenchRoomNoter,
   createWorkbenchSessionChecker,
   type WorkbenchSessionCheck,
@@ -39,6 +40,7 @@ export function createWorkbenchSessions<Env, Reach>(deps: {
   // One checker (and one room noter) per credentials for the life of the isolate: they hold the caches.
   const checkers = new Map<string, WorkbenchSessionChecker>();
   const noters = new Map<string, ReturnType<typeof createWorkbenchRoomNoter>>();
+  const tokenNoters = new Map<string, ReturnType<typeof createTokenRoomNoter>>();
 
   function checkerFor(credentials: ClientCredentials): WorkbenchSessionChecker {
     const key = keyOf(credentials);
@@ -105,5 +107,26 @@ export function createWorkbenchSessions<Env, Reach>(deps: {
     }
   }
 
-  return { resolveWorkbenchSession, noteWorkbenchRoom };
+  // An API token's room ticket opened an item's room until `until`: liveworkspace notes it, so revoking the token
+  // closes the room's sockets at once. Best effort, off the response's path.
+  async function noteTokenRoom(
+    env: Env,
+    input: { ownerId: string; tokenId: string; itemId: string; until: number },
+  ): Promise<void> {
+    const credentials = deps.credentials(env);
+    if (!credentials) return;
+    const key = keyOf(credentials);
+    let note = tokenNoters.get(key);
+    if (!note) {
+      note = createTokenRoomNoter(credentials);
+      tokenNoters.set(key, note);
+    }
+    try {
+      await note(input);
+    } catch (err) {
+      console.warn('[workbench] token room note failed', { error: String(err) });
+    }
+  }
+
+  return { resolveWorkbenchSession, noteWorkbenchRoom, noteTokenRoom };
 }

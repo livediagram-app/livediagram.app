@@ -4,6 +4,7 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { memo } from 'react';
 import { truncateName, type Tab } from '@livedocuments/document';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
@@ -16,6 +17,7 @@ import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { RolePill } from '@/components/chrome/RoleIndicator';
+import { SuggestionsHeaderAction } from '@liveworkspace/suggestions/react/SuggestionsBar';
 import { offersHistory, openHistoryFromFooter } from '@/components/versions/HistoryButton';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
@@ -60,6 +62,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const ownerName = useEditorChrome((s) => resolveOwnerBadge(s)?.name ?? null);
   const isSelf = useEditorChrome((s) => s.isOwner);
   const canToggleRole = useEditorChrome((s) => s.canToggleRole);
+  const canvasSuggestions = useEditorChrome((s) => s.canvasSuggestions);
   const { isOffline, headerCommunity, isMobileViewport } = view;
   if (hidden) return null;
   return (
@@ -89,13 +92,19 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
           readOnly={readOnly}
           renameNonce={renameNonce}
           rolePill={
-            <RolePill
-              role={roleLevel}
-              ownerName={ownerName}
-              isSelf={isSelf}
-              onToggle={canToggleRole ? () => chrome.get().toggleViewPreview() : undefined}
-            />
+            <>
+              <RolePill
+                role={roleLevel}
+                ownerName={ownerName}
+                isSelf={isSelf}
+                onToggle={canToggleRole ? () => chrome.get().toggleViewPreview() : undefined}
+              />
+              <ApprovalBadge />
+            </>
           }
+          // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
+          // in the title bar at every width, so the canvas's toolbars never cover it.
+          leadAction={<SuggestionsHeaderAction suggestions={canvasSuggestions} />}
           // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
           // while the deck has a slide to show, on a desktop, once the document is up. Every role.
           present={

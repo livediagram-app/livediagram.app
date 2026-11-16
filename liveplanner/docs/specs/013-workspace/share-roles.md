@@ -21,6 +21,12 @@ Participant level is the middle: take part in the board, never reshape it.
 | **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; take part in session tools; add, write and arrange stickies and text; place images and swap their pictures; grow mind maps; write on any element but a Behaviour, a table's cells included; work with Plan cards and Sheet cells (see [What a Participant changes](#what-a-participant-changes)). |
 | **Editor**      | `edit`        | All of Participant; change anything on the drawing, its tabs, its modes and its tools' configuration.                                                                                                                                                                                                                                                |
 
+- **Suggest Only on the canvas.** An Editor may set a Participant link, or a person, to **Suggest Only** in the
+  Share dialog's Suggestions section ([Canvas suggestions](../012-collaboration/canvas-suggestions.md)). Such a
+  Participant's changes to a tab's elements are always suggestions an Editor accepts or rejects; the room refuses
+  any element change it makes straight in, but for comments, reactions and votes. The setting is the item's own
+  (its room), never the index's: the link's level stays `participate`. Any Participant or Editor sees a tab's
+  suggestions; a Viewer sees none and makes none.
 - **The levels are a ladder**: every level holds everything below it.
 - **A Viewer only looks.** A comment, a vote and an answer are all taking part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone
   editing the element it looks at.

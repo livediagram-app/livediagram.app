@@ -12,6 +12,10 @@
 // A view-only client (an MCP server's interactive view, one-explorer-contracts.md "A view-only ticket") gets the same
 // seal with a cap and no pairing: the room admits it at the cap whatever the grant says, and it holds no grant it
 // could use bare. It opens as `cap`, never as a workbench, so no pairing close or workbench rule reaches it.
+//
+// A ticket minted through an API token (an MCP server's live view, a CLI) is sealed with the token's id beside
+// whatever else it holds (`k`), with no cap when it asks for none: the room keeps the id on the socket, so revoking
+// the token closes exactly the sockets its tickets opened (public-api-and-tokens.md "Revoking a token").
 
 import { isLevel, type GrantClaims, type Level } from '@liveworkspace/index-client';
 import type { IndexEnv, IndexService } from './service';
@@ -23,9 +27,10 @@ const AAD = new TextEncoder().encode('liveworkspace room-ticket v2');
 
 export type RoomTicketWorkbench = { pairing: string; cap: Level };
 
-// What a sealed ticket holds beside the grant: a workbench session's pairing and cap, or a view-only client's cap
-// alone (`pairing: null`).
-export type RoomTicketSeal = { pairing: string | null; cap: Level };
+// What a sealed ticket holds beside the grant: a workbench session's pairing and cap, a view-only client's cap alone
+// (`pairing: null`), and the API token that minted it (`token`, with or without a cap). A workbench session always
+// has a cap.
+export type RoomTicketSeal = { pairing: string | null; cap: Level | null; token?: string | null };
 
 export type RoomTicket = {
   claims: GrantClaims;
@@ -33,6 +38,8 @@ export type RoomTicket = {
   workbench: RoomTicketWorkbench | null;
   // A view-only ticket's cap (sealed with no pairing); null for every other ticket.
   cap: Level | null;
+  // The API token that minted it (sealed), or null.
+  token: string | null;
 };
 
 // The sealing key, derived once per isolate (and again only if INDEX_KEY changes) rather than on every ticket.
@@ -76,10 +83,11 @@ function fromBase64Url(text: string): Uint8Array {
   return Uint8Array.from(plain, (c) => c.charCodeAt(0));
 }
 
-type SealedFacts = { g: string; p: string; c: Level };
+// `c` is empty for a ticket sealed with no cap (a token's that asked for none); `k` is the minting token, if any.
+type SealedFacts = { g: string; p: string; c: Level | ''; k?: string };
 
 // The ticket's sealed facts, or null for anything this key did not seal (forged, tampered, another key, garbage).
-// `p` is the pairing, empty for a view-only ticket.
+// `p` is the pairing, empty for a view-only ticket. A workbench session's always has a cap.
 async function unseal(secret: string, body: string): Promise<SealedFacts | null> {
   try {
     const bytes = fromBase64Url(body);
@@ -90,9 +98,10 @@ async function unseal(secret: string, body: string): Promise<SealedFacts | null>
       bytes.slice(IV_BYTES),
     );
     const facts = JSON.parse(new TextDecoder().decode(plain)) as Partial<SealedFacts>;
-    if (typeof facts.g !== 'string' || typeof facts.p !== 'string' || !isLevel(facts.c))
-      return null;
-    return { g: facts.g, p: facts.p, c: facts.c };
+    if (typeof facts.g !== 'string' || typeof facts.p !== 'string') return null;
+    if (!(isLevel(facts.c) || (facts.c === '' && !facts.p))) return null;
+    if (facts.k !== undefined && (typeof facts.k !== 'string' || !facts.k)) return null;
+    return { g: facts.g, p: facts.p, c: facts.c, ...(facts.k ? { k: facts.k } : {}) };
   } catch {
     return null;
   }
@@ -107,8 +116,14 @@ export async function sealRoomTicket(
 ): Promise<string> {
   if (!seal) return grant;
   if (!env.INDEX_KEY) throw new Error('no INDEX_KEY to seal a room ticket');
+  if (seal.pairing && !seal.cap) throw new Error('a workbench room ticket needs a cap');
   const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
-  const facts: SealedFacts = { g: grant, p: seal.pairing ?? '', c: seal.cap };
+  const facts: SealedFacts = {
+    g: grant,
+    p: seal.pairing ?? '',
+    c: seal.cap ?? '',
+    ...(seal.token ? { k: seal.token } : {}),
+  };
   const sealed = new Uint8Array(
     await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv, additionalData: AAD },
@@ -135,18 +150,21 @@ export async function openRoomTicket(
   let grant = ticket;
   let workbench: RoomTicketWorkbench | null = null;
   let cap: Level | null = null;
+  let token: string | null = null;
   if (ticket.startsWith(SEALED_PREFIX)) {
     if (!env.INDEX_KEY) return null;
     const facts = await unseal(env.INDEX_KEY, ticket.slice(SEALED_PREFIX.length));
     if (!facts) return null;
     grant = facts.g;
-    if (facts.p) workbench = { pairing: facts.p, cap: facts.c };
-    else cap = facts.c;
+    // unseal let an empty cap through only with no pairing.
+    if (facts.p) workbench = { pairing: facts.p, cap: facts.c as Level };
+    else cap = facts.c || null;
+    token = facts.k ?? null;
   } else if (ticket.includes(SEP)) {
     return null;
   }
   const claims = await service.verifyGrant(env, grant, itemId);
-  return claims ? { claims, grant, workbench, cap } : null;
+  return claims ? { claims, grant, workbench, cap, token } : null;
 }
 
 // ---------- A session's grant in the room ---------------------------------------------------------------------

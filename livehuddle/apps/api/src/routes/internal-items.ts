@@ -25,11 +25,13 @@ import { countCommunityCopy } from '../community-service';
 import { deleteAccount, mergeGuest } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
+import { tellTrashed } from '../room-access-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
+import { documentFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -61,6 +63,12 @@ export function handleInternalItems(
     communityKey: env.COMMUNITY_KEY,
     waitUntil,
     handlers: {
+      // Where the document stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
+      // editors"): trashed anywhere (the api, MCP delete_document, the Explorer), its room tells every editor and
+      // closes. Nothing is kept, so a restore reopens as before.
+      standing: async (id, standing) => {
+        if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
+      },
       // Where Community posts' items stand, as the index reads them, for the Community's sweep.
       communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
       purge: async (id) => {
@@ -120,6 +128,8 @@ export function handleInternalItems(
       exportComments: (id) => documentRoom(env, id).exportComments(),
       // A new canvas from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDocumentFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => documentFromTemplate(env, input),
       // An old livehuddle.app document's livehuddle part, into its canvas's room (document-migration.ts). A tab over
       // the tab cap refuses the whole part (413) before the room is called.
       migrate: async (payload) => {

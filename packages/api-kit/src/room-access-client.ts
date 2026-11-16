@@ -1,5 +1,5 @@
 // An api's half of "access changes end the sessions they affect" (each product's docs/specs/015-api/api.md) for a
-// workbench pairing: ask an item's room to close the sockets it opened (./room-access.ts says which). Best-effort:
+// workbench pairing or a revoked API token: ask an item's room to close the sockets it opened (./room-access.ts says which). Best-effort:
 // the pairing's end is the change, and every later API call and room join is gated on it, so a room that can't be
 // reached is logged rather than failing the request. Every other access change reaches the room through the index
 // (a revoked link's revoke door) or its grants. Each api's room-access-client.ts hands in its room fetch.
@@ -51,5 +51,35 @@ export function createRoomAccessClient<E>(roomFetch: RoomFetch<E>) {
     // The sockets one workbench pairing opened on the item, closed.
     closeWorkbenchSessions: (env: E, itemId: string, pairingId: string): Promise<boolean> =>
       closeRoomSessions(env, itemId, { match: 'workbench', pairingId }),
+    // The sockets one API token's room tickets opened on the item (its live views), closed: the token was revoked.
+    closeTokenSessions: (env: E, itemId: string, tokenId: string): Promise<boolean> =>
+      closeRoomSessions(env, itemId, { match: 'token', tokenId }),
+    // The item moved to the Trash (each product's docs/specs/013-workspace/trash.md "Open editors"): its room sends the
+    // product's trashed op (`kind`) to every session and closes each, as its /broadcast does for that op. The index
+    // tells the app off the trash's own path (its standing push), so this never slows a trash. Nothing is kept: a
+    // restored item's room opens as before. Best effort, logged.
+    tellTrashed: async (env: E, itemId: string, kind: string): Promise<boolean> => {
+      try {
+        const res = await roomFetch(
+          env,
+          itemId,
+          '/broadcast',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ op: { kind } }),
+          },
+          ROOM_ACCESS_CLOSE_TIMEOUT_MS,
+        );
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        return true;
+      } catch (err) {
+        console.warn('[room-access] trashed did not reach the room', {
+          itemId,
+          error: String(err),
+        });
+        return false;
+      }
+    },
   };
 }

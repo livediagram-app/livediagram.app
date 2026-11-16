@@ -98,6 +98,21 @@ describe('handleInternalItems', () => {
     expect((await send('POST', path('A'), { pairingId: 'p1' }, {})).status).toBe(404);
   });
 
+  it("closes a revoked token's sockets through the same door, naming the token", async () => {
+    const tokenClose = vi.fn(async (itemId: string) => itemId === 'A');
+    const path = (id: string) => `/api/internal/items/${id}/workbench-close`;
+    const ok = await send('POST', path('A'), { tokenId: 't1' }, { tokenClose });
+    expect(await ok.json()).toEqual({ ok: true });
+    expect(tokenClose).toHaveBeenCalledWith('A', 't1');
+    expect((await send('POST', path('B'), { tokenId: 't1' }, { tokenClose })).status).toBe(503);
+    expect((await send('POST', path('A'), { tokenId: '' }, { tokenClose })).status).toBe(400);
+    // An app that closes no token's sockets, and one that closes no pairing's.
+    const workbenchClose = vi.fn(async () => true);
+    expect((await send('POST', path('A'), { tokenId: 't1' }, { workbenchClose })).status).toBe(404);
+    expect((await send('POST', path('A'), { pairingId: 'p1' }, { tokenClose })).status).toBe(404);
+    expect(workbenchClose).not.toHaveBeenCalled();
+  });
+
   it('takes a notice at once and works it out off the path', async () => {
     const pending: Promise<unknown>[] = [];
     const notice = vi.fn(async () => {});
@@ -114,6 +129,58 @@ describe('handleInternalItems', () => {
     expect(
       (await send('POST', '/api/internal/items/A/notices', { type: 'x' }, { notice })).status,
     ).toBe(400);
+  });
+
+  it('hands an approval notice to its own handler, and takes it with nothing to do without one', async () => {
+    const pending: Promise<unknown>[] = [];
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const approval = {
+      type: 'approval_requested',
+      approvalId: 'ap_1',
+      requesterId: 'user_a',
+      requesterName: 'Ada',
+      approverIds: ['user_b'],
+      itemTitle: 'Roadmap',
+      note: null,
+      due: null,
+    };
+    const approvalRequested = vi.fn(async () => {});
+    const notice = vi.fn(async () => {});
+    const path = '/api/internal/items/A/notices';
+    const res = await send(
+      'POST',
+      path,
+      approval,
+      { approvalRequested, notice },
+      {
+        waitUntil: (p) => pending.push(p),
+      },
+    );
+    expect(res.status).toBe(202);
+    await Promise.all(pending);
+    expect(approvalRequested).toHaveBeenCalledWith('A', approval);
+    expect(notice).not.toHaveBeenCalled();
+    // No door: taken, nothing sent; the other notices still need theirs.
+    expect((await send('POST', path, approval, {})).status).toBe(202);
+    expect((await send('POST', path, { type: 'shared', actorId: 'user_a' }, {})).status).toBe(404);
+    // A handler that throws is logged, never the index's problem.
+    const failing = vi.fn(async () => {
+      throw new Error('boom');
+    });
+    await send(
+      'POST',
+      path,
+      approval,
+      { approvalRequested: failing },
+      {
+        waitUntil: (p) => pending.push(p),
+      },
+    );
+    await Promise.all(pending);
+    expect(warn).toHaveBeenCalledWith('[internal] notice failed', {
+      type: 'approval_requested',
+      error: 'Error: boom',
+    });
   });
 
   it('copies, answering a missing source and a conflict', async () => {

@@ -1,0 +1,54 @@
+{
+  "name": "@liveworkspace/suggestions",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./review": "./src/review.ts",
+    "./room-review": "./src/room-review.ts",
+    "./store": "./src/store.ts",
+    "./route": "./src/route.ts",
+    "./client": "./src/client.ts",
+    "./room-signal": "./src/room-signal.ts",
+    "./openapi": "./src/openapi.ts",
+    "./telemetry": "./src/telemetry.ts",
+    "./react/SuggestionsBar": "./src/react/SuggestionsBar.tsx",
+    "./react/SuggestionGhostOverlay": "./src/react/SuggestionGhostOverlay.tsx",
+    "./react/SuggestOnlySection": "./src/react/SuggestOnlySection.tsx",
+    "./react/suggestions-store": "./src/react/suggestions-store.ts",
+    "./react/useCanvasSuggestions": "./src/react/useCanvasSuggestions.ts",
+    "./react/useSuggestCapture": "./src/react/useSuggestCapture.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@liveworkspace/ui": "workspace:*",
+    "@liveworkspace/workbench": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "^5.1.0",
+    "jsdom": "^31.0.0",
+    "oxlint": "^1.93.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

@@ -96,6 +96,9 @@ port block's first port (`LOCAL_PORTS`: liveworkspace 3000, livediagram 3100, li
 livedocuments 3300, livedesign 3400, livehuddle 3500, as in the root AGENTS.md) whenever a dev server renders it
 (`NODE_ENV=development`), and its live address in a build. The switcher, the landing page, the app
 footers' liveworkspace links and the Explorer's cross-app items all read it.
+A stack run in another port block (a verifier's) names its own addresses in `NEXT_PUBLIC_LOCAL_ORIGINS`
+(`liveplanner.app=http://localhost:3650,livedocuments.app=http://localhost:3645`), which a dev server reads instead of
+`LOCAL_PORTS` for each site it names; only loopback `http` origins count, anything else is ignored. A build never reads it.
 
 Every app shows **the same switcher**: one copy, `SiteSwitcher` in `@liveworkspace/ui`
 (`packages/ui/src/SiteSwitcher.tsx`), which each app's UI package binds to its app's prism (its own

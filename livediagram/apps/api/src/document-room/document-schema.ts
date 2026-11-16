@@ -18,6 +18,7 @@ import {
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import { CANVAS_SUGGESTIONS_SCHEMA } from '@liveworkspace/suggestions/store';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -306,7 +307,20 @@ const V6 = (exec: Exec) => {
   );
 };
 
-const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6];
+// Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Stored on the item"): their
+// table, beside the tabs; and the document's review settings ("Suggest Only"), JSON or NULL, on its row. Asks before
+// the ALTER, so it is safe however far a room got.
+const V7 = (exec: Exec) => {
+  exec(CANVAS_SUGGESTIONS_SCHEMA);
+  const have = new Set(
+    exec('PRAGMA table_info(document)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
+};
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

@@ -27,11 +27,12 @@ import { deleteAccount, mergeGuest } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
-import { notifyFirstShare } from '../email/notifications';
+import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
-import { closeWorkbenchSessions } from '../room-access-client';
+import { closeTokenSessions, closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
+import { documentFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -62,6 +63,8 @@ export function handleInternalItems(
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
       revoke: (id, codes, reason) => documentRoom(env, id).revokeCodes(codes, reason),
+      // An approval request (liveworkspace approvals.md): the approvers' email.
+      approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
@@ -110,6 +113,8 @@ export function handleInternalItems(
       exportComments: (id) => documentRoom(env, id).exportComments(),
       // A new canvas from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDocumentFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => documentFromTemplate(env, input),
       // An old livediagram.app document's livediagram part, into its canvas's room (document-migration.ts). A tab over
       // the tab cap refuses the whole part (413) before the room is called.
       migrate: async (payload) => {
@@ -125,6 +130,14 @@ export function handleInternalItems(
       connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
       // A workbench pairing's access ended at liveworkspace: its sockets in this canvas's room close.
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // An API token was revoked at liveworkspace: the sockets its room tickets opened here (its live views) close.
+      tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),
+      // Where the canvas stands after an archive, move out, trash or restore (the index calls it off its own path, so
+      // the room call costs the trash nothing). Into the Trash, from anywhere: its room ends every session now
+      // (docs/specs/013-workspace/trash.md). Nothing else here runs on its own clock for a put-away canvas.
+      standing: async (id, standing) => {
+        if (standing.trashed) await documentRoom(env, id).trashed();
+      },
     },
   });
 }

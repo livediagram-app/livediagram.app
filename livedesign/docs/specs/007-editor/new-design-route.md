@@ -50,9 +50,9 @@ the `OpeningScreen` as its fallback), because Next ships the root not-found slot
 
 A genuinely unknown address (a mistyped page, `/explorer/mine`, a page an older build had) reaches the editor
 through the same slot. It names no design and carries no share link, so the editor shows the in-app `<NotFound>`
-card at once, titled **Page not found** ("There is no page at this address. Open a design from the Explorer or
+card at once, titled **Page Not Found** ("There is no page at this address. Open a design from the Explorer or
 start fresh.") with its **Open Explorer** and **New Design** buttons, and asks the API for nothing. A design that is
-missing or not yours gets the same card titled **Design not found**, and a design whose share ended **No Longer
+missing or not yours gets the same card titled **Design Not Found**, and a design whose share ended **No Longer
 Shared With You**. The card stands alone under the app header, with no Explorer panel beside it: Open Explorer goes
 to `/explorer`, New Design to `/new`. An embed shows the card with New Design only, opening the app in a new tab.
 Only the editor's own empty route (`/design`, `/design/placeholder`) hands off to `/new`, so a mistyped page never
@@ -62,13 +62,19 @@ makes a design.
 
 A design its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Design not found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-design/offline-mode.md#archived-in-this-browser)).
+**Design Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-design/offline-mode.md#archived-in-this-browser)).
 Either way the editor shows the same card in place of the design, titled **Design Archived** ("This design is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
 it; **Open Explorer** goes to `/explorer`. An embed or a workbench frame shows the card with Open Explorer only (a step
 back, in a workspace frame), since nothing inside a frame moves it out. The code is
 `@liveworkspace/workbench/lib/archived` and the card's `archived` variant.
+
+The owner opening an archived design's address directly gets this card, never the load-error screen: the api relays the index's refusal as `409 archived`, which the arrival (`openOwnAddress`, `@liveworkspace/workbench/lib/editor-arrival`) takes as the archived answer (`isArchivedLoadError`), not a failed load. Only that exact answer: any other failure keeps its error screen.
+
+### The tab title
+
+The browser tab names what the page shows. An open design names it ("<name> | livedesign"); a status screen in its place names the screen instead, in Title Case: **Design Not Found**, **Page Not Found**, **Design Archived**, **Design Deleted**, **Couldn’t Load Design**, **Password Required** ("Design Not Found | livedesign"), so a missing design's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
 
 ### A failed load is not a missing design
 
@@ -241,7 +247,7 @@ create into a team has succeeded, never on a refused one ([Telemetry](../017-tel
 - `/new` → the opening screen, then the editor on `/design/<id>`, on its start.
 - `/design/<id>` (existing) → the editor hydrates.
 - `/design/shared?s=<code>` (visitor) → the editor and the name prompt.
-- An unknown address → Page not found, no API call; a missing design → Design not found.
+- An unknown address → Page Not Found, no API call; a missing design → Design Not Found.
 - `/new` → created at once, This Browser for a guest, filed in the signed-in person's default folder for it.
 - `/new?blank=1` → a blank design, its start closed; `/new?blank=1&folder=<id>` files it into that folder.
 - `/new?template=not-a-kind` → a design that opens on its start.

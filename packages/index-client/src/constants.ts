@@ -176,6 +176,11 @@ export const ITEM_EVENT_TYPES = [
   'synced',
   'opened_by_visitor',
   'copied_by_visitor',
+  // Approvals (approvals.md): a request made, an approver's decision, a request cancelled or replaced.
+  'approval_requested',
+  'approval_approved',
+  'approval_changes_requested',
+  'approval_cancelled',
 ] as const;
 export const ACCOUNT_EVENT_TYPES = [
   'team_invite_sent',
@@ -226,6 +231,10 @@ export const TEAM_AUDIT_ITEM_TYPES = [
   'moved',
   'trashed',
   'restored',
+  'approval_requested',
+  'approval_approved',
+  'approval_changes_requested',
+  'approval_cancelled',
 ] as const satisfies readonly EventType[];
 // Kinds with no event of their own: a team item deleted for good, a team webhook added or removed.
 export const TEAM_AUDIT_OWN_TYPES = ['deleted', 'webhook_added', 'webhook_removed'] as const;
@@ -257,6 +266,10 @@ export const TEAM_AUDIT_EVENT_LABELS: Record<TeamAuditEventType, string> = {
   moved: 'Moved',
   trashed: 'Moved to the Trash',
   restored: 'Restored',
+  approval_requested: 'Approval Requested',
+  approval_approved: 'Approved',
+  approval_changes_requested: 'Changes Requested',
+  approval_cancelled: 'Approval Cancelled',
   deleted: 'Deleted for Good',
   webhook_added: 'Webhook Added',
   webhook_removed: 'Webhook Removed',
@@ -365,6 +378,16 @@ export const INDEX_ERRORS = [
   // token hash malformed.
   'calendar_feed_app_only',
   'calendar_feed_invalid',
+  // Approvals (approvals.md): a caller that is no person in person, approvers malformed or not reaching the item, a
+  // malformed due day, a decision by someone not named, no open request, two requests racing, accounts unreachable.
+  'approvals_need_a_person',
+  'invalid_approvers',
+  'approver_cannot_open',
+  'invalid_due',
+  'not_an_approver',
+  'approval_not_found',
+  'approval_conflict',
+  'approvals_unavailable',
   'invalid_password',
   // A new share password shorter than SHARE_PASSWORD_MIN.
   'password_too_short',
@@ -383,6 +406,8 @@ export const INDEX_ERRORS = [
   'connection_target_gone',
   'connection_link_removed',
   'wrong_app',
+  // Project kits (kits.md): a guest starting one.
+  'sign_in_required',
   // Archived (one-explorer-contracts.md "Archived"): what the owner hears from a grant, an open, a copy, a favourite or
   // a share while it is archived; a teammate who isn't its owner archiving it; an item in the Trash archived.
   'archived',

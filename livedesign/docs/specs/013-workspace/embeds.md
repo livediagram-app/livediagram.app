@@ -60,3 +60,31 @@ thumbnail, the same code in every app ([Previews: Pasting a share link](../../..
 - Hiding the "Open in livedesign" badge (it is deliberately not configurable).
 - A signed-in editor inside a developer tool: that is a [workbench embed](workbench-embeds.md), served under `/embed`
   so it may be framed, and admitted by a workbench ticket rather than a share code.
+
+## Live embeds
+
+A **live embed** shows a canvas, a plan, a livedocuments page or another design, live and read-only, on this design
+([Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md), Work Tracker 930). It is the Embed
+element made from the palette's **Live Embed** tile (`embedProvider: 'live'`), drawn by the shared face
+(`@liveworkspace/workbench` `LiveEmbedView`) in place of a provider's player.
+
+- **Choosing.** Double-clicking it opens **Choose a File**: this design's connected files, the person's Recent in the
+  four apps, and a field for a pasted share link. Picking writes `liveItem` (the file's app and id), `liveName` and
+  `livePoster` (its snapshot). Only an Editor chooses: a Participant and a Viewer see the embed as everyone does, and
+  the dialog never opens for them.
+- **Each reader's own access.** Every reader sees the file live only with their own access to it, opened read-only in
+  its app's frame; anyone else sees the snapshot made unreadable and **Open in <App>**, with "Ask its owner to share it with you". Nothing here mints a share link.
+- **On screen only.** A frame is asked for only while the element is on screen, at most three at once in the page,
+  and given up two seconds after it leaves.
+- **Open** opens the file in its own app in a new browser tab; **Use the file** hands the pointer to the frame, and
+  until then the element drags and selects as any other.
+- **Exports draw the snapshot**, and a Community copy keeps the snapshot without the link.
+
+## Live embeds of a design
+
+Another app's item can show a design live, read-only, inside it ([Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md),
+Work Tracker 930). The frame is this app's [workbench embed](workbench-embeds.md) (`/embed/workbench?d=<id>`) opened by
+an **embed ticket**: minted by the host page with the reader's own access, always at the view level, bound to the host
+app's origin, and renewed through the host before its 30 minutes run out. The page is the workbench page as it is, at
+a view session: the editor read-only, with Open in livedesign one click away. A reader without their own access never
+reaches this frame: the host shows its snapshot instead.

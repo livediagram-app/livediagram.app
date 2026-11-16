@@ -40,7 +40,42 @@ describe('room tickets', () => {
       grant: 'grant-for-d1',
       workbench: null,
       cap: null,
+      token: null,
     });
+  });
+
+  // public-api-and-tokens.md "Revoking a token": a ticket an API token minted carries the token's id, sealed.
+  it("seals the minting token's id, with or without a cap", async () => {
+    const plain = await sealRoomTicket(env, 'grant-for-d1', {
+      pairing: null,
+      cap: null,
+      token: 'tok-1',
+    });
+    expect(plain.startsWith('rt2~')).toBe(true);
+    expect(plain).not.toContain('grant-for-d1');
+    const opened = await openRoomTicket(service, env, plain, 'd1');
+    expect(opened).toEqual({
+      claims: claims('d1'),
+      grant: 'grant-for-d1',
+      workbench: null,
+      cap: null,
+      token: 'tok-1',
+    });
+    // No cap: the grant's own level.
+    expect(roomTicketLevel(opened!)).toBe('edit');
+    const view = await sealRoomTicket(env, 'grant-for-d1', {
+      pairing: null,
+      cap: 'view',
+      token: 'tok-1',
+    });
+    expect(await openRoomTicket(service, env, view, 'd1')).toMatchObject({
+      cap: 'view',
+      token: 'tok-1',
+    });
+    // A workbench session never goes uncapped.
+    await expect(sealRoomTicket(env, 'grant-for-d1', { pairing: 'p1', cap: null })).rejects.toThrow(
+      'cap',
+    );
   });
 
   // one-explorer-contracts.md "A view-only ticket": the MCP view's, sealed with a cap and no pairing.
@@ -54,6 +89,7 @@ describe('room tickets', () => {
       grant: 'grant-for-d1',
       workbench: null,
       cap: 'view',
+      token: null,
     });
     // The grant is the owner's edit; the ticket admits at view.
     expect(roomTicketLevel(opened!)).toBe('view');
@@ -127,6 +163,18 @@ describe('room tickets', () => {
       cap: 'boss' as unknown as 'view',
     });
     expect(await openRoomTicket(service, env, odd, 'd1')).toBeNull();
+    // No cap is only ever a ticket with no pairing, and a token is a non-empty string.
+    const uncappedPairing = await sealRoomTicket(env, 'grant-for-d1', {
+      pairing: null,
+      cap: null,
+    });
+    expect(await openRoomTicket(service, env, uncappedPairing, 'd1')).toMatchObject({ cap: null });
+    const badToken = await sealRoomTicket(env, 'grant-for-d1', {
+      pairing: null,
+      cap: 'view',
+      token: 5 as unknown as string,
+    });
+    expect(await openRoomTicket(service, env, badToken, 'd1')).toBeNull();
   });
 
   it('seals for another item only that item', async () => {

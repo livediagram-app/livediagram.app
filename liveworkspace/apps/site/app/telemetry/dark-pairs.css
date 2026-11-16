@@ -3,10 +3,11 @@
  * emits: named here, the sheet emits each after its light half, so a dark hover stays dark whatever loads after it
  * (liveworkspace/docs/specs/010-site/site.md "Stylesheets"). */
 @source inline("dark:bg-amber-400/15");
-@source inline("dark:bg-brand-400");
+@source inline("dark:bg-amber-500/20");
 @source inline("dark:bg-brand-400/10");
 @source inline("dark:bg-brand-500/25");
 @source inline("dark:bg-emerald-400/15");
+@source inline("dark:bg-red-500/10");
 @source inline("dark:bg-rose-500/15");
 @source inline("dark:bg-sky-400/15");
 @source inline("dark:bg-slate-700/40");
@@ -62,7 +63,6 @@
 @source inline("dark:hover:border-brand-400/60");
 @source inline("dark:hover:text-rose-300");
 @source inline("dark:ring-amber-400/20");
-@source inline("dark:ring-brand-400");
 @source inline("dark:ring-slate-600");
 @source inline("dark:shadow-black/20");
 @source inline("dark:stroke-brand-400");

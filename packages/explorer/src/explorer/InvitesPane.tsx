@@ -10,7 +10,7 @@ import { teamErrorMessage, type PendingInvitation } from '../data/teams';
 import { useTeams } from '../teams/context';
 import { initialsOf } from '../teams/TeamCard';
 import { NewTeamDialog } from '../teams/NewTeamDialog';
-import { Button } from '@liveworkspace/ui';
+import { Button, ButtonContent, buttonClassName } from '@liveworkspace/ui';
 import { EmptyState } from '@liveworkspace/ui';
 import { MailIcon } from '../ui/library-icons';
 import { useToast } from '../ui/Toasts';
@@ -18,13 +18,45 @@ import { relativeSince, useNow } from '../time';
 import { SIDEBAR_LABELS } from '../views';
 import { useExplorer } from './context';
 import { EmptyPane, SkeletonRows } from './EmptyPane';
+import { useExtras } from './extras';
 import { PaneHeader } from './PaneHeader';
 
 const members = (n: number) => `${n} ${n === 1 ? 'member' : 'members'}`;
 
+// Invites opened signed out, most often from an invitation email by someone with no account yet: never "none", since
+// invitations wait for whoever signs in with the invited address. It says nothing of any invitation itself, and offers
+// Sign In and Create Account, both back here (the host's hrefs name this page).
+export function SignedOutInvites({
+  signInHref,
+  signUpHref,
+}: {
+  signInHref: string;
+  signUpHref?: string;
+}) {
+  return (
+    <EmptyState
+      icon={<MailIcon size={28} />}
+      title="Your invitations are waiting"
+      description="Sign in with the email address your invitation was sent to and they show up here, to accept or decline. New to liveworkspace? Create a free account with that address."
+    >
+      <div data-invites-signed-out="" className="flex flex-wrap items-center justify-center gap-2">
+        <a href={signInHref} className={buttonClassName({ size: 'sm', className: 'shadow-sm' })}>
+          <ButtonContent>Sign In</ButtonContent>
+        </a>
+        {signUpHref ? (
+          <a href={signUpHref} className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
+            <ButtonContent>Create Account</ButtonContent>
+          </a>
+        ) : null}
+      </div>
+    </EmptyState>
+  );
+}
+
 export function InvitesPane() {
   const { words, navigate } = useExplorer();
   const { myTeams, myTeamsFailed, retryMyTeams, canRun, answer } = useTeams();
+  const { signedIn, signInHref, signUpHref } = useExtras();
   const toast = useToast();
   const now = useNow();
   // The invitations being answered, so their buttons wait.
@@ -61,7 +93,9 @@ export function InvitesPane() {
         />
       ) : null}
       <PaneHeader title={SIDEBAR_LABELS.invites} showFilter={false} />
-      {!canRun ? (
+      {!canRun && !signedIn && signInHref ? (
+        <SignedOutInvites signInHref={signInHref} signUpHref={signUpHref} />
+      ) : !canRun ? (
         <EmptyPane view={{ kind: 'invites' }} words={words} />
       ) : invites === null && myTeamsFailed ? (
         <EmptyState

@@ -52,6 +52,8 @@ export { HoverCard, type HoverCardProps } from './HoverCard';
 export { AppScopeToggle, type AppScope, type AppScopeOption } from './AppScopeToggle';
 // A pane header's small pressed-state switch, which AppScopeToggle and the Image Gallery's All / Unused draw.
 export { SegmentedToggle, type SegmentedOption } from './SegmentedToggle';
+export { PANEL_INK, RoleSwitch, type RoleOption } from './RoleSwitch';
+export { Spinner } from './Spinner';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { HINT_CARD_SURFACE } from './hint/hint-constants';
 export { Dialog, type DialogProps } from './dialog/Dialog';

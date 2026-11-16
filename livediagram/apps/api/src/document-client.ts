@@ -68,6 +68,8 @@ export type DocumentRoomClient = {
   // Share links revoked or rescoped elsewhere (the index): their sessions end now, or reload into what the link
   // opens now.
   revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  // The canvas went to the Trash at the index: every session hears it and closes now; answers how many closed.
+  trashed(): Promise<number>;
   // The canvas's Community post's link (its code, and whether it opens the canvas now), or null for none.
   community(): Promise<{ code: string; open: boolean } | null>;
   // The post's title when `code` is its open link: what a copy through it is named.
@@ -116,6 +118,7 @@ export function documentRoom(
     importMigrated: (payload) => room.importMigrated(documentId, payload),
     purge: () => room.purge(documentId),
     revokeCodes: (codes, reason) => room.revokeCodes(documentId, codes, reason),
+    trashed: () => room.trashed(documentId),
     community: () => room.community(documentId),
     communityPostTitle: (code) => room.communityPostTitle(documentId, code),
     communityListing: (code) => room.communityListing(documentId, code),
@@ -154,6 +157,7 @@ export type DocumentRoomRpc = {
     codes: string[],
     reason?: 'revoked' | 'rescoped',
   ): Promise<number>;
+  trashed(documentId: string): Promise<number>;
   community(documentId: string): Promise<{ code: string; open: boolean } | null>;
   communityPostTitle(documentId: string, code: string): Promise<string | null>;
   communityListing(

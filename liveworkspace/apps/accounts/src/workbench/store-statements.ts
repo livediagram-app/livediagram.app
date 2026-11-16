@@ -7,10 +7,13 @@ import {
   type SqlExec,
   WORKBENCH_QUOTA_MAX,
   WORKBENCH_SESSION_GRACE_MS,
+  WORKBENCH_TOKEN_ROOM_GRACE_MS,
   type WorkbenchLevel,
   type WorkbenchPairingRow,
   type WorkbenchReach,
   type WorkbenchScope,
+  EMBED_PAIRING_NAME,
+  EMBED_TOKEN_ID,
 } from './store-types.ts';
 import type { Row } from './store-schema.ts';
 
@@ -101,6 +104,23 @@ export function recordApprovedPairing(
     request.name,
     request.scope,
     now,
+  );
+}
+
+// A live embed's pairing for an app and host origin, made once (store-types.ts EMBED_TOKEN_ID).
+export function recordEmbedPairing(
+  sql: SqlExec,
+  input: { app: string; origin: string; now: number },
+): void {
+  sql.exec(
+    `INSERT INTO wb_pairings (id, app, token_id, origin, name, scope, created_at) VALUES (?, ?, ?, ?, ?, 'item', ?)
+     ON CONFLICT (app, token_id, origin) DO NOTHING`,
+    crypto.randomUUID(),
+    input.app,
+    EMBED_TOKEN_ID,
+    input.origin,
+    EMBED_PAIRING_NAME,
+    input.now,
   );
 }
 
@@ -207,7 +227,14 @@ export function nextLapseOf(sql: SqlExec): number | null {
        UNION ALL SELECT MIN(until) FROM wb_quota)`,
     WORKBENCH_SESSION_GRACE_MS,
   );
-  return typeof row?.at === 'number' ? row.at : null;
+  // A token's rooms on their own: a compound SELECT holds at most five terms (D1's limit, kept here too).
+  const rooms = firstOf(
+    sql,
+    'SELECT MIN(until) + ? AS at FROM wb_token_rooms',
+    WORKBENCH_TOKEN_ROOM_GRACE_MS,
+  );
+  const lapses = [row?.at, rooms?.at].filter((at): at is number => typeof at === 'number');
+  return lapses.length > 0 ? Math.min(...lapses) : null;
 }
 
 // Whether the store holds any row at all; one left with none deletes itself.
@@ -217,12 +244,13 @@ export function hasRows(sql: SqlExec): boolean {
       sql,
       `SELECT 1 FROM wb_pairings UNION ALL SELECT 1 FROM wb_pairing_requests UNION ALL SELECT 1 FROM wb_tickets
        UNION ALL SELECT 1 FROM wb_sessions UNION ALL SELECT 1 FROM wb_quota LIMIT 1`,
-    ) !== null
+    ) !== null || firstOf(sql, 'SELECT 1 FROM wb_token_rooms LIMIT 1') !== null
   );
 }
 
 // What has lapsed: tickets and requests past their expiry, sessions past their grace, allowance uses past their
-// window. Answers how many rows went.
+// window, a token's rooms past their ticket's lapse and grace, and live embed pairings left with neither ticket nor
+// session. Answers how many rows went.
 export function sweepLapsed(sql: SqlExec, now: number): number {
   let deleted = 0;
   const run = (query: string, ...bindings: unknown[]) => {
@@ -232,5 +260,13 @@ export function sweepLapsed(sql: SqlExec, now: number): number {
   run('DELETE FROM wb_pairing_requests WHERE expires_at <= ?', now);
   run('DELETE FROM wb_sessions WHERE expires_at <= ?', now - WORKBENCH_SESSION_GRACE_MS);
   run('DELETE FROM wb_quota WHERE until <= ?', now);
+  run('DELETE FROM wb_token_rooms WHERE until <= ?', now - WORKBENCH_TOKEN_ROOM_GRACE_MS);
+  // A live embed's pairing goes with its last ticket and session: it is no standing access.
+  run(
+    `DELETE FROM wb_pairings WHERE token_id = ?
+       AND NOT EXISTS (SELECT 1 FROM wb_tickets t WHERE t.pairing_id = wb_pairings.id)
+       AND NOT EXISTS (SELECT 1 FROM wb_sessions s WHERE s.pairing_id = wb_pairings.id)`,
+    EMBED_TOKEN_ID,
+  );
   return deleted;
 }

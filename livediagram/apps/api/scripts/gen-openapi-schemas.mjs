@@ -40,6 +40,8 @@ export const ROOT_TYPES = [
   'ChangesetSummary',
   'ChangesetDetail',
   'RevertResponse',
+  'ReviewSettings',
+  'ReviewResponse',
   'OutlineView',
   'GraphView',
   'LayoutView',

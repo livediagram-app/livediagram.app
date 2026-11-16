@@ -195,7 +195,9 @@ export function EditorHeader({
                 community={community}
                 onManage={showShare ? onOpenShare : undefined}
               />
-              {rolePill ? <span className="ml-1 inline-flex">{rolePill}</span> : null}
+              {rolePill ? (
+                <span className="ml-1 inline-flex items-center gap-2">{rolePill}</span>
+              ) : null}
             </span>
           </div>
         )}

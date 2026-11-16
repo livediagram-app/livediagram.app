@@ -42,7 +42,7 @@ dropped }`.
   default export gains `email`.
 - `apps/api/src/routes/email-intake-routes.ts`: `handleEmailIntakeRoutes(ctx)`, dispatched from
   `project-subresource-routes.ts` after the roadmaps'.
-- `plan-schema.ts`: V33, `EMAIL_INTAKES_SCHEMA`. `plan-room.ts`: `emailIntake`, `intakeEntry`, `setIntakeEntry`;
+- `plan-schema.ts`: V34, `EMAIL_INTAKES_SCHEMA`. `plan-room.ts`: `emailIntake`, `intakeEntry`, `setIntakeEntry`;
   `plan-client.ts` likewise.
 - `apps/api/wrangler.toml`: `EMAIL_INTAKE_DOMAIN = "in.liveplanner.app"` in `[vars]` (unset on staging: off there).
 - Editor `components/email-intake/`: `email-intake-gate.ts` (`emailIntakeScopeFor`), `email-intake-client.ts`,

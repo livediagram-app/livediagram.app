@@ -39,24 +39,27 @@ typed-in addresses do) `List-Unsubscribe-Post: List-Unsubscribe=One-Click` goes 
 
 ### The emails
 
-| Email               | Sent when                                   | Subject                                                        | Brand / links                                                        | Can be turned off              |
-| ------------------- | ------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------ |
-| Sign-in code        | a code is asked for                         | `<code> is your live<word> sign-in code`                       | the app it came through, else liveworkspace                          | no                             |
-| Deletion code       | an app asks before closing an account       | `<code> is your code to delete your liveworkspace account`     | the asking client's app, else liveworkspace                          | no                             |
-| Team invitation     | an admin invites; reminders at stage 1 to 3 | `<who> invited you to <team> on liveworkspace` (`Reminder: …`) | accept at `/explorer/invites`; decline at `/join/decline?token=`     | no                             |
-| Invitation response | someone accepts or declines                 | `<responder> accepted\|declined your invitation to <team>`     | `/explorer/team?id=`; unsubscribe `/explorer?settings=notifications` | `notifyInviteResponse` (`all`) |
-| Token expiring      | a week before, in the send window           | `Your liveworkspace API token expires soon`                    | `/explorer?settings=tokens`                                          | no                             |
-| Welcome             | right after sign-up, caught up every 15 min | `Welcome to liveworkspace`                                     | liveworkspace's frame, links to the home app                         | no                             |
-| Week 1              | ~7 days in                                  | `Find your way around the Explorer`                            | as above                                                             | `notifyTips`                   |
-| Week 2              | ~14 days in                                 | `Bring your team into your work`                               | as above                                                             | `notifyTips`                   |
-| Activation          | ~3 days in, nothing made, week 1 not sent   | `Your first piece of work is waiting`                          | as above                                                             | `notifyTips`                   |
-| Win-back            | once, 4 weeks after the last save           | `Your work is waiting`                                         | as above                                                             | `notifyTips`                   |
+| Email               | Sent when                                   | Subject                                                        | Brand / links                                                                             | Can be turned off              |
+| ------------------- | ------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------ |
+| Sign-in code        | a code is asked for                         | `<code> is your live<word> sign-in code`                       | the app it came through, else liveworkspace                                               | no                             |
+| Deletion code       | an app asks before closing an account       | `<code> is your code to delete your liveworkspace account`     | the asking client's app, else liveworkspace                                               | no                             |
+| Team invitation     | an admin invites; reminders at stage 1 to 3 | `<who> invited you to <team> on liveworkspace` (`Reminder: …`) | accept at `/explorer/invites?invite=`; decline at `/join/decline?token=` (the same token) | no                             |
+| Invitation response | someone accepts or declines                 | `<responder> accepted\|declined your invitation to <team>`     | `/explorer/team?id=`; unsubscribe `/explorer?settings=notifications`                      | `notifyInviteResponse` (`all`) |
+| Token expiring      | a week before, in the send window           | `Your liveworkspace API token expires soon`                    | `/explorer?settings=tokens`                                                               | no                             |
+| Welcome             | right after sign-up, caught up every 15 min | `Welcome to liveworkspace`                                     | liveworkspace's frame, links to the home app                                              | no                             |
+| Week 1              | ~7 days in                                  | `Find your way around the Explorer`                            | as above                                                                                  | `notifyTips`                   |
+| Week 2              | ~14 days in                                 | `Bring your team into your work`                               | as above                                                                                  | `notifyTips`                   |
+| Activation          | ~3 days in, nothing made, week 1 not sent   | `Your first piece of work is waiting`                          | as above                                                                                  | `notifyTips`                   |
+| Win-back            | once, 4 weeks after the last save           | `Your work is waiting`                                         | as above                                                                                  | `notifyTips`                   |
 
 The invitation's inviter name falls back to `Someone`. The code email and the deletion code email say they work 10 minutes; both draw the code in the same tinted panel
 (`codePanel`). Nothing a person
 wrote is ever in a series email.
 
-Every email is `frame(brand, { preheader, heading, body, footer })` with a `text` part. The code email takes the
+Every email is `frame(brand, { preheader, heading, body, footer })` with a `text` part. The frame opens
+`<!doctype html>\n<html>` and `EMAIL_HEAD` (`@liveworkspace/email/layout`: `<meta charset="utf-8">`, the matching
+`http-equiv` Content-Type and `<meta name="viewport" content="width=device-width, initial-scale=1">`) before the
+body, well inside the first 1024 bytes a browser scans for a saved file's charset. The code email takes the
 brand it came through; every other email takes `workspaceBrand({ BASE_URL })`. The team and token emails:
 
 | Email               | Heading                                                | Button                  | Sign-off under the rule                                                              |

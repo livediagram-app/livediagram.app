@@ -2,9 +2,10 @@ import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { lucideCheck } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
 import type { Metadata } from 'next';
-import { type CSSProperties, Fragment } from 'react';
+import { type CSSProperties, Fragment, type ReactNode } from 'react';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { ClosingActions, SignUpPromise } from '@/components/landing/AccountActions';
 import { Apps } from '@/components/landing/Apps';
 import { HeroActions } from '@/components/landing/HeroActions';
 import { HubArt } from '@/components/landing/HubArt';
@@ -25,8 +26,12 @@ const STEPS: Partial<Record<SiteId, string>> = {
   'livehuddle.app': 'talk it through',
 };
 
-// Every app is open source (each product's LICENSE).
-const PROMISES = ['Open source', 'No sign-up needed', 'No trackers or ads'];
+// Every app is open source (each product's LICENSE). The second one changes for someone signed in (SignUpPromise).
+const PROMISES: { key: string; text: ReactNode }[] = [
+  { key: 'open-source', text: 'Open source' },
+  { key: 'no-sign-up', text: <SignUpPromise /> },
+  { key: 'no-trackers', text: 'No trackers or ads' },
+];
 
 // liveworkspace.app's front door (liveworkspace/docs/specs/010-site/site.md "The front door"): what liveworkspace
 // is, the apps in it and how they join up, and the one account that ties them together.
@@ -80,11 +85,11 @@ export default function Home() {
               <HeroActions />
               <ul className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm sm:justify-start text-slate-500 dark:text-slate-400">
                 {PROMISES.map((p) => (
-                  <li key={p} className="flex items-center gap-1.5">
+                  <li key={p.key} className="flex items-center gap-1.5">
                     <span className="text-emerald-600 dark:text-emerald-400">
                       <CheckIcon />
                     </span>
-                    {p}
+                    {p.text}
                   </li>
                 ))}
               </ul>
@@ -111,23 +116,7 @@ export default function Home() {
               <h2 className="mx-auto mt-8 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-5xl">
                 One account. Every app. Always live.
               </h2>
-              <p className="mx-auto mt-4 max-w-xl text-lg text-slate-300">
-                Or start your work as a guest without signing in at all.
-              </p>
-              <div className="mt-9 flex flex-wrap justify-center gap-3">
-                <a
-                  href="/sign-up?return=%2F"
-                  className="relative touch-target-y inline-flex min-h-12 items-center rounded-full bg-white px-6 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-px hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                >
-                  Create your free account
-                </a>
-                <a
-                  href="#apps"
-                  className="relative touch-target-y inline-flex min-h-12 items-center rounded-full border border-white/25 px-6 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                >
-                  Pick an app
-                </a>
-              </div>
+              <ClosingActions />
             </div>
           </div>
         </section>

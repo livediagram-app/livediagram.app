@@ -3148,7 +3148,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "loom",
       "figma",
       "gdocs",
-      "website"
+      "website",
+      "live"
     ],
     "type": "string"
   },
@@ -4508,6 +4509,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "info"
     ],
     "type": "string"
+  },
+  "LiveEmbedApp": {
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign"
+    ],
+    "type": "string"
+  },
+  "LiveItem": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/LiveEmbedApp"
+      },
+      "itemId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId"
+    ],
+    "type": "object"
   },
   "MapPin": {
     "additionalProperties": false,
@@ -6301,7 +6327,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "ReviewResponse": {
     "additionalProperties": false,
-    "description": "`GET` and `PUT /api/documents/:id/review`'s answer.",
+    "description": "`GET` and `PUT /api/<items>/:id/review`'s answer.",
     "properties": {
       "review": {
         "$ref": "#/components/schemas/StoredReview"
@@ -7493,7 +7519,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "StoredReview": {
     "additionalProperties": false,
-    "description": "What the document keeps: the settings, the people seen joining as Participants, and the pins.",
+    "description": "What the item keeps: the settings, the people seen joining as Participants, and the pins.",
     "properties": {
       "agents": {
         "type": "boolean"
@@ -8921,6 +8947,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
+      },
+      "liveItem": {
+        "$ref": "#/components/schemas/LiveItem"
+      },
+      "liveName": {
+        "type": "string"
+      },
+      "livePoster": {
+        "type": "string"
       },
       "locked": {
         "type": "boolean"

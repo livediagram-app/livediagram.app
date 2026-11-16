@@ -526,8 +526,16 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   taken out and used bare. It names no pairing, so nothing closes it by one; it lives as long as the grant inside
   it (10 minutes) and is never renewed in place: the client mints a fresh one, through its own credential, which
   asks the index again. The room stamps such a session as no owner, whoever the grant's person is. Revoking the
-  person's access closes it (`person`, 4005) and its next mint is refused; revoking the credential stops it at
-  the latest when its ticket lapses.
+  person's access closes it (`person`, 4005) and its next mint is refused; revoking the credential closes it at
+  once (below).
+- **A token's ticket**: a ticket minted through an API token (a view-only one, or one with no cap at all) is sealed
+  with the token's id too (`rt2~`, the sealed facts' `k`), and the room keeps it on the socket. The app notes the room
+  at accounts against the token until the ticket lapses (`POST /api/account/internal/workbench/token-rooms`,
+  [workbench.md](../011-workbench/workbench.md) "A token's rooms"). Revoking the token closes those rooms through the
+  same index door: `POST /api/index/internal/workbench-close {app, tokenId, itemIds}`, and the app's
+  `POST <app>/api/internal/items/:id/workbench-close {tokenId}` (`tokenClose` in `@liveworkspace/index-app`),
+  which closes exactly the sockets that token's tickets opened (`{match: 'token'}`, 4005). The body names a pairing
+  or a token, never both. An app that seals no token answers 404 for `{tokenId}`.
 - **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
   editor answers `{kind: "grant", grant}` with a fresh one (a paired tool's session answers with a fresh sealed
   ticket). A fresh grant saying the same moves the lapse on; one with another level, tab or pairing (a paired
@@ -554,6 +562,9 @@ minute, with retries ([When a push fails](#when-a-push-fails)):
 - `PUT /app/items/:id/summary`: `{summary, updatedAt}`. An `updatedAt` more than five minutes ahead is taken as
   now, as an event's `at` is: a clock running fast can't pin the item to the top of every list, where a later push
   could never bring it down.
+  `updatedAt` is the item's newest content save, so it is also the item's revision: the index keeps it as the item's
+  `content_at`, which only moves forward and nothing else writes, for an approval's Changed Since Approval
+  ([approvals.md](approvals.md#changed-since-approval-the-items-revision)).
 - `PUT /app/items/:id/collab/:tabId`: the tab's comment threads and actions, replacing that tab's rows:
   `{tabName?, threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds,
 latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, agentIds?, card?, firstAt,
@@ -775,7 +786,9 @@ copy for a year, so the sweep never cuts it short.
 
 - The index records `created` (with `source` when an AI or import made it, `copiedFrom` for a copy),
   `renamed` (`from`), `moved` (`folderName`, `teamId`, and `fromTeamId` when it changed team), `trashed`, `restored`,
-  `shared` (`level`), `unshared` and `favourited` in the same batch as the change. An empty item its app tidies away
+  `shared` (`level`), `unshared` and `favourited` in the same batch as the change. An approval request, decision or
+  cancel records `approval_requested`, `approval_approved`, `approval_changes_requested` or `approval_cancelled`
+  ([approvals.md](approvals.md#history-and-the-team-audit-log)). An empty item its app tidies away
   is not news. An item created with `synced: true` (kept offline in one browser, put back under its own id) records
   `synced` instead of `created`. An item taken offline for good (`DELETE /items/:id?permanent=true&reason=offline`)
   leaves no event: it is gone, and so is its History. A joined teammate taking a team item offline sends the team's

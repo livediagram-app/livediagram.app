@@ -71,18 +71,18 @@ const FIXTURES: Record<string, unknown[][]> = {
 };
 
 const EXPECTED: Record<string, string> = {
-  accountDeletedEmail: '5333b9860bf5fae6cb5160923149384cc475bb4c5b33aca5f6bedb02b5151b17',
-  actionAssignedEmail: 'dc95db5e1d00956f671a6244b456f1af84146cc8ff96b354beeafb5170d1f5a4',
-  automationAddressEmail: '5ad4e6c7336a3eb40e9fd05b2fd865e272e31caa6b147a829af4fd5c57dc9030',
-  automationEmail: '41f7dd42b5b05aceb55b7b6dc1c95d5fbda3a64aec2181e8730d131a8efd958a',
-  commentNotificationEmail: 'd1791defcf18b7dca7b58d4b143fc509af641339a032fb14328d1e1c48ab5481',
-  firstShareEmail: 'c65e8a751b3e08bcd12ca05170a3a62f0ad42fdc4fb9e7a3228658b5d1d36737',
-  formResponseEmail: 'c89afa28b11f42d1464a29c5546f297f0f6f61113839d1b93c7c1e8e3d82b0f8',
-  formSuspendedEmail: '4259b18e6c0b3e6e51ffdeec5916652ff4a5f1b5176246e716385afedf107f28',
+  accountDeletedEmail: '40b3ce60a5f46f012a1b4b12b74f4b198a90913314d06113d96bc4cc32fe6063',
+  actionAssignedEmail: '4536ec03977842845924c44bf6fabd1e0d3b799a0f6d6be72c50202c45f73c75',
+  automationAddressEmail: '2f5c40eefb275f8b0b6abecc38caa50c704abfa46ef6cc2c8ec6b6a3b6087a62',
+  automationEmail: '00459a50e9c575ca8b4fe8e82b9d5dffe7362729b54fe472ce8d0e21831333c8',
+  commentNotificationEmail: 'd67533e81468cbc72d7df8b406de54a9692dc6ab98deea5ba1ad3398441490de',
+  firstShareEmail: 'b737bf7aafbb563c57be7634303fbe8db1c5a4792ebdb0ac1975b909ae740baa',
+  formResponseEmail: '9ff7fec86671bb122718fff9a11328cdc699c504732fd0510a37c422adaa1dd5',
+  formSuspendedEmail: 'eb4eb858fb2bed9bea1926510be10f841e3c9f2e5bd02d3cf3beee900e7970f1',
   mentionQuote: '8d3f68955246da293e50ef5ebbe33ecdd4a4b7e9d61945db180b8771a547ead9',
-  mentionedEmail: 'f64e56e51ba7d57b4857bb1cbde401fe4ec818ed71fcfb6a416a32eea534fc34',
-  milestoneEmail: '530897a37a84a2e43347a57b9dcabb22b18e5bc83b30efa03a9d71e295b31a26',
-  projectJoinedEmail: '7f69cf99201625678e01068af34489788fa04106c13563c37089d722e487e525',
+  mentionedEmail: 'c2288762e850f57e2d6b797e4acb2fd3a45465195a9add924e0ad9993361f32d',
+  milestoneEmail: 'a429bdb880126e40c54f6d515ea48fe27b00647b8ce43e6a5283a909e60c7ede',
+  projectJoinedEmail: '05b0440cda152eab3f9cc8fe9fb60398d7e6f89802e8af5db52a7b87456abc0d',
 };
 
 function renders(): Record<string, string> {

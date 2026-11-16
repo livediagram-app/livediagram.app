@@ -20,15 +20,16 @@ import {
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { communityService } from '../community-service';
-import { notifyFirstShare } from '../email/notifications';
+import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { mediaClient, mediaOwner } from '../media';
 import { documentRoom } from '../document-client';
-import { closeWorkbenchSessions } from '../room-access-client';
+import { closeWorkbenchSessions, tellTrashed } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
+import { documentFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -59,6 +60,8 @@ export function handleInternalItems(
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
       revoke: (id, codes, reason) => documentRoom(env, id).revokeCodes(codes, reason),
+      // An approval request (liveworkspace approvals.md): the approvers' email.
+      approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
@@ -100,6 +103,8 @@ export function handleInternalItems(
       exportComments: (id) => documentRoom(env, id).exportComments(),
       // A new document from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDocumentFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => documentFromTemplate(env, input),
       // A workbench pairing's access ended at liveworkspace: its sockets in this document's room close.
       // An old livediagram.app document's livedocuments part, into its document's room (document-room/document-migration.ts). A tab
       // over the tab cap refuses the whole part (413) before the room is called.
@@ -108,6 +113,12 @@ export function handleInternalItems(
         return documentRoom(env, payload.id).importMigrated(payload);
       },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // Where the document stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
+      // editors"): trashed anywhere (the api, MCP delete_document, the Explorer), its room tells every editor and
+      // closes. Nothing is kept, so a restore reopens as before.
+      standing: async (id, standing) => {
+        if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
+      },
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the document's tab bar.
       connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),

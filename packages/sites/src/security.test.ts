@@ -154,5 +154,7 @@ describe('every advisory link in the repository', () => {
     expect(wrong).toEqual([]);
     // The root SECURITY.md, each product's, each README and each help article at least.
     expect(seen).toBeGreaterThanOrEqual(10);
-  });
+    // It reads every tracked text file (tens of thousands), which is disk time, not work: on a loaded machine that
+    // passed the 5 s default, so it has its own room.
+  }, 30_000);
 });

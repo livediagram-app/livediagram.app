@@ -156,3 +156,23 @@ describe('review settings', () => {
     expect(parseReviewSettings({ links: [], lift: ['k', 'k', 3] }).lift).toEqual(['k']);
   });
 });
+
+describe('review pins, bounded', () => {
+  it('moves a person to the link they came through last, and keeps at most the cap', () => {
+    const base = { ...NO_REVIEW, links: ['code1', 'code2'] };
+    const first = withReviewPinned(base, 'key1', 'code1', 1);
+    const moved = withReviewPinned(withReviewPinned(first, 'key2', 'code1', 2), 'key1', 'code2', 3);
+    expect(moved.pins.map((p) => [p.key, p.code])).toEqual([
+      ['key1', 'code2'],
+      ['key2', 'code1'],
+    ]);
+    const many = Array.from({ length: SUGGEST_ONLY_MAX_PEOPLE + 5 }, (_, i) => ({
+      key: `k${i}`,
+      code: 'code1',
+      at: i,
+    }));
+    expect(parseStoredReview(JSON.stringify({ links: ['code1'], pins: many })).pins).toHaveLength(
+      SUGGEST_ONLY_MAX_PEOPLE,
+    );
+  });
+});

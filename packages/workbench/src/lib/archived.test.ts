@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { writeThisBrowser } from '@liveworkspace/explorer/this-browser';
 import { afterEach, describe, expect, it } from 'vitest';
-import { archivedByIndex, archivedChangeFolderHref, archivedInThisBrowser } from './archived';
+import {
+  archivedByIndex,
+  archivedChangeFolderHref,
+  archivedInThisBrowser,
+  isArchivedLoadError,
+} from './archived';
 
 afterEach(() => window.localStorage.clear());
 
@@ -38,5 +43,14 @@ describe('archived files in an editor', () => {
     expect(archivedByIndex('n', refusal)).toBe(false);
     expect(archivedByIndex('x', refusal)).toBe(false);
     expect(archivedByIndex(null, refusal)).toBe(false);
+  });
+
+  it('tells the api’s `409 archived` from every other load failure', () => {
+    expect(isArchivedLoadError({ status: 409, code: 'archived' })).toBe(true);
+    expect(isArchivedLoadError({ status: 409, code: 'tab_busy' })).toBe(false);
+    expect(isArchivedLoadError({ status: 404, code: 'archived' })).toBe(false);
+    expect(isArchivedLoadError(new Error('offline'))).toBe(false);
+    expect(isArchivedLoadError(null)).toBe(false);
+    expect(isArchivedLoadError('archived')).toBe(false);
   });
 });

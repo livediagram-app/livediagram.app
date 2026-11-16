@@ -68,3 +68,24 @@ describe('the workbench close match', () => {
     );
   });
 });
+
+// A revoked API token's room tickets (public-api-and-tokens.md "Revoking a token"): its sockets, and nobody else's.
+describe('the token close match', () => {
+  const TOKEN = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
+  const token = { match: 'token', tokenId: TOKEN } as const;
+
+  it('parses a token id, and refuses anything that is not one', () => {
+    expect(parseAccessCloseMatch({ match: 'token', tokenId: TOKEN })).toEqual(token);
+    expect(parseAccessCloseMatch({ match: 'token', tokenId: 'lwt_secret' })).toBeNull();
+    expect(parseAccessCloseMatch({ match: 'token' })).toBeNull();
+  });
+
+  it('matches only the sockets that token opened, never another token or a person', () => {
+    expect(sessionMatchesAccessClose({ apiToken: TOKEN }, token)).toBe(true);
+    expect(
+      sessionMatchesAccessClose({ apiToken: '00000000-0000-4000-8000-000000000000' }, token),
+    ).toBe(false);
+    expect(sessionMatchesAccessClose({ personTag: TAG, apiToken: null }, token)).toBe(false);
+    expect(sessionMatchesAccessClose({ workbenchPairing: TOKEN }, token)).toBe(false);
+  });
+});

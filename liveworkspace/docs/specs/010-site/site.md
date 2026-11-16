@@ -117,9 +117,9 @@ moves between them, and the one account that joins them.
 1. **Hero**: "Everything your team makes, live in one workspace", then two short paragraphs, never one block:
    the first names each app in its accent and what it is for (sketch, plan, write it up, make it look right, talk
    it through), the second says one account opens them all and every link opens straight into the work. Under the
-   calls to action, three ticked promises: Open source, No sign-up needed, No trackers or ads. Two calls to
-   action: **Create your free account** (`/sign-up`, back here after) and **Explore the apps**.
-   Signed in, they are hidden. Beside it, the platform's prism
+   calls to action, three ticked promises: Open source, No sign-up needed (Free in every app, signed in), No
+   trackers or ads. Two calls to action: **Create your free account** (`/sign-up`, back here after) and **Explore
+   the apps**. Signed in, they are hidden. Beside it, the platform's prism
    with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
    clockwise in the
    order work moves through them, and someone at work in each, drawn as that app shows them: a cursor in
@@ -155,14 +155,20 @@ moves between them, and the one account that joins them.
 3. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
    the same promises", thirteen tiles that fill every row (18 cells over three columns, 16 over two), each with a small piece of the product drawn
    in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
-   account (the large tile, the sign-in box beside each app signed in, with Create your account);
+   account (the large tile, the sign-in box beside each app signed in, with Create your account, or, signed in,
+   Open your Explorer);
    live by default (people in the work as each app shows them: a cursor on a canvas, a ring on a held card, a
    character in a Space; the words promise real-time collaboration, never a cursor in every app); share by link (the share box); one Explorer for
    everything (full width: the words beside a folder holding a Canvas, a Plan, a Document, a
    Design and a Space, two by two with the Space across the foot); connected across apps (a plan's tab bar holding connected files from the other apps, one open as a preview; two columns wide on a tablet); one Inbox; teams across every app; one key for scripts and AI (a token in a
    terminal, checked against every app's API by a script, since there is no liveworkspace CLI); a copy in your Google Drive (the liveworkspace folder in Drive, a file from each app, each synced); on your phone, too (an installed app's notification on a home screen of the apps); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free.
-4. **Closing call to action**: "One account. Every app. Always live."
+4. **Closing call to action**: "One account. Every app. Always live." Signed out, it says "Or start your work as a
+   guest without signing in at all." over **Create your free account** (`/sign-up`, back here after) and **Pick an
+   app** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
+   app. Pick up where you left off." over **Open Explorer** (`/explorer`) and **Pick an app**. Until the page knows
+   (`useSession`), it shows the signed-out words, right for most visitors; the two states have the same lines and
+   buttons, so the swap moves nothing (`components/landing/AccountActions.tsx`).
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
    comparisons, the Community, every app's posts together, the telemetry dashboard and Status) and Legal (the
    privacy policy, Terms of Use, Report a Vulnerability and Licences). Report a Vulnerability opens the repository's
@@ -413,6 +419,8 @@ built once here. It is shown here and, through each switched-on app's router, at
   Apps), drawn by the Explorer itself from `@liveworkspace/ui/work-art`, so nothing is loaded for them. Each starts
   its template in its app: the page hands the Explorer `templateHref` (`lib/explorer/host.ts`), the app's own
   `/new?template=` ([one-explorer.md](../004-index/one-explorer.md) "What you can make, on Home's hero").
+  Under All Apps the heading carries **Start a Project** on its right, to this site's `/kits` (below): one press
+  makes a whole project across the apps.
 - **Previews.** Every app's items have one, from liveworkspace's previews on the page's own origin
   (`/api/previews/items/<id>?v=<updatedAt>`, [previews.md](../006-media/previews.md)), asked with the person's workspace token
   and the item's share code. They are asked for only as a card nears the screen or a row is pointed at, at most
@@ -531,6 +539,41 @@ pages are `noindex`. Cmd/Ctrl+K and Cmd/Ctrl+. open the Search panel (`useSearch
 `@liveworkspace/explorer/search-shortcut`), the same two chords as the editors' command palette. They stand aside while
 the person is typing (a text field, a text area, a select or editable text) and while a dialog is open (anything
 marked `aria-modal`, the Search panel itself included), so a chord typed into a field or a dialog stays there.
+
+### Start a Project (`/kits`)
+
+One click starts a project across the apps: a [kit](../004-index/kits.md) makes an item from a template in each of
+its apps, in a new folder, every one connected to every other both ways. The page is
+`app/kits/page.tsx` and `components/kits/`, static like the rest, asking the index with the workspace token as the
+Explorer does.
+
+- **The header and frame** are the site's (the header, the footer), the page's words under the header: "Start a
+  Project", then "One click makes every file your project needs, in every app, in a new folder, each one connected
+  to the others."
+- **The kits.** One card per kit of the catalogue, in its order: its title, its line, and its parts as rows, each the
+  part's app logo (its Living Prism) and the part's name over the app's name. The cards are one radio group
+  ("Kit"): pressing a card chooses it, its border and a tick in the deep shade of liveworkspace's accent; arrow keys
+  move between them. The first kit is chosen as the page opens. Two columns from `md`, one on a phone.
+- **The setup**, under the cards, in place (no dialog): **Project Name** (the chosen kit's title as its placeholder,
+  used when left empty, at most `KIT_NAME_MAX`), **Role** as the three-way switch Connect File draws (Editor,
+  Participant, Viewer; Editor chosen), with its words under it, the only line under a control on this page because
+  it is the one choice that shares: "Anyone who can open one of these files can edit the others." (take part in,
+  view). When the chosen role is one a part's app does not offer, a second line says what that part gets instead
+  ("livehuddle has no Viewer role, so Team Space opens to Participants."). Then **Create Project**, naming how many
+  files ("Create 4 Files" on a phone).
+- **Signed out (or a guest).** The kits and the setup show as they are, and Create Project is **Sign In to Create**,
+  which signs in and comes back here (`signInHref`). Until the session is known, the button waits, disabled.
+- **The run.** Create replaces the setup with the run's card, in place: one row per part, its logo, its name and its
+  state (a spinner while making; a tick once made, with **Open**; a cross when it could not be made, saying so),
+  then a row for the connections ("Connecting 4 files…", then "12 connections, Editor"). The page cannot see each step
+  of the index's one request, so every row spins until the answer comes. `aria-live="polite"` reads the outcome.
+- **Done.** "Your project is ready." with **Open Folder** (the Explorer at the folder, `/explorer/folder?id=<id>`) and
+  each part's Open (its app's item address), and **Start Another**, which brings the setup back.
+- **Partly done.** "Some of your project couldn't be made." over the rows, with **Retry** (the same kit, role and
+  folder; only what is missing is made) and **Remove What Was Made** (asks once, in place: "Delete the files this
+  made? This can't be undone." Delete Them, Cancel; then the setup comes back). A run that made nothing at all
+  ("Couldn't start your project.") offers Try Again alone.
+- **A refused run** (the network, the index) leaves the setup as it was with the reason under Create, in words.
 
 ### The Community (`/community`, `/community/post`)
 

@@ -16,6 +16,8 @@ import {
   type ShareLink,
   type ShareLinkExpiry,
 } from '@liveworkspace/index-client';
+import { ApprovalPanel } from '../approvals/ApprovalPanel';
+import { useApprovalDoor } from '../approvals/door';
 import { useShareLinks } from '../data/useShareLinks';
 import { useNow } from '../time';
 import { Button, CountBadge } from '@liveworkspace/ui';
@@ -122,8 +124,27 @@ export function ShareDialog({
   initialView = 'passes',
   publicNote = null,
 }: ShareDialogProps) {
-  const [view, setView] = useState<ShareView>(appTab ? initialView : 'passes');
+  // Approval (approvals.md): for an Editor where the editor offers approvals; the badge opens the dialog on it.
+  const approvals = useApprovalDoor();
+  const approvalTab = Boolean(approvals?.door.canRequest);
+  const views = useMemo<ShareView[]>(
+    () => [
+      'passes',
+      ...(appTab ? (['app'] as const) : []),
+      ...(approvalTab ? (['approval'] as const) : []),
+    ],
+    [appTab, approvalTab],
+  );
+  const [view, setView] = useState<ShareView>(() =>
+    approvals?.takeStartTab() && approvalTab
+      ? 'approval'
+      : views.includes(initialView)
+        ? initialView
+        : 'passes',
+  );
+  const tabbed = views.length > 1;
   const showApp = Boolean(appTab) && view === 'app';
+  const showApproval = approvalTab && view === 'approval';
   const [note, setNote] = useState<{ text: string; tone: 'success' | 'info' | 'error' } | null>(
     null,
   );
@@ -246,11 +267,26 @@ export function ShareDialog({
         }
         onClose={close}
       />
-      {appTab ? (
-        <ShareTabs view={view} onView={setView} appLabel={appTab.label} appBadge={appTab.badge} />
+      {tabbed ? (
+        <ShareTabs
+          views={views}
+          view={view}
+          onView={setView}
+          appLabel={appTab?.label ?? ''}
+          appBadge={appTab?.badge}
+        />
       ) : null}
 
-      {appTab && showApp ? (
+      {showApproval ? (
+        <div
+          id={sharePanelId('approval')}
+          role="tabpanel"
+          aria-labelledby={shareTabId('approval')}
+          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
+        >
+          <ApprovalPanel />
+        </div>
+      ) : appTab && showApp ? (
         <div
           id={sharePanelId('app')}
           role="tabpanel"
@@ -261,9 +297,9 @@ export function ShareDialog({
         </div>
       ) : (
         <div
-          id={appTab ? sharePanelId('passes') : undefined}
-          role={appTab ? 'tabpanel' : undefined}
-          aria-labelledby={appTab ? shareTabId('passes') : undefined}
+          id={tabbed ? sharePanelId('passes') : undefined}
+          role={tabbed ? 'tabpanel' : undefined}
+          aria-labelledby={tabbed ? shareTabId('passes') : undefined}
           className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
         >
           <ShareComposer

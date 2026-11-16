@@ -5,7 +5,7 @@
 import type { Env } from '../env.ts';
 import { hashApiToken, isApiTokenFormat } from '../tokens.ts';
 import { closeRooms } from './index-access.ts';
-import { workbenchStoreOf } from './store.ts';
+import { EMBED_TOKEN_ID, workbenchStoreOf } from './store.ts';
 
 type WaitUntil = (promise: Promise<unknown>) => void;
 
@@ -34,6 +34,18 @@ export async function liveTokenFacts(
   return row ? { readOnly: row.readOnly === 1, expiresAt: row.expiresAt } : null;
 }
 
+// What a ticket's or session's token allows: a live embed's has no token row (workbench.md "Live embed tickets"), so it
+// is read-only and lapses with its own session; any other is the API token's own facts, or null once it stops working.
+export async function sessionTokenFacts(
+  db: D1Database,
+  tokenId: string,
+  userId: string,
+  now = Date.now(),
+): Promise<{ readOnly: boolean; expiresAt: number } | null> {
+  if (tokenId === EMBED_TOKEN_ID) return { readOnly: true, expiresAt: Number.POSITIVE_INFINITY };
+  return liveTokenFacts(db, tokenId, userId, now);
+}
+
 // The token a secret is, revoked or not, for ending its workbench after a self-revoke. Either prefix (`lwt_`, or an
 // `lvd_` one carried over from the old livediagram.app, isApiTokenFormat).
 export async function tokenBySecret(
@@ -47,7 +59,8 @@ export async function tokenBySecret(
     .first<{ id: string; userId: string }>();
 }
 
-// A token was revoked: its pairings and requests go, and their rooms close. Never fails the revoke.
+// A token was revoked: its pairings and requests go, and their rooms close, with the rooms its own room tickets opened
+// (an MCP server's live view). Never fails the revoke.
 export async function endTokenWorkbench(
   env: Env,
   userId: string,

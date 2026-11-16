@@ -68,6 +68,16 @@ A tab can sit in several canvases ([Tab ↔ document many-to-many](../006-docume
 Trashing a canvas does not touch its tabs, so a tab it shares with another canvas carries on there. When the
 trashed canvas is purged, a tab no other canvas holds goes with it, and a tab still linked elsewhere stays.
 
+### Open editors
+
+A trash made anywhere (the editor, the Explorer, the REST API, MCP) is the index's: it tells the app where the item
+now stands (`POST /api/internal/items/:id/standing`, one-explorer-contracts.md "Where an item stands") off the trash's
+own path. On `trashed: true` the api posts `{op: {kind: 'document-trashed'}}` to the document's room (`tellTrashed`,
+`@liveworkspace/api-kit/room-access-client`), which sends it from `system` to every session and closes each socket,
+as for any `document-trashed` op. Open editors and MCP views show the trashed state at once. The notice is fire-and-forget (a
+room that cannot be reached is logged, and its sessions end at their next grant renewal), and the room keeps nothing
+of it, so a restore reopens as before.
+
 ## The purge
 
 The index's daily sweep purges every canvas that has been in the Trash for 30 days or more, and tells livehuddle to

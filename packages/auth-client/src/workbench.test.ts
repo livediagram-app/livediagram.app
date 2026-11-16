@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createTokenRoomNoter,
   createWorkbenchRoomNoter,
   createWorkbenchSessionChecker,
   takeAllowance,
@@ -132,6 +133,40 @@ describe('createWorkbenchRoomNoter', () => {
     const { fetcher, calls } = fakeFetch(() => new Response(null, { status }));
     const note = createWorkbenchRoomNoter(CREDENTIALS, { fetcher });
     const input = { ownerId: 'user_1', sessionId: 's1', itemId: 'plan1' };
+    await expect(note(input)).resolves.toBe(false);
+    status = 204;
+    await expect(note(input)).resolves.toBe(true);
+    expect(calls).toHaveLength(2);
+  });
+});
+
+// public-api-and-tokens.md "Revoking a token": each room ticket a token mints moves its room's note on.
+describe('createTokenRoomNoter', () => {
+  it('tells accounts each time a ticket moves the lapse on, never a repeat', async () => {
+    const { fetcher, calls } = fakeFetch(() => new Response(null, { status: 204 }));
+    const note = createTokenRoomNoter(CREDENTIALS, { fetcher, maxEntries: 2 });
+    const input = { ownerId: 'user_1', tokenId: 't1', itemId: 'd1', until: 1_000 };
+    await expect(note(input)).resolves.toBe(true);
+    await note(input);
+    await note({ ...input, until: 900 });
+    await note({ ...input, until: 2_000 });
+    expect(calls.map((c) => JSON.parse(c.init.body as string).until)).toEqual([1_000, 2_000]);
+    expect(calls[0]!.url).toBe(
+      'https://liveworkspace.app/api/account/internal/workbench/token-rooms',
+    );
+    // Remembered rooms are bounded: the oldest goes first.
+    await note({ ...input, itemId: 'd2' });
+    await note({ ...input, itemId: 'd3' });
+    await note({ ...input, itemId: 'd2' });
+    await note(input);
+    expect(calls).toHaveLength(5);
+  });
+
+  it('tries again after a note that failed', async () => {
+    let status = 503;
+    const { fetcher, calls } = fakeFetch(() => new Response(null, { status }));
+    const note = createTokenRoomNoter(CREDENTIALS, { fetcher });
+    const input = { ownerId: 'user_1', tokenId: 't1', itemId: 'd1', until: 1_000 };
     await expect(note(input)).resolves.toBe(false);
     status = 204;
     await expect(note(input)).resolves.toBe(true);

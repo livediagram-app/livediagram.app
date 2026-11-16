@@ -80,6 +80,13 @@ export type SessionAttachment = {
   //   - `workbenchPairing`: the workbench pairing that opened this session (docs/specs/013-workspace/workbench-embeds.md),
   //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
   workbenchPairing?: string | null;
+  //   - `viewOnly`: a view-only ticket opened it (an MCP live view, X-Verified-View-Only): it watches and never says
+  //     hello, and the room counts it apart from the people (docs/specs/015-api/api.md "A room holds at most 100
+  //     connections").
+  viewOnly?: boolean;
+  //   - `apiToken`: the API token whose ticket opened it (X-Verified-Api-Token, docs/specs/015-api/public-api-and-tokens.md
+  //     "Revoking a token"), so revoking the token closes exactly its sockets.
+  apiToken?: string | null;
   //   - `adderKey`: a Participant's adder key, from X-Verified-Adder (docs/specs/013-workspace/share-roles.md
   //     "Integrity"): what the room stamps on the stickies and text it adds. 32 hex characters.
   //   - `documentId`: the document this room serves, from X-Verified-Document, so a Participant's write knows its
@@ -100,6 +107,8 @@ export type SessionAttachment = {
 const MAX_PERSON_TAG_LEN = 64;
 // A workbench pairing id is a UUID.
 const MAX_PAIRING_ID_LEN = 36;
+// An API token id is a UUID; the clamp keeps a forged header from bloating the attachment.
+const MAX_API_TOKEN_ID_LEN = 64;
 // A document id is usually a UUID, but an API or MCP client may choose a longer one, up to the documents route's
 // bound (200): the clamp keeps a forged header from bloating the attachment and never cuts an id the api accepts,
 // since a cut id fails every later check against the real one (a grant's renewal, a participant write).
@@ -119,6 +128,8 @@ type VerifiedSession = {
   account?: boolean;
   networkTag: string | null;
   workbenchPairing: string | null;
+  viewOnly?: boolean;
+  apiToken?: string | null;
   adderKey: string | null;
   documentId: string | null;
   grantExp?: number | null;
@@ -153,6 +164,8 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     account: request.headers.get('X-Verified-Account') === '1',
     networkTag: header('X-Verified-Network'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
+    viewOnly: request.headers.get('X-Verified-View-Only') === '1',
+    apiToken: header('X-Verified-Api-Token'),
     adderKey: header('X-Verified-Adder'),
     documentId: header('X-Verified-Document'),
     grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
@@ -185,6 +198,8 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     networkTag: v.networkTag?.slice(0, MAX_NETWORK_TAG_LEN) ?? null,
     pollAnsweredAs: null,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
+    ...(v.viewOnly ? { viewOnly: true } : {}),
+    ...(v.apiToken ? { apiToken: v.apiToken.slice(0, MAX_API_TOKEN_ID_LEN) } : {}),
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
     grantExp: v.grantExp ?? null,

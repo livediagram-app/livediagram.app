@@ -66,6 +66,10 @@ const LABELS: Partial<Record<EventType, string>> = {
   team_role_changed: 'Role Changed',
   team_member_removed: 'Member Removed',
   team_renamed: 'Team Renamed',
+  approval_requested: 'Approval Requested',
+  approval_approved: 'Approved',
+  approval_changes_requested: 'Changes Requested',
+  approval_cancelled: 'Approval Cancelled',
 };
 
 const isEventType = (type: string): type is EventType => type in TONE_BY_TYPE_KEYS;
@@ -75,6 +79,7 @@ const isEventType = (type: string): type is EventType => type in TONE_BY_TYPE_KE
 export function eventLabel(event: ItemEvent): string {
   const type = event.type as string;
   if (type === 'team_member_removed' && event.detail?.left) return 'Member Left';
+  if (type === 'approval_cancelled' && event.detail?.replaced) return 'Approval Asked Again';
   const own = isEventType(type) ? LABELS[type] : undefined;
   if (own) return own;
   const kind = isApp(event.app) ? kindWords(event.app).one : 'Item';
@@ -114,6 +119,10 @@ const TONE_BY_TYPE: Record<EventType, EventTone> = {
   action_done: 'create',
   opened_by_visitor: 'create',
   copied_by_visitor: 'create',
+  approval_requested: 'structural',
+  approval_approved: 'create',
+  approval_changes_requested: 'structural',
+  approval_cancelled: 'structural',
 };
 const TONE_BY_TYPE_KEYS: Record<string, unknown> = TONE_BY_TYPE;
 
@@ -155,6 +164,7 @@ export const toneSoftColor = (tone: EventTone) => TONE_FALLBACK[tone].soft;
 export type EventCategory =
   | 'comments'
   | 'actions'
+  | 'approvals'
   | 'new'
   | 'edits'
   | 'renames'
@@ -188,6 +198,10 @@ const CATEGORY_BY_TYPE: Record<EventType, EventCategory> = {
   moved: 'filing',
   synced: 'filing',
   favourited: 'favourites',
+  approval_requested: 'approvals',
+  approval_approved: 'approvals',
+  approval_changes_requested: 'approvals',
+  approval_cancelled: 'approvals',
 };
 
 export function eventCategory(type: string): EventCategory {
@@ -197,6 +211,7 @@ export function eventCategory(type: string): EventCategory {
 export const CATEGORY_LABELS: Record<EventCategory, string> = {
   comments: 'Comments',
   actions: 'Actions',
+  approvals: 'Approvals',
   new: 'Created',
   edits: 'Edits',
   renames: 'Renames',
@@ -212,6 +227,7 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
 const CATEGORY_ORDER: EventCategory[] = [
   'comments',
   'actions',
+  'approvals',
   'new',
   'edits',
   'renames',

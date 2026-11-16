@@ -5,6 +5,7 @@ import {
   SNAPSHOT_REVERTED_CLOSE,
   ROOM_FULL_REASON,
   roomIsFull,
+  viewOnlyRoomIsFull,
   WORKBENCH_ENDED_CLOSE,
 } from '@livediagram/api-schema';
 import {
@@ -26,12 +27,20 @@ const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
 // 4000-4999 application range; the client reloads or leaves on the op itself.
 const SHARE_LINK_CHANGED_CLOSE = 4003;
 
-// Turn an upgrade away when the room already holds ROOM_MAX_CONNECTIONS sockets: accepted only to be closed
-// with ROOM_FULL_CLOSE, never handed to the hibernation runtime, so it holds no session and receives nothing.
-export function turnAwayIfFull(room: DocumentRoom, server: WebSocket): boolean {
-  const connections = room.state.getWebSockets().length;
-  if (!roomIsFull(connections)) return false;
-  console.warn('[room] full', { documentId: room.documentId, connections });
+// The hibernation tag a view-only socket is accepted under (an MCP live view's, a view-only ticket's), so the room
+// counts its views without reading every attachment.
+export const VIEW_ONLY_TAG = 'view-only';
+
+// Turn an upgrade away when the room is full for it: accepted only to be closed with ROOM_FULL_CLOSE, never handed to
+// the hibernation runtime, so it holds no session and receives nothing. People and view-only sockets count apart
+// (docs/specs/015-api/api.md "A room holds at most 100 connections"): a person is turned away at ROOM_MAX_CONNECTIONS
+// people, whatever views are watching, and a view at ROOM_MAX_VIEW_ONLY views, so views alone can never fill it.
+export function turnAwayIfFull(room: DocumentRoom, server: WebSocket, viewOnly = false): boolean {
+  const all = room.state.getWebSockets().length;
+  const views = room.state.getWebSockets(VIEW_ONLY_TAG).length;
+  const full = viewOnly ? viewOnlyRoomIsFull(views) : roomIsFull(all - views);
+  if (!full) return false;
+  console.warn('[room] full', { documentId: room.documentId, connections: all, views, viewOnly });
   server.accept();
   server.close(ROOM_FULL_CLOSE, ROOM_FULL_REASON);
   return true;
@@ -160,9 +169,9 @@ export function closeSessionsForAccessChange(room: DocumentRoom, close: AccessCl
 // After a document-trashed op has gone out, close every socket
 // (docs/specs/013-workspace/trash.md): the document is in the Trash, and its
 // admission refuses every new join until it is restored.
-export function closeAllIfTrashed(room: DocumentRoom, op: unknown): void {
-  if ((op as { kind?: unknown } | null)?.kind !== 'document-trashed') return;
-  closeSockets(room, () => [DOCUMENT_TRASHED_CLOSE, 'document-trashed']);
+export function closeAllIfTrashed(room: DocumentRoom, op: unknown): number {
+  if ((op as { kind?: unknown } | null)?.kind !== 'document-trashed') return 0;
+  return closeSockets(room, () => [DOCUMENT_TRASHED_CLOSE, 'document-trashed']);
 }
 
 // A snapshot's revert replaced the canvas in place (document-snapshots.ts): the ledger's entries describe content that

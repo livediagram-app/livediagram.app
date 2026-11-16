@@ -5,6 +5,7 @@
 // arrival sets what it found, in the order the editors always did, and answers whether the load reached the item
 // (true) or ended on a gate, a not-found or an error screen (false). The specs, in each product's docs/specs:
 // 013-workspace/share-password.md, trash.md, tab-scoped-share-links.md and 025-community/community.md.
+import { isArchivedLoadError } from './archived';
 import { indexClient } from './index-client';
 import type { LastSeenDoors, LastSeenFirstTab, LastSeenInput } from './api/last-seen-copies';
 
@@ -308,6 +309,11 @@ export async function openOwnAddress<
     if (product.isTrashedError(err)) {
       set.setTrashed(true);
       forgetCopy(product.lastSeen, self.id, id);
+    } else if (isArchivedLoadError(err)) {
+      // Archived by its owner (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"): the api relays the
+      // index's `409 archived`, which only the owner hears. Not a connection problem: the item ends on not found,
+      // which the editor shows as its archived card (the held grant's refusal says archived).
+      set.setNotFound(true);
     } else set.setLoadError(true);
     return endShort(product, set);
   }

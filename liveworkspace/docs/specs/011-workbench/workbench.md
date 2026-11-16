@@ -52,19 +52,21 @@ are `/api/account/workbench/*`, and a request names its app in the body (`app`) 
 The app named is only a choice of dialect and of which items the ticket reaches: a token is good on every app, so
 naming another app gives nothing that app's own address would not.
 
-| Route                                             | Who                                  | What                                                  |
-| ------------------------------------------------- | ------------------------------------ | ----------------------------------------------------- |
-| `POST tickets`                                    | an API token (`lwt_`)                | mint a ticket, or `428 pairing_required` with the URL |
-| `POST sessions`                                   | nobody: the ticket is the credential | redeem a ticket for a session (`lvw_`)                |
-| `DELETE sessions/current`                         | a session (`lvw_`)                   | end that session                                      |
-| `POST pairing-requests`                           | an API token                         | ask to pair, or `paired` when already                 |
-| `GET pairing-requests/:code/status`               | the token that asked                 | the CLI's wait                                        |
-| `GET pairing-requests/:code`                      | the token's owner, signed in         | the pairing page's question                           |
-| `POST pairing-requests/:code/approve`, `/decline` | the token's owner, signed in         | the answer, once                                      |
-| `GET pairings`, `DELETE pairings/:id`             | the owner, signed in                 | Settings > API tokens; Unpair                         |
-| `POST /api/account/internal/workbench/session`    | an app's server (client credentials) | check a session (`lvw_`) for that app                 |
-| `POST /api/account/internal/workbench/rooms`      | an app's server                      | a workspace session joined an item's room             |
-| `POST /api/account/internal/allowance`            | an app's server                      | take from a sender's notification email allowance     |
+| Route                                              | Who                                  | What                                                  |
+| -------------------------------------------------- | ------------------------------------ | ----------------------------------------------------- |
+| `POST tickets`                                     | an API token (`lwt_`)                | mint a ticket, or `428 pairing_required` with the URL |
+| `POST embed-tickets`                               | the person's own token, on an app    | a live embed's view ticket (below)                    |
+| `POST sessions`                                    | nobody: the ticket is the credential | redeem a ticket for a session (`lvw_`)                |
+| `DELETE sessions/current`                          | a session (`lvw_`)                   | end that session                                      |
+| `POST pairing-requests`                            | an API token                         | ask to pair, or `paired` when already                 |
+| `GET pairing-requests/:code/status`                | the token that asked                 | the CLI's wait                                        |
+| `GET pairing-requests/:code`                       | the token's owner, signed in         | the pairing page's question                           |
+| `POST pairing-requests/:code/approve`, `/decline`  | the token's owner, signed in         | the answer, once                                      |
+| `GET pairings`, `DELETE pairings/:id`              | the owner, signed in                 | Settings > API tokens; Unpair                         |
+| `POST /api/account/internal/workbench/session`     | an app's server (client credentials) | check a session (`lvw_`) for that app                 |
+| `POST /api/account/internal/workbench/rooms`       | an app's server                      | a workspace session joined an item's room             |
+| `POST /api/account/internal/workbench/token-rooms` | an app's server                      | an API token's room ticket opened an item's room      |
+| `POST /api/account/internal/allowance`             | an app's server                      | take from a sender's notification email allowance     |
 
 "Signed in" is the liveworkspace.app session cookie (same-origin writes only), or, on an app's address, an account's
 access token for that app. A token, a workbench session or a guest never answers a pairing or unpairs.
@@ -102,6 +104,7 @@ wb_sessions         (id PK, secret_hash UNIQUE, app, token_id, pairing_id → wb
                      item_id, folder_id, tab_id, origin, role, created_at, expires_at)
 wb_session_rooms    (session_id → wb_sessions ON DELETE CASCADE, item_id)
 wb_quota            (kind, at, until)   -- the notification email allowance, `<app>:notify-email`
+wb_token_rooms      (token_id, app, item_id, until, PK (token_id, app, item_id))  -- a token's rooms, below
 wb_meta             (key, value)        -- whose store it is
 ```
 
@@ -140,6 +143,33 @@ wb_meta             (key, value)        -- whose store it is
    that joins a room tells accounts once per isolate (`POST internal/workbench/rooms`), off the response's path, so
    ending its access closes that room too.
 
+## Live embed tickets
+
+A [live embed](../004-index/live-embeds.md) opens its target in the target app's workbench frame, with the reader's own
+access at the view level. Its tickets come from the same store, with no API token and no pairing request: the person is
+reading in one of our own apps, so there is nothing to approve.
+
+- **Mint** (`POST embed-tickets`, on the host app's address, which forwards it here as for every workbench route). The
+  bearer is the person's own access or guest token for an app: never an API token, a workbench session or a share code
+  (`403 token_required` for those, `401 sign_in_required` with none). The body is
+  `{ target: <app>, itemId, origin }`: `target` one of `LIVE_EMBED_APPS`, `origin` the host page's origin, which must be
+  one of the apps' origins in this environment (any loopback origin in development), else `400 invalid_origin`. Limited
+  per person by `WORKBENCH_LIMITER` (`workbench-embed:<personId>`). The index is asked for the person's own grant on
+  the item (`ownerItemAccess`): `404 not_found` out of reach, `410 <noun>_trashed` in the Trash, `503
+index_unavailable` when it cannot answer. A guest token mints for the guest's own access, as an account's does. The answer, `201 { ticket, path, expiresAt }`, gives the frame's path
+  (`/embed/workbench?d=<itemId>`), which the host puts on the target's origin, and the ticket for its fragment.
+- **The embed pairing.** The ticket hangs on one pairing per target app and host origin in the person's store, made on
+  the first mint: `token_id` is `embed` (`EMBED_TOKEN_ID`), which no API token can be, `scope` is the item scope and its
+  name "Live embeds". It is never listed in Settings > API tokens, never ended by a token's revocation or a dead-token
+  clean-up, and goes by itself once its last ticket and session have lapsed (the store's alarm), or with the account.
+- **Redeem** is `POST sessions`, as for every ticket. For an embed ticket there is no token to check; the reader's own
+  grant is asked again, the level is `view` whatever it says, and the session lives `LIVE_EMBED_SESSION_TTL_MS`
+  (30 minutes).
+- **Check.** An app's check of an embed session (`POST internal/workbench/session`) answers `level: 'view'` and the
+  session's own expiry; it needs no token row.
+- **Renew.** The frame asks its parent for a ticket before its session ends; the host mints another the same way, so
+  each renewal checks the reader's access again.
+
 ## Ending access
 
 - **Unpair** (`DELETE pairings/:id`) removes one pairing; **a token revoked** (`DELETE /api/account/tokens/:id`, the
@@ -149,6 +179,22 @@ wb_meta             (key, value)        -- whose store it is
   calls each app's `POST /api/internal/items/:id/workbench-close { pairingId }` with the app's key, the door the index
   already uses for revoked links. The room closes the pairing's sockets with `WORKBENCH_ENDED_CLOSE` (4006).
 - What an app still holds of a session it checked runs out within a minute. A room is closed at once.
+
+### A token's rooms
+
+An API token can open a room without any pairing: an MCP server's live view, or a CLI, mints a room ticket through it
+(each product's docs/specs/015-api/public-api-and-tokens.md "Revoking a token"). The app seals the token's id into
+the ticket, and off the mint's path tells accounts `POST internal/workbench/token-rooms {ownerId, tokenId, itemId,
+until}`, `until` being the ticket's grant lapse (at most 15 minutes ahead). Accounts checks the token is the owner's
+and live, and keeps one row per token, app and item in the owner's store, its `until` moved on by each later ticket
+(the app sends again only when it moves). A token keeps at most `WORKBENCH_TOKEN_ROOMS_MAX` (500) rooms; a note past
+it is refused (409) and that room's sockets lapse with their ticket. The sweep drops a row two minutes past its
+`until`, so a store holding only lapsed rooms deletes itself as before, and a store made before the table existed
+takes it on its next start.
+
+Revoking the token reads its rows (an indexed read of that token's rows only, never every item), deletes them, and
+closes them by app with the pairings' rooms: `{app, tokenId, itemIds}` to the index, `{tokenId}` to each app's door,
+`{match: 'token'}` in each room (4005). Another token's rooms and every person's socket stay open.
 
 ## Performance
 

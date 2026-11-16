@@ -7,6 +7,7 @@ import type { ClientMessage, ServerMessage } from '../types';
 import { MAX_TAB_ID_LEN, admitFrame, helloPresence, resolveCatchup } from '../project-room-rules';
 import { opForScope } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
+import { reviewJoined, suggestsOnly } from './room-review';
 import { helloChangesRoster } from '@liveworkspace/api-kit/room-roster';
 import { type SessionAttachment } from '../room-session';
 import type { PlanRoom } from './plan-room';
@@ -84,6 +85,8 @@ export function webSocketMessage(
     // see the size note on SessionAttachment.
     const presence = helloPresence(msg.participant, session);
     ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
+    // A Participant is noted for the Share dialog and told whether it suggests (Suggest Only).
+    reviewJoined(room, ws, { ...session, presence });
     // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
     // key"): its editor records its answers and reactions under it from now on.
     if (presence.key) sendTo(room, ws, { kind: 'collab-key', key: presence.key });
@@ -128,6 +131,7 @@ export function webSocketMessage(
           presenceId: sender.id,
           projectId: session.projectId ?? null,
           adderKey: session.adderKey ?? null,
+          suggestOnly: suggestsOnly(room, session),
         },
         msg.op,
         msg.ref,

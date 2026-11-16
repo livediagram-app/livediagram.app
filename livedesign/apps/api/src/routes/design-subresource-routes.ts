@@ -1,6 +1,8 @@
 // /api/designs/<id>/... inside the design's Durable Object: per-tab content, pages, photo blobs, comments, agent
 // presence and changesets.
 
+import { handleSuggestionRoutes } from './suggestion-routes';
+import { handleReviewRoute } from './review-route';
 import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDesign, getDesignForSave, getTab } from '../db';
@@ -39,6 +41,14 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
+  // Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md).
+  const suggestions = await handleSuggestionRoutes(ctx);
+  if (suggestions) return suggestions;
+  // Review settings (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only").
+  if (segments.length === 4 && segments[3] === 'review') {
+    const review = await handleReviewRoute(ctx, segments[2]!);
+    if (review) return review;
+  }
   // The component library (docs/specs/009-elements/components.md).
   const components = await handleComponentRoutes(ctx);
   if (components) return components;

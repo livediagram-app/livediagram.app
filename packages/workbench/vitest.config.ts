@@ -8,6 +8,14 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // (docs/specs/007-editor/pages-mode.md "Contents" in each). The editors' door tests drive them with real pages; these
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
+  // A live embed's rules (liveworkspace/docs/specs/004-index/live-embeds.md, Work Tracker 930).
+  'src/components/live-embed/live-embed-target.ts',
+  'src/components/live-embed/live-embed-slots.ts',
+  'src/components/live-embed/live-embed-ticket.ts',
+  'src/components/live-embed/live-embed-words.ts',
+  'src/components/live-embed/live-poster.ts',
+  'src/components/live-embed/choose-live-embed.ts',
+  'src/components/live-embed/useLiveEmbedFrame.ts',
   'src/components/canvas/PageContentsList.tsx',
   'src/components/canvas/PageContentsSidebar.tsx',
   'src/components/canvas/PageRowMenu.tsx',

@@ -10,6 +10,7 @@ import {
 import { Glyph, Prims } from '@livediagram/ui';
 import {
   FigmaTileArt,
+  LiveEmbedTileArt,
   LoomTileArt,
   VimeoTileArt,
   YouTubeTileArt,
@@ -128,13 +129,25 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     label: 'Add Website Embed',
     description:
       'Embeds any website on the canvas. Double-click it to set the address; it loads when you press Load embed. Some sites refuse to be framed and will come up blank.',
-    dividerAfter: true,
     action: { type: 'video', provider: 'website' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideGlobe} />
       </Glyph>
     ),
+  },
+  {
+    id: 'media:embed-live',
+    tileGroup: 'embed',
+    blurb: 'A file from our apps, live',
+    caption: 'Live Embed',
+    section: 'media',
+    label: 'Add Live Embed',
+    description:
+      'Shows a canvas, plan, page or design from our apps, live and read-only. Double-click it to choose the file; everyone sees it with their own access.',
+    dividerAfter: true,
+    action: { type: 'video', provider: 'live' },
+    icon: <LiveEmbedTileArt />,
   },
   {
     id: 'tools:avatar',

@@ -61,7 +61,16 @@ under the pointer as a category is switched.
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
-  icon; an edge with nothing beyond it stays sharp.
+  icon; an edge with nothing beyond it stays sharp. The category bar's row (`StripScroller`,
+  `@liveworkspace/workbench/components/palette/StripScroller`) also lays a fade in the card's own colour over each
+  edge with more beyond it, sized to the item that edge cuts (at least 44px): solid over the whole item and soft
+  for 6px short of it, so no label ever shows cut mid-word, with a small round chevron button in it
+  (**Scroll Left**, **Scroll Right**, a Tooltip each). A press scrolls past everything shown, so the item
+  the fade hid lands first, whole, past the other edge's button: as far as a press can go without skipping
+  an item (smoothly, or at once under reduced motion). The buttons serve a mouse,
+  which has no swipe; they keep the focus where it was and stay out of the Tab order, since the arrow keys walk the
+  bar and the browser scrolls a focused button into view. They show at every width the bar swipes (a phone, or a
+  narrow window).
 - **The strip's room.** Still too wide with the glyphs alone for the room beside the menu box (a 640 to 760px window
   with Pages mode's Contents docked left, whose joined menu box takes the strip's left), the bar shows its first
   categories and folds the rest behind **More Categories** (a ⋯ button at the bar's end, drawn as a category's),

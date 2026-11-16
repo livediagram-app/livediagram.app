@@ -27,6 +27,46 @@ describe('useBrowserTabTitle', () => {
     await waitFor(() => expect(document.title).toBe('Thomas HQ | livehuddle'));
   });
 
+  // A status screen (Canvas Not Found) names the tab over the item's own title, which the page still holds.
+  it('lets a status screen name the tab over the item, and hands it back when the screen goes', async () => {
+    const page = renderHook(({ t }: { t: string }) => useBrowserTabTitle(t), {
+      initialProps: { t: 'Untitled canvas | livediagram' },
+    });
+    const screen = renderHook(() =>
+      useBrowserTabTitle('Canvas Not Found | livediagram', { status: true }),
+    );
+    expect(document.title).toBe('Canvas Not Found | livediagram');
+    // The item's title changing under the screen does not take the tab back.
+    page.rerender({ t: 'Roadmap | livediagram' });
+    expect(document.title).toBe('Canvas Not Found | livediagram');
+    document.querySelector('title')!.textContent = 'livediagram';
+    await waitFor(() => expect(document.title).toBe('Canvas Not Found | livediagram'));
+    screen.unmount();
+    expect(document.title).toBe('Roadmap | livediagram');
+    page.unmount();
+  });
+
+  // Among equals the latest mounted holder names the tab, and the earlier one takes it back when that one goes.
+  it('lets the latest of two status screens, or of two items, name the tab', () => {
+    const first = renderHook(() => useBrowserTabTitle('Plan A | liveplanner'));
+    const second = renderHook(() => useBrowserTabTitle('Plan B | liveplanner'));
+    expect(document.title).toBe('Plan B | liveplanner');
+    const archived = renderHook(() =>
+      useBrowserTabTitle('Archived | liveplanner', { status: true }),
+    );
+    const missing = renderHook(() =>
+      useBrowserTabTitle('Not Found | liveplanner', { status: true }),
+    );
+    expect(document.title).toBe('Not Found | liveplanner');
+    missing.unmount();
+    expect(document.title).toBe('Archived | liveplanner');
+    archived.unmount();
+    expect(document.title).toBe('Plan B | liveplanner');
+    second.unmount();
+    expect(document.title).toBe('Plan A | liveplanner');
+    first.unmount();
+  });
+
   it('leaves the title alone while there is none to show, follows a rename, and stops once unmounted', async () => {
     document.title = 'Form | liveplanner';
     const { rerender, unmount } = renderHook(
