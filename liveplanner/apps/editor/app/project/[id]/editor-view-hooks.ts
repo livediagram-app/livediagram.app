@@ -19,6 +19,7 @@ import {
   calendarFeedScopeFor,
   type CalendarFeedScope,
 } from '@/components/calendar-feed/calendar-feed-gate';
+import { roadmapScopeFor, type RoadmapScope } from '@/components/roadmap/roadmap-gate';
 import type { useEditorContext } from './EditorContext';
 
 type EditorContextValue = ReturnType<typeof useEditorContext>;
@@ -101,6 +102,18 @@ export function useEditorCalendarFeed(
     workbench: !!ctx.workbench,
     offline: isOffline,
     signedIn: !!ctx.accountUserId,
+    scope: ctx.plan.context?.itemsScope ?? null,
+  });
+}
+
+// Publish as Roadmap's scope (docs/specs/026-plan/public-roadmap.md "Who may publish"): the plan's owner or a team
+// member on a plan saved to the server, a guest owner included; null (no tab menu row) for everyone else.
+export function useEditorRoadmap(ctx: EditorContextValue, isOffline: boolean): RoadmapScope | null {
+  return roadmapScopeFor({
+    hydrated: ctx.hydrated,
+    embed: ctx.embedMode,
+    workbench: !!ctx.workbench,
+    offline: isOffline,
     scope: ctx.plan.context?.itemsScope ?? null,
   });
 }

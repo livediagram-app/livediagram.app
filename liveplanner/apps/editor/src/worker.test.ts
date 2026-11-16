@@ -41,6 +41,24 @@ describe('editor worker editor route', () => {
     }
   });
 
+  // A public roadmap's page (docs/specs/026-plan/public-roadmap.md): one placeholder backs every roadmap; never framed.
+  it('serves the roadmap page for /roadmap/<plan>/<code>, refusing framing', async () => {
+    const { env: e, seen } = env();
+    const res = await worker.fetch(
+      new Request('https://liveplanner.app/roadmap/plan-1/lpr_AbCdEfGhIjKlMnOpQrStUv'),
+      e,
+    );
+    const placeholder = await worker.fetch(
+      new Request('https://liveplanner.app/roadmap/placeholder'),
+      e,
+    );
+    expect(seen).toEqual(['/roadmap/placeholder', '/roadmap/placeholder']);
+    for (const r of [res, placeholder]) {
+      expect(r.headers.get('X-Frame-Options')).toBe('DENY');
+      expect(r.headers.get('Content-Security-Policy')).toBe(TRUSTED_TYPES_CSP);
+    }
+  });
+
   it('keeps refusing framing on paths that only look like the form page', async () => {
     const { env: e } = env();
     for (const path of ['/forms', '/formx/abc', '/project/form']) {

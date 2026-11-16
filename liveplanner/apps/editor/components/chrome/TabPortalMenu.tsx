@@ -31,6 +31,7 @@ import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { lucideLink } from '@liveworkspace/icons/lucide';
 import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
 import { CalendarFeedMenuRow } from '@/components/calendar-feed/CalendarFeedMenuRow';
+import { RoadmapMenuRow } from '@/components/roadmap/RoadmapMenuRow';
 
 const ConnectAgainIcon = lucideGlyph(lucideLink, 16);
 
@@ -364,6 +365,9 @@ export function PortalMenu({
           {/* The plan's dates out, beside the tab out (docs/specs/026-plan/calendar-feed.md "Where it lives"): only
             for the plan's owner or a team member, signed in. */}
           <CalendarFeedMenuRow onClose={onClose} />
+          {/* A board out as a public page (docs/specs/026-plan/public-roadmap.md "Where it lives"): the plan's owner or
+            a team member, on a tab holding a Plan board. */}
+          <RoadmapMenuRow onClose={onClose} />
           <MenuActionRow
             plain
             icon={<ClearIcon />}
