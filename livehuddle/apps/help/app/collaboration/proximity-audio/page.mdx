@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { CallStrip, Earshot, MicStates } from '@/components/illustrations/calls';
+import { CallStrip, Earshot, MicStates, MiniView } from '@/components/illustrations/calls';
 
 export const metadata = helpMetadata({
   title: 'Proximity Audio',
@@ -95,7 +95,47 @@ On a computer the button is named beside its glyph, and on a phone it shows only
 
 ### Muting from another tab
 
-You don't have to go back to the Space to mute. Press **Pop Out** at the end of the Call dock and the small window that stays on top carries your microphone at its foot, and your camera while it is on. In Chrome and Edge, the browser's own media controls also show a microphone and a camera button while you are in a call. Each press does exactly what the Call dock does, and the dock follows. There is no hang up button: you leave a call by walking away.
+You don't have to go back to the Space to mute. Press [**Pop Out**](#pop-out-the-mini-view) at the end of the Call dock and the small window that stays on top carries your microphone at its foot, and your camera while it is on. In Chrome and Edge, the browser's own media controls also show a microphone and a camera button while you are in a call. Each press does exactly what the Call dock does, and the dock follows. There is no hang up button: you leave a call by walking away.
+
+## Pop Out: The Mini View
+
+You will often leave the Space's tab to work in another one, and lose sight of who just walked over, who is talking and who is knocking. **Pop Out** is the Call dock's last button (after Share while you share, with a divider before it). It opens the **Mini View**: a small window that stays on top of your other tabs and apps, so the Space's people stay in sight.
+
+<Step n={1}>
+  Press **Pop Out** at the end of the Call dock. The Mini View opens at about 320 by 400 pixels, in
+  the light or dark look the app had when it opened, and you can drag it and resize it where you
+  like. The button turns solid and reads **Popped Out**.
+</Step>
+
+<Step n={2}>
+  Work in another tab or app. The window keeps showing who is on the Space's tab, you first, then
+  everyone else. While you are in a call, the people you hear lead under **Near You** and the rest
+  follow under **In the Space**. Each row shows the person's face, their name (yours reads **You**),
+  their status if they have one, a raised hand, and three bouncing bars with a ring round their face
+  while they talk.
+</Step>
+
+<Step n={3}>
+  To go back, press **Back to Space** at the top of the window (or any row, or its header): the
+  Space's tab comes to the front. To put the window away, press its close button, or press **Popped
+  Out** on the dock.
+</Step>
+
+<Figure caption="The Call dock ends with Pop Out. The Mini View it opens lists the people near you first, then everyone else in the Space, with Back to Space at the top and your microphone and camera at the foot.">
+  <MiniView />
+</Figure>
+
+- **Knocks reach you here too.** When somebody knocks, a line at the top reads "Sam is knocking" with **Let In** and **Not Now**. Answering here or on the Space's tab answers once for both.
+- **Your microphone and camera** sit at the foot of the window when you may speak, and press just as the Call dock's do. A Viewer has none, and while a call connects there is nothing to press yet.
+- **It keeps up while the Space's tab is hidden.** Arrivals, who is talking, hands and knocks stay current. Cameras and shared screens are not received while the tab is hidden, so the Mini View shows no video.
+- **Anyone can open it,** Editors, Participants and Viewers alike, because who is here is everyone's to see. There is one Mini View for each tab, and it never opens by itself. It closes when you close it, or leave the Space.
+
+### Which browsers offer it
+
+Pop Out needs the browser's Picture-in-Picture window for web pages:
+
+- **Chrome and Edge** (version 116 or later) and **Firefox** (version 151 or later) show it.
+- **Desktop Safari and phones** do not offer it, so the Call dock shows no Pop Out and nothing else changes.
 
 ## Seeing who is talking
 
