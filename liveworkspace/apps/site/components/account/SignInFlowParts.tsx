@@ -17,8 +17,8 @@ export function SignedInNextSteps() {
   return (
     <div data-signed-in-next="" className="flex flex-col gap-4">
       <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-        You&apos;re signed in to every liveworkspace app. Pick up your work in the Explorer, or go
-        back to the app you came from.
+        Every liveworkspace app knows you now. Pick up your work in the Explorer, or go back to the
+        app you came from.
       </p>
       {NEXT_STEPS.map((step) => (
         <a
