@@ -40,8 +40,8 @@ const interviewRoom = (name: string, x: number, windows: IndoorRoom['windows']):
 });
 
 const SUITE_ROOMS: IndoorRoom[] = [
-  interviewRoom('Interview Room 1', 60, [{ side: 'w', at: 230 }]),
-  interviewRoom('Interview Room 2', 640, [{ side: 'n', at: 400 }]),
+  interviewRoom('Interview 1', 60, [{ side: 'w', at: 230 }]),
+  interviewRoom('Interview 2', 640, [{ side: 'n', at: 400 }]),
   {
     // Where the panel meets after an interview, out of the candidates' way.
     name: 'Debrief Room',

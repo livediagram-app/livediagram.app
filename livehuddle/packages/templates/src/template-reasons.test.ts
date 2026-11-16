@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { notesNewestFirst, onRoomWall, type Element } from '@livehuddle/document';
+import {
+  meetingPieceRoom,
+  notesNewestFirst,
+  onRoomWall,
+  roomZones,
+  type Element,
+} from '@livehuddle/document';
 import { buildTemplate } from './build-template';
 import { templateFloors } from './template-floors';
 import { pinnedNotes, TEMPLATE_NOTE_AUTHOR, TEMPLATE_NOTE_SIGNER } from './template-notes';
@@ -56,6 +62,32 @@ describe.each(SPACES)('the %s Space', (kind) => {
     const rooms = all.filter((e) => e.shape === 'room');
     const doors = all.filter((e) => e.shape === 'door');
     expect(rooms.some((r) => doors.some((d) => onRoomWall(d, r)))).toBe(true);
+  });
+
+  // A sign inside a building's shell reads the shell, not the room beside it: it must stand where its own room is
+  // the innermost one (the Coworking Space's Meeting Room sign read "Coworking" before it moved onto the room's wall).
+  it('names the room each Room Sign stands by, never a room that holds other rooms', () => {
+    const builds = [buildTemplate(kind, 0, 0), ...templateFloors(kind).map((f) => f.build(0, 0))];
+    for (const els of builds) {
+      const zones = roomZones(els);
+      const rooms = els.filter((e): e is Shape => e.type === 'shape' && e.shape === 'room');
+      const holdsRooms = (r: Shape) =>
+        rooms.some(
+          (o) =>
+            o !== r &&
+            o.x >= r.x &&
+            o.y >= r.y &&
+            o.x + o.width <= r.x + r.width &&
+            o.y + o.height <= r.y + r.height,
+        );
+      for (const sign of els.filter(
+        (e): e is Shape => e.type === 'shape' && e.shape === 'room-sign',
+      )) {
+        const room = rooms.find((r) => r.id === meetingPieceRoom(sign, zones));
+        expect(room, `${kind}: a Room Sign reads no room`).toBeDefined();
+        expect(holdsRooms(room!), `${kind}: a Room Sign reads ${room!.label}`).toBe(false);
+      }
+    }
   });
 });
 

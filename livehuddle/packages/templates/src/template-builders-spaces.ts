@@ -108,8 +108,9 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
         { kind: 'lockers', x: 900, y: 540 },
         // The members' Notice Board under the Meeting Room, its notes pinned already (template-notes.ts).
         { kind: 'notice-board', x: 1110, y: 520, notes: COWORK_NOTES },
-        // The Meeting Room's sign, right of its door.
-        { kind: 'room-sign', x: 1100 + 228 + 18, y: 40 + 360 + 10, w: 88 },
+        // The Meeting Room's sign, right of its door on the face of its front wall: inside the room's box, so it
+        // reads the Meeting Room and not the Coworking floor around it (meetingPieceRoom takes the innermost room).
+        { kind: 'room-sign', x: 1100 + 228 + 18, y: 40 + 360 - 50, w: 88 },
       ],
     },
     // Two phone booths along the right, for a call without the room, each a Phone Booth piece in a booth room
@@ -148,7 +149,8 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       pieces: [
         { kind: 'screen', x: 120, y: 4, w: 120 },
         { kind: 'meeting-table', x: 64, y: 96 },
-        { kind: 'plant', x: 296, y: 280 },
+        // The plant in the far corner, clear of the table, the front wall right of the door kept for the sign.
+        { kind: 'plant', x: 296, y: 52 },
       ],
     },
   ];

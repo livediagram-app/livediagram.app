@@ -50,7 +50,7 @@ three (`template-builders-spaces.ts`):
   bar (coffee machine, water cooler, plant), a lounge (a sofa and two chairs round a rug), a bookshelf, and two
   **phone booths** along the right, small rooms each holding a [Phone Booth](../009-elements/workday-pieces.md#phone-booth)
   for a call away from the floor. Since Work Tracker 1076 the floor is wider for a glass **Meeting Room** (a Meeting
-  Table, a Screen, a Room Sign by its door) above the Lockers, and a members' **Notice Board** with three notes pinned.
+  Table, a Screen, a Room Sign on its front wall by the door) above the Lockers, and a members' **Notice Board** with three notes pinned.
 - **Team Pod**: one room for a small team: a cluster of four desks, a meeting table for the stand-up, a coffee
   machine, a plant and a bookshelf, a **World Clock** for the team's time zones, a **Phone Booth** for a call away from
   the team and a **Timer** under the board for the stand-up (Work Tracker 1076), and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
@@ -296,7 +296,9 @@ Work Tracker 1076). Each one has:
   what to do first.
 - **Meeting spaces with doors**: a room people meet in has walls and a Door, so it is a call of its own
   ([Rooms are calls](meeting-rooms-and-stage.md)); where people knock, a Room Sign stands beside its Door
-  ([Knock](knock.md)). The open-air Spaces meet in their Summer House, bandstand or tents.
+  ([Knock](knock.md)). A sign reads the innermost room it stands in, so in a Space that is one big room (the Coworking
+  Space) a nested room's sign hangs on that room's own wall face, inside its box. The open-air Spaces meet in their
+  Summer House, bandstand or tents.
 - **A reason to walk to every room**: a piece that does something when you reach it (a Reception Desk's bell, a Screen,
   a Jukebox, a Pet Bed's dog, a Nap Pod, a Phone Booth, a Timer, a bar), not furniture alone.
 - **Walk-up pieces with answers where they fit**: a Notice Board with notes already pinned, a World Clock, a Calendar
@@ -321,9 +323,9 @@ Two Office Spaces for meeting people from outside the team (`template-builders-o
 closed rooms off an open floor built with `campusPlan` (indoor rooms), as the Games Rooms are: every room has a Door, a
 Room Sign and 160 px of open floor in front of its Door, and a Directory stands by the entrance.
 
-- **Interview Suite** (Office, carpet): **Interview Room 1** and **Interview Room 2** (a Meeting Table and a Screen
-  each, a call of its own) and a **Debrief Room** (a table, a Screen, a Timer and a water cooler) along the top. Below
-  them the waiting area: a Notice Board of three notes for candidates, two sofas on rugs, a World Clock, coffee, a
+- **Interview Suite** (Office, carpet): **Interview 1** and **Interview 2** (a Meeting Table and a Screen each, a
+  call of its own, named short so the whole name fits on the Room Sign) and a **Debrief Room** (a table, a Screen, a
+  Timer and a water cooler) along the top. Below them the waiting area: a Notice Board of three notes for candidates, two sofas on rugs, a World Clock, coffee, a
   water cooler and a Phone Booth, and the **front desk** (a Reception Desk) by the entrance. The Avatar Pad waits in
   the waiting area.
 - **Client Lounge** (Office, parquet): a **Boardroom** round a Long Table with a Screen and a World Clock, a glass
