@@ -56,9 +56,9 @@ describe('filterGallery', () => {
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'form bug').map((t) => t.kind);
-    expect(kinds).toContain('bug-report-form');
-    expect(kinds).not.toContain('bug-triage');
+    const kinds = filterGallery(all, 'form rating').map((t) => t.kind);
+    expect(kinds).toContain('feedback-form');
+    expect(kinds).not.toContain('feedback-board');
     expect(filterGallery(all, 'kanban zebra')).toEqual([]);
   });
 });
