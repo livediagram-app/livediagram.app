@@ -20,16 +20,17 @@ type Holder = { title: string; status: boolean };
 const holders = new Set<Holder>();
 let observer: MutationObserver | null = null;
 
-// The title the holders ask for: the latest status holder's, else the latest holder's.
-function wanted(): string | null {
+// The title the holders ask for: the latest status holder's, else the latest holder's. Only asked while a holder is
+// mounted: the observer disconnects when the last one goes, which also drops its queued records.
+function wanted(): string {
   let pick: Holder | null = null;
   for (const holder of holders) if (holder.status || !pick?.status) pick = holder;
-  return pick?.title ?? null;
+  return pick!.title;
 }
 
 function apply(): void {
   const title = wanted();
-  if (title !== null && document.title !== title) document.title = title;
+  if (document.title !== title) document.title = title;
 }
 
 export function useBrowserTabTitle(title: string | null, options: { status?: boolean } = {}): void {
