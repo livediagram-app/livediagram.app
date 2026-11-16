@@ -5,7 +5,7 @@
 
 import { BRAND_APPS, type BrandStep } from '@liveworkspace/brand';
 import type { App } from '@liveworkspace/index-client';
-import { APP_ITEMS } from '@liveworkspace/sites';
+import { APP_ITEMS, workspaceOriginFor } from '@liveworkspace/sites';
 import type { CSSProperties } from 'react';
 import { siteOf } from '../words';
 import { workTiles, type WorkTile } from './work-kinds';
@@ -13,7 +13,12 @@ import { workTiles, type WorkTile } from './work-kinds';
 /** Where a tile starts its kind: the app's New route with the template, or null for no link. */
 export type TemplateHref = (app: App, template: string) => string | null;
 
-export const WORK_KINDS_COPY = { heading: 'What you can make' } as const;
+export const WORK_KINDS_COPY = { heading: 'What you can make', kits: 'Start a Project' } as const;
+
+/** liveworkspace's Start a Project (010-site/site.md "Start a Project"), from whichever address the Explorer is on. */
+export const kitsUrl = (
+  host: string = typeof window === 'undefined' ? '' : window.location.host,
+): string => `${workspaceOriginFor(host)}/kits`;
 
 const HEADING_ID = 'explorer-home-work-kinds';
 
@@ -112,12 +117,24 @@ export function WorkKinds({
   const tiles = workTiles(app, all);
   return (
     <section aria-labelledby={HEADING_ID} data-work-kinds={all ? 'all' : app}>
-      <h2
-        id={HEADING_ID}
-        className="mb-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400"
-      >
-        {WORK_KINDS_COPY.heading}
-      </h2>
+      <div className="mb-2.5 flex items-baseline justify-between gap-3">
+        <h2
+          id={HEADING_ID}
+          className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400"
+        >
+          {WORK_KINDS_COPY.heading}
+        </h2>
+        {/* Under All Apps, a whole project across the apps in one press. */}
+        {all ? (
+          <a
+            href={kitsUrl()}
+            data-work-kits=""
+            className="relative touch-target-y cursor-pointer text-xs font-semibold text-brand-700 hover:text-brand-800 hover:underline dark:text-brand-300 dark:hover:text-brand-200"
+          >
+            {WORK_KINDS_COPY.kits}
+          </a>
+        ) : null}
+      </div>
       <ul className={`grid ${all ? GRID.all : GRID.app} sm:gap-3`}>
         {tiles.map((tile) => (
           <li key={`${tile.app}:${tile.kind.id}`} className="min-w-0">
