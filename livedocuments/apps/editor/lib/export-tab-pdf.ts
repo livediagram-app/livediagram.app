@@ -39,7 +39,7 @@ export async function exportPagesAsPdf(
     const pageOpts = { ...opts, page, motionFrames };
     out.push({
       svg: await (await exportTabAsSvg(tab, pageOpts)).text(),
-      links: links[i] ?? [],
+      links: links[i],
       raster: () => renderTabToCanvas(tab, pageOpts),
     });
   }
