@@ -8,7 +8,8 @@
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, Tab } from './index';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
-import { participantArticlesChange } from './participant-article';
+import { participantArticlesChange, type ParticipantArticleOptions } from './participant-article';
+import { ARTICLE_NOTE_SIZE } from './article-notes';
 import { isValidElement } from './validate';
 import { withCleanImageAlt } from './image-alt';
 
@@ -131,10 +132,38 @@ function refuse(reason: ParticipantRefusal, correction: ElementOp | null): Parti
   return { result: 'refused', correction, reason };
 }
 
-export function applyParticipantOp(tab: Tab, op: ElementOp): ParticipantOpResult {
+/** How the rule reads a Participant: `marginComment` when it may put a comment on selected text (Suggest Only,
+ *  docs/specs/007-editor/suggestions.md "Comments on selected text"), so adding a margin note's comment marker is
+ *  its one add. */
+export type ParticipantOpOptions = { marginComment?: boolean };
+
+// A margin note's comment marker, as the editor makes one (newArticleNote): the one element a Participant on Suggest
+// Only may add.
+function isNewMarginComment(tab: Tab, el: Element): boolean {
+  if (el.type !== 'article-note' || el.articleNote !== 'comment') return false;
+  if (el.width !== ARTICLE_NOTE_SIZE || el.height !== ARTICLE_NOTE_SIZE) return false;
+  return !tab.elements.some((e) => e.id === el.id) && isValidElement(el);
+}
+
+export function applyParticipantOp(
+  tab: Tab,
+  op: ElementOp,
+  options: ParticipantOpOptions = {},
+): ParticipantOpResult {
   const elements = tab.elements;
   if (op.kind === 'reorder') {
     return refuse('reorder', { kind: 'reorder', ids: elements.map((e) => e.id) });
+  }
+  if (op.kind === 'add' && options.marginComment && tab.locked !== true) {
+    if (isNewMarginComment(tab, op.element)) {
+      const element = op.element;
+      return {
+        result: 'applied',
+        tab: { ...tab, elements: [...elements, element] },
+        op: { kind: 'add', element, at: elements.length },
+        changed: true,
+      };
+    }
   }
   if (op.kind === 'add') {
     // Taken back off the sender's screen, unless the id was already someone else's.
@@ -170,13 +199,17 @@ export function applyParticipantOp(tab: Tab, op: ElementOp): ParticipantOpResult
 // `after` is one the server would take as it is. Answers `after`, or null when any part of it would be refused or
 // trimmed, so the editor never shows a change the room will undo. Around the elements, only the tab's articles may
 // change, and only as writing (participant-article.ts): a Participant never edits a tab's settings or pages.
-export function participantTabChange(before: Tab, after: Tab): Tab | null {
+export function participantTabChange(
+  before: Tab,
+  after: Tab,
+  options: ParticipantArticleOptions & ParticipantOpOptions = {},
+): Tab | null {
   const { elements: _b, articles: beforeArticles, ...beforeMeta } = before;
   const { elements: _a, articles: afterArticles, ...afterMeta } = after;
   if (!sameValue(beforeMeta, afterMeta)) return null;
   let tab = before;
   for (const op of diffToElementOps(before.elements, after.elements)) {
-    const outcome = applyParticipantOp(tab, op);
+    const outcome = applyParticipantOp(tab, op, options);
     if (outcome.result === 'refused') return null;
     // The rule took everything the change made, nothing trimmed.
     if (op.kind === 'update') {
@@ -185,6 +218,7 @@ export function participantTabChange(before: Tab, after: Tab): Tab | null {
     }
     tab = outcome.tab;
   }
-  if (beforeArticles !== afterArticles && !participantArticlesChange(before, after)) return null;
+  if (beforeArticles !== afterArticles && !participantArticlesChange(before, after, options))
+    return null;
   return after;
 }

@@ -39,6 +39,7 @@ import { noteArticleCaret, pendingArticleHoldBlock } from '@/lib/article/article
 import { heldBackBlocks } from '@/lib/article/article-hold-commit';
 import { useWritingHolds } from './useWritingHolds';
 import { SlashMenu } from './SlashMenu';
+import { useSuggestionCard } from './useSuggestionCard';
 import { useArticleLinkHover } from './useArticleLinkHover';
 import { caretCanvasRect, writingScale } from './article-editor-handle';
 import { track } from '@/lib/telemetry';
@@ -368,6 +369,12 @@ export default function ArticleEditor(props: ArticleEditorProps) {
 
   // A link hovered: its address, Open, Edit and Remove (made after the view, which it listens on).
   const linkCard = useArticleLinkHover(viewRef, props.editable);
+  // A suggestion's card: who, when, what, and an Editor's Accept and Reject (docs/specs/007-editor/suggestions.md).
+  const suggestionCard = useSuggestionCard(
+    viewRef,
+    props.flow,
+    props.editable && props.reshape !== false,
+  );
 
   // A request to put the caret in this article (a new article: its title).
   const request = props.focusRequest;
@@ -385,6 +392,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   return (
     <>
       {linkCard}
+      {suggestionCard}
       {cutOff && props.card ? (
         <FlashcardTooLong page={props.pages[0]!} zoom={props.zoom} split={props.split} />
       ) : cutOff ? (

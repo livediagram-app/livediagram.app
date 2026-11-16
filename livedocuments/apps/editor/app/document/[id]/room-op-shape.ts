@@ -55,6 +55,8 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
       return isText(op.tabId) && isRecord(op.patch) && isOptionalList(op.clear);
     case 'article':
       return isText(op.tabId) && isText(op.flow);
+    case 'review':
+      return typeof op.suggestOnly === 'boolean';
     case 'document-meta':
       return (
         isText(op.name) &&

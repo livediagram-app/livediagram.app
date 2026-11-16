@@ -117,3 +117,42 @@ describe('participantArticlesChange (the editor side)', () => {
     expect(participantTabChange(before, grown)).toBeNull();
   });
 });
+
+// Suggest Only (docs/specs/007-editor/suggestions.md "The server is the rule"): the writing must be suggestions of the
+// sender's own.
+describe('a Participant on Suggest Only', () => {
+  const mark = { id: 's1', k: 'ins' as const, by: 'key-sam', n: 'Sam', at: 1 };
+  it('writes a suggestion of its own', () => {
+    const r = applyParticipantArticleOps(
+      tabWith(base),
+      'f1',
+      [
+        {
+          kind: 'put',
+          block: {
+            id: 'b1',
+            type: 'paragraph',
+            runs: [{ text: 'Hello' }, { text: '!', sg: mark }],
+          },
+        },
+      ],
+      { suggestBy: 'key-sam' },
+    );
+    expect(r.result).toBe('applied');
+  });
+  it('is refused writing straight in, and its editor holds the change back', () => {
+    const tab = tabWith(base);
+    const ops = [{ kind: 'put' as const, block: para('b1', 'Hello there') }];
+    expect(applyParticipantArticleOps(tab, 'f1', ops, { suggestBy: 'key-sam' })).toEqual({
+      result: 'refused',
+      reason: 'not-suggestion',
+    });
+    const after = tabWith({
+      ...base,
+      blocks: [para('b1', 'Hello there'), ...base.blocks.slice(1)],
+    });
+    expect(participantArticlesChange(tab, after, { suggestBy: 'key-sam' })).toBe(false);
+    expect(participantTabChange(tab, after, { suggestBy: 'key-sam' })).toBeNull();
+    expect(participantTabChange(tab, after)).toBe(after);
+  });
+});

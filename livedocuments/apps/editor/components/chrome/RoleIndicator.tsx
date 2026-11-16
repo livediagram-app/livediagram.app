@@ -3,6 +3,7 @@
 import { useId } from 'react';
 import { Tooltip } from '@livedocuments/ui';
 import type { AccessLevel } from '@livedocuments/api-schema';
+import { useSuggestOnly } from '@/lib/article/article-suggest-store';
 
 // Whether you are editing, participating in or viewing this document
 // (docs/specs/013-workspace/share-roles.md): the title bar's pill (docs/specs/007-editor/editor-app.md#role-pill). It
@@ -39,6 +40,9 @@ const PILL_TOGGLE_TONE: Record<Role, string> = {
   view: 'cursor-pointer transition hover:ring-amber-400 dark:hover:ring-amber-400/60',
 };
 
+// A Participant on Suggest Only (docs/specs/007-editor/suggestions.md "Suggesting").
+export const SUGGESTING_HINT = 'You suggest changes; an Editor accepts or rejects them';
+
 export function roleOwnerLabel(ownerName: string | null, isSelf: boolean): string {
   if (isSelf) return 'Owned by you';
   return ownerName ? `Owned by ${ownerName}` : '';
@@ -57,7 +61,8 @@ export function RolePill({
 }) {
   const hintId = useId();
   const owner = roleOwnerLabel(ownerName, isSelf);
-  const word = ROLE_WORD[role];
+  const suggesting = useSuggestOnly() && role === 'participate';
+  const word = suggesting ? 'Suggesting' : ROLE_WORD[role];
   const pill = onToggle ? (
     <button
       type="button"
@@ -75,10 +80,17 @@ export function RolePill({
   ) : (
     // Static for a view-link visitor, and focusable so the Tooltip naming the
     // owner can be reached by keyboard too.
-    <span tabIndex={0} data-role-pill={role} className={`${PILL} ${PILL_TONE[role]}`}>
+    <span
+      tabIndex={0}
+      data-role-pill={role}
+      data-suggesting={suggesting ? '' : undefined}
+      className={`${PILL} ${PILL_TONE[role]}`}
+    >
       <span className="text-optical-line text-optical-caps">{word}</span>
+      {suggesting ? <span className="sr-only">{`. ${SUGGESTING_HINT}`}</span> : null}
       {owner ? <span className="sr-only">{`. ${owner}`}</span> : null}
     </span>
   );
-  return owner ? <Tooltip label={owner}>{pill}</Tooltip> : pill;
+  const tip = [suggesting ? SUGGESTING_HINT : '', owner].filter(Boolean).join('. ');
+  return tip ? <Tooltip label={tip}>{pill}</Tooltip> : pill;
 }

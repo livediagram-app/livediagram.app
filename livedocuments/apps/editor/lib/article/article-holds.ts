@@ -17,6 +17,12 @@ type HoldsState = { holds: readonly ArticlePeerHold[]; decorations: DecorationSe
 
 export const articleHoldsKey = new PluginKey<HoldsState>('article-holds');
 
+/** The top-level blocks collaborators hold (a held cell holds its table): a decision on a suggestion leaves them
+ *  until their writers let go (docs/specs/007-editor/suggestions.md "Reviewing"). */
+export function heldBlockIds(state: EditorState): Set<string> {
+  return new Set((articleHoldsKey.getState(state)?.holds ?? []).map((h) => h.blockId));
+}
+
 /** Where a hold at the caret would be: the top-level block at the selection's head, and in a table cell that
  *  cell's row id and column id. Null between blocks, or in a block without an id. */
 export function holdSpotOf(state: EditorState): ArticleHoldSpot | null {

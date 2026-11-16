@@ -72,6 +72,7 @@ A few rules hold for every operation:
 - **Comments are not fields.** Comment threads travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
 - **Locks.** A changeset on a locked tab, or one that would change a locked element or an element on a locked layer, is refused with `element_locked`.
 - **Flashcards.** A flashcard holds text only: a changeset that would add an element onto a card, or move one onto it, is refused with `text_only`. Write a card's text with `write_article`.
+- **Articles as suggestions.** Edit operations change elements; an article's writing is written with `write_article`, whose `as: "suggestions"` makes the changes wait in the editor for an Editor to accept or reject. `update_document` takes `as` too, for the same call shape, but its element changes always land as a changeset with **Show** and **Undo** ([Article Suggestions](/help/developers/agent-changes/#article-suggestions)).
 
 ## Selectors
 

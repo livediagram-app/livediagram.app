@@ -80,6 +80,7 @@ function OpenEditorAnchoredPopovers() {
     documentId,
     tabId: activeTab.id,
     selfId: selfParticipant.id,
+    selfName: selfParticipant.name,
     shareCode: sessionShareCode,
   });
 

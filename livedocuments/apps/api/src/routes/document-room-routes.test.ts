@@ -137,15 +137,26 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Account')).toBe('0');
   });
 
-  it('takes the share code a signed-in link opener names on ?s=', async () => {
+  // A Suggest Only link holds the guest or signed-in person who opened it (docs/specs/007-editor/suggestions.md
+  // "Suggest Only"): the room reads the code and a verified collab key, both from the grant.
+  it("takes a guest's or a signed-in link opener's share code from the grant's link claim, never ?s=", async () => {
+    for (const sub of ['guest_g', 'user_a']) {
+      const { env, seen } = roomEnv();
+      const t = grantFor({ item: 'p1', sub, level: 'participate', link: 'code1' });
+      await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(t)}&s=other`);
+      const h = seen[0]!.headers;
+      expect(h.get('X-Verified-Share-Code'), sub).toBe('code1');
+      expect(h.get('X-Verified-Role')).toBe('participate');
+      expect(h.get('X-Verified-Collab-Key')).toMatch(/^[0-9a-f]{32}$/);
+      expect(h.get('X-Verified-Account')).toBe(sub === 'user_a' ? '1' : '0');
+    }
+  });
+
+  it('names no share code for a grant without a link, whatever ?s= says', async () => {
     const { env, seen } = roomEnv();
     const t = grantFor({ item: 'p1', sub: 'guest_g', level: 'participate' });
     await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(t)}&s=code1`);
-    const h = seen[0]!.headers;
-    expect(h.get('X-Verified-Share-Code')).toBe('code1');
-    expect(h.get('X-Verified-Role')).toBe('participate');
-    // A guest has a person tag but is no account.
-    expect(h.get('X-Verified-Account')).toBe('0');
+    expect(seen[0]!.headers.get('X-Verified-Share-Code')).toBe('');
   });
 
   it('caps a workbench ticket at its sealed level and stamps its pairing', async () => {

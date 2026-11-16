@@ -448,7 +448,8 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
 
   // Append a comment to one element's thread on a tab: the write path of a view-role visitor, whose contribution
   // has no autosave to ride. Answers the created comment so the caller merges it without a refetch. `mentions` are
-  // the teammates it @-tags (cleaned server-side); `cell` the table cell it is on, where the product has them.
+  // the teammates it @-tags (cleaned server-side); `cell` the table cell it is on, where the product has them. `name`
+  // is the caller's display name, the one on their cursor, for a server that has no profile name to stamp.
   async function addComment(
     ownerId: string,
     itemId: string,
@@ -458,6 +459,7 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
     shareCode: string | null = null,
     mentions?: unknown[],
     cell?: string,
+    name?: string,
   ): Promise<AddedComment> {
     const res = await core.apiFetch(commentsUrl(itemId, tabId), {
       method: 'POST',
@@ -467,6 +469,7 @@ export function createTabCalls<Tab extends TabBase, NoGrant, Summary>(
         text,
         ...(mentions?.length ? { mentions } : {}),
         ...(cell !== undefined ? { cell } : {}),
+        ...(name ? { name } : {}),
       }),
     });
     return core.expectOk<{ comment: AddedComment }>(res, 'add comment').then((b) => b.comment);

@@ -218,7 +218,7 @@ function on(el: XmlElement | undefined): boolean {
   return v === undefined || !['0', 'false', 'off', 'none'].includes(v.toLowerCase());
 }
 
-type RunMarks = Omit<ArticleRun, 'text' | 'href' | 'color' | 'hl' | 'note' | 'nk' | 'fn'>;
+type RunMarks = Omit<ArticleRun, 'text' | 'href' | 'color' | 'hl' | 'note' | 'nk' | 'fn' | 'sg'>;
 
 /** Whether a run is hidden text (`w:vanish`, its own or its character style's; the run's own wins), which Word
  *  neither shows nor prints. */

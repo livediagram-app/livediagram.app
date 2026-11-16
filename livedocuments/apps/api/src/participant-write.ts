@@ -13,7 +13,9 @@ import {
   applyParticipantOp,
   type ArticleOp,
   type ElementOp,
+  type ParticipantArticleOptions,
   type ParticipantArticleResult,
+  type ParticipantOpOptions,
   type ParticipantOpResult,
   type Tab,
 } from '@livedocuments/document';
@@ -63,9 +65,12 @@ export function participantTabStore(
 }
 
 // One element op through the participant content rule: written only when it applied and changed something.
-export function participantOpChange(op: ElementOp): TabChange<Tab, ParticipantOpResult> {
+export function participantOpChange(
+  op: ElementOp,
+  options: ParticipantOpOptions = {},
+): TabChange<Tab, ParticipantOpResult> {
   return (tab) => {
-    const outcome = applyParticipantOp(tab, op);
+    const outcome = applyParticipantOp(tab, op, options);
     const next = outcome.result === 'applied' && outcome.changed ? outcome.tab : null;
     return { next, answer: outcome };
   };
@@ -88,9 +93,10 @@ export async function writeParticipantOp(
 export function participantArticleChange(
   flow: string,
   ops: readonly ArticleOp[],
+  options: ParticipantArticleOptions = {},
 ): TabChange<Tab, ParticipantArticleResult> {
   return (tab) => {
-    const outcome = applyParticipantArticleOps(tab, flow, ops);
+    const outcome = applyParticipantArticleOps(tab, flow, ops, options);
     const next = outcome.result === 'applied' && outcome.changed ? outcome.tab : null;
     return { next, answer: outcome };
   };

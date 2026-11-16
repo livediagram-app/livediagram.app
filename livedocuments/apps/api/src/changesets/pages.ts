@@ -5,6 +5,7 @@
 // saves and relayed; the pages, mode and writing ride the same batch. Then the room hears what an
 // editor's own edit sends. A lost race repeats once from the read.
 import {
+  parseStoredReview,
   tabArticleOps,
   type HeldParagraph,
   type PagesAnswer,
@@ -12,11 +13,23 @@ import {
   type PagesRequest,
   type RoomOp,
 } from '@livedocuments/api-schema';
-import { diffToElementOps, pageStepsOf, plural, type Tab } from '@livedocuments/document';
+import {
+  articleNoteIds,
+  articlesOf,
+  articleTitleOf,
+  diffToElementOps,
+  isArticleHex,
+  pageStepsOf,
+  plural,
+  withArticleFlow,
+  type Tab,
+} from '@livedocuments/document';
 import {
   applyArticleWrite,
   applyPageChanges,
   articleSummaries,
+  suggestArticleWrite,
+  suggestedWriteLines,
   type PageChangesOutcome,
   pageSummaries,
 } from '@livedocuments/edit-operations';
@@ -54,9 +67,13 @@ const refused = (status: number, refusal: PagesRefusal): PagesResult => {
 // The tab fields an editor's `tab-meta` patch carries for pages: absent ones are cleared.
 const PAGE_FIELDS = ['pages', 'pageOrientation'] as const;
 
+// An assistant's write as suggestions (docs/specs/024-agents/pages-for-agents.md "Suggestions"): its name, how many
+// it made and its change id, for the editor's toast.
+type Suggested = { n: string; count: number; g: string };
+
 /** The ops an editor's own edit would send for the same change, minus the elements (the changeset
  *  carries those). */
-export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
+export function pagesRoomOps(before: Tab, after: Tab, suggested?: Suggested): RoomOp[] {
   const ops: RoomOp[] = [];
   const patch: Record<string, unknown> = {};
   const clear: string[] = [];
@@ -76,8 +93,53 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
       ...(clear.length ? { clear: clear } : {}),
       ...(pageSteps.length ? { pageSteps } : {}),
     });
-  ops.push(...tabArticleOps(before, after, { grow: true }));
+  ops.push(...tabArticleOps(before, after, { grow: true, ...(suggested ? { suggested } : {}) }));
   return ops;
+}
+
+// Whether the document's Assistants Suggest switch is on (docs/specs/007-editor/suggestions.md "Suggest Only").
+async function assistantsSuggest(env: DocumentEnv): Promise<boolean> {
+  const row = await env.DOCUMENT_DB.prepare('SELECT review FROM document LIMIT 1').first<{
+    review: string | null;
+  }>();
+  return parseStoredReview(row?.review ?? null).agents;
+}
+
+/** An assistant's article write made suggestions on the stored article: the written article replaced by the stored
+ *  one with the changes suggested, margin notes on text that still stands keeping their markers, and the answer's
+ *  lines saying what became of it. A new article has nothing to suggest against: it is written as it is. */
+export function suggestedWrite(
+  stored: Tab,
+  written: { tab: Tab; flow: string; created: boolean; lines: string[] },
+  author: Author,
+  tokenId: string,
+  g: string,
+  now = Date.now(),
+): { tab: Tab; lines: string[]; suggested: Suggested | null } {
+  const before = articlesOf(stored)[written.flow];
+  if (written.created || !before) return { ...written, suggested: null };
+  const after = articlesOf(written.tab)[written.flow]!;
+  const n = author.name.trim().slice(0, 80) || 'Assistant';
+  const write = suggestArticleWrite(before, after, {
+    by: `agent:${tokenId}`.slice(0, 64),
+    n,
+    ...(isArticleHex(author.color) ? { c: author.color } : {}),
+    at: now,
+    ai: true,
+    g,
+  });
+  let tab = withArticleFlow(written.tab, written.flow, write.flow);
+  const notes = articleNoteIds({ [written.flow]: write.flow });
+  const have = new Set(tab.elements.map((e) => e.id));
+  const back = stored.elements.filter(
+    (e) => e.type === 'article-note' && notes.has(e.id) && !have.has(e.id),
+  );
+  if (back.length) tab = { ...tab, elements: [...tab.elements, ...back] };
+  return {
+    tab,
+    lines: suggestedWriteLines(write, articleTitleOf(write.flow)),
+    suggested: write.suggested ? { n, count: write.suggested, g } : null,
+  };
 }
 
 export async function submitPages(args: PagesArgs): Promise<PagesResult> {
@@ -86,20 +148,32 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
   for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
     // An agent's article write reads the room's paragraph holds beside the tab (spec "Held paragraphs"); page
     // changes never touch the writing, and a person's own write is never held.
-    const [stored, prevRev, holds] = await Promise.all([
+    const agentWrite = args.tokenId && 'article' in request;
+    const [stored, prevRev, holds, agentsSuggest] = await Promise.all([
       readStoredTab(env, document.id, tabId),
       lastChangesetRev(env, tabId),
-      args.tokenId && 'article' in request ? readRoomHolds(env, document.id, tabId) : null,
+      agentWrite ? readRoomHolds(env, document.id, tabId) : null,
+      agentWrite ? assistantsSuggest(env) : false,
     ]);
     if (!stored) return { status: 404, body: { error: 'not_found', message: 'No such tab.' } };
     // The page changes, or the write and which article it made or wrote.
     let out: PageChangesOutcome;
     let wrote: { flow: string; created: boolean } | null = null;
+    let suggested: Suggested | null = null;
     if ('pages' in request) out = applyPageChanges(stored.tab, request.pages);
     else {
       const w = applyArticleWrite(stored.tab, request.article);
       out = w;
-      if (!('refusal' in w)) wrote = { flow: w.flow, created: w.created };
+      if (!('refusal' in w)) {
+        wrote = { flow: w.flow, created: w.created };
+        // An assistant's write as suggestions: asked for, or always while Assistants Suggest is on.
+        if (args.tokenId && (request.article.as === 'suggestions' || agentsSuggest)) {
+          const g = `cs-${crypto.randomUUID().slice(0, 8)}`;
+          const s = suggestedWrite(stored.tab, w, args.author, args.tokenId, g);
+          out = { tab: s.tab, lines: s.lines };
+          suggested = s.suggested;
+        }
+      }
     }
     if ('refusal' in out) {
       console.info('[pages-agent] refused', {
@@ -110,7 +184,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       return refused(400, out.refusal);
     }
     const next = withServerRules(out.tab, stored, args.author);
-    const ops = pagesRoomOps(stored.tab, next);
+    const ops = pagesRoomOps(stored.tab, next, suggested ?? undefined);
     const held = heldArticleTargets(ops, holds);
     if (held.length > 0) {
       console.info('[pages-agent] held', { ...where, held: held.length });
@@ -174,7 +248,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     await relayPages(env, document.id, ops);
     console.info('[pages-agent] applied', {
       ...where,
-      kind: 'pages' in request ? 'pages' : 'article',
+      kind: 'pages' in request ? 'pages' : suggested ? 'suggestions' : 'article',
       changes: 'pages' in request ? request.pages.length : 1,
       rev,
     });

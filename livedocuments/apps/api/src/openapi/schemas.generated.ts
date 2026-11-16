@@ -477,6 +477,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "sg": {
+        "$ref": "#/components/schemas/ArticleSuggestion"
+      },
       "type": {
         "const": "list",
         "type": "string"
@@ -673,6 +676,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "sg": {
+        "$ref": "#/components/schemas/ArticleSuggestion"
+      },
       "style": {
         "$ref": "#/components/schemas/ArticleParagraphStyle"
       },
@@ -755,6 +761,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": true,
         "type": "boolean"
       },
+      "sg": {
+        "$ref": "#/components/schemas/ArticleSuggestion"
+      },
       "sub": {
         "const": true,
         "type": "boolean"
@@ -773,6 +782,55 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "text"
+    ],
+    "type": "object"
+  },
+  "ArticleRunFormat": {
+    "additionalProperties": false,
+    "description": "A run's formatting: what a format change (`ArticleSuggestion.was`) puts back when it is rejected.",
+    "properties": {
+      "b": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "code": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "color": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "hl": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "href": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "i": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "s": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "sub": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "sup": {
+        "$ref": "#/components/schemas/ArticleRun"
+      },
+      "u": {
+        "$ref": "#/components/schemas/ArticleRun"
+      }
+    },
+    "required": [
+      "b",
+      "i",
+      "u",
+      "s",
+      "code",
+      "sup",
+      "sub",
+      "href",
+      "color",
+      "hl"
     ],
     "type": "object"
   },
@@ -825,6 +883,56 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "type": "object"
+  },
+  "ArticleSuggestion": {
+    "additionalProperties": false,
+    "description": "One proposed change by one author (docs/specs/007-editor/suggestions.md \"What a suggestion is\"). On a run: text put in, taken out but kept, or newly formatted (`was` the format before). On a paragraph or list item (`ins` or `del` only): the break before it, put in or taken out.",
+    "properties": {
+      "ai": {
+        "const": true,
+        "type": "boolean"
+      },
+      "at": {
+        "type": "number"
+      },
+      "by": {
+        "type": "string"
+      },
+      "c": {
+        "type": "string"
+      },
+      "g": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "k": {
+        "$ref": "#/components/schemas/ArticleSuggestionKind"
+      },
+      "n": {
+        "type": "string"
+      },
+      "was": {
+        "$ref": "#/components/schemas/ArticleRunFormat"
+      }
+    },
+    "required": [
+      "id",
+      "k",
+      "by",
+      "n",
+      "at"
+    ],
+    "type": "object"
+  },
+  "ArticleSuggestionKind": {
+    "enum": [
+      "ins",
+      "del",
+      "fmt"
+    ],
+    "type": "string"
   },
   "ArticleSummary": {
     "additionalProperties": false,
@@ -988,6 +1096,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "article": {
         "type": "string"
       },
+      "as": {
+        "$ref": "#/components/schemas/ArticleWriteAs"
+      },
       "look": {
         "$ref": "#/components/schemas/ArticleLookId"
       },
@@ -1014,6 +1125,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "markdown"
     ],
     "type": "object"
+  },
+  "ArticleWriteAs": {
+    "enum": [
+      "suggestions",
+      "direct"
+    ],
+    "type": "string"
   },
   "ArticleWriteMode": {
     "enum": [
@@ -6144,6 +6262,109 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ReviewPerson": {
+    "additionalProperties": false,
+    "properties": {
+      "key": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "key",
+      "name"
+    ],
+    "type": "object"
+  },
+  "ReviewPin": {
+    "additionalProperties": false,
+    "description": "A person who arrived through a Suggest Only link, held to it on every later session whatever link (or none) they open with, while that link stays on Suggest Only. `key` is the server-verified collab key; `code` the link's.",
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "code": {
+        "type": "string"
+      },
+      "key": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "key",
+      "code",
+      "at"
+    ],
+    "type": "object"
+  },
+  "ReviewResponse": {
+    "additionalProperties": false,
+    "description": "`GET` and `PUT /api/documents/:id/review`'s answer.",
+    "properties": {
+      "review": {
+        "$ref": "#/components/schemas/StoredReview"
+      }
+    },
+    "required": [
+      "review"
+    ],
+    "type": "object"
+  },
+  "ReviewSeen": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "key": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "at",
+      "key",
+      "name"
+    ],
+    "type": "object"
+  },
+  "ReviewSettings": {
+    "additionalProperties": false,
+    "description": "What an Editor sets: the Suggest Only links (share codes) and people (collab keys), and Assistants Suggest. `lift`, sent only, names people whose pins go (they were on Suggest Only through a link).",
+    "properties": {
+      "agents": {
+        "type": "boolean"
+      },
+      "lift": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "links": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "people": {
+        "items": {
+          "$ref": "#/components/schemas/ReviewPerson"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "links",
+      "people",
+      "agents"
+    ],
+    "type": "object"
+  },
   "RowAt": {
     "additionalProperties": false,
     "properties": {
@@ -7267,6 +7488,47 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "y",
       "width",
       "height"
+    ],
+    "type": "object"
+  },
+  "StoredReview": {
+    "additionalProperties": false,
+    "description": "What the document keeps: the settings, the people seen joining as Participants, and the pins.",
+    "properties": {
+      "agents": {
+        "type": "boolean"
+      },
+      "links": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "people": {
+        "items": {
+          "$ref": "#/components/schemas/ReviewPerson"
+        },
+        "type": "array"
+      },
+      "pins": {
+        "items": {
+          "$ref": "#/components/schemas/ReviewPin"
+        },
+        "type": "array"
+      },
+      "seen": {
+        "items": {
+          "$ref": "#/components/schemas/ReviewSeen"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "agents",
+      "links",
+      "people",
+      "pins",
+      "seen"
     ],
     "type": "object"
   },

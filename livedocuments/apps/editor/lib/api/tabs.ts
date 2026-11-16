@@ -161,6 +161,8 @@ export const apiAddComment: (
   // Teammates the comment @-tags (docs/specs/012-collaboration/comment-mentions.md); cleaned server-side.
   mentions?: CommentMention[],
   cell?: string,
+  // The caller's display name, stamped when the server has no profile name for them.
+  name?: string,
 ) => Promise<AddedComment> = calls.addComment;
 
 // Delete a comment you authored (the server checks the comment's stamped author).

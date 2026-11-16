@@ -160,8 +160,8 @@ export const AGENT_TOAST_SHOW = chart(
   'Agent',
   'Opened',
   'Agent Changes Shown',
-  "Somebody pressed Show on an agent's toast to see what it changed.",
-  { types: ['Toast'] },
+  "Somebody pressed Show on an agent's toast to see what it changed, or Review on the toast its article suggestions raise.",
+  { types: ['Toast', 'SuggestionsToast'] },
 );
 
 // Document views (docs/specs/024-agents/document-views.md): which views agents read a document through.

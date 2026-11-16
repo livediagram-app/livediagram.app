@@ -17,7 +17,10 @@ type ArticlesTab = Pick<Tab, 'id'> & { articles?: unknown };
 export function tabArticleOps(
   before: ArticlesTab,
   after: ArticlesTab,
-  { grow = false }: { grow?: boolean } = {},
+  {
+    grow = false,
+    suggested,
+  }: { grow?: boolean; suggested?: { n: string; count: number; g: string } } = {},
 ): RoomOp[] {
   if (before.articles === after.articles) return [];
   const was = articlesOf(before);
@@ -26,7 +29,7 @@ export function tabArticleOps(
   for (const flow of Object.keys(was)) {
     if (!(flow in now)) ops.push({ kind: 'article', tabId: after.id, flow, removed: true });
   }
-  const marks = grow ? { grow: true as const } : {};
+  const marks = { ...(grow ? { grow: true as const } : {}), ...(suggested ? { suggested } : {}) };
   for (const [flow, doc] of Object.entries(now)) {
     if (was[flow] === doc) continue;
     // In frames the room will carry (it drops one over 256K characters): ops in order, a frame

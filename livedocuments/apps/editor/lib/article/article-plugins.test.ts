@@ -3,7 +3,8 @@ import { EditorState, TextSelection, type Transaction } from 'prosemirror-state'
 import type { DecorationSet } from 'prosemirror-view';
 import { newArticleTable, type ArticleBlock } from '@livedocuments/document';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { blocksToDoc } from './article-convert';
+import { blocksToDoc, docToBlocks } from './article-convert';
+import { replaceContentTr } from './article-replace';
 import { blockIdsPlugin, decorationsPlugin } from './article-plugins';
 import { articleSchema as S } from './article-schema';
 
@@ -96,6 +97,33 @@ describe('decorationsPlugin', () => {
       state = state.apply(step(state));
       expect(decosOf(shown(state, plugin))).toEqual(decosOf(fresh(state)));
     }
+  });
+
+  // A peer's write across several list items (an assistant's write_article landing as suggestions) replaces those
+  // items whole: their markers were mapped away with them and the list showed none until a reload.
+  it('keeps list markers through a peer write that replaces several list items whole', () => {
+    const started = start(article(40));
+    const { plugin } = started;
+    let { state } = started;
+    const mark = {
+      id: 's1',
+      k: 'ins' as const,
+      by: 'agent:t',
+      n: 'Claude',
+      at: 1,
+      ai: true as const,
+    };
+    const blocks = docToBlocks(state.doc).map((b): ArticleBlock =>
+      b.type === 'list' && (b.id === 'b5' || b.id === 'b10' || b.id === 'b15')
+        ? { ...b, runs: [...b.runs, { text: ' more', sg: mark }] }
+        : b,
+    );
+    const tr = replaceContentTr(state, blocks, false);
+    expect(tr).not.toBeNull();
+    state = state.apply(tr!);
+    const markers = decosOf(shown(state, plugin)).filter((d) => d.includes('data-marker'));
+    expect(markers.length).toBeGreaterThan(0);
+    expect(decosOf(shown(state, plugin))).toEqual(decosOf(fresh(state)));
   });
 
   it('follows the editable flag read live, with or without a transaction', () => {

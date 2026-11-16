@@ -19,6 +19,8 @@ const session = {
   tabId: 'tab',
   selfId: 'me',
   shareCode: 'CODE',
+  // Signed with when the server has no profile name (a guest's margin comment).
+  selfName: 'Sam',
 };
 
 beforeEach(() => vi.clearAllMocks());
@@ -36,6 +38,7 @@ describe('commentPersisters', () => {
       'CODE',
       undefined,
       'B2',
+      'Sam',
     );
     await p.remove('c1')?.();
     expect(api.apiDeleteComment).toHaveBeenCalledWith('me', 'doc', 'tab', 'c1', 'CODE');
