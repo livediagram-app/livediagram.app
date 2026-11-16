@@ -8,9 +8,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import type { LaidOutPage } from '@livedesign/design';
 import type { PhotoTextEdit } from '@/hooks/editor/usePhotoEditor';
-import { photoOf, pixelLayer } from '@/lib/photo-editor/photo-test-utils';
+import { harness, photoOf, pixelLayer } from '@/lib/photo-editor/photo-test-utils';
 import { photoTools } from '@/lib/photo-editor/tool-state';
 import { PhotoCanvasOverlays } from './PhotoCanvasOverlays';
+import { PhotoTextEditor } from './PhotoTextEditor';
 import { photoView } from './photo-view-test-utils';
 import { usePhotoShortcuts } from './usePhotoShortcuts';
 
@@ -147,5 +148,53 @@ describe('the photo Text tool through the canvas pointer path', () => {
       await Promise.resolve();
     });
     expect(h.s.layer(made!.id)?.name).toBe('Yo');
+  });
+
+  it('ends the old edit and begins one on the new session when the field is handed another session', async () => {
+    const withText = (text: string) =>
+      harness(
+        photoOf(200, 100, [
+          pixelLayer('bg', { name: 'Background' }),
+          {
+            id: 't',
+            name: text,
+            layerKind: 'text',
+            text: {
+              text,
+              font: 'inter',
+              size: 10,
+              weight: 400,
+              colour: '#000000',
+              align: 'left',
+              at: { x: 1, y: 1 },
+            },
+          },
+        ]),
+      );
+    const a = withText('Old');
+    const b = withText('New');
+    const edit = { layerId: 't', isNew: false };
+    const props = { edit, page: page.rect, onEnd: () => {} };
+    const r = render(
+      <StrictMode>
+        <PhotoTextEditor session={a.s} {...props} />
+      </StrictMode>,
+    );
+    r.rerender(
+      <StrictMode>
+        <PhotoTextEditor session={b.s} {...props} />
+      </StrictMode>,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    // Typing now writes to the new session's layer, never the old one's.
+    fireEvent.change(r.container.querySelector('textarea')!, { target: { value: 'Typed' } });
+    const textOf = (s: typeof a.s) => {
+      const l = s.layer('t');
+      return l?.layerKind === 'text' ? l.text.text : null;
+    };
+    expect(textOf(b.s)).toBe('Typed');
+    expect(textOf(a.s)).toBe('Old');
   });
 });
