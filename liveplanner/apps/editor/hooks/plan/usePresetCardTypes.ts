@@ -44,7 +44,12 @@ type Latest = RefObject<{
 }>;
 
 // Saves the catalogue `boards` leave, when it changes; `via` names the path in the log.
-function applyBoards(latest: Latest, saved: { current: Saved }, boards: Elements, via: string): void {
+function applyBoards(
+  latest: Latest,
+  saved: { current: Saved },
+  boards: Elements,
+  via: string,
+): void {
   const now = latest.current;
   const base =
     saved.current && saved.current.over === now.catalogue ? saved.current.next : now.catalogue;

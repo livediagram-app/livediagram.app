@@ -8,7 +8,7 @@
 // server plan, who can hold no rule, it is dropped. /new and the workspace's New need none of this: their create
 // names the template (lib/api/projects.ts starterRulesAskOf). Draws nothing.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/ui/useToast';
 import { onPendingStarterRules, takePendingStarterRules } from '@/lib/pending-starter-rules';
 import {
@@ -26,7 +26,8 @@ export function PendingStarterRules({
   offline,
 }: {
   tabId: string | undefined;
-  projectId: string;
+  // Null while the editor has no project open.
+  projectId: string | null;
   // A plan in This Browser.
   offline: boolean;
 }) {
@@ -34,8 +35,6 @@ export function PendingStarterRules({
   // Present with `offline` for someone who must sync the plan or sign in first.
   const barred = useAutomationsDoor()?.offline === true;
   const toast = useToast();
-  const toastRef = useRef(toast);
-  toastRef.current = toast;
   // Start Planning leaves a kind while the editor is open.
   const [left, setLeft] = useState(0);
   useEffect(() => onPendingStarterRules(() => setLeft((n) => n + 1)), []);
@@ -46,18 +45,16 @@ export function PendingStarterRules({
     if (!kind) return;
     const ask = starterRulesAskOf(kind)!;
     if (!scope) {
-      if (offline)
-        void offlineSaveStarterRules(projectId, ask).catch(() =>
-          toastRef.current.error(STARTER_RULES_FAILED),
-        );
+      if (offline && projectId)
+        void offlineSaveStarterRules(projectId, ask).catch(() => toast.error(STARTER_RULES_FAILED));
       return;
     }
     void import('@liveplanner/templates/template-starter-rules')
       .then((m) => makeStarterRules(scope, m.templateStarterRules(kind, ask.timeZone), () => {}))
-      .catch(() => toastRef.current.error(STARTER_RULES_FAILED))
+      .catch(() => toast.error(STARTER_RULES_FAILED))
       // The Rules list and the footer's count read the rules made.
       .finally(() => void readAutomations(scope));
-  }, [tabId, projectId, offline, scope, barred, left]);
+  }, [tabId, projectId, offline, scope, barred, left, toast]);
 
   return null;
 }

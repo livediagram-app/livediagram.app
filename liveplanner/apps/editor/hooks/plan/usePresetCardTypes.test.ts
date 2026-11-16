@@ -97,7 +97,10 @@ describe('usePresetCardTypes', () => {
     const { templateCardTypesProvided } = await import('@liveplanner/items');
     expect(templateCardTypesProvided()).toBe(false);
     // A plan that already has the type never loads them.
-    const has: ItemTypeCatalogue = { version: ITEM_TYPE_CATALOGUE_VERSION, types: [{ ...ITEM_TYPES[1]!, id: 'bt-bug', label: 'Bug' }] };
+    const has: ItemTypeCatalogue = {
+      version: ITEM_TYPE_CATALOGUE_VERSION,
+      types: [{ ...ITEM_TYPES[1], id: 'bt-bug', label: 'Bug' }],
+    };
     const quiet = setup({ catalogue: has, enabled: false });
     quiet.result.current.bring(els(ownBoard('a', ['bt-bug'])));
     expect(quiet.saveCatalogue).not.toHaveBeenCalled();

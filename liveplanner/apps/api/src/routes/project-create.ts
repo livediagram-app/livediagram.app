@@ -7,7 +7,9 @@ import {
   catalogueWithBoardTypes,
   legacyCatalogue,
   validateItemTypeCatalogue,
-  type ItemTypeCatalogue, provideTemplateCardTypes } from '@liveplanner/items';
+  type ItemTypeCatalogue,
+  provideTemplateCardTypes,
+} from '@liveplanner/items';
 import type { Tab } from '@liveplanner/project';
 import { isValidTab, migrateIncomingTab } from '@liveplanner/project';
 import { capStoredName } from '../names';

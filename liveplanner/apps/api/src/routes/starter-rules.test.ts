@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 const roomOf = (id: string) =>
-  (Reflect.get(w.env, 'PLAN_ROOM') as { get: (id: { name: string }) => PlanRoom }).get({
+  (Reflect.get(w.env, 'PLAN_ROOM') as unknown as { get: (id: { name: string }) => PlanRoom }).get({
     name: id,
   });
 

@@ -100,6 +100,15 @@ describe('PendingStarterRules', () => {
     });
   });
 
+  it('keeps nothing in This Browser while no project is open', async () => {
+    markPendingStarterRules('t1', 'kanban');
+    render(<PendingStarterRules tabId="t1" projectId={null} offline />, {
+      wrapper: wrap(null, { open: () => {}, offline: true }),
+    });
+    await settle();
+    expect(offlineSaveStarterRules).not.toHaveBeenCalled();
+  });
+
   it('says so when This Browser can’t keep it', async () => {
     offlineSaveStarterRules.mockRejectedValueOnce(new Error('idb'));
     markPendingStarterRules('t1', 'kanban');

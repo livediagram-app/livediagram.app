@@ -9,7 +9,8 @@ import { ProjectLoading } from '@/components/chrome/ProjectLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
-import { apiCreateProject, apiLoadSelf, apiSaveSelf, starterRulesAskOf } from '@/lib/api-client';
+import { apiCreateProject, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
+import { starterRulesAskOf } from '@/lib/api/starter-rules-ask';
 import {
   createFailureCopy,
   createIdsFor,

@@ -1542,13 +1542,16 @@ a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug T
 `personal.ts` and `business.ts`, pure data, run through `withComments`) are the Plan templates' own types, each id
 prefixed by its template ([Plan templates](../plan-templates.md#card-types-a-template-makes)); no template names a
 ready-made id. They are the subpath `@liveplanner/items/template-card-types`, never the barrel, so the editor's first
-load holds none of them. The subpath also exports `BOARD_CARD_TYPES` (both catalogues), and evaluating it calls
-`provideTemplateCardTypes(TEMPLATE_CARD_TYPES)` (`brought-types.ts`): `boardCardType(id)` finds a ready-made type, else
-a provided template type, which `broughtTypesToAdd` and a template form's target use. `templateCardTypesProvided()`
-says whether the subpath has loaded; each path that makes a template's tabs imports it (and names an export, so a
-bundler keeps it). The editor's `usePresetCardTypes` imports it before bringing a board that names an id neither the
-plan nor the ready-made types know, and keeps the catalogue it last saved until the next render (`savedRef`), so two
-brings in one tick never save over each other.
+load holds none of them. The subpath also exports `BOARD_CARD_TYPES` (both catalogues). `boardCardType(id)`
+(`brought-types.ts`) finds a ready-made type, else one handed to it by `provideTemplateCardTypes`, which
+`broughtTypesToAdd` and a template form's target use; `templateCardTypesProvided()` says whether that has happened.
+Each path that makes a template's tabs imports the subpath and calls `provideTemplateCardTypes(TEMPLATE_CARD_TYPES)`
+at module level: the editor's `lib/template-builders.ts`, the api's `project-create.ts`, `project-seed.ts` and
+`internal-template.ts`, the MCP's `tools.ts` and `tab-tools.ts`, agent-verbs' `plan/brought-types.ts` and
+`template-starter-rules.ts` (the templates package's tests, through a setup file). The editor's `usePresetCardTypes`
+imports it before bringing a board that names an id neither the plan nor the lookup knows, and builds on the
+catalogue it last saved until a render hands it back (`saved`), so two brings in one tick never save over each
+other.
 
 - `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`; nothing for one that names none (Blank), Archive or
   All Cards.

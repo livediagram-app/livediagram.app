@@ -16,7 +16,9 @@ import {
   type AutomationStep,
   type AutomationTemplateFill,
   type AutomationTemplatePlan,
-  type AutomationTemplateId, provideTemplateCardTypes } from '@liveplanner/items';
+  type AutomationTemplateId,
+  provideTemplateCardTypes,
+} from '@liveplanner/items';
 import { buildTemplateTabs } from './template-tab';
 import {
   hasStarterRules,

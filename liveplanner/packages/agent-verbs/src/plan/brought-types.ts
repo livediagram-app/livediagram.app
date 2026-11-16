@@ -15,7 +15,9 @@ import {
   catalogueWithBoardTypes,
   typesOf,
   withTypeStatuses,
-  type ItemTypeCatalogue, provideTemplateCardTypes } from '@liveplanner/items';
+  type ItemTypeCatalogue,
+  provideTemplateCardTypes,
+} from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
 import { CARD_TYPES_SAVE_ATTEMPTS, isCardTypesStale, itemTypesPath } from './plan-state';
 import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';

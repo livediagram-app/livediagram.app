@@ -8,7 +8,8 @@ import {
   untitledNameForTemplate,
   type TemplateKind,
 } from '@liveplanner/templates';
-import { apiCreateProject, starterRulesAskOf } from '@/lib/api-client';
+import { apiCreateProject } from '@/lib/api-client';
+import { starterRulesAskOf } from '@/lib/api/starter-rules-ask';
 import { NEW_PROJECT_THEME_ID, newProjectContent } from '@/lib/new-project-content';
 import { newProjectKind } from '@/lib/new-project-params';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';

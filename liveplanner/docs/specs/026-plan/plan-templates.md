@@ -157,7 +157,7 @@ The catalogue below still lists, per tab, the metrics, charts and rail it brings
   a Milestone and a To-Do (named Done On there), so [Stamp the Finish Date](#starter-rules) has a field to set.
 - **Loaded only to make a template.** `TEMPLATE_CARD_TYPES` is a subpath of its own
   (`@liveplanner/items/template-card-types`), out of the items barrel, so opening a plan never loads it: a plan reads
-  its types from its own catalogue, and only a board being made looks a type up by id. Importing the subpath hands the
+  its types from its own catalogue, and only a board being made looks a type up by id. Each path that imports it hands the
   catalogue to the lookup (`provideTemplateCardTypes`). The paths that make a template's tabs import it: the editor's
   template builders (loaded when a template is picked, or on /new), the api's and the MCP's template paths, the
   agents' board verbs, and the starter rules. A board that appears on an open tab naming a type the plan lacks and the

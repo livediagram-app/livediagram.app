@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
-import {
-  itemTitle,
-  readRepeatRule,
-  readItemCreate,
-  type PlanBoardSetup,
-} from '@liveplanner/items';
+import { itemTitle, readRepeatRule, readItemCreate, type PlanBoardSetup } from '@liveplanner/items';
 import { planTemplateSeedItems, seedDate, seedTimeZone, seedToday } from './plan-template-seeds';
 import { PLAN_TEMPLATE_SEEDS } from './plan-template-seed-data';
 import {
