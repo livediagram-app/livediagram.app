@@ -27,4 +27,5 @@ Follow the references below only as needed; never upfront.
 - ./explorer-filters.md - when working on Explorer filters: the lens, one string of words and tokens (`opens-in:` `made-by:ai` `edited:` `people:` `space:`) that chips write and the top-bar search types, with autocomplete, scope versus lens, `?q=` in the URL, the chip row, the field, Search results, and Made by AI replacing the Generated bucket
 - ./empty-design-cleanup.md - when working on Empty design clean-up: the index's daily sweep moves a design with no elements, unchanged for 30 days, to the Trash (marked `empty`); what livedesign reports (`hasContent`) and shows (`reason`)
 - ./snapshots.md - when working on Snapshots: manual save points of the whole design, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
+- ./approvals.md - when working on Approvals: asking named people to approve the design, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, local opens)

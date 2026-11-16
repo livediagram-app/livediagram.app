@@ -20,6 +20,17 @@ const FIXTURES: Record<string, unknown[][]> = {
     ['', null],
     ['  ', '  '],
   ],
+  approvalRequestedEmail: [
+    [
+      {
+        requesterName: 'Ada <a>',
+        item: { id: 'a b', name: 'N<' },
+        note: 'n & m',
+        due: '2026-11-20',
+      },
+    ],
+    [{ requesterName: null, item: { id: 'x', name: ' ' }, note: null, due: null }],
+  ],
   actionAssignedEmail: [
     ['Bo <b>', { id: 'a b', name: 'N<' }, 'Do it', 'desc & more'],
     [null, null, ' X ', null],
@@ -41,6 +52,7 @@ const FIXTURES: Record<string, unknown[][]> = {
 };
 
 const EXPECTED: Record<string, string> = {
+  approvalRequestedEmail: '3ae78264c5d4dffa081e274b4641229fa873f608f6d1795a7df706170b6cb1a2',
   accountDeletedEmail: '4ce0910a35c300a161568447d49348301607cbfdc25c57b9ceef59808743665b',
   actionAssignedEmail: 'e8a719c8e1792c3cfeb8b662920d281c0819f08b7c11a11a36b33ca9aff58cbe',
   commentNotificationEmail: '0ffa42d594ef62c8c941b0f06933a8f16aa428ee77a22df3a99f1c6e4f6531b5',

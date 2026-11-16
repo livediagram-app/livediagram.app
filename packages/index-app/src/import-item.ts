@@ -6,7 +6,7 @@
 // the owner's) leaves nothing behind. A write that fails after it takes the item away again, so nobody finds an
 // empty one, and the error goes on to the door (503): the mirror asks again on its next pass.
 
-import type { App, IndexClient } from '@liveworkspace/index-client';
+import type { App, IndexClient, ItemSource } from '@liveworkspace/index-client';
 import type { ImportInput, ImportResult } from './internal';
 
 export type ImportRead<T> =
@@ -29,13 +29,15 @@ export async function importItemAs<T>(
   input: ImportInput,
   steps: ImportSteps<T>,
   newId: () => string = () => crypto.randomUUID(),
+  // How the item came to be, as the index records it: a Drive file's `import`, a kit's `template`.
+  source: Extract<ItemSource, 'import' | 'template'> = 'import',
 ): Promise<ImportResult> {
   const read = steps.read(input.file);
   if (!read.ok) return { status: read.failure };
   if (!client) throw new Error('index_unavailable');
   const title = steps.title(input.name);
   const id = newId();
-  await client.createItem({ id, app, title, folderId: input.folderId, source: 'import' });
+  await client.createItem({ id, app, title, folderId: input.folderId, source });
   try {
     await steps.write(id, read.content, title);
   } catch (err) {

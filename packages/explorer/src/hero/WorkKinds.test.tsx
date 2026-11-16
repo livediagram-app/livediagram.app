@@ -4,7 +4,7 @@ import { type App } from '@liveworkspace/index-client';
 import { APP_NAMES } from '@liveworkspace/sites';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
-import { WorkKinds, defaultTemplateHref } from './WorkKinds';
+import { WorkKinds, defaultTemplateHref, kitsUrl } from './WorkKinds';
 import { WORK_KINDS, WORK_KINDS_PER_APP, workTiles } from './work-kinds';
 
 // What Home's hero pictures (liveworkspace/docs/specs/004-index/one-explorer.md "What you can make, on Home's hero"): each app's own
@@ -181,5 +181,20 @@ describe('WorkKinds', () => {
     // a picture that grows past this budget is a picture to simplify, as the hero draws on every Home.
     for (const n of counts) expect(n).toBeLessThan(200);
     expect(ms).toBeLessThan(cpuBudgetMs(1000));
+  });
+});
+
+describe('Start a Project', () => {
+  it('shows under All Apps alone, to liveworkspace’s /kits', () => {
+    const { unmount } = render(<WorkKinds app="liveplanner" all />);
+    const link = screen.getByRole('link', { name: 'Start a Project' });
+    expect(link.getAttribute('href')).toMatch(/\/kits$/);
+    unmount();
+    render(<WorkKinds app="liveplanner" all={false} />);
+    expect(screen.queryByRole('link', { name: 'Start a Project' })).toBeNull();
+  });
+
+  it('goes to staging’s from a staging address', () => {
+    expect(kitsUrl('staging.liveplanner.app')).toBe('https://staging.liveworkspace.app/kits');
   });
 });

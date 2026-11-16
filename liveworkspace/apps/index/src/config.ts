@@ -53,6 +53,9 @@ export const SHARE_GUESS_RETRY_AFTER_S = 60;
 // (IDX27), how many the sweep takes a run, and how long a caller over CONNECTION_OPEN_LIMITER is told to wait (its
 // period).
 export const CONNECTION_REVERSE_TIMEOUT_MS = 5_000;
+// How long a project kit's part may take in its app's template door (kits.md "Limits"): a template's file built and
+// imported, which a large plan template with Sheets can take seconds over.
+export const KIT_CREATE_TIMEOUT_MS = 20_000;
 export const CONNECTION_CONFIRM_GRACE_MS = 60 * 60 * 1000;
 export const CONNECTION_SWEEP_MAX = 200;
 export const CONNECTION_OPEN_RETRY_AFTER_S = 60;

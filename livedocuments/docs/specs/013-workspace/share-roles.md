@@ -29,6 +29,10 @@ Participant level is the middle: edit the text and comment, never reshape the do
 - **A Viewer only looks.** A comment and a reaction are both taking
   part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone
   editing the element it looks at.
+- **Approving is a Viewer's one write** ([Approvals](approvals.md), the owner's choice, 2026-11-15): a Viewer, a
+  Participant or an Editor named as an approver may **Approve** or **Request Changes** on the document's open
+  approval request. It writes the decision and nothing else, and only for someone named; asking for approval and
+  cancelling are an Editor's of the whole document.
 - **A checklist tick is editing**: it is one shared value, not a person's answer.
 
 ## What a Participant changes

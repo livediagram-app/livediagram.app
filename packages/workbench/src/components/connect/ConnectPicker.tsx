@@ -7,7 +7,7 @@
 // failure, says why on the row. Painted from the start panel's palette (`ink`), else the app's light or dark look.
 import { useId, useMemo, useState, type CSSProperties } from 'react';
 import type { IndexClient, Item, Level } from '@liveworkspace/index-client';
-import { CompactEmptyState, SwitchRow, lucideGlyph, Button } from '@liveworkspace/ui';
+import { CompactEmptyState, PANEL_INK, SwitchRow, lucideGlyph, Button } from '@liveworkspace/ui';
 import { lucideClock, lucideRefreshCw, lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import {
   bothWaysLine,
@@ -40,13 +40,12 @@ export type ConnectInk = {
 };
 
 // The app's own look when no ink is handed in: slate on white, and its dark counterpart.
-const DEFAULT_INK =
-  '[--cp-text:#0f172a] [--cp-muted:#475569] [--cp-border:#e2e8f0] [--cp-surface:#f8fafc] [--cp-column:#f1f5f9] [--cp-card:#ffffff] [--cp-accent:var(--color-brand-700)] [--cp-on-accent:#ffffff] dark:[--cp-text:#e2e8f0] dark:[--cp-muted:#94a3b8] dark:[--cp-border:#334155] dark:[--cp-surface:#111827] dark:[--cp-column:#1e293b] dark:[--cp-card:#0f172a] dark:[--cp-accent:var(--color-brand-400)] dark:[--cp-on-accent:#0f172a]';
+export const CONNECT_DEFAULT_INK = PANEL_INK;
 
 // The both-ways switch's off track in a themed panel: the theme's muted ink, faint, as SaveSwitchRow draws it.
 const THEMED_OFF_TRACK = 'color-mix(in srgb, var(--cp-muted) 45%, transparent)';
 
-function inkStyle(ink: ConnectInk | undefined): CSSProperties {
+export function inkStyle(ink: ConnectInk | undefined): CSSProperties {
   const base = {
     '--cp-hover': 'color-mix(in srgb, var(--cp-text) 6%, transparent)',
   } as CSSProperties;
@@ -141,7 +140,7 @@ export function ConnectPicker({
   return (
     <div
       data-connect-picker=""
-      className={`flex flex-col text-[var(--cp-text)] ${ink ? '' : DEFAULT_INK}`}
+      className={`flex flex-col text-[var(--cp-text)] ${ink ? '' : CONNECT_DEFAULT_INK}`}
       style={inkStyle(ink)}
     >
       <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">

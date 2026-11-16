@@ -5,6 +5,7 @@
 
 import { continuePurges, FREQUENT_CRON, handlePersonPurge } from './account-purge';
 import { handleApp } from './app-routes';
+import { handleApproval } from './approvals';
 import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
@@ -30,6 +31,7 @@ import { sweepEvents } from './events';
 import { sweepTeamAudit } from './team-audit';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
 import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
+import { handleKits } from './kits';
 import { handleTeamAudit } from './team-audit-read';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 import { handleSpacePreviews } from './space-previews';
@@ -66,6 +68,8 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   trash: handleTrash,
   webhooks: (ctx) => handleWebhooks(ctx),
   'team-audit': (ctx) => handleTeamAudit(ctx),
+  // A project kit, started, finished or removed (kits.ts).
+  kits: handleKits,
 };
 
 async function route(ctx: RouteContext): Promise<Response> {
@@ -103,6 +107,8 @@ async function route(ctx: RouteContext): Promise<Response> {
     // A chart's range read on the person's own access, and the plan's Sheets for its picker (sheet-sources.ts).
     if (segments[2] === 'sheets' && segments.length === 3) return handleSheetList(ctx, id);
     if (segments[2] === 'sheet-range' && segments.length === 3) return handleSheetRange(ctx, id);
+    // Approvals (approvals.ts): asked, decided, cancelled and read, a person in person only.
+    if (segments[2] === 'approval') return handleApproval(ctx, id, segments.slice(3));
     // The document's own webhooks (webhooks/routes.ts): an account's session only.
     if (segments[2] === 'webhooks') {
       const person = ctx.caller.person;
@@ -145,6 +151,8 @@ const routeLabel = createApiRouteLabel(
     'calendar-feeds',
     'cards',
     'trash',
+    'kits',
+    'remove',
     'restore',
     'archive',
     'archived',
@@ -178,6 +186,8 @@ const routeLabel = createApiRouteLabel(
     'sheets',
     'sheet-range',
     'sheet-changed',
+    'approval',
+    'decision',
   ]),
 );
 

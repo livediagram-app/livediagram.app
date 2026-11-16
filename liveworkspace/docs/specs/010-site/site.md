@@ -419,6 +419,8 @@ built once here. It is shown here and, through each switched-on app's router, at
   Apps), drawn by the Explorer itself from `@liveworkspace/ui/work-art`, so nothing is loaded for them. Each starts
   its template in its app: the page hands the Explorer `templateHref` (`lib/explorer/host.ts`), the app's own
   `/new?template=` ([one-explorer.md](../004-index/one-explorer.md) "What you can make, on Home's hero").
+  Under All Apps the heading carries **Start a Project** on its right, to this site's `/kits` (below): one press
+  makes a whole project across the apps.
 - **Previews.** Every app's items have one, from liveworkspace's previews on the page's own origin
   (`/api/previews/items/<id>?v=<updatedAt>`, [previews.md](../006-media/previews.md)), asked with the person's workspace token
   and the item's share code. They are asked for only as a card nears the screen or a row is pointed at, at most
@@ -537,6 +539,41 @@ pages are `noindex`. Cmd/Ctrl+K and Cmd/Ctrl+. open the Search panel (`useSearch
 `@liveworkspace/explorer/search-shortcut`), the same two chords as the editors' command palette. They stand aside while
 the person is typing (a text field, a text area, a select or editable text) and while a dialog is open (anything
 marked `aria-modal`, the Search panel itself included), so a chord typed into a field or a dialog stays there.
+
+### Start a Project (`/kits`)
+
+One click starts a project across the apps: a [kit](../004-index/kits.md) makes an item from a template in each of
+its apps, in a new folder, every one connected to every other both ways. The page is
+`app/kits/page.tsx` and `components/kits/`, static like the rest, asking the index with the workspace token as the
+Explorer does.
+
+- **The header and frame** are the site's (the header, the footer), the page's words under the header: "Start a
+  Project", then "One click makes every file your project needs, in every app, in a new folder, each one connected
+  to the others."
+- **The kits.** One card per kit of the catalogue, in its order: its title, its line, and its parts as rows, each the
+  part's app logo (its Living Prism) and the part's name over the app's name. The cards are one radio group
+  ("Kit"): pressing a card chooses it, its border and a tick in the deep shade of liveworkspace's accent; arrow keys
+  move between them. The first kit is chosen as the page opens. Two columns from `md`, one on a phone.
+- **The setup**, under the cards, in place (no dialog): **Project Name** (the chosen kit's title as its placeholder,
+  used when left empty, at most `KIT_NAME_MAX`), **Role** as the three-way switch Connect File draws (Editor,
+  Participant, Viewer; Editor chosen), with its words under it, the only line under a control on this page because
+  it is the one choice that shares: "Anyone who can open one of these files can edit the others." (take part in,
+  view). When the chosen role is one a part's app does not offer, a second line says what that part gets instead
+  ("livehuddle has no Viewer role, so Team Space opens to Participants."). Then **Create Project**, naming how many
+  files ("Create 4 Files" on a phone).
+- **Signed out (or a guest).** The kits and the setup show as they are, and Create Project is **Sign In to Create**,
+  which signs in and comes back here (`signInHref`). Until the session is known, the button waits, disabled.
+- **The run.** Create replaces the setup with the run's card, in place: one row per part, its logo, its name and its
+  state (a spinner while making; a tick once made, with **Open**; a cross when it could not be made, saying so),
+  then a row for the connections ("Connecting 4 files…", then "12 connections, Editor"). The page cannot see each step
+  of the index's one request, so every row spins until the answer comes. `aria-live="polite"` reads the outcome.
+- **Done.** "Your project is ready." with **Open Folder** (the Explorer at the folder, `/explorer/folder?id=<id>`) and
+  each part's Open (its app's item address), and **Start Another**, which brings the setup back.
+- **Partly done.** "Some of your project couldn't be made." over the rows, with **Retry** (the same kit, role and
+  folder; only what is missing is made) and **Remove What Was Made** (asks once, in place: "Delete the files this
+  made? This can't be undone." Delete Them, Cancel; then the setup comes back). A run that made nothing at all
+  ("Couldn't start your project.") offers Try Again alone.
+- **A refused run** (the network, the index) leaves the setup as it was with the reason under Create, in words.
 
 ### The Community (`/community`, `/community/post`)
 

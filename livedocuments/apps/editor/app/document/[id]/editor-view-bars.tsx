@@ -4,6 +4,7 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { memo } from 'react';
 import { truncateName, type Tab } from '@livedocuments/document';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
@@ -91,12 +92,15 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
           readOnly={readOnly}
           renameNonce={renameNonce}
           rolePill={
-            <RolePill
-              role={roleLevel}
-              ownerName={ownerName}
-              isSelf={isSelf}
-              onToggle={canToggleRole ? () => chrome.get().toggleViewPreview() : undefined}
-            />
+            <>
+              <RolePill
+                role={roleLevel}
+                ownerName={ownerName}
+                isSelf={isSelf}
+                onToggle={canToggleRole ? () => chrome.get().toggleViewPreview() : undefined}
+              />
+              <ApprovalBadge />
+            </>
           }
           // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
           // in the title bar at every width, so the canvas's toolbars never cover it.

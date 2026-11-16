@@ -29,6 +29,7 @@ import { planRoom } from '../plan-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importProjectFileFor } from './internal-file';
+import { projectFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -74,6 +75,8 @@ export function handleInternalItems(
       sheetRange: (id, ask, watcher) => planRoom(env, id).readSheetRange(ask, watcher),
       // A new plan from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importProjectFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => projectFromTemplate(env, input),
       revoke: (id, codes, reason) => planRoom(env, id).revokeCodes(codes, reason),
       // Archived, moved out, trashed or restored at the index: the plan's time rules, Waits and repeating cards stop
       // while it is put away and take up again when it comes back (plan-room/plan-standing.ts).

@@ -5,7 +5,8 @@
 //   DELETE /api/internal/items/:id                          drop everything the item stores, end its sessions
 //   POST   /api/internal/items/purge          {ids}          the same for up to BULK_PURGE_MAX items (a closed account)
 //   POST   /api/internal/items/:id/revoke     {codes, reason?}  end the sessions of revoked or rescoped links
-//   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
+//   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts,
+//                                                           approvals.ts)
 //   POST   /api/internal/items/:id/workbench-close {pairingId}  a workbench pairing's access ended: close its sessions
 //                                                            in the item's room (liveworkspace/docs/specs/011-workbench/workbench.md)
 //   POST   /api/internal/items/:id/standing {archived, trashed, at}  where the item stands at the index after an
@@ -37,6 +38,9 @@
 //                                                            liveworkspace/docs/specs/003-accounts/data-export.md)
 //   POST   /api/internal/items/import     {owner, folderId, name, file}  a new item for `owner` from a file: the
 //                                                            Drive mirror's Import as a copy. Takes DRIVE_KEY too.
+//   POST   /api/internal/items/from-template {owner, folderId, name, template}  a new item for `owner` from one of
+//                                                            the app's templates, a project kit's part
+//                                                            (template-item.ts, liveworkspace/docs/specs/004-index/kits.md)
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
 //                                                            into the item's room with its own times (docs/migration.md
 //                                                            "The apps' migration door"). Takes MIGRATION_KEY too.
@@ -56,6 +60,7 @@
 import {
   COMMUNITY_STATES_MAX,
   isItemCommunityState,
+  parseApprovalNotice,
   parseItemNotice,
   parseItemStanding,
   TITLE_MAX,
@@ -66,6 +71,7 @@ import {
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
+import { templateDoor } from './template-item';
 import { bearerMatches } from './timing-safe';
 import {
   type Copier,
@@ -110,6 +116,8 @@ export type {
   ImportResult,
   InternalItemHandlers,
   InternalItemsOptions,
+  TemplateInput,
+  TemplateResult,
 } from './internal-contract';
 export { MIGRATION_MAX_BYTES, PERSON_ITEMS_MAX } from './internal-doors';
 
@@ -248,6 +256,8 @@ export async function handleInternalItems(
   if (exporting)
     return handlers.export ? exportItem(url, request, id, handlers.export) : notFound();
   if (importing) return handlers.import ? importItem(request, handlers.import) : notFound();
+  if (rest.length === 1 && id === 'from-template' && request.method === 'POST')
+    return handlers.fromTemplate ? templateDoor(request, handlers.fromTemplate) : notFound();
   if (migrating)
     return handlers.migrate ? migrateItem(request, id, app, handlers.migrate) : notFound();
 
@@ -304,8 +314,24 @@ export async function handleInternalItems(
     return json({ ok: true });
   }
 
-  if (rest.length === 2 && rest[1] === 'notices' && request.method === 'POST' && handlers.notice) {
-    const notice = parseItemNotice(await bodyOf(request));
+  if (rest.length === 2 && rest[1] === 'notices' && request.method === 'POST') {
+    const body = await bodyOf(request);
+    // An approval request (approvals.md "The email"): the app's own handler emails the approvers; an app without
+    // the door takes the notice and sends nothing.
+    const approval = parseApprovalNotice(body);
+    if (approval) {
+      const ask = handlers.approvalRequested;
+      if (ask) {
+        waitUntil(
+          ask(id, approval).catch((err: unknown) => {
+            console.warn('[internal] notice failed', { type: approval.type, error: String(err) });
+          }),
+        );
+      }
+      return json({ ok: true }, 202);
+    }
+    if (!handlers.notice) return notFound();
+    const notice = parseItemNotice(body);
     if (!notice) return badRequest('invalid notice');
     const run = handlers.notice;
     waitUntil(

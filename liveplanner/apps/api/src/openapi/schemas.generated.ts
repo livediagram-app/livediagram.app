@@ -6498,7 +6498,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "loom",
       "figma",
       "gdocs",
-      "website"
+      "website",
+      "live"
     ],
     "type": "string"
   },

@@ -4,6 +4,7 @@
 
 import type { ItemEvent } from '@liveworkspace/index-client';
 import { quoted } from '../quoted';
+import { dueWords } from '../approvals/approval-words';
 import { SHARE_LEVEL_WORDS } from './share-levels';
 
 /** Who did it, as the reader should hear it. The index keeps no names: an app's report may carry one. */
@@ -56,6 +57,19 @@ export function eventWords(
       };
     case 'action_done':
       return { detail: null, quote: detail.action ?? null };
+    case 'approval_requested': {
+      const count = Number(detail.approvers ?? '0') || 0;
+      const who = count === 1 ? 'From 1 person' : count > 1 ? `From ${count} people` : null;
+      const by = detail.due ? `by ${dueWords(detail.due)}` : null;
+      return { detail: [who, by].filter(Boolean).join(', ') || null, quote: null };
+    }
+    case 'approval_approved':
+      return {
+        detail: detail.complete ? 'Approved by everyone' : null,
+        quote: detail.note ?? null,
+      };
+    case 'approval_changes_requested':
+      return { detail: null, quote: detail.note ?? null };
     default:
       return { detail: null, quote: null };
   }

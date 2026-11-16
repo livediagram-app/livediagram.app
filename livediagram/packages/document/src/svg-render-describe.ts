@@ -163,6 +163,14 @@ export function describeBoxedExport(
   const { resolveImageHref, resolveIconArt, resolveStickerArt } = opts;
   const fontFamily = exportFontFamily(el, opts.tabFont, opts.tabFinish);
   const opacity = el.opacity ?? 1;
+  // A live embed draws its snapshot, never the item (liveworkspace/docs/specs/004-index/live-embeds.md "Snapshots").
+  if (el.type === 'video' && el.embedProvider === 'live' && el.livePoster) {
+    return {
+      opacity,
+      shape: { kind: 'image', href: el.livePoster, objectFit: 'cover', radius: 0 },
+      label: null,
+    };
+  }
   if (el.type === 'image') {
     // Mirror ImageElementView: borderRadius drives the corner clip (avatar
     // 'full' → circle), objectFit defaults to 'contain'.

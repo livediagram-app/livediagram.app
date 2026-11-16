@@ -5,6 +5,7 @@
 // (docs/specs/007-editor/split-view.md). Plain functions over the editor context, not components, so the
 // view's tree is what it always was; each is null where its bar is hidden.
 
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import type { ReactNode } from 'react';
 import { truncateName } from '@livedesign/design';
 import { offersPrototype, PrototypeHeaderButton } from '@/components/chrome/PrototypeHeaderButton';
@@ -94,7 +95,12 @@ export function editorViewHeader(
           copying={copying}
           readOnly={isStructureReadOnly}
           renameNonce={renameDesignNonce}
-          rolePill={<RolePill {...role} />}
+          rolePill={
+            <>
+              <RolePill {...role} />
+              <ApprovalBadge />
+            </>
+          }
           // Editing or Suggesting, and the review (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md):
           // in the title bar at every width, so the canvas's toolbars never cover it.
           leadAction={

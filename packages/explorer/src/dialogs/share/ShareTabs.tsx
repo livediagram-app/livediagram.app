@@ -1,24 +1,25 @@
 'use client';
 
-// The Share dialog's two tabs, there only when the host adds one of its own (livediagram's Community): Passes, the
-// links handed out, and the host's. The chosen tab draws its own underline (two tabs need no sliding bar); arrow keys
+// The Share dialog's tabs, there only when the host adds one of its own (livediagram's Community) or the editor
+// offers approvals: Passes, the links handed out, the host's, and Approval. The chosen tab draws its own underline (two tabs need no sliding bar); arrow keys
 // move between them. livediagram's ShareTabs from before the Explorer split, with the host's badge (words, never a
 // dot) in place of its dot.
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import type { ShareView } from './parts';
 
-const VIEWS: readonly ShareView[] = ['passes', 'app'];
-
 export const shareTabId = (v: ShareView) => `share-tab-${v}`;
 export const sharePanelId = (v: ShareView) => `share-panel-${v}`;
 
 export function ShareTabs({
+  views,
   view,
   onView,
   appLabel,
   appBadge,
 }: {
+  // The tabs there are, in order: Passes, then the host's, then Approval.
+  views: readonly ShareView[];
   view: ShareView;
   onView: (view: ShareView) => void;
   appLabel: string;
@@ -29,7 +30,7 @@ export function ShareTabs({
     const step = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
     if (!step) return;
     e.preventDefault();
-    const next = VIEWS[(VIEWS.indexOf(view) + step + VIEWS.length) % VIEWS.length]!;
+    const next = views[(views.indexOf(view) + step + views.length) % views.length]!;
     onView(next);
     listRef.current?.querySelector<HTMLButtonElement>(`#${shareTabId(next)}`)?.focus();
   };
@@ -41,7 +42,7 @@ export function ShareTabs({
       onKeyDown={onKey}
       className="relative flex shrink-0 gap-1 border-b border-slate-100 px-4 dark:border-slate-800"
     >
-      {VIEWS.map((v) => {
+      {views.map((v) => {
         const on = v === view;
         return (
           <button
@@ -59,7 +60,7 @@ export function ShareTabs({
                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            {v === 'passes' ? 'Passes' : appLabel}
+            {v === 'passes' ? 'Passes' : v === 'approval' ? 'Approval' : appLabel}
             {on ? (
               <span
                 aria-hidden

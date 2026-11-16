@@ -116,6 +116,58 @@ describe('handleInternalItems', () => {
     ).toBe(400);
   });
 
+  it('hands an approval notice to its own handler, and takes it with nothing to do without one', async () => {
+    const pending: Promise<unknown>[] = [];
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const approval = {
+      type: 'approval_requested',
+      approvalId: 'ap_1',
+      requesterId: 'user_a',
+      requesterName: 'Ada',
+      approverIds: ['user_b'],
+      itemTitle: 'Roadmap',
+      note: null,
+      due: null,
+    };
+    const approvalRequested = vi.fn(async () => {});
+    const notice = vi.fn(async () => {});
+    const path = '/api/internal/items/A/notices';
+    const res = await send(
+      'POST',
+      path,
+      approval,
+      { approvalRequested, notice },
+      {
+        waitUntil: (p) => pending.push(p),
+      },
+    );
+    expect(res.status).toBe(202);
+    await Promise.all(pending);
+    expect(approvalRequested).toHaveBeenCalledWith('A', approval);
+    expect(notice).not.toHaveBeenCalled();
+    // No door: taken, nothing sent; the other notices still need theirs.
+    expect((await send('POST', path, approval, {})).status).toBe(202);
+    expect((await send('POST', path, { type: 'shared', actorId: 'user_a' }, {})).status).toBe(404);
+    // A handler that throws is logged, never the index's problem.
+    const failing = vi.fn(async () => {
+      throw new Error('boom');
+    });
+    await send(
+      'POST',
+      path,
+      approval,
+      { approvalRequested: failing },
+      {
+        waitUntil: (p) => pending.push(p),
+      },
+    );
+    await Promise.all(pending);
+    expect(warn).toHaveBeenCalledWith('[internal] notice failed', {
+      type: 'approval_requested',
+      error: 'Error: boom',
+    });
+  });
+
   it('copies, answering a missing source and a conflict', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     let seen: unknown = null;

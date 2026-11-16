@@ -34,6 +34,10 @@ Participant level is the middle: take part in the board, never reshape it.
 - **Running a session is facilitation, an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
   editors and the [facilitator baton](../012-collaboration/facilitator.md). A Participant takes part and never
   runs, and never holds the baton.
+- **Approving is a Viewer's one write** ([Approvals](approvals.md), the owner's choice, 2026-11-15): a Viewer, a
+  Participant or an Editor named as an approver may **Approve** or **Request Changes** on the canvas's open
+  approval request. It writes the decision and nothing else, and only for someone named; asking for approval and
+  cancelling are an Editor's of the whole canvas.
 - **A checklist tick is editing**: it is one shared value, not a person's answer.
 
 ## What a Participant changes

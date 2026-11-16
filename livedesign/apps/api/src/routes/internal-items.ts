@@ -20,7 +20,7 @@ import {
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { communityService } from '../community-service';
-import { notifyFirstShare } from '../email/notifications';
+import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
 import { purgeDesignPreviews } from '../db/designs';
@@ -28,6 +28,7 @@ import { designRoom } from '../design-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDesignFileFor } from './internal-file';
+import { designFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -57,6 +58,8 @@ export function handleInternalItems(
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
       revoke: (id, codes, reason) => designRoom(env, id).revokeCodes(codes, reason),
+      // An approval request (liveworkspace approvals.md): the approvers' email.
+      approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
@@ -122,6 +125,8 @@ export function handleInternalItems(
       exportComments: (id) => designRoom(env, id).exportComments(),
       // A new design from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDesignFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => designFromTemplate(env, input),
     },
   });
 }
