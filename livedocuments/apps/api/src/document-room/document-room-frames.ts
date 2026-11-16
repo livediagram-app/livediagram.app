@@ -14,6 +14,7 @@ import type { DocumentRoom } from './document-room';
 import { scopeOf, sequenceMutation, sendTo } from './document-room-sockets';
 import { sendFollowers, noteMultiplayer } from './document-room-presence';
 import { answerArticleHold } from './document-room-holds';
+import { participantJoined, suggestByOf } from './document-room-review';
 
 // Max ops a single session may broadcast per 1s window. Far above any
 // legit client (cursor / laser broadcasts are throttled to a few dozen
@@ -90,6 +91,8 @@ export function webSocketMessage(
     // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab
     // key"): its editor records its answers and reactions under it from now on.
     if (presence.key) sendTo(room, ws, { kind: 'collab-key', key: presence.key });
+    // A Participant hears whether its writing is suggestions (docs/specs/007-editor/suggestions.md "Suggest Only").
+    participantJoined(room, ws, session, presence);
     // Where the ordered stream stands as this session joins, so a later
     // reconnect asks for what came after it, not for the whole log.
     sendTo(room, ws, { kind: 'cursor', epoch: room.epoch, seq: room.seq });
@@ -128,7 +131,14 @@ export function webSocketMessage(
     });
     if (gate.kind === 'drop') return;
     if (gate.kind === 'participant-content' || gate.kind === 'participant-article') {
-      const writer = { ws, presenceId: sender.id, documentId: session.documentId ?? null };
+      // On Suggest Only, its writing must be suggestions of its own, and it may comment on selected text
+      // (docs/specs/007-editor/suggestions.md "The server is the rule").
+      const writer = {
+        ws,
+        presenceId: sender.id,
+        documentId: session.documentId ?? null,
+        suggestBy: suggestByOf(room, session),
+      };
       if (gate.kind === 'participant-content')
         void room.participantWrites.applyContentOp(writer, msg.op, msg.ref);
       else void room.participantWrites.applyArticleOp(writer, msg.op, msg.ref);

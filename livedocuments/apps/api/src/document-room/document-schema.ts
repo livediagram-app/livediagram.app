@@ -295,7 +295,18 @@ const V7 = (exec: Exec) => {
 // (versions/version-schema.ts). Its own step, appended: every statement is IF NOT EXISTS.
 const V8 = VERSION_SCHEMA;
 
-const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7, V8];
+// The document's review settings (docs/specs/007-editor/suggestions.md "Suggest Only"): JSON, or NULL for none
+// (document-room-review.ts). Asks before the ALTER, so it is safe however far a room got.
+const V9 = (exec: Exec) => {
+  const have = new Set(
+    exec('PRAGMA table_info(document)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
+};
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7, V8, V9];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

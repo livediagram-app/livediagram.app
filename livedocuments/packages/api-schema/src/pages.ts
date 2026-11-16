@@ -85,7 +85,12 @@ export type ArticleWrite = {
   look?: ArticleLookId;
   accent?: string;
   pageNumbers?: boolean;
+  // `suggestions`: an assistant's changes to the words arrive as suggestions to accept or reject
+  // (docs/specs/024-agents/pages-for-agents.md "Suggestions"); `direct` (absent) writes straight in.
+  as?: ArticleWriteAs;
 };
+
+export type ArticleWriteAs = 'suggestions' | 'direct';
 
 export type PagesRequest = { pages: PageChange[] } | { article: ArticleWrite };
 

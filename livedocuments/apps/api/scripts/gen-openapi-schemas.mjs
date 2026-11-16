@@ -38,6 +38,8 @@ export const ROOT_TYPES = [
   'ChangesetRequest',
   'PagesRequest',
   'PagesAnswer',
+  'ReviewSettings',
+  'ReviewResponse',
   'ChangesetResponse',
   'ChangesetSummary',
   'ChangesetDetail',

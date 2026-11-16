@@ -661,6 +661,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
+    method: 'GET',
+    path: '/documents/{id}/review',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "The document's review settings: the Participant share links and people whose article writing is always suggestions, whether an assistant's article writes are, and the people seen joining as Participants. An Editor's only.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'ReviewResponse',
+    statuses: [200, 401, 403, 404, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/review',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "Set the review settings: Suggest Only links (share codes) and people (collab keys), and Assistants Suggest. Reaches every Participant with the document open. An Editor's only.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: ref('ReviewSettings'),
+    responseSchema: 'ReviewResponse',
+    statuses: [200, 400, 401, 403, 404, 410],
+  },
+  {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/pages',
     segment: 'documents',

@@ -340,6 +340,7 @@ export * from './home';
 export * from './drag-preview';
 export * from './article-caret';
 export * from './article-hold';
+export * from './review';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from '@liveworkspace/api-schema/within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).

@@ -192,7 +192,18 @@ function articleWrite(v: unknown): ArticleWrite {
   if (!isRecord(v)) return bad('"article" is an object with "markdown".');
   onlyKeys(
     v,
-    ['article', 'new', 'markdown', 'mode', 'size', 'orientation', 'look', 'accent', 'pageNumbers'],
+    [
+      'article',
+      'new',
+      'markdown',
+      'mode',
+      'size',
+      'orientation',
+      'look',
+      'accent',
+      'pageNumbers',
+      'as',
+    ],
     '"article"',
   );
   if (typeof v.markdown !== 'string') bad('"markdown" is the article\'s text, in Markdown.');
@@ -219,6 +230,7 @@ function articleWrite(v: unknown): ArticleWrite {
     ...(v.look === undefined ? {} : { look: oneOf(ARTICLE_LOOK_IDS, v.look, 'look') }),
     ...(v.accent === undefined ? {} : { accent: hex(v.accent, 'accent') }),
     ...(v.pageNumbers === undefined ? {} : { pageNumbers: v.pageNumbers as boolean }),
+    ...(v.as === undefined ? {} : { as: oneOf(['suggestions', 'direct'] as const, v.as, 'as') }),
   };
 }
 
