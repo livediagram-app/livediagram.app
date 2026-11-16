@@ -205,7 +205,7 @@ export function createAppDoors(
         await res.body?.cancel();
         throw new DoorError(res.status, `${caller}: sheet-range ${res.status}`);
       }
-      const read = (await res.json().catch(() => null)) as unknown;
+      const read: unknown = await res.json().catch(() => null);
       if (!isSheetRangeDoorRead(read)) throw new DoorError(200, `${caller}: malformed sheet-range`);
       return read;
     },

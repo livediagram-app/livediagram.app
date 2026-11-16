@@ -240,12 +240,12 @@ describe('sheet sources', () => {
     await doors.readSheetRange('liveplanner', 'P1', { sheetId: 's1', range: RANGE, watcher: null });
     expect(calls[0]!.url).toBe('https://liveplanner.test/api/internal/items/P1/sheet-range');
     expect(calls[0]!.init?.method).toBe('POST');
-    expect(JSON.parse(String(calls[0]!.init?.body))).toEqual({
+    expect(JSON.parse(calls[0]!.init?.body as string)).toEqual({
       sheetId: 's1',
       a1: 'A1:D9',
       watcher: 'D1',
     });
-    expect(JSON.parse(String(calls[1]!.init?.body))).toEqual({ sheetId: 's1', range: RANGE });
+    expect(JSON.parse(calls[1]!.init?.body as string)).toEqual({ sheetId: 's1', range: RANGE });
   });
 
   it("throws a read's refusal or a malformed answer", async () => {
