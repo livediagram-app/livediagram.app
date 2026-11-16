@@ -4,10 +4,10 @@ The status page on liveworkspace.app (`/status`, [site.md](../010-site/site.md#s
 the visitor's browser. That shows what _this visitor_ sees, and only while the page is open. The **status Worker**
 (`apps/status`, `liveworkspace-status`) adds what a browser can't: a check of every service from Cloudflare once an
 hour, kept for 90 days, so the page can show when each service was last checked, a bar per day and the incidents of
-the last 90 days.
+the last 90 days. The Explorer index is checked signed in, every 5 minutes ([The signed-in check](#the-signed-in-check)).
 
 ```
-apps/status            the Worker: the hourly checks (a Cron Trigger) and the read API at /api/status
+apps/status            the Worker: the hourly checks and the 5-minute signed-in check (Cron Triggers), the read API at /api/status
 packages/status        @liveworkspace/status: the one list of services, how an answer is judged, the wire shapes
 ```
 
@@ -20,8 +20,9 @@ A Cron Trigger runs at minute 7 of every hour (`"7 * * * *"`), in production and
 
 1. **Check.** Every service with a check of its own is checked at once, with a 10 second timeout each. A Worker may
    wait on at most six answers at a time, so the checks go out six at a time and each is timed from when its own
-   request leaves, never from when it was queued. That is 27 requests in all, well under the 50 subrequests a free
-   Worker may make per run (a test keeps it under 40).
+   request leaves, never from when it was queued. The Explorer index is checked signed in, with its own timings
+   ([below](#the-signed-in-check)): three requests in place of one. That is 33 requests in all in production, well
+   under the 50 subrequests a free Worker may make per run (a test keeps it under 40).
 2. **Judge.** Each answer is **up** (the answer expected, in 1.5 s or less), **slow** (expected, after more than
    1.5 s) or **down** (no answer in 10 s, a network error, or the wrong answer), with its HTTP code, how long it took
    and a short error code (`timeout`, `network`, `status`, `not_json`). The server can read every answer, so the app
@@ -37,7 +38,8 @@ A Cron Trigger runs at minute 7 of every hour (`"7 * * * *"`), in production and
    - incidents: outages only. A run of consecutive down checks is one incident, from its first down check to the
      first check after it that answered (up, or slow: a slow answer is still an answer), with how many checks it
      spanned and its first error. A down service opens one or extends its open one; one that answers again closes
-     it. A service taken off the list (its app retired, say) is never checked again, so its open incident closes with
+     it. The signed-in Explorer check opens one only on its second down check in a row, starting at the first
+     ([below](#the-signed-in-check)). A service taken off the list (its app retired, say) is never checked again, so its open incident closes with
      the first run that no longer lists it, and is pruned like any other; the read API sends only the incidents of
      services on the list. A slow hour is no incident: it shows in the day's bar, not in the list;
    - pruning: checks, days and closed incidents older than 90 days go.
@@ -45,6 +47,53 @@ A Cron Trigger runs at minute 7 of every hour (`"7 * * * *"`), in production and
    reading them is one row, however many people have the page open.
 
 Nothing alerts anyone. That may come later; the incidents table is where it would read from.
+
+## The signed-in check
+
+The Explorer index's anonymous check (`GET /api/index/jwks`) never reads a token, so it can't see the index's token
+check failing. On 2026-11-13 every signed-in `/api/index/*` call took 10 s and answered 401 for half an hour while the
+index waited on accounts' key set, and the page stayed green. So the status Worker also checks the index as a person
+uses it, signed in, every 5 minutes. A visitor's browser can't: it would need the credential. So the page's live line
+for **Explorer index** stays the anonymous check, and its stored history (liveworkspace's last check, the bars and the
+incidents) is the signed-in check's. The catalogue marks it as a check only the Worker makes (`worker` on the
+service, `@liveworkspace/status`), which the page never runs.
+
+**The credential is a guest's**, one that never makes anything, so a leak reaches only an empty guest with no account,
+team or item behind it:
+
+- `STATUS_GUEST_COOKIE`, a secret on the status Worker alone (production and staging each have their own), holds a
+  signed `lw_guest` cookie value (`guest_<uuid>.<signature>`, [accounts.md "Guests"](../003-accounts/accounts.md)).
+  It is never in the repository, the catalogue, a stored check or the page.
+- Each check mints a fresh guest token the way an app's page does. `GET https://www.livediagram.app/api/auth/guest?state=<random>`
+  (no cookie; livediagram's address in the environment, as on the page) answers a redirect to accounts' hand-off.
+  The Worker follows it only when it is on `PLATFORM_ORIGIN`, and only then sends the cookie. Accounts answers a
+  redirect back to the app with a 45-day `guest_token` and the same `state` in the fragment; the cookie keeps naming
+  the same guest, and the hand-off marks it seen, so the guest is never swept. Each check so exercises the app's
+  door, accounts' hand-off and its token signing.
+- Then `GET /api/index/placement-defaults` with the token as the Bearer: the index checks it against accounts' keys
+  (the check that failed on 2026-11-13) and reads the guest's one empty, indexed list. Up when it answers 200 and
+  JSON.
+
+**Judged**: each hand-off step gives up after 5 s. The index call is slow past 1.5 s, as every check, and down when it
+hasn't answered in 5 s (`SIGNED_IN_TIMEOUT_MS`), half the others' 10 s: a signed-in Explorer list that takes 5 s is
+broken for the person waiting on it. The 10 s answers of 2026-11-13 are down either way (a timeout, or the 401). The
+time stored is the index call's; a hand-off that gives no token is down with the error `sign_in` and the hand-off's
+time.
+
+**Cadence**: a second Cron Trigger, at minutes 2, 12, 17, 22, 27, 32, 37, 42, 47, 52 and 57, runs this check alone,
+and the hourly run at minute 7 makes it as part of the round, so it runs every 5 minutes; everything else stays
+hourly. A cold isolate's first key fetch can be slow, so one down check opens no incident: the second in a row does,
+starting at the first, and an answer closes it as usual. A 30-minute outage is then an incident within 10 minutes.
+
+**Without the secret** (before it is set, or on a dev server), the hourly run checks the index anonymously as before,
+and the 5-minute run checks nothing and logs `{"run":"status-signed-in","skipped":"no_secret"}`: never a false red.
+
+**The 5-minute run** reads one batch (the service's open incident, its check before this one, today's `daily` row and
+the two snapshots) and writes one: the check, today's row with this check added (the hourly run works the day's
+medians out again from every check), the incident it opened, extended or closed, and both snapshots with this
+service's entry, today's bar and its incidents patched in. The snapshots' `at`, the uptimes and the earlier days stay
+the hourly run's. Its bar and uptime count every 5-minute check; in its group's and the page's uptime each counts as a
+twelfth, so the service weighs there as an hourly one does.
 
 ## The read API
 
@@ -126,19 +175,19 @@ skipped. Every app ships one except livehuddle, which removed its MCP server (ow
 launched app is on the page, livehuddle's group last. A held app
 ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)) is not on the page
 until it launches; none is held today. One round is 31 requests in production (27 on staging, which has no public
-MCP host), under a Worker's 50 subrequests.
+MCP host), plus two for the signed-in Explorer check's hand-off, under a Worker's 50 subrequests.
 
 ## The database
 
 `liveworkspace-status` (production) and `liveworkspace-status-staging`, bound as `STATUS_DB`. The schema is
 `apps/status/migrations/0001_status.sql`:
 
-| Table       | Rows                                    | Kept                  |
-| ----------- | --------------------------------------- | --------------------- |
-| `checks`    | one per service per hour (35 an hour)   | 90 days, about 75,600 |
-| `daily`     | one per service per UTC day             | 90 days, about 3,150  |
-| `incidents` | one per outage (a spell of down checks) | 90 days after closing |
-| `snapshots` | two: `latest` and `history`             | replaced every run    |
+| Table       | Rows                                                         | Kept                   |
+| ----------- | ------------------------------------------------------------ | ---------------------- |
+| `checks`    | one per service per hour, and the Explorer's every 5 minutes | 90 days, about 112,000 |
+| `daily`     | one per service per UTC day                                  | 90 days, about 3,150   |
+| `incidents` | one per outage (a spell of down checks)                      | 90 days after closing  |
+| `snapshots` | two: `latest` and `history`                                  | replaced every run     |
 
 ## Running it locally
 
@@ -147,6 +196,7 @@ cd liveworkspace/apps/status
 corepack pnpm db:migrate:local
 corepack pnpm dev                       # http://localhost:3010/api/status, with /__scheduled
 curl 'http://localhost:3010/__scheduled?cron=7+*+*+*+*'   # one run, now
+curl 'http://localhost:3010/__scheduled?cron=2,12,17,22,27,32,37,42,47,52,57+*+*+*+*'   # the signed-in check alone
 corepack pnpm seed:local                # 90 days of made-up history, for a look at the page
 ```
 
@@ -159,8 +209,9 @@ part of the Worker.
 
 CI's deploy ships it ([docs/ci.md](../../../../docs/ci.md#deploys) at the repository root): staging on every push to `main`, production through the manual gate, both on the liveworkspace Cloudflare account. The status Worker is in the first tier, so its D1 migrations (`apps/status/migrations`) apply before its
 code; the databases are `liveworkspace-status` and `liveworkspace-status-staging`, with their ids in
-`apps/status/wrangler.toml`. It has no secrets. A first run fills the page within the hour; before it, the page
-shows its live checks alone.
+`apps/status/wrangler.toml`. Its one secret is `STATUS_GUEST_COOKIE` ([The signed-in check](#the-signed-in-check)),
+set by the owner with `wrangler secret put` on each environment; no deploy sets or reads it. A first run fills the
+page within the hour; before it, the page shows its live checks alone.
 
 ## Performance
 
@@ -179,6 +230,13 @@ Measured locally (`wrangler dev`, D1's own `rows_read` and `rows_written`, Octob
   over 90 days is 7,435 bytes (956 gzipped) with the local seed's realistic history; `/api/status` is 1,265 (346).
   The worst case, every service down two days in three, stays under 24 KB (4 KB gzipped), tested in `api.test.ts`.
 - **The page**: one request on load and one every 5 minutes while visible, nothing per service.
+- **The signed-in check**: three requests every 5 minutes (the app's door, accounts' hand-off, one index read of an
+  empty list by its key), 288 a day of each per environment; accounts writes the guest's seen stamp at most once a
+  day. A 5-minute run reads about 45 rows and writes six at most: the open incident by its index, one `daily` row by
+  its key, two snapshots, and the last 15 minutes of `checks` by `checks`' key, at most 41 rows (measured with 90
+  days stored at this volume, 112,320 checks; every query a key or index search). That is about 13,000 rows read and
+  1,700 written a day. It never rebuilds the history from `daily`; the hourly run does. Its own work is 0.2 ms of
+  CPU locally (the hourly run's 12 ms), patching a 7 KB history. The hourly run's read gains the same one look back.
 
 The edge cache is the Worker's `caches.default`, on the `liveworkspace.app` zone. A miss is the one D1 row; the
 snapshot is what keeps that cheap.

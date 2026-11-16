@@ -266,7 +266,7 @@ chosen to be cheap (no database read where one can be avoided, or one the edge c
 | ------------- | ------------------ | -------------------------------------------------- | ---------------------------- |
 | liveworkspace | Website            | `HEAD /robots.txt`                                 | 200                          |
 |               | Accounts & sign-in | `GET /.well-known/openid-configuration`            | 200, JSON                    |
-|               | Explorer index     | `GET /api/index/jwks`                              | 200, JSON                    |
+|               | Explorer index     | `GET /api/index/jwks` (hourly: signed in, below)   | 200, JSON                    |
 |               | Community          | `GET /api/community/facets?app=livediagram.app`    | 200, JSON (edge cached)      |
 |               | Telemetry          | `OPTIONS /api/telemetry/events`                    | 204 (no database)            |
 |               | Media & previews   | `GET /api/previews`                                | 404 JSON from the Worker     |
@@ -290,6 +290,12 @@ Worker's port.
 
 The hourly checks can read every answer, so the pages a browser can only call **Reached** get a true state there
 (up on a 2xx or 3xx).
+
+The Explorer index's anonymous check never reads a token, so the status Worker also checks it signed in, as a guest,
+every 5 minutes: a fresh guest token from accounts, then `GET /api/index/placement-defaults` with it, down when it
+hasn't answered 200 JSON in 5 s ([status.md "The signed-in check"](../009-status/status.md#the-signed-in-check)). The
+guest's credential is a secret on the status Worker alone; the page never has it, so its live line for the row stays
+the anonymous check, and the row's last check, bars and incidents are the signed-in one's.
 
 Each service shows its state as an icon and a word, never colour alone: **Operational** (answered as expected),
 **Slow** (answered, after more than 1.5 s), **Down** (no answer in 10 s, a network error, or an answer it shouldn't
