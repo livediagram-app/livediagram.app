@@ -71,7 +71,9 @@ around the editor's `ModePanel` and its placement props); the theme card and lis
 around the editor's `ColourPicker`) and the animation tile (`components/palette/AnimationPreviewTile`, around its
 `SizeButton`); the auth pages' cards (`components/chrome/auth-cards`, around the editor's Night Band frame and pitch,
 with the return-path rules beside them in `auth-routes`), the deferred-auth provider
-(`components/providers/auth-provider`, around the bridges the editor loads with `next/dynamic` itself), the settings
+(`components/providers/auth-provider`, around the loaders of the bridges' code the editor passes it; it mounts the
+bridge by a state update once its code lands, never through a Suspense reveal that React's 300 ms reveal throttle can
+hold back), the settings
 test pane, the palette chrome hook, the canvas's view readers, the drag ghost and the search panel's sources. The
 Explorer's lazy load shares its loader (`components/panels/explorer-loader`) while each editor keeps its
 `next/dynamic` call. Telemetry stays in the editors: a component whose events the editor's telemetry scan counts (the

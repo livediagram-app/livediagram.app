@@ -42,6 +42,9 @@ vi.mock('@/lib/api-client', () => ({
   setSessionSharePassword: () => {},
   writeCachedSharePassword: () => {},
 }));
+// What the warm paint waits for (offline-mode.md "The code it draws is in first"), answered at once unless a test holds it.
+const warmCode = vi.hoisted(() => ({ preload: vi.fn(async () => {}) }));
+vi.mock('@/lib/editor-deferred-code', () => ({ WARM_PAINT_CODE: [() => warmCode.preload()] }));
 vi.mock('@/lib/last-seen', () => ({ lastSeenCopies: copies }));
 // The not-found fallback's reload, watched rather than run (offline-mode.md "Never a wrong not found").
 vi.mock('@liveworkspace/workbench/lib/warm-open', async (importOriginal) => ({
@@ -142,6 +145,7 @@ const lastRole = (set: Record<string, ReturnType<typeof vi.fn>>): unknown =>
 
 beforeEach(() => {
   resetLoadProgressForTests();
+  warmCode.preload.mockImplementation(async () => {});
   window.sessionStorage.clear();
   window.history.replaceState(null, '', '/document/doc-1');
   hint.signedIn = false;
@@ -420,5 +424,61 @@ describe('useIdentityBootstrap warm open', () => {
     hook.rerender({ authLoaded: true, accountUserId: null });
     await flush();
     expect(timing.started.map((t) => t.metric)).toEqual(['DocumentLoad']);
+  });
+
+  // offline-mode.md "The code it draws is in first": the paint waits for the code of what it mounts first.
+  const holdCode = () => {
+    let codeIn: () => void = () => {};
+    warmCode.preload.mockImplementation(() => new Promise<void>((r) => (codeIn = r)));
+    return () => codeIn();
+  };
+
+  it('has the code the paint draws in before it paints', async () => {
+    const codeIn = holdCode();
+    render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(warmCode.preload).toHaveBeenCalledOnce();
+    expect(paint).not.toHaveBeenCalled();
+    codeIn();
+    await flush();
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+  });
+
+  it('asks for no code when there is no copy to paint', async () => {
+    copies.held = null;
+    render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(warmCode.preload).not.toHaveBeenCalled();
+  });
+
+  it('paints nothing when the load landed while the code loaded', async () => {
+    const codeIn = holdCode();
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+    codeIn();
+    await flush();
+    expect(paint).not.toHaveBeenCalled();
+  });
+
+  // The warm-open 404 race (Work Tracker 890, PR #1804) stays fixed with the wait in front of the paint: auth settles and
+  // the load starts while the code loads, the copy then paints, and the load's not found reloads cold instead of showing.
+  it('still reloads once rather than show not found when the paint waited for its code', async () => {
+    const codeIn = holdCode();
+    let answer: (found: unknown) => void = () => {};
+    api.apiLoadDocument.mockImplementation(() => new Promise((r) => (answer = r)));
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    codeIn();
+    await flush();
+    expect(paint).toHaveBeenCalledOnce();
+    answer(null);
+    await flush();
+    expect(set.setDocumentNotFound?.mock.calls ?? []).not.toContainEqual([true]);
+    expect(fallback.reload).toHaveBeenCalledOnce();
   });
 });

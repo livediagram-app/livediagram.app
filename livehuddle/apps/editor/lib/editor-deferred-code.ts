@@ -1,3 +1,5 @@
+import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
+
 // The editor's code that loads on demand (docs/specs/016-platform/web-performance.md), in one place so each
 // surface's dynamic import and the prefetch below name the same module.
 //
@@ -30,3 +32,20 @@ export const EDITOR_SURFACE_CODE = [
   loadEditorSearchPanel,
   loadToolPanels,
 ] as const;
+
+// Element tours (docs/specs/007-editor/element-tours.md), mounted with the editor: a lazy panel
+// (@liveworkspace/ui/lazy-panel), so the warm paint can have its code in before it paints and it draws in the paint's
+// own commit.
+export const ElementTourHost = lazyPanel('ElementTourHost', () =>
+  import('@/components/tour/ElementTourHost').then((m) => m.ElementTourHost),
+);
+// The Receptionist's host (docs/specs/008-canvas/receptionist.md), mounted the first time a person walks, which a Space
+// opened on the walk does with its warm paint.
+export const ReceptionistHost = lazyPanel('ReceptionistHost', () =>
+  import('@/components/tour/ReceptionistHost').then((m) => m.ReceptionistHost),
+);
+
+// What the warm paint (docs/specs/006-document/offline-mode.md "The code it draws is in first") waits for before it
+// paints, at most WARM_PAINT_CODE_WAIT_MS: what it mounts with the canvas (Work Tracker 960). Anything left waiting on
+// its code draws a beat late, behind React's reveal throttle.
+export const WARM_PAINT_CODE = [ElementTourHost.preload, ReceptionistHost.preload] as const;

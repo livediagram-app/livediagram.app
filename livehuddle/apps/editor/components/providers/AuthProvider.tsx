@@ -1,57 +1,25 @@
 'use client';
 
-// Deferred auth for the whole app tree (docs/specs/014-identity/auth-and-guest-access.md: auth is purely
-// additive; a guest needs no sign-in). The
-// children render at once under DeferredAuthContext's "not settled" defaults, and a lazily-loaded
-// bridge (AccountsBridge, an async chunk) asks the api for the session and pushes the distilled
-// auth state into the context. Auth state "pops in" once that one request answers.
-//
-// Signing in leaves the app for the accounts site on a full-page visit and comes back on another,
-// so no state from before signing in survives into the signed-in page.
+// Deferred auth for the whole app tree (the workbench's components/providers/auth-provider says how), bound to this
+// editor's bridges.
 
-import dynamic from 'next/dynamic';
-import { useState, type ReactNode } from 'react';
 import { e2eAuthEnabled } from '@liveworkspace/workbench/lib/auth-config';
-import {
-  DEFERRED_AUTH_DEFAULT,
-  DeferredAuthContext,
-} from '@liveworkspace/workbench/components/providers/deferred-auth';
+import { createAuthProvider } from '@liveworkspace/workbench/components/providers/auth-provider';
 import { bindWorkbench } from '@/lib/workbench-bindings';
 import { E2E_SESSION_KEY } from '@/lib/workbench-keys';
 
 // This editor's facts for the workbench code, before anything renders (lib/workbench-bindings.ts).
 bindWorkbench();
 
-// Test builds only (see e2eAuthEnabled): never part of a real bundle. It stands in for the accounts
-// bridge, so a test build with sign-in on shows every sign-in surface while the test picks the session.
-const LazyE2EAuthBridge = e2eAuthEnabled
-  ? dynamic(
-      () =>
+export const AuthProvider = createAuthProvider({
+  // Test builds only (see e2eAuthEnabled): never part of a real bundle. It stands in for the accounts
+  // bridge, so a test build with sign-in on shows every sign-in surface while the test picks the session.
+  loadE2EAuthBridge: e2eAuthEnabled
+    ? () =>
         import('@liveworkspace/workbench/components/providers/E2EAuthBridge').then(
           (m) => m.E2EAuthBridge,
-        ),
-      {
-        ssr: false,
-        loading: () => null,
-      },
-    )
-  : null;
-
-const LazyAccountsBridge = dynamic(() => import('./AccountsBridge').then((m) => m.AccountsBridge), {
-  ssr: false,
-  loading: () => null,
+        )
+    : null,
+  loadAccountsBridge: () => import('./AccountsBridge').then((m) => m.AccountsBridge),
+  e2eSessionKey: E2E_SESSION_KEY,
 });
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);
-  return (
-    <DeferredAuthContext.Provider value={authState}>
-      {children}
-      {LazyE2EAuthBridge ? (
-        <LazyE2EAuthBridge sessionKey={E2E_SESSION_KEY} onState={setAuthState} />
-      ) : (
-        <LazyAccountsBridge onState={setAuthState} />
-      )}
-    </DeferredAuthContext.Provider>
-  );
-}

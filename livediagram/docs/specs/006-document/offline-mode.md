@@ -247,6 +247,14 @@ always did.
   reload, never a loop; the console says why (`[load] warm-open-fallback <reason>`).
 - **The tab title** names the document from the warm paint on, and comes back if the framework rewrites the
   page's title after it (the static export's not-found route sets its own).
+- **The code it draws is in first.** Before it paints, the warm paint waits for the code of what it mounts with the
+  canvas (the Quick Style panel and the element tours: `WARM_PAINT_CODE` in
+  `apps/editor/lib/editor-deferred-code.ts`), at most 200 ms (`WARM_PAINT_CODE_WAIT_MS`), so they draw in the paint's
+  own commit rather than a beat later. A returning open has that code in its HTTP cache, so the wait is a few
+  milliseconds; past the cap it paints without it. React holds back revealing waiting content for 300 ms after any is
+  revealed, so the sign-in bridge mounts by a state update as its code lands rather than by such a reveal: nothing the
+  paint shows holds back auth, the ordinary load's first request (the participant) goes out as auth answers, and a
+  warm open is editable no later than a cold one.
 - **Other tabs wait for the load.** The copy holds the first tab's body only: moving to
   another tab during the warm paint shows the tab loader, never a blank canvas, and the
   catch-up keeps the tab the reader moved to (when the document still has it and the link's
@@ -273,15 +281,19 @@ measures warm opens against cold ones on production builds
 tab, 100 ms round trip at 10 / 5 Mbps on every request, 12 cold and 12 warm opens interleaved, each a fresh
 navigation with the app's files cached, median / p90 from navigation start):
 
-| Way in                | Cold: content and editable | Warm: content | Warm: editable   |
-| --------------------- | -------------------------- | ------------- | ---------------- |
-| Signed in             | 827 / 829 ms               | 360 / 369 ms  | 1,191 / 1,209 ms |
-| A guest by share link | 835 / 843 ms               | 369 / 376 ms  | 1,190 / 1,196 ms |
+| Way in                | Cold: content and editable | Warm: content | Warm: editable | Auth answers, cold / warm |
+| --------------------- | -------------------------- | ------------- | -------------- | ------------------------- |
+| Signed in             | 828 / 841 ms               | 382 / 389 ms  | 787 / 801 ms   | 285 / 284 ms              |
+| A guest by share link | 843 / 853 ms               | 389 / 398 ms  | 798 / 803 ms   | 291 / 290 ms              |
 
-The content shows about 470 ms (56%) sooner. Becoming editable comes about 360 ms later than a cold open today: the
-ordinary load's first request starts later behind the warm paint's commit (see the blueprint's "Measured on production
-builds" and its follow-up). The other editors bind the same shared modules and the same bootstrap, so their shape
-is the same. `WarmPaint` (timing telemetry) now times the warm paint in the field, beside `DocumentLoad`.
+Measured again after Work Tracker 960 (the warm paint waits for its code, the sign-in bridge mounts as its code
+lands). The content shows about 450 ms (54%) sooner, and the warm open is editable about 40 ms sooner than a cold one,
+as its catch-up keeps the painted tab instead of drawing the editor for the first time. Before it, a warm open whose
+paint landed before the sign-in bridge's reveal (most of them on a loaded machine) became editable at about 1,200 ms:
+the paint's commit left panels waiting on their code, and React held the bridge's reveal, and so auth and the load,
+back about 400 ms behind theirs. Auth now answers at the same moment warm or cold, and the participant request goes
+out 3 ms after it (median; 5 ms p90). The other editors bind the same shared modules and the same bootstrap, so their
+shape is the same. `WarmPaint` (timing telemetry) times the warm paint in the field, beside `DocumentLoad`.
 
 **Measured** (headless Chromium, 25 runs each, median / p95): keeping a copy and reading it
 back cost about a millisecond against the seconds the warm open saves.

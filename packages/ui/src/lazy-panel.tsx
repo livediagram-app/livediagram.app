@@ -7,7 +7,13 @@ import { lazy, Suspense, useState, type ComponentProps, type ComponentType } fro
 // opening), so by the press the code is in and the panel draws in the press's own commit, as a static import would,
 // with nothing in between to take focus or flash. Opened before then, it draws nothing until its code lands. A load
 // that fails (offline) draws nothing rather than throwing into the screen around it; a failed preload is forgotten,
-// so the press tries again.
+// so the press tries again. Content a page cannot do without (`onFail: 'throw'`) throws a failed load into the error
+// boundary around it instead, as a `next/dynamic` component would.
+export type LazyPanelOptions = {
+  /** What a failed load draws: nothing (the default, for a panel), or the error, thrown to the boundary around it. */
+  onFail?: 'nothing' | 'throw';
+};
+
 export type LazyPanel<P extends object> = ComponentType<P> & {
   /** Fetches the panel's code without drawing it. Never rejects. */
   preload: () => Promise<void>;
@@ -16,6 +22,7 @@ export type LazyPanel<P extends object> = ComponentType<P> & {
 export function lazyPanel<P extends object>(
   name: string,
   load: () => Promise<ComponentType<P>>,
+  { onFail = 'nothing' }: LazyPanelOptions = {},
 ): LazyPanel<P> {
   let loaded: ComponentType<P> | null = null;
   let pending: Promise<ComponentType<P>> | null = null;
@@ -31,6 +38,7 @@ export function lazyPanel<P extends object>(
     fetch().then(
       (component) => ({ default: component }),
       (err: unknown) => {
+        if (onFail === 'throw') throw err;
         console.warn(`[${name}] panel code failed to load`, err);
         return { default: (() => null) as ComponentType<P> };
       },
