@@ -58,7 +58,8 @@ function lockup(k: Kit, cy: number, ink: string, tagInk: string, back = TEAL): E
   const S = k.box.width;
   const d = S * 0.15;
   const gap = S * 0.045;
-  const nameW = S * 0.42;
+  // Syne is a wide face: at 9% of the artboard "Tandem" fits this box on one line in every weight.
+  const nameW = S * 0.46;
   const x0 = (S - (markWidth(d) + gap + nameW)) / 2;
   const nameH = S * 0.13;
   const tagH = S * 0.05;
@@ -66,7 +67,7 @@ function lockup(k: Kit, cy: number, ink: string, tagInk: string, back = TEAL): E
   return [
     ...mark(k, x0, cy - d / 2, d, back),
     inDisplayFace(
-      word(k, textX, cy - (nameH + tagH) / 2, nameW, nameH, NAME, 0.105, {
+      word(k, textX, cy - (nameH + tagH) / 2, nameW, nameH, NAME, 0.09, {
         textAlignX: 'left',
         fontWeight: 700,
         letterSpacing: -0.02,
